@@ -1,0 +1,46 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Export modal configures PNG, GIF, Sprite Sheet, and Project formats",
+  "description": "Verify opening the export dialog, switching between PNG, GIF, Sprite Sheet, and Project export tabs, and inspecting settings.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Export button in the top header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Export Studio Assets modal opens showing format tabs for PNG, GIF, Sprite Sheet, and .pixibun"
+    },
+    {
+      "type": "action",
+      "description": "Click the Sprite Sheet format tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Layout Packing options for Horizontal, Vertical, and Grid and Godot/Unity JSON toggle are displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the GIF format tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the scale resolution buttons 1x, 2x, 4x, 8x and FPS info are displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the Cancel button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the export modal is dismissed"
+    }
+  ]
+}

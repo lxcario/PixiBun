@@ -1,0 +1,30 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Landing page navigation loads hero and enters studio workspace",
+  "description": "Verify the landing page loads, dither curtain can be dismissed, and clicking OPEN THE ATELIER enters the studio editor.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/"
+    },
+    {
+      "type": "action",
+      "description": "Dismiss the introductory dither curtain by clicking on the screen"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the hero section displays the headline A QUIET DESK TO DRAW, ANIMATE, & UNWIND and the primary button OPEN THE ATELIER"
+    },
+    {
+      "type": "action",
+      "description": "Click the OPEN THE ATELIER button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the browser navigates to the /studio workspace displaying the PixiBun top header, left toolbar, and canvas viewport"
+    }
+  ]
+}

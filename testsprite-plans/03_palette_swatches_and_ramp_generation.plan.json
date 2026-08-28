@@ -1,0 +1,38 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Palette tab switches color presets and generates OKLCH ramps",
+  "description": "Verify switching to the Palette tab, selecting swatches, and generating a 5-step color ramp.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Palette tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the palette dropdown selector and color swatch grid are displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the + 5-Step Ramp button in the palette panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a feedback message confirms harmonic ramp tones added and new swatches appear in the grid"
+    },
+    {
+      "type": "action",
+      "description": "Click a color swatch in the palette grid"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the primary color well updates to match the selected color"
+    }
+  ]
+}

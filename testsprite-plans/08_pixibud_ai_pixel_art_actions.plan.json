@@ -1,0 +1,46 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "PixiBud smart tools execute Auto-Shade, Clean Jaggies, and Mood Tints",
+  "description": "Verify opening the PixiBud smart assistant tab and triggering Auto-Shade, Clean Jaggies, and Warm Sunset actions.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the PixiBud tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the PixiBud action buttons are displayed including Auto-Shade, Highlight, Clean Jaggies, and Warm Sunset"
+    },
+    {
+      "type": "action",
+      "description": "Click the Auto-Shade action button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a feedback banner appears stating Curved shadow crescent painted onto your sprite"
+    },
+    {
+      "type": "action",
+      "description": "Click the Clean Jaggies action button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a feedback banner appears stating Staircase corners smoothed flat"
+    },
+    {
+      "type": "action",
+      "description": "Click the Warm Sunset mood tint button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a feedback banner appears stating Dusk light washed across the canvas"
+    }
+  ]
+}

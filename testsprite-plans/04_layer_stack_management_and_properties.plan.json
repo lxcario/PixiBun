@@ -1,0 +1,46 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Layers tab creates new layers and modifies blend mode and visibility",
+  "description": "Verify adding new layers, adjusting opacity, changing blend modes, and toggling visibility.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Layers tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layers header displays Layers (1) and Layer 1 is active"
+    },
+    {
+      "type": "action",
+      "description": "Click the Add New Layer button in the layer toolbar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layer count updates to Layers (2) and Layer 2 appears in the layer stack"
+    },
+    {
+      "type": "action",
+      "description": "Click the visibility eye icon on Layer 2"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the visibility eye icon toggles to its hidden state"
+    },
+    {
+      "type": "action",
+      "description": "Select Multiply from the blend mode dropdown"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the blend mode dropdown shows Multiply as the selected value"
+    }
+  ]
+}

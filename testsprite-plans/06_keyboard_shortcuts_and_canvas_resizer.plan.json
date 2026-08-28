@@ -1,0 +1,38 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Header opens keyboard shortcuts cheat sheet and canvas resize modal",
+  "description": "Verify opening and closing the shortcuts guide modal and canvas dimension resizer dialog.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Shortcuts button in the top header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the shortcuts modal opens displaying keyboard shortcuts for Tools, Canvas, and Animation"
+    },
+    {
+      "type": "action",
+      "description": "Click the Close button on the shortcuts modal"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the shortcuts modal is dismissed"
+    },
+    {
+      "type": "action",
+      "description": "Click the canvas dimension button 32x32 in the top header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Canvas Resize modal opens displaying width and height controls and preset dimension options"
+    }
+  ]
+}

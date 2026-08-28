@@ -1,0 +1,50 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Toolbar allows selecting drawing tools and modifying brush size",
+  "description": "Verify selecting Pen, Eraser, Flood Fill, Dither, and Brush Size updates the active tool state and controls.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the left toolbar is visible containing the Pen, Eraser, Flood Fill, Dither Brush, Eyedropper, Marquee, Line, Rectangle, and Ellipse buttons"
+    },
+    {
+      "type": "action",
+      "description": "Click the Eraser tool button in the left toolbar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Eraser tool is active with highlighted gold styling in the tool dock"
+    },
+    {
+      "type": "action",
+      "description": "Click the Flood Fill tool button in the left toolbar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Flood Fill tool is active and displays the fill mode modifier button"
+    },
+    {
+      "type": "action",
+      "description": "Click the Dither tool button in the left toolbar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Dither tool is active and displays the Bayer matrix button with 2x2, 4x4, or 8x8"
+    },
+    {
+      "type": "action",
+      "description": "Click the brush size cycler button in the left toolbar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the brush size button updates its text to 2px"
+    }
+  ]
+}

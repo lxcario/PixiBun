@@ -1,0 +1,1563 @@
+'use client';
+
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useStudioStore } from '@/stores/studioStore';
+import { 
+  getBresenhamLine, 
+  filterPixelPerfect, 
+  getRectanglePoints, 
+  getEllipsePoints, 
+  applySymmetry, 
+  Point,
+  getQuadraticBezierPoints,
+  getIsometric2p1Line
+} from '@/lib/canvas/rasterMath';
+import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
+import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
+import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { HistoryStep } from '@/types/canvas';
+import { ImportPayload } from '@/components/modals/ImportModal';
+import { 
+  cleanJaggiesOnCanvas, 
+  generateAutoShadeData, 
+  generateHighlightData,
+  generateSelOutData,
+  generateOuterStrokeData,
+  generateGroundShadowData,
+  applyAtmosphericColorGrade,
+  quantizeToActivePalette,
+  cleanStrayPixelsOnCanvas
+} from '@/lib/ai/pixelAiEngine';
+import {
+  renderParametric2p5DLighting,
+  rotateWithRotSprite,
+  applyAtkinsonDither,
+  applyZhangSuenThinning,
+  executePhotometricPipeline,
+  computeSeparableEDT,
+  generateInflatedHeightmap,
+  applyBilateralFilter,
+  computeTangentNormalField,
+  bakeNormalMapToCanvas
+} from '@/lib/ai/smartMathEngine';
+import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
+
+interface SelectionBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface FloatingSelection {
+  canvas: HTMLCanvasElement;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface CenterViewportProps {
+  onCommitHistory?: () => void;
+  onOpenImport?: (payload: ImportPayload) => void;
+}
+
+export const CenterViewport: React.FC<CenterViewportProps> = ({ 
+  onCommitHistory,
+  onOpenImport 
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const gridCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Undo & Redo History Stacks
+  const undoStackRef = useRef<HistoryStep[]>([]);
+  const redoStackRef = useRef<HistoryStep[]>([]);
+  const currentStrokeSnapshotRef = useRef<HistoryStep | null>(null);
+
+  // Selection & Clipboard Memory
+  const [selection, setSelection] = useState<SelectionBox | null>(null);
+  const [floatingSelection, setFloatingSelection] = useState<FloatingSelection | null>(null);
+  const clipboardRef = useRef<{ canvas: HTMLCanvasElement; w: number; h: number } | null>(null);
+  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
+  const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
+
+  const {
+    canvasWidth,
+    canvasHeight,
+    zoom,
+    setZoom,
+    panX,
+    panY,
+    setPan,
+    showGrid,
+    showIsoGuides,
+    showTilePreview,
+    showNormalMapPreview,
+    tools,
+    primaryColor,
+    secondaryColor,
+    setPrimaryColor,
+    frames,
+    activeFrameIndex,
+    activeLayerId,
+    onionSkin,
+    isPlaying,
+    setCanUndo,
+    setCanRedo,
+    addExtractedPalette,
+    addLayer,
+  } = useStudioStore();
+
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
+  const [strokeStart, setStrokeStart] = useState<Point | null>(null);
+  const [lastPoint, setLastPoint] = useState<Point | null>(null);
+  const [cursorCoords, setCursorCoords] = useState<Point | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [lassoPoints, setLassoPoints] = useState<Point[]>([]);
+
+  // Initialize or fetch the offscreen canvas for a layer.
+  const getOrCreateLayerCanvas = useCallback(
+    (layerId: string): HTMLCanvasElement =>
+      getOrCreateBuffer(layerId, canvasWidth, canvasHeight).canvas,
+    [canvasWidth, canvasHeight]
+  );
+
+  // Composite all visible layers onto the main viewport canvas
+  const renderComposite = useCallback(() => {
+    const mainCanvas = mainCanvasRef.current;
+    if (!mainCanvas) return;
+    const ctx = mainCanvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.imageSmoothingEnabled = false;
+
+    // 1. Onion Skinning (Previous Frames in Matcha Green / Wisteria, Next in Plum)
+    if (onionSkin.enabled && !isPlaying && frames.length > 1) {
+      if (activeFrameIndex > 0) {
+        const prevFrame = frames[activeFrameIndex - 1];
+        ctx.globalAlpha = onionSkin.opacity;
+        prevFrame.layers.forEach((layer) => {
+          if (layer.visible) {
+            const lCanvas = getOrCreateLayerCanvas(layer.id);
+            ctx.drawImage(lCanvas, 0, 0);
+          }
+        });
+      }
+    }
+
+    // 2. Main Active Frame Layers
+    const currentFrame = frames[activeFrameIndex];
+    if (currentFrame) {
+      currentFrame.layers.forEach((layer) => {
+        if (!layer.visible) return;
+        const lCanvas = getOrCreateLayerCanvas(layer.id);
+        ctx.globalAlpha = layer.opacity;
+        ctx.globalCompositeOperation = layer.blendMode;
+        ctx.drawImage(lCanvas, 0, 0);
+      });
+    }
+
+    // 3. Floating Selection Buffer overlay (if active)
+    if (floatingSelection) {
+      ctx.globalAlpha = 1.0;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
+    }
+
+    // 4. Tangent-Space Normal Map Live Viewport Mode
+    if (showNormalMapPreview) {
+      const data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      const isOpaque = (x: number, y: number) => {
+        if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
+        return data[(y * canvasWidth + x) * 4 + 3] > 30;
+      };
+      const distanceMap = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+      const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
+      const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
+      const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
+      const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(normalCanvas, 0, 0);
+    }
+
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
+  }, [activeFrameIndex, canvasHeight, canvasWidth, floatingSelection, frames, getOrCreateLayerCanvas, isPlaying, onionSkin, showNormalMapPreview]);
+
+  // Capture Undo Snapshot
+  const captureSnapshot = useCallback((description: string = 'Stroke') => {
+    const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
+    const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    currentStrokeSnapshotRef.current = {
+      layerId: activeLayerId,
+      frameIndex: activeFrameIndex,
+      imageData: imgData,
+      description,
+    };
+  }, [activeFrameIndex, activeLayerId, canvasWidth, canvasHeight, getOrCreateLayerCanvas]);
+
+  // Commit Undo Snapshot to Stack
+  const commitSnapshot = useCallback(() => {
+    if (currentStrokeSnapshotRef.current) {
+      undoStackRef.current.push(currentStrokeSnapshotRef.current);
+      if (undoStackRef.current.length > 50) {
+        undoStackRef.current.shift();
+      }
+      redoStackRef.current = [];
+      currentStrokeSnapshotRef.current = null;
+      setCanUndo(true);
+      setCanRedo(false);
+      onCommitHistory?.();
+    }
+  }, [onCommitHistory, setCanRedo, setCanUndo]);
+
+  // Undo Action
+  const performUndo = useCallback(() => {
+    if (undoStackRef.current.length === 0) return;
+
+    const previousStep = undoStackRef.current.pop();
+    if (!previousStep) return;
+
+    const currentLayerCanvas = getOrCreateLayerCanvas(previousStep.layerId);
+    const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    redoStackRef.current.push({
+      layerId: previousStep.layerId,
+      frameIndex: previousStep.frameIndex,
+      imageData: currentImgData,
+      description: previousStep.description,
+    });
+
+    ctx.putImageData(previousStep.imageData, 0, 0);
+
+    setCanUndo(undoStackRef.current.length > 0);
+    setCanRedo(true);
+    renderComposite();
+  }, [canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+
+  // Redo Action
+  const performRedo = useCallback(() => {
+    if (redoStackRef.current.length === 0) return;
+
+    const nextStep = redoStackRef.current.pop();
+    if (!nextStep) return;
+
+    const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
+    const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    undoStackRef.current.push({
+      layerId: nextStep.layerId,
+      frameIndex: nextStep.frameIndex,
+      imageData: currentImgData,
+      description: nextStep.description,
+    });
+
+    ctx.putImageData(nextStep.imageData, 0, 0);
+
+    setCanUndo(true);
+    setCanRedo(redoStackRef.current.length > 0);
+    renderComposite();
+  }, [canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+
+  // Bind Custom Event Listeners for Undo / Redo / Palette Extract / AI Operations
+  useEffect(() => {
+    const handleUndoEvent = () => performUndo();
+    const handleRedoEvent = () => performRedo();
+
+    const handleExtractPaletteEvent = () => {
+      const mainCanvas = mainCanvasRef.current;
+      if (!mainCanvas) return;
+      const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imgData.data;
+      const uniqueColors = new Set<string>();
+
+      for (let i = 0; i < data.length; i += 4) {
+        const a = data[i + 3];
+        if (a > 30) {
+          const hex = rgbaToHex(data[i], data[i + 1], data[i + 2], a);
+          uniqueColors.add(hex);
+        }
+      }
+
+      const colorsArr = Array.from(uniqueColors);
+      if (colorsArr.length > 0) {
+        addExtractedPalette(`Extracted (${colorsArr.length})`, colorsArr);
+      }
+    };
+
+    const handleCleanJaggiesEvent = () => {
+      captureSnapshot('AI Clean Jaggies');
+      const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        cleanJaggiesOnCanvas(ctx, canvasWidth, canvasHeight);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleAutoShadeEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
+      const lightEl = customEvent.detail?.lightElevation ?? tools.lightElevation;
+
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      captureSnapshot('AI 2.5D Auto-Shade');
+
+      const { shadedPixels } = renderParametric2p5DLighting(mainCtx, canvasWidth, canvasHeight, {
+        azimuthDeg: lightAz,
+        elevationDeg: lightEl,
+        shadowIntensity: 0.8,
+        specularShininess: 16,
+        rimLight: false,
+        selOut: false,
+      });
+
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        shadedPixels.forEach((p) => {
+          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          tCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleHighlightEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
+      const lightEl = customEvent.detail?.lightElevation ?? tools.lightElevation;
+
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      captureSnapshot('AI Specular Highlight');
+
+      const { specularPixels } = renderParametric2p5DLighting(mainCtx, canvasWidth, canvasHeight, {
+        azimuthDeg: lightAz,
+        elevationDeg: lightEl,
+        shadowIntensity: 0.8,
+        specularShininess: 16,
+        rimLight: false,
+        selOut: false,
+      });
+
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        specularPixels.forEach((p) => {
+          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          tCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleSelOutEvent = () => {
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      captureSnapshot('AI Selective Outline');
+      const { selOutPixels } = generateSelOutData(mainCtx, canvasWidth, canvasHeight);
+
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        selOutPixels.forEach((p) => {
+          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          tCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleAutoOutlineEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const strokeColor = customEvent.detail?.color || '#2B2038';
+
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      captureSnapshot('AI Auto Outline');
+      const { strokePixels } = generateOuterStrokeData(mainCtx, canvasWidth, canvasHeight, strokeColor);
+
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        strokePixels.forEach((p) => {
+          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          tCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleGroundShadowEvent = () => {
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      captureSnapshot('AI Ground Shadow');
+      const { shadowPixels } = generateGroundShadowData(mainCtx, canvasWidth, canvasHeight);
+
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        shadowPixels.forEach((p) => {
+          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          tCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleRotSpriteEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const angle = customEvent.detail?.angle || 45;
+
+      captureSnapshot(`RotSprite ${angle}°`);
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (tCtx) {
+        const rotated = rotateWithRotSprite(tCtx, canvasWidth, canvasHeight, angle);
+        tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        tCtx.drawImage(rotated, 0, 0);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleAtkinsonDitherEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const paletteColors = customEvent.detail?.colors || [];
+
+      captureSnapshot('Atkinson Dither');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (tCtx) {
+        applyAtkinsonDither(tCtx, canvasWidth, canvasHeight, paletteColors);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleSkeletonThinningEvent = () => {
+      captureSnapshot('1px Skeleton Thinning');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (tCtx) {
+        applyZhangSuenThinning(tCtx, canvasWidth, canvasHeight);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleColorGradeEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const grade = customEvent.detail?.grade || 'sunset';
+
+      captureSnapshot(`AI Color Grade (${grade})`);
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        applyAtmosphericColorGrade(tCtx, canvasWidth, canvasHeight, grade);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleQuantizePaletteEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const paletteColors = customEvent.detail?.colors || [];
+
+      captureSnapshot('AI Snap to Palette');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        quantizeToActivePalette(tCtx, canvasWidth, canvasHeight, paletteColors);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handleRemoveStraysEvent = () => {
+      captureSnapshot('AI Remove Stray Pixels');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d');
+      if (tCtx) {
+        cleanStrayPixelsOnCanvas(tCtx, canvasWidth, canvasHeight);
+        commitSnapshot();
+        renderComposite();
+      }
+    };
+
+    const handlePhotometricLightingEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const detail = customEvent.detail || {};
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (!tCtx) return;
+
+      captureSnapshot(`Photometric Lighting (${detail.material || 'matte'})`);
+      const shadedCanvas = executePhotometricPipeline(
+        tCtx,
+        canvasWidth,
+        canvasHeight,
+        {
+          lightAzimuth: detail.lightAzimuth ?? tools.lightAzimuth,
+          lightElevation: detail.lightElevation ?? tools.lightElevation,
+          lightRadius: detail.lightRadius ?? tools.lightRadius,
+          lightColor: detail.lightColor ?? primaryColor,
+          ambientIntensity: detail.ambientIntensity ?? 0.35,
+          material: detail.material ?? tools.materialPreset,
+          cavityStrength: detail.cavityStrength ?? tools.cavityStrength,
+          ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
+          bayerSize: detail.bayerSize || '4x4',
+        },
+        detail.paletteColors || []
+      );
+
+      tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+      tCtx.drawImage(shadedCanvas, 0, 0);
+      commitSnapshot();
+      renderComposite();
+    };
+
+    const handleBakeNormalMapEvent = () => {
+      const mainCanvas = mainCanvasRef.current;
+      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
+      if (!mainCtx) return;
+
+      const imgData = mainCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imgData.data;
+      const isOpaque = (x: number, y: number) => {
+        if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
+        return data[(y * canvasWidth + x) * 4 + 3] > 30;
+      };
+
+      const distanceMap = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+      const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
+      const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
+      const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
+      const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
+
+      addLayer('Normal Map');
+      setTimeout(() => {
+        const state = useStudioStore.getState();
+        const currentFrame = state.frames[state.activeFrameIndex];
+        const newLayer = currentFrame?.layers[currentFrame.layers.length - 1];
+        if (newLayer) {
+          const lCanvas = getOrCreateLayerCanvas(newLayer.id);
+          const lCtx = lCanvas.getContext('2d');
+          if (lCtx) {
+            lCtx.drawImage(normalCanvas, 0, 0);
+            renderComposite();
+          }
+        }
+      }, 50);
+    };
+
+    window.addEventListener('pixibun:undo', handleUndoEvent);
+    window.addEventListener('pixibun:redo', handleRedoEvent);
+    window.addEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
+    window.addEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
+    window.addEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
+    window.addEventListener('pixibun:highlight', handleHighlightEvent as EventListener);
+    window.addEventListener('pixibun:sel-out', handleSelOutEvent);
+    window.addEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
+    window.addEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+    window.addEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
+    window.addEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
+    window.addEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
+    window.addEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
+    window.addEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
+    window.addEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
+    window.addEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
+    window.addEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
+
+    return () => {
+      window.removeEventListener('pixibun:undo', handleUndoEvent);
+      window.removeEventListener('pixibun:redo', handleRedoEvent);
+      window.removeEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
+      window.removeEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
+      window.removeEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
+      window.removeEventListener('pixibun:highlight', handleHighlightEvent as EventListener);
+      window.removeEventListener('pixibun:sel-out', handleSelOutEvent);
+      window.removeEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
+      window.removeEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+      window.removeEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
+      window.removeEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
+      window.removeEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
+      window.removeEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
+      window.removeEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
+      window.removeEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
+      window.removeEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
+      window.removeEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
+    };
+  }, [
+    activeLayerId,
+    addExtractedPalette,
+    addLayer,
+    canvasHeight,
+    canvasWidth,
+    captureSnapshot,
+    commitSnapshot,
+    getOrCreateLayerCanvas,
+    performRedo,
+    performUndo,
+    primaryColor,
+    renderComposite,
+    tools.cavityStrength,
+    tools.ditherModulation,
+    tools.lightAzimuth,
+    tools.lightElevation,
+    tools.lightRadius,
+    tools.materialPreset,
+  ]);
+
+  // Render Grid, Isometric Guides, Symmetry, and Marching Ants Selection Overlay
+  const renderGridAndSelection = useCallback(() => {
+    const gridCanvas = gridCanvasRef.current;
+    if (!gridCanvas) return;
+    const ctx = gridCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const scale = zoom / 100;
+    const width = canvasWidth * scale;
+    const height = canvasHeight * scale;
+
+    gridCanvas.width = width;
+    gridCanvas.height = height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // 1. Pixel Grid Lines
+    if (showGrid && scale >= 4) {
+      ctx.strokeStyle = 'rgba(58, 46, 76, 0.16)';
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x <= canvasWidth; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * scale, 0);
+        ctx.lineTo(x * scale, height);
+        ctx.stroke();
+      }
+
+      for (let y = 0; y <= canvasHeight; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * scale);
+        ctx.lineTo(width, y * scale);
+        ctx.stroke();
+      }
+    }
+
+    // 2. Isometric 2:1 Guide Grid Lines
+    if (showIsoGuides) {
+      ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+
+      const isoStep = 8 * scale;
+      for (let offset = -height * 2; offset <= width * 2; offset += isoStep) {
+        // Forward diagonals (2:1 slope)
+        ctx.beginPath();
+        ctx.moveTo(offset, 0);
+        ctx.lineTo(offset + height * 2, height);
+        ctx.stroke();
+
+        // Backward diagonals (-2:1 slope)
+        ctx.beginPath();
+        ctx.moveTo(offset, 0);
+        ctx.lineTo(offset - height * 2, height);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    // 3. Symmetry Line Indicators
+    if (tools.symmetryHorizontal) {
+      const midX = (canvasWidth / 2) * scale;
+      ctx.strokeStyle = 'rgba(199, 146, 223, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(midX, 0);
+      ctx.lineTo(midX, height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    if (tools.symmetryVertical) {
+      const midY = (canvasHeight / 2) * scale;
+      ctx.strokeStyle = 'rgba(199, 146, 223, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, midY);
+      ctx.lineTo(width, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // 4. Selection Bounding Box & Marching Ants
+    const activeBox = floatingSelection 
+      ? { x: floatingSelection.x, y: floatingSelection.y, w: floatingSelection.w, h: floatingSelection.h }
+      : selection;
+
+    if (activeBox) {
+      const sx = activeBox.x * scale;
+      const sy = activeBox.y * scale;
+      const sw = activeBox.w * scale;
+      const sh = activeBox.h * scale;
+
+      // Dark dashed border
+      ctx.strokeStyle = '#3A2E4C';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(sx, sy, sw, sh);
+
+      // Light inner dashed border
+      ctx.strokeStyle = '#C792DF';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(sx, sy, sw, sw > 0 && sh > 0 ? sh : 0);
+      ctx.setLineDash([]);
+    }
+  }, [
+    canvasHeight,
+    canvasWidth,
+    floatingSelection,
+    selection,
+    showGrid,
+    showIsoGuides,
+    tools.symmetryHorizontal,
+    tools.symmetryVertical,
+    zoom,
+  ]);
+
+  // Initial Composite and Grid Rendering
+  useEffect(() => {
+    renderComposite();
+    renderGridAndSelection();
+  }, [renderComposite, renderGridAndSelection]);
+
+  // Convert client viewport coordinates to canvas integer pixel coordinates
+  const clientToCanvasCoords = (clientX: number, clientY: number, clamp: boolean = false): Point | null => {
+    const canvas = mainCanvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return null;
+
+    let x = Math.floor((clientX - rect.left) / (rect.width / canvasWidth));
+    let y = Math.floor((clientY - rect.top) / (rect.height / canvasHeight));
+
+    if (clamp) {
+      x = Math.max(0, Math.min(canvasWidth - 1, x));
+      y = Math.max(0, Math.min(canvasHeight - 1, y));
+      return { x, y };
+    }
+
+    if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) {
+      return null;
+    }
+    return { x, y };
+  };
+
+  // Commit floating selection buffer back to active layer
+  const commitFloatingSelection = useCallback(() => {
+    if (!floatingSelection) return;
+
+    captureSnapshot('Commit Selection');
+    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+    const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+    if (ctx) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
+    }
+    setFloatingSelection(null);
+    setSelection(null);
+    commitSnapshot();
+    renderComposite();
+  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite]);
+
+  // Lift selected pixels from layer canvas into floating buffer
+  const liftSelectionToFloating = useCallback(() => {
+    if (!selection || floatingSelection) return;
+
+    captureSnapshot('Lift Selection');
+    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+    const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const { x, y, w, h } = selection;
+    if (w <= 0 || h <= 0) return;
+
+    const floatCanvas = document.createElement('canvas');
+    floatCanvas.width = w;
+    floatCanvas.height = h;
+    const fCtx = floatCanvas.getContext('2d');
+    if (fCtx) {
+      fCtx.imageSmoothingEnabled = false;
+      fCtx.drawImage(layerCanvas, x, y, w, h, 0, 0, w, h);
+    }
+
+    ctx.clearRect(x, y, w, h);
+
+    setFloatingSelection({
+      canvas: floatCanvas,
+      x,
+      y,
+      w,
+      h,
+    });
+    commitSnapshot();
+    renderComposite();
+  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+
+  // Clipboard Actions
+  const handleCopy = useCallback(() => {
+    if (!selection && !floatingSelection) return;
+
+    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+    const box = floatingSelection || selection!;
+    const copyCanvas = document.createElement('canvas');
+    copyCanvas.width = box.w;
+    copyCanvas.height = box.h;
+    const cCtx = copyCanvas.getContext('2d');
+    if (!cCtx) return;
+
+    cCtx.imageSmoothingEnabled = false;
+    if (floatingSelection) {
+      cCtx.drawImage(floatingSelection.canvas, 0, 0);
+    } else {
+      cCtx.drawImage(layerCanvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    }
+
+    clipboardRef.current = {
+      canvas: copyCanvas,
+      w: box.w,
+      h: box.h,
+    };
+  }, [activeLayerId, floatingSelection, getOrCreateLayerCanvas, selection]);
+
+  const handleCut = useCallback(() => {
+    handleCopy();
+    if (floatingSelection) {
+      setFloatingSelection(null);
+      setSelection(null);
+      renderComposite();
+    } else if (selection) {
+      captureSnapshot('Cut Selection');
+      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const ctx = layerCanvas.getContext('2d');
+      ctx?.clearRect(selection.x, selection.y, selection.w, selection.h);
+      setSelection(null);
+      commitSnapshot();
+      renderComposite();
+    }
+  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, handleCopy, renderComposite, selection]);
+
+  const handlePaste = useCallback(() => {
+    if (!clipboardRef.current) return;
+
+    if (floatingSelection) {
+      commitFloatingSelection();
+    }
+
+    const { canvas, w, h } = clipboardRef.current;
+    const pasteCanvas = document.createElement('canvas');
+    pasteCanvas.width = w;
+    pasteCanvas.height = h;
+    const pCtx = pasteCanvas.getContext('2d');
+    pCtx?.drawImage(canvas, 0, 0);
+
+    const px = Math.max(0, Math.floor((canvasWidth - w) / 2));
+    const py = Math.max(0, Math.floor((canvasHeight - h) / 2));
+
+    setFloatingSelection({
+      canvas: pasteCanvas,
+      x: px,
+      y: py,
+      w,
+      h,
+    });
+    setSelection({ x: px, y: py, w, h });
+    renderComposite();
+  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite]);
+
+  const handleDeleteSelection = useCallback(() => {
+    if (floatingSelection) {
+      setFloatingSelection(null);
+      setSelection(null);
+      renderComposite();
+    } else if (selection) {
+      captureSnapshot('Delete Selection');
+      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const ctx = layerCanvas.getContext('2d');
+      ctx?.clearRect(selection.x, selection.y, selection.w, selection.h);
+      setSelection(null);
+      commitSnapshot();
+      renderComposite();
+    }
+  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+
+  const handleFlipHorizontal = useCallback(() => {
+    const active = floatingSelection;
+    if (!active) {
+      liftSelectionToFloating();
+      return;
+    }
+    const flippedCanvas = document.createElement('canvas');
+    flippedCanvas.width = active.w;
+    flippedCanvas.height = active.h;
+    const fCtx = flippedCanvas.getContext('2d');
+    if (!fCtx) return;
+
+    fCtx.imageSmoothingEnabled = false;
+    fCtx.translate(active.w, 0);
+    fCtx.scale(-1, 1);
+    fCtx.drawImage(active.canvas, 0, 0);
+
+    setFloatingSelection({
+      ...active,
+      canvas: flippedCanvas,
+    });
+    renderComposite();
+  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+
+  const handleFlipVertical = useCallback(() => {
+    const active = floatingSelection;
+    if (!active) {
+      liftSelectionToFloating();
+      return;
+    }
+    const flippedCanvas = document.createElement('canvas');
+    flippedCanvas.width = active.w;
+    flippedCanvas.height = active.h;
+    const fCtx = flippedCanvas.getContext('2d');
+    if (!fCtx) return;
+
+    fCtx.imageSmoothingEnabled = false;
+    fCtx.translate(0, active.h);
+    fCtx.scale(1, -1);
+    fCtx.drawImage(active.canvas, 0, 0);
+
+    setFloatingSelection({
+      ...active,
+      canvas: flippedCanvas,
+    });
+    renderComposite();
+  }, [floatingSelection, liftSelectionToFloating, renderComposite]);
+
+  // Global Keyboard Shortcuts for Selection & History
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopy();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
+        e.preventDefault();
+        handleCut();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        handlePaste();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        commitFloatingSelection();
+        setSelection(null);
+      } else if (e.key === 'Escape') {
+        commitFloatingSelection();
+        setSelection(null);
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selection || floatingSelection) {
+          e.preventDefault();
+          handleDeleteSelection();
+        }
+      } else if (e.key.toLowerCase() === 'h' && (selection || floatingSelection)) {
+        e.preventDefault();
+        handleFlipHorizontal();
+      } else if (e.key.toLowerCase() === 'v' && (selection || floatingSelection) && !e.ctrlKey) {
+        e.preventDefault();
+        handleFlipVertical();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    commitFloatingSelection,
+    handleCopy,
+    handleCut,
+    handleDeleteSelection,
+    handleFlipHorizontal,
+    handleFlipVertical,
+    handlePaste,
+    selection,
+    floatingSelection,
+  ]);
+
+  // Draw points on active layer
+  const drawPointsOnActiveLayer = useCallback(
+    (points: Point[], color: string, isErase: boolean = false) => {
+      const currentFrame = frames[activeFrameIndex];
+      const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+      if (!targetLayerId) return;
+
+      const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
+      const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      ctx.imageSmoothingEnabled = false;
+
+      let allPoints = points;
+      if (tools.symmetryHorizontal || tools.symmetryVertical) {
+        allPoints = applySymmetry(
+          points,
+          canvasWidth,
+          canvasHeight,
+          tools.symmetryHorizontal,
+          tools.symmetryVertical
+        );
+      }
+
+      if (isErase) {
+        ctx.globalCompositeOperation = 'destination-out';
+        allPoints.forEach((p) => {
+          const offset = Math.floor(tools.brushSize / 2);
+          ctx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
+        });
+        ctx.globalCompositeOperation = 'source-over';
+      } else {
+        ctx.fillStyle = color;
+        ctx.globalCompositeOperation = 'source-over';
+        allPoints.forEach((p) => {
+          const offset = Math.floor(tools.brushSize / 2);
+          ctx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
+        });
+      }
+
+      renderComposite();
+    },
+    [
+      activeFrameIndex,
+      activeLayerId,
+      canvasHeight,
+      canvasWidth,
+      frames,
+      getOrCreateLayerCanvas,
+      renderComposite,
+      tools.brushSize,
+      tools.symmetryHorizontal,
+      tools.symmetryVertical,
+    ]
+  );
+
+  // Mouse / Pointer Event Handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Middle Click or Alt+Click = Pan Viewport
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - panX, y: e.clientY - panY });
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    const coords = clientToCanvasCoords(e.clientX, e.clientY);
+    if (!coords) return;
+
+    // Selection Tool Handlers
+    if (tools.activeTool === 'select-box') {
+      const activeBox = floatingSelection || selection;
+
+      if (
+        activeBox &&
+        coords.x >= activeBox.x &&
+        coords.x < activeBox.x + activeBox.w &&
+        coords.y >= activeBox.y &&
+        coords.y < activeBox.y + activeBox.h
+      ) {
+        if (!floatingSelection) {
+          liftSelectionToFloating();
+        }
+        setIsDraggingSelection(true);
+        setDragOffset({
+          x: coords.x - activeBox.x,
+          y: coords.y - activeBox.y,
+        });
+        return;
+      }
+
+      if (floatingSelection) {
+        commitFloatingSelection();
+      }
+
+      setIsDrawing(true);
+      setStrokeStart(coords);
+      setLastPoint(coords);
+      setSelection({ x: coords.x, y: coords.y, w: 1, h: 1 });
+      return;
+    }
+
+    if (tools.activeTool === 'select-lasso') {
+      if (floatingSelection) commitFloatingSelection();
+      setIsDrawing(true);
+      setLassoPoints([coords]);
+      setStrokeStart(coords);
+      return;
+    }
+
+    // Color Replace Tool
+    if (tools.activeTool === 'color-replace') {
+      captureSnapshot('Color Replace');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const data = imgData.data;
+        const targetIdx = (coords.y * canvasWidth + coords.x) * 4;
+        const tr = data[targetIdx];
+        const tg = data[targetIdx + 1];
+        const tb = data[targetIdx + 2];
+        const ta = data[targetIdx + 3];
+
+        if (ta > 30) {
+          const replaceRgb = hexToRgba(primaryColor);
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i + 2] === tb) {
+              data[i] = replaceRgb.r;
+              data[i + 1] = replaceRgb.g;
+              data[i + 2] = replaceRgb.b;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+          commitSnapshot();
+          renderComposite();
+        }
+      }
+      return;
+    }
+
+    // Commit floating selection before starting other tools
+    if (floatingSelection) {
+      commitFloatingSelection();
+    }
+
+    captureSnapshot(`Tool: ${tools.activeTool}`);
+
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // fallback
+    }
+
+    setIsDrawing(true);
+    setStrokeStart(coords);
+    setLastPoint(coords);
+
+    const isErase = tools.activeTool === 'eraser';
+    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+
+    switch (tools.activeTool) {
+      case 'pen':
+      case 'eraser': {
+        drawPointsOnActiveLayer([coords], drawColor, isErase);
+        break;
+      }
+      case 'dither': {
+        if (shouldDitherPixel(coords.x, coords.y, tools.ditherMatrix, tools.ditherDensity)) {
+          drawPointsOnActiveLayer([coords], drawColor, false);
+        }
+        break;
+      }
+      case 'eyedropper': {
+        const mainCanvas = mainCanvasRef.current;
+        if (mainCanvas) {
+          const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+          if (ctx) {
+            const pixel = ctx.getImageData(coords.x, coords.y, 1, 1).data;
+            const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
+            setPrimaryColor(hex);
+          }
+        }
+        setIsDrawing(false);
+        break;
+      }
+      case 'bucket': {
+        const currentFrame = frames[activeFrameIndex];
+        const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+        if (targetLayerId) {
+          const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
+          const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+          if (ctx) {
+            performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous);
+            renderComposite();
+            commitSnapshot();
+          }
+        }
+        setIsDrawing(false);
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isPanning) {
+      setPan(e.clientX - panStart.x, e.clientY - panStart.y);
+      return;
+    }
+
+    const coords = clientToCanvasCoords(e.clientX, e.clientY, isDrawing);
+    if (coords) {
+      setCursorCoords(coords);
+    }
+
+    // Move floating selection
+    if (isDraggingSelection && coords && floatingSelection) {
+      const newX = coords.x - dragOffset.x;
+      const newY = coords.y - dragOffset.y;
+      setFloatingSelection({
+        ...floatingSelection,
+        x: newX,
+        y: newY,
+      });
+      setSelection({
+        x: newX,
+        y: newY,
+        w: floatingSelection.w,
+        h: floatingSelection.h,
+      });
+      renderComposite();
+      return;
+    }
+
+    if (!isDrawing || !coords) return;
+
+    // Marquee Box Sizing
+    if (tools.activeTool === 'select-box' && strokeStart) {
+      const minX = Math.min(strokeStart.x, coords.x);
+      const minY = Math.min(strokeStart.y, coords.y);
+      const width = Math.abs(coords.x - strokeStart.x) + 1;
+      const height = Math.abs(coords.y - strokeStart.y) + 1;
+      setSelection({ x: minX, y: minY, w: width, h: height });
+      return;
+    }
+
+    // Lasso Selecting
+    if (tools.activeTool === 'select-lasso') {
+      setLassoPoints((prev) => [...prev, coords]);
+      return;
+    }
+
+    const isErase = tools.activeTool === 'eraser';
+    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+
+    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
+      if (lastPoint) {
+        const linePoints = getBresenhamLine(lastPoint.x, lastPoint.y, coords.x, coords.y);
+        const pointsToDraw = tools.pixelPerfect ? filterPixelPerfect(linePoints) : linePoints;
+        drawPointsOnActiveLayer(pointsToDraw, drawColor, isErase);
+      }
+      setLastPoint(coords);
+    } else if (tools.activeTool === 'dither') {
+      if (shouldDitherPixel(coords.x, coords.y, tools.ditherMatrix, tools.ditherDensity)) {
+        drawPointsOnActiveLayer([coords], drawColor, false);
+      }
+      setLastPoint(coords);
+    } else if (
+      (tools.activeTool === 'line' ||
+        tools.activeTool === 'curve' ||
+        tools.activeTool === 'isometric-line' ||
+        tools.activeTool === 'rectangle' ||
+        tools.activeTool === 'ellipse') &&
+      strokeStart
+    ) {
+      // Dynamic overlay preview
+      const previewCanvas = previewCanvasRef.current;
+      if (previewCanvas) {
+        const pCtx = previewCanvas.getContext('2d');
+        if (pCtx) {
+          pCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+          pCtx.imageSmoothingEnabled = false;
+
+          let previewPoints: Point[] = [];
+          if (tools.activeTool === 'line') {
+            previewPoints = getBresenhamLine(strokeStart.x, strokeStart.y, coords.x, coords.y);
+          } else if (tools.activeTool === 'isometric-line') {
+            previewPoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y);
+          } else if (tools.activeTool === 'curve') {
+            const controlPoint: Point = {
+              x: Math.round((strokeStart.x + coords.x) / 2 + (coords.y - strokeStart.y) * tools.curveTightness),
+              y: Math.round((strokeStart.y + coords.y) / 2 - (coords.x - strokeStart.x) * tools.curveTightness),
+            };
+            previewPoints = getQuadraticBezierPoints(strokeStart, controlPoint, coords);
+          } else if (tools.activeTool === 'rectangle') {
+            previewPoints = getRectanglePoints(strokeStart.x, strokeStart.y, coords.x, coords.y, tools.shapeFilled);
+          } else if (tools.activeTool === 'ellipse') {
+            previewPoints = getEllipsePoints(strokeStart.x, strokeStart.y, coords.x, coords.y, tools.shapeFilled);
+          }
+
+          pCtx.fillStyle = drawColor;
+          previewPoints.forEach((p) => {
+            pCtx.fillRect(p.x, p.y, tools.brushSize, tools.brushSize);
+          });
+        }
+      }
+    }
+  };
+
+  const handlePointerUp = (e?: React.PointerEvent) => {
+    if (e) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {
+        // fallback
+      }
+    }
+
+    if (isPanning) {
+      setIsPanning(false);
+    }
+
+    if (isDraggingSelection) {
+      setIsDraggingSelection(false);
+      return;
+    }
+
+    if (isDrawing) {
+      setIsDrawing(false);
+
+      if (
+        (tools.activeTool === 'line' ||
+          tools.activeTool === 'curve' ||
+          tools.activeTool === 'isometric-line' ||
+          tools.activeTool === 'rectangle' ||
+          tools.activeTool === 'ellipse') &&
+        strokeStart &&
+        cursorCoords
+      ) {
+        let shapePoints: Point[] = [];
+        if (tools.activeTool === 'line') {
+          shapePoints = getBresenhamLine(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y);
+        } else if (tools.activeTool === 'isometric-line') {
+          shapePoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y);
+        } else if (tools.activeTool === 'curve') {
+          const controlPoint: Point = {
+            x: Math.round((strokeStart.x + cursorCoords.x) / 2 + (cursorCoords.y - strokeStart.y) * tools.curveTightness),
+            y: Math.round((strokeStart.y + cursorCoords.y) / 2 - (cursorCoords.x - strokeStart.x) * tools.curveTightness),
+          };
+          shapePoints = getQuadraticBezierPoints(strokeStart, controlPoint, cursorCoords);
+        } else if (tools.activeTool === 'rectangle') {
+          shapePoints = getRectanglePoints(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y, tools.shapeFilled);
+        } else if (tools.activeTool === 'ellipse') {
+          shapePoints = getEllipsePoints(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y, tools.shapeFilled);
+        }
+
+        drawPointsOnActiveLayer(shapePoints, primaryColor, false);
+
+        const previewCanvas = previewCanvasRef.current;
+        if (previewCanvas) {
+          const pCtx = previewCanvas.getContext('2d');
+          pCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
+        }
+      }
+
+      if (tools.activeTool !== 'select-box' && tools.activeTool !== 'select-lasso') {
+        commitSnapshot();
+      }
+    }
+
+    setStrokeStart(null);
+    setLastPoint(null);
+  };
+
+  // Zoom with mouse wheel
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.25 : 0.8;
+    setZoom(Math.max(100, Math.min(6400, Math.round(zoom * zoomFactor))));
+  };
+
+  // Drag and drop imports
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      const filename = file.name;
+
+      if (filename.endsWith('.pixibun') || filename.endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const projectJson = JSON.parse(event.target?.result as string);
+            onOpenImport?.({
+              type: 'project',
+              filename,
+              projectJson,
+            });
+          } catch (err) {
+            console.error('Failed to parse project file:', err);
+          }
+        };
+        reader.readAsText(file);
+      } else if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target?.result as string;
+          const img = new Image();
+          img.onload = () => {
+            onOpenImport?.({
+              type: 'image',
+              filename,
+              dataUrl,
+              imgWidth: img.width,
+              imgHeight: img.height,
+            });
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const stageWidth = (canvasWidth * zoom) / 100;
+  const stageHeight = (canvasHeight * zoom) / 100;
+
+  return (
+    <main
+      ref={containerRef}
+      onWheel={handleWheel}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      style={{ touchAction: 'none' }}
+      className={`relative flex-1 h-full overflow-hidden bg-[var(--desk-bg)] transition-colors duration-300 flex items-center justify-center cursor-crosshair select-none ${
+        isPanning ? 'cursor-grab active:cursor-grabbing' : ''
+      }`}
+    >
+      {/* 1. Drag & Drop File Highlight Overlay */}
+      {isDragOver && (
+        <div className="absolute inset-4 z-40 border-4 border-dashed border-[#f0be7c] bg-[#201431]/90 rounded-[4px] flex flex-col items-center justify-center gap-2 pointer-events-none backdrop-blur-xs shadow-2xl">
+          <span className="text-sm font-mono font-bold text-[#f0be7c] uppercase">
+            Drop Sprite or .pixibun Project to Import
+          </span>
+        </div>
+      )}
+
+      {/* 2. Floating Live 1x/2x/4x Animation Preview Window */}
+      <FloatingPreviewWindow />
+
+      {/* 3. Main Drawing Stage (Paper pinned on the desk) */}
+      <div
+        className="relative border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)]"
+        style={{
+          width: `${stageWidth}px`,
+          height: `${stageHeight}px`,
+          transform: `translate(${panX}px, ${panY}px)`,
+          transition: isPanning ? 'none' : 'transform 0.05s linear',
+        }}
+      >
+        {/* Solid Canvas Background */}
+        <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
+
+        {/* Main Composite Layer Canvas */}
+        <canvas
+          ref={mainCanvasRef}
+          width={canvasWidth}
+          height={canvasHeight}
+          className="absolute inset-0 w-full h-full pixelated"
+        />
+
+        {/* Live Shape / Curve Preview Overlay Canvas */}
+        <canvas
+          ref={previewCanvasRef}
+          width={canvasWidth}
+          height={canvasHeight}
+          className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+        />
+
+        {/* Pixel Grid, Isometric Guides & Selection Box Overlay */}
+        <canvas
+          ref={gridCanvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        />
+      </div>
+
+      {/* 4. Precision HUD Pill at Top Left */}
+      <div className="absolute top-3 left-3 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] px-3 py-1.5 rounded-[3px] text-xs font-mono text-[var(--text-heading)] pointer-events-none select-none flex items-center gap-2.5 shadow-md">
+        <span className="font-bold text-[#f0be7c]">
+          {cursorCoords ? `X: ${cursorCoords.x} Y: ${cursorCoords.y}` : 'X: -- Y: --'}
+        </span>
+        <span className="text-[#3a2e4c]">|</span>
+        <span className="text-[#dcabdf] font-bold">
+          {selection ? `Sel: ${selection.w}x${selection.h}` : `${canvasWidth}x${canvasHeight}`}
+        </span>
+        <span className="text-[#3a2e4c]">|</span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-3 h-3 rounded-[1px] border border-[#140d1f]"
+            style={{ backgroundColor: primaryColor }}
+          />
+          <span className="text-[11px] text-[#f0be7c] font-bold uppercase">{primaryColor}</span>
+        </div>
+      </div>
+
+      {/* 5. Bottom Right Viewport Metrics Badge */}
+      <div className="absolute bottom-3 right-3 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] px-3 py-1.5 rounded-[3px] text-xs font-mono text-[var(--text-heading)] pointer-events-none select-none flex items-center gap-2.5 shadow-md">
+        <span className="text-[#dcabdf] font-bold">{zoom}%</span>
+        <span className="text-[#3a2e4c]">|</span>
+        <span className="text-[var(--text-body)]">
+          {frames[activeFrameIndex]?.layers.length || 1} Layers
+        </span>
+      </div>
+    </main>
+  );
+};

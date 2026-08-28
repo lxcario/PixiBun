@@ -1,0 +1,30 @@
+{
+  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Theme toggle switches between Dark Atelier and Light Alabaster themes",
+  "description": "Verify toggling the theme in the studio header updates data-theme and UI appearance.",
+  "priority": "p2",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Theme Toggle button in the top header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the document root theme changes to light mode styling"
+    },
+    {
+      "type": "action",
+      "description": "Click the Theme Toggle button again"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the document root theme returns to dark mode styling"
+    }
+  ]
+}
