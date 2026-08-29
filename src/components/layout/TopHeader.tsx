@@ -34,13 +34,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     zoom,
     setZoom,
     setPan,
-    showGrid,
-    toggleGrid,
-    showTilePreview,
-    toggleTilePreview,
-    tools,
-    toggleSymmetryH,
-    toggleSymmetryV,
     canUndo: storeCanUndo,
     canRedo: storeCanRedo,
   } = useStudioStore();

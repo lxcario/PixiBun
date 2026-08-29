@@ -16,7 +16,7 @@
  */
 
 import { MaterialType, MaterialProperties, PhotometricLightingParams } from '@/types/tools';
-import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
+import { hexToRgba } from '@/lib/canvas/floodFill';
 
 export interface Point {
   x: number;
@@ -415,7 +415,7 @@ function srgbToLinear(c: number): number {
 /**
  * Converts Linear sRGB [0..1] to sRGB [0..255].
  */
-function linearToSrgb(v: number): number {
+export function linearToSrgb(v: number): number {
   const c = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1.0 / 2.4) - 0.055;
   return Math.round(Math.max(0, Math.min(255, c * 255)));
 }
@@ -564,8 +564,6 @@ export function executePhotometricPipeline(
   const outCtx = outputCanvas.getContext('2d')!;
   const outImgData = outCtx.createImageData(width, height);
   const outData = outImgData.data;
-
-  const lightRadiusSq = params.lightRadius * params.lightRadius;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {

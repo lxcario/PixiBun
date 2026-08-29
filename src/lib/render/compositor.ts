@@ -32,7 +32,7 @@ export function compositeFrame(
   if (!ctx) return null;
   ctx.imageSmoothingEnabled = false;
 
-  for (const layer of frame.layers) {
+  for (const layer of frame.layers.slice().reverse()) {
     if (!layer.visible && !options.includeInvisible) continue;
     const buffer = getOrCreateBuffer(layer.id, width, height);
     ctx.globalAlpha = layer.opacity;

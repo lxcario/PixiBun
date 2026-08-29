@@ -35,6 +35,7 @@ export const RightInspector: React.FC = () => {
     addCustomColorToPalette,
     generateAndAddRamp,
     tools,
+    setActiveTool,
     setLightAzimuth,
     setLightElevation,
     setMaterialPreset,
@@ -60,6 +61,7 @@ export const RightInspector: React.FC = () => {
 
   // 1. Module 1: Full Photometric Lighting & Normal Mapping Pipeline
   const handleRenderPhotometricLighting = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(
       new CustomEvent('pixibun:photometric-lighting', {
         detail: {
@@ -72,7 +74,7 @@ export const RightInspector: React.FC = () => {
           cavityStrength: tools.cavityStrength,
           ditherModulation: tools.ditherModulation,
           bayerSize: '4x4',
-          paletteColors: currentPalette.colors,
+          paletteColors: [],
         },
       })
     );
@@ -80,11 +82,13 @@ export const RightInspector: React.FC = () => {
   };
 
   const handleBakeNormalMap = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:bake-normal-map'));
     showFeedback('Tangent-Space Normal Map (128, 128, 255) baked to new layer');
   };
 
   const handleSpecularHighlight = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(
       new CustomEvent('pixibun:highlight', {
         detail: {
@@ -98,6 +102,7 @@ export const RightInspector: React.FC = () => {
   };
 
   const handleSelOut = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(
       new CustomEvent('pixibun:sel-out', {
         detail: {
@@ -110,8 +115,15 @@ export const RightInspector: React.FC = () => {
   };
 
   const handleGroundShadow = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:ground-shadow'));
     showFeedback('Ground drop shadow cast beneath sprite base');
+  };
+
+  const handle47Blob = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
+    window.dispatchEvent(new CustomEvent('pixibun:apply-47-blob'));
+    showFeedback('47-Tile Blob autotiling contours generated on new layer');
   };
 
   // 3. Module 3: Advanced Dithering Actions
@@ -646,23 +658,30 @@ export const RightInspector: React.FC = () => {
             </span>
 
             <div className="grid grid-cols-1 gap-1.5">
-              <button
-                disabled
-                title="Requires tileset atlas (planned). Use the Curve drawing tool (toolbar) for Bézier curves."
-                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)]/40 flex items-center justify-center gap-1 cursor-not-allowed"
+              <TactileButton
+                size="sm"
+                variant="default"
+                onClick={() => {
+                  setActiveTool('curve');
+                  showFeedback('Curve tool active — click and drag on canvas to draw Bézier curve');
+                }}
+                title="Select Bézier Curve drawing tool on toolbar"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <PixelIcon name="grid-iso" size={12} />
-                <span>Bézier Spline (use Curve tool)</span>
-              </button>
+                <PixelIcon name="curve" size={12} />
+                <span>Bézier Curve Tool</span>
+              </TactileButton>
 
-              <button
-                disabled
-                title="Requires tileset atlas (planned). 47-Tile Blob is currently a bitmask computation utility, not a one-click autotiler."
-                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)]/40 flex items-center justify-center gap-1 cursor-not-allowed"
+              <TactileButton
+                size="sm"
+                variant="default"
+                onClick={handle47Blob}
+                title="Calculate 47-tile bitmask connectivity and generate autotile edge contours"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
                 <PixelIcon name="grid-iso" size={12} />
-                <span>47-Blob (utility only)</span>
-              </button>
+                <span>47-Blob Autotile Edges</span>
+              </TactileButton>
 
               <TactileButton
                 size="sm"

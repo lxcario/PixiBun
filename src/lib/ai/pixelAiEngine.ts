@@ -13,6 +13,7 @@
 
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
 import { rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
+import { calculate47TileBitmask } from '@/lib/ai/smartMathEngine';
 
 export interface ShadedPixel {
   x: number;
@@ -789,4 +790,61 @@ export function harmonizePaletteColors(existingColors: string[]): string[] {
   });
 
   return newColors.slice(0, 4);
+}
+
+/**
+ * 11. 47-Tile Blob Autotiling Edge & Corner Contour Generator:
+ * Uses calculate47TileBitmask to evaluate 8-neighbor connectivity for each pixel,
+ * generating edge highlight/shadow contour accents on sprite transitions.
+ */
+export function generate47BlobEdgeData(
+  srcCtx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+): { blobPixels: ShadedPixel[] } {
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+
+  const isOpaque = (x: number, y: number): boolean => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return false;
+    return data[(y * width + x) * 4 + 3] > 30;
+  };
+
+  const blobPixels: ShadedPixel[] = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!isOpaque(x, y)) continue;
+
+      const bitmask = calculate47TileBitmask(isOpaque, x, y);
+      // Bitmask 255 means fully enclosed interior pixel
+      if (bitmask === 255) continue;
+
+      const idx = (y * width + x) * 4;
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+
+      const hasNorth = (bitmask & 1) !== 0;
+      const hasEast = (bitmask & 4) !== 0;
+      const hasSouth = (bitmask & 16) !== 0;
+      const hasWest = (bitmask & 64) !== 0;
+
+      if (!hasNorth || !hasWest) {
+        // Exposed top/left boundary: warm highlight accent
+        const [hr, hg, hb] = getHighlightRgb(r, g, b);
+        blobPixels.push({ x, y, r: hr, g: hg, b: hb, a: 220 });
+      } else if (!hasSouth || !hasEast) {
+        // Exposed bottom/right boundary: deep contour shadow
+        const [sr, sg, sb] = getShadedRgb(r, g, b, 'deep');
+        blobPixels.push({ x, y, r: sr, g: sg, b: sb, a: 220 });
+      } else {
+        // Diagonal inner corner crease
+        const [sr, sg, sb] = getShadedRgb(r, g, b, 'mid');
+        blobPixels.push({ x, y, r: sr, g: sg, b: sb, a: 200 });
+      }
+    }
+  }
+
+  return { blobPixels };
 }

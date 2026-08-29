@@ -24,7 +24,8 @@ import {
   generateGroundShadowData,
   applyAtmosphericColorGrade,
   quantizeToActivePalette,
-  cleanStrayPixelsOnCanvas
+  cleanStrayPixelsOnCanvas,
+  generate47BlobEdgeData
 } from '@/lib/ai/pixelAiEngine';
 import {
   renderParametric2p5DLighting,
@@ -135,12 +136,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     ctx.imageSmoothingEnabled = false;
 
+    const state = useStudioStore.getState();
+    const currentFrame = state.frames[state.activeFrameIndex];
+
     // 1. Onion Skinning (Previous Frames in Matcha Green / Wisteria, Next in Plum)
-    if (onionSkin.enabled && !isPlaying && frames.length > 1) {
-      if (activeFrameIndex > 0) {
-        const prevFrame = frames[activeFrameIndex - 1];
-        ctx.globalAlpha = onionSkin.opacity;
-        prevFrame.layers.forEach((layer) => {
+    if (state.onionSkin.enabled && !state.isPlaying && state.frames.length > 1) {
+      if (state.activeFrameIndex > 0) {
+        const prevFrame = state.frames[state.activeFrameIndex - 1];
+        ctx.globalAlpha = state.onionSkin.opacity;
+        prevFrame.layers.slice().reverse().forEach((layer) => {
           if (layer.visible) {
             const lCanvas = getOrCreateLayerCanvas(layer.id);
             ctx.drawImage(lCanvas, 0, 0);
@@ -149,10 +153,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     }
 
-    // 2. Main Active Frame Layers
-    const currentFrame = frames[activeFrameIndex];
+    // 2. Main Active Frame Layers (Bottom-to-Top Compositing)
     if (currentFrame) {
-      currentFrame.layers.forEach((layer) => {
+      currentFrame.layers.slice().reverse().forEach((layer) => {
         if (!layer.visible) return;
         const lCanvas = getOrCreateLayerCanvas(layer.id);
         ctx.globalAlpha = layer.opacity;
@@ -169,7 +172,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     }
 
     // 4. Tangent-Space Normal Map Live Viewport Mode
-    if (showNormalMapPreview) {
+    if (state.showNormalMapPreview) {
       const data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
       const isOpaque = (x: number, y: number) => {
         if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
@@ -186,7 +189,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
-  }, [activeFrameIndex, canvasHeight, canvasWidth, floatingSelection, frames, getOrCreateLayerCanvas, isPlaying, onionSkin, showNormalMapPreview]);
+  }, [canvasHeight, canvasWidth, floatingSelection, getOrCreateLayerCanvas]);
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback((description: string = 'Stroke') => {
@@ -338,10 +341,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         const existing = currentFrame.layers.find(l => l.tag === tag);
         if (existing) {
           deleteBuffers([existing.id]);
-          deleteLayer(existing.id);
+          state.deleteLayer(existing.id);
         }
       }
-      addLayer(displayName, tag);
+      state.addLayer(displayName, tag);
 
       const freshState = useStudioStore.getState();
       const freshFrame = freshState.frames[freshState.activeFrameIndex];
@@ -641,6 +644,23 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
+    const handle47BlobEvent = () => {
+      const srcCtx = compositeSourceSnapshot('blob-edges');
+      if (!srcCtx) return;
+
+      const { blobPixels } = generate47BlobEdgeData(srcCtx, canvasWidth, canvasHeight);
+
+      const outCtx = replaceTaggedLayer('47-Blob Contours', 'blob-edges');
+      if (outCtx) {
+        blobPixels.forEach((p) => {
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
+        });
+        renderComposite();
+        bumpBufferVersion();
+      }
+    };
+
     window.addEventListener('pixibun:undo', handleUndoEvent);
     window.addEventListener('pixibun:redo', handleRedoEvent);
     window.addEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
@@ -650,6 +670,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     window.addEventListener('pixibun:sel-out', handleSelOutEvent);
     window.addEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
     window.addEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+    window.addEventListener('pixibun:apply-47-blob', handle47BlobEvent);
     window.addEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
     window.addEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
     window.addEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);
@@ -670,6 +691,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       window.removeEventListener('pixibun:sel-out', handleSelOutEvent);
       window.removeEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
       window.removeEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+      window.removeEventListener('pixibun:apply-47-blob', handle47BlobEvent);
       window.removeEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
       window.removeEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
       window.removeEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);

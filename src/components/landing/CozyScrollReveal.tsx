@@ -97,7 +97,7 @@ export const CozyScrollReveal: React.FC<CozyScrollRevealProps> = ({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.01, margin: '120px 0px 120px 0px' }}
+      viewport={{ once, amount, margin: '120px 0px 120px 0px' }}
       variants={selectedVariants}
       transition={{
         duration: 0.5,

@@ -41,7 +41,7 @@ export const FloatingPreviewWindow: React.FC = () => {
 
     const currentFrame = frames[activeFrameIndex];
     if (currentFrame) {
-      currentFrame.layers.forEach((layer) => {
+      currentFrame.layers.slice().reverse().forEach((layer) => {
         if (!layer.visible) return;
         const lBuffer = getOrCreateBuffer(layer.id, canvasWidth, canvasHeight);
         ctx.globalAlpha = layer.opacity;

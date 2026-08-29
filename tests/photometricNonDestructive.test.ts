@@ -153,8 +153,10 @@ function makeCanvas(width: number, height: number): MockCanvas {
     width,
     height,
     getContext: () => ctx,
-    _imageData,
   } as unknown as MockCanvas;
+  Object.defineProperty(canvas, '_imageData', {
+    get(): ImageDataShim { return _imageData; },
+  });
   Object.defineProperty(canvas, 'width', {
     get() { return width; },
     set(v: number) {
@@ -439,4 +441,58 @@ describe('Bake Normals layer index', () => {
     // The base art is at the bottom (index = layers.length - 1)
     expect(frame.layers[frame.layers.length - 1].id).toBe('base');
   });
+
+  it('composites layers bottom-to-top so layers[0] renders on top of layers[1]', async () => {
+    const { compositeFrame } = await import('@/lib/render/compositor');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 4;
+    const height = 4;
+
+    const baseBuf = getOrCreateBuffer('base-layer', width, height);
+    baseBuf.ctx.fillStyle = '#FF0000'; // Red base
+    baseBuf.ctx.fillRect(0, 0, width, height);
+
+    const topBuf = getOrCreateBuffer('top-layer', width, height);
+    topBuf.ctx.fillStyle = '#00FF00'; // Green top
+    topBuf.ctx.fillRect(0, 0, width, height);
+
+    const frames = [
+      {
+        id: 'f1',
+        durationMs: 100,
+        layers: [
+          { id: 'top-layer', name: 'Top Layer', visible: true, locked: false, opacity: 1, blendMode: 'source-over' as const },
+          { id: 'base-layer', name: 'Base Layer', visible: true, locked: false, opacity: 1, blendMode: 'source-over' as const },
+        ],
+      },
+    ];
+
+    const out = compositeFrame(frames, 0, width, height);
+    expect(out).toBeTruthy();
+    const outData = ((out as unknown as MockCanvas).getContext('2d') as MockCtx)._imageData.data;
+
+    // Pixel at (0,0) must be GREEN (#00FF00), since top-layer (index 0) is drawn on top of base-layer (index 1)
+    expect(outData[0]).toBe(0);   // R = 0
+    expect(outData[1]).toBe(255); // G = 255
+    expect(outData[2]).toBe(0);   // B = 0
+  });
+
+  it('generates 47-blob edge contours on a sprite silhouette', async () => {
+    const { generate47BlobEdgeData } = await import('@/lib/ai/pixelAiEngine');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 8;
+    const height = 8;
+
+    const buf = getOrCreateBuffer('sprite', width, height);
+    buf.ctx.fillStyle = '#3A2E4C';
+    buf.ctx.fillRect(2, 2, 4, 4); // 4x4 square
+
+    const result = generate47BlobEdgeData(buf.ctx as unknown as CanvasRenderingContext2D, width, height);
+    expect(result.blobPixels.length).toBeGreaterThan(0);
+  });
 });
+
