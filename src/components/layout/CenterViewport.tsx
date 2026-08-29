@@ -93,6 +93,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setPan,
     showGrid,
     showIsoGuides,
+    showNormalMapPreview,
+    onionSkin,
+    isPlaying,
     tools,
     primaryColor,
     secondaryColor,
@@ -100,6 +103,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     frames,
     activeFrameIndex,
     activeLayerId,
+    bufferVersion,
     setCanUndo,
     setCanRedo,
     addExtractedPalette,
@@ -841,11 +845,24 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     zoom,
   ]);
 
-  // Initial Composite and Grid Rendering
+  // Live Composite Rendering whenever frames, active layer/frame, visibility, opacity, buffer or preview mode changes
   useEffect(() => {
     renderComposite();
+  }, [
+    renderComposite,
+    frames,
+    activeFrameIndex,
+    activeLayerId,
+    bufferVersion,
+    showNormalMapPreview,
+    onionSkin,
+    isPlaying,
+  ]);
+
+  // Grid, symmetry guides, and selection box rendering
+  useEffect(() => {
     renderGridAndSelection();
-  }, [renderComposite, renderGridAndSelection]);
+  }, [renderGridAndSelection]);
 
   // Convert client viewport coordinates to canvas integer pixel coordinates
   const clientToCanvasCoords = (clientX: number, clientY: number, clamp: boolean = false): Point | null => {
