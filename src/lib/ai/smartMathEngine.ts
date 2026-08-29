@@ -16,7 +16,8 @@
  */
 
 import { MaterialType, MaterialProperties, PhotometricLightingParams } from '@/types/tools';
-import { hexToRgba } from '@/lib/canvas/floodFill';
+import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
+import { generateOklchRamp } from '@/lib/color/rampGenerator';
 
 export interface Point {
   x: number;
@@ -684,6 +685,38 @@ export function renderParametric2p5DLighting(
   specularPixels: ShadedPixel[];
   rimPixels: ShadedPixel[];
 } {
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+
+  const isOpaque = (x: number, y: number) => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return false;
+    return data[(y * width + x) * 4 + 3] > 30;
+  };
+
+  const distanceMap = computeSeparableEDT(isOpaque, width, height);
+  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+
+  const azRad = (params.azimuthDeg * Math.PI) / 180;
+  const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
+
+  const Lx = Math.cos(azRad) * Math.cos(elRad);
+  const Ly = -Math.sin(azRad) * Math.cos(elRad);
+  const Lz = Math.sin(elRad);
+
+  const Vx = 0;
+  const Vy = 0;
+  const Vz = 1.0;
+
+  const Hx = Lx + Vx;
+  const Hy = Ly + Vy;
+  const Hz = Lz + Vz;
+  const hLen = Math.sqrt(Hx * Hx + Hy * Hy + Hz * Hz) || 1;
+  const normHx = Hx / hLen;
+  const normHy = Hy / hLen;
+  const normHz = Hz / hLen;
+
   const photometricCanvas = executePhotometricPipeline(
     srcCtx,
     width,
@@ -696,7 +729,7 @@ export function renderParametric2p5DLighting(
       ambientIntensity: 0.35,
       material: 'matte',
       cavityStrength: 1.0,
-      ditherModulation: 0.3,
+      ditherModulation: 0,
       bayerSize: '4x4',
     },
     []
@@ -709,7 +742,9 @@ export function renderParametric2p5DLighting(
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const pIdx = (y * width + x) * 4;
+      const idx = y * width + x;
+      const pIdx = idx * 4;
+
       if (pData[pIdx + 3] > 30) {
         shadedPixels.push({
           x,
@@ -719,6 +754,26 @@ export function renderParametric2p5DLighting(
           b: pData[pIdx + 2],
           a: pData[pIdx + 3],
         });
+
+        const Nx = normalField.nx[idx];
+        const Ny = normalField.ny[idx];
+        const Nz = normalField.nz[idx];
+
+        const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
+        const shininess = params.specularShininess || 16;
+        const Ispec = Math.pow(NdotH, shininess);
+
+        if (Ispec > 0.35) {
+          const alpha = Math.min(255, Math.round(Ispec * 255));
+          specularPixels.push({
+            x,
+            y,
+            r: 255,
+            g: 255,
+            b: 255,
+            a: alpha,
+          });
+        }
       }
     }
   }
@@ -894,10 +949,30 @@ export function applyAtkinsonDither(
   height: number,
   paletteHex: string[]
 ): void {
-  if (paletteHex.length === 0) return;
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
-  const palRgba = paletteHex.map(hexToRgba);
+
+  // Build effective palette: combine passed palette with unique colors on canvas
+  const canvasColors = new Set<string>();
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] > 30) {
+      canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
+    }
+  }
+
+  let effectivePalette = paletteHex;
+  if (effectivePalette.length === 0 || (canvasColors.size > 0 && !Array.from(canvasColors).some(c => effectivePalette.includes(c)))) {
+    const customPalette = new Set<string>();
+    canvasColors.forEach(c => {
+      customPalette.add(c);
+      const ramp = generateOklchRamp(c);
+      ramp.forEach(rc => customPalette.add(rc));
+    });
+    effectivePalette = Array.from(customPalette);
+  }
+
+  if (effectivePalette.length === 0) return;
+  const palRgba = effectivePalette.map(hexToRgba);
 
   const buffer = new Float32Array(width * height * 3);
   for (let i = 0; i < width * height; i++) {
@@ -966,10 +1041,30 @@ export function applyRiemersmaDither(
   height: number,
   paletteHex: string[]
 ): void {
-  if (paletteHex.length === 0) return;
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
-  const palRgba = paletteHex.map(hexToRgba);
+
+  // Build effective palette: combine passed palette with unique colors on canvas
+  const canvasColors = new Set<string>();
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] > 30) {
+      canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
+    }
+  }
+
+  let effectivePalette = paletteHex;
+  if (effectivePalette.length === 0 || (canvasColors.size > 0 && !Array.from(canvasColors).some(c => effectivePalette.includes(c)))) {
+    const customPalette = new Set<string>();
+    canvasColors.forEach(c => {
+      customPalette.add(c);
+      const ramp = generateOklchRamp(c);
+      ramp.forEach(rc => customPalette.add(rc));
+    });
+    effectivePalette = Array.from(customPalette);
+  }
+
+  if (effectivePalette.length === 0) return;
+  const palRgba = effectivePalette.map(hexToRgba);
 
   let order = 1;
   while (order < Math.max(width, height)) {
