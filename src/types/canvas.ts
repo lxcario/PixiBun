@@ -7,6 +7,8 @@ export interface Layer {
   locked: boolean;
   opacity: number; // 0 to 1
   blendMode: BlendMode;
+  // Stable machine identifier for auto-generated layers (photometric, normal-map, etc.)
+  tag?: string;
   // Canvas pixel buffer stored as an OffscreenCanvas or base64 / ImageData
   dataUrl?: string; 
 }

@@ -103,6 +103,10 @@ interface StudioState {
   setCanUndo: (can: boolean) => void;
   setCanRedo: (can: boolean) => void;
 
+  // Buffer mutation signal (increments on every pixel-level change to any layer)
+  bufferVersion: number;
+  bumpBufferVersion: () => void;
+
   // Actions
   setCanvasSize: (width: number, height: number, anchor?: AnchorPosition, resample?: boolean) => void;
   setProjectName: (name: string) => void;
@@ -142,7 +146,7 @@ interface StudioState {
   setCustomRamps: (ramps: ColorRamp[]) => void;
 
   // Layer Operations
-  addLayer: (name?: string) => void;
+  addLayer: (name?: string, tag?: string) => void;
   deleteLayer: (layerId: string) => void;
   duplicateLayer: (layerId: string) => void;
   reorderLayers: (startIndex: number, endIndex: number) => void;
@@ -289,6 +293,13 @@ export const useStudioStore = create<StudioState>()(
       setCanRedo: can => {
         set(state => {
           state.canRedo = can;
+        });
+      },
+
+      bufferVersion: 0,
+      bumpBufferVersion: () => {
+        set(state => {
+          state.bufferVersion += 1;
         });
       },
 
@@ -516,7 +527,7 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      addLayer: (name) => {
+      addLayer: (name, tag) => {
         set(state => {
           const currentFrame = state.frames[state.activeFrameIndex];
           if (!currentFrame) return;
@@ -529,7 +540,8 @@ export const useStudioStore = create<StudioState>()(
             visible: true,
             locked: false,
             opacity: 1,
-            blendMode: 'source-over'
+            blendMode: 'source-over',
+            ...(tag ? { tag } : {}),
           };
 
           currentFrame.layers.unshift(newLayer);

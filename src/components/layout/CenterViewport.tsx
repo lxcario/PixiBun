@@ -14,13 +14,11 @@ import {
 } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { HistoryStep } from '@/types/canvas';
 import { ImportPayload } from '@/components/modals/ImportModal';
 import { 
   cleanJaggiesOnCanvas, 
-  generateAutoShadeData, 
-  generateHighlightData,
   generateSelOutData,
   generateOuterStrokeData,
   generateGroundShadowData,
@@ -32,6 +30,7 @@ import {
   renderParametric2p5DLighting,
   rotateWithRotSprite,
   applyAtkinsonDither,
+  applyRiemersmaDither,
   applyZhangSuenThinning,
   executePhotometricPipeline,
   computeSeparableEDT,
@@ -93,7 +92,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setPan,
     showGrid,
     showIsoGuides,
-    showTilePreview,
     showNormalMapPreview,
     tools,
     primaryColor,
@@ -108,6 +106,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setCanRedo,
     addExtractedPalette,
     addLayer,
+    deleteLayer,
+    bumpBufferVersion,
   } = useStudioStore();
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -117,8 +117,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const [lastPoint, setLastPoint] = useState<Point | null>(null);
   const [cursorCoords, setCursorCoords] = useState<Point | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [lassoPoints, setLassoPoints] = useState<Point[]>([]);
-
+  const [, setLassoPoints] = useState<Point[]>([]);
   // Initialize or fetch the offscreen canvas for a layer.
   const getOrCreateLayerCanvas = useCallback(
     (layerId: string): HTMLCanvasElement =>
@@ -243,7 +242,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setCanUndo(undoStackRef.current.length > 0);
     setCanRedo(true);
     renderComposite();
-  }, [canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+    bumpBufferVersion();
+  }, [bumpBufferVersion, canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Redo Action
   const performRedo = useCallback(() => {
@@ -269,7 +269,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setCanUndo(true);
     setCanRedo(redoStackRef.current.length > 0);
     renderComposite();
-  }, [canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+    bumpBufferVersion();
+  }, [bumpBufferVersion, canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Bind Custom Event Listeners for Undo / Redo / Palette Extract / AI Operations
   useEffect(() => {
@@ -300,6 +301,58 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
+    // Composite all visible layers (excluding a specific tag) into a scratch canvas
+    // for use as AI pipeline input. This avoids reading onion skins or editor chrome
+    // from mainCanvasRef, and excludes any existing output layer with the given tag
+    // so the pipeline always sees the original artwork, not its own previous output.
+    const compositeSourceSnapshot = (excludeTag?: string): CanvasRenderingContext2D | null => {
+      const state = useStudioStore.getState();
+      const currentFrame = state.frames[state.activeFrameIndex];
+      if (!currentFrame) return null;
+      const scratch = document.createElement('canvas');
+      scratch.width = canvasWidth;
+      scratch.height = canvasHeight;
+      const sCtx = scratch.getContext('2d', { willReadFrequently: true });
+      if (!sCtx) return null;
+      sCtx.imageSmoothingEnabled = false;
+
+      currentFrame.layers.slice().reverse().forEach((layer) => {
+        if (!layer.visible) return;
+        if (excludeTag && layer.tag === excludeTag) return;
+        const lCanvas = getOrCreateLayerCanvas(layer.id);
+        sCtx.globalAlpha = layer.opacity;
+        sCtx.globalCompositeOperation = layer.blendMode;
+        sCtx.drawImage(lCanvas, 0, 0);
+      });
+      sCtx.globalAlpha = 1.0;
+      sCtx.globalCompositeOperation = 'source-over';
+      return sCtx;
+    };
+
+    // Remove any existing layer with the given tag, clean up its buffer, then
+    // create a new layer with that tag and return its canvas context.
+    const replaceTaggedLayer = (displayName: string, tag: string): CanvasRenderingContext2D | null => {
+      const state = useStudioStore.getState();
+      const currentFrame = state.frames[state.activeFrameIndex];
+      if (currentFrame) {
+        const existing = currentFrame.layers.find(l => l.tag === tag);
+        if (existing) {
+          deleteBuffers([existing.id]);
+          deleteLayer(existing.id);
+        }
+      }
+      addLayer(displayName, tag);
+
+      const freshState = useStudioStore.getState();
+      const freshFrame = freshState.frames[freshState.activeFrameIndex];
+      const newLayer = freshFrame?.layers[0]; // addLayer uses unshift -> index 0
+      if (!newLayer) return null;
+      const lCanvas = getOrCreateLayerCanvas(newLayer.id);
+      const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+      if (lCtx) lCtx.imageSmoothingEnabled = false;
+      return lCtx;
+    };
+
     const handleCleanJaggiesEvent = () => {
       captureSnapshot('AI Clean Jaggies');
       const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
@@ -308,6 +361,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         cleanJaggiesOnCanvas(ctx, canvasWidth, canvasHeight);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -316,13 +370,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
       const lightEl = customEvent.detail?.lightElevation ?? tools.lightElevation;
 
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
+      const srcCtx = compositeSourceSnapshot('auto-shade');
+      if (!srcCtx) return;
 
-      captureSnapshot('AI 2.5D Auto-Shade');
-
-      const { shadedPixels } = renderParametric2p5DLighting(mainCtx, canvasWidth, canvasHeight, {
+      const { shadedPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
         azimuthDeg: lightAz,
         elevationDeg: lightEl,
         shadowIntensity: 0.8,
@@ -331,15 +382,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         selOut: false,
       });
 
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d');
-      if (tCtx) {
+      const outCtx = replaceTaggedLayer(`Auto Shade ${lightAz}°`, 'auto-shade');
+      if (outCtx) {
         shadedPixels.forEach((p) => {
-          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          tCtx.fillRect(p.x, p.y, 1, 1);
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -348,13 +398,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
       const lightEl = customEvent.detail?.lightElevation ?? tools.lightElevation;
 
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
+      const srcCtx = compositeSourceSnapshot('specular');
+      if (!srcCtx) return;
 
-      captureSnapshot('AI Specular Highlight');
-
-      const { specularPixels } = renderParametric2p5DLighting(mainCtx, canvasWidth, canvasHeight, {
+      const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
         azimuthDeg: lightAz,
         elevationDeg: lightEl,
         shadowIntensity: 0.8,
@@ -363,35 +410,31 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         selOut: false,
       });
 
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d');
-      if (tCtx) {
+      const outCtx = replaceTaggedLayer(`Specular ${lightAz}°`, 'specular');
+      if (outCtx) {
         specularPixels.forEach((p) => {
-          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          tCtx.fillRect(p.x, p.y, 1, 1);
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
     const handleSelOutEvent = () => {
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
+      const srcCtx = compositeSourceSnapshot('sel-out');
+      if (!srcCtx) return;
 
-      captureSnapshot('AI Selective Outline');
-      const { selOutPixels } = generateSelOutData(mainCtx, canvasWidth, canvasHeight);
+      const { selOutPixels } = generateSelOutData(srcCtx, canvasWidth, canvasHeight);
 
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d');
-      if (tCtx) {
+      const outCtx = replaceTaggedLayer('Selective Outline', 'sel-out');
+      if (outCtx) {
         selOutPixels.forEach((p) => {
-          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          tCtx.fillRect(p.x, p.y, 1, 1);
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -399,12 +442,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const customEvent = e as CustomEvent;
       const strokeColor = customEvent.detail?.color || '#2B2038';
 
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
-
       captureSnapshot('AI Auto Outline');
-      const { strokePixels } = generateOuterStrokeData(mainCtx, canvasWidth, canvasHeight, strokeColor);
+      const srcCtx = compositeSourceSnapshot();
+      if (!srcCtx) return;
+
+      const { strokePixels } = generateOuterStrokeData(srcCtx, canvasWidth, canvasHeight, strokeColor);
 
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d');
@@ -415,26 +457,24 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         });
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
     const handleGroundShadowEvent = () => {
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
+      const srcCtx = compositeSourceSnapshot('ground-shadow');
+      if (!srcCtx) return;
 
-      captureSnapshot('AI Ground Shadow');
-      const { shadowPixels } = generateGroundShadowData(mainCtx, canvasWidth, canvasHeight);
+      const { shadowPixels } = generateGroundShadowData(srcCtx, canvasWidth, canvasHeight);
 
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d');
-      if (tCtx) {
+      const outCtx = replaceTaggedLayer('Ground Shadow', 'ground-shadow');
+      if (outCtx) {
         shadowPixels.forEach((p) => {
-          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          tCtx.fillRect(p.x, p.y, 1, 1);
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -451,6 +491,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         tCtx.drawImage(rotated, 0, 0);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -465,6 +506,22 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         applyAtkinsonDither(tCtx, canvasWidth, canvasHeight, paletteColors);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
+      }
+    };
+
+    const handleRiemersmaDitherEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const paletteColors = customEvent.detail?.colors || [];
+
+      captureSnapshot('Riemersma Dither');
+      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      if (tCtx) {
+        applyRiemersmaDither(tCtx, canvasWidth, canvasHeight, paletteColors);
+        commitSnapshot();
+        renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -476,6 +533,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         applyZhangSuenThinning(tCtx, canvasWidth, canvasHeight);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -490,6 +548,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         applyAtmosphericColorGrade(tCtx, canvasWidth, canvasHeight, grade);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -504,6 +563,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         quantizeToActivePalette(tCtx, canvasWidth, canvasHeight, paletteColors);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
@@ -515,19 +575,21 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         cleanStrayPixelsOnCanvas(tCtx, canvasWidth, canvasHeight);
         commitSnapshot();
         renderComposite();
+        bumpBufferVersion();
       }
     };
 
     const handlePhotometricLightingEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       const detail = customEvent.detail || {};
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
-      if (!tCtx) return;
 
-      captureSnapshot(`Photometric Lighting (${detail.material || 'matte'})`);
+      // Read composite of all visible layers EXCLUDING any previous photometric output
+      const srcCtx = compositeSourceSnapshot('photometric');
+      if (!srcCtx) return;
+
+      const materialName = detail.material ?? tools.materialPreset;
       const shadedCanvas = executePhotometricPipeline(
-        tCtx,
+        srcCtx,
         canvasWidth,
         canvasHeight,
         {
@@ -536,7 +598,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           lightRadius: detail.lightRadius ?? tools.lightRadius,
           lightColor: detail.lightColor ?? primaryColor,
           ambientIntensity: detail.ambientIntensity ?? 0.35,
-          material: detail.material ?? tools.materialPreset,
+          material: materialName,
           cavityStrength: detail.cavityStrength ?? tools.cavityStrength,
           ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
           bayerSize: detail.bayerSize || '4x4',
@@ -544,18 +606,21 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         detail.paletteColors || []
       );
 
-      tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-      tCtx.drawImage(shadedCanvas, 0, 0);
-      commitSnapshot();
-      renderComposite();
+      // Write output to a dedicated tagged layer (replaces any previous one)
+      const outCtx = replaceTaggedLayer(`Photometric ${materialName}`, 'photometric');
+      if (outCtx) {
+        outCtx.drawImage(shadedCanvas, 0, 0);
+        renderComposite();
+        bumpBufferVersion();
+      }
     };
 
     const handleBakeNormalMapEvent = () => {
-      const mainCanvas = mainCanvasRef.current;
-      const mainCtx = mainCanvas?.getContext('2d', { willReadFrequently: true });
-      if (!mainCtx) return;
+      // Read composite of all visible layers excluding any previous normal map
+      const srcCtx = compositeSourceSnapshot('normal-map');
+      if (!srcCtx) return;
 
-      const imgData = mainCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
       const data = imgData.data;
       const isOpaque = (x: number, y: number) => {
         if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
@@ -568,20 +633,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
       const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
 
-      addLayer('Normal Map');
-      setTimeout(() => {
-        const state = useStudioStore.getState();
-        const currentFrame = state.frames[state.activeFrameIndex];
-        const newLayer = currentFrame?.layers[currentFrame.layers.length - 1];
-        if (newLayer) {
-          const lCanvas = getOrCreateLayerCanvas(newLayer.id);
-          const lCtx = lCanvas.getContext('2d');
-          if (lCtx) {
-            lCtx.drawImage(normalCanvas, 0, 0);
-            renderComposite();
-          }
-        }
-      }, 50);
+      const outCtx = replaceTaggedLayer('Normal Map', 'normal-map');
+      if (outCtx) {
+        outCtx.drawImage(normalCanvas, 0, 0);
+        renderComposite();
+        bumpBufferVersion();
+      }
     };
 
     window.addEventListener('pixibun:undo', handleUndoEvent);
@@ -595,6 +652,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     window.addEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
     window.addEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
     window.addEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
+    window.addEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);
     window.addEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
     window.addEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
     window.addEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
@@ -614,6 +672,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       window.removeEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
       window.removeEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
       window.removeEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
+      window.removeEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);
       window.removeEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
       window.removeEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
       window.removeEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
@@ -625,10 +684,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     activeLayerId,
     addExtractedPalette,
     addLayer,
+    bumpBufferVersion,
     canvasHeight,
     canvasWidth,
     captureSnapshot,
     commitSnapshot,
+    deleteLayer,
     getOrCreateLayerCanvas,
     performRedo,
     performUndo,
@@ -804,7 +865,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setSelection(null);
     commitSnapshot();
     renderComposite();
-  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite]);
+    bumpBufferVersion();
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite]);
 
   // Lift selected pixels from layer canvas into floating buffer
   const liftSelectionToFloating = useCallback(() => {
@@ -838,7 +900,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     });
     commitSnapshot();
     renderComposite();
-  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+    bumpBufferVersion();
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
 
   // Clipboard Actions
   const handleCopy = useCallback(() => {
@@ -872,6 +935,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setFloatingSelection(null);
       setSelection(null);
       renderComposite();
+      bumpBufferVersion();
     } else if (selection) {
       captureSnapshot('Cut Selection');
       const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
@@ -880,8 +944,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setSelection(null);
       commitSnapshot();
       renderComposite();
+      bumpBufferVersion();
     }
-  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, handleCopy, renderComposite, selection]);
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, handleCopy, renderComposite, selection]);
 
   const handlePaste = useCallback(() => {
     if (!clipboardRef.current) return;
@@ -916,6 +981,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setFloatingSelection(null);
       setSelection(null);
       renderComposite();
+      bumpBufferVersion();
     } else if (selection) {
       captureSnapshot('Delete Selection');
       const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
@@ -924,8 +990,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setSelection(null);
       commitSnapshot();
       renderComposite();
+      bumpBufferVersion();
     }
-  }, [activeLayerId, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
 
   const handleFlipHorizontal = useCallback(() => {
     const active = floatingSelection;
@@ -1067,10 +1134,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
 
       renderComposite();
+      bumpBufferVersion();
     },
     [
       activeFrameIndex,
       activeLayerId,
+      bumpBufferVersion,
       canvasHeight,
       canvasWidth,
       frames,
@@ -1154,15 +1223,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         if (ta > 30) {
           const replaceRgb = hexToRgba(primaryColor);
           for (let i = 0; i < data.length; i += 4) {
-            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i + 2] === tb) {
-              data[i] = replaceRgb.r;
-              data[i + 1] = replaceRgb.g;
+            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i] === tb) {
               data[i + 2] = replaceRgb.b;
             }
           }
           ctx.putImageData(imgData, 0, 0);
           commitSnapshot();
           renderComposite();
+          bumpBufferVersion();
         }
       }
       return;
@@ -1223,6 +1291,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous);
             renderComposite();
             commitSnapshot();
+            bumpBufferVersion();
           }
         }
         setIsDrawing(false);
@@ -1329,9 +1398,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             previewPoints = getEllipsePoints(strokeStart.x, strokeStart.y, coords.x, coords.y, tools.shapeFilled);
           }
 
+          if (tools.symmetryHorizontal || tools.symmetryVertical) {
+            previewPoints = applySymmetry(
+              previewPoints,
+              canvasWidth,
+              canvasHeight,
+              tools.symmetryHorizontal,
+              tools.symmetryVertical
+            );
+          }
+
           pCtx.fillStyle = drawColor;
+          const offset = Math.floor(tools.brushSize / 2);
           previewPoints.forEach((p) => {
-            pCtx.fillRect(p.x, p.y, tools.brushSize, tools.brushSize);
+            pCtx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
           });
         }
       }
@@ -1359,6 +1439,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (isDrawing) {
       setIsDrawing(false);
 
+      let endCoords = cursorCoords;
+      if (e) {
+        const upCoords = clientToCanvasCoords(e.clientX, e.clientY, true);
+        if (upCoords) endCoords = upCoords;
+      }
+      if (!endCoords && strokeStart) endCoords = strokeStart;
+
       if (
         (tools.activeTool === 'line' ||
           tools.activeTool === 'curve' ||
@@ -1366,26 +1453,27 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           tools.activeTool === 'rectangle' ||
           tools.activeTool === 'ellipse') &&
         strokeStart &&
-        cursorCoords
+        endCoords
       ) {
         let shapePoints: Point[] = [];
         if (tools.activeTool === 'line') {
-          shapePoints = getBresenhamLine(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y);
+          shapePoints = getBresenhamLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y);
         } else if (tools.activeTool === 'isometric-line') {
-          shapePoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y);
+          shapePoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y);
         } else if (tools.activeTool === 'curve') {
           const controlPoint: Point = {
-            x: Math.round((strokeStart.x + cursorCoords.x) / 2 + (cursorCoords.y - strokeStart.y) * tools.curveTightness),
-            y: Math.round((strokeStart.y + cursorCoords.y) / 2 - (cursorCoords.x - strokeStart.x) * tools.curveTightness),
+            x: Math.round((strokeStart.x + endCoords.x) / 2 + (endCoords.y - strokeStart.y) * tools.curveTightness),
+            y: Math.round((strokeStart.y + endCoords.y) / 2 - (endCoords.x - strokeStart.x) * tools.curveTightness),
           };
-          shapePoints = getQuadraticBezierPoints(strokeStart, controlPoint, cursorCoords);
+          shapePoints = getQuadraticBezierPoints(strokeStart, controlPoint, endCoords);
         } else if (tools.activeTool === 'rectangle') {
-          shapePoints = getRectanglePoints(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y, tools.shapeFilled);
+          shapePoints = getRectanglePoints(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, tools.shapeFilled);
         } else if (tools.activeTool === 'ellipse') {
-          shapePoints = getEllipsePoints(strokeStart.x, strokeStart.y, cursorCoords.x, cursorCoords.y, tools.shapeFilled);
+          shapePoints = getEllipsePoints(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, tools.shapeFilled);
         }
 
-        drawPointsOnActiveLayer(shapePoints, primaryColor, false);
+        const drawColor = e?.shiftKey ? secondaryColor : primaryColor;
+        drawPointsOnActiveLayer(shapePoints, drawColor, false);
 
         const previewCanvas = previewCanvasRef.current;
         if (previewCanvas) {
@@ -1397,6 +1485,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       if (tools.activeTool !== 'select-box' && tools.activeTool !== 'select-lasso') {
         commitSnapshot();
       }
+    }
+
+    const previewCanvas = previewCanvasRef.current;
+    if (previewCanvas) {
+      const pCtx = previewCanvas.getContext('2d');
+      pCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
     }
 
     setStrokeStart(null);

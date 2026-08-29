@@ -169,7 +169,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           </TactileButton>
           <button
             onClick={handleResetZoom}
-            className="px-2 text-xs font-mono font-bold text-[#f0be7c] hover:text-[#fff8db] min-w-[56px] text-center cursor-pointer"
+            className="px-2 text-xs font-mono font-bold text-[#f0be7c] hover:text-[#fff8db] min-w-[52px] text-center cursor-pointer"
             title="Reset Zoom (1600%)"
           >
             {zoom}%
@@ -194,48 +194,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             FIT
           </TactileButton>
         </div>
-
-        <div className="h-5 w-px bg-[#3a2e4c]" />
-
-        {/* Viewport Toggles */}
-        <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-          <TactileButton
-            size="icon-sm"
-            variant={showGrid ? 'active' : 'default'}
-            onClick={toggleGrid}
-            title="Toggle Pixel Grid"
-            className={`w-8 h-8 ${showGrid ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'}`}
-          >
-            <PixelIcon name="grid" size={16} />
-          </TactileButton>
-          <TactileButton
-            size="icon-sm"
-            variant={showTilePreview ? 'active' : 'default'}
-            onClick={toggleTilePreview}
-            title="Toggle 3x3 Tile Preview"
-            className={`w-8 h-8 ${showTilePreview ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'}`}
-          >
-            <span className="text-[11px] font-mono font-bold">3x3</span>
-          </TactileButton>
-          <TactileButton
-            size="icon-sm"
-            variant={tools.symmetryHorizontal ? 'active' : 'default'}
-            onClick={toggleSymmetryH}
-            title="Toggle Horizontal Symmetry"
-            className={`w-9 h-8 ${tools.symmetryHorizontal ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'}`}
-          >
-            <span className="text-[10px] font-mono font-bold">Sym-H</span>
-          </TactileButton>
-          <TactileButton
-            size="icon-sm"
-            variant={tools.symmetryVertical ? 'active' : 'default'}
-            onClick={toggleSymmetryV}
-            title="Toggle Vertical Symmetry"
-            className={`w-9 h-8 ${tools.symmetryVertical ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'}`}
-          >
-            <span className="text-[10px] font-mono font-bold">Sym-V</span>
-          </TactileButton>
-        </div>
       </div>
 
       {/* Right Actions: Theme Toggle, Shortcuts & Export */}
@@ -247,9 +205,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           variant="default"
           onClick={onOpenShortcuts}
           title="Keyboard Shortcuts (?)"
-          className="text-xs px-3 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
         >
-          <PixelIcon name="help" size={15} />
+          <PixelIcon name="help" size={14} />
           <span>Shortcuts</span>
         </TactileButton>
 
@@ -258,9 +216,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           variant="primary"
           onClick={onOpenExport}
           title="Export PNG, GIF, or Spritesheet"
-          className="text-xs px-3.5 py-1.5 bg-[#f0be7c] hover:bg-[#fff8db] text-[#140d1f] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="text-xs px-3 py-1.5 bg-[#f0be7c] hover:bg-[#fff8db] text-[#140d1f] border-2 border-[#8c5120] font-mono font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5"
         >
-          <PixelIcon name="export" size={15} />
+          <PixelIcon name="export" size={14} />
           <span>Export</span>
         </TactileButton>
       </div>

@@ -37,7 +37,6 @@ export const RightInspector: React.FC = () => {
     tools,
     setLightAzimuth,
     setLightElevation,
-    setLightRadius,
     setMaterialPreset,
     setCavityStrength,
     setDitherModulation,
@@ -85,19 +84,6 @@ export const RightInspector: React.FC = () => {
     showFeedback('Tangent-Space Normal Map (128, 128, 255) baked to new layer');
   };
 
-  const handleAutoShade = () => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:auto-shade', {
-        detail: {
-          lightAzimuth: tools.lightAzimuth,
-          lightElevation: tools.lightElevation,
-          shadowColor: secondaryColor || '#1c1328',
-        },
-      })
-    );
-    showFeedback(`2.5D Shading rendered at ${tools.lightAzimuth}° light angle`);
-  };
-
   const handleSpecularHighlight = () => {
     window.dispatchEvent(
       new CustomEvent('pixibun:highlight', {
@@ -123,29 +109,9 @@ export const RightInspector: React.FC = () => {
     showFeedback('Selective outline (Sel-Out) softened based on light alignment');
   };
 
-  const handleAutoOutline = () => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:auto-outline', {
-        detail: { color: primaryColor || '#1a1126' },
-      })
-    );
-    showFeedback('1-pixel outer silhouette outline applied');
-  };
-
   const handleGroundShadow = () => {
     window.dispatchEvent(new CustomEvent('pixibun:ground-shadow'));
     showFeedback('Ground drop shadow cast beneath sprite base');
-  };
-
-  // 2. Module 2: Geometry & Curves Actions
-  const handleApplyBezier = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:apply-bezier'));
-    showFeedback('Rational Bézier curve calculated and rasterized');
-  };
-
-  const handle47TileBlob = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:autotile-blob'));
-    showFeedback('47-Tile Blob bitmask evaluated for active tileset');
   };
 
   // 3. Module 3: Advanced Dithering Actions
@@ -614,9 +580,10 @@ export const RightInspector: React.FC = () => {
               variant="primary"
               onClick={handleRenderPhotometricLighting}
               title="Execute full Blinn-Phong + Lambert + Laplace Cavity AO + OKLab Bayer Dither"
-              className="text-[11px] py-2 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_2px_0_#8c5120]"
+              className="text-[11px] py-2 font-mono font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_2px_0_#8c5120] flex items-center justify-center gap-1.5"
             >
-              <span>✦ Render Photometric Lighting</span>
+              <PixelIcon name="sun" size={14} />
+              <span>Render Photometric</span>
             </TactileButton>
 
             {/* Normal Map Export & Actions */}
@@ -626,9 +593,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleBakeNormalMap}
                 title="Bake 3D tangent space normal map (128, 128, 255) directly to a new layer"
-                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[#dcabdf] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[#dcabdf] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Bake Normal Map</span>
+                <PixelIcon name="copy" size={12} />
+                <span>Bake Normals</span>
               </TactileButton>
 
               <TactileButton
@@ -636,13 +604,14 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={toggleNormalMapPreview}
                 title="Toggle live viewport normal map inspection mode"
-                className={`text-[10px] py-1.5 font-bold border transition-colors ${
+                className={`text-[10px] py-1.5 font-bold border transition-colors flex items-center justify-center gap-1 ${
                   showNormalMapPreview
                     ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
                     : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
                 }`}
               >
-                <span>Normal Preview: {showNormalMapPreview ? 'ON' : 'OFF'}</span>
+                <PixelIcon name={showNormalMapPreview ? 'eye' : 'eye-off'} size={12} />
+                <span>Normal View</span>
               </TactileButton>
 
               <TactileButton
@@ -650,9 +619,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleSpecularHighlight}
                 title="Add isolated Blinn-Phong specular glint"
-                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Specular Glint</span>
+                <PixelIcon name="sparkles" size={12} />
+                <span>Specular</span>
               </TactileButton>
 
               <TactileButton
@@ -660,9 +630,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleSelOut}
                 title="Selective outlining based on light angle alignment"
-                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Sel-Out Stroke</span>
+                <PixelIcon name="pen" size={12} />
+                <span>Sel-Out</span>
               </TactileButton>
             </div>
           </div>
@@ -671,37 +642,36 @@ export const RightInspector: React.FC = () => {
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-[#dcabdf] uppercase tracking-wider flex items-center gap-1">
               <PixelIcon name="curve" size={12} />
-              <span>Geometry, Curves & Autotiling</span>
+              <span>Geometry & Autotiling</span>
             </span>
 
-            <div className="grid grid-cols-2 gap-1.5">
-              <TactileButton
-                size="sm"
-                variant="default"
-                onClick={handleApplyBezier}
-                title="Generate smooth rational Bézier curve spline points"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            <div className="grid grid-cols-1 gap-1.5">
+              <button
+                disabled
+                title="Requires tileset atlas (planned). Use the Curve drawing tool (toolbar) for Bézier curves."
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)]/40 flex items-center justify-center gap-1 cursor-not-allowed"
               >
-                <span>Bézier Spline</span>
-              </TactileButton>
+                <PixelIcon name="grid-iso" size={12} />
+                <span>Bézier Spline (use Curve tool)</span>
+              </button>
 
-              <TactileButton
-                size="sm"
-                variant="default"
-                onClick={handle47TileBlob}
-                title="Evaluate 8-neighbor bitmask for 47-Tile Blob autotile set"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+              <button
+                disabled
+                title="Requires tileset atlas (planned). 47-Tile Blob is currently a bitmask computation utility, not a one-click autotiler."
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)]/40 flex items-center justify-center gap-1 cursor-not-allowed"
               >
-                <span>47-Tile Blob</span>
-              </TactileButton>
+                <PixelIcon name="grid-iso" size={12} />
+                <span>47-Blob (utility only)</span>
+              </button>
 
               <TactileButton
                 size="sm"
                 variant="default"
                 onClick={handleGroundShadow}
                 title="Calculate bounding base and cast elliptical ground shadow"
-                className="text-[11px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="sparkles" size={12} />
                 <span>Ground Drop Shadow</span>
               </TactileButton>
             </div>
@@ -711,7 +681,7 @@ export const RightInspector: React.FC = () => {
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
               <PixelIcon name="dither" size={12} />
-              <span>Advanced Dithering Suite</span>
+              <span>Advanced Dithering</span>
             </span>
 
             <div className="grid grid-cols-2 gap-1.5">
@@ -720,9 +690,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleAtkinsonDither}
                 title="Atkinson error diffusion with 75% error retention for retro Mac contrast"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Atkinson (75%)</span>
+                <PixelIcon name="dither" size={12} />
+                <span>Atkinson 75%</span>
               </TactileButton>
 
               <TactileButton
@@ -730,9 +701,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleRiemersmaDither}
                 title="Riemersma space-filling Hilbert curve dithering without directional worming"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Riemersma Hilbert</span>
+                <PixelIcon name="wrap" size={12} />
+                <span>Riemersma</span>
               </TactileButton>
             </div>
           </div>
@@ -741,7 +713,7 @@ export const RightInspector: React.FC = () => {
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-[#dcabdf] uppercase tracking-wider flex items-center gap-1">
               <PixelIcon name="rotate" size={12} />
-              <span>RotSprite 8x & Pixel Cleanup</span>
+              <span>RotSprite 8x & Cleanup</span>
             </span>
 
             {/* RotSprite Angle Control */}
@@ -781,8 +753,9 @@ export const RightInspector: React.FC = () => {
                 variant="primary"
                 onClick={() => handleRotSprite(rotationAngle)}
                 title="3-pass Scale2X upscaling + nearest rotation + downscale snap"
-                className="text-[11px] py-1 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] mt-0.5"
+                className="text-[10px] py-1 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] mt-0.5 flex items-center justify-center gap-1"
               >
+                <PixelIcon name="rotate" size={12} />
                 <span>Rotate with RotSprite</span>
               </TactileButton>
             </div>
@@ -794,9 +767,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleCleanJaggies}
                 title="Remove staircase double-pixel corners in 1px strokes"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Clean Jaggies</span>
+                <PixelIcon name="pen" size={12} />
+                <span>De-Jaggy</span>
               </TactileButton>
 
               <TactileButton
@@ -804,9 +778,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleSkeletonThinning}
                 title="Zhang-Suen morphological skeleton thinning for 1px line normalization"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>1px Thinning</span>
+                <PixelIcon name="line" size={12} />
+                <span>1px Thin</span>
               </TactileButton>
 
               <TactileButton
@@ -814,8 +789,9 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleRemoveStrays}
                 title="Sweep away accidental isolated noise dots"
-                className="text-[11px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="trash" size={12} />
                 <span>Clean Stray Pixels</span>
               </TactileButton>
             </div>
@@ -825,7 +801,7 @@ export const RightInspector: React.FC = () => {
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
               <PixelIcon name="sparkles" size={12} />
-              <span>Atmospheric Tint & Frame Morph</span>
+              <span>Color Tint & Frame Morph</span>
             </span>
 
             <div className="grid grid-cols-2 gap-1.5">
@@ -834,9 +810,10 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={() => handleColorGrade('sunset')}
                 title="Warm golden sunset glow"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
-                <span>Sunset Glow</span>
+                <PixelIcon name="sun" size={12} />
+                <span>Sunset</span>
               </TactileButton>
 
               <TactileButton
@@ -844,8 +821,9 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={() => handleColorGrade('moonlight')}
                 title="Midnight violet moonlight glow"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="sparkles" size={12} />
                 <span>Moonlight</span>
               </TactileButton>
 
@@ -854,8 +832,9 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleHarmonizePalette}
                 title="Generate 4 harmonic OKLCH tones"
-                className="text-[11px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="palette" size={12} />
                 <span>Harmonize</span>
               </TactileButton>
 
@@ -864,8 +843,9 @@ export const RightInspector: React.FC = () => {
                 variant="primary"
                 onClick={handleQuantizePalette}
                 title="Snap every pixel cleanly to the active palette"
-                className="text-[11px] py-1.5 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120]"
+                className="text-[10px] py-1.5 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="palette" size={12} />
                 <span>Snap Palette</span>
               </TactileButton>
 
@@ -874,8 +854,9 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={handleInBetweenFrame}
                 title="Optical flow tweening in-between animation frame"
-                className="text-[11px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                className="text-[10px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
+                <PixelIcon name="plus" size={12} />
                 <span>+ In-Between Frame</span>
               </TactileButton>
             </div>

@@ -959,7 +959,114 @@ export function applyAtkinsonDither(
 }
 
 // -----------------------------------------------------------------------------
-// 12. Rational Bézier Curves & Isometric Lines
+// 12. Riemersma Hilbert Space-Filling Dither
+// -----------------------------------------------------------------------------
+
+export function applyRiemersmaDither(
+  srcCtx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  paletteHex: string[]
+): void {
+  if (paletteHex.length === 0) return;
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+  const palRgba = paletteHex.map(hexToRgba);
+
+  let order = 1;
+  while (order < Math.max(width, height)) {
+    order *= 2;
+  }
+
+  const path: [number, number][] = [];
+  const numPoints = order * order;
+
+  for (let d = 0; d < numPoints; d++) {
+    let rx: number, ry: number, s: number;
+    let t = d;
+    let x = 0;
+    let y = 0;
+    
+    for (s = 1; s < order; s *= 2) {
+      rx = 1 & Math.floor(t / 2);
+      ry = 1 & (t ^ rx);
+      if (ry === 0) {
+        if (rx === 1) {
+          x = s - 1 - x;
+          y = s - 1 - y;
+        }
+        const temp = x;
+        x = y;
+        y = temp;
+      }
+      x += s * rx;
+      y += s * ry;
+      t = Math.floor(t / 4);
+    }
+    
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+      path.push([x, y]);
+    }
+  }
+
+  const historyLength = 16;
+  const errR = new Array<number>(historyLength).fill(0);
+  const errG = new Array<number>(historyLength).fill(0);
+  const errB = new Array<number>(historyLength).fill(0);
+  const decay = 1 / 8;
+
+  for (let p = 0; p < path.length; p++) {
+    const [x, y] = path[p];
+    const idx = y * width + x;
+
+    if (data[idx * 4 + 3] <= 30) continue;
+
+    let totalErrR = 0;
+    let totalErrG = 0;
+    let totalErrB = 0;
+
+    for (let i = 0; i < historyLength; i++) {
+      const weight = Math.pow(decay, historyLength - i);
+      totalErrR += errR[i] * weight;
+      totalErrG += errG[i] * weight;
+      totalErrB += errB[i] * weight;
+    }
+
+    const r = Math.max(0, Math.min(255, data[idx * 4] + totalErrR));
+    const g = Math.max(0, Math.min(255, data[idx * 4 + 1] + totalErrG));
+    const b = Math.max(0, Math.min(255, data[idx * 4 + 2] + totalErrB));
+
+    let closest = palRgba[0];
+    let minDiff = Infinity;
+    for (const c of palRgba) {
+      const diff = (r - c.r) ** 2 + (g - c.g) ** 2 + (b - c.b) ** 2;
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = c;
+      }
+    }
+
+    const qErrR = (data[idx * 4] + totalErrR) - closest.r;
+    const qErrG = (data[idx * 4 + 1] + totalErrG) - closest.g;
+    const qErrB = (data[idx * 4 + 2] + totalErrB) - closest.b;
+
+    data[idx * 4] = closest.r;
+    data[idx * 4 + 1] = closest.g;
+    data[idx * 4 + 2] = closest.b;
+
+    errR.shift();
+    errR.push(qErrR);
+    errG.shift();
+    errG.push(qErrG);
+    errB.shift();
+    errB.push(qErrB);
+  }
+
+  srcCtx.putImageData(imgData, 0, 0);
+}
+
+// -----------------------------------------------------------------------------
+// 13. Rational Bézier Curves & Isometric Lines
 // -----------------------------------------------------------------------------
 
 export function getQuadraticBezierPoints(
@@ -1036,20 +1143,33 @@ export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: numb
   const dx = x1 - x0;
   const dy = y1 - y0;
 
-  const steps = Math.max(Math.abs(dx), Math.abs(dy) * 2);
-  if (steps === 0) return [{ x: x0, y: y0 }];
+  if (dx === 0 && dy === 0) return [{ x: x0, y: y0 }];
+
+  const sx = dx >= 0 ? 1 : -1;
+  const sy = dy >= 0 ? 1 : -1;
+
+  // Number of 2-pixel isometric steps along X axis
+  const numSteps = Math.max(1, Math.round(Math.abs(dx) / 2));
 
   const seen = new Set<string>();
 
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const x = Math.round(x0 + dx * t);
-    const y = Math.round(y0 + (dx * t) / 2);
+  for (let k = 0; k <= numSteps; k++) {
+    const curY = y0 + k * sy;
+    const curX1 = x0 + (k * 2) * sx;
+    const curX2 = x0 + (k * 2 + 1) * sx;
 
-    const key = `${x},${y}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      points.push({ x, y });
+    const key1 = `${curX1},${curY}`;
+    if (!seen.has(key1)) {
+      seen.add(key1);
+      points.push({ x: curX1, y: curY });
+    }
+
+    if (k < numSteps) {
+      const key2 = `${curX2},${curY}`;
+      if (!seen.has(key2)) {
+        seen.add(key2);
+        points.push({ x: curX2, y: curY });
+      }
     }
   }
 

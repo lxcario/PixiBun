@@ -230,10 +230,10 @@ export const BottomTimeline: React.FC = () => {
             variant="default"
             onClick={addFrame}
             title="Add Blank Frame"
-            className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
           >
             <PixelIcon name="plus" size={13} />
-            <span>+ Frame</span>
+            <span>Frame</span>
           </TactileButton>
 
           <TactileButton

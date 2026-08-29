@@ -20,10 +20,11 @@ export const FloatingPreviewWindow: React.FC = () => {
     setPreviewBackdrop,
     showFloatingPreview,
     toggleFloatingPreview,
+    bufferVersion,
   } = useStudioStore();
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 24, y: 48 });
+  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 16, y: 56 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -51,7 +52,7 @@ export const FloatingPreviewWindow: React.FC = () => {
 
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
-  }, [activeFrameIndex, canvasHeight, canvasWidth, frames, showFloatingPreview]);
+  }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, showFloatingPreview]);
 
   if (!showFloatingPreview) return null;
 

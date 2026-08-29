@@ -30,6 +30,7 @@ const TOOL_GROUPS: { groupName: string; tools: ToolItem[] }[] = [
     tools: [
       { id: 'select-box', label: 'Marquee Box', shortcut: 'M', icon: 'select-box' },
       { id: 'select-lasso', label: 'Lasso Select', shortcut: 'Q', icon: 'select-lasso' },
+      { id: 'select-wand', label: 'Magic Wand', shortcut: 'W', icon: 'select-wand' },
     ],
   },
   {

@@ -1,5 +1,39 @@
 # Build Plan — PixiBun
 
+## Phase 15 — Non-Destructive Photometric Output & Live Preview Signal
+**Goal:** Fix the three regressions caused by the photometric pipeline writing destructively into the source layer (pixel loss on light-angle changes, incoherent re-renders, stale live preview) and replace fragile display-name matching with a stable per-layer `tag` identifier system.
+
+**Root cause:** the photometric, auto-shade, specular, sel-out, ground-shadow, and bake-normals pipelines previously called `clearRect` + `drawImage` on the active drawing layer, so each render destroyed the artist's original pixels. There was also no `bufferVersion` signal for buffer-pixel mutations, so the live preview window did not re-render during strokes.
+
+**Deliverables:**
+- [x] `Layer.tag?: string` added to `src/types/canvas.ts` for stable machine identification of auto-generated output layers.
+- [x] `useStudioStore.addLayer(name?, tag?)` extended; `addLayer` continues to `unshift` so the new layer is at `layers[0]`.
+- [x] `useStudioStore.bufferVersion` + `bumpBufferVersion()` action added; bumped on every pixel-mutating path (pen/eraser/dither strokes, bucket fill, color replace, undo/redo, commit/lift/cut/delete selection, and all AI panel handlers).
+- [x] `CenterViewport`: helpers `compositeSourceSnapshot(excludeTag)` and `replaceTaggedLayer(name, tag)`; `Render Photometric`, `Auto-Shade`, `Specular`, `Sel-Out`, `Ground Drop Shadow`, and `Bake Normals` now write to dedicated tagged layers and exclude prior outputs from their inputs.
+- [x] `Bake Normals` fixed to write to the new `layers[0]` (was using `layers[length-1]` after a 50ms `setTimeout`).
+- [x] `FloatingPreviewWindow` subscribes to `bufferVersion`; live preview now updates in real time during strokes and AI renders.
+- [x] Dead duplicated `useEffect` block (legacy destructive pattern) removed from `CenterViewport`.
+- [x] `applyRiemersmaDither()` Hilbert space-filling implementation in `smartMathEngine.ts`, wired to `pixibun:riemersma-dither`.
+- [x] `RightInspector`: removed dead `Bezier Spline` panel button (Bézier is already a drawing tool — the toolbar's `curve` tool); `47-Blob` button disabled with explanatory tooltip (`"Requires tileset atlas (planned). 47-Tile Blob is currently a bitmask computation utility, not a one-click autotiler."`).
+- [x] `LOGS.md` updated to clarify 47-Tile Blob is a bitmask utility, not a one-click autotiler.
+- [x] Regression tests in `tests/photometricNonDestructive.test.ts`:
+   1. Non-destructiveness — 10 photometric renders with varying angles leave the source `ImageData` byte-identical.
+   2. Live sync — `bufferVersion` starts at 0 and increments on every `bumpBufferVersion()` call.
+   3. Photometric correctness — `Az=0, El=90` produces a non-empty, silhouette-following, left/right-symmetric output with the top at least as bright as the bottom rim.
+   4. Bake Normals layer index — `addLayer(name, tag)` inserts at `layers[0]`; `replaceTaggedLayer` keeps a single tagged output layer with base art at the bottom.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` → 0 errors.
+- `npx vitest run` → 32/32 tests pass.
+- Manually: draw a sprite, run Render Photometric 10× with varying angles — original layer remains byte-identical and the tagged output layer is replaced in place.
+- Manually: drawing on the canvas updates the floating live preview in real time.
+- Manually: click Riemersma dither with a palette — produces non-worming error-diffusion output.
+- Manually: Bézier Spline button is gone; 47-Blob is disabled with the documented tooltip.
+
+**Status:** Complete (2026-08-29)
+
+---
+
 ## Phase 14 — 2.5D Photometric Studio, Normal Mapping, Geometry Engine & Mathematical Dithering Suite
 **Goal:** Deliver a mathematically rigorous computer graphics and pixel intelligence suite built into the PixiBud inspector and canvas engine: linear-time $O(N)$ Euclidean Distance Transform (EDT), analytical tangent-space normal vector fields with standard blue texture baking $(128, 128, 255)$, Blinn-Phong specular half-vector glints, discrete Laplace cavity ambient occlusion, 5 physical material presets, OKLab perceptual color quantization, and recursive Bayer matrix dither modulation.
 

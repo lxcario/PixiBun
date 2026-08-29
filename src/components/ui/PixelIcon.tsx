@@ -126,6 +126,15 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
           </svg>
         );
 
+      case 'select-lasso':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="3 2" className={className}>
+            <path d="M7 22a5 5 0 0 1-2-4c0-4 4-8 9-8s8 4 8 8-3 6-8 6c-3 0-5-1-6-2" />
+            <path d="M3 14c1-4 4-7 8-9" strokeDasharray="none" />
+            <circle cx="6" cy="18" r="1.5" fill="currentColor" stroke="none" />
+          </svg>
+        );
+
       case 'line':
         return (
           <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={className}>
