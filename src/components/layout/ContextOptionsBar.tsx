@@ -35,6 +35,8 @@ export const ContextOptionsBar: React.FC = () => {
     setIsoAngleSnap,
     toggleSymmetryH,
     toggleSymmetryV,
+    showGrid,
+    toggleGrid,
     showIsoGuides,
     toggleIsoGuides,
     showTilePreview,
@@ -247,6 +249,20 @@ export const ContextOptionsBar: React.FC = () => {
         </button>
 
         <div className="h-4 w-px bg-[var(--desk-border)] mx-0.5" />
+
+        {/* Pixel Grid Toggle */}
+        <button
+          onClick={toggleGrid}
+          title="Toggle Pixel Grid Lines (Ctrl+')"
+          className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer flex items-center gap-1 ${
+            showGrid
+              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+          }`}
+        >
+          <PixelIcon name="grid-iso" size={12} />
+          <span>Grid</span>
+        </button>
 
         {/* Isometric 2:1 Guide Grid */}
         <button

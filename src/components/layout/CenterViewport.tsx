@@ -1112,6 +1112,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       } else if (e.key.toLowerCase() === 'v' && (selection || floatingSelection) && !e.ctrlKey) {
         e.preventDefault();
         handleFlipVertical();
+      } else if (((e.ctrlKey || e.metaKey) && e.key === "'") || (e.shiftKey && e.key.toLowerCase() === 'g')) {
+        e.preventDefault();
+        useStudioStore.getState().toggleGrid();
       }
     };
 
