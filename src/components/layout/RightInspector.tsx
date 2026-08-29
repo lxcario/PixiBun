@@ -631,7 +631,6 @@ export const RightInspector: React.FC = () => {
                 variant="default"
                 onClick={() => {
                   setActiveTool('curve');
-                  showFeedback('Curve tool active — click and drag on canvas to draw Bézier curve');
                 }}
                 title="Select Bézier Curve drawing tool on toolbar"
                 className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
