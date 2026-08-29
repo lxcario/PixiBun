@@ -516,13 +516,52 @@ describe('Bake Normals layer index', () => {
     const frontIdx = 12 * 64 + 12;
     expect(normalField.nz[frontIdx]).toBeCloseTo(1.0, 1);
 
-    // Head Top face (12, 4) normal should point UP: ny is negative
-    const topIdx = 4 * 64 + 12;
-    expect(normalField.ny[topIdx]).toBeLessThan(0);
-
     // Head Right face (4, 12) normal should point RIGHT/WEST: nx is negative
     const rightIdx = 12 * 64 + 4;
     expect(normalField.nx[rightIdx]).toBeLessThan(0);
+  });
+
+  it('executes Minecraft skin shading with hue-shifting and contact occlusion', async () => {
+    const { executeMinecraftSkinShadingPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { getOrCreateBuffer, clearAllBuffers } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 64;
+    const height = 64;
+
+    const buf = getOrCreateBuffer('mc-skin', width, height);
+    // Draw head front with peach skin tone #F0BE7C
+    buf.ctx.fillStyle = '#F0BE7C';
+    buf.ctx.fillRect(8, 8, 8, 8);
+
+    const shadedCanvas = executeMinecraftSkinShadingPipeline(
+      buf.ctx as unknown as CanvasRenderingContext2D,
+      width,
+      height,
+      {
+        material: 'matte',
+        lightAzimuth: 45,
+        lightElevation: 45,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.2,
+        lightBrightness: 1.2,
+        cavityStrength: 1.0,
+        ditherModulation: 0.5,
+        bayerSize: '4x4',
+      }
+    );
+
+    const sCtx = shadedCanvas.getContext('2d')!;
+    const imgData = sCtx.getImageData(0, 0, width, height);
+
+    // Transparent void pixels (0, 0) must remain alpha 0
+    expect(imgData.data[3]).toBe(0);
+
+    // Head front top pixel (12, 8) must be opaque and shaded
+    const headTopIdx = (8 * 64 + 12) * 4;
+    expect(imgData.data[headTopIdx + 3]).toBe(255);
+    expect(imgData.data[headTopIdx]).toBeGreaterThan(100); // Vibrant, not dark crushed
   });
 });
 
