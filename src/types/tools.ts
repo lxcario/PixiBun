@@ -33,6 +33,7 @@ export interface PhotometricLightingParams {
   lightRadius: number; // Distance attenuation radius (e.g. 16 to 128px)
   lightColor: string; // Hex color for light source
   ambientIntensity: number; // 0.0 to 1.0
+  lightBrightness?: number; // 0.5 to 2.0 (overall exposure/brightness multiplier)
   material: MaterialType;
   cavityStrength: number; // 0.0 to 2.0 (Laplace AO)
   ditherModulation: number; // 0.0 to 1.0 (Bayer threshold offset strength)
@@ -53,6 +54,7 @@ export interface ToolSettings {
   lightAzimuth: number; // 0 to 360 deg
   lightElevation: number; // 0 to 90 deg
   lightRadius: number; // Distance attenuation radius (16 to 256)
+  lightBrightness: number; // 0.5 to 2.0 (exposure / brightness)
   materialPreset: MaterialType;
   cavityStrength: number; // 0 to 1
   ditherModulation: number; // 0 to 1

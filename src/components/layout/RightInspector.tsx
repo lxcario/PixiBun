@@ -38,6 +38,7 @@ export const RightInspector: React.FC = () => {
     setActiveTool,
     setLightAzimuth,
     setLightElevation,
+    setLightBrightness,
     setMaterialPreset,
     setCavityStrength,
     setDitherModulation,
@@ -61,6 +62,7 @@ export const RightInspector: React.FC = () => {
           lightAzimuth: tools.lightAzimuth,
           lightElevation: tools.lightElevation,
           lightRadius: tools.lightRadius,
+          lightBrightness: tools.lightBrightness,
           lightColor: primaryColor || '#FFFFFF',
           ambientIntensity: 0.35,
           material: tools.materialPreset,
@@ -516,6 +518,23 @@ export const RightInspector: React.FC = () => {
                 />
                 <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
                   {tools.lightElevation}°
+                </span>
+              </div>
+
+              {/* Brightness / Exposure */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Brightness:</span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.05"
+                  value={tools.lightBrightness}
+                  onChange={(e) => setLightBrightness(parseFloat(e.target.value))}
+                  className="w-32 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {Math.round(tools.lightBrightness * 100)}%
                 </span>
               </div>
 

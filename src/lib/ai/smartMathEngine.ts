@@ -484,16 +484,204 @@ export function getBayerMatrixThreshold(x: number, y: number, size: '2x2' | '4x4
   }
 }
 
+/**
+ * Detects if the current canvas image corresponds to a standard Minecraft skin (64x64 or 64x32).
+ */
+export function detectMinecraftSkin(
+  isOpaque: (x: number, y: number) => boolean,
+  width: number,
+  height: number
+): boolean {
+  if (width !== 64 || (height !== 64 && height !== 32)) return false;
+
+  const voidZones = [
+    { x: 0, y: 0, w: 8, h: 8 },
+    { x: 24, y: 0, w: 8, h: 8 },
+    { x: 32, y: 0, w: 8, h: 8 },
+    { x: 56, y: 0, w: 8, h: 8 },
+    { x: 0, y: 16, w: 4, h: 4 },
+    { x: 12, y: 16, w: 4, h: 4 },
+    { x: 36, y: 16, w: 4, h: 4 },
+    { x: 56, y: 16, w: 8, h: 4 },
+  ];
+
+  let voidPixels = 0;
+  let voidOpaque = 0;
+  for (const z of voidZones) {
+    if (z.y + z.h <= height) {
+      for (let py = z.y; py < z.y + z.h; py++) {
+        for (let px = z.x; px < z.x + z.w; px++) {
+          voidPixels++;
+          if (isOpaque(px, py)) voidOpaque++;
+        }
+      }
+    }
+  }
+
+  let headPixels = 0;
+  for (let py = 8; py < 16; py++) {
+    for (let px = 8; px < 16; px++) {
+      if (isOpaque(px, py)) headPixels++;
+    }
+  }
+
+  return (voidOpaque / (voidPixels || 1) < 0.25) && (headPixels >= 16);
+}
+
+/**
+ * Computes physically accurate 3D cuboid face normals for Minecraft skins.
+ */
+export function computeMinecraftSkinNormalField(
+  width: number,
+  height: number
+): NormalVectorField {
+  const nx = new Float32Array(width * height);
+  const ny = new Float32Array(width * height);
+  const nz = new Float32Array(width * height);
+
+  for (let i = 0; i < width * height; i++) {
+    nz[i] = 1.0;
+  }
+
+  const paintFace = (
+    fx: number,
+    fy: number,
+    fw: number,
+    fh: number,
+    baseNorm: [number, number, number]
+  ) => {
+    if (fx + fw > width || fy + fh > height) return;
+
+    for (let py = fy; py < fy + fh; py++) {
+      for (let px = fx; px < fx + fw; px++) {
+        const idx = py * width + px;
+        let [bx, by] = baseNorm;
+        const bz = baseNorm[2];
+
+        if (px === fx) bx = Math.max(-0.9, bx - 0.35);
+        if (px === fx + fw - 1) bx = Math.min(0.9, bx + 0.35);
+        if (py === fy) by = Math.max(-0.9, by - 0.35);
+        if (py === fy + fh - 1) by = Math.min(0.9, by + 0.35);
+
+        const len = Math.sqrt(bx * bx + by * by + bz * bz) || 1;
+        nx[idx] = bx / len;
+        ny[idx] = by / len;
+        nz[idx] = bz / len;
+      }
+    }
+  };
+
+  const UP: [number, number, number] = [0, -0.85, 0.5];
+  const DOWN: [number, number, number] = [0, 0.85, 0.5];
+  const LEFT: [number, number, number] = [0.85, 0, 0.5];
+  const RIGHT: [number, number, number] = [-0.85, 0, 0.5];
+  const FRONT: [number, number, number] = [0, 0, 1.0];
+  const BACK: [number, number, number] = [0, 0, 0.4];
+
+  // Head (0, 0, 32, 16)
+  paintFace(8, 0, 8, 8, UP);
+  paintFace(16, 0, 8, 8, DOWN);
+  paintFace(0, 8, 8, 8, RIGHT);
+  paintFace(8, 8, 8, 8, FRONT);
+  paintFace(16, 8, 8, 8, LEFT);
+  paintFace(24, 8, 8, 8, BACK);
+
+  // Hat Layer 2 (32, 0, 32, 16)
+  paintFace(40, 0, 8, 8, UP);
+  paintFace(48, 0, 8, 8, DOWN);
+  paintFace(32, 8, 8, 8, RIGHT);
+  paintFace(40, 8, 8, 8, FRONT);
+  paintFace(48, 8, 8, 8, LEFT);
+  paintFace(56, 8, 8, 8, BACK);
+
+  // Body / Torso (16, 16, 24, 16)
+  paintFace(20, 16, 8, 4, UP);
+  paintFace(28, 16, 8, 4, DOWN);
+  paintFace(16, 20, 4, 12, RIGHT);
+  paintFace(20, 20, 8, 12, FRONT);
+  paintFace(28, 20, 4, 12, LEFT);
+  paintFace(32, 20, 8, 12, BACK);
+
+  // Right Arm (40, 16, 16, 16)
+  paintFace(44, 16, 4, 4, UP);
+  paintFace(48, 16, 4, 4, DOWN);
+  paintFace(40, 20, 4, 12, RIGHT);
+  paintFace(44, 20, 4, 12, FRONT);
+  paintFace(48, 20, 4, 12, LEFT);
+  paintFace(52, 20, 4, 12, BACK);
+
+  // Right Leg (0, 16, 16, 16)
+  paintFace(4, 16, 4, 4, UP);
+  paintFace(8, 16, 4, 4, DOWN);
+  paintFace(0, 20, 4, 12, RIGHT);
+  paintFace(4, 20, 4, 12, FRONT);
+  paintFace(8, 20, 4, 12, LEFT);
+  paintFace(12, 20, 4, 12, BACK);
+
+  if (height >= 64) {
+    paintFace(20, 48, 4, 4, UP);
+    paintFace(24, 48, 4, 4, DOWN);
+    paintFace(16, 52, 4, 12, RIGHT);
+    paintFace(20, 52, 4, 12, FRONT);
+    paintFace(24, 52, 4, 12, LEFT);
+    paintFace(28, 52, 4, 12, BACK);
+
+    paintFace(36, 48, 4, 4, UP);
+    paintFace(40, 48, 4, 4, DOWN);
+    paintFace(32, 52, 4, 12, RIGHT);
+    paintFace(36, 52, 4, 12, FRONT);
+    paintFace(40, 52, 4, 12, LEFT);
+    paintFace(44, 52, 4, 12, BACK);
+
+    paintFace(20, 32, 8, 4, UP);
+    paintFace(28, 32, 8, 4, DOWN);
+    paintFace(16, 36, 4, 12, RIGHT);
+    paintFace(20, 36, 8, 12, FRONT);
+    paintFace(28, 36, 4, 12, LEFT);
+    paintFace(32, 36, 8, 12, BACK);
+
+    paintFace(44, 32, 4, 4, UP);
+    paintFace(48, 32, 4, 4, DOWN);
+    paintFace(40, 36, 4, 12, RIGHT);
+    paintFace(44, 36, 4, 12, FRONT);
+    paintFace(48, 36, 4, 12, LEFT);
+    paintFace(52, 36, 4, 12, BACK);
+
+    paintFace(4, 32, 4, 4, UP);
+    paintFace(8, 32, 4, 4, DOWN);
+    paintFace(0, 36, 4, 12, RIGHT);
+    paintFace(4, 36, 4, 12, FRONT);
+    paintFace(8, 36, 4, 12, LEFT);
+    paintFace(12, 36, 4, 12, BACK);
+
+    paintFace(4, 48, 4, 4, UP);
+    paintFace(8, 48, 4, 4, DOWN);
+    paintFace(0, 52, 4, 12, RIGHT);
+    paintFace(4, 52, 4, 12, FRONT);
+    paintFace(8, 52, 4, 12, LEFT);
+    paintFace(12, 52, 4, 12, BACK);
+
+    paintFace(52, 48, 4, 4, UP);
+    paintFace(56, 48, 4, 4, DOWN);
+    paintFace(48, 52, 4, 12, RIGHT);
+    paintFace(52, 52, 4, 12, FRONT);
+    paintFace(56, 52, 4, 12, LEFT);
+    paintFace(60, 52, 4, 12, BACK);
+  }
+
+  return { nx, ny, nz };
+}
+
 // -----------------------------------------------------------------------------
 // 7. Full Photometric Lighting Pipeline
 // -----------------------------------------------------------------------------
 
 /**
  * Renders complete physical 2.5D lighting model:
- * - Lambertian Diffuse (with albedo Hadamard product)
+ * - Half-Lambertian Diffuse with Wrap Lighting (prevents dark muddy crush)
  * - Blinn-Phong Specular (Half-Vector H)
+ * - 3D Minecraft Skin Geometry Recognition
  * - Discrete Laplace Cavity AO
- * - Distance Attenuation
  * - OKLab Perceptual Quantization + Bayer Matrix Dither Modulation
  */
 export function executePhotometricPipeline(
@@ -506,41 +694,44 @@ export function executePhotometricPipeline(
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
 
-  // 1. Compute binary mask & linear EDT
+  // 1. Compute binary mask
   const isOpaque = (x: number, y: number) => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
     return data[(y * width + x) * 4 + 3] > 30;
   };
 
-  const distanceMap = computeSeparableEDT(isOpaque, width, height);
+  const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
 
-  // 2. Non-linear Dome Heightmap + Bilateral Smoothing
-  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
-  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+  // 2. Normal Vector Field & Cavity AO
+  let normalField: NormalVectorField;
+  let cavityAO: Float32Array;
 
-  // 3. Tangent Space Normal Vector Field
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  if (isMcSkin) {
+    normalField = computeMinecraftSkinNormalField(width, height);
+    cavityAO = new Float32Array(width * height).fill(1.0);
+  } else {
+    const distanceMap = computeSeparableEDT(isOpaque, width, height);
+    const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+    const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+    normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+    cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength);
+  }
 
-  // 4. Laplace Cavity Ambient Occlusion
-  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength);
-
-  // 5. Material Coefficients
+  // 3. Material & Lighting Parameters
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
+  const brightness = params.lightBrightness ?? 1.15;
 
-  // Light Vector L from Spherical Coordinates
   const azRad = (params.lightAzimuth * Math.PI) / 180;
-  const elRad = (params.lightElevation * Math.PI) / 180;
+  const elRad = (Math.max(10, params.lightElevation) * Math.PI) / 180;
 
   const Lx = Math.cos(azRad) * Math.cos(elRad);
   const Ly = -Math.sin(azRad) * Math.cos(elRad);
   const Lz = Math.sin(elRad);
 
-  // View Vector V = (0, 0, 1) in orthographic view
   const Vx = 0;
   const Vy = 0;
   const Vz = 1.0;
 
-  // Blinn-Phong Half-Vector H = (L + V) / ||L + V||
   const Hx = Lx + Vx;
   const Hy = Ly + Vy;
   const Hz = Lz + Vz;
@@ -549,13 +740,11 @@ export function executePhotometricPipeline(
   const normHy = Hy / hLen;
   const normHz = Hz / hLen;
 
-  // Light color RGB
   const lightRgba = hexToRgba(params.lightColor || '#FFFFFF');
   const lightR = lightRgba.r / 255;
   const lightG = lightRgba.g / 255;
   const lightB = lightRgba.b / 255;
 
-  // Pre-calculate OKLab palette
   const paletteRgba = paletteHex.map(hexToRgba);
   const paletteOKLab = paletteRgba.map((c) => rgbToOKLab(c.r, c.g, c.b));
 
@@ -586,11 +775,12 @@ export function executePhotometricPipeline(
 
       const ao = cavityAO[idx];
 
-      // 1. Lambertian Diffuse N . L
-      const NdotL = Math.max(0, Nx * Lx + Ny * Ly + Nz * Lz);
-      const diffR = mat.kd * NdotL * (origR * lightR);
-      const diffG = mat.kd * NdotL * (origG * lightG);
-      const diffB = mat.kd * NdotL * (origB * lightB);
+      // 1. Half-Lambert Wrap Lighting (prevents muddy dark black crush)
+      const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
+      const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.35) / 1.35), 1.25);
+      const diffR = mat.kd * wrapNdotL * (origR * lightR);
+      const diffG = mat.kd * wrapNdotL * (origG * lightG);
+      const diffB = mat.kd * wrapNdotL * (origB * lightB);
 
       // 2. Blinn-Phong Specular (N . H)^alpha
       const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
@@ -600,7 +790,6 @@ export function executePhotometricPipeline(
       let specG = Ispec * lightG;
       let specB = Ispec * lightB;
 
-      // For metallic materials, specular is tinted by base albedo
       if (mat.isMetallic) {
         specR *= origR;
         specG *= origG;
@@ -608,14 +797,15 @@ export function executePhotometricPipeline(
       }
 
       // 3. Ambient
-      const ambR = origR * params.ambientIntensity * ao;
-      const ambG = origG * params.ambientIntensity * ao;
-      const ambB = origB * params.ambientIntensity * ao;
+      const effectiveAmbient = Math.max(0.35, params.ambientIntensity) * brightness;
+      const ambR = origR * effectiveAmbient * ao;
+      const ambG = origG * effectiveAmbient * ao;
+      const ambB = origB * effectiveAmbient * ao;
 
-      // 4. Total continuous color: (Ambient * AO + Diffuse * AO + Specular)
-      let totalR = Math.max(0, Math.min(1.0, ambR + diffR * ao + specR));
-      let totalG = Math.max(0, Math.min(1.0, ambG + diffG * ao + specG));
-      let totalB = Math.max(0, Math.min(1.0, ambB + diffB * ao + specB));
+      // 4. Total continuous color: (Ambient + Diffuse * AO + Specular) * brightness
+      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR * ao + specR) * (brightness * 0.9)));
+      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG * ao + specG) * (brightness * 0.9)));
+      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB * ao + specB) * (brightness * 0.9)));
 
       // 5. Bayer Matrix Dither Modulation
       if (params.ditherModulation > 0) {
@@ -693,10 +883,21 @@ export function renderParametric2p5DLighting(
     return data[(y * width + x) * 4 + 3] > 30;
   };
 
-  const distanceMap = computeSeparableEDT(isOpaque, width, height);
-  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
-  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+  const normalField = isMcSkin
+    ? computeMinecraftSkinNormalField(width, height)
+    : computeTangentNormalField(
+        applyBilateralFilter(
+          generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
+          width,
+          height,
+          1.5,
+          2.0
+        ),
+        width,
+        height,
+        2.0
+      );
 
   const azRad = (params.azimuthDeg * Math.PI) / 180;
   const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
@@ -726,7 +927,8 @@ export function renderParametric2p5DLighting(
       lightElevation: params.elevationDeg,
       lightRadius: 64,
       lightColor: '#FFFFFF',
-      ambientIntensity: 0.35,
+      ambientIntensity: 0.45,
+      lightBrightness: 1.2,
       material: 'matte',
       cavityStrength: 1.0,
       ditherModulation: 0,

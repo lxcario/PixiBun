@@ -133,6 +133,7 @@ interface StudioState {
   setLightAzimuth: (azimuth: number) => void;
   setLightElevation: (elevation: number) => void;
   setLightRadius: (radius: number) => void;
+  setLightBrightness: (brightness: number) => void;
   setMaterialPreset: (preset: MaterialType) => void;
   setCavityStrength: (strength: number) => void;
   setDitherModulation: (mod: number) => void;
@@ -238,6 +239,7 @@ export const useStudioStore = create<StudioState>()(
         lightAzimuth: 315,
         lightElevation: 45,
         lightRadius: 64,
+        lightBrightness: 1.15,
         materialPreset: 'matte',
         cavityStrength: 1.0,
         ditherModulation: 0.35,
@@ -453,6 +455,12 @@ export const useStudioStore = create<StudioState>()(
       setLightRadius: radius => {
         set(state => {
           state.tools.lightRadius = Math.max(16, Math.min(256, radius));
+        });
+      },
+
+      setLightBrightness: brightness => {
+        set(state => {
+          state.tools.lightBrightness = Math.max(0.4, Math.min(2.5, brightness));
         });
       },
 

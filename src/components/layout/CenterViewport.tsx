@@ -38,7 +38,9 @@ import {
   generateInflatedHeightmap,
   applyBilateralFilter,
   computeTangentNormalField,
-  bakeNormalMapToCanvas
+  bakeNormalMapToCanvas,
+  detectMinecraftSkin,
+  computeMinecraftSkinNormalField,
 } from '@/lib/ai/smartMathEngine';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
 
@@ -600,8 +602,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           lightAzimuth: detail.lightAzimuth ?? tools.lightAzimuth,
           lightElevation: detail.lightElevation ?? tools.lightElevation,
           lightRadius: detail.lightRadius ?? tools.lightRadius,
+          lightBrightness: detail.lightBrightness ?? tools.lightBrightness ?? 1.15,
           lightColor: detail.lightColor ?? primaryColor,
-          ambientIntensity: detail.ambientIntensity ?? 0.35,
+          ambientIntensity: detail.ambientIntensity ?? 0.45,
           material: materialName,
           cavityStrength: detail.cavityStrength ?? tools.cavityStrength,
           ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
@@ -631,10 +634,21 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         return data[(y * canvasWidth + x) * 4 + 3] > 30;
       };
 
-      const distanceMap = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
-      const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
-      const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
-      const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
+      const isMcSkin = detectMinecraftSkin(isOpaque, canvasWidth, canvasHeight);
+      const normalField = isMcSkin
+        ? computeMinecraftSkinNormalField(canvasWidth, canvasHeight)
+        : computeTangentNormalField(
+            applyBilateralFilter(
+              generateInflatedHeightmap(computeSeparableEDT(isOpaque, canvasWidth, canvasHeight), canvasWidth, canvasHeight, 0.5),
+              canvasWidth,
+              canvasHeight,
+              1.5,
+              2.0
+            ),
+            canvasWidth,
+            canvasHeight,
+            2.0
+          );
       const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
 
       const outCtx = replaceTaggedLayer('Normal Map', 'normal-map');
@@ -723,6 +737,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     tools.lightAzimuth,
     tools.lightElevation,
     tools.lightRadius,
+    tools.lightBrightness,
     tools.materialPreset,
   ]);
 

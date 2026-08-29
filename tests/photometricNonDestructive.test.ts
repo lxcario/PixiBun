@@ -494,5 +494,35 @@ describe('Bake Normals layer index', () => {
     const result = generate47BlobEdgeData(buf.ctx as unknown as CanvasRenderingContext2D, width, height);
     expect(result.blobPixels.length).toBeGreaterThan(0);
   });
+
+  it('detects Minecraft skin and generates true 3D cuboid face normals', async () => {
+    const { detectMinecraftSkin, computeMinecraftSkinNormalField } = await import('@/lib/ai/smartMathEngine');
+
+    // Simulate 64x64 Minecraft skin with head filled
+    const isOpaque = (x: number, y: number) => {
+      // Head front (8..16, 8..16) and Torso (20..28, 20..32) are opaque
+      if (x >= 8 && x < 16 && y >= 8 && y < 16) return true;
+      if (x >= 20 && x < 28 && y >= 20 && y < 32) return true;
+      return false;
+    };
+
+    const isMc = detectMinecraftSkin(isOpaque, 64, 64);
+    expect(isMc).toBe(true);
+
+    const normalField = computeMinecraftSkinNormalField(64, 64);
+    expect(normalField.nx.length).toBe(64 * 64);
+
+    // Head Front face (12, 12) normal should be forward facing: nz close to 1.0
+    const frontIdx = 12 * 64 + 12;
+    expect(normalField.nz[frontIdx]).toBeCloseTo(1.0, 1);
+
+    // Head Top face (12, 4) normal should point UP: ny is negative
+    const topIdx = 4 * 64 + 12;
+    expect(normalField.ny[topIdx]).toBeLessThan(0);
+
+    // Head Right face (4, 12) normal should point RIGHT/WEST: nx is negative
+    const rightIdx = 12 * 64 + 4;
+    expect(normalField.nx[rightIdx]).toBeLessThan(0);
+  });
 });
 
