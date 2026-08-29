@@ -6,9 +6,11 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { ImportPayload } from '@/components/modals/ImportModal';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
+  onOpenImport?: (payload: ImportPayload) => void;
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
   onUndo?: () => void;
@@ -19,6 +21,7 @@ interface TopHeaderProps {
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenExport,
+  onOpenImport,
   onOpenShortcuts,
   onOpenResize,
   onUndo,
@@ -43,6 +46,53 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const filename = file.name;
+    const isProject = filename.endsWith('.pixibun') || filename.endsWith('.json');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result;
+      if (isProject) {
+        try {
+          const parsed = JSON.parse(result as string);
+          onOpenImport?.({
+            type: 'project',
+            filename,
+            projectJson: parsed,
+          });
+        } catch {
+          // ignore malformed JSON
+        }
+      } else {
+        const dataUrl = result as string;
+        const img = new Image();
+        img.onload = () => {
+          onOpenImport?.({
+            type: 'image',
+            filename,
+            dataUrl,
+            imgWidth: img.width,
+            imgHeight: img.height,
+          });
+        };
+        img.src = dataUrl;
+      }
+    };
+
+    if (isProject) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsDataURL(file);
+    }
+
+    e.target.value = '';
+  };
 
   const handleZoomIn = () => setZoom(zoom * 1.5);
   const handleZoomOut = () => setZoom(zoom / 1.5);
@@ -189,8 +239,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Actions: Theme Toggle, Shortcuts & Export */}
+      {/* Right Actions: Theme Toggle, Shortcuts, Import & Export */}
       <div className="flex items-center gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pixibun,.json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
         <ThemeToggle />
 
         <TactileButton
@@ -202,6 +260,17 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         >
           <PixelIcon name="help" size={14} />
           <span>Shortcuts</span>
+        </TactileButton>
+
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={() => fileInputRef.current?.click()}
+          title="Import and Convert Image to Pixel Art"
+          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
+        >
+          <PixelIcon name="export" size={14} className="rotate-180" />
+          <span>Import</span>
         </TactileButton>
 
         <TactileButton

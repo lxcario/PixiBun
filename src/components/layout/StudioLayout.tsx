@@ -11,10 +11,11 @@ import { BottomTimeline } from './BottomTimeline';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { ShortcutsModal } from '@/components/modals/ShortcutsModal';
 import { CanvasResizeModal, AnchorPosition } from '@/components/modals/CanvasResizeModal';
-import { ImportModal, ImportPayload } from '@/components/modals/ImportModal';
+import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
 import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
 import { buildProjectFile, hydrateProject } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
+import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
@@ -30,8 +31,6 @@ export const StudioLayout: React.FC = () => {
 
   const {
     setActiveFrame,
-    addLayer,
-    addFrame,
     isPlaying,
     setIsPlaying,
     setActiveTool,
@@ -128,16 +127,93 @@ export const StudioLayout: React.FC = () => {
     setIsImportOpen(true);
   }, []);
 
-  // Confirm Image Import
-  const handleConfirmImportImage = useCallback((target: 'new-layer' | 'new-frame' | 'replace-layer') => {
-    if (!importPayload?.dataUrl) return;
+  // Confirm Image Import & Inject Pixel Art to Target Buffer
+  const handleConfirmImportImage = useCallback((confirmData: ImageImportConfirmPayload) => {
+    const { canvas, target, extractedPalette, addToPalette, filename } = confirmData;
+    const store = useStudioStore.getState();
+    const width = store.canvasWidth;
+    const height = store.canvasHeight;
+
+    let targetLayerId = store.activeLayerId;
 
     if (target === 'new-frame') {
-      addFrame();
+      store.addFrame();
+      const updatedState = useStudioStore.getState();
+      const newFrame = updatedState.frames[updatedState.activeFrameIndex];
+      targetLayerId = newFrame?.layers[0]?.id || updatedState.activeLayerId;
     } else if (target === 'new-layer') {
-      addLayer(`Import: ${importPayload.filename}`);
+      const layerName = filename ? `Import: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Layer';
+      store.addLayer(layerName);
+      const updatedState = useStudioStore.getState();
+      targetLayerId = updatedState.activeLayerId;
     }
-  }, [addFrame, addLayer, importPayload]);
+
+    if (targetLayerId) {
+      const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
+      const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        if (target === 'replace-layer') {
+          ctx.clearRect(0, 0, width, height);
+        }
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(canvas, 0, 0);
+      }
+    }
+
+    if (addToPalette && extractedPalette.length > 0) {
+      const paletteName = filename ? `Palette: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Palette';
+      store.addExtractedPalette(paletteName, extractedPalette);
+    }
+
+    store.bumpBufferVersion();
+    setIsImportOpen(false);
+  }, []);
+
+  // Global Clipboard Paste (Ctrl+V) for Image Files
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const dataUrl = event.target?.result as string;
+              const img = new Image();
+              img.onload = () => {
+                handleOpenImport({
+                  type: 'image',
+                  filename: 'Pasted Image',
+                  dataUrl,
+                  imgWidth: img.width,
+                  imgHeight: img.height,
+                });
+              };
+              img.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [handleOpenImport]);
 
   // Confirm Project Import - validate before touching live state so a
   // malformed file explains itself instead of corrupting the session.
@@ -281,6 +357,7 @@ export const StudioLayout: React.FC = () => {
       {/* Top Header */}
       <TopHeader
         onOpenExport={() => setIsExportOpen(true)}
+        onOpenImport={handleOpenImport}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
         onUndo={handleUndo}
