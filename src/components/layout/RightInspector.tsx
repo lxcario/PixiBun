@@ -48,16 +48,9 @@ export const RightInspector: React.FC = () => {
   const currentFrame = frames[activeFrameIndex];
   const activeLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
-
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
-  const [lastActionStatus, setLastActionStatus] = useState<string | null>(null);
   const [rotationAngle, setRotationAngle] = useState<number>(45);
-
-  const showFeedback = (msg: string) => {
-    setLastActionStatus(msg);
-    setTimeout(() => setLastActionStatus(null), 3000);
-  };
 
   // 1. Module 1: Full Photometric Lighting & Normal Mapping Pipeline
   const handleRenderPhotometricLighting = () => {
@@ -78,13 +71,11 @@ export const RightInspector: React.FC = () => {
         },
       })
     );
-    showFeedback(`Photometric ${tools.materialPreset.toUpperCase()} lighting evaluated with OKLab Bayer dithering`);
   };
 
   const handleBakeNormalMap = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:bake-normal-map'));
-    showFeedback('Tangent-Space Normal Map (128, 128, 255) baked to new layer');
   };
 
   const handleSpecularHighlight = () => {
@@ -98,7 +89,6 @@ export const RightInspector: React.FC = () => {
         },
       })
     );
-    showFeedback(`Blinn-Phong specular glint placed at ${tools.lightAzimuth}°`);
   };
 
   const handleSelOut = () => {
@@ -111,19 +101,16 @@ export const RightInspector: React.FC = () => {
         },
       })
     );
-    showFeedback('Selective outline (Sel-Out) softened based on light alignment');
   };
 
   const handleGroundShadow = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:ground-shadow'));
-    showFeedback('Ground drop shadow cast beneath sprite base');
   };
 
   const handle47Blob = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:apply-47-blob'));
-    showFeedback('47-Tile Blob autotiling contours generated on new layer');
   };
 
   // 3. Module 3: Advanced Dithering Actions
@@ -133,7 +120,6 @@ export const RightInspector: React.FC = () => {
         detail: { colors: currentPalette.colors },
       })
     );
-    showFeedback('Atkinson 75% error-diffusion dithering applied');
   };
 
   const handleRiemersmaDither = () => {
@@ -142,7 +128,6 @@ export const RightInspector: React.FC = () => {
         detail: { colors: currentPalette.colors },
       })
     );
-    showFeedback('Riemersma Hilbert space-filling dithering applied');
   };
 
   // 4. Module 4: Pixel Perfection & RotSprite
@@ -152,29 +137,22 @@ export const RightInspector: React.FC = () => {
         detail: { angle },
       })
     );
-    showFeedback(`RotSprite 8x Scale2X rotation applied at ${angle}°`);
   };
 
   const handleCleanJaggies = () => {
     window.dispatchEvent(new CustomEvent('pixibun:clean-jaggies'));
-    showFeedback('Staircase double-pixel corners smoothed');
   };
 
   const handleSkeletonThinning = () => {
     window.dispatchEvent(new CustomEvent('pixibun:skeleton-thinning'));
-    showFeedback('Zhang-Suen 1px line thinning normalized strokes');
   };
 
   const handleRemoveStrays = () => {
     window.dispatchEvent(new CustomEvent('pixibun:remove-strays'));
-    showFeedback('Isolated noise pixels swept away');
   };
 
   const handleColorGrade = (grade: 'sunset' | 'moonlight' | 'neon') => {
     window.dispatchEvent(new CustomEvent('pixibun:color-grade', { detail: { grade } }));
-    if (grade === 'sunset') showFeedback('Warm sunset dusk tone applied');
-    else if (grade === 'moonlight') showFeedback('Midnight moonlight tone applied');
-    else showFeedback('High saturation cyber tone applied');
   };
 
   const handleQuantizePalette = () => {
@@ -183,18 +161,15 @@ export const RightInspector: React.FC = () => {
         detail: { colors: currentPalette.colors },
       })
     );
-    showFeedback('Every pixel snapped to active palette via OKLab distance');
   };
 
   const handleHarmonizePalette = () => {
     const harmonics = harmonizePaletteColors(currentPalette.colors);
     harmonics.forEach((c) => addCustomColorToPalette(currentPaletteId, c));
-    showFeedback(`${harmonics.length} harmonic OKLCH tones added to palette`);
   };
 
   const handleInBetweenFrame = () => {
     duplicateFrame(activeFrameIndex);
-    showFeedback('In-between animation frame added to timeline');
   };
 
   return (
@@ -482,13 +457,6 @@ export const RightInspector: React.FC = () => {
       {/* Tab 3: PixiBud Smart Studio — 4 Professional Mathematical Modules */}
       {activeInspectorTab === 'ai' && (
         <div className="flex-1 flex flex-col p-3 gap-3 overflow-y-auto">
-          {/* Action Feedback Banner */}
-          {lastActionStatus && (
-            <div className="bg-[#2c1e40] border-2 border-[#f0be7c] text-[#f0be7c] px-2.5 py-1.5 rounded-[2px] text-xs font-mono font-bold shadow-xs animate-fade-in">
-              ✦ {lastActionStatus}
-            </div>
-          )}
-
           {/* Module 1: 2.5D Photometric Lighting & Normal Mapping Studio */}
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
             <div className="flex items-center justify-between">
