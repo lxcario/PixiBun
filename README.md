@@ -38,7 +38,8 @@ graph LR
 
 ### 🖌️ Artisan Raster & Drawing Engine
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
-* **Wu's Quantized 2:1 Isometric Lines:** Crisp, authentic 26.565° isometric grid snapping without jagged stepping.
+* **Wu's Quantized 2:1 Isometric Lines & Guides:** Crisp, authentic 26.565° isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
+* **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Rational Bézier Curves:** Exact quadratic and cubic integer de Casteljau curves for fluid ribbon and contour plotting.
 * **Flood Fill & Color Replacement:** Both contiguous region fill and global canvas-wide color swapping with adjustable tolerance.
 * **Marquee Box, Lasso & Wand Selection:** Move, nudge, duplicate, flip horizontally/vertically, and paste selection buffers.
@@ -47,10 +48,13 @@ graph LR
 ---
 
 ### ☀️ PixiBud 2.5D Photometric Studio & Smart Math Engine
+* **3D Minecraft Skin Recognition & Dedicated Shading:** Automatically detects $64\times64$ and $64\times32$ Java/Bedrock UV layouts, computes analytical 3D unit normal vectors $\mathbf{N}$ for all 12 cuboid faces, and executes professional skin shading (Half-Lambert wrap, contact ambient occlusion under chin/armpits/limbs, sky hemisphere radiance, and warm sunlight/cool indigo hue-shifting).
 * **Linear-Time $O(N)$ Euclidean Distance Transform (EDT):** Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes compute distance fields in milliseconds.
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
 * **Analytical Tangent-Space Normal Generation:** Discrete Sobel kernels derive partial derivatives ($\frac{\partial H}{\partial x}, \frac{\partial H}{\partial y}$) and surface normal vectors $\mathbf{N} = \frac{(-s_x G_x, -s_y G_y, 1)}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}}$.
 * **1-Click Normal Map Baking:** Exports standard blue tangent-space normal maps $(128, 128, 255)$ directly to a new layer for immediate use in **Godot**, **Unity**, and **Unreal Engine**.
+* **Directional Selective Outlining (Sel-Out):** Evaluates surface normal azimuth alignment against the light source, applying illuminated rim tones to light-facing edges and deep saturated material tones to shadow edges.
+* **Smart Sub-Pixel Anti-Aliasing (De-Jaggy):** Evaluates staircase L-crooks in 1px lines and inserts soft intermediate OKLab blend pixels for smooth hand-drawn contours without creating holes.
 * **Full Photometric Lighting Equation:**
   $$\mathbf{C}_{\text{total}} = \left( \mathbf{C}_{\text{ambient}} \cdot AO(p) + I_d (\mathbf{C}_{\text{albedo}} \odot \mathbf{C}_{\text{light\_diffuse}}) \cdot AO(p) + I_s \mathbf{C}_{\text{light\_specular}} \right) \cdot \text{Atten}(d)$$
 * **5 Physical Material Presets:**
@@ -71,10 +75,12 @@ graph LR
 * **Atkinson 75% Error Retention Dither:** Classic vintage Macintosh error-diffusion for high-contrast, atmospheric shading.
 * **Riemersma Space-Filling Hilbert Dither:** Space-filling curve error propagation that eliminates directional worming artifacts.
 * **Harmonic Ramp Generator:** Generates 5-step highlight and shadow ramps in OKLCH space with natural warm sun / cool shadow hue-shifting.
+* **Atmospheric Photographic Color Grading:** Physical Kelvin temperature shifts (+2800K Golden Sunset, -3500K Cool Moonlight, Neon Dusk, DMG Game Boy).
 
 ---
 
 ### 🎬 Animation Suite & Layer Stack
+* **2D Optical Flow In-Between Morphing:** Block-matching motion displacement fields and Signed Distance Field (SDF) interpolation generating smooth intermediate tween frames in OKLab space.
 * **Multi-Layer Compositor:** Individual layer opacity, lock, visibility, and 8 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge, Darken, Lighten, Difference*).
 * **Frame-by-Frame Timeline:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.

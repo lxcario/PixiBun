@@ -7,12 +7,14 @@
 
 ## Scope
 ### In scope for v1:
-- **High-Performance Canvas Engine:** Dual-layer raster engine with integer zoom (100%–6400%), pan, pixel grid toggle, symmetry rulers (X/Y/radial), tile preview mode.
-- **Precision Pixel Tools:** Pixel-perfect pen (Bresenham line smoothing, no jaggies), eraser, dithering brushes (Bayer 2x2, 4x4, 8x8), flood fill (with tolerance & contiguous controls), color swap, color picker, shape primitives (line, rectangle, ellipse), selection wand/lasso/box.
-- **Multi-Layer Stack:** Layers with opacity, blend modes (Normal, Multiply, Screen, Overlay), visibility, locking, reordering, merge down.
-- **Animation & Sprite Timeline:** Frame management, FPS scrubber (1–60 FPS), loop/ping-pong playback, customizable onion skinning (prev/next tint & opacity), tag clips (Idle, Walk, Attack).
-- **Gemini AI Co-Creator Companion:** Live canvas vision snapshot, natural-language creative assistance, 1-click Auto-Shade layer generator, Palette Harmonizer, Frame in-between generator, and Jaggy/Double-pixel cleaner.
-- **Color & Palette Management:** OKLCH/HSV/HEX color picker, preset palettes (Endesga 32, Pico-8, Solarized, Cozy Hearth 16), custom color ramp generator.
+- **High-Performance Canvas Engine:** Dual-layer raster engine with integer zoom (100%–6400%), pan, pixel grid toggle, symmetry rulers (X/Y), 2:1 isometric guides, 3x3 seamless pattern matrix preview mode.
+- **Precision Pixel Tools:** Pixel-perfect pen (Bresenham line smoothing, no jaggies), eraser, dithering brushes (Bayer 2x2, 4x4, 8x8), flood fill (with tolerance & contiguous controls), color swap, color picker, shape primitives (line, 2:1 iso line, rational Bézier curve, rectangle, ellipse), selection wand/lasso/box.
+- **Multi-Layer Stack:** Layers with opacity, blend modes (Normal, Multiply, Screen, Overlay), visibility, locking, reordering, and non-destructive tagged AI output layers.
+- **Animation & Sprite Timeline:** Frame management, FPS scrubber (1–60 FPS), loop/ping-pong playback, customizable onion skinning (prev/next tint & opacity), tag clips (Idle, Walk, Attack), and 2D Optical Flow in-between frame morphing.
+- **PixiBud 2.5D Photometric Studio:** Linear-time $O(N)$ Euclidean Distance Transform, non-linear dome height inflation, Sobel tangent normal vector field generation, 1-click normal map baking $(128, 128, 255)$, Laplace cavity AO, and 5 physical material presets.
+- **3D Minecraft Skin Recognition & Dedicated Shading:** Automatic Java/Bedrock UV layout detection ($64\times64$ and $64\times32$), 12-region 3D normal mapping, Half-Lambert diffuse wrap, anatomical contact AO, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting.
+- **Smart Pixel Math Suite:** RotSprite 8x distortion-free rotation, Zhang-Suen 1px line thinning, Smart Sub-Pixel Anti-Aliasing (De-Jaggy), Directional Selective Outlining (Sel-Out), Atkinson 75% error-diffusion, and Riemersma Hilbert space-filling dithering.
+- **Color & Palette Management:** OKLCH/HSV/HEX color picker, preset palettes (Endesga 32, Pico-8, Solarized, Cozy Hearth 16), custom color ramp generator, and atmospheric photographic color grading (Sunset, Moonlight, Neon, Game Boy).
 - **Export & Storage Pipeline:** Local-first IndexedDB autosave via Dexie.js, project save/load (`.pixibun`), lossless PNG export, animated GIF export, packed sprite sheet export + JSON metadata.
 
 ### Explicitly out of scope for v1:

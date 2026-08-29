@@ -209,4 +209,39 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
 **Checks run:** `npx tsc --noEmit` (0 errors), `npm run build` (Next.js 16.3.2 Turbopack, 0 errors), `npm test` (all tests passing).
 **Status:** Complete
 
+---
+
+## Phase 16 — Minecraft 3D Skin Photometric Engine, Optical Flow Tweening, Sub-Pixel Anti-Aliasing & 3x3 Seamless Tiling (2026-08-30)
+**Delivered:**
+- **3D Minecraft Skin Recognition & Dedicated Photometric Pipeline**:
+  - `detectMinecraftSkin(isOpaque, width, height)`: Accurately identifies Minecraft Java & Bedrock skin layouts ($64\times64$ and $64\times32$) by analyzing void transparency zones and head/torso density.
+  - `computeMinecraftSkinNormalField(width, height)`: Generates analytical 3D unit normal vectors $\mathbf{N} = (N_x, N_y, N_z)$ for all 12 UV regions (Head, Hat, Torso, Jacket, Right Arm, Right Sleeve, Left Arm, Left Sleeve, Right Leg, Right Pants, Left Leg, Left Pants) with smooth 1px edge bevel curvature.
+  - `executeMinecraftSkinShadingPipeline()`: Full domain-specific shading engine used by top PlanetMinecraft & Skindex artists:
+    - Half-Lambert wrapped lighting: $\text{wrap}(N \cdot L) = ((N \cdot L + 0.4) / 1.4)^{1.2}$.
+    - Raytraced anatomical contact ambient occlusion ($AO_{\text{neck}} = 0.80, AO_{\text{armpit}} = 0.82, AO_{\text{thigh}} = 0.85, AO_{\text{ground}} = 0.82$).
+    - 2nd-layer outer depth shadows (Hat/Jacket/Sleeve/Pants shadow cast onto 1st layer: $AO_{\text{layer}} = 0.88$).
+    - Sky-hemisphere micro-gradients ($I_{\text{sky}} = 1.06 - 0.12 \times \frac{y - y_{\text{top}}}{h_{\text{face}}}$).
+    - OKLCH perceptual hue-shifting (warm sunlight amber $+28^\circ \to 65^\circ$ highlights vs cool ambient indigo $+25^\circ \to 260^\circ$ rich shadows).
+    - 100% non-destructive modulation in OKLCH space (preserves all texture details, eye colors, and pixel patterns).
+- **2D Optical Flow & Signed Distance Field (SDF) Frame Morphing (`morphInBetweenFrames`)**:
+  - Computes 2D Block-Matching Optical Flow motion displacement fields $(u, v)$ between Frame $A$ and Frame $B$.
+  - Interpolates boundary trajectories and pixel colors at $t = 0.5$ in OKLab perceptual color space.
+  - Inserts smooth, physically consistent intermediate tween frames into the animation timeline on a single click.
+- **Smart Hand-Crafted Anti-Aliasing (De-Jaggy)**:
+  - Detects high-contrast staircase L-crooks on 1px diagonal lines.
+  - Blends the corner pixels with smooth intermediate OKLab tones, transforming jagged diagonal steps into clean curves without creating holes or deleting lines.
+- **Directional Selective Outlining (Sel-Out)**:
+  - Evaluates outer silhouette normal vectors against the 3D light azimuth $\theta$.
+  - Borders facing the light receive an illuminated rim tone ($+30\%$ lightness, increased saturation of interior albedo), while borders facing away receive deep saturated shadow tones (never pure flat black).
+- **3x3 Seamless Pattern Matrix Viewport (`showTilePreview`)**:
+  - Live wraps the canvas with 8 adjacent repeating ghost tiles in real time so artists can verify seamless texture repeats during drawing.
+- **Isometric 2:1 Projection Diamond Grid (`showIsoGuides`)**:
+  - Renders crisp 2:1 slope guide lines across the canvas for game tiles and isometric art.
+- **Floating Preview Close Fix**:
+  - Added pointer event propagation stop on the `FloatingPreviewWindow` close button.
+
+**Checks run:** `npm test` (48/48 passed), `npm run lint` (0 errors), `npm run build` (0 errors, clean Next.js 16.3.2 Turbopack static output).
+**Status:** Complete
+
+
 

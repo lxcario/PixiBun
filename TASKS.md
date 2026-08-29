@@ -1,5 +1,30 @@
 # Build Plan — PixiBun
 
+## Phase 16 — Minecraft 3D Photometric Shading Engine, Optical Flow Tweening, Anti-Aliasing & 3x3 Tiling
+**Goal:** Implement physically and domain-accurate 3D Minecraft skin recognition and shading (Half-Lambert diffuse wrap, raytraced anatomical contact occlusion, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting), optical flow animation tweening, smart sub-pixel anti-aliasing (De-Jaggy), light-aligned selective outlining (Sel-Out), and live 3x3 seamless pattern matrix preview.
+
+**Deliverables:**
+- [x] `detectMinecraftSkin(isOpaque, width, height)` & `computeMinecraftSkinNormalField(width, height)`: 3D normal vector recognition for all 12 UV boxes with smooth 1px edge beveling.
+- [x] `executeMinecraftSkinShadingPipeline()`: Domain-specific non-destructive shading with Half-Lambert wrap, anatomical contact AO, sky-hemisphere radiance gradient, and OKLCH hue-shifting.
+- [x] `morphInBetweenFrames()`: 2D Block-Matching Optical Flow & Signed Distance Field animation tweening in OKLab space.
+- [x] `cleanJaggiesOnCanvas()`: Smart hand-crafted sub-pixel anti-aliasing (De-Jaggy) smoothing 1px staircase corners.
+- [x] `generateSelOutData()`: Directional selective outlining recoloring silhouette outlines based on 3D light azimuth $\theta$.
+- [x] `showTilePreview`: Live 3x3 seamless pattern matrix surrounding the viewport stage.
+- [x] `showIsoGuides`: Sharp 2:1 isometric diamond guide grid.
+- [x] `FloatingPreviewWindow` close button propagation stop.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors.
+- `npm test` → 48/48 tests pass.
+- `npm run build` → 0 errors (Next.js 16.3.2 Turbopack static output).
+- Manually: import Minecraft skin and render photometric lighting — produces warm sunlight highlights, indigo contact shadows, and preserved textures.
+- Manually: click `+ In-Between Frame` — interpolates smooth intermediate animation frame.
+- Manually: click `3x3` — live mirrors drawing into 8 seamless pattern tiles.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 15 — Non-Destructive Photometric Output & Live Preview Signal
 **Goal:** Fix the three regressions caused by the photometric pipeline writing destructively into the source layer (pixel loss on light-angle changes, incoherent re-renders, stale live preview) and replace fragile display-name matching with a stable per-layer `tag` identifier system.
 

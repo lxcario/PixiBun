@@ -134,3 +134,41 @@ The application state is managed by Zustand with Immer middleware:
 
 * **Framework Engine:** Next.js 16 App Router on Vercel Edge Network.
 * **Continuous Deployment:** Every push to `main` triggers automated typechecking (`tsc --noEmit`), linting (`eslint`), unit testing (`vitest`), and static optimization before deploying to production.
+
+---
+
+## 7. 3D Minecraft Skin Recognition & Domain Shading Engine
+
+When an imported or active sprite matches the standard Java/Bedrock $64\times64$ or $64\times32$ UV bounding template, the engine bypasses 2.5D heightmap inflation and routes directly into the dedicated **3D Minecraft Skin Photometric Shading Engine**:
+
+```mermaid
+graph TD
+    Skin["Minecraft Skin Texture (64x64 / 64x32)"] --> Detect["UV Template Void Pattern Classifier"]
+    Detect --> UVMap["12-Region Cuboid Face Normal Field N(x,y,z)"]
+    UVMap --> HalfLambert["Half-Lambert Wrap Lighting ((N·L + 0.4)/1.4)^1.2"]
+    UVMap --> ContactAO["Raytraced Contact Occlusion Map (Neck, Limbs, Layers)"]
+    HalfLambert & ContactAO --> SkyDome["Hemispheric Sky Radiance Gradient"]
+    SkyDome --> OKLCH["OKLCH Perceptual Hue-Shifting"]
+    OKLCH --> FinalSkin["Non-Destructive Minecraft Shaded Output Layer"]
+```
+
+### Mathematical Formulations:
+1. **Half-Lambertian Wrapped Diffuse:**
+   $$\text{wrap}(\mathbf{N} \cdot \mathbf{L}) = \left(\frac{\mathbf{N} \cdot \mathbf{L} + 0.4}{1.4}\right)^{1.2}$$
+2. **Raytraced Anatomical Contact Ambient Occlusion:**
+   $$AO(x, y) = \min(AO_{\text{neck}}, AO_{\text{armpit}}, AO_{\text{thigh}}, AO_{\text{ground}}, AO_{\text{layer}})$$
+3. **Perceptual OKLCH Hue-Shifting:**
+   * **Highlight:** $H_{\text{new}} = \text{shiftHueToward}(H_{\text{orig}}, 65^\circ, \Delta_{\text{sun}})$ (Sunlight amber)
+   * **Shadow:** $H_{\text{new}} = \text{shiftHueToward}(H_{\text{orig}}, 260^\circ, \Delta_{\text{sky}})$ (Cool ambient indigo, never flat gray)
+
+---
+
+## 8. Optical Flow In-Between Animation Morphing
+
+The frame morphing engine (`src/lib/ai/pixelAiEngine.ts`) implements **2D Block-Matching Optical Flow & Signed Distance Field (SDF)** interpolation:
+
+1. **Motion Displacement Field:**
+   $$\mathbf{v}(x, y) = \arg\min_{(u, v) \in \mathcal{W}} \sum_{p \in \mathcal{B}} |I_A(p) - I_B(p + (u, v))|$$
+2. **Intermediate Synthesis at $t = 0.5$:**
+   Pixels are displaced along trajectory vectors $\mathbf{x} - t \mathbf{v}$ and blended in OKLab perceptual color space, producing clean tween frames between keyframes without ghosting or tearing.
+
