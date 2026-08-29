@@ -12,34 +12,38 @@
 
 ## 1. System Topology Overview
 
-PixiBun is structured as a client-side single-page application built on **Next.js 16 (App Router)** with zero mandatory server dependencies for drawing, animation, or exporting.
+PixiBun is structured as a client-side single-page application built on **Next.js 16 (App Router)** with zero mandatory server dependencies for drawing, animation, synthesis, or exporting.
 
 ```mermaid
 graph TD
     subgraph UI_Layer ["🎨 UI & Workspace Shell (React 19 + Tailwind v4)"]
-        TopNav["TopHeader (File / Edit / View / Export / Resize)"]
+        TopNav["TopHeader (File / Edit / View / Export / Resize / Theme)"]
         OptionStrip["ContextOptionsBar (Tool Parameters, Size, Dither Density)"]
         LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
         ViewportShell["CenterViewport (Dual-Canvas Viewport & HUD Overlay)"]
         RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Clips)"]
+        Modals["Modals (Import, Export, Resize, Palette, Shortcuts)"]
     end
 
     subgraph State_Layer ["⚡ Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
+        Theme["useThemeStore (Dark / Light Mode, Zero-Lag Style Override)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
-        UndoRedo["History Stacks (ImageData Snapshots)"]
+        UndoRedo["History Stacks (ImageData Ring Buffers)"]
     end
 
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, Wu 2:1 Iso, Bézier)"]
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
+        PixelizeCore["Image Synthesis Engine (Sobel Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
+        AudioCore["Web Audio Lo-Fi Synthesizer (Vinyl Rain Noise, Rhodes Chords, FFT Analyser)"]
     end
 
     subgraph Storage_Layer ["💾 Local Storage & Export Pipeline"]
         DexieDB["Dexie.js IndexedDB (Auto-Save, Frame Blobs)"]
-        Exporter["Export Engines (Lossless PNG, GIF, Godot/Unity JSON)"]
+        Exporter["Export Engines (Lossless PNG, GIF, Godot, Unity & Phaser 3 JSON)"]
     end
 
     UI_Layer --> State_Layer
@@ -72,7 +76,7 @@ sequenceDiagram
 
 ### Direct Buffer Memory Management (`src/lib/engine/bufferRegistry.ts`)
 Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects indexed by layer UUID in memory. When the user resizes the canvas:
-1. `resizeAllBuffers(newWidth, newHeight, anchor)` shifts and re-allocates existing canvas buffers with nearest-neighbor preservation.
+1. `resizeAllBuffers(newWidth, newHeight, anchor, resample)` shifts and re-allocates existing canvas buffers with 9-point anchor alignment and optional nearest-neighbor resampling.
 2. Memory leaks are eliminated by explicitly clearing and discarding dereferenced buffers via `deleteBuffers(layerId)`.
 
 ---
@@ -117,6 +121,7 @@ graph TD
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
 * **Undo/Redo History:** Implemented as a ring buffer of `ImageData` snapshots per layer (50 steps deep). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **`bufferVersion` Signal:** Atomic counter incremented on every pixel-level mutation, notifying decoupled observers (like the floating live preview window) without triggering full-tree React component re-renders.
 
 ---
 
@@ -127,6 +132,7 @@ The application state is managed by Zustand with Immer middleware:
   * `projects`: Stores project metadata, dimensions, frame sequences, layer hierarchies, and custom palettes.
   * `frames`: Stores raw binary PNG blobs for each animation frame to ensure instantaneous project loading.
 * **Autosave Loop:** Debounced continuous state synchronization runs automatically in the background on every stroke completion.
+* **Versioned `.pixibun` Format (`src/lib/project/schema.ts`):** Zero-dependency structural validation enforcing schema contracts before project hydration to prevent malformed data from corrupting session state.
 
 ---
 
@@ -172,3 +178,65 @@ The frame morphing engine (`src/lib/ai/pixelAiEngine.ts`) implements **2D Block-
 2. **Intermediate Synthesis at $t = 0.5$:**
    Pixels are displaced along trajectory vectors $\mathbf{x} - t \mathbf{v}$ and blended in OKLab perceptual color space, producing clean tween frames between keyframes without ghosting or tearing.
 
+---
+
+## 9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)
+
+```mermaid
+graph TD
+    InputImg["Source Image / Texture"] --> BoxDown["Linear Optical Area Box Filter (Gamma-Corrected)"]
+    InputImg --> SobelSalience["Sobel Gradient Magnitude Map (Edge Preservation)"]
+    BoxDown & SobelSalience --> SalientDown["Salient Downsampled ImageData"]
+    SalientDown --> BGKey["4-Corner Background Keying & 1-Bit Alpha"]
+    BGKey --> Quantize["OKLab Median-Cut Partitioning + K-Means++ Refinement"]
+    Quantize --> DitherBranch{"Dither Mode"}
+    DitherBranch -->|Floyd-Steinberg| SerpentineFS["Serpentine Error Diffusion"]
+    DitherBranch -->|Atkinson| AtkDiff["Atkinson 75% Retention"]
+    DitherBranch -->|Bayer 4x4| BayerMod["Bayer Threshold Modulation"]
+    DitherBranch -->|None| FlatQuant["Direct OKLab Nearest-Color"]
+    SerpentineFS & AtkDiff & BayerMod & FlatQuant --> PixelArtOutput["Synthesized Pixel Art Layer"]
+```
+
+1. **Linear Optical Gamma Correction:**
+   $$C_{\text{linear}} = \begin{cases} C_{\text{sRGB}} / 12.92 & C_{\text{sRGB}} \le 0.04045 \\ \left(\frac{C_{\text{sRGB}} + 0.055}{1.055}\right)^{2.4} & C_{\text{sRGB}} > 0.04045 \end{cases}$$
+2. **Sobel Salience Weighting:**
+   $$W_{\text{salience}}(x, y) = W_{\text{area}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x, y)\|)$$
+3. **OKLab Median-Cut & Lloyd K-Means Refinement:**
+   Clusters color bounding boxes along the axis of maximal perceptual variance in OKLab space ($L, a, b$), followed by iterative centroid convergence:
+   $$\mu_k^{(t+1)} = \frac{1}{|S_k|} \sum_{p \in S_k} p$$
+
+---
+
+## 10. Procedural Web Audio Ambient Radio (`src/lib/audio/lofiRadio.ts`)
+
+```mermaid
+graph LR
+    subgraph AudioEngine ["Web Audio Synth"]
+        NoiseGen["Pink Noise / Vinyl Pops Generator"] --> NoiseFilter["Biquad Lowpass (800Hz)"]
+        NoiseFilter --> NoiseGain["Noise Gain Node"]
+        
+        ChordOsc["Triangle Chords (Rhodes Envelope)"] --> VibratoLFO["LFO Tape Flutter (0.3Hz)"]
+        VibratoLFO --> ChordFilter["Biquad Lowpass Sweep (950Hz -> 300Hz)"]
+        ChordFilter --> ChordGain["Chord Gain Node"]
+        
+        SubBass["Sub-Bass Sine (f/2)"] --> BassGain["Bass Gain Node"]
+        
+        NoiseGain & ChordGain & BassGain --> MasterGain["Master Volume Gain"]
+        MasterGain --> Analyser["FFT Analyser (fftSize: 64)"]
+        Analyser --> Destination["AudioContext Destination (Speakers)"]
+    end
+    
+    Analyser --> EqualizerBars["Animated Boombox LED Spectrum Bars"]
+```
+
+* **Zero-Bandwidth:** Synthesizes warm rain ambiance, subtle vinyl crackles, Rhodes chords, and sub-bass completely in code without loading external `.mp3` or `.wav` assets.
+* **Real-Time Spectrum Visualizer:** 4-band FFT frequency analyzer samples frequency buckets ($b_0, b_1, b_2, b_3$) on every animation frame for animated LED spectrum feedback.
+
+---
+
+## 11. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)
+
+To prevent simultaneous layout recalculations and repaint stutter across thousands of DOM elements during Dark (Cozy Midnight) $\leftrightarrow$ Light (Morning Atelier) switching:
+1. **Transition Suppression:** Injects a high-priority stylesheet (`pixibun-theme-transition-killer`) with `transition: none !important` before mutating `data-theme`.
+2. **Synchronous Reflow:** Reads `getComputedStyle(css).opacity` to force instantaneous layout evaluation while transitions are disabled.
+3. **Clean Teardown:** Removes the temporary stylesheet on the subsequent `requestAnimationFrame` tick, restoring silky micro-interactions without flash or delay.

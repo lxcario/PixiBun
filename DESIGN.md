@@ -7,7 +7,7 @@
 ```
 
 > **A tactile, disciplined design system for creative workbenches.**  
-> Grounded in physical materials (dark plum-wood, tactile alabaster paper, warm amber incandescent lamplight, and soft wisteria petals).
+> Grounded in physical materials (dark plum-wood, warm tactile paper, incandescent lamplight, and soft wisteria petals).
 
 ---
 
@@ -17,8 +17,8 @@ PixiBun is structured around the physical sensation of sitting at a solid wooden
 
 ```mermaid
 graph TD
-    Desk["🪵 Deep Plum-Wood Desk (`--desk-surface`)<br/>#181124 to #2A2130"] --> Chassis["💼 Thistle Lavender Studio Chassis (`--desk-surface-raised`)<br/>#251A36"]
-    Chassis --> Viewport["📄 Alabaster Paper Canvas Surround<br/>#120B1B"]
+    Desk["🪵 Deep Plum-Wood Desk (`--desk-surface`)<br/>#140C1E to #201431"] --> Chassis["💼 Thistle Lavender Studio Chassis (`--desk-surface-raised`)<br/>#281B3D"]
+    Chassis --> Viewport["📄 Recessed Paper Canvas Surround<br/>#120A1C"]
     Viewport --> Lamp["💡 Incandescent Lamp Glow Overlay (`.lamp-pool`)<br/>#F0BE7C (Single radial overlay)"]
 ```
 
@@ -26,7 +26,7 @@ graph TD
 * **The Single Lamp Pool:** There is at most **one** warm amber illumination pool per scene (`.lamp-pool`). It is rendered as a soft, non-interactive radial gradient overlay (`pointer-events: none`) that batches over the viewport without altering pixel export data.
 * **Wood Grain & Dither Inset Textures:**
   * `.texture-dither`: 4px static checkerboard pattern at $\le 6\%$ opacity for inset wells and recessed slider tracks.
-  * `.texture-wood-grain`: Static linear gradient streaks representing brushed dark plum timber.
+  * `.texture-wood-grain`: Static linear gradient streaks representing brushed timber grain.
 * **Anti-Slop Discipline:**
   * **Zero ambient floating or bobbing animations.** Elements stay anchored to their physical surfaces.
   * **Zero generic AI sparkles (✨) as feature markers.**
@@ -44,25 +44,58 @@ graph LR
     Base --- Shadow["🌑 Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
 ```
 
-### Color Token Reference Table
+### Cozy Midnight (Dark Theme Tokens)
 
 | Token Variable | Hex Code | OKLCH Equivalent | Role & Context |
 |---|---|---|---|
-| `--desk-surface` | `#181124` | `oklch(0.18 0.04 300)` | Master room backdrop, outer layout base |
-| `--desk-surface-raised` | `#251A36` | `oklch(0.24 0.06 305)` | Raised panel chassis, inspector tabs, toolbar rail |
-| `--desk-border` | `#352248` | `oklch(0.30 0.07 310)` | 2px tactile bezel divider, structural outline |
-| `--canvas-bg` | `#120B1B` | `oklch(0.14 0.03 300)` | Viewport surround, deepest recessed well |
+| `--desk-bg` | `#140C1E` | `oklch(0.16 0.04 300)` | Master room backdrop, outer layout base |
+| `--desk-surface` | `#201431` | `oklch(0.22 0.05 305)` | Master chassis, toolbar, inspector panels |
+| `--desk-surface-raised` | `#281B3D` | `oklch(0.26 0.06 308)` | Raised tool blocks, active button plates |
+| `--desk-border` | `#3A2E4C` | `oklch(0.32 0.07 310)` | 2px tactile bezel divider, structural outline |
 | `--text-heading` | `#EDE8F4` | `oklch(0.93 0.02 300)` | Crisp white/cream headings, button icons |
-| `--text-body` | `#CDBFDF` | `oklch(0.81 0.05 305)` | Functional labels, coordinates, layer names |
-| `--text-muted` | `#8A76A0` | `oklch(0.57 0.06 305)` | Inactive tools, helper hints, unit tags |
+| `--text-body` | `#D0C4DF` | `oklch(0.82 0.05 305)` | Functional labels, coordinates, layer names |
+| `--text-muted` | `#8C7B9E` | `oklch(0.58 0.06 305)` | Inactive tools, helper hints, unit tags |
 | `--accent-wisteria` | `#C792DF` | `oklch(0.72 0.15 315)` | Primary active states, selection marquee, play button |
-| `--accent-lilac` | `#DCABDF` | `oklch(0.79 0.11 320)` | Highlight blooms, secondary guides, curve knots |
-| `--lamp-amber` | `#F0BE7C` | `oklch(0.82 0.13 80)` | Focus rings, key lights, primary action buttons |
-| `--danger-berry` | `#FF99AA` | `oklch(0.74 0.16 15)` | Destructive actions, delete layer, discard |
+| `--accent-plum` | `#DCABDF` | `oklch(0.79 0.11 320)` | Highlight blooms, secondary guides, curve knots |
+| `--accent-gold` | `#F0BE7C` | `oklch(0.82 0.13 80)` | Focus rings, key lights, primary action buttons |
+| `--color-danger` | `#E06B7D` | `oklch(0.68 0.18 15)` | Destructive actions, delete layer, discard |
+
+### Morning Atelier (Light Theme Tokens)
+
+| Token Variable | Hex Code | OKLCH Equivalent | Role & Context |
+|---|---|---|---|
+| `--desk-bg` | `#FBF8F3` | `oklch(0.98 0.01 80)` | Bright morning room base & clean desk surface |
+| `--desk-surface` | `#F3EBE0` | `oklch(0.94 0.02 75)` | Warm tactile paper chassis & tool panels |
+| `--desk-surface-raised` | `#FFFDF9` | `oklch(0.99 0.01 80)` | Raised card and inspector surfaces |
+| `--desk-border` | `#3C2254` | `oklch(0.30 0.09 315)` | High-contrast structural bezel framing |
+| `--text-heading` | `#221233` | `oklch(0.20 0.06 315)` | High-contrast dark violet titles & buttons |
+| `--text-body` | `#4A3559` | `oklch(0.35 0.06 315)` | Body text, tool parameters, coordinates |
+| `--text-muted` | `#78608A` | `oklch(0.50 0.06 315)` | Subtle badges, shortcut keys, secondary text |
+| `--accent-gold` | `#D97818` | `oklch(0.65 0.17 65)` | Warm sunlit highlights & primary button fill |
+| `--accent-plum` | `#7E2B96` | `oklch(0.48 0.19 320)` | Active tool accents and focus outlines |
+| `--accent-wisteria` | `#9940B5` | `oklch(0.55 0.20 315)` | Timeline scrubbers and hover rings |
 
 ---
 
-## 3. Tactile Physics & Button Mechanical Standard
+## 3. Dual Theme Switching & Zero-Lag Transition Engine
+
+The studio supports instant switching between **Cozy Midnight** (Dark) and **Morning Atelier** (Light) via the tactile `ThemeToggle` switch:
+
+```mermaid
+stateDiagram-v2
+    [*] --> SuppressTransitions: Click Theme Switch
+    SuppressTransitions --> MutateDOM: Inject Temporary Override Sheet
+    MutateDOM --> ForceReflow: Swap data-theme Attribute & Class
+    ForceReflow --> RestoreTransitions: Cleanly Remove Override on Next rAF Frame
+    RestoreTransitions --> [*]: Normal Smooth Interaction Restored
+```
+
+* **Zero-Lag Transition Suppression:** During theme swaps, a temporary `<style>` block disables all CSS transitions across the DOM (`transition: none !important`), forces a synchronous reflow, and removes itself on the next `requestAnimationFrame` tick. This eliminates layout thrashing and repaint stutter across thousands of UI nodes.
+* **Animated Tactile Knob:** Spring-physics switch (<kbd>stiffness: 550, damping: 32</kbd>) hosting custom hand-pixelled SVG sprites: a radiant morning sun with geometric rays for Light mode and a cozy crescent moon with a twinkling star for Dark mode.
+
+---
+
+## 4. Tactile Physics & Button Mechanical Standard
 
 All interactive buttons and tool wells in PixiBun adhere to a strict 4-state physical mechanics protocol:
 
@@ -78,7 +111,7 @@ stateDiagram-v2
 1. **Resting State:**
    * 2px rounded corners (`rounded-[2px]`).
    * 2px solid border (`border-2 border-[var(--desk-border)]`).
-   * Subtle bottom shadow (`box-shadow: 0 2px 0 #130e20`).
+   * Subtle bottom shadow (`box-shadow: 0 2px 0 var(--btn-shadow)`).
 2. **Hover State (Light Sweep):**
    * Micro-scale lift: `transform: scale(1.025)`.
    * Specular reflection light-sweep gliding from left (`-160%`) to right (`+160%`).
@@ -92,7 +125,15 @@ stateDiagram-v2
 
 ---
 
-## 4. Typography Scale & Hierarchies
+## 5. 16-Bit Pixel Cursor & Interactive Atmosphere
+
+On fine-pointer devices (mouse / trackpad), PixiBun activates a custom 16-bit pixel cursor system:
+* **Custom SVG Cursors:** Sharp pixel-art quill/arrow for resting state and an illuminated golden wand for clickable elements.
+* **Golden Sparkle Particle Trail (`PixelCursor.tsx`):** Lightweight canvas overlay emitting soft amber/wisteria micro-sparkles on rapid cursor movement, with an automatic sleep state when idle to conserve battery and CPU cycles.
+
+---
+
+## 6. Typography Scale & Hierarchies
 
 PixiBun pairs a retro pixel display typeface with a crisp, geometric sans-serif:
 
@@ -112,26 +153,7 @@ graph TD
 
 ---
 
-## 5. Canvas & Graphics Engine Invariants
-
-```mermaid
-graph LR
-    Offscreen["Offscreen Canvas Layer Buffers<br/>(Uint8ClampedArray)"] --> Compositor["Master Offscreen Compositor<br/>(Layer Blend Modes & Opacities)"]
-    Compositor --> ViewportCanvas["Viewport Display Canvas<br/>(Nearest-Neighbor Integer Scaler)"]
-    ViewportCanvas --> HUD["Precision HUD Overlay<br/>(Marching Ants, 2:1 Iso Grid)"]
-```
-
-* **Integer Pixel Grid Snapping:**
-  All mouse and stylus events translate via:
-  $$x_{\text{canvas}} = \lfloor (x_{\text{event}} - \text{panX}) / \text{zoom} \rfloor, \quad y_{\text{canvas}} = \lfloor (y_{\text{event}} - \text{panY}) / \text{zoom} \rfloor$$
-* **Zero Smoothing:**
-  `ctx.imageSmoothingEnabled = false` is enforced unconditionally across every offscreen buffer and main viewport.
-* **True 3D Photometric Shading:**
-  No linear diagonal shortcuts. All auto-shading evaluates 2.5D surface normal vectors $\mathbf{N}$, Lambertian diffuse term $\max(0, \mathbf{N}\cdot\mathbf{L})$, and Blinn-Phong specular half-vector $\mathbf{H} = \frac{\mathbf{L}+\mathbf{V}}{\|\mathbf{L}+\mathbf{V}\|}$.
-
----
-
-## 6. Anti-Slop Voice & Copywriting Guidelines
+## 7. Anti-Slop Voice & Copywriting Guidelines
 
 * **Voice:** Written from one craftsperson to another — humble, warm, precise, and practical.
 * **Banned Buzzwords:** Never use *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"Seamlessly supercharge"*, *"Unlock next-gen capabilities"*, or fake robotic status codes (*"Payload initialized"*).
