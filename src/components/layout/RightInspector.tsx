@@ -499,9 +499,20 @@ export const RightInspector: React.FC = () => {
                   onChange={(e) => setLightAzimuth(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
-                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
-                  {tools.lightAzimuth}°
-                </span>
+                <div className="flex items-center gap-1 min-w-[54px] justify-end">
+                  <svg
+                    className="w-3 h-3 text-[#f0be7c] transition-transform duration-75"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    style={{ transform: `rotate(${tools.lightAzimuth}deg)` }}
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
+                  </svg>
+                  <span className="text-[#f0be7c] font-bold text-[10px] text-right">
+                    {tools.lightAzimuth}°
+                  </span>
+                </div>
               </div>
 
               {/* Elevation */}

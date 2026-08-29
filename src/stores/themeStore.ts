@@ -58,8 +58,24 @@ export function applyThemeToDOM(theme: ThemeMode) {
   });
 }
 
+function getInitialTheme(): ThemeMode {
+  if (typeof window === 'undefined') return 'dark';
+  try {
+    const saved = localStorage.getItem('pixibun-theme') as ThemeMode | null;
+    if (saved === 'light' || saved === 'dark') return saved;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light';
+    }
+  } catch {
+    // ignore storage / media query errors
+  }
+  return 'dark';
+}
+
+const initialTheme = getInitialTheme();
+
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  theme: 'dark',
+  theme: initialTheme,
 
   setTheme: (theme: ThemeMode) => {
     set({ theme });
@@ -80,12 +96,6 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
 }));
 
 if (typeof window !== 'undefined') {
-  try {
-    const saved = localStorage.getItem('pixibun-theme') as ThemeMode | null;
-    const initial = saved === 'light' ? 'light' : 'dark';
-    applyThemeToDOM(initial);
-  } catch {
-    // ignore
-  }
+  applyThemeToDOM(initialTheme);
 }
 

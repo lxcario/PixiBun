@@ -13,6 +13,7 @@ interface TopHeaderProps {
   onOpenImport?: (payload: ImportPayload) => void;
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
+  onNewDrawing?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   canUndo?: boolean;
@@ -24,6 +25,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenImport,
   onOpenShortcuts,
   onOpenResize,
+  onNewDrawing,
   onUndo,
   onRedo,
   canUndo: propCanUndo,
@@ -250,6 +252,17 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         />
 
         <ThemeToggle />
+
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={onNewDrawing}
+          title="Start a New Blank Drawing"
+          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
+        >
+          <PixelIcon name="pen" size={14} />
+          <span>New</span>
+        </TactileButton>
 
         <TactileButton
           size="sm"

@@ -1,5 +1,66 @@
 # Build Plan — PixiBun
 
+## Phase 19 — Tag Clip Export Scoping & Multi-Threaded Web Worker GIF Encoding
+**Goal:** Implement isolated animation clip exporting (`Export Scope`), DOM-free GIF encoding core, background Web Worker acceleration with zero-copy transferable `ArrayBuffer` objects, animated progress bar feedback in `ExportModal`, and transparent main-thread fallback.
+
+**Deliverables:**
+- [x] Tag Clip Export Scope: `ExportModal.tsx` dropdown allows isolating clips (`Walk [1-4]`). Slices target frame arrays, adds scope suffixes to filenames, and $0$-indexes SpriteSheet atlas metadata (`Hero_0`, `Hero_1`, etc.).
+- [x] DOM-free GIF Encoder Core (`src/lib/export/gifEncoderCore.ts`): Separated `quantizePixels`, `lzwEncode`, and `encodeGifRawFrames` into a pure, testable module.
+- [x] Web Worker Acceleration (`src/lib/export/gifEncoder.worker.ts`): Background thread LZW compression and Median-Cut quantization with `postMessage` transferable buffers.
+- [x] Live Worker Progress Bar: Visual progress updates (`X / Y frames (Z%)`) during GIF encoding in `ExportModal.tsx`.
+- [x] Transparent Main-Thread Fallback: Automatic fallback in environments without worker support or under strict CSP rules.
+- [x] Test Coverage: Added `tests/exportScopeAndWorker.test.ts` verifying multi-clip isolation and progress event callbacks.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm test` → 54/54 tests pass across 9 test suites.
+- Manually: export clip "Walk" — produces isolated 4-frame GIF/SpriteSheet with $0$-indexed metadata.
+- Manually: export 50-frame animation — worker encodes in background without freezing UI while progress bar animates.
+
+**Status:** Complete (2026-08-30)
+
+---
+
+## Phase 18 — Data Persistence Hardening, Dynamic Undo Limits, Schema Migration & Locked Layer Security
+**Goal:** Implement resilient multi-layer local-first persistence safeguards, dynamic resolution-scaled undo memory bounds, full proto-v1 $\to$ v2 schema migration, forward-compatibility version guards, new drawing confirmation dialog, and locked layer raster protection with HUD feedback.
+
+**Deliverables:**
+- [x] 2-Strike Autosave Failure Toast & Auto-Recovery: `autoSaveWorkspace` returns status boolean. `StudioLayout` renders persistent warning banner with 1-click Export CTA on $\ge 2$ consecutive failures; auto-dismisses on storage recovery.
+- [x] Dynamic Canvas-Scaled Undo Limits: Replaced fixed 50-step stack with resolution-scaled limits ($50$ steps for $\le 64\text{px}$, $35$ steps for $\le 256\text{px}$, $20$ steps for $> 256\text{px}$).
+- [x] Full Payload v1 $\to$ v2 Migration Engine (`migrateProjectPayload`): Backfills `customRamps`, `clips`, `onionSkin`, and layer `blendMode`/`opacity`/`visible`/`locked` for legacy and unversioned (`version: undefined`) files.
+- [x] Forward-Version Guard: Explicit error message rejecting files from newer PixiBun versions (`input.version > PROJECT_FORMAT_VERSION`).
+- [x] "New Drawing" Confirmation Modal: Prevents accidental canvas clearing via `isNewConfirmOpen` modal.
+- [x] Locked Layer Security: `handlePointerDown` rejects drawing on locked layers and renders animated HUD toast (`🔒 Active layer is locked`).
+- [x] OS Theme Auto-Detection: `themeStore.ts` detects `prefers-color-scheme: light` on cold boot before falling back to dark.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm test` → 51/51 tests pass.
+- Schema migration unit tests verify unversioned and v1 projects migrate cleanly to v2.
+
+**Status:** Complete (2026-08-30)
+
+---
+
+## Phase 17 — Compass Convention Light Vector Alignment, Optical Flow Center-Bias & Dynamic Compass Indicator
+**Goal:** Align 2.5D photometric lighting with standard artist and Photoshop/Substance compass heading conventions ($0^\circ = \text{North/Top}, 315^\circ = \text{North-West/Top-Left}$), eliminate optical flow ghosting on uniform/transparent macroblocks via quadratic center bias, add a real-time rotating SVG compass needle indicator to the Azimuth slider, and verify with comprehensive directional tests.
+
+**Deliverables:**
+- [x] Standard Artist/Compass Light Vector Convention: `Lx = Math.sin(azRad) * Math.cos(elRad)`, `Ly = -Math.cos(azRad) * Math.cos(elRad)` applied across `executePhotometricPipeline`, `executeMinecraftSkinShadingPipeline`, `renderParametric2p5DLighting`, and `generateSelOutData`.
+- [x] Optical Flow Zero-Motion Center Bias: Added `(ux*ux + vy*vy) * 0.05` quadratic distance penalty to block-matching SAD calculation in `morphInBetweenFrames`, preventing false motion vectors on solid-color and transparent background tiles.
+- [x] Dynamic Rotating SVG Compass Needle: Added animated SVG navigation indicator next to Azimuth slider in `RightInspector.tsx` that visually rotates in real time with `tools.lightAzimuth`.
+- [x] Compass Directional Highlight Regression Suite: Added test in `tests/photometricNonDestructive.test.ts` verifying that $315^\circ$ highlights Top-Left, $135^\circ$ highlights Bottom-Right, $45^\circ$ highlights Top-Right, and $225^\circ$ highlights Bottom-Left.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm test` → 49/49 tests pass across 8 test suites.
+- Manually: set Azimuth to $315^\circ$ — produces crisp Top-Left highlight and Bottom-Right shadow.
+- Manually: move Azimuth slider — SVG compass needle smoothly rotates matching the light angle.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 16 — Minecraft 3D Photometric Shading Engine, Optical Flow Tweening, Anti-Aliasing & 3x3 Tiling
 **Goal:** Implement physically and domain-accurate 3D Minecraft skin recognition and shading (Half-Lambert diffuse wrap, raytraced anatomical contact occlusion, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting), optical flow animation tweening, smart sub-pixel anti-aliasing (De-Jaggy), light-aligned selective outlining (Sel-Out), and live 3x3 seamless pattern matrix preview.
 

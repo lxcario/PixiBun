@@ -64,10 +64,13 @@ describe('validateProjectFile', () => {
     if (!wrongFormat.ok) expect(wrongFormat.error).toMatch(/not saved by PixiBun/i);
   });
 
-  it('rejects files from newer format versions', () => {
+  it('rejects files from newer format versions with an actionable update message', () => {
     const future = validateProjectFile({ ...validProjectFixture(), version: PROJECT_FORMAT_VERSION + 1 });
     expect(future.ok).toBe(false);
-    if (!future.ok) expect(future.error).toMatch(/cannot read/i);
+    if (!future.ok) {
+      expect(future.error).toMatch(/Please update PixiBun/i);
+      expect(future.error).toContain(`format v${PROJECT_FORMAT_VERSION + 1}`);
+    }
   });
 
   it('rejects projects without frames', () => {
@@ -91,5 +94,79 @@ describe('validateProjectFile', () => {
     const result = validateProjectFile(fixture);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/palette/i);
+  });
+
+  it('seamlessly migrates legacy v1 files missing customRamps, clips, onionSkin, and layer blendModes', () => {
+    const legacyV1 = {
+      format: PROJECT_FORMAT_ID,
+      version: 1,
+      name: 'Legacy V1 Canvas',
+      width: 16,
+      height: 16,
+      fps: 8,
+      palettes: [
+        { id: 'pal-1', name: 'Retro', colors: ['#3A2E4C', '#F0BE7C'] },
+      ],
+      currentPaletteId: 'pal-1',
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Layer 1',
+              // missing opacity, locked, visible, blendMode
+            },
+          ],
+        },
+      ],
+      createdAt: 1_680_000_000_000,
+      updatedAt: 1_680_000_000_000,
+    };
+
+    const result = validateProjectFile(legacyV1);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.version).toBe(PROJECT_FORMAT_VERSION);
+      expect(result.value.customRamps).toEqual([]);
+      expect(result.value.clips).toEqual([]);
+      expect(result.value.onionSkin.enabled).toBe(false);
+      expect(result.value.frames[0].layers[0].blendMode).toBe('source-over');
+      expect(result.value.frames[0].layers[0].opacity).toBe(1.0);
+      expect(result.value.frames[0].layers[0].visible).toBe(true);
+      expect(result.value.frames[0].layers[0].locked).toBe(false);
+    }
+  });
+
+  it('gracefully treats unversioned (version: undefined) files as legacy and migrates them to v2', () => {
+    const unversioned = {
+      format: PROJECT_FORMAT_ID,
+      // version intentionally omitted
+      name: 'Unversioned Canvas',
+      width: 16,
+      height: 16,
+      fps: 10,
+      palettes: [
+        { id: 'pal-1', name: 'Alabaster', colors: ['#3A2E4C', '#EDE8F4'] },
+      ],
+      currentPaletteId: 'pal-1',
+      frames: [
+        {
+          id: 'f1',
+          durationMs: 100,
+          layers: [{ id: 'l1', name: 'Layer 1' }],
+        },
+      ],
+      createdAt: 1_670_000_000_000,
+      updatedAt: 1_670_000_000_000,
+    };
+
+    const result = validateProjectFile(unversioned);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.version).toBe(PROJECT_FORMAT_VERSION);
+      expect(result.value.frames[0].layers[0].blendMode).toBe('source-over');
+    }
   });
 });

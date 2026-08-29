@@ -243,5 +243,72 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
 **Checks run:** `npm test` (48/48 passed), `npm run lint` (0 errors), `npm run build` (0 errors, clean Next.js 16.3.2 Turbopack static output).
 **Status:** Complete
 
+---
+
+## Phase 17 — Compass Convention Alignment, Optical Flow Center-Bias & Dynamic Compass Indicator (2026-08-30)
+**Delivered:**
+- **Standard Artist & Navigation Compass Light Vector Alignment**:
+  - Aligned the 3D directional light vector with Photoshop, Substance, and compass heading conventions:
+    $$L_x = \sin(\text{azRad}) \cdot \cos(\text{elRad}), \quad L_y = -\cos(\text{azRad}) \cdot \cos(\text{elRad}), \quad L_z = \sin(\text{elRad})$$
+  - Now $0^\circ = \text{North (Top)}, 45^\circ = \text{North-East (Top-Right)}, 135^\circ = \text{South-East (Bottom-Right)}, 225^\circ = \text{South-West (Bottom-Left)}, 315^\circ = \text{North-West (Top-Left)}$.
+  - Applied consistently across `executePhotometricPipeline`, `executeMinecraftSkinShadingPipeline`, `renderParametric2p5DLighting`, and `generateSelOutData`.
+- **Optical Flow Zero-Motion Center Bias**:
+  - Added quadratic motion distance penalty $(ux^2 + vy^2) \times 0.05$ to macroblock sum-of-absolute-differences (SAD) evaluation in `morphInBetweenFrames()`.
+  - Guarantees that flat, solid-color, or transparent background macroblocks strictly prefer $(0, 0)$ displacement vectors, completely eliminating ghosting artifacts during in-between frame synthesis.
+- **Dynamic Rotating Compass Needle in Inspector**:
+  - Added an animated SVG compass needle next to the Azimuth slider in `RightInspector.tsx` that rotates synchronously in real time with the selected light angle.
+- **Directional Regression Testing**:
+  - Added 4-quadrant brightness verification in `tests/photometricNonDestructive.test.ts` testing $315^\circ \to \text{Top-Left}$, $135^\circ \to \text{Bottom-Right}$, $45^\circ \to \text{Top-Right}$, and $225^\circ \to \text{Bottom-Left}$.
+
+**Checks run:** `npm test` (49/49 passed), `npm run lint` (0 errors, 0 warnings).
+**Status:** Complete
+
+---
+
+## Phase 18 — Data Persistence Hardening, Dynamic Undo Limits, Schema Migration & Locked Layer Security (2026-08-30)
+**Delivered:**
+- **Persistent Storage Failure & Auto-Recovery Banner (`db.ts`, `StudioLayout.tsx`)**:
+  - `autoSaveWorkspace` now returns `Promise<boolean>`.
+  - `StudioLayout` maintains consecutive failure count: $\ge 2$ triggers a sticky red/amber warning banner with 1-click `"Export Drawing"` CTA.
+  - Succeeded auto-save resets error counters and automatically dismisses the banner.
+- **Dynamic Canvas-Scaled Undo Limits (`CenterViewport.tsx`)**:
+  - Replaced hardcoded 50-step stack with resolution-scaled bounds ($50$ steps for $\le 64\text{px}$, $35$ steps for $\le 256\text{px}$, $20$ steps for $> 256\text{px}$).
+- **Full Payload v1 $\to$ v2 Migration Engine (`schema.ts`)**:
+  - Added `migrateProjectPayload` backfilling `customRamps`, `clips`, `onionSkin`, and layer `blendMode`/`opacity`/`visible`/`locked` for unversioned (`version: undefined`) and v1 files.
+  - Added forward-version rejection guard with clear upgrade instructions for future files (`version > 2`).
+- **"New Drawing" Workflow & Confirmation Modal**:
+  - Added `resetToNewProject()` store action and `"New"` button in `TopHeader.tsx` with modal confirmation preventing accidental canvas clearing.
+- **Locked Layer Protection & HUD Toast**:
+  - Drawing attempts on locked layers are rejected and display an animated HUD toast (`🔒 Active layer is locked`).
+- **OS Theme Auto-Detection**:
+  - `themeStore.ts` checks `window.matchMedia('(prefers-color-scheme: light)').matches` before defaulting to dark theme.
+
+**Checks run:** `npm test` (51/51 passed), `npm run lint` (0 errors, 0 warnings).
+**Status:** Complete
+
+---
+
+## Phase 19 — Tag Clip Export Scoping & Multi-Threaded Web Worker GIF Encoding (2026-08-30)
+**Delivered:**
+- **Tag Clip Export Scope (`ExportModal.tsx`)**:
+  - Added `"Export Scope"` dropdown allowing artists to export only specific named clips (`Walk [1-4]`, `Attack [5-8]`).
+  - Slices target frame arrays, automatically suffixes output filenames (`hero_Walk-4x.gif`), and cleanly $0$-indexes SpriteSheet atlas metadata (`Hero_0`, `Hero_1`, etc.) for Godot, Unity, and Phaser 3.
+- **DOM-Free GIF Encoder Core (`gifEncoderCore.ts`)**:
+  - Extracted `quantizePixels` (Median-Cut) and `lzwEncode` into a pure, testable, DOM-free computation module.
+- **Multi-Threaded Web Worker Acceleration (`gifEncoder.worker.ts`, `gifEncoder.ts`)**:
+  - Background Web Worker handles LZW encoding and palette reduction.
+  - Uses transferable `ArrayBuffer` objects (`postMessage(msg, [buffer])`) to eliminate memory copying overhead on heavy animations ($128\times128+$ 50 frames).
+- **Live Worker Progress Bar (`ExportModal.tsx`)**:
+  - Displays real-time progress percentages (`Encoding GIF via Web Worker: X / Y frames (Z%)`) with smooth animated bar during GIF generation.
+- **Transparent Main-Thread Fallback**:
+  - Automatically executes on the main thread if Web Worker initialization fails or is blocked by CSP.
+- **Unit Test Coverage (`tests/exportScopeAndWorker.test.ts`)**:
+  - Tested isolated clip exporting and progress reporting callbacks.
+
+**Checks run:** `npm test` (54/54 passed), `npm run lint` (0 errors, 0 warnings).
+**Status:** Complete
+
+
+
 
 

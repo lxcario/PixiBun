@@ -31,7 +31,7 @@ export async function autoSaveWorkspace(
   height: number,
   fps: number,
   stateSnapshot: object
-): Promise<void> {
+): Promise<boolean> {
   try {
     const dataJson = JSON.stringify(stateSnapshot);
     await db.projects.put({
@@ -43,8 +43,10 @@ export async function autoSaveWorkspace(
       updatedAt: Date.now(),
       dataJson,
     });
+    return true;
   } catch (err) {
     console.error('Autosave error:', err);
+    return false;
   }
 }
 

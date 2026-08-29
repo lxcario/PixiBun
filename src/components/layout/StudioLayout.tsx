@@ -12,10 +12,12 @@ import { ExportModal } from '@/components/modals/ExportModal';
 import { ShortcutsModal } from '@/components/modals/ShortcutsModal';
 import { CanvasResizeModal, AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
+import { ModalWrapper } from '@/components/ui/ModalWrapper';
+import { TactileButton } from '@/components/ui/TactileButton';
 import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
 import { buildProjectFile, hydrateProject } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
@@ -24,10 +26,13 @@ export const StudioLayout: React.FC = () => {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
+  const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const autosaveTimerRef = useRef<number | null>(null);
   const autosaveInFlightRef = useRef(false);
+  const autosaveFailCountRef = useRef(0);
 
   const {
     setActiveFrame,
@@ -42,6 +47,7 @@ export const StudioLayout: React.FC = () => {
     setCanvasSize,
     frames,
     activeFrameIndex,
+    resetToNewProject,
   } = useStudioStore();
 
   // Serialize the full studio - pixels included - into IndexedDB. Debounced so
@@ -51,7 +57,7 @@ export const StudioLayout: React.FC = () => {
     autosaveInFlightRef.current = true;
     try {
       const project = buildProjectFile();
-      await autoSaveWorkspace(
+      const success = await autoSaveWorkspace(
         'current-project',
         project.name,
         project.width,
@@ -59,12 +65,36 @@ export const StudioLayout: React.FC = () => {
         project.fps,
         project
       );
+      if (success) {
+        autosaveFailCountRef.current = 0;
+        setAutosaveError(null);
+      } else {
+        autosaveFailCountRef.current += 1;
+        if (autosaveFailCountRef.current >= 2) {
+          setAutosaveError(
+            'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
+          );
+        }
+      }
     } catch (err) {
       console.error('Autosave failed:', err);
+      autosaveFailCountRef.current += 1;
+      if (autosaveFailCountRef.current >= 2) {
+        setAutosaveError(
+          'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
+        );
+      }
     } finally {
       autosaveInFlightRef.current = false;
     }
   }, []);
+
+  const handleConfirmNewDrawing = useCallback(() => {
+    clearAllBuffers();
+    resetToNewProject();
+    setIsNewConfirmOpen(false);
+    void runAutosave();
+  }, [resetToNewProject, runAutosave]);
 
   const handleCommitHistory = useCallback(() => {
     if (autosaveTimerRef.current !== null) {
@@ -367,11 +397,40 @@ export const StudioLayout: React.FC = () => {
         onOpenImport={handleOpenImport}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
+        onNewDrawing={() => setIsNewConfirmOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
       />
+
+      {/* Persistent Storage Warning Banner */}
+      {autosaveError && (
+        <div className="bg-[#eb5a66]/20 border-b-2 border-[#eb5a66] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#ffb4b9] z-30 shadow-md transition-all">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⚠️</span>
+            <span>{autosaveError}</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <TactileButton
+              size="sm"
+              variant="danger"
+              onClick={() => setIsExportOpen(true)}
+              title="Open Export Dialog"
+              className="text-xs px-2.5 py-1 bg-[#eb5a66] hover:bg-[#ff8c94] text-[#140d1f] font-bold border border-[#8c202a]"
+            >
+              Export Drawing
+            </TactileButton>
+            <button
+              onClick={() => setAutosaveError(null)}
+              className="px-2 py-1 text-xs text-[#ffb4b9] hover:text-[#fff] transition-colors cursor-pointer"
+              title="Dismiss warning"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Contextual Dynamic Tool Options Strip */}
       <ContextOptionsBar />
@@ -388,6 +447,38 @@ export const StudioLayout: React.FC = () => {
 
       {/* Bottom Timeline */}
       <BottomTimeline />
+
+      {/* New Drawing Confirmation Modal */}
+      <ModalWrapper
+        isOpen={isNewConfirmOpen}
+        onClose={() => setIsNewConfirmOpen(false)}
+        title="Start a New Drawing?"
+      >
+        <div className="p-5 flex flex-col gap-4 text-sm text-[var(--text-body)]">
+          <p className="leading-relaxed">
+            Starting a new drawing will clear the current canvas and reset the studio to a fresh blank project.
+          </p>
+          <p className="text-xs text-[var(--accent-gold)] font-mono">
+            💡 If you want to keep your current artwork, remember to export it as PNG or a .pixibun project file first.
+          </p>
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[var(--desk-border)]">
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={() => setIsNewConfirmOpen(false)}
+            >
+              Keep Drawing
+            </TactileButton>
+            <TactileButton
+              size="sm"
+              variant="danger"
+              onClick={handleConfirmNewDrawing}
+            >
+              Start New Drawing
+            </TactileButton>
+          </div>
+        </div>
+      </ModalWrapper>
 
       {/* Export Modal */}
       <ExportModal

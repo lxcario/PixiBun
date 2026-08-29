@@ -93,8 +93,8 @@ export function generateSelOutData(
   };
 
   const azRad = (lightAzimuthDeg * Math.PI) / 180;
-  const Lx = Math.cos(azRad);
-  const Ly = -Math.sin(azRad);
+  const Lx = Math.sin(azRad);
+  const Ly = -Math.cos(azRad);
 
   const selOutPixels: ShadedPixel[] = [];
 
@@ -375,6 +375,10 @@ export function morphInBetweenFrames(
               }
             }
           }
+
+          // Bias toward zero-motion for uniform/flat/transparent blocks to avoid ghosting
+          const motionPenalty = (ux * ux + vy * vy) * 0.05;
+          sad += motionPenalty;
 
           if (sad < bestSAD) {
             bestSAD = sad;

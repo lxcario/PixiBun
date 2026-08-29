@@ -107,8 +107,9 @@ graph TD
 1. **$O(N)$ Euclidean Distance Transform:**
    Uses separable 1D lower parabolic envelope scans:
    $$D(p) = \min_{q \notin \Omega} \sqrt{(p_x - q_x)^2 + (p_y - q_y)^2}$$
-2. **Analytical Tangent Normals:**
-   $$\mathbf{N} = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}$$
+2. **Analytical Tangent Normals & Light Vector (Compass Convention):**
+   $$\mathbf{N} = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}, \quad \mathbf{L}(\theta, \phi) = \begin{pmatrix} \sin\theta \cos\phi \\ -\cos\theta \cos\phi \\ \sin\phi \end{pmatrix}$$
+   *Standard navigation/Photoshop azimuth convention: $0^\circ = \text{North (Top)}, 45^\circ = \text{North-East}, 135^\circ = \text{South-East}, 225^\circ = \text{South-West}, 315^\circ = \text{North-West (Top-Left)}$.*
 3. **Blinn-Phong Specular Half-Vector:**
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
 4. **Discrete Laplace Cavity Occlusion:**
@@ -116,23 +117,42 @@ graph TD
 
 ---
 
-## 4. State Management & Undo Architecture
+## 4. State Management, Layer Security & Undo Architecture
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **Undo/Redo History:** Implemented as a ring buffer of `ImageData` snapshots per layer (50 steps deep). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **Dynamic Canvas-Scaled Undo History:** Replaces static memory limits with an integer-pixel-scaled ring buffer of `ImageData` snapshots:
+  * $\le 64\times64$ ($4096\text{ px}$): 50 steps ($\sim 800\text{ KB}$)
+  * $\le 256\times256$ ($65536\text{ px}$): 35 steps ($\sim 8.9\text{ MB}$)
+  * $> 256\times256$ ($262144\text{ px}$): 20 steps ($\sim 20\text{ MB}$)
+  Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`🔒 Active layer is locked! Unlock it in the Layers panel to draw.`).
 * **`bufferVersion` Signal:** Atomic counter incremented on every pixel-level mutation, notifying decoupled observers (like the floating live preview window) without triggering full-tree React component re-renders.
 
 ---
 
-## 5. Local-First Storage Architecture (`src/lib/storage/db.ts`)
+## 5. Local-First Storage & Migration Architecture (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-* **Database Engine:** Dexie.js wrapping browser IndexedDB.
+* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`).
 * **Tables:**
-  * `projects`: Stores project metadata, dimensions, frame sequences, layer hierarchies, and custom palettes.
+  * `projects`: Stores project metadata, dimensions, frame sequences, layer hierarchies, and custom palettes under key `'current-project'`.
   * `frames`: Stores raw binary PNG blobs for each animation frame to ensure instantaneous project loading.
-* **Autosave Loop:** Debounced continuous state synchronization runs automatically in the background on every stroke completion.
-* **Versioned `.pixibun` Format (`src/lib/project/schema.ts`):** Zero-dependency structural validation enforcing schema contracts before project hydration to prevent malformed data from corrupting session state.
+* **Persistent Storage Failure & Auto-Recovery Banner:** `autoSaveWorkspace` returns a boolean status. If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds, the banner auto-dismisses and resets error counts.
+* **Full-Fidelity v1 $\to$ v2 Migration Engine (`migrateProjectPayload`):**
+  * Auto-detects legacy or unversioned (`version: undefined`) files.
+  * Backfills default `customRamps: []`, `clips: []`, `onionSkin`, and per-layer `blendMode: 'source-over'`, `opacity: 1.0`, `visible: true`, `locked: false`.
+  * Upgrades `version` to `PROJECT_FORMAT_VERSION = 2`.
+* **Forward Compatibility Guard:** Rejects files saved with a newer format (`input.version > PROJECT_FORMAT_VERSION`) with an explicit update prompt: `"This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file."`.
+
+---
+
+## 6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)
+
+* **Tag Clip Export Scoping (`ExportModal.tsx`):** Allows artists to select specific named clips (`Walk [1-4]`, `Attack [5-8]`). Frames are sliced to the clip range, output files are dynamically renamed (`hero_Walk-4x.gif`), and SpriteSheet atlas metadata is cleanly $0$-indexed for Godot/Unity/Phaser.
+* **Multi-Threaded Web Worker GIF Encoding (`gifEncoder.worker.ts`):** Offloads CPU-intensive Median-Cut color quantization and variable-length LZW compression to a background Web Worker.
+* **Zero-Copy Transferable Objects:** Frame pixel buffers are transferred as `ArrayBuffer` transferables (`postMessage(msg, [buffer])`), eliminating memory copying overhead on $128\times128+$ 50-frame animations.
+* **Live Worker Progress Bar:** Dispatches `{ type: 'progress', current, total }` messages, driving real-time progress percentages in the `ExportModal`.
+* **Transparent Main-Thread Fallback:** Automatically falls back to synchronous execution in environments without Web Worker support or under strict CSP policies.
 
 ---
 
@@ -173,8 +193,9 @@ graph TD
 
 The frame morphing engine (`src/lib/ai/pixelAiEngine.ts`) implements **2D Block-Matching Optical Flow & Signed Distance Field (SDF)** interpolation:
 
-1. **Motion Displacement Field:**
-   $$\mathbf{v}(x, y) = \arg\min_{(u, v) \in \mathcal{W}} \sum_{p \in \mathcal{B}} |I_A(p) - I_B(p + (u, v))|$$
+1. **Motion Displacement Field (with Zero-Motion Center Bias):**
+   $$\mathbf{v}(x, y) = \arg\min_{(u, v) \in \mathcal{W}} \left( \sum_{p \in \mathcal{B}} |I_A(p) - I_B(p + (u, v))| + 0.05 \cdot (u^2 + v^2) \right)$$
+   *The quadratic displacement penalty $0.05 \cdot (u^2 + v^2)$ provides tie-break stabilization, preventing false ghosting artifacts across uniform, solid color, or transparent background regions.*
 2. **Intermediate Synthesis at $t = 0.5$:**
    Pixels are displaced along trajectory vectors $\mathbf{x} - t \mathbf{v}$ and blended in OKLab perceptual color space, producing clean tween frames between keyframes without ghosting or tearing.
 

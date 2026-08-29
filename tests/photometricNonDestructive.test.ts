@@ -366,6 +366,85 @@ describe('Photometric correctness', () => {
     const bottom = rowAvg(13);
     expect(top).toBeGreaterThanOrEqual(bottom - 1);
   });
+
+  it('evaluates directional highlight quadrant for Azimuth=315, 135, 45, 225', async () => {
+    const { executePhotometricPipeline } = await import('@/lib/ai/smartMathEngine');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 16;
+    const height = 16;
+    const base = getOrCreateBuffer('circle-diag', width, height);
+    base.ctx.fillStyle = '#FFFFFF';
+    const cx = 7.5, cy = 7.5, r = 6;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (Math.hypot(x - cx, y - cy) <= r) base.ctx.fillRect(x, y, 1, 1);
+      }
+    }
+
+    const getQuadrantBrightness = (azimuth: number) => {
+      const out = executePhotometricPipeline(
+        base.ctx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        {
+          lightAzimuth: azimuth,
+          lightElevation: 45,
+          lightRadius: 64,
+          lightColor: '#FFFFFF',
+          ambientIntensity: 0.2,
+          material: 'metal',
+          cavityStrength: 1.0,
+          ditherModulation: 0,
+          bayerSize: '4x4',
+        },
+        []
+      );
+      const outCtx = (out as unknown as MockCanvas).getContext('2d') as MockCtx;
+      const data = outCtx._imageData.data;
+
+      let tlSum = 0, tlN = 0;
+      let brSum = 0, brN = 0;
+      let trSum = 0, trN = 0;
+      let blSum = 0, blN = 0;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          if (data[idx + 3] > 30) {
+            const lum = data[idx];
+            if (x < cx && y < cy) { tlSum += lum; tlN++; }
+            if (x > cx && y > cy) { brSum += lum; brN++; }
+            if (x > cx && y < cy) { trSum += lum; trN++; }
+            if (x < cx && y > cy) { blSum += lum; blN++; }
+          }
+        }
+      }
+      return {
+        TL: tlN > 0 ? tlSum / tlN : 0,
+        BR: brN > 0 ? brSum / brN : 0,
+        TR: trN > 0 ? trSum / trN : 0,
+        BL: blN > 0 ? blSum / blN : 0,
+      };
+    };
+
+    const res315 = getQuadrantBrightness(315);
+    const res135 = getQuadrantBrightness(135);
+    const res45 = getQuadrantBrightness(45);
+    const res225 = getQuadrantBrightness(225);
+    expect(res315.TL).toBeGreaterThan(res315.BR);
+    expect(res315.TL).toBeGreaterThan(160);
+
+    expect(res135.BR).toBeGreaterThan(res135.TL);
+    expect(res135.BR).toBeGreaterThan(160);
+
+    expect(res45.TR).toBeGreaterThan(res45.BL);
+    expect(res45.TR).toBeGreaterThan(160);
+
+    expect(res225.BL).toBeGreaterThan(res225.TR);
+    expect(res225.BL).toBeGreaterThan(160);
+  });
 });
 
 // ---------------------------------------------------------------------------

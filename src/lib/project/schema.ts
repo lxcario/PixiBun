@@ -70,6 +70,69 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
   return { id: input.id, durationMs: input.durationMs, layers };
 }
 
+/**
+ * Upgrades legacy project payloads (such as v1 files) to the current format specification
+ * by backfilling safe default values for newly introduced fields (clips, customRamps,
+ * onionSkin settings, layer blendMode, opacity, lock flags).
+ */
+export function migrateProjectPayload(raw: Record<string, unknown>): Record<string, unknown> {
+  const migrated: Record<string, unknown> = { ...raw };
+
+  // 1. Backfill customRamps
+  if (!Array.isArray(migrated.customRamps)) {
+    migrated.customRamps = [];
+  }
+
+  // 2. Backfill clips
+  if (!Array.isArray(migrated.clips)) {
+    migrated.clips = [];
+  }
+
+  // 3. Backfill loopMode
+  if (typeof migrated.loopMode !== 'string' || !LOOP_MODES.has(migrated.loopMode)) {
+    migrated.loopMode = 'repeat';
+  }
+
+  // 4. Backfill onionSkin
+  if (!isPlainObject(migrated.onionSkin)) {
+    migrated.onionSkin = {
+      enabled: false,
+      prevFrames: 1,
+      nextFrames: 1,
+      opacity: 0.35,
+      prevColor: '#7fae6b',
+      nextColor: '#c792df',
+    };
+  }
+
+  // 5. Backfill frame & layer properties
+  if (Array.isArray(migrated.frames)) {
+    migrated.frames = (migrated.frames as unknown[]).map((f) => {
+      if (!isPlainObject(f)) return f;
+      const frameObj = { ...f };
+      if (frameObj.durationMs === undefined) {
+        frameObj.durationMs = 100;
+      }
+      if (Array.isArray(frameObj.layers)) {
+        frameObj.layers = (frameObj.layers as unknown[]).map((l) => {
+          if (!isPlainObject(l)) return l;
+          const layerObj = { ...l };
+          if (layerObj.visible === undefined) layerObj.visible = true;
+          if (layerObj.locked === undefined) layerObj.locked = false;
+          if (layerObj.opacity === undefined) layerObj.opacity = 1.0;
+          if (layerObj.blendMode === undefined) layerObj.blendMode = 'source-over';
+          return layerObj;
+        });
+      }
+      return frameObj;
+    });
+  }
+
+  // Upgrade version tag
+  migrated.version = PROJECT_FORMAT_VERSION;
+  return migrated;
+}
+
 export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (!isPlainObject(input)) {
     return { ok: false, error: 'That file does not look like a PixiBun project.' };
@@ -77,25 +140,36 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (input.format !== PROJECT_FORMAT_ID) {
     return { ok: false, error: 'This file was not saved by PixiBun, so it cannot be opened here.' };
   }
-  if (!isIntegerInRange(input.version, 1, PROJECT_FORMAT_VERSION)) {
+
+  // 1. Forward-compatibility guard: reject files saved with a newer PixiBun format
+  if (typeof input.version === 'number' && input.version > PROJECT_FORMAT_VERSION) {
     return {
       ok: false,
-      error: `This project uses format v${String(input.version)}, which this version of PixiBun cannot read.`,
+      error: `This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file.`,
     };
   }
-  if (typeof input.name !== 'string' || input.name.trim().length === 0) {
+
+  // 2. Backward-compatibility: migrate legacy/unversioned payloads before validation
+  const normalized = migrateProjectPayload(input);
+  if (!isIntegerInRange(normalized.version, 1, PROJECT_FORMAT_VERSION)) {
+    return {
+      ok: false,
+      error: `This project uses an invalid format version (${String(input.version)}).`,
+    };
+  }
+  if (typeof normalized.name !== 'string' || normalized.name.trim().length === 0) {
     return { ok: false, error: 'The project inside this file has no usable name.' };
   }
-  if (!isIntegerInRange(input.width, 1, 2048) || !isIntegerInRange(input.height, 1, 2048)) {
+  if (!isIntegerInRange(normalized.width, 1, 2048) || !isIntegerInRange(normalized.height, 1, 2048)) {
     return { ok: false, error: 'The project canvas dimensions are out of range.' };
   }
-  if (!isIntegerInRange(input.fps, 1, 60)) return { ok: false, error: 'The project playback speed is out of range.' };
-  if (typeof input.loopMode !== 'string' || !LOOP_MODES.has(input.loopMode)) {
+  if (!isIntegerInRange(normalized.fps, 1, 60)) return { ok: false, error: 'The project playback speed is out of range.' };
+  if (typeof normalized.loopMode !== 'string' || !LOOP_MODES.has(normalized.loopMode)) {
     return { ok: false, error: 'The project loop mode is not recognized.' };
   }
 
-  if (!isPlainObject(input.onionSkin)) return { ok: false, error: 'The onion skin settings are missing or malformed.' };
-  const skin = input.onionSkin;
+  if (!isPlainObject(normalized.onionSkin)) return { ok: false, error: 'The onion skin settings are missing or malformed.' };
+  const skin = normalized.onionSkin;
   if (
     typeof skin.enabled !== 'boolean' ||
     !isIntegerInRange(skin.prevFrames, 0, 5) ||
@@ -107,11 +181,11 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     return { ok: false, error: 'The onion skin settings are corrupted.' };
   }
 
-  if (!Array.isArray(input.palettes) || input.palettes.length === 0) {
+  if (!Array.isArray(normalized.palettes) || normalized.palettes.length === 0) {
     return { ok: false, error: 'The file carries no color palettes.' };
   }
-  for (let i = 0; i < input.palettes.length; i++) {
-    const pal = input.palettes[i];
+  for (let i = 0; i < normalized.palettes.length; i++) {
+    const pal = normalized.palettes[i];
     if (!isPlainObject(pal) || typeof pal.id !== 'string' || typeof pal.name !== 'string' || !Array.isArray(pal.colors)) {
       return { ok: false, error: `Palette ${i + 1} is malformed.` };
     }
@@ -119,14 +193,14 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
       return { ok: false, error: `Palette "${pal.name}" holds colors PixiBun cannot read.` };
     }
   }
-  if (typeof input.currentPaletteId !== 'string') {
+  if (typeof normalized.currentPaletteId !== 'string') {
     return { ok: false, error: 'The file does not say which palette is active.' };
   }
-  if (!Array.isArray(input.customRamps)) return { ok: false, error: 'The custom ramp list is malformed.' };
+  if (!Array.isArray(normalized.customRamps)) return { ok: false, error: 'The custom ramp list is malformed.' };
 
-  if (!Array.isArray(input.clips)) return { ok: false, error: 'The animation clip list is malformed.' };
-  for (let i = 0; i < input.clips.length; i++) {
-    const clip = input.clips[i];
+  if (!Array.isArray(normalized.clips)) return { ok: false, error: 'The animation clip list is malformed.' };
+  for (let i = 0; i < normalized.clips.length; i++) {
+    const clip = normalized.clips[i];
     if (
       !isPlainObject(clip) ||
       typeof clip.id !== 'string' ||
@@ -138,19 +212,19 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     }
   }
 
-  if (!Array.isArray(input.frames) || input.frames.length === 0) {
+  if (!Array.isArray(normalized.frames) || normalized.frames.length === 0) {
     return { ok: false, error: 'This project has no animation frames to open.' };
   }
   const frames: SerializedFrame[] = [];
-  for (let i = 0; i < input.frames.length; i++) {
-    const result = validateFrame(input.frames[i], i);
+  for (let i = 0; i < normalized.frames.length; i++) {
+    const result = validateFrame(normalized.frames[i], i);
     if (typeof result === 'string') return { ok: false, error: result };
     frames.push(result);
   }
 
   if (
-    !isIntegerInRange(input.createdAt, 0, Number.MAX_SAFE_INTEGER) ||
-    !isIntegerInRange(input.updatedAt, 0, Number.MAX_SAFE_INTEGER)
+    !isIntegerInRange(normalized.createdAt, 0, Number.MAX_SAFE_INTEGER) ||
+    !isIntegerInRange(normalized.updatedAt, 0, Number.MAX_SAFE_INTEGER)
   ) {
     return { ok: false, error: 'The project timestamps are missing or corrupted.' };
   }
@@ -159,29 +233,29 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     ok: true,
     value: {
       format: PROJECT_FORMAT_ID,
-      version: input.version,
-      name: input.name,
-      width: input.width,
-      height: input.height,
-      fps: input.fps,
-      loopMode: input.loopMode as ProjectFile['loopMode'],
+      version: normalized.version as number,
+      name: normalized.name as string,
+      width: normalized.width as number,
+      height: normalized.height as number,
+      fps: normalized.fps as number,
+      loopMode: normalized.loopMode as ProjectFile['loopMode'],
       onionSkin: {
-        enabled: skin.enabled,
-        prevFrames: skin.prevFrames,
-        nextFrames: skin.nextFrames,
-        prevColor: skin.prevColor,
-        nextColor: skin.nextColor,
-        opacity: skin.opacity,
+        enabled: skin.enabled as boolean,
+        prevFrames: skin.prevFrames as number,
+        nextFrames: skin.nextFrames as number,
+        prevColor: skin.prevColor as string,
+        nextColor: skin.nextColor as string,
+        opacity: skin.opacity as number,
       },
-      palettes: input.palettes.map(pal => ({
+      palettes: (normalized.palettes as Record<string, unknown>[]).map((pal) => ({
         id: pal.id as string,
         name: pal.name as string,
         author: typeof pal.author === 'string' ? pal.author : undefined,
         colors: (pal.colors as string[]).slice(),
       })),
-      currentPaletteId: input.currentPaletteId,
-      customRamps: input.customRamps as ProjectFile['customRamps'],
-      clips: input.clips.map(clip => ({
+      currentPaletteId: normalized.currentPaletteId as string,
+      customRamps: normalized.customRamps as ProjectFile['customRamps'],
+      clips: (normalized.clips as Record<string, unknown>[]).map((clip) => ({
         id: clip.id as string,
         name: clip.name as string,
         startFrame: clip.startFrame as number,
@@ -189,8 +263,8 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
         color: typeof clip.color === 'string' ? clip.color : undefined,
       })),
       frames,
-      createdAt: input.createdAt,
-      updatedAt: input.updatedAt,
+      createdAt: normalized.createdAt as number,
+      updatedAt: normalized.updatedAt as number,
     },
   };
 }

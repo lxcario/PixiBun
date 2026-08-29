@@ -124,6 +124,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const [cursorCoords, setCursorCoords] = useState<Point | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [, setLassoPoints] = useState<Point[]>([]);
+  const [lockedWarning, setLockedWarning] = useState(false);
+  const lockedWarningTimerRef = useRef<number | null>(null);
   // Initialize or fetch the offscreen canvas for a layer.
   const getOrCreateLayerCanvas = useCallback(
     (layerId: string): HTMLCanvasElement =>
@@ -215,7 +217,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const commitSnapshot = useCallback(() => {
     if (currentStrokeSnapshotRef.current) {
       undoStackRef.current.push(currentStrokeSnapshotRef.current);
-      if (undoStackRef.current.length > 50) {
+      const maxUndoLimit = canvasWidth * canvasHeight > 65536
+        ? (canvasWidth * canvasHeight > 262144 ? 20 : 35)
+        : 50;
+      while (undoStackRef.current.length > maxUndoLimit) {
         undoStackRef.current.shift();
       }
       redoStackRef.current = [];
@@ -224,7 +229,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setCanRedo(false);
       onCommitHistory?.();
     }
-  }, [onCommitHistory, setCanRedo, setCanUndo]);
+  }, [canvasHeight, canvasWidth, onCommitHistory, setCanRedo, setCanUndo]);
 
   // Undo Action
   const performUndo = useCallback(() => {
@@ -271,6 +276,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       imageData: currentImgData,
       description: nextStep.description,
     });
+
+    const maxUndoLimit = canvasWidth * canvasHeight > 65536
+      ? (canvasWidth * canvasHeight > 262144 ? 20 : 35)
+      : 50;
+    while (undoStackRef.current.length > maxUndoLimit) {
+      undoStackRef.current.shift();
+    }
 
     ctx.putImageData(nextStep.imageData, 0, 0);
 
@@ -1352,6 +1364,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       commitFloatingSelection();
     }
 
+    // Prevent drawing on locked layers with visual feedback
+    const currentFrame = frames[activeFrameIndex];
+    const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
+    if (currentLayer?.locked) {
+      setLockedWarning(true);
+      if (lockedWarningTimerRef.current !== null) {
+        window.clearTimeout(lockedWarningTimerRef.current);
+      }
+      lockedWarningTimerRef.current = window.setTimeout(() => {
+        setLockedWarning(false);
+      }, 1600);
+      return;
+    }
+
     captureSnapshot(`Tool: ${tools.activeTool}`);
 
     try {
@@ -1793,6 +1819,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           <span className="text-[11px] text-[#f0be7c] font-bold uppercase">{primaryColor}</span>
         </div>
       </div>
+
+      {/* Locked Layer Feedback Toast */}
+      {lockedWarning && (
+        <div className="absolute top-12 left-3 bg-[#eb5a66] text-[#140d1f] border-2 border-[#8c202a] px-3 py-1 rounded-[2px] text-xs font-mono font-bold shadow-lg z-30 flex items-center gap-1.5 pointer-events-none animate-pulse">
+          <span>🔒</span>
+          <span>Active layer is locked! Unlock it in the Layers panel to draw.</span>
+        </div>
+      )}
 
       {/* 5. Bottom Right Viewport Metrics Badge */}
       <div className="absolute bottom-3 right-3 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] px-3 py-1.5 rounded-[3px] text-xs font-mono text-[var(--text-heading)] pointer-events-none select-none flex items-center gap-2.5 shadow-md">

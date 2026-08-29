@@ -54,7 +54,7 @@ graph LR
 * **3D Minecraft Skin Recognition & Dedicated Shading:** Automatically detects $64\times64$ and $64\times32$ Java/Bedrock UV layouts, computes analytical 3D unit normal vectors $\mathbf{N}$ for all 12 cuboid regions, and executes domain skin shading (Half-Lambert wrap, contact ambient occlusion under chin/armpits/limbs, sky hemisphere radiance, and warm sunlight/cool indigo hue-shifting).
 * **Linear-Time $O(N)$ Euclidean Distance Transform (EDT):** Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes compute distance fields in milliseconds.
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
-* **Analytical Tangent-Space Normal Generation:** Discrete Sobel kernels derive partial derivatives ($\frac{\partial H}{\partial x}, \frac{\partial H}{\partial y}$) and surface normal vectors $\mathbf{N} = \frac{(-s_x G_x, -s_y G_y, 1)}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}}$.
+* **Analytical Tangent-Space Normal Generation & Compass Alignment:** Discrete Sobel kernels derive surface normal vectors with standard artist compass heading navigation ($0^\circ = \text{North/Top}, 315^\circ = \text{North-West/Top-Left}$) and a dynamic rotating SVG compass needle in the studio inspector.
 * **1-Click Normal Map Baking:** Exports standard blue tangent-space normal maps $(128, 128, 255)$ directly to a new layer for immediate use in **Godot**, **Unity**, and **Unreal Engine**.
 * **Directional Selective Outlining (Sel-Out):** Evaluates surface normal azimuth alignment against the light source, applying illuminated rim tones to light-facing edges and deep saturated material tones to shadow edges.
 * **Smart Sub-Pixel Anti-Aliasing (De-Jaggy):** Evaluates staircase L-crooks in 1px lines and inserts soft intermediate OKLab blend pixels for smooth hand-drawn contours without creating holes.
@@ -88,11 +88,20 @@ graph LR
 ---
 
 ### 🎬 Animation Suite & Layer Stack
-* **2D Optical Flow In-Between Morphing:** Block-matching motion displacement fields and Signed Distance Field (SDF) interpolation generating smooth intermediate tween frames in OKLab space.
-* **Multi-Layer Compositor:** Individual layer opacity, lock, visibility, and 8 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge, Darken, Lighten, Difference*).
-* **Frame-by-Frame Timeline:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
+* **2D Optical Flow In-Between Morphing:** Block-matching motion displacement fields with zero-motion center bias and Signed Distance Field (SDF) interpolation generating smooth intermediate tween frames in OKLab space without background ghosting.
+* **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (`🔒 Active layer is locked`), visibility, and 8 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge, Darken, Lighten, Difference*).
+* **Frame-by-Frame Timeline & Tag Clips:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.
 * **Floating Live Preview Popout:** Draggable, resizable $1\times/2\times/4\times$ live preview window with custom backdrops (*Checkerboard, Dark Obsidian, Alabaster Paper, Amber Lamp*).
+
+---
+
+### 📦 Game-Ready Export Pipeline
+* **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
+* **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag and displaying a live progress bar.
+* **Lossless PNG:** Integer scaling from $1\times$ to $32\times$ with crisp nearest-neighbor sampling.
+* **Packed Sprite Sheets:** Horizontal, vertical, or matrix packed layouts with ready-to-use JSON metadata for **Godot 4**, **Unity**, and **Phaser 3**.
+* **Native `.pixibun` Files:** Single-click project file export and restore with schema v2 migration and forward-compatibility guards.
 
 ---
 

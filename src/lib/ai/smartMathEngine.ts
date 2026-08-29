@@ -731,8 +731,8 @@ export function executeMinecraftSkinShadingPipeline(
   const azRad = (params.lightAzimuth * Math.PI) / 180;
   const elRad = (Math.max(15, params.lightElevation) * Math.PI) / 180;
 
-  const Lx = Math.cos(azRad) * Math.cos(elRad);
-  const Ly = -Math.sin(azRad) * Math.cos(elRad);
+  const Lx = Math.sin(azRad) * Math.cos(elRad);
+  const Ly = -Math.cos(azRad) * Math.cos(elRad);
   const Lz = Math.sin(elRad);
 
   const brightness = params.lightBrightness ?? 1.15;
@@ -920,8 +920,8 @@ export function executePhotometricPipeline(
   const azRad = (params.lightAzimuth * Math.PI) / 180;
   const elRad = (Math.max(10, params.lightElevation) * Math.PI) / 180;
 
-  const Lx = Math.cos(azRad) * Math.cos(elRad);
-  const Ly = -Math.sin(azRad) * Math.cos(elRad);
+  const Lx = Math.sin(azRad) * Math.cos(elRad);
+  const Ly = -Math.cos(azRad) * Math.cos(elRad);
   const Lz = Math.sin(elRad);
 
   const Vx = 0;
@@ -1098,8 +1098,8 @@ export function renderParametric2p5DLighting(
   const azRad = (params.azimuthDeg * Math.PI) / 180;
   const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
 
-  const Lx = Math.cos(azRad) * Math.cos(elRad);
-  const Ly = -Math.sin(azRad) * Math.cos(elRad);
+  const Lx = Math.sin(azRad) * Math.cos(elRad);
+  const Ly = -Math.cos(azRad) * Math.cos(elRad);
   const Lz = Math.sin(elRad);
 
   const Vx = 0;

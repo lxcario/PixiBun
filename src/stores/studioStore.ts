@@ -180,8 +180,9 @@ interface StudioState {
   addExtractedPalette: (name: string, colors: string[]) => void;
   generateAndAddRamp: (baseColor: string) => void;
 
-  // Full Project Rehydration
+  // Full Project Rehydration & Reset
   loadProjectState: (projectData: ProjectFile) => void;
+  resetToNewProject: () => void;
 
   // Inspector & AI Dock
   setActiveInspectorTab: (tab: 'layers' | 'palette' | 'ai') => void;
@@ -865,6 +866,42 @@ export const useStudioStore = create<StudioState>()(
           if (projectData.clips) {
             state.clips = projectData.clips;
           }
+        });
+      },
+
+      resetToNewProject: () => {
+        const initialLayerId = createId('layer');
+        const initialFrameId = createId('frame');
+        set(state => {
+          state.projectName = 'Untitled Sprite';
+          state.canvasWidth = 32;
+          state.canvasHeight = 32;
+          state.zoom = 1600;
+          state.panX = 0;
+          state.panY = 0;
+          state.frames = [
+            {
+              id: initialFrameId,
+              durationMs: 125,
+              layers: [
+                {
+                  id: initialLayerId,
+                  name: 'Base Layer',
+                  visible: true,
+                  locked: false,
+                  opacity: 1,
+                  blendMode: 'source-over',
+                },
+              ],
+            },
+          ];
+          state.activeFrameIndex = 0;
+          state.activeLayerId = initialLayerId;
+          state.clips = [
+            { id: 'clip-1', name: 'Default Clip', startFrame: 0, endFrame: 0 },
+          ];
+          state.activeClipId = null;
+          state.bufferVersion += 1;
         });
       },
 
