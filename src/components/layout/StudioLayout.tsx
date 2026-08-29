@@ -129,21 +129,28 @@ export const StudioLayout: React.FC = () => {
 
   // Confirm Image Import & Inject Pixel Art to Target Buffer
   const handleConfirmImportImage = useCallback((confirmData: ImageImportConfirmPayload) => {
-    const { canvas, target, extractedPalette, addToPalette, filename } = confirmData;
+    const { canvas, target, extractedPalette, addToPalette, filename, resizeCanvasToMatch } = confirmData;
     const store = useStudioStore.getState();
-    const width = store.canvasWidth;
-    const height = store.canvasHeight;
 
-    let targetLayerId = store.activeLayerId;
+    // 1. If user chose to match image dimensions, resize canvas first!
+    if (resizeCanvasToMatch) {
+      store.setCanvasSize(resizeCanvasToMatch.width, resizeCanvasToMatch.height, 'top-left', false);
+    }
+
+    const currentStore = useStudioStore.getState();
+    const width = currentStore.canvasWidth;
+    const height = currentStore.canvasHeight;
+
+    let targetLayerId = currentStore.activeLayerId;
 
     if (target === 'new-frame') {
-      store.addFrame();
+      currentStore.addFrame();
       const updatedState = useStudioStore.getState();
       const newFrame = updatedState.frames[updatedState.activeFrameIndex];
       targetLayerId = newFrame?.layers[0]?.id || updatedState.activeLayerId;
     } else if (target === 'new-layer') {
       const layerName = filename ? `Import: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Layer';
-      store.addLayer(layerName);
+      currentStore.addLayer(layerName);
       const updatedState = useStudioStore.getState();
       targetLayerId = updatedState.activeLayerId;
     }
@@ -162,10 +169,10 @@ export const StudioLayout: React.FC = () => {
 
     if (addToPalette && extractedPalette.length > 0) {
       const paletteName = filename ? `Palette: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Palette';
-      store.addExtractedPalette(paletteName, extractedPalette);
+      currentStore.addExtractedPalette(paletteName, extractedPalette);
     }
 
-    store.bumpBufferVersion();
+    currentStore.bumpBufferVersion();
     setIsImportOpen(false);
   }, []);
 
