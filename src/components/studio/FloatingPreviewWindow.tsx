@@ -125,11 +125,14 @@ export const FloatingPreviewWindow: React.FC = () => {
         </div>
 
         <button
+          onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
           onClick={(e) => {
             e.stopPropagation();
             toggleFloatingPreview();
           }}
-          className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5"
+          className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5 cursor-pointer"
           title="Close Preview Window"
         >
           ×

@@ -25,7 +25,8 @@ import {
   applyAtmosphericColorGrade,
   quantizeToActivePalette,
   cleanStrayPixelsOnCanvas,
-  generate47BlobEdgeData
+  generate47BlobEdgeData,
+  morphInBetweenFrames,
 } from '@/lib/ai/pixelAiEngine';
 import {
   renderParametric2p5DLighting,
@@ -95,6 +96,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setPan,
     showGrid,
     showIsoGuides,
+    showTilePreview,
     showNormalMapPreview,
     onionSkin,
     isPlaying,
@@ -427,11 +429,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
-    const handleSelOutEvent = () => {
+    const handleSelOutEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
+
       const srcCtx = compositeSourceSnapshot('sel-out');
       if (!srcCtx) return;
 
-      const { selOutPixels } = generateSelOutData(srcCtx, canvasWidth, canvasHeight);
+      const { selOutPixels } = generateSelOutData(srcCtx, canvasWidth, canvasHeight, lightAz);
 
       const outCtx = replaceTaggedLayer('Selective Outline', 'sel-out');
       if (outCtx) {
@@ -442,6 +447,55 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         renderComposite();
         bumpBufferVersion();
       }
+    };
+
+    const handleInBetweenFrameEvent = () => {
+      const state = useStudioStore.getState();
+      const currentIdx = state.activeFrameIndex;
+      const totalFrames = state.frames.length;
+
+      const ctxA = compositeSourceSnapshot();
+      if (!ctxA) return;
+
+      let nextIdx = (currentIdx + 1) % totalFrames;
+      if (totalFrames === 1) {
+        state.duplicateFrame(0);
+        nextIdx = 1;
+      }
+
+      const frameB = state.frames[nextIdx];
+      const scratchB = document.createElement('canvas');
+      scratchB.width = canvasWidth;
+      scratchB.height = canvasHeight;
+      const ctxB = scratchB.getContext('2d')!;
+      ctxB.imageSmoothingEnabled = false;
+
+      frameB.layers.slice().reverse().forEach((l) => {
+        if (!l.visible) return;
+        const lCanvas = getOrCreateLayerCanvas(l.id);
+        ctxB.globalAlpha = l.opacity;
+        ctxB.globalCompositeOperation = l.blendMode;
+        ctxB.drawImage(lCanvas, 0, 0);
+      });
+
+      const morphedCanvas = morphInBetweenFrames(ctxA, ctxB, canvasWidth, canvasHeight, 0.5);
+
+      state.addFrame();
+      const updatedState = useStudioStore.getState();
+      const newFrame = updatedState.frames[updatedState.frames.length - 1];
+
+      if (newFrame && newFrame.layers[0]) {
+        const targetBuf = getOrCreateBuffer(newFrame.layers[0].id, canvasWidth, canvasHeight);
+        const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
+        if (tCtx) {
+          tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+          tCtx.imageSmoothingEnabled = false;
+          tCtx.drawImage(morphedCanvas, 0, 0);
+        }
+      }
+
+      renderComposite();
+      bumpBufferVersion();
     };
 
     const handleAutoOutlineEvent = (e: Event) => {
@@ -695,6 +749,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     window.addEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
     window.addEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
     window.addEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
+    window.addEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
 
     return () => {
       window.removeEventListener('pixibun:undo', handleUndoEvent);
@@ -716,6 +771,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       window.removeEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
       window.removeEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
       window.removeEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
+      window.removeEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
     };
   }, [
     activeLayerId,
@@ -779,19 +835,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     // 2. Isometric 2:1 Guide Grid Lines
     if (showIsoGuides) {
-      ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
+      ctx.strokeStyle = 'rgba(240, 190, 124, 0.45)';
       ctx.lineWidth = 1;
-      ctx.setLineDash([3, 3]);
+      ctx.setLineDash([2, 2]);
 
-      const isoStep = 8 * scale;
-      for (let offset = -height * 2; offset <= width * 2; offset += isoStep) {
-        // Forward diagonals (2:1 slope)
+      const isoStep = 16 * scale;
+      const span = width + height * 2;
+      for (let offset = -span; offset <= span * 2; offset += isoStep) {
+        // Forward diagonals (2:1 slope: dx = 2*dy)
         ctx.beginPath();
         ctx.moveTo(offset, 0);
         ctx.lineTo(offset + height * 2, height);
         ctx.stroke();
 
-        // Backward diagonals (-2:1 slope)
+        // Backward diagonals (-2:1 slope: dx = -2*dy)
         ctx.beginPath();
         ctx.moveTo(offset, 0);
         ctx.lineTo(offset - height * 2, height);
@@ -1653,6 +1710,45 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           transition: isPanning ? 'none' : 'transform 0.05s linear',
         }}
       >
+        {/* 3x3 Seamless Tile Matrix Preview Surroundings */}
+        {showTilePreview && (
+          <div className="absolute inset-0 pointer-events-none z-0 opacity-60">
+            {[-1, 0, 1].map((ox) =>
+              [-1, 0, 1].map((oy) => {
+                if (ox === 0 && oy === 0) return null;
+                return (
+                  <div
+                    key={`tile-${ox}-${oy}`}
+                    className="absolute border border-dashed border-[#f0be7c]/40 overflow-hidden"
+                    style={{
+                      left: `${ox * stageWidth}px`,
+                      top: `${oy * stageHeight}px`,
+                      width: `${stageWidth}px`,
+                      height: `${stageHeight}px`,
+                    }}
+                  >
+                    <canvas
+                      ref={(el) => {
+                        if (el && mainCanvasRef.current) {
+                          const ctx = el.getContext('2d');
+                          if (ctx) {
+                            el.width = canvasWidth;
+                            el.height = canvasHeight;
+                            ctx.imageSmoothingEnabled = false;
+                            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                            ctx.drawImage(mainCanvasRef.current, 0, 0);
+                          }
+                        }
+                      }}
+                      className="w-full h-full pixelated"
+                    />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
         {/* Solid Canvas Background */}
         <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
 

@@ -441,6 +441,29 @@ export function rgbToOKLab(r: number, g: number, b: number): OKLabColor {
 }
 
 /**
+ * Converts OKLab color space back to RGB [0..255].
+ */
+export function okLabToRGB(L: number, a: number, b: number): { r: number; g: number; b: number } {
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+
+  const lr = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const lg = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const lb = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+  return {
+    r: linearToSrgb(lr),
+    g: linearToSrgb(lg),
+    b: linearToSrgb(lb),
+  };
+}
+
+/**
  * Computes Delta E distance in OKLab color space.
  */
 export function deltaEOKLab(c1: OKLabColor, c2: OKLabColor): number {
@@ -1194,23 +1217,21 @@ export function applyAtkinsonDither(
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
 
-  // Build effective palette: combine passed palette with unique colors on canvas
-  const canvasColors = new Set<string>();
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] > 30) {
-      canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
-    }
-  }
-
   let effectivePalette = paletteHex;
-  if (effectivePalette.length === 0 || (canvasColors.size > 0 && !Array.from(canvasColors).some(c => effectivePalette.includes(c)))) {
+  if (!effectivePalette || effectivePalette.length < 2) {
+    const canvasColors = new Set<string>();
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 30) {
+        canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
+      }
+    }
     const customPalette = new Set<string>();
     canvasColors.forEach(c => {
       customPalette.add(c);
       const ramp = generateOklchRamp(c);
       ramp.forEach(rc => customPalette.add(rc));
     });
-    effectivePalette = Array.from(customPalette);
+    effectivePalette = Array.from(customPalette).slice(0, 16);
   }
 
   if (effectivePalette.length === 0) return;
@@ -1286,23 +1307,21 @@ export function applyRiemersmaDither(
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
 
-  // Build effective palette: combine passed palette with unique colors on canvas
-  const canvasColors = new Set<string>();
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] > 30) {
-      canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
-    }
-  }
-
   let effectivePalette = paletteHex;
-  if (effectivePalette.length === 0 || (canvasColors.size > 0 && !Array.from(canvasColors).some(c => effectivePalette.includes(c)))) {
+  if (!effectivePalette || effectivePalette.length < 2) {
+    const canvasColors = new Set<string>();
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 30) {
+        canvasColors.add(rgbaToHex(data[i], data[i + 1], data[i + 2], 255));
+      }
+    }
     const customPalette = new Set<string>();
     canvasColors.forEach(c => {
       customPalette.add(c);
       const ramp = generateOklchRamp(c);
       ramp.forEach(rc => customPalette.add(rc));
     });
-    effectivePalette = Array.from(customPalette);
+    effectivePalette = Array.from(customPalette).slice(0, 16);
   }
 
   if (effectivePalette.length === 0) return;

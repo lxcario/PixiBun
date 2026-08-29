@@ -19,7 +19,6 @@ export const RightInspector: React.FC = () => {
     addLayer,
     duplicateLayer,
     deleteLayer,
-    duplicateFrame,
     toggleLayerVisibility,
     toggleLayerLock,
     setLayerOpacity,
@@ -171,7 +170,7 @@ export const RightInspector: React.FC = () => {
   };
 
   const handleInBetweenFrame = () => {
-    duplicateFrame(activeFrameIndex);
+    window.dispatchEvent(new CustomEvent('pixibun:in-between-frame'));
   };
 
   return (
@@ -771,11 +770,11 @@ export const RightInspector: React.FC = () => {
                 size="sm"
                 variant="default"
                 onClick={handleCleanJaggies}
-                title="Remove staircase double-pixel corners in 1px strokes"
+                title="Smart Anti-Aliasing: Smooths staircase jagged edges with intermediate OKLab blend tones"
                 className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
                 <PixelIcon name="pen" size={12} />
-                <span>De-Jaggy</span>
+                <span>De-Jaggy (AA)</span>
               </TactileButton>
 
               <TactileButton
@@ -814,7 +813,7 @@ export const RightInspector: React.FC = () => {
                 size="sm"
                 variant="default"
                 onClick={() => handleColorGrade('sunset')}
-                title="Warm golden sunset glow"
+                title="Warm golden hour Kelvin shift (+2800K) with sunset amber peach tones"
                 className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
                 <PixelIcon name="sun" size={12} />
@@ -825,7 +824,7 @@ export const RightInspector: React.FC = () => {
                 size="sm"
                 variant="default"
                 onClick={() => handleColorGrade('moonlight')}
-                title="Midnight violet moonlight glow"
+                title="Cool night Kelvin shift (-3500K) with luminous cobalt/wisteria ambient tint"
                 className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
                 <PixelIcon name="sparkles" size={12} />
@@ -858,7 +857,7 @@ export const RightInspector: React.FC = () => {
                 size="sm"
                 variant="default"
                 onClick={handleInBetweenFrame}
-                title="Optical flow tweening in-between animation frame"
+                title="Optical Flow & SDF In-Between Morphing: Generates true smooth intermediate tween frame"
                 className="text-[10px] py-1.5 font-bold col-span-2 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
               >
                 <PixelIcon name="plus" size={12} />
