@@ -791,6 +791,7 @@ export function rotateWithRotSprite(
   height: number,
   angleDeg: number
 ): HTMLCanvasElement {
+  // 1. Scale 8x via Scale2X (AdvMAME2x three passes)
   let currentCanvas = document.createElement('canvas');
   currentCanvas.width = width;
   currentCanvas.height = height;
@@ -802,14 +803,17 @@ export function rotateWithRotSprite(
     currentCanvas = scale2XPass(currentCanvas);
   }
 
+  // 2. High-res 8x rotation around center
+  const w8 = width * 8;
+  const h8 = height * 8;
   const rotated8xCanvas = document.createElement('canvas');
-  rotated8xCanvas.width = width * 8;
-  rotated8xCanvas.height = height * 8;
+  rotated8xCanvas.width = w8;
+  rotated8xCanvas.height = h8;
   const rotCtx = rotated8xCanvas.getContext('2d')!;
   rotCtx.imageSmoothingEnabled = false;
 
-  const cx8 = (width * 8) / 2;
-  const cy8 = (height * 8) / 2;
+  const cx8 = w8 / 2;
+  const cy8 = h8 / 2;
   const rad = (angleDeg * Math.PI) / 180;
 
   rotCtx.translate(cx8, cy8);
@@ -817,27 +821,63 @@ export function rotateWithRotSprite(
   rotCtx.translate(-cx8, -cy8);
   rotCtx.drawImage(currentCanvas, 0, 0);
 
+  // 3. Majority-Voting Area Downsampler (64 subpixels per pixel)
   const outputCanvas = document.createElement('canvas');
   outputCanvas.width = width;
   outputCanvas.height = height;
   const outCtx = outputCanvas.getContext('2d')!;
   outCtx.imageSmoothingEnabled = false;
 
-  const rot8Data = rotCtx.getImageData(0, 0, width * 8, height * 8).data;
+  const rot8Data = rotCtx.getImageData(0, 0, w8, h8).data;
   const outImgData = outCtx.createImageData(width, height);
   const outData = outImgData.data;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const sampleX = x * 8 + 4;
-      const sampleY = y * 8 + 4;
-      const sIdx = (sampleY * (width * 8) + sampleX) * 4;
+      const colorCounts = new Map<string, { count: number; r: number; g: number; b: number; a: number }>();
+      let opaqueCount = 0;
+
+      for (let sy = 0; sy < 8; sy++) {
+        for (let sx = 0; sx < 8; sx++) {
+          const subX = x * 8 + sx;
+          const subY = y * 8 + sy;
+          const sIdx = (subY * w8 + subX) * 4;
+
+          const a = rot8Data[sIdx + 3];
+          if (a > 30) {
+            opaqueCount++;
+            const r = rot8Data[sIdx];
+            const g = rot8Data[sIdx + 1];
+            const b = rot8Data[sIdx + 2];
+            const key = `${r},${g},${b}`;
+            const existing = colorCounts.get(key);
+            if (existing) {
+              existing.count++;
+            } else {
+              colorCounts.set(key, { count: 1, r, g, b, a });
+            }
+          }
+        }
+      }
 
       const outIdx = (y * width + x) * 4;
-      outData[outIdx] = rot8Data[sIdx];
-      outData[outIdx + 1] = rot8Data[sIdx + 1];
-      outData[outIdx + 2] = rot8Data[sIdx + 2];
-      outData[outIdx + 3] = rot8Data[sIdx + 3];
+      // If at least 35% of the 8x8 block is covered, render the modal color
+      if (opaqueCount >= 22) {
+        let bestColor = { r: 0, g: 0, b: 0, a: 255 };
+        let maxCount = -1;
+        for (const entry of colorCounts.values()) {
+          if (entry.count > maxCount) {
+            maxCount = entry.count;
+            bestColor = entry;
+          }
+        }
+        outData[outIdx] = bestColor.r;
+        outData[outIdx + 1] = bestColor.g;
+        outData[outIdx + 2] = bestColor.b;
+        outData[outIdx + 3] = 255;
+      } else {
+        outData[outIdx + 3] = 0;
+      }
     }
   }
 
