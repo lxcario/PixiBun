@@ -251,6 +251,7 @@ export interface NormalVectorField {
   ny: Float32Array;
   nz: Float32Array;
   sky?: Float32Array;
+  material?: Uint8Array; // 0 = skin (base layer), 1 = fabric (overlay clothing), 2 = eye protection
 }
 
 /**
@@ -563,10 +564,12 @@ export function computeMinecraftSkinNormalField(
   const ny = new Float32Array(width * height);
   const nz = new Float32Array(width * height);
   const sky = new Float32Array(width * height);
+  const material = new Uint8Array(width * height); // 0 = skin (base), 1 = fabric (overlay), 2 = eye protection
 
   for (let i = 0; i < width * height; i++) {
     nz[i] = 1.0;
     sky[i] = 1.0;
+    material[i] = 0;
   }
 
   const paintFace = (
@@ -575,150 +578,169 @@ export function computeMinecraftSkinNormalField(
     fw: number,
     fh: number,
     baseNorm: [number, number, number],
+    leftNeighborNorm: [number, number, number] = baseNorm,
+    rightNeighborNorm: [number, number, number] = baseNorm,
     faceType: 'UP' | 'DOWN' | 'SIDE' = 'SIDE',
-    bodyPart: 'head' | 'torso' | 'arm' | 'leg' = 'torso'
+    bodyPart: 'head' | 'torso' | 'arm' | 'leg' = 'torso',
+    layer: 'base' | 'overlay' = 'base'
   ) => {
     if (fx + fw > width || fy + fh > height) return;
 
     for (let py = fy; py < fy + fh; py++) {
       for (let px = fx; px < fx + fw; px++) {
         const idx = py * width + px;
-        const [bx, by, bz] = baseNorm;
+        let [bx, by, bz] = baseNorm;
 
-        // True planar normal - eliminates pillow shading and edge distortion
+        // 1px narrow boundary linear interpolation to remove harsh barcode/step transitions
+        if (fw > 1) {
+          if (px === fx) {
+            // Left border column: blend 75% base + 25% left neighbor
+            bx = bx * 0.75 + leftNeighborNorm[0] * 0.25;
+            by = by * 0.75 + leftNeighborNorm[1] * 0.25;
+            bz = bz * 0.75 + leftNeighborNorm[2] * 0.25;
+          } else if (px === fx + fw - 1) {
+            // Right border column: blend 75% base + 25% right neighbor
+            bx = bx * 0.75 + rightNeighborNorm[0] * 0.25;
+            by = by * 0.75 + rightNeighborNorm[1] * 0.25;
+            bz = bz * 0.75 + rightNeighborNorm[2] * 0.25;
+          }
+        }
+
         const len = Math.sqrt(bx * bx + by * by + bz * bz) || 1;
         nx[idx] = bx / len;
         ny[idx] = by / len;
         nz[idx] = bz / len;
 
-        // Anatomical sky lighting factor based on actual 3D orientation
-        if (faceType === 'UP') {
-          sky[idx] = 1.08; // Top of head, shoulders receive direct sky illumination
-        } else if (faceType === 'DOWN') {
-          sky[idx] = 0.80; // Under-chin, soles, sleeve bottoms are anatomically shadowed
+        // Material assignment
+        if (layer === 'overlay') {
+          material[idx] = 1; // Fabric / Clothing overlay
         } else {
-          // Vertical side faces: subtle natural top-to-bottom falloff
-          const localY = (py - fy) / Math.max(1, fh - 1);
-          if (bodyPart === 'head') {
-            sky[idx] = 1.04 - localY * 0.08; // 1.04 forehead down to 0.96 chin
-          } else if (bodyPart === 'torso') {
-            sky[idx] = 1.02 - localY * 0.06; // 1.02 chest down to 0.96 waist
-          } else if (bodyPart === 'arm') {
-            sky[idx] = 1.02 - localY * 0.08; // 1.02 shoulder down to 0.94 hand
+          // Base layer: check if this is the Head Front Eye region (x: 8..15, y: 12..14)
+          if (bodyPart === 'head' && fx === 8 && fy === 8 && py >= 12 && py <= 14) {
+            material[idx] = 2; // Eye row
           } else {
-            sky[idx] = 0.98 - localY * 0.08; // 0.98 hip down to 0.90 ankle
+            material[idx] = 0; // Skin / Organic base
           }
+        }
+
+        // Sky factor
+        if (faceType === 'UP') {
+          sky[idx] = 1.08;
+        } else if (faceType === 'DOWN') {
+          sky[idx] = 0.80;
+        } else {
+          sky[idx] = 1.0; // Flat neutral sky (no vertical 1D gradient lines)
         }
       }
     }
   };
 
-  const UP: [number, number, number] = [0, -0.85, 0.5];
-  const DOWN: [number, number, number] = [0, 0.85, 0.5];
-  const LEFT: [number, number, number] = [0.85, 0, 0.5];
-  const RIGHT: [number, number, number] = [-0.85, 0, 0.5];
+  const UP: [number, number, number] = [0, -0.60, 0.80];
+  const DOWN: [number, number, number] = [0, 0.60, 0.80];
+  const LEFT: [number, number, number] = [0.60, 0, 0.80];
+  const RIGHT: [number, number, number] = [-0.60, 0, 0.80];
   const FRONT: [number, number, number] = [0, 0, 1.0];
-  const BACK: [number, number, number] = [0, 0, 0.4];
+  const BACK: [number, number, number] = [0, 0, 0.65];
 
-  // Head (0, 0, 32, 16)
-  paintFace(8, 0, 8, 8, UP, 'UP', 'head');
-  paintFace(16, 0, 8, 8, DOWN, 'DOWN', 'head');
-  paintFace(0, 8, 8, 8, RIGHT, 'SIDE', 'head');
-  paintFace(8, 8, 8, 8, FRONT, 'SIDE', 'head');
-  paintFace(16, 8, 8, 8, LEFT, 'SIDE', 'head');
-  paintFace(24, 8, 8, 8, BACK, 'SIDE', 'head');
+  // Head (0, 0, 32, 16) - Base Layer
+  paintFace(8, 0, 8, 8, UP, UP, UP, 'UP', 'head', 'base');
+  paintFace(16, 0, 8, 8, DOWN, DOWN, DOWN, 'DOWN', 'head', 'base');
+  paintFace(0, 8, 8, 8, RIGHT, BACK, FRONT, 'SIDE', 'head', 'base');
+  paintFace(8, 8, 8, 8, FRONT, RIGHT, LEFT, 'SIDE', 'head', 'base');
+  paintFace(16, 8, 8, 8, LEFT, FRONT, BACK, 'SIDE', 'head', 'base');
+  paintFace(24, 8, 8, 8, BACK, LEFT, RIGHT, 'SIDE', 'head', 'base');
 
-  // Hat Layer 2 (32, 0, 32, 16)
-  paintFace(40, 0, 8, 8, UP, 'UP', 'head');
-  paintFace(48, 0, 8, 8, DOWN, 'DOWN', 'head');
-  paintFace(32, 8, 8, 8, RIGHT, 'SIDE', 'head');
-  paintFace(40, 8, 8, 8, FRONT, 'SIDE', 'head');
-  paintFace(48, 8, 8, 8, LEFT, 'SIDE', 'head');
-  paintFace(56, 8, 8, 8, BACK, 'SIDE', 'head');
+  // Hat Layer 2 (32, 0, 32, 16) - Overlay Layer (Clothing/Hair)
+  paintFace(40, 0, 8, 8, UP, UP, UP, 'UP', 'head', 'overlay');
+  paintFace(48, 0, 8, 8, DOWN, DOWN, DOWN, 'DOWN', 'head', 'overlay');
+  paintFace(32, 8, 8, 8, RIGHT, BACK, FRONT, 'SIDE', 'head', 'overlay');
+  paintFace(40, 8, 8, 8, FRONT, RIGHT, LEFT, 'SIDE', 'head', 'overlay');
+  paintFace(48, 8, 8, 8, LEFT, FRONT, BACK, 'SIDE', 'head', 'overlay');
+  paintFace(56, 8, 8, 8, BACK, LEFT, RIGHT, 'SIDE', 'head', 'overlay');
 
-  // Body / Torso (16, 16, 24, 16)
-  paintFace(20, 16, 8, 4, UP, 'UP', 'torso');
-  paintFace(28, 16, 8, 4, DOWN, 'DOWN', 'torso');
-  paintFace(16, 20, 4, 12, RIGHT, 'SIDE', 'torso');
-  paintFace(20, 20, 8, 12, FRONT, 'SIDE', 'torso');
-  paintFace(28, 20, 4, 12, LEFT, 'SIDE', 'torso');
-  paintFace(32, 20, 8, 12, BACK, 'SIDE', 'torso');
+  // Body / Torso (16, 16, 24, 16) - Base Layer
+  paintFace(20, 16, 8, 4, UP, UP, UP, 'UP', 'torso', 'base');
+  paintFace(28, 16, 8, 4, DOWN, DOWN, DOWN, 'DOWN', 'torso', 'base');
+  paintFace(16, 20, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'torso', 'base');
+  paintFace(20, 20, 8, 12, FRONT, RIGHT, LEFT, 'SIDE', 'torso', 'base');
+  paintFace(28, 20, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'torso', 'base');
+  paintFace(32, 20, 8, 12, BACK, LEFT, RIGHT, 'SIDE', 'torso', 'base');
 
-  // Right Arm (40, 16, 16, 16)
-  paintFace(44, 16, 4, 4, UP, 'UP', 'arm');
-  paintFace(48, 16, 4, 4, DOWN, 'DOWN', 'arm');
-  paintFace(40, 20, 4, 12, RIGHT, 'SIDE', 'arm');
-  paintFace(44, 20, 4, 12, FRONT, 'SIDE', 'arm');
-  paintFace(48, 20, 4, 12, LEFT, 'SIDE', 'arm');
-  paintFace(52, 20, 4, 12, BACK, 'SIDE', 'arm');
+  // Right Arm (40, 16, 16, 16) - Base Layer
+  paintFace(44, 16, 4, 4, UP, UP, UP, 'UP', 'arm', 'base');
+  paintFace(48, 16, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'arm', 'base');
+  paintFace(40, 20, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'arm', 'base');
+  paintFace(44, 20, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'arm', 'base');
+  paintFace(48, 20, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'arm', 'base');
+  paintFace(52, 20, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'arm', 'base');
 
-  // Right Leg (0, 16, 16, 16)
-  paintFace(4, 16, 4, 4, UP, 'UP', 'leg');
-  paintFace(8, 16, 4, 4, DOWN, 'DOWN', 'leg');
-  paintFace(0, 20, 4, 12, RIGHT, 'SIDE', 'leg');
-  paintFace(4, 20, 4, 12, FRONT, 'SIDE', 'leg');
-  paintFace(8, 20, 4, 12, LEFT, 'SIDE', 'leg');
-  paintFace(12, 20, 4, 12, BACK, 'SIDE', 'leg');
+  // Right Leg (0, 16, 16, 16) - Base Layer
+  paintFace(4, 16, 4, 4, UP, UP, UP, 'UP', 'leg', 'base');
+  paintFace(8, 16, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'leg', 'base');
+  paintFace(0, 20, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'leg', 'base');
+  paintFace(4, 20, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'leg', 'base');
+  paintFace(8, 20, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'leg', 'base');
+  paintFace(12, 20, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'leg', 'base');
 
   if (height >= 64) {
-    // Left Leg Base (16, 48, 16, 16)
-    paintFace(20, 48, 4, 4, UP, 'UP', 'leg');
-    paintFace(24, 48, 4, 4, DOWN, 'DOWN', 'leg');
-    paintFace(16, 52, 4, 12, RIGHT, 'SIDE', 'leg');
-    paintFace(20, 52, 4, 12, FRONT, 'SIDE', 'leg');
-    paintFace(24, 52, 4, 12, LEFT, 'SIDE', 'leg');
-    paintFace(28, 52, 4, 12, BACK, 'SIDE', 'leg');
+    // Left Leg Base (16, 48, 16, 16) - Base Layer
+    paintFace(20, 48, 4, 4, UP, UP, UP, 'UP', 'leg', 'base');
+    paintFace(24, 48, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'leg', 'base');
+    paintFace(16, 52, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'leg', 'base');
+    paintFace(20, 52, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'leg', 'base');
+    paintFace(24, 52, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'leg', 'base');
+    paintFace(28, 52, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'leg', 'base');
 
-    // Left Arm Base (32, 48, 16, 16)
-    paintFace(36, 48, 4, 4, UP, 'UP', 'arm');
-    paintFace(40, 48, 4, 4, DOWN, 'DOWN', 'arm');
-    paintFace(32, 52, 4, 12, RIGHT, 'SIDE', 'arm');
-    paintFace(36, 52, 4, 12, FRONT, 'SIDE', 'arm');
-    paintFace(40, 52, 4, 12, LEFT, 'SIDE', 'arm');
-    paintFace(44, 52, 4, 12, BACK, 'SIDE', 'arm');
+    // Left Arm Base (32, 48, 16, 16) - Base Layer
+    paintFace(36, 48, 4, 4, UP, UP, UP, 'UP', 'arm', 'base');
+    paintFace(40, 48, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'arm', 'base');
+    paintFace(32, 52, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'arm', 'base');
+    paintFace(36, 52, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'arm', 'base');
+    paintFace(40, 52, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'arm', 'base');
+    paintFace(44, 52, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'arm', 'base');
 
-    // Jacket Layer 2 (16, 32, 24, 16)
-    paintFace(20, 32, 8, 4, UP, 'UP', 'torso');
-    paintFace(28, 32, 8, 4, DOWN, 'DOWN', 'torso');
-    paintFace(16, 36, 4, 12, RIGHT, 'SIDE', 'torso');
-    paintFace(20, 36, 8, 12, FRONT, 'SIDE', 'torso');
-    paintFace(28, 36, 4, 12, LEFT, 'SIDE', 'torso');
-    paintFace(32, 36, 8, 12, BACK, 'SIDE', 'torso');
+    // Jacket Layer 2 (16, 32, 24, 16) - Overlay Layer (Clothing)
+    paintFace(20, 32, 8, 4, UP, UP, UP, 'UP', 'torso', 'overlay');
+    paintFace(28, 32, 8, 4, DOWN, DOWN, DOWN, 'DOWN', 'torso', 'overlay');
+    paintFace(16, 36, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'torso', 'overlay');
+    paintFace(20, 36, 8, 12, FRONT, RIGHT, LEFT, 'SIDE', 'torso', 'overlay');
+    paintFace(28, 36, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'torso', 'overlay');
+    paintFace(32, 36, 8, 12, BACK, LEFT, RIGHT, 'SIDE', 'torso', 'overlay');
 
-    // Right Sleeve Layer 2 (40, 32, 16, 16)
-    paintFace(44, 32, 4, 4, UP, 'UP', 'arm');
-    paintFace(48, 32, 4, 4, DOWN, 'DOWN', 'arm');
-    paintFace(40, 36, 4, 12, RIGHT, 'SIDE', 'arm');
-    paintFace(44, 36, 4, 12, FRONT, 'SIDE', 'arm');
-    paintFace(48, 36, 4, 12, LEFT, 'SIDE', 'arm');
-    paintFace(52, 36, 4, 12, BACK, 'SIDE', 'arm');
+    // Right Sleeve Layer 2 (40, 32, 16, 16) - Overlay Layer (Clothing)
+    paintFace(44, 32, 4, 4, UP, UP, UP, 'UP', 'arm', 'overlay');
+    paintFace(48, 32, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'arm', 'overlay');
+    paintFace(40, 36, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'arm', 'overlay');
+    paintFace(44, 36, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'arm', 'overlay');
+    paintFace(48, 36, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'arm', 'overlay');
+    paintFace(52, 36, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'arm', 'overlay');
 
-    // Right Pants Layer 2 (0, 32, 16, 16)
-    paintFace(4, 32, 4, 4, UP, 'UP', 'leg');
-    paintFace(8, 32, 4, 4, DOWN, 'DOWN', 'leg');
-    paintFace(0, 36, 4, 12, RIGHT, 'SIDE', 'leg');
-    paintFace(4, 36, 4, 12, FRONT, 'SIDE', 'leg');
-    paintFace(8, 36, 4, 12, LEFT, 'SIDE', 'leg');
-    paintFace(12, 36, 4, 12, BACK, 'SIDE', 'leg');
+    // Right Pants Layer 2 (0, 32, 16, 16) - Overlay Layer (Clothing)
+    paintFace(4, 32, 4, 4, UP, UP, UP, 'UP', 'leg', 'overlay');
+    paintFace(8, 32, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'leg', 'overlay');
+    paintFace(0, 36, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'leg', 'overlay');
+    paintFace(4, 36, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'leg', 'overlay');
+    paintFace(8, 36, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'leg', 'overlay');
+    paintFace(12, 36, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'leg', 'overlay');
 
-    // Left Pants Layer 2 (0, 48, 16, 16)
-    paintFace(4, 48, 4, 4, UP, 'UP', 'leg');
-    paintFace(8, 48, 4, 4, DOWN, 'DOWN', 'leg');
-    paintFace(0, 52, 4, 12, RIGHT, 'SIDE', 'leg');
-    paintFace(4, 52, 4, 12, FRONT, 'SIDE', 'leg');
-    paintFace(8, 52, 4, 12, LEFT, 'SIDE', 'leg');
-    paintFace(12, 52, 4, 12, BACK, 'SIDE', 'leg');
+    // Left Pants Layer 2 (0, 48, 16, 16) - Overlay Layer (Clothing)
+    paintFace(4, 48, 4, 4, UP, UP, UP, 'UP', 'leg', 'overlay');
+    paintFace(8, 48, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'leg', 'overlay');
+    paintFace(0, 52, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'leg', 'overlay');
+    paintFace(4, 52, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'leg', 'overlay');
+    paintFace(8, 52, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'leg', 'overlay');
+    paintFace(12, 52, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'leg', 'overlay');
 
-    // Left Sleeve Layer 2 (48, 48, 16, 16)
-    paintFace(52, 48, 4, 4, UP, 'UP', 'arm');
-    paintFace(56, 48, 4, 4, DOWN, 'DOWN', 'arm');
-    paintFace(48, 52, 4, 12, RIGHT, 'SIDE', 'arm');
-    paintFace(52, 52, 4, 12, FRONT, 'SIDE', 'arm');
-    paintFace(56, 52, 4, 12, LEFT, 'SIDE', 'arm');
-    paintFace(60, 52, 4, 12, BACK, 'SIDE', 'arm');
+    // Left Sleeve Layer 2 (48, 48, 16, 16) - Overlay Layer (Clothing)
+    paintFace(52, 48, 4, 4, UP, UP, UP, 'UP', 'arm', 'overlay');
+    paintFace(56, 48, 4, 4, DOWN, DOWN, DOWN, 'DOWN', 'arm', 'overlay');
+    paintFace(48, 52, 4, 12, RIGHT, BACK, FRONT, 'SIDE', 'arm', 'overlay');
+    paintFace(52, 52, 4, 12, FRONT, RIGHT, LEFT, 'SIDE', 'arm', 'overlay');
+    paintFace(56, 52, 4, 12, LEFT, FRONT, BACK, 'SIDE', 'arm', 'overlay');
+    paintFace(60, 52, 4, 12, BACK, LEFT, RIGHT, 'SIDE', 'arm', 'overlay');
   }
 
-  return { nx, ny, nz, sky };
+  return { nx, ny, nz, sky, material };
 }
 
 /**
@@ -777,23 +799,10 @@ export function executeMinecraftSkinShadingPipeline(
     }
   };
 
-  // 1. Head Under-Chin / Neck Occlusion
-  applyContactAO(8, 14, 8, 2, 0.82); // Head Front chin bottom
-  applyContactAO(16, 0, 8, 8, 0.78); // Head bottom neck face
+  // 1. Head Under-Neck Occlusion (Bottom face of head)
+  applyContactAO(16, 0, 8, 8, 0.85);
 
-  // 2. Torso Neck Seam & Armpit Creases
-  applyContactAO(20, 20, 8, 2, 0.84); // Top of chest under neck
-  applyContactAO(16, 20, 1, 12, 0.85); // Right armpit side
-  applyContactAO(35, 20, 1, 12, 0.85); // Left armpit side
-
-  // 3. Inner Limb Shadows
-  applyContactAO(8, 20, 4, 12, 0.88); // Right inner leg
-  if (height >= 64) {
-    applyContactAO(24, 52, 4, 12, 0.88); // Left inner leg
-    applyContactAO(40, 52, 2, 12, 0.88); // Left inner arm
-  }
-
-  // 4. Overlap Layer (Hat, Jacket, Sleeve, Pants) subtle shadow on base layer
+  // 2. Overlap Layer (Hat, Jacket, Sleeve, Pants) subtle shadow on base layer
   const applyOverlapShadow = (ox: number, oy: number, w: number, h: number, bx: number, by: number) => {
     for (let py = 0; py < h; py++) {
       for (let px = 0; px < w; px++) {
@@ -810,6 +819,9 @@ export function executeMinecraftSkinShadingPipeline(
   if (height >= 64) {
     applyOverlapShadow(16, 32, 24, 16, 16, 16);
     applyOverlapShadow(40, 32, 16, 16, 40, 16); // Right sleeve
+    applyOverlapShadow(0, 32, 16, 16, 0, 16);   // Right pants
+    applyOverlapShadow(0, 48, 16, 16, 16, 48);  // Left pants
+    applyOverlapShadow(48, 48, 16, 16, 32, 48); // Left sleeve
   }
 
   // Shift hue helper in degrees
@@ -862,18 +874,43 @@ export function executeMinecraftSkinShadingPipeline(
       let newC: number;
       let newH: number;
 
-      if (totalFactor >= 1.0) {
-        // --- HIGHLIGHT REGION (Warm Sunlight Hue Shift) ---
-        const intensity = Math.min(1.0, (totalFactor - 1.0) * 1.5);
-        newH = shiftHue(H, 65, intensity * 28);
-        newL = Math.min(0.98, L + intensity * (0.98 - L) * 0.55);
-        newC = Math.min(0.35, C * (1.0 + intensity * 0.15));
+      const matType = normalField.material ? normalField.material[idx] : 0;
+
+      if (matType === 2) {
+        // --- 1. EYE PROTECTION (Head Front Eye Row) ---
+        // Sclera, pupils and irises receive minimal lighting modulation to stay crisp without being washed out
+        const eyeFactor = 1.0 + (totalFactor - 1.0) * 0.10;
+        newH = H;
+        newL = Math.max(0.05, Math.min(0.99, L + (eyeFactor - 1.0) * 0.08));
+        newC = C;
+      } else if (matType === 1) {
+        // --- 2. FABRIC / CLOTHING OVERLAY (Hat, Jacket, Sleeves, Pants) ---
+        // Low specular, soft/broad transitions, reduced contrast: white shirts stay crisp white, patterns stay clear
+        if (totalFactor >= 1.0) {
+          const intensity = Math.min(1.0, (totalFactor - 1.0) * 0.70);
+          newH = shiftHue(H, 65, intensity * 8);
+          newL = Math.min(0.99, L + intensity * (0.99 - L) * 0.20);
+          newC = Math.min(0.35, C * (1.0 + intensity * 0.04));
+        } else {
+          const intensity = Math.min(1.0, (1.0 - totalFactor) * 0.75);
+          newH = shiftHue(H, 260, intensity * 10);
+          newL = Math.max(0.20, L - intensity * L * 0.22);
+          newC = Math.min(0.35, C * (1.0 + intensity * 0.06));
+        }
       } else {
-        // --- SHADOW REGION (Cool Ambient Indigo/Violet Hue Shift) ---
-        const intensity = Math.min(1.0, (1.0 - totalFactor) * 1.6);
-        newH = shiftHue(H, 260, intensity * 25);
-        newL = Math.max(0.12, L - intensity * L * 0.48);
-        newC = Math.min(0.35, C * (1.0 + intensity * 0.22));
+        // --- 3. SKIN / ORGANIC BASE LAYER ---
+        // Rich organic hue shifting with warm sunlight highlights and cool violet shadows
+        if (totalFactor >= 1.0) {
+          const intensity = Math.min(1.0, (totalFactor - 1.0) * 1.4);
+          newH = shiftHue(H, 65, intensity * 26);
+          newL = Math.min(0.98, L + intensity * (0.98 - L) * 0.48);
+          newC = Math.min(0.35, C * (1.0 + intensity * 0.15));
+        } else {
+          const intensity = Math.min(1.0, (1.0 - totalFactor) * 1.5);
+          newH = shiftHue(H, 260, intensity * 24);
+          newL = Math.max(0.12, L - intensity * L * 0.42);
+          newC = Math.min(0.35, C * (1.0 + intensity * 0.20));
+        }
       }
 
       const hRad = (newH * Math.PI) / 180;
