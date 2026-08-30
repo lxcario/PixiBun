@@ -1,6 +1,6 @@
 export interface AiMessage {
   id: string;
-  sender: 'user' | 'gemini';
+  sender: 'user' | 'assistant';
   text: string;
   timestamp: number;
   suggestions?: string[];

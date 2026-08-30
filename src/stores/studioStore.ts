@@ -290,10 +290,10 @@ export const useStudioStore = create<StudioState>()(
       aiMessages: [
         {
           id: 'welcome-msg',
-          sender: 'gemini',
-          text: "Hey there! I'm PixiBud, your pixel art buddy. I'm keeping an eye on your canvas — whenever you want cozy shading, fresh palette tones, or smooth animation frames, just tap a button or ask me anything!",
+          sender: 'assistant',
+          text: "Hey there! I'm PixiBud, your pixel art math studio assistant. Tap any of the panels below to execute deterministic 2.5D photometric lighting, volumetric SSS, or normal baking directly on your artwork layers!",
           timestamp: Date.now(),
-          suggestions: ['Auto-Shade', 'Add specular highlight', 'Harmonize palette', 'Clean jaggies']
+          suggestions: ['2.5D Photometric', 'Volumetric SSS', 'Harmonize palette', 'Clean jaggies']
         }
       ],
       isAiThinking: false,

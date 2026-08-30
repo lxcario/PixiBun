@@ -235,7 +235,7 @@ export const RightInspector: React.FC = () => {
               : 'bg-[var(--desk-surface)] border-[#352248] text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[var(--desk-surface)]'
           }`}
         >
-          <PixelIcon name="gemini" size={14} />
+          <PixelIcon name="sparkles" size={14} />
           <span>PixiBud AI</span>
         </button>
       </div>
