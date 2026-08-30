@@ -505,6 +505,35 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run build`: Next.js 16 production build compiles cleanly.
 **Status:** Complete
 
+---
+
+## Phase 26 — Volumetric Optics, Subsurface Scattering & Anisotropic Shaders (2026-08-30)
+**Delivered:**
+- **Mathematical Volumetric Optics Engine (`src/lib/ai/smartMathEngine.ts`)**:
+  - **Subsurface Scattering (SSS) & Forward Phase**: Implemented Beer-Lambert exponential absorption through distance-field thickness $T(\mathbf{x}) = 2\sqrt{\max(0, R^2 - D(\mathbf{x})^2)}$ combined with 2D Henyey-Greenstein forward phase function `phaseHG2D(cosTheta, g)` for glowing potions, gemstones, and slimes.
+  - **Dielectric Fresnel with Cauchy Chromatic Dispersion**: Implemented `evaluateDielectricFresnel(cosTheta, etaBase, dispersion, roughness, fresnelPower)` splitting per-channel IOR ($F_{0, R} < F_{0, G} < F_{0, B}$) and roughness-damped grazing falloff.
+  - **Kajiya-Kay Anisotropic Highlight**: Implemented `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)` generating curvature and directional tangent fields with dual-cuticle shifts ($s_1 = +0.10, s_2 = -0.15$) for hair, fur, and brushed metal.
+  - **Full Optical Pipeline**: Implemented `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` blending SSS, Fresnel, and Anisotropic specular passes with perceptual OKLab palette snapping and Bayer matrix dither modulation.
+- **PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`)**:
+  - Built **Volumetric Optics & SSS** module in PixiBud AI tab with tactile preset buttons (💎 Gem, 🧪 Slime, 💇 Hair, 🍃 Leaf, ⚔️ Metal).
+  - Added interactive parameter sliders for SSS Depth ($1 - 32\text{px}$), Fresnel Rim Power ($1.0 - 8.0\times$), Flow Preset selector (Vertical, Horizontal, Radial, Curvature), and Anisotropy Angle ($0^\circ - 180^\circ$).
+- **Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`)**:
+  - Wired `pixibun:volumetric-optics` custom event to non-destructive tagged output layer (`Layer.tag = 'optical-output'`).
+- **Unit & E2E Test Suites**:
+  - Created `tests/volumetricOptics.test.ts` (11 unit tests verifying phase function forward/backscattering, Cauchy dispersion channel splitting, tangent field normalization & rotations, and gemstone/hair rendering).
+  - Hardened `tests/e2e/studio.spec.ts` with an end-to-end test verifying preset selection, optical rendering, and tagged layer creation.
+- **Documentation**:
+  - Synchronized `TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, and `README.md` (111 unit tests across 19 suites, 14 E2E specs).
+
+**Checks run:**
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm run typecheck`: 0 errors.
+- `npm test`: 111/111 tests pass across 19 test suites.
+- `npx playwright test`: 14/14 Playwright E2E specs pass.
+- `npm run build`: Next.js 16 production build compiles cleanly.
+**Status:** Complete
+
+
 
 
 

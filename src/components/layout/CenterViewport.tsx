@@ -36,6 +36,7 @@ import {
   applyRiemersmaDither,
   applyZhangSuenThinning,
   executePhotometricPipeline,
+  executeVolumetricOpticalPipeline,
   computeSeparableEDT,
   generateInflatedHeightmap,
   applyBilateralFilter,
@@ -711,6 +712,42 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
+    const handleVolumetricOpticsEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const detail = customEvent.detail || {};
+
+      // Read composite of all visible layers EXCLUDING any previous optical output
+      const srcCtx = compositeSourceSnapshot('optical-output');
+      if (!srcCtx) return;
+
+      const preset = detail.preset ?? tools.opticalPreset;
+      const shadedCanvas = executeVolumetricOpticalPipeline(
+        srcCtx,
+        canvasWidth,
+        canvasHeight,
+        {
+          preset,
+          translucencyDepth: detail.translucencyDepth ?? tools.translucencyDepth,
+          fresnelPower: detail.fresnelPower ?? tools.fresnelPower,
+          anisoAngle: detail.anisoAngle ?? tools.anisoAngle,
+          anisoFlow: detail.anisoFlow ?? tools.anisoFlow,
+          lightAzimuth: detail.lightAzimuth ?? tools.lightAzimuth,
+          lightElevation: detail.lightElevation ?? tools.lightElevation,
+          lightColor: detail.lightColor ?? primaryColor,
+          paletteColors: detail.paletteColors ?? [],
+          ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
+        }
+      );
+
+      // Write output to a dedicated tagged layer (replaces any previous one)
+      const outCtx = replaceTaggedLayer(`Optics (${preset})`, 'optical-output');
+      if (outCtx) {
+        outCtx.drawImage(shadedCanvas, 0, 0);
+        renderComposite();
+        bumpBufferVersion();
+      }
+    };
+
     const handleBakeNormalMapEvent = () => {
       // Read composite of all visible layers excluding any previous normal map
       const srcCtx = compositeSourceSnapshot('normal-map');
@@ -790,6 +827,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     window.addEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
     window.addEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
     window.addEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
+    window.addEventListener('pixibun:volumetric-optics', handleVolumetricOpticsEvent as EventListener);
     window.addEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
     window.addEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
 
@@ -813,6 +851,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       window.removeEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
       window.removeEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
       window.removeEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
+      window.removeEventListener('pixibun:volumetric-optics', handleVolumetricOpticsEvent as EventListener);
       window.removeEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
       window.removeEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
     };
@@ -840,6 +879,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     tools.lightRadius,
     tools.lightBrightness,
     tools.materialPreset,
+    tools.opticalPreset,
+    tools.translucencyDepth,
+    tools.fresnelPower,
+    tools.anisoAngle,
+    tools.anisoFlow,
   ]);
 
   // Render Grid, Isometric Guides, Symmetry, and Marching Ants Selection Overlay

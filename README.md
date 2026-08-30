@@ -58,6 +58,9 @@ graph LR
 * **1-Click Normal Map Baking:** Exports standard blue tangent-space normal maps $(128, 128, 255)$ directly to a new layer for immediate use in **Godot**, **Unity**, and **Unreal Engine**.
 * **Directional Selective Outlining (Sel-Out):** Evaluates surface normal azimuth alignment against the light source, applying illuminated rim tones to light-facing edges and deep saturated material tones to shadow edges.
 * **Smart Sub-Pixel Anti-Aliasing (De-Jaggy):** Evaluates staircase L-crooks in 1px lines and inserts soft intermediate OKLab blend pixels for smooth hand-drawn contours without creating holes.
+* **2D Volumetric Optics & Subsurface Scattering (SSS):** Beer-Lambert exponential spectral decay through distance-field chord lengths $T(\mathbf{x}) = 2\sqrt{\max(0, R^2 - D(\mathbf{x})^2)}$ combined with 2D Henyey-Greenstein forward phase scattering for luminous gemstones, potion vials, and translucent slimes.
+* **Dielectric Fresnel Rim Reflection with Cauchy Dispersion:** Schlick grazing angle reflectance modulated by per-channel IOR splitting ($F_{0, R} < F_{0, G} < F_{0, B}$) for crystalline edges and rim-lit character contours.
+* **Kajiya-Kay Anisotropic Highlight:** Curvature and directional tangent vector fields $\mathbf{T}(\mathbf{x})$ with dual-cuticle shifts for continuous specular highlight bands across hair strands, fur, and brushed metal blades.
 * **Contact Ground Drop Shadows & Auto Outline:** 1-click generation of soft elliptical contact shadows under feet and clean 1px outer stroke silhouette layers.
 * **RotSprite 8x Engine:** 3-pass Scale2X (EPX) upscaling + nearest-neighbor rotation + snap sampling for crisp, artifact-free pixel art rotation.
 * **Zhang-Suen Line Thinning:** Morphological skeleton algorithm for normalizing thick strokes down to clean 1px lines.
@@ -198,7 +201,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 100 Vitest unit and component tests in Happy-DOM across 18 suites, full Playwright E2E browser test suite (13 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 111 Vitest unit and component tests in Happy-DOM across 19 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -217,7 +220,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v3) | Multi-project workspace management, thumbnail previews, and persistent storage API guard. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 100 unit/component tests + 13 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 111 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
 
 ---
 

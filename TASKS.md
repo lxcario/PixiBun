@@ -1,5 +1,32 @@
 # Build Plan — PixiBun
 
+## Phase 26 — Volumetric Optics, Subsurface Scattering & Anisotropic Shaders (PixiBud AI Physical Shading Suite)
+**Goal:** Implement professional, deterministic on-device 2D computer graphics algorithms in PixiBud AI for volumetric optics, subsurface scattering (SSS), dielectric Fresnel rim reflections with chromatic dispersion, and Kajiya-Kay anisotropic specular highlights. All optical passes operate non-destructively on dedicated tagged output layers (`Layer.tag = 'optical-output'`) with perceptual OKLab palette quantization and Bayer matrix dithering.
+
+**Deliverables:**
+- [x] Optical Shading Types & Store State (`src/types/tools.ts`, `src/stores/studioStore.ts`): Added `OpticalPresetType`, `AnisoFlowPreset`, `VolumetricOpticsParams`, and tool state controls (`opticalPreset`, `translucencyDepth`, `fresnelPower`, `anisoAngle`, `anisoFlow`).
+- [x] Mathematical Volumetric Optics Engine (`src/lib/ai/smartMathEngine.ts`):
+  - 2D Henyey-Greenstein phase function `phaseHG2D(cosTheta, g)` with forward/backscattering anisotropy and singularity protection.
+  - Dielectric Schlick Fresnel reflectance with Cauchy chromatic dispersion `evaluateDielectricFresnel(cosTheta, etaBase, dispersion, roughness, fresnelPower)`.
+  - Anisotropic curvature and directional tangent field generator `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)`.
+  - Full pipeline `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` executing Beer-Lambert SSS, Fresnel rim glow, dual-cuticle Kajiya-Kay anisotropic specular highlights, and OKLab Bayer dither palette quantization.
+- [x] PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Volumetric Optics & SSS** panel with material preset buttons (💎 Gem, 🧪 Slime, 💇 Hair, 🍃 Leaf, ⚔️ Metal), interactive depth/rim/flow sliders, and "Render Volumetric Optics" action.
+- [x] Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`): Added event listener for `pixibun:volumetric-optics` writing output non-destructively to tagged output layers (`Layer.tag = 'optical-output'`) without mutating base artwork.
+- [x] Unit Test Suite (`tests/volumetricOptics.test.ts`): 11 comprehensive unit tests covering phase function derivations, Fresnel grazing reflectance, Cauchy dispersion splitting, tangent rotations, and gemstone/hair rendering.
+- [x] Playwright E2E Spec (`tests/e2e/studio.spec.ts`): End-to-end test verifying gemstone preset selection, rendering, and tagged output layer creation.
+- [x] Documentation & Test Metrics Synchronization (`TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`): Documented physical formulas, updated test counts (111 unit tests across 19 suites, 14 E2E specs).
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 111/111 tests pass across 19 test suites.
+- `npx playwright test` → 14/14 Playwright E2E specs pass.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 25 — Honest Ghosts & Living Timeline (Onion-Skin Overlay Split + Timeline Thumbnails)
 **Goal:** Address tracked Phase 8 debt: (1) Decouple onion-skin ghost rendering from the main canvas into a dedicated underlay canvas with distance falloff and tint mapping, ensuring the eyedropper and exporters sample only pure artwork layers; (2) Upgrade timeline frame cards from numbered placeholder boxes to real pixel thumbnails painted via `compositeFrame()`, with active-frame live updates keyed on buffer versions.
 

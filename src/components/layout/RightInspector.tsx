@@ -5,7 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BlendMode } from '@/types/canvas';
-import { MaterialType } from '@/types/tools';
+import { MaterialType, OpticalPresetType, AnisoFlowPreset } from '@/types/tools';
 import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
 
 export const RightInspector: React.FC = () => {
@@ -41,6 +41,11 @@ export const RightInspector: React.FC = () => {
     setMaterialPreset,
     setCavityStrength,
     setDitherModulation,
+    setOpticalPreset,
+    setTranslucencyDepth,
+    setFresnelPower,
+    setAnisoAngle,
+    setAnisoFlow,
     showNormalMapPreview,
     toggleNormalMapPreview,
   } = useStudioStore();
@@ -112,6 +117,27 @@ export const RightInspector: React.FC = () => {
   const handle47Blob = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:apply-47-blob'));
+  };
+
+  // 2. Module 2: Volumetric Optics, SSS & Anisotropic Shaders
+  const handleRenderVolumetricOptics = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
+    window.dispatchEvent(
+      new CustomEvent('pixibun:volumetric-optics', {
+        detail: {
+          preset: tools.opticalPreset,
+          translucencyDepth: tools.translucencyDepth,
+          fresnelPower: tools.fresnelPower,
+          anisoAngle: tools.anisoAngle,
+          anisoFlow: tools.anisoFlow,
+          lightAzimuth: tools.lightAzimuth,
+          lightElevation: tools.lightElevation,
+          lightColor: primaryColor || '#FFFFFF',
+          paletteColors: currentPalette.colors,
+          ditherModulation: tools.ditherModulation,
+        },
+      })
+    );
   };
 
   // 3. Module 3: Advanced Dithering Actions
@@ -651,7 +677,123 @@ export const RightInspector: React.FC = () => {
             </div>
           </div>
 
-          {/* Module 2: Geometry & Curve Tools */}
+          {/* Module 2: Volumetric Optics, Subsurface Scattering & Anisotropic Shaders */}
+          <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+                <PixelIcon name="sparkles" size={12} />
+                <span>Volumetric Optics & SSS</span>
+              </span>
+              <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2D Physics</span>
+            </div>
+
+            {/* Optical Preset Selector */}
+            <div className="flex flex-col gap-1 text-xs font-mono">
+              <span className="text-[10px] text-[var(--text-body)] font-bold">Material Preset:</span>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { id: 'gemstone', label: '💎 Gem' },
+                  { id: 'slime', label: '🧪 Slime' },
+                  { id: 'hair', label: '💇 Hair' },
+                  { id: 'foliage', label: '🍃 Leaf' },
+                  { id: 'metal_aniso', label: '⚔️ Metal' },
+                ].map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() => setOpticalPreset(preset.id as OpticalPresetType)}
+                    className={`py-1 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                      tools.opticalPreset === preset.id
+                        ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                        : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Parameter Sliders */}
+            <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2">
+              {/* Translucency Depth (SSS) */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">SSS Depth:</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="32"
+                  value={tools.translucencyDepth}
+                  onChange={(e) => setTranslucencyDepth(parseInt(e.target.value, 10))}
+                  className="w-28 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {tools.translucencyDepth}px
+                </span>
+              </div>
+
+              {/* Fresnel Grazing Power */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Fresnel Rim:</span>
+                <input
+                  type="range"
+                  min="1.0"
+                  max="8.0"
+                  step="0.5"
+                  value={tools.fresnelPower}
+                  onChange={(e) => setFresnelPower(parseFloat(e.target.value))}
+                  className="w-28 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
+                  {tools.fresnelPower}x
+                </span>
+              </div>
+
+              {/* Anisotropic Flow Preset */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Flow Type:</span>
+                <select
+                  value={tools.anisoFlow}
+                  onChange={(e) => setAnisoFlow(e.target.value as AnisoFlowPreset)}
+                  className="bg-[#181124] text-[var(--text-heading)] font-bold text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
+                >
+                  <option value="vertical">Vertical (Hair)</option>
+                  <option value="horizontal">Horizontal (Folds)</option>
+                  <option value="radial">Radial (Gem Facets)</option>
+                  <option value="curvature">Curvature Gradient</option>
+                </select>
+              </div>
+
+              {/* Anisotropy Angle */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Aniso Angle:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="180"
+                  value={tools.anisoAngle}
+                  onChange={(e) => setAnisoAngle(parseInt(e.target.value, 10))}
+                  className="w-28 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {tools.anisoAngle}°
+                </span>
+              </div>
+            </div>
+
+            {/* Action Button: Render Volumetric Optics */}
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={handleRenderVolumetricOptics}
+              title="Render SSS forward scattering, dielectric Fresnel rim glow & Kajiya-Kay anisotropic highlights"
+              className="text-[10px] py-1.5 font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_2px_0_#8c5120] flex items-center justify-center gap-1.5"
+            >
+              <PixelIcon name="sparkles" size={13} />
+              <span>Render Volumetric Optics</span>
+            </TactileButton>
+          </div>
+
+          {/* Module 3: Geometry & Curve Tools */}
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-[#dcabdf] uppercase tracking-wider flex items-center gap-1">
               <PixelIcon name="curve" size={12} />

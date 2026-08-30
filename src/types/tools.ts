@@ -60,6 +60,27 @@ export interface ToolSettings {
   ditherModulation: number; // 0 to 1
   curveTightness: number; // 0 to 1
   isoAngleSnap: boolean;
+  opticalPreset: OpticalPresetType;
+  translucencyDepth: number; // 1 to 32px
+  fresnelPower: number; // 1.0 to 8.0
+  anisoAngle: number; // 0 to 180 deg
+  anisoFlow: AnisoFlowPreset;
+}
+
+export type OpticalPresetType = 'gemstone' | 'slime' | 'hair' | 'foliage' | 'metal_aniso';
+export type AnisoFlowPreset = 'vertical' | 'horizontal' | 'radial' | 'curvature';
+
+export interface VolumetricOpticsParams {
+  preset: OpticalPresetType;
+  translucencyDepth: number; // 1 to 32px (optical path length scale)
+  fresnelPower: number; // 1.0 to 8.0 (grazing angle exponent)
+  anisoAngle: number; // 0° to 180°
+  anisoFlow: AnisoFlowPreset;
+  lightAzimuth: number; // 0° to 360°
+  lightElevation: number; // 0° to 90°
+  lightColor: string;
+  paletteColors: string[];
+  ditherModulation: number; // 0.0 to 1.0
 }
 
 

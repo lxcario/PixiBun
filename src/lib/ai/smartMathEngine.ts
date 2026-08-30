@@ -15,7 +15,7 @@
  * 12. Zhang-Suen Morphological Skeleton Line Thinning
  */
 
-import { MaterialType, MaterialProperties, PhotometricLightingParams } from '@/types/tools';
+import { MaterialType, MaterialProperties, PhotometricLightingParams, VolumetricOpticsParams, OpticalPresetType, AnisoFlowPreset } from '@/types/tools';
 import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
 
@@ -1867,4 +1867,409 @@ export function applyZhangSuenThinning(
 
   srcCtx.putImageData(imgData, 0, 0);
   return { thinnedCount: count };
+}
+
+// -----------------------------------------------------------------------------
+// 13. PixiBud 2D Volumetric Optics, Subsurface Scattering & Anisotropic Shaders
+// -----------------------------------------------------------------------------
+
+export interface OpticalMaterialProfile {
+  sigmaT: [number, number, number]; // Spectral extinction (R, G, B)
+  gForward: number; // Henyey-Greenstein forward anisotropy (0.6 - 0.85)
+  distortion: number; // Normal distortion for internal refraction (0.1 - 0.4)
+  wrap: number; // Subsurface wrap factor (0.2 - 0.5)
+  fresnelEta: number; // Base IOR (e.g. 1.77 Ruby, 1.33 Slime, 1.58 Emerald)
+  fresnelPower: number; // Grazing angle power exponent (2.0 - 6.0)
+  dispersion: number; // Abbe chromatic dispersion delta (0.01 - 0.06)
+  roughness: number; // Surface microfacet roughness (0.0 - 0.5)
+  anisoStrength: number; // Kajiya-Kay anisotropic specular strength
+  kajiyaPower1: number; // Sharp highlight exponent
+  kajiyaPower2: number; // Soft tinted highlight exponent
+  kajiyaSpec1: number; // Sharp specular weight
+  kajiyaSpec2: number; // Soft specular weight
+}
+
+export const OPTICAL_PROFILES: Record<OpticalPresetType, OpticalMaterialProfile> = {
+  gemstone: {
+    sigmaT: [0.35, 2.4, 2.8],
+    gForward: 0.78,
+    distortion: 0.35,
+    wrap: 0.3,
+    fresnelEta: 1.77,
+    fresnelPower: 4.5,
+    dispersion: 0.035,
+    roughness: 0.08,
+    anisoStrength: 0.85,
+    kajiyaPower1: 64,
+    kajiyaPower2: 24,
+    kajiyaSpec1: 1.2,
+    kajiyaSpec2: 0.4,
+  },
+  slime: {
+    sigmaT: [2.9, 0.4, 2.6],
+    gForward: 0.82,
+    distortion: 0.25,
+    wrap: 0.45,
+    fresnelEta: 1.33,
+    fresnelPower: 3.0,
+    dispersion: 0.015,
+    roughness: 0.12,
+    anisoStrength: 0.35,
+    kajiyaPower1: 32,
+    kajiyaPower2: 12,
+    kajiyaSpec1: 0.6,
+    kajiyaSpec2: 0.5,
+  },
+  hair: {
+    sigmaT: [1.5, 1.5, 1.5],
+    gForward: 0.55,
+    distortion: 0.15,
+    wrap: 0.35,
+    fresnelEta: 1.55,
+    fresnelPower: 3.5,
+    dispersion: 0.01,
+    roughness: 0.25,
+    anisoStrength: 1.4,
+    kajiyaPower1: 48,
+    kajiyaPower2: 16,
+    kajiyaSpec1: 1.3,
+    kajiyaSpec2: 0.7,
+  },
+  foliage: {
+    sigmaT: [2.5, 0.5, 3.2],
+    gForward: 0.68,
+    distortion: 0.2,
+    wrap: 0.4,
+    fresnelEta: 1.45,
+    fresnelPower: 2.8,
+    dispersion: 0.015,
+    roughness: 0.35,
+    anisoStrength: 0.3,
+    kajiyaPower1: 24,
+    kajiyaPower2: 8,
+    kajiyaSpec1: 0.5,
+    kajiyaSpec2: 0.3,
+  },
+  metal_aniso: {
+    sigmaT: [0.8, 0.8, 0.8],
+    gForward: 0.5,
+    distortion: 0.1,
+    wrap: 0.2,
+    fresnelEta: 2.4,
+    fresnelPower: 5.0,
+    dispersion: 0.04,
+    roughness: 0.15,
+    anisoStrength: 1.5,
+    kajiyaPower1: 80,
+    kajiyaPower2: 32,
+    kajiyaSpec1: 1.6,
+    kajiyaSpec2: 0.8,
+  },
+};
+
+/**
+ * Evaluates 2D Henyey-Greenstein Phase Function for volumetric forward scattering.
+ */
+export function phaseHG2D(cosTheta: number, g: number): number {
+  const gClamped = Math.max(-0.95, Math.min(0.95, g));
+  const g2 = gClamped * gClamped;
+  const cosT = Math.max(-1.0, Math.min(1.0, cosTheta));
+  const denom = Math.max(1e-4, 1.0 + g2 - 2.0 * gClamped * cosT);
+  return (1.0 - g2) / (2.0 * Math.PI * Math.pow(denom, 1.5));
+}
+
+/**
+ * Evaluates Chromatic Dielectric Fresnel Reflectance with Cauchy dispersion channel splitting.
+ */
+export function evaluateDielectricFresnel(
+  cosTheta: number,
+  etaBase: number,
+  dispersion: number,
+  roughness: number,
+  fresnelPower: number = 5.0
+): [number, number, number] {
+  const cosT = Math.max(0.0, Math.min(1.0, cosTheta));
+  const etaR = Math.max(1.01, etaBase - dispersion);
+  const etaG = Math.max(1.01, etaBase);
+  const etaB = Math.max(1.01, etaBase + dispersion);
+
+  const f0R = Math.pow((etaR - 1) / (etaR + 1), 2);
+  const f0G = Math.pow((etaG - 1) / (etaG + 1), 2);
+  const f0B = Math.pow((etaB - 1) / (etaB + 1), 2);
+
+  const fMax = Math.max(0.0, 1.0 - roughness);
+  const grazingTerm = Math.pow(1.0 - cosT, fresnelPower);
+
+  return [
+    f0R + (Math.max(fMax, f0R) - f0R) * grazingTerm,
+    f0G + (Math.max(fMax, f0G) - f0G) * grazingTerm,
+    f0B + (Math.max(fMax, f0B) - f0B) * grazingTerm,
+  ];
+}
+
+/**
+ * Computes anisotropic 2D tangent vector field T(x, y) based on normal curvature and directional presets.
+ */
+export function computeAnisotropicTangentField(
+  normalField: NormalVectorField,
+  width: number,
+  height: number,
+  flowPreset: AnisoFlowPreset,
+  angleDeg: number
+): { tx: Float32Array; ty: Float32Array } {
+  const tx = new Float32Array(width * height);
+  const ty = new Float32Array(width * height);
+  const angleRad = (angleDeg * Math.PI) / 180;
+  const cosA = Math.cos(angleRad);
+  const sinA = Math.sin(angleRad);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      const nx = normalField.nx[idx];
+      const ny = normalField.ny[idx];
+
+      let bx = 0;
+      let by = 0;
+
+      if (flowPreset === 'vertical') {
+        bx = 0;
+        by = 1;
+      } else if (flowPreset === 'horizontal') {
+        bx = 1;
+        by = 0;
+      } else if (flowPreset === 'radial') {
+        const cx = width / 2;
+        const cy = height / 2;
+        const dx = x - cx;
+        const dy = y - cy;
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        bx = -dy / len;
+        by = dx / len;
+      } else {
+        // Curvature tangent: orthogonal to normal gradient
+        const len = Math.sqrt(nx * nx + ny * ny) || 1;
+        bx = -ny / len;
+        by = nx / len;
+      }
+
+      // Rotate by angle offset
+      const rx = bx * cosA - by * sinA;
+      const ry = bx * sinA + by * cosA;
+      const rLen = Math.sqrt(rx * rx + ry * ry) || 1;
+
+      tx[idx] = rx / rLen;
+      ty[idx] = ry / rLen;
+    }
+  }
+
+  return { tx, ty };
+}
+
+/**
+ * Executes the complete 2D Volumetric Optics, SSS, Fresnel, and Anisotropic Specular Shader pipeline.
+ */
+export function executeVolumetricOpticalPipeline(
+  srcCtx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  params: VolumetricOpticsParams
+): HTMLCanvasElement {
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+
+  const isOpaque = (x: number, y: number) => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return false;
+    return data[(y * width + x) * 4 + 3] > 30;
+  };
+
+  // 1. Distance transform & normal fields
+  const distanceMap = computeSeparableEDT(isOpaque, width, height);
+  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  const tangentField = computeAnisotropicTangentField(
+    normalField,
+    width,
+    height,
+    params.anisoFlow,
+    params.anisoAngle
+  );
+
+  const profile = OPTICAL_PROFILES[params.preset] || OPTICAL_PROFILES.gemstone;
+
+  // 2. Light setup
+  const azRad = (params.lightAzimuth * Math.PI) / 180;
+  const elRad = (Math.max(10, params.lightElevation) * Math.PI) / 180;
+
+  const Lx = Math.sin(azRad) * Math.cos(elRad);
+  const Ly = -Math.cos(azRad) * Math.cos(elRad);
+  const Lz = Math.sin(elRad);
+
+  const Vx = 0;
+  const Vy = 0;
+  const Vz = 1.0;
+
+  const Hx = Lx + Vx;
+  const Hy = Ly + Vy;
+  const Hz = Lz + Vz;
+  const hLen = Math.sqrt(Hx * Hx + Hy * Hy + Hz * Hz) || 1;
+  const normHx = Hx / hLen;
+  const normHy = Hy / hLen;
+
+  const lightRgba = hexToRgba(params.lightColor || '#FFFFFF');
+  const lightR = lightRgba.r / 255;
+  const lightG = lightRgba.g / 255;
+  const lightB = lightRgba.b / 255;
+
+  const paletteRgba = params.paletteColors.map(hexToRgba);
+  const paletteOKLab = paletteRgba.map(c => rgbToOKLab(c.r, c.g, c.b));
+
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = width;
+  outputCanvas.height = height;
+  const outCtx = outputCanvas.getContext('2d')!;
+  const outImgData = outCtx.createImageData(width, height);
+  const outData = outImgData.data;
+
+  // Bayer 4x4 threshold matrix
+  const bayer4x4 = [
+    0, 8, 2, 10,
+    12, 4, 14, 6,
+    3, 11, 1, 9,
+    15, 7, 13, 5,
+  ];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      const pIdx = idx * 4;
+
+      if (!isOpaque(x, y)) {
+        outData[pIdx + 3] = 0;
+        continue;
+      }
+
+      const origR = data[pIdx] / 255;
+      const origG = data[pIdx + 1] / 255;
+      const origB = data[pIdx + 2] / 255;
+      const origA = data[pIdx + 3];
+
+      const Nx = normalField.nx[idx];
+      const Ny = normalField.ny[idx];
+      const Nz = normalField.nz[idx];
+
+      const Tx = tangentField.tx[idx];
+      const Ty = tangentField.ty[idx];
+
+      const dist = distanceMap[idx];
+
+      // A. 2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein)
+      const NdotL = Nx * Lx + Ny * Ly + Nz * Lz;
+      const effectiveDepth = Math.max(1, params.translucencyDepth);
+      const opticalChord = (2.0 * Math.max(0.5, dist)) / Math.max(0.08, NdotL + profile.wrap);
+      const scaledChord = opticalChord / effectiveDepth;
+
+      const sssR = Math.exp(-profile.sigmaT[0] * scaledChord);
+      const sssG = Math.exp(-profile.sigmaT[1] * scaledChord);
+      const sssB = Math.exp(-profile.sigmaT[2] * scaledChord);
+
+      // Inverted light vector with normal distortion for forward scatter
+      const sLx = -(Lx + Nx * profile.distortion);
+      const sLy = -(Ly + Ny * profile.distortion);
+      const sLz = -(Lz + Nz * profile.distortion);
+      const sLen = Math.sqrt(sLx * sLx + sLy * sLy + sLz * sLz) || 1;
+      const cosTheta = (sLx * Vx + sLy * Vy + sLz * Vz) / sLen;
+      const forwardScatter = phaseHG2D(cosTheta, profile.gForward);
+
+      const sssRadianceR = (sssR * (0.2 + 2.2 * forwardScatter)) * lightR;
+      const sssRadianceG = (sssG * (0.2 + 2.2 * forwardScatter)) * lightG;
+      const sssRadianceB = (sssB * (0.2 + 2.2 * forwardScatter)) * lightB;
+
+      // B. Dielectric Fresnel Reflection with Chromatic Dispersion
+      const cosView = Math.max(0, Nz); // dot(N, V) where V = (0, 0, 1)
+      const fresnelPower = params.fresnelPower ?? profile.fresnelPower;
+      const [fresR, fresG, fresB] = evaluateDielectricFresnel(
+        cosView,
+        profile.fresnelEta,
+        profile.dispersion,
+        profile.roughness,
+        fresnelPower
+      );
+
+      const rimLightGate = Math.max(0.1, NdotL);
+      const rimRadianceR = fresR * rimLightGate * lightR;
+      const rimRadianceG = fresG * rimLightGate * lightG;
+      const rimRadianceB = fresB * rimLightGate * lightB;
+
+      // C. Kajiya-Kay Anisotropic Specular Highlight
+      const t1x = Tx + Nx * 0.1;
+      const t1y = Ty + Ny * 0.1;
+      const t1Len = Math.sqrt(t1x * t1x + t1y * t1y) || 1;
+
+      const t2x = Tx - Nx * 0.15;
+      const t2y = Ty - Ny * 0.15;
+      const t2Len = Math.sqrt(t2x * t2x + t2y * t2y) || 1;
+
+      const dotTH1 = (t1x / t1Len) * normHx + (t1y / t1Len) * normHy;
+      const dotTH2 = (t2x / t2Len) * normHx + (t2y / t2Len) * normHy;
+
+      const sinTH1 = Math.sqrt(Math.max(0.0, 1.0 - dotTH1 * dotTH1));
+      const sinTH2 = Math.sqrt(Math.max(0.0, 1.0 - dotTH2 * dotTH2));
+
+      const spec1 = profile.kajiyaSpec1 * Math.pow(sinTH1, profile.kajiyaPower1);
+      const spec2 = profile.kajiyaSpec2 * Math.pow(sinTH2, profile.kajiyaPower2);
+
+      const anisoHighlightR = (spec1 * lightR + spec2 * origR * lightR) * profile.anisoStrength;
+      const anisoHighlightG = (spec1 * lightG + spec2 * origG * lightG) * profile.anisoStrength;
+      const anisoHighlightB = (spec1 * lightB + spec2 * origB * lightB) * profile.anisoStrength;
+
+      // D. Combine Shading Passes
+      const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
+      const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
+      const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
+
+      let r255 = Math.max(0, Math.min(255, Math.round(finalR * 255)));
+      let g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
+      let b255 = Math.max(0, Math.min(255, Math.round(finalB * 255)));
+
+      // E. Optional OKLab Perceptual Quantization + Bayer Dithering
+      if (paletteOKLab.length > 0 && params.ditherModulation > 0) {
+        const rawLab = rgbToOKLab(r255, g255, b255);
+        const bayerIdx = (y % 4) * 4 + (x % 4);
+        const bayerOffset = ((bayer4x4[bayerIdx] / 16.0) - 0.5) * params.ditherModulation;
+
+        const modL = rawLab.L + bayerOffset * 0.12;
+        const modA = rawLab.a + bayerOffset * 0.04;
+        const modB = rawLab.b + bayerOffset * 0.04;
+
+        let bestDist = Infinity;
+        let bestColor = paletteRgba[0];
+
+        for (let i = 0; i < paletteOKLab.length; i++) {
+          const pLab = paletteOKLab[i];
+          const dL = modL - pLab.L;
+          const da = modA - pLab.a;
+          const db = modB - pLab.b;
+          const dist = 1.25 * dL * dL + 0.85 * (da * da + db * db);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestColor = paletteRgba[i];
+          }
+        }
+
+        r255 = bestColor.r;
+        g255 = bestColor.g;
+        b255 = bestColor.b;
+      }
+
+      outData[pIdx] = r255;
+      outData[pIdx + 1] = g255;
+      outData[pIdx + 2] = b255;
+      outData[pIdx + 3] = origA;
+    }
+  }
+
+  outCtx.putImageData(outImgData, 0, 0);
+  return outputCanvas;
 }

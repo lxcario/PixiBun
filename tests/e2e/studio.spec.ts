@@ -272,5 +272,51 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     });
     expect(thumb1PaintedCount).toBeGreaterThan(0);
   });
+
+  test('PixiBud AI renders volumetric optics non-destructively to tagged output layer', async ({ page }) => {
+    await page.goto('/studio');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    await page.waitForTimeout(500);
+
+    const canvas = page.locator('canvas[data-testid="main-composite-canvas"]');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) return;
+
+    // 1. Draw a block on the active layer
+    const targetX = box.x + (box.width / 32) * 16.5;
+    const targetY = box.y + (box.height / 32) * 16.5;
+    await page.mouse.move(targetX, targetY);
+    await page.mouse.down();
+    await page.mouse.move(targetX + 8, targetY + 8);
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+
+    // 2. Switch to PixiBud AI tab
+    const aiTabBtn = page.getByRole('button', { name: /PixiBud AI/i });
+    await aiTabBtn.click();
+    await page.waitForTimeout(150);
+
+    // 3. Select Gemstone preset
+    const gemBtn = page.getByRole('button', { name: /💎 Gem/i });
+    await expect(gemBtn).toBeVisible();
+    await gemBtn.click();
+    await page.waitForTimeout(100);
+
+    // 4. Click Render Volumetric Optics
+    const renderBtn = page.getByRole('button', { name: /Render Volumetric Optics/i });
+    await expect(renderBtn).toBeVisible();
+    await renderBtn.click();
+    await page.waitForTimeout(200);
+
+    // 5. Switch back to Layers tab
+    const layersTabBtn = page.getByRole('button', { name: /Layers/i });
+    await layersTabBtn.click();
+    await page.waitForTimeout(150);
+
+    // 6. Assert non-destructive output layer 'Optics (gemstone)' exists
+    await expect(page.locator('text=Optics (gemstone)')).toBeVisible();
+  });
 });
 
