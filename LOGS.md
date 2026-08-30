@@ -365,13 +365,14 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
   - Added `--focus-ring: 0 0 0 2px var(--accent-gold);` and `.min-target-size` ($\ge 24\text{px}$) in `globals.css` with WCAG AA $\ge 4.5:1$ contrast compliant light/dark tokens.
   - Added keyboard navigation alternatives for drag interactions in `CenterViewport.tsx` (arrow keys for viewport panning and selection nudging per WCAG 2.5.7).
   - Implemented route and global error boundaries in `src/app/error.tsx`, `src/app/global-error.tsx`, and `src/app/studio/error.tsx`.
-- **Privacy-First Observability & Diagnostics**:
+- **Privacy-First Observability & SSRF-Hardened Relay**:
   - Upgraded Dexie schema to version 2 with additive `diagnostics` table (`'id, kind, timestamp'`).
   - Implemented `src/lib/diagnostics/capture.ts` with FIFO ring buffer pruning (max 200 entries), 2KB detail truncation, export diagnostics JSON tool, and opt-in relay toggle.
   - Integrated Core Web Vitals capture (`CLS`, `INP`, `LCP`, `TTFB`, `FCP`) via `web-vitals` library.
+  - Hardened same-origin `/api/diagnostics/relay` proxy against SSRF: destination is strictly resolved from operator-configured `DIAGNOSTICS_RELAY_URL` environment variable (enforcing HTTPS), completely ignoring client-supplied target URLs and eliminating information disclosure.
   - Added Privacy & Diagnostics inspector section in `ShortcutsModal.tsx`.
 - **Continuous Quality & Performance Gates**:
-  - Built Happy-DOM component test suites: `ModalWrapper.test.tsx`, `TactileButton.test.tsx`, `ThemeToggle.test.tsx`, `diagnostics.test.ts` bringing Vitest coverage to 73 tests across 14 test files (100% green).
+  - Built Happy-DOM component test suites and route tests: `ModalWrapper.test.tsx`, `TactileButton.test.tsx`, `ThemeToggle.test.tsx`, `diagnostics.test.ts`, `diagnosticsRelay.test.ts` bringing Vitest coverage to 77 tests across 15 test files (100% green).
   - Built Playwright Chromium E2E suite: `landing.spec.ts`, `studio.spec.ts`, `offline.spec.ts`, `pwa.spec.ts` with automated Axe WCAG 2.2 AA scans (0 violations).
   - Configured `lighthouserc.json` with strict accessibility ($1.0$) and performance thresholds.
   - Updated `.github/workflows/ci.yml` with 3 parallel validation stages (`validate`, `e2e`, `lighthouse`).
@@ -379,8 +380,8 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 **Checks run:**
 - `npm run typecheck`: 0 errors.
 - `npm run lint`: 0 errors, 0 warnings.
-- `npm test`: 73/73 tests pass across 14 test suites (100% green).
+- `npm test`: 77/77 tests pass across 15 test suites (100% green).
 - `npm run test:e2e`: 9/9 Playwright E2E and Axe WCAG 2.2 specs pass (100% green).
-- `npm run build`: Next.js 16 production build compiles cleanly in 6.8s.
+- `npm run build`: Next.js 16 production build compiles cleanly in 20.4s.
 **Status:** Complete
 

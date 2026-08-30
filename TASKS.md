@@ -13,12 +13,13 @@
 - [x] Drag Alternatives & Live Region Feedback: Arrow key canvas panning and floating selection nudging (WCAG 2.5.7) and `aria-live="polite"` locked layer feedback.
 - [x] Route & Global Error Boundaries: Atelier styled error boundaries in `src/app/error.tsx`, `src/app/global-error.tsx`, and `src/app/studio/error.tsx`.
 - [x] Privacy-First Diagnostics & Web Vitals: Dexie schema v2 with 200-entry ring buffer, `web-vitals` listener, export JSON tool, and opt-in relay toggle in `ShortcutsModal.tsx`.
-- [x] Quality Gates & CI: 73 unit/component tests (100% green), 9 Playwright E2E specs with Axe WCAG 2.2 scans, `lighthouserc.json`, and 3-stage GitHub Actions CI.
+- [x] SSRF Security Remediation: Rewrote `/api/diagnostics/relay` to strictly use operator-configured HTTPS `DIAGNOSTICS_RELAY_URL` environment variable, ignoring all client-supplied target URLs and eliminating open-proxy vulnerabilities.
+- [x] Quality Gates & CI: 77 unit/component tests (100% green across 15 suites), 9 Playwright E2E specs with Axe WCAG 2.2 scans, `lighthouserc.json`, and 3-stage GitHub Actions CI.
 
 **Acceptance criteria:**
 - `npm run lint` → 0 errors, 0 warnings.
 - `npm run typecheck` → 0 errors.
-- `npm test` → 73/73 tests pass across 14 test suites.
+- `npm test` → 77/77 tests pass across 15 test suites.
 - `npm run test:e2e` → 9/9 Playwright E2E and Axe WCAG scans pass.
 - `npm run build` → Next.js 16 production build compiles cleanly.
 
