@@ -291,3 +291,32 @@ To prevent simultaneous layout recalculations and repaint stutter across thousan
 1. **Transition Suppression:** Injects a high-priority stylesheet (`pixibun-theme-transition-killer`) with `transition: none !important` before mutating `data-theme`.
 2. **Synchronous Reflow:** Reads `getComputedStyle(css).opacity` to force instantaneous layout evaluation while transitions are disabled.
 3. **Clean Teardown:** Removes the temporary stylesheet on the subsequent `requestAnimationFrame` tick, restoring silky micro-interactions without flash or delay.
+
+---
+
+## 12. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)
+
+High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral Filters, Laplace Normal Map baking, downsampling) require substantial TypedArray scratch space. To eliminate garbage collection pauses during live canvas interactions:
+- **Pool Sizing & Lifecycle:** Pre-allocates and bounds reusable `Float32Array`, `Int32Array`, and `Uint8ClampedArray` buffers.
+- **Resource Borrows:** Callers acquire buffers with `acquireFloat32Buffer(minLen)` and release them in `finally` blocks with `releaseFloat32Buffer(buf)`.
+- **Zero-Fill Guarantees:** Buffers are sanitized/cleared on release, preventing cross-frame data corruption.
+- **Compositor Canvas Pooling:** `compositeFrame()` leverages a persistent offscreen canvas singleton and accepts an optional `targetCanvas` destination to avoid allocating DOM canvas elements on every render tick.
+
+---
+
+## 13. Multithreaded AI Worker Architecture (`src/lib/ai/pixelAi.worker.ts`)
+
+Heavy compute-bound graphics passes are offloaded from the UI main thread to a dedicated Web Worker:
+- **Optical Flow Tweening:** 2D block-matching motion vector analysis and intermediate frame synthesis run in the background.
+- **Selective Outlining (Sel-Out):** Computes normal vector rim and directional shadow tints asynchronously.
+- **Downsampling & Quantization:** OKLab color clustering and Floyd-Steinberg/Atkinson error diffusion run without frame drops.
+- **Transferable Buffers:** Data exchange leverages zero-copy `ArrayBuffer` transfer lists (`postMessage(payload, [buffer])`).
+
+---
+
+## 14. Strongly-Typed Event Bus (`src/lib/events/studioEvents.ts`)
+
+Cross-component commands (normal map baking, palette quantization, volumetric lighting triggers, in-between frame synthesis) utilize a strongly-typed pub/sub event bus:
+- **Discriminated Event Map:** Every action is defined in `StudioEventMap` with strict payload schemas.
+- **Subscription Ergonomics:** Components subscribe via `studioEvents.on(event, handler)` which returns an unsubscribe cleanup function.
+

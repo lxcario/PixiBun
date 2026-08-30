@@ -18,6 +18,12 @@
 import { MaterialType, MaterialProperties, PhotometricLightingParams, VolumetricOpticsParams, OpticalPresetType, AnisoFlowPreset } from '@/types/tools';
 import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
+import {
+  acquireFloat32Buffer,
+  releaseFloat32Buffer,
+  acquireInt32Buffer,
+  releaseInt32Buffer,
+} from '@/lib/engine/bufferPool';
 
 export interface Point {
   x: number;
@@ -87,10 +93,10 @@ export const MATERIAL_PROFILES: Record<MaterialType, MaterialProperties> = {
 /**
  * Computes the 1D squared distance transform of an array in O(N) time using lower parabolic envelopes.
  */
-function dt1D(f: Float32Array, n: number): Float32Array {
-  const d = new Float32Array(n);
-  const v = new Int32Array(n);
-  const z = new Float32Array(n + 1);
+function dt1D(f: Float32Array, n: number, dOut?: Float32Array, vScratch?: Int32Array, zScratch?: Float32Array): Float32Array {
+  const d = dOut || new Float32Array(n);
+  const v = vScratch || acquireInt32Buffer(n);
+  const z = zScratch || acquireFloat32Buffer(n + 1);
   let k = 0;
   v[0] = 0;
   z[0] = -Infinity;
@@ -116,6 +122,9 @@ function dt1D(f: Float32Array, n: number): Float32Array {
     d[q] = (q - v[k]) * (q - v[k]) + f[v[k]];
   }
 
+  if (!vScratch) releaseInt32Buffer(v);
+  if (!zScratch) releaseFloat32Buffer(z);
+
   return d;
 }
 
@@ -128,7 +137,7 @@ export function computeSeparableEDT(
   height: number
 ): Float32Array {
   const INF = 1e9;
-  const grid = new Float32Array(width * height);
+  const grid = acquireFloat32Buffer(width * height);
 
   // Initialize: 0 for transparent boundary, INF for opaque interior
   for (let y = 0; y < height; y++) {
@@ -137,32 +146,45 @@ export function computeSeparableEDT(
     }
   }
 
-  // 1. Transform along columns
-  for (let x = 0; x < width; x++) {
-    const col = new Float32Array(height);
-    for (let y = 0; y < height; y++) {
-      col[y] = grid[y * width + x];
-    }
-    const dtCol = dt1D(col, height);
-    for (let y = 0; y < height; y++) {
-      grid[y * width + x] = dtCol[y];
-    }
-  }
+  // Pre-allocate scratch buffers for 1D transforms along columns and rows
+  const maxDim = Math.max(width, height);
+  const fScratch = acquireFloat32Buffer(maxDim);
+  const dScratch = acquireFloat32Buffer(maxDim);
+  const vScratch = acquireInt32Buffer(maxDim);
+  const zScratch = acquireFloat32Buffer(maxDim + 1);
 
-  // 2. Transform along rows
-  const distance = new Float32Array(width * height);
-  for (let y = 0; y < height; y++) {
-    const row = new Float32Array(width);
+  try {
+    // 1. Transform along columns
     for (let x = 0; x < width; x++) {
-      row[x] = grid[y * width + x];
+      for (let y = 0; y < height; y++) {
+        fScratch[y] = grid[y * width + x];
+      }
+      dt1D(fScratch, height, dScratch, vScratch, zScratch);
+      for (let y = 0; y < height; y++) {
+        grid[y * width + x] = dScratch[y];
+      }
     }
-    const dtRow = dt1D(row, width);
-    for (let x = 0; x < width; x++) {
-      distance[y * width + x] = Math.sqrt(dtRow[x]);
-    }
-  }
 
-  return distance;
+    // 2. Transform along rows
+    const distance = new Float32Array(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        fScratch[x] = grid[y * width + x];
+      }
+      dt1D(fScratch, width, dScratch, vScratch, zScratch);
+      for (let x = 0; x < width; x++) {
+        distance[y * width + x] = Math.sqrt(dScratch[x]);
+      }
+    }
+
+    return distance;
+  } finally {
+    releaseFloat32Buffer(grid);
+    releaseFloat32Buffer(fScratch);
+    releaseFloat32Buffer(dScratch);
+    releaseInt32Buffer(vScratch);
+    releaseFloat32Buffer(zScratch);
+  }
 }
 
 // -----------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { StudioLayout } from '@/components/layout/StudioLayout';
+import { MobileStudioGate } from '@/components/layout/MobileStudioGate';
 
 export const metadata: Metadata = {
   title: 'PixiBun Studio — Tactile Pixel Art & Animation',
@@ -8,5 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default function StudioPage() {
-  return <StudioLayout />;
+  return (
+    <>
+      <MobileStudioGate />
+      <div className="hidden lg:block w-full h-full">
+        <StudioLayout />
+      </div>
+    </>
+  );
 }

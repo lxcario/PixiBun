@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { useStudioStore } from '@/stores/studioStore';
-import {
-  processImageToPixelArt,
-  PixelizeOptions,
-  PixelizeResult,
-} from '@/lib/ai/pixelizeEngine';
+import { usePixelizeEngine } from '@/hooks/usePixelizeEngine';
 
 export interface ImportPayload {
   type: 'image' | 'project';
@@ -53,102 +49,36 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     return palettes.find((p) => p.id === currentPaletteId)?.colors || [];
   }, [palettes, currentPaletteId]);
 
-  const [imageTarget, setImageTarget] = useState<'new-layer' | 'new-frame' | 'replace-layer'>('new-layer');
-  
-  // Size mode: 'match-image' (1:1 exact size) or 'fit-canvas' (scaled to current canvas)
-  const [sizeMode, setSizeMode] = useState<'match-image' | 'fit-canvas'>('match-image');
-
-  // Processing mode: 'exact' (100% untouched 1:1 original pixels) or 'pixelize' (retro stylization)
-  const [processingMode, setProcessingMode] = useState<'exact' | 'pixelize'>('exact');
-
-  // Advanced Pixelization options (only shown when processingMode === 'pixelize')
-  const [colorMode, setColorMode] = useState<'true-color' | 'active-palette' | 'reduce-16' | 'reduce-8' | 'reduce-32'>('reduce-16');
-  const [ditherMode, setDitherMode] = useState<'none' | 'bayer-4x4' | 'atkinson' | 'floyd-steinberg'>('none');
-  const [removeBackground, setRemoveBackground] = useState<boolean>(false);
-  const [addToPalette, setAddToPalette] = useState<boolean>(false);
-
-  const [previewResult, setPreviewResult] = useState<PixelizeResult | null>(null);
-  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const imgElementRef = useRef<HTMLImageElement | null>(null);
-
-  // Re-run pixelization when options change
-  const runPixelization = useCallback((loadedImg?: HTMLImageElement) => {
-    const img = loadedImg || imgElementRef.current;
-    if (!img) return;
-
-    const targetW = sizeMode === 'match-image' ? img.width : canvasWidth;
-    const targetH = sizeMode === 'match-image' ? img.height : canvasHeight;
-
-    if (processingMode === 'exact') {
-      // 100% untouched exact 1:1 copy
-      const exactCanvas = document.createElement('canvas');
-      exactCanvas.width = targetW;
-      exactCanvas.height = targetH;
-      const ctx = exactCanvas.getContext('2d', { willReadFrequently: true })!;
-      ctx.imageSmoothingEnabled = false;
-
-      if (sizeMode === 'match-image') {
-        ctx.drawImage(img, 0, 0);
-      } else {
-        // Fit proportionally onto current canvas
-        const aspect = img.width / img.height;
-        const canvasAspect = targetW / targetH;
-        let dw = targetW;
-        let dh = targetH;
-        let dx = 0;
-        let dy = 0;
-        if (aspect > canvasAspect) {
-          dh = Math.round(targetW / aspect);
-          dy = Math.floor((targetH - dh) / 2);
-        } else {
-          dw = Math.round(targetH * aspect);
-          dx = Math.floor((targetW - dw) / 2);
-        }
-        ctx.drawImage(img, dx, dy, dw, dh);
-      }
-
-      setPreviewResult({
-        canvas: exactCanvas,
-        dataUrl: exactCanvas.toDataURL('image/png'),
-        extractedPalette: [],
-        width: targetW,
-        height: targetH,
-      });
-      return;
-    }
-
-    // Processing mode === 'pixelize' (Retro stylization engine)
-    const options: PixelizeOptions = {
-      targetWidth: targetW,
-      targetHeight: targetH,
-      fitMode: sizeMode === 'match-image' ? 'pixel-art' : 'contain',
-      samplingMode: 'salient-box',
-      colorMode,
-      activePalette,
-      ditherMode,
-      cleanAlpha: true,
-      removeBackground,
-      bgTolerance: 0.15,
-    };
-
-    const result = processImageToPixelArt(img, options);
-    setPreviewResult(result);
-  }, [
-    activePalette,
-    canvasHeight,
-    canvasWidth,
-    colorMode,
-    ditherMode,
-    processingMode,
-    removeBackground,
+  const {
+    imageTarget,
+    setImageTarget,
     sizeMode,
-  ]);
+    setSizeMode,
+    processingMode,
+    setProcessingMode,
+    colorMode,
+    setColorMode,
+    ditherMode,
+    setDitherMode,
+    removeBackground,
+    setRemoveBackground,
+    addToPalette,
+    setAddToPalette,
+    previewResult,
+    imgElementRef,
+    runPixelization,
+  } = usePixelizeEngine({
+    canvasWidth,
+    canvasHeight,
+    activePalette,
+  });
+
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Load Image Element once when payload changes
   useEffect(() => {
     if (!payload?.dataUrl || payload.type !== 'image') {
       imgElementRef.current = null;
-      setPreviewResult(null);
       return;
     }
 
@@ -161,13 +91,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       setSizeMode(img.width <= 512 && img.height <= 512 ? 'match-image' : 'fit-canvas');
       runPixelization(img);
     };
-  }, [payload, runPixelization]);
+  }, [payload, runPixelization, setSizeMode, imgElementRef]);
 
   useEffect(() => {
     if (imgElementRef.current) {
       runPixelization();
     }
-  }, [runPixelization]);
+  }, [runPixelization, imgElementRef]);
 
   // Render to live preview canvas
   useEffect(() => {

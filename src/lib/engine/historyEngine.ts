@@ -1,4 +1,5 @@
 import type { HistoryStep } from '@/types/canvas';
+export type { HistoryStep };
 
 export interface HistoryEngine {
   /** Push a completed stroke snapshot; drops redo tail, prunes to maxDepth (50), returns new undo depth. */

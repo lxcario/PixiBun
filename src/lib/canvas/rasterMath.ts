@@ -41,7 +41,7 @@ export function filterPixelPerfect(points: Point[]): Point[] {
   const result: Point[] = [points[0]];
 
   for (let i = 1; i < points.length - 1; i++) {
-    const prev = points[i - 1];
+    const prev = result[result.length - 1];
     const curr = points[i];
     const next = points[i + 1];
 
@@ -50,8 +50,13 @@ export function filterPixelPerfect(points: Point[]): Point[] {
     const sameRowOrColAsNext = curr.x === next.x || curr.y === next.y;
 
     if (sameRowOrColAsPrev && sameRowOrColAsNext && prev.x !== next.x && prev.y !== next.y) {
-      // Skip this corner point to maintain a single-pixel line width
-      continue;
+      // Ensure 8-way diagonal connectivity between prev and next before skipping
+      const dx = Math.abs(next.x - prev.x);
+      const dy = Math.abs(next.y - prev.y);
+      if (dx <= 1 && dy <= 1) {
+        // Skip this corner point to maintain a single-pixel line width
+        continue;
+      }
     }
 
     result.push(curr);

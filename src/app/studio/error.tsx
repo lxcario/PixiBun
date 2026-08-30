@@ -20,19 +20,19 @@ export default function StudioErrorBoundary({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#140c1e] text-[#f7e7c4] p-6 font-mono">
-      <div className="max-w-lg w-full bg-[#20152e] border-2 border-[#8c5120] rounded-[4px] p-6 shadow-[0_4px_0_#0a050f] flex flex-col gap-4 text-center">
-        <div className="w-12 h-12 mx-auto rounded-full bg-[#3a2052] border border-[#f0be7c] flex items-center justify-center text-xl">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--desk-bg)] text-[var(--text-heading)] p-6 font-mono">
+      <div className="max-w-lg w-full bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[4px] p-6 shadow-[0_4px_0_var(--desk-bg)] flex flex-col gap-4 text-center">
+        <div className="w-12 h-12 mx-auto rounded-full bg-[var(--desk-surface-raised)] border border-[var(--accent-gold)] flex items-center justify-center text-xl">
           🎨
         </div>
-        <h2 className="text-lg font-bold text-[#f0be7c] font-display">
+        <h2 className="text-lg font-bold text-[var(--accent-gold)] font-display">
           Studio Canvas Hitch
         </h2>
-        <p className="text-xs text-[#d3b89d] leading-relaxed">
-          The studio workbench encountered an issue rendering canvas state. <strong className="text-[#f0be7c]">Your artwork is safely saved in local IndexedDB storage.</strong>
+        <p className="text-xs text-[var(--text-body)] leading-relaxed">
+          The studio workbench encountered an issue rendering canvas state. <strong className="text-[var(--accent-gold)]">Your artwork is safely saved in local IndexedDB storage.</strong>
         </p>
         {error.message && (
-          <div className="bg-[#140c1e] border border-[#3d2352] p-2.5 rounded text-[11px] text-[#fca5a5] text-left break-words max-h-28 overflow-y-auto font-mono">
+          <div className="bg-[var(--desk-bg)] border border-[var(--desk-border)] p-2.5 rounded text-[11px] text-[#fca5a5] text-left break-words max-h-28 overflow-y-auto font-mono">
             {error.message}
           </div>
         )}
@@ -40,21 +40,21 @@ export default function StudioErrorBoundary({
           <button
             type="button"
             onClick={() => reset()}
-            className="px-4 py-2 bg-[#f0be7c] text-[#140c1e] font-bold text-xs rounded border-2 border-[#8c5120] hover:bg-[#fff8db] shadow-[0_2px_0_#8c5120] cursor-pointer"
+            className="px-4 py-2 bg-[var(--accent-gold)] text-[var(--desk-bg)] font-bold text-xs rounded border-2 border-[var(--desk-border)] hover:opacity-90 cursor-pointer"
           >
             Resume Session
           </button>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-[#2d1b3f] text-[#f7e7c4] font-medium text-xs rounded border border-[#8c5120] hover:bg-[#3b2353] cursor-pointer"
+            className="px-4 py-2 bg-[var(--desk-surface-raised)] text-[var(--text-heading)] font-medium text-xs rounded border border-[var(--desk-border)] hover:bg-[var(--desk-surface)] cursor-pointer"
           >
             Reload Studio
           </button>
           <button
             type="button"
             onClick={() => exportDiagnosticsFile()}
-            className="px-3 py-2 bg-transparent text-[#d3b89d] hover:text-[#f0be7c] text-xs underline underline-offset-2 cursor-pointer"
+            className="px-3 py-2 bg-transparent text-[var(--text-body)] hover:text-[var(--accent-gold)] text-xs underline underline-offset-2 cursor-pointer"
           >
             Export Diagnostics
           </button>

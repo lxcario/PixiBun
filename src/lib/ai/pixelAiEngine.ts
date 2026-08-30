@@ -78,14 +78,12 @@ export function getHighlightRgb(r: number, g: number, b: number): [number, numbe
  * Uses surface normals: borders facing the light source (azimuth) receive an illuminated
  * rim tint, while shadow-facing borders receive deep saturated material tones.
  */
-export function generateSelOutData(
-  srcCtx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  lightAzimuthDeg: number = 315
+export function generateSelOutDataSync(
+  image: { width: number; height: number; data: Uint8ClampedArray },
+  lightAzimuthDeg: number = 315,
+  _lightElevationDeg?: number
 ): { selOutPixels: ShadedPixel[] } {
-  const imgData = srcCtx.getImageData(0, 0, width, height);
-  const data = imgData.data;
+  const { width, height, data } = image;
 
   const isOpaque = (x: number, y: number): boolean => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
@@ -167,6 +165,19 @@ export function generateSelOutData(
   }
 
   return { selOutPixels };
+}
+
+export function generateSelOutData(
+  srcCtx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  lightAzimuthDeg: number = 315
+): { selOutPixels: ShadedPixel[] } {
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  return generateSelOutDataSync(
+    { width, height, data: imgData.data },
+    lightAzimuthDeg
+  );
 }
 
 /**
@@ -320,26 +331,16 @@ export function applyAtmosphericColorGrade(
 }
 
 /**
- * 4. Optical Flow & Signed Distance Field (SDF) In-Between Frame Morphing:
- * Given Frame A and Frame B, computes 2D block-matching motion flow vectors and
- * interpolates boundaries and color trajectories to generate a smooth intermediate tween frame.
+ * Pure buffer optical flow tweening for frames A and B.
  */
-export function morphInBetweenFrames(
-  ctxA: CanvasRenderingContext2D,
-  ctxB: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  t: number = 0.5
-): HTMLCanvasElement {
-  const dataA = ctxA.getImageData(0, 0, width, height).data;
-  const dataB = ctxB.getImageData(0, 0, width, height).data;
-
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = width;
-  outCanvas.height = height;
-  const outCtx = outCanvas.getContext('2d')!;
-  const outImgData = outCtx.createImageData(width, height);
-  const outData = outImgData.data;
+export function morphInBetweenFramesSync(
+  frameA: { width: number; height: number; data: Uint8ClampedArray },
+  frameB: { width: number; height: number; data: Uint8ClampedArray },
+  steps: number = 1
+): { width: number; height: number; data: Uint8ClampedArray }[] {
+  const { width, height } = frameA;
+  const dataA = frameA.data;
+  const dataB = frameB.data;
 
   // Compute 2D Optical Flow motion displacement vectors (u, v) for every 4x4 macroblock
   const blockSize = 4;
@@ -402,68 +403,110 @@ export function morphInBetweenFrames(
     }
   }
 
-  // Synthesize intermediate frame along forward & backward flow trajectories at time t
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = y * width + x;
-      const pIdx = idx * 4;
+  const results: { width: number; height: number; data: Uint8ClampedArray }[] = [];
 
-      const u = flowU[idx];
-      const v = flowV[idx];
+  for (let s = 1; s <= steps; s++) {
+    const t = s / (steps + 1);
+    const outData = new Uint8ClampedArray(width * height * 4);
 
-      const ax = Math.round(x - t * u);
-      const ay = Math.round(y - t * v);
-      const bx = Math.round(x + (1 - t) * u);
-      const by = Math.round(y + (1 - t) * v);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = y * width + x;
+        const pIdx = idx * 4;
 
-      const hasA = ax >= 0 && ax < width && ay >= 0 && ay < height;
-      const hasB = bx >= 0 && bx < width && by >= 0 && by < height;
+        const u = flowU[idx];
+        const v = flowV[idx];
 
-      const aIdx = hasA ? (ay * width + ax) * 4 : -1;
-      const bIdx = hasB ? (by * width + bx) * 4 : -1;
+        const ax = Math.round(x - t * u);
+        const ay = Math.round(y - t * v);
+        const bx = Math.round(x + (1 - t) * u);
+        const by = Math.round(y + (1 - t) * v);
 
-      const aOpaque = aIdx >= 0 && dataA[aIdx + 3] > 30;
-      const bOpaque = bIdx >= 0 && dataB[bIdx + 3] > 30;
+        const hasA = ax >= 0 && ax < width && ay >= 0 && ay < height;
+        const hasB = bx >= 0 && bx < width && by >= 0 && by < height;
 
-      if (!aOpaque && !bOpaque) {
-        outData[pIdx + 3] = 0;
-        continue;
-      }
+        const aIdx = hasA ? (ay * width + ax) * 4 : -1;
+        const bIdx = hasB ? (by * width + bx) * 4 : -1;
 
-      if (aOpaque && !bOpaque) {
-        if (t <= 0.5) {
-          outData[pIdx] = dataA[aIdx];
-          outData[pIdx + 1] = dataA[aIdx + 1];
-          outData[pIdx + 2] = dataA[aIdx + 2];
-          outData[pIdx + 3] = Math.round(dataA[aIdx + 3] * (1 - t * 1.5));
+        const aOpaque = aIdx >= 0 && dataA[aIdx + 3] > 30;
+        const bOpaque = bIdx >= 0 && dataB[bIdx + 3] > 30;
+
+        if (!aOpaque && !bOpaque) {
+          outData[pIdx + 3] = 0;
+          continue;
         }
-        continue;
-      }
 
-      if (!aOpaque && bOpaque) {
-        if (t >= 0.5) {
-          outData[pIdx] = dataB[bIdx];
-          outData[pIdx + 1] = dataB[bIdx + 1];
-          outData[pIdx + 2] = dataB[bIdx + 2];
-          outData[pIdx + 3] = Math.round(dataB[bIdx + 3] * (t * 1.5 - 0.5));
+        if (aOpaque && !bOpaque) {
+          if (t <= 0.5) {
+            outData[pIdx] = dataA[aIdx];
+            outData[pIdx + 1] = dataA[aIdx + 1];
+            outData[pIdx + 2] = dataA[aIdx + 2];
+            outData[pIdx + 3] = Math.round(dataA[aIdx + 3] * (1 - t * 1.5));
+          }
+          continue;
         }
-        continue;
+
+        if (!aOpaque && bOpaque) {
+          if (t >= 0.5) {
+            outData[pIdx] = dataB[bIdx];
+            outData[pIdx + 1] = dataB[bIdx + 1];
+            outData[pIdx + 2] = dataB[bIdx + 2];
+            outData[pIdx + 3] = Math.round(dataB[bIdx + 3] * (t * 1.5 - 0.5));
+          }
+          continue;
+        }
+
+        // Both opaque: interpolate in OKLab space
+        const labA = rgbToOKLab(dataA[aIdx], dataA[aIdx + 1], dataA[aIdx + 2]);
+        const labB = rgbToOKLab(dataB[bIdx], dataB[bIdx + 1], dataB[bIdx + 2]);
+
+        const mixL = (1 - t) * labA.L + t * labB.L;
+        const mixA = (1 - t) * labA.a + t * labB.a;
+        const mixB = (1 - t) * labA.b + t * labB.b;
+
+        const rgb = okLabToRGB(mixL, mixA, mixB);
+        outData[pIdx] = rgb.r;
+        outData[pIdx + 1] = rgb.g;
+        outData[pIdx + 2] = rgb.b;
+        outData[pIdx + 3] = 255;
       }
-
-      // Both opaque: interpolate in OKLab space
-      const labA = rgbToOKLab(dataA[aIdx], dataA[aIdx + 1], dataA[aIdx + 2]);
-      const labB = rgbToOKLab(dataB[bIdx], dataB[bIdx + 1], dataB[bIdx + 2]);
-
-      const mixL = (1 - t) * labA.L + t * labB.L;
-      const mixA = (1 - t) * labA.a + t * labB.a;
-      const mixB = (1 - t) * labA.b + t * labB.b;
-
-      const rgb = okLabToRGB(mixL, mixA, mixB);
-      outData[pIdx] = rgb.r;
-      outData[pIdx + 1] = rgb.g;
-      outData[pIdx + 2] = rgb.b;
-      outData[pIdx + 3] = 255;
     }
+
+    results.push({ width, height, data: outData });
+  }
+
+  return results;
+}
+
+/**
+ * 4. Optical Flow & Signed Distance Field (SDF) In-Between Frame Morphing:
+ * Given Frame A and Frame B, computes 2D block-matching motion flow vectors and
+ * interpolates boundaries and color trajectories to generate a smooth intermediate tween frame.
+ */
+export function morphInBetweenFrames(
+  ctxA: CanvasRenderingContext2D,
+  ctxB: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  _t: number = 0.5
+): HTMLCanvasElement {
+  const dataA = ctxA.getImageData(0, 0, width, height).data;
+  const dataB = ctxB.getImageData(0, 0, width, height).data;
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = width;
+  outCanvas.height = height;
+  const outCtx = outCanvas.getContext('2d')!;
+  const outImgData = outCtx.createImageData(width, height);
+
+  const [result] = morphInBetweenFramesSync(
+    { width, height, data: dataA },
+    { width, height, data: dataB },
+    1
+  );
+
+  if (result) {
+    outImgData.data.set(result.data);
   }
 
   outCtx.putImageData(outImgData, 0, 0);

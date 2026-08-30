@@ -14,9 +14,6 @@ function getSafeStorage(): Storage | null {
     if (typeof window !== 'undefined' && window.localStorage) {
       return window.localStorage;
     }
-    if (typeof localStorage !== 'undefined') {
-      return localStorage;
-    }
   } catch {
     // blocked or unavailable
   }

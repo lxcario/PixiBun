@@ -15,21 +15,27 @@ export interface CompositeOptions {
   includeInvisible?: boolean;
 }
 
+let sharedOffscreenCanvas: HTMLCanvasElement | null = null;
+
 export function compositeFrame(
   frames: AnimationFrame[],
   frameIndex: number,
   width: number,
   height: number,
-  options: CompositeOptions = {}
+  options: CompositeOptions = {},
+  targetCanvas?: HTMLCanvasElement
 ): HTMLCanvasElement | null {
   const frame = frames[frameIndex];
   if (!frame || typeof document === 'undefined') return null;
 
-  const out = document.createElement('canvas');
-  out.width = width;
-  out.height = height;
+  const out = targetCanvas || (sharedOffscreenCanvas ?? (sharedOffscreenCanvas = document.createElement('canvas')));
+  if (out.width !== width || out.height !== height) {
+    out.width = width;
+    out.height = height;
+  }
   const ctx = out.getContext('2d');
   if (!ctx) return null;
+  ctx.clearRect(0, 0, width, height);
   ctx.imageSmoothingEnabled = false;
 
   for (const layer of frame.layers.slice().reverse()) {

@@ -180,7 +180,9 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search filter"
                 className="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-xs font-bold"
               >
                 ×
@@ -268,6 +270,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                           type="submit"
                           className="px-1.5 py-0.5 text-xs text-[#7fae6b] font-bold"
                           title="Save title"
+                          aria-label="Save title"
                         >
                           ✓
                         </button>

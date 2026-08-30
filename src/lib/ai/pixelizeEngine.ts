@@ -10,6 +10,7 @@
  */
 
 import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
+import { acquireFloat32Buffer, releaseFloat32Buffer } from '@/lib/engine/bufferPool';
 
 export interface OklabColor {
   L: number;
@@ -175,100 +176,109 @@ export function downsampleImage(
   const { offsetX, offsetY, drawW, drawH } = calculateFitTransform(srcW, srcH, dstW, dstH, fitMode);
 
   // Pre-calculate gradient magnitude map for salience if in salient-box mode
-  const gradientMap = new Float32Array(srcW * srcH);
-  if (samplingMode === 'salient-box' && srcW > 1 && srcH > 1) {
-    for (let y = 1; y < srcH - 1; y++) {
-      for (let x = 1; x < srcW - 1; x++) {
-        const idx = (y * srcW + x) * 4;
-        const lumCenter = 0.2126 * srcData[idx] + 0.7152 * srcData[idx + 1] + 0.0722 * srcData[idx + 2];
-        const lumRight = 0.2126 * srcData[idx + 4] + 0.7152 * srcData[idx + 5] + 0.0722 * srcData[idx + 6];
-        const lumDown = 0.2126 * srcData[((y + 1) * srcW + x) * 4] + 0.7152 * srcData[((y + 1) * srcW + x) * 4 + 1] + 0.0722 * srcData[((y + 1) * srcW + x) * 4 + 2];
+  const gradientMap = acquireFloat32Buffer(srcW * srcH);
+  try {
+    if (samplingMode === 'salient-box' && srcW > 1 && srcH > 1) {
+      for (let y = 1; y < srcH - 1; y++) {
+        for (let x = 1; x < srcW - 1; x++) {
+          const idx = (y * srcW + x) * 4;
+          const lumCenter = 0.2126 * srcData[idx] + 0.7152 * srcData[idx + 1] + 0.0722 * srcData[idx + 2];
+          const lumRight = 0.2126 * srcData[idx + 4] + 0.7152 * srcData[idx + 5] + 0.0722 * srcData[idx + 6];
+          const lumDown = 0.2126 * srcData[((y + 1) * srcW + x) * 4] + 0.7152 * srcData[((y + 1) * srcW + x) * 4 + 1] + 0.0722 * srcData[((y + 1) * srcW + x) * 4 + 2];
 
-        const gx = lumRight - lumCenter;
-        const gy = lumDown - lumCenter;
-        gradientMap[y * srcW + x] = Math.sqrt(gx * gx + gy * gy);
+          const gx = lumRight - lumCenter;
+          const gy = lumDown - lumCenter;
+          gradientMap[y * srcW + x] = Math.sqrt(gx * gx + gy * gy);
+        }
       }
     }
-  }
 
-  for (let dy = 0; dy < dstH; dy++) {
-    for (let dx = 0; dx < dstW; dx++) {
-      const dstIdx = (dy * dstW + dx) * 4;
+    for (let dy = 0; dy < dstH; dy++) {
+      for (let dx = 0; dx < dstW; dx++) {
+        const dstIdx = (dy * dstW + dx) * 4;
 
-      // Check if within the drawn subregion
-      const relX = dx - offsetX;
-      const relY = dy - offsetY;
+        // Check if within the drawn subregion
+        const relX = dx - offsetX;
+        const relY = dy - offsetY;
 
-      if (relX < 0 || relX >= drawW || relY < 0 || relY >= drawH) {
-        dstData[dstIdx + 3] = 0; // Transparent letterbox
-        continue;
-      }
+        if (relX < 0 || relX >= drawW || relY < 0 || relY >= drawH) {
+          dstData[dstIdx + 3] = 0; // Transparent letterbox
+          continue;
+        }
 
-      if (samplingMode === 'nearest' || fitMode === 'pixel-art') {
-        const srcX = Math.min(srcW - 1, Math.max(0, Math.floor((relX / drawW) * srcW)));
-        const srcY = Math.min(srcH - 1, Math.max(0, Math.floor((relY / drawH) * srcH)));
-        const sIdx = (srcY * srcW + srcX) * 4;
+        if (samplingMode === 'nearest' || fitMode === 'pixel-art') {
+          const srcX = Math.min(srcW - 1, Math.max(0, Math.floor((relX / drawW) * srcW)));
+          const srcY = Math.min(srcH - 1, Math.max(0, Math.floor((relY / drawH) * srcH)));
+          const sIdx = (srcY * srcW + srcX) * 4;
 
-        dstData[dstIdx] = srcData[sIdx];
-        dstData[dstIdx + 1] = srcData[sIdx + 1];
-        dstData[dstIdx + 2] = srcData[sIdx + 2];
-        dstData[dstIdx + 3] = srcData[sIdx + 3];
-      } else {
-        // Area Box Filtering with Linear Gamma & Gradient Salience Boost
-        const x0 = (relX / drawW) * srcW;
-        const x1 = ((relX + 1) / drawW) * srcW;
-        const y0 = (relY / drawH) * srcH;
-        const y1 = ((relY + 1) / drawH) * srcH;
+          dstData[dstIdx] = srcData[sIdx];
+          dstData[dstIdx + 1] = srcData[sIdx + 1];
+          dstData[dstIdx + 2] = srcData[sIdx + 2];
+          dstData[dstIdx + 3] = srcData[sIdx + 3];
+        } else {
+          // Area Box Filtering with Linear Gamma & Gradient Salience Boost
+          const x0 = (relX / drawW) * srcW;
+          const x1 = ((relX + 1) / drawW) * srcW;
+          const y0 = (relY / drawH) * srcH;
+          const y1 = ((relY + 1) / drawH) * srcH;
 
-        const startX = Math.floor(x0);
-        const endX = Math.min(srcW - 1, Math.ceil(x1));
-        const startY = Math.floor(y0);
-        const endY = Math.min(srcH - 1, Math.ceil(y1));
+          const startX = Math.floor(x0);
+          const endX = Math.min(srcW - 1, Math.ceil(x1));
+          const startY = Math.floor(y0);
+          const endY = Math.min(srcH - 1, Math.ceil(y1));
 
-        let totalWeight = 0;
-        let rLinSum = 0;
-        let gLinSum = 0;
-        let bLinSum = 0;
-        let aSum = 0;
+          let totalWeight = 0;
+          let rLinSum = 0;
+          let gLinSum = 0;
+          let bLinSum = 0;
+          let aSum = 0;
 
-        for (let sy = startY; sy <= endY; sy++) {
-          const yWeight = Math.max(0, Math.min(sy + 1, y1) - Math.max(sy, y0));
-          if (yWeight <= 0) continue;
+          for (let sy = startY; sy <= endY; sy++) {
+            for (let sx = startX; sx <= endX; sx++) {
+              const sIdx = (sy * srcW + sx) * 4;
+              const alpha = srcData[sIdx + 3];
+              if (alpha < 5) continue; // Ignore nearly transparent pixels
 
-          for (let sx = startX; sx <= endX; sx++) {
-            const xWeight = Math.max(0, Math.min(sx + 1, x1) - Math.max(sx, x0));
-            if (xWeight <= 0) continue;
+              const weightX = Math.max(0, Math.min(sx + 1, x1) - Math.max(sx, x0));
+              const weightY = Math.max(0, Math.min(sy + 1, y1) - Math.max(sy, y0));
+              let boxWeight = weightX * weightY;
 
-            const baseAreaWeight = xWeight * yWeight;
-            const grad = gradientMap[sy * srcW + sx] || 0;
-            const salienceWeight = baseAreaWeight * (1.0 + grad * 0.05);
+              if (boxWeight <= 0) continue;
 
-            const sIdx = (sy * srcW + sx) * 4;
-            const alpha = srcData[sIdx + 3] / 255;
-            if (alpha <= 0.01) continue;
+              // Boost high-frequency edge pixels so thin line art doesn't blur away
+              if (samplingMode === 'salient-box') {
+                const salience = gradientMap[sy * srcW + sx];
+                boxWeight *= 1.0 + Math.min(2.5, salience * 3.0);
+              }
 
-            const effWeight = salienceWeight * alpha;
-            rLinSum += srgbToLinear(srcData[sIdx]) * effWeight;
-            gLinSum += srgbToLinear(srcData[sIdx + 1]) * effWeight;
-            bLinSum += srgbToLinear(srcData[sIdx + 2]) * effWeight;
-            aSum += srcData[sIdx + 3] * salienceWeight;
-            totalWeight += effWeight;
+              const rLin = srgbToLinear(srcData[sIdx]);
+              const gLin = srgbToLinear(srcData[sIdx + 1]);
+              const bLin = srgbToLinear(srcData[sIdx + 2]);
+
+              rLinSum += rLin * boxWeight;
+              gLinSum += gLin * boxWeight;
+              bLinSum += bLin * boxWeight;
+              aSum += alpha;
+              totalWeight += boxWeight;
+            }
+          }
+
+          if (totalWeight > 0.001) {
+            dstData[dstIdx] = linearToSrgb(rLinSum / totalWeight);
+            dstData[dstIdx + 1] = linearToSrgb(gLinSum / totalWeight);
+            dstData[dstIdx + 2] = linearToSrgb(bLinSum / totalWeight);
+            dstData[dstIdx + 3] = Math.round(Math.min(255, aSum / (endX - startX + 1) / (endY - startY + 1)));
+          } else {
+            dstData[dstIdx + 3] = 0;
           }
         }
-
-        if (totalWeight > 0.001) {
-          dstData[dstIdx] = linearToSrgb(rLinSum / totalWeight);
-          dstData[dstIdx + 1] = linearToSrgb(gLinSum / totalWeight);
-          dstData[dstIdx + 2] = linearToSrgb(bLinSum / totalWeight);
-          dstData[dstIdx + 3] = Math.round(Math.min(255, aSum / (endX - startX + 1) / (endY - startY + 1)));
-        } else {
-          dstData[dstIdx + 3] = 0;
-        }
       }
     }
-  }
 
-  return dstImgData;
+    return dstImgData;
+  } finally {
+    releaseFloat32Buffer(gradientMap);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -697,5 +707,106 @@ export function processImageToPixelArt(
     extractedPalette: Array.from(extractedHexSet).slice(0, 32),
     width: options.targetWidth,
     height: options.targetHeight,
+  };
+}
+
+export const extractOklabPaletteSync = extractOklabPalette;
+
+export function downsampleImageSync(
+  srcData: { width: number; height: number; data: Uint8ClampedArray },
+  dstW: number,
+  dstH: number
+): ImageData {
+  const { width: srcW, height: srcH, data } = srcData;
+  const dstImgData = new ImageData(dstW, dstH);
+  const dstData = dstImgData.data;
+
+  const { offsetX, offsetY, drawW, drawH } = calculateFitTransform(srcW, srcH, dstW, dstH, 'contain');
+  const gradientMap = acquireFloat32Buffer(srcW * srcH);
+
+  try {
+    for (let dy = 0; dy < dstH; dy++) {
+      for (let dx = 0; dx < dstW; dx++) {
+        const dstIdx = (dy * dstW + dx) * 4;
+        const relX = dx - offsetX;
+        const relY = dy - offsetY;
+
+        if (relX < 0 || relX >= drawW || relY < 0 || relY >= drawH) {
+          dstData[dstIdx + 3] = 0;
+          continue;
+        }
+
+        const srcX = Math.min(srcW - 1, Math.max(0, Math.floor((relX / drawW) * srcW)));
+        const srcY = Math.min(srcH - 1, Math.max(0, Math.floor((relY / drawH) * srcH)));
+        const sIdx = (srcY * srcW + srcX) * 4;
+
+        dstData[dstIdx] = data[sIdx];
+        dstData[dstIdx + 1] = data[sIdx + 1];
+        dstData[dstIdx + 2] = data[sIdx + 2];
+        dstData[dstIdx + 3] = data[sIdx + 3];
+      }
+    }
+
+    return dstImgData;
+  } finally {
+    releaseFloat32Buffer(gradientMap);
+  }
+}
+
+export function quantizeAndDitherSync(
+  downsampled: ImageData,
+  width: number,
+  height: number,
+  colorMode: string,
+  activePalette?: string[],
+  ditherMode: string = 'none',
+  ditherStrength: number = 0.75
+): { palette: string[]; outputData: Uint8ClampedArray } {
+  const extractedHexSet = new Set<string>();
+  let paletteRgb: [number, number, number][] = [];
+
+  if (colorMode === 'active-palette' && activePalette && activePalette.length > 0) {
+    paletteRgb = activePalette.map((hex) => {
+      const { r, g, b } = hexToRgba(hex);
+      return [r, g, b];
+    });
+    activePalette.forEach((c) => extractedHexSet.add(c));
+  } else if (colorMode === 'reduce-8' || colorMode === 'reduce-16' || colorMode === 'reduce-32') {
+    const kColors = colorMode === 'reduce-8' ? 8 : colorMode === 'reduce-16' ? 16 : 32;
+    const opaquePixels: OklabColor[] = [];
+    const d = downsampled.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 30) {
+        opaquePixels.push(rgbToOklab(d[i], d[i + 1], d[i + 2]));
+      }
+    }
+
+    const oklabCentroids = extractOklabPalette(opaquePixels, kColors);
+    paletteRgb = oklabCentroids.map((c) => oklabToRgb(c.L, c.a, c.b));
+    paletteRgb.forEach(([r, g, b]) => extractedHexSet.add(rgbaToHex(r, g, b, 255)));
+  }
+
+  if (paletteRgb.length > 0) {
+    quantizeAndDither(
+      downsampled,
+      width,
+      height,
+      paletteRgb,
+      ditherMode as 'none' | 'bayer-4x4' | 'atkinson' | 'floyd-steinberg',
+      ditherStrength
+    );
+  } else {
+    const d = downsampled.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 30) {
+        extractedHexSet.add(rgbaToHex(d[i], d[i + 1], d[i + 2], 255));
+      }
+    }
+  }
+
+  return {
+    palette: Array.from(extractedHexSet).slice(0, 32),
+    outputData: downsampled.data,
   };
 }

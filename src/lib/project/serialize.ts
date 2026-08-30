@@ -27,6 +27,32 @@ export function rasterizeLayerPng(layerId: string, width: number, height: number
   return base64;
 }
 
+/** Asynchronously encodes one layer buffer to base64 PNG using non-blocking toBlob. */
+export async function rasterizeLayerPngAsync(layerId: string, width: number, height: number): Promise<string | undefined> {
+  requireBrowser();
+  const hasContent = getOrCreateBuffer(layerId, width, height);
+  if (!hasContent || !hasContent.canvas) return undefined;
+
+  return new Promise((resolve) => {
+    hasContent.canvas.toBlob((blob) => {
+      if (!blob) {
+        // Fallback to sync if blob fails
+        return resolve(rasterizeLayerPng(layerId, width, height));
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const base64 = result ? result.replace(/^data:image\/png;base64,/, '') : undefined;
+        resolve(base64);
+      };
+      reader.onerror = () => {
+        resolve(rasterizeLayerPng(layerId, width, height));
+      };
+      reader.readAsDataURL(blob);
+    }, 'image/png');
+  });
+}
+
 /** Snapshots the entire studio - metadata plus every layer's pixels - into a portable ProjectFile. */
 export function buildProjectFile(): ProjectFile {
   const state = useStudioStore.getState();
@@ -58,6 +84,54 @@ export function buildProjectFile(): ProjectFile {
         pngBase64: rasterizeLayerPng(layer.id, state.canvasWidth, state.canvasHeight),
       })),
     })),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+/** Asynchronously snapshots the entire studio with non-blocking layer rasterization. */
+export async function buildProjectFileAsync(): Promise<ProjectFile> {
+  const state = useStudioStore.getState();
+  const now = Date.now();
+
+  const frames = await Promise.all(
+    state.frames.map(async (frame) => {
+      const layers = await Promise.all(
+        frame.layers.map(async (layer): Promise<SerializedLayer> => {
+          const pngBase64 = await rasterizeLayerPngAsync(layer.id, state.canvasWidth, state.canvasHeight);
+          return {
+            id: layer.id,
+            name: layer.name,
+            visible: layer.visible,
+            locked: layer.locked,
+            opacity: layer.opacity,
+            blendMode: layer.blendMode,
+            pngBase64,
+          };
+        })
+      );
+      return {
+        id: frame.id,
+        durationMs: frame.durationMs,
+        layers,
+      };
+    })
+  );
+
+  return {
+    format: PROJECT_FORMAT_ID,
+    version: PROJECT_FORMAT_VERSION,
+    name: state.projectName,
+    width: state.canvasWidth,
+    height: state.canvasHeight,
+    fps: state.fps,
+    loopMode: state.loopMode,
+    onionSkin: { ...state.onionSkin },
+    palettes: state.palettes.map(p => ({ ...p, colors: [...p.colors] })),
+    currentPaletteId: state.currentPaletteId,
+    customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
+    clips: state.clips.map(c => ({ ...c })),
+    frames,
     createdAt: now,
     updatedAt: now,
   };

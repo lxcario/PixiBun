@@ -59,9 +59,9 @@ export function applyThemeToDOM(theme: ThemeMode) {
 }
 
 function getInitialTheme(): ThemeMode {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined' || !window.localStorage) return 'dark';
   try {
-    const saved = localStorage.getItem('pixibun-theme') as ThemeMode | null;
+    const saved = window.localStorage.getItem('pixibun-theme') as ThemeMode | null;
     if (saved === 'light' || saved === 'dark') return saved;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
       return 'light';
@@ -79,9 +79,9 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
 
   setTheme: (theme: ThemeMode) => {
     set({ theme });
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        localStorage.setItem('pixibun-theme', theme);
+        window.localStorage.setItem('pixibun-theme', theme);
       } catch {
         // ignore storage errors
       }

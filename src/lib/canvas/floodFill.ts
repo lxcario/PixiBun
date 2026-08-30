@@ -45,7 +45,7 @@ export function colorsMatch(
   if ((c1.a <= 10 && c2.a > 10) || (c1.a > 10 && c2.a <= 10)) return false;
 
   if (tolerance === 0) {
-    return c1.r === c2.r && c1.g === c2.g && c1.b === c2.b && Math.abs(c1.a - c2.a) <= 10;
+    return c1.r === c2.r && c1.g === c2.g && c1.b === c2.b && c1.a === c2.a;
   }
 
   const diff = Math.sqrt(

@@ -28,8 +28,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
-    const { events, app, version } = body || {};
+    let body: Record<string, unknown> | null = null;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      console.error('Failed to parse diagnostics relay request JSON:', parseErr);
+      return NextResponse.json(
+        { error: 'Invalid JSON payload' },
+        { status: 400 }
+      );
+    }
+    const { events, app, version } = (body as { events?: unknown[]; app?: string; version?: string }) || {};
 
     const upstreamPayload = {
       app: app || 'pixibun',

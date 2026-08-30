@@ -479,6 +479,7 @@ export const RightInspector: React.FC = () => {
                         : 'border-[#1a1126] hover:border-[#ffffff]'
                     }`}
                     title={`${color} (Left click: Primary | Right click: Secondary)`}
+                    aria-label={`Select color ${color}`}
                   />
                 );
               })}

@@ -482,7 +482,7 @@ export const StudioLayout: React.FC = () => {
       <ContextOptionsBar />
 
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
-      <div className="flex flex-1 overflow-hidden">
+      <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none">
         <LeftToolbar />
         <CenterViewport 
           onCommitHistory={handleCommitHistory}

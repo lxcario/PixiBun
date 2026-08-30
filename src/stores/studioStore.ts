@@ -9,7 +9,7 @@ import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
 import { AiMessage } from '@/types/ai';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
 import { createId } from '@/lib/engine/id';
-import { cloneBuffers, deleteBuffers, resizeAllBuffers } from '@/lib/engine/bufferRegistry';
+import { cloneBuffers, deleteBuffers, resizeAllBuffers, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ProjectFile } from '@/types/project';
 
@@ -904,6 +904,7 @@ export const useStudioStore = create<StudioState>()(
       },
 
       loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
+        clearAllBuffers();
         set(state => {
           if (projectId) state.currentProjectId = projectId;
           if (projectData.name) state.projectName = projectData.name;
@@ -928,6 +929,7 @@ export const useStudioStore = create<StudioState>()(
       },
 
       resetToNewProject: (newId?: string) => {
+        clearAllBuffers();
         const initialLayerId = createId('layer');
         const initialFrameId = createId('frame');
         set(state => {
