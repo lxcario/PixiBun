@@ -92,7 +92,7 @@ interface StudioState {
   onionSkin: OnionSkinSettings;
   clips: AnimationClip[];
 
-  // Gemini AI Companion Dock
+  // PixiBud Smart Studio Companion
   aiMessages: AiMessage[];
   isAiThinking: boolean;
   activeInspectorTab: 'layers' | 'palette' | 'ai';

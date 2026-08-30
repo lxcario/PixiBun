@@ -1,5 +1,25 @@
 # Build Plan — PixiBun
 
+## Phase 22 — Dead Route Pruning & Architectural Truthfulness
+**Goal:** Eliminate dead serverless routes and orphaned backend scripts (`/api/ai/vision`, `testsprite-backend/`, `scripts/write_backend_tests.js`) and synchronize all architectural documentation to honestly reflect PixiBun's 100% deterministic, on-device graphics math identity with zero cloud or API key dependencies.
+
+**Deliverables:**
+- [x] Deleted dead route: Removed `src/app/api/ai/vision/route.ts` and orphaned folder `src/app/api/ai/`.
+- [x] Deleted dead tests: Removed Python backend suite `testsprite-backend/` (7 tests) and test generator `scripts/write_backend_tests.js`.
+- [x] Doc Truthfulness: Updated `MAIN.md`, `SKILL.md`, `README.md`, `TASKS.md`, `LOGS.md`, and `studioStore.ts` removing false Gemini cloud claims and documenting PixiBud's pure on-device graphics math engine.
+- [x] Attack Surface Minimization: App contains only one server endpoint (`/api/diagnostics/relay`), fully hardened with SSRF protection.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 77/77 tests pass across 15 test suites.
+- `npm run test:e2e` → 9/9 Playwright E2E specs pass.
+- `npm run build` → Next.js 16 production build compiles cleanly (no `/api/ai/vision` route).
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 21 — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability
 **Goal:** Make PixiBun a professional, reliable, and accessible local-first web application across four core pillars: (1) True PWA offline installation with hand-rolled zero-dependency service worker, manifest, precached app shell, offline fallback, and persistent storage protection; (2) Full WCAG 2.2 AA accessibility with keyboard alternatives for drag interactions, focus traps with opener restoration, high-contrast focus rings, minimum target sizes, and error boundaries; (3) Continuous automated quality & performance gates with 73 Happy-DOM unit/component tests, full Playwright E2E browser tests with automated Axe WCAG audits, and Lighthouse CI score budgets; (4) Privacy-first local diagnostics with IndexedDB ring buffer, Core Web Vitals bridge, and one-click JSON export.
 

@@ -28,7 +28,7 @@
 ## Stack (with rationale)
 | Layer | Choice | Why |
 |---|---|---|
-| Framework | **Next.js 16 (App Router) + React 19 + TypeScript** | Stable React Compiler, Turbopack default bundler, modern SSR/client boundaries, and seamless API routes for Gemini AI proxying. |
+| Framework | **Next.js 16 (App Router) + React 19 + TypeScript** | Stable React Compiler, Turbopack default bundler, modern SSR/client boundaries, and zero client bundle bloat. |
 | Canvas & Raster Engine | **Custom HTML5 2D Canvas + OffscreenCanvas Compositor** | Direct pixel buffer access (`ImageData`), zero-overhead nearest-neighbor integer scaling, custom Bresenham/DDA line interpolation. |
 | State & History | **Zustand + Immer** | Zero-re-render canvas stroke pipeline, fast undo/redo history snapshotting, and predictable decoupled state for layers and timeline. |
 | Image Synthesis | **Custom OKLab & Sobel Pipeline (`pixelizeEngine.ts`)** | Gamma-corrected downsampling, salience preservation, OKLab median-cut, Floyd-Steinberg/Atkinson dithering. |
@@ -36,12 +36,12 @@
 | Styling & Design Tokens | **Tailwind CSS v4** | CSS-first configuration (`@theme`), OKLCH color space native support, container queries, and custom tactile pixel utility classes. |
 | Tactile Motion | **Motion (`motion/react`)** | Fluid micro-interactions, floating cozy tool dock transitions, dialogs, and drawer animations without layout thrashing. |
 | Storage & Autosave | **Dexie.js (IndexedDB)** | Local-first, zero-latency continuous auto-save, offline support, and schema-validated project file serialization. |
-| AI Multimodal Perception | **Google Gemini 2.0 / 1.5 Flash Vision via Serverless Route** | Fast visual canvas comprehension, low latency, structured JSON output for layer generation and palette suggestion. |
+| Smart Graphics Intelligence | **Deterministic On-Device Math Engine (`smartMathEngine.ts`)** | 2.5D Felzenszwalb EDT lighting, Sobel normal maps, Minecraft 3D skin shading, and optical flow morphing with 0 cloud dependencies, 0 latency, and 100% offline privacy. |
 
 ## Repo & Environments
 - **GitHub repo:** Private
 - **Environments:** 
-  - `dev`: Local development (`localhost:3000`) with mock or live Gemini API
+  - `dev`: Local development (`localhost:3000`) and static PWA build with 100% offline capability
   - `production`: Vercel edge deployment with secure server-side environment variables
 
 ## Related Docs

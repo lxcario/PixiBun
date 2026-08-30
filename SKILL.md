@@ -17,8 +17,7 @@ NEVER DO THIS
 - Never introduce random floating text, ambient wobbles, or generic AI slop animations.
 - Never write empty catch blocks (`catch (e) {}`) or generic unhandled promise rejections.
 - Never introduce an external dependency when a clean, testable algorithm (e.g. Bresenham line algorithm, Flood fill BFS, Bayer matrix dithering) achieves the goal with zero bloat.
-- Never commit generic messages ("wip", "fix", "update"); follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `perf:`).
-- Never allow AI features to hallucinate non-integer coordinates or anti-aliased pixels into the user's project buffer.
+- Never allow smart features to produce non-integer coordinates or anti-aliased pixels into the user's project buffer.
 
 ALWAYS DO THIS
 - Write meaningful, human-like, authentic, warm copy across all headlines, descriptions, button tooltips, and feedback toasts that reads like a skilled craftsperson speaking directly to another human.
@@ -26,7 +25,7 @@ ALWAYS DO THIS
 - Ensure all canvas drawing tools (Pen, Eraser, Fill, Dither, Select) operate cleanly on `ImageData` / custom layer buffers with immediate visual feedback.
 - Maintain a rock-solid, memory-efficient undo/redo history stack (max 50 steps) that snapshots state without UI stutter.
 - Support responsive keyboard shortcuts (B for Pen, E for Eraser, G for Fill, I for Eyedropper, M for Select, Space+Drag for Pan, Z/Ctrl+Z for Undo, Ctrl+Y for Redo).
-- Structure Gemini AI requests to parse canvas image snapshots and return deterministic, structured JSON schemas (palette arrays, layer coordinate masks, or base64 pixel sprites).
+- Structure all smart graphics features to operate directly and deterministically on on-device pixel buffers with zero network dependencies.
 - Store all projects locally first using Dexie.js (IndexedDB) with instant autosave.
 - Maintain high contrast ratios (WCAG AA compliant) for all tool labels and UI text against the dark cedarwood background.
 

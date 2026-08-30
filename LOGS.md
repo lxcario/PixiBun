@@ -385,3 +385,25 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run build`: Next.js 16 production build compiles cleanly in 20.4s.
 **Status:** Complete
 
+---
+
+## Phase 22 — Dead Route Pruning & Architectural Truthfulness (2026-08-30)
+**Delivered:**
+- **Dead Endpoint Deletion**:
+  - Completely removed orphaned route `src/app/api/ai/vision/route.ts` and directory `src/app/api/ai/`.
+  - Deleted orphaned Python backend test suite `testsprite-backend/` (7 tests) and test generator `scripts/write_backend_tests.js`.
+- **Attack Surface Minimization**:
+  - Application attack surface is now minimized to a single, tightly controlled same-origin proxy endpoint (`/api/diagnostics/relay`).
+- **Documentation Truthfulness & Realignment**:
+  - Synchronized `MAIN.md`, `SKILL.md`, `README.md`, `TASKS.md`, and `studioStore.ts` to honestly document PixiBud as a 100% deterministic on-device graphics math engine.
+  - Zero external API key dependencies required for full deployment.
+
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 77/77 tests pass across 15 test suites.
+- `npm run test:e2e`: 9/9 Playwright E2E specs pass.
+- `npm run build`: Next.js 16 production build compiles cleanly with zero dead routes.
+**Status:** Complete
+
+
