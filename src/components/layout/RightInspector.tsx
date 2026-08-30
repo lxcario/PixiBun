@@ -5,7 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BlendMode } from '@/types/canvas';
-import { MaterialType, OpticalPresetType, AnisoFlowPreset } from '@/types/tools';
+import { MaterialType, OpticalPresetType, AnisoFlowPreset, CelToneCount } from '@/types/tools';
 import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
 
 export const RightInspector: React.FC = () => {
@@ -46,6 +46,7 @@ export const RightInspector: React.FC = () => {
     setFresnelPower,
     setAnisoAngle,
     setAnisoFlow,
+    setOpticalCelTones,
     showNormalMapPreview,
     toggleNormalMapPreview,
   } = useStudioStore();
@@ -130,6 +131,7 @@ export const RightInspector: React.FC = () => {
           fresnelPower: tools.fresnelPower,
           anisoAngle: tools.anisoAngle,
           anisoFlow: tools.anisoFlow,
+          celTones: tools.opticalCelTones,
           lightAzimuth: tools.lightAzimuth,
           lightElevation: tools.lightElevation,
           lightColor: primaryColor || '#FFFFFF',
@@ -708,6 +710,36 @@ export const RightInspector: React.FC = () => {
                     }`}
                   >
                     {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Cel Tones / Shading Mode Selector */}
+            <div className="flex flex-col gap-1 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Cel Tones:</span>
+                <span className="text-[9px] text-[#dcabdf] font-bold">
+                  {tools.opticalCelTones === 'smooth' ? 'Smooth VFX' : `${tools.opticalCelTones} Tones`}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { id: 2, label: '2 Tones' },
+                  { id: 3, label: '3 Tones' },
+                  { id: 4, label: '4 Tones' },
+                  { id: 'smooth', label: 'Smooth' },
+                ].map((option) => (
+                  <button
+                    key={String(option.id)}
+                    onClick={() => setOpticalCelTones(option.id as CelToneCount)}
+                    className={`py-1 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                      tools.opticalCelTones === option.id
+                        ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                        : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+                    }`}
+                  >
+                    {option.label}
                   </button>
                 ))}
               </div>

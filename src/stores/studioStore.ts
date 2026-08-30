@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { Layer, AnimationFrame, BlendMode } from '@/types/canvas';
-import { ToolType, ToolSettings, DitherMatrixType, MaterialType, OpticalPresetType, AnisoFlowPreset } from '@/types/tools';
+import { ToolType, ToolSettings, DitherMatrixType, MaterialType, OpticalPresetType, AnisoFlowPreset, CelToneCount } from '@/types/tools';
 import { ColorPalette, ColorRamp } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
 import { AiMessage } from '@/types/ai';
@@ -146,6 +146,7 @@ interface StudioState {
   setFresnelPower: (power: number) => void;
   setAnisoAngle: (angle: number) => void;
   setAnisoFlow: (flow: AnisoFlowPreset) => void;
+  setOpticalCelTones: (tones: CelToneCount) => void;
   setPrimaryColor: (color: string) => void;
   setSecondaryColor: (color: string) => void;
   swapColors: () => void;
@@ -259,6 +260,7 @@ export const useStudioStore = create<StudioState>()(
         fresnelPower: 3.5,
         anisoAngle: 90,
         anisoFlow: 'vertical',
+        opticalCelTones: 3,
       },
 
       primaryColor: '#3A2E4C',
@@ -535,6 +537,12 @@ export const useStudioStore = create<StudioState>()(
       setAnisoFlow: flow => {
         set(state => {
           state.tools.anisoFlow = flow;
+        });
+      },
+
+      setOpticalCelTones: tones => {
+        set(state => {
+          state.tools.opticalCelTones = tones;
         });
       },
 

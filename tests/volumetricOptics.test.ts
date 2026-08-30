@@ -5,6 +5,8 @@ import {
   computeAnisotropicTangentField,
   executeVolumetricOpticalPipeline,
   computeTangentNormalField,
+  snapToGemstoneFacets,
+  cleanOrphanPixelConfetti,
 } from '@/lib/ai/smartMathEngine';
 import { VolumetricOpticsParams } from '@/types/tools';
 
@@ -253,6 +255,114 @@ describe('PixiBud AI 2D Volumetric Optics Engine', () => {
 
       const centerIdx = (8 * width + 8) * 4;
       expect(resData[centerIdx + 3]).toBe(255);
+    });
+
+    it('quantizes lighting into stepped cel-tones (2, 3, and 4 tones)', () => {
+      const width = 16;
+      const height = 16;
+      const { ctx } = makeMockCanvas(width, height);
+
+      ctx.fillStyle = '#3B82F6';
+      ctx.fillRect(2, 2, 12, 12);
+
+      const baseParams: VolumetricOpticsParams = {
+        preset: 'slime',
+        translucencyDepth: 12,
+        fresnelPower: 3.0,
+        anisoAngle: 90,
+        anisoFlow: 'curvature',
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightColor: '#FFFFFF',
+        paletteColors: ['#1E3A8A', '#2563EB', '#60A5FA', '#DBEAFE'],
+        ditherModulation: 0.0,
+      };
+
+      const res2 = executeVolumetricOpticalPipeline(
+        ctx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        { ...baseParams, celTones: 2 }
+      );
+      const res3 = executeVolumetricOpticalPipeline(
+        ctx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        { ...baseParams, celTones: 3 }
+      );
+      const res4 = executeVolumetricOpticalPipeline(
+        ctx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        { ...baseParams, celTones: 4 }
+      );
+
+      expect(res2.width).toBe(width);
+      expect(res3.width).toBe(width);
+      expect(res4.width).toBe(width);
+
+      const data2 = res2.getContext('2d')!.getImageData(0, 0, width, height).data;
+      const data3 = res3.getContext('2d')!.getImageData(0, 0, width, height).data;
+      const data4 = res4.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+      // Count unique colors inside the 12x12 sprite
+      const colors2 = new Set<string>();
+      const colors3 = new Set<string>();
+      const colors4 = new Set<string>();
+
+      for (let y = 2; y < 14; y++) {
+        for (let x = 2; x < 14; x++) {
+          const idx = (y * width + x) * 4;
+          colors2.add(`${data2[idx]},${data2[idx+1]},${data2[idx+2]}`);
+          colors3.add(`${data3[idx]},${data3[idx+1]},${data3[idx+2]}`);
+          colors4.add(`${data4[idx]},${data4[idx+1]},${data4[idx+2]}`);
+        }
+      }
+
+      expect(colors2.size).toBeLessThanOrEqual(2);
+      expect(colors3.size).toBeLessThanOrEqual(3);
+      expect(colors4.size).toBeLessThanOrEqual(4);
+    });
+  });
+
+  describe('snapToGemstoneFacets', () => {
+    it('snaps normal angles to 8 discrete sector angles', () => {
+      const nx = new Float32Array([0.9, -0.9, 0.0]);
+      const ny = new Float32Array([0.1, -0.1, 0.0]);
+      const nz = new Float32Array([0.4, 0.4, 1.0]);
+
+      const snapped = snapToGemstoneFacets(nx, ny, nz, 3, 1, 8);
+      expect(snapped.nx.length).toBe(3);
+      expect(snapped.nz[2]).toBe(1.0); // center top facet
+    });
+  });
+
+  describe('cleanOrphanPixelConfetti', () => {
+    it('merges an isolated single pixel into neighboring dominant color', () => {
+      const width = 4;
+      const height = 4;
+      const data = new Uint8ClampedArray(width * height * 4);
+
+      // Fill with blue
+      for (let i = 0; i < width * height; i++) {
+        data[i * 4] = 0;
+        data[i * 4 + 1] = 0;
+        data[i * 4 + 2] = 255;
+        data[i * 4 + 3] = 255;
+      }
+
+      // Add a single isolated red pixel at (1, 1)
+      const orphanIdx = (1 * width + 1) * 4;
+      data[orphanIdx] = 255;
+      data[orphanIdx + 1] = 0;
+      data[orphanIdx + 2] = 0;
+      data[orphanIdx + 3] = 255;
+
+      cleanOrphanPixelConfetti(data, width, height);
+
+      // Orphan pixel should be cleaned to blue
+      expect(data[orphanIdx]).toBe(0);
+      expect(data[orphanIdx + 2]).toBe(255);
     });
   });
 });

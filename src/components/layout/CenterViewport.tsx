@@ -732,6 +732,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           fresnelPower: detail.fresnelPower ?? tools.fresnelPower,
           anisoAngle: detail.anisoAngle ?? tools.anisoAngle,
           anisoFlow: detail.anisoFlow ?? tools.anisoFlow,
+          celTones: detail.celTones ?? tools.opticalCelTones,
           lightAzimuth: detail.lightAzimuth ?? tools.lightAzimuth,
           lightElevation: detail.lightElevation ?? tools.lightElevation,
           lightColor: detail.lightColor ?? primaryColor,
@@ -885,6 +886,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     tools.fresnelPower,
     tools.anisoAngle,
     tools.anisoFlow,
+    tools.opticalCelTones,
   ]);
 
   // Render Grid, Isometric Guides, Symmetry, and Marching Ants Selection Overlay

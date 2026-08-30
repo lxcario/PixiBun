@@ -2067,7 +2067,111 @@ export function computeAnisotropicTangentField(
 }
 
 /**
- * Executes the complete 2D Volumetric Optics, SSS, Fresnel, and Anisotropic Specular Shader pipeline.
+ * Converts OKLab color space to OKLCH (Lightness, Chroma, Hue in degrees [0..360]).
+ */
+export function okLabToOKLCH(L: number, a: number, b: number): { L: number; C: number; h: number } {
+  const C = Math.sqrt(a * a + b * b);
+  let h = (Math.atan2(b, a) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  return { L, C, h };
+}
+
+/**
+ * Converts OKLCH back to OKLab color space.
+ */
+export function oklchToOKLab(L: number, C: number, h: number): OKLabColor {
+  const hRad = (h * Math.PI) / 180;
+  return {
+    L,
+    a: C * Math.cos(hRad),
+    b: C * Math.sin(hRad),
+  };
+}
+
+/**
+ * Snaps smooth surface normals into discrete planar facet angles for cut gemstones.
+ */
+export function snapToGemstoneFacets(
+  nx: Float32Array,
+  ny: Float32Array,
+  nz: Float32Array,
+  width: number,
+  height: number,
+  numSectors: number = 8
+): { nx: Float32Array; ny: Float32Array; nz: Float32Array } {
+  const outNx = new Float32Array(width * height);
+  const outNy = new Float32Array(width * height);
+  const outNz = new Float32Array(width * height);
+  const sectorAngle = (2 * Math.PI) / numSectors;
+
+  for (let i = 0; i < width * height; i++) {
+    const x = nx[i];
+    const y = ny[i];
+    const z = nz[i];
+    const planarLen = Math.sqrt(x * x + y * y);
+    if (planarLen < 0.08) {
+      outNx[i] = 0;
+      outNy[i] = 0;
+      outNz[i] = 1.0;
+    } else {
+      let angle = Math.atan2(y, x);
+      if (angle < 0) angle += 2 * Math.PI;
+      const snappedAngle = Math.round(angle / sectorAngle) * sectorAngle;
+      const snappedElevation = Math.max(0.35, Math.round(z * 3) / 3);
+      const snappedPlanar = Math.sqrt(Math.max(0, 1 - snappedElevation * snappedElevation));
+      outNx[i] = snappedPlanar * Math.cos(snappedAngle);
+      outNy[i] = snappedPlanar * Math.sin(snappedAngle);
+      outNz[i] = snappedElevation;
+    }
+  }
+  return { nx: outNx, ny: outNy, nz: outNz };
+}
+
+/**
+ * 1-Pass Cellular Automaton to remove isolated orphan pixel noise (confetti cleanup).
+ */
+export function cleanOrphanPixelConfetti(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number
+): void {
+  const copy = new Uint8ClampedArray(data);
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = (y * width + x) * 4;
+      if (copy[idx + 3] === 0) continue;
+
+      const r = copy[idx];
+      const g = copy[idx + 1];
+      const b = copy[idx + 2];
+
+      const up = ((y - 1) * width + x) * 4;
+      const down = ((y + 1) * width + x) * 4;
+      const left = (y * width + (x - 1)) * 4;
+      const right = (y * width + (x + 1)) * 4;
+
+      const matches = (nIdx: number) => {
+        if (copy[nIdx + 3] === 0) return false;
+        return copy[nIdx] === r && copy[nIdx + 1] === g && copy[nIdx + 2] === b;
+      };
+
+      const neighborMatches = (matches(up) ? 1 : 0) + (matches(down) ? 1 : 0) + (matches(left) ? 1 : 0) + (matches(right) ? 1 : 0);
+
+      if (neighborMatches === 0) {
+        const neighbors = [up, down, left, right].filter(n => copy[n + 3] > 0);
+        if (neighbors.length > 0) {
+          const target = neighbors[0];
+          data[idx] = copy[target];
+          data[idx + 1] = copy[target + 1];
+          data[idx + 2] = copy[target + 2];
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Executes the complete 2D Cel-Banded Volumetric Optics, SSS, Fresnel, and Anisotropic Specular Shader pipeline.
  */
 export function executeVolumetricOpticalPipeline(
   srcCtx: CanvasRenderingContext2D,
@@ -2083,11 +2187,27 @@ export function executeVolumetricOpticalPipeline(
     return data[(y * width + x) * 4 + 3] > 30;
   };
 
+  const isBorder = (x: number, y: number) => {
+    if (!isOpaque(x, y)) return false;
+    return !isOpaque(x + 1, y) || !isOpaque(x - 1, y) || !isOpaque(x, y + 1) || !isOpaque(x, y - 1);
+  };
+
   // 1. Distance transform & normal fields
   const distanceMap = computeSeparableEDT(isOpaque, width, height);
+  let maxDist = 1;
+  for (let i = 0; i < width * height; i++) {
+    if (distanceMap[i] > maxDist) maxDist = distanceMap[i];
+  }
+
   const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
   const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  let normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+
+  // Faceted normal snapping for gemstones
+  if (params.preset === 'gemstone' || params.facetedGems) {
+    normalField = snapToGemstoneFacets(normalField.nx, normalField.ny, normalField.nz, width, height, 8);
+  }
+
   const tangentField = computeAnisotropicTangentField(
     normalField,
     width,
@@ -2132,13 +2252,8 @@ export function executeVolumetricOpticalPipeline(
   const outImgData = outCtx.createImageData(width, height);
   const outData = outImgData.data;
 
-  // Bayer 4x4 threshold matrix
-  const bayer4x4 = [
-    0, 8, 2, 10,
-    12, 4, 14, 6,
-    3, 11, 1, 9,
-    15, 7, 13, 5,
-  ];
+  const celTones = params.celTones ?? 3;
+  const numTones = typeof celTones === 'number' ? celTones : 3;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -2163,9 +2278,9 @@ export function executeVolumetricOpticalPipeline(
       const Ty = tangentField.ty[idx];
 
       const dist = distanceMap[idx];
-
-      // A. 2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein)
       const NdotL = Nx * Lx + Ny * Ly + Nz * Lz;
+
+      // A. 2D Subsurface Scattering with Focused Inner Core
       const effectiveDepth = Math.max(1, params.translucencyDepth);
       const opticalChord = (2.0 * Math.max(0.5, dist)) / Math.max(0.08, NdotL + profile.wrap);
       const scaledChord = opticalChord / effectiveDepth;
@@ -2182,12 +2297,17 @@ export function executeVolumetricOpticalPipeline(
       const cosTheta = (sLx * Vx + sLy * Vy + sLz * Vz) / sLen;
       const forwardScatter = phaseHG2D(cosTheta, profile.gForward);
 
-      const sssRadianceR = (sssR * (0.2 + 2.2 * forwardScatter)) * lightR;
-      const sssRadianceG = (sssG * (0.2 + 2.2 * forwardScatter)) * lightG;
-      const sssRadianceB = (sssB * (0.2 + 2.2 * forwardScatter)) * lightB;
+      // Focused internal luminous core mask for slimes and potion bottles
+      const coreMask = Math.pow(Math.max(0, (dist - 1.0) / Math.max(1.0, maxDist - 1.0)), 1.1);
+      const forwardGlow = Math.min(1.0, Math.max(0, 1.8 * forwardScatter));
+      const sssCoreFactor = (profile.wrap * 0.4 + (1 - profile.wrap * 0.4) * coreMask) * (0.3 + 0.7 * forwardGlow);
 
-      // B. Dielectric Fresnel Reflection with Chromatic Dispersion
-      const cosView = Math.max(0, Nz); // dot(N, V) where V = (0, 0, 1)
+      const sssRadianceR = sssR * sssCoreFactor * lightR * 1.5;
+      const sssRadianceG = sssG * sssCoreFactor * lightG * 1.5;
+      const sssRadianceB = sssB * sssCoreFactor * lightB * 1.5;
+
+      // B. Dielectric Fresnel Reflection with Morphological Crescent Outline
+      const cosView = Math.max(0, Nz);
       const fresnelPower = params.fresnelPower ?? profile.fresnelPower;
       const [fresR, fresG, fresB] = evaluateDielectricFresnel(
         cosView,
@@ -2197,12 +2317,15 @@ export function executeVolumetricOpticalPipeline(
         fresnelPower
       );
 
-      const rimLightGate = Math.max(0.1, NdotL);
-      const rimRadianceR = fresR * rimLightGate * lightR;
-      const rimRadianceG = fresG * rimLightGate * lightG;
-      const rimRadianceB = fresB * rimLightGate * lightB;
+      const isSilBorder = isBorder(x, y);
+      const rimLightGate = Math.max(0, NdotL + 0.25);
+      const crescentRimBoost = isSilBorder ? 1.6 : 0.8;
 
-      // C. Kajiya-Kay Anisotropic Specular Highlight
+      const rimRadianceR = fresR * rimLightGate * crescentRimBoost * lightR;
+      const rimRadianceG = fresG * rimLightGate * crescentRimBoost * lightG;
+      const rimRadianceB = fresB * rimLightGate * crescentRimBoost * lightB;
+
+      // C. Kajiya-Kay Anisotropic Specular Highlight (Angel Ring)
       const t1x = Tx + Nx * 0.1;
       const t1y = Ty + Ny * 0.1;
       const t1Len = Math.sqrt(t1x * t1x + t1y * t1y) || 1;
@@ -2217,41 +2340,84 @@ export function executeVolumetricOpticalPipeline(
       const sinTH1 = Math.sqrt(Math.max(0.0, 1.0 - dotTH1 * dotTH1));
       const sinTH2 = Math.sqrt(Math.max(0.0, 1.0 - dotTH2 * dotTH2));
 
-      const spec1 = profile.kajiyaSpec1 * Math.pow(sinTH1, profile.kajiyaPower1);
+      let spec1 = profile.kajiyaSpec1 * Math.pow(sinTH1, profile.kajiyaPower1);
       const spec2 = profile.kajiyaSpec2 * Math.pow(sinTH2, profile.kajiyaPower2);
+
+      // Clean bounded angel-ring sheen band for hair preset
+      if (params.preset === 'hair') {
+        spec1 = sinTH1 > 0.65 ? Math.pow((sinTH1 - 0.65) / 0.35, 1.4) * 1.5 : 0;
+      }
 
       const anisoHighlightR = (spec1 * lightR + spec2 * origR * lightR) * profile.anisoStrength;
       const anisoHighlightG = (spec1 * lightG + spec2 * origG * lightG) * profile.anisoStrength;
       const anisoHighlightB = (spec1 * lightB + spec2 * origB * lightB) * profile.anisoStrength;
 
-      // D. Combine Shading Passes
-      const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
-      const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
-      const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
+      // D. Total Physical Light Modulation Signal
+      const diffuseLight = Math.max(0, NdotL);
+      const totalLightSignal = (
+        0.30 * diffuseLight +
+        0.45 * ((sssRadianceR + sssRadianceG + sssRadianceB) / 3) +
+        0.55 * ((rimRadianceR + rimRadianceG + rimRadianceB) / 3) +
+        0.50 * ((anisoHighlightR + anisoHighlightG + anisoHighlightB) / 3)
+      );
 
-      let r255 = Math.max(0, Math.min(255, Math.round(finalR * 255)));
-      let g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
-      let b255 = Math.max(0, Math.min(255, Math.round(finalB * 255)));
+      let r255: number;
+      let g255: number;
+      let b255: number;
 
-      // E. Optional OKLab Perceptual Quantization + Bayer Dithering
-      if (paletteOKLab.length > 0 && params.ditherModulation > 0) {
-        const rawLab = rgbToOKLab(r255, g255, b255);
-        const bayerIdx = (y % 4) * 4 + (x % 4);
-        const bayerOffset = ((bayer4x4[bayerIdx] / 16.0) - 0.5) * params.ditherModulation;
+      const baseLab = rgbToOKLab(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
+      const baseLch = okLabToOKLCH(baseLab.L, baseLab.a, baseLab.b);
 
-        const modL = rawLab.L + bayerOffset * 0.12;
-        const modA = rawLab.a + bayerOffset * 0.04;
-        const modB = rawLab.b + bayerOffset * 0.04;
+      if (celTones === 'smooth') {
+        // Continuous lighting mode for VFX overlays
+        const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
+        const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
+        const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
 
+        r255 = Math.max(0, Math.min(255, Math.round(finalR * 255)));
+        g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
+        b255 = Math.max(0, Math.min(255, Math.round(finalB * 255)));
+      } else {
+        // Stepped Cel-Banding Quantization Mode (2, 3, or 4 Tones)
+        const toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
+
+        let targetL = baseLch.L;
+        let targetC = baseLch.C;
+        let targetH = baseLch.h;
+
+        if (toneStep >= numTones - 1) {
+          // Specular Glint / Fresnel Rim Tone (Warm Sun / Amber shift)
+          targetL = Math.min(1.0, baseLch.L * 1.35 + 0.12);
+          targetC = baseLch.C * 1.15;
+          targetH = (baseLch.h - 15 + 360) % 360;
+        } else if (toneStep === 0) {
+          // Deep Atmospheric Shadow (Cool Indigo / Violet shift)
+          targetL = baseLch.L * 0.62;
+          targetC = baseLch.C * 0.90;
+          targetH = (baseLch.h + 28) % 360;
+        } else {
+          // Midtone / SSS Resonant Tone
+          targetL = baseLch.L * 0.95;
+          targetC = baseLch.C * 1.05;
+        }
+
+        const modulatedLab = oklchToOKLab(targetL, targetC, targetH);
+        const modulatedRgb = okLabToRGB(modulatedLab.L, modulatedLab.a, modulatedLab.b);
+
+        r255 = modulatedRgb.r;
+        g255 = modulatedRgb.g;
+        b255 = modulatedRgb.b;
+      }
+
+      // E. Optional Palette Snapping
+      if (paletteOKLab.length > 0) {
+        const pixelLab = rgbToOKLab(r255, g255, b255);
         let bestDist = Infinity;
         let bestColor = paletteRgba[0];
 
         for (let i = 0; i < paletteOKLab.length; i++) {
           const pLab = paletteOKLab[i];
-          const dL = modL - pLab.L;
-          const da = modA - pLab.a;
-          const db = modB - pLab.b;
-          const dist = 1.25 * dL * dL + 0.85 * (da * da + db * db);
+          const dist = deltaEOKLab(pixelLab, pLab);
           if (dist < bestDist) {
             bestDist = dist;
             bestColor = paletteRgba[i];
@@ -2270,6 +2436,12 @@ export function executeVolumetricOpticalPipeline(
     }
   }
 
+  // F. 1-Pass Cellular Automaton to remove isolated orphan pixel confetti
+  if (celTones !== 'smooth') {
+    cleanOrphanPixelConfetti(outData, width, height);
+  }
+
   outCtx.putImageData(outImgData, 0, 0);
   return outputCanvas;
 }
+
