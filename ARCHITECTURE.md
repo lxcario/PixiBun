@@ -131,6 +131,13 @@ graph TD
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
 4. **Discrete Laplace Cavity Occlusion:**
    $$\nabla^2 H \approx H * \begin{bmatrix} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{bmatrix}, \quad AO(p) = \text{clamp}(1.0 - k_{\text{ao}} \max(0, -\nabla^2 H), 0, 1)$$
+5. **2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein Forward Phase):**
+   $$T(\mathbf{x}) = 2\sqrt{\max\left(0, R^2 - D(\mathbf{x})^2\right)}, \quad I_{SSS}(\mathbf{x}) = C_{scatter} \exp\left(-\boldsymbol{\sigma}_t \frac{T(\mathbf{x})}{d_{trans}}\right) \cdot P_{2D}(\mathbf{L}', \mathbf{V}, g)$$
+   $$P_{2D}(\theta, g) = \frac{1 - g^2}{2\pi (1 + g^2 - 2g \cos\theta)^{3/2}}$$
+6. **Dielectric Fresnel Reflectance with Cauchy Chromatic Dispersion:**
+   $$F(\theta) = F_0 + (\max(1 - \alpha, F_0) - F_0) \cdot (1 - \cos\theta)^{p_{fresnel}}, \quad \eta_R = \eta_0 - \Delta\eta, \; \eta_B = \eta_0 + \Delta\eta$$
+7. **Kajiya-Kay Anisotropic Cylindrical Specular:**
+   $$\sin(\mathbf{T}, \mathbf{H}) = \sqrt{\max\left(0, 1 - (\mathbf{T}\cdot\mathbf{H})^2\right)}, \quad I_{aniso} = k_{s1} \sin^{p_1}(\mathbf{T}_1, \mathbf{H}) + k_{s2} \sin^{p_2}(\mathbf{T}_2, \mathbf{H})$$
 
 ---
 
@@ -143,7 +150,7 @@ The application state is managed by Zustand with Immer middleware:
   * $\le 256\times256$ ($65536\text{ px}$): 35 steps ($\sim 8.9\text{ MB}$)
   * $> 256\times256$ ($262144\text{ px}$): 20 steps ($\sim 20\text{ MB}$)
   Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
-* **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`🔒 Active layer is locked! Unlock it in the Layers panel to draw.`).
+* **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal:** Atomic counter incremented on every pixel-level mutation, notifying decoupled observers (like the floating live preview window) without triggering full-tree React component re-renders.
 
 ---

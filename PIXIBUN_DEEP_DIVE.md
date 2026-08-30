@@ -404,5 +404,5 @@ Tüm renkler insan gözünün algısına en uygun olan **OKLCH** uzayında tanı
 * **Depolama:** `dexie` (IndexedDB)
 * **Ses:** Yerel Web Audio API (Osilatörler, BiquadFilter, AnalyserNode)
 * **Yapay Zeka:** Deterministik Cihaz-Üzeri Matematik Motoru (`smartMathEngine.ts`) — sıfır bulut bağımlılığı
-* **Test & Kalite:** Vitest (15 test dosyası, 77 birim/bileşen testi — %100 Passed) + Playwright E2E (9/9) + Axe WCAG 2.2 + Lighthouse CI
-* **Kod Kalitesi:** ESLint 10 Flat Config + jsx-a11y (Zero `any`, sıfır hata ve uyarı)
+* **Test & Kalite:** Vitest (19 test dosyası, 111 birim/bileşen testi — %100 Passed) + Playwright E2E (14/14 Passed) + Axe WCAG 2.2 + Lighthouse CI
+* **Kod Kalitesi:** ESLint 9 Flat Config + jsx-a11y (Zero `any`, sıfır hata ve uyarı)
