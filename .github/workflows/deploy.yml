@@ -1,52 +1,23 @@
-name: CI & Vercel Deploy
+name: Vercel Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches:
       - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
 
 jobs:
-  verify:
-    name: Verify & Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check (TypeScript)
-        run: npm run typecheck
-
-      - name: Lint check
-        run: npm run lint
-
-      - name: Run unit tests (Vitest)
-        run: npm test
-
-      - name: Build project (Next.js Turbopack)
-        run: npm run build
-
   deploy:
     name: Deploy to Vercel
-    needs: verify
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

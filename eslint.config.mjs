@@ -5,7 +5,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'implementation_plan.md'] },
+  { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'docs/plans/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

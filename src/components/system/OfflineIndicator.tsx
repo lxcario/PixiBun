@@ -17,16 +17,9 @@ export function useOnlineStatus(): boolean {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    const interval = setInterval(() => {
-      if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
-        setIsOnline(navigator.onLine);
-      }
-    }, 500);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      clearInterval(interval);
     };
   }, []);
 

@@ -30,7 +30,7 @@ graph TD
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["useThemeStore (Dark / Light Mode, Zero-Lag Style Override)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
-        UndoRedo["History Stacks (ImageData Ring Buffers)"]
+        UndoRedo["historyEngine (50-Step DOM-Free History Ring)"]
     end
 
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
@@ -78,6 +78,13 @@ sequenceDiagram
 Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects indexed by layer UUID in memory. When the user resizes the canvas:
 1. `resizeAllBuffers(newWidth, newHeight, anchor, resample)` shifts and re-allocates existing canvas buffers with 9-point anchor alignment and optional nearest-neighbor resampling.
 2. Memory leaks are eliminated by explicitly clearing and discarding dereferenced buffers via `deleteBuffers(layerId)`.
+
+### Pure History Engine (`src/lib/engine/historyEngine.ts`)
+The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
+- Maintains a 50-step FIFO history ring with automatic pruning of oldest steps when capacity is reached.
+- Invalidates the redo tail upon any new drawing action or canvas mutation.
+- Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
+- Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
 
 ---
 

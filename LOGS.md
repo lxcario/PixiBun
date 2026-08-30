@@ -406,4 +406,36 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run build`: Next.js 16 production build compiles cleanly with zero dead routes.
 **Status:** Complete
 
+---
+
+## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction (2026-08-30)
+**Delivered:**
+- **DOM-Free History Engine Extraction**:
+  - Implemented `src/lib/engine/historyEngine.ts` with 50-step max depth, FIFO eviction, redo-tail invalidation, and O(1) state restoration.
+  - Extracted history management out of `CenterViewport.tsx` component refs into the new engine.
+  - Created `tests/historyEngine.test.ts` with 8 comprehensive unit tests (push, undo, redo, clear, maxDepth pruning, redo tail invalidation, empty-stack edge cases).
+- **Assertion-Backed E2E Test Suite**:
+  - Hardened `tests/e2e/studio.spec.ts` with concrete canvas pixel data sampling before/after stroke, after undo (`Control+z`), and after redo (`Control+y`), with TopBar undo/redo button enabled/disabled state assertions.
+  - Hardened `tests/e2e/offline.spec.ts` with real offline navigation: waiting for `navigator.serviceWorker.ready` and `controller !== null`, setting offline mode, reloading disconnected, and verifying cached studio hydration and offline HUD status.
+  - Updated `tests/e2e/pwa.spec.ts` adding explicit `navigator.serviceWorker.controller` verification for `/studio`.
+- **Private Lighthouse CI & Single CI Truth**:
+  - Updated `lighthouserc.json` to upload to local filesystem (`./lhci-reports`) instead of public storage.
+  - Added `lhci-reports/` to `.gitignore` and configured 7-day artifact upload in `.github/workflows/ci.yml`.
+  - Refactored `.github/workflows/deploy.yml` to eliminate duplicated validation job and trigger via `workflow_run` on successful completion of `CI` on `main`.
+  - Removed duplicate security headers and dead `/static/(.*)` cache rule from `vercel.json`.
+- **Repo Hygiene & Architectural Documentation Truthfulness**:
+  - Moved `implementation_plan.md` and `implementation_plan_v2.md` to `docs/plans/` and created `docs/plans/README.md`.
+  - Removed empty `CLAUDE.md` placeholder file.
+  - Updated `eslint.config.mjs` to ignore `docs/plans/**`.
+  - Synchronized `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, and `README.md` with the new history engine architecture and verified test metrics (85 unit/component tests across 16 suites, 10 E2E specs).
+
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 85/85 tests pass across 16 test suites (100% green on CI/Node 20).
+- `npm run test:e2e`: 10/10 Playwright E2E specs pass.
+- `npm run build`: Next.js 16 production build compiles cleanly.
+**Status:** Complete
+
+
 

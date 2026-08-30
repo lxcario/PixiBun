@@ -27,4 +27,22 @@ test.describe('PWA Manifest & Service Worker Assets', () => {
     const text = await res.text();
     expect(text).toContain("You're Away from the Network");
   });
+
+  test('registers service worker and actively controls /studio', async ({ page }) => {
+    await page.goto('/studio');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+
+    const isControlled = await page.evaluate(async () => {
+      if (!('serviceWorker' in navigator)) return false;
+      await navigator.serviceWorker.ready;
+      if (navigator.serviceWorker.controller) return true;
+      return new Promise<boolean>((resolve) => {
+        navigator.serviceWorker.addEventListener('controllerchange', () => resolve(true), { once: true });
+        setTimeout(() => resolve(Boolean(navigator.serviceWorker.controller)), 1000);
+      });
+    });
+
+    expect(isControlled).toBe(true);
+  });
 });

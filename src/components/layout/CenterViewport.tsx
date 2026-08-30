@@ -16,6 +16,7 @@ import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
 import { getOrCreateBuffer, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { HistoryStep } from '@/types/canvas';
+import { createHistoryEngine, HistoryEngine } from '@/lib/engine/historyEngine';
 import { ImportPayload } from '@/components/modals/ImportModal';
 import { 
   cleanJaggiesOnCanvas, 
@@ -74,9 +75,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Undo & Redo History Stacks
-  const undoStackRef = useRef<HistoryStep[]>([]);
-  const redoStackRef = useRef<HistoryStep[]>([]);
+  // Undo & Redo History Engine
+  const historyEngineRef = useRef<HistoryEngine>(createHistoryEngine(50));
   const currentStrokeSnapshotRef = useRef<HistoryStep | null>(null);
 
   // Selection & Clipboard Memory
@@ -216,26 +216,17 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   // Commit Undo Snapshot to Stack
   const commitSnapshot = useCallback(() => {
     if (currentStrokeSnapshotRef.current) {
-      undoStackRef.current.push(currentStrokeSnapshotRef.current);
-      const maxUndoLimit = canvasWidth * canvasHeight > 65536
-        ? (canvasWidth * canvasHeight > 262144 ? 20 : 35)
-        : 50;
-      while (undoStackRef.current.length > maxUndoLimit) {
-        undoStackRef.current.shift();
-      }
-      redoStackRef.current = [];
+      historyEngineRef.current.push(currentStrokeSnapshotRef.current);
       currentStrokeSnapshotRef.current = null;
-      setCanUndo(true);
-      setCanRedo(false);
+      setCanUndo(historyEngineRef.current.canUndo);
+      setCanRedo(historyEngineRef.current.canRedo);
       onCommitHistory?.();
     }
-  }, [canvasHeight, canvasWidth, onCommitHistory, setCanRedo, setCanUndo]);
+  }, [onCommitHistory, setCanRedo, setCanUndo]);
 
   // Undo Action
   const performUndo = useCallback(() => {
-    if (undoStackRef.current.length === 0) return;
-
-    const previousStep = undoStackRef.current.pop();
+    const previousStep = historyEngineRef.current.peekUndo();
     if (!previousStep) return;
 
     const currentLayerCanvas = getOrCreateLayerCanvas(previousStep.layerId);
@@ -243,26 +234,27 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (!ctx) return;
 
     const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-    redoStackRef.current.push({
+    const currentStep: HistoryStep = {
       layerId: previousStep.layerId,
       frameIndex: previousStep.frameIndex,
       imageData: currentImgData,
       description: previousStep.description,
-    });
+    };
 
-    ctx.putImageData(previousStep.imageData, 0, 0);
+    const stepToRestore = historyEngineRef.current.undo(currentStep);
+    if (!stepToRestore) return;
 
-    setCanUndo(undoStackRef.current.length > 0);
-    setCanRedo(true);
+    ctx.putImageData(stepToRestore.imageData, 0, 0);
+
+    setCanUndo(historyEngineRef.current.canUndo);
+    setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
   }, [bumpBufferVersion, canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Redo Action
   const performRedo = useCallback(() => {
-    if (redoStackRef.current.length === 0) return;
-
-    const nextStep = redoStackRef.current.pop();
+    const nextStep = historyEngineRef.current.peekRedo();
     if (!nextStep) return;
 
     const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
@@ -270,24 +262,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (!ctx) return;
 
     const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-    undoStackRef.current.push({
+    const currentStep: HistoryStep = {
       layerId: nextStep.layerId,
       frameIndex: nextStep.frameIndex,
       imageData: currentImgData,
       description: nextStep.description,
-    });
+    };
 
-    const maxUndoLimit = canvasWidth * canvasHeight > 65536
-      ? (canvasWidth * canvasHeight > 262144 ? 20 : 35)
-      : 50;
-    while (undoStackRef.current.length > maxUndoLimit) {
-      undoStackRef.current.shift();
-    }
+    const stepToRestore = historyEngineRef.current.redo(currentStep);
+    if (!stepToRestore) return;
 
-    ctx.putImageData(nextStep.imageData, 0, 0);
+    ctx.putImageData(stepToRestore.imageData, 0, 0);
 
-    setCanUndo(true);
-    setCanRedo(redoStackRef.current.length > 0);
+    setCanUndo(historyEngineRef.current.canUndo);
+    setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
   }, [bumpBufferVersion, canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
@@ -1803,6 +1791,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         {/* Main Composite Layer Canvas */}
         <canvas
           ref={mainCanvasRef}
+          data-testid="main-composite-canvas"
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated"

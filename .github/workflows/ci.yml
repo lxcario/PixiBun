@@ -88,3 +88,11 @@ jobs:
 
       - name: Run Lighthouse CI Audit
         run: npx @lhci/cli autorun
+
+      - name: Upload Lighthouse CI Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lhci-reports
+          path: lhci-reports/
+          retention-days: 7

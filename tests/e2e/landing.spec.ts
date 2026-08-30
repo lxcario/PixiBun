@@ -30,7 +30,8 @@ test.describe('Landing Page & Accessibility', () => {
     if (await curtain.isVisible()) {
       await curtain.click();
     }
-    await page.waitForTimeout(500);
+    // Wait for entrance animations to settle completely to ensure 100% contrast opacity
+    await page.waitForTimeout(1100);
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])

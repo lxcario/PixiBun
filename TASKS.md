@@ -1,5 +1,31 @@
 # Build Plan — PixiBun
 
+## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction
+**Goal:** Make PixiBun's quality claims honest, maintainable, and robust across four core pillars: (1) Assertion-backed E2E testing with pixel-level validation for undo/redo, authentic disconnected page reload for offline hydration, and active service worker controller verification; (2) Unified CI/CD workflow with `deploy.yml` triggered via `workflow_run` on `main`, private artifact storage for Lighthouse CI reports (`lhci-reports/`), and removal of redundant/dead headers from `vercel.json`; (3) Pure, DOM-free `HistoryEngine` extraction (`src/lib/engine/historyEngine.ts`) with fixed 50-step depth and dedicated unit test suite; (4) Clean repo hygiene and architectural doc truthfulness.
+
+**Deliverables:**
+- [x] Pure History Engine (`src/lib/engine/historyEngine.ts`): Extracted 50-step undo/redo stack out of `CenterViewport.tsx` refs into a DOM-free, pure TypeScript module with FIFO pruning, redo-tail invalidation, and O(1) state restoration.
+- [x] Unit Test Suite (`tests/historyEngine.test.ts`): 8 unit tests verifying push, undo, redo, clear, maxDepth pruning (50), redo invalidation, and empty-stack edge cases.
+- [x] Monolith Slimming (`src/components/layout/CenterViewport.tsx`): Replaced ad-hoc undo/redo stack refs with `historyEngineRef` and added `data-testid="main-composite-canvas"` for deterministic testing.
+- [x] Assertion-Backed E2E Tests: Hardened `tests/e2e/studio.spec.ts` with pixel-level canvas assertions before/after stroke and undo/redo; hardened `tests/e2e/offline.spec.ts` with real disconnected page reload and SW cache hydration; updated `tests/e2e/pwa.spec.ts` with active `navigator.serviceWorker.controller` verification.
+- [x] Private Lighthouse CI: Updated `lighthouserc.json` to upload to local filesystem (`./lhci-reports`), added `lhci-reports/` to `.gitignore`, and added 7-day artifact upload to `.github/workflows/ci.yml`.
+- [x] Single CI Truth: Removed duplicate `verify` job from `.github/workflows/deploy.yml` in favor of `workflow_run` trigger on successful `CI` completion on `main`.
+- [x] Header Deduplication & Dead Rule Pruning: Removed redundant security headers and dead `/static/(.*)` cache rule from `vercel.json` (`next.config.ts` remains canonical header source).
+- [x] Repo Hygiene: Relocated `implementation_plan.md` and `implementation_plan_v2.md` to `docs/plans/` with `docs/plans/README.md`, deleted empty `CLAUDE.md`, and updated `eslint.config.mjs` ignores.
+- [x] Architectural Documentation Truthfulness: Synchronized `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, and `README.md` to reflect `HistoryEngine` architecture and updated test metrics (85 unit/component tests, 10 E2E specs).
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 85/85 tests pass across 16 test suites (CI / Node 20).
+- `npm run test:e2e` → 10/10 Playwright E2E specs pass.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+- CI green on `main` (Node 20).
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 22 — Dead Route Pruning & Architectural Truthfulness
 **Goal:** Eliminate dead serverless routes and orphaned backend scripts (`/api/ai/vision`, `testsprite-backend/`, `scripts/write_backend_tests.js`) and synchronize all architectural documentation to honestly reflect PixiBun's 100% deterministic, on-device graphics math identity with zero cloud or API key dependencies.
 

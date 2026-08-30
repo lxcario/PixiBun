@@ -83,9 +83,9 @@ sequenceDiagram
 * Fırça vuruşu, silgi, kova dolgusu, seçim taşıma veya yapay zeka gölgelendirmesi bittiğinde `bumpBufferVersion()` çağrılır.
 * `FloatingPreviewWindow` gibi bağımsız UI elemanları bu tamsayı sayacını dinler. Böylece ana React bileşeni render edilmeden canlı önizleme sub-16ms hızla güncellenir.
 
-### 3. Geri Al / Yinele (Undo/Redo Ring Buffer)
-* `CenterViewport.tsx` içinde her katman için 50 derinliğe sahip bir `HistoryStep` yığını tutulur.
-* Her fırça darbesi başlamadan önce `ctx.getImageData(0, 0, width, height)` ile katmanın anlık görüntüsü alınır. Geri alma işleminde $O(1)$ sürede `ctx.putImageData` ile piksel seviyesinde geri yüklenir.
+### 3. Geri Al / Yinele (Undo/Redo History Engine)
+* `src/lib/engine/historyEngine.ts` DOM-bağımsız saf motoru içinde 50 derinliğe sahip bir `HistoryStep` FIFO halkası tutulur (`createHistoryEngine(50)`).
+* Her fırça darbesi başlamadan önce `ctx.getImageData(0, 0, width, height)` ile katmanın anlık görüntüsü alınır. Geri alma işleminde $O(1)$ sürede `ctx.putImageData` ile piksel seviyesinde geri yüklenir ve `canUndo`/`canRedo` durumları reaktif senkronize edilir.
 
 ---
 
