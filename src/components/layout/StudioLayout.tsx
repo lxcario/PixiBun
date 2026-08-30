@@ -19,6 +19,21 @@ import { buildProjectFile, hydrateProject } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+    try {
+      const isPersisted = await navigator.storage.persisted();
+      if (!isPersisted) {
+        return await navigator.storage.persist();
+      }
+      return isPersisted;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
 export const StudioLayout: React.FC = () => {
@@ -113,9 +128,9 @@ export const StudioLayout: React.FC = () => {
     return () => window.removeEventListener('pagehide', flush);
   }, [runAutosave]);
 
-  // Restore the last session on mount. Legacy saves (pre-ProjectFile) fail
-  // validation on purpose - starting fresh beats restoring empty promises.
+  // Restore the last session on mount and request persistent storage.
   useEffect(() => {
+    void requestPersistentStorage();
     let cancelled = false;
     loadLatestSavedWorkspace().then(async (saved) => {
       if (!saved || cancelled) return;

@@ -277,21 +277,27 @@ export const BottomTimeline: React.FC = () => {
           {clips.map(clip => (
             <div
               key={clip.id}
-              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors ${
                 activeClipId === clip.id
                   ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
                   : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:text-[#f0be7c]'
               }`}
             >
-              <span onClick={() => setActiveClipId(clip.id)}>
-                {clip.name} ({clip.startFrame + 1}-{clip.endFrame + 1})
-              </span>
               <button
+                type="button"
+                onClick={() => setActiveClipId(clip.id)}
+                className="cursor-pointer font-bold font-mono text-[10px] bg-transparent border-0 p-0 text-inherit text-left"
+              >
+                {clip.name} ({clip.startFrame + 1}-{clip.endFrame + 1})
+              </button>
+              <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteClip(clip.id);
                 }}
-                className="text-[#ff99aa] hover:text-[#ffffff] ml-0.5"
+                className="text-[#ff99aa] hover:text-[#ffffff] ml-0.5 cursor-pointer bg-transparent border-0 p-0"
+                aria-label={`Delete clip ${clip.name}`}
                 title="Delete Clip"
               >
                 ×
@@ -306,11 +312,13 @@ export const BottomTimeline: React.FC = () => {
               onChange={(e) => setNewClipName(e.target.value)}
               onBlur={handleCreateClipSubmit}
               onKeyDown={(e) => e.key === 'Enter' && handleCreateClipSubmit()}
-              autoFocus
+              ref={(el) => el?.focus()}
+              aria-label="New clip name"
               className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 text-[10px] font-mono rounded-[2px] border border-[#f0be7c] outline-none w-20"
             />
           ) : (
             <button
+              type="button"
               onClick={() => setIsCreatingClip(true)}
               className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer"
               title="Add Tagged Animation Clip"
@@ -327,10 +335,12 @@ export const BottomTimeline: React.FC = () => {
             const isInsideClip = activeClip ? (index >= activeClip.startFrame && index <= activeClip.endFrame) : true;
 
             return (
-              <div
+              <button
+                type="button"
                 key={frame.id}
                 onClick={() => setActiveFrame(index)}
-                className={`relative min-w-[52px] h-12 rounded-[2px] border-2 cursor-pointer transition-all flex flex-col items-center justify-between p-1 select-none ${
+                aria-label={`Select frame ${index + 1}`}
+                className={`relative min-w-[52px] h-12 rounded-[2px] border-2 cursor-pointer transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
                   isActive
                     ? 'bg-[#2c1e40] border-[#f0be7c] shadow-[0_2px_0_#130e20]'
                     : isInsideClip
@@ -353,7 +363,7 @@ export const BottomTimeline: React.FC = () => {
                     {index + 1}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

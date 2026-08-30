@@ -189,27 +189,42 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+---
+
+## 📱 Offline PWA, Accessibility & Privacy Observability
+
+PixiBun is engineered as a true production-grade, local-first web application:
+
+* **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
+* **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
+* **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
+* **Continuous Quality & Performance Gates:** 73 Vitest unit and component tests in Happy-DOM, full Playwright E2E browser test suite with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+
+---
+
 ## 🛠️ Technical Architecture
 
 | Subsystem | Technology | Architectural Rationale |
 |---|---|---|
 | **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, React Compiler memoization, zero client bundle bloat. |
+| **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
 | **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong | Deterministic on-device computer graphics math for 2.5D shading and normal baking. |
 | **Image Synthesis** | Sobel Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
 | **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines. |
-| **Color Science** | OKLCH & OKLab Color Models | Perceptually uniform lightness and hue-shifting ramps. |
+| **Accessibility** | WCAG 2.2 AA + ESLint JSX-A11y + Axe | Keyboard drag alternatives, focus traps, accessible roles, high-visibility focus rings. |
+| **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
-| **Local Persistence** | Dexie.js (IndexedDB) | Fast, transactional on-device storage with zero network overhead. |
-| **Quality & Tests** | Vitest + GitHub Actions CI | Strict TypeScript 5.7, 61 unit tests & benchmarks (100% green), automated CI. |
+| **Local Persistence** | Dexie.js (IndexedDB) | Fast, transactional on-device storage with persistent storage API guard. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 73 unit/component tests + Playwright E2E + Axe WCAG scans + LHCI budgets. |
 
 ---
 
 ## 📜 Craft Values & Open Source
 
-* **100% Local-First:** No accounts, no telemetry, no tracking, no subscriptions.
-* **Offline-Capable:** Runs fully without an active internet connection.
+* **100% Local-First & Zero Telemetry:** No accounts, no telemetry, no tracking, no subscriptions.
+* **100% Offline-Capable:** Runs fully without an active internet connection via installed PWA.
 * **License:** [MIT](./LICENSE) — open source and free forever.
 
 *Handcrafted with pixels, coffee, and care.* ✦

@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 
 export default tseslint.config(
@@ -17,8 +18,23 @@ export default tseslint.config(
     },
     plugins: {
       'react-hooks': reactHooks,
+      'jsx-a11y': jsxA11y,
     },
     rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
+      'jsx-a11y/label-has-associated-control': [
+        'error',
+        {
+          assert: 'either',
+          depth: 3,
+        },
+      ],
+      'jsx-a11y/no-noninteractive-tabindex': [
+        'error',
+        {
+          roles: ['application', 'region', 'tabpanel'],
+        },
+      ],
       // House rule from SKILL.md: zero `any` shortcuts.
       '@typescript-eslint/no-explicit-any': 'error',
       // Reserved-for-future parameters keep call sites stable; underscore marks intent.

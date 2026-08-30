@@ -141,10 +141,18 @@ export const PixelDitherCurtain: React.FC = () => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={`fixed inset-0 z-50 pointer-events-auto cursor-pointer select-none transition-colors duration-100 ${
         hasStarted ? 'bg-transparent' : 'bg-[#1e1730]'
       }`}
       onClick={dismiss}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+          dismiss();
+        }
+      }}
+      aria-label="Skip introductory pixel curtain animation"
       title="Click or press ESC to skip"
     >
       <canvas

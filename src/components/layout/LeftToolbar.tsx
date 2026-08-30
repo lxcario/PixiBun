@@ -100,22 +100,26 @@ export const LeftToolbar: React.FC = () => {
         {/* Overlapping Primary / Secondary Color Wells */}
         <div className="relative w-10 h-10">
           {/* Secondary Color Well (Behind) */}
-          <div
+          <button
+            type="button"
             onClick={() => setColorPickerTarget('secondary')}
             onContextMenu={(e) => {
               e.preventDefault();
               swapColors();
             }}
             style={{ backgroundColor: secondaryColor }}
-            className="absolute bottom-0 right-0 w-6 h-6 rounded-[2px] border-2 border-[var(--desk-border)] shadow-[0_2px_0_var(--btn-shadow)] cursor-pointer hover:scale-110 transition-transform"
+            className="absolute bottom-0 right-0 w-6 h-6 rounded-[2px] border-2 border-[var(--desk-border)] shadow-[0_2px_0_var(--btn-shadow)] cursor-pointer hover:scale-110 transition-transform p-0"
+            aria-label={`Secondary color ${secondaryColor}. Click to choose, right click to swap`}
             title={`Secondary Color (${secondaryColor}) - Click to Pick / Right-click to Swap`}
           />
 
           {/* Primary Color Well (Front) */}
-          <div
+          <button
+            type="button"
             onClick={() => setColorPickerTarget('primary')}
             style={{ backgroundColor: primaryColor }}
-            className="absolute top-0 left-0 w-6 h-6 rounded-[2px] border-2 border-[#f0be7c] shadow-[0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:scale-110 transition-transform"
+            className="absolute top-0 left-0 w-6 h-6 rounded-[2px] border-2 border-[#f0be7c] shadow-[0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:scale-110 transition-transform p-0 z-10"
+            aria-label={`Primary color ${primaryColor}. Click to choose`}
             title={`Primary Color (${primaryColor}) - Click to Pick Color`}
           />
         </div>

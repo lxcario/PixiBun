@@ -7,6 +7,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ImportPayload } from '@/components/modals/ImportModal';
+import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
@@ -143,7 +144,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             onChange={(e) => setTempName(e.target.value)}
             onBlur={handleNameSubmit}
             onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
-            autoFocus
+            ref={(el) => el?.focus()}
+            aria-label="Project name"
             className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-2.5 py-1 text-sm font-mono rounded-[2px] border-2 border-[var(--accent-gold)] outline-none"
           />
         ) : (
@@ -171,6 +173,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-[#f0be7c] animate-pulse" />
           <span>Saved</span>
         </div>
+
+        {/* Offline Status Badge */}
+        <OfflineIndicator />
       </div>
 
       {/* Center Utilities: Undo/Redo, Zoom, Viewport Toggles */}
@@ -268,11 +273,12 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           size="sm"
           variant="default"
           onClick={onOpenShortcuts}
-          title="Keyboard Shortcuts (?)"
+          title="Atelier Guide, Diagnostics & Shortcuts (?)"
+          aria-label="Atelier Guide, Diagnostics and Shortcuts"
           className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
         >
           <PixelIcon name="help" size={14} />
-          <span>Shortcuts</span>
+          <span>Guide</span>
         </TactileButton>
 
         <TactileButton

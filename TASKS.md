@@ -1,5 +1,31 @@
 # Build Plan — PixiBun
 
+## Phase 21 — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability
+**Goal:** Make PixiBun a professional, reliable, and accessible local-first web application across four core pillars: (1) True PWA offline installation with hand-rolled zero-dependency service worker, manifest, precached app shell, offline fallback, and persistent storage protection; (2) Full WCAG 2.2 AA accessibility with keyboard alternatives for drag interactions, focus traps with opener restoration, high-contrast focus rings, minimum target sizes, and error boundaries; (3) Continuous automated quality & performance gates with 73 Happy-DOM unit/component tests, full Playwright E2E browser tests with automated Axe WCAG audits, and Lighthouse CI score budgets; (4) Privacy-first local diagnostics with IndexedDB ring buffer, Core Web Vitals bridge, and one-click JSON export.
+
+**Deliverables:**
+- [x] PWA Manifest & Icons: `public/manifest.webmanifest` and pixel-crisp PNG icons (192, 512, maskable, 180 apple touch) in `public/icons/`.
+- [x] Hand-Rolled Service Worker (`public/sw.js`): Precached app shell, Stale-While-Revalidate caching for static chunks and assets, network-only for `/api/*`, navigation fallback, and `SKIP_WAITING` support.
+- [x] Offline Fallback Page (`public/offline.html`): Self-contained, warm atelier styled static fallback page.
+- [x] Service Worker Registrar & Update Toast (`src/components/system/ServiceWorkerRegistrar.tsx`, `PwaUpdateToast.tsx`): Update notification banner with instant reload action.
+- [x] Offline Indicator & Storage Persistence (`OfflineIndicator.tsx`, `StudioLayout.tsx`): HUD status pill when offline and `navigator.storage.persist()` guard against eviction.
+- [x] WCAG 2.2 AA Conformance & JSX-A11y: Resolved all static a11y violations, added `eslint-plugin-jsx-a11y`, hardened `ModalWrapper.tsx` focus traps and Escape handling.
+- [x] Drag Alternatives & Live Region Feedback: Arrow key canvas panning and floating selection nudging (WCAG 2.5.7) and `aria-live="polite"` locked layer feedback.
+- [x] Route & Global Error Boundaries: Atelier styled error boundaries in `src/app/error.tsx`, `src/app/global-error.tsx`, and `src/app/studio/error.tsx`.
+- [x] Privacy-First Diagnostics & Web Vitals: Dexie schema v2 with 200-entry ring buffer, `web-vitals` listener, export JSON tool, and opt-in relay toggle in `ShortcutsModal.tsx`.
+- [x] Quality Gates & CI: 73 unit/component tests (100% green), 9 Playwright E2E specs with Axe WCAG 2.2 scans, `lighthouserc.json`, and 3-stage GitHub Actions CI.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 73/73 tests pass across 14 test suites.
+- `npm run test:e2e` → 9/9 Playwright E2E and Axe WCAG scans pass.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 20 — Audit Remediation, Security Hardening, Dependency Pruning, Linter Hygiene & CI Enforcement
 **Goal:** Remediate all architectural and hygiene findings identified in the deep audit: delete hardcoded PAT tokens, prune dead runtime dependencies, fix linter violations in benchmarks, align blend mode types with the UI and schema, add an MIT license, tighten CSP headers, establish GitHub Actions CI, and synchronize all documentation.
 

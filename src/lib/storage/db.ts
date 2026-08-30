@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie';
+import type { DiagnosticEntry } from '@/types/diagnostics';
 
 export interface StoredProject {
   id: string;
@@ -12,11 +13,16 @@ export interface StoredProject {
 
 class PixiBunDatabase extends Dexie {
   projects!: Table<StoredProject, string>;
+  diagnostics!: Table<DiagnosticEntry, string>;
 
   constructor() {
     super('PixiBunDB');
     this.version(1).stores({
       projects: 'id, name, updatedAt',
+    });
+    this.version(2).stores({
+      projects: 'id, name, updatedAt',
+      diagnostics: 'id, kind, timestamp',
     });
   }
 }

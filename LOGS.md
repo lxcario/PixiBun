@@ -345,3 +345,42 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm test`: 61/61 tests pass across 10 test suites.
 - `npm run build`: Next.js 16.3.2 Turbopack static compilation succeeds in 21.5s with zero errors.
 **Status:** Complete
+
+---
+
+## Phase 21 — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability (2026-08-30)
+**Delivered:**
+- **PWA Manifest & Asset Infrastructure**:
+  - Created `public/manifest.webmanifest` configuring standalone display, icons, and metadata.
+  - Generated pixel-crisp PNG icons (192, 512, maskable-512, apple-touch-180) from `src/app/icon.svg` via `scripts/generate-icons.mjs`.
+  - Created `public/offline.html` warm atelier-styled static fallback page.
+- **Hand-Rolled Service Worker (`public/sw.js`)**:
+  - Implemented zero-dependency service worker precaching the app shell, static assets, and manifest with Stale-While-Revalidate caching for static chunks and network-first navigation fallback.
+  - Built `src/components/system/ServiceWorkerRegistrar.tsx` and `PwaUpdateToast.tsx` providing non-intrusive update notification with instant reload.
+  - Integrated `navigator.storage.persist()` in `StudioLayout.tsx` guarding stored user artwork against browser eviction.
+  - Created `OfflineIndicator.tsx` status chip displaying live IndexedDB status when offline.
+- **WCAG 2.2 AA Accessibility Conformance**:
+  - Installed and configured `eslint-plugin-jsx-a11y` in `eslint.config.mjs` resolving all static accessibility violations across all components.
+  - Hardened `ModalWrapper.tsx` with native `<dialog>` event listeners, focus trapping, and return of focus to opener upon close.
+  - Added `--focus-ring: 0 0 0 2px var(--accent-gold);` and `.min-target-size` ($\ge 24\text{px}$) in `globals.css` with WCAG AA $\ge 4.5:1$ contrast compliant light/dark tokens.
+  - Added keyboard navigation alternatives for drag interactions in `CenterViewport.tsx` (arrow keys for viewport panning and selection nudging per WCAG 2.5.7).
+  - Implemented route and global error boundaries in `src/app/error.tsx`, `src/app/global-error.tsx`, and `src/app/studio/error.tsx`.
+- **Privacy-First Observability & Diagnostics**:
+  - Upgraded Dexie schema to version 2 with additive `diagnostics` table (`'id, kind, timestamp'`).
+  - Implemented `src/lib/diagnostics/capture.ts` with FIFO ring buffer pruning (max 200 entries), 2KB detail truncation, export diagnostics JSON tool, and opt-in relay toggle.
+  - Integrated Core Web Vitals capture (`CLS`, `INP`, `LCP`, `TTFB`, `FCP`) via `web-vitals` library.
+  - Added Privacy & Diagnostics inspector section in `ShortcutsModal.tsx`.
+- **Continuous Quality & Performance Gates**:
+  - Built Happy-DOM component test suites: `ModalWrapper.test.tsx`, `TactileButton.test.tsx`, `ThemeToggle.test.tsx`, `diagnostics.test.ts` bringing Vitest coverage to 73 tests across 14 test files (100% green).
+  - Built Playwright Chromium E2E suite: `landing.spec.ts`, `studio.spec.ts`, `offline.spec.ts`, `pwa.spec.ts` with automated Axe WCAG 2.2 AA scans (0 violations).
+  - Configured `lighthouserc.json` with strict accessibility ($1.0$) and performance thresholds.
+  - Updated `.github/workflows/ci.yml` with 3 parallel validation stages (`validate`, `e2e`, `lighthouse`).
+
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 73/73 tests pass across 14 test suites (100% green).
+- `npm run test:e2e`: 9/9 Playwright E2E and Axe WCAG 2.2 specs pass (100% green).
+- `npm run build`: Next.js 16 production build compiles cleanly in 6.8s.
+**Status:** Complete
+

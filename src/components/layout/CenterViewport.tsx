@@ -1199,6 +1199,25 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       } else if (((e.ctrlKey || e.metaKey) && e.key === "'") || (e.shiftKey && e.key.toLowerCase() === 'g')) {
         e.preventDefault();
         useStudioStore.getState().toggleGrid();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (floatingSelection) {
+          e.preventDefault();
+          const step = e.shiftKey ? 5 : 1;
+          const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+          const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          setFloatingSelection({
+            ...floatingSelection,
+            x: floatingSelection.x + dx,
+            y: floatingSelection.y + dy,
+          });
+        } else {
+          e.preventDefault();
+          const step = e.shiftKey ? 60 : 20;
+          const dx = e.key === 'ArrowLeft' ? step : e.key === 'ArrowRight' ? -step : 0;
+          const dy = e.key === 'ArrowUp' ? step : e.key === 'ArrowDown' ? -step : 0;
+          const currentStore = useStudioStore.getState();
+          currentStore.setPan(currentStore.panX + dx, currentStore.panY + dy);
+        }
       }
     };
 
@@ -1728,7 +1747,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       {/* 3. Main Drawing Stage (Paper pinned on the desk) */}
       <div
-        className="relative border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)]"
+        role="application"
+        tabIndex={0}
+        aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
+        className="relative border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)] focus:outline-none focus:ring-2 focus:ring-[#f0be7c]"
         style={{
           width: `${stageWidth}px`,
           height: `${stageHeight}px`,
@@ -1822,7 +1844,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       {/* Locked Layer Feedback Toast */}
       {lockedWarning && (
-        <div className="absolute top-12 left-3 bg-[#eb5a66] text-[#140d1f] border-2 border-[#8c202a] px-3 py-1 rounded-[2px] text-xs font-mono font-bold shadow-lg z-30 flex items-center gap-1.5 pointer-events-none animate-pulse">
+        <div
+          role="status"
+          aria-live="polite"
+          className="absolute top-12 left-3 bg-[#eb5a66] text-[#140d1f] border-2 border-[#8c202a] px-3 py-1 rounded-[2px] text-xs font-mono font-bold shadow-lg z-30 flex items-center gap-1.5 pointer-events-none animate-pulse"
+        >
           <span>🔒</span>
           <span>Active layer is locked! Unlock it in the Layers panel to draw.</span>
         </div>

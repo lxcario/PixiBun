@@ -246,8 +246,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({
               {isDifferentSize && (
                 <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
                   <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Canvas Sizing</span>
-                  <label className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
+                  <label htmlFor="size-mode-match-image" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
                     <input
+                      id="size-mode-match-image"
                       type="radio"
                       name="canvas-size-mode"
                       checked={sizeMode === 'match-image'}
@@ -264,8 +265,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
+                  <label htmlFor="size-mode-fit-canvas" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
                     <input
+                      id="size-mode-fit-canvas"
                       type="radio"
                       name="canvas-size-mode"
                       checked={sizeMode === 'fit-canvas'}

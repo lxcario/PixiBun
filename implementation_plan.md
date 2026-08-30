@@ -1,43 +1,40 @@
-﻿# Implementation Plan - PixiBun De-Slop: Lamplit Identity, Cozy Studio & Hero Landing Page
+# Implementation Plan — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability
 
 ## Overview
 
-Transform PixiBun from a competent-but-generic tool UI into a warm, authored, cozy pixel-art webapp with a hero landing page, following the anti-slop protocol in `FullStackGuide.md`. The audit found three slop roots: (1) there is no front door - `/` boots straight into the editor so nothing establishes identity; (2) the chrome is uniform flat rectangles with identical radii, zero texture, zero warmth, and emoji-riddled robotic feedback strings (`'✨ Applied 2.5D curved shadow crescent'`) that violate both `SKILL.md` and FullStackGuide §2.3; (3) despite promising a "Hearth & Coffee" aesthetic, every surface is cool pastel lavender with no light source, no material, no story.
+Make PixiBun a genuinely professional web application across four pillars, chosen by the owner: **(1) PWA/offline install** — the README has claimed "100% offline-capable" since day one, but there is no `public/` directory, no manifest, no service worker; today the app is a lie on a plane. **(2) WCAG 2.2 AA accessibility** — the app has good a11y instincts (amber focus rings, `aria-label`s, `useReducedMotion`) but zero enforcement, no error boundaries (`error.tsx` absent), and the canvas-centric UI has dragging-only interactions. **(3) Test & performance gates** — 61 node-only Vitest tests never touch a React component or a browser; no E2E, no performance budgets; Lighthouse CI closes this. **(4) Privacy-first observability** — the "zero telemetry" brand promise is honored by making diagnostics **local-only by default** (IndexedDB ring buffer + "Export diagnostics" button) with a strictly **opt-in** relay, implemented with a ~100-line hand-rolled reporter instead of the Sentry SDK, honoring SKILL.md's zero-bloat rule.
 
-The direction confirmed with the owner: **keep the lavender pastel identity but deepen it** - warmer plum tones, wood/lamplight accents, dithered textures, night-desk coziness.
+Research grounding: W3C WCAG 2.2 (new AA criteria: 2.4.11 Focus Not Obscured, 2.5.7 Dragging Movements, 2.5.8 Target Size, 3.2.6 Consistent Help), web.dev Learn PWA (manifest + service worker lifecycle, update flows, storage persistence), Lighthouse CI assertions/budgets, Playwright best practices (test user-visible behavior, isolation, CI on Linux, Chromium-only install).
 
-**One signature element** (FullStackGuide §3.6): *the lamplit desk.* The studio reads as a physical desk at night - a dark plum-wood surface surrounding a paper-lilac workspace, with a single warm lamp-glow pool falling across the canvas frame. Everything else stays disciplined around it. Supporting cast: **Bun**, a hand-pixelled bunny mascot (already latent in `icon.svg`) who becomes the brand mark, lives in the header, and stars in the landing hero. No ambient floating, no glow spam, no sparkle icons - the guide bans them explicitly.
-
-Scope: routing restructure (`/` landing, `/studio` editor), design-token overhaul, texture/material utilities, full copy rewrite of feedback strings, brand mark integration, hero landing page with an interactive doodle pad and starter-sprite gallery rendered through the existing compositor pipeline. Out of scope: the pending engine work in `TASKS.md` Phases 9-12 (compositor-in-viewport, undo v2, animation truth, PWA) - this plan runs alongside those and does not touch pixel-buffer ownership.
+Everything fits the existing architecture: no new runtime deps except `web-vitals` (~1KB); the service worker is hand-rolled (app is small, Workbox is bloat); CSP stays `'self'`-only because the opt-in relay is self-hosted or same-origin; the cozy aesthetic and copy rules are untouched.
 
 ## Types
 
-New file `src/types/landing.ts`:
+New file `src/types/diagnostics.ts`:
 
 ```ts
-export interface StarterTemplate {
-  id: TemplateId;
-  name: string;              // human name, e.g. 'Hearth Ghost'
-  blurb: string;             // one warm sentence
-  width: number;             // pixels, e.g. 16
-  height: number;
-  /** rows of single-char color keys; '.' = transparent; keys index TEMPLATE_PALETTE */
-  rows: string[];
+export type DiagnosticKind = 'error' | 'web-vital' | 'unhandled-rejection';
+
+export interface DiagnosticEntry {
+  id: string;                    // from createId('diag')
+  kind: DiagnosticKind;
+  timestamp: number;
+  message: string;               // error.message or vital name
+  detail?: string;               // stack (truncated to 2KB) or vital metric JSON
+  route: string;                 // pathname at capture time
+  appVersion: string;            // from package.json / next build id
 }
 
-export type TemplateId = 'hearth-ghost' | 'mushroom' | 'bun' | 'lantern';
-
-export const TEMPLATE_PALETTE: Record<string, string>; // char -> hex, shared by all templates
-
-export interface DoodlePadState {
-  cols: number;              // e.g. 32
-  rows: number;              // e.g. 20
-  /** one byte per cell: 0 = empty, 1..n = TEMPLATE_PALETTE key index */
-  cells: Uint8Array;
+export interface DiagnosticsSettings {
+  enabled: boolean;              // local capture; default TRUE (local-only is not telemetry)
+  relayOptIn: boolean;           // default FALSE — sending anything off-device requires this
+  relayEndpoint?: string;        // user/self-hosted GlitchTip-compatible URL
 }
+
+export type PwaUpdateState = 'idle' | 'downloading' | 'ready';
 ```
 
-No store changes required - the doodle pad and gallery are self-contained client islands with local state. If the optional "carry my doodle into the studio" step is taken, the serialized doodle travels via `sessionStorage` (`pixibun:doodle-handoff`) and hydrates as layer pixels through the existing `bufferRegistry`, not through Zustand.
+No changes to `src/types/canvas.ts`, `tools.ts`, or the store shape. Diagnostics settings live in `localStorage` (`pixibun-diagnostics`), deliberately outside Zustand so it survives store resets.
 
 ## Files
 
@@ -45,102 +42,107 @@ New files:
 
 | Path | Purpose |
 |---|---|
-| `src/app/studio/page.tsx` | New editor route; renders `<StudioLayout />` plus its own `metadata` since the root layout no longer fits both pages. |
-| `src/components/landing/LandingHero.tsx` | Client component. Silkscreen wordmark, Bun mascot with a 2-frame idle blink (CSS steps, reduced-motion respected), tagline, CTAs. No gradients, no float. |
-| `src/components/landing/DoodlePad.tsx` | The hero's interactive proof: a 32x20 crisp-canvas grid visitors paint on with 4 swatches + eraser before entering the studio. Pointer events, integer cell math, `imageSmoothingEnabled = false`. Optional "take it to the studio" button (sessionStorage handoff). |
-| `src/components/landing/StarterGallery.tsx` | Renders 4 starter sprites from `starterTemplates.ts` onto small canvases via `templateRenderer`; clicking one opens the studio with that template preloaded. Asymmetric row layout, deliberately not a card grid. |
-| `src/components/landing/FeatureStory.tsx` | Single-column narrative section: real sentences about layers, onion skinning, ramps, GIF export, paired with `PixelIcon`s. Craftsperson voice; zero marketing abstractions. |
-| `src/components/landing/SiteFooter.tsx` | Quiet footer: mascot mark, one honest line, link back up. |
-| `src/components/ui/BunMascot.tsx` | Inline SVG (viewBox 16x16, `shape-rendering="crispEdges"`, same technique as existing `icon.svg`); props: `size`, `pose: 'idle' \| 'blink' \| 'happy'`. Single source of mascot art. |
-| `src/lib/art/starterTemplates.ts` | Hand-authored pixel maps (`StarterTemplate[]`) + `TEMPLATE_PALETTE` in the lavender/warm ramp. Char-grid format keeps it reviewable and testable. |
-| `src/lib/render/templateRenderer.ts` | `paintTemplate(canvas, template)` - fills rects per non-transparent cell, DPR-aware, smoothing off. Reused by gallery and the studio handoff. |
+| `public/manifest.webmanifest` | Installable PWA: `name: "PixiBun Atelier"`, `short_name: "PixiBun"`, `start_url: "/studio"`, `display: "standalone"`, `theme_color: "#140C1E"`, `background_color: "#140C1E"`, icons 192/512 + maskable (PNG renders of Bun), `description` in craftsperson voice. |
+| `public/icons/*.png` | 192, 512, maskable-512, apple-touch-180 — hand-exported from `src/app/icon.svg` (document the export command in LOGS). |
+| `public/sw.js` | Hand-rolled service worker: **precache** app shell (land on `install`, versioned cache name `pixibun-v{n}`); **stale-while-revalidate** for `/_next/static/*` and fonts; **network-only** for `/api/*` (never cache AI route) and non-GET; **offline fallback** to cached `/studio` shell; `skipWaiting` + `clients.claim` on explicit postMessage so update UX is deterministic. |
+| `public/offline.html` | Static fallback served when navigation fails and no shell cached — warm copy, no JS. |
+| `src/components/system/ServiceWorkerRegistrar.tsx` | Client component in root layout: registers `/sw.js`, listens for `waiting` worker, exposes update via `PwaUpdateToast`. |
+| `src/components/system/PwaUpdateToast.tsx` | "A fresh build is ready — reload to pick it up" HUD chip; posts `SKIP_WAITING` to the worker; respects copy rules. |
+| `src/components/system/OfflineIndicator.tsx` | `navigator.onLine` + `online`/`offline` listeners → small status chip near the viewport HUD; `useOnlineStatus` hook inside. |
+| `src/components/system/DiagnosticsProvider.tsx` | Client provider: `error`/`unhandledrejection` listeners + `reportWebVitals` bridge; writes entries to Dexie table; never throws. |
+| `src/app/error.tsx` | Route error boundary (client): warm failure copy, "Try again" reset, captures into diagnostics. |
+| `src/app/global-error.tsx` | Root boundary fallback (renders own `<html>` when layout itself fails). |
+| `src/app/studio/error.tsx` | Studio-specific boundary: warns autosave state is safe (IndexedDB), CTA to reload. |
+| `src/lib/diagnostics/capture.ts` | `captureDiagnostic(entry)`, `getRecentDiagnostics(limit)`, `clearDiagnostics()`, `exportDiagnosticsFile()` — Dexie-backed ring buffer (max 200 entries, FIFO prune). |
+| `src/lib/diagnostics/vitals.ts` | `initWebVitals()` — wraps `web-vitals` `onLCP/onINP/onCLS/onTTFB` into `captureDiagnostic` calls. |
+| `tests/e2e/*.spec.ts` | Playwright specs (see Testing). |
+| `playwright.config.ts` | Chromium-only, `webServer` running `next build && next start`, trace on retry, `contextOptions` with reduced-motion and emulated offline variants. |
+| `lighthouserc.json` | Lighthouse CI config: 3 runs, assert categories (performance ≥ 0.85, accessibility = 1.0, best-practices ≥ 0.9, seo ≥ 0.9), `budgets` for script size. |
 
 Modified files:
 
 | Path | Change |
 |---|---|
-| `src/app/page.tsx` | Rewritten: server component composing `LandingHero`, `FeatureStory`, `StarterGallery`, `SiteFooter`. Page-level `metadata` (title, description, OG). |
-| `src/app/layout.tsx` | Remove global `overflow-hidden` from `<body>`/css (it currently kills scrolling app-wide); scope overflow locking to the studio shell instead. Keep fonts. Landing-appropriate default metadata. |
-| `src/app/globals.css` | Token overhaul in `@theme`: add `--color-desk` (deep plum-wood ~#2A2130), `--color-desk-grain` (~#3A2C42), `--color-lamp` (warm amber ~#F0BE7C), `--color-lamp-soft` (~#E8AE68); deepen surfaces one step warmer; add utilities `.texture-dither` (2x2 repeating-conic-gradient checker at low alpha), `.texture-wood-grain` (layered repeating-linear-gradients, static, no animation), `.lamp-pool` (single radial-gradient vignette, pointer-events none). Pure CSS data - no image requests, CSP-safe. Scrollbar colors updated. |
-| `DESIGN.md` | Locked token table gains desk/lamp/grain roles; documents the signature element ("the lamplit desk"), texture rules (static only, <= 8% alpha dithers), and landing-page voice guide with the banned-phrase list from FullStackGuide §2.3. |
-| `src/components/layout/RightInspector.tsx` | Strip every emoji from feedback strings; rewrite each as one warm craftsperson line. No robotic strings. |
-| `src/components/layout/TopHeader.tsx` | Brand block rebuilt: `BunMascot` mark (20px) beside the PIXIBUN wordmark in Silkscreen on a single bordered plate instead of the two-box badge stack; radii hierarchy applied. |
-| `src/components/layout/StudioLayout.tsx` | Root wrapper becomes the desk: `bg-desk texture-wood-grain` behind the chassis; inset wells get `.texture-dither`; `overflow-hidden h-screen` move onto this wrapper (restoring page scroll globally). |
-| `src/components/layout/CenterViewport.tsx` | Canvas stage gains the lamp pool: a `pointer-events-none` overlay div with `.lamp-pool` over the canvas frame only (exports untouched - overlays already render separately from exported frames). Frame becomes a 3px inset "paper on desk" treatment. |
-| `src/components/ui/TactilePanel.tsx` | Variants re-tokened from raw hex to semantic tokens; `canvas-frame` variant receives the lamplit inset shadow. |
-| `src/components/ui/TactileButton.tsx` | Explicit `focus-visible` ring (amber `--color-lamp`, 2px, offset) restoring WCAG focus lost to `outline-none`; hardcoded hexes swapped for tokens. |
+| `src/app/layout.tsx` | Add `manifest: "/manifest.webmanifest"`, `viewport` export (`themeColor` per scheme), `appleWebApp` metadata; mount `ServiceWorkerRegistrar`, `DiagnosticsProvider`. |
+| `next.config.ts` | Headers for `/sw.js` (`Cache-Control: no-cache`, `Service-Worker-Allowed: /`) and `/offline.html`; production CSP: drop `'unsafe-eval'` (keep `'unsafe-inline'` for styles only — split `style-src`), keeping dev pragmatic via env check. |
+| `src/components/layout/StudioLayout.tsx` | Mount `OfflineIndicator`; call `navigator.storage.persist()` once on first user gesture (storage-persistence guard against eviction — Dexie data is the user's artwork). |
+| `src/components/ui/ModalWrapper.tsx` | Add focus trap hardening (Tab cycle, focus return to opener) — verified against WCAG 2.4.11/2.4.3. |
+| `src/components/layout/CenterViewport.tsx` | WCAG 2.5.7 (Dragging Movements): keyboard alternatives for drag-only actions — arrow keys nudge floating selection (already exists), add pan via arrow keys when no selection, and single-click fallbacks where sensible; canvas gets `role="application"` + `aria-label` describing the drawing surface. |
+| `src/components/layout/TopHeader.tsx` | Persistent Help button (opens ShortcutsModal) satisfying WCAG 3.2.6 Consistent Help; add "Export diagnostics" entry into ShortcutsModal footer. |
+| `src/components/modals/ShortcutsModal.tsx` | Add diagnostics disclosure: local capture status, relay opt-in toggle (off by default, honest copy about what is sent), Export/Clear buttons. |
+| `src/app/globals.css` | Focus ring token unified (`--focus-ring`), min target sizes utility for icon buttons (≥24px hit area via padding, WCAG 2.5.8). |
+| `eslint.config.mjs` | Add `eslint-plugin-jsx-a11y` recommended rules (errors) for `src/`. |
+| `.github/workflows/ci.yml` | Add `e2e` job (Playwright, Chromium only, `--with-deps`) and `lighthouse` job (`lhci autorun` against `next build` output); keep existing gates. |
 
 ## Functions
 
 New functions:
 
-- `paintTemplate(canvas: HTMLCanvasElement, template: StarterTemplate): void` - `src/lib/render/templateRenderer.ts`. Integer rect fills, devicePixelRatio aware, `imageSmoothingEnabled = false`.
-- `serializeDoodle(state: DoodlePadState): string` / `parseDoodle(raw: string): DoodlePadState \| null` - base64 of the `Uint8Array` plus dims header, used by the sessionStorage handoff. Failures return `null`, never throw into render paths.
-- `getTemplate(id: TemplateId): StarterTemplate` - `src/lib/art/starterTemplates.ts`.
-- `BunMascot({ size, pose })` - `src/components/ui/BunMascot.tsx`.
+- `registerServiceWorker(): Promise<ServiceWorkerRegistration | null>` — `src/components/system/ServiceWorkerRegistrar.tsx`; null-safe when `!('serviceWorker' in navigator)` or on `file:`.
+- `requestPersistentStorage(): Promise<boolean>` — wraps `navigator.storage.persist()`; fire-once guard.
+- `useOnlineStatus(): boolean` — `src/components/system/OfflineIndicator.tsx`.
+- `captureDiagnostic(entry: Omit<DiagnosticEntry, 'id' | 'timestamp' | 'route' | 'appVersion'>): void` — `src/lib/diagnostics/capture.ts`; swallows all storage errors (diagnostics must never break the app).
+- `initWebVitals(): void` — `src/lib/diagnostics/vitals.ts`.
+- `exportDiagnosticsFile(): Promise<void>` — serializes entries to a `.json` Blob download.
+- `relayDiagnostics(endpoint: string, entries: DiagnosticEntry[]): Promise<boolean>` — minimal `fetch` POST (Sentry-envelope-compatible), only invoked after `relayOptIn === true`.
 
 Modified functions:
 
-- `Home()` in `src/app/page.tsx` - replaced by the landing composition (server component; only `DoodlePad`/`LandingHero` interactivity is client-side islands).
-- Feedback handlers in `RightInspector.tsx` (`handleAutoShade`, `handleSpecularHighlight`, `handleSelOut`, `handleAutoOutline`, `handleGroundShadow`, `handleCleanJaggies`, `handleRemoveStrays`, `handleColorGrade`, `handleQuantizePalette`, `handleHarmonizePalette`, `handleInBetweenFrame`) - copy rewrite only; dispatch mechanics unchanged.
+- `applyThemeToDOM` / theme boot in `themeStore.ts` — coordinate `themeColor` meta updates with the new viewport metadata (minor).
+- `postMessage` handling in `public/sw.js` (`SKIP_WAITING`, `CACHE_VERSION` bump message).
 
-Removed functions/patterns:
-
-- The two-box brand badge JSX in `TopHeader.tsx` (replaced by the mascot plate).
-- Global `overflow-hidden` on `html, body` in `globals.css` (replaced by scoping in `StudioLayout`).
+Removed: none.
 
 ## Classes
 
-No new classes. The codebase is function-oriented and stays that way. Only existing component contracts touched are the presentational props listed above (`BunMascot` pose union, `TactilePanel` variant retokening).
+None. The codebase is function-oriented and stays that way; Next.js error boundaries are function components (`error.tsx` exports a default client component receiving `{ error, reset }`).
 
 ## Dependencies
 
-**None added.** Everything ships with what exists: Tailwind v4 gradients handle dither/grain/lamp textures, `next/font` already self-hosts Silkscreen, plain CSS `steps()` handles the mascot blink (fewer moving parts than motion). CSP needs no changes (`default-src 'self'`; all assets inline or self-hosted).
+| Package | Kind | Why |
+|---|---|---|
+| `web-vitals` (^5) | runtime | The only runtime addition; ~1KB, official Lighthouse-compatible vitals. |
+| `@playwright/test` | dev | E2E + axe + offline emulation. |
+| `@axe-core/playwright` | dev | Automated WCAG scanning inside E2E. |
+| `happy-dom` | dev | Component-test environment for Vitest (ModalWrapper/TactileButton/themeStore). |
+| `eslint-plugin-jsx-a11y` | dev | Static a11y enforcement in lint gate. |
+| `@lhci/cli` | CI-only | Installed via `npx` in the workflow; never in `package.json`. |
+
+Deliberately **not** added: Workbox (hand-rolled SW — the shell is ~10 assets; SKILL.md forbids deps when a clean solution exists), Sentry SDK (hand-rolled ~100-line reporter to a self-hosted GlitchTip-compatible endpoint — zero third-party script, CSP untouched, honors the privacy promise).
 
 ## Testing
 
-Unit tests (Vitest, existing suite extended):
-
-- `tests/starterTemplates.test.ts` - every template's `rows` are rectangular, within declared width/height, and use only keys present in `TEMPLATE_PALETTE`; ids unique.
-- `tests/templateRenderer.test.ts` - paint a known 2x2 template onto a minimal 2D-context fake recording fillRect calls; verify cell count, colors, transparent cells skipped.
-- `tests/doodleHandoff.test.ts` - serialize/parse round-trip equality; corrupted or truncated payloads return `null`.
-
-Manual checkpoints:
-
-1. `/` renders the landing: wordmark crisp (Silkscreen actually loading), mascot blink respects reduced-motion, no console errors.
-2. Paint in the hero doodle pad on desktop and touch; cells are crisp integers, eraser works, "open the studio" lands on `/studio` with autosave state intact.
-3. Studio still restores the saved project on mount (regression guard: routing change must not break `loadLatestSavedWorkspace` hydration).
-4. Every feedback action in the inspector shows warm human copy, zero emojis, zero robotic strings.
-5. Lamp pool overlays the canvas frame but eyedropper sampling and PNG/GIF/spritesheet exports remain unchanged (compositor untouched).
-6. Keyboard-only pass: focus ring visible on every TactileButton on both pages; Escape closes modals.
-7. `typecheck`, `lint`, `test`, and `next build` all clean.
+1. **Component tests** (`tests/components/*.test.tsx`, Vitest + happy-dom): ModalWrapper focus trap/Escape/focus-return; ThemeToggle persists and applies `data-theme`; TactileButton focus-visible ring; diagnostics capture FIFO pruning and corrupted-payload tolerance.
+2. **E2E (Playwright, Chromium):**
+   - `landing.spec.ts` — hero renders, DoodlePad paints, no console errors, axe scan clean (zero violations, WCAG 2.2 tags).
+   - `studio.spec.ts` — draw a stroke, Ctrl+Z/Ctrl+Y round-trip, zoom bounds, keyboard shortcuts modal via `?`, locked-layer toast via `aria-live`.
+   - `offline.spec.ts` — load `/studio`, `context.setOffline(true)`, reload → shell + workspace hydrate from IndexedDB; OfflineIndicator visible.
+   - `pwa.spec.ts` — manifest fetchable, valid; SW registered and controlling; `/api/ai/vision` bypasses cache (asserted via request interception).
+3. **Lighthouse CI:** 3-run median against production build; a11y score must equal 100; performance ≥ 85; budgets: total script ≤ 300KB (current app is well under).
+4. **Existing suite:** all 61 tests remain green; new lib tests for `capture.ts` pruning.
 
 ## Implementation Order
 
-**Phase A - Tokens, textures, materials (foundation; everything else consumes these)**
-1. `globals.css`: new desk/lamp/grain tokens, warmed surfaces, `.texture-dither`, `.texture-wood-grain`, `.lamp-pool`; remove global `overflow-hidden`; move `h-screen w-screen overflow-hidden select-none` onto `StudioLayout`'s root div.
-2. `DESIGN.md`: lock the expanded token table + signature-element statement + copy rules.
-3. `TactilePanel.tsx` + `TactileButton.tsx`: retoken to semantic names, add `focus-visible` amber rings.
+**Phase A — Error boundaries & diagnostics foundation (P0, ship first)**
+1. `src/types/diagnostics.ts`, Dexie schema v2 (`diagnostics` table — additive, no migration risk), `capture.ts` + vitals + tests.
+2. `error.tsx`, `global-error.tsx`, `studio/error.tsx`; `DiagnosticsProvider` in root layout.
+3. Diagnostics UI in ShortcutsModal (local by default; relay opt-in never default-on).
 
-**Phase B - Route restructure + studio ambience**
-4. Create `src/app/studio/page.tsx` hosting `<StudioLayout />` with its own metadata; gut `src/app/page.tsx` to a temporary passthrough so the app builds between commits (replaced in Phase D).
-5. Verify autosave hydration, keyboard shortcuts, and modal flows survive the route move (manual checkpoint 3).
-6. `StudioLayout.tsx`: desk background + wood-grain texture; `CenterViewport.tsx`: canvas frame treatment + lamp-pool overlay (pointer-events none).
+**Phase B — Accessibility (WCAG 2.2 AA)**
+4. `eslint-plugin-jsx-a11y` wired; fix everything it flags.
+5. Target-size sweep (2.5.8), keyboard pan/nudge alternatives (2.5.7), Help surface (3.2.6), ModalWrapper focus hardening, reduced-motion audit for `PixelVines`/`PixelDitherCurtain`/`CozyParticles`.
+6. `globals.css` focus-ring token; component tests green.
 
-**Phase C - Brand, mascot, de-slop copy**
-7. `BunMascot.tsx` (poses: idle, blink, happy); refresh `TopHeader.tsx` brand plate.
-8. `RightInspector.tsx`: rewrite all eleven feedback strings - warm, specific, emoji-free.
-9. Sweep remaining components (`BottomTimeline`, `LeftToolbar`, modals) for stray hex values, uniform-radius violations, and cold strings; normalize to tokens.
+**Phase C — PWA / offline truth**
+7. `public/` manifest + icons + `offline.html`; layout metadata; `next.config.ts` SW headers.
+8. `sw.js` (precache/SWR/network-only rules) + registrar + update toast + offline indicator; `storage.persist()` on first gesture.
+9. E2E `offline.spec.ts` + `pwa.spec.ts` green; README "offline-capable" claim becomes true — update LOGS/TASKS.
 
-**Phase D - Landing page**
-10. `starterTemplates.ts` (hand-author four 16x16 sprites in the house palette) + `templateRenderer.ts` + unit tests.
-11. `DoodlePad.tsx` (hero interactive grid) + `tests/doodleHandoff.test.ts`.
-12. `LandingHero.tsx` (wordmark, mascot, tagline, CTAs), `FeatureStory.tsx`, `StarterGallery.tsx`, `SiteFooter.tsx`.
-13. Compose final `src/app/page.tsx` + landing `metadata`; write the real hero/tagline copy first (Gate 2: words before wireframes) - draft included in PR description for review.
+**Phase D — Quality gates**
+10. `playwright.config.ts` + three E2E specs; `lighthouserc.json`.
+11. CI workflow: add `e2e` and `lighthouse` jobs; require both green before merge is considered done.
 
-**Phase E - Polish and handoff**
-14. Optional (recommended): doodle/gallery to studio handoff over sessionStorage, hydrated into a fresh layer via `bufferRegistry.getOrCreateBuffer` on studio mount when the key exists.
-15. Full manual checkpoint sweep (1-7 above), adversarial self-review per Gate 5 (slop-tell category especially), update `TASKS.md` with a completed phase entry and `LOGS.md` notes.
-16. Conventional Commits per logical unit (`feat(landing): ...`, `feat(theme): ...`, `fix(copy): ...`).
+**Phase E — Close-out**
+12. Production build + full manual sweep (install on desktop/Android, airplane-mode reload, keyboard-only pass, screen-reader smoke via NVDA), adversarial self-review per FullStackGuide Gate 5, `TASKS.md` Phase 21 entry, conventional commits per phase.
 
-Every phase exits with typecheck, lint, tests, and a production build green before the next begins.
+Every phase exits with `typecheck`, `lint`, `test`, and `next build` green — now also enforced by the existing CI on `main`.

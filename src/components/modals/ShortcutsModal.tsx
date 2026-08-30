@@ -1,8 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
+import {
+  getDiagnosticsSettings,
+  setDiagnosticsSettings,
+  exportDiagnosticsFile,
+  clearDiagnostics,
+} from '@/lib/diagnostics/capture';
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -37,6 +43,7 @@ const SHORTCUTS: ShortcutEntry[] = [
   { key: 'Ctrl + Z / Y', description: 'Undo / Redo Stroke', category: 'Editing' },
   { key: 'Esc', description: 'Deselect / Commit Float', category: 'Editing' },
   { key: 'Middle / Alt + Drag', description: 'Pan Canvas Viewport', category: 'Canvas & Viewport' },
+  { key: 'Arrow Keys', description: 'Pan Viewport / Nudge Selection', category: 'Canvas & Viewport' },
   { key: 'Mouse Wheel', description: 'Zoom In / Out Canvas', category: 'Canvas & Viewport' },
   { key: 'Space', description: 'Play / Pause Animation', category: 'Animation' },
   { key: ',', description: 'Step to Previous Frame', category: 'Animation' },
@@ -45,9 +52,40 @@ const SHORTCUTS: ShortcutEntry[] = [
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
   const categories = ['Tools', 'Editing', 'Canvas & Viewport', 'Animation'] as const;
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [diagSettings, setDiagSettings] = useState(getDiagnosticsSettings());
+  const [clearNotice, setClearNotice] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDiagSettings(getDiagnosticsSettings());
+      setClearNotice(false);
+    }
+  }, [isOpen]);
+
+  const handleToggleLocal = (enabled: boolean) => {
+    const updated = setDiagnosticsSettings({ enabled });
+    setDiagSettings(updated);
+  };
+
+  const handleToggleRelay = (relayOptIn: boolean) => {
+    const updated = setDiagnosticsSettings({ relayOptIn });
+    setDiagSettings(updated);
+  };
+
+  const handleEndpointChange = (relayEndpoint: string) => {
+    const updated = setDiagnosticsSettings({ relayEndpoint });
+    setDiagSettings(updated);
+  };
+
+  const handleClear = async () => {
+    await clearDiagnostics();
+    setClearNotice(true);
+    setTimeout(() => setClearNotice(false), 2500);
+  };
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Keyboard Shortcuts & Hotkeys" maxWidth="w-[540px] max-h-[85vh]">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Atelier Guide & Shortcuts" maxWidth="w-[560px] max-h-[85vh]">
       {/* Shortcuts List by Category */}
       <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
         {categories.map((cat) => (
@@ -70,6 +108,81 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
             </div>
           </div>
         ))}
+
+        {/* Privacy & Diagnostics Section */}
+        <div className="mt-2 border-t border-[var(--desk-border)] pt-3">
+          <button
+            type="button"
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+            className="flex items-center justify-between w-full text-left text-xs font-mono font-bold text-[#f0be7c] hover:text-[#fff8db] py-1 cursor-pointer"
+          >
+            <span>Privacy, Diagnostics & Offline Health</span>
+            <span className="text-[10px]">{showDiagnostics ? '▲ Hide' : '▼ View'}</span>
+          </button>
+
+          {showDiagnostics && (
+            <div className="mt-2 p-3 bg-[var(--desk-surface)] rounded-[3px] border border-[var(--desk-border)] flex flex-col gap-2.5 text-xs font-mono text-[var(--text-heading)]">
+              <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+                PixiBun honors a strict <strong className="text-[#f0be7c]">zero-telemetry guarantee</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting.
+              </p>
+
+              <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                <input
+                  type="checkbox"
+                  checked={diagSettings.enabled}
+                  onChange={(e) => handleToggleLocal(e.target.checked)}
+                  className="rounded border-[var(--desk-border)] accent-[#f0be7c]"
+                />
+                <span>Enable local diagnostic ring buffer (local only)</span>
+              </label>
+
+              <div className="border-t border-[var(--desk-border)] pt-2 flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                  <input
+                    type="checkbox"
+                    checked={diagSettings.relayOptIn}
+                    onChange={(e) => handleToggleRelay(e.target.checked)}
+                    className="rounded border-[var(--desk-border)] accent-[#f0be7c]"
+                  />
+                  <span>Opt-in remote crash relay (strictly off by default)</span>
+                </label>
+
+                {diagSettings.relayOptIn && (
+                  <div className="pl-5 flex flex-col gap-1">
+                    <span className="text-[10px] text-[var(--text-muted)]">Relay Endpoint (GlitchTip / Sentry compatible HTTP POST):</span>
+                    <input
+                      type="url"
+                      value={diagSettings.relayEndpoint || ''}
+                      onChange={(e) => handleEndpointChange(e.target.value)}
+                      placeholder="https://diagnostics.yourdomain.com/api/relay"
+                      className="bg-[var(--desk-bg)] border border-[var(--desk-border)] rounded px-2 py-1 text-[11px] font-mono text-[var(--text-heading)] focus:outline-none focus:border-[#f0be7c]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 mt-1 pt-2 border-t border-[var(--desk-border)]">
+                <button
+                  type="button"
+                  onClick={() => exportDiagnosticsFile()}
+                  className="px-2.5 py-1 bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[#f0be7c] text-[11px] rounded text-[#f0be7c] font-medium cursor-pointer"
+                >
+                  📥 Export Diagnostics JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="px-2.5 py-1 bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[#fca5a5] text-[11px] rounded text-[#fca5a5] cursor-pointer"
+                >
+                  🧹 Clear Stored Logs
+                </button>
+                {clearNotice && (
+                  <span className="text-[10px] text-[#86efac]">Logs cleared!</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal Footer */}

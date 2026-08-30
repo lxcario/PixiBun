@@ -36,6 +36,7 @@ export const ClickSpark: React.FC<ClickSparkProps> = ({
   children,
   className = '',
 }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sparksRef = useRef<Spark[]>([]);
 
@@ -86,38 +87,12 @@ export const ClickSpark: React.FC<ClickSparkProps> = ({
     [duration, sparkRadius]
   );
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const x = e.clientX;
-    const y = e.clientY;
-
-    const now = performance.now();
-    const newSparks: Spark[] = [];
-
-    for (let i = 0; i < sparkCount; i++) {
-      const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() * 0.4 - 0.2);
-      const color = sparkColors[Math.floor(Math.random() * sparkColors.length)];
-      newSparks.push({
-        x,
-        y,
-        angle,
-        speed: 1 + Math.random() * 0.8,
-        startTime: now,
-        color,
-        size: sparkSize,
-      });
-    }
-
-    const wasEmpty = sparksRef.current.length === 0;
-    sparksRef.current.push(...newSparks);
-
-    if (wasEmpty) {
-      requestAnimationFrame(animate);
-    }
-  };
-
   useEffect(() => {
+    // Respect reduced motion
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const handleResize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -127,12 +102,54 @@ export const ClickSpark: React.FC<ClickSparkProps> = ({
 
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const x = e.clientX;
+      const y = e.clientY;
+
+      const now = performance.now();
+      const newSparks: Spark[] = [];
+
+      for (let i = 0; i < sparkCount; i++) {
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() * 0.4 - 0.2);
+        const color = sparkColors[Math.floor(Math.random() * sparkColors.length)];
+        newSparks.push({
+          x,
+          y,
+          angle,
+          speed: 1 + Math.random() * 0.8,
+          startTime: now,
+          color,
+          size: sparkSize,
+        });
+      }
+
+      const wasEmpty = sparksRef.current.length === 0;
+      sparksRef.current.push(...newSparks);
+
+      if (wasEmpty) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('pointerdown', handlePointerDown);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (container) {
+        container.removeEventListener('pointerdown', handlePointerDown);
+      }
+    };
+  }, [animate, sparkColors, sparkCount, sparkSize]);
 
   return (
     <div
-      onClick={handleClick}
+      ref={containerRef}
       className={`relative ${className}`}
       style={{ isolation: 'isolate' }}
     >

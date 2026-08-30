@@ -300,8 +300,7 @@ export const RightInspector: React.FC = () => {
               return (
                 <div
                   key={layer.id}
-                  onClick={() => setActiveLayer(layer.id)}
-                  className={`flex items-center justify-between px-2.5 py-2 rounded-[2px] border-2 text-xs font-mono transition-all cursor-pointer ${
+                  className={`flex items-center justify-between px-2.5 py-2 rounded-[2px] border-2 text-xs font-mono transition-all ${
                     isActive
                       ? 'bg-[#2c1e40] border-[#f0be7c] text-[#f0be7c] font-bold shadow-xs'
                       : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:bg-[#281b3d] hover:text-[var(--text-heading)]'
@@ -328,26 +327,31 @@ export const RightInspector: React.FC = () => {
                             setEditingLayerId(null);
                           }
                         }}
-                        autoFocus
+                        ref={(el) => el?.focus()}
+                        aria-label="Layer name"
                         className="bg-[#181124] text-[var(--text-heading)] px-1.5 py-0.5 text-xs font-mono rounded-[2px] border border-[#f0be7c] outline-none w-full"
                       />
                     ) : (
-                      <span
+                      <button
+                        type="button"
+                        onClick={() => setActiveLayer(layer.id)}
                         onDoubleClick={() => {
                           setEditingLayerId(layer.id);
                           setLayerNameInput(layer.name);
                         }}
-                        className="truncate"
-                        title="Double-click to rename"
+                        className="truncate text-left bg-transparent border-0 p-0 text-inherit cursor-pointer flex-1 font-mono text-xs"
+                        aria-label={`Select layer ${layer.name}. Double click to rename`}
+                        title="Click to select, double-click to rename"
                       >
                         {layer.name}
-                      </span>
+                      </button>
                     )}
                   </div>
 
                   {/* Visibility & Lock Toggles */}
                   <div className="flex items-center gap-1.5">
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleLayerLock(layer.id);
@@ -355,12 +359,14 @@ export const RightInspector: React.FC = () => {
                       className={`p-1 transition-colors cursor-pointer ${
                         layer.locked ? 'text-[#f0be7c]' : 'text-[var(--text-body)]/50 hover:text-[var(--text-heading)]'
                       }`}
+                      aria-label={layer.locked ? `Unlock layer ${layer.name}` : `Lock layer ${layer.name}`}
                       title={layer.locked ? 'Unlock Layer' : 'Lock Layer'}
                     >
                       <PixelIcon name={layer.locked ? 'lock' : 'unlock'} size={14} />
                     </button>
 
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleLayerVisibility(layer.id);
@@ -372,6 +378,7 @@ export const RightInspector: React.FC = () => {
                             : 'text-[var(--text-body)]'
                           : 'text-[var(--text-body)]/30 hover:text-[var(--text-heading)]'
                       }`}
+                      aria-label={layer.visible ? `Hide layer ${layer.name}` : `Show layer ${layer.name}`}
                       title={layer.visible ? 'Hide Layer' : 'Show Layer'}
                     >
                       <PixelIcon name={layer.visible ? 'eye' : 'eye-off'} size={14} />
