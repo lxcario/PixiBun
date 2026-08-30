@@ -17,7 +17,7 @@ PixiBun; Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand + Immer ve 
 ```text
 src/
 ├── app/
-│   ├── api/ai/vision/route.ts       # Gemini 2.0/1.5 Flash Vision proxy & yerel deterministik yedek
+│   ├── api/diagnostics/relay/route.ts # SSRF korumalı sunucu tanı aktarım proxy'si (isteğe bağlı, sıfır telemetri)
 │   ├── globals.css                  # Tailwind v4 @theme, OKLCH değişkenleri, taktil gölgeler, dither dokuları
 │   ├── layout.tsx                   # Kök düzen (Silkscreen, Plus Jakarta Sans, JetBrains Mono fontları)
 │   ├── page.tsx                     # Landing Page (Yaşayan ahşap masa sahnesi, diorama, hikaye)
@@ -401,6 +401,6 @@ Tüm renkler insan gözünün algısına en uygun olan **OKLCH** uzayında tanı
 * **Animasyon & Fizik:** `motion` (`motion/react`)
 * **Depolama:** `dexie` (IndexedDB)
 * **Ses:** Yerel Web Audio API (Osilatörler, BiquadFilter, AnalyserNode)
-* **Yapay Zeka & Çoklu Mod:** Google Gemini Flash Vision API (`/api/ai/vision`) + Çevrimdışı Deterministik Algoritmalar
-* **Test & Kalite:** Vitest (10 test dosyası, 61 birim ve benchmark testi — %100 Passed) + GitHub Actions CI
-* **Kod Kalitesi:** ESLint 10 Flat Config (Zero `any`, sıfır hata ve uyarı)
+* **Yapay Zeka:** Deterministik Cihaz-Üzeri Matematik Motoru (`smartMathEngine.ts`) — sıfır bulut bağımlılığı
+* **Test & Kalite:** Vitest (15 test dosyası, 77 birim/bileşen testi — %100 Passed) + Playwright E2E (9/9) + Axe WCAG 2.2 + Lighthouse CI
+* **Kod Kalitesi:** ESLint 10 Flat Config + jsx-a11y (Zero `any`, sıfır hata ve uyarı)
