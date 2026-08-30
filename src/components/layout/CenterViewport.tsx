@@ -45,6 +45,8 @@ import {
   computeMinecraftSkinNormalField,
 } from '@/lib/ai/smartMathEngine';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
+import { compositeFrame } from '@/lib/render/compositor';
+import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
 
 interface SelectionBox {
   x: number;
@@ -72,6 +74,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const onionCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -133,7 +136,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     [canvasWidth, canvasHeight]
   );
 
-  // Composite all visible layers onto the main viewport canvas
+  // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
     const mainCanvas = mainCanvasRef.current;
     if (!mainCanvas) return;
@@ -146,21 +149,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const state = useStudioStore.getState();
     const currentFrame = state.frames[state.activeFrameIndex];
 
-    // 1. Onion Skinning (Previous Frames in Matcha Green / Wisteria, Next in Plum)
-    if (state.onionSkin.enabled && !state.isPlaying && state.frames.length > 1) {
-      if (state.activeFrameIndex > 0) {
-        const prevFrame = state.frames[state.activeFrameIndex - 1];
-        ctx.globalAlpha = state.onionSkin.opacity;
-        prevFrame.layers.slice().reverse().forEach((layer) => {
-          if (layer.visible) {
-            const lCanvas = getOrCreateLayerCanvas(layer.id);
-            ctx.drawImage(lCanvas, 0, 0);
-          }
-        });
-      }
-    }
-
-    // 2. Main Active Frame Layers (Bottom-to-Top Compositing)
+    // 1. Main Active Frame Layers (Bottom-to-Top Compositing)
     if (currentFrame) {
       currentFrame.layers.slice().reverse().forEach((layer) => {
         if (!layer.visible) return;
@@ -171,7 +160,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       });
     }
 
-    // 3. Floating Selection Buffer overlay (if active)
+    // 2. Floating Selection Buffer overlay (if active)
     if (floatingSelection) {
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
@@ -197,6 +186,52 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
   }, [canvasHeight, canvasWidth, floatingSelection, getOrCreateLayerCanvas]);
+
+  // Render onion-skin ghost frames onto the dedicated underlay canvas
+  const renderOnionSkin = useCallback(() => {
+    const onionCanvas = onionCanvasRef.current;
+    if (!onionCanvas) return;
+    const ctx = onionCanvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.imageSmoothingEnabled = false;
+
+    const state = useStudioStore.getState();
+    const specs = getOnionSkinSpecs(
+      state.frames.length,
+      state.activeFrameIndex,
+      state.onionSkin,
+      state.isPlaying
+    );
+
+    if (specs.length === 0) return;
+
+    for (const spec of specs) {
+      const ghostCanvas = compositeFrame(
+        state.frames,
+        spec.frameIndex,
+        canvasWidth,
+        canvasHeight
+      );
+      if (!ghostCanvas) continue;
+
+      if (spec.tint) {
+        const ghostCtx = ghostCanvas.getContext('2d');
+        if (ghostCtx) {
+          ghostCtx.globalCompositeOperation = 'source-atop';
+          ghostCtx.fillStyle = spec.tint;
+          ghostCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+      }
+
+      ctx.globalAlpha = spec.alpha;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(ghostCanvas, 0, 0);
+    }
+
+    ctx.globalAlpha = 1.0;
+  }, [canvasHeight, canvasWidth]);
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback((description: string = 'Stroke') => {
@@ -927,11 +962,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     zoom,
   ]);
 
-  // Live Composite Rendering whenever frames, active layer/frame, visibility, opacity, buffer or preview mode changes
+  // Live Composite & Onion Skin Rendering whenever frames, active layer/frame, visibility, opacity, buffer or preview mode changes
   useEffect(() => {
     renderComposite();
+    renderOnionSkin();
   }, [
     renderComposite,
+    renderOnionSkin,
     frames,
     activeFrameIndex,
     activeLayerId,
@@ -1423,13 +1460,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         break;
       }
       case 'eyedropper': {
-        const mainCanvas = mainCanvasRef.current;
-        if (mainCanvas) {
-          const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+        const comp = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight);
+        if (comp) {
+          const ctx = comp.getContext('2d', { willReadFrequently: true });
           if (ctx) {
             const pixel = ctx.getImageData(coords.x, coords.y, 1, 1).data;
-            const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
-            setPrimaryColor(hex);
+            if (pixel[3] > 0) {
+              const hex = rgbaToHex(pixel[0], pixel[1], pixel[2], pixel[3]);
+              setPrimaryColor(hex);
+            }
           }
         }
         setIsDrawing(false);
@@ -1797,6 +1836,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
         {/* Solid Canvas Background */}
         <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
+
+        {/* Onion Skin Underlay Canvas */}
+        <canvas
+          ref={onionCanvasRef}
+          data-testid="onion-skin-canvas"
+          width={canvasWidth}
+          height={canvasHeight}
+          className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+        />
 
         {/* Main Composite Layer Canvas */}
         <canvas

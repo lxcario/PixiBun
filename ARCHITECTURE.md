@@ -55,24 +55,34 @@ graph TD
 
 ## 2. Canvas & Rendering Pipeline
 
-### Dual-Canvas Architecture
-To avoid browser layout recalculations and achieve smooth 60 FPS viewport manipulation, rendering is separated into two tiers:
+### Multi-Canvas Layered Viewport Stack
+To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 5-layer stack:
 
 ```mermaid
-sequenceDiagram
-    participant User as Artist (Pointer / Stylus)
-    participant Viewport as CenterViewport Canvas
-    participant LayerBuff as Layer OffscreenCanvas
-    participant Compositor as Master Composite Buffer
-    participant HUD as Grid & Selection HUD
-
-    User->>Viewport: PointerDown / PointerMove (Screen Coordinates)
-    Viewport->>Viewport: Translate to Integer Grid Coordinates (x, y)
-    Viewport->>LayerBuff: Draw Stroke directly into Active Layer ImageData
-    LayerBuff->>Compositor: Composite all visible layers with BlendMode & Opacity
-    Compositor->>Viewport: Blit Composite Buffer with Nearest-Neighbor Zoom & Pan
-    Viewport->>HUD: Render 2:1 Isometric Grid, Symmetry Guide & Marching Ants
+graph TD
+    subgraph Viewport_Stack ["🖥️ CenterViewport Canvas Stack (Bottom to Top)"]
+        L0["0. Solid Background (White #ffffff)"]
+        L1["1. Onion Skin Underlay (onionCanvasRef: Tinted Ghosts & Falloff)"]
+        L2["2. Main Artwork Composite (mainCanvasRef: Layers & Normal Map Preview)"]
+        L3["3. Interactive Shape Preview (previewCanvasRef: Bézier & Vector Shapes)"]
+        L4["4. Precision HUD (gridCanvasRef: Pixel Grid, Iso Guides & Marquee)"]
+    end
+    
+    L0 --> L1
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
 ```
+
+### Pure Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)
+The `compositeFrame()` module serves as the single visual source of truth for pure pixel compositing:
+- **Zero Editor Chrome**: Bottom-up compositing honoring layer visibility, opacity, and blend modes without including onion skin ghosts, grid lines, or selection marquees.
+- **Eyedropper & Exporters**: The eyedropper samples directly from `compositeFrame()`, making color picking completely immune to normal-map preview modes, HUD guides, and ghost underlays.
+- **Living Timeline Thumbnails**: Timeline frame cards render `<FrameThumbnail>` elements backed by `compositeFrame()`, with live re-compositing restricted to the active frame on `bufferVersion` updates to maintain $O(1)$ stroke performance.
+
+### Pure Onion Skinning Engine (`src/lib/render/onionSkin.ts`)
+- Pure, DOM-free `getOnionSkinSpecs()` computes clamped previous/next ghost specifications with distance falloff `base * (1 - 0.25 * (dist - 1))` and `prevColor`/`nextColor` tint mapping.
+- Tinting is executed offscreen via `source-atop` before blitting to the underlay canvas.
 
 ### Direct Buffer Memory Management (`src/lib/engine/bufferRegistry.ts`)
 Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects indexed by layer UUID in memory. When the user resizes the canvas:

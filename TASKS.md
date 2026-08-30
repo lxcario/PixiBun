@@ -1,5 +1,28 @@
 # Build Plan — PixiBun
 
+## Phase 25 — Honest Ghosts & Living Timeline (Onion-Skin Overlay Split + Timeline Thumbnails)
+**Goal:** Address tracked Phase 8 debt: (1) Decouple onion-skin ghost rendering from the main canvas into a dedicated underlay canvas with distance falloff and tint mapping, ensuring the eyedropper and exporters sample only pure artwork layers; (2) Upgrade timeline frame cards from numbered placeholder boxes to real pixel thumbnails painted via `compositeFrame()`, with active-frame live updates keyed on buffer versions.
+
+**Deliverables:**
+- [x] Pure Onion Skin Spec Generator (`src/lib/render/onionSkin.ts`): Extracted DOM-free `getOnionSkinSpecs()` computing clamped previous/next frame indices, `prevColor`/`nextColor` tint mapping, and linear distance falloff `base * (1 - 0.25 * (dist - 1))`.
+- [x] Viewport Underlay Canvas Stack (`src/components/layout/CenterViewport.tsx`): Inserted `onionCanvasRef` underlay between the solid white background and `mainCanvasRef`. Removed ghost rendering from `renderComposite()` to ensure the main canvas holds only clean layer composites.
+- [x] Composite-Isolated Eyedropper (`src/components/layout/CenterViewport.tsx`): Eyedropper tool now samples pure `compositeFrame()` output, isolating it from ghosts, normal maps, and HUD chrome. Picking empty/transparent pixels (`alpha === 0`) is now an intentional no-op that preserves the active primary color.
+- [x] Living Timeline Thumbnails (`src/components/layout/BottomTimeline.tsx`): Built `<FrameThumbnail>` component painting real frame pixels via `compositeFrame()`. Optimized re-renders to only re-composite the active frame on `bufferVersion` bumps while inactive thumbnails remain stable.
+- [x] Unit Test Suite (`tests/onionSkin.test.ts`): 9 unit tests verifying disabled state, single-frame edge cases, playback short-circuiting, edge-clamping at frame 0 and last frame, symmetric nearest-first ordering, distance falloff calculations, and tint assignments.
+- [x] Playwright E2E Specs (`tests/e2e/studio.spec.ts`): Added tests verifying that onion-skin ghosts never pollute eyedropper samples, empty picks act as no-ops, and timeline frame thumbnails render real non-zero pixel data.
+- [x] Documentation & Debt Tracking (`TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`): Struck resolved Phase 8 debt items, documented underlay blend mode decoupling and eyedropper no-op behavior in `LOGS.md`, and updated viewport architecture diagrams.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 100/100 tests pass across 18 test suites.
+- `npm run test:e2e` → 13/13 Playwright E2E specs pass.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 24 — Multi-Project Workspace Management (Projects Gallery, Persistence & Lifecycle UX)
 **Goal:** Transform PixiBun from a single-scratchpad editor into a full-fledged local-first creative studio by introducing multi-project management. Artists can maintain an unlimited library of sprites and animations stored in IndexedDB (Schema v3) with thumbnail previews, duplication, renaming, deletion, and P0 history stack invalidation on project switches.
 

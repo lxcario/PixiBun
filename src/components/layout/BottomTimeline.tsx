@@ -5,6 +5,57 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LoopMode } from '@/types/animation';
+import { compositeFrame } from '@/lib/render/compositor';
+
+interface FrameThumbnailProps {
+  frameIndex: number;
+  isActive: boolean;
+}
+
+const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex, isActive }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasWidth = useStudioStore((state) => state.canvasWidth);
+  const canvasHeight = useStudioStore((state) => state.canvasHeight);
+  const frames = useStudioStore((state) => state.frames);
+  const bufferVersion = useStudioStore((state) => state.bufferVersion);
+  const currentProjectId = useStudioStore((state) => state.currentProjectId);
+
+  const activeBufferVersion = isActive ? bufferVersion : 0;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.imageSmoothingEnabled = false;
+
+    const comp = compositeFrame(frames, frameIndex, canvasWidth, canvasHeight);
+    if (comp) {
+      ctx.drawImage(comp, 0, 0);
+    }
+  }, [
+    frameIndex,
+    canvasWidth,
+    canvasHeight,
+    frames,
+    currentProjectId,
+    activeBufferVersion,
+  ]);
+
+  return (
+    <div className="w-6 h-6 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        data-testid={`frame-thumbnail-${frameIndex}`}
+        className="w-full h-full pixelated"
+      />
+    </div>
+  );
+};
 
 export const BottomTimeline: React.FC = () => {
   const {
@@ -357,12 +408,8 @@ export const BottomTimeline: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Mini Preview Box */}
-                <div className="w-6 h-6 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center">
-                  <span className="text-[8px] font-mono text-[var(--text-body)] font-bold">
-                    {index + 1}
-                  </span>
-                </div>
+                {/* Frame Canvas Pixel Thumbnail */}
+                <FrameThumbnail frameIndex={index} isActive={isActive} />
               </button>
             );
           })}

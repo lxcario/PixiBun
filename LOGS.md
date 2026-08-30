@@ -94,7 +94,7 @@
 
 **Checks run:** `npx tsc --noEmit` (0 errors), `npm run lint` (0 problems), `npm test` (17/17), `npm run build` (Next.js 16.3.2 Turbopack, 0 errors).
 **Issues found & fixed:** Duplicate-frame pixel loss, autosave data loss, identical-frame exports, onion-baked PNG exports, resize anchor drop, ID collisions, buffer leaks on delete.
-**Known remaining (tracked):** Viewport renderer still draws onion skin into the main composite (eyedropper ghost-sampling; overlay-canvas split planned for Phase 9), timeline thumbnails still placeholders, undo still pixels-only, GIF/spritesheet ignore clips, AI offline copy still impersonates conversation. All scheduled in `implementation_plan.md`.
+**Known remaining (tracked):** ~~Viewport renderer still draws onion skin into the main composite (resolved Phase 25)~~, ~~timeline thumbnails still placeholders (resolved Phase 25)~~, undo still pixels-only, GIF/spritesheet ignore clips, AI offline copy still impersonates conversation. All scheduled in `implementation_plan.md`.
 **Status:** Complete
 
 ## 2026-08-25 - Phase 13: Lamplit Identity, De-Slop & Landing Page
@@ -469,6 +469,42 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run test:e2e`: 11/11 Playwright E2E specs pass.
 - `npm run build`: Next.js 16 production build compiles cleanly.
 **Status:** Complete
+
+---
+
+## Phase 25 — Honest Ghosts & Living Timeline (2026-08-30)
+**Delivered:**
+- **Pure Onion Skin Spec Computation (`src/lib/render/onionSkin.ts`)**:
+  - Implemented pure, DOM-free `getOnionSkinSpecs()` computing ghost frame indices, `prevColor`/`nextColor` tint mapping, and linear distance falloff `base * (1 - 0.25 * (dist - 1))`.
+  - Full feature-completion: previous dead configuration (`nextFrames`, `prevColor`, `nextColor`) is now fully live and functional.
+  - Automatically suppresses ghosts when disabled, during animation playback (`isPlaying === true`), or in single-frame animations.
+- **Viewport Underlay Canvas Stack (`src/components/layout/CenterViewport.tsx`)**:
+  - Inserted dedicated `onionCanvasRef` (`data-testid="onion-skin-canvas"`) underneath `mainCanvasRef` (between the solid white background and main composite).
+  - Ghosts are composited via `compositeFrame()`, tinted with `source-atop`, and blitted at spec alpha onto `onionCanvasRef`.
+  - Removed ghost rendering from `renderComposite()`. Main canvas is now pure active-frame layers, floating selections, and normal-map preview.
+  - *Deliberate Tradeoff & Design Decision:* Layer blend modes (such as `multiply`) no longer interact with ghosts because ghosts live on a separate underlay canvas below the artwork composite rather than baked directly into the layer stack. This aligns with standard Aseprite-class behavior.
+- **Composite-Isolated Eyedropper (`src/components/layout/CenterViewport.tsx`)**:
+  - Eyedropper tool now samples pure `compositeFrame()` output, fully isolated from onion ghosts, normal map previews, and HUD overlays (first step of Compositor Milestone 2).
+  - *Deliberate UX Change:* Picking empty/transparent pixels (`alpha === 0`) is now an intentional no-op that preserves the active primary color rather than setting black.
+- **Living Timeline Thumbnails (`src/components/layout/BottomTimeline.tsx`)**:
+  - Replaced static numbered placeholder boxes with real pixel `<FrameThumbnail>` sub-components.
+  - Frame thumbnails are composited via `compositeFrame()` with crisp pixelated scaling.
+  - Optimized re-render dependencies: active frame updates in real-time on `bufferVersion` bumps (`isActive ? bufferVersion : 0`), while inactive frames remain stable without per-stroke $O(\text{frames})$ re-compositing overhead.
+- **Unit & E2E Test Suites**:
+  - Created `tests/onionSkin.test.ts` (9 unit tests verifying disabled state, single-frame edge cases, playback short-circuiting, edge clamping at frame 0 and last frame, symmetric nearest-first ordering, distance falloff calculations, and tint assignments).
+  - Hardened `tests/e2e/studio.spec.ts` with 2 new E2E tests verifying that onion ghosts do not pollute eyedropper color picks, empty picks act as no-ops, and timeline frame thumbnails render real non-zero pixel data.
+- **Documentation Truthfulness & Debt Striking**:
+  - Struck resolved Phase 8 debt items in `LOGS.md`.
+  - Updated `TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, and `README.md` test metrics (100 unit tests across 18 suites, 13 E2E specs).
+
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 100/100 tests pass across 18 test suites.
+- `npm run test:e2e`: 13/13 Playwright E2E specs pass.
+- `npm run build`: Next.js 16 production build compiles cleanly.
+**Status:** Complete
+
 
 
 
