@@ -299,7 +299,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await page.waitForTimeout(150);
 
     // 3. Select Gemstone preset
-    const gemBtn = page.getByRole('button', { name: /💎 Gem/i });
+    const gemBtn = page.getByRole('button', { name: /^Gem$/i });
     await expect(gemBtn).toBeVisible();
     await gemBtn.click();
     await page.waitForTimeout(100);

@@ -692,11 +692,11 @@ export const RightInspector: React.FC = () => {
               <span className="text-[10px] text-[var(--text-body)] font-bold">Material Preset:</span>
               <div className="grid grid-cols-3 gap-1">
                 {[
-                  { id: 'gemstone', label: '💎 Gem' },
-                  { id: 'slime', label: '🧪 Slime' },
-                  { id: 'hair', label: '💇 Hair' },
-                  { id: 'foliage', label: '🍃 Leaf' },
-                  { id: 'metal_aniso', label: '⚔️ Metal' },
+                  { id: 'gemstone', label: 'Gem' },
+                  { id: 'slime', label: 'Slime' },
+                  { id: 'hair', label: 'Hair' },
+                  { id: 'foliage', label: 'Leaf' },
+                  { id: 'metal_aniso', label: 'Metal' },
                 ].map((preset) => (
                   <button
                     key={preset.id}

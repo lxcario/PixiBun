@@ -48,6 +48,7 @@ import {
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
 import { compositeFrame } from '@/lib/render/compositor';
 import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
+import { PixelIcon } from '@/components/ui/PixelIcon';
 
 interface SelectionBox {
   x: number;
@@ -1940,7 +1941,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           aria-live="polite"
           className="absolute top-12 left-3 bg-[#eb5a66] text-[#140d1f] border-2 border-[#8c202a] px-3 py-1 rounded-[2px] text-xs font-mono font-bold shadow-lg z-30 flex items-center gap-1.5 pointer-events-none animate-pulse"
         >
-          <span>🔒</span>
+          <PixelIcon name="lock" size={12} className="text-[#140d1f]" />
           <span>Active layer is locked! Unlock it in the Layers panel to draw.</span>
         </div>
       )}
