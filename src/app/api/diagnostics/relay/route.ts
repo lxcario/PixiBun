@@ -2,34 +2,34 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { endpoint, events, app, version } = body || {};
-
-    const targetUrl = endpoint || process.env.DIAGNOSTICS_RELAY_URL;
+    const targetUrl = process.env.DIAGNOSTICS_RELAY_URL;
 
     if (!targetUrl || typeof targetUrl !== 'string') {
       return NextResponse.json(
-        { error: 'No valid relay endpoint provided or configured' },
-        { status: 400 }
+        { error: 'Diagnostics relay is not configured on this server; reports stay local.' },
+        { status: 503 }
       );
     }
 
-    // Basic URL validation to prevent SSRF against invalid schemes
+    // Enforce HTTPS-only protocol for server-configured upstream
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(targetUrl);
-      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      if (parsedUrl.protocol !== 'https:') {
         return NextResponse.json(
-          { error: 'Invalid URL protocol' },
-          { status: 400 }
+          { error: 'Diagnostics relay upstream must use HTTPS' },
+          { status: 503 }
         );
       }
     } catch {
       return NextResponse.json(
-        { error: 'Malformed relay URL' },
-        { status: 400 }
+        { error: 'Diagnostics relay upstream URL is malformed' },
+        { status: 503 }
       );
     }
+
+    const body = await request.json().catch(() => ({}));
+    const { events, app, version } = body || {};
 
     const upstreamPayload = {
       app: app || 'pixibun',
@@ -50,15 +50,16 @@ export async function POST(request: Request) {
 
     if (!upstreamResponse.ok) {
       return NextResponse.json(
-        { error: `Upstream relay returned status ${upstreamResponse.status}` },
+        { error: 'Upstream relay returned an error' },
         { status: 502 }
       );
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
+    // Avoid echoing internal error details to prevent information disclosure
     return NextResponse.json(
-      { error: 'Relay forward failed', detail: String(err) },
+      { error: 'Relay forward failed' },
       { status: 500 }
     );
   }

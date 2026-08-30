@@ -17,14 +17,12 @@ describe('diagnostics capture & settings', () => {
     const settings = getDiagnosticsSettings();
     expect(settings.enabled).toBe(true);
     expect(settings.relayOptIn).toBe(false);
-    expect(settings.relayEndpoint).toBeUndefined();
   });
 
   it('persists updated settings to localStorage', () => {
-    setDiagnosticsSettings({ relayOptIn: true, relayEndpoint: 'https://example.com/api/relay' });
+    setDiagnosticsSettings({ relayOptIn: true });
     const updated = getDiagnosticsSettings();
     expect(updated.relayOptIn).toBe(true);
-    expect(updated.relayEndpoint).toBe('https://example.com/api/relay');
   });
 
   it('captures diagnostic entry and truncates oversized detail stack', async () => {

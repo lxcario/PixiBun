@@ -33,7 +33,6 @@ export function getDiagnosticsSettings(): DiagnosticsSettings {
         memorySettings = {
           enabled: parsed.enabled ?? true,
           relayOptIn: parsed.relayOptIn ?? false,
-          relayEndpoint: parsed.relayEndpoint || undefined,
         };
         return memorySettings;
       }
@@ -119,9 +118,9 @@ export async function captureDiagnostic(
     }
 
     // Strictly opt-in relay
-    if (settings.relayOptIn && settings.relayEndpoint) {
+    if (settings.relayOptIn) {
       // Fire-and-forget relay
-      relayDiagnostics(settings.relayEndpoint, [fullEntry]).catch(() => {
+      relayDiagnostics([fullEntry]).catch(() => {
         // relay failure must never crash the app
       });
     }
@@ -193,7 +192,6 @@ export async function exportDiagnosticsFile(): Promise<void> {
 }
 
 export async function relayDiagnostics(
-  endpoint: string,
   entries: DiagnosticEntry[]
 ): Promise<boolean> {
   try {
@@ -203,9 +201,9 @@ export async function relayDiagnostics(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        endpoint,
         app: 'pixibun',
         version: APP_VERSION,
+        timestamp: Date.now(),
         events: entries,
       }),
     });

@@ -1,44 +1,72 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { POST } from '@/app/api/diagnostics/relay/route';
 
-describe('POST /api/diagnostics/relay (same-origin proxy)', () => {
+describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
+  const originalEnv = process.env.DIAGNOSTICS_RELAY_URL;
+
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('rejects request with 400 if no endpoint is provided or configured', async () => {
+  afterEach(() => {
+    if (originalEnv !== undefined) {
+      process.env.DIAGNOSTICS_RELAY_URL = originalEnv;
+    } else {
+      delete process.env.DIAGNOSTICS_RELAY_URL;
+    }
+  });
+
+  it('returns 503 when DIAGNOSTICS_RELAY_URL is unset (reports stay local)', async () => {
+    delete process.env.DIAGNOSTICS_RELAY_URL;
+
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
-      body: JSON.stringify({ events: [] }),
+      body: JSON.stringify({ events: [{ id: 'diag-1', kind: 'error', message: 'test' }] }),
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(503);
     const json = await res.json();
-    expect(json.error).toContain('No valid relay endpoint');
+    expect(json.error).toContain('not configured on this server; reports stay local');
   });
 
-  it('rejects invalid or unsafe URL protocol with 400', async () => {
+  it('ignores any client-supplied endpoint in request body and only uses env-configured URL', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://configured-upstream.internal/errors';
+    const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    globalThis.fetch = mockFetch;
+
+    // Attacker attempts SSRF to internal metadata service
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
-      body: JSON.stringify({ endpoint: 'javascript:alert(1)', events: [] }),
+      body: JSON.stringify({
+        endpoint: 'http://169.254.169.254/latest/meta-data',
+        events: [{ id: 'diag-attack', kind: 'error', message: 'ssrf attempt' }],
+      }),
     });
 
     const res = await POST(req);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    // Verified: target is strictly the operator-configured upstream, NOT the client endpoint
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://configured-upstream.internal/errors',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
   });
 
-  it('forwards diagnostic events to upstream endpoint and returns success', async () => {
+  it('forwards diagnostic events to configured HTTPS upstream successfully', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://relay.example.com/api/errors';
     const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     globalThis.fetch = mockFetch;
 
     const req = new Request('http://localhost:3000/api/diagnostics/relay', {
       method: 'POST',
       body: JSON.stringify({
-        endpoint: 'https://relay.example.com/api/errors',
         app: 'pixibun',
         version: '1.0.0',
-        events: [{ id: 'diag-1', kind: 'error', message: 'test' }],
+        events: [{ id: 'diag-1', kind: 'error', message: 'test event' }],
       }),
     });
 
@@ -46,7 +74,6 @@ describe('POST /api/diagnostics/relay (same-origin proxy)', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.success).toBe(true);
-    expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://relay.example.com/api/errors',
       expect.objectContaining({
@@ -54,5 +81,19 @@ describe('POST /api/diagnostics/relay (same-origin proxy)', () => {
         headers: { 'Content-Type': 'application/json' },
       })
     );
+  });
+
+  it('returns 503 when configured URL is not HTTPS', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'http://insecure-upstream.example.com/errors';
+
+    const req = new Request('http://localhost:3000/api/diagnostics/relay', {
+      method: 'POST',
+      body: JSON.stringify({ events: [] }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.error).toContain('must use HTTPS');
   });
 });

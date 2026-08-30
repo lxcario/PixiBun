@@ -73,11 +73,6 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     setDiagSettings(updated);
   };
 
-  const handleEndpointChange = (relayEndpoint: string) => {
-    const updated = setDiagnosticsSettings({ relayEndpoint });
-    setDiagSettings(updated);
-  };
-
   const handleClear = async () => {
     await clearDiagnostics();
     setClearNotice(true);
@@ -148,16 +143,9 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                 </label>
 
                 {diagSettings.relayOptIn && (
-                  <div className="pl-5 flex flex-col gap-1">
-                    <span className="text-[10px] text-[var(--text-muted)]">Relay Endpoint (GlitchTip / Sentry compatible HTTP POST):</span>
-                    <input
-                      type="url"
-                      value={diagSettings.relayEndpoint || ''}
-                      onChange={(e) => handleEndpointChange(e.target.value)}
-                      placeholder="https://diagnostics.yourdomain.com/api/relay"
-                      className="bg-[var(--desk-bg)] border border-[var(--desk-border)] rounded px-2 py-1 text-[11px] font-mono text-[var(--text-heading)] focus:outline-none focus:border-[#f0be7c]"
-                    />
-                  </div>
+                  <p className="pl-5 text-[10px] text-[var(--text-muted)] italic leading-tight">
+                    The relay destination is configured by the server operator via <code className="text-[#f0be7c]">DIAGNOSTICS_RELAY_URL</code>. If no upstream is configured, reports stay on this device.
+                  </p>
                 )}
               </div>
 

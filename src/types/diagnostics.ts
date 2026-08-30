@@ -13,7 +13,6 @@ export interface DiagnosticEntry {
 export interface DiagnosticsSettings {
   enabled: boolean; // local capture; default TRUE (local-only is not telemetry)
   relayOptIn: boolean; // default FALSE — sending anything off-device requires this
-  relayEndpoint?: string; // user/self-hosted GlitchTip-compatible URL
 }
 
 export type PwaUpdateState = 'idle' | 'downloading' | 'ready';
