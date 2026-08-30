@@ -211,6 +211,15 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
 
 ---
 
+## Hotfix — PixiBud AI Panel Compositing Violation, Stale Preview & Bake Normals Index (2026-08-29)
+
+The Phase 14 photometric pipeline had a single class of bug across three symptoms: `handlePhotometricLightingEvent` in `CenterViewport.tsx` read from the active drawing layer's context, passed it to `executePhotometricPipeline()`, then wrote the shaded output *back into the same layer* via `clearRect` + `drawImage`, permanently destroying the artist's original pixel data. Subsequent renders compounded on already-shaded pixels, producing incoherent output. Additionally, `handleAutoShadeEvent` and `handleHighlightEvent` read from `mainCanvasRef` (the viewport composite including onion skins) instead of a clean layer composite. The Live Preview never updated because `FloatingPreviewWindow` had no signal for pixel-level buffer mutations (only structural layer changes triggered re-renders). A secondary bug in `handleBakeNormalMapEvent` used `layers[layers.length - 1]` to target the newly added layer, but `addLayer` uses `unshift()`, placing new layers at index 0 -- so the normal map overwrote the bottom artwork layer. Fix: all photometric/shade/specular/sel-out/shadow handlers now write to dedicated tagged output layers (`Layer.tag` field) via `compositeSourceSnapshot()` + `replaceTaggedLayer()`, a `bufferVersion` counter in the Zustand store signals every pixel mutation (drawing, undo/redo, AI ops, clipboard) to `FloatingPreviewWindow`, and Riemersma Hilbert dithering was implemented to match the documented feature set.
+
+**Checks run:** `npx tsc --noEmit` (0 errors), `npx vitest run` (34/34 tests passed including 4 new regression tests).
+**Status:** Complete
+
+---
+
 ## Phase 16 — Minecraft 3D Skin Photometric Engine, Optical Flow Tweening, Sub-Pixel Anti-Aliasing & 3x3 Seamless Tiling (2026-08-30)
 **Delivered:**
 - **3D Minecraft Skin Recognition & Dedicated Photometric Pipeline**:

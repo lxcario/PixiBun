@@ -595,9 +595,23 @@ describe('Bake Normals layer index', () => {
     const frontIdx = 12 * 64 + 12;
     expect(normalField.nz[frontIdx]).toBeCloseTo(1.0, 1);
 
+    // Head Front edge pixel (8, 12) must have the exact same planar normal as center (12, 12) - NO edge-tilt pillow shading!
+    const frontEdgeIdx = 12 * 64 + 8;
+    expect(normalField.nz[frontEdgeIdx]).toBeCloseTo(normalField.nz[frontIdx], 2);
+    expect(normalField.nx[frontEdgeIdx]).toBeCloseTo(normalField.nx[frontIdx], 2);
+
     // Head Right face (4, 12) normal should point RIGHT/WEST: nx is negative
     const rightIdx = 12 * 64 + 4;
     expect(normalField.nx[rightIdx]).toBeLessThan(0);
+
+    // Anatomical sky lighting verification:
+    // Head Top (x=12, y=4) is UP face -> receives direct overhead sky light (1.08)
+    const headTopIdx = 4 * 64 + 12;
+    expect(normalField.sky![headTopIdx]).toBeCloseTo(1.08, 2);
+
+    // Head Bottom (x=20, y=4) is DOWN face (under-chin / neck) -> anatomically shadowed (0.80), NOT lit as top sky!
+    const headBotIdx = 4 * 64 + 20;
+    expect(normalField.sky![headBotIdx]).toBeCloseTo(0.80, 2);
   });
 
   it('executes Minecraft skin shading with hue-shifting and contact occlusion', async () => {

@@ -250,6 +250,7 @@ export interface NormalVectorField {
   nx: Float32Array;
   ny: Float32Array;
   nz: Float32Array;
+  sky?: Float32Array;
 }
 
 /**
@@ -561,9 +562,11 @@ export function computeMinecraftSkinNormalField(
   const nx = new Float32Array(width * height);
   const ny = new Float32Array(width * height);
   const nz = new Float32Array(width * height);
+  const sky = new Float32Array(width * height);
 
   for (let i = 0; i < width * height; i++) {
     nz[i] = 1.0;
+    sky[i] = 1.0;
   }
 
   const paintFace = (
@@ -571,25 +574,41 @@ export function computeMinecraftSkinNormalField(
     fy: number,
     fw: number,
     fh: number,
-    baseNorm: [number, number, number]
+    baseNorm: [number, number, number],
+    faceType: 'UP' | 'DOWN' | 'SIDE' = 'SIDE',
+    bodyPart: 'head' | 'torso' | 'arm' | 'leg' = 'torso'
   ) => {
     if (fx + fw > width || fy + fh > height) return;
 
     for (let py = fy; py < fy + fh; py++) {
       for (let px = fx; px < fx + fw; px++) {
         const idx = py * width + px;
-        let [bx, by] = baseNorm;
-        const bz = baseNorm[2];
+        const [bx, by, bz] = baseNorm;
 
-        if (px === fx) bx = Math.max(-0.9, bx - 0.35);
-        if (px === fx + fw - 1) bx = Math.min(0.9, bx + 0.35);
-        if (py === fy) by = Math.max(-0.9, by - 0.35);
-        if (py === fy + fh - 1) by = Math.min(0.9, by + 0.35);
-
+        // True planar normal - eliminates pillow shading and edge distortion
         const len = Math.sqrt(bx * bx + by * by + bz * bz) || 1;
         nx[idx] = bx / len;
         ny[idx] = by / len;
         nz[idx] = bz / len;
+
+        // Anatomical sky lighting factor based on actual 3D orientation
+        if (faceType === 'UP') {
+          sky[idx] = 1.08; // Top of head, shoulders receive direct sky illumination
+        } else if (faceType === 'DOWN') {
+          sky[idx] = 0.80; // Under-chin, soles, sleeve bottoms are anatomically shadowed
+        } else {
+          // Vertical side faces: subtle natural top-to-bottom falloff
+          const localY = (py - fy) / Math.max(1, fh - 1);
+          if (bodyPart === 'head') {
+            sky[idx] = 1.04 - localY * 0.08; // 1.04 forehead down to 0.96 chin
+          } else if (bodyPart === 'torso') {
+            sky[idx] = 1.02 - localY * 0.06; // 1.02 chest down to 0.96 waist
+          } else if (bodyPart === 'arm') {
+            sky[idx] = 1.02 - localY * 0.08; // 1.02 shoulder down to 0.94 hand
+          } else {
+            sky[idx] = 0.98 - localY * 0.08; // 0.98 hip down to 0.90 ankle
+          }
+        }
       }
     }
   };
@@ -602,97 +621,104 @@ export function computeMinecraftSkinNormalField(
   const BACK: [number, number, number] = [0, 0, 0.4];
 
   // Head (0, 0, 32, 16)
-  paintFace(8, 0, 8, 8, UP);
-  paintFace(16, 0, 8, 8, DOWN);
-  paintFace(0, 8, 8, 8, RIGHT);
-  paintFace(8, 8, 8, 8, FRONT);
-  paintFace(16, 8, 8, 8, LEFT);
-  paintFace(24, 8, 8, 8, BACK);
+  paintFace(8, 0, 8, 8, UP, 'UP', 'head');
+  paintFace(16, 0, 8, 8, DOWN, 'DOWN', 'head');
+  paintFace(0, 8, 8, 8, RIGHT, 'SIDE', 'head');
+  paintFace(8, 8, 8, 8, FRONT, 'SIDE', 'head');
+  paintFace(16, 8, 8, 8, LEFT, 'SIDE', 'head');
+  paintFace(24, 8, 8, 8, BACK, 'SIDE', 'head');
 
   // Hat Layer 2 (32, 0, 32, 16)
-  paintFace(40, 0, 8, 8, UP);
-  paintFace(48, 0, 8, 8, DOWN);
-  paintFace(32, 8, 8, 8, RIGHT);
-  paintFace(40, 8, 8, 8, FRONT);
-  paintFace(48, 8, 8, 8, LEFT);
-  paintFace(56, 8, 8, 8, BACK);
+  paintFace(40, 0, 8, 8, UP, 'UP', 'head');
+  paintFace(48, 0, 8, 8, DOWN, 'DOWN', 'head');
+  paintFace(32, 8, 8, 8, RIGHT, 'SIDE', 'head');
+  paintFace(40, 8, 8, 8, FRONT, 'SIDE', 'head');
+  paintFace(48, 8, 8, 8, LEFT, 'SIDE', 'head');
+  paintFace(56, 8, 8, 8, BACK, 'SIDE', 'head');
 
   // Body / Torso (16, 16, 24, 16)
-  paintFace(20, 16, 8, 4, UP);
-  paintFace(28, 16, 8, 4, DOWN);
-  paintFace(16, 20, 4, 12, RIGHT);
-  paintFace(20, 20, 8, 12, FRONT);
-  paintFace(28, 20, 4, 12, LEFT);
-  paintFace(32, 20, 8, 12, BACK);
+  paintFace(20, 16, 8, 4, UP, 'UP', 'torso');
+  paintFace(28, 16, 8, 4, DOWN, 'DOWN', 'torso');
+  paintFace(16, 20, 4, 12, RIGHT, 'SIDE', 'torso');
+  paintFace(20, 20, 8, 12, FRONT, 'SIDE', 'torso');
+  paintFace(28, 20, 4, 12, LEFT, 'SIDE', 'torso');
+  paintFace(32, 20, 8, 12, BACK, 'SIDE', 'torso');
 
   // Right Arm (40, 16, 16, 16)
-  paintFace(44, 16, 4, 4, UP);
-  paintFace(48, 16, 4, 4, DOWN);
-  paintFace(40, 20, 4, 12, RIGHT);
-  paintFace(44, 20, 4, 12, FRONT);
-  paintFace(48, 20, 4, 12, LEFT);
-  paintFace(52, 20, 4, 12, BACK);
+  paintFace(44, 16, 4, 4, UP, 'UP', 'arm');
+  paintFace(48, 16, 4, 4, DOWN, 'DOWN', 'arm');
+  paintFace(40, 20, 4, 12, RIGHT, 'SIDE', 'arm');
+  paintFace(44, 20, 4, 12, FRONT, 'SIDE', 'arm');
+  paintFace(48, 20, 4, 12, LEFT, 'SIDE', 'arm');
+  paintFace(52, 20, 4, 12, BACK, 'SIDE', 'arm');
 
   // Right Leg (0, 16, 16, 16)
-  paintFace(4, 16, 4, 4, UP);
-  paintFace(8, 16, 4, 4, DOWN);
-  paintFace(0, 20, 4, 12, RIGHT);
-  paintFace(4, 20, 4, 12, FRONT);
-  paintFace(8, 20, 4, 12, LEFT);
-  paintFace(12, 20, 4, 12, BACK);
+  paintFace(4, 16, 4, 4, UP, 'UP', 'leg');
+  paintFace(8, 16, 4, 4, DOWN, 'DOWN', 'leg');
+  paintFace(0, 20, 4, 12, RIGHT, 'SIDE', 'leg');
+  paintFace(4, 20, 4, 12, FRONT, 'SIDE', 'leg');
+  paintFace(8, 20, 4, 12, LEFT, 'SIDE', 'leg');
+  paintFace(12, 20, 4, 12, BACK, 'SIDE', 'leg');
 
   if (height >= 64) {
-    paintFace(20, 48, 4, 4, UP);
-    paintFace(24, 48, 4, 4, DOWN);
-    paintFace(16, 52, 4, 12, RIGHT);
-    paintFace(20, 52, 4, 12, FRONT);
-    paintFace(24, 52, 4, 12, LEFT);
-    paintFace(28, 52, 4, 12, BACK);
+    // Left Leg Base (16, 48, 16, 16)
+    paintFace(20, 48, 4, 4, UP, 'UP', 'leg');
+    paintFace(24, 48, 4, 4, DOWN, 'DOWN', 'leg');
+    paintFace(16, 52, 4, 12, RIGHT, 'SIDE', 'leg');
+    paintFace(20, 52, 4, 12, FRONT, 'SIDE', 'leg');
+    paintFace(24, 52, 4, 12, LEFT, 'SIDE', 'leg');
+    paintFace(28, 52, 4, 12, BACK, 'SIDE', 'leg');
 
-    paintFace(36, 48, 4, 4, UP);
-    paintFace(40, 48, 4, 4, DOWN);
-    paintFace(32, 52, 4, 12, RIGHT);
-    paintFace(36, 52, 4, 12, FRONT);
-    paintFace(40, 52, 4, 12, LEFT);
-    paintFace(44, 52, 4, 12, BACK);
+    // Left Arm Base (32, 48, 16, 16)
+    paintFace(36, 48, 4, 4, UP, 'UP', 'arm');
+    paintFace(40, 48, 4, 4, DOWN, 'DOWN', 'arm');
+    paintFace(32, 52, 4, 12, RIGHT, 'SIDE', 'arm');
+    paintFace(36, 52, 4, 12, FRONT, 'SIDE', 'arm');
+    paintFace(40, 52, 4, 12, LEFT, 'SIDE', 'arm');
+    paintFace(44, 52, 4, 12, BACK, 'SIDE', 'arm');
 
-    paintFace(20, 32, 8, 4, UP);
-    paintFace(28, 32, 8, 4, DOWN);
-    paintFace(16, 36, 4, 12, RIGHT);
-    paintFace(20, 36, 8, 12, FRONT);
-    paintFace(28, 36, 4, 12, LEFT);
-    paintFace(32, 36, 8, 12, BACK);
+    // Jacket Layer 2 (16, 32, 24, 16)
+    paintFace(20, 32, 8, 4, UP, 'UP', 'torso');
+    paintFace(28, 32, 8, 4, DOWN, 'DOWN', 'torso');
+    paintFace(16, 36, 4, 12, RIGHT, 'SIDE', 'torso');
+    paintFace(20, 36, 8, 12, FRONT, 'SIDE', 'torso');
+    paintFace(28, 36, 4, 12, LEFT, 'SIDE', 'torso');
+    paintFace(32, 36, 8, 12, BACK, 'SIDE', 'torso');
 
-    paintFace(44, 32, 4, 4, UP);
-    paintFace(48, 32, 4, 4, DOWN);
-    paintFace(40, 36, 4, 12, RIGHT);
-    paintFace(44, 36, 4, 12, FRONT);
-    paintFace(48, 36, 4, 12, LEFT);
-    paintFace(52, 36, 4, 12, BACK);
+    // Right Sleeve Layer 2 (40, 32, 16, 16)
+    paintFace(44, 32, 4, 4, UP, 'UP', 'arm');
+    paintFace(48, 32, 4, 4, DOWN, 'DOWN', 'arm');
+    paintFace(40, 36, 4, 12, RIGHT, 'SIDE', 'arm');
+    paintFace(44, 36, 4, 12, FRONT, 'SIDE', 'arm');
+    paintFace(48, 36, 4, 12, LEFT, 'SIDE', 'arm');
+    paintFace(52, 36, 4, 12, BACK, 'SIDE', 'arm');
 
-    paintFace(4, 32, 4, 4, UP);
-    paintFace(8, 32, 4, 4, DOWN);
-    paintFace(0, 36, 4, 12, RIGHT);
-    paintFace(4, 36, 4, 12, FRONT);
-    paintFace(8, 36, 4, 12, LEFT);
-    paintFace(12, 36, 4, 12, BACK);
+    // Right Pants Layer 2 (0, 32, 16, 16)
+    paintFace(4, 32, 4, 4, UP, 'UP', 'leg');
+    paintFace(8, 32, 4, 4, DOWN, 'DOWN', 'leg');
+    paintFace(0, 36, 4, 12, RIGHT, 'SIDE', 'leg');
+    paintFace(4, 36, 4, 12, FRONT, 'SIDE', 'leg');
+    paintFace(8, 36, 4, 12, LEFT, 'SIDE', 'leg');
+    paintFace(12, 36, 4, 12, BACK, 'SIDE', 'leg');
 
-    paintFace(4, 48, 4, 4, UP);
-    paintFace(8, 48, 4, 4, DOWN);
-    paintFace(0, 52, 4, 12, RIGHT);
-    paintFace(4, 52, 4, 12, FRONT);
-    paintFace(8, 52, 4, 12, LEFT);
-    paintFace(12, 52, 4, 12, BACK);
+    // Left Pants Layer 2 (0, 48, 16, 16)
+    paintFace(4, 48, 4, 4, UP, 'UP', 'leg');
+    paintFace(8, 48, 4, 4, DOWN, 'DOWN', 'leg');
+    paintFace(0, 52, 4, 12, RIGHT, 'SIDE', 'leg');
+    paintFace(4, 52, 4, 12, FRONT, 'SIDE', 'leg');
+    paintFace(8, 52, 4, 12, LEFT, 'SIDE', 'leg');
+    paintFace(12, 52, 4, 12, BACK, 'SIDE', 'leg');
 
-    paintFace(52, 48, 4, 4, UP);
-    paintFace(56, 48, 4, 4, DOWN);
-    paintFace(48, 52, 4, 12, RIGHT);
-    paintFace(52, 52, 4, 12, FRONT);
-    paintFace(56, 52, 4, 12, LEFT);
-    paintFace(60, 52, 4, 12, BACK);
+    // Left Sleeve Layer 2 (48, 48, 16, 16)
+    paintFace(52, 48, 4, 4, UP, 'UP', 'arm');
+    paintFace(56, 48, 4, 4, DOWN, 'DOWN', 'arm');
+    paintFace(48, 52, 4, 12, RIGHT, 'SIDE', 'arm');
+    paintFace(52, 52, 4, 12, FRONT, 'SIDE', 'arm');
+    paintFace(56, 52, 4, 12, LEFT, 'SIDE', 'arm');
+    paintFace(60, 52, 4, 12, BACK, 'SIDE', 'arm');
   }
 
-  return { nx, ny, nz };
+  return { nx, ny, nz, sky };
 }
 
 /**
@@ -826,13 +852,8 @@ export function executeMinecraftSkinShadingPipeline(
       // 2. Anatomical Ambient Occlusion
       const ao = 1.0 - (1.0 - aoMap[idx]) * cavityStr;
 
-      // 3. Sky Dome Micro-Gradient (Top of head and shoulders catch subtle overhead skylight)
-      let skyFactor = 1.0;
-      if (y < 16) {
-        skyFactor = 1.08 - (y / 16) * 0.12;
-      } else if (y >= 16 && y < 32) {
-        skyFactor = 1.04 - ((y - 16) / 16) * 0.08;
-      }
+      // 3. Anatomical Sky Lighting (Calculated per UV island based on 3D face orientation)
+      const skyFactor = normalField.sky ? normalField.sky[idx] : 1.0;
 
       // Total continuous lighting multiplier
       const totalFactor = directionalFactor * ao * skyFactor * (brightness * 0.95);
