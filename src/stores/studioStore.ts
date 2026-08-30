@@ -56,10 +56,12 @@ export const PRESET_PALETTES: ColorPalette[] = [
 ];
 
 interface StudioState {
-  // Project Canvas Dimensions
+  // Project Canvas Dimensions & Identification
+  currentProjectId: string;
   canvasWidth: number;
   canvasHeight: number;
   projectName: string;
+  setCurrentProjectId: (id: string) => void;
 
   // Viewport State
   zoom: number; // e.g. 1600 (meaning 1600% / 16x)
@@ -181,8 +183,8 @@ interface StudioState {
   generateAndAddRamp: (baseColor: string) => void;
 
   // Full Project Rehydration & Reset
-  loadProjectState: (projectData: ProjectFile) => void;
-  resetToNewProject: () => void;
+  loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => void;
+  resetToNewProject: (newId?: string) => void;
 
   // Inspector & AI Dock
   setActiveInspectorTab: (tab: 'layers' | 'palette' | 'ai') => void;
@@ -211,6 +213,7 @@ export const useStudioStore = create<StudioState>()(
     };
 
     return {
+      currentProjectId: createId('proj'),
       canvasWidth: 32,
       canvasHeight: 32,
       projectName: 'Untitled Sprite',
@@ -846,8 +849,15 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      loadProjectState: (projectData) => {
+      setCurrentProjectId: (id: string) => {
         set(state => {
+          state.currentProjectId = id;
+        });
+      },
+
+      loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
+        set(state => {
+          if (projectId) state.currentProjectId = projectId;
           if (projectData.name) state.projectName = projectData.name;
           if (projectData.width) state.canvasWidth = projectData.width;
           if (projectData.height) state.canvasHeight = projectData.height;
@@ -869,10 +879,11 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      resetToNewProject: () => {
+      resetToNewProject: (newId?: string) => {
         const initialLayerId = createId('layer');
         const initialFrameId = createId('frame');
         set(state => {
+          state.currentProjectId = newId || createId('proj');
           state.projectName = 'Untitled Sprite';
           state.canvasWidth = 32;
           state.canvasHeight = 32;

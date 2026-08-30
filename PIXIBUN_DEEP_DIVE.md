@@ -300,9 +300,11 @@ graph LR
 
 # 9. Veritabanı, Dosya Formatı & Dışa Aktarım Mimarisi
 
-### 1. IndexedDB Yerel Veritabanı (`db.ts`)
-* `Dexie.js` ile tarayıcı içinde `PixiBunDB` isimli veritabanı kurulur.
-* Sanatçı çizim yaparken her fırça darbesi sonrası 800ms debounce gecikmesiyle tüm katmanlar ve paletler sessizce kaydedilir. Sayfa yenilense bile hiçbir çizim kaybolmaz.
+### 1. IndexedDB Yerel Çoklu Proje Veritabanı (`db.ts`, Schema v3)
+* `Dexie.js` ile tarayıcı içinde `PixiBunDB` isimli veritabanı kurulur (Schema v3).
+* **Sınırsız Proje Kütüphanesi:** Sanatçılar cihazlarında sınırsız sayıda piksel sanatı ve animasyon projesini yerel olarak barındırabilir.
+* **Otomatik Kayıt ve Küçük Resim (Thumbnail) Tamponu:** Her fırça darbesi sonrası 800ms debounce gecikmesiyle o anki projenin katmanları, paletleri ve kompozit küçük resmi (`thumbnailDataUrl`) sessizce kaydedilir.
+* **P0 Geçmiş İptali (History Invalidation):** Proje değiştirildiğinde veya yeni proje açıldığında `pixibun:history-clear` olayı tetiklenerek önceki projenin geri alma (undo) verilerinin yeni projeyi bozması %100 engellenir.
 
 ### 2. Güvenli `.pixibun` Dosya Formatı (`schema.ts` & `serialize.ts`)
 * `.pixibun` dosyaları projenin tüm katmanlarını, karelerini, harmanlama modlarını ve paletlerini taşır.

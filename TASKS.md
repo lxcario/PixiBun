@@ -1,5 +1,29 @@
 # Build Plan — PixiBun
 
+## Phase 24 — Multi-Project Workspace Management (Projects Gallery, Persistence & Lifecycle UX)
+**Goal:** Transform PixiBun from a single-scratchpad editor into a full-fledged local-first creative studio by introducing multi-project management. Artists can maintain an unlimited library of sprites and animations stored in IndexedDB (Schema v3) with thumbnail previews, duplication, renaming, deletion, and P0 history stack invalidation on project switches.
+
+**Deliverables:**
+- [x] IndexedDB Schema v3 & CRUD Engine (`src/lib/storage/db.ts`): Upgraded Dexie database to schema v3 with `createdAt` index and migration upgrade. Implemented `listAllProjects()`, `getProjectById()`, `saveProject()`, `deleteProject()`, `duplicateProject()`, `renameProject()`, and `createBlankProject()`.
+- [x] Dynamic Project ID State & Serialization (`src/stores/studioStore.ts`, `src/lib/project/serialize.ts`): Added `currentProjectId` state to studio store, created lightweight `generateCompositeThumbnail()` from active frame composite buffer, and dynamic project autosaving.
+- [x] P0 History Stack Invalidation (`src/components/layout/CenterViewport.tsx`, `src/lib/project/serialize.ts`): Added `pixibun:history-clear` custom event dispatched on project hydration, new project creation, and project switches, wiping 50-step undo/redo engine and flags to eliminate cross-project canvas corruption.
+- [x] Projects Gallery & Management Modal (`src/components/modals/ProjectsGalleryModal.tsx`): Built responsive tactile card grid with live thumbnail rendering, resolution/FPS badges, inline renaming, cloning, safe deletion with confirmation, and instant project switching.
+- [x] TopHeader Integration (`src/components/layout/TopHeader.tsx`, `src/components/layout/StudioLayout.tsx`): Added "Projects" tactile button and hooked up gallery open/switch/new workflows with autosave flushes.
+- [x] Unit Test Suite (`tests/projectsDb.test.ts`): 6 unit tests with `fake-indexeddb` verifying project creation, sorting by `updatedAt`, duplication independence, renaming, and deletion.
+- [x] Playwright E2E Spec (`tests/e2e/projects.spec.ts`): End-to-end test verifying gallery opening, drawing stroke, creating new project, asserting undo is disabled immediately (P0), duplicating project, and deleting project.
+- [x] Documentation & Drift Pruning: Corrected `ARCHITECTURE.md` storage section (removed phantom `frames` table), updated `PIXIBUN_DEEP_DIVE.md`, and updated `README.md` test metrics (91 unit tests across 17 suites, 11 E2E specs).
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 91/91 tests pass across 17 test suites.
+- `npm run test:e2e` → 11/11 Playwright E2E specs pass.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction
 **Goal:** Make PixiBun's quality claims honest, maintainable, and robust across four core pillars: (1) Assertion-backed E2E testing with pixel-level validation for undo/redo, authentic disconnected page reload for offline hydration, and active service worker controller verification; (2) Unified CI/CD workflow with `deploy.yml` triggered via `workflow_run` on `main`, private artifact storage for Lighthouse CI reports (`lhci-reports/`), and removal of redundant/dead headers from `vercel.json`; (3) Pure, DOM-free `HistoryEngine` extraction (`src/lib/engine/historyEngine.ts`) with fixed 50-step depth and dedicated unit test suite; (4) Clean repo hygiene and architectural doc truthfulness.
 

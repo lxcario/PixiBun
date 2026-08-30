@@ -14,10 +14,11 @@ import { CanvasResizeModal, AnchorPosition } from '@/components/modals/CanvasRes
 import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
-import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
-import { buildProjectFile, hydrateProject } from '@/lib/project/serialize';
+import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById } from '@/lib/storage/db';
+import { buildProjectFile, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { ProjectsGalleryModal } from '@/components/modals/ProjectsGalleryModal';
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -42,6 +43,7 @@ export const StudioLayout: React.FC = () => {
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -62,6 +64,7 @@ export const StudioLayout: React.FC = () => {
     setCanvasSize,
     frames,
     activeFrameIndex,
+    currentProjectId,
     resetToNewProject,
   } = useStudioStore();
 
@@ -72,13 +75,16 @@ export const StudioLayout: React.FC = () => {
     autosaveInFlightRef.current = true;
     try {
       const project = buildProjectFile();
+      const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
+      const state = useStudioStore.getState();
       const success = await autoSaveWorkspace(
-        'current-project',
+        state.currentProjectId,
         project.name,
         project.width,
         project.height,
         project.fps,
-        project
+        project,
+        thumbnailDataUrl
       );
       if (success) {
         autosaveFailCountRef.current = 0;
@@ -108,8 +114,32 @@ export const StudioLayout: React.FC = () => {
     clearAllBuffers();
     resetToNewProject();
     setIsNewConfirmOpen(false);
+    window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
     void runAutosave();
   }, [resetToNewProject, runAutosave]);
+
+  const handleOpenProject = useCallback(async (projectId: string) => {
+    if (autosaveTimerRef.current !== null) {
+      window.clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    await runAutosave();
+
+    const target = await getProjectById(projectId);
+    if (!target) return;
+
+    try {
+      const parsed: unknown = JSON.parse(target.dataJson);
+      const result = validateProjectFile(parsed);
+      if (!result.ok) {
+        setImportError(result.error);
+        return;
+      }
+      await hydrateProject(result.value, target.id);
+    } catch (err) {
+      console.error('Failed to open project:', err);
+    }
+  }, [runAutosave]);
 
   const handleCommitHistory = useCallback(() => {
     if (autosaveTimerRef.current !== null) {
@@ -138,7 +168,7 @@ export const StudioLayout: React.FC = () => {
         const parsed: unknown = JSON.parse(saved.dataJson);
         const result = validateProjectFile(parsed);
         if (!result.ok) return;
-        await hydrateProject(result.value);
+        await hydrateProject(result.value, saved.id);
       } catch (err) {
         console.error('Project restore failed:', err);
       }
@@ -413,6 +443,7 @@ export const StudioLayout: React.FC = () => {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
         onNewDrawing={() => setIsNewConfirmOpen(true)}
+        onOpenGallery={() => setIsGalleryOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         canUndo={canUndo}
@@ -525,6 +556,23 @@ export const StudioLayout: React.FC = () => {
         }}
         onConfirmImage={handleConfirmImportImage}
         onConfirmProject={handleConfirmImportProject}
+      />
+
+      {/* Projects & Artworks Gallery Modal */}
+      <ProjectsGalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        currentProjectId={currentProjectId}
+        onOpenProject={handleOpenProject}
+        onNewProject={() => {
+          clearAllBuffers();
+          resetToNewProject();
+          window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+          void runAutosave();
+        }}
+        onOpenImport={() => {
+          setIsImportOpen(true);
+        }}
       />
     </div>
   );

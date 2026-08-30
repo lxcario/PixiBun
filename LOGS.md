@@ -437,5 +437,38 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run build`: Next.js 16 production build compiles cleanly.
 **Status:** Complete
 
+---
+
+## Phase 24 — Multi-Project Workspace Management (2026-08-30)
+**Delivered:**
+- **IndexedDB Schema v3 & Project CRUD Engine**:
+  - Upgraded Dexie database schema to version 3 in `src/lib/storage/db.ts` with `createdAt` index and `.upgrade()` migration backfilling `createdAt = updatedAt || Date.now()`.
+  - Implemented `listAllProjects()`, `getProjectById()`, `saveProject()`, `deleteProject()`, `duplicateProject()`, `renameProject()`, and `createBlankProject()`.
+- **Dynamic Project State & Composite Thumbnail Cache**:
+  - Added `currentProjectId` state to `src/stores/studioStore.ts` for tracking active project identity.
+  - Implemented `generateCompositeThumbnail()` in `src/lib/project/serialize.ts` generating lightweight PNG data URLs from active frame composite buffers on the debounced autosave tick.
+- **P0 History Stack Invalidation**:
+  - Implemented `pixibun:history-clear` custom event in `serialize.ts`, `StudioLayout.tsx`, and `CenterViewport.tsx`.
+  - Clears `HistoryEngine` and resets `canUndo`/`canRedo` flags on project hydrate, project switch, new drawing, and import, eliminating cross-project undo canvas corruption.
+- **Projects Gallery Modal (`ProjectsGalleryModal.tsx`)**:
+  - Built tactile card grid with live thumbnail rendering, canvas resolution / FPS badges, relative last-modified time, inline renaming synchronized with active store, project cloning, and safe deletion with confirmation.
+- **TopHeader & StudioLayout Integration**:
+  - Added tactile "Projects" button in `TopHeader.tsx`.
+  - Wired gallery open/switch/new workflows with autosave flushes in `StudioLayout.tsx`.
+- **Unit & E2E Test Suites**:
+  - Created `tests/projectsDb.test.ts` (6 unit tests with `fake-indexeddb` verifying project CRUD, sorting, cloning independence, and schema integrity).
+  - Created `tests/e2e/projects.spec.ts` (Playwright E2E test verifying gallery open, drawing stroke, creating new project, asserting undo is disabled immediately (P0), duplicating project, and deleting project).
+- **Documentation Truthfulness**:
+  - Corrected `ARCHITECTURE.md` storage section (removed phantom `frames` table).
+  - Updated `PIXIBUN_DEEP_DIVE.md` and `README.md` test metrics (91 unit tests across 17 suites, 11 E2E specs).
+
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 91/91 tests pass across 17 test suites.
+- `npm run test:e2e`: 11/11 Playwright E2E specs pass.
+- `npm run build`: Next.js 16 production build compiles cleanly.
+**Status:** Complete
+
 
 

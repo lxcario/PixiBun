@@ -138,12 +138,18 @@ The application state is managed by Zustand with Immer middleware:
 
 ---
 
-## 5. Local-First Storage & Migration Architecture (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
+## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`).
+* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`, Schema v3).
 * **Tables:**
-  * `projects`: Stores project metadata, dimensions, frame sequences, layer hierarchies, and custom palettes under key `'current-project'`.
-  * `frames`: Stores raw binary PNG blobs for each animation frame to ensure instantaneous project loading.
+  * `projects`: Indexed by `id, name, updatedAt, createdAt`. Stores serialized `.pixibun` payload (`dataJson`), canvas bounds (`width, height`), `fps`, `createdAt`, `updatedAt`, and a downscaled composite preview (`thumbnailDataUrl`) for instant gallery card rendering.
+  * `diagnostics`: Indexed by `id, kind, timestamp`. Stores local telemetry and crash events in an on-device ring buffer (200 entries max).
+* **Multi-Project Workspace Management (`ProjectsGalleryModal.tsx`):**
+  * Artists can maintain an unlimited on-device portfolio of sprites and animations.
+  * Supports full lifecycle management: instant switching, project duplication (`duplicateProject`), inline renaming (`renameProject`), and safe deletion (`deleteProject`).
+* **P0 History Stack Invalidation (`pixibun:history-clear`):**
+  * When switching projects, loading an artwork, or creating a new blank project, `hydrateProject` and `resetToNewProject` dispatch `pixibun:history-clear`.
+  * `CenterViewport` clears the 50-step `HistoryEngine` and resets `canUndo`/`canRedo` flags, eliminating cross-project undo state corruption.
 * **Persistent Storage Failure & Auto-Recovery Banner:** `autoSaveWorkspace` returns a boolean status. If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds, the banner auto-dismisses and resets error counts.
 * **Full-Fidelity v1 $\to$ v2 Migration Engine (`migrateProjectPayload`):**
   * Auto-detects legacy or unversioned (`version: undefined`) files.

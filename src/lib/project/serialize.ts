@@ -63,6 +63,43 @@ export function buildProjectFile(): ProjectFile {
   };
 }
 
+/**
+ * Renders a lightweight downscaled composite thumbnail PNG data-URL from visible layers
+ * of the active frame. Used by autosave to populate the Projects Gallery without re-decoding.
+ */
+export function generateCompositeThumbnail(maxWidth = 128, maxHeight = 128): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const state = useStudioStore.getState();
+  const currentFrame = state.frames[state.activeFrameIndex] || state.frames[0];
+  if (!currentFrame) return undefined;
+
+  const w = state.canvasWidth;
+  const h = state.canvasHeight;
+  if (w <= 0 || h <= 0) return undefined;
+
+  const scale = Math.min(maxWidth / w, maxHeight / h, 1);
+  const targetW = Math.max(1, Math.round(w * scale));
+  const targetH = Math.max(1, Math.round(h * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return undefined;
+
+  ctx.imageSmoothingEnabled = false;
+
+  currentFrame.layers.slice().reverse().forEach((layer) => {
+    if (!layer.visible) return;
+    const entry = getOrCreateBuffer(layer.id, w, h);
+    ctx.globalAlpha = layer.opacity;
+    ctx.globalCompositeOperation = layer.blendMode;
+    ctx.drawImage(entry.canvas, 0, 0, targetW, targetH);
+  });
+
+  return canvas.toDataURL('image/png');
+}
+
 function base64ToBlob(base64: string): Blob {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -89,7 +126,7 @@ async function paintLayerFromPng(layerId: string, pngBase64: string, width: numb
  * PNG back into fresh buffers, then rehydrates store metadata. Assumes the
  * file already passed `validateProjectFile`.
  */
-export async function hydrateProject(file: ProjectFile): Promise<void> {
+export async function hydrateProject(file: ProjectFile, projectId?: string): Promise<void> {
   requireBrowser();
   clearAllBuffers();
 
@@ -107,5 +144,10 @@ export async function hydrateProject(file: ProjectFile): Promise<void> {
   }
 
   const { loadProjectState } = useStudioStore.getState();
-  loadProjectState(file);
+  loadProjectState(file, projectId);
+
+  // Invalidate history stack across project boundary to prevent cross-project undo corruption
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+  }
 }

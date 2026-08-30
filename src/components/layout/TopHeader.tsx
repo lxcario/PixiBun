@@ -15,6 +15,7 @@ interface TopHeaderProps {
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
   onNewDrawing?: () => void;
+  onOpenGallery?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   canUndo?: boolean;
@@ -27,6 +28,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenShortcuts,
   onOpenResize,
   onNewDrawing,
+  onOpenGallery,
   onUndo,
   onRedo,
   canUndo: propCanUndo,
@@ -257,6 +259,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         />
 
         <ThemeToggle />
+
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={onOpenGallery}
+          title="Open Projects & Artworks Gallery"
+          aria-label="Projects Gallery"
+          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
+        >
+          <PixelIcon name="layers" size={14} />
+          <span>Projects</span>
+        </TactileButton>
 
         <TactileButton
           size="sm"

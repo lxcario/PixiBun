@@ -730,8 +730,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
+    const handleClearHistoryEvent = () => {
+      historyEngineRef.current.clear();
+      setCanUndo(false);
+      setCanRedo(false);
+    };
+
     window.addEventListener('pixibun:undo', handleUndoEvent);
     window.addEventListener('pixibun:redo', handleRedoEvent);
+    window.addEventListener('pixibun:history-clear', handleClearHistoryEvent);
     window.addEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
     window.addEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
     window.addEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
@@ -754,6 +761,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     return () => {
       window.removeEventListener('pixibun:undo', handleUndoEvent);
       window.removeEventListener('pixibun:redo', handleRedoEvent);
+      window.removeEventListener('pixibun:history-clear', handleClearHistoryEvent);
       window.removeEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
       window.removeEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
       window.removeEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
@@ -788,6 +796,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     performUndo,
     primaryColor,
     renderComposite,
+    setCanRedo,
+    setCanUndo,
     tools.cavityStrength,
     tools.ditherModulation,
     tools.lightAzimuth,
