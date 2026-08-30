@@ -317,7 +317,31 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 **Checks run:** `npm test` (54/54 passed), `npm run lint` (0 errors, 0 warnings).
 **Status:** Complete
 
+---
 
+## Phase 20 — Audit Remediation, Security Hardening, Dead Dependency Pruning, Linter Hygiene & CI Enforcement (2026-08-30)
+**Delivered:**
+- **Security & Secret Cleanup**:
+  - Deleted `sync_github.mjs` containing the exposed GitHub Personal Access Token.
+- **Dead Dependency Pruning**:
+  - Removed unused `isomorphic-git` package from `package.json`.
+- **Linter & Test Hygiene**:
+  - Fixed unused imports (`quantizeAndDither`) and removed `no-console` warnings in `tests/benchmark.test.ts`.
+  - ESLint verification passes with **0 errors and 0 warnings** across all 10 test suites and source files.
+- **Blend Mode Alignment Across Types, Schema & UI**:
+  - Synchronized `RightInspector.tsx` layer blend mode dropdown to match the 5 validated engine blend modes (`source-over`, `multiply`, `screen`, `overlay`, `color-dodge`), removing unvalidated ghost options (`darken`, `lighten`, `difference`).
+- **Open Source Licensing**:
+  - Added root `LICENSE` file under MIT terms matching `README.md`.
+- **CI/CD Automation**:
+  - Created `.github/workflows/ci.yml` running typecheck (`tsc --noEmit`), lint (`eslint`), test suite (`vitest`), and production build (`next build`) on every push and PR.
+- **Security Headers**:
+  - Tightened Content Security Policy in `next.config.ts` by removing redundant external `connect-src` origins.
+- **Documentation Truthfulness & Verification**:
+  - Synchronized all `.md` documentation files (`README.md`, `MAIN.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, `TASKS.md`, `LOGS.md`) to 100% verified factual accuracy.
 
-
-
+**Checks run:**
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+- `npm test`: 61/61 tests pass across 10 test suites.
+- `npm run build`: Next.js 16.3.2 Turbopack static compilation succeeds in 21.5s with zero errors.
+**Status:** Complete

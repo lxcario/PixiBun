@@ -288,9 +288,6 @@ export const RightInspector: React.FC = () => {
                   <option value="screen">Screen</option>
                   <option value="overlay">Overlay</option>
                   <option value="color-dodge">Color Dodge</option>
-                  <option value="darken">Darken</option>
-                  <option value="lighten">Lighten</option>
-                  <option value="difference">Difference</option>
                 </select>
               </div>
             </div>

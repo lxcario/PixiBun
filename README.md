@@ -89,7 +89,7 @@ graph LR
 
 ### 🎬 Animation Suite & Layer Stack
 * **2D Optical Flow In-Between Morphing:** Block-matching motion displacement fields with zero-motion center bias and Signed Distance Field (SDF) interpolation generating smooth intermediate tween frames in OKLab space without background ghosting.
-* **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (`🔒 Active layer is locked`), visibility, and 8 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge, Darken, Lighten, Difference*).
+* **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (`🔒 Active layer is locked`), visibility, and 5 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge*).
 * **Frame-by-Frame Timeline & Tag Clips:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.
 * **Floating Live Preview Popout:** Draggable, resizable $1\times/2\times/4\times$ live preview window with custom backdrops (*Checkerboard, Dark Obsidian, Alabaster Paper, Amber Lamp*).
@@ -98,26 +98,12 @@ graph LR
 
 ### 📦 Game-Ready Export Pipeline
 * **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
-* **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag and displaying a live progress bar.
+* **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag, featuring cancellation via `AbortController` and a live progress bar.
 * **Lossless PNG:** Integer scaling from $1\times$ to $32\times$ with crisp nearest-neighbor sampling.
 * **Packed Sprite Sheets:** Horizontal, vertical, or matrix packed layouts with ready-to-use JSON metadata for **Godot 4**, **Unity**, and **Phaser 3**.
 * **Native `.pixibun` Files:** Single-click project file export and restore with schema v2 migration and forward-compatibility guards.
 
 ---
-
-### 📻 Procedural Lo-Fi Ambient Radio
-* **Zero-Network Audio Engine:** Built directly on the native Web Audio API with zero external audio assets or network requests.
-* **Rain & Vinyl Crackle Noise:** Warm pink-noise generation with subtle randomized needle-drop pops and soft lowpass acoustic dampening.
-* **Pentatonic Warm Chord Progressions:** Rhodes-inspired triangle oscillators with gentle tape-flutter LFO vibrato, warmth filters, and sub-bass accompaniment across 3 tracks (*lo-fi beats*, *rainy night in lilac*, *cozy hearth*).
-* **Real-Time Spectrum Visualizer:** 4-band FFT analyser feeding animated equalizer LED bars on the vintage boombox.
-
----
-
-### 📦 Game-Ready Export Pipeline
-* **Lossless PNG:** Integer scaling from $1\times$ to $32\times$ with crisp nearest-neighbor sampling.
-* **Animated GIF:** Lightweight looped GIFs with per-frame millisecond durations.
-* **Packed Sprite Sheets:** Horizontal, vertical, or matrix packed layouts with ready-to-use JSON metadata for **Godot 4**, **Unity**, and **Phaser 3**.
-* **Native `.pixibun` Files:** Single-click project file export and restore containing all frames, layers, palettes, and metadata.
 
 ---
 
@@ -216,7 +202,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | **Color Science** | OKLCH & OKLab Color Models | Perceptually uniform lightness and hue-shifting ramps. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB) | Fast, transactional on-device storage with zero network overhead. |
-| **Quality & Tests** | Vitest + TypeScript 5.7 | Strict type safety and unit test coverage. |
+| **Quality & Tests** | Vitest + GitHub Actions CI | Strict TypeScript 5.7, 61 unit tests & benchmarks (100% green), automated CI. |
 
 ---
 

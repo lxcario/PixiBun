@@ -1,5 +1,31 @@
 # Build Plan — PixiBun
 
+## Phase 20 — Audit Remediation, Security Hardening, Dependency Pruning, Linter Hygiene & CI Enforcement
+**Goal:** Remediate all architectural and hygiene findings identified in the deep audit: delete hardcoded PAT tokens, prune dead runtime dependencies, fix linter violations in benchmarks, align blend mode types with the UI and schema, add an MIT license, tighten CSP headers, establish GitHub Actions CI, and synchronize all documentation.
+
+**Deliverables:**
+- [x] Security: Deleted `sync_github.mjs` containing the exposed Personal Access Token.
+- [x] Dependency Hygiene: Removed unused `isomorphic-git` (1.41.9) from `package.json`.
+- [x] Linter Hygiene: Fixed `tests/benchmark.test.ts` unused imports and console calls (`eslint` passes with 0 errors and 0 warnings).
+- [x] Blend Mode Alignment: Synchronized `src/types/canvas.ts`, `src/lib/project/schema.ts`, and `RightInspector.tsx` to the 5 verified blend modes (`source-over`, `multiply`, `screen`, `overlay`, `color-dodge`).
+- [x] License: Created root `LICENSE` file under MIT terms.
+- [x] CI/CD Automation: Created `.github/workflows/ci.yml` running typecheck, lint, vitest, and production build on push/PR.
+- [x] Security Headers: Tightened CSP in `next.config.ts` by removing redundant external connect-src.
+- [x] Documentation Truthfulness: Synchronized all `.md` files to reflect verified facts (61 tests across 10 suites, 5 blend modes, zero dead deps).
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors, 0 warnings.
+- `npm run typecheck` → 0 errors.
+- `npm test` → 61/61 tests pass across 10 test suites.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+- `LICENSE` file exists in repo root.
+- `isomorphic-git` absent from `package.json`.
+- `sync_github.mjs` deleted.
+
+**Status:** Complete (2026-08-30)
+
+---
+
 ## Phase 19 — Tag Clip Export Scoping & Multi-Threaded Web Worker GIF Encoding
 **Goal:** Implement isolated animation clip exporting (`Export Scope`), DOM-free GIF encoding core, background Web Worker acceleration with zero-copy transferable `ArrayBuffer` objects, animated progress bar feedback in `ExportModal`, and transparent main-thread fallback.
 
