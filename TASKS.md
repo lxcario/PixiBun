@@ -1,5 +1,28 @@
 # Build Plan — PixiBun
 
+## Phase 27 — 2D Ray Marching & Physically Accurate Soft Shadows (Aaltonen Cone Tracing Engine)
+**Goal:** Implement a GPU-independent, deterministic on-device 2D Ray Marching and Physically Accurate Soft Shadows engine. Operates over $O(N)$ Euclidean Distance Fields (EDT) utilizing Sebastian Aaltonen's contact-hardening tangent correction and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$) with cubic Hermite smoothstep falloff, Bayer matrix ordered dithering stippling, and non-destructive tagged layer output (`Layer.tag = 'cast-shadow'`).
+
+**Deliverables:**
+- [x] Mathematical Core Engine (`src/lib/ai/shadowRayMarcher.ts`):
+  - Branchless $C^0$ continuous bilinear sampling `sampleEDTBilinear(edt, width, height, x, y)`.
+  - Aaltonen tangent geometric correction and physical cone tracing `tracePhysical2DSoftShadow(edt, width, height, px, py, lx, ly, lightRadius)`.
+  - Zero-allocation full grid generator `generateRaymarchedShadowMap(...)` utilizing `acquireFloat32Buffer` / `releaseFloat32Buffer`.
+  - Full pipeline `executeRaymarchedCastShadowPipeline(...)` with Bayer matrix stippling (`none`, `2x2`, `4x4`, `8x8`) and atmospheric color tinting.
+- [x] Studio Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Raymarched Soft Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector.
+- [x] Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`): Added event listener for `pixibun:render-cast-shadow` writing output non-destructively to tagged output layer (`Layer.tag = 'cast-shadow'`) without mutating base artwork.
+- [x] Unit Test Suite (`tests/shadowRayMarcher.test.ts`): 9 comprehensive unit and integration tests covering bilinear sampling precision, boundary clamping, contact hardening, memory pool recycling, color composition, Bayer stippling, and non-destructive layer replacement.
+- [x] Documentation & Test Metrics Synchronization (`TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`): Updated formulas, test metrics (123 unit tests across 20 suites), and architectural descriptions.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` → 0 errors.
+- `npm test` → 123/123 tests pass across 20 test suites.
+- `npm run build` → Next.js 16 production build compiles cleanly.
+
+**Status:** Complete (2026-08-31)
+
+---
+
 ## Phase 26 — Volumetric Optics, Subsurface Scattering & Anisotropic Shaders (PixiBud AI Physical Shading Suite)
 **Goal:** Implement professional, deterministic on-device 2D computer graphics algorithms in PixiBud AI for volumetric optics, subsurface scattering (SSS), dielectric Fresnel rim reflections with chromatic dispersion, and Kajiya-Kay anisotropic specular highlights. All optical passes operate non-destructively on dedicated tagged output layers (`Layer.tag = 'optical-output'`) with perceptual OKLab palette quantization and Bayer matrix dithering.
 

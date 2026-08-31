@@ -533,6 +533,33 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - `npm run build`: Next.js 16 production build compiles cleanly.
 **Status:** Complete
 
+---
+
+## Phase 27 — 2D Ray Marching & Physically Accurate Soft Shadows (2026-08-31)
+**Delivered:**
+- **Mathematical 2D Ray Marcher & Soft Shadow Engine (`src/lib/ai/shadowRayMarcher.ts`)**:
+  - **Branchless Bilinear Distance Sampling**: Implemented `sampleEDTBilinear(edt, width, height, x, y)` restoring $C^0$ continuity over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) to prevent ray-stepping acne.
+  - **Aaltonen Contact-Hardening Geometric Correction**: Implemented analytical closest approach derivation ($y = \frac{h^2}{2ph}, d = \sqrt{\max(0, h^2 - y^2)}$) in `tracePhysical2DSoftShadow`, eliminating step-banding artifacts.
+  - **Physical Area Light Cone Tracing**: Modeled expanding light cones $r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$ with cubic Hermite smoothstep falloff, replacing arbitrary $k$ multipliers with physical light radius $R_L$.
+  - **Zero-Allocation Buffer Pooling**: Managed full-canvas visibility maps using `acquireFloat32Buffer` / `releaseFloat32Buffer` with `try...finally` memory guarantees.
+  - **Bayer Matrix Penumbra Dithering**: Supported `none`, `2x2`, `4x4`, and `8x8` Bayer ordered dithering to stipple smooth continuous penumbras into authentic retro dot patterns.
+- **Studio Inspector UI (`src/components/layout/RightInspector.tsx`)**:
+  - Built **Raymarched Soft Shadows** card in PixiBud Smart Studio tab.
+  - Added interactive sliders for Light X/Y coordinates, Light Disk Radius ($R_L$, 2px to 64px), Opacity, and Bayer dither mode dropdown.
+  - Added Shadow Color Picker with 5 one-click palette presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`).
+- **Non-Destructive Viewport Layer Stacking (`src/components/layout/CenterViewport.tsx`)**:
+  - Added event listener for `pixibun:render-cast-shadow` outputting non-destructively to tagged `'cast-shadow'` layer without mutating base artwork.
+- **Unit & Integration Test Suite (`tests/shadowRayMarcher.test.ts`)**:
+  - Added 9 unit tests verifying bilinear sampling, boundary clamping, contact hardening, buffer pool memory safety, color composition, Bayer stippling, and non-destructive tagged layer replacement.
+- **Documentation**:
+  - Synchronized `TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, and `CHANGELOG.md` (123 unit tests across 20 suites).
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors.
+- `npm test`: 123/123 tests pass across 20 test suites.
+- `npm run build`: Next.js 16 production build compiles cleanly.
+**Status:** Complete
+
 
 
 

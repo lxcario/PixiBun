@@ -38,6 +38,7 @@ import {
   executePhotometricPipeline,
   executeVolumetricOpticalPipeline,
   computeSeparableEDT,
+  executeRaymarchedCastShadowPipeline,
   generateInflatedHeightmap,
   applyBilateralFilter,
   computeTangentNormalField,
@@ -804,6 +805,50 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
+    const handleRenderCastShadowEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const detail = customEvent.detail || {};
+
+      // Read composite of all visible layers EXCLUDING any previous cast shadow layer
+      const srcCtx = compositeSourceSnapshot('cast-shadow');
+      if (!srcCtx) return;
+
+      const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imgData.data;
+
+      // Binary mask of solid obstacles (alpha > 30)
+      const isOpaque = (x: number, y: number) => {
+        if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
+        return data[(y * canvasWidth + x) * 4 + 3] > 30;
+      };
+
+      // Compute exact O(N) Euclidean Distance Transform to obstacle boundaries
+      const edt = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+
+      // Execute 2D Raymarched Soft Shadows with Aaltonen geometric cone tracing
+      const shadowImgData = executeRaymarchedCastShadowPipeline(
+        edt,
+        canvasWidth,
+        canvasHeight,
+        {
+          lightX: detail.lightX ?? Math.round(canvasWidth / 2),
+          lightY: detail.lightY ?? Math.round(canvasHeight / 4),
+          lightRadius: detail.lightRadius ?? 16,
+          shadowOpacity: detail.shadowOpacity ?? 0.6,
+          shadowColor: detail.shadowColor ?? '#180B26',
+          ditherMode: detail.ditherMode ?? '4x4',
+        }
+      );
+
+      // Write output to a dedicated tagged layer (replaces any previous one non-destructively)
+      const outCtx = replaceTaggedLayer('Cast Shadow', 'cast-shadow');
+      if (outCtx) {
+        outCtx.putImageData(shadowImgData, 0, 0);
+        renderComposite();
+        bumpBufferVersion();
+      }
+    };
+
     const handleClearHistoryEvent = () => {
       historyEngineRef.current.clear();
       setCanUndo(false);
@@ -820,6 +865,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     window.addEventListener('pixibun:sel-out', handleSelOutEvent);
     window.addEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
     window.addEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+    window.addEventListener('pixibun:render-cast-shadow', handleRenderCastShadowEvent as EventListener);
     window.addEventListener('pixibun:apply-47-blob', handle47BlobEvent);
     window.addEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
     window.addEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
@@ -844,6 +890,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       window.removeEventListener('pixibun:sel-out', handleSelOutEvent);
       window.removeEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
       window.removeEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
+      window.removeEventListener('pixibun:render-cast-shadow', handleRenderCastShadowEvent as EventListener);
       window.removeEventListener('pixibun:apply-47-blob', handle47BlobEvent);
       window.removeEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
       window.removeEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);

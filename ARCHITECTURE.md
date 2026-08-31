@@ -138,6 +138,13 @@ graph TD
    $$F(\theta) = F_0 + (\max(1 - \alpha, F_0) - F_0) \cdot (1 - \cos\theta)^{p_{fresnel}}, \quad \eta_R = \eta_0 - \Delta\eta, \; \eta_B = \eta_0 + \Delta\eta$$
 7. **Kajiya-Kay Anisotropic Cylindrical Specular:**
    $$\sin(\mathbf{T}, \mathbf{H}) = \sqrt{\max\left(0, 1 - (\mathbf{T}\cdot\mathbf{H})^2\right)}, \quad I_{aniso} = k_{s1} \sin^{p_1}(\mathbf{T}_1, \mathbf{H}) + k_{s2} \sin^{p_2}(\mathbf{T}_2, \mathbf{H})$$
+8. **2D Raymarched Soft Shadows with Sebastian Aaltonen Contact Hardening (`shadowRayMarcher.ts`):**
+   * **Bilinear Continuous Distance:** $D(x, y) = (1 - u)(1 - v)D_{00} + u(1 - v)D_{10} + (1 - u)v D_{01} + uv D_{11}$
+   * **Aaltonen Tangent Geometric Correction:** Point of closest approach along ray segment between steps $P_{\text{prev}}$ and $P_{\text{cur}}$:
+     $$y = \frac{h^2}{2 \cdot ph}, \quad d = \sqrt{\max(0, h^2 - y^2)}, \quad t_{\text{closest}} = \max(\epsilon, t - y)$$
+   * **Physical Light Cone Tracing & Cubic Hermite Occlusion:**
+     $$r_{\text{cone}} = R_L \cdot \frac{t_{\text{closest}}}{T}, \quad s = \text{clamp}\left(\frac{d}{r_{\text{cone}}}, 0, 1\right), \quad V = \min(V, s^2(3 - 2s))$$
+   * **Non-Destructive Tagged Output:** Writes directly to `Layer.tag = 'cast-shadow'` with zero GC allocation via `acquireFloat32Buffer` / `releaseFloat32Buffer`.
 
 ---
 

@@ -32,6 +32,7 @@ src/
 │   ├── ai/
 │   │   ├── pixelAiEngine.ts         # Optik akış ara kare (tween), jaggies temizleme, zemin gölgesi, dış kontur
 │   │   ├── pixelizeEngine.ts        # Görselden piksele: Sobel salience, OKLab Median-Cut + K-Means++, Floyd-Steinberg/Atkinson
+│   │   ├── shadowRayMarcher.ts      # 2D Ray Marching, Aaltonen teğet geometrik kontak sertleşmesi, fiziksel koni izleme
 │   │   └── smartMathEngine.ts       # 2.5D Fotometrik ışık, O(N) EDT, Sobel normalleri, Minecraft 3D skin shader, RotSprite, Zhang-Suen
 │   ├── art/                         # Başlangıç şablonları (Hearth Ghost, Desk Mushroom, Bun, Little Lantern)
 │   ├── audio/
@@ -403,6 +404,25 @@ Tüm renkler insan gözünün algısına en uygun olan **OKLCH** uzayında tanı
 * **Animasyon & Fizik:** `motion` (`motion/react`)
 * **Depolama:** `dexie` (IndexedDB)
 * **Ses:** Yerel Web Audio API (Osilatörler, BiquadFilter, AnalyserNode)
-* **Yapay Zeka:** Deterministik Cihaz-Üzeri Matematik Motoru (`smartMathEngine.ts`) — sıfır bulut bağımlılığı
-* **Test & Kalite:** Vitest (19 test dosyası, 111 birim/bileşen testi — %100 Passed) + Playwright E2E (14/14 Passed) + Axe WCAG 2.2 + Lighthouse CI
+* **Yapay Zeka:** Deterministik Cihaz-Üzeri Matematik Motoru (`smartMathEngine.ts`, `shadowRayMarcher.ts`) — sıfır bulut bağımlılığı
+* **Test & Kalite:** Vitest (20 test dosyası, 123 birim/bileşen testi — %100 Passed) + Playwright E2E (14/14 Passed) + Axe WCAG 2.2 + Lighthouse CI
 * **Kod Kalitesi:** ESLint 9 Flat Config + jsx-a11y (Zero `any`, sıfır hata ve uyarı)
+
+---
+
+# 14. 2D Ray Marching & Sebastian Aaltonen Kontak Sertleşmeli Yumuşak Gölge Motoru (`shadowRayMarcher.ts`)
+
+Ayrık Öklid Mesafe Alanları ($O(N)$ Felzenszwalb EDT) üzerinde GPU'dan bağımsız, doğrudan CPU ve TypedArray tamponları ile çalışan 2B ışın yürütme (sphere tracing) mimarisi:
+
+1. **Dallanmasız (Branchless) $C^0$ Süreklilik Bilineer Örnekleme (`sampleEDTBilinear`):**
+   $$D(x, y) = (1 - u)(1 - v)D_{00} + u(1 - v)D_{10} + (1 - u)v D_{01} + uv D_{11}$$
+2. **Sebastian Aaltonen Teğet Geometrik Kontak Sertleşmesi Düzeltmesi:**
+   Işın adımları arasındaki en yakın teğet yaklaşım noktasını analitik olarak çözer:
+   $$y = \frac{h^2}{2 \cdot ph}, \quad d = \sqrt{\max(0, h^2 - y^2)}, \quad t_{\text{closest}} = \max(\epsilon, t - y)$$
+3. **Fiziksel Alan Işığı Koni İzleme (Physical Area Light Cone Tracing):**
+   Keyfi $k$ katsayısı yerine doğrudan fiziksel ışık diski yarıçapı $R_L$ ile koni genişliği modellenir:
+   $$r_{\text{cone}}(t_{\text{closest}}) = R_L \cdot \frac{t_{\text{closest}}}{T}, \quad s = \text{clamp}\left(\frac{d}{r_{\text{cone}}}, 0, 1\right), \quad V = \min(V, s^2(3 - 2s))$$
+4. **Bayer Matris Yarıgölge (Penumbra) Dither Stippling:**
+   Float görünürlük değerlerini retro piksel stiline dönüştüren $2\times2, 4\times4, 8\times8$ Bayer eşikleme modülasyonu.
+5. **Sıfır Çöp Toplama (Zero-GC) Bellek Havuzu:**
+   Görünürlük tamponları `acquireFloat32Buffer` / `releaseFloat32Buffer` ile havuzlanır, `try...finally` güvencesiyle bellek sızıntıları önlenir.

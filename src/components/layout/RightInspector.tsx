@@ -8,8 +8,18 @@ import { BlendMode } from '@/types/canvas';
 import { MaterialType, OpticalPresetType, AnisoFlowPreset, CelToneCount } from '@/types/tools';
 import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
 
+const SHADOW_COLOR_PRESETS = [
+  { label: 'Indigo', hex: '#180B26' },
+  { label: 'Obsidian', hex: '#0A0612' },
+  { label: 'Umber', hex: '#26140B' },
+  { label: 'Violet', hex: '#2E1065' },
+  { label: 'Teal/Fog', hex: '#062419' },
+];
+
 export const RightInspector: React.FC = () => {
   const {
+    canvasWidth,
+    canvasHeight,
     activeInspectorTab,
     setActiveInspectorTab,
     frames,
@@ -57,6 +67,14 @@ export const RightInspector: React.FC = () => {
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
   const [rotationAngle, setRotationAngle] = useState<number>(45);
+
+  // 2D Raymarched Soft Shadow State
+  const [shadowLightX, setShadowLightX] = useState<number>(Math.round(canvasWidth / 2));
+  const [shadowLightY, setShadowLightY] = useState<number>(Math.round(canvasHeight / 4));
+  const [shadowLightRadius, setShadowLightRadius] = useState<number>(16);
+  const [shadowOpacity, setShadowOpacity] = useState<number>(0.6);
+  const [shadowColor, setShadowColor] = useState<string>('#180B26');
+  const [shadowDitherMode, setShadowDitherMode] = useState<'none' | '2x2' | '4x4' | '8x8'>('4x4');
 
   // 1. Module 1: Full Photometric Lighting & Normal Mapping Pipeline
   const handleRenderPhotometricLighting = () => {
@@ -113,6 +131,23 @@ export const RightInspector: React.FC = () => {
   const handleGroundShadow = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
     window.dispatchEvent(new CustomEvent('pixibun:ground-shadow'));
+  };
+
+  // 2D Raymarched Soft Shadows (Aaltonen Cone Tracing)
+  const handleRenderCastShadow = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
+    window.dispatchEvent(
+      new CustomEvent('pixibun:render-cast-shadow', {
+        detail: {
+          lightX: shadowLightX,
+          lightY: shadowLightY,
+          lightRadius: shadowLightRadius,
+          shadowOpacity: shadowOpacity,
+          shadowColor: shadowColor,
+          ditherMode: shadowDitherMode,
+        },
+      })
+    );
   };
 
   const handle47Blob = () => {
@@ -680,7 +715,146 @@ export const RightInspector: React.FC = () => {
             </div>
           </div>
 
-          {/* Module 2: Volumetric Optics, Subsurface Scattering & Anisotropic Shaders */}
+          {/* Module 2: 2D Raymarched Soft Shadows (Aaltonen Cone Tracing) */}
+          <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+                <PixelIcon name="sun" size={12} />
+                <span>Raymarched Soft Shadows</span>
+              </span>
+              <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2D Cone Tracing</span>
+            </div>
+
+            {/* Parameters Grid */}
+            <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
+              {/* Light X */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Light X:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max={canvasWidth}
+                  value={shadowLightX}
+                  onChange={(e) => setShadowLightX(parseInt(e.target.value, 10))}
+                  className="w-32 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {shadowLightX}px
+                </span>
+              </div>
+
+              {/* Light Y */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Light Y:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max={canvasHeight}
+                  value={shadowLightY}
+                  onChange={(e) => setShadowLightY(parseInt(e.target.value, 10))}
+                  className="w-32 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {shadowLightY}px
+                </span>
+              </div>
+
+              {/* Light Radius (Penumbra Softness) */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Light Radius (RL):</span>
+                <input
+                  type="range"
+                  min="2"
+                  max="64"
+                  value={shadowLightRadius}
+                  onChange={(e) => setShadowLightRadius(parseInt(e.target.value, 10))}
+                  className="w-32 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
+                  {shadowLightRadius}px
+                </span>
+              </div>
+
+              {/* Shadow Opacity */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Opacity:</span>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1.0"
+                  step="0.05"
+                  value={shadowOpacity}
+                  onChange={(e) => setShadowOpacity(parseFloat(e.target.value))}
+                  className="w-32 accent-[#f0be7c] cursor-pointer"
+                />
+                <span className="text-[#f0be7c] font-bold text-[10px] min-w-[28px] text-right">
+                  {Math.round(shadowOpacity * 100)}%
+                </span>
+              </div>
+
+              {/* Dither Mode */}
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-[var(--text-body)] font-bold">Bayer Dither:</span>
+                <select
+                  value={shadowDitherMode}
+                  onChange={(e) => setShadowDitherMode(e.target.value as 'none' | '2x2' | '4x4' | '8x8')}
+                  className="bg-[#181124] text-[var(--text-heading)] font-bold text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
+                >
+                  <option value="none">Smooth (No Dither)</option>
+                  <option value="2x2">Bayer 2x2 (Coarse)</option>
+                  <option value="4x4">Bayer 4x4 (Classic)</option>
+                  <option value="8x8">Bayer 8x8 (Fine)</option>
+                </select>
+              </div>
+
+              {/* Shadow Color Preset Selector */}
+              <div className="flex flex-col gap-1 text-xs font-mono pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[var(--text-body)] font-bold">Shadow Tint:</span>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="color"
+                      value={shadowColor}
+                      onChange={(e) => setShadowColor(e.target.value)}
+                      className="w-4 h-4 rounded-[1px] border border-[var(--desk-border)] cursor-pointer bg-transparent"
+                      title="Custom Shadow Color"
+                    />
+                    <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase">{shadowColor}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-1">
+                  {SHADOW_COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.hex}
+                      onClick={() => setShadowColor(preset.hex)}
+                      className={`py-0.5 text-[8px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                        shadowColor.toUpperCase() === preset.hex.toUpperCase()
+                          ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                          : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+                      }`}
+                      title={`Set shadow tint to ${preset.label} (${preset.hex})`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Action Button */}
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={handleRenderCastShadow}
+              title="Raymarch 2D physically accurate soft shadows with Aaltonen contact hardening into a non-destructive layer"
+              className="text-[11px] py-2 font-mono font-bold bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_2px_0_#8c5120] flex items-center justify-center gap-1.5"
+            >
+              <PixelIcon name="sun" size={14} />
+              <span>Render Cast Shadows</span>
+            </TactileButton>
+          </div>
+
+          {/* Module 3: Volumetric Optics, Subsurface Scattering & Anisotropic Shaders */}
           <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">

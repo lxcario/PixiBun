@@ -2467,3 +2467,14 @@ export function executeVolumetricOpticalPipeline(
   return outputCanvas;
 }
 
+// -----------------------------------------------------------------------------
+// 13. 2D Ray Marching & Physically Accurate Soft Shadows (Aaltonen Cone Tracing)
+// -----------------------------------------------------------------------------
+export {
+  sampleEDTBilinear,
+  tracePhysical2DSoftShadow,
+  generateRaymarchedShadowMap,
+  executeRaymarchedCastShadowPipeline,
+  type RaymarchedShadowParams,
+} from './shadowRayMarcher';
+

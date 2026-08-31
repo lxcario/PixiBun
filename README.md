@@ -51,6 +51,7 @@ graph LR
 ---
 
 ### ☀️ PixiBud 2.5D Photometric Studio & Smart Math Engine
+* **2D Raymarched Soft Shadows & Aaltonen Cone Tracing:** Physically accurate 2D sphere tracing over linear-time $O(N)$ Euclidean Distance Fields (EDT) utilizing Sebastian Aaltonen's contact-hardening tangent correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$) with cubic Hermite smoothstep area falloff, Bayer matrix ordered dithering stippling, and non-destructive tagged layer output.
 * **3D Minecraft Skin Recognition & Dedicated Shading:** Automatically detects $64\times64$ and $64\times32$ Java/Bedrock UV layouts, computes analytical 3D unit normal vectors $\mathbf{N}$ for all 12 cuboid regions, and executes domain skin shading (Half-Lambert wrap, contact ambient occlusion under chin/armpits/limbs, sky hemisphere radiance, and warm sunlight/cool indigo hue-shifting).
 * **Linear-Time $O(N)$ Euclidean Distance Transform (EDT):** Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes compute distance fields in milliseconds.
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
@@ -201,7 +202,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 111 Vitest unit and component tests in Happy-DOM across 19 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 123 Vitest unit and component tests in Happy-DOM across 20 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -212,7 +213,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, React Compiler memoization, zero client bundle bloat. |
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
-| **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong | Deterministic on-device computer graphics math for 2.5D shading and normal baking. |
+| **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, Aaltonen Ray Marching | Deterministic on-device computer graphics math for 2.5D shading, raymarched soft shadows, and normal baking. |
 | **Image Synthesis** | Sobel Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
 | **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines. |
@@ -220,7 +221,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v3) | Multi-project workspace management, thumbnail previews, and persistent storage API guard. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 111 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 123 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
 
 ---
 
