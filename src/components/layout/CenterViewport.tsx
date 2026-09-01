@@ -611,17 +611,26 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       const morphedCanvas = morphInBetweenFrames(ctxA, ctxB, canvasWidth, canvasHeight, 0.5);
 
-      state.addFrame();
+      state.duplicateFrame(currentIdx);
       const updatedState = useStudioStore.getState();
-      const newFrame = updatedState.frames[updatedState.frames.length - 1];
+      const newFrame = updatedState.frames[updatedState.activeFrameIndex];
 
-      if (newFrame && newFrame.layers[0]) {
-        const targetBuf = getOrCreateBuffer(newFrame.layers[0].id, canvasWidth, canvasHeight);
-        const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
-        if (tCtx) {
-          tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-          tCtx.imageSmoothingEnabled = false;
-          tCtx.drawImage(morphedCanvas, 0, 0);
+      if (newFrame) {
+        // Since we morph the composite, we should apply the result to the base layer and clear any higher layers
+        const baseLayer = newFrame.layers[newFrame.layers.length - 1];
+        if (baseLayer) {
+          const targetBuf = getOrCreateBuffer(baseLayer.id, canvasWidth, canvasHeight);
+          const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
+          if (tCtx) {
+            tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            tCtx.imageSmoothingEnabled = false;
+            tCtx.drawImage(morphedCanvas, 0, 0);
+          }
+        }
+        // Clear upper layers so they don't overlay the flat composite twice
+        for (let i = 0; i < newFrame.layers.length - 1; i++) {
+          const upperBuf = getOrCreateBuffer(newFrame.layers[i].id, canvasWidth, canvasHeight);
+          upperBuf.canvas.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
         }
       }
 

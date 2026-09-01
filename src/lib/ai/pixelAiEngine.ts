@@ -9,7 +9,7 @@
 // -----------------------------------------------------------------------------
 
 import { ShadedPixel } from '@/lib/ai/smartMathEngine';
-import { rgbToOKLab, okLabToRGB, deltaEOKLab } from '@/lib/ai/smartMathEngine';
+import { rgbToOKLab, okLabToRGB, deltaEOKLab, computeSeparableEDT } from '@/lib/ai/smartMathEngine';
 import { hexToRgba } from '@/lib/canvas/floodFill';
 
 /**
@@ -342,51 +342,49 @@ export function morphInBetweenFramesSync(
   const dataA = frameA.data;
   const dataB = frameB.data;
 
-  // Extract non-transparent pixels as particles
-  const pixelsA: { x: number; y: number; r: number; g: number; b: number; a: number; matched?: boolean }[] = [];
-  const pixelsB: { x: number; y: number; r: number; g: number; b: number; a: number; matched?: boolean }[] = [];
+  // 1. Helper to compute SDF
+  const getSDF = (data: Uint8ClampedArray) => {
+    // insideDist: distance to transparent (positive inside, 0 outside)
+    const insideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] > 10, width, height);
+    // outsideDist: distance to opaque (positive outside, 0 inside)
+    const outsideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] <= 10, width, height);
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      if (dataA[idx + 3] > 10) {
-        pixelsA.push({ x, y, r: dataA[idx], g: dataA[idx + 1], b: dataA[idx + 2], a: dataA[idx + 3] });
-      }
-      if (dataB[idx + 3] > 10) {
-        pixelsB.push({ x, y, r: dataB[idx], g: dataB[idx + 1], b: dataB[idx + 2], a: dataB[idx + 3] });
-      }
+    const sdf = new Float32Array(width * height);
+    for (let i = 0; i < width * height; i++) {
+      sdf[i] = outsideDist[i] - insideDist[i];
     }
-  }
+    return sdf;
+  };
 
-  // Find pairs (matching exact color first, then closest distance)
-  const matches = [];
-  for (let i = 0; i < pixelsA.length; i++) {
-    const pA = pixelsA[i];
-    let bestDist = Infinity;
-    let matchIdx = -1;
+  const sdfA = getSDF(dataA);
+  const sdfB = getSDF(dataB);
 
-    for (let j = 0; j < pixelsB.length; j++) {
-      const pB = pixelsB[j];
-      if (pB.matched) continue;
-
-      // Only match similar colors to preserve pixel boundaries
-      const colorDist = Math.abs(pA.r - pB.r) + Math.abs(pA.g - pB.g) + Math.abs(pA.b - pB.b);
-      if (colorDist < 20) {
-        const spatialDist = Math.hypot(pB.x - pA.x, pB.y - pA.y);
-        // Only allow matches within a reasonable movement radius (e.g. 15 pixels)
-        if (spatialDist < bestDist && spatialDist < 15) {
-          bestDist = spatialDist;
-          matchIdx = j;
+  // 2. Helper to find closest opaque pixel color using BFS/spiral search
+  const findClosestColor = (data: Uint8ClampedArray, cx: number, cy: number): [number, number, number, number] => {
+    if (data[(cy * width + cx) * 4 + 3] > 10) {
+      const idx = (cy * width + cx) * 4;
+      return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+    }
+    
+    let r = 1;
+    while (r < Math.max(width, height)) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const px = cx + dx;
+          const py = cy + dy;
+          if (px >= 0 && px < width && py >= 0 && py < height) {
+            const idx = (py * width + px) * 4;
+            if (data[idx + 3] > 10) {
+              return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+            }
+          }
         }
       }
+      r++;
     }
-
-    if (matchIdx !== -1) {
-      pixelsB[matchIdx].matched = true;
-      matches.push({ a: pA, b: pixelsB[matchIdx] });
-      pA.matched = true;
-    }
-  }
+    return [0, 0, 0, 0];
+  };
 
   const results: { width: number; height: number; data: Uint8ClampedArray }[] = [];
 
@@ -394,40 +392,35 @@ export function morphInBetweenFramesSync(
     const t = s / (steps + 1);
     const outData = new Uint8ClampedArray(width * height * 4);
 
-    // 1. Draw interpolated matched pixels
-    for (const match of matches) {
-      const tweenX = Math.round(match.a.x + (match.b.x - match.a.x) * t);
-      const tweenY = Math.round(match.a.y + (match.b.y - match.a.y) * t);
-      if (tweenX >= 0 && tweenX < width && tweenY >= 0 && tweenY < height) {
-        const idx = (tweenY * width + tweenX) * 4;
-        // Simple alpha blending for color
-        outData[idx] = Math.round(match.a.r + (match.b.r - match.a.r) * t);
-        outData[idx + 1] = Math.round(match.a.g + (match.b.g - match.a.g) * t);
-        outData[idx + 2] = Math.round(match.a.b + (match.b.b - match.a.b) * t);
-        outData[idx + 3] = 255;
-      }
-    }
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = y * width + x;
+        const outIdx = i * 4;
 
-    // 2. Draw unmatched pixels fading out (from A) or fading in (from B)
-    for (const pA of pixelsA) {
-      if (!pA.matched && t < 0.5) {
-        const idx = (pA.y * width + pA.x) * 4;
-        if (outData[idx + 3] === 0) {
-          outData[idx] = pA.r; outData[idx + 1] = pA.g; outData[idx + 2] = pA.b;
-          outData[idx + 3] = Math.round(pA.a * (1 - t * 2));
+        // Tween SDF
+        const tweenedSDF = sdfA[i] * (1 - t) + sdfB[i] * t;
+
+        // If inside shape or exactly on boundary
+        if (tweenedSDF <= 0) {
+          // Sample nearest colors
+          const colorA = findClosestColor(dataA, x, y);
+          const colorB = findClosestColor(dataB, x, y);
+          
+          if (colorA[3] === 0 && colorB[3] === 0) continue;
+
+          let cA = colorA;
+          let cB = colorB;
+          if (colorA[3] === 0) cA = colorB;
+          if (colorB[3] === 0) cB = colorA;
+
+          // Simple sRGB cross-fade
+          outData[outIdx] = Math.round(cA[0] * (1 - t) + cB[0] * t);
+          outData[outIdx + 1] = Math.round(cA[1] * (1 - t) + cB[1] * t);
+          outData[outIdx + 2] = Math.round(cA[2] * (1 - t) + cB[2] * t);
+          outData[outIdx + 3] = 255;
         }
       }
     }
-    for (const pB of pixelsB) {
-      if (!pB.matched && t > 0.5) {
-        const idx = (pB.y * width + pB.x) * 4;
-        if (outData[idx + 3] === 0) {
-          outData[idx] = pB.r; outData[idx + 1] = pB.g; outData[idx + 2] = pB.b;
-          outData[idx + 3] = Math.round(pB.a * ((t - 0.5) * 2));
-        }
-      }
-    }
-
     results.push({ width, height, data: outData });
   }
 
