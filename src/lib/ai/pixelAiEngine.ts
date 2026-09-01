@@ -342,64 +342,49 @@ export function morphInBetweenFramesSync(
   const dataA = frameA.data;
   const dataB = frameB.data;
 
-  // Compute 2D Optical Flow motion displacement vectors (u, v) for every 4x4 macroblock
-  const blockSize = 4;
-  const searchRadius = 6;
-  const flowU = new Float32Array(width * height);
-  const flowV = new Float32Array(width * height);
+  // Extract non-transparent pixels as particles
+  const pixelsA: { x: number; y: number; r: number; g: number; b: number; a: number; matched?: boolean }[] = [];
+  const pixelsB: { x: number; y: number; r: number; g: number; b: number; a: number; matched?: boolean }[] = [];
 
-  for (let by = 0; by < height; by += blockSize) {
-    for (let bx = 0; bx < width; bx += blockSize) {
-      let bestSAD = Infinity;
-      let bestU = 0, bestV = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      if (dataA[idx + 3] > 10) {
+        pixelsA.push({ x, y, r: dataA[idx], g: dataA[idx + 1], b: dataA[idx + 2], a: dataA[idx + 3] });
+      }
+      if (dataB[idx + 3] > 10) {
+        pixelsB.push({ x, y, r: dataB[idx], g: dataB[idx + 1], b: dataB[idx + 2], a: dataB[idx + 3] });
+      }
+    }
+  }
 
-      for (let vy = -searchRadius; vy <= searchRadius; vy++) {
-        for (let ux = -searchRadius; ux <= searchRadius; ux++) {
-          let sad = 0;
-          for (let py = 0; py < blockSize; py++) {
-            for (let px = 0; px < blockSize; px++) {
-              const ax = bx + px;
-              const ay = by + py;
-              const bx_pos = ax + ux;
-              const by_pos = ay + vy;
+  // Find pairs (matching exact color first, then closest distance)
+  const matches = [];
+  for (let i = 0; i < pixelsA.length; i++) {
+    const pA = pixelsA[i];
+    let bestDist = Infinity;
+    let matchIdx = -1;
 
-              if (ax < width && ay < height && bx_pos >= 0 && bx_pos < width && by_pos >= 0 && by_pos < height) {
-                const aIdx = (ay * width + ax) * 4;
-                const bIdx = (by_pos * width + bx_pos) * 4;
-                const diffR = Math.abs(dataA[aIdx] - dataB[bIdx]);
-                const diffG = Math.abs(dataA[aIdx + 1] - dataB[bIdx + 1]);
-                const diffB = Math.abs(dataA[aIdx + 2] - dataB[bIdx + 2]);
-                const diffA = Math.abs(dataA[aIdx + 3] - dataB[bIdx + 3]);
-                sad += diffR + diffG + diffB + diffA * 2;
-              } else {
-                sad += 1000;
-              }
-            }
-          }
+    for (let j = 0; j < pixelsB.length; j++) {
+      const pB = pixelsB[j];
+      if (pB.matched) continue;
 
-          // Bias toward zero-motion for uniform/flat/transparent blocks to avoid ghosting
-          const motionPenalty = (ux * ux + vy * vy) * 0.05;
-          sad += motionPenalty;
-
-          if (sad < bestSAD) {
-            bestSAD = sad;
-            bestU = ux;
-            bestV = vy;
-          }
+      // Only match similar colors to preserve pixel boundaries
+      const colorDist = Math.abs(pA.r - pB.r) + Math.abs(pA.g - pB.g) + Math.abs(pA.b - pB.b);
+      if (colorDist < 20) {
+        const spatialDist = Math.hypot(pB.x - pA.x, pB.y - pA.y);
+        // Only allow matches within a reasonable movement radius (e.g. 15 pixels)
+        if (spatialDist < bestDist && spatialDist < 15) {
+          bestDist = spatialDist;
+          matchIdx = j;
         }
       }
+    }
 
-      // Populate flow vector field
-      for (let py = 0; py < blockSize; py++) {
-        for (let px = 0; px < blockSize; px++) {
-          const x = bx + px;
-          const y = by + py;
-          if (x < width && y < height) {
-            flowU[y * width + x] = bestU;
-            flowV[y * width + x] = bestV;
-          }
-        }
-      }
+    if (matchIdx !== -1) {
+      pixelsB[matchIdx].matched = true;
+      matches.push({ a: pA, b: pixelsB[matchIdx] });
+      pA.matched = true;
     }
   }
 
@@ -409,66 +394,37 @@ export function morphInBetweenFramesSync(
     const t = s / (steps + 1);
     const outData = new Uint8ClampedArray(width * height * 4);
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = y * width + x;
-        const pIdx = idx * 4;
+    // 1. Draw interpolated matched pixels
+    for (const match of matches) {
+      const tweenX = Math.round(match.a.x + (match.b.x - match.a.x) * t);
+      const tweenY = Math.round(match.a.y + (match.b.y - match.a.y) * t);
+      if (tweenX >= 0 && tweenX < width && tweenY >= 0 && tweenY < height) {
+        const idx = (tweenY * width + tweenX) * 4;
+        // Simple alpha blending for color
+        outData[idx] = Math.round(match.a.r + (match.b.r - match.a.r) * t);
+        outData[idx + 1] = Math.round(match.a.g + (match.b.g - match.a.g) * t);
+        outData[idx + 2] = Math.round(match.a.b + (match.b.b - match.a.b) * t);
+        outData[idx + 3] = 255;
+      }
+    }
 
-        const u = flowU[idx];
-        const v = flowV[idx];
-
-        const ax = Math.round(x - t * u);
-        const ay = Math.round(y - t * v);
-        const bx = Math.round(x + (1 - t) * u);
-        const by = Math.round(y + (1 - t) * v);
-
-        const hasA = ax >= 0 && ax < width && ay >= 0 && ay < height;
-        const hasB = bx >= 0 && bx < width && by >= 0 && by < height;
-
-        const aIdx = hasA ? (ay * width + ax) * 4 : -1;
-        const bIdx = hasB ? (by * width + bx) * 4 : -1;
-
-        const aOpaque = aIdx >= 0 && dataA[aIdx + 3] > 30;
-        const bOpaque = bIdx >= 0 && dataB[bIdx + 3] > 30;
-
-        if (!aOpaque && !bOpaque) {
-          outData[pIdx + 3] = 0;
-          continue;
+    // 2. Draw unmatched pixels fading out (from A) or fading in (from B)
+    for (const pA of pixelsA) {
+      if (!pA.matched && t < 0.5) {
+        const idx = (pA.y * width + pA.x) * 4;
+        if (outData[idx + 3] === 0) {
+          outData[idx] = pA.r; outData[idx + 1] = pA.g; outData[idx + 2] = pA.b;
+          outData[idx + 3] = Math.round(pA.a * (1 - t * 2));
         }
-
-        if (aOpaque && !bOpaque) {
-          if (t <= 0.5) {
-            outData[pIdx] = dataA[aIdx];
-            outData[pIdx + 1] = dataA[aIdx + 1];
-            outData[pIdx + 2] = dataA[aIdx + 2];
-            outData[pIdx + 3] = Math.round(dataA[aIdx + 3] * (1 - t * 1.5));
-          }
-          continue;
+      }
+    }
+    for (const pB of pixelsB) {
+      if (!pB.matched && t > 0.5) {
+        const idx = (pB.y * width + pB.x) * 4;
+        if (outData[idx + 3] === 0) {
+          outData[idx] = pB.r; outData[idx + 1] = pB.g; outData[idx + 2] = pB.b;
+          outData[idx + 3] = Math.round(pB.a * ((t - 0.5) * 2));
         }
-
-        if (!aOpaque && bOpaque) {
-          if (t >= 0.5) {
-            outData[pIdx] = dataB[bIdx];
-            outData[pIdx + 1] = dataB[bIdx + 1];
-            outData[pIdx + 2] = dataB[bIdx + 2];
-            outData[pIdx + 3] = Math.round(dataB[bIdx + 3] * (t * 1.5 - 0.5));
-          }
-          continue;
-        }
-
-        // Both opaque: interpolate in OKLab space
-        const labA = rgbToOKLab(dataA[aIdx], dataA[aIdx + 1], dataA[aIdx + 2]);
-        const labB = rgbToOKLab(dataB[bIdx], dataB[bIdx + 1], dataB[bIdx + 2]);
-
-        const mixL = (1 - t) * labA.L + t * labB.L;
-        const mixA = (1 - t) * labA.a + t * labB.a;
-        const mixB = (1 - t) * labA.b + t * labB.b;
-
-        const rgb = okLabToRGB(mixL, mixA, mixB);
-        outData[pIdx] = rgb.r;
-        outData[pIdx + 1] = rgb.g;
-        outData[pIdx + 2] = rgb.b;
-        outData[pIdx + 3] = 255;
       }
     }
 

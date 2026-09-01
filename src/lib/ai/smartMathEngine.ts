@@ -1269,112 +1269,15 @@ export function rotateWithRotSprite(
   height: number,
   angleDeg: number
 ): HTMLCanvasElement {
-  // 1. Scale 8x via Scale2X (AdvMAME2x three passes)
-  let currentCanvas = document.createElement('canvas');
-  currentCanvas.width = width;
-  currentCanvas.height = height;
-  const initCtx = currentCanvas.getContext('2d')!;
-  initCtx.imageSmoothingEnabled = false;
-  initCtx.drawImage(srcCtx.canvas, 0, 0);
+  const w = width;
+  const h = height;
+  const sData = srcCtx.getImageData(0, 0, w, h).data;
 
-  for (let pass = 0; pass < 3; pass++) {
-    currentCanvas = scale2XPass(currentCanvas);
-  }
-
-  // 2. High-res 8x rotation around center
-  const w8 = width * 8;
-  const h8 = height * 8;
-  const rotated8xCanvas = document.createElement('canvas');
-  rotated8xCanvas.width = w8;
-  rotated8xCanvas.height = h8;
-  const rotCtx = rotated8xCanvas.getContext('2d')!;
-  rotCtx.imageSmoothingEnabled = false;
-
-  const cx8 = w8 / 2;
-  const cy8 = h8 / 2;
-  const rad = (angleDeg * Math.PI) / 180;
-
-  rotCtx.translate(cx8, cy8);
-  rotCtx.rotate(rad);
-  rotCtx.translate(-cx8, -cy8);
-  rotCtx.drawImage(currentCanvas, 0, 0);
-
-  // 3. Majority-Voting Area Downsampler (64 subpixels per pixel)
-  const outputCanvas = document.createElement('canvas');
-  outputCanvas.width = width;
-  outputCanvas.height = height;
-  const outCtx = outputCanvas.getContext('2d')!;
-  outCtx.imageSmoothingEnabled = false;
-
-  const rot8Data = rotCtx.getImageData(0, 0, w8, h8).data;
-  const outImgData = outCtx.createImageData(width, height);
-  const outData = outImgData.data;
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const colorCounts = new Map<string, { count: number; r: number; g: number; b: number; a: number }>();
-      let opaqueCount = 0;
-
-      for (let sy = 0; sy < 8; sy++) {
-        for (let sx = 0; sx < 8; sx++) {
-          const subX = x * 8 + sx;
-          const subY = y * 8 + sy;
-          const sIdx = (subY * w8 + subX) * 4;
-
-          const a = rot8Data[sIdx + 3];
-          if (a > 30) {
-            opaqueCount++;
-            const r = rot8Data[sIdx];
-            const g = rot8Data[sIdx + 1];
-            const b = rot8Data[sIdx + 2];
-            const key = `${r},${g},${b}`;
-            const existing = colorCounts.get(key);
-            if (existing) {
-              existing.count++;
-            } else {
-              colorCounts.set(key, { count: 1, r, g, b, a });
-            }
-          }
-        }
-      }
-
-      const outIdx = (y * width + x) * 4;
-      // If at least 35% of the 8x8 block is covered, render the modal color
-      if (opaqueCount >= 22) {
-        let bestColor = { r: 0, g: 0, b: 0, a: 255 };
-        let maxCount = -1;
-        for (const entry of colorCounts.values()) {
-          if (entry.count > maxCount) {
-            maxCount = entry.count;
-            bestColor = entry;
-          }
-        }
-        outData[outIdx] = bestColor.r;
-        outData[outIdx + 1] = bestColor.g;
-        outData[outIdx + 2] = bestColor.b;
-        outData[outIdx + 3] = 255;
-      } else {
-        outData[outIdx + 3] = 0;
-      }
-    }
-  }
-
-  outCtx.putImageData(outImgData, 0, 0);
-  return outputCanvas;
-}
-
-function scale2XPass(srcCanvas: HTMLCanvasElement): HTMLCanvasElement {
-  const w = srcCanvas.width;
-  const h = srcCanvas.height;
-  const sCtx = srcCanvas.getContext('2d')!;
-  const sData = sCtx.getImageData(0, 0, w, h).data;
-
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = w * 2;
-  outCanvas.height = h * 2;
-  const oCtx = outCanvas.getContext('2d')!;
-  const oImgData = oCtx.createImageData(w * 2, h * 2);
-  const oData = oImgData.data;
+  // 1. Scale3X
+  const scale = 3;
+  const w3 = w * scale;
+  const h3 = h * scale;
+  const scaledData = new Uint8ClampedArray(w3 * h3 * 4);
 
   const getPixel = (x: number, y: number): [number, number, number, number] => {
     const cx = Math.max(0, Math.min(w - 1, x));
@@ -1383,47 +1286,87 @@ function scale2XPass(srcCanvas: HTMLCanvasElement): HTMLCanvasElement {
     return [sData[idx], sData[idx + 1], sData[idx + 2], sData[idx + 3]];
   };
 
-  const same = (p1: [number, number, number, number], p2: [number, number, number, number]): boolean => {
+  const same = (p1: [number, number, number, number], p2: [number, number, number, number]) => {
     return p1[0] === p2[0] && p1[1] === p2[1] && p1[2] === p2[2] && p1[3] === p2[3];
   };
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const P = getPixel(x, y);
-      const A = getPixel(x - 1, y);
-      const B = getPixel(x, y - 1);
-      const C = getPixel(x + 1, y);
-      const D = getPixel(x, y + 1);
+      const A = getPixel(x - 1, y - 1), B = getPixel(x, y - 1), C = getPixel(x + 1, y - 1);
+      const D = getPixel(x - 1, y),     E = getPixel(x, y),     F = getPixel(x + 1, y);
+      const G = getPixel(x - 1, y + 1), H = getPixel(x, y + 1), I = getPixel(x + 1, y + 1);
 
-      let E0 = P;
-      let E1 = P;
-      let E2 = P;
-      let E3 = P;
+      const out = [
+        E, E, E,
+        E, E, E,
+        E, E, E
+      ];
 
-      if (!same(B, D) && !same(A, C)) {
-        E0 = same(A, B) ? A : P;
-        E1 = same(B, C) ? C : P;
-        E2 = same(D, A) ? A : P;
-        E3 = same(D, C) ? C : P;
+      if (!same(B, H) && !same(D, F)) {
+        out[0] = same(D, B) ? D : E;
+        out[1] = (same(D, B) && !same(E, C)) || (same(B, F) && !same(E, A)) ? B : E;
+        out[2] = same(B, F) ? F : E;
+        out[3] = (same(D, B) && !same(E, G)) || (same(D, H) && !same(E, A)) ? D : E;
+        out[4] = E;
+        out[5] = (same(B, F) && !same(E, I)) || (same(H, F) && !same(E, C)) ? F : E;
+        out[6] = same(D, H) ? D : E;
+        out[7] = (same(D, H) && !same(E, I)) || (same(H, F) && !same(E, G)) ? H : E;
+        out[8] = same(H, F) ? F : E;
       }
 
-      const setOut = (ox: number, oy: number, p: [number, number, number, number]) => {
-        const oIdx = (oy * (w * 2) + ox) * 4;
-        oData[oIdx] = p[0];
-        oData[oIdx + 1] = p[1];
-        oData[oIdx + 2] = p[2];
-        oData[oIdx + 3] = p[3];
-      };
-
-      setOut(x * 2, y * 2, E0);
-      setOut(x * 2 + 1, y * 2, E1);
-      setOut(x * 2, y * 2 + 1, E2);
-      setOut(x * 2 + 1, y * 2 + 1, E3);
+      for (let sy = 0; sy < scale; sy++) {
+        for (let sx = 0; sx < scale; sx++) {
+          const sIdx = ((y * scale + sy) * w3 + (x * scale + sx)) * 4;
+          const pxColor = out[sy * 3 + sx];
+          scaledData[sIdx] = pxColor[0];
+          scaledData[sIdx + 1] = pxColor[1];
+          scaledData[sIdx + 2] = pxColor[2];
+          scaledData[sIdx + 3] = pxColor[3];
+        }
+      }
     }
   }
 
-  oCtx.putImageData(oImgData, 0, 0);
-  return outCanvas;
+  // 2. Inverse Mapping Rotation -> Direct Decimation
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = w;
+  outputCanvas.height = h;
+  const outCtx = outputCanvas.getContext('2d')!;
+  const outImgData = outCtx.createImageData(w, h);
+  const outData = outImgData.data;
+
+  const cx = w / 2;
+  const cy = h / 2;
+  const rad = (-angleDeg * Math.PI) / 180; // Inverse angle
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      // Find source pixel in 1x space
+      const dx = x - cx;
+      const dy = y - cy;
+      const srcX1 = cos * dx - sin * dy + cx;
+      const srcY1 = sin * dx + cos * dy + cy;
+
+      // Map to 3x space
+      const srcX3 = Math.round(srcX1 * scale);
+      const srcY3 = Math.round(srcY1 * scale);
+
+      const outIdx = (y * w + x) * 4;
+
+      if (srcX3 >= 0 && srcX3 < w3 && srcY3 >= 0 && srcY3 < h3) {
+        const srcIdx = (srcY3 * w3 + srcX3) * 4;
+        outData[outIdx] = scaledData[srcIdx];
+        outData[outIdx + 1] = scaledData[srcIdx + 1];
+        outData[outIdx + 2] = scaledData[srcIdx + 2];
+        outData[outIdx + 3] = scaledData[srcIdx + 3];
+      }
+    }
+  }
+
+  outCtx.putImageData(outImgData, 0, 0);
+  return outputCanvas;
 }
 
 // -----------------------------------------------------------------------------

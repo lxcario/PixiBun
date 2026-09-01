@@ -1173,7 +1173,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const commitFloatingSelection = useCallback(() => {
     if (!floatingSelection) return;
 
-    captureSnapshot('Commit Selection');
+    if (!currentStrokeSnapshotRef.current) {
+      captureSnapshot('Commit Selection');
+    }
     const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
     const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
     if (ctx) {
@@ -1542,10 +1544,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const coords = clientToCanvasCoords(e.clientX, e.clientY);
     if (!coords) return;
 
-    // Selection Tool Handlers
-    if (tools.activeTool === 'select-box') {
+    // Global Selection Drag Handler
+    if (tools.activeTool.startsWith('select-')) {
       const activeBox = floatingSelection || selection;
-
       if (
         activeBox &&
         coords.x >= activeBox.x &&
@@ -1553,6 +1554,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         coords.y >= activeBox.y &&
         coords.y < activeBox.y + activeBox.h
       ) {
+        // If it has an irregular mask, we can optionally check if they clicked a solid pixel.
+        // For now, dragging via bounding box is standard and easiest for users.
         if (!floatingSelection) {
           liftSelectionToFloating();
         }
@@ -1563,7 +1566,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         });
         return;
       }
+    }
 
+    if (tools.activeTool === 'select-box') {
       if (floatingSelection) {
         commitFloatingSelection();
       }
@@ -1693,8 +1698,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         if (ta > 30) {
           const replaceRgb = hexToRgba(primaryColor);
           for (let i = 0; i < data.length; i += 4) {
-            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i] === tb) {
+            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i + 2] === tb) {
+              data[i] = replaceRgb.r;
+              data[i + 1] = replaceRgb.g;
               data[i + 2] = replaceRgb.b;
+              data[i + 3] = replaceRgb.a;
             }
           }
           ctx.putImageData(imgData, 0, 0);

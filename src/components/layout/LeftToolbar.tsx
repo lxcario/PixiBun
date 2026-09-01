@@ -58,7 +58,6 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   const {
     tools,
     setActiveTool,
-    setBrushSize,
     primaryColor,
     secondaryColor,
     setPrimaryColor,
@@ -118,27 +117,6 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
           </div>
         ))}
 
-        {/* Quick Brush Size Selector */}
-        <div className="flex flex-col items-center gap-1 w-full pt-1.5 border-t border-[var(--desk-border)]">
-          <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] tracking-tighter">SIZE</span>
-          <div className="flex gap-1 items-center justify-center w-full">
-            {[1, 2, 3].map((sz) => (
-              <button
-                key={sz}
-                type="button"
-                onClick={() => setBrushSize(sz)}
-                className={`w-3.5 h-3.5 rounded-[1px] text-[8px] font-mono font-bold flex items-center justify-center cursor-pointer transition-colors ${
-                  tools.brushSize === sz
-                    ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
-                    : 'bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
-                }`}
-                title={`Brush Size ${sz}px`}
-              >
-                {sz}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* 2. Color Wells, Swap & Quick Palette Dock */}
