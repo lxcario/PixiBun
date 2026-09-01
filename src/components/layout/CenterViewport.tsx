@@ -585,29 +585,35 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const currentIdx = state.activeFrameIndex;
       const totalFrames = state.frames.length;
 
-      const ctxA = compositeSourceSnapshot();
-      if (!ctxA) return;
+      const frameA = state.frames[currentIdx];
+      if (!frameA) return;
 
       let nextIdx = (currentIdx + 1) % totalFrames;
       if (totalFrames === 1) {
         state.duplicateFrame(0);
         nextIdx = 1;
       }
-
       const frameB = state.frames[nextIdx];
-      const scratchB = document.createElement('canvas');
-      scratchB.width = canvasWidth;
-      scratchB.height = canvasHeight;
-      const ctxB = scratchB.getContext('2d')!;
-      ctxB.imageSmoothingEnabled = false;
 
-      frameB.layers.slice().reverse().forEach((l) => {
-        if (!l.visible) return;
-        const lCanvas = getOrCreateLayerCanvas(l.id);
-        ctxB.globalAlpha = l.opacity;
-        ctxB.globalCompositeOperation = l.blendMode;
-        ctxB.drawImage(lCanvas, 0, 0);
-      });
+      // Exclude ALL tagged layers (lighting, shadows, outlines) to morph the pure base artwork
+      const getCleanCtx = (frame: typeof frameA) => {
+        const scratch = document.createElement('canvas');
+        scratch.width = canvasWidth;
+        scratch.height = canvasHeight;
+        const ctx = scratch.getContext('2d')!;
+        ctx.imageSmoothingEnabled = false;
+        frame.layers.slice().reverse().forEach((l) => {
+          if (!l.visible || l.tag) return;
+          const lCanvas = getOrCreateLayerCanvas(l.id);
+          ctx.globalAlpha = l.opacity;
+          ctx.globalCompositeOperation = l.blendMode;
+          ctx.drawImage(lCanvas, 0, 0);
+        });
+        return ctx;
+      };
+
+      const ctxA = getCleanCtx(frameA);
+      const ctxB = getCleanCtx(frameB);
 
       const morphedCanvas = morphInBetweenFrames(ctxA, ctxB, canvasWidth, canvasHeight, 0.5);
 
@@ -616,8 +622,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const newFrame = updatedState.frames[updatedState.activeFrameIndex];
 
       if (newFrame) {
-        // Since we morph the composite, we should apply the result to the base layer and clear any higher layers
-        const baseLayer = newFrame.layers[newFrame.layers.length - 1];
+        const nonTaggedLayers = newFrame.layers.filter(l => !l.tag);
+        // Base layer is the bottom-most layer
+        const baseLayer = nonTaggedLayers[nonTaggedLayers.length - 1];
+        
         if (baseLayer) {
           const targetBuf = getOrCreateBuffer(baseLayer.id, canvasWidth, canvasHeight);
           const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
@@ -627,15 +635,29 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             tCtx.drawImage(morphedCanvas, 0, 0);
           }
         }
-        // Clear upper layers so they don't overlay the flat composite twice
-        for (let i = 0; i < newFrame.layers.length - 1; i++) {
-          const upperBuf = getOrCreateBuffer(newFrame.layers[i].id, canvasWidth, canvasHeight);
-          upperBuf.canvas.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
+        
+        // Clear other non-tagged layers so they don't overlay the flat composite twice
+        for (const l of nonTaggedLayers) {
+          if (l.id !== baseLayer?.id) {
+            const upperBuf = getOrCreateBuffer(l.id, canvasWidth, canvasHeight);
+            upperBuf.canvas.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
+          }
         }
       }
 
       renderComposite();
       bumpBufferVersion();
+
+      // Automatically re-apply photometric or optical pipelines to the new morphed frame!
+      if (frameA.layers.some(l => l.tag === 'photometric')) {
+        studioEvents.emit('pixibun:photometric-lighting', {});
+      }
+      if (frameA.layers.some(l => l.tag === 'optical-output')) {
+        studioEvents.emit('pixibun:volumetric-optics', {});
+      }
+      if (frameA.layers.some(l => l.tag === 'cast-shadow')) {
+        studioEvents.emit('pixibun:render-cast-shadow', {});
+      }
     };
 
     const handleAutoOutlineEvent = (e: Event) => {
