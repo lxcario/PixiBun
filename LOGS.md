@@ -577,3 +577,17 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 
 
+
+---
+
+## Phase 29 – SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
+**Delivered:**
+- **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Meijster's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
+- **Automated Morph Relighting Pipeline (src/components/layout/CenterViewport.tsx)**: Re-architected handleInBetweenFrameEvent to strip AI-generated layers (photometrics, drop shadows) prior to morphing via a pure getCleanCtx extraction. Automatically re-dispatches \pixibun:photometric-lighting\ and \pixibun:volumetric-optics\ events to dynamically shade the new frame, completely fixing the "muddy baked colors" artifact.
+- **RotSprite Artifact-Free Canvas Rotation (src/lib/ai/smartMathEngine.ts)**: Fixed floating-point holes created by native \ctx.rotate\ by implementing a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm (\otateWithRotSprite\).
+- **Selection Bounding Box & Undo History Fixes**: Fixed Lasso tool movement by isolating drag-boundary checks to \.startsWith('select-')\. Fixed Ctrl+Z restoration of dragged pixels by freezing the history snapshot pre-erasure in commitFloatingSelection.
+- **GIF Export Multiframe Rendering Bug (src/components/modals/ExportModal.tsx, src/lib/render/compositor.ts)**: Discovered the pooled \sharedOffscreenCanvas\ singleton was overwriting all frames with the last drawn frame during batch exports. Added \{ freshCanvas: true }\ allocation strategy during multi-frame composite jobs.
+- **GIF Delay Centisecond Clamping (src/lib/export/gifEncoderCore.ts)**: Clamped minimum GIF delay to \2\ centiseconds (\Math.max(2, ...)\) to prevent aggressive browser 100ms throttling penalties for ultra-fast animations.
+- **Test Coverage (	ests/exportScopeAndWorker.test.ts)**: Added comprehensive TestSprite verification tests and Jest unit tests for GIF export distinct chunk guarantees and delay clamping.
+
+**Status:** Complete

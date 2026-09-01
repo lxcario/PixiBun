@@ -1,12 +1,25 @@
-# 📜 PixiBun Atelier — Changelog
+# ðŸ“œ PixiBun Atelier â€” Changelog
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ---
 
-## [v1.2.0] — 2026-08-31
+## [v1.3.0] - 2026-09-01
 
-### ☀️ 2D Ray Marching & Physically Accurate Soft Shadows Engine
+### ✨ Rendering Pipeline & AI Morphing Rewrite
+- **Signed Distance Field (SDF) Morphing Engine (`src/lib/ai/pixelAiEngine.ts`)**: Replaced artifact-prone optical flow with Meijster's O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
+- **Smart Morph Relighting (`src/components/layout/CenterViewport.tsx`)**: Re-architected in-between generation to cleanly extract base artwork, perform the SDF morph, and automatically re-dispatch `pixibun:photometric-lighting` and `pixibun:volumetric-optics` passes so newly generated frames perfectly match the dynamic lighting of the scene.
+- **RotSprite Artifact-Free Canvas Rotation (`src/lib/ai/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
+- **GIF Export Multiframe Pooled Canvas Fix (`src/components/modals/ExportModal.tsx`, `src/lib/render/compositor.ts`)**: Passed `{ freshCanvas: true }` during multi-frame composite jobs, preventing the `sharedOffscreenCanvas` singleton from destructively overwriting all output frames with the final frame.
+- **GIF Delay Centisecond Clamping (`src/lib/export/gifEncoderCore.ts`)**: Added a lower bound of `2` centiseconds to GIF frame delays to bypass aggressive browser 100ms throttling penalties for fast animations.
+- **Selection Bounding Box & Undo History Restorations**: Fixed Lasso tool boundary drag locking and prevented `Ctrl+Z` hole-punching bugs by capturing snapshot buffers strictly pre-erasure.
+- **Test Suite Updates**: 123 tests passing. Added new unit tests for GIF chunk distinction and delay clamping.
+
+---
+
+## [v1.2.0] â€” 2026-08-31
+
+### â˜€ï¸ 2D Ray Marching & Physically Accurate Soft Shadows Engine
 - **Aaltonen Contact-Hardening Cone Tracing (`src/lib/ai/shadowRayMarcher.ts`)**: Implemented CPU-bound 2D sphere tracing directly over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) using Sebastian Aaltonen's tangent geometric correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$).
 - **Branchless $C^0$ Bilinear Field Interpolation (`sampleEDTBilinear`)**: Eliminates grid-stepping quantization and ray-stepping acne across fractional query coordinates.
 - **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with bulletproof `try...finally` deallocation guarantees.
@@ -17,9 +30,9 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
-## [v1.1.0] — 2026-08-30
+## [v1.1.0] â€” 2026-08-30
 
-### 🚀 Core Engine & Rendering Optimizations
+### ðŸš€ Core Engine & Rendering Optimizations
 - **Zero-GC Compositor Canvas Pooling**: Added `sharedOffscreenCanvas` singleton and `targetCanvas` parameter in `compositeFrame()`, eliminating dynamic canvas element creation during onion skinning, scrubbing, and frame compositing.
 - **TypedArray Buffer Pool (`src/lib/engine/bufferPool.ts`)**: Built a memory-bounded scratch buffer pool (`acquireFloat32Buffer`, `releaseFloat32Buffer`, `acquireInt32Buffer`, `releaseInt32Buffer`, clamped arrays) with zero-fill reset guarantees.
 - **Zero-GC EDT Distance Transform (`src/lib/ai/smartMathEngine.ts`)**: Refactored 1D parabolic envelope calculations in `computeSeparableEDT` and `dt1D` to borrow scratch buffers from `TypedArrayPool`.
@@ -30,11 +43,11 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Pixel-Perfect 8-Way Connectivity (`src/lib/canvas/rasterMath.ts`)**: Enforced Chebyshev distance connectivity check (`Math.abs(dx) <= 1 && Math.abs(dy) <= 1`) before dropping corner pixels.
 - **Async Autosave Serialization (`src/lib/project/serialize.ts`)**: Added `rasterizeLayerPngAsync` with non-blocking `canvas.toBlob()` and wired `buildProjectFileAsync()` to background autosave.
 
-### 🏗️ Architecture & State Management
+### ðŸ—ï¸ Architecture & State Management
 - **Strongly-Typed Event Bus (`src/lib/events/studioEvents.ts`)**: Created a typed TypeScript event pub/sub system with discriminated payloads for 23 studio actions.
 - **Image-to-Pixel-Art Hook (`src/hooks/usePixelizeEngine.ts`)**: Decomposed monolithic modal logic from `ImportModal.tsx` into a reusable, testable React hook.
 
-### 🌐 Web Platform, Accessibility & Security
+### ðŸŒ Web Platform, Accessibility & Security
 - **Node.js SSR Storage Warning**: Replaced bare `typeof localStorage !== 'undefined'` checks with `typeof window !== 'undefined' && window.localStorage` across `capture.ts` and `themeStore.ts`.
 - **Responsive Workspace Gate (< 1024px) (`src/components/layout/MobileStudioGate.tsx`)**: Added a tactile fallback screen with Bun mascot guiding users on small screens / mobile devices.
 - **Static Theme Initialization & Clean CSP Configuration**: Externalized theme bootstrapping script into `public/theme.js` with structured fallback error handling.
@@ -44,8 +57,9 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
-## [v1.0.0] — Initial Release
+## [v1.0.0] â€” Initial Release
 - Multi-layer timeline animation engine with customizable FPS and onion skinning.
 - Full artisan raster tools: Bresenham pen, dither brush, Wu 2:1 isometric guides, flood fill, bezier curves.
 - PixiBud Smart Studio: Photometric surface normal baking, Blinn-Phong lighting, volumetric sub-surface scattering, and autotiling.
 - Offline-first storage with Dexie IndexedDB and multi-engine export suite (PNG, GIF, Godot, Unity, Phaser 3).
+
