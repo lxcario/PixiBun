@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, JetBrains_Mono, Silkscreen } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
@@ -58,9 +59,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
       <head>
-        <script src="/theme.js" />
+        <Script src="/theme.js" strategy="beforeInteractive" />
       </head>
       <body className="bg-desk text-text-primary antialiased font-sans">
         <a

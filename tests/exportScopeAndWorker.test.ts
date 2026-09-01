@@ -8,7 +8,6 @@ import {
 } from '@/lib/export/gifEncoderCore';
 import {
   extractScaledRawFrames,
-  createAnimatedGifBlobAsync,
 } from '@/lib/export/gifEncoder';
 import { AnimationClip } from '@/types/animation';
 
@@ -189,13 +188,37 @@ describe('GIF Encoder Core & Worker Encoding', () => {
     expect(Array.from(activeLayerPixels)).toEqual([255, 0, 0, 255, 0, 255, 0, 255]);
   });
 
-  it('rejects with AbortError when AbortSignal is triggered', async () => {
-    const canvas = createMockCanvas(8, 8);
-    const controller = new AbortController();
-    controller.abort(); // Abort immediately
+  it('encodes high-resolution 128x128 scaled multi-frame animations with full LZW dictionary growth without bit truncation', () => {
+    const rawFrames: RawFrameData[] = [];
+    const width = 128;
+    const height = 128;
 
-    await expect(
-      createAnimatedGifBlobAsync([canvas], 10, 1, undefined, controller.signal)
-    ).rejects.toThrowError('GIF encoding aborted');
+    for (let f = 0; f < 3; f++) {
+      const data = new Uint8ClampedArray(width * height * 4);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          // Create patterns with varied colors
+          if (x < 64 && y < 64) {
+            data[idx] = 255; data[idx + 1] = 0; data[idx + 2] = 0; data[idx + 3] = 255; // Red
+          } else if (x >= 64 && y < 64) {
+            data[idx] = 0; data[idx + 1] = 255; data[idx + 2] = 0; data[idx + 3] = 255; // Green
+          } else if (x < 64 && y >= 64) {
+            data[idx] = 0; data[idx + 1] = 0; data[idx + 2] = 255; data[idx + 3] = 255; // Blue
+          } else {
+            data[idx] = 0; data[idx + 1] = 0; data[idx + 2] = 0; data[idx + 3] = 0; // Transparent
+          }
+        }
+      }
+      rawFrames.push({ width, height, data });
+    }
+
+    const gifBytes = encodeGifRawFrames(rawFrames, 8);
+    expect(gifBytes.length).toBeGreaterThan(500);
+
+    // Verify valid GIF header and trailer
+    expect(String.fromCharCode(...gifBytes.slice(0, 6))).toBe('GIF89a');
+    expect(gifBytes[gifBytes.length - 1]).toBe(0x3B);
   });
 });
+

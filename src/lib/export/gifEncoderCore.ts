@@ -163,19 +163,23 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
   const flushBlock = () => {
     if (block.length > 0) {
       out.push(block.length);
-      for (let i = 0; i < block.length; i++) out.push(block[i]);
+      for (let i = 0; i < block.length; i++) {
+        out.push(block[i]);
+      }
       block.length = 0;
     }
   };
 
   const writeBits = (code: number, size: number) => {
-    bitBuffer |= code << bitCount;
+    bitBuffer |= (code & ((1 << size) - 1)) << bitCount;
     bitCount += size;
     while (bitCount >= 8) {
       block.push(bitBuffer & 0xFF);
-      bitBuffer >>= 8;
+      bitBuffer >>>= 8;
       bitCount -= 8;
-      if (block.length === 255) flushBlock();
+      if (block.length === 255) {
+        flushBlock();
+      }
     }
   };
 
@@ -187,6 +191,7 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
     for (let i = 1; i < pixels.length; i++) {
       const c = pixels[i];
       const key = (prefix << 8) | c;
+
       if (dict.has(key)) {
         prefix = dict.get(key)!;
       } else {
@@ -194,7 +199,7 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
 
         if (dictSize < 4096) {
           dict.set(key, dictSize++);
-          if (dictSize === (1 << codeSize) && codeSize < 12) {
+          if (dictSize > (1 << codeSize) && codeSize < 12) {
             codeSize++;
           }
         } else {
@@ -212,11 +217,13 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
 
   writeBits(eoiCode, codeSize);
 
-  while (bitCount > 0) {
+  if (bitCount > 0) {
     block.push(bitBuffer & 0xFF);
-    bitBuffer >>= 8;
-    bitCount -= 8;
-    if (block.length === 255) flushBlock();
+    bitBuffer = 0;
+    bitCount = 0;
+    if (block.length === 255) {
+      flushBlock();
+    }
   }
   flushBlock();
   out.push(0);

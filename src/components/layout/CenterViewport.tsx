@@ -395,14 +395,16 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
     };
 
-    // Composite all visible layers (excluding a specific tag) into a scratch canvas
-    // for use as AI pipeline input. This avoids reading onion skins or editor chrome
-    // from mainCanvasRef, and excludes any existing output layer with the given tag
-    // so the pipeline always sees the original artwork, not its own previous output.
+    // Composite all visible layers into a scratch canvas for use as AI pipeline input.
+    // If an excludeTag is provided, we attempt to composite excluding that generated layer
+    // to allow cleanly re-shading from the base artwork. However, if the user painted/bucket-filled
+    // new pixels on the tagged layer (or if base layers have fewer pixels), we intelligently use
+    // the full composite so user artwork NEVER disappears.
     const compositeSourceSnapshot = (excludeTag?: string): CanvasRenderingContext2D | null => {
       const state = useStudioStore.getState();
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return null;
+
       const scratch = document.createElement('canvas');
       scratch.width = canvasWidth;
       scratch.height = canvasHeight;
@@ -410,6 +412,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       if (!sCtx) return null;
       sCtx.imageSmoothingEnabled = false;
 
+      // 1. Composite excluding the tag (base artwork)
       currentFrame.layers.slice().reverse().forEach((layer) => {
         if (!layer.visible) return;
         if (excludeTag && layer.tag === excludeTag) return;
@@ -418,6 +421,42 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         sCtx.globalCompositeOperation = layer.blendMode;
         sCtx.drawImage(lCanvas, 0, 0);
       });
+
+      // 2. Count opaque pixels in the non-tagged composite
+      const nonTaggedData = sCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      let nonTaggedPixels = 0;
+      for (let i = 3; i < nonTaggedData.length; i += 4) {
+        if (nonTaggedData[i] > 20) nonTaggedPixels++;
+      }
+
+      // 3. Composite ALL visible layers
+      const fullScratch = document.createElement('canvas');
+      fullScratch.width = canvasWidth;
+      fullScratch.height = canvasHeight;
+      const fullCtx = fullScratch.getContext('2d', { willReadFrequently: true });
+      if (!fullCtx) return sCtx;
+      fullCtx.imageSmoothingEnabled = false;
+
+      currentFrame.layers.slice().reverse().forEach((layer) => {
+        if (!layer.visible) return;
+        const lCanvas = getOrCreateLayerCanvas(layer.id);
+        fullCtx.globalAlpha = layer.opacity;
+        fullCtx.globalCompositeOperation = layer.blendMode;
+        fullCtx.drawImage(lCanvas, 0, 0);
+      });
+
+      const fullData = fullCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      let fullPixels = 0;
+      for (let i = 3; i < fullData.length; i += 4) {
+        if (fullData[i] > 20) fullPixels++;
+      }
+
+      // If full composite has more pixels than the non-tagged composite (meaning the user
+      // drew/filled new pixels on the active layer) or if non-tagged has 0 pixels, use full composite!
+      if (fullPixels > nonTaggedPixels || nonTaggedPixels === 0) {
+        return fullCtx;
+      }
+
       sCtx.globalAlpha = 1.0;
       sCtx.globalCompositeOperation = 'source-over';
       return sCtx;

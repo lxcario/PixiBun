@@ -66,6 +66,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     frames,
     activeFrameIndex,
     setActiveFrame,
+    reorderFrames,
     addFrame,
     duplicateFrame,
     deleteFrame,
@@ -87,10 +88,51 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const isPingPongForwardRef = useRef(true);
   const [isCreatingClip, setIsCreatingClip] = useState(false);
   const [newClipName, setNewClipName] = useState('New Clip');
+  const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(null);
+  const [dragOverFrameIndex, setDragOverFrameIndex] = useState<number | null>(null);
 
   const activeClip = clips.find(c => c.id === activeClipId);
   const minFrame = activeClip ? activeClip.startFrame : 0;
   const maxFrame = activeClip ? activeClip.endFrame : frames.length - 1;
+
+  // Frame Drag-and-Drop Reordering Handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', String(index));
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedFrameIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverFrameIndex !== index) {
+      setDragOverFrameIndex(index);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, index: number) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    if (dragOverFrameIndex === index) {
+      setDragOverFrameIndex(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceIndexStr = e.dataTransfer.getData('text/plain');
+    const sourceIndex = sourceIndexStr ? parseInt(sourceIndexStr, 10) : draggedFrameIndex;
+
+    if (sourceIndex !== null && !isNaN(sourceIndex) && sourceIndex !== targetIndex) {
+      reorderFrames(sourceIndex, targetIndex);
+    }
+    setDraggedFrameIndex(null);
+    setDragOverFrameIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedFrameIndex(null);
+    setDragOverFrameIndex(null);
+  };
 
   // Playback timer loop scoped to active clip or entire frame stack
   useEffect(() => {
@@ -397,27 +439,40 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           </div>
         )}
 
-        {/* Frame Thumbnail Reel */}
+        {/* Frame Thumbnail Reel (with Click & Drag Reordering) */}
         <div className="flex items-center gap-2">
           {frames.map((frame, index) => {
             const isActive = index === activeFrameIndex;
             const isInsideClip = activeClip ? (index >= activeClip.startFrame && index <= activeClip.endFrame) : true;
+            const isBeingDragged = draggedFrameIndex === index;
+            const isDropTarget = dragOverFrameIndex === index && draggedFrameIndex !== index;
 
             return (
               <button
                 type="button"
                 key={frame.id}
+                draggable={!isPlaying}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={(e) => handleDragLeave(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
                 onClick={() => setActiveFrame(index)}
-                aria-label={`Select frame ${index + 1}`}
-                className={`relative min-w-[52px] h-12 rounded-[2px] border-2 cursor-pointer transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
-                  isActive
+                aria-label={`Select frame ${index + 1}. Drag to reorder or replace.`}
+                title="Click to select, drag to replace/reorder"
+                className={`relative min-w-[52px] h-12 rounded-[2px] border-2 cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
+                  isBeingDragged
+                    ? 'opacity-30 scale-95 border-dashed border-[#f0be7c] bg-[#1a0f2e]'
+                    : isDropTarget
+                    ? 'border-[#f0be7c] bg-[#3d2757] ring-2 ring-[#f0be7c] shadow-[0_0_12px_rgba(240,190,124,0.6)] scale-105'
+                    : isActive
                     ? 'bg-[#2c1e40] border-[#f0be7c] shadow-[0_2px_0_#130e20]'
                     : isInsideClip
-                    ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[#2e2040]'
+                    ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:border-[#f0be7c]/60'
                     : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'
                 }`}
               >
-                <div className="w-full flex justify-between items-center text-[9px] font-mono leading-none">
+                <div className="w-full flex justify-between items-center text-[9px] font-mono leading-none pointer-events-none">
                   <span className={isActive ? 'text-[#f0be7c] font-bold' : 'text-[var(--text-heading)] font-bold'}>
                     #{index + 1}
                   </span>
@@ -427,7 +482,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 </div>
 
                 {/* Frame Canvas Pixel Thumbnail */}
-                <FrameThumbnail frameIndex={index} isActive={isActive} />
+                <div className="pointer-events-none">
+                  <FrameThumbnail frameIndex={index} isActive={isActive} />
+                </div>
               </button>
             );
           })}

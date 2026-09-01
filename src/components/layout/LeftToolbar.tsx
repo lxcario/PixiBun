@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { ToolType } from '@/types/tools';
@@ -70,6 +70,11 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   } = useStudioStore();
 
   const [colorPickerTarget, setColorPickerTarget] = useState<'primary' | 'secondary' | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
@@ -175,7 +180,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
         </button>
 
         {/* Recent Colors Strip */}
-        {recentColors.length > 0 && (
+        {isMounted && recentColors.length > 0 && (
           <div className="w-full pt-1 pb-1 flex flex-col items-center gap-1">
             <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] w-full text-center tracking-tighter">RECENT</div>
             <div className="grid grid-cols-2 gap-1 w-full max-h-28 overflow-y-auto pr-0.5">
