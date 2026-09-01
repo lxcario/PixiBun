@@ -918,7 +918,6 @@ export const useStudioStore = create<StudioState>()(
       },
 
       loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
-        clearAllBuffers();
         set(state => {
           if (projectId) state.currentProjectId = projectId;
           if (projectData.name) state.projectName = projectData.name;
