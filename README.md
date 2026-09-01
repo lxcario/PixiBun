@@ -202,7 +202,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 123 Vitest unit and component tests in Happy-DOM across 20 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 124 Vitest unit and component tests in Happy-DOM across 20 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -221,7 +221,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v3) | Multi-project workspace management, thumbnail previews, and persistent storage API guard. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 123 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 124 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
 
 ---
 
@@ -229,6 +229,6 @@ PixiBun is engineered as a true production-grade, local-first web application:
 
 * **100% Local-First & Zero Telemetry:** No accounts, no telemetry, no tracking, no subscriptions.
 * **100% Offline-Capable:** Runs fully without an active internet connection via installed PWA.
-* **License:** [MIT](./LICENSE) — open source and free forever.
+* **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
 
 *Handcrafted with pixels, coffee, and care.* ✦

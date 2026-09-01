@@ -39,7 +39,7 @@
 | Smart Graphics Intelligence | **Deterministic On-Device Math Engine (`smartMathEngine.ts`)** | 2.5D Felzenszwalb EDT lighting, Sobel normal maps, Minecraft 3D skin shading, and optical flow morphing with 0 cloud dependencies, 0 latency, and 100% offline privacy. |
 
 ## Repo & Environments
-- **GitHub repo:** Private
+- **GitHub repo:** Private (Planned Open Source MIT release)
 - **Environments:** 
   - `dev`: Local development (`localhost:3000`) and static PWA build with 100% offline capability
   - `production`: Vercel edge deployment with secure server-side environment variables

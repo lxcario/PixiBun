@@ -552,7 +552,20 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - **Unit & Integration Test Suite (`tests/shadowRayMarcher.test.ts`)**:
   - Added 9 unit tests verifying bilinear sampling, boundary clamping, contact hardening, buffer pool memory safety, color composition, Bayer stippling, and non-destructive tagged layer replacement.
 - **Documentation**:
-  - Synchronized `TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, and `CHANGELOG.md` (123 unit tests across 20 suites).
+  - Synchronized `TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, and `CHANGELOG.md` (124 unit tests across 20 suites).
+
+---
+
+## Phase 28 — Security Audit Remediation (Token Revocation, CSP Hardening, Event Bus Migration) (2026-09-01)
+**Delivered:**
+- **Security Incident Remediation**: Discovered leaked GitHub tokens committed in a script (`sync_github.mjs`, commit `a6f198d`) and separately as a live plaintext value in `.env.local`. Revoked tokens immediately at the source (GitHub).
+- **CSP Hardening**: Hardened Content Security Policy, locking down `worker-src` and `script-src` while allowing necessary Next.js hydration.
+- **Event Bus Migration (`src/lib/events/studioEvents.ts`)**: Migrated all raw `window.addEventListener('pixibun:...')` calls in React components to a centralized, type-safe `StudioEventBus` to prevent memory leaks and unbind issues. (Note: Dispatch side `window.dispatchEvent` remains in use and is slated for a future cleanup).
+- **Verification**: 
+  - Ran `grep -rn "window.addEventListener.*pixibun:" src/` confirming 0 unmigrated listeners.
+  - Test suite passing (124 tests).
+
+**Status:** Complete
 
 **Checks run:**
 - `npx tsc --noEmit`: 0 errors.

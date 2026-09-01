@@ -1,4 +1,4 @@
-﻿# 🐇 PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
+# 🐇 PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
 
 `	ext
   /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
@@ -75,14 +75,14 @@ sequenceDiagram
     Signal-->>LivePop: Refresh Live Preview (Zero React Re-renders)
 `
 
-### 1. ufferRegistry.ts (Layer Buffer Store)
-* Layer pixels are stored in a Map<string, { canvas: HTMLCanvasElement | OffscreenCanvas, ctx: CanvasRenderingContext2D }>.
-* When a layer is created (getOrCreateBuffer), an independent OffscreenCanvas is allocated at canvas dimensions.
-* **Memory Safety:** When a layer is deleted, deleteBuffers(layerId) cleans up references immediately.
-* **9-Point Anchor Resizing (esizeAllBuffers):** Canvas dimensions resize relative to 9 anchor points (	op-left, center, ottom-right, etc.) with nearest-neighbor resampling options.
+### 1. `bufferRegistry.ts` (Layer Buffer Store)
+* Layer pixels are stored in a `Map<string, { canvas: HTMLCanvasElement | OffscreenCanvas, ctx: CanvasRenderingContext2D }>`.
+* When a layer is created (`getOrCreateBuffer`), an independent OffscreenCanvas is allocated at canvas dimensions.
+* **Memory Safety:** When a layer is deleted, `deleteBuffers(layerId)` cleans up references immediately.
+* **9-Point Anchor Resizing (`resizeAllBuffers`):** Canvas dimensions resize relative to 9 anchor points (`top-left`, center, `bottom-right`, etc.) with nearest-neighbor resampling options.
 
-### 2. ufferVersion Reactive Signal
-* On stroke completion, fill, or smart shading pass, umpBufferVersion() notifies subscribers.
+### 2. `bufferVersion` Reactive Signal
+* On stroke completion, fill, or smart shading pass, `bumpBufferVersion()` notifies subscribers.
 * FloatingPreviewWindow listens to this integer counter, updating live previews without triggering React re-renders.
 
 ### 3. Undo/Redo History Engine
@@ -100,13 +100,13 @@ Standard Bresenham produces duplicate "L" corner pixels on rapid turns. A 3-poin
 
 \text{If } (x_i = x_{i-1} \lor y_i = y_{i-1}) \land (x_{i+1} \ne x_i \land y_{i+1} \ne y_i) \implies \text{Prune middle pixel}
 
-### 2. Wu's Quantized 2:1 Isometric Line (getIsometric2p1Line)
-For standard .565^\circ$ isometric projections:
+### 2. Wu's Quantized 2:1 Isometric Line (`getIsometric2p1Line`)
+For standard $26.565^\circ$ isometric projections:
 
 y_{\text{iso}} = y_0 + \text{sign}(dy) \cdot \left\lfloor \frac{|x - x_0|}{2} \right\rfloor
 
-### 3. Rational Bezier Curves (getQuadraticBezierPoints)
-Calculates integer de Casteljau curves across 3 control points (, P_1, P_2$):
+### 3. Rational Bezier Curves (`getQuadraticBezierPoints`)
+Calculates integer de Casteljau curves across 3 control points ($P_0, P_1, P_2$):
 
 B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]
 
@@ -148,7 +148,7 @@ Distance values are converted to volumetric dome heights via $\gamma = 0.5$ powe
 H(x, y) = \left(\frac{D(x, y)}{\max D}\right)^{0.5}
 
 ### 3. Analytical Tangent-Space Normals & Sobel Gradients
-Discrete \times3$ Sobel kernels derive directional gradients (, G_y$):
+Discrete $3\times3$ Sobel kernels derive directional gradients ($G_x, G_y$):
 
 \mathbf{N}(x, y) = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}
 

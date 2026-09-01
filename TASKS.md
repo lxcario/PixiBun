@@ -1,5 +1,18 @@
 # Build Plan — PixiBun
 
+## Phase 28 — Security Audit Remediation (Token Revocation, CSP Hardening, Event Bus Migration)
+**Goal:** Address critical security and architectural flaws discovered during audit. Revoke leaked tokens, harden Content Security Policy (CSP), and migrate raw `window.addEventListener` usage to a structured event bus.
+
+**Deliverables:**
+- [x] Security Incident Remediation: Discovered leaked GitHub tokens committed in a script (`sync_github.mjs`, commit `a6f198d`) and separately as a live plaintext value in `.env.local`; confirmed revocation on GitHub.
+- [x] CSP Hardening: Adjusted `unsafe-inline` and `worker-src` directives for strict production security while maintaining Next.js hydration and web worker functionality.
+- [x] Event Bus Migration (`src/lib/events/studioEvents.ts`): Replaced raw `window.addEventListener('pixibun:...')` with strongly typed `StudioEventBus` subscription model across components (dispatch side migration planned for future).
+- [x] Verification: Confirmed 0 raw `window.addEventListener('pixibun:...')` calls remain in `src/`. Confirmed tests pass (124 tests).
+
+**Status:** Complete (2026-09-01)
+
+---
+
 ## Phase 27 — 2D Ray Marching & Physically Accurate Soft Shadows (Aaltonen Cone Tracing Engine)
 **Goal:** Implement a GPU-independent, deterministic on-device 2D Ray Marching and Physically Accurate Soft Shadows engine. Operates over $O(N)$ Euclidean Distance Fields (EDT) utilizing Sebastian Aaltonen's contact-hardening tangent correction and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$) with cubic Hermite smoothstep falloff, Bayer matrix ordered dithering stippling, and non-destructive tagged layer output (`Layer.tag = 'cast-shadow'`).
 

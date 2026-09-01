@@ -278,7 +278,11 @@ export function executeRaymarchedCastShadowPipeline(
 
         // Shadow alpha is proportional to (1.0 - visibility) * opacity
         const shadowFactor = (1.0 - vis) * opacity;
-        const alpha = Math.round(shadowFactor * 255);
+        let alpha = Math.round(shadowFactor * 255);
+
+        if (edt[idx] <= 0) {
+          alpha = 0;
+        }
 
         if (alpha > 0) {
           data[pIdx] = sr;

@@ -2403,32 +2403,19 @@ export function executeVolumetricOpticalPipeline(
         // Stepped Cel-Banding Quantization Mode (2, 3, or 4 Tones)
         const toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
 
-        let targetL = baseLch.L;
-        let targetC = baseLch.C;
-        let targetH = baseLch.h;
+        const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
+        const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
+        const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
 
-        if (toneStep >= numTones - 1) {
-          // Specular Glint / Fresnel Rim Tone (Warm Sun / Amber shift)
-          targetL = Math.min(1.0, baseLch.L * 1.35 + 0.12);
-          targetC = baseLch.C * 1.15;
-          targetH = (baseLch.h - 15 + 360) % 360;
-        } else if (toneStep === 0) {
-          // Deep Atmospheric Shadow (Cool Indigo / Violet shift)
-          targetL = baseLch.L * 0.62;
-          targetC = baseLch.C * 0.90;
-          targetH = (baseLch.h + 28) % 360;
-        } else {
-          // Midtone / SSS Resonant Tone
-          targetL = baseLch.L * 0.95;
-          targetC = baseLch.C * 1.05;
-        }
+        const toneFactor = toneStep / Math.max(1, numTones - 1);
 
-        const modulatedLab = oklchToOKLab(targetL, targetC, targetH);
-        const modulatedRgb = okLabToRGB(modulatedLab.L, modulatedLab.a, modulatedLab.b);
+        const qR = origR * 0.4 + (finalR - origR * 0.4) * toneFactor;
+        const qG = origG * 0.4 + (finalG - origG * 0.4) * toneFactor;
+        const qB = origB * 0.4 + (finalB - origB * 0.4) * toneFactor;
 
-        r255 = modulatedRgb.r;
-        g255 = modulatedRgb.g;
-        b255 = modulatedRgb.b;
+        r255 = Math.max(0, Math.min(255, Math.round(qR * 255)));
+        g255 = Math.max(0, Math.min(255, Math.round(qG * 255)));
+        b255 = Math.max(0, Math.min(255, Math.round(qB * 255)));
       }
 
       // E. Optional Palette Snapping
