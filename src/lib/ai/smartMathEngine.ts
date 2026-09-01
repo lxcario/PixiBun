@@ -2392,9 +2392,9 @@ export function executeVolumetricOpticalPipeline(
 
       if (celTones === 'smooth') {
         // Continuous lighting mode for VFX overlays
-        const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
-        const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
-        const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
+        const finalR = origR * 0.4 + (origR * diffuseLight * 0.6) + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
+        const finalG = origG * 0.4 + (origG * diffuseLight * 0.6) + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
+        const finalB = origB * 0.4 + (origB * diffuseLight * 0.6) + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
 
         r255 = Math.max(0, Math.min(255, Math.round(finalR * 255)));
         g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
@@ -2403,9 +2403,9 @@ export function executeVolumetricOpticalPipeline(
         // Stepped Cel-Banding Quantization Mode (2, 3, or 4 Tones)
         const toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
 
-        const finalR = origR * 0.4 + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
-        const finalG = origG * 0.4 + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
-        const finalB = origB * 0.4 + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
+        const finalR = origR * 0.4 + (origR * diffuseLight * 0.6) + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
+        const finalG = origG * 0.4 + (origG * diffuseLight * 0.6) + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
+        const finalB = origB * 0.4 + (origB * diffuseLight * 0.6) + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
 
         const toneFactor = toneStep / Math.max(1, numTones - 1);
 
