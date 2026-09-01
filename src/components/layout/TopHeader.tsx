@@ -8,6 +8,7 @@ import { BunMascot } from '@/components/ui/BunMascot';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ImportPayload } from '@/components/modals/ImportModal';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
+import { AutosaveIndicator } from '@/components/ui/AutosaveIndicator';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
@@ -171,10 +172,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         )}
 
         {/* Autosave Status Pill */}
-        <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[11px] font-mono text-[var(--text-body)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#f0be7c] animate-pulse" />
-          <span>Saved</span>
-        </div>
+        <AutosaveIndicator />
 
         {/* Offline Status Badge */}
         <OfflineIndicator />

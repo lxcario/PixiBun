@@ -14,7 +14,7 @@ import {
 } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
-import { getOrCreateBuffer, deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { HistoryStep } from '@/types/canvas';
 import { createHistoryEngine, HistoryEngine } from '@/lib/engine/historyEngine';
 import { ImportPayload } from '@/components/modals/ImportModal';
@@ -51,13 +51,8 @@ import { compositeFrame } from '@/lib/render/compositor';
 import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { studioEvents } from '@/lib/events/studioEvents';
-
-interface SelectionBox {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+import { useRadialContextMenu } from '@/hooks/useRadialContextMenu';
+import { RadialContextMenu } from '@/components/studio/RadialContextMenu';
 
 interface FloatingSelection {
   canvas: HTMLCanvasElement;
@@ -135,6 +130,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const [lassoPoints, setLassoPoints] = useState<Point[]>([]);
   const [lockedWarning, setLockedWarning] = useState(false);
   const lockedWarningTimerRef = useRef<number | null>(null);
+
+  const radialMenu = useRadialContextMenu();
+
   // Initialize or fetch the offscreen canvas for a layer.
   const getOrCreateLayerCanvas = useCallback(
     (layerId: string): HTMLCanvasElement =>
@@ -2039,6 +2037,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onContextMenu={radialMenu.handleContextMenu}
       style={{ touchAction: 'none' }}
       className={`relative flex-1 h-full overflow-hidden bg-[var(--desk-bg)] transition-colors duration-300 flex items-center justify-center cursor-crosshair select-none ${
         isPanning ? 'cursor-grab active:cursor-grabbing' : ''
@@ -2183,6 +2182,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           {frames[activeFrameIndex]?.layers.length || 1} Layers
         </span>
       </div>
+
+      <RadialContextMenu
+        isOpen={radialMenu.isOpen}
+        position={radialMenu.position}
+        onClose={radialMenu.closeMenu}
+      />
     </main>
   );
 };

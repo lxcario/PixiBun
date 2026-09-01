@@ -1,5 +1,25 @@
 # Build Plan — PixiBun
 
+## Phase 29 — UX Enhancement: Radial Menu, Progressive Disclosure, Recent Colors, Autosave Feedback
+**Goal:** Implement four targeted UX improvements focusing on Fitts's Law, cognitive load reduction, recognition over recall, and system status visibility.
+
+**Deliverables:**
+- [x] Recent Colors: Implemented global LRU history in `studioStore.ts` tracking up to 8 unique colors decoupled from project state, synced via `localStorage`, and rendered dynamically in `LeftToolbar.tsx`.
+- [x] Autosave Indicator: Replaced the static header pill with `AutosaveIndicator.tsx`. Connected directly to `runAutosave` via `studioStore.ts`'s `saveStatus` to accurately pulse during writes, hold 'Saved' state briefly, and clearly flag failures with 'Save failed!' error UI on IndexedDB rejection.
+- [x] Radial Context Menu: Created a dedicated floating `RadialContextMenu.tsx` hooked into `CenterViewport.tsx` via `useRadialContextMenu.ts`. Captures unmapped right-clicks and 500ms touch long-presses to display tools (Pen, Eraser, Fill, Eyedropper) and color swatches right at the cursor, preserving full keyboard navigability.
+- [x] Progressive Disclosure: Refactored bulky parameter sections inside `RightInspector.tsx` (Sobel Normals, Aaltonen Shadows) behind native collapsible `<button>` toggles tied to boolean states, vastly reducing default visual clutter in the PixiBud AI studio.
+- [x] Unit Tests: Wrote `recentColors.test.ts` to verify LRU order/caps/de-duplication, and `autosaveStatus.test.tsx` simulating storage failure to verify exact `saveStatus === 'error'` propagation. Tested against `vitest` with `happy-dom` environment.
+- [x] Verification: Successfully executed `npm run typecheck`, `npm run lint`, and `npm test` verifying 0 errors and 129 passing tests across 23 suites.
+
+**Acceptance criteria:**
+- `npm run lint` → 0 errors (fixed JSX-a11y and unused var warnings).
+- `npm run typecheck` → 0 errors.
+- `npm test` → 129/129 tests pass across 23 test suites.
+- Code conforms directly to locked implementation decisions (no new project fields, no DOM pollution).
+
+**Status:** Complete (2026-09-01)
+
+---
 ## Phase 28 — Security Audit Remediation (Token Revocation, CSP Hardening, Event Bus Migration)
 **Goal:** Address critical security and architectural flaws discovered during audit. Revoke leaked tokens, harden Content Security Policy (CSP), and migrate raw `window.addEventListener` usage to a structured event bus.
 

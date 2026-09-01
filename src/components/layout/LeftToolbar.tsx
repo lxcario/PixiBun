@@ -61,6 +61,7 @@ export const LeftToolbar: React.FC = () => {
     swapColors,
     palettes,
     currentPaletteId,
+    recentColors,
   } = useStudioStore();
 
   const [colorPickerTarget, setColorPickerTarget] = useState<'primary' | 'secondary' | null>(null);
@@ -132,6 +133,35 @@ export const LeftToolbar: React.FC = () => {
         >
           [X]
         </button>
+
+        {/* Recent Colors Strip */}
+        {recentColors.length > 0 && (
+          <div className="w-full pt-1 pb-1 flex flex-col items-center gap-1">
+            <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] w-full text-center tracking-tighter">RECENT</div>
+            <div className="grid grid-cols-2 gap-1 w-full max-h-28 overflow-y-auto pr-0.5">
+              {recentColors.map((color, idx) => {
+                const isPrimary = color.toLowerCase() === primaryColor.toLowerCase();
+                return (
+                  <button
+                    key={`recent-${color}-${idx}`}
+                    onClick={() => setPrimaryColor(color)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setSecondaryColor(color);
+                    }}
+                    style={{ backgroundColor: color }}
+                    className={`w-full h-3.5 rounded-[1px] border transition-transform hover:scale-110 cursor-pointer ${
+                      isPrimary
+                        ? 'border-[#ffffff] ring-1 ring-[#f0be7c] scale-105'
+                        : 'border-[#140d1f]'
+                    }`}
+                    title={`${color} (Recent) (L: Primary | R: Secondary)`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Quick Palette 8-Swatch Dock */}
         <div className="w-full pt-1 border-t border-[var(--desk-border)]/60 flex flex-col items-center gap-1">

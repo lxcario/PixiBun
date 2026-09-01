@@ -2388,7 +2388,7 @@ export function executeVolumetricOpticalPipeline(
       let b255: number;
 
       const baseLab = rgbToOKLab(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
-      const baseLch = okLabToOKLCH(baseLab.L, baseLab.a, baseLab.b);
+      const _baseLch = okLabToOKLCH(baseLab.L, baseLab.a, baseLab.b);
 
       if (celTones === 'smooth') {
         // Continuous lighting mode for VFX overlays

@@ -108,6 +108,10 @@ interface StudioState {
   // Buffer mutation signal (increments on every pixel-level change to any layer)
   bufferVersion: number;
   bumpBufferVersion: () => void;
+  
+  // Autosave status
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;
 
   // Selection
   selection: { x: number; y: number; w: number; h: number } | null;
@@ -158,6 +162,10 @@ interface StudioState {
   selectPalette: (id: string) => void;
   addCustomColorToPalette: (paletteId: string, color: string) => void;
   setCustomRamps: (ramps: ColorRamp[]) => void;
+
+  // Recent Colors (Global, decoupled from project)
+  recentColors: string[];
+  addRecentColor: (color: string) => void;
 
   // Layer Operations
   addLayer: (name?: string, tag?: string) => void;
@@ -273,6 +281,7 @@ export const useStudioStore = create<StudioState>()(
       palettes: PRESET_PALETTES,
       currentPaletteId: 'alabaster-wisteria-8',
       customRamps: [],
+      recentColors: typeof window !== 'undefined' && window.localStorage ? JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]') : [],
 
       frames: [defaultInitialFrame],
       activeFrameIndex: 0,
@@ -323,6 +332,13 @@ export const useStudioStore = create<StudioState>()(
       bumpBufferVersion: () => {
         set(state => {
           state.bufferVersion += 1;
+        });
+      },
+
+      saveStatus: 'idle',
+      setSaveStatus: (status) => {
+        set(state => {
+          state.saveStatus = status;
         });
       },
 
@@ -564,11 +580,27 @@ export const useStudioStore = create<StudioState>()(
         set(state => {
           state.primaryColor = color;
         });
+        get().addRecentColor(color);
       },
 
       setSecondaryColor: color => {
         set(state => {
           state.secondaryColor = color;
+        });
+        get().addRecentColor(color);
+      },
+
+      addRecentColor: color => {
+        set(state => {
+          const hex = color.toUpperCase();
+          state.recentColors = state.recentColors.filter((c: string) => c !== hex);
+          state.recentColors.unshift(hex);
+          if (state.recentColors.length > 8) {
+            state.recentColors.pop();
+          }
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.setItem('pixibun_recent_colors', JSON.stringify(state.recentColors));
+          }
         });
       },
 

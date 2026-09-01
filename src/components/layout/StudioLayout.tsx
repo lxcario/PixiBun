@@ -74,6 +74,8 @@ export const StudioLayout: React.FC = () => {
   const runAutosave = useCallback(async () => {
     if (autosaveInFlightRef.current) return;
     autosaveInFlightRef.current = true;
+    const { setSaveStatus } = useStudioStore.getState();
+    setSaveStatus('saving');
     try {
       const project = await buildProjectFileAsync();
       const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
@@ -90,8 +92,16 @@ export const StudioLayout: React.FC = () => {
       if (success) {
         autosaveFailCountRef.current = 0;
         setAutosaveError(null);
+        setSaveStatus('saved');
+        // Reset to idle after a short delay so it doesn't stay 'saved' forever
+        setTimeout(() => {
+          if (useStudioStore.getState().saveStatus === 'saved') {
+            useStudioStore.getState().setSaveStatus('idle');
+          }
+        }, 2000);
       } else {
         autosaveFailCountRef.current += 1;
+        setSaveStatus('error');
         if (autosaveFailCountRef.current >= 2) {
           setAutosaveError(
             'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
@@ -101,6 +111,7 @@ export const StudioLayout: React.FC = () => {
     } catch (err) {
       console.error('Autosave failed:', err);
       autosaveFailCountRef.current += 1;
+      setSaveStatus('error');
       if (autosaveFailCountRef.current >= 2) {
         setAutosaveError(
           'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'

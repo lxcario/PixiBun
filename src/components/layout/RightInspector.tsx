@@ -75,6 +75,8 @@ export const RightInspector: React.FC = () => {
   const [shadowOpacity, setShadowOpacity] = useState<number>(0.6);
   const [shadowColor, setShadowColor] = useState<string>('#180B26');
   const [shadowDitherMode, setShadowDitherMode] = useState<'none' | '2x2' | '4x4' | '8x8'>('4x4');
+  const [opticsExpanded, setOpticsExpanded] = useState(false);
+  const [advancedLightingExpanded, setAdvancedLightingExpanded] = useState(false);
 
   // 1. Module 1: Full Photometric Lighting & Normal Mapping Pipeline
   const handleRenderPhotometricLighting = () => {
@@ -561,7 +563,18 @@ export const RightInspector: React.FC = () => {
               </select>
             </div>
 
+            {/* Advanced Lighting Toggle */}
+            <button
+              onClick={() => setAdvancedLightingExpanded(!advancedLightingExpanded)}
+              className="w-full flex items-center justify-between bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] hover:bg-[#2e2040] transition-colors cursor-pointer mt-1"
+            >
+              <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
+                {advancedLightingExpanded ? '▼ Sobel Normals & Lighting' : '▶ Sobel Normals & Lighting'}
+              </span>
+            </button>
+
             {/* Light Parameters (Azimuth, Elevation, Radius, Cavity AO, Dither Modulation) */}
+            {advancedLightingExpanded && (
             <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
               {/* Azimuth */}
               <div className="flex items-center justify-between text-xs font-mono">
@@ -657,6 +670,7 @@ export const RightInspector: React.FC = () => {
                 </span>
               </div>
             </div>
+            )}
 
             {/* Primary Action: Full Photometric Lighting */}
             <TactileButton
@@ -732,8 +746,19 @@ export const RightInspector: React.FC = () => {
               <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2D Cone Tracing</span>
             </div>
 
+            {/* Advanced Optics Toggle */}
+            <button
+              onClick={() => setOpticsExpanded(!opticsExpanded)}
+              className="w-full flex items-center justify-between bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] hover:bg-[#2e2040] transition-colors cursor-pointer"
+            >
+              <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
+                {opticsExpanded ? '▼ Advanced Optics' : '▶ Advanced Optics'}
+              </span>
+            </button>
+
             {/* Parameters Grid */}
-            <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
+            {opticsExpanded && (
+              <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
               {/* Light X */}
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-[10px] text-[var(--text-body)] font-bold">Light X:</span>
@@ -847,6 +872,7 @@ export const RightInspector: React.FC = () => {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Primary Action Button */}
             <TactileButton
