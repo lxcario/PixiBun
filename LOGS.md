@@ -591,3 +591,15 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - **Test Coverage (	ests/exportScopeAndWorker.test.ts)**: Added comprehensive TestSprite verification tests and Jest unit tests for GIF export distinct chunk guarantees and delay clamping.
 
 **Status:** Complete
+
+---
+
+## Phase 30 – Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
+**Delivered:**
+- **Progressive Onboarding (eat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact seamlessly before transitioning fully into the studio workspace.
+- **Advanced Selection Utilities (eat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
+- **Workflow UX Enhancements (eat(ux))**: Shipped a new contextual Radial Menu, live Autosave indicator, tracked Recent Colors palette, and progressive disclosure toggles for advanced tools.
+- **Hydration Fixes (ix(hydration))**: Resolved React SSR hydration mismatch console warnings related to the \ecentColors\ store mapping.
+- **Physical Rendering Pass (ix(rendering))**: Restored omitted Lambertian diffuse reflection to the photometric rendering composite for enhanced volume presence.
+
+**Status:** Complete

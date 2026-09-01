@@ -6,9 +6,18 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## [v1.3.0] - 2026-09-01
 
+### 🚀 UX & Onboarding Overhaul
+- **Progressive Playground & Onboarding**: Implemented a seamless onboarding flow with a progressive playground, allowing users to transition smoothly into the full studio experience.
+- **Radial Menu & Recent Colors**: Added a contextual radial menu for rapid tool access, an autosave activity indicator, progressive disclosure of advanced tools, and a tracked "Recent Colors" palette.
+- **Hydration & SSR**: Fixed hydration mismatch and console warnings in the `recentColors` component logic.
+
+### 🎨 Advanced Selection Tools
+- **Magic Wand & Lasso Rasterization**: Shipped the Magic Wand tool for continuous flood-fill color selection and implemented precise polygon rasterization for the freehand Lasso tool.
+
 ### ✨ Rendering Pipeline & AI Morphing Rewrite
 - **Signed Distance Field (SDF) Morphing Engine (`src/lib/ai/pixelAiEngine.ts`)**: Replaced artifact-prone optical flow with Meijster's O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
 - **Smart Morph Relighting (`src/components/layout/CenterViewport.tsx`)**: Re-architected in-between generation to cleanly extract base artwork, perform the SDF morph, and automatically re-dispatch `pixibun:photometric-lighting` and `pixibun:volumetric-optics` passes so newly generated frames perfectly match the dynamic lighting of the scene.
+- **Physical Rendering Fix**: Restored omitted Lambertian diffuse reflection to physical composites, vastly improving lighting realism.
 - **RotSprite Artifact-Free Canvas Rotation (`src/lib/ai/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
 - **GIF Export Multiframe Pooled Canvas Fix (`src/components/modals/ExportModal.tsx`, `src/lib/render/compositor.ts`)**: Passed `{ freshCanvas: true }` during multi-frame composite jobs, preventing the `sharedOffscreenCanvas` singleton from destructively overwriting all output frames with the final frame.
 - **GIF Delay Centisecond Clamping (`src/lib/export/gifEncoderCore.ts`)**: Added a lower bound of `2` centiseconds to GIF frame delays to bypass aggressive browser 100ms throttling penalties for fast animations.
