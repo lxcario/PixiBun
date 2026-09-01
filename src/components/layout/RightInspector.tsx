@@ -538,6 +538,13 @@ export const RightInspector: React.FC = () => {
               </span>
             </div>
 
+            {canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32) && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-[#26140b] text-[#f0be7c] text-[10px] font-mono font-bold rounded-[2px] border border-[#8c5120]">
+                <PixelIcon name="layers" size={10} />
+                <span>Minecraft 3D Skin Shading Active ({canvasWidth}x{canvasHeight})</span>
+              </div>
+            )}
+
             {/* Material Preset Selector */}
             <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
               <span className="text-[10px] text-[var(--text-body)] font-bold">Material:</span>

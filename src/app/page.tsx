@@ -46,7 +46,7 @@ export default function Home() {
           {/* Decorative Section Divider */}
           <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-center gap-4 text-[var(--desk-border)]">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--desk-border)] to-[var(--desk-border)]" />
-            <span className="text-xs font-mono text-[var(--accent-plum)] select-none">✦ ─── ✧ ─── ✦</span>
+            <span className="w-1.5 h-1.5 rotate-45 bg-[var(--accent-plum)] shrink-0" aria-hidden="true" />
             <div className="flex-1 h-px bg-gradient-to-r from-[var(--desk-border)] via-[var(--desk-border)] to-transparent" />
           </div>
 
@@ -55,7 +55,7 @@ export default function Home() {
           {/* Decorative Section Divider */}
           <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-center gap-4 text-[var(--desk-border)]">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--desk-border)] to-[var(--desk-border)]" />
-            <span className="text-xs font-mono text-[var(--accent-gold)] select-none">✦ ─── ✧ ─── ✦</span>
+            <span className="w-1.5 h-1.5 rotate-45 bg-[var(--accent-gold)] shrink-0" aria-hidden="true" />
             <div className="flex-1 h-px bg-gradient-to-r from-[var(--desk-border)] via-[var(--desk-border)] to-transparent" />
           </div>
 

@@ -34,7 +34,6 @@ export type PixelIconName =
   | 'onion' 
   | 'layers' 
   | 'palette' 
-  | 'gemini' 
   | 'export' 
   | 'import' 
   | 'trash' 
@@ -45,6 +44,7 @@ export type PixelIconName =
   | 'lock' 
   | 'unlock'
   | 'help'
+  | 'warning'
   | 'sparkles'
   | 'sun'
   | 'symmetry'
@@ -280,13 +280,6 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
           </svg>
         );
 
-      case 'gemini':
-        return (
-          <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" className={className}>
-            <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-          </svg>
-        );
-
       case 'export':
         return (
           <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -456,6 +449,15 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
           <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <rect width="18" height="14" x="3" y="5" rx="2" />
             <path d="M7 15l3-3 2 2 5-5" />
+          </svg>
+        );
+
+      case 'warning':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
         );
 

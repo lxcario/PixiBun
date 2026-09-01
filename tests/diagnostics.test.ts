@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   getDiagnosticsSettings,
   setDiagnosticsSettings,
@@ -11,6 +11,14 @@ describe('diagnostics capture & settings', () => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.clear();
     }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 200 })
+    );
+  });
+
+  afterEach(() => {
+    setDiagnosticsSettings({ enabled: true, relayOptIn: false });
+    vi.restoreAllMocks();
   });
 
   it('provides default settings with local capture enabled and relay disabled', () => {

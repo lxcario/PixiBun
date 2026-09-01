@@ -311,19 +311,18 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 ---
 
-## 13. Multithreaded AI Worker Architecture (`src/lib/ai/pixelAi.worker.ts`)
+## 13. Multithreaded Worker & Deterministic CG Math Architecture
 
-Heavy compute-bound graphics passes are offloaded from the UI main thread to a dedicated Web Worker:
-- **Optical Flow Tweening:** 2D block-matching motion vector analysis and intermediate frame synthesis run in the background.
-- **Selective Outlining (Sel-Out):** Computes normal vector rim and directional shadow tints asynchronously.
-- **Downsampling & Quantization:** OKLab color clustering and Floyd-Steinberg/Atkinson error diffusion run without frame drops.
-- **Transferable Buffers:** Data exchange leverages zero-copy `ArrayBuffer` transfer lists (`postMessage(payload, [buffer])`).
+Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
+- **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
+- **Deterministic On-Device Graphics Math (`src/lib/ai/smartMathEngine.ts`, `shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and Raymarched Soft Shadows run synchronously with zero latency using pre-allocated `bufferPool.ts` scratch buffers.
 
 ---
 
-## 14. Strongly-Typed Event Bus (`src/lib/events/studioEvents.ts`)
+## 14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
-Cross-component commands (normal map baking, palette quantization, volumetric lighting triggers, in-between frame synthesis) utilize a strongly-typed pub/sub event bus:
-- **Discriminated Event Map:** Every action is defined in `StudioEventMap` with strict payload schemas.
-- **Subscription Ergonomics:** Components subscribe via `studioEvents.on(event, handler)` which returns an unsubscribe cleanup function.
+Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, raymarched shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
+- **Discriminated Event Map:** All 23 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
+- **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
+
 

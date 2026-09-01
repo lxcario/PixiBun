@@ -14,8 +14,9 @@ import { CanvasResizeModal, AnchorPosition } from '@/components/modals/CanvasRes
 import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
+import { PixelIcon } from '@/components/ui/PixelIcon';
 import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById } from '@/lib/storage/db';
-import { buildProjectFile, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
+import { buildProjectFileAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectsGalleryModal } from '@/components/modals/ProjectsGalleryModal';
@@ -74,7 +75,7 @@ export const StudioLayout: React.FC = () => {
     if (autosaveInFlightRef.current) return;
     autosaveInFlightRef.current = true;
     try {
-      const project = buildProjectFile();
+      const project = await buildProjectFileAsync();
       const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
       const state = useStudioStore.getState();
       const success = await autoSaveWorkspace(
@@ -454,7 +455,7 @@ export const StudioLayout: React.FC = () => {
       {autosaveError && (
         <div className="bg-[#eb5a66]/20 border-b-2 border-[#eb5a66] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#ffb4b9] z-30 shadow-md transition-all">
           <div className="flex items-center gap-2">
-            <span className="text-sm">⚠️</span>
+            <PixelIcon name="warning" size={14} />
             <span>{autosaveError}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -505,7 +506,7 @@ export const StudioLayout: React.FC = () => {
             Starting a new drawing will clear the current canvas and reset the studio to a fresh blank project.
           </p>
           <p className="text-xs text-[var(--accent-gold)] font-mono">
-            💡 If you want to keep your current artwork, remember to export it as PNG or a .pixibun project file first.
+            <PixelIcon name="export" size={12} className="inline align-[-2px] mr-1" /> If you want to keep your current artwork, remember to export it as PNG or a .pixibun project file first.
           </p>
           <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[var(--desk-border)]">
             <TactileButton

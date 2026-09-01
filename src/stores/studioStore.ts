@@ -911,6 +911,13 @@ export const useStudioStore = create<StudioState>()(
           if (projectData.width) state.canvasWidth = projectData.width;
           if (projectData.height) state.canvasHeight = projectData.height;
           if (projectData.fps) state.fps = projectData.fps;
+          if (projectData.loopMode) state.loopMode = projectData.loopMode;
+          if (projectData.onionSkin) {
+            state.onionSkin = { ...state.onionSkin, ...projectData.onionSkin };
+          }
+          if (projectData.customRamps) {
+            state.customRamps = projectData.customRamps.map((r) => ({ ...r, shades: [...r.shades] }));
+          }
           if (projectData.frames && projectData.frames.length > 0) {
             state.frames = projectData.frames;
             state.activeFrameIndex = 0;

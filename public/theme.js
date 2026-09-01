@@ -5,5 +5,9 @@
     var theme = saved === 'light' ? 'light' : (saved === 'dark' ? 'dark' : (prefersDark ? 'dark' : 'dark'));
     document.documentElement.classList.add(theme);
     document.documentElement.setAttribute('data-theme', theme);
-  } catch(e) {}
+  } catch (_err) {
+    // Safe fallback to dark theme if localStorage or matchMedia is restricted
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
 })();

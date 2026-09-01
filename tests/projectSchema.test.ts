@@ -169,4 +169,37 @@ describe('validateProjectFile', () => {
       expect(result.value.frames[0].layers[0].blendMode).toBe('source-over');
     }
   });
+
+  it('restores loopMode, onionSkin, and customRamps during store hydration', async () => {
+    const { useStudioStore } = await import('@/stores/studioStore');
+    const store = useStudioStore.getState();
+
+    store.loadProjectState({
+      name: 'Hydration Test',
+      width: 48,
+      height: 48,
+      loopMode: 'ping-pong',
+      onionSkin: {
+        enabled: true,
+        prevFrames: 2,
+        nextFrames: 2,
+        prevColor: '#ff0000',
+        nextColor: '#00ff00',
+        opacity: 0.8,
+      },
+      customRamps: [
+        { baseColor: '#ff0055', shades: ['#330011', '#ff0055', '#ff99bb'] },
+      ],
+    }, 'proj-hydration-test');
+
+    const updated = useStudioStore.getState();
+    expect(updated.currentProjectId).toBe('proj-hydration-test');
+    expect(updated.loopMode).toBe('ping-pong');
+    expect(updated.onionSkin.enabled).toBe(true);
+    expect(updated.onionSkin.prevFrames).toBe(2);
+    expect(updated.onionSkin.prevColor).toBe('#ff0000');
+    expect(updated.customRamps).toHaveLength(1);
+    expect(updated.customRamps[0].baseColor).toBe('#ff0055');
+  });
 });
+

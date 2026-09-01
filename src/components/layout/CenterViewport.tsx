@@ -50,6 +50,7 @@ import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow
 import { compositeFrame } from '@/lib/render/compositor';
 import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface SelectionBox {
   x: number;
@@ -855,54 +856,34 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       setCanRedo(false);
     };
 
-    window.addEventListener('pixibun:undo', handleUndoEvent);
-    window.addEventListener('pixibun:redo', handleRedoEvent);
-    window.addEventListener('pixibun:history-clear', handleClearHistoryEvent);
-    window.addEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
-    window.addEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
-    window.addEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
-    window.addEventListener('pixibun:highlight', handleHighlightEvent as EventListener);
-    window.addEventListener('pixibun:sel-out', handleSelOutEvent);
-    window.addEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
-    window.addEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
-    window.addEventListener('pixibun:render-cast-shadow', handleRenderCastShadowEvent as EventListener);
-    window.addEventListener('pixibun:apply-47-blob', handle47BlobEvent);
-    window.addEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
-    window.addEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
-    window.addEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);
-    window.addEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
-    window.addEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
-    window.addEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
-    window.addEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
-    window.addEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
-    window.addEventListener('pixibun:volumetric-optics', handleVolumetricOpticsEvent as EventListener);
-    window.addEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
-    window.addEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
+    const unsubs = [
+      studioEvents.on('pixibun:undo', handleUndoEvent),
+      studioEvents.on('pixibun:redo', handleRedoEvent),
+      studioEvents.on('pixibun:history-clear', handleClearHistoryEvent),
+      studioEvents.on('pixibun:extract-palette', handleExtractPaletteEvent),
+      studioEvents.on('pixibun:clean-jaggies', handleCleanJaggiesEvent),
+      studioEvents.on('pixibun:auto-shade', (detail) => handleAutoShadeEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:highlight', (detail) => handleHighlightEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:sel-out', (detail) => handleSelOutEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:auto-outline', (detail) => handleAutoOutlineEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:ground-shadow', handleGroundShadowEvent),
+      studioEvents.on('pixibun:render-cast-shadow', (detail) => handleRenderCastShadowEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:apply-47-blob', handle47BlobEvent),
+      studioEvents.on('pixibun:rot-sprite', (detail) => handleRotSpriteEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:atkinson-dither', (detail) => handleAtkinsonDitherEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:riemersma-dither', (detail) => handleRiemersmaDitherEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:skeleton-thinning', handleSkeletonThinningEvent),
+      studioEvents.on('pixibun:color-grade', (detail) => handleColorGradeEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:quantize-palette', (detail) => handleQuantizePaletteEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:remove-strays', handleRemoveStraysEvent),
+      studioEvents.on('pixibun:photometric-lighting', (detail) => handlePhotometricLightingEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:volumetric-optics', (detail) => handleVolumetricOpticsEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:bake-normal-map', handleBakeNormalMapEvent),
+      studioEvents.on('pixibun:in-between-frame', handleInBetweenFrameEvent),
+    ];
 
     return () => {
-      window.removeEventListener('pixibun:undo', handleUndoEvent);
-      window.removeEventListener('pixibun:redo', handleRedoEvent);
-      window.removeEventListener('pixibun:history-clear', handleClearHistoryEvent);
-      window.removeEventListener('pixibun:extract-palette', handleExtractPaletteEvent);
-      window.removeEventListener('pixibun:clean-jaggies', handleCleanJaggiesEvent);
-      window.removeEventListener('pixibun:auto-shade', handleAutoShadeEvent as EventListener);
-      window.removeEventListener('pixibun:highlight', handleHighlightEvent as EventListener);
-      window.removeEventListener('pixibun:sel-out', handleSelOutEvent);
-      window.removeEventListener('pixibun:auto-outline', handleAutoOutlineEvent as EventListener);
-      window.removeEventListener('pixibun:ground-shadow', handleGroundShadowEvent);
-      window.removeEventListener('pixibun:render-cast-shadow', handleRenderCastShadowEvent as EventListener);
-      window.removeEventListener('pixibun:apply-47-blob', handle47BlobEvent);
-      window.removeEventListener('pixibun:rot-sprite', handleRotSpriteEvent as EventListener);
-      window.removeEventListener('pixibun:atkinson-dither', handleAtkinsonDitherEvent as EventListener);
-      window.removeEventListener('pixibun:riemersma-dither', handleRiemersmaDitherEvent as EventListener);
-      window.removeEventListener('pixibun:skeleton-thinning', handleSkeletonThinningEvent);
-      window.removeEventListener('pixibun:color-grade', handleColorGradeEvent as EventListener);
-      window.removeEventListener('pixibun:quantize-palette', handleQuantizePaletteEvent as EventListener);
-      window.removeEventListener('pixibun:remove-strays', handleRemoveStraysEvent);
-      window.removeEventListener('pixibun:photometric-lighting', handlePhotometricLightingEvent as EventListener);
-      window.removeEventListener('pixibun:volumetric-optics', handleVolumetricOpticsEvent as EventListener);
-      window.removeEventListener('pixibun:bake-normal-map', handleBakeNormalMapEvent);
-      window.removeEventListener('pixibun:in-between-frame', handleInBetweenFrameEvent);
+      unsubs.forEach((unsub) => unsub());
     };
   }, [
     activeLayerId,

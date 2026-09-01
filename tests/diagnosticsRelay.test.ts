@@ -3,12 +3,14 @@ import { POST } from '@/app/api/diagnostics/relay/route';
 
 describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
   const originalEnv = process.env.DIAGNOSTICS_RELAY_URL;
+  const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     if (originalEnv !== undefined) {
       process.env.DIAGNOSTICS_RELAY_URL = originalEnv;
     } else {

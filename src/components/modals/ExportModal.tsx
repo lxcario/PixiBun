@@ -94,19 +94,35 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     });
 
     const dataUrl = packed.canvas.toDataURL('image/png');
+    const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${scale}x`;
     const link = document.createElement('a');
-    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${scale}x.png`;
+    link.download = `${baseFilename}.png`;
     link.href = dataUrl;
     link.click();
 
-    if (includeMetadata && packed.metadata?.unityJson) {
-      const metaBlob = new Blob([packed.metadata.unityJson], { type: 'application/json' });
-      const metaUrl = URL.createObjectURL(metaBlob);
-      const metaLink = document.createElement('a');
-      metaLink.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${scale}x.json`;
-      metaLink.href = metaUrl;
-      metaLink.click();
-      URL.revokeObjectURL(metaUrl);
+    if (includeMetadata && packed.metadata) {
+      // Export Godot 4 SpriteFrames .tres resource
+      if (packed.metadata.godotTres) {
+        const tresBlob = new Blob([packed.metadata.godotTres], { type: 'text/plain' });
+        const tresUrl = URL.createObjectURL(tresBlob);
+        const tresLink = document.createElement('a');
+        tresLink.download = `${baseFilename}.tres`;
+        tresLink.href = tresUrl;
+        tresLink.click();
+        URL.revokeObjectURL(tresUrl);
+      }
+
+      // Export standard TexturePacker & Unity JSON metadata
+      const jsonContent = packed.metadata.texturePackerJson || packed.metadata.unityJson;
+      if (jsonContent) {
+        const metaBlob = new Blob([jsonContent], { type: 'application/json' });
+        const metaUrl = URL.createObjectURL(metaBlob);
+        const metaLink = document.createElement('a');
+        metaLink.download = `${baseFilename}.json`;
+        metaLink.href = metaUrl;
+        metaLink.click();
+        URL.revokeObjectURL(metaUrl);
+      }
     }
 
     onClose();
@@ -367,7 +383,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           </div>
 
           <div className="flex items-center justify-between pt-1 border-t border-[var(--desk-border)]">
-            <span className="text-[var(--text-body)] font-bold">Godot/Unity JSON:</span>
+            <span className="text-[var(--text-body)] font-bold">Engine Metadata (Godot & JSON):</span>
             <button
               onClick={() => setIncludeMetadata(!includeMetadata)}
               className={`px-2 py-0.5 rounded-[2px] border text-[10px] font-bold cursor-pointer transition-colors ${

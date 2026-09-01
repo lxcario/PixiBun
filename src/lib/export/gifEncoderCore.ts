@@ -224,6 +224,55 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
   return out;
 }
 
+class DynamicByteArray {
+  private buffer: Uint8Array;
+  private length = 0;
+
+  constructor(initialCapacity = 65536) {
+    this.buffer = new Uint8Array(initialCapacity);
+  }
+
+  private ensureCapacity(needed: number) {
+    if (this.length + needed <= this.buffer.length) return;
+    let nextCapacity = this.buffer.length * 2;
+    while (this.length + needed > nextCapacity) {
+      nextCapacity *= 2;
+    }
+    const nextBuffer = new Uint8Array(nextCapacity);
+    nextBuffer.set(this.buffer.subarray(0, this.length));
+    this.buffer = nextBuffer;
+  }
+
+  writeByte(b: number) {
+    this.ensureCapacity(1);
+    this.buffer[this.length++] = b & 0xFF;
+  }
+
+  writeShort(s: number) {
+    this.ensureCapacity(2);
+    this.buffer[this.length++] = s & 0xFF;
+    this.buffer[this.length++] = (s >> 8) & 0xFF;
+  }
+
+  writeString(str: string) {
+    this.ensureCapacity(str.length);
+    for (let i = 0; i < str.length; i++) {
+      this.buffer[this.length++] = str.charCodeAt(i);
+    }
+  }
+
+  writeBytes(arr: number[] | Uint8Array) {
+    this.ensureCapacity(arr.length);
+    for (let i = 0; i < arr.length; i++) {
+      this.buffer[this.length++] = arr[i] & 0xFF;
+    }
+  }
+
+  toUint8Array(): Uint8Array {
+    return this.buffer.subarray(0, this.length);
+  }
+}
+
 export function encodeGifRawFrames(
   frames: RawFrameData[],
   fps: number,
@@ -236,43 +285,28 @@ export function encodeGifRawFrames(
   const width = frames[0].width;
   const height = frames[0].height;
   const delay = Math.round(100 / Math.max(1, fps));
-  const buffer: number[] = [];
-
-  const writeByte = (b: number) => buffer.push(b & 0xFF);
-  const writeShort = (s: number) => {
-    buffer.push(s & 0xFF);
-    buffer.push((s >> 8) & 0xFF);
-  };
-  const writeString = (str: string) => {
-    for (let i = 0; i < str.length; i++) buffer.push(str.charCodeAt(i));
-  };
-  const writeBytes = (arr: number[]) => {
-    for (let i = 0; i < arr.length; i++) buffer.push(arr[i]);
-  };
+  const writer = new DynamicByteArray(width * height * frames.length);
 
   // Header
-  writeString('GIF89a');
+  writer.writeString('GIF89a');
 
   // Logical Screen Descriptor
-  writeShort(width);
-  writeShort(height);
-  // Global Color Table Flag = 1, Color Resolution = 8 bits, Size of GCT = 256
-  writeByte(0xF7);
-  writeByte(0); // Background Color Index
-  writeByte(0); // Pixel Aspect Ratio
-
-  // Global Color Table (256 entries of 0)
-  for (let i = 0; i < 256 * 3; i++) writeByte(0);
+  writer.writeShort(width);
+  writer.writeShort(height);
+  // Global Color Table Flag = 0 (we provide per-frame Local Color Tables), Color Resolution = 8 bits
+  writer.writeByte(0x70);
+  writer.writeByte(0); // Background Color Index
+  writer.writeByte(0); // Pixel Aspect Ratio
 
   // Netscape Application Extension for looping
-  writeByte(0x21); // Extension Introducer
-  writeByte(0xFF); // Application Extension Label
-  writeByte(11);   // Block Size
-  writeString('NETSCAPE2.0');
-  writeByte(3);    // Sub-block Size
-  writeByte(1);    // Sub-block ID
-  writeShort(0);   // Loop count (0 = infinite)
-  writeByte(0);    // Block Terminator
+  writer.writeByte(0x21); // Extension Introducer
+  writer.writeByte(0xFF); // Application Extension Label
+  writer.writeByte(11);   // Block Size
+  writer.writeString('NETSCAPE2.0');
+  writer.writeByte(3);    // Sub-block Size
+  writer.writeByte(1);    // Sub-block ID
+  writer.writeShort(0);   // Loop count (0 = infinite)
+  writer.writeByte(0);    // Block Terminator
 
   // Encode each frame
   for (let i = 0; i < frames.length; i++) {
@@ -280,46 +314,50 @@ export function encodeGifRawFrames(
     const { palette, indexedPixels, transparentIndex } = quantizePixels(frame.data, width * height);
 
     // Graphics Control Extension
-    writeByte(0x21); // Extension Introducer
-    writeByte(0xF9); // Graphic Control Label
-    writeByte(4);    // Block Size
+    writer.writeByte(0x21); // Extension Introducer
+    writer.writeByte(0xF9); // Graphic Control Label
+    writer.writeByte(4);    // Block Size
     const transparentFlag = transparentIndex !== -1 ? 1 : 0;
-    writeByte((2 << 2) | transparentFlag); // Disposal Method = 2 (Restore to background)
-    writeShort(delay);
-    writeByte(transparentIndex !== -1 ? transparentIndex : 0);
-    writeByte(0); // Block Terminator
+    writer.writeByte((2 << 2) | transparentFlag); // Disposal Method = 2 (Restore to background)
+    writer.writeShort(delay);
+    writer.writeByte(transparentIndex !== -1 ? transparentIndex : 0);
+    writer.writeByte(0); // Block Terminator
+
+    // Determine color depth and local color table size code (2^(N+1))
+    const colorDepth = Math.max(2, Math.ceil(Math.log2(palette.length || 2)));
+    const tableSizeCode = colorDepth - 1;
+    const tableEntries = 1 << colorDepth;
 
     // Image Descriptor
-    writeByte(0x2C); // Image Separator
-    writeShort(0);   // Left
-    writeShort(0);   // Top
-    writeShort(width);
-    writeShort(height);
-    writeByte(0x87); // Local Color Table Flag = 1, Size = 256
+    writer.writeByte(0x2C); // Image Separator
+    writer.writeShort(0);   // Left
+    writer.writeShort(0);   // Top
+    writer.writeShort(width);
+    writer.writeShort(height);
+    writer.writeByte(0x80 | (tableSizeCode & 0x07)); // Local Color Table Flag = 1, Size = 2^(tableSizeCode+1)
 
     // Local Color Table
-    for (let j = 0; j < 256; j++) {
+    for (let j = 0; j < tableEntries; j++) {
       if (j < palette.length) {
-        writeByte(palette[j][0]);
-        writeByte(palette[j][1]);
-        writeByte(palette[j][2]);
+        writer.writeByte(palette[j][0]);
+        writer.writeByte(palette[j][1]);
+        writer.writeByte(palette[j][2]);
       } else {
-        writeByte(0);
-        writeByte(0);
-        writeByte(0);
+        writer.writeByte(0);
+        writer.writeByte(0);
+        writer.writeByte(0);
       }
     }
 
     // LZW Compression
-    const colorDepth = Math.max(2, Math.ceil(Math.log2(palette.length || 2)));
     const lzwData = lzwEncode(indexedPixels, colorDepth);
-    writeBytes(lzwData);
+    writer.writeBytes(lzwData);
 
     onProgress?.(i + 1, frames.length);
   }
 
   // Trailer
-  writeByte(0x3B);
+  writer.writeByte(0x3B);
 
-  return new Uint8Array(buffer);
+  return writer.toUint8Array();
 }

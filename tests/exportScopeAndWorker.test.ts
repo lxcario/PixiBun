@@ -83,6 +83,13 @@ describe('Tag Clip Export Scope', () => {
     expect(unityAttack.sprites).toHaveLength(4);
     expect(unityAttack.sprites[0].name).toBe('Hero_0');
     expect(unityAttack.sprites[3].name).toBe('Hero_3');
+
+    // 3. Verify Godot .tres and TexturePacker JSON generation
+    expect(attackPacked.metadata.godotTres).toContain('[gd_resource type="SpriteFrames"');
+    expect(attackPacked.metadata.godotTres).toContain('Rect2(0, 0, 16, 16)');
+    const tpData = JSON.parse(attackPacked.metadata.texturePackerJson);
+    expect(tpData.frames).toHaveLength(4);
+    expect(tpData.meta.app).toBe('PixiBun Studio');
   });
 
   it('safely handles inverted or out-of-bounds clip ranges', () => {

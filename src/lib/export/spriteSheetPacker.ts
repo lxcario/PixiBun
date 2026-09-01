@@ -10,8 +10,10 @@ export interface SpriteSheetConfig {
 export interface PackedSpriteSheet {
   canvas: HTMLCanvasElement;
   metadata: {
+    godotTres: string;
     godotJson: string;
     unityJson: string;
+    texturePackerJson: string;
     phaserJson: string;
     width: number;
     height: number;
@@ -77,7 +79,32 @@ export function packSpriteSheet(
     }
   }
 
-  // Generate Godot SpriteFrames Metadata
+  const sanitizedName = projectName.toLowerCase().replace(/\s+/g, '_');
+  const textureFilename = `${sanitizedName}_spritesheet.png`;
+
+  // Generate authentic Godot 4 SpriteFrames .tres resource
+  const godotSubResources = frameRects.map((f, idx) => `[sub_resource type="AtlasTexture" id="AtlasTexture_${idx}"]
+atlas = ExtResource("1_tex")
+region = Rect2(${f.x}, ${f.y}, ${f.w}, ${f.h})`).join('\n\n');
+
+  const godotFramesArray = frameRects.map((_, idx) => `{\n"duration": 1.0,\n"texture": SubResource("AtlasTexture_${idx}")\n}`).join(', ');
+
+  const godotTres = `[gd_resource type="SpriteFrames" load_steps=${count + 2} format=3]
+
+[ext_resource type="Texture2D" path="res://${textureFilename}" id="1_tex"]
+
+${godotSubResources}
+
+[resource]
+animations = [{
+"frames": [${godotFramesArray}],
+"loop": true,
+"name": &"default",
+"speed": ${fps.toFixed(1)}
+}]
+`;
+
+  // Generate Godot SpriteFrames Metadata (JSON format)
   const godotMetadata = {
     resource_type: 'SpriteFrames',
     animations: [
@@ -91,6 +118,27 @@ export function packSpriteSheet(
         })),
       },
     ],
+  };
+
+  // Standard TexturePacker Array format (natively supported by Unity, Phaser, PixiJS, Godot TP Importer)
+  const texturePackerMetadata = {
+    frames: frameRects.map((f, idx) => ({
+      filename: `frame_${idx.toString().padStart(3, '0')}.png`,
+      frame: { x: f.x, y: f.y, w: f.w, h: f.h },
+      rotated: false,
+      trimmed: false,
+      spriteSourceSize: { x: 0, y: 0, w: f.w, h: f.h },
+      sourceSize: { w: f.w, h: f.h },
+      pivot: { x: 0.5, y: 0.5 },
+    })),
+    meta: {
+      app: 'PixiBun Studio',
+      version: '1.0',
+      image: textureFilename,
+      format: 'RGBA8888',
+      size: { w: sheetWidth, h: sheetHeight },
+      scale: config.scale.toString(),
+    },
   };
 
   // Generate Unity Metadata
@@ -111,7 +159,7 @@ export function packSpriteSheet(
   const phaserMetadata = {
     textures: [
       {
-        image: `${projectName}.png`,
+        image: textureFilename,
         size: { w: sheetWidth, h: sheetHeight },
         frames: frameRects.map((f, idx) => ({
           filename: `frame_${idx.toString().padStart(3, '0')}`,
@@ -134,8 +182,10 @@ export function packSpriteSheet(
   return {
     canvas: sheetCanvas,
     metadata: {
+      godotTres,
       godotJson: JSON.stringify(godotMetadata, null, 2),
       unityJson: JSON.stringify(unityMetadata, null, 2),
+      texturePackerJson: JSON.stringify(texturePackerMetadata, null, 2),
       phaserJson: JSON.stringify(phaserMetadata, null, 2),
       width: sheetWidth,
       height: sheetHeight,
@@ -145,3 +195,4 @@ export function packSpriteSheet(
     },
   };
 }
+
