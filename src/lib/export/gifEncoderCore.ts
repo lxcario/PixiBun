@@ -291,7 +291,7 @@ export function encodeGifRawFrames(
 
   const width = frames[0].width;
   const height = frames[0].height;
-  const delay = Math.round(100 / Math.max(1, fps));
+  const delay = Math.max(2, Math.round(100 / Math.max(1, fps)));
   const writer = new DynamicByteArray(width * height * frames.length);
 
   // Header

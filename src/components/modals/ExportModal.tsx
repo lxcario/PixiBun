@@ -58,7 +58,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   };
 
   const handleExportPNG = () => {
-    const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight);
+    const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
     if (!source) return;
 
     const exportCanvas = document.createElement('canvas');
@@ -83,7 +83,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     const frameCanvases: HTMLCanvasElement[] = [];
 
     for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight);
+      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
       frameCanvases.push(composed ?? new HTMLCanvasElement());
     }
 
@@ -134,7 +134,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     const frameCanvases: HTMLCanvasElement[] = [];
 
     for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight);
+      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
       if (composed) {
         frameCanvases.push(composed);
       }

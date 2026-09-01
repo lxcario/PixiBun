@@ -13,6 +13,8 @@ import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 export interface CompositeOptions {
   /** Include hidden layers (used by flatten-style exports). Default false. */
   includeInvisible?: boolean;
+  /** If true, always allocates a fresh HTMLCanvasElement instance rather than using the pooled singleton. */
+  freshCanvas?: boolean;
 }
 
 let sharedOffscreenCanvas: HTMLCanvasElement | null = null;
@@ -28,7 +30,11 @@ export function compositeFrame(
   const frame = frames[frameIndex];
   if (!frame || typeof document === 'undefined') return null;
 
-  const out = targetCanvas || (sharedOffscreenCanvas ?? (sharedOffscreenCanvas = document.createElement('canvas')));
+  const out =
+    targetCanvas ||
+    (options.freshCanvas
+      ? document.createElement('canvas')
+      : sharedOffscreenCanvas ?? (sharedOffscreenCanvas = document.createElement('canvas')));
   if (out.width !== width || out.height !== height) {
     out.width = width;
     out.height = height;

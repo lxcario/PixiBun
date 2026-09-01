@@ -220,5 +220,66 @@ describe('GIF Encoder Core & Worker Encoding', () => {
     expect(String.fromCharCode(...gifBytes.slice(0, 6))).toBe('GIF89a');
     expect(gifBytes[gifBytes.length - 1]).toBe(0x3B);
   });
+
+  it('guarantees distinct frame bytes across animation frames preventing static PNG frozen GIF exports', () => {
+    // Simulate 3 distinct moving animation frames
+    const rawFrames: RawFrameData[] = [];
+    const width = 16;
+    const height = 16;
+
+    for (let f = 0; f < 3; f++) {
+      const data = new Uint8ClampedArray(width * height * 4);
+      // Frame 0 has dot at 0,0; Frame 1 at 5,5; Frame 2 at 10,10
+      const px = f * 5;
+      const py = f * 5;
+      const idx = (py * width + px) * 4;
+      data[idx] = 255;
+      data[idx + 1] = 100;
+      data[idx + 2] = 50;
+      data[idx + 3] = 255;
+      rawFrames.push({ width, height, data });
+    }
+
+    const gifBytes = encodeGifRawFrames(rawFrames, 12);
+    expect(gifBytes.length).toBeGreaterThan(0);
+
+    // Parse image descriptors
+    const frameOffsets: number[] = [];
+    for (let i = 0; i < gifBytes.length - 1; i++) {
+      if (gifBytes[i] === 0x21 && gifBytes[i + 1] === 0xF9) {
+        frameOffsets.push(i);
+      }
+    }
+
+    expect(frameOffsets).toHaveLength(3);
+
+    // Verify frame 0 and frame 1 and frame 2 are distinct (not identical chunks)
+    const frame0 = gifBytes.slice(frameOffsets[0], frameOffsets[1]);
+    const frame1 = gifBytes.slice(frameOffsets[1], frameOffsets[2]);
+    const frame2 = gifBytes.slice(frameOffsets[2]);
+
+    expect(Array.from(frame0)).not.toEqual(Array.from(frame1));
+    expect(Array.from(frame1)).not.toEqual(Array.from(frame2));
+  });
+
+  it('safely clamps frame delay to at least 2 centiseconds to prevent browser 100ms throttling penalty', () => {
+    const rawFrames: RawFrameData[] = [
+      { width: 2, height: 2, data: new Uint8ClampedArray(16) },
+    ];
+    // Request 120 FPS -> 100/120 = 0.83 -> rounded = 1, but must clamp to 2
+    const gifBytes = encodeGifRawFrames(rawFrames, 120);
+
+    // Find GCE: 0x21 0xF9 0x04 flags delay_low delay_high
+    for (let i = 0; i < gifBytes.length - 6; i++) {
+      if (gifBytes[i] === 0x21 && gifBytes[i + 1] === 0xF9 && gifBytes[i + 2] === 0x04) {
+        const delayLow = gifBytes[i + 4];
+        const delayHigh = gifBytes[i + 5];
+        const delay = delayLow | (delayHigh << 8);
+        expect(delay).toBeGreaterThanOrEqual(2);
+        break;
+      }
+    }
+  });
 });
+
 
