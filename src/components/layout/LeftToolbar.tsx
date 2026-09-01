@@ -50,10 +50,15 @@ const TOOL_GROUPS: { groupName: string; tools: ToolItem[] }[] = [
   },
 ];
 
-export const LeftToolbar: React.FC = () => {
+export interface LeftToolbarProps {
+  isPlaygroundMode?: boolean;
+}
+
+export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = false }) => {
   const {
     tools,
     setActiveTool,
+    setBrushSize,
     primaryColor,
     secondaryColor,
     setPrimaryColor,
@@ -68,11 +73,23 @@ export const LeftToolbar: React.FC = () => {
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
+  const activeToolGroups = isPlaygroundMode
+    ? [
+        {
+          groupName: 'Essential Drawing',
+          tools: [
+            { id: 'pen' as ToolType, label: 'Pen', shortcut: 'B', icon: 'pen' as PixelIconName },
+            { id: 'eraser' as ToolType, label: 'Eraser', shortcut: 'E', icon: 'eraser' as PixelIconName },
+          ],
+        },
+      ]
+    : TOOL_GROUPS;
+
   return (
     <aside className="w-14 bg-[var(--desk-surface)] border-r-2 border-[var(--desk-border)] flex flex-col items-center py-2 justify-between select-none z-10 shadow-sm overflow-y-auto transition-colors duration-300">
       {/* 1. Categorized Tool Groups */}
       <div className="flex flex-col gap-2 w-full px-1.5 items-center">
-        {TOOL_GROUPS.map((group, gIdx) => (
+        {activeToolGroups.map((group, gIdx) => (
           <div key={group.groupName} className="flex flex-col gap-1 w-full items-center">
             {gIdx > 0 && <div className="w-7 h-px bg-[var(--desk-border)] my-0.5" />}
             {group.tools.map((tool) => {
@@ -82,6 +99,7 @@ export const LeftToolbar: React.FC = () => {
                   key={tool.id}
                   onClick={() => setActiveTool(tool.id)}
                   title={`${tool.label} (${tool.shortcut})`}
+                  data-tutorial={`${tool.id}-tool`}
                   className={`w-9 h-9 rounded-[2px] border-2 flex items-center justify-center cursor-pointer transition-all ${
                     isActive
                       ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_2px_0_#8c5120] scale-105'
@@ -94,6 +112,28 @@ export const LeftToolbar: React.FC = () => {
             })}
           </div>
         ))}
+
+        {/* Quick Brush Size Selector */}
+        <div className="flex flex-col items-center gap-1 w-full pt-1.5 border-t border-[var(--desk-border)]">
+          <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] tracking-tighter">SIZE</span>
+          <div className="flex gap-1 items-center justify-center w-full">
+            {[1, 2, 3].map((sz) => (
+              <button
+                key={sz}
+                type="button"
+                onClick={() => setBrushSize(sz)}
+                className={`w-3.5 h-3.5 rounded-[1px] text-[8px] font-mono font-bold flex items-center justify-center cursor-pointer transition-colors ${
+                  tools.brushSize === sz
+                    ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
+                    : 'bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+                }`}
+                title={`Brush Size ${sz}px`}
+              >
+                {sz}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* 2. Color Wells, Swap & Quick Palette Dock */}

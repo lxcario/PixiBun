@@ -173,6 +173,18 @@ export const StudioLayout: React.FC = () => {
   // Restore the last session on mount and request persistent storage.
   useEffect(() => {
     void requestPersistentStorage();
+
+    const isFromPlayground =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('fromPlayground') === 'true';
+
+    if (isFromPlayground) {
+      // Abort workspace rehydration so live buffers from playground are not cleared by clearAllBuffers()!
+      // Trigger an immediate autosave of the active session so it gets stored in IndexedDB.
+      void runAutosave();
+      return;
+    }
+
     let cancelled = false;
     loadLatestSavedWorkspace().then(async (saved) => {
       if (!saved || cancelled) return;
@@ -188,7 +200,7 @@ export const StudioLayout: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runAutosave]);
 
   // Undo / Redo handlers dispatching to canvas engine
   const handleUndo = useCallback(() => {

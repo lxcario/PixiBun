@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -36,6 +36,12 @@ export const LandingHero: React.FC = () => {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[4px] border-2 border-border-dark bg-accent-primary text-text-primary font-bold text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)] hover:bg-[#d4a5ea] active:translate-y-px transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lamp focus-visible:ring-offset-2 focus-visible:ring-offset-desk"
             >
               Open the Studio
+            </Link>
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[4px] border-2 border-[var(--desk-border)] bg-[var(--desk-surface-raised)] text-[var(--accent-gold)] font-bold text-sm hover:bg-[#2e2040] hover:text-[#fff] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lamp"
+            >
+              <span>✦ Beginner Playground</span>
             </Link>
             <a
               href="#try"

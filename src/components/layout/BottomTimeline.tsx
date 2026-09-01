@@ -57,7 +57,11 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex, isActive })
   );
 };
 
-export const BottomTimeline: React.FC = () => {
+export interface BottomTimelineProps {
+  isPlaygroundMode?: boolean;
+}
+
+export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode = false }) => {
   const {
     frames,
     activeFrameIndex,
@@ -194,6 +198,7 @@ export const BottomTimeline: React.FC = () => {
             variant={isPlaying ? 'primary' : 'default'}
             onClick={() => setIsPlaying(!isPlaying)}
             title="Play / Pause Animation (Space)"
+            data-tutorial="play-button"
             className={`min-w-[88px] text-xs py-1.5 ${
               isPlaying
                 ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
@@ -224,55 +229,61 @@ export const BottomTimeline: React.FC = () => {
             <PixelIcon name="step-forward" size={14} />
           </TactileButton>
 
-          <div className="h-5 w-px bg-[#3a2e4c] mx-1" />
+          {!isPlaygroundMode && (
+            <>
+              <div className="h-5 w-px bg-[#3a2e4c] mx-1" />
 
-          {/* Loop Mode */}
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={cycleLoopMode}
-            title={`Loop Mode: ${loopMode}`}
-            className="text-xs uppercase font-mono py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name={loopMode === 'ping-pong' ? 'ping-pong' : 'loop'} size={14} />
-            <span>{loopMode}</span>
-          </TactileButton>
+              {/* Loop Mode */}
+              <TactileButton
+                size="sm"
+                variant="default"
+                onClick={cycleLoopMode}
+                title={`Loop Mode: ${loopMode}`}
+                className="text-xs uppercase font-mono py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+              >
+                <PixelIcon name={loopMode === 'ping-pong' ? 'ping-pong' : 'loop'} size={14} />
+                <span>{loopMode}</span>
+              </TactileButton>
+            </>
+          )}
         </div>
 
         {/* Center: FPS Scrubber & Onion Skinning */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          {/* FPS Slider */}
-          <div className="flex items-center gap-2 bg-[var(--desk-surface-raised)] px-2.5 py-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-            <span className="text-[var(--text-body)] font-bold">FPS:</span>
-            <input
-              type="range"
-              min="1"
-              max="30"
-              value={fps}
-              onChange={(e) => setFps(parseInt(e.target.value, 10))}
-              className="w-20 accent-[#f0be7c] cursor-pointer"
-            />
-            <span className="text-[#f0be7c] min-w-[20px] font-bold text-right">
-              {fps}
-            </span>
-          </div>
+        {!isPlaygroundMode && (
+          <div className="flex items-center gap-4 text-xs font-mono">
+            {/* FPS Slider */}
+            <div className="flex items-center gap-2 bg-[var(--desk-surface-raised)] px-2.5 py-1 rounded-[2px] border-2 border-[var(--desk-border)]">
+              <span className="text-[var(--text-body)] font-bold">FPS:</span>
+              <input
+                type="range"
+                min="1"
+                max="30"
+                value={fps}
+                onChange={(e) => setFps(parseInt(e.target.value, 10))}
+                className="w-20 accent-[#f0be7c] cursor-pointer"
+              />
+              <span className="text-[#f0be7c] min-w-[20px] font-bold text-right">
+                {fps}
+              </span>
+            </div>
 
-          {/* Onion Skinning Toggle */}
-          <TactileButton
-            size="sm"
-            variant={onionSkin.enabled ? 'primary' : 'default'}
-            onClick={() => setOnionSkin({ enabled: !onionSkin.enabled })}
-            title="Toggle Onion Skinning"
-            className={`text-xs py-1.5 ${
-              onionSkin.enabled
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
-            }`}
-          >
-            <PixelIcon name="onion" size={14} />
-            <span>Onion Skin</span>
-          </TactileButton>
-        </div>
+            {/* Onion Skinning Toggle */}
+            <TactileButton
+              size="sm"
+              variant={onionSkin.enabled ? 'primary' : 'default'}
+              onClick={() => setOnionSkin({ enabled: !onionSkin.enabled })}
+              title="Toggle Onion Skinning"
+              className={`text-xs py-1.5 ${
+                onionSkin.enabled
+                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                  : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+              }`}
+            >
+              <PixelIcon name="onion" size={14} />
+              <span>Onion Skin</span>
+            </TactileButton>
+          </div>
+        )}
 
         {/* Frame Actions (Add, Duplicate, Delete) */}
         <div className="flex items-center gap-1.5">
@@ -281,103 +292,110 @@ export const BottomTimeline: React.FC = () => {
             variant="default"
             onClick={addFrame}
             title="Add Blank Frame"
-            className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
+            data-tutorial="add-frame"
+            className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1 font-bold"
           >
             <PixelIcon name="plus" size={13} />
             <span>Frame</span>
           </TactileButton>
 
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            onClick={() => duplicateFrame(activeFrameIndex)}
-            title="Duplicate Active Frame"
-            className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name="copy" size={13} />
-          </TactileButton>
+          {!isPlaygroundMode && (
+            <>
+              <TactileButton
+                size="icon-sm"
+                variant="default"
+                onClick={() => duplicateFrame(activeFrameIndex)}
+                title="Duplicate Active Frame"
+                className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+              >
+                <PixelIcon name="copy" size={13} />
+              </TactileButton>
 
-          <TactileButton
-            size="icon-sm"
-            variant="danger"
-            disabled={frames.length <= 1}
-            onClick={() => deleteFrame(activeFrameIndex)}
-            title="Delete Active Frame"
-            className="w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33]"
-          >
-            <PixelIcon name="trash" size={13} />
-          </TactileButton>
+              <TactileButton
+                size="icon-sm"
+                variant="danger"
+                disabled={frames.length <= 1}
+                onClick={() => deleteFrame(activeFrameIndex)}
+                title="Delete Active Frame"
+                className="w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33]"
+              >
+                <PixelIcon name="trash" size={13} />
+              </TactileButton>
+            </>
+          )}
         </div>
       </div>
 
       {/* Animation Clips Tag Bar & Frame Thumbnail Reel */}
       <div className="flex items-center gap-3 overflow-x-auto">
-        {/* Clip Tag Badges */}
-        <div className="flex items-center gap-1 border-r border-[var(--desk-border)] pr-2">
-          <button
-            onClick={() => setActiveClipId(null)}
-            className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
-              activeClipId === null
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:text-[#f0be7c]'
-            }`}
-          >
-            All Frames ({frames.length})
-          </button>
-
-          {clips.map(clip => (
-            <div
-              key={clip.id}
-              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors ${
-                activeClipId === clip.id
+        {/* Clip Tag Badges (Hidden in playground mode to keep it minimal) */}
+        {!isPlaygroundMode && (
+          <div className="flex items-center gap-1 border-r border-[var(--desk-border)] pr-2">
+            <button
+              onClick={() => setActiveClipId(null)}
+              className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
+                activeClipId === null
                   ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
                   : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:text-[#f0be7c]'
               }`}
             >
-              <button
-                type="button"
-                onClick={() => setActiveClipId(clip.id)}
-                className="cursor-pointer font-bold font-mono text-[10px] bg-transparent border-0 p-0 text-inherit text-left"
-              >
-                {clip.name} ({clip.startFrame + 1}-{clip.endFrame + 1})
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteClip(clip.id);
-                }}
-                className="text-[#ff99aa] hover:text-[#ffffff] ml-0.5 cursor-pointer bg-transparent border-0 p-0"
-                aria-label={`Delete clip ${clip.name}`}
-                title="Delete Clip"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-
-          {isCreatingClip ? (
-            <input
-              type="text"
-              value={newClipName}
-              onChange={(e) => setNewClipName(e.target.value)}
-              onBlur={handleCreateClipSubmit}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateClipSubmit()}
-              ref={(el) => el?.focus()}
-              aria-label="New clip name"
-              className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 text-[10px] font-mono rounded-[2px] border border-[#f0be7c] outline-none w-20"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsCreatingClip(true)}
-              className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer"
-              title="Add Tagged Animation Clip"
-            >
-              + Tag Clip
+              All Frames ({frames.length})
             </button>
-          )}
-        </div>
+
+            {clips.map(clip => (
+              <div
+                key={clip.id}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold border transition-colors ${
+                  activeClipId === clip.id
+                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                    : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:text-[#f0be7c]'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveClipId(clip.id)}
+                  className="cursor-pointer font-bold font-mono text-[10px] bg-transparent border-0 p-0 text-inherit text-left"
+                >
+                  {clip.name} ({clip.startFrame + 1}-{clip.endFrame + 1})
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteClip(clip.id);
+                  }}
+                  className="text-[#ff99aa] hover:text-[#ffffff] ml-0.5 cursor-pointer bg-transparent border-0 p-0"
+                  aria-label={`Delete clip ${clip.name}`}
+                  title="Delete Clip"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+
+            {isCreatingClip ? (
+              <input
+                type="text"
+                value={newClipName}
+                onChange={(e) => setNewClipName(e.target.value)}
+                onBlur={handleCreateClipSubmit}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateClipSubmit()}
+                ref={(el) => el?.focus()}
+                aria-label="New clip name"
+                className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 text-[10px] font-mono rounded-[2px] border border-[#f0be7c] outline-none w-20"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsCreatingClip(true)}
+                className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer"
+                title="Add Tagged Animation Clip"
+              >
+                + Tag Clip
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Frame Thumbnail Reel */}
         <div className="flex items-center gap-2">

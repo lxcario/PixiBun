@@ -2,6 +2,8 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
+import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { 
   getBresenhamLine, 
   filterPixelPerfect, 
@@ -73,6 +75,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const stencilCanvasRef = useRef<HTMLCanvasElement>(null);
   const onionCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -236,6 +239,49 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     ctx.globalAlpha = 1.0;
   }, [canvasHeight, canvasWidth]);
+
+  // Render on-canvas interactive lightbox tracing stencil
+  const showStencilGuide = useOnboardingStore((state) => state.showStencilGuide);
+  const stencilOpacity = useOnboardingStore((state) => state.stencilOpacity);
+  const currentStepIndex = useOnboardingStore((state) => state.currentStepIndex);
+  const activeLessonId = useOnboardingStore((state) => state.activeLessonId);
+
+  useEffect(() => {
+    const canvas = stencilCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if (!showStencilGuide) return;
+
+    const currentStep = useOnboardingStore.getState().getCurrentStep();
+    if (currentStep.type !== 'DRAW_FRAME') return;
+    if (currentStep.frameIndex !== undefined && activeFrameIndex !== currentStep.frameIndex) return;
+
+    const template = useOnboardingStore.getState().getCurrentFrameTemplate();
+    if (!template) return;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = stencilOpacity;
+
+    const cellW = canvasWidth / 16;
+    const cellH = canvasHeight / 16;
+
+    template.grid16.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        const char = row[x];
+        if (char === '.') continue;
+        const color = TEMPLATE_PALETTE[char];
+        if (color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+        }
+      }
+    });
+
+    ctx.globalAlpha = 1.0;
+  }, [showStencilGuide, stencilOpacity, currentStepIndex, activeLessonId, activeFrameIndex, canvasWidth, canvasHeight]);
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback((description: string = 'Stroke', overrideLayerId?: string) => {
@@ -2057,6 +2103,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       {/* 3. Main Drawing Stage (Paper pinned on the desk) */}
       <div
+        id="center-canvas-area"
+        data-tutorial="canvas"
         role="application"
         tabIndex={0}
         aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
@@ -2109,6 +2157,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
         {/* Solid Canvas Background */}
         <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
+
+        {/* Lightbox Stencil Tracing Canvas */}
+        <canvas
+          ref={stencilCanvasRef}
+          data-testid="stencil-guide-canvas"
+          width={canvasWidth}
+          height={canvasHeight}
+          className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+        />
 
         {/* Onion Skin Underlay Canvas */}
         <canvas

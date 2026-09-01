@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
-// Hardened Content Security Policy: 'unsafe-eval' removed. 'unsafe-inline' retained for static Next.js App Router client hydration scripts.
-const cspHeader = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:;";
+const isDev = process.env.NODE_ENV === 'development';
+
+// Content Security Policy: 'unsafe-eval' enabled strictly in development for React stack trace reconstruction & Turbopack HMR; stripped in production for maximum security.
+const cspHeader = `default-src 'self'; script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:;`;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
