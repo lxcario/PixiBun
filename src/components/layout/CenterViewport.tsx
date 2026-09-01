@@ -87,7 +87,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const currentStrokeSnapshotRef = useRef<HistoryStep | null>(null);
 
   // Selection & Clipboard Memory
-  const [selection, setSelection] = useState<SelectionBox | null>(null);
   const [floatingSelection, setFloatingSelection] = useState<FloatingSelection | null>(null);
   const clipboardRef = useRef<{ canvas: HTMLCanvasElement; w: number; h: number } | null>(null);
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
@@ -121,6 +120,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     addLayer,
     deleteLayer,
     bumpBufferVersion,
+    selection,
+    selectionMask,
+    setSelection,
   } = useStudioStore();
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -130,7 +132,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const [lastPoint, setLastPoint] = useState<Point | null>(null);
   const [cursorCoords, setCursorCoords] = useState<Point | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [, setLassoPoints] = useState<Point[]>([]);
+  const [lassoPoints, setLassoPoints] = useState<Point[]>([]);
   const [lockedWarning, setLockedWarning] = useState(false);
   const lockedWarningTimerRef = useRef<number | null>(null);
   // Initialize or fetch the offscreen canvas for a layer.
@@ -1002,6 +1004,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const sw = activeBox.w * scale;
       const sh = activeBox.h * scale;
 
+      // Render irregular mask tint
+      if (selectionMask) {
+        ctx.fillStyle = 'rgba(100, 150, 255, 0.3)';
+        for (let py = activeBox.y; py < activeBox.y + activeBox.h; py++) {
+          for (let px = activeBox.x; px < activeBox.x + activeBox.w; px++) {
+            if (py >= 0 && py < canvasHeight && px >= 0 && px < canvasWidth) {
+              if (selectionMask[py * canvasWidth + px] === 1) {
+                ctx.fillRect(px * scale, py * scale, scale, scale);
+              }
+            }
+          }
+        }
+      }
+
       // Dark dashed border
       ctx.strokeStyle = '#3A2E4C';
       ctx.lineWidth = 2;
@@ -1019,6 +1035,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     canvasWidth,
     floatingSelection,
     selection,
+    selectionMask,
     showGrid,
     showIsoGuides,
     tools.symmetryHorizontal,
@@ -1105,10 +1122,46 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const fCtx = floatCanvas.getContext('2d');
     if (fCtx) {
       fCtx.imageSmoothingEnabled = false;
-      fCtx.drawImage(layerCanvas, x, y, w, h, 0, 0, w, h);
+      const imgData = ctx.getImageData(x, y, w, h);
+      
+      if (selectionMask) {
+        for (let py = 0; py < h; py++) {
+          for (let px = 0; px < w; px++) {
+            const globalX = x + px;
+            const globalY = y + py;
+            if (globalX >= 0 && globalX < canvasWidth && globalY >= 0 && globalY < canvasHeight) {
+              if (selectionMask[globalY * canvasWidth + globalX] === 0) {
+                const idx = (py * w + px) * 4;
+                imgData.data[idx + 3] = 0;
+              }
+            }
+          }
+        }
+      }
+      fCtx.putImageData(imgData, 0, 0);
+      
+      if (selectionMask) {
+        const origImgData = ctx.getImageData(x, y, w, h);
+        for (let py = 0; py < h; py++) {
+          for (let px = 0; px < w; px++) {
+            const globalX = x + px;
+            const globalY = y + py;
+            if (globalX >= 0 && globalX < canvasWidth && globalY >= 0 && globalY < canvasHeight) {
+              if (selectionMask[globalY * canvasWidth + globalX] === 1) {
+                const idx = (py * w + px) * 4;
+                origImgData.data[idx + 3] = 0;
+                origImgData.data[idx] = 0;
+                origImgData.data[idx + 1] = 0;
+                origImgData.data[idx + 2] = 0;
+              }
+            }
+          }
+        }
+        ctx.putImageData(origImgData, x, y);
+      } else {
+        ctx.clearRect(x, y, w, h);
+      }
     }
-
-    ctx.clearRect(x, y, w, h);
 
     setFloatingSelection({
       canvas: floatCanvas,
@@ -1442,8 +1495,101 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (tools.activeTool === 'select-lasso') {
       if (floatingSelection) commitFloatingSelection();
       setIsDrawing(true);
+      setSelection(null);
       setLassoPoints([coords]);
       setStrokeStart(coords);
+      return;
+    }
+
+    if (tools.activeTool === 'select-wand') {
+      if (floatingSelection) commitFloatingSelection();
+
+      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const data = imgData.data;
+        const targetIdx = (coords.y * canvasWidth + coords.x) * 4;
+        const targetR = data[targetIdx];
+        const targetG = data[targetIdx + 1];
+        const targetB = data[targetIdx + 2];
+        const targetA = data[targetIdx + 3];
+
+        const newSelectionMask = new Uint8Array(canvasWidth * canvasHeight);
+        let minX = canvasWidth, minY = canvasHeight, maxX = -1, maxY = -1;
+
+        const visited = new Uint8Array(canvasWidth * canvasHeight);
+        const queue: Point[] = [coords];
+        const { bucketTolerance, bucketContiguous } = tools;
+
+        const colorMatch = (r: number, g: number, b: number, a: number) => {
+          if (bucketTolerance === 0) {
+            return r === targetR && g === targetG && b === targetB && a === targetA;
+          }
+          const diff = Math.max(
+            Math.abs(r - targetR),
+            Math.abs(g - targetG),
+            Math.abs(b - targetB),
+            Math.abs(a - targetA)
+          );
+          return diff <= bucketTolerance;
+        };
+
+        if (bucketContiguous) {
+          visited[coords.y * canvasWidth + coords.x] = 1;
+          let head = 0;
+          while (head < queue.length) {
+            const { x, y } = queue[head++];
+            const idx = y * canvasWidth + x;
+            newSelectionMask[idx] = 1;
+
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+
+            const neighbors = [
+              { nx: x - 1, ny: y },
+              { nx: x + 1, ny: y },
+              { nx: x, ny: y - 1 },
+              { nx: x, ny: y + 1 },
+            ];
+
+            for (const { nx, ny } of neighbors) {
+              if (nx >= 0 && nx < canvasWidth && ny >= 0 && ny < canvasHeight) {
+                const nIdx = ny * canvasWidth + nx;
+                if (visited[nIdx] === 0) {
+                  visited[nIdx] = 1;
+                  const dataIdx = nIdx * 4;
+                  if (colorMatch(data[dataIdx], data[dataIdx+1], data[dataIdx+2], data[dataIdx+3])) {
+                    queue.push({ x: nx, y: ny });
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          for (let y = 0; y < canvasHeight; y++) {
+            for (let x = 0; x < canvasWidth; x++) {
+              const idx = y * canvasWidth + x;
+              const dataIdx = idx * 4;
+              if (colorMatch(data[dataIdx], data[dataIdx+1], data[dataIdx+2], data[dataIdx+3])) {
+                newSelectionMask[idx] = 1;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+        }
+
+        if (maxX >= 0) {
+          setSelection({ x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 }, newSelectionMask);
+        } else {
+          setSelection(null, null);
+        }
+      }
       return;
     }
 
@@ -1603,7 +1749,26 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     // Lasso Selecting
     if (tools.activeTool === 'select-lasso') {
-      setLassoPoints((prev) => [...prev, coords]);
+      setLassoPoints((prev) => {
+        const next = [...prev, coords];
+        const previewCanvas = previewCanvasRef.current;
+        if (previewCanvas && next.length > 0) {
+          const pCtx = previewCanvas.getContext('2d');
+          if (pCtx) {
+            pCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            pCtx.imageSmoothingEnabled = false;
+            pCtx.strokeStyle = 'rgba(199, 146, 223, 0.85)';
+            pCtx.lineWidth = 1;
+            pCtx.beginPath();
+            pCtx.moveTo(next[0].x, next[0].y);
+            for (let i = 1; i < next.length; i++) {
+              pCtx.lineTo(next[i].x, next[i].y);
+            }
+            pCtx.stroke();
+          }
+        }
+        return next;
+      });
       return;
     }
 
@@ -1731,15 +1896,60 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
         const drawColor = e?.shiftKey ? secondaryColor : primaryColor;
         drawPointsOnActiveLayer(shapePoints, drawColor, false);
-
-        const previewCanvas = previewCanvasRef.current;
-        if (previewCanvas) {
-          const pCtx = previewCanvas.getContext('2d');
-          pCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
-        }
       }
 
-      if (tools.activeTool !== 'select-box' && tools.activeTool !== 'select-lasso') {
+      if (tools.activeTool === 'select-lasso') {
+        if (lassoPoints.length > 2) {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvasWidth;
+          tempCanvas.height = canvasHeight;
+          const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+          if (tempCtx) {
+            tempCtx.fillStyle = 'black';
+            tempCtx.beginPath();
+            tempCtx.moveTo(lassoPoints[0].x, lassoPoints[0].y);
+            for (let i = 1; i < lassoPoints.length; i++) {
+              tempCtx.lineTo(lassoPoints[i].x, lassoPoints[i].y);
+            }
+            tempCtx.closePath();
+            tempCtx.fill();
+
+            const imgData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imgData.data;
+            const newSelectionMask = new Uint8Array(canvasWidth * canvasHeight);
+            let minX = canvasWidth, minY = canvasHeight, maxX = -1, maxY = -1;
+
+            for (let y = 0; y < canvasHeight; y++) {
+              for (let x = 0; x < canvasWidth; x++) {
+                const idx = y * canvasWidth + x;
+                const alpha = data[idx * 4 + 3];
+                if (alpha > 0) {
+                  newSelectionMask[idx] = 1;
+                  if (x < minX) minX = x;
+                  if (x > maxX) maxX = x;
+                  if (y < minY) minY = y;
+                  if (y > maxY) maxY = y;
+                }
+              }
+            }
+
+            if (maxX >= 0) {
+              setSelection({ x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 }, newSelectionMask);
+            } else {
+              setSelection(null, null);
+            }
+          }
+        }
+        setLassoPoints([]);
+      }
+
+      const previewCanvas = previewCanvasRef.current;
+      if (previewCanvas) {
+        const pCtx = previewCanvas.getContext('2d');
+        pCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
+      }
+
+      if (tools.activeTool !== 'select-box' && tools.activeTool !== 'select-lasso' && tools.activeTool !== 'select-wand') {
         commitSnapshot();
       }
     }

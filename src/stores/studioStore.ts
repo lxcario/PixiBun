@@ -109,6 +109,11 @@ interface StudioState {
   bufferVersion: number;
   bumpBufferVersion: () => void;
 
+  // Selection
+  selection: { x: number; y: number; w: number; h: number } | null;
+  selectionMask: Uint8Array | null;
+  setSelection: (sel: { x: number; y: number; w: number; h: number } | null, mask?: Uint8Array | null) => void;
+
   // Actions
   setCanvasSize: (width: number, height: number, anchor?: AnchorPosition, resample?: boolean) => void;
   setProjectName: (name: string) => void;
@@ -318,6 +323,15 @@ export const useStudioStore = create<StudioState>()(
       bumpBufferVersion: () => {
         set(state => {
           state.bufferVersion += 1;
+        });
+      },
+
+      selection: null,
+      selectionMask: null,
+      setSelection: (sel, mask = null) => {
+        set(state => {
+          state.selection = sel;
+          state.selectionMask = mask;
         });
       },
 
