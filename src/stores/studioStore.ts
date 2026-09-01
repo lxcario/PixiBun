@@ -721,10 +721,24 @@ export const useStudioStore = create<StudioState>()(
           const currentFrame = state.frames[state.activeFrameIndex];
 
           // New frames share the layer layout but start with blank pixels.
-          const clonedLayers: Layer[] = currentFrame.layers.map(l => ({
-            ...l,
-            id: createId('layer')
-          }));
+          // Exclude AI-generated layers (which have tags) from bleeding into new frames.
+          const clonedLayers: Layer[] = currentFrame.layers
+            .filter(l => !l.tag)
+            .map(l => ({
+              ...l,
+              id: createId('layer')
+            }));
+            
+          if (clonedLayers.length === 0) {
+            clonedLayers.push({
+              id: createId('layer'),
+              name: 'Base Layer',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over'
+            });
+          }
 
           const newFrame: AnimationFrame = {
             id: newFrameId,

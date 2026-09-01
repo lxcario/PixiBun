@@ -238,14 +238,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   }, [canvasHeight, canvasWidth]);
 
   // Capture Undo Snapshot
-  const captureSnapshot = useCallback((description: string = 'Stroke') => {
-    const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
+  const captureSnapshot = useCallback((description: string = 'Stroke', overrideLayerId?: string) => {
+    const targetLayerId = overrideLayerId || activeLayerId;
+    const currentLayerCanvas = getOrCreateLayerCanvas(targetLayerId);
     const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
     const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
     currentStrokeSnapshotRef.current = {
-      layerId: activeLayerId,
+      layerId: targetLayerId,
       frameIndex: activeFrameIndex,
       imageData: imgData,
       description,
@@ -376,28 +377,43 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       return sCtx;
     };
 
-    // Remove any existing layer with the given tag, clean up its buffer, then
-    // create a new layer with that tag and return its canvas context.
-    const replaceTaggedLayer = (displayName: string, tag: string): CanvasRenderingContext2D | null => {
+    // Non-destructively update or create a tagged AI layer, capturing history in place.
+    const updateTaggedLayer = (displayName: string, tag: string, drawFn: (ctx: CanvasRenderingContext2D) => void) => {
       const state = useStudioStore.getState();
       const currentFrame = state.frames[state.activeFrameIndex];
-      if (currentFrame) {
-        const existing = currentFrame.layers.find(l => l.tag === tag);
-        if (existing) {
-          deleteBuffers([existing.id]);
-          state.deleteLayer(existing.id);
-        }
-      }
-      state.addLayer(displayName, tag);
+      if (!currentFrame) return;
 
-      const freshState = useStudioStore.getState();
-      const freshFrame = freshState.frames[freshState.activeFrameIndex];
-      const newLayer = freshFrame?.layers[0]; // addLayer uses unshift -> index 0
-      if (!newLayer) return null;
-      const lCanvas = getOrCreateLayerCanvas(newLayer.id);
+      let targetLayerId: string;
+      const existing = currentFrame.layers.find(l => l.tag === tag);
+      
+      if (existing) {
+        targetLayerId = existing.id;
+        if (existing.name !== displayName) {
+          state.renameLayer(targetLayerId, displayName);
+        }
+      } else {
+        state.addLayer(displayName, tag);
+        const freshState = useStudioStore.getState();
+        const freshFrame = freshState.frames[freshState.activeFrameIndex];
+        const newLayer = freshFrame?.layers[0]; // addLayer uses unshift -> index 0
+        if (!newLayer) return;
+        targetLayerId = newLayer.id;
+      }
+
+      // Crucially capture the layer's pristine state BEFORE writing AI output
+      captureSnapshot(displayName, targetLayerId);
+      
+      const lCanvas = getOrCreateLayerCanvas(targetLayerId);
       const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
-      if (lCtx) lCtx.imageSmoothingEnabled = false;
-      return lCtx;
+      if (lCtx) {
+        lCtx.imageSmoothingEnabled = false;
+        lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawFn(lCtx);
+      }
+      
+      commitSnapshot();
+      renderComposite();
+      bumpBufferVersion();
     };
 
     const handleCleanJaggiesEvent = () => {
@@ -429,15 +445,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         selOut: false,
       });
 
-      const outCtx = replaceTaggedLayer(`Auto Shade ${lightAz}°`, 'auto-shade');
-      if (outCtx) {
+      updateTaggedLayer(`Auto Shade ${lightAz}°`, 'auto-shade', (outCtx) => {
         shadedPixels.forEach((p) => {
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleHighlightEvent = (e: Event) => {
@@ -457,15 +470,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         selOut: false,
       });
 
-      const outCtx = replaceTaggedLayer(`Specular ${lightAz}°`, 'specular');
-      if (outCtx) {
+      updateTaggedLayer(`Specular ${lightAz}°`, 'specular', (outCtx) => {
         specularPixels.forEach((p) => {
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleSelOutEvent = (e: Event) => {
@@ -477,15 +487,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       const { selOutPixels } = generateSelOutData(srcCtx, canvasWidth, canvasHeight, lightAz);
 
-      const outCtx = replaceTaggedLayer('Selective Outline', 'sel-out');
-      if (outCtx) {
+      updateTaggedLayer('Selective Outline', 'sel-out', (outCtx) => {
         selOutPixels.forEach((p) => {
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleInBetweenFrameEvent = () => {
@@ -566,15 +573,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       const { shadowPixels } = generateGroundShadowData(srcCtx, canvasWidth, canvasHeight);
 
-      const outCtx = replaceTaggedLayer('Ground Shadow', 'ground-shadow');
-      if (outCtx) {
+      updateTaggedLayer('Ground Shadow', 'ground-shadow', (outCtx) => {
         shadowPixels.forEach((p) => {
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleRotSpriteEvent = (e: Event) => {
@@ -706,13 +710,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         detail.paletteColors || []
       );
 
-      // Write output to a dedicated tagged layer (replaces any previous one)
-      const outCtx = replaceTaggedLayer(`Photometric ${materialName}`, 'photometric');
-      if (outCtx) {
+      // Write output to a dedicated tagged layer non-destructively
+      updateTaggedLayer(`Photometric ${materialName}`, 'photometric', (outCtx) => {
         outCtx.drawImage(shadedCanvas, 0, 0);
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleVolumetricOpticsEvent = (e: Event) => {
@@ -743,13 +744,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }
       );
 
-      // Write output to a dedicated tagged layer (replaces any previous one)
-      const outCtx = replaceTaggedLayer(`Optics (${preset})`, 'optical-output');
-      if (outCtx) {
+      // Write output to a dedicated tagged layer non-destructively
+      updateTaggedLayer(`Optics (${preset})`, 'optical-output', (outCtx) => {
         outCtx.drawImage(shadedCanvas, 0, 0);
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleBakeNormalMapEvent = () => {
@@ -781,12 +779,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           );
       const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
 
-      const outCtx = replaceTaggedLayer('Normal Map', 'normal-map');
-      if (outCtx) {
+      updateTaggedLayer('Normal Map', 'normal-map', (outCtx) => {
         outCtx.drawImage(normalCanvas, 0, 0);
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handle47BlobEvent = () => {
@@ -795,15 +790,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       const { blobPixels } = generate47BlobEdgeData(srcCtx, canvasWidth, canvasHeight);
 
-      const outCtx = replaceTaggedLayer('47-Blob Contours', 'blob-edges');
-      if (outCtx) {
+      updateTaggedLayer('47-Blob Contours', 'blob-edges', (outCtx) => {
         blobPixels.forEach((p) => {
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleRenderCastShadowEvent = (e: Event) => {
@@ -841,13 +833,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }
       );
 
-      // Write output to a dedicated tagged layer (replaces any previous one non-destructively)
-      const outCtx = replaceTaggedLayer('Cast Shadow', 'cast-shadow');
-      if (outCtx) {
+      // Write output to a dedicated tagged layer non-destructively
+      updateTaggedLayer('Cast Shadow', 'cast-shadow', (outCtx) => {
         outCtx.putImageData(shadowImgData, 0, 0);
-        renderComposite();
-        bumpBufferVersion();
-      }
+      });
     };
 
     const handleClearHistoryEvent = () => {
