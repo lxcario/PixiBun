@@ -29,6 +29,7 @@ export const RightInspector: React.FC = () => {
     addLayer,
     duplicateLayer,
     deleteLayer,
+    mergeLayerDown,
     toggleLayerVisibility,
     toggleLayerLock,
     setLayerOpacity,
@@ -63,6 +64,8 @@ export const RightInspector: React.FC = () => {
 
   const currentFrame = frames[activeFrameIndex];
   const activeLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
+  const activeLayerIndex = currentFrame?.layers.findIndex((l) => l.id === activeLayerId) ?? -1;
+  const isMergeDownAvailable = activeLayerIndex >= 0 && !!currentFrame && activeLayerIndex < currentFrame.layers.length - 1;
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
@@ -309,6 +312,16 @@ export const RightInspector: React.FC = () => {
               </TactileButton>
               <TactileButton
                 size="icon-sm"
+                variant="default"
+                disabled={!activeLayer || !isMergeDownAvailable}
+                onClick={() => activeLayer && mergeLayerDown(activeLayer.id)}
+                title="Merge Down"
+                className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+              >
+                <PixelIcon name="merge-down" size={14} />
+              </TactileButton>
+              <TactileButton
+                size="icon-sm"
                 variant="danger"
                 disabled={!currentFrame || currentFrame.layers.length <= 1}
                 onClick={() => activeLayer && deleteLayer(activeLayer.id)}
@@ -360,8 +373,9 @@ export const RightInspector: React.FC = () => {
 
           {/* Layer Stack List */}
           <div className="flex-1 overflow-y-auto flex flex-col gap-1.5 pr-1">
-            {currentFrame?.layers.map((layer) => {
+            {currentFrame?.layers.map((layer, index) => {
               const isActive = layer.id === activeLayerId;
+              const canMergeDown = index < (currentFrame?.layers.length || 0) - 1;
               return (
                 <div
                   key={layer.id}
@@ -413,8 +427,22 @@ export const RightInspector: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Visibility & Lock Toggles */}
+                  {/* Actions: Merge Down, Visibility & Lock Toggles */}
                   <div className="flex items-center gap-1.5">
+                    {canMergeDown && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          mergeLayerDown(layer.id);
+                        }}
+                        className="p-1 transition-colors cursor-pointer text-[var(--text-body)]/50 hover:text-[#f0be7c]"
+                        aria-label={`Merge down layer ${layer.name}`}
+                        title="Merge Down"
+                      >
+                        <PixelIcon name="merge-down" size={14} />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={(e) => {

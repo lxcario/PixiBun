@@ -9,7 +9,7 @@ import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
 import { AiMessage } from '@/types/ai';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
 import { createId } from '@/lib/engine/id';
-import { cloneBuffers, deleteBuffers, resizeAllBuffers, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, cloneBuffers, deleteBuffers, resizeAllBuffers, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ProjectFile } from '@/types/project';
 
@@ -168,7 +168,7 @@ interface StudioState {
   addRecentColor: (color: string) => void;
 
   // Layer Operations
-  addLayer: (name?: string, tag?: string) => void;
+  addLayer: (name?: string, tag?: string, idOverride?: string) => void;
   deleteLayer: (layerId: string) => void;
   duplicateLayer: (layerId: string) => void;
   reorderLayers: (startIndex: number, endIndex: number) => void;
@@ -178,11 +178,13 @@ interface StudioState {
   setLayerOpacity: (layerId: string, opacity: number) => void;
   setLayerBlendMode: (layerId: string, blendMode: BlendMode) => void;
   renameLayer: (layerId: string, name: string) => void;
+  mergeLayerDown: (layerId: string) => void;
 
   // Frame Operations
   addFrame: () => void;
   duplicateFrame: (frameIndex: number) => void;
   deleteFrame: (frameIndex: number) => void;
+  setFrameDuration: (frameIndex: number, durationMs: number) => void;
   reorderFrames: (startIndex: number, endIndex: number) => void;
   setActiveFrame: (index: number) => void;
   setFps: (fps: number) => void;
@@ -265,7 +267,7 @@ export const useStudioStore = create<StudioState>()(
         lightBrightness: 1.15,
         materialPreset: 'matte',
         cavityStrength: 1.0,
-        ditherModulation: 0.35,
+        ditherModulation: 0.0,
         curveTightness: 0.5,
         isoAngleSnap: true,
         opticalPreset: 'gemstone',
@@ -351,13 +353,13 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      setCanvasSize: (width, height, anchor = 'top-left', resample = false) => {
+      setCanvasSize: (width, height, anchor = 'center', resample = true) => {
         const previousWidth = get().canvasWidth;
         const previousHeight = get().canvasHeight;
         if (previousWidth === width && previousHeight === height) return;
 
-        // Anchor-aware resize keeps user content where they expect it instead
-        // of silently cropping everything toward the top-left corner.
+        // Dynamic art scaling (resample=true) scales artwork to fit new canvas size.
+        // Anchor-aware resize (resample=false) shifts content per anchor.
         resizeAllBuffers(width, height, anchor, resample);
         set(state => {
           state.canvasWidth = width;
@@ -633,13 +635,13 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      addLayer: (name, tag) => {
+      addLayer: (name, tag, idOverride) => {
         set(state => {
           const currentFrame = state.frames[state.activeFrameIndex];
           if (!currentFrame) return;
 
           const layerCount = currentFrame.layers.length + 1;
-          const newLayerId = createId('layer');
+          const newLayerId = idOverride || createId('layer');
           const newLayer: Layer = {
             id: newLayerId,
             name: name || `Layer ${layerCount}`,
@@ -761,6 +763,39 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
+      mergeLayerDown: (layerId) => {
+        set(state => {
+          const currentFrame = state.frames[state.activeFrameIndex];
+          if (!currentFrame || currentFrame.layers.length <= 1) return;
+
+          const upperIndex = currentFrame.layers.findIndex(l => l.id === layerId);
+          if (upperIndex === -1 || upperIndex >= currentFrame.layers.length - 1) {
+            return;
+          }
+
+          const upper = currentFrame.layers[upperIndex];
+          const lower = currentFrame.layers[upperIndex + 1];
+
+          const upperBuffer = getOrCreateBuffer(upper.id, state.canvasWidth, state.canvasHeight);
+          const lowerBuffer = getOrCreateBuffer(lower.id, state.canvasWidth, state.canvasHeight);
+
+          if (upper.visible) {
+            lowerBuffer.ctx.save();
+            lowerBuffer.ctx.imageSmoothingEnabled = false;
+            lowerBuffer.ctx.globalAlpha = upper.opacity;
+            lowerBuffer.ctx.globalCompositeOperation = upper.blendMode;
+            lowerBuffer.ctx.drawImage(upperBuffer.canvas, 0, 0);
+            lowerBuffer.ctx.restore();
+          }
+
+          currentFrame.layers.splice(upperIndex, 1);
+          deleteBuffers([upper.id]);
+
+          state.activeLayerId = lower.id;
+          state.bufferVersion += 1;
+        });
+      },
+
       addFrame: () => {
         set(state => {
           const newFrameId = createId('frame');
@@ -837,6 +872,15 @@ export const useStudioStore = create<StudioState>()(
           state.frames.splice(frameIndex, 1);
           state.activeFrameIndex = Math.min(state.activeFrameIndex, state.frames.length - 1);
           state.activeLayerId = state.frames[state.activeFrameIndex].layers[0].id;
+        });
+      },
+
+      setFrameDuration: (frameIndex, durationMs) => {
+        set(state => {
+          const frame = state.frames[frameIndex];
+          if (frame) {
+            frame.durationMs = Math.max(10, Math.min(10000, Math.round(durationMs)));
+          }
         });
       },
 

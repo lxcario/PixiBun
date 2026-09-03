@@ -43,8 +43,9 @@ export const PlaygroundLayout: React.FC = () => {
 
   const stepConfig = getCurrentStep();
 
-  // Set default brush size to 2 for bold, clear inking on mount
+  // Initialize playground state and brush size on mount
   useEffect(() => {
+    useOnboardingStore.getState().startPlayground();
     setBrushSize(2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -227,7 +228,7 @@ export const PlaygroundLayout: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => router.push('/studio')}
+            onClick={() => router.push('/studio?fromPlayground=true')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] border-2 border-[var(--desk-border)] text-xs font-mono font-bold text-[var(--text-body)] hover:text-[#f0be7c] transition-all cursor-pointer shadow-sm active:translate-y-px"
             title="Skip onboarding and enter the full studio"
           >

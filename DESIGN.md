@@ -158,3 +158,72 @@ graph TD
 * **Voice:** Written from one craftsperson to another — humble, warm, precise, and practical.
 * **Banned Buzzwords:** Never use *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"Seamlessly supercharge"*, *"Unlock next-gen capabilities"*, or fake robotic status codes (*"Payload initialized"*).
 * **Positive Framing:** Explain the tangible physical utility clearly: *"Bakes a 3D tangent normal map into a new layer for Godot/Unity"* instead of *"AI-powered magic normal generator"*.
+
+---
+
+## 8. Viewport Ergonomics & HUD Precision Guidance
+
+### Canvas Brush Bounding Box (HUD Cursor Overlay)
+At high zoom factors ($\ge 400\%$), navigating multi-pixel brush sizes ($2\text{px}$ to $16\text{px}$) requires direct spatial feedback:
+* **Geometry:** A 1px crisp bounding box matching `tools.brushSize` centered on the cursor canvas coordinate.
+* **Color & Contrast:** 1px stroke in warm studio amber (`#F0BE7C` at 60% opacity) layered over a 1px dark shadow stroke (`#140C1E` at 50% opacity) ensuring visibility over both light and dark pixels.
+* **Performance Invariant:** Rendered exclusively onto `gridCanvasRef` on `pointermove` without touching Zustand state or triggering React re-renders.
+
+### Viewport Fit & Scale Navigation Standards
+Keyboard conventions for rapid drafting ergonomics:
+* **`Ctrl + 0` (Fit to Screen):** Recomputes zoom and offsets so the entire canvas fills the viewport with at least 32px padding on all sides, aligned to integer zoom steps ($100\%, 200\%, \dots$).
+* **`Ctrl + 1` (100% Real Scale):** Resets viewport zoom to exactly 100% with the canvas centered in the drafting desk.
+
+### Accessible Form Controls & Screen Reader Semantics
+* **Native Range Sliders:** Native `<input type="range">` elements natively communicate `min`, `max`, and `value` to assistive technologies. Custom `aria-valuemin/max/now` attributes MUST NOT be added redundantly.
+* **Mandatory Label Association:** Every slider must be programmatically associated with its text label via `<label htmlFor="...">` or an explicit `aria-label` (e.g. `aria-label="Brush size"`).
+
+---
+
+## 9. Animation Spacing & Variable Timing Visualizer
+
+### Classical Timing vs. Spacing Principles
+Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Principles of Animation:
+* **Proportional Timeline Frame Cards:** Rather than uniform-width cards, timeline frame cards scale their horizontal width proportionally when `durationMs` deviates from the baseline frame duration ($T_{\text{base}} = 1000 / \text{fps}$):
+  $$W_{\text{card}} = \text{clamp}\left(48\text{px}, \; 48\text{px} \times \frac{\text{durationMs}}{T_{\text{base}}}, \; 160\text{px}\right)$$
+* **Timing Hold Badge:** Frames with $\text{durationMs} \ge 2 \times T_{\text{base}}$ display an understated amber duration pill (`+125ms`) on the top-right corner of the card.
+* **Ghost Frame Spacing Falloff:** Onion skin ghost opacity scales down during extended holds so stationary poses do not overwhelm adjacent in-betweens.
+
+---
+
+## 10. Direct Manipulation Lighting Gizmo (HUD Canvas Layer)
+
+Grounded in Ben Shneiderman's 1983 direct-manipulation paradigm:
+* **Spatial Sun Handle:** A 12px circular brass token (`#F0BE7C`) positioned along an elliptical orbit representing the light vector ($\theta$ azimuth, $\phi$ elevation).
+* **Azimuth Sweep Arc:** A subtle dashed compass circle rendered on `gridCanvasRef` indicating azimuth direction ($0^\circ$ North to $315^\circ$ North-West).
+* **Interactive Physics:** Dragging the sun handle updates `tools.lightAzimuth` and `tools.lightElevation` in real-time, providing tactile 3D spatial feedback directly on the drafting desk without forcing the artist to fiddle with numeric sliders in the right inspector.
+
+---
+
+## 11. Tileset Palette & Stamping Workflow
+
+### Grid Partitioning & Slicing Viewport
+* **Tile Grid Geometry:** Strict integer grid overlay supporting $16\times16$, $24\times24$, and $32\times32$ pixel tiles.
+* **Active Tile Selection:** Double-line brass bezel (`#F0BE7C` outer, `#140C1E` inner) highlighting currently active stamp tile.
+* **Stamp Tool Preview:** When the stamp tool is active, the cursor renders a 50% translucent ghost preview of the selected tile snapped to the canvas pixel grid.
+
+---
+
+## 12. Perceptual Accessibility: CVD (Colorblindness) Lens
+
+Grounded in Machado, Oliveira & Fernandes (2009, IEEE TVCG):
+* **Non-Destructive Lens Simulation:** A post-composite SVG filter / matrix multiplication pass simulating:
+  1. **Protanopia:** L-cone deficiency (red-weakness).
+  2. **Deuteranopia:** M-cone deficiency (green-weakness).
+  3. **Tritanopia:** S-cone deficiency (blue-weakness).
+  4. **Monochromacy:** Pure luminance contrast validation.
+* **Lens Invariant:** Operates strictly on viewport display output; project data and exported files remain 100% untouched.
+
+---
+
+## 13. Silhouette & Value Contrast Testing (Squint Mode)
+
+* **Game Art Silhouette Discipline:** A 1-key HUD toggle rendering all non-transparent sprite pixels as solid silhouette black (`#140C1E`) over white background.
+* **Utility:** Allows character animators and game artists to immediately evaluate readability, weight distribution, and negative space without color distractions.
+
+

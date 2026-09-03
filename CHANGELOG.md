@@ -1,6 +1,37 @@
-# ðŸ“œ PixiBun Atelier â€” Changelog
+# PixiBun Atelier — Changelog
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
+
+---
+
+## [v1.4.0] - 2026-09-03
+
+### Performance, Storage & Hot-Path Decoupling (Phase 30)
+- **Stroke Hot-Path Decoupling**: Pruned monolithic `useStudioStore` subscriptions in `CenterViewport.tsx` to atomic selectors. Completely decoupled `bufferVersion` subscriptions from viewport rendering, eliminating re-render cascades during active pen/eraser strokes.
+- **Throttled Live Signals**: Throttled `bumpBufferVersion()` via `requestAnimationFrame` strictly for decoupled observers (`BottomTimeline`, `FloatingPreviewWindow`), while deferring snapshot commits and autosave triggers strictly to stroke completion (`pointerup`).
+- **Dexie Schema v4 Binary Blob Storage**: Upgraded IndexedDB engine to schema v4 with a dedicated `layerBlobs` table (`++id, [projectId+layerId+frameIndex], projectId, layerId`). Layer pixel buffers are stored directly as raw PNG `Blob` instances, omitting `pngBase64` from metadata JSON to eliminate serialization overhead and storage duplication. Added `paintLayerFromBlob` with zero-leak `ImageBitmap.close()` management and full backward compatibility for legacy projects.
+- **Export Constructor Hardening**: Replaced illegal `new HTMLCanvasElement()` constructor fallback in `ExportModal.tsx` with standard `document.createElement('canvas')`.
+- **Compositor Re-entrancy Protection**: Set `freshCanvas: true` default in `compositor.ts` to prevent shared singleton canvas overwrite bugs during concurrent renders.
+- **Zero Linter Warnings**: Cleaned up all 6 `react-hooks/exhaustive-deps` warnings in `CenterViewport.tsx`.
+
+### Product Alignment, Viewport Precision & Timing (Phase 31)
+- **Layer Merge Down (`mergeLayerDown`)**: Implemented non-destructive layer merge in `studioStore.ts` that composites the active layer onto the underlying layer respecting opacity and blend modes (`source-over`, `multiply`, `screen`, etc.), releases upper buffer memory, and focuses the lower layer. Added tactile UI buttons in `RightInspector.tsx` and a new pixel-aligned icon in `PixelIcon.tsx`.
+- **Variable Frame Duration Pacing**: Wired per-frame `durationMs` to a high-resolution delta-time animation clock in `BottomTimeline.tsx`. Added proportional timeline card widths ($W_{\text{card}}$) and amber timing hold badges (`+Xms`) for frames held $\ge 2\times$ baseline duration per Richard Williams timing principles.
+- **Heterogeneous GIF Export**: Upgraded `gifEncoderCore.ts`, `gifEncoder.worker.ts`, and `ExportModal.tsx` to output frame-specific centisecond delays ($D_i = \max(2, \text{round}(\text{durationMs}_i / 10))$).
+- **Selection Modifiers**: Implemented Shift (Union) and Alt (Subtract) across Marquee Box, Freehand Lasso, and Magic Wand in `CenterViewport.tsx`, with dynamic binary mask merging, bounding box recalculation, and real-time color-coded viewport preview outlines.
+- **Keyboard Zoom Shortcuts**: Bound `Ctrl/Cmd +` / `Ctrl/Cmd =`, `Ctrl/Cmd -`, `Ctrl/Cmd 0` (Fit to screen), and `Ctrl/Cmd 1` (100% zoom) in `StudioLayout.tsx`, with documentation added to `ShortcutsModal.tsx`.
+- **Canvas Brush Ghost Bounding Cursor**: Added a 1px integer pixel bounding box on an overlay canvas layer in `CenterViewport.tsx` matching `tools.brushSize` at $\ge 400\%$ zoom, with zero React re-renders.
+
+### Critical UX, Viewport Precision & RotSprite Polish
+- **Onboarding Stencil Isolation**: Added strict `isPlaygroundActive` gating in `CenterViewport.tsx` and reset stencil state on `StudioLayout.tsx` mount, preventing playground tracing templates from leaking onto the studio canvas.
+- **Playground Animation Transfer**: Added `?fromPlayground=true` parameter in `PlaygroundLayout.tsx` to preserve animated frame sequences authored during onboarding when entering the studio, autosaving to IndexedDB under the project name `'Playground Animation'`.
+- **Viewport Zoom Aspect Ratio Fix**: Added `shrink-0` and explicit `flexShrink: 0`, `minWidth`, and `minHeight` styles to `#center-canvas-area` in `CenterViewport.tsx`, eliminating horizontal flexbox compression at high zoom levels (e.g. 2625%) and maintaining an exact 1:1 square aspect ratio up to 6400% zoom.
+- **Dynamic Canvas Resizing (Default Resample)**: Changed default `resample` state to `true` in `CanvasResizeModal.tsx` and `setCanvasSize` in `studioStore.ts`. Resizing down (e.g. 32x32 to 16x16) now dynamically scales artwork via nearest-neighbor interpolation without edge cropping or data loss.
+- **Photometric Dither Modulation Default**: Reset initial `tools.ditherModulation` from `0.35` (35%) to `0.0` (0%) in `studioStore.ts`.
+- **PixiBud AI Undo Layer Deletion**: Added `createdLayerId` tracking to `HistoryStep` in `canvas.ts` and `CenterViewport.tsx`. Pressing `Ctrl+Z` after applying an AI effect (`Photometric`, `Specular`, `Cast Shadow`) completely deletes the created layer from the layer stack and buffer pool.
+- **Base Layer Active Focus Anchor**: `updateTaggedLayer` now restores active selection to the underlying base artwork layer after generating an AI pass, enabling seamless chaining of multiple effects (e.g. Specular or Cast Shadow immediately following Photometric).
+- **RotSprite Precision Rewrite**: Rewrote `rotateWithRotSprite` in `smartMathEngine.ts` with exact, lossless orthogonal integer permutation fast-paths for $90^\circ, 180^\circ, 270^\circ$, plus $3\times3$ subpixel supersampling and majority color voting for arbitrary angles, eliminating stroke breakage, missing pixels, and shape deformation.
+- **Test Suite Updates**: 164 tests passing across 31 suites (+5 new tests in `tests/rotSpriteAndPrecision.test.ts`).
 
 ---
 

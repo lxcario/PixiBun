@@ -84,7 +84,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
     for (let i = 0; i < targetFrames.length; i++) {
       const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      frameCanvases.push(composed ?? new HTMLCanvasElement());
+      if (!composed) {
+        console.error(`Failed to composite frame ${i + 1} for sprite sheet export.`);
+        const fallback = document.createElement('canvas');
+        fallback.width = canvasWidth;
+        fallback.height = canvasHeight;
+        frameCanvases.push(fallback);
+      } else {
+        frameCanvases.push(composed);
+      }
     }
 
     const packed = packSpriteSheet(frameCanvases, canvasWidth, canvasHeight, fps, projectName, {
@@ -148,6 +156,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setIsExporting(true);
     setExportProgress({ current: 0, total: frameCanvases.length });
 
+    const delays = targetFrames.map((f) => {
+      const ms = f.durationMs || Math.round(1000 / fps);
+      return Math.max(2, Math.round(ms / 10));
+    });
+
     try {
       const blob = await createAnimatedGifBlobAsync(
         frameCanvases,
@@ -156,7 +169,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         (current, total) => {
           setExportProgress({ current, total });
         },
-        controller.signal
+        controller.signal,
+        delays
       );
 
       const url = URL.createObjectURL(blob);

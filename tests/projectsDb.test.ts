@@ -10,11 +10,15 @@ import {
   createBlankProject,
   autoSaveWorkspace,
   loadLatestSavedWorkspace,
+  saveLayerBlobs,
+  getLayerBlobsForProject,
+  deleteLayerBlobsForProject,
 } from '@/lib/storage/db';
 
 describe('Projects Database (Dexie IndexedDB CRUD)', () => {
   beforeEach(async () => {
     await db.projects.clear();
+    await db.layerBlobs.clear();
   });
 
   it('creates and lists blank projects sorted by updatedAt descending', async () => {
@@ -99,15 +103,69 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
     expect(updated?.dataJson).toContain('Final Polished Artwork');
   });
 
-  it('deletes a project by ID', async () => {
+  it('deletes a project by ID and cascades deletion of its layerBlobs', async () => {
     const proj = await createBlankProject('To Be Deleted');
     expect(await getProjectById(proj.id)).not.toBeNull();
+
+    const mockBlob = new Blob(['mock-binary-data'], { type: 'image/png' });
+    await saveLayerBlobs(proj.id, [{ layerId: 'layer-1', frameIndex: 0, blob: mockBlob }]);
+    const savedBlobs = await getLayerBlobsForProject(proj.id);
+    expect(savedBlobs).toHaveLength(1);
 
     const deleted = await deleteProject(proj.id);
     expect(deleted).toBe(true);
     expect(await getProjectById(proj.id)).toBeNull();
 
+    const remainingBlobs = await getLayerBlobsForProject(proj.id);
+    expect(remainingBlobs).toHaveLength(0);
+
     const all = await listAllProjects();
     expect(all).toHaveLength(0);
+  });
+
+  it('stores and retrieves binary layerBlobs in Dexie schema v4 via autoSaveWorkspace', async () => {
+    const proj = await createBlankProject('Binary Project', 16, 16);
+    const mockBlob1 = new Blob(['png-pixels-layer1'], { type: 'image/png' });
+    const mockBlob2 = new Blob(['png-pixels-layer2'], { type: 'image/png' });
+
+    const success = await autoSaveWorkspace(
+      proj.id,
+      'Binary Project Saved',
+      16,
+      16,
+      8,
+      { metadataOnly: true },
+      undefined,
+      [
+        { layerId: 'layer-1', frameIndex: 0, blob: mockBlob1 },
+        { layerId: 'layer-2', frameIndex: 0, blob: mockBlob2 },
+      ]
+    );
+
+    expect(success).toBe(true);
+    const storedBlobs = await getLayerBlobsForProject(proj.id);
+    expect(storedBlobs).toHaveLength(2);
+    expect(storedBlobs.map((b) => b.layerId)).toEqual(['layer-1', 'layer-2']);
+
+    const loadedProject = await getProjectById(proj.id);
+    expect(loadedProject?.dataJson).toBe(JSON.stringify({ metadataOnly: true }));
+
+    await deleteLayerBlobsForProject(proj.id);
+    const clearedBlobs = await getLayerBlobsForProject(proj.id);
+    expect(clearedBlobs).toHaveLength(0);
+  });
+
+  it('clones layerBlobs when duplicating an existing project', async () => {
+    const original = await createBlankProject('Source Sprite', 32, 32);
+    const mockBlob = new Blob(['source-pixels'], { type: 'image/png' });
+    await saveLayerBlobs(original.id, [{ layerId: 'layer-src', frameIndex: 0, blob: mockBlob }]);
+
+    const duplicate = await duplicateProject(original.id, 'Cloned Sprite');
+    expect(duplicate).not.toBeNull();
+
+    const clonedBlobs = await getLayerBlobsForProject(duplicate!.id);
+    expect(clonedBlobs).toHaveLength(1);
+    expect(clonedBlobs[0].layerId).toBe('layer-src');
+    expect(clonedBlobs[0].projectId).toBe(duplicate!.id);
   });
 });

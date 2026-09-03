@@ -32,7 +32,7 @@ export function compositeFrame(
 
   const out =
     targetCanvas ||
-    (options.freshCanvas
+    (options.freshCanvas ?? true
       ? document.createElement('canvas')
       : sharedOffscreenCanvas ?? (sharedOffscreenCanvas = document.createElement('canvas')));
   if (out.width !== width || out.height !== height) {

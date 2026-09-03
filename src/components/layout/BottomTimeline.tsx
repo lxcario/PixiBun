@@ -70,6 +70,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     addFrame,
     duplicateFrame,
     deleteFrame,
+    setFrameDuration,
     isPlaying,
     setIsPlaying,
     fps,
@@ -138,7 +139,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   useEffect(() => {
     if (!isPlaying || frames.length <= 1) return;
 
-    const frameDuration = 1000 / fps;
+    const baseFrameDuration = Math.round(1000 / fps);
     let lastTimestamp = 0;
     let accumulator = 0;
     let animFrameId: number;
@@ -148,8 +149,10 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       accumulator += timestamp - lastTimestamp;
       lastTimestamp = timestamp;
 
-      if (accumulator >= frameDuration) {
-        accumulator -= frameDuration;
+      const currentDuration = frames[activeFrameIndex]?.durationMs || baseFrameDuration;
+
+      if (accumulator >= currentDuration) {
+        accumulator = Math.max(0, accumulator - currentDuration);
         if (loopMode === 'repeat') {
           if (activeFrameIndex < maxFrame) {
             setActiveFrame(activeFrameIndex + 1);
@@ -191,11 +194,11 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   }, [
     isPlaying,
     fps,
-    loopMode,
+    frames,
     activeFrameIndex,
-    frames.length,
-    minFrame,
+    loopMode,
     maxFrame,
+    minFrame,
     setActiveFrame,
     setIsPlaying,
   ]);
@@ -307,6 +310,27 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <span className="text-[#f0be7c] min-w-[20px] font-bold text-right">
                 {fps}
               </span>
+            </div>
+
+            {/* Active Frame Duration Input */}
+            <div className="flex items-center gap-1.5 bg-[var(--desk-surface-raised)] px-2 py-1 rounded-[2px] border-2 border-[var(--desk-border)]">
+              <span className="text-[var(--text-body)] font-bold">Dur:</span>
+              <input
+                type="number"
+                min="10"
+                max="5000"
+                step="10"
+                aria-label="Active frame duration in milliseconds"
+                value={frames[activeFrameIndex]?.durationMs || Math.round(1000 / fps)}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val) && val >= 10) {
+                    setFrameDuration(activeFrameIndex, val);
+                  }
+                }}
+                className="w-14 bg-[#181124] text-[#f0be7c] font-bold text-right px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] focus:border-[#f0be7c] outline-none text-xs font-mono"
+              />
+              <span className="text-[var(--text-body)]/60 text-[10px]">ms</span>
             </div>
 
             {/* Onion Skinning Toggle */}
@@ -447,6 +471,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             const isBeingDragged = draggedFrameIndex === index;
             const isDropTarget = dragOverFrameIndex === index && draggedFrameIndex !== index;
 
+            const baseTime = Math.round(1000 / fps);
+            const duration = frame.durationMs || baseTime;
+            const cardWidth = Math.max(48, Math.min(160, Math.round(48 * (duration / baseTime))));
+            const isHold = duration >= 2 * baseTime;
+            const extraMs = duration - baseTime;
+
             return (
               <button
                 type="button"
@@ -458,9 +488,10 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
                 onClick={() => setActiveFrame(index)}
-                aria-label={`Select frame ${index + 1}. Drag to reorder or replace.`}
-                title="Click to select, drag to replace/reorder"
-                className={`relative min-w-[52px] h-12 rounded-[2px] border-2 cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
+                aria-label={`Select frame ${index + 1}. Duration: ${duration}ms. Drag to reorder.`}
+                title={`Frame #${index + 1} (${duration}ms) - Drag to reorder`}
+                style={{ width: `${cardWidth}px` }}
+                className={`relative min-w-[48px] h-12 rounded-[2px] border-2 cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
                   isBeingDragged
                     ? 'opacity-30 scale-95 border-dashed border-[#f0be7c] bg-[#1a0f2e]'
                     : isDropTarget
@@ -472,12 +503,22 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'
                 }`}
               >
+                {/* Timing Hold Badge */}
+                {isHold && (
+                  <span
+                    data-testid={`frame-hold-badge-${index}`}
+                    className="absolute -top-1.5 -right-1.5 bg-[#8c5120] text-[#f0be7c] text-[8px] font-mono font-bold px-1 rounded-[2px] border border-[#f0be7c] shadow-xs pointer-events-none z-10"
+                  >
+                    +{extraMs}ms
+                  </span>
+                )}
+
                 <div className="w-full flex justify-between items-center text-[9px] font-mono leading-none pointer-events-none">
                   <span className={isActive ? 'text-[#f0be7c] font-bold' : 'text-[var(--text-heading)] font-bold'}>
                     #{index + 1}
                   </span>
                   <span className={isActive ? 'text-[#f0be7c]/80' : 'text-[var(--text-body)]/60'}>
-                    {frame.layers.length}L
+                    {duration}ms
                   </span>
                 </div>
 

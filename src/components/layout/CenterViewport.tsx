@@ -16,7 +16,7 @@ import {
 } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { HistoryStep } from '@/types/canvas';
 import { createHistoryEngine, HistoryEngine } from '@/lib/engine/historyEngine';
 import { ImportPayload } from '@/components/modals/ImportModal';
@@ -90,38 +90,109 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
 
-  const {
-    canvasWidth,
-    canvasHeight,
-    zoom,
-    setZoom,
-    panX,
-    panY,
-    setPan,
-    showGrid,
-    showIsoGuides,
-    showTilePreview,
-    showNormalMapPreview,
-    onionSkin,
-    isPlaying,
-    tools,
-    primaryColor,
-    secondaryColor,
-    setPrimaryColor,
-    frames,
-    activeFrameIndex,
-    activeLayerId,
-    bufferVersion,
-    setCanUndo,
-    setCanRedo,
-    addExtractedPalette,
-    addLayer,
-    deleteLayer,
-    bumpBufferVersion,
-    selection,
-    selectionMask,
-    setSelection,
-  } = useStudioStore();
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const zoom = useStudioStore((s) => s.zoom);
+  const setZoom = useStudioStore((s) => s.setZoom);
+  const panX = useStudioStore((s) => s.panX);
+  const panY = useStudioStore((s) => s.panY);
+  const setPan = useStudioStore((s) => s.setPan);
+  const showGrid = useStudioStore((s) => s.showGrid);
+  const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
+  const showTilePreview = useStudioStore((s) => s.showTilePreview);
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const onionSkin = useStudioStore((s) => s.onionSkin);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const tools = useStudioStore((s) => s.tools);
+  const primaryColor = useStudioStore((s) => s.primaryColor);
+  const secondaryColor = useStudioStore((s) => s.secondaryColor);
+  const setPrimaryColor = useStudioStore((s) => s.setPrimaryColor);
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const activeLayerId = useStudioStore((s) => s.activeLayerId);
+  const setCanUndo = useStudioStore((s) => s.setCanUndo);
+  const setCanRedo = useStudioStore((s) => s.setCanRedo);
+  const addExtractedPalette = useStudioStore((s) => s.addExtractedPalette);
+  const addLayer = useStudioStore((s) => s.addLayer);
+  const deleteLayer = useStudioStore((s) => s.deleteLayer);
+  const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
+  const selection = useStudioStore((s) => s.selection);
+  const selectionMask = useStudioStore((s) => s.selectionMask);
+  const setSelection = useStudioStore((s) => s.setSelection);
+
+  const isDrawingRef = useRef(false);
+  const rafBufferBumpRef = useRef<number | null>(null);
+  const onionGhostCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cursorCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const selectionModifierRef = useRef<'replace' | 'union' | 'subtract'>('replace');
+  const baseSelectionMaskRef = useRef<Uint8Array | null>(null);
+
+  const createBoxMask = useCallback(
+    (box: { x: number; y: number; w: number; h: number }): Uint8Array => {
+      const mask = new Uint8Array(canvasWidth * canvasHeight);
+      const endX = Math.min(canvasWidth, box.x + box.w);
+      const endY = Math.min(canvasHeight, box.y + box.h);
+      for (let y = Math.max(0, box.y); y < endY; y++) {
+        for (let x = Math.max(0, box.x); x < endX; x++) {
+          mask[y * canvasWidth + x] = 1;
+        }
+      }
+      return mask;
+    },
+    [canvasHeight, canvasWidth]
+  );
+
+  const mergeSelectionMask = useCallback(
+    (
+      baseMask: Uint8Array | null,
+      incomingMask: Uint8Array,
+      mode: 'replace' | 'union' | 'subtract'
+    ): { box: { x: number; y: number; w: number; h: number } | null; mask: Uint8Array | null } => {
+      const total = canvasWidth * canvasHeight;
+      const resultMask = new Uint8Array(total);
+      const effectiveBase = mode !== 'replace' && baseMask ? baseMask : null;
+
+      let minX = canvasWidth;
+      let minY = canvasHeight;
+      let maxX = -1;
+      let maxY = -1;
+      let count = 0;
+
+      for (let i = 0; i < total; i++) {
+        const baseVal = effectiveBase ? effectiveBase[i] : 0;
+        const incVal = incomingMask[i];
+        let finalVal = 0;
+
+        if (mode === 'union') {
+          finalVal = baseVal === 1 || incVal === 1 ? 1 : 0;
+        } else if (mode === 'subtract') {
+          finalVal = baseVal === 1 && incVal === 0 ? 1 : 0;
+        } else {
+          finalVal = incVal;
+        }
+
+        resultMask[i] = finalVal;
+        if (finalVal === 1) {
+          count++;
+          const px = i % canvasWidth;
+          const py = Math.floor(i / canvasWidth);
+          if (px < minX) minX = px;
+          if (px > maxX) maxX = px;
+          if (py < minY) minY = py;
+          if (py > maxY) maxY = py;
+        }
+      }
+
+      if (count > 0 && maxX >= minX && maxY >= minY) {
+        return {
+          box: { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 },
+          mask: resultMask,
+        };
+      }
+      return { box: null, mask: null };
+    },
+    [canvasHeight, canvasWidth]
+  );
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -214,12 +285,23 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     if (specs.length === 0) return;
 
+    if (!onionGhostCanvasRef.current) {
+      onionGhostCanvasRef.current = document.createElement('canvas');
+    }
+    const scratchCanvas = onionGhostCanvasRef.current;
+    if (scratchCanvas.width !== canvasWidth || scratchCanvas.height !== canvasHeight) {
+      scratchCanvas.width = canvasWidth;
+      scratchCanvas.height = canvasHeight;
+    }
+
     for (const spec of specs) {
       const ghostCanvas = compositeFrame(
         state.frames,
         spec.frameIndex,
         canvasWidth,
-        canvasHeight
+        canvasHeight,
+        {},
+        scratchCanvas
       );
       if (!ghostCanvas) continue;
 
@@ -240,7 +322,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.globalAlpha = 1.0;
   }, [canvasHeight, canvasWidth]);
 
-  // Render on-canvas interactive lightbox tracing stencil
+  // Render on-canvas interactive lightbox tracing stencil (strictly in playground mode)
+  const isPlaygroundActive = useOnboardingStore((state) => state.isPlaygroundActive);
   const showStencilGuide = useOnboardingStore((state) => state.showStencilGuide);
   const stencilOpacity = useOnboardingStore((state) => state.stencilOpacity);
   const currentStepIndex = useOnboardingStore((state) => state.currentStepIndex);
@@ -253,7 +336,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    if (!showStencilGuide) return;
+    if (!showStencilGuide || !isPlaygroundActive) return;
 
     const currentStep = useOnboardingStore.getState().getCurrentStep();
     if (currentStep.type !== 'DRAW_FRAME') return;
@@ -281,10 +364,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     });
 
     ctx.globalAlpha = 1.0;
-  }, [showStencilGuide, stencilOpacity, currentStepIndex, activeLessonId, activeFrameIndex, canvasWidth, canvasHeight]);
+  }, [showStencilGuide, isPlaygroundActive, stencilOpacity, currentStepIndex, activeLessonId, activeFrameIndex, canvasWidth, canvasHeight]);
 
   // Capture Undo Snapshot
-  const captureSnapshot = useCallback((description: string = 'Stroke', overrideLayerId?: string) => {
+  const captureSnapshot = useCallback((description: string = 'Stroke', overrideLayerId?: string, createdLayerId?: string) => {
     const targetLayerId = overrideLayerId || activeLayerId;
     const currentLayerCanvas = getOrCreateLayerCanvas(targetLayerId);
     const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
@@ -296,6 +379,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       frameIndex: activeFrameIndex,
       imageData: imgData,
       description,
+      createdLayerId,
     };
   }, [activeFrameIndex, activeLayerId, canvasWidth, canvasHeight, getOrCreateLayerCanvas]);
 
@@ -325,12 +409,20 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       frameIndex: previousStep.frameIndex,
       imageData: currentImgData,
       description: previousStep.description,
+      createdLayerId: previousStep.createdLayerId,
     };
 
     const stepToRestore = historyEngineRef.current.undo(currentStep);
     if (!stepToRestore) return;
 
-    ctx.putImageData(stepToRestore.imageData, 0, 0);
+    if (previousStep.createdLayerId) {
+      // Remove the newly created layer on undo
+      const state = useStudioStore.getState();
+      state.deleteLayer(previousStep.createdLayerId);
+      deleteBuffers([previousStep.createdLayerId]);
+    } else {
+      ctx.putImageData(stepToRestore.imageData, 0, 0);
+    }
 
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);
@@ -343,6 +435,16 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const nextStep = historyEngineRef.current.peekRedo();
     if (!nextStep) return;
 
+    if (nextStep.createdLayerId) {
+      // Recreate the layer if it was deleted during undo
+      const state = useStudioStore.getState();
+      const currentFrame = state.frames[nextStep.frameIndex];
+      const exists = currentFrame?.layers.some(l => l.id === nextStep.createdLayerId);
+      if (!exists) {
+        state.addLayer(nextStep.description, undefined, nextStep.createdLayerId);
+      }
+    }
+
     const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
     const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
@@ -353,6 +455,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       frameIndex: nextStep.frameIndex,
       imageData: currentImgData,
       description: nextStep.description,
+      createdLayerId: nextStep.createdLayerId,
     };
 
     const stepToRestore = historyEngineRef.current.redo(currentStep);
@@ -468,7 +571,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
 
+      const previousActiveLayerId = state.activeLayerId;
       let targetLayerId: string;
+      let isNewLayer = false;
       const existing = currentFrame.layers.find(l => l.tag === tag);
       
       if (existing) {
@@ -477,6 +582,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           state.renameLayer(targetLayerId, displayName);
         }
       } else {
+        isNewLayer = true;
         state.addLayer(displayName, tag);
         const freshState = useStudioStore.getState();
         const freshFrame = freshState.frames[freshState.activeFrameIndex];
@@ -486,7 +592,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
 
       // Crucially capture the layer's pristine state BEFORE writing AI output
-      captureSnapshot(displayName, targetLayerId);
+      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined);
       
       const lCanvas = getOrCreateLayerCanvas(targetLayerId);
       const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
@@ -499,6 +605,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       commitSnapshot();
       renderComposite();
       bumpBufferVersion();
+
+      // Maintain selection on the original artwork layer so sequential AI effects remain anchored to base art
+      if (previousActiveLayerId && previousActiveLayerId !== targetLayerId) {
+        useStudioStore.getState().setActiveLayer(previousActiveLayerId);
+      }
     };
 
     const handleCleanJaggiesEvent = () => {
@@ -1159,7 +1270,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // Live Composite & Onion Skin Rendering whenever frames, active layer/frame, visibility, opacity, buffer or preview mode changes
   useEffect(() => {
-    renderComposite();
+    if (!isDrawingRef.current) {
+      renderComposite();
+    }
     renderOnionSkin();
   }, [
     renderComposite,
@@ -1167,7 +1280,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     frames,
     activeFrameIndex,
     activeLayerId,
-    bufferVersion,
     showNormalMapPreview,
     onionSkin,
     isPlaying,
@@ -1177,6 +1289,63 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   useEffect(() => {
     renderGridAndSelection();
   }, [renderGridAndSelection]);
+
+  // Canvas Brush Ghost Bounding Cursor per DESIGN.md Section 8
+  const renderBrushGhost = useCallback(
+    (coords: Point | null) => {
+      const canvas = cursorCanvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const scale = zoom / 100;
+      const targetW = canvasWidth * scale;
+      const targetH = canvasHeight * scale;
+
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+
+      ctx.clearRect(0, 0, targetW, targetH);
+
+      const isBrushTool =
+        tools.activeTool === 'pen' ||
+        tools.activeTool === 'eraser' ||
+        tools.activeTool === 'dither' ||
+        tools.activeTool === 'line' ||
+        tools.activeTool === 'curve' ||
+        tools.activeTool === 'rectangle' ||
+        tools.activeTool === 'ellipse';
+
+      if (!coords || zoom < 400 || !isBrushTool) {
+        return;
+      }
+
+      const brushSize = tools.brushSize;
+      const offset = Math.floor(brushSize / 2);
+      const bx = coords.x - offset;
+      const by = coords.y - offset;
+
+      const sx = Math.round(bx * scale);
+      const sy = Math.round(by * scale);
+      const sw = Math.round(brushSize * scale);
+      const sh = Math.round(brushSize * scale);
+
+      ctx.imageSmoothingEnabled = false;
+
+      // Outer shadow stroke: 1px #140C1E at 50% opacity
+      ctx.strokeStyle = 'rgba(20, 12, 30, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx - 0.5, sy - 0.5, sw + 1, sh + 1);
+
+      // Inner highlight stroke: 1px #F0BE7C at 60% opacity
+      ctx.strokeStyle = 'rgba(240, 190, 124, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx + 0.5, sy + 0.5, sw - 1, sh - 1);
+    },
+    [canvasHeight, canvasWidth, tools.activeTool, tools.brushSize, zoom]
+  );
 
   // Convert client viewport coordinates to canvas integer pixel coordinates
   const clientToCanvasCoords = (clientX: number, clientY: number, clamp: boolean = false): Point | null => {
@@ -1218,7 +1387,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     commitSnapshot();
     renderComposite();
     bumpBufferVersion();
-  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite]);
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, setSelection]);
 
   // Lift selected pixels from layer canvas into floating buffer
   const liftSelectionToFloating = useCallback(() => {
@@ -1289,7 +1458,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     commitSnapshot();
     renderComposite();
     bumpBufferVersion();
-  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+  }, [activeLayerId, bumpBufferVersion, canvasHeight, canvasWidth, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection, selectionMask]);
 
   // Clipboard Actions
   const handleCopy = useCallback(() => {
@@ -1334,7 +1503,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       renderComposite();
       bumpBufferVersion();
     }
-  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, handleCopy, renderComposite, selection]);
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, handleCopy, renderComposite, selection, setSelection]);
 
   const handlePaste = useCallback(() => {
     if (!clipboardRef.current) return;
@@ -1362,7 +1531,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     });
     setSelection({ x: px, y: py, w, h });
     renderComposite();
-  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite]);
+  }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
 
   const handleDeleteSelection = useCallback(() => {
     if (floatingSelection) {
@@ -1380,7 +1549,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       renderComposite();
       bumpBufferVersion();
     }
-  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection]);
+  }, [activeLayerId, bumpBufferVersion, captureSnapshot, commitSnapshot, floatingSelection, getOrCreateLayerCanvas, renderComposite, selection, setSelection]);
 
   const handleFlipHorizontal = useCallback(() => {
     const active = floatingSelection;
@@ -1501,7 +1670,16 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     handlePaste,
     selection,
     floatingSelection,
+    setSelection,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (rafBufferBumpRef.current !== null) {
+        cancelAnimationFrame(rafBufferBumpRef.current);
+      }
+    };
+  }, []);
 
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
@@ -1544,12 +1722,18 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       }
 
       renderComposite();
-      bumpBufferVersion();
+
+      // Throttle bumpBufferVersion via requestAnimationFrame so live preview and timeline stay responsive without event thrashing
+      if (rafBufferBumpRef.current === null) {
+        rafBufferBumpRef.current = requestAnimationFrame(() => {
+          rafBufferBumpRef.current = null;
+          useStudioStore.getState().bumpBufferVersion();
+        });
+      }
     },
     [
       activeFrameIndex,
       activeLayerId,
-      bumpBufferVersion,
       canvasHeight,
       canvasWidth,
       frames,
@@ -1604,17 +1788,40 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         commitFloatingSelection();
       }
 
+      const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
+      selectionModifierRef.current = mode;
+      baseSelectionMaskRef.current = selectionMask
+        ? new Uint8Array(selectionMask)
+        : selection
+        ? createBoxMask(selection)
+        : null;
+
+      isDrawingRef.current = true;
       setIsDrawing(true);
       setStrokeStart(coords);
       setLastPoint(coords);
-      setSelection({ x: coords.x, y: coords.y, w: 1, h: 1 });
+      if (mode === 'replace') {
+        setSelection({ x: coords.x, y: coords.y, w: 1, h: 1 }, null);
+      }
       return;
     }
 
     if (tools.activeTool === 'select-lasso') {
       if (floatingSelection) commitFloatingSelection();
+
+      const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
+      selectionModifierRef.current = mode;
+      baseSelectionMaskRef.current = selectionMask
+        ? new Uint8Array(selectionMask)
+        : selection
+        ? createBoxMask(selection)
+        : null;
+
+      isDrawingRef.current = true;
       setIsDrawing(true);
-      setSelection(null);
+      if (mode === 'replace') {
+        setSelection(null, null);
+      }
       setLassoPoints([coords]);
       setStrokeStart(coords);
       return;
@@ -1622,6 +1829,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     if (tools.activeTool === 'select-wand') {
       if (floatingSelection) commitFloatingSelection();
+
+      const mode = e.shiftKey ? 'union' : e.altKey ? 'subtract' : 'replace';
+      const baseMask = selectionMask
+        ? new Uint8Array(selectionMask)
+        : selection
+        ? createBoxMask(selection)
+        : null;
 
       const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
       const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
@@ -1635,8 +1849,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         const targetA = data[targetIdx + 3];
 
         const newSelectionMask = new Uint8Array(canvasWidth * canvasHeight);
-        let minX = canvasWidth, minY = canvasHeight, maxX = -1, maxY = -1;
-
         const visited = new Uint8Array(canvasWidth * canvasHeight);
         const queue: Point[] = [coords];
         const { bucketTolerance, bucketContiguous } = tools;
@@ -1661,11 +1873,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             const { x, y } = queue[head++];
             const idx = y * canvasWidth + x;
             newSelectionMask[idx] = 1;
-
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
 
             const neighbors = [
               { nx: x - 1, ny: y },
@@ -1694,20 +1901,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
               const dataIdx = idx * 4;
               if (colorMatch(data[dataIdx], data[dataIdx+1], data[dataIdx+2], data[dataIdx+3])) {
                 newSelectionMask[idx] = 1;
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
               }
             }
           }
         }
 
-        if (maxX >= 0) {
-          setSelection({ x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 }, newSelectionMask);
-        } else {
-          setSelection(null, null);
-        }
+        const { box, mask } = mergeSelectionMask(baseMask, newSelectionMask, mode);
+        setSelection(box, mask);
       }
       return;
     }
@@ -1772,6 +1972,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       // fallback
     }
 
+    isDrawingRef.current = true;
     setIsDrawing(true);
     setStrokeStart(coords);
     setLastPoint(coords);
@@ -1803,6 +2004,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             }
           }
         }
+        isDrawingRef.current = false;
         setIsDrawing(false);
         break;
       }
@@ -1819,6 +2021,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             bumpBufferVersion();
           }
         }
+        isDrawingRef.current = false;
         setIsDrawing(false);
         break;
       }
@@ -1836,6 +2039,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const coords = clientToCanvasCoords(e.clientX, e.clientY, isDrawing);
     if (coords) {
       setCursorCoords(coords);
+      renderBrushGhost(coords);
+    } else {
+      renderBrushGhost(null);
     }
 
     // Move floating selection
@@ -1865,7 +2071,21 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       const minY = Math.min(strokeStart.y, coords.y);
       const width = Math.abs(coords.x - strokeStart.x) + 1;
       const height = Math.abs(coords.y - strokeStart.y) + 1;
-      setSelection({ x: minX, y: minY, w: width, h: height });
+      if (selectionModifierRef.current === 'replace') {
+        setSelection({ x: minX, y: minY, w: width, h: height }, null);
+      } else {
+        const previewCanvas = previewCanvasRef.current;
+        if (previewCanvas) {
+          const pCtx = previewCanvas.getContext('2d');
+          if (pCtx) {
+            pCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            pCtx.imageSmoothingEnabled = false;
+            pCtx.strokeStyle = selectionModifierRef.current === 'union' ? 'rgba(128, 255, 128, 0.85)' : 'rgba(255, 128, 128, 0.85)';
+            pCtx.lineWidth = 1;
+            pCtx.strokeRect(minX, minY, width, height);
+          }
+        }
+      }
       return;
     }
 
@@ -1963,6 +2183,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   };
 
   const handlePointerUp = (e?: React.PointerEvent) => {
+    if (rafBufferBumpRef.current !== null) {
+      cancelAnimationFrame(rafBufferBumpRef.current);
+      rafBufferBumpRef.current = null;
+    }
+
     if (e) {
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -1981,6 +2206,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     }
 
     if (isDrawing) {
+      isDrawingRef.current = false;
       setIsDrawing(false);
 
       let endCoords = cursorCoords;
@@ -2020,6 +2246,22 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         drawPointsOnActiveLayer(shapePoints, drawColor, false);
       }
 
+      if (tools.activeTool === 'select-box' && strokeStart && endCoords) {
+        const bx = Math.min(strokeStart.x, endCoords.x);
+        const by = Math.min(strokeStart.y, endCoords.y);
+        const bw = Math.abs(endCoords.x - strokeStart.x) + 1;
+        const bh = Math.abs(endCoords.y - strokeStart.y) + 1;
+        const boxMask = createBoxMask({ x: bx, y: by, w: bw, h: bh });
+        const { box, mask } = mergeSelectionMask(
+          baseSelectionMaskRef.current,
+          boxMask,
+          selectionModifierRef.current
+        );
+        setSelection(box, mask);
+        baseSelectionMaskRef.current = null;
+        selectionModifierRef.current = 'replace';
+      }
+
       if (tools.activeTool === 'select-lasso') {
         if (lassoPoints.length > 2) {
           const tempCanvas = document.createElement('canvas');
@@ -2039,7 +2281,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             const imgData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
             const data = imgData.data;
             const newSelectionMask = new Uint8Array(canvasWidth * canvasHeight);
-            let minX = canvasWidth, minY = canvasHeight, maxX = -1, maxY = -1;
 
             for (let y = 0; y < canvasHeight; y++) {
               for (let x = 0; x < canvasWidth; x++) {
@@ -2047,19 +2288,18 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
                 const alpha = data[idx * 4 + 3];
                 if (alpha > 0) {
                   newSelectionMask[idx] = 1;
-                  if (x < minX) minX = x;
-                  if (x > maxX) maxX = x;
-                  if (y < minY) minY = y;
-                  if (y > maxY) maxY = y;
                 }
               }
             }
 
-            if (maxX >= 0) {
-              setSelection({ x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 }, newSelectionMask);
-            } else {
-              setSelection(null, null);
-            }
+            const { box, mask } = mergeSelectionMask(
+              baseSelectionMaskRef.current,
+              newSelectionMask,
+              selectionModifierRef.current
+            );
+            setSelection(box, mask);
+            baseSelectionMaskRef.current = null;
+            selectionModifierRef.current = 'replace';
           }
         }
         setLassoPoints([]);
@@ -2073,6 +2313,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       if (tools.activeTool !== 'select-box' && tools.activeTool !== 'select-lasso' && tools.activeTool !== 'select-wand') {
         commitSnapshot();
+        bumpBufferVersion();
       }
     }
 
@@ -2157,7 +2398,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerLeave={(e) => {
+        handlePointerUp(e);
+        renderBrushGhost(null);
+      }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -2186,10 +2430,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         role="application"
         tabIndex={0}
         aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
-        className="relative border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)] focus:outline-none focus:ring-2 focus:ring-[#f0be7c]"
+        className="relative shrink-0 border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)] focus:outline-none focus:ring-2 focus:ring-[#f0be7c]"
         style={{
           width: `${stageWidth}px`,
           height: `${stageHeight}px`,
+          minWidth: `${stageWidth}px`,
+          minHeight: `${stageHeight}px`,
+          flexShrink: 0,
           transform: `translate(${panX}px, ${panY}px)`,
           transition: isPanning ? 'none' : 'transform 0.05s linear',
         }}
@@ -2274,6 +2521,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         {/* Pixel Grid, Isometric Guides & Selection Box Overlay */}
         <canvas
           ref={gridCanvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        />
+
+        {/* Canvas Brush Ghost Bounding Cursor */}
+        <canvas
+          ref={cursorCanvasRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
       </div>

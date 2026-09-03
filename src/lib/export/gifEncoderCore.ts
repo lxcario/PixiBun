@@ -283,7 +283,8 @@ class DynamicByteArray {
 export function encodeGifRawFrames(
   frames: RawFrameData[],
   fps: number,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  delays?: number[]
 ): Uint8Array {
   if (frames.length === 0) {
     throw new Error('encodeGifRawFrames requires at least 1 frame.');
@@ -291,7 +292,7 @@ export function encodeGifRawFrames(
 
   const width = frames[0].width;
   const height = frames[0].height;
-  const delay = Math.max(2, Math.round(100 / Math.max(1, fps)));
+  const defaultDelay = Math.max(2, Math.round(100 / Math.max(1, fps)));
   const writer = new DynamicByteArray(width * height * frames.length);
 
   // Header
@@ -320,13 +321,17 @@ export function encodeGifRawFrames(
     const frame = frames[i];
     const { palette, indexedPixels, transparentIndex } = quantizePixels(frame.data, width * height);
 
+    const frameDelay = delays && delays[i] !== undefined
+      ? Math.max(2, Math.round(delays[i]))
+      : defaultDelay;
+
     // Graphics Control Extension
     writer.writeByte(0x21); // Extension Introducer
     writer.writeByte(0xF9); // Graphic Control Label
     writer.writeByte(4);    // Block Size
     const transparentFlag = transparentIndex !== -1 ? 1 : 0;
     writer.writeByte((2 << 2) | transparentFlag); // Disposal Method = 2 (Restore to background)
-    writer.writeShort(delay);
+    writer.writeShort(frameDelay);
     writer.writeByte(transparentIndex !== -1 ? transparentIndex : 0);
     writer.writeByte(0); // Block Terminator
 

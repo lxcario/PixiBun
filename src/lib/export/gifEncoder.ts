@@ -55,7 +55,8 @@ export async function createAnimatedGifBlobAsync(
   fps: number,
   scale: number = 1,
   onProgress?: (current: number, total: number) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  delays?: number[]
 ): Promise<Blob> {
   if (frameCanvases.length === 0) {
     throw new Error('createAnimatedGifBlobAsync requires at least 1 canvas frame.');
@@ -122,6 +123,7 @@ export async function createAnimatedGifBlobAsync(
           type: 'encode',
           frames: rawFrames,
           fps,
+          delays,
         };
 
         // Transfer raw pixel buffers to the worker to avoid copy overhead
@@ -145,7 +147,7 @@ export async function createAnimatedGifBlobAsync(
   }
 
   // Main thread fallback
-  const gifUint8 = encodeGifRawFrames(rawFrames, fps, onProgress);
+  const gifUint8 = encodeGifRawFrames(rawFrames, fps, onProgress, delays);
   return new Blob([gifUint8 as unknown as BlobPart], { type: 'image/gif' });
 }
 
@@ -155,9 +157,10 @@ export async function createAnimatedGifBlobAsync(
 export function createAnimatedGifBlob(
   frameCanvases: HTMLCanvasElement[],
   fps: number,
-  scale: number = 1
+  scale: number = 1,
+  delays?: number[]
 ): Blob {
   const rawFrames = extractScaledRawFrames(frameCanvases, scale);
-  const gifUint8 = encodeGifRawFrames(rawFrames, fps);
+  const gifUint8 = encodeGifRawFrames(rawFrames, fps, undefined, delays);
   return new Blob([gifUint8 as unknown as BlobPart], { type: 'image/gif' });
 }

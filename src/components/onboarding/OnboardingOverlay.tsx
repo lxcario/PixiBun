@@ -136,7 +136,10 @@ export const OnboardingOverlay: React.FC = () => {
               <TactileButton
                 size="sm"
                 variant="primary"
-                onClick={() => router.push('/studio?fromPlayground=true')}
+                onClick={() => {
+                  useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
+                  router.push('/studio?fromPlayground=true');
+                }}
                 className="text-xs font-bold px-5 py-2.5 bg-[#f0be7c] hover:bg-[#f3cb95] text-[#140d1f] border-2 border-[#8c5120] shadow-md flex items-center gap-2"
               >
                 <span>Enter Full Studio</span>

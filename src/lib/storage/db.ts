@@ -15,9 +15,19 @@ export interface StoredProject {
   dataJson: string; // Serialized ProjectFile
 }
 
+export interface StoredLayerBlob {
+  id?: number;
+  projectId: string;
+  layerId: string;
+  frameIndex: number;
+  blob: Blob;
+  updatedAt: number;
+}
+
 export class PixiBunDatabase extends Dexie {
   projects!: Table<StoredProject, string>;
   diagnostics!: Table<DiagnosticEntry, string>;
+  layerBlobs!: Table<StoredLayerBlob, number>;
 
   constructor() {
     super('PixiBunDB');
@@ -38,10 +48,55 @@ export class PixiBunDatabase extends Dexie {
         }
       });
     });
+    this.version(4).stores({
+      projects: 'id, name, updatedAt, createdAt',
+      diagnostics: 'id, kind, timestamp',
+      layerBlobs: '++id, [projectId+layerId+frameIndex], projectId, layerId',
+    });
   }
 }
 
 export const db = new PixiBunDatabase();
+
+// Save layer binary blobs to layerBlobs table
+export async function saveLayerBlobs(
+  projectId: string,
+  blobs: Array<{ layerId: string; frameIndex: number; blob: Blob }>
+): Promise<void> {
+  const now = Date.now();
+  await db.transaction('rw', db.layerBlobs, async () => {
+    await db.layerBlobs.where('projectId').equals(projectId).delete();
+    const records: StoredLayerBlob[] = blobs.map((b) => ({
+      projectId,
+      layerId: b.layerId,
+      frameIndex: b.frameIndex,
+      blob: b.blob,
+      updatedAt: now,
+    }));
+    if (records.length > 0) {
+      await db.layerBlobs.bulkAdd(records);
+    }
+  });
+}
+
+// Retrieve layer binary blobs for a project
+export async function getLayerBlobsForProject(projectId: string): Promise<StoredLayerBlob[]> {
+  try {
+    return await db.layerBlobs.where('projectId').equals(projectId).toArray();
+  } catch (err) {
+    console.error(`Failed to get layer blobs for project ${projectId}:`, err);
+    return [];
+  }
+}
+
+// Delete layer binary blobs for a project
+export async function deleteLayerBlobsForProject(projectId: string): Promise<void> {
+  try {
+    await db.layerBlobs.where('projectId').equals(projectId).delete();
+  } catch (err) {
+    console.error(`Failed to delete layer blobs for project ${projectId}:`, err);
+  }
+}
 
 // Autosave current workspace to IndexedDB
 export async function autoSaveWorkspace(
@@ -51,7 +106,8 @@ export async function autoSaveWorkspace(
   height: number,
   fps: number,
   stateSnapshot: object,
-  thumbnailDataUrl?: string
+  thumbnailDataUrl?: string,
+  layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>
 ): Promise<boolean> {
   try {
     const existing = await db.projects.get(projectId);
@@ -68,6 +124,9 @@ export async function autoSaveWorkspace(
       thumbnailDataUrl: thumbnailDataUrl || existing?.thumbnailDataUrl,
       dataJson,
     });
+    if (layerBlobs && layerBlobs.length > 0) {
+      await saveLayerBlobs(projectId, layerBlobs);
+    }
     return true;
   } catch (err) {
     console.error('Autosave error:', err);
@@ -111,6 +170,7 @@ export async function getProjectById(id: string): Promise<StoredProject | null> 
 export async function deleteProject(id: string): Promise<boolean> {
   try {
     await db.projects.delete(id);
+    await deleteLayerBlobsForProject(id);
     return true;
   } catch (err) {
     console.error(`Delete project ${id} error:`, err);
@@ -149,6 +209,19 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
     };
 
     await db.projects.put(duplicate);
+
+    const sourceBlobs = await getLayerBlobsForProject(id);
+    if (sourceBlobs.length > 0) {
+      await saveLayerBlobs(
+        newId,
+        sourceBlobs.map((b) => ({
+          layerId: b.layerId,
+          frameIndex: b.frameIndex,
+          blob: b.blob,
+        }))
+      );
+    }
+
     return duplicate;
   } catch (err) {
     console.error(`Duplicate project ${id} error:`, err);

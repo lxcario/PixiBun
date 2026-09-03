@@ -4,6 +4,7 @@ export interface WorkerRequest {
   type: 'encode';
   frames: RawFrameData[];
   fps: number;
+  delays?: number[];
 }
 
 export type WorkerResponse =
@@ -14,10 +15,15 @@ export type WorkerResponse =
 self.onmessage = (e: MessageEvent<WorkerRequest>) => {
   if (e.data?.type === 'encode') {
     try {
-      const { frames, fps } = e.data;
-      const gifUint8 = encodeGifRawFrames(frames, fps, (current, total) => {
-        (self as unknown as Worker).postMessage({ type: 'progress', current, total });
-      });
+      const { frames, fps, delays } = e.data;
+      const gifUint8 = encodeGifRawFrames(
+        frames,
+        fps,
+        (current, total) => {
+          (self as unknown as Worker).postMessage({ type: 'progress', current, total });
+        },
+        delays
+      );
       // Send completed GIF array buffer as a transferable object to eliminate copy overhead
       (self as unknown as Worker).postMessage(
         { type: 'done', buffer: gifUint8.buffer },

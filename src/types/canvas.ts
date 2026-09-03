@@ -34,4 +34,6 @@ export interface HistoryStep {
   frameIndex: number;
   layerId: string;
   imageData: ImageData;
+  // If this step created a new layer, its ID is stored here so undo can remove it cleanly
+  createdLayerId?: string;
 }

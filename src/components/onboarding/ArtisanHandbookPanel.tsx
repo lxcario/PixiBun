@@ -124,7 +124,10 @@ export const ArtisanHandbookPanel: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => router.push('/studio?fromPlayground=true')}
+            onClick={() => {
+              useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
+              router.push('/studio?fromPlayground=true');
+            }}
             className="text-[10px] font-mono font-bold text-[var(--text-body)] hover:text-[#f0be7c] transition-colors cursor-pointer bg-transparent border-0"
             title="Skip to full studio"
           >
@@ -323,7 +326,10 @@ export const ArtisanHandbookPanel: React.FC = () => {
           <TactileButton
             size="sm"
             variant="primary"
-            onClick={() => router.push('/studio?fromPlayground=true')}
+            onClick={() => {
+              useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
+              router.push('/studio?fromPlayground=true');
+            }}
             className="text-xs font-bold px-4 py-2 bg-[#f0be7c] hover:bg-[#f3cb95] text-[#140d1f] border-2 border-[#8c5120] shadow-md flex items-center gap-1.5"
           >
             <span>{stepConfig.nextButtonLabel}</span>

@@ -1273,7 +1273,86 @@ export function rotateWithRotSprite(
   const h = height;
   const sData = srcCtx.getImageData(0, 0, w, h).data;
 
-  // 1. Scale3X
+  // 1. Lossless integer fast-path for exact 90-degree orthogonal multiples
+  const normAngle = ((Math.round(angleDeg) % 360) + 360) % 360;
+  if (normAngle === 0) {
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = w;
+    outputCanvas.height = h;
+    outputCanvas.getContext('2d')!.drawImage(srcCtx.canvas, 0, 0);
+    return outputCanvas;
+  }
+
+  if (normAngle === 180) {
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = w;
+    outputCanvas.height = h;
+    const outCtx = outputCanvas.getContext('2d')!;
+    const outImgData = outCtx.createImageData(w, h);
+    const outData = outImgData.data;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const srcIdx = (y * w + x) * 4;
+        const dstX = w - 1 - x;
+        const dstY = h - 1 - y;
+        const dstIdx = (dstY * w + dstX) * 4;
+        outData[dstIdx] = sData[srcIdx];
+        outData[dstIdx + 1] = sData[srcIdx + 1];
+        outData[dstIdx + 2] = sData[srcIdx + 2];
+        outData[dstIdx + 3] = sData[srcIdx + 3];
+      }
+    }
+    outCtx.putImageData(outImgData, 0, 0);
+    return outputCanvas;
+  }
+
+  if (normAngle === 90 && w === h) {
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = w;
+    outputCanvas.height = h;
+    const outCtx = outputCanvas.getContext('2d')!;
+    const outImgData = outCtx.createImageData(w, h);
+    const outData = outImgData.data;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const srcIdx = (y * w + x) * 4;
+        const dstX = h - 1 - y;
+        const dstY = x;
+        const dstIdx = (dstY * w + dstX) * 4;
+        outData[dstIdx] = sData[srcIdx];
+        outData[dstIdx + 1] = sData[srcIdx + 1];
+        outData[dstIdx + 2] = sData[srcIdx + 2];
+        outData[dstIdx + 3] = sData[srcIdx + 3];
+      }
+    }
+    outCtx.putImageData(outImgData, 0, 0);
+    return outputCanvas;
+  }
+
+  if (normAngle === 270 && w === h) {
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = w;
+    outputCanvas.height = h;
+    const outCtx = outputCanvas.getContext('2d')!;
+    const outImgData = outCtx.createImageData(w, h);
+    const outData = outImgData.data;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const srcIdx = (y * w + x) * 4;
+        const dstX = y;
+        const dstY = w - 1 - x;
+        const dstIdx = (dstY * w + dstX) * 4;
+        outData[dstIdx] = sData[srcIdx];
+        outData[dstIdx + 1] = sData[srcIdx + 1];
+        outData[dstIdx + 2] = sData[srcIdx + 2];
+        outData[dstIdx + 3] = sData[srcIdx + 3];
+      }
+    }
+    outCtx.putImageData(outImgData, 0, 0);
+    return outputCanvas;
+  }
+
+  // 2. Scale3X Expansion (Preserves diagonal connectivity without blurring)
   const scale = 3;
   const w3 = w * scale;
   const h3 = h * scale;
@@ -1327,7 +1406,7 @@ export function rotateWithRotSprite(
     }
   }
 
-  // 2. Inverse Mapping Rotation -> Direct Decimation
+  // 3. Inverse Mapping Rotation with 3x3 Supersampling and Majority Color Voting
   const outputCanvas = document.createElement('canvas');
   outputCanvas.width = w;
   outputCanvas.height = h;
@@ -1337,30 +1416,68 @@ export function rotateWithRotSprite(
 
   const cx = w / 2;
   const cy = h / 2;
-  const rad = (-angleDeg * Math.PI) / 180; // Inverse angle
+  const rad = (-angleDeg * Math.PI) / 180; // Inverse rotation angle
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
 
+  const subOffsets = [
+    [-0.3, -0.3], [0, -0.3], [0.3, -0.3],
+    [-0.3,  0.0], [0,  0.0], [0.3,  0.0],
+    [-0.3,  0.3], [0,  0.3], [0.3,  0.3],
+  ];
+
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      // Find source pixel in 1x space
-      const dx = x - cx;
-      const dy = y - cy;
-      const srcX1 = cos * dx - sin * dy + cx;
-      const srcY1 = sin * dx + cos * dy + cy;
+      const px = x + 0.5 - cx;
+      const py = y + 0.5 - cy;
 
-      // Map to 3x space
-      const srcX3 = Math.round(srcX1 * scale);
-      const srcY3 = Math.round(srcY1 * scale);
+      const colorVotes = new Map<number, { count: number; r: number; g: number; b: number; a: number }>();
+      let solidCount = 0;
+
+      for (let i = 0; i < 9; i++) {
+        const ox = px + subOffsets[i][0];
+        const oy = py + subOffsets[i][1];
+
+        const srcX1 = cos * ox - sin * oy + cx;
+        const srcY1 = sin * ox + cos * oy + cy;
+
+        const srcX3 = Math.floor(srcX1 * scale);
+        const srcY3 = Math.floor(srcY1 * scale);
+
+        if (srcX3 >= 0 && srcX3 < w3 && srcY3 >= 0 && srcY3 < h3) {
+          const sIdx = (srcY3 * w3 + srcX3) * 4;
+          const a = scaledData[sIdx + 3];
+          if (a > 32) {
+            solidCount++;
+            const r = scaledData[sIdx];
+            const g = scaledData[sIdx + 1];
+            const b = scaledData[sIdx + 2];
+            const key = (r << 24) | (g << 16) | (b << 8) | a;
+            const entry = colorVotes.get(key);
+            if (entry) {
+              entry.count++;
+            } else {
+              colorVotes.set(key, { count: 1, r, g, b, a });
+            }
+          }
+        }
+      }
 
       const outIdx = (y * w + x) * 4;
-
-      if (srcX3 >= 0 && srcX3 < w3 && srcY3 >= 0 && srcY3 < h3) {
-        const srcIdx = (srcY3 * w3 + srcX3) * 4;
-        outData[outIdx] = scaledData[srcIdx];
-        outData[outIdx + 1] = scaledData[srcIdx + 1];
-        outData[outIdx + 2] = scaledData[srcIdx + 2];
-        outData[outIdx + 3] = scaledData[srcIdx + 3];
+      // Minimum 33% coverage (>= 3 out of 9 subpixel hits) preserves stroke continuity
+      if (solidCount >= 3 && colorVotes.size > 0) {
+        let bestVote = 0;
+        let bestColor = { r: 0, g: 0, b: 0, a: 255 };
+        for (const v of colorVotes.values()) {
+          if (v.count > bestVote) {
+            bestVote = v.count;
+            bestColor = v;
+          }
+        }
+        outData[outIdx] = bestColor.r;
+        outData[outIdx + 1] = bestColor.g;
+        outData[outIdx + 2] = bestColor.b;
+        outData[outIdx + 3] = bestColor.a;
       }
     }
   }

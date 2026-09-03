@@ -603,3 +603,56 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - **Physical Rendering Pass (ix(rendering))**: Restored omitted Lambertian diffuse reflection to the photometric rendering composite for enhanced volume presence.
 
 **Status:** Complete
+
+---
+
+## Phase 30 - Performance, Hot-Path Decoupling and Dexie Schema v4 (2026-09-03)
+**Delivered:**
+- **Stroke Hot-Path Decoupling (src/components/layout/CenterViewport.tsx)**: Deconstructed monolithic useStudioStore call into fine-grained atomic selectors. Eliminated bufferVersion subscription from CenterViewport, dropping stroke re-render count from N (per pointermove) to zero during active mouse dragging.
+- **Throttled Live Signals**: Throttled bumpBufferVersion via requestAnimationFrame strictly for external decoupled observers (BottomTimeline and FloatingPreviewWindow) at 60fps, while committing history snapshots and autosave triggers strictly on pointerup.
+- **Dexie Schema v4 Binary Blob Storage (src/lib/storage/db.ts, src/lib/project/serialize.ts)**: Upgraded database engine to schema v4 with dedicated layerBlobs table. Encodes layer buffers directly to raw PNG Blob instances and omits pngBase64 from metadata JSON, eliminating serialization bloat and double-storage. Added paintLayerFromBlob with native createImageBitmap and explicit bitmap.close() leak prevention, with full backward compatibility for legacy project files.
+- **Runtime Constructor Safety (src/components/modals/ExportModal.tsx)**: Replaced illegal new HTMLCanvasElement() constructor fallback with document.createElement('canvas').
+- **Compositor Re-entrancy Protection (src/lib/render/compositor.ts)**: Set freshCanvas: true by default to prevent singleton sharedOffscreenCanvas overwrites during concurrent rendering passes.
+- **Linter Zero Warnings**: Cleaned up all 6 react-hooks/exhaustive-deps warnings in CenterViewport.tsx.
+
+**Checks run:**
+- npm run typecheck: 0 errors
+- npm run lint: 0 errors, 0 warnings
+- npm test: 147/147 tests pass across 27 suites
+**Status:** Complete
+
+---
+
+## Phase 31 - Product Alignment, Variable Frame Timing and Viewport Precision (2026-09-03)
+**Delivered:**
+- **Layer Merge Down (src/stores/studioStore.ts, src/components/layout/RightInspector.tsx)**: Implemented mergeLayerDown(layerId) blending upper layer onto lower layer with exact opacity and blendMode preservation, purging upper buffer memory, and updating layer selection. Added tactile merge-down UI buttons in layer toolbar and on layer cards. Verified with 4 unit tests in tests/mergeLayer.test.ts.
+- **Variable Frame Duration Pacing (src/components/layout/BottomTimeline.tsx)**: Wired per-frame durationMs to high-resolution delta-time animation loop using requestAnimationFrame. Implemented proportional timeline card widths (W_card) and amber timing hold badges (+Xms) per Richard Williams timing principles.
+- **Heterogeneous GIF Export (src/lib/export/gifEncoderCore.ts, src/lib/export/gifEncoder.worker.ts, src/components/modals/ExportModal.tsx)**: Supported frame-specific centisecond delay arrays (D_i = max(2, round(durationMs_i / 10))) written to GIF Graphic Control Extensions. Verified with 4 unit tests in tests/frameDurationPlayback.test.ts.
+- **Additive and Subtractive Selection Modifiers (src/components/layout/CenterViewport.tsx)**: Supported Shift (Union) and Alt (Subtract) across box, lasso, and wand tools, with dynamic binary mask merging, bounding box recalculation, and color-coded green/red viewport modifier outlines. Verified with 4 unit tests in tests/selectionModifiers.test.ts.
+- **Keyboard Zoom and Navigation Shortcuts (src/components/layout/StudioLayout.tsx, src/components/modals/ShortcutsModal.tsx)**: Bound Ctrl/Cmd + / =, Ctrl/Cmd -, Ctrl/Cmd 0 (Fit to Screen), and Ctrl/Cmd 1 (100% zoom).
+- **Canvas Brush Ghost Bounding Cursor (src/components/layout/CenterViewport.tsx)**: Added 1px integer pixel bounding box matching tools.brushSize at >= 400% zoom on dedicated cursorCanvasRef overlay, with zero React state mutations.
+
+**Checks run:**
+- npm run typecheck: 0 errors
+- npm run lint: 0 errors, 0 warnings
+- npm test: 159/159 tests pass across 30 suites (+12 new tests)
+**Status:** Complete
+
+---
+
+## Precision Polish & Critical UX Bug Fixes (2026-09-03)
+**Delivered:**
+- **Onboarding Stencil Isolation (src/components/layout/CenterViewport.tsx, src/components/layout/StudioLayout.tsx)**: Added strict isPlaygroundActive check in CenterViewport stencil effect and reset state on StudioLayout mount, preventing playground tracing stencils from leaking onto the studio canvas.
+- **Playground Animation Transfer (src/components/layout/PlaygroundLayout.tsx, src/components/layout/StudioLayout.tsx)**: Added ?fromPlayground=true query param so animation frame sequences created in the onboarding playground are seamlessly preserved in studio and saved to IndexedDB under Playground Animation.
+- **Viewport Zoom Aspect Ratio Fix (src/components/layout/CenterViewport.tsx)**: Added shrink-0 and explicit flexShrink: 0, minWidth, and minHeight to #center-canvas-area, stopping flexbox from horizontally squashing the canvas at high zooms (e.g. 2625%) and maintaining a 1:1 square aspect ratio up to 6400% zoom.
+- **Dynamic Canvas Resizing (src/components/modals/CanvasResizeModal.tsx, src/stores/studioStore.ts)**: Defaulted resample to true in CanvasResizeModal and setCanvasSize, scaling artwork dynamically with nearest-neighbor interpolation without clipping edges or corrupting drawings when resizing 32x32 to 16x16.
+- **Photometric Dither Modulation Default (src/stores/studioStore.ts)**: Reset initial tools.ditherModulation from 0.35 (35%) to 0.0 (0%).
+- **PixiBud AI Undo Layer Deletion (src/types/canvas.ts, src/components/layout/CenterViewport.tsx)**: Added createdLayerId to HistoryStep. Pressing Ctrl+Z on an AI-generated layer (Photometric, Specular, Soft Shadow) deletes the layer from the store and frees its buffer memory.
+- **Base Layer Active Focus Anchor (src/components/layout/CenterViewport.tsx)**: Automatically restores active layer selection to the base artwork after generating an AI pass, enabling immediate chaining of subsequent effects.
+- **RotSprite Precision Rewrite (src/lib/ai/smartMathEngine.ts)**: Implemented exact integer permutation fast-paths for 90, 180, and 270 degree rotations, plus 3x3 subpixel supersampling and majority color voting for arbitrary angles, eliminating stroke dropouts and shape distortion.
+
+**Checks run:**
+- npm run typecheck: 0 errors
+- npm run lint: 0 errors, 0 warnings
+- npm test: 164/164 tests pass across 31 suites (+5 new tests in tests/rotSpriteAndPrecision.test.ts)
+**Status:** Complete

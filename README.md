@@ -44,7 +44,8 @@ graph LR
 * **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Rational Bézier Curves:** Exact quadratic and cubic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
 * **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with adjustable tolerance.
-* **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
+* **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
+* **Canvas Brush Ghost Cursor & Zoom Ergonomics:** Non-destructive 1px footprint bounding box matching brush size at $\ge 400\%$ zoom, with `Ctrl + + / - / 0 / 1` integer keyboard navigation.
 * **Dual Overlapping Tactile Color Wells:** Primary/Secondary color slots with quick swap (<kbd>X</kbd>), custom HSV/HEX modal picker, and 8-color quick palette dock.
 * **9-Point Anchor Canvas Resizing:** Expand or crop from any anchor corner or center, with optional aspect-ratio locking and nearest-neighbor content resampling.
 
@@ -202,7 +203,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 124 Vitest unit and component tests in Happy-DOM across 20 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 164 Vitest unit and component tests in Happy-DOM across 31 suites, full Playwright E2E browser test suite (14 specs) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -220,8 +221,8 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Accessibility** | WCAG 2.2 AA + ESLint JSX-A11y + Axe | Keyboard drag alternatives, focus traps, accessible roles, high-visibility focus rings. |
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
-| **Local Persistence** | Dexie.js (IndexedDB Schema v3) | Multi-project workspace management, thumbnail previews, and persistent storage API guard. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 124 unit/component tests + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
+| **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 164 unit/component tests across 31 suites + 14 Playwright E2E specs + Axe WCAG scans + LHCI budgets. |
 
 ---
 

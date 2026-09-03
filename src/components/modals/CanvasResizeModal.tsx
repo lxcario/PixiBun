@@ -29,7 +29,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
   const [height, setHeight] = useState(canvasHeight);
   const [lockAspect, setLockAspect] = useState(true);
   const [anchor, setAnchor] = useState<AnchorPosition>('center');
-  const [resample, setResample] = useState(false);
+  const [resample, setResample] = useState(true);
 
   const handleWidthChange = (val: number) => {
     const clamped = Math.max(4, Math.min(512, val));
@@ -129,7 +129,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
               onChange={(e) => setResample(e.target.checked)}
               className="accent-[#f0be7c]"
             />
-            <span>Resample Content</span>
+            <span>Scale Artwork (Resample)</span>
           </label>
         </div>
       </div>

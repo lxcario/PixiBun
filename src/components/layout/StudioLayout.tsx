@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 import { TopHeader } from './TopHeader';
 import { ContextOptionsBar } from './ContextOptionsBar';
 import { LeftToolbar } from './LeftToolbar';
@@ -15,8 +16,8 @@ import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/compone
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById } from '@/lib/storage/db';
-import { buildProjectFileAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
+import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById, getLayerBlobsForProject } from '@/lib/storage/db';
+import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectsGalleryModal } from '@/components/modals/ProjectsGalleryModal';
@@ -67,6 +68,11 @@ export const StudioLayout: React.FC = () => {
     activeFrameIndex,
     currentProjectId,
     resetToNewProject,
+    zoom,
+    setZoom,
+    setPan,
+    canvasWidth,
+    canvasHeight,
   } = useStudioStore();
 
   // Serialize the full studio - pixels included - into IndexedDB. Debounced so
@@ -77,7 +83,7 @@ export const StudioLayout: React.FC = () => {
     const { setSaveStatus } = useStudioStore.getState();
     setSaveStatus('saving');
     try {
-      const project = await buildProjectFileAsync();
+      const { project, layerBlobs } = await buildAutosavePayloadAsync();
       const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
       const state = useStudioStore.getState();
       const success = await autoSaveWorkspace(
@@ -87,7 +93,8 @@ export const StudioLayout: React.FC = () => {
         project.height,
         project.fps,
         project,
-        thumbnailDataUrl
+        thumbnailDataUrl,
+        layerBlobs
       );
       if (success) {
         autosaveFailCountRef.current = 0;
@@ -147,7 +154,8 @@ export const StudioLayout: React.FC = () => {
         setImportError(result.error);
         return;
       }
-      await hydrateProject(result.value, target.id);
+      const layerBlobs = await getLayerBlobsForProject(target.id);
+      await hydrateProject(result.value, target.id, layerBlobs);
     } catch (err) {
       console.error('Failed to open project:', err);
     }
@@ -174,6 +182,9 @@ export const StudioLayout: React.FC = () => {
   useEffect(() => {
     void requestPersistentStorage();
 
+    // Studio mode must never display playground tracing stencils
+    useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
+
     const isFromPlayground =
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('fromPlayground') === 'true';
@@ -181,6 +192,10 @@ export const StudioLayout: React.FC = () => {
     if (isFromPlayground) {
       // Abort workspace rehydration so live buffers from playground are not cleared by clearAllBuffers()!
       // Trigger an immediate autosave of the active session so it gets stored in IndexedDB.
+      const state = useStudioStore.getState();
+      if (state.projectName === 'Untitled Sprite') {
+        state.setProjectName('Playground Animation');
+      }
       void runAutosave();
       return;
     }
@@ -192,7 +207,8 @@ export const StudioLayout: React.FC = () => {
         const parsed: unknown = JSON.parse(saved.dataJson);
         const result = validateProjectFile(parsed);
         if (!result.ok) return;
-        await hydrateProject(result.value, saved.id);
+        const layerBlobs = await getLayerBlobsForProject(saved.id);
+        await hydrateProject(result.value, saved.id, layerBlobs);
       } catch (err) {
         console.error('Project restore failed:', err);
       }
@@ -373,6 +389,49 @@ export const StudioLayout: React.FC = () => {
         return;
       }
 
+      // Zoom Shortcuts: Ctrl/Cmd + (+, -, 0, 1)
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          const ZOOM_STEPS = [100, 200, 400, 800, 1600, 3200, 6400];
+          const nextStep = ZOOM_STEPS.find((step) => step > zoom) || 6400;
+          setZoom(nextStep);
+          return;
+        }
+
+        if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          const ZOOM_STEPS = [100, 200, 400, 800, 1600, 3200, 6400];
+          const prevStep = [...ZOOM_STEPS].reverse().find((step) => step < zoom) || 100;
+          setZoom(prevStep);
+          return;
+        }
+
+        if (e.key === '0') {
+          e.preventDefault();
+          const fitZoom = Math.max(
+            100,
+            Math.min(
+              6400,
+              Math.min(
+                Math.floor(52000 / Math.max(1, canvasWidth)),
+                Math.floor(52000 / Math.max(1, canvasHeight))
+              )
+            )
+          );
+          setZoom(fitZoom);
+          setPan(0, 0);
+          return;
+        }
+
+        if (e.key === '1') {
+          e.preventDefault();
+          setZoom(100);
+          setPan(0, 0);
+          return;
+        }
+      }
+
       // Single Key Shortcuts
       const key = e.key.toLowerCase();
       switch (key) {
@@ -456,6 +515,11 @@ export const StudioLayout: React.FC = () => {
     setIsPlaying,
     handleUndo,
     handleRedo,
+    zoom,
+    setZoom,
+    setPan,
+    canvasWidth,
+    canvasHeight,
   ]);
 
   return (

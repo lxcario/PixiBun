@@ -1,5 +1,204 @@
 # Build Plan — PixiBun
 
+## Phase 30 — Critical Bug Remediation & Hot-Path Performance (P0/P1)
+**Goal:** Eliminate drawing stroke re-render cascades, prune unselected Zustand store subscriptions, secure illegal constructor fallbacks, convert monolithic autosave to binary blob storage, and eliminate compositor singleton aliasing risks.
+
+**Evidence & Rationale:**
+- Hot-Path Re-render Cascade: `CenterViewport.tsx` (line 124) calls `useStudioStore()` without selectors, subscribing to entire state. `drawPointsOnActiveLayer` (line 1547) triggers `renderComposite()` + `bumpBufferVersion()` on every pointer move, firing line 1161 `useEffect` and rendering composite a second time. Sources: Zustand Slices & Atomic Selectors pattern (zustand.docs.pmnd.rs); Dan Abramov PureCanvas dragging commit pattern.
+- Export Modal Fallback: `ExportModal.tsx` line 87 contains `frameCanvases.push(composed ?? new HTMLCanvasElement())`, which throws `TypeError: Illegal constructor` in standard browser environments (W3C DOM specification).
+- IndexedDB Autosave Serialization: `serialize.ts` converts every layer to PNG base64 and serializes via `JSON.stringify` into a single `dataJson` column. Storing raw `Blob`/`ArrayBuffer` in IndexedDB reduces storage footprint by ~33% and eliminates base64 CPU overhead (RxDB benchmark documentation).
+- Compositor Shared Buffer Aliasing: `compositor.ts` defaults to module-scoped `sharedOffscreenCanvas` when `freshCanvas` is omitted, introducing buffer overwrite risks during concurrent renders.
+
+**Deliverables:**
+- [x] Store Selector Pruning (`CenterViewport.tsx`): Refactor monolithic `useStudioStore()` call into atomic selectors or `useShallow` slices so `CenterViewport` renders strictly when its direct dependencies mutate.
+- [x] Stroke Hot-Path Decoupling (`CenterViewport.tsx`): Isolate pixel writes to layer canvas during `isDrawing === true`. Write directly to layer canvas and call `renderComposite()`. Throttle `bumpBufferVersion()` via `requestAnimationFrame` during strokes so live preview and timeline remain smooth at 60fps without React event thrashing. Finalize `bumpBufferVersion()`, history snapshot commits, and autosave calls on `handlePointerUp`.
+- [x] Safe Export Modal Fallback (`ExportModal.tsx`): Replace `new HTMLCanvasElement()` with `document.createElement('canvas')` and add explicit error handling if `compositeFrame` ever returns null.
+- [x] Binary Blob Layer Storage (`src/lib/storage/db.ts`, `serialize.ts`): Introduce dedicated `layerBlobs` table (`++id, [projectId+layerId+frameIndex], projectId, layerId`) in Dexie schema v4. Store raw image `Blob` data directly, retaining metadata in `dataJson` with zero double-storage. Maintain full backward compatibility for v1/v2/v3 project files via `migrateProjectPayload`.
+- [x] Compositor Re-entrancy Safety (`src/lib/render/compositor.ts`, `CenterViewport.tsx`): Default `freshCanvas` to `true` while giving priority to explicit `targetCanvas`, and reuse pooled scratch canvas in `renderOnionSkin` to prevent GC pressure during scrub loops.
+- [x] Linter & Hook Cleanup: Resolve all 6 `react-hooks/exhaustive-deps` warnings in `CenterViewport.tsx`.
+
+**Acceptance criteria:**
+- React DevTools Profiler confirms `CenterViewport` render count during an active multi-point pen stroke drops from N (points count) to <= 1.
+- `grep -r "new HTMLCanvasElement" src` returns zero results.
+- `projectSchema.test.ts` and `projectsDb.test.ts` verify backward compatibility and migration to schema v4.
+- Regression test verifies onion skin and floating preview do not overwrite pixel buffers during concurrent rendering.
+- `npm run typecheck`, `npm run lint`, and `npm test` execute cleanly with 0 errors and 0 warnings.
+
+**Status:** Complete (2026-09-03)
+
+---
+
+## Phase 31 — Product Say-Do Alignment & Viewport Precision (P2)
+**Goal:** Align published feature promises with implementation reality, connect dead schema fields to real animation pacing, add standard selection modification modes, and implement precision viewport feedback.
+
+**Evidence & Rationale:**
+- Merge Down Discrepancy: `FeatureStory.tsx` advertises "merge down" capability, while `studioStore.ts` and `RightInspector.tsx` lack layer merge logic.
+- Dead Frame Timing Field: `durationMs` exists on `AnimationFrame` schema but playback and export ignore it, relying solely on global `fps`. Classic animation theory (Thomas & Johnston, Richard Williams *The Animator's Survival Kit*) defines variable frame timing ("holds on a pose") as a fundamental animator tool.
+- Selection Modifier Ergonomics: `select-box`, `select-lasso`, and `select-wand` restart selections from scratch without Shift (Union) or Alt (Subtract) modifiers standard in raster tools.
+- Keyboard Zoom Gap: `TopHeader.tsx` includes a "Fit to Screen" button (`handleFitToScreen`) but lacks standard keyboard shortcuts (`Ctrl+0`, `Ctrl+1`, `Ctrl++`, `Ctrl+-`).
+- Brush Ghost Bounding Cursor: Canvas lacks cursor-level spatial preview of multi-pixel brush footprints at high zoom.
+
+**Deliverables:**
+- [x] Layer Merge Down Action (`studioStore.ts`, `RightInspector.tsx`): Implement `mergeLayerDown(layerId)` blending the active layer onto the underlying layer using `compositeFrame` blend modes and removing the top layer cleanly.
+- [x] Variable Frame Duration Pacing (`BottomTimeline.tsx`, `studioStore.ts`, `gifEncoder.ts`): Wire `durationMs` to timeline animation loops and GIF/spritesheet frame delays. Render proportional timeline cards visualizing animation spacing.
+- [x] Additive & Subtractive Selection Modifiers (`CenterViewport.tsx`): Support `e.shiftKey` (Union) and `e.altKey` (Subtract) across Marquee, Lasso, and Magic Wand selection tools.
+- [x] Keyboard Navigation Shortcuts (`StudioLayout.tsx`, `ShortcutsModal.tsx`): Bind `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0` (trigger existing `handleFitToScreen`), and `Ctrl/Cmd 1` (100% integer zoom). List all shortcuts in `ShortcutsModal.tsx`.
+- [x] Brush Footprint Ghost Cursor (`CenterViewport.tsx`): Render a 1px integer pixel bounding box matching `tools.brushSize` on `gridCanvasRef` when zoom >= 400%.
+
+**Acceptance criteria:**
+- Unit test `tests/mergeLayer.test.ts` confirms pixel-exact compositing and layer removal on merge down.
+- Unit test `tests/frameDurationPlayback.test.ts` verifies correct total animation cycle duration with mixed per-frame `durationMs` values.
+- Unit test `tests/selectionModifiers.test.ts` verifies Shift+Marquee combines two rectangular selection regions and Alt+Marquee subtracts cleanly.
+- Keyboard shortcuts trigger expected zoom levels and fit-to-screen viewport positioning.
+
+**Status:** Complete (2026-09-03)
+
+---
+
+## Phase 31.5 — Precision Polish & Critical UX Remediation
+**Goal:** Address 8 verified user-reported bugs across onboarding stencil isolation, playground frame retention, flexbox zoom stretching, dynamic canvas downsampling, Photometric dither modulation, Ctrl+Z layer management, base layer active focus, and RotSprite precision.
+
+**Deliverables:**
+- [x] Stencil Isolation (`CenterViewport.tsx`, `StudioLayout.tsx`): Restricted stencil guide rendering strictly to active playground mode (`isPlaygroundActive === true`), preventing tracing templates from remaining on the studio canvas.
+- [x] Playground Animation Transfer (`PlaygroundLayout.tsx`, `StudioLayout.tsx`): Passed `?fromPlayground=true` when entering studio to preserve live animation frames and autosave under `'Playground Animation'`.
+- [x] High-Zoom Viewport Aspect Ratio (`CenterViewport.tsx`): Applied `shrink-0` and explicit `flexShrink: 0`, `minWidth`, `minHeight` to `#center-canvas-area`, preventing CSS flexbox from horizontally compressing the canvas at high zoom levels (e.g. 2625%).
+- [x] Dynamic Canvas Resizing (`CanvasResizeModal.tsx`, `studioStore.ts`): Defaulted `resample` to `true` in `CanvasResizeModal` and `setCanvasSize`, scaling artwork dynamically with nearest-neighbor interpolation without clipping edges when resizing down.
+- [x] Photometric Dither Modulation Default (`studioStore.ts`): Reset initial `tools.ditherModulation` from `0.35` (35%) to `0.0` (0%).
+- [x] PixiBud AI Undo Layer Deletion (`canvas.ts`, `CenterViewport.tsx`): Added `createdLayerId` to `HistoryStep`. Pressing `Ctrl+Z` after applying an AI effect deletes the created layer from the frame stack and frees buffer memory.
+- [x] Base Layer Active Focus Anchor (`CenterViewport.tsx`): Automatically restored active layer focus to the base artwork after generating an AI pass, enabling sequential effect chaining.
+- [x] RotSprite Precision Rewrite (`smartMathEngine.ts`): Implemented lossless orthogonal integer permutation fast-paths for $90^\circ, 180^\circ, 270^\circ$, plus $3\times3$ subpixel supersampling and majority color voting for arbitrary angles.
+- [x] Unit Tests (`tests/rotSpriteAndPrecision.test.ts`): 5 comprehensive unit tests for RotSprite rotations, dither modulation 0.0, and default resample canvas sizing.
+
+**Acceptance criteria:**
+- `npm test`: 164 / 164 tests pass across 31 suites.
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors, 0 warnings.
+
+**Status:** Complete (2026-09-03)
+
+---
+
+## Phase 32 — Studio Accessibility & Automated Auditing (A11y)
+**Goal:** Expand automated accessibility coverage into the production studio route and provide accessible names for all custom controls.
+
+**Evidence & Rationale:**
+- Axe-Core Test Gap: `@axe-core/playwright` is installed but only configured for `landing.spec.ts`. The core `/studio` route has zero automated accessibility regression tests.
+- Accessible Form Names: `ContextOptionsBar.tsx` range sliders feature visual labels (`<span>Size:</span>`) without programmatic `<label>` associations or `aria-label` attributes. WAI-ARIA Authoring Practices mandate explicit accessible names for all slider widgets.
+
+**Deliverables:**
+- [ ] Studio Automated Axe-Core Audit (`tests/e2e/studio.spec.ts`): Add automated a11y testing covering blank canvas, open modals, and right inspector panel states.
+- [ ] Accessible Range Slider Names (`ContextOptionsBar.tsx`): Add explicit `aria-label` attributes (e.g. `aria-label="Brush size"`) and `<label htmlFor>` connections across all parameter sliders without redundant `aria-valuemin/max` attributes.
+
+**Acceptance criteria:**
+- `tests/e2e/studio.spec.ts` executes axe audit and asserts `expect(results.violations).toEqual([])`.
+- `eslint-plugin-jsx-a11y` rule `label-has-associated-control` passes with 0 warnings across all components.
+
+**Status:** Planned
+
+---
+
+## Phase 33 — Architectural Decoupling & Modularization
+**Goal:** Deconstruct monolithic god-components and large stores into focused, maintainable, single-responsibility units.
+
+**Evidence & Rationale:**
+- Monolithic Viewport Component: `CenterViewport.tsx` spans 2,328 lines combining pointer routing, raster math, selection masks, stencil guides, grid rendering, and 15+ event subscriptions. React's "Reusing Logic with Custom Hooks" recommends domain-specific hook decomposition.
+- Large Zustand Store: `studioStore.ts` spans 1,058 lines. Zustand's official documentation recommends the "Slices Pattern" (`createToolSlice`, `createLayerSlice`, `createViewportSlice`) for enterprise state management.
+- Modal Bundle Weight: Modals are loaded statically in `StudioLayout.tsx`. Next.js recommends `next/dynamic(..., { ssr: false })` for heavy dialogs.
+- CG Engine Monolith: `smartMathEngine.ts` spans 2,410 lines across distance transforms, lighting, bilateral filters, and Minecraft skin recognition.
+
+**Deliverables:**
+- [ ] Viewport Custom Hooks Refactor (`src/hooks/viewport/`):
+  - `useViewportDrawing.ts`: Pen, eraser, dither, and shape rasterization.
+  - `useViewportSelection.ts`: Marquee, lasso, wand, and floating buffer drag/commit.
+  - `useViewportTransform.ts`: Zoom, pan, wheel, and canvas center alignment.
+  - `useStudioEventSubscriptions.ts`: Photometric lighting, normal map bake, and thinning subscribers.
+  - Shrink `CenterViewport.tsx` from 2,328 lines to < 700 lines.
+- [ ] Zustand Store Slices Migration (`src/stores/slices/`): Split `studioStore.ts` into modular slices (`createToolSlice`, `createLayerSlice`, `createTimelineSlice`, `createPaletteSlice`) while maintaining 100% public API compatibility.
+- [ ] Lazy Modal Code-Splitting (`StudioLayout.tsx`): Dynamically import `ExportModal`, `CanvasResizeModal`, `ProjectsGalleryModal`, `ShortcutsModal`, and `ImportModal` via `next/dynamic`.
+- [ ] Smart Math Modularization (`src/lib/ai/`): Split `smartMathEngine.ts` into `distanceTransform.ts`, `photometricLighting.ts`, `rotSprite.ts`, and `minecraftSkin.ts`.
+
+**Acceptance criteria:**
+- Public API of `useStudioStore` and `CenterViewport` remains 100% backward-compatible.
+- Next.js production build output demonstrates measurable reduction in initial JS bundle size for `/studio`.
+- 100% of existing tests in `tests/` pass with zero modifications.
+
+**Status:** Planned
+
+---
+
+## Phase 34 — Academic Research-Backed Graphics Intelligence
+**Goal:** Integrate peer-reviewed computer graphics algorithms and perceptual tools into PixiBud AI.
+
+**Academic Sources & Specifications:**
+1. Blue-Noise Dithering: Ulichney, 1993 (SPIE). Void-and-cluster algorithm generating high-frequency blue-noise masks with isotropic spatial distribution.
+2. WaveFunctionCollapse Pattern Synthesis: Maxim Gumin, 2016; Merrell model synthesis. Procedural texture synthesis constraint-satisfaction solver.
+3. Depixelize & Vector SVG Export: Johannes Kopf & Dani Lischinski, SIGGRAPH Asia 2011. Spline extraction from pixel art silhouettes via Voronoi dual-mesh optimization.
+4. Wallpaper Group Symmetry: 17 plane crystallographic symmetry groups (Schattschneider classification) including p2, p4, p4m, p6m multi-axis tiling brushes.
+5. Perceptual CVD Colorblindness Simulation: Machado, Oliveira & Fernandes, 2009 (IEEE TVCG). Real-time on-device protanopia, deuteranopia, and tritanopia simulation lenses.
+6. Silhouette & Squint Mode: Game art production discipline. Instant 1-bit solid black silhouette overlay testing character silhouette readability.
+7. Direct-Manipulation Lighting Gizmo: Ben Shneiderman, 1983 ("Direct Manipulation"). Draggable 3D sun azimuth/elevation arc gizmo rendered directly on the viewport HUD.
+8. P2P Local-First Canvas Sync: Ink & Switch ("Local-First Software"), CRDT + WebRTC room synchronization.
+9. Audio-Synchronized Visual Pulse: Spectral flux onset detection (Dixon 2006; Bello et al. 2005, IEEE TASLP) tied to procedural lofi radio FFT analysis.
+10. Speedpaint History Playback: Replay engine rendering animated video/GIF from serialized `HistoryStep` ring buffers.
+
+**Deliverables:**
+- [ ] Blue-Noise Dither Mask Generator (`src/lib/canvas/blueNoise.ts`): Precomputed 64x64 void-and-cluster matrix integrated into dither brush options.
+- [ ] WaveFunctionCollapse Texture Fill (`src/lib/ai/wfcEngine.ts`): Overlapping model solver generating seamless pattern tiles from canvas selections.
+- [ ] Vector SVG Exporter (`src/lib/export/depixelize.ts`): Kopf-Lischinski topological resolution graph generator producing smooth SVG files.
+- [ ] Wallpaper Symmetry Brush (`src/lib/canvas/wallpaperSymmetry.ts`): Multi-axis symmetry engine supporting p2, p4, and p4m group drawing.
+- [ ] Machado CVD Colorblindness Filter (`src/lib/color/cvdLens.ts`): Real-time canvas filter simulating protanopia, deuteranopia, and tritanopia.
+- [ ] Silhouette / Squint Preview Toggle (`useStudioStore.ts`, `CenterViewport.tsx`): 1-click black silhouette rendering on composite viewport.
+- [ ] Direct Manipulation Light Gizmo (`CenterViewport.tsx`): On-canvas interactive 3D azimuth/elevation vector handle.
+- [ ] P2P WebRTC Canvas Pairing (`src/lib/sync/p2pSync.ts`): Room-based peer connection for collaborative pixel sessions.
+- [ ] Speedpaint Video Exporter (`src/lib/export/speedpaintExporter.ts`): Compiles undo ring snapshots into animated MP4/GIF speedpaint progression.
+
+**Acceptance criteria:**
+- Unit test verifies blue-noise mask local spatial variance matches theoretical properties.
+- Kopf-Lischinski SVG exporter produces clean path geometry matching sprite silhouettes.
+- Machado CVD color transform outputs verified against reference test vectors.
+- All algorithms execute on-device synchronously or via workers with zero external API calls.
+
+**Status:** Planned
+
+---
+
+## Phase 35 — Market Expansion & Tileset Ecosystem
+**Goal:** Address validated competitor gaps (Pixelorama, Aseprite) by implementing a dedicated tileset stamping workflow, Lospec palette interoperability, and modern video exports.
+
+**Evidence & Rationale:**
+- Tileset Stamping Gap: 47-blob autotile bitmasking is implemented in `smartMathEngine.ts`, but artists cannot slice a 256x256 tileset into 16x16 grid tiles to stamp onto levels. Competitor tools (Pixelorama, Pyxel Edit) provide dedicated tile palette workflows.
+- Lospec Palette Standard: Lospec is the dominant pixel art palette repository. PixiBun currently features only 4 static presets with no `.hex` or `.gpl` file import.
+- Social Video Export: Artists require upscaled MP4 / WebM / APNG video clips for Twitter/X and TikTok portfolio sharing.
+
+**Deliverables:**
+- [ ] Tileset Stamping & Palette Panel (`src/components/studio/TilesetPanel.tsx`):
+  - 16x16, 24x24, and 32x32 grid slicing over imported tile atlas textures.
+  - Active tile picker allowing stamp-placement directly onto active layers.
+- [ ] Lospec Palette Import Pipeline (`src/lib/color/paletteImporter.ts`):
+  - Support drag-and-drop import of `.hex` and `.gpl` (GIMP palette) files.
+  - Support direct copy-paste of raw hex lists (`#140d1f #281b3d ...`) with auto-tokenization.
+- [ ] MediaRecorder Social Video Export (`src/lib/export/videoExporter.ts`):
+  - Export canvas animations directly to WebM and MP4 (H.264) upscaled at 8x, 16x, and 32x integer scale.
+  - Export high-fidelity Animated PNG (APNG) preserving 24-bit color depth beyond GIF's 256-color limit.
+
+**Acceptance criteria:**
+- Unit test `tests/paletteImport.test.ts` validates parsing of standard Lospec `.hex` and `.gpl` format samples.
+- Tileset stamp placement generates pixel-perfect 16x16 tile placement aligned to grid boundaries.
+- Video exporter produces valid WebM and APNG files playable in standard browsers and video players.
+
+**Status:** Planned
+
+---
+
+## Excluded Claims (Transparency Audit)
+The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
+- Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.
+- Excluded: "Custom aria-valuemin/max/now attributes needed on sliders" — Verified false; `<input type="range">` natively provides these ARIA properties to assistive technology. Only programmatic `<label>` / `aria-label` was missing (addressed in Phase 32).
+- Excluded: "Fit to Screen feature is missing" — Verified false; `TopHeader.tsx:109` already provides `handleFitToScreen`. Only the keyboard shortcut (`Ctrl+0`) was missing (addressed in Phase 31).
+
+---
+
+
 ## Phase 29 — UX Enhancement: Radial Menu, Progressive Disclosure, Recent Colors, Autosave Feedback
 **Goal:** Implement four targeted UX improvements focusing on Fitts's Law, cognitive load reduction, recognition over recall, and system status visibility.
 
