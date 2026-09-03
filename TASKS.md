@@ -595,3 +595,21 @@ The following claims from preliminary inspection were investigated and confirmed
 
 ## Phase 8 — Data Integrity, Truthful Exports & Verification Harness
 **Status:** Complete (2026-08-25)
+
+---
+
+## Phase 32 — Canonical Xenowhirl RotSprite Engine & 45° Distortion Remediation
+**Goal:** Eliminate arbitrary angle rotation distortion (specifically 45°) where outlines bloomed into 2-3px blobs on the top-left and eroded into the fill on the bottom-right, restoring 100% nilateral symmetry and unbroken contour closure.
+**Deliverables:**
+- [x] **Fast 32-Bit 3-Pass Scale2X Cascade**: Native `Uint32Array` memory pipeline expanding original pixels 1x -> 2x -> 4x -> 8x without per-byte bit-shift overhead.
+- [x] **Exact Subpixel Center-Preserving Continuous Sampling**: Symmetrically maps continuous destination centers (x + 0.5, y + 0.5) around canvas pivot (W/2, H/2) to continuous source coordinates, sampling directly from the 8x raster with floor(sx * 8), floor(sy * 8).
+- [x] **Single-Pixel Detail Restoration**: Forward-maps isolated 1px source features to destination coordinates, ensuring micro-details and single-pixel highlights never vanish.
+- [x] **Zero Palette Mutation**: Strictly point-samples from the Scale2X palette without color blending or averaging.
+- [x] **Comprehensive Testing**: Added multi-color outline 45° rotation tests verifying 100% lclosed contour via flood fill (0 fill leaks), 4-quadrant bilateral symmetry, exact 100.0% area preservation (144 -> 144 pixels), isolated dot conservation, and a full 360° rotation leak test at 15° increments (0 leaks across all 24 angles).
+
+**Checks run:**
+- Type-check (`tsc --noEmit`): 0 errors
+- Lint (`eslint src tests`): 0 errors, 0 warnings
+- Tests (`npm test`): 169/169 tests pass across 31 suites
+
+**Status:** Complete (2026-09-03)

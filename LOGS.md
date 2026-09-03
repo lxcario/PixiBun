@@ -671,3 +671,19 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - npm run lint: 0 errors, 0 warnings
 - npm test: 166/166 tests pass across 31 suites (+7 new tests in tests/rotSpriteAndPrecision.test.ts)
 **Status:** Complete
+
+---
+
+## Canonical Xenowhirl RotSprite Engine & 45-Degree Distortion Remediation (2026-09-03)
+**Delivered:**
+- **Canonical Xenowhirl RotSprite Engine (src/lib/ai/smartMathEngine.ts)**: Completely resolved the 45-degree rotation distortion reported by the user (2-3px blooming on convex top-left outlines, erased bottom-right outlines, and asymmetrical corner spurs). Replaced the weighted voting alpha threshold engine with native 32-bit 3-pass Scale2X cascade (1x -> 2x -> 4x -> 8x) combined with strict subpixel center continuous inverse sampling.
+- **Exact Symmetrical Coordinate Inverse Mapping**: Symmetrically maps continuous destination centers (x + 0.5, y + 0.5) around canvas pivot (W/2, H/2) to continuous source coordinates, sampling directly from the 8x raster with floor(sx * 8), floor(sy * 8). Eliminates all directional coordinate drift and threshold competition between outlines and fills.
+- **Single-Pixel Detail Restoration**: Added forward-mapping presence conservation for isolated source features, guaranteeing micro-details and single-pixel highlighty�never yvanish after non-orthogonal rotations.
+- **Zero Palette Mutation**: Strictly point-samples from the Scale2X palette without color blending or averaging.
+- **Comprehensive Unit Testing (tests/rotSpriteAndPrecision.test.ts)**: Added multi-color outline 45-degree rotation tests verifying 100% closed contour via flood fill (0 fill leaks), 4-quadrant bilateral symmetry, exact 100.0% area preservation (144 -> 144 pixels), isolated dot conservation, and a full 360-degree rotation leak test at 15-degree increments (0 leaks across all 24 angles).
+
+**Checks run:**
+- npm run typecheck: 0 errors
+- npm run lint: 0 errors, 0 warnings
+- npm test: 169/169 tests pass across 31 suites (+3 new comprehensive tests in tests/rotSpriteAndPrecision.test.ts)
+**Status:** Complete

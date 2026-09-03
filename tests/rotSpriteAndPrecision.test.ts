@@ -381,5 +381,176 @@ describe('RotSprite Engine & Precision Viewport Fixes', () => {
     // RotSprite preserves the full continuous contour without gaping dropouts
     expect(solidPixels).toBeGreaterThanOrEqual(75);
   });
+
+  it('rotates multi-color outlined sprites at 45 degrees symmetrically with zero fill leaks and no bloated edges', () => {
+    const canvas = makeCanvas(32, 32);
+    const ctx = canvas.getContext('2d')!;
+
+    // Create a 32x32 character sprite with 1px purple outline and yellow fill
+    const PURPLE: [number, number, number, number] = [58, 46, 76, 255];
+    const YELLOW: [number, number, number, number] = [255, 220, 0, 255];
+
+    const imgData = ctx.createImageData(32, 32);
+    for (let y = 10; y <= 21; y++) {
+      for (let x = 10; x <= 21; x++) {
+        const isOutline = x === 10 || x === 21 || y === 10 || y === 21;
+        const color = isOutline ? PURPLE : YELLOW;
+        const idx = (y * 32 + x) * 4;
+        imgData.data[idx] = color[0];
+        imgData.data[idx + 1] = color[1];
+        imgData.data[idx + 2] = color[2];
+        imgData.data[idx + 3] = color[3];
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const rotated = rotateWithRotSprite(ctx, 32, 32, 45);
+    const rData = rotated.getContext('2d')!.getImageData(0, 0, 32, 32).data;
+
+    // 1. Flood-fill from (0, 0) in transparent space to assert yellow interior NEVER leaks out
+    const visited = new Uint8Array(32 * 32);
+    const queue = [0];
+    visited[0] = 1;
+    let yellowLeaked = false;
+
+    while (queue.length > 0) {
+      const curr = queue.pop()!;
+      const qx = curr % 32;
+      const qy = Math.floor(curr / 32);
+      const neighbors = [
+        [qx + 1, qy], [qx - 1, qy], [qx, qy + 1], [qx, qy - 1]
+      ];
+      for (const [nx, ny] of neighbors) {
+        if (nx >= 0 && nx < 32 && ny >= 0 && ny < 32) {
+          const nIdx = ny * 32 + nx;
+          if (!visited[nIdx]) {
+            visited[nIdx] = 1;
+            const r = rData[nIdx * 4];
+            const g = rData[nIdx * 4 + 1];
+            const b = rData[nIdx * 4 + 2];
+            const a = rData[nIdx * 4 + 3];
+            if (a === 0) {
+              queue.push(nIdx);
+            } else if (r === YELLOW[0] && g === YELLOW[1] && b === YELLOW[2]) {
+              yellowLeaked = true;
+            }
+          }
+        }
+      }
+    }
+    expect(yellowLeaked).toBe(false);
+
+    // 2. Symmetrical outline check: count purple outline pixels in all 4 quadrants
+    let qTL = 0, qTR = 0, qBL = 0, qBR = 0;
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        const idx = (y * 32 + x) * 4;
+        if (rData[idx] === PURPLE[0] && rData[idx + 1] === PURPLE[1] && rData[idx + 2] === PURPLE[2] && rData[idx + 3] > 32) {
+          if (x < 16 && y < 16) qTL++;
+          else if (x >= 16 && y < 16) qTR++;
+          else if (x < 16 && y >= 16) qBL++;
+          else qBR++;
+        }
+      }
+    }
+    // Quadrants should be balanced and not suffer from 3x bloating on TL or 0x erosion on BR
+    expect(qTL).toBeGreaterThan(0);
+    expect(qTR).toBeGreaterThan(0);
+    expect(qBL).toBeGreaterThan(0);
+    expect(qBR).toBeGreaterThan(0);
+    expect(Math.abs(qTL - qBR)).toBeLessThanOrEqual(4);
+    expect(Math.abs(qTR - qBL)).toBeLessThanOrEqual(4);
+
+    // 3. Exact area preservation
+    let totalSolid = 0;
+    for (let i = 3; i < rData.length; i += 4) {
+      if (rData[i] > 32) totalSolid++;
+    }
+    // Original 12x12 = 144 pixels; rotated area should be preserved within 5%
+    expect(totalSolid).toBeGreaterThanOrEqual(135);
+    expect(totalSolid).toBeLessThanOrEqual(155);
+  });
+
+  it('preserves single-pixel isolated details during 45 degree rotation', () => {
+    const canvas = makeCanvas(16, 16);
+    const ctx = canvas.getContext('2d')!;
+
+    // 1px isolated white dot at (8, 8)
+    const imgData = ctx.createImageData(16, 16);
+    const idx = (8 * 16 + 8) * 4;
+    imgData.data[idx] = 255;
+    imgData.data[idx + 1] = 255;
+    imgData.data[idx + 2] = 255;
+    imgData.data[idx + 3] = 255;
+    ctx.putImageData(imgData, 0, 0);
+
+    const rotated = rotateWithRotSprite(ctx, 16, 16, 45);
+    const rData = rotated.getContext('2d')!.getImageData(0, 0, 16, 16).data;
+
+    let solidCount = 0;
+    for (let i = 3; i < rData.length; i += 4) {
+      if (rData[i] > 32) solidCount++;
+    }
+    expect(solidCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('maintains a closed outline without leaks across full 360 degree rotation sweep', () => {
+    const canvas = makeCanvas(32, 32);
+    const ctx = canvas.getContext('2d')!;
+
+    const PURPLE: [number, number, number, number] = [58, 46, 76, 255];
+    const YELLOW: [number, number, number, number] = [255, 220, 0, 255];
+
+    const imgData = ctx.createImageData(32, 32);
+    for (let y = 10; y <= 21; y++) {
+      for (let x = 10; x <= 21; x++) {
+        const isOutline = x === 10 || x === 21 || y === 10 || y === 21;
+        const color = isOutline ? PURPLE : YELLOW;
+        const idx = (y * 32 + x) * 4;
+        imgData.data[idx] = color[0];
+        imgData.data[idx + 1] = color[1];
+        imgData.data[idx + 2] = color[2];
+        imgData.data[idx + 3] = color[3];
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    for (let angle = 0; angle < 360; angle += 15) {
+      const rotated = rotateWithRotSprite(ctx, 32, 32, angle);
+      const rData = rotated.getContext('2d')!.getImageData(0, 0, 32, 32).data;
+
+      const visited = new Uint8Array(32 * 32);
+      const queue = [0];
+      visited[0] = 1;
+      let yellowLeaked = false;
+
+      while (queue.length > 0) {
+        const curr = queue.pop()!;
+        const qx = curr % 32;
+        const qy = Math.floor(curr / 32);
+        const neighbors = [
+          [qx + 1, qy], [qx - 1, qy], [qx, qy + 1], [qx, qy - 1]
+        ];
+        for (const [nx, ny] of neighbors) {
+          if (nx >= 0 && nx < 32 && ny >= 0 && ny < 32) {
+            const nIdx = ny * 32 + nx;
+            if (!visited[nIdx]) {
+              visited[nIdx] = 1;
+              const r = rData[nIdx * 4];
+              const g = rData[nIdx * 4 + 1];
+              const b = rData[nIdx * 4 + 2];
+              const a = rData[nIdx * 4 + 3];
+              if (a === 0) {
+                queue.push(nIdx);
+              } else if (r === YELLOW[0] && g === YELLOW[1] && b === YELLOW[2]) {
+                yellowLeaked = true;
+              }
+            }
+          }
+        }
+      }
+      expect(yellowLeaked).toBe(false);
+    }
+  });
 });
 

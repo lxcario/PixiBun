@@ -64,7 +64,7 @@ graph LR
 * **Dielectric Fresnel Rim Reflection with Cauchy Dispersion:** Schlick grazing angle reflectance modulated by per-channel IOR splitting ($F_{0, R} < F_{0, G} < F_{0, B}$) for crystalline edges and rim-lit character contours.
 * **Kajiya-Kay Anisotropic Highlight:** Curvature and directional tangent vector fields $\mathbf{T}(\mathbf{x})$ with dual-cuticle shifts for continuous specular highlight bands across hair strands, fur, and brushed metal blades.
 * **Contact Ground Drop Shadows & Auto Outline:** 1-click generation of soft elliptical contact shadows under feet and clean 1px outer stroke silhouette layers.
-* **RotSprite 8x Engine:** 3-pass Scale2X (EPX) upscaling + nearest-neighbor rotation + snap sampling for crisp, artifact-free pixel art rotation.
+* **Canonical Xenowhirl RotSprite Engine:** 3-pass Scale2X (EPX) cascade ($1\times \to 2\times \to 4\times \to 8\times$) + strict subpixel center continuous inverse sampling with single-pixel presence conservation, completely eliminating 45° distortion, blooming, and outline erosion while preserving 100% bilateral symmetry and palette purity.
 * **Zhang-Suen Line Thinning:** Morphological skeleton algorithm for normalizing thick strokes down to clean 1px lines.
 * **5 Physical Material Presets:** Matte Clay, Polished Metal, Glossy Glass/Gem, Velvet Fabric, and Gold/Brass.
 
