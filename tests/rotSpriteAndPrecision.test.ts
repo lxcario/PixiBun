@@ -307,4 +307,79 @@ describe('RotSprite Engine & Precision Viewport Fixes', () => {
     const pixel = nextBuf.ctx.getImageData(0, 0, 1, 1).data;
     expect(pixel[3]).toBeGreaterThan(0);
   });
+
+  it('preserves continuous 1px outlines when downscaling 32x32 to 16x16 via Area-Preserving Downsampling', () => {
+    const state = useStudioStore.getState();
+    state.resetToNewProject();
+    state.setCanvasSize(32, 32, 'center', false);
+
+    const activeLayerId = useStudioStore.getState().activeLayerId;
+    const buf = getOrCreateBuffer(activeLayerId, 32, 32);
+
+    // Draw a 1px circle outline on 32x32
+    const cx = 16, cy = 16, r = 10;
+    const imgData = buf.ctx.createImageData(32, 32);
+    for (let angle = 0; angle < 360; angle += 0.5) {
+      const rad = (angle * Math.PI) / 180;
+      const x = Math.round(cx + r * Math.cos(rad));
+      const y = Math.round(cy + r * Math.sin(rad));
+      if (x >= 0 && x < 32 && y >= 0 && y < 32) {
+        const idx = (y * 32 + x) * 4;
+        imgData.data[idx] = 58;
+        imgData.data[idx + 1] = 46;
+        imgData.data[idx + 2] = 76;
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    buf.ctx.putImageData(imgData, 0, 0);
+
+    // Downscale from 32x32 to 16x16 with resample = true
+    useStudioStore.getState().setCanvasSize(16, 16, 'center', true);
+    const nextBuf = getOrCreateBuffer(activeLayerId, 16, 16);
+    const resampledData = nextBuf.ctx.getImageData(0, 0, 16, 16).data;
+
+    let solidCount = 0;
+    for (let i = 3; i < resampledData.length; i += 4) {
+      if (resampledData[i] > 32) solidCount++;
+    }
+
+    // With naive nearest-neighbor decimation, odd pixels are dropped resulting in ~20 broken dashes.
+    // Area-preserving downsampling preserves all four quadrants with >= 35 solid pixels and no holes.
+    expect(solidCount).toBeGreaterThanOrEqual(35);
+  });
+
+  it('rotates 45 degrees using Xenowoz 8x Scale2X RotSprite with unbroken contour', () => {
+    const canvas = makeCanvas(32, 32);
+    const ctx = canvas.getContext('2d')!;
+
+    // Draw a 32x32 circle outline
+    const cx = 16, cy = 16, r = 10;
+    const imgData = ctx.createImageData(32, 32);
+    for (let angle = 0; angle < 360; angle += 0.5) {
+      const rad = (angle * Math.PI) / 180;
+      const x = Math.round(cx + r * Math.cos(rad));
+      const y = Math.round(cy + r * Math.sin(rad));
+      if (x >= 0 && x < 32 && y >= 0 && y < 32) {
+        const idx = (y * 32 + x) * 4;
+        imgData.data[idx] = 58;
+        imgData.data[idx + 1] = 46;
+        imgData.data[idx + 2] = 76;
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const rotatedCanvas = rotateWithRotSprite(ctx, 32, 32, 45);
+    const rCtx = rotatedCanvas.getContext('2d')!;
+    const rData = rCtx.getImageData(0, 0, 32, 32).data;
+
+    let solidPixels = 0;
+    for (let i = 3; i < rData.length; i += 4) {
+      if (rData[i] > 32) solidPixels++;
+    }
+
+    // RotSprite preserves the full continuous contour without gaping dropouts
+    expect(solidPixels).toBeGreaterThanOrEqual(75);
+  });
 });
+

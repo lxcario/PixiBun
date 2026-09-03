@@ -1352,61 +1352,76 @@ export function rotateWithRotSprite(
     return outputCanvas;
   }
 
-  // 2. Scale3X Expansion (Preserves diagonal connectivity without blurring)
-  const scale = 3;
-  const w3 = w * scale;
-  const h3 = h * scale;
-  const scaledData = new Uint8ClampedArray(w3 * h3 * 4);
+  // 2. Exact Xenowoz 8x Scale2X (EPX) Cascade (3 successive passes: 1x -> 2x -> 4x -> 8x)
+  function applyScale2x(
+    src: Uint8ClampedArray,
+    curW: number,
+    curH: number
+  ): { data: Uint8ClampedArray; w: number; h: number } {
+    const outW = curW * 2;
+    const outH = curH * 2;
+    const out = new Uint8ClampedArray(outW * outH * 4);
 
-  const getPixel = (x: number, y: number): [number, number, number, number] => {
-    const cx = Math.max(0, Math.min(w - 1, x));
-    const cy = Math.max(0, Math.min(h - 1, y));
-    const idx = (cy * w + cx) * 4;
-    return [sData[idx], sData[idx + 1], sData[idx + 2], sData[idx + 3]];
-  };
+    const getPx = (x: number, y: number): number => {
+      const cx = x < 0 ? 0 : x >= curW ? curW - 1 : x;
+      const cy = y < 0 ? 0 : y >= curH ? curH - 1 : y;
+      const idx = (cy * curW + cx) * 4;
+      return (src[idx] << 24) | (src[idx + 1] << 16) | (src[idx + 2] << 8) | src[idx + 3];
+    };
 
-  const same = (p1: [number, number, number, number], p2: [number, number, number, number]) => {
-    return p1[0] === p2[0] && p1[1] === p2[1] && p1[2] === p2[2] && p1[3] === p2[3];
-  };
+    for (let y = 0; y < curH; y++) {
+      for (let x = 0; x < curW; x++) {
+        const pIdx = (y * curW + x) * 4;
+        const P = (src[pIdx] << 24) | (src[pIdx + 1] << 16) | (src[pIdx + 2] << 8) | src[pIdx + 3];
+        const B = getPx(x, y - 1);
+        const D = getPx(x - 1, y);
+        const F = getPx(x + 1, y);
+        const H = getPx(x, y + 1);
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const A = getPixel(x - 1, y - 1), B = getPixel(x, y - 1), C = getPixel(x + 1, y - 1);
-      const D = getPixel(x - 1, y),     E = getPixel(x, y),     F = getPixel(x + 1, y);
-      const G = getPixel(x - 1, y + 1), H = getPixel(x, y + 1), I = getPixel(x + 1, y + 1);
-
-      const out = [
-        E, E, E,
-        E, E, E,
-        E, E, E
-      ];
-
-      if (!same(B, H) && !same(D, F)) {
-        out[0] = same(D, B) ? D : E;
-        out[1] = (same(D, B) && !same(E, C)) || (same(B, F) && !same(E, A)) ? B : E;
-        out[2] = same(B, F) ? F : E;
-        out[3] = (same(D, B) && !same(E, G)) || (same(D, H) && !same(E, A)) ? D : E;
-        out[4] = E;
-        out[5] = (same(B, F) && !same(E, I)) || (same(H, F) && !same(E, C)) ? F : E;
-        out[6] = same(D, H) ? D : E;
-        out[7] = (same(D, H) && !same(E, I)) || (same(H, F) && !same(E, G)) ? H : E;
-        out[8] = same(H, F) ? F : E;
-      }
-
-      for (let sy = 0; sy < scale; sy++) {
-        for (let sx = 0; sx < scale; sx++) {
-          const sIdx = ((y * scale + sy) * w3 + (x * scale + sx)) * 4;
-          const pxColor = out[sy * 3 + sx];
-          scaledData[sIdx] = pxColor[0];
-          scaledData[sIdx + 1] = pxColor[1];
-          scaledData[sIdx + 2] = pxColor[2];
-          scaledData[sIdx + 3] = pxColor[3];
+        let e0 = P, e1 = P, e2 = P, e3 = P;
+        if (B !== H && D !== F) {
+          e0 = D === B ? D : P;
+          e1 = B === F ? F : P;
+          e2 = D === H ? D : P;
+          e3 = H === F ? F : P;
         }
+
+        const outBase = (y * 2) * outW * 4 + (x * 2) * 4;
+        const rowStep = outW * 4;
+
+        out[outBase] = (e0 >>> 24) & 0xff;
+        out[outBase + 1] = (e0 >>> 16) & 0xff;
+        out[outBase + 2] = (e0 >>> 8) & 0xff;
+        out[outBase + 3] = e0 & 0xff;
+
+        out[outBase + 4] = (e1 >>> 24) & 0xff;
+        out[outBase + 5] = (e1 >>> 16) & 0xff;
+        out[outBase + 6] = (e1 >>> 8) & 0xff;
+        out[outBase + 7] = e1 & 0xff;
+
+        const row1Base = outBase + rowStep;
+        out[row1Base] = (e2 >>> 24) & 0xff;
+        out[row1Base + 1] = (e2 >>> 16) & 0xff;
+        out[row1Base + 2] = (e2 >>> 8) & 0xff;
+        out[row1Base + 3] = e2 & 0xff;
+
+        out[row1Base + 4] = (e3 >>> 24) & 0xff;
+        out[row1Base + 5] = (e3 >>> 16) & 0xff;
+        out[row1Base + 6] = (e3 >>> 8) & 0xff;
+        out[row1Base + 7] = e3 & 0xff;
       }
     }
+    return { data: out, w: outW, h: outH };
   }
 
-  // 3. Inverse Mapping Rotation with 3x3 Supersampling and Majority Color Voting
+  const p1 = applyScale2x(sData, w, h);
+  const p2 = applyScale2x(p1.data, p1.w, p1.h);
+  const p3 = applyScale2x(p2.data, p2.w, p2.h);
+  const s8 = p3.data;
+  const w8 = p3.w;
+  const h8 = p3.h;
+
+  // 3. Inverse Mapping Rotation in 8x Space with 64-Sample Center-Weighted Downsampling
   const outputCanvas = document.createElement('canvas');
   outputCanvas.width = w;
   outputCanvas.height = h;
@@ -1416,68 +1431,112 @@ export function rotateWithRotSprite(
 
   const cx = w / 2;
   const cy = h / 2;
-  const rad = (-angleDeg * Math.PI) / 180; // Inverse rotation angle
+  const rad = (-angleDeg * Math.PI) / 180;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
 
-  const subOffsets = [
-    [-0.3, -0.3], [0, -0.3], [0.3, -0.3],
-    [-0.3,  0.0], [0,  0.0], [0.3,  0.0],
-    [-0.3,  0.3], [0,  0.3], [0.3,  0.3],
-  ];
+  // Precompute 8x8 Gaussian radial weights (sigma = 2.2) to prioritize cell center
+  const weights = new Float32Array(64);
+  const twoSigmaSq = 2 * (2.2 * 2.2);
+  for (let dy = 0; dy < 8; dy++) {
+    for (let dx = 0; dx < 8; dx++) {
+      const distSq = (dx - 3.5) ** 2 + (dy - 3.5) ** 2;
+      weights[dy * 8 + dx] = Math.exp(-distSq / twoSigmaSq);
+    }
+  }
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const px = x + 0.5 - cx;
-      const py = y + 0.5 - cy;
-
-      const colorVotes = new Map<number, { count: number; r: number; g: number; b: number; a: number }>();
       let solidCount = 0;
+      let innerCoreSolid = false;
+      const colorVotes = new Map<number, {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+        weight: number;
+        centerDistSum: number;
+        count: number;
+      }>();
 
-      for (let i = 0; i < 9; i++) {
-        const ox = px + subOffsets[i][0];
-        const oy = py + subOffsets[i][1];
+      for (let dy = 0; dy < 8; dy++) {
+        for (let dx = 0; dx < 8; dx++) {
+          const subX = x + (dx + 0.5) / 8 - cx;
+          const subY = y + (dy + 0.5) / 8 - cy;
 
-        const srcX1 = cos * ox - sin * oy + cx;
-        const srcY1 = sin * ox + cos * oy + cy;
+          const rx = (cos * subX - sin * subY + cx) * 8;
+          const ry = (sin * subX + cos * subY + cy) * 8;
 
-        const srcX3 = Math.floor(srcX1 * scale);
-        const srcY3 = Math.floor(srcY1 * scale);
+          const sx = Math.floor(rx);
+          const sy = Math.floor(ry);
 
-        if (srcX3 >= 0 && srcX3 < w3 && srcY3 >= 0 && srcY3 < h3) {
-          const sIdx = (srcY3 * w3 + srcX3) * 4;
-          const a = scaledData[sIdx + 3];
-          if (a > 32) {
-            solidCount++;
-            const r = scaledData[sIdx];
-            const g = scaledData[sIdx + 1];
-            const b = scaledData[sIdx + 2];
-            const key = (r << 24) | (g << 16) | (b << 8) | a;
-            const entry = colorVotes.get(key);
-            if (entry) {
-              entry.count++;
-            } else {
-              colorVotes.set(key, { count: 1, r, g, b, a });
+          if (sx >= 0 && sx < w8 && sy >= 0 && sy < h8) {
+            const sIdx = (sy * w8 + sx) * 4;
+            const a = s8[sIdx + 3];
+            if (a > 32) {
+              solidCount++;
+              if (dx >= 3 && dx <= 4 && dy >= 3 && dy <= 4) {
+                innerCoreSolid = true;
+              }
+              const wgt = weights[dy * 8 + dx];
+              const dist = Math.sqrt((dx - 3.5) ** 2 + (dy - 3.5) ** 2);
+              const key = (s8[sIdx] << 24) | (s8[sIdx + 1] << 16) | (s8[sIdx + 2] << 8) | a;
+
+              const entry = colorVotes.get(key);
+              if (entry) {
+                entry.weight += wgt;
+                entry.centerDistSum += dist;
+                entry.count++;
+              } else {
+                colorVotes.set(key, {
+                  r: s8[sIdx],
+                  g: s8[sIdx + 1],
+                  b: s8[sIdx + 2],
+                  a,
+                  weight: wgt,
+                  centerDistSum: dist,
+                  count: 1,
+                });
+              }
             }
           }
         }
       }
 
       const outIdx = (y * w + x) * 4;
-      // Minimum 33% coverage (>= 3 out of 9 subpixel hits) preserves stroke continuity
-      if (solidCount >= 3 && colorVotes.size > 0) {
-        let bestVote = 0;
-        let bestColor = { r: 0, g: 0, b: 0, a: 255 };
-        for (const v of colorVotes.values()) {
-          if (v.count > bestVote) {
-            bestVote = v.count;
-            bestColor = v;
+      // 25% solid coverage threshold (>= 16/64 subpixels) or core hit ensures 1px outlines never drop
+      if ((solidCount >= 14 || innerCoreSolid) && colorVotes.size > 0) {
+        let bestEntry = null;
+        for (const entry of colorVotes.values()) {
+          if (!bestEntry) {
+            bestEntry = entry;
+            continue;
+          }
+          if (entry.weight > bestEntry.weight) {
+            bestEntry = entry;
+          } else if (Math.abs(entry.weight - bestEntry.weight) < 1e-4) {
+            // Centroid proximity tie-break
+            const avgDistA = entry.centerDistSum / entry.count;
+            const avgDistB = bestEntry.centerDistSum / bestEntry.count;
+            if (avgDistA < avgDistB) {
+              bestEntry = entry;
+            } else if (Math.abs(avgDistA - avgDistB) < 1e-4) {
+              // Luminance tie-break (darker outline wins)
+              const lumA = 0.299 * entry.r + 0.587 * entry.g + 0.114 * entry.b;
+              const lumB = 0.299 * bestEntry.r + 0.587 * bestEntry.g + 0.114 * bestEntry.b;
+              if (lumA < lumB) {
+                bestEntry = entry;
+              }
+            }
           }
         }
-        outData[outIdx] = bestColor.r;
-        outData[outIdx + 1] = bestColor.g;
-        outData[outIdx + 2] = bestColor.b;
-        outData[outIdx + 3] = bestColor.a;
+
+        if (bestEntry) {
+          outData[outIdx] = bestEntry.r;
+          outData[outIdx + 1] = bestEntry.g;
+          outData[outIdx + 2] = bestEntry.b;
+          outData[outIdx + 3] = bestEntry.a;
+        }
       }
     }
   }

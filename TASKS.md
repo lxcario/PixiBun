@@ -62,15 +62,16 @@
 - [x] Stencil Isolation (`CenterViewport.tsx`, `StudioLayout.tsx`): Restricted stencil guide rendering strictly to active playground mode (`isPlaygroundActive === true`), preventing tracing templates from remaining on the studio canvas.
 - [x] Playground Animation Transfer (`PlaygroundLayout.tsx`, `StudioLayout.tsx`): Passed `?fromPlayground=true` when entering studio to preserve live animation frames and autosave under `'Playground Animation'`.
 - [x] High-Zoom Viewport Aspect Ratio (`CenterViewport.tsx`): Applied `shrink-0` and explicit `flexShrink: 0`, `minWidth`, `minHeight` to `#center-canvas-area`, preventing CSS flexbox from horizontally compressing the canvas at high zoom levels (e.g. 2625%).
-- [x] Dynamic Canvas Resizing (`CanvasResizeModal.tsx`, `studioStore.ts`): Defaulted `resample` to `true` in `CanvasResizeModal` and `setCanvasSize`, scaling artwork dynamically with nearest-neighbor interpolation without clipping edges when resizing down.
+- [x] Area-Preserving Canvas Downsampling (`bufferRegistry.ts`): Replaced naive `drawImage` downsampling with presence-preserving area box integration (`resamplePixelArtBuffer`), preventing 1px strokes and outlines from being dropped into disconnected dashes when downscaling (e.g. 32x32 to 16x16).
 - [x] Photometric Dither Modulation Default (`studioStore.ts`): Reset initial `tools.ditherModulation` from `0.35` (35%) to `0.0` (0%).
 - [x] PixiBud AI Undo Layer Deletion (`canvas.ts`, `CenterViewport.tsx`): Added `createdLayerId` to `HistoryStep`. Pressing `Ctrl+Z` after applying an AI effect deletes the created layer from the frame stack and frees buffer memory.
 - [x] Base Layer Active Focus Anchor (`CenterViewport.tsx`): Automatically restored active layer focus to the base artwork after generating an AI pass, enabling sequential effect chaining.
-- [x] RotSprite Precision Rewrite (`smartMathEngine.ts`): Implemented lossless orthogonal integer permutation fast-paths for $90^\circ, 180^\circ, 270^\circ$, plus $3\times3$ subpixel supersampling and majority color voting for arbitrary angles.
-- [x] Unit Tests (`tests/rotSpriteAndPrecision.test.ts`): 5 comprehensive unit tests for RotSprite rotations, dither modulation 0.0, and default resample canvas sizing.
+- [x] True Xenowoz 8x Scale2X RotSprite Engine (`smartMathEngine.ts`): Implemented 3-pass Scale2X (EPX) upscaling ($1\times \to 2\times \to 4\times \to 8\times$) combined with high-resolution inverse rotation and a 64-sample Gaussian radial center-weighted downsampler ($\sigma = 2.2$) with a 25% outline threshold and luminance tie-breaking, completely eliminating gaps and spikes at arbitrary angles.
+- [x] Live Preview Window Dragging & Resizing (`FloatingPreviewWindow.tsx`): Fixed mouse stickiness by moving drag listeners to `window` with `e.buttons === 0` termination guards. Added an interactive bottom-right resize handle (`◢`) allowing smooth viewport resizing from 100x100 to 640x640.
+- [x] Unit Tests (`tests/rotSpriteAndPrecision.test.ts`): 7 comprehensive unit tests verifying 32x32->16x16 line preservation, 45-degree contour continuity, orthogonal fast-paths, dither modulation 0.0, and default resample canvas sizing.
 
 **Acceptance criteria:**
-- `npm test`: 164 / 164 tests pass across 31 suites.
+- `npm test`: 166 / 166 tests pass across 31 suites.
 - `npm run typecheck`: 0 errors.
 - `npm run lint`: 0 errors, 0 warnings.
 

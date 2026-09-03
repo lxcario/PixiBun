@@ -103,6 +103,92 @@ function anchorOffsets(
   }
 }
 
+export function resamplePixelArtBuffer(
+  srcCanvas: HTMLCanvasElement,
+  dstCtx: CanvasRenderingContext2D,
+  newWidth: number,
+  newHeight: number
+): void {
+  const oldWidth = srcCanvas.width;
+  const oldHeight = srcCanvas.height;
+  if (oldWidth === 0 || oldHeight === 0 || newWidth === 0 || newHeight === 0) return;
+
+  // When upscaling both axes, crisp nearest-neighbor drawImage is exact and immediate
+  if (newWidth >= oldWidth && newHeight >= oldHeight) {
+    dstCtx.imageSmoothingEnabled = false;
+    dstCtx.drawImage(srcCanvas, 0, 0, newWidth, newHeight);
+    return;
+  }
+
+  // When downscaling, naive drawImage skips odd coordinates and perforates 1px strokes.
+  // Area-preserving downsampling with presence conservation prevents line dropouts.
+  const srcCtx = srcCanvas.getContext('2d', { willReadFrequently: true });
+  if (!srcCtx) {
+    dstCtx.drawImage(srcCanvas, 0, 0, newWidth, newHeight);
+    return;
+  }
+
+  const srcData = srcCtx.getImageData(0, 0, oldWidth, oldHeight).data;
+  const dstImgData = dstCtx.createImageData(newWidth, newHeight);
+  const dstData = dstImgData.data;
+
+  const scaleX = oldWidth / newWidth;
+  const scaleY = oldHeight / newHeight;
+
+  for (let y = 0; y < newHeight; y++) {
+    const y0 = Math.floor(y * scaleY);
+    const y1 = Math.min(oldHeight, Math.ceil((y + 1) * scaleY));
+
+    for (let x = 0; x < newWidth; x++) {
+      const x0 = Math.floor(x * scaleX);
+      const x1 = Math.min(oldWidth, Math.ceil((x + 1) * scaleX));
+
+      // Scan source footprint [x0, x1) x [y0, y1)
+      const colorVotes = new Map<number, { r: number; g: number; b: number; a: number; count: number }>();
+      let solidCount = 0;
+
+      for (let sy = y0; sy < y1; sy++) {
+        for (let sx = x0; sx < x1; sx++) {
+          const sIdx = (sy * oldWidth + sx) * 4;
+          const a = srcData[sIdx + 3];
+          if (a > 32) {
+            solidCount++;
+            const r = srcData[sIdx];
+            const g = srcData[sIdx + 1];
+            const b = srcData[sIdx + 2];
+            const key = (r << 24) | (g << 16) | (b << 8) | a;
+            const entry = colorVotes.get(key);
+            if (entry) {
+              entry.count++;
+            } else {
+              colorVotes.set(key, { r, g, b, a, count: 1 });
+            }
+          }
+        }
+      }
+
+      const dIdx = (y * newWidth + x) * 4;
+      // Presence conservation: Any solid stroke in the cell guarantees a solid pixel
+      if (solidCount > 0 && colorVotes.size > 0) {
+        let bestVote = 0;
+        let bestColor = { r: 0, g: 0, b: 0, a: 255 };
+        for (const v of colorVotes.values()) {
+          if (v.count > bestVote) {
+            bestVote = v.count;
+            bestColor = v;
+          }
+        }
+        dstData[dIdx] = bestColor.r;
+        dstData[dIdx + 1] = bestColor.g;
+        dstData[dIdx + 2] = bestColor.b;
+        dstData[dIdx + 3] = bestColor.a;
+      }
+    }
+  }
+
+  dstCtx.putImageData(dstImgData, 0, 0);
+}
+
 /**
  * Resizes every buffer, honoring the user's anchor choice. With resample the
  * content scales into the new bounds; otherwise it shifts per the anchor
@@ -123,7 +209,7 @@ export function resizeAllBuffers(
     next.ctx.imageSmoothingEnabled = false;
 
     if (resample) {
-      next.ctx.drawImage(entry.canvas, 0, 0, newWidth, newHeight);
+      resamplePixelArtBuffer(entry.canvas, next.ctx, newWidth, newHeight);
     } else {
       const { offsetX, offsetY } = anchorOffsets(anchor, oldWidth, oldHeight, newWidth, newHeight);
       next.ctx.drawImage(entry.canvas, offsetX, offsetY);
