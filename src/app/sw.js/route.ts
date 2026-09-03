@@ -1,4 +1,24 @@
-const CACHE_NAME = 'pixibun-v1';
+/**
+ * Service Worker route handler (src/app/sw.js/route.ts).
+ *
+ * Phase 32 — Cache versioning fidelity fix: CACHE_NAME was previously the
+ * static string 'pixibun-v1' in public/sw.js, so new deploys kept reusing the
+ * same precache bucket. The cache version is now build-time-injected via
+ * `env.SW_CACHE_VERSION` in next.config.ts (inlined into this bundle by the
+ * Next.js compiler) and bumped per release: a deploy that changes the version
+ * produces a byte-different /sw.js, which triggers a service worker update,
+ * and `activate` deletes every cache bucket that is not the current version.
+ *
+ * Response headers (no-cache + Service-Worker-Allowed + Content-Type) are
+ * supplied by the '/sw.js' entry in next.config.ts `headers()` — this handler
+ * deliberately sets none of them to avoid duplicated headers.
+ *
+ * SKIP_WAITING flow is unchanged (see the message listener below).
+ */
+
+const swCacheVersion: string = process.env.SW_CACHE_VERSION ?? 'v1';
+
+const SW_SOURCE = `const CACHE_NAME = 'pixibun-${swCacheVersion}';
 const PRECACHE_ASSETS = [
   '/',
   '/studio',
@@ -114,3 +134,10 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+`;
+
+export async function GET() {
+  // Content-Type / Cache-Control / Service-Worker-Allowed are appended by the
+  // '/sw.js' headers entry in next.config.ts — do not duplicate them here.
+  return new Response(SW_SOURCE, { status: 200 });
+}

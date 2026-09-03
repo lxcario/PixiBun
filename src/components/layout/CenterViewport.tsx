@@ -16,10 +16,12 @@ import {
 } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
+import { CVD_FILTER_IDS, getViewportFilterCss } from '@/lib/color/cvdLens';
+import { ViewportLensFilters } from '@/components/studio/ViewportLensFilters';
 import { getOrCreateBuffer, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { HistoryStep } from '@/types/canvas';
 import { createHistoryEngine, HistoryEngine } from '@/lib/engine/historyEngine';
-import { ImportPayload } from '@/components/modals/ImportModal';
+import type { ImportPayload } from '@/components/modals/ImportModal';
 import { 
   cleanJaggiesOnCanvas, 
   generateSelOutData,
@@ -101,6 +103,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  // Display-only perceptual lenses (DESIGN.md §12/§13)
+  const cvdLens = useStudioStore((s) => s.cvdLens);
+  const squintMode = useStudioStore((s) => s.squintMode);
+  // Matrix-only lens: safe for translucent stacked surfaces (preserves alpha)
+  const cvdFilterCss = cvdLens !== 'none' ? `url(#${CVD_FILTER_IDS[cvdLens]})` : undefined;
+  // Main composite surface: squint (white flood + ink) supersedes the CVD matrix
+  const mainFilterCss = getViewportFilterCss(cvdLens, squintMode);
   const onionSkin = useStudioStore((s) => s.onionSkin);
   const isPlaying = useStudioStore((s) => s.isPlaying);
   const tools = useStudioStore((s) => s.tools);
@@ -2480,8 +2489,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           </div>
         )}
 
+        {/* Display-only perceptual lens SVG filter definitions (§12/§13) */}
+        <ViewportLensFilters />
+
         {/* Solid Canvas Background */}
-        <div className="absolute inset-0 bg-[#ffffff] pointer-events-none" />
+        <div
+          className="absolute inset-0 bg-[#ffffff] pointer-events-none"
+          style={{ filter: cvdFilterCss }}
+        />
 
         {/* Lightbox Stencil Tracing Canvas */}
         <canvas
@@ -2490,6 +2505,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+          style={{ filter: cvdFilterCss }}
         />
 
         {/* Onion Skin Underlay Canvas */}
@@ -2499,6 +2515,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+          style={{ filter: cvdFilterCss }}
         />
 
         {/* Main Composite Layer Canvas */}
@@ -2508,6 +2525,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated"
+          style={{ filter: mainFilterCss }}
         />
 
         {/* Live Shape / Curve Preview Overlay Canvas */}
@@ -2516,6 +2534,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated pointer-events-none"
+          style={{ filter: cvdFilterCss }}
         />
 
         {/* Pixel Grid, Isometric Guides & Selection Box Overlay */}

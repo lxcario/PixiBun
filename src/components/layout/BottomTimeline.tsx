@@ -304,6 +304,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 min="1"
                 max="30"
                 value={fps}
+                aria-label="Playback speed in frames per second"
                 onChange={(e) => setFps(parseInt(e.target.value, 10))}
                 className="w-20 accent-[#f0be7c] cursor-pointer"
               />

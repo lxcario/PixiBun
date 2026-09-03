@@ -4,6 +4,24 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
+## [v1.5.0] - 2026-09-03
+### Accessibility, Next.js 16 Security Proxy & Perceptual Color Lenses (Phase 32)
+- **Automated WCAG 2.2 Axe Audits (`tests/e2e/studio.spec.ts`)**: Integrated `@axe-core/playwright` automated a11y test suites across blank canvas workspace, open Export modal, and all expanded RightInspector panels (Layers, Palette, PixiBud AI). Achieved 100% compliance with zero violations.
+- **Accessible Slider and Control Associations**: Added explicit `aria-label` tags to all custom inputs across `ContextOptionsBar.tsx`, `RightInspector.tsx`, `BottomTimeline.tsx`, and `ExportModal.tsx`, completely satisfying WCAG 4.1.2 accessible name requirements.
+- **Next.js 16 Proxy Nonce CSP (`src/proxy.ts`)**: Replaced deprecated middleware with Next.js 16 `proxy.ts`, generating per-request crypto nonces, injecting `script-src 'self' 'nonce-{nonce}'` with production `'unsafe-inline'` script elimination, and bounding matchers strictly to dynamic page routes (skipping static assets, icons, and service workers).
+- **Dynamic Service Worker Route Handler (`src/app/sw.js/route.ts`)**: Transitioned static `public/sw.js` into a dynamic Next.js route handler with build-time cache versioning (`pixibun-v2`), serving authoritative `Cache-Control: no-cache, no-store, must-revalidate` and `Service-Worker-Allowed: /` headers.
+- **Machado 2009 CVD Colorblindness Simulation & Squint Silhouette Mode (`src/lib/color/cvdLens.ts`, `ViewportLensFilters.tsx`)**: Implemented mathematically rigorous on-device color vision deficiency simulation lenses (Protanopia, Deuteranopia, Tritanopia, Monochromacy) based on Machado et al. 2009 IEEE TVCG matrices, plus an instant 1-bit Squint silhouette filter. Rendered via zero-mutation GPU SVG `feColorMatrix` CSS display filters, guaranteeing canvas pixel buffers and export outputs remain completely pristine.
+- **HUD Controls & Keyboard Shortcuts**: Added `CVD` lens cycle and `SIL` silhouette toggle buttons to `ContextOptionsBar.tsx`, wired hotkeys `p` (CVD cycle) and `s` (Squint toggle) in `StudioLayout.tsx`, and documented them in `ShortcutsModal.tsx`.
+- **Lighthouse CI & Test Verification**:
+  - Landing: Performance 0.85, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
+  - Studio: Performance 0.86, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
+  - Studio JS Bundle: 260.79 KB (< 300 KB budget).
+  - Vitest: 186/186 tests passing across 32 test suites.
+  - Playwright: 17/17 tests passing across all end-to-end suites.
+  - TypeScript & Linter: 0 errors, 0 warnings.
+
+---
+
 ## [v1.4.0] - 2026-09-03
 
 ### Performance, Storage & Hot-Path Decoupling (Phase 30)

@@ -345,6 +345,7 @@ export const RightInspector: React.FC = () => {
                     max="1"
                     step="0.05"
                     value={activeLayer.opacity}
+                    aria-label="Layer opacity"
                     onChange={(e) => setLayerOpacity(activeLayer.id, parseFloat(e.target.value))}
                     className="w-28 accent-[#f0be7c] cursor-pointer"
                   />
@@ -358,6 +359,7 @@ export const RightInspector: React.FC = () => {
                 <span className="text-[var(--text-body)] font-bold">Blend:</span>
                 <select
                   value={activeLayer.blendMode}
+                  aria-label="Layer blend mode"
                   onChange={(e) => setLayerBlendMode(activeLayer.id, e.target.value as BlendMode)}
                   className="bg-[#181124] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1 rounded-[2px] border-2 border-[var(--desk-border)] outline-none cursor-pointer"
                 >
@@ -491,6 +493,7 @@ export const RightInspector: React.FC = () => {
           <div className="flex flex-col gap-2 pb-2 border-b border-[var(--desk-border)]">
             <select
               value={currentPaletteId}
+              aria-label="Color palette preset"
               onChange={(e) => selectPalette(e.target.value)}
               className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] outline-none w-full cursor-pointer shadow-xs"
             >
@@ -580,6 +583,7 @@ export const RightInspector: React.FC = () => {
               <span className="text-[10px] text-[var(--text-body)] font-bold">Material:</span>
               <select
                 value={tools.materialPreset}
+                aria-label="Material shading preset"
                 onChange={(e) => setMaterialPreset(e.target.value as MaterialType)}
                 className="bg-[#181124] text-[#f0be7c] font-bold text-[10px] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
               >
@@ -612,6 +616,7 @@ export const RightInspector: React.FC = () => {
                   min="0"
                   max="360"
                   value={tools.lightAzimuth}
+                  aria-label="Light azimuth angle"
                   onChange={(e) => setLightAzimuth(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -639,6 +644,7 @@ export const RightInspector: React.FC = () => {
                   min="0"
                   max="90"
                   value={tools.lightElevation}
+                  aria-label="Light elevation angle"
                   onChange={(e) => setLightElevation(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -656,6 +662,7 @@ export const RightInspector: React.FC = () => {
                   max="2.0"
                   step="0.05"
                   value={tools.lightBrightness}
+                  aria-label="Light brightness and exposure"
                   onChange={(e) => setLightBrightness(parseFloat(e.target.value))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -673,6 +680,7 @@ export const RightInspector: React.FC = () => {
                   max="2.0"
                   step="0.1"
                   value={tools.cavityStrength}
+                  aria-label="Laplace cavity ambient occlusion strength"
                   onChange={(e) => setCavityStrength(parseFloat(e.target.value))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -690,6 +698,7 @@ export const RightInspector: React.FC = () => {
                   max="1.0"
                   step="0.05"
                   value={tools.ditherModulation}
+                  aria-label="Bayer dither modulation"
                   onChange={(e) => setDitherModulation(parseFloat(e.target.value))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -795,6 +804,7 @@ export const RightInspector: React.FC = () => {
                   min="0"
                   max={canvasWidth}
                   value={shadowLightX}
+                  aria-label="Raymarch shadow light source X position"
                   onChange={(e) => setShadowLightX(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -811,6 +821,7 @@ export const RightInspector: React.FC = () => {
                   min="0"
                   max={canvasHeight}
                   value={shadowLightY}
+                  aria-label="Raymarch shadow light source Y position"
                   onChange={(e) => setShadowLightY(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -827,6 +838,7 @@ export const RightInspector: React.FC = () => {
                   min="2"
                   max="64"
                   value={shadowLightRadius}
+                  aria-label="Raymarch shadow light radius and softness"
                   onChange={(e) => setShadowLightRadius(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -844,6 +856,7 @@ export const RightInspector: React.FC = () => {
                   max="1.0"
                   step="0.05"
                   value={shadowOpacity}
+                  aria-label="Raymarch shadow opacity"
                   onChange={(e) => setShadowOpacity(parseFloat(e.target.value))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />
@@ -857,6 +870,7 @@ export const RightInspector: React.FC = () => {
                 <span className="text-[10px] text-[var(--text-body)] font-bold">Bayer Dither:</span>
                 <select
                   value={shadowDitherMode}
+                  aria-label="Raymarch shadow Bayer dither matrix mode"
                   onChange={(e) => setShadowDitherMode(e.target.value as 'none' | '2x2' | '4x4' | '8x8')}
                   className="bg-[#181124] text-[var(--text-heading)] font-bold text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
                 >
@@ -991,6 +1005,7 @@ export const RightInspector: React.FC = () => {
                   min="1"
                   max="32"
                   value={tools.translucencyDepth}
+                  aria-label="Subsurface scattering translucency depth"
                   onChange={(e) => setTranslucencyDepth(parseInt(e.target.value, 10))}
                   className="w-28 accent-[#f0be7c] cursor-pointer"
                 />
@@ -1008,6 +1023,7 @@ export const RightInspector: React.FC = () => {
                   max="8.0"
                   step="0.5"
                   value={tools.fresnelPower}
+                  aria-label="Fresnel rim grazing power"
                   onChange={(e) => setFresnelPower(parseFloat(e.target.value))}
                   className="w-28 accent-[#f0be7c] cursor-pointer"
                 />
@@ -1021,6 +1037,7 @@ export const RightInspector: React.FC = () => {
                 <span className="text-[10px] text-[var(--text-body)] font-bold">Flow Type:</span>
                 <select
                   value={tools.anisoFlow}
+                  aria-label="Anisotropic highlight flow preset"
                   onChange={(e) => setAnisoFlow(e.target.value as AnisoFlowPreset)}
                   className="bg-[#181124] text-[var(--text-heading)] font-bold text-[10px] font-mono px-2 py-0.5 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
                 >
@@ -1039,6 +1056,7 @@ export const RightInspector: React.FC = () => {
                   min="0"
                   max="180"
                   value={tools.anisoAngle}
+                  aria-label="Anisotropic highlight angle"
                   onChange={(e) => setAnisoAngle(parseInt(e.target.value, 10))}
                   className="w-28 accent-[#f0be7c] cursor-pointer"
                 />
@@ -1154,6 +1172,7 @@ export const RightInspector: React.FC = () => {
                   min="-180"
                   max="180"
                   value={rotationAngle}
+                  aria-label="RotSprite rotation angle in degrees"
                   onChange={(e) => setRotationAngle(parseInt(e.target.value, 10))}
                   className="w-32 accent-[#f0be7c] cursor-pointer"
                 />

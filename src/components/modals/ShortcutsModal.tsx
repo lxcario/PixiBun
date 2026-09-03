@@ -50,6 +50,8 @@ const SHORTCUTS: ShortcutEntry[] = [
   { key: 'Ctrl + + / -', description: 'Zoom In / Out Step', category: 'Canvas & Viewport' },
   { key: 'Ctrl + 0', description: 'Fit Canvas to Screen', category: 'Canvas & Viewport' },
   { key: 'Ctrl + 1', description: 'Reset Zoom to 100%', category: 'Canvas & Viewport' },
+  { key: 'P', description: 'Cycle CVD Colorblindness Lens (display-only)', category: 'Canvas & Viewport' },
+  { key: 'S', description: 'Silhouette / Squint Mode (display-only)', category: 'Canvas & Viewport' },
   { key: 'Space', description: 'Play / Pause Animation', category: 'Animation' },
   { key: ',', description: 'Step to Previous Frame', category: 'Animation' },
   { key: '.', description: 'Step to Next Frame', category: 'Animation' },

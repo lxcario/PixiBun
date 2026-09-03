@@ -687,3 +687,30 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - npm run lint: 0 errors, 0 warnings
 - npm test: 169/169 tests pass across 31 suites (+3 new comprehensive tests in tests/rotSpriteAndPrecision.test.ts)
 **Status:** Complete
+
+---
+
+## Phase 32 — Studio Accessibility, Next.js 16 Security Proxy & Perceptual Color Lenses (2026-09-03)
+**Delivered:**
+- **Automated WCAG 2.2 Axe Audits (tests/e2e/studio.spec.ts)**: Integrated @axe-core/playwright automated a11y test suites across blank canvas workspace, open Export modal, and all expanded RightInspector panels (Layers, Palette, PixiBud AI). All 3 test suites assert and achieve zero violations.
+- **Accessible Slider & Select Names (WCAG 4.1.2)**: Added explicit `aria-label` attributes across all interactive sliders and select dropdowns:
+  - BottomTimeline.tsx: Animation FPS slider.
+  - ContextOptionsBar.tsx: Brush size, curve tightness, dither density, and dither matrix algorithm.
+  - RightInspector.tsx: Layer opacity, layer blend mode, color palette preset, material preset, light azimuth, light elevation, light brightness, cavity AO, dither modulation, shadow light X/Y, shadow radius, shadow opacity, shadow dither mode, SSS depth, fresnel power, aniso flow preset, aniso angle, and RotSprite rotation angle.
+  - ExportModal.tsx: Export frame scope.
+- **Next.js 16 Security Proxy Nonce-Based CSP (src/proxy.ts)**: Replaced deprecated middleware with Next.js 16 proxy.ts, generating per-request crypto nonces, injecting script-src 'self' 'nonce-{nonce}' with production 'unsafe-inline' script elimination, and bounding matchers strictly to dynamic page routes (skipping static assets, icons, and service workers).
+- **Dynamic Service Worker Route Handler (src/app/sw.js/route.ts)**: Transitioned static public/sw.js into a dynamic Next.js route handler with build-time cache versioning (CACHE_NAME = 'pixibun-v2'), serving authoritative Cache-Control: no-cache, no-store, must-revalidate and Service-Worker-Allowed: / headers.
+- **Machado 2009 CVD Colorblindness Simulation & Squint Silhouette Mode (src/lib/color/cvdLens.ts, src/components/studio/ViewportLensFilters.tsx)**: Implemented mathematically rigorous on-device color vision deficiency simulation lenses (Protanopia, Deuteranopia, Tritanopia, Monochromacy) based on Machado et al. 2009 IEEE TVCG matrices, plus an instant 1-bit Squint silhouette filter. Rendered via zero-mutation GPU SVG eColorMatrix CSS display filters, guaranteeing canvas pixel buffers and export outputs remain completely pristine.
+- **HUD Controls & Keyboard Shortcuts**: Added CVD lens cycle and SIL silhouette toggle buttons to ContextOptionsBar.tsx, wired hotkeys p (CVD cycle) and s (Squint toggle) in StudioLayout.tsx, and documented them in ShortcutsModal.tsx.
+- **E2E Test Fixes (tests/e2e/projects.spec.ts, tests/e2e/studio.spec.ts)**: Added visibility wait for lazy-loaded gallery project cards, preventing count race conditions.
+
+**Checks run:**
+- npm run typecheck: 0 errors
+- npm run lint: 0 errors, 0 warnings
+- npm test: 186/186 tests pass across 32 suites (+17 comprehensive unit tests in tests/cvdLens.test.ts)
+- npx playwright test: 17/17 tests pass (100% across all suites)
+- Lighthouse CI Local Audit:
+  - Landing (http://localhost:3000/): Performance 0.85, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
+  - Studio (http://localhost:3000/studio): Performance 0.86, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
+  - First-load JS Bundle on /studio: 260.79 KB (< 300 KB budget).
+**Status:** Complete

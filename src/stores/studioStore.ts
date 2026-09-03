@@ -2,12 +2,13 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { Layer, AnimationFrame, BlendMode } from '@/types/canvas';
+import { Layer, AnimationFrame, BlendMode, FrameTag, TagLoopMode } from '@/types/canvas';
 import { ToolType, ToolSettings, DitherMatrixType, MaterialType, OpticalPresetType, AnisoFlowPreset, CelToneCount } from '@/types/tools';
 import { ColorPalette, ColorRamp } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
 import { AiMessage } from '@/types/ai';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
+import type { CvdLensMode } from '@/lib/color/cvdLens';
 import { createId } from '@/lib/engine/id';
 import { getOrCreateBuffer, cloneBuffers, deleteBuffers, resizeAllBuffers, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
@@ -73,6 +74,11 @@ interface StudioState {
   showFloatingPreview: boolean;
   previewScale: 1 | 2 | 4;
   previewBackdrop: 'alabaster' | 'obsidian' | 'checker' | 'amber';
+  // Display-only perceptual lenses (DESIGN.md §12/§13) — never touch project data or exports
+  cvdLens: CvdLensMode;
+  squintMode: boolean;
+  setCvdLens: (mode: CvdLensMode) => void;
+  toggleSquintMode: () => void;
 
   // Tool & Brush Settings
   tools: ToolSettings;
@@ -194,10 +200,18 @@ interface StudioState {
 
   // Animation Clips & Tags
   activeClipId: string | null;
-  addClip: (name: string, startFrame: number, endFrame: number, color?: string) => void;
+  addClip: (name: string, startFrame: number, endFrame: number, color?: string, loopMode?: TagLoopMode) => void;
   updateClip: (id: string, updates: Partial<AnimationClip>) => void;
   deleteClip: (id: string) => void;
+  reorderClips: (sourceIndex: number, targetIndex: number) => void;
   setActiveClipId: (id: string | null) => void;
+
+  // Tag System first-class aliases
+  addTag: (name: string, fromFrame: number, toFrame: number, color?: string, loopMode?: TagLoopMode) => void;
+  updateTag: (id: string, updates: Partial<FrameTag>) => void;
+  deleteTag: (id: string) => void;
+  reorderTags: (sourceIndex: number, targetIndex: number) => void;
+  setActiveTagId: (id: string | null) => void;
 
   // Palette & Color Extractor
   addExtractedPalette: (name: string, colors: string[]) => void;
@@ -249,6 +263,8 @@ export const useStudioStore = create<StudioState>()(
       showNormalMapPreview: false,
       previewScale: 2,
       previewBackdrop: 'checker',
+      cvdLens: 'none',
+      squintMode: false,
 
       tools: {
         activeTool: 'pen',
@@ -301,7 +317,16 @@ export const useStudioStore = create<StudioState>()(
         opacity: 0.45
       },
       clips: [
-        { id: 'clip-1', name: 'Default Clip', startFrame: 0, endFrame: 0 }
+        {
+          id: 'tag-1',
+          name: 'Default',
+          fromFrame: 0,
+          toFrame: 0,
+          startFrame: 0,
+          endFrame: 0,
+          color: '#F0BE7C',
+          loopMode: 'forward',
+        },
       ],
       activeClipId: null,
 
@@ -407,6 +432,18 @@ export const useStudioStore = create<StudioState>()(
       toggleFloatingPreview: () => {
         set(state => {
           state.showFloatingPreview = !state.showFloatingPreview;
+        });
+      },
+
+      setCvdLens: (mode) => {
+        set(state => {
+          state.cvdLens = mode;
+        });
+      },
+
+      toggleSquintMode: () => {
+        set(state => {
+          state.squintMode = !state.squintMode;
         });
       },
 
@@ -931,14 +968,19 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
-      addClip: (name, startFrame, endFrame, color) => {
+      addClip: (name, startFrame, endFrame, color, loopMode = 'forward') => {
         set(state => {
+          const minF = Math.max(0, Math.min(state.frames.length - 1, Math.min(startFrame, endFrame)));
+          const maxF = Math.max(0, Math.min(state.frames.length - 1, Math.max(startFrame, endFrame)));
           const newClip: AnimationClip = {
-            id: createId('clip'),
+            id: createId('tag'),
             name,
-            startFrame: Math.max(0, Math.min(state.frames.length - 1, startFrame)),
-            endFrame: Math.max(0, Math.min(state.frames.length - 1, endFrame)),
-            color: color || '#C792DF'
+            fromFrame: minF,
+            toFrame: maxF,
+            startFrame: minF,
+            endFrame: maxF,
+            color: color || '#F0BE7C',
+            loopMode: loopMode || 'forward',
           };
           state.clips.push(newClip);
           state.activeClipId = newClip.id;
@@ -949,7 +991,26 @@ export const useStudioStore = create<StudioState>()(
         set(state => {
           const clip = state.clips.find(c => c.id === id);
           if (clip) {
-            Object.assign(clip, updates);
+            const nextUpdates = { ...updates };
+            if (nextUpdates.fromFrame !== undefined && nextUpdates.startFrame === undefined) {
+              nextUpdates.startFrame = nextUpdates.fromFrame;
+            } else if (nextUpdates.startFrame !== undefined && nextUpdates.fromFrame === undefined) {
+              nextUpdates.fromFrame = nextUpdates.startFrame;
+            }
+            if (nextUpdates.toFrame !== undefined && nextUpdates.endFrame === undefined) {
+              nextUpdates.endFrame = nextUpdates.toFrame;
+            } else if (nextUpdates.endFrame !== undefined && nextUpdates.toFrame === undefined) {
+              nextUpdates.toFrame = nextUpdates.endFrame;
+            }
+            if (nextUpdates.fromFrame !== undefined) {
+              nextUpdates.fromFrame = Math.max(0, Math.min(state.frames.length - 1, nextUpdates.fromFrame));
+              nextUpdates.startFrame = nextUpdates.fromFrame;
+            }
+            if (nextUpdates.toFrame !== undefined) {
+              nextUpdates.toFrame = Math.max(0, Math.min(state.frames.length - 1, nextUpdates.toFrame));
+              nextUpdates.endFrame = nextUpdates.toFrame;
+            }
+            Object.assign(clip, nextUpdates);
           }
         });
       },
@@ -963,16 +1024,51 @@ export const useStudioStore = create<StudioState>()(
         });
       },
 
+      reorderClips: (sourceIndex, targetIndex) => {
+        set(state => {
+          if (
+            sourceIndex < 0 ||
+            sourceIndex >= state.clips.length ||
+            targetIndex < 0 ||
+            targetIndex >= state.clips.length
+          ) {
+            return;
+          }
+          const [moved] = state.clips.splice(sourceIndex, 1);
+          state.clips.splice(targetIndex, 0, moved);
+        });
+      },
+
       setActiveClipId: (id) => {
         set(state => {
           state.activeClipId = id;
           if (id) {
             const clip = state.clips.find(c => c.id === id);
             if (clip) {
-              state.activeFrameIndex = clip.startFrame;
+              state.activeFrameIndex = clip.fromFrame ?? clip.startFrame;
             }
           }
         });
+      },
+
+      addTag: (name, fromFrame, toFrame, color, loopMode = 'forward') => {
+        get().addClip(name, fromFrame, toFrame, color, loopMode);
+      },
+
+      updateTag: (id, updates) => {
+        get().updateClip(id, updates);
+      },
+
+      deleteTag: (id) => {
+        get().deleteClip(id);
+      },
+
+      reorderTags: (sourceIndex, targetIndex) => {
+        get().reorderClips(sourceIndex, targetIndex);
+      },
+
+      setActiveTagId: (id) => {
+        get().setActiveClipId(id);
       },
 
       addExtractedPalette: (name, colors) => {
@@ -1033,7 +1129,20 @@ export const useStudioStore = create<StudioState>()(
             state.currentPaletteId = projectData.currentPaletteId || projectData.palettes[0].id;
           }
           if (projectData.clips) {
-            state.clips = projectData.clips;
+            state.clips = projectData.clips.map((c, idx) => {
+              const from = c.fromFrame !== undefined ? c.fromFrame : (c.startFrame ?? 0);
+              const to = c.toFrame !== undefined ? c.toFrame : (c.endFrame ?? from);
+              return {
+                id: c.id || `tag-${idx + 1}`,
+                name: c.name || `Tag ${idx + 1}`,
+                fromFrame: from,
+                toFrame: to,
+                startFrame: from,
+                endFrame: to,
+                color: c.color || '#F0BE7C',
+                loopMode: c.loopMode || 'forward',
+              };
+            });
           }
         });
       },
@@ -1069,7 +1178,16 @@ export const useStudioStore = create<StudioState>()(
           state.activeFrameIndex = 0;
           state.activeLayerId = initialLayerId;
           state.clips = [
-            { id: 'clip-1', name: 'Default Clip', startFrame: 0, endFrame: 0 },
+            {
+              id: 'tag-1',
+              name: 'Default',
+              fromFrame: 0,
+              toFrame: 0,
+              startFrame: 0,
+              endFrame: 0,
+              color: '#F0BE7C',
+              loopMode: 'forward',
+            },
           ];
           state.activeClipId = null;
           state.bufferVersion += 1;

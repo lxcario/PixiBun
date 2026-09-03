@@ -255,13 +255,20 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
       })),
       currentPaletteId: normalized.currentPaletteId as string,
       customRamps: normalized.customRamps as ProjectFile['customRamps'],
-      clips: (normalized.clips as Record<string, unknown>[]).map((clip) => ({
-        id: clip.id as string,
-        name: clip.name as string,
-        startFrame: clip.startFrame as number,
-        endFrame: clip.endFrame as number,
-        color: typeof clip.color === 'string' ? clip.color : undefined,
-      })),
+      clips: (normalized.clips as Record<string, unknown>[]).map((clip) => {
+        const start = typeof clip.startFrame === 'number' ? clip.startFrame : (typeof clip.fromFrame === 'number' ? clip.fromFrame : 0);
+        const end = typeof clip.endFrame === 'number' ? clip.endFrame : (typeof clip.toFrame === 'number' ? clip.toFrame : start);
+        return {
+          id: clip.id as string,
+          name: clip.name as string,
+          startFrame: start,
+          endFrame: end,
+          fromFrame: start,
+          toFrame: end,
+          color: typeof clip.color === 'string' ? clip.color : '#F0BE7C',
+          loopMode: (clip.loopMode === 'reverse' || clip.loopMode === 'ping-pong') ? clip.loopMode : 'forward',
+        };
+      }),
       frames,
       createdAt: normalized.createdAt as number,
       updatedAt: normalized.updatedAt as number,

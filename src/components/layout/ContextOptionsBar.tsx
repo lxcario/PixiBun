@@ -4,6 +4,23 @@ import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { DitherMatrixType } from '@/types/tools';
+import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
+
+const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
+  none: 'OFF',
+  protanopia: 'P',
+  deuteranopia: 'D',
+  tritanopia: 'T',
+  monochromacy: 'M',
+};
+
+const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
+  none: 'Colorblindness Lens (P): OFF — cycles Protanopia / Deuteranopia / Tritanopia / Monochromacy',
+  protanopia: 'Colorblindness Lens (P): Protanopia (red-weak) — cycles lens modes',
+  deuteranopia: 'Colorblindness Lens (P): Deuteranopia (green-weak) — cycles lens modes',
+  tritanopia: 'Colorblindness Lens (P): Tritanopia (blue-weak) — cycles lens modes',
+  monochromacy: 'Colorblindness Lens (P): Monochromacy (luminance only) — cycles lens modes',
+};
 
 const TOOL_METADATA: Record<string, { label: string; shortcut: string; icon: PixelIconName }> = {
   pen: { label: 'Pen', shortcut: 'B', icon: 'pen' },
@@ -43,6 +60,10 @@ export const ContextOptionsBar: React.FC = () => {
     toggleTilePreview,
     showFloatingPreview,
     toggleFloatingPreview,
+    cvdLens,
+    squintMode,
+    setCvdLens,
+    toggleSquintMode,
   } = useStudioStore();
 
   const currentToolMeta = TOOL_METADATA[tools.activeTool] || {
@@ -89,6 +110,7 @@ export const ContextOptionsBar: React.FC = () => {
                 max="16"
                 value={tools.brushSize}
                 onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
+                aria-label="Brush size"
                 className="w-16 h-1.5 accent-[#f0be7c] cursor-pointer"
               />
               <span className="text-[#f0be7c] font-bold text-[10px] min-w-[24px] text-right">
@@ -125,6 +147,7 @@ export const ContextOptionsBar: React.FC = () => {
                 step="0.05"
                 value={tools.curveTightness}
                 onChange={(e) => setCurveTightness(parseFloat(e.target.value))}
+                aria-label="Curve tightness"
                 className="w-14 h-1.5 accent-[#f0be7c] cursor-pointer"
               />
               <span className="text-[#dcabdf] font-bold text-[10px]">
@@ -157,6 +180,7 @@ export const ContextOptionsBar: React.FC = () => {
             <span className="text-[10px] text-[var(--text-body)] font-bold uppercase">Matrix:</span>
             <select
               value={tools.ditherMatrix}
+              aria-label="Dither matrix algorithm"
               onChange={(e) => setDitherMatrix(e.target.value as DitherMatrixType)}
               className="bg-[var(--desk-surface-raised)] text-[#f0be7c] font-bold text-[10px] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
             >
@@ -176,6 +200,7 @@ export const ContextOptionsBar: React.FC = () => {
                 step="0.05"
                 value={tools.ditherDensity}
                 onChange={(e) => setDitherDensity(parseFloat(e.target.value))}
+                aria-label="Dither density"
                 className="w-14 h-1.5 accent-[#f0be7c] cursor-pointer"
               />
               <span className="text-[#f0be7c] font-bold text-[10px]">
@@ -304,6 +329,40 @@ export const ContextOptionsBar: React.FC = () => {
         >
           <PixelIcon name="preview" size={12} />
           <span>Live</span>
+        </button>
+
+        <div className="h-4 w-px bg-[var(--desk-border)] mx-0.5" />
+
+        {/* CVD Colorblindness Lens (DESIGN.md §12) — display-only, never touches project data */}
+        <button
+          onClick={() => setCvdLens(cycleCvdLens(cvdLens))}
+          title={CVD_LENS_TITLES[cvdLens]}
+          aria-label={`Colorblindness simulation lens: ${cvdLens}. Press P to cycle.`}
+          aria-pressed={cvdLens !== 'none'}
+          className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer flex items-center gap-1 ${
+            cvdLens !== 'none'
+              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+          }`}
+        >
+          <PixelIcon name="eyedropper" size={12} />
+          <span>CVD:{CVD_LENS_BUTTON_LABELS[cvdLens]}</span>
+        </button>
+
+        {/* Silhouette / Squint Mode (DESIGN.md §13) — display-only */}
+        <button
+          onClick={toggleSquintMode}
+          title="Silhouette / Squint Mode (S): renders all painted pixels as solid silhouette over white for value-contrast readability checks"
+          aria-label="Silhouette squint mode. Press S to toggle."
+          aria-pressed={squintMode}
+          className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer flex items-center gap-1 ${
+            squintMode
+              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+          }`}
+        >
+          <PixelIcon name="select-box" size={12} />
+          <span>SIL</span>
         </button>
       </div>
     </div>

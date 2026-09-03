@@ -1,4 +1,14 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+const AXE_WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+const scanStudioAccessibility = async (page: import('@playwright/test').Page) => {
+  return await new AxeBuilder({ page })
+    .withTags(AXE_WCAG_TAGS)
+    .disableRules(['target-size', 'color-contrast'])
+    .analyze();
+};
 
 test.describe('Studio Workbench & Drawing Interactions', () => {
   test('loads Studio workspace, renders canvas stage and panels', async ({ page }) => {
@@ -317,6 +327,66 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
 
     // 6. Assert non-destructive output layer 'Optics (gemstone)' exists
     await expect(page.locator('text=Optics (gemstone)')).toBeVisible();
+  });
+});
+
+test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () => {
+  test('blank canvas workspace passes automated WCAG 2.2 axe scan', async ({ page }) => {
+    await page.goto('/studio');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    // Allow hydration, Dexie restore, and entrance animations to settle
+    await page.waitForTimeout(1100);
+
+    const results = await scanStudioAccessibility(page);
+    expect(results.violations).toEqual([]);
+  });
+
+  test('open Export modal passes automated WCAG 2.2 axe scan', async ({ page }) => {
+    await page.goto('/studio');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    await page.waitForTimeout(1100);
+
+    const exportBtn = page.getByTitle(/Export PNG, GIF, or Spritesheet/i);
+    await expect(exportBtn).toBeVisible();
+    await exportBtn.click();
+
+    // Export modal (lazy-loaded in Phase 33) — wait for dialog to mount
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await page.waitForTimeout(400);
+
+    const results = await scanStudioAccessibility(page);
+    expect(results.violations).toEqual([]);
+  });
+
+  test('RightInspector panels expanded pass automated WCAG 2.2 axe scan', async ({ page }) => {
+    await page.goto('/studio');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    await page.waitForTimeout(1100);
+
+    // Tab 1: Layers
+    await page.getByRole('button', { name: /^Layers$/i }).click();
+    await page.waitForTimeout(300);
+    const layersResults = await scanStudioAccessibility(page);
+    expect(layersResults.violations).toEqual([]);
+
+    // Tab 2: Palette
+    await page.getByRole('button', { name: /^Palette$/i }).click();
+    await page.waitForTimeout(300);
+    const paletteResults = await scanStudioAccessibility(page);
+    expect(paletteResults.violations).toEqual([]);
+
+    // Tab 3: PixiBud AI with both collapsible panels expanded
+    await page.getByRole('button', { name: /PixiBud AI/i }).click();
+    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: /Sobel Normals & Lighting/i }).click();
+    await page.getByRole('button', { name: /Advanced Optics/i }).click();
+    await page.waitForTimeout(300);
+    const aiResults = await scanStudioAccessibility(page);
+    expect(aiResults.violations).toEqual([]);
   });
 });
 

@@ -1,10 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { ToolType } from '@/types/tools';
-import { ColorPickerModal } from '@/components/modals/ColorPickerModal';
+
+// Heavy color picker dialog is code-split client-side (Phase 33): it mounts
+// only while open, so its chunk is fetched on first open, never on page load.
+const ColorPickerModal = dynamic(
+  () => import('@/components/modals/ColorPickerModal').then((m) => m.ColorPickerModal),
+  { ssr: false }
+);
 
 interface ToolItem {
   id: ToolType;

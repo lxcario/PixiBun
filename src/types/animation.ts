@@ -1,4 +1,7 @@
+import type { FrameTag, TagLoopMode } from './canvas';
+
 export type LoopMode = 'repeat' | 'ping-pong' | 'once';
+export type { TagLoopMode, FrameTag };
 
 export interface OnionSkinSettings {
   enabled: boolean;
@@ -14,5 +17,8 @@ export interface AnimationClip {
   name: string;
   startFrame: number;
   endFrame: number;
+  fromFrame?: number;
+  toFrame?: number;
   color?: string;
+  loopMode?: TagLoopMode;
 }

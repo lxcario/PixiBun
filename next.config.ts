@@ -1,12 +1,20 @@
 import type { NextConfig } from "next";
 
-const isDev = process.env.NODE_ENV === 'development';
-
-// Content Security Policy: 'unsafe-eval' enabled strictly in development for React stack trace reconstruction & Turbopack HMR; stripped in production for maximum security.
-const cspHeader = `default-src 'self'; script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:;`;
+// Content Security Policy is issued per-request by src/proxy.ts (Next.js 16
+// proxy file convention): nonce-based script-src in production, 'unsafe-eval'
+// strictly for development (Turbopack HMR). Style-src keeps 'unsafe-inline'
+// per the original implementation plan. Static security headers live here;
+// the CSP must NOT be duplicated here or the two policies intersect and block
+// nonce'd hydration scripts.
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  env: {
+    // Service worker cache bucket version — build-time injected into
+    // src/app/sw.js/route.ts. Bump per release (or when precached shell
+    // assets change) so new deploys cannot serve stale precached assets.
+    SW_CACHE_VERSION: 'v2',
+  },
   async headers() {
     return [
       {
@@ -33,7 +41,6 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          { key: 'Content-Security-Policy', value: cspHeader },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

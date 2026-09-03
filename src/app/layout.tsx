@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import { Plus_Jakarta_Sans, JetBrains_Mono, Silkscreen } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
@@ -53,15 +54,20 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Nonce-based CSP (src/proxy.ts): reading headers() opts every route into
+  // dynamic rendering, which is required for Next.js to inject the per-request
+  // nonce into its bootstrap <script> tags. Explicitly forwarded to any
+  // manually declared <Script> components (nonce props are not auto-injected).
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
       <head>
-        <Script src="/theme.js" strategy="beforeInteractive" />
+        <Script src="/theme.js" strategy="beforeInteractive" nonce={nonce} />
       </head>
       <body className="bg-desk text-text-primary antialiased font-sans">
         <a

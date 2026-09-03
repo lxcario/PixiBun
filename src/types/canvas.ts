@@ -19,6 +19,17 @@ export interface AnimationFrame {
   layers: Layer[];
 }
 
+export type TagLoopMode = 'forward' | 'reverse' | 'ping-pong';
+
+export interface FrameTag {
+  id: string;
+  name: string;
+  fromFrame: number;
+  toFrame: number;
+  color: string;
+  loopMode: TagLoopMode;
+}
+
 export interface ProjectMetadata {
   id: string;
   name: string;

@@ -59,6 +59,7 @@ test.describe('Projects Gallery & Workspace Management', () => {
 
     // Test Duplication / Clone action
     const cloneButtons = modal.getByRole('button', { name: 'Clone' });
+    await expect(cloneButtons.first()).toBeVisible();
     const initialCloneCount = await cloneButtons.count();
     expect(initialCloneCount).toBeGreaterThanOrEqual(1);
 

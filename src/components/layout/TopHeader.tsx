@@ -6,7 +6,7 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { ImportPayload } from '@/components/modals/ImportModal';
+import type { ImportPayload } from '@/components/modals/ImportModal';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import { AutosaveIndicator } from '@/components/ui/AutosaveIndicator';
 

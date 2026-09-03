@@ -49,7 +49,8 @@ export type PixelIconName =
   | 'sparkles'
   | 'sun'
   | 'symmetry'
-  | 'preview';
+  | 'preview'
+  | 'tag';
 
 interface PixelIconProps {
   name: PixelIconName;
@@ -488,6 +489,14 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <rect width="4" height="4" x="17" y="3" opacity="0.5" />
             <rect width="4" height="4" x="3" y="17" opacity="0.5" />
             <rect width="4" height="4" x="17" y="17" opacity="0.5" />
+          </svg>
+        );
+
+      case 'tag':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 2H2v10l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L12 2Z" />
+            <circle cx="7" cy="7" r="1.5" fill="currentColor" />
           </svg>
         );
 

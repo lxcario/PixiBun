@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { TopHeader } from './TopHeader';
@@ -9,10 +10,8 @@ import { LeftToolbar } from './LeftToolbar';
 import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
-import { ExportModal } from '@/components/modals/ExportModal';
-import { ShortcutsModal } from '@/components/modals/ShortcutsModal';
-import { CanvasResizeModal, AnchorPosition } from '@/components/modals/CanvasResizeModal';
-import { ImportModal, ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
+import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
+import type { ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -20,7 +19,31 @@ import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById, getLayerBl
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
-import { ProjectsGalleryModal } from '@/components/modals/ProjectsGalleryModal';
+import { cycleCvdLens } from '@/lib/color/cvdLens';
+
+// Heavy dialogs are code-split client-side (Phase 33): none of these bundles
+// are part of the /studio first-load JS. They render only while open, so the
+// chunks are fetched on first open rather than on page load.
+const ExportModal = dynamic(
+  () => import('@/components/modals/ExportModal').then((m) => m.ExportModal),
+  { ssr: false }
+);
+const ShortcutsModal = dynamic(
+  () => import('@/components/modals/ShortcutsModal').then((m) => m.ShortcutsModal),
+  { ssr: false }
+);
+const CanvasResizeModal = dynamic(
+  () => import('@/components/modals/CanvasResizeModal').then((m) => m.CanvasResizeModal),
+  { ssr: false }
+);
+const ImportModal = dynamic(
+  () => import('@/components/modals/ImportModal').then((m) => m.ImportModal),
+  { ssr: false }
+);
+const ProjectsGalleryModal = dynamic(
+  () => import('@/components/modals/ProjectsGalleryModal').then((m) => m.ProjectsGalleryModal),
+  { ssr: false }
+);
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -477,6 +500,17 @@ export const StudioLayout: React.FC = () => {
         case 'r':
           setActiveTool('color-replace');
           break;
+        case 's': {
+          // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens
+          useStudioStore.getState().toggleSquintMode();
+          break;
+        }
+        case 'p': {
+          // CVD Colorblindness Lens (DESIGN.md §12) — cycle display-only lens
+          const { cvdLens: current, setCvdLens } = useStudioStore.getState();
+          setCvdLens(cycleCvdLens(current));
+          break;
+        }
         case 'x':
           swapColors();
           break;
@@ -614,54 +648,64 @@ export const StudioLayout: React.FC = () => {
         </div>
       </ModalWrapper>
 
-      {/* Export Modal */}
-      <ExportModal
-        isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
-      />
+      {/* Export Modal (lazy-loaded: mounted only while open) */}
+      {isExportOpen && (
+        <ExportModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+        />
+      )}
 
-      {/* Shortcuts Cheat Sheet Modal */}
-      <ShortcutsModal
-        isOpen={isShortcutsOpen}
-        onClose={() => setIsShortcutsOpen(false)}
-      />
+      {/* Shortcuts Cheat Sheet Modal (lazy-loaded) */}
+      {isShortcutsOpen && (
+        <ShortcutsModal
+          isOpen={isShortcutsOpen}
+          onClose={() => setIsShortcutsOpen(false)}
+        />
+      )}
 
-      {/* Canvas Resize Modal */}
-      <CanvasResizeModal
-        isOpen={isResizeOpen}
-        onClose={() => setIsResizeOpen(false)}
-        onResize={handleResize}
-      />
+      {/* Canvas Resize Modal (lazy-loaded) */}
+      {isResizeOpen && (
+        <CanvasResizeModal
+          isOpen={isResizeOpen}
+          onClose={() => setIsResizeOpen(false)}
+          onResize={handleResize}
+        />
+      )}
 
-      {/* Drag & Drop Import Modal */}
-      <ImportModal
-        isOpen={isImportOpen}
-        payload={importPayload}
-        error={importError}
-        onClose={() => {
-          setImportError(null);
-          setIsImportOpen(false);
-        }}
-        onConfirmImage={handleConfirmImportImage}
-        onConfirmProject={handleConfirmImportProject}
-      />
+      {/* Drag & Drop Import Modal (lazy-loaded) */}
+      {isImportOpen && (
+        <ImportModal
+          isOpen={isImportOpen}
+          payload={importPayload}
+          error={importError}
+          onClose={() => {
+            setImportError(null);
+            setIsImportOpen(false);
+          }}
+          onConfirmImage={handleConfirmImportImage}
+          onConfirmProject={handleConfirmImportProject}
+        />
+      )}
 
-      {/* Projects & Artworks Gallery Modal */}
-      <ProjectsGalleryModal
-        isOpen={isGalleryOpen}
-        onClose={() => setIsGalleryOpen(false)}
-        currentProjectId={currentProjectId}
-        onOpenProject={handleOpenProject}
-        onNewProject={() => {
-          clearAllBuffers();
-          resetToNewProject();
-          window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
-          void runAutosave();
-        }}
-        onOpenImport={() => {
-          setIsImportOpen(true);
-        }}
-      />
+      {/* Projects & Artworks Gallery Modal (lazy-loaded) */}
+      {isGalleryOpen && (
+        <ProjectsGalleryModal
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+          currentProjectId={currentProjectId}
+          onOpenProject={handleOpenProject}
+          onNewProject={() => {
+            clearAllBuffers();
+            resetToNewProject();
+            window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+            void runAutosave();
+          }}
+          onOpenImport={() => {
+            setIsImportOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 };
