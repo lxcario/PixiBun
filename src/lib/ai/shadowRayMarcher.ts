@@ -27,6 +27,7 @@ export interface RaymarchedShadowParams {
   volumetricDepthBias?: number; // default: 0.25 (prevents 1D line collapse)
   mode?: 'bounded-2.5d' | 'raymarch-2d'; // default: 'bounded-2.5d'
   isFloating?: boolean;
+  shadowStyle?: 'cast' | 'drop'; // default: 'cast'
 }
 
 /**
@@ -255,9 +256,10 @@ export function renderBoundedSpriteCastShadow(
   const {
     shadowOpacity = 0.65,
     shadowColor,
-    ditherMode = '4x4',
+    ditherMode = 'none',
     perspectiveForeshortening = 0.5,
     volumetricDepthBias = 0.25,
+    shadowStyle = 'cast',
   } = params;
 
   // 1. Scan Sprite Bounding Box & Baseline from EDT field (solid pixels have edt <= 0.001)
@@ -348,75 +350,54 @@ export function renderBoundedSpriteCastShadow(
   densityMap.fill(0);
 
   try {
-    // A. Directional Sheared Silhouette Projection
-    for (let y_s = minY; y_s <= maxY; y_s++) {
-      const h = yBase - y_s; // Height above baseline: 0 at feet, boxH at head
-      const u = Math.min(1.0, h / boxH); // Normalized height: [0, 1]
+    if (shadowStyle === 'drop') {
+      // Classic Top-Down RPG Ground Drop Shadow (Pokémon, Zelda: Minish Cap)
+      // Crisp pixel ellipse centered under the character's contact base
+      const rx = Math.max(2.5, Math.round(boxW * 0.42));
+      const ry = Math.max(1.5, Math.round(rx * 0.35));
+      const floorY = isFloating ? yGround : Math.min(height - 1, yGround + 1);
 
-      // Distance attenuation: contact base is 1.0, fading to 0.0 at tip
-      const falloff = Math.max(0.0, 1.0 - Math.pow(u, 1.4));
+      const minYDrop = Math.max(0, Math.floor(floorY - ry));
+      const maxYDrop = Math.min(height - 1, Math.ceil(floorY + ry));
+      const minXDrop = Math.max(0, Math.floor(cx - rx));
+      const maxXDrop = Math.min(width - 1, Math.ceil(cx + rx));
 
-      // Aaltonen contact hardening penumbra factor (sharp at base, softening with distance)
-      const penumbraSoftness = 1.0 - 0.35 * u;
-      const scanlineAlpha = falloff * penumbraSoftness;
-
-      if (scanlineAlpha <= 0.01) continue;
-
-      // Project contiguous spans of opaque pixels on row y_s
-      let x = minX;
-      while (x <= maxX) {
-        if (edt[y_s * width + x] <= 0.001) {
-          const xStart = x;
-          while (x <= maxX && edt[y_s * width + x] <= 0.001) {
-            x++;
+      for (let cy_ = minYDrop; cy_ <= maxYDrop; cy_++) {
+        const dy = (cy_ - floorY) / ry;
+        const rowOffset = cy_ * width;
+        for (let cx_ = minXDrop; cx_ <= maxXDrop; cx_++) {
+          const dx = (cx_ - cx) / rx;
+          if (dx * dx + dy * dy <= 1.0) {
+            densityMap[rowOffset + cx_] = 1.0;
           }
-          const xEnd = x - 1;
-
-          const xMinProj = Math.floor(xStart + h * shearX - (Math.abs(shearX) > 0.5 ? 0.5 : 0));
-          const xMaxProj = Math.ceil(xEnd + h * shearX + (Math.abs(shearX) > 0.5 ? 0.5 : 0));
-
-          const yMinProj = Math.floor(Math.min(yGround + (h - 0.5) * shearY, yGround + (h + 0.5) * shearY));
-          const yMaxProj = Math.ceil(Math.max(yGround + (h - 0.5) * shearY, yGround + (h + 0.5) * shearY));
-
-          for (let py = yMinProj; py <= yMaxProj; py++) {
-            if (py < 0 || py >= height) continue;
-            const rowOffset = py * width;
-            for (let px = xMinProj; px <= xMaxProj; px++) {
-              if (px < 0 || px >= width) continue;
-              const pIdx = rowOffset + px;
-              if (scanlineAlpha > densityMap[pIdx]) {
-                densityMap[pIdx] = scanlineAlpha;
-              }
-            }
-          }
-        } else {
-          x++;
         }
       }
-    }
+    } else {
+      // Directional 1-to-1 Pixel Silhouette Projection
+      // Iterates exact opaque sprite pixels without bounding box bloating or filling hollow leg gaps
+      const numSubSteps = Math.min(4, Math.ceil(Math.max(1, Math.abs(shearX), Math.abs(shearY))));
+      const stepInv = 1.0 / numSubSteps;
 
-    // B. Ambient Contact Occlusion Ellipse at Ground Baseline
-    const rx = Math.max(2.5, boxW * 0.45);
-    const ry = Math.max(1.2, rx * 0.25);
-    const contactStrength = isFloating ? 0.45 : 0.85;
+      for (let ys = minY; ys <= maxY; ys++) {
+        const h = yBase - ys; // Height above baseline: 0 at feet, boxH at head
+        const u = boxH > 1 ? Math.min(1.0, h / boxH) : 0;
+        const falloff = Math.max(0.0, 1.0 - Math.pow(u, 1.4));
+        if (falloff <= 0.02) continue;
 
-    const minYContact = Math.max(0, Math.floor(yGround - ry));
-    const maxYContact = Math.min(height - 1, Math.ceil(yGround + ry));
-    const minXContact = Math.max(0, Math.floor(cx - rx));
-    const maxXContact = Math.min(width - 1, Math.ceil(cx + rx));
+        for (let xs = minX; xs <= maxX; xs++) {
+          if (edt[ys * width + xs] > 0.001) continue; // Only project opaque pixels
 
-    for (let cy_ = minYContact; cy_ <= maxYContact; cy_++) {
-      const dy = (cy_ - yGround) / ry;
-      const rowOffset = cy_ * width;
-      for (let cx_ = minXContact; cx_ <= maxXContact; cx_++) {
-        const dx = (cx_ - cx) / rx;
-        const distSq = dx * dx + dy * dy;
-        if (distSq <= 1.0) {
-          const dist = Math.sqrt(distSq);
-          const ao = (1.0 - dist) * contactStrength;
-          const pIdx = rowOffset + cx_;
-          if (ao > densityMap[pIdx]) {
-            densityMap[pIdx] = ao;
+          for (let s = 0; s < numSubSteps; s++) {
+            const subH = h + s * stepInv;
+            const px = Math.round(xs + subH * shearX);
+            const py = Math.round(yGround + subH * shearY);
+
+            if (px >= 0 && px < width && py >= 0 && py < height) {
+              const pIdx = py * width + px;
+              if (falloff > densityMap[pIdx]) {
+                densityMap[pIdx] = falloff;
+              }
+            }
           }
         }
       }
@@ -426,6 +407,7 @@ export function renderBoundedSpriteCastShadow(
     const data = outImgData.data;
     const [sr, sg, sb] = parseShadowColor(shadowColor);
     const opacity = Math.max(0.0, Math.min(1.0, shadowOpacity));
+    const expectedAlpha = Math.round(opacity * 255);
 
     for (let y = 0; y < height; y++) {
       const row = y * width;
@@ -440,19 +422,18 @@ export function renderBoundedSpriteCastShadow(
         }
 
         const density = densityMap[idx];
-        if (density <= 0.01) {
+        if (density <= 0.05) {
           data[pIdx + 3] = 0;
           continue;
         }
 
-        const continuousAlpha = density * opacity;
         let finalAlpha = 0;
-
         if (ditherMode !== 'none') {
           const threshold = getBayerMatrixThreshold(x, y, ditherMode);
-          finalAlpha = continuousAlpha >= threshold ? Math.round(opacity * 255) : 0;
+          finalAlpha = (density * opacity) >= threshold ? expectedAlpha : 0;
         } else {
-          finalAlpha = Math.round(continuousAlpha * 255);
+          // Authentic pixel art uniform flat opacity (no 256-level blurry airbrush gradient)
+          finalAlpha = expectedAlpha;
         }
 
         if (finalAlpha > 0) {
@@ -523,7 +504,12 @@ export function executeClassic2DRaymarchedShadow(
         }
 
         const shadowFactor = (1.0 - vis) * opacity;
-        let alpha = Math.round(shadowFactor * 255);
+        let alpha = 0;
+        if (ditherMode !== 'none') {
+          alpha = Math.round(shadowFactor * 255);
+        } else {
+          alpha = shadowFactor > 0.05 ? Math.round(opacity * 255) : 0;
+        }
 
         if (edt[idx] <= 0) {
           alpha = 0;

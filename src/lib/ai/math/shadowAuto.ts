@@ -50,6 +50,7 @@ export interface InferredShadowSettings {
   isFloating: boolean;
   lightAzimuth: number;
   lightElevation: number;
+  shadowStyle?: 'cast' | 'drop';
 }
 
 export interface ShadowAnalysisOptions {
@@ -71,8 +72,8 @@ export function inferRaymarchedShadowSettings(
     lightRadius: 16,
     shadowOpacity: 0.6,
     shadowColor: '#180B26',
-    ditherMode: '4x4',
-    rationale: 'Canvas is empty — assigned centered overhead studio light with 4x4 dither.',
+    ditherMode: 'none',
+    rationale: 'Canvas is empty — assigned centered overhead studio light with clean flat shadow.',
     spriteBounds: {
       minX: 0,
       maxX: width - 1,
@@ -228,7 +229,7 @@ export function inferRaymarchedShadowSettings(
 
   // --- 5. Opacity & Dithering -------------------------------------------------
   const shadowOpacity = isFloating ? 0.5 : 0.65;
-  const ditherMode: 'none' | '2x2' | '4x4' | '8x8' = '4x4';
+  const ditherMode: 'none' | '2x2' | '4x4' | '8x8' = 'none';
 
   const formName = isFloating
     ? 'floating subject'

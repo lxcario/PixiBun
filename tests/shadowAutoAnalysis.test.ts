@@ -36,7 +36,7 @@ describe('Raymarched Soft Shadows Auto-Analysis Engine', () => {
     expect(out.lightY).toBeLessThan(16); // Overhead
     expect(out.lightRadius).toBe(16);
     expect(out.shadowOpacity).toBe(0.6);
-    expect(out.ditherMode).toBe('4x4');
+    expect(out.ditherMode).toBe('none');
     expect(out.rationale).toContain('empty');
   });
 

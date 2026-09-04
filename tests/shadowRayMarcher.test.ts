@@ -314,6 +314,90 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
         expect(a === 0 || a === expectedAlpha).toBe(true);
       }
     });
+
+    it('produces crisp uniform flat opacity with zero blurry continuous alpha when dither is none', async () => {
+      const width = 24;
+      const height = 24;
+      const isOpaque = (x: number, y: number) => x >= 8 && x <= 16 && y >= 6 && y <= 14;
+      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
+
+      const params: RaymarchedShadowParams = {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        shadowOpacity: 0.65,
+        shadowColor: '#180B26',
+        ditherMode: 'none',
+      };
+
+      const imgData = renderBoundedSpriteCastShadow(edt, width, height, params);
+
+      const expectedAlpha = Math.round(0.65 * 255);
+      let shadowPixelCount = 0;
+      for (let i = 3; i < imgData.data.length; i += 4) {
+        const a = imgData.data[i];
+        // Every pixel must be either completely transparent or crisp uniform flat opacity (no blurry continuous gradient)
+        expect(a === 0 || a === expectedAlpha).toBe(true);
+        if (a === expectedAlpha) shadowPixelCount++;
+      }
+      expect(shadowPixelCount).toBeGreaterThan(0);
+    });
+
+    it('preserves hollow contours and does not fill empty gaps between character legs', async () => {
+      const width = 32;
+      const height = 32;
+      // Character with two feet at x=6..10 and x=22..26 at bottom row y=22, hollow arch in between (x=11..21)
+      const isOpaque = (x: number, y: number): boolean => {
+        if (x < 6 || x > 26 || y < 10 || y > 22) return false;
+        // Hollow arch between feet
+        if (x > 10 && x < 22 && y >= 19) return false;
+        return true;
+      };
+
+      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
+
+      const params: RaymarchedShadowParams = {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        shadowOpacity: 0.65,
+        ditherMode: 'none',
+        shadowStyle: 'cast',
+      };
+
+      const imgData = renderBoundedSpriteCastShadow(edt, width, height, params);
+
+      // On bottom baseline row y = 22, the gap between legs (x=12..20) must be completely clear (alpha = 0)
+      for (let x = 12; x <= 20; x++) {
+        const alpha = imgData.data[(22 * width + x) * 4 + 3];
+        expect(alpha).toBe(0);
+      }
+    });
+
+    it('renders a crisp grounded RPG ellipse when shadowStyle is drop', async () => {
+      const width = 32;
+      const height = 32;
+      const isOpaque = (x: number, y: number) => x >= 10 && x <= 22 && y >= 10 && y <= 22;
+      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
+
+      const params: RaymarchedShadowParams = {
+        shadowOpacity: 0.5,
+        shadowColor: '#180B26',
+        ditherMode: 'none',
+        shadowStyle: 'drop',
+      };
+
+      const imgData = renderBoundedSpriteCastShadow(edt, width, height, params);
+
+      const expectedAlpha = Math.round(0.5 * 255);
+      // Immediately below baseline y = 22 at center x = 16, row 23 should be shadowed
+      const centerAlpha = imgData.data[(23 * width + 16) * 4 + 3];
+      expect(centerAlpha).toBe(expectedAlpha);
+
+      // Distant pixel (e.g. at y = 28) should remain clear
+      expect(imgData.data[(28 * width + 16) * 4 + 3]).toBe(0);
+    });
   });
 
   describe('non-destructive layer tagging integration', () => {

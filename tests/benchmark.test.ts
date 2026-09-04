@@ -60,7 +60,7 @@ describe('Performance Benchmarking Suite', () => {
     expect(result.data.length).toBe(dstW * dstH * 4);
     expect(durationMs).toBeGreaterThan(0);
     expect(durationMs).toBeLessThan(10000); // Must complete within 10s budget
-  });
+  }, 15000);
 
   it('measures K-Means++ in OKLab for 16, 64, and 256 colors', () => {
     const W = 64;

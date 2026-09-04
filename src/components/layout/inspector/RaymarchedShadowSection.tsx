@@ -31,7 +31,8 @@ export const RaymarchedShadowSection: React.FC = () => {
   const [shadowLightRadius, setShadowLightRadius] = useState<number>(16);
   const [shadowOpacity, setShadowOpacity] = useState<number>(0.65);
   const [shadowColor, setShadowColor] = useState<string>('#180B26');
-  const [shadowDitherMode, setShadowDitherMode] = useState<'none' | '2x2' | '4x4' | '8x8'>('4x4');
+  const [shadowDitherMode, setShadowDitherMode] = useState<'none' | '2x2' | '4x4' | '8x8'>('none');
+  const [shadowStyle, setShadowStyle] = useState<'cast' | 'drop'>('cast');
   const [inferredRationale, setInferredRationale] = useState<string>('');
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export const RaymarchedShadowSection: React.FC = () => {
       setShadowOpacity(inferred.shadowOpacity);
       setShadowColor(inferred.shadowColor);
       setShadowDitherMode(inferred.ditherMode);
+      if (inferred.shadowStyle) setShadowStyle(inferred.shadowStyle);
       setInferredRationale(inferred.rationale);
     });
     return unsub;
@@ -51,7 +53,11 @@ export const RaymarchedShadowSection: React.FC = () => {
 
   const handleAutoRenderCastShadow = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:render-cast-shadow-auto'));
+    window.dispatchEvent(
+      new CustomEvent('pixibun:render-cast-shadow-auto', {
+        detail: { shadowStyle },
+      })
+    );
   };
 
   const handleRenderCastShadow = () => {
@@ -67,6 +73,7 @@ export const RaymarchedShadowSection: React.FC = () => {
           shadowOpacity: shadowOpacity,
           shadowColor: shadowColor,
           ditherMode: shadowDitherMode,
+          shadowStyle: shadowStyle,
           mode: 'bounded-2.5d',
         },
       })
@@ -129,6 +136,37 @@ export const RaymarchedShadowSection: React.FC = () => {
           <PixelIcon name="pen" size={12} />
           <span>Manual</span>
         </button>
+      </div>
+
+      {/* Shadow Style: Directional Cast vs Ground Drop (Classic RPG Oval) */}
+      <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
+        <span className="text-[10px] text-[var(--text-body)] font-bold">Style:</span>
+        <div className="flex gap-1" role="group" aria-label="Shadow projection style">
+          <button
+            type="button"
+            onClick={() => setShadowStyle('cast')}
+            aria-pressed={shadowStyle === 'cast'}
+            className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+              shadowStyle === 'cast'
+                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+            }`}
+          >
+            Directional Cast
+          </button>
+          <button
+            type="button"
+            onClick={() => setShadowStyle('drop')}
+            aria-pressed={shadowStyle === 'drop'}
+            className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+              shadowStyle === 'drop'
+                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+            }`}
+          >
+            Ground Drop (Oval)
+          </button>
+        </div>
       </div>
 
       {mode === 'auto' && (

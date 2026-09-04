@@ -407,7 +407,8 @@ export function useViewportStudioEvents({
           lightRadius: detail.lightRadius ?? 16,
           shadowOpacity: detail.shadowOpacity ?? 0.65,
           shadowColor: detail.shadowColor ?? '#180B26',
-          ditherMode: detail.ditherMode ?? '4x4',
+          ditherMode: detail.ditherMode ?? 'none',
+          shadowStyle: detail.shadowStyle ?? 'cast',
           mode: detail.mode ?? 'bounded-2.5d',
         }
       );
@@ -417,7 +418,10 @@ export function useViewportStudioEvents({
       });
     };
 
-    const handleRenderCastShadowAutoEvent = () => {
+    const handleRenderCastShadowAutoEvent = (e?: Event) => {
+      const customEvent = e as CustomEvent | undefined;
+      const detail = customEvent?.detail || {};
+
       const srcCtx = compositeSourceSnapshot('cast-shadow');
       if (!srcCtx) return;
 
@@ -433,7 +437,12 @@ export function useViewportStudioEvents({
       // Synchronize inspector controls and listeners
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
-          new CustomEvent('pixibun:shadow-settings-inferred', { detail: inferred })
+          new CustomEvent('pixibun:shadow-settings-inferred', {
+            detail: {
+              ...inferred,
+              shadowStyle: detail.shadowStyle ?? 'cast',
+            },
+          })
         );
       }
 
@@ -457,7 +466,8 @@ export function useViewportStudioEvents({
           lightRadius: inferred.lightRadius,
           shadowOpacity: inferred.shadowOpacity,
           shadowColor: inferred.shadowColor,
-          ditherMode: inferred.ditherMode,
+          ditherMode: detail.ditherMode ?? inferred.ditherMode ?? 'none',
+          shadowStyle: detail.shadowStyle ?? 'cast',
           mode: 'bounded-2.5d',
         }
       );
@@ -914,7 +924,7 @@ export function useViewportStudioEvents({
       studioEvents.on('pixibun:auto-outline', (detail) => handleAutoOutlineEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:ground-shadow', handleGroundShadowEvent),
       studioEvents.on('pixibun:render-cast-shadow', (detail) => handleRenderCastShadowEvent({ detail } as CustomEvent)),
-      studioEvents.on('pixibun:render-cast-shadow-auto', handleRenderCastShadowAutoEvent),
+      studioEvents.on('pixibun:render-cast-shadow-auto', (detail) => handleRenderCastShadowAutoEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:apply-47-blob', handle47BlobEvent),
       studioEvents.on('pixibun:wfc-synthesis', (detail) => handleWfcSynthesisEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:rot-sprite', (detail) => handleRotSpriteEvent({ detail } as CustomEvent)),

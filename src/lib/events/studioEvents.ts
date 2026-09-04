@@ -26,8 +26,9 @@ export type StudioEventMap = {
     shadowColor?: string;
     ditherMode?: 'none' | '2x2' | '4x4' | '8x8';
     mode?: 'bounded-2.5d' | 'raymarch-2d';
+    shadowStyle?: 'cast' | 'drop';
   };
-  'pixibun:render-cast-shadow-auto': void;
+  'pixibun:render-cast-shadow-auto': { shadowStyle?: 'cast' | 'drop' } | void;
   'pixibun:shadow-settings-inferred': {
     lightX: number;
     lightY: number;
@@ -38,6 +39,7 @@ export type StudioEventMap = {
     shadowColor: string;
     ditherMode: 'none' | '2x2' | '4x4' | '8x8';
     rationale: string;
+    shadowStyle?: 'cast' | 'drop';
   };
   'pixibun:apply-47-blob': void;
   'pixibun:wfc-synthesis': { n?: number; symmetries?: 1 | 4 | 8; seed?: number } | void;
