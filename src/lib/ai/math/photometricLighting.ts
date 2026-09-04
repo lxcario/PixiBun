@@ -366,12 +366,11 @@ export function executePhotometricPipeline(
     return executeMinecraftSkinShadingPipeline(srcCtx, width, height, params);
   }
 
-  const {
-    normalField,
-    cavityAO,
-    isInkLine,
-    isFeature,
-  } = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0);
+  const distanceMap = computeSeparableEDT(isOpaque, width, height);
+  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
   const brightness = params.lightBrightness ?? 1.15;
@@ -429,26 +428,6 @@ export function executePhotometricPipeline(
       const Nz = normalField.nz[idx];
 
       const ao = cavityAO[idx];
-
-      // Hand-drawn line art & dark contour preservation:
-      // Preserves original hand-inked line work with deep contrast, subtle ambient occlusion darkening,
-      // and eliminates muddy diffuse light wash or specular glints on ink lines.
-      if (isInkLine[idx] === 1) {
-        outData[pIdx] = Math.round(data[pIdx] * (0.65 + 0.35 * ao));
-        outData[pIdx + 1] = Math.round(data[pIdx + 1] * (0.65 + 0.35 * ao));
-        outData[pIdx + 2] = Math.round(data[pIdx + 2] * (0.65 + 0.35 * ao));
-        outData[pIdx + 3] = data[pIdx + 3];
-        continue;
-      }
-
-      // Facial feature preservation (e.g. eyes, mouth):
-      if (isFeature[idx] === 1) {
-        outData[pIdx] = Math.round(data[pIdx] * (0.75 + 0.25 * ao));
-        outData[pIdx + 1] = Math.round(data[pIdx + 1] * (0.75 + 0.25 * ao));
-        outData[pIdx + 2] = Math.round(data[pIdx + 2] * (0.75 + 0.25 * ao));
-        outData[pIdx + 3] = data[pIdx + 3];
-        continue;
-      }
 
       // 1. Half-Lambert Wrap Lighting (prevents muddy dark black crush)
       const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
@@ -554,13 +533,20 @@ export function renderParametric2p5DLighting(
   };
 
   const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
-  const contentAnalysis = isMcSkin
-    ? null
-    : computeContentAwareHeightmap(data, width, height, 1.0, 2.0);
-
   const normalField = isMcSkin
     ? computeMinecraftSkinNormalField(width, height)
-    : contentAnalysis!.normalField;
+    : computeTangentNormalField(
+        applyBilateralFilter(
+          generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
+          width,
+          height,
+          1.5,
+          2.0
+        ),
+        width,
+        height,
+        2.0
+      );
 
   const azRad = (params.azimuthDeg * Math.PI) / 180;
   const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
@@ -602,7 +588,6 @@ export function renderParametric2p5DLighting(
 
   const pData = photometricCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
   const shadedPixels: ShadedPixel[] = [];
-  const candidateSpecular: Array<{ pixel: ShadedPixel; intensity: number }> = [];
   const specularPixels: ShadedPixel[] = [];
   const rimPixels: ShadedPixel[] = [];
 
@@ -624,64 +609,39 @@ export function renderParametric2p5DLighting(
           a: pData[pIdx + 3],
         });
 
-        const isInk = contentAnalysis ? contentAnalysis.isInkLine[idx] === 1 : false;
-        const isFeat = contentAnalysis ? contentAnalysis.isFeature[idx] === 1 : false;
-        const macroD = contentAnalysis ? contentAnalysis.macroHeightmap[idx] : 2.0;
+        // Exclude pure black outline pixels from receiving specular highlight
+        const isBlackOutline = data[pIdx] < 30 && data[pIdx + 1] < 30 && data[pIdx + 2] < 30;
+        if (isBlackOutline) continue;
 
-        // Specular glints strictly prohibited on line art, facial markings (eyes/mouth), and boundary outer edges
-        if (!isInk && !isFeat && macroD >= 1.5) {
-          const Nx = normalField.nx[idx];
-          const Ny = normalField.ny[idx];
-          const Nz = normalField.nz[idx];
+        const Nx = normalField.nx[idx];
+        const Ny = normalField.ny[idx];
+        const Nz = normalField.nz[idx];
 
-          const NdotL = Nx * Lx + Ny * Ly + Nz * Lz;
-          if (NdotL > 0.05 && Nz >= 0.15) {
-            const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
-            const Ispec = Math.pow(NdotH, shininess);
+        const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
+        const Ispec = Math.pow(NdotH, shininess);
 
-            if (Ispec > 0.30) {
-              const alpha = Math.min(255, Math.round(Ispec * 255));
-              let r = 255;
-              let g = 255;
-              let b = 255;
+        if (Ispec > 0.35) {
+          const alpha = Math.min(255, Math.round(Ispec * 255));
+          let r = 255;
+          let g = 255;
+          let b = 255;
 
-              if (isMetallic) {
-                r = Math.min(255, Math.round(pData[pIdx] * 0.35 + 255 * 0.65));
-                g = Math.min(255, Math.round(pData[pIdx + 1] * 0.35 + 245 * 0.65));
-                b = Math.min(255, Math.round(pData[pIdx + 2] * 0.35 + 160 * 0.65));
-              }
-
-              candidateSpecular.push({
-                pixel: { x, y, r, g, b, a: alpha },
-                intensity: Ispec,
-              });
-            }
+          if (isMetallic) {
+            r = Math.min(255, Math.round(pData[pIdx] * 0.35 + 255 * 0.65));
+            g = Math.min(255, Math.round(pData[pIdx + 1] * 0.35 + 245 * 0.65));
+            b = Math.min(255, Math.round(pData[pIdx + 2] * 0.35 + 160 * 0.65));
           }
+
+          specularPixels.push({
+            x,
+            y,
+            r,
+            g,
+            b,
+            a: alpha,
+          });
         }
       }
-    }
-  }
-
-  // Cluster candidate glints into a cohesive apex hotspot (matching Photo 2!)
-  // Eliminates scattered edge dots across ears, chins, and line art
-  if (candidateSpecular.length > 0) {
-    candidateSpecular.sort((a, b) => b.intensity - a.intensity);
-    const apex = candidateSpecular[0];
-    const apexX = apex.pixel.x;
-    const apexY = apex.pixel.y;
-    const apexIntensity = apex.intensity;
-
-    const maxClusterRadius = Math.max(1.8, Math.min(3.2, Math.sqrt(width * height) * 0.06));
-    const clustered = candidateSpecular.filter((cand) => {
-      const dx = cand.pixel.x - apexX;
-      const dy = cand.pixel.y - apexY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      return dist <= maxClusterRadius && cand.intensity >= apexIntensity * 0.60;
-    });
-
-    const maxGlints = Math.max(3, Math.min(7, Math.round((width * height) / 200)));
-    for (let i = 0; i < Math.min(maxGlints, clustered.length); i++) {
-      specularPixels.push(clustered[i].pixel);
     }
   }
 

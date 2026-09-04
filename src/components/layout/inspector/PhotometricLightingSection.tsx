@@ -64,7 +64,6 @@ export const PhotometricLightingSection: React.FC = () => {
     setMaterialPreset,
     setCavityStrength,
     setDitherModulation,
-    primaryColor,
     showNormalMapPreview,
     toggleNormalMapPreview,
   } = useStudioStore();
@@ -88,7 +87,7 @@ export const PhotometricLightingSection: React.FC = () => {
           lightElevation: tools.lightElevation,
           lightRadius: tools.lightRadius,
           lightBrightness: tools.lightBrightness,
-          lightColor: primaryColor || '#FFFFFF',
+          lightColor: '#FFFFFF',
           ambientIntensity: 0.35,
           material: tools.materialPreset,
           cavityStrength: tools.cavityStrength,
@@ -112,7 +111,7 @@ export const PhotometricLightingSection: React.FC = () => {
         detail: {
           lightAzimuth: tools.lightAzimuth,
           lightElevation: tools.lightElevation,
-          highlightColor: primaryColor || '#FFFFFF',
+          highlightColor: '#FFFFFF',
         },
       })
     );
