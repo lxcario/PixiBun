@@ -310,7 +310,10 @@ export function computeDiscreteLaplaceCavity(
     for (let x = 0; x < width; x++) {
       const idx = y * width + x;
       const center = heightmap[idx];
-      if (center === 0) continue;
+      if (center <= 0) {
+        cavity[idx] = 1.0;
+        continue;
+      }
 
       const up = getH(x, y - 1);
       const down = getH(x, y + 1);
@@ -318,7 +321,9 @@ export function computeDiscreteLaplaceCavity(
       const right = getH(x + 1, y);
 
       const laplacian = (up + down + left + right) - 4 * center;
-      cavity[idx] = Math.max(0.0, Math.min(1.0, 0.5 + laplacian * 2.0));
+      // Cavity occurs where curvature is concave (valleys/crevices)
+      const concaveCurvature = Math.max(0, -laplacian);
+      cavity[idx] = Math.max(0.0, Math.min(1.0, 1.0 - concaveCurvature * 2.0));
     }
   }
 

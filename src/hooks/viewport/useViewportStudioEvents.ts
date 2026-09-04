@@ -627,7 +627,7 @@ export function useViewportStudioEvents({
           lightElevation: inferred.lightElevation,
           lightRadius: 64,
           lightColor: state.primaryColor || '#FFFFFF',
-          ambientIntensity: 0.45,
+          ambientIntensity: 0.35,
           lightBrightness: inferred.brightness,
           material: inferred.material,
           cavityStrength: state.tools.cavityStrength,
@@ -637,9 +637,30 @@ export function useViewportStudioEvents({
         []
       );
 
-      updateTaggedLayer(`Photometric Auto (${inferred.material})`, 'photometric', (outCtx) => {
+      // 1. Shaded 2.5D diffuse body layer
+      updateTaggedLayer(`Photometric ${inferred.material}`, 'photometric', (outCtx) => {
         outCtx.drawImage(shadedCanvas, 0, 0);
       });
+
+      // 2. Automatically generate the Specular Glint layer (matching Photo 2!)
+      const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
+        azimuthDeg: inferred.lightAzimuth,
+        elevationDeg: inferred.lightElevation,
+        shadowIntensity: 0.8,
+        specularShininess: 24,
+        rimLight: false,
+        selOut: false,
+        material: inferred.material === 'matte' ? 'metal' : inferred.material,
+      });
+
+      if (specularPixels.length > 0) {
+        updateTaggedLayer(`Specular ${inferred.lightAzimuth}°`, 'specular', (outCtx) => {
+          specularPixels.forEach((p) => {
+            outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+            outCtx.fillRect(p.x, p.y, 1, 1);
+          });
+        });
+      }
     };
 
     const handlePhotometricLightingEvent = (e: Event) => {

@@ -356,9 +356,9 @@ export function executePhotometricPipeline(
   }
 
   const distanceMap = computeSeparableEDT(isOpaque, width, height);
-  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
-  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.6);
+  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.2, 0.35);
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 3.2);
   const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height);
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
@@ -421,17 +421,15 @@ export function executePhotometricPipeline(
       const ao = 1.0 - (1.0 - rawAo) * aoStrength;
 
       const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
-      const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.35) / 1.35), 1.25);
-      const diffR = mat.kd * wrapNdotL * (origR * lightR);
-      const diffG = mat.kd * wrapNdotL * (origG * lightG);
-      const diffB = mat.kd * wrapNdotL * (origB * lightB);
+      // High-contrast 3D diffuse lighting across spherical normal dome
+      const diffNdotL = Math.max(0, rawNdotL);
+      const diffR = mat.kd * diffNdotL * (origR * lightR);
+      const diffG = mat.kd * diffNdotL * (origG * lightG);
+      const diffB = mat.kd * diffNdotL * (origB * lightB);
 
       const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
-      // Silhouette falloff (geometric masking): specular energy fades to zero as the
-      // surface tilts edge-on to the viewer (N·V = Nz -> 0). Without this, the huge
-      // EDT rim gradients produce chalky white glints smeared along the outline.
       const NdotV = Math.max(0, Nz);
-      const rimSpecMask = Math.min(1, NdotV / 0.35);
+      const rimSpecMask = Math.min(1, NdotV / 0.2);
       const Ispec = mat.ks * Math.pow(NdotH, mat.shininess) * rimSpecMask;
 
       let specR = Ispec * lightR;
@@ -444,14 +442,14 @@ export function executePhotometricPipeline(
         specB *= origB;
       }
 
-      const effectiveAmbient = Math.max(0.35, params.ambientIntensity) * brightness;
-      const ambR = origR * effectiveAmbient * ao;
-      const ambG = origG * effectiveAmbient * ao;
-      const ambB = origB * effectiveAmbient * ao;
+      const ambientFactor = Math.max(0.2, Math.min(0.5, params.ambientIntensity ?? 0.35)) * brightness;
+      const ambR = origR * ambientFactor * ao;
+      const ambG = origG * ambientFactor * ao;
+      const ambB = origB * ambientFactor * ao;
 
-      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR * ao + specR) * (brightness * 0.9)));
-      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG * ao + specG) * (brightness * 0.9)));
-      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB * ao + specB) * (brightness * 0.9)));
+      let totalR = Math.max(0, Math.min(1.0, ambR + diffR * ao + specR));
+      let totalG = Math.max(0, Math.min(1.0, ambG + diffG * ao + specG));
+      let totalB = Math.max(0, Math.min(1.0, ambB + diffB * ao + specB));
 
       if (params.ditherModulation > 0) {
         const threshold = getBayerMatrixThreshold(x, y, params.bayerSize);
