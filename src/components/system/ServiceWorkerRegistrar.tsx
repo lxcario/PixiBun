@@ -60,8 +60,9 @@ export function ServiceWorkerRegistrar() {
     });
 
     let refreshing = false;
+    const hadController = Boolean(navigator.serviceWorker?.controller);
     const handleControllerChange = () => {
-      if (!refreshing) {
+      if (!refreshing && hadController) {
         refreshing = true;
         window.location.reload();
       }

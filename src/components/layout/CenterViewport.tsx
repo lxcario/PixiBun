@@ -1065,6 +1065,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         {/* Layer 1: Onion Skin Ghost Canvases */}
         <canvas
           ref={onionCanvasRef}
+          data-testid="onion-skin-canvas"
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"

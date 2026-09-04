@@ -382,8 +382,8 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     // Tab 3: PixiBud AI with both collapsible panels expanded
     await page.getByRole('button', { name: /PixiBud AI/i }).click();
     await page.waitForTimeout(300);
-    await page.getByRole('button', { name: /Sobel Normals & Lighting/i }).click();
-    await page.getByRole('button', { name: /Advanced Optics/i }).click();
+    await page.getByRole('button', { name: /2\.5D Photometric Studio/i }).click();
+    await page.getByRole('button', { name: /Volumetric Optics & SSS/i }).click();
     await page.waitForTimeout(300);
     const aiResults = await scanStudioAccessibility(page);
     expect(aiResults.violations).toEqual([]);

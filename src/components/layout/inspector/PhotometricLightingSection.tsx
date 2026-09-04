@@ -133,10 +133,13 @@ export const PhotometricLightingSection: React.FC = () => {
   return (
     <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+        <button
+          type="button"
+          className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1 cursor-pointer select-none bg-transparent border-none p-0 focus:outline-none"
+        >
           <PixelIcon name="sun" size={12} />
           <span>2.5D Photometric Studio</span>
-        </span>
+        </button>
         <span className="text-[10px] font-mono text-[#f0be7c] font-bold">
           {tools.lightAzimuth}° / {tools.lightElevation}°
         </span>

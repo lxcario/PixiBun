@@ -46,13 +46,27 @@ export function useViewportDrawing({
 
   useEffect(() => {
     setGlobalHistoryEngine(historyEngineRef.current);
+
+    // Event listener: Proje değiştiğinde veya yeni çizim açıldığında geçmişi temizle
+    const handleHistoryClear = () => {
+      if (historyEngineRef.current) {
+        historyEngineRef.current.clear();
+      }
+      currentStrokeSnapshotRef.current = null;
+      setCanUndo(false);
+      setCanRedo(false);
+    };
+
+    window.addEventListener('pixibun:history-clear', handleHistoryClear);
+
     return () => {
+      window.removeEventListener('pixibun:history-clear', handleHistoryClear);
       setGlobalHistoryEngine(null);
       if (rafBufferBumpRef.current !== null) {
         cancelAnimationFrame(rafBufferBumpRef.current);
       }
     };
-  }, []);
+  }, [setCanUndo, setCanRedo]);
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback(
