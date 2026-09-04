@@ -16,7 +16,7 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool from the left toolbar"
+      "description": "Select the Ellipse tool using the button labeled 'Ellipse (O)' in the left toolbar shapes group (fallback: press the O key on the keyboard)"
     },
     {
       "type": "action",
@@ -24,7 +24,7 @@
     },
     {
       "type": "action",
-      "description": "Click the PixiBud AI tab in the right inspector panel"
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel (tabs: Layers, Palette, PixiBud AI)"
     },
     {
       "type": "assertion",
@@ -32,7 +32,7 @@
     },
     {
       "type": "action",
-      "description": "Keep Auto mode selected and click the Analyze & Render button"
+      "description": "Keep the 'Auto' mode button active and click the 'Analyze & Render' button in the Smart Art Analysis panel"
     },
     {
       "type": "assertion",
@@ -40,15 +40,15 @@
     },
     {
       "type": "action",
-      "description": "Switch to Manual mode and select the Gold / Brass material chip"
+      "description": "Click the 'Manual' mode button, then click the 'Gold / Brass' material chip in the Material section"
     },
     {
       "type": "action",
-      "description": "Change the Direction (azimuth) slider in the Light Direction panel"
+      "description": "Change the 'Direction' slider value in the Light Direction panel (drag the slider or click a new position on it)"
     },
     {
       "type": "action",
-      "description": "Click the Render Photometric button again"
+      "description": "Click the 'Render Photometric' button"
     },
     {
       "type": "assertion",
