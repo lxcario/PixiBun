@@ -19,15 +19,20 @@ export type StudioEventMap = {
   'pixibun:render-cast-shadow': {
     lightX?: number;
     lightY?: number;
+    lightAzimuth?: number;
+    lightElevation?: number;
     lightRadius?: number;
     shadowOpacity?: number;
     shadowColor?: string;
     ditherMode?: 'none' | '2x2' | '4x4' | '8x8';
+    mode?: 'bounded-2.5d' | 'raymarch-2d';
   };
   'pixibun:render-cast-shadow-auto': void;
   'pixibun:shadow-settings-inferred': {
     lightX: number;
     lightY: number;
+    lightAzimuth?: number;
+    lightElevation?: number;
     lightRadius: number;
     shadowOpacity: number;
     shadowColor: string;

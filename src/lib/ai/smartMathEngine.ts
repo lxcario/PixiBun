@@ -34,5 +34,7 @@ export {
   tracePhysical2DSoftShadow,
   generateRaymarchedShadowMap,
   executeRaymarchedCastShadowPipeline,
+  renderBoundedSpriteCastShadow,
+  executeBoundedCastShadowPipeline,
   type RaymarchedShadowParams,
 } from './shadowRayMarcher';

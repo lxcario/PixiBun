@@ -26,8 +26,10 @@ export const RaymarchedShadowSection: React.FC = () => {
   const [mode, setMode] = useState<'auto' | 'manual'>('auto');
   const [shadowLightX, setShadowLightX] = useState<number>(Math.round(canvasWidth / 2));
   const [shadowLightY, setShadowLightY] = useState<number>(Math.round(canvasHeight / 4));
+  const [shadowAzimuth, setShadowAzimuth] = useState<number>(315);
+  const [shadowElevation, setShadowElevation] = useState<number>(45);
   const [shadowLightRadius, setShadowLightRadius] = useState<number>(16);
-  const [shadowOpacity, setShadowOpacity] = useState<number>(0.6);
+  const [shadowOpacity, setShadowOpacity] = useState<number>(0.65);
   const [shadowColor, setShadowColor] = useState<string>('#180B26');
   const [shadowDitherMode, setShadowDitherMode] = useState<'none' | '2x2' | '4x4' | '8x8'>('4x4');
   const [inferredRationale, setInferredRationale] = useState<string>('');
@@ -36,6 +38,8 @@ export const RaymarchedShadowSection: React.FC = () => {
     const unsub = studioEvents.on('pixibun:shadow-settings-inferred', (inferred) => {
       setShadowLightX(inferred.lightX);
       setShadowLightY(inferred.lightY);
+      if (inferred.lightAzimuth !== undefined) setShadowAzimuth(inferred.lightAzimuth);
+      if (inferred.lightElevation !== undefined) setShadowElevation(inferred.lightElevation);
       setShadowLightRadius(inferred.lightRadius);
       setShadowOpacity(inferred.shadowOpacity);
       setShadowColor(inferred.shadowColor);
@@ -57,10 +61,13 @@ export const RaymarchedShadowSection: React.FC = () => {
         detail: {
           lightX: shadowLightX,
           lightY: shadowLightY,
+          lightAzimuth: shadowAzimuth,
+          lightElevation: shadowElevation,
           lightRadius: shadowLightRadius,
           shadowOpacity: shadowOpacity,
           shadowColor: shadowColor,
           ditherMode: shadowDitherMode,
+          mode: 'bounded-2.5d',
         },
       })
     );
@@ -76,6 +83,8 @@ export const RaymarchedShadowSection: React.FC = () => {
     const ly = Math.round(cy - Math.cos(azRad) * dist);
     setShadowLightX(lx);
     setShadowLightY(ly);
+    setShadowAzimuth(tools.lightAzimuth);
+    setShadowElevation(tools.lightElevation);
   };
 
   return (
@@ -85,7 +94,7 @@ export const RaymarchedShadowSection: React.FC = () => {
           <PixelIcon name="sun" size={12} />
           <span>Raymarched Soft Shadows</span>
         </span>
-        <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2D Cone Tracing</span>
+        <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2.5D Ground Projection</span>
       </div>
 
       {/* Mode Switch: Auto analysis vs Manual artist control */}
@@ -135,8 +144,8 @@ export const RaymarchedShadowSection: React.FC = () => {
           {/* Inferred Parameters Summary */}
           <div className="grid grid-cols-2 gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)] text-[9px] font-mono">
             <div className="flex flex-col">
-              <span className="text-[var(--text-body)] opacity-70">Light Source:</span>
-              <span className="text-[#f0be7c] font-bold">({shadowLightX}px, {shadowLightY}px)</span>
+              <span className="text-[var(--text-body)] opacity-70">Direction:</span>
+              <span className="text-[#f0be7c] font-bold">{shadowAzimuth}° / {shadowElevation}°</span>
             </div>
             <div className="flex flex-col">
               <span className="text-[var(--text-body)] opacity-70">Penumbra Blur:</span>

@@ -28,7 +28,7 @@ import {
   bakeNormalMapToCanvas,
   detectMinecraftSkin,
   computeMinecraftSkinNormalField,
-  executeRaymarchedCastShadowPipeline,
+  renderBoundedSpriteCastShadow,
 } from '@/lib/ai/smartMathEngine';
 import { synthesizeWfc } from '@/lib/procedural/waveFunctionCollapse';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
@@ -395,17 +395,20 @@ export function useViewportStudioEvents({
       // Empty canvas pixels -> distance > 0 (distance to nearest sprite pixel)
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), canvasWidth, canvasHeight);
 
-      const shadowImgData = executeRaymarchedCastShadowPipeline(
+      const shadowImgData = renderBoundedSpriteCastShadow(
         edt,
         canvasWidth,
         canvasHeight,
         {
           lightX: detail.lightX ?? Math.round(canvasWidth / 2),
           lightY: detail.lightY ?? Math.round(canvasHeight / 4),
+          lightAzimuth: detail.lightAzimuth,
+          lightElevation: detail.lightElevation,
           lightRadius: detail.lightRadius ?? 16,
-          shadowOpacity: detail.shadowOpacity ?? 0.6,
+          shadowOpacity: detail.shadowOpacity ?? 0.65,
           shadowColor: detail.shadowColor ?? '#180B26',
           ditherMode: detail.ditherMode ?? '4x4',
+          mode: detail.mode ?? 'bounded-2.5d',
         }
       );
 
@@ -442,17 +445,20 @@ export function useViewportStudioEvents({
       // Measure distance from empty receiver canvas to the solid sprite occluder
       const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), canvasWidth, canvasHeight);
 
-      const shadowImgData = executeRaymarchedCastShadowPipeline(
+      const shadowImgData = renderBoundedSpriteCastShadow(
         edt,
         canvasWidth,
         canvasHeight,
         {
           lightX: inferred.lightX,
           lightY: inferred.lightY,
+          lightAzimuth: inferred.lightAzimuth,
+          lightElevation: inferred.lightElevation,
           lightRadius: inferred.lightRadius,
           shadowOpacity: inferred.shadowOpacity,
           shadowColor: inferred.shadowColor,
           ditherMode: inferred.ditherMode,
+          mode: 'bounded-2.5d',
         }
       );
 

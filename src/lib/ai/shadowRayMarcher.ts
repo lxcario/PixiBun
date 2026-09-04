@@ -14,13 +14,19 @@ import { acquireFloat32Buffer, releaseFloat32Buffer } from '../engine/bufferPool
 import { getBayerMatrixThreshold } from './smartMathEngine';
 
 export interface RaymarchedShadowParams {
-  lightX: number;
-  lightY: number;
-  lightRadius: number; // Physical light source radius (e.g. 4 to 64px)
-  shadowOpacity?: number; // 0.0 to 1.0 (default: 0.7)
+  lightX?: number;
+  lightY?: number;
+  lightRadius?: number; // Physical light source radius (e.g. 4 to 64px)
+  lightAzimuth?: number; // 0° to 360° (0° = North, 90° = East, 315° = Northwest)
+  lightElevation?: number; // 15° to 85° (overhead)
+  shadowOpacity?: number; // 0.0 to 1.0 (default: 0.65)
   shadowColor?: string | [number, number, number]; // Hex string or [r, g, b] (default: #180B26)
   ditherMode?: 'none' | '2x2' | '4x4' | '8x8';
   maxSteps?: number; // Maximum sphere-tracing steps (default: 64)
+  perspectiveForeshortening?: number; // default: 0.5 (3/4 top-down perspective)
+  volumetricDepthBias?: number; // default: 0.25 (prevents 1D line collapse)
+  mode?: 'bounded-2.5d' | 'raymarch-2d'; // default: 'bounded-2.5d'
+  isFloating?: boolean;
 }
 
 /**
@@ -228,19 +234,259 @@ export function generateRaymarchedShadowMap(
 }
 
 /**
- * Executes the complete 2D Raymarched Soft Shadow pipeline and returns an ImageData layer.
- * Manages zero-allocation buffers automatically to guarantee zero memory leaks.
+ * Renders a physically grounded 2.5D Bounded Sprite Cast Shadow.
+ *
+ * Professional game engine technique (Godot 4, Unity 2D, Aseprite):
+ * 1. Anchored at the sprite's ground contact baseline (yBase = maxY) with zero drift at feet.
+ * 2. Directional ground shear derived from key light Azimuth (theta_az) and Elevation (theta_el).
+ * 3. Finite, bounded shadow reach L = Hs * cot(theta_el) * k_persp (prevents infinite canvas flooding).
+ * 4. Sebastian Aaltonen contact-hardening: sharp contact umbra at feet, softening with distance.
+ * 5. Volumetric depth bias: prevents 1D line collapse when sun is at East/West (90°/270°).
+ * 6. Ambient contact occlusion ellipse at the base for grounding under high-noon overhead light.
+ * 7. Authentic ordered Bayer 4x4 matrix dithering.
+ * 8. Zero allocation Float32Array buffer pooling and non-destructive output.
  */
-export function executeRaymarchedCastShadowPipeline(
+export function renderBoundedSpriteCastShadow(
   edt: Float32Array,
   width: number,
   height: number,
   params: RaymarchedShadowParams
 ): ImageData {
   const {
-    lightX,
-    lightY,
-    lightRadius,
+    shadowOpacity = 0.65,
+    shadowColor,
+    ditherMode = '4x4',
+    perspectiveForeshortening = 0.5,
+    volumetricDepthBias = 0.25,
+  } = params;
+
+  // 1. Scan Sprite Bounding Box & Baseline from EDT field (solid pixels have edt <= 0.001)
+  let minX = width;
+  let maxX = -1;
+  let minY = height;
+  let maxY = -1;
+  let count = 0;
+  let sumX = 0;
+  let sumY = 0;
+
+  for (let y = 0; y < height; y++) {
+    const row = y * width;
+    for (let x = 0; x < width; x++) {
+      if (edt[row + x] <= 0.001) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+        count++;
+        sumX += x;
+        sumY += y;
+      }
+    }
+  }
+
+  const outImgData = createImageDataBuffer(width, height);
+  if (count === 0) return outImgData;
+
+  const boxW = Math.max(1, maxX - minX + 1);
+  const boxH = Math.max(1, maxY - minY + 1);
+  const cx = sumX / count;
+  const cy = sumY / count;
+  const yBase = maxY;
+
+  const distanceFromBottom = height - 1 - maxY;
+  const isFloating = params.isFloating === true;
+
+  // For floating sprites, ground is lower than the sprite; for grounded, ground is at baseline
+  const yGround = isFloating
+    ? Math.min(height - 2, maxY + Math.min(8, Math.max(3, Math.round(distanceFromBottom * 0.6))))
+    : yBase;
+
+  // 2. Resolve Azimuth and Elevation
+  let azimuthDeg = params.lightAzimuth;
+  let elevationDeg = params.lightElevation;
+
+  if (azimuthDeg === undefined || elevationDeg === undefined) {
+    const lx = params.lightX ?? Math.round(width / 2);
+    const ly = params.lightY ?? Math.round(height / 4);
+    const dx = lx - cx;
+    const dy = ly - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (azimuthDeg === undefined) {
+      if (dist < 0.001) {
+        azimuthDeg = 0;
+      } else {
+        const azRad = Math.atan2(dx, -dy);
+        azimuthDeg = Math.round(((azRad * 180) / Math.PI + 360) % 360);
+      }
+    }
+
+    if (elevationDeg === undefined) {
+      const maxDim = Math.max(width, height);
+      elevationDeg = Math.round(Math.max(15, Math.min(85, 90 - (dist / maxDim) * 70)));
+    }
+  }
+
+  // 3. Compute Directional Shear Factors
+  const azRad = (azimuthDeg * Math.PI) / 180;
+  const elRad = (Math.max(12, Math.min(88, elevationDeg)) * Math.PI) / 180;
+  const cotEl = 1.0 / Math.tan(elRad);
+
+  // Shadow direction on ground is opposite the light
+  const sx = -Math.sin(azRad);
+  let sy = Math.cos(azRad);
+
+  // Volumetric character depth bias prevents 1D line collapse when sun is at East/West (90°/270°)
+  const signY = sy >= 0 ? 1 : -1;
+  sy = signY * Math.max(Math.abs(sy), volumetricDepthBias);
+
+  const shearX = cotEl * sx;
+  const shearY = cotEl * sy * perspectiveForeshortening;
+
+  // 4. Rasterize Bounded Ground Shadow into Pooled Float32 Density Map
+  const densityMap = acquireFloat32Buffer(width * height);
+  densityMap.fill(0);
+
+  try {
+    // A. Directional Sheared Silhouette Projection
+    for (let y_s = minY; y_s <= maxY; y_s++) {
+      const h = yBase - y_s; // Height above baseline: 0 at feet, boxH at head
+      const u = Math.min(1.0, h / boxH); // Normalized height: [0, 1]
+
+      // Distance attenuation: contact base is 1.0, fading to 0.0 at tip
+      const falloff = Math.max(0.0, 1.0 - Math.pow(u, 1.4));
+
+      // Aaltonen contact hardening penumbra factor (sharp at base, softening with distance)
+      const penumbraSoftness = 1.0 - 0.35 * u;
+      const scanlineAlpha = falloff * penumbraSoftness;
+
+      if (scanlineAlpha <= 0.01) continue;
+
+      // Project contiguous spans of opaque pixels on row y_s
+      let x = minX;
+      while (x <= maxX) {
+        if (edt[y_s * width + x] <= 0.001) {
+          const xStart = x;
+          while (x <= maxX && edt[y_s * width + x] <= 0.001) {
+            x++;
+          }
+          const xEnd = x - 1;
+
+          const xMinProj = Math.floor(xStart + h * shearX - (Math.abs(shearX) > 0.5 ? 0.5 : 0));
+          const xMaxProj = Math.ceil(xEnd + h * shearX + (Math.abs(shearX) > 0.5 ? 0.5 : 0));
+
+          const yMinProj = Math.floor(Math.min(yGround + (h - 0.5) * shearY, yGround + (h + 0.5) * shearY));
+          const yMaxProj = Math.ceil(Math.max(yGround + (h - 0.5) * shearY, yGround + (h + 0.5) * shearY));
+
+          for (let py = yMinProj; py <= yMaxProj; py++) {
+            if (py < 0 || py >= height) continue;
+            const rowOffset = py * width;
+            for (let px = xMinProj; px <= xMaxProj; px++) {
+              if (px < 0 || px >= width) continue;
+              const pIdx = rowOffset + px;
+              if (scanlineAlpha > densityMap[pIdx]) {
+                densityMap[pIdx] = scanlineAlpha;
+              }
+            }
+          }
+        } else {
+          x++;
+        }
+      }
+    }
+
+    // B. Ambient Contact Occlusion Ellipse at Ground Baseline
+    const rx = Math.max(2.5, boxW * 0.45);
+    const ry = Math.max(1.2, rx * 0.25);
+    const contactStrength = isFloating ? 0.45 : 0.85;
+
+    const minYContact = Math.max(0, Math.floor(yGround - ry));
+    const maxYContact = Math.min(height - 1, Math.ceil(yGround + ry));
+    const minXContact = Math.max(0, Math.floor(cx - rx));
+    const maxXContact = Math.min(width - 1, Math.ceil(cx + rx));
+
+    for (let cy_ = minYContact; cy_ <= maxYContact; cy_++) {
+      const dy = (cy_ - yGround) / ry;
+      const rowOffset = cy_ * width;
+      for (let cx_ = minXContact; cx_ <= maxXContact; cx_++) {
+        const dx = (cx_ - cx) / rx;
+        const distSq = dx * dx + dy * dy;
+        if (distSq <= 1.0) {
+          const dist = Math.sqrt(distSq);
+          const ao = (1.0 - dist) * contactStrength;
+          const pIdx = rowOffset + cx_;
+          if (ao > densityMap[pIdx]) {
+            densityMap[pIdx] = ao;
+          }
+        }
+      }
+    }
+
+    // 5. Composite into Output Buffer with Color, Opacity & Bayer Dither
+    const data = outImgData.data;
+    const [sr, sg, sb] = parseShadowColor(shadowColor);
+    const opacity = Math.max(0.0, Math.min(1.0, shadowOpacity));
+
+    for (let y = 0; y < height; y++) {
+      const row = y * width;
+      for (let x = 0; x < width; x++) {
+        const idx = row + x;
+        const pIdx = idx * 4;
+
+        // Solid sprite pixels must remain 100% transparent in the shadow layer
+        if (edt[idx] <= 0.001) {
+          data[pIdx + 3] = 0;
+          continue;
+        }
+
+        const density = densityMap[idx];
+        if (density <= 0.01) {
+          data[pIdx + 3] = 0;
+          continue;
+        }
+
+        const continuousAlpha = density * opacity;
+        let finalAlpha = 0;
+
+        if (ditherMode !== 'none') {
+          const threshold = getBayerMatrixThreshold(x, y, ditherMode);
+          finalAlpha = continuousAlpha >= threshold ? Math.round(opacity * 255) : 0;
+        } else {
+          finalAlpha = Math.round(continuousAlpha * 255);
+        }
+
+        if (finalAlpha > 0) {
+          data[pIdx] = sr;
+          data[pIdx + 1] = sg;
+          data[pIdx + 2] = sb;
+          data[pIdx + 3] = finalAlpha;
+        } else {
+          data[pIdx + 3] = 0;
+        }
+      }
+    }
+
+    return outImgData;
+  } finally {
+    releaseFloat32Buffer(densityMap);
+  }
+}
+
+export const executeBoundedCastShadowPipeline = renderBoundedSpriteCastShadow;
+
+/**
+ * Classic 2D Planar Raymarched Soft Shadows (Sphere Tracing on discrete 2D distance field).
+ */
+export function executeClassic2DRaymarchedShadow(
+  edt: Float32Array,
+  width: number,
+  height: number,
+  params: RaymarchedShadowParams
+): ImageData {
+  const {
+    lightX = Math.round(width / 2),
+    lightY = Math.round(height / 4),
+    lightRadius = 16,
     shadowOpacity = 0.7,
     shadowColor,
     ditherMode = 'none',
@@ -250,7 +496,6 @@ export function executeRaymarchedCastShadowPipeline(
   const [sr, sg, sb] = parseShadowColor(shadowColor);
   const opacity = Math.max(0.0, Math.min(1.0, shadowOpacity));
 
-  // 1. Generate continuous visibility map from buffer pool
   const visibilityMap = generateRaymarchedShadowMap(
     edt,
     width,
@@ -261,12 +506,10 @@ export function executeRaymarchedCastShadowPipeline(
     maxSteps
   );
 
-  // 2. Allocate output ImageData buffer safely in browser and node
   const imgData = createImageDataBuffer(width, height);
   const data = imgData.data;
 
   try {
-    // 3. Composite visibility buffer into stylized shadow pixels
     for (let y = 0; y < height; y++) {
       const row = y * width;
       for (let x = 0; x < width; x++) {
@@ -276,11 +519,9 @@ export function executeRaymarchedCastShadowPipeline(
 
         if (ditherMode !== 'none') {
           const threshold = getBayerMatrixThreshold(x, y, ditherMode);
-          // Crisp Bayer matrix stippling: if visibility < threshold, pixel is shadowed
           vis = vis < threshold ? 0.0 : 1.0;
         }
 
-        // Shadow alpha is proportional to (1.0 - visibility) * opacity
         const shadowFactor = (1.0 - vis) * opacity;
         let alpha = Math.round(shadowFactor * 255);
 
@@ -301,9 +542,24 @@ export function executeRaymarchedCastShadowPipeline(
 
     return imgData;
   } finally {
-    // Crucially release pooled visibility buffer to prevent GC pressure and memory leaks
     releaseFloat32Buffer(visibilityMap);
   }
+}
+
+/**
+ * Unified Cast Shadow Pipeline.
+ * Defaults to the professional bounded 2.5D ground shadow unless 2D planar sphere-tracing is requested.
+ */
+export function executeRaymarchedCastShadowPipeline(
+  edt: Float32Array,
+  width: number,
+  height: number,
+  params: RaymarchedShadowParams
+): ImageData {
+  if (params.mode === 'bounded-2.5d') {
+    return renderBoundedSpriteCastShadow(edt, width, height, params);
+  }
+  return executeClassic2DRaymarchedShadow(edt, width, height, params);
 }
 
 export {

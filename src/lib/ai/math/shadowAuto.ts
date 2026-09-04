@@ -48,6 +48,8 @@ export interface InferredShadowSettings {
     cy: number;
   };
   isFloating: boolean;
+  lightAzimuth: number;
+  lightElevation: number;
 }
 
 export interface ShadowAnalysisOptions {
@@ -82,6 +84,8 @@ export function inferRaymarchedShadowSettings(
       cy: Math.round(height / 2),
     },
     isFloating: false,
+    lightAzimuth: 315,
+    lightElevation: 45,
   };
 
   let minX = width;
@@ -231,7 +235,7 @@ export function inferRaymarchedShadowSettings(
     : `grounded subject (${boxW}x${boxH}px, base Y=${maxY})`;
 
   const rationale =
-    `Recognized ${formName}. Placed cast light at (${lightX}, ${lightY}) matching ${azimuthDeg}° / ${elevationDeg}° light vector, ` +
+    `Recognized ${formName}. Projecting 2.5D grounded cast shadow along ${azimuthDeg}° / ${elevationDeg}° light vector, ` +
     `with ${lightRadius}px penumbra radius and ${shadowColor} atmospheric tint.`;
 
   return {
@@ -253,5 +257,7 @@ export function inferRaymarchedShadowSettings(
       cy,
     },
     isFloating,
+    lightAzimuth: azimuthDeg,
+    lightElevation: elevationDeg,
   };
 }
