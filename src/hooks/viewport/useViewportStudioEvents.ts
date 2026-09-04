@@ -87,7 +87,10 @@ export function useViewportStudioEvents({
           if (
             excludeTag &&
             (layer.tag === excludeTag ||
-              (excludeTag === 'photometric' && layer.name.toLowerCase().startsWith('photometric')))
+              (excludeTag === 'photometric' &&
+                (layer.tag === 'specular' ||
+                  layer.name.toLowerCase().startsWith('photometric') ||
+                  layer.name.toLowerCase().startsWith('specular'))))
           ) {
             return;
           }
@@ -297,10 +300,10 @@ export function useViewportStudioEvents({
         azimuthDeg: lightAz,
         elevationDeg: lightEl,
         shadowIntensity: 0.8,
-        specularShininess: 64,
+        specularShininess: 16,
         rimLight: false,
         selOut: false,
-        material: tools.materialPreset || 'gold',
+        material: tools.materialPreset,
       });
 
       updateTaggedLayer(`Specular ${lightAz}°`, 'specular', (outCtx) => {
@@ -647,10 +650,10 @@ export function useViewportStudioEvents({
         azimuthDeg: inferred.lightAzimuth,
         elevationDeg: inferred.lightElevation,
         shadowIntensity: 0.8,
-        specularShininess: 24,
+        specularShininess: 16,
         rimLight: false,
         selOut: false,
-        material: inferred.material === 'matte' ? 'metal' : inferred.material,
+        material: inferred.material,
       });
 
       if (specularPixels.length > 0) {

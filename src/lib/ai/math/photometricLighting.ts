@@ -356,10 +356,10 @@ export function executePhotometricPipeline(
   }
 
   const distanceMap = computeSeparableEDT(isOpaque, width, height);
-  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.6);
-  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.2, 0.35);
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 3.2);
-  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height);
+  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
   const brightness = params.lightBrightness ?? 1.15;
@@ -416,21 +416,18 @@ export function executePhotometricPipeline(
       const Ny = normalField.ny[idx];
       const Nz = normalField.nz[idx];
 
-      const rawAo = cavityAO[idx];
-      const aoStrength = params.cavityStrength ?? 1.0;
-      const ao = 1.0 - (1.0 - rawAo) * aoStrength;
+      const ao = cavityAO[idx];
 
+      // 1. Half-Lambert Wrap Lighting (prevents muddy dark black crush)
       const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
-      // High-contrast 3D diffuse lighting across spherical normal dome
-      const diffNdotL = Math.max(0, rawNdotL);
-      const diffR = mat.kd * diffNdotL * (origR * lightR);
-      const diffG = mat.kd * diffNdotL * (origG * lightG);
-      const diffB = mat.kd * diffNdotL * (origB * lightB);
+      const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.35) / 1.35), 1.25);
+      const diffR = mat.kd * wrapNdotL * (origR * lightR);
+      const diffG = mat.kd * wrapNdotL * (origG * lightG);
+      const diffB = mat.kd * wrapNdotL * (origB * lightB);
 
+      // 2. Blinn-Phong Specular (N . H)^alpha
       const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
-      const NdotV = Math.max(0, Nz);
-      const rimSpecMask = Math.min(1, NdotV / 0.2);
-      const Ispec = mat.ks * Math.pow(NdotH, mat.shininess) * rimSpecMask;
+      const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);
 
       let specR = Ispec * lightR;
       let specG = Ispec * lightG;
@@ -442,14 +439,16 @@ export function executePhotometricPipeline(
         specB *= origB;
       }
 
-      const ambientFactor = Math.max(0.2, Math.min(0.5, params.ambientIntensity ?? 0.35)) * brightness;
-      const ambR = origR * ambientFactor * ao;
-      const ambG = origG * ambientFactor * ao;
-      const ambB = origB * ambientFactor * ao;
+      // 3. Ambient
+      const effectiveAmbient = Math.max(0.35, params.ambientIntensity ?? 0.35) * brightness;
+      const ambR = origR * effectiveAmbient * ao;
+      const ambG = origG * effectiveAmbient * ao;
+      const ambB = origB * effectiveAmbient * ao;
 
-      let totalR = Math.max(0, Math.min(1.0, ambR + diffR * ao + specR));
-      let totalG = Math.max(0, Math.min(1.0, ambG + diffG * ao + specG));
-      let totalB = Math.max(0, Math.min(1.0, ambB + diffB * ao + specB));
+      // 4. Total continuous color: (Ambient + Diffuse * AO + Specular) * brightness
+      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR * ao + specR) * (brightness * 0.9)));
+      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG * ao + specG) * (brightness * 0.9)));
+      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB * ao + specB) * (brightness * 0.9)));
 
       if (params.ditherModulation > 0) {
         const threshold = getBayerMatrixThreshold(x, y, params.bayerSize);
@@ -568,7 +567,7 @@ export function renderParametric2p5DLighting(
       lightColor: '#FFFFFF',
       ambientIntensity: 0.45,
       lightBrightness: 1.2,
-      material: 'matte',
+      material: (params.material as MaterialType) || 'matte',
       cavityStrength: 1.0,
       ditherModulation: 0,
       bayerSize: '4x4',
@@ -582,33 +581,8 @@ export function renderParametric2p5DLighting(
   const specularPixels: ShadedPixel[] = [];
   const rimPixels: ShadedPixel[] = [];
 
-  // Interior mask: glints are only allowed on pixels well inside the silhouette.
-  // EDT rim normals point sideways (N·V ~ 0) and would otherwise align with the
-  // half-vector on the light-facing edge, smearing chalky glints along the outline.
-  const distanceMap = computeSeparableEDT(isOpaque, width, height);
-  const INTERIOR_MIN_DISTANCE = 2.0;
-
-  // First pass: per-pixel half-vector alignment field (interior pixels only)
-  const ndotHField = new Float32Array(width * height);
-  let maxNdotH = 0;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = y * width + x;
-      if (!isOpaque(x, y) || distanceMap[idx] < INTERIOR_MIN_DISTANCE) continue;
-      const Nx = normalField.nx[idx];
-      const Ny = normalField.ny[idx];
-      const Nz = normalField.nz[idx];
-      const alignment = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
-      ndotHField[idx] = alignment;
-      if (alignment > maxNdotH) maxNdotH = alignment;
-    }
-  }
-
-  // Relative alignment knee: glints live where the surface tilts closest to the
-  // Blinn-Phong half vector, judged relative to the sprite's own best-aligned
-  // interior pixel. An absolute threshold would systematically favour the steep
-  // (rim) normals regardless of where the artist's actual surface bump is.
-  const ALIGNMENT_KNEE = 0.08;
+  const isMetallic = params.material === 'gold' || params.material === 'metal';
+  const shininess = params.specularShininess || 16;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -625,58 +599,37 @@ export function renderParametric2p5DLighting(
           a: pData[pIdx + 3],
         });
 
-        const NdotH = ndotHField[idx];
-        if (NdotH <= 0 || NdotH < maxNdotH - ALIGNMENT_KNEE) continue;
+        const Nx = normalField.nx[idx];
+        const Ny = normalField.ny[idx];
+        const Nz = normalField.nz[idx];
 
-        // Non-maximum suppression: strict local peak among opaque 8-neighbours
-        // keeps glints pinpoint instead of letting them cluster into streaks.
-        let isPeak = true;
-        for (let dy = -1; dy <= 1 && isPeak; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const sx = x + dx;
-            const sy = y + dy;
-            if (sx < 0 || sy < 0 || sx >= width || sy >= height) continue;
-            if (!isOpaque(sx, sy)) continue;
-            if (ndotHField[sy * width + sx] > NdotH) {
-              isPeak = false;
-              break;
-            }
+        const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
+        const Ispec = Math.pow(NdotH, shininess);
+
+        if (Ispec > 0.35) {
+          const alpha = Math.min(255, Math.round(Ispec * 255));
+          let r = 255;
+          let g = 255;
+          let b = 255;
+
+          if (isMetallic) {
+            r = Math.min(255, Math.round(pData[pIdx] * 0.35 + 255 * 0.65));
+            g = Math.min(255, Math.round(pData[pIdx + 1] * 0.35 + 245 * 0.65));
+            b = Math.min(255, Math.round(pData[pIdx + 2] * 0.35 + 160 * 0.65));
           }
+
+          candidateSpecular.push({
+            pixel: { x, y, r, g, b, a: alpha },
+            intensity: Ispec,
+          });
         }
-        if (!isPeak) continue;
-
-        // Glint strength is normalized relative to the sprite's own apex alignment
-        // (see normI below) instead of an absolute Blinn-Phong cutoff, so the
-        // highlight lands on the best-aligned interior surface on every sprite.
-        const normI = Math.max(0, Math.min(1, 1 - (maxNdotH - NdotH) / ALIGNMENT_KNEE));
-        const alpha = Math.min(255, Math.round(160 + normI * 95));
-
-        // Conductor vs dielectric tinting
-        const isMetallic = params.material === 'gold' || params.material === 'metal';
-        let r = 255;
-        let g = 255;
-        let b = 255;
-
-        if (isMetallic) {
-          // Warm metallic highlight conserving base albedo
-          r = Math.min(255, Math.round(pData[pIdx] * 0.35 + 255 * 0.65));
-          g = Math.min(255, Math.round(pData[pIdx + 1] * 0.35 + 245 * 0.65));
-          b = Math.min(255, Math.round(pData[pIdx + 2] * 0.35 + 160 * 0.65));
-        }
-
-        candidateSpecular.push({
-          pixel: { x, y, r, g, b, a: alpha },
-          intensity: NdotH,
-        });
       }
     }
   }
 
-  // Pinpoint clustering: sort by specular intensity descending and limit to top peak glints
-  // Max glints = max(3, round(width * height / 256)), guaranteeing pinpoint sparkles rather than flat washes
+  // Sort candidate glints by intensity descending to cluster around the apex hotspot
   candidateSpecular.sort((a, b) => b.intensity - a.intensity);
-  const maxGlints = Math.max(3, Math.round((width * height) / 256));
+  const maxGlints = Math.max(4, Math.round((width * height) / 256));
   for (let i = 0; i < Math.min(maxGlints, candidateSpecular.length); i++) {
     specularPixels.push(candidateSpecular[i].pixel);
   }

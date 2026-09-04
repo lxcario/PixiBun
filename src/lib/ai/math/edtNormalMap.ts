@@ -114,18 +114,18 @@ export function generateInflatedHeightmap(
   height: number,
   gamma: number = 0.5
 ): Float32Array {
-  const heightmap = new Float32Array(width * height);
   let maxD = 0;
   for (let i = 0; i < distanceMap.length; i++) {
     if (distanceMap[i] > maxD) maxD = distanceMap[i];
   }
+  if (maxD <= 0) maxD = 1;
 
-  if (maxD === 0) return heightmap;
-
+  const heightmap = new Float32Array(width * height);
   for (let i = 0; i < distanceMap.length; i++) {
     if (distanceMap[i] > 0) {
       const normalizedD = Math.min(1.0, distanceMap[i] / maxD);
-      heightmap[i] = Math.pow(normalizedD, gamma);
+      // Non-linear curvature inflated to full 3D dome height
+      heightmap[i] = maxD * Math.pow(normalizedD, gamma);
     }
   }
 
@@ -140,7 +140,7 @@ export function applyBilateralFilter(
   width: number,
   height: number,
   sigmaSpatial: number = 1.5,
-  sigmaRange: number = 0.15
+  sigmaRange: number = 2.0
 ): Float32Array {
   const dst = new Float32Array(width * height);
   const radius = Math.ceil(sigmaSpatial * 2);
@@ -149,40 +149,31 @@ export function applyBilateralFilter(
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const centerIdx = y * width + x;
-      const centerVal = src[centerIdx];
+      const centerH = src[y * width + x];
+      if (centerH <= 0) continue;
 
-      if (centerVal === 0) {
-        dst[centerIdx] = 0;
-        continue;
-      }
-
-      let sumWeights = 0;
-      let sumValues = 0;
+      let sum = 0;
+      let totalWeight = 0;
 
       for (let dy = -radius; dy <= radius; dy++) {
-        const ny = y + dy;
-        if (ny < 0 || ny >= height) continue;
-
         for (let dx = -radius; dx <= radius; dx++) {
           const nx = x + dx;
-          if (nx < 0 || nx >= width) continue;
+          const ny = y + dy;
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
 
-          const neighborVal = src[ny * width + nx];
-          if (neighborVal === 0) continue;
+          const neighborH = src[ny * width + nx];
+          if (neighborH <= 0) continue;
 
-          const distSq = dx * dx + dy * dy;
-          const spatialWeight = Math.exp(-distSq / twoSigmaSpatialSq);
-          const rangeDiff = neighborVal - centerVal;
-          const rangeWeight = Math.exp(-(rangeDiff * rangeDiff) / twoSigmaRangeSq);
+          const spatialDistSq = dx * dx + dy * dy;
+          const rangeDistSq = (centerH - neighborH) * (centerH - neighborH);
 
-          const weight = spatialWeight * rangeWeight;
-          sumWeights += weight;
-          sumValues += neighborVal * weight;
+          const w = Math.exp(-spatialDistSq / twoSigmaSpatialSq) * Math.exp(-rangeDistSq / twoSigmaRangeSq);
+          sum += neighborH * w;
+          totalWeight += w;
         }
       }
 
-      dst[centerIdx] = sumWeights > 0 ? sumValues / sumWeights : centerVal;
+      dst[y * width + x] = totalWeight > 0 ? sum / totalWeight : centerH;
     }
   }
 
@@ -196,50 +187,48 @@ export function computeTangentNormalField(
   heightmap: Float32Array,
   width: number,
   height: number,
-  strength: number = 2.0
+  depthScale: number = 2.0
 ): NormalVectorField {
   const nx = new Float32Array(width * height);
   const ny = new Float32Array(width * height);
   const nz = new Float32Array(width * height);
 
   const getH = (x: number, y: number) => {
-    const cx = Math.max(0, Math.min(width - 1, x));
-    const cy = Math.max(0, Math.min(height - 1, y));
-    return heightmap[cy * width + cx];
+    if (x < 0 || x >= width || y < 0 || y >= height) return 0;
+    return heightmap[y * width + x];
   };
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = y * width + x;
-
-      if (heightmap[idx] === 0) {
+      if (heightmap[idx] <= 0) {
         nx[idx] = 0;
         ny[idx] = 0;
         nz[idx] = 1;
         continue;
       }
 
-      const z00 = getH(x - 1, y - 1);
-      const z01 = getH(x - 1, y);
-      const z02 = getH(x - 1, y + 1);
-      const z20 = getH(x + 1, y - 1);
-      const z21 = getH(x + 1, y);
-      const z22 = getH(x + 1, y + 1);
+      // Sobel kernel for Gx (dH/dx)
+      const Gx = (
+        -1 * getH(x - 1, y - 1) + 1 * getH(x + 1, y - 1) +
+        -2 * getH(x - 1, y)     + 2 * getH(x + 1, y) +
+        -1 * getH(x - 1, y + 1) + 1 * getH(x + 1, y + 1)
+      ) / 8.0;
 
-      const z10 = getH(x, y - 1);
-      const z12 = getH(x, y + 1);
+      // Sobel kernel for Gy (dH/dy)
+      const Gy = (
+        -1 * getH(x - 1, y - 1) - 2 * getH(x, y - 1) - 1 * getH(x + 1, y - 1) +
+         1 * getH(x - 1, y + 1) + 2 * getH(x, y + 1) + 1 * getH(x + 1, y + 1)
+      ) / 8.0;
 
-      const dzdx = (z20 + 2 * z21 + z22 - (z00 + 2 * z01 + z02)) / 8;
-      const dzdy = (z02 + 2 * z12 + z22 - (z00 + 2 * z10 + z20)) / 8;
+      const sx = -Gx * depthScale;
+      const sy = -Gy * depthScale;
+      const sz = 1.0;
+      const len = Math.sqrt(sx * sx + sy * sy + sz * sz) || 1;
 
-      const vx = -dzdx * strength;
-      const vy = -dzdy * strength;
-      const vz = 1.0;
-
-      const len = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1.0;
-      nx[idx] = vx / len;
-      ny[idx] = vy / len;
-      nz[idx] = vz / len;
+      nx[idx] = sx / len;
+      ny[idx] = sy / len;
+      nz[idx] = sz / len;
     }
   }
 
@@ -280,9 +269,9 @@ export function bakeNormalMapToCanvas(
       const g = Math.round(((-normalField.ny[idx] + 1) / 2) * 255); // Invert Y for OpenGL tangent map convention
       const b = Math.round(((normalField.nz[idx] + 1) / 2) * 255);
 
-      data[pIdx] = Math.max(0, Math.min(255, r));
-      data[pIdx + 1] = Math.max(0, Math.min(255, g));
-      data[pIdx + 2] = Math.max(0, Math.min(255, b));
+      data[pIdx] = r;
+      data[pIdx + 1] = g;
+      data[pIdx + 2] = b;
       data[pIdx + 3] = 255;
     }
   }
@@ -297,7 +286,8 @@ export function bakeNormalMapToCanvas(
 export function computeDiscreteLaplaceCavity(
   heightmap: Float32Array,
   width: number,
-  height: number
+  height: number,
+  cavityStrength: number = 1.0
 ): Float32Array {
   const cavity = new Float32Array(width * height);
 
@@ -315,15 +305,15 @@ export function computeDiscreteLaplaceCavity(
         continue;
       }
 
-      const up = getH(x, y - 1);
-      const down = getH(x, y + 1);
-      const left = getH(x - 1, y);
-      const right = getH(x + 1, y);
+      // Discrete Laplace operator: d^2H/dx^2 + d^2H/dy^2
+      const laplace =
+        getH(x, y - 1) +
+        getH(x - 1, y) - 4 * center + getH(x + 1, y) +
+        getH(x, y + 1);
 
-      const laplacian = (up + down + left + right) - 4 * center;
       // Cavity occurs where curvature is concave (valleys/crevices)
-      const concaveCurvature = Math.max(0, -laplacian);
-      cavity[idx] = Math.max(0.0, Math.min(1.0, 1.0 - concaveCurvature * 2.0));
+      const concaveCurvature = Math.max(0, -laplace);
+      cavity[idx] = Math.max(0.0, Math.min(1.0, 1.0 - cavityStrength * (concaveCurvature / 4.0)));
     }
   }
 
