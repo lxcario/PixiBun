@@ -87,7 +87,58 @@ export function inferPhotometricSettings(
 
   if (count === 0 || lumTotal === 0) return DEFAULTS;
 
-  // --- 1) Light azimuth: geometric centroid -> luminance centroid -------------
+  // --- 1) Morphological & Silhouette Analysis ---------------------------------
+  let minX = width, maxX = 0, minY = height, maxY = 0;
+  let perimeter = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const p = (y * width + x) * 4;
+      if (data[p + 3] <= OPAQUE_ALPHA) continue;
+
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+
+      const isEdge =
+        x === 0 || x === width - 1 || y === 0 || y === height - 1 ||
+        data[((y - 1) * width + x) * 4 + 3] <= OPAQUE_ALPHA ||
+        data[((y + 1) * width + x) * 4 + 3] <= OPAQUE_ALPHA ||
+        data[(y * width + (x - 1)) * 4 + 3] <= OPAQUE_ALPHA ||
+        data[(y * width + (x + 1)) * 4 + 3] <= OPAQUE_ALPHA;
+      if (isEdge) perimeter++;
+    }
+  }
+
+  const boxW = Math.max(1, maxX - minX + 1);
+  const boxH = Math.max(1, maxY - minY + 1);
+  const aspectRatio = boxW / boxH;
+  const circularity = perimeter > 0 ? (4 * Math.PI * count) / (perimeter * perimeter) : 0;
+  const isOrb = circularity > 0.65 && aspectRatio >= 0.8 && aspectRatio <= 1.25;
+
+  // Detect top appendages/ears: check if top 25% of sprite bounding box splits into 2 distinct islands
+  let hasEarsOrHorns = false;
+  const earScanRows = Math.min(6, Math.max(2, Math.floor(boxH * 0.25)));
+  for (let y = minY; y < minY + earScanRows; y++) {
+    let segments = 0;
+    let inSegment = false;
+    for (let x = minX; x <= maxX; x++) {
+      const opaque = data[(y * width + x) * 4 + 3] > OPAQUE_ALPHA;
+      if (opaque && !inSegment) {
+        segments++;
+        inSegment = true;
+      } else if (!opaque && inSegment) {
+        inSegment = false;
+      }
+    }
+    if (segments >= 2) {
+      hasEarsOrHorns = true;
+      break;
+    }
+  }
+
+  // --- 2) Light azimuth: geometric centroid -> luminance centroid -------------
   const cx = sumX / count;
   const cy = sumY / count;
   const lx = lumSumX / lumTotal;
@@ -96,23 +147,32 @@ export function inferPhotometricSettings(
   const dy = ly - cy;
   const offsetMag = Math.sqrt(dx * dx + dy * dy);
 
-  // Screen convention matches the pipeline: Lx = sin(az), Ly = -cos(az),
-  // so azimuth = atan2(dx, -dy) with +y pointing down.
   let azimuthDeg: number;
   if (offsetMag < 0.35) {
-    // Bright mass is centered — treat as a domed, overhead-lit subject.
-    azimuthDeg = 315; // Classic 3/4 studio key
+    // Subject has flat or unshaded base colors — assign optimal studio key light based on form
+    if (hasEarsOrHorns) {
+      // Flattering 3/4 studio key light for character/creature: lights left ear, sculpts face, casts subtle right shadow
+      azimuthDeg = 315;
+    } else if (isOrb) {
+      // Classic 336° high-key studio light for rounded spheres / orbs (matching Photo 2!)
+      azimuthDeg = 336;
+    } else {
+      azimuthDeg = 315; // Classic 3/4 studio key
+    }
   } else {
+    // Artist already painted shading cues: align azimuth with brightest mass
     azimuthDeg = Math.round(((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360);
   }
 
-  // --- 2) Light elevation: vertical bias of the bright mass ------------------
-  // spriteRadius approximates the silhouette scale for normalization.
+  // --- 3) Light elevation: vertical bias of the bright mass ------------------
   const spriteRadius = Math.sqrt(count / Math.PI) || 1;
   const verticalBias = Math.max(-1, Math.min(1, -dy / (spriteRadius * 0.55)));
-  const elevationDeg = Math.round(Math.max(15, Math.min(90, 45 + 40 * verticalBias)));
+  let elevationDeg = Math.round(Math.max(15, Math.min(90, 45 + 40 * verticalBias)));
+  if (hasEarsOrHorns && offsetMag < 0.35) {
+    elevationDeg = 48; // Optimal anatomical elevation for character features
+  }
 
-  // --- 3) Material scoring ----------------------------------------------------
+  // --- 4) Material scoring ----------------------------------------------------
   const meanLum = lumTotal / count;
   let variance = 0;
   let binSum = 0;
@@ -164,15 +224,19 @@ export function inferPhotometricSettings(
     }
   });
 
-  // --- 4) Exposure compensation ----------------------------------------------
+  // --- 5) Exposure compensation ----------------------------------------------
   let brightness = 1.15;
   if (meanLum < 0.25) brightness = 1.35;
   else if (meanLum > 0.7) brightness = 0.95;
 
   const specPct = Math.round(specRatio * 100);
+  let formDesc = 'canvas art';
+  if (hasEarsOrHorns) formDesc = 'character with anatomical features';
+  else if (isOrb) formDesc = 'spherical form';
+
   const rationale =
-    `Highlight mass sits at ${azimuthDeg}° / ${elevationDeg}° ` +
-    `(spec share ${specPct}%, contrast ${contrast.toFixed(2)}) → ${material} shading.`;
+    `Recognized ${formDesc} (highlight mass ${azimuthDeg}° / ${elevationDeg}°, ` +
+    `spec share ${specPct}%, contrast ${contrast.toFixed(2)}) → ${material} shading.`;
 
   return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, rationale };
 }

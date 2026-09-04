@@ -87,4 +87,94 @@ describe('Photometric Auto-Analysis Engine', () => {
     // Mid-tone art keeps baseline exposure
     expect(out.brightness).toBeCloseTo(1.15, 5);
   });
+
+  it('recognizes character morphology with ears/horns and assigns 315°/48° key lighting', () => {
+    // 32x32 sprite with two ear peaks at the top and a face body below
+    const data = makeData(32, 32, (x, y) => {
+      // Left ear (x: 8..11, y: 4..8)
+      if (y >= 4 && y <= 8 && x >= 8 && x <= 11) return [140, 90, 180, 255];
+      // Right ear (x: 20..23, y: 4..8)
+      if (y >= 4 && y <= 8 && x >= 20 && x <= 23) return [140, 90, 180, 255];
+      // Face / Body (x: 6..25, y: 9..24)
+      if (y >= 9 && y <= 24 && x >= 6 && x <= 25) return [140, 90, 180, 255];
+      return null;
+    });
+    const out = inferPhotometricSettings(data, 32, 32);
+    expect(out.lightAzimuth).toBe(315);
+    expect(out.lightElevation).toBe(48);
+    expect(out.rationale).toContain('character with anatomical features');
+  });
+
+  it('recognizes spherical orb geometry and assigns 336° key lighting', () => {
+    // 32x32 circle centered at (16, 16) with radius 12
+    const data = makeData(32, 32, (x, y) => {
+      if (inCircle(x, y, 16, 16, 12)) return [220, 50, 50, 255];
+      return null;
+    });
+    const out = inferPhotometricSettings(data, 32, 32);
+    expect(out.lightAzimuth).toBe(336);
+    expect(out.rationale).toContain('spherical form');
+  });
+});
+
+describe('Content-Aware Heightmap & Part Segmentation', () => {
+  it('detects line art contours, isolates facial features, and segments anatomical parts', async () => {
+    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
+
+    // Create a 32x32 character sprite with black outline (0,0,0), purple body (150, 90, 190),
+    // two ears at the top, and two black eye pixels inside the face.
+    const data = makeData(32, 32, (x, y) => {
+      // Black eye pixels inside face at (12, 14) and (19, 14)
+      if ((x === 12 && y === 14) || (x === 19 && y === 14)) return [0, 0, 0, 255];
+
+      // Left ear (x: 8..11, y: 4..7)
+      if (x >= 8 && x <= 11 && y >= 4 && y <= 7) {
+        if (x === 8 || x === 11 || y === 4) return [0, 0, 0, 255]; // ear outline
+        return [150, 90, 190, 255]; // ear interior
+      }
+
+      // Right ear (x: 20..23, y: 4..7)
+      if (x >= 20 && x <= 23 && y >= 4 && y <= 7) {
+        if (x === 20 || x === 23 || y === 4) return [0, 0, 0, 255]; // ear outline
+        return [150, 90, 190, 255]; // ear interior
+      }
+
+      // Main face body (x: 6..25, y: 8..24)
+      if (x >= 6 && x <= 25 && y >= 8 && y <= 24) {
+        if (x === 6 || x === 25 || y === 8 || y === 24) return [0, 0, 0, 255]; // body outline
+        return [150, 90, 190, 255]; // body interior
+      }
+
+      return null;
+    });
+
+    const analysis = computeContentAwareHeightmap(data, 32, 32);
+
+    // 1. Line art detection
+    const borderIdx = 8 * 32 + 6; // left border of body
+    expect(analysis.isInkLine[borderIdx]).toBe(1);
+
+    // 2. Facial feature detection (eye pixel at 12, 14)
+    const eyeIdx = 14 * 32 + 12;
+    expect(analysis.isFeature[eyeIdx]).toBe(1);
+
+    // 3. Part segmentation: left ear interior, right ear interior, and face have separate component IDs
+    const leftEarInterior = 6 * 32 + 9;
+    const rightEarInterior = 6 * 32 + 21;
+    const faceInterior = 16 * 32 + 16;
+    expect(analysis.componentMap[leftEarInterior]).toBeGreaterThan(0);
+    expect(analysis.componentMap[rightEarInterior]).toBeGreaterThan(0);
+    expect(analysis.componentMap[faceInterior]).toBeGreaterThan(0);
+
+    // 4. Heightmap volume: ears have distinct local 3D height, not flattened ramps
+    expect(analysis.smoothHeightmap[leftEarInterior]).toBeGreaterThan(0.5);
+    expect(analysis.smoothHeightmap[rightEarInterior]).toBeGreaterThan(0.5);
+    expect(analysis.smoothHeightmap[faceInterior]).toBeGreaterThan(analysis.smoothHeightmap[leftEarInterior]);
+
+    // 5. Normal vectors: left ear left flank angles leftward, right ear right flank angles rightward
+    const leftEarLeftFlank = 6 * 32 + 9;
+    const rightEarRightFlank = 6 * 32 + 22;
+    expect(analysis.normalField.nx[leftEarLeftFlank]).toBeLessThan(0); // angles toward the left
+    expect(analysis.normalField.nx[rightEarRightFlank]).toBeGreaterThan(0); // angles toward the right
+  });
 });

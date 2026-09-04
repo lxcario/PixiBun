@@ -319,3 +319,348 @@ export function computeDiscreteLaplaceCavity(
 
   return cavity;
 }
+
+export interface ContentAwareAnalysis {
+  isInkLine: Uint8Array;
+  isFeature: Uint8Array;
+  componentMap: Int32Array;
+  numComponents: number;
+  macroHeightmap: Float32Array;
+  microHeightmap: Float32Array;
+  compositeHeightmap: Float32Array;
+  smoothHeightmap: Float32Array;
+  normalField: NormalVectorField;
+  cavityAO: Float32Array;
+}
+
+/**
+ * Analyzes the canvas pixel buffer and computes a content-aware, part-segmented
+ * 2.5D height field, normal vectors, and ambient occlusion.
+ *
+ * Decomposes artwork into:
+ * 1. Line art & dark facial contours (eyes, mouth, seams) - preserved as crevice barriers.
+ * 2. Connected color components (anatomical parts: ears, head, body, limbs).
+ * 3. Multi-scale depth synthesis (Macro form + Micro local part volume).
+ */
+export function computeContentAwareHeightmap(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  cavityStrength: number = 1.0,
+  depthScale: number = 2.0
+): ContentAwareAnalysis {
+  const totalPixels = width * height;
+  const isInkLine = new Uint8Array(totalPixels);
+  const isFeature = new Uint8Array(totalPixels);
+  const componentMap = new Int32Array(totalPixels);
+
+  const isOpaque = (x: number, y: number): boolean => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return false;
+    return data[(y * width + x) * 4 + 3] > 30;
+  };
+
+  // 1. Calculate luminance & local contrast to detect line art and contours
+  const lum = new Float32Array(totalPixels);
+  let opaqueCount = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      const p = idx * 4;
+      if (data[p + 3] <= 30) continue;
+
+      opaqueCount++;
+      const r = data[p];
+      const g = data[p + 1];
+      const b = data[p + 2];
+      lum[idx] = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    }
+  }
+
+  if (opaqueCount === 0) {
+    const emptyH = new Float32Array(totalPixels);
+    const emptyNorm: NormalVectorField = {
+      nx: new Float32Array(totalPixels),
+      ny: new Float32Array(totalPixels),
+      nz: new Float32Array(totalPixels).fill(1.0),
+      width,
+      height,
+    };
+    return {
+      isInkLine,
+      isFeature,
+      componentMap,
+      numComponents: 0,
+      macroHeightmap: emptyH,
+      microHeightmap: emptyH,
+      compositeHeightmap: emptyH,
+      smoothHeightmap: emptyH,
+      normalField: emptyNorm,
+      cavityAO: new Float32Array(totalPixels).fill(1.0),
+    };
+  }
+
+  // 2. Identify line art / dark ink lines / crevices
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      if (!isOpaque(x, y)) continue;
+
+      const myLum = lum[idx];
+      if (myLum < 0.22) {
+        isInkLine[idx] = 1;
+        continue;
+      }
+
+      // Check if this pixel is significantly darker than neighboring interior pixels
+      let maxNeighborLum = 0;
+      let hasOpaqueNeighbor = false;
+      const neighbors = [
+        [x + 1, y],
+        [x - 1, y],
+        [x, y + 1],
+        [x, y - 1],
+      ];
+      for (const [nx, ny] of neighbors) {
+        if (isOpaque(nx, ny)) {
+          hasOpaqueNeighbor = true;
+          const nLum = lum[ny * width + nx];
+          if (nLum > maxNeighborLum) maxNeighborLum = nLum;
+        }
+      }
+
+      if (hasOpaqueNeighbor && maxNeighborLum - myLum >= 0.30) {
+        isInkLine[idx] = 1;
+      }
+    }
+  }
+
+  // 3. Identify dark facial / internal features (eyes, mouth)
+  const visitedFeature = new Uint8Array(totalPixels);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      if (isInkLine[idx] !== 1 || visitedFeature[idx]) continue;
+
+      const queue: number[] = [idx];
+      visitedFeature[idx] = 1;
+      const cluster: number[] = [];
+      let touchesBackground = false;
+
+      let qHead = 0;
+      while (qHead < queue.length) {
+        const cur = queue[qHead++];
+        cluster.push(cur);
+        const cx = cur % width;
+        const cy = Math.floor(cur / width);
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx < 0 || nx >= width || ny < 0 || ny >= height || !isOpaque(nx, ny)) {
+              touchesBackground = true;
+              continue;
+            }
+            const nIdx = ny * width + nx;
+            if (isInkLine[nIdx] === 1 && !visitedFeature[nIdx]) {
+              visitedFeature[nIdx] = 1;
+              queue.push(nIdx);
+            }
+          }
+        }
+      }
+
+      if (!touchesBackground && cluster.length <= 12) {
+        for (const fIdx of cluster) {
+          isFeature[fIdx] = 1;
+        }
+      }
+    }
+  }
+
+  // 4. Connected Components for Non-Ink Interior Parts
+  let currentComponent = 0;
+  const visitedComp = new Uint8Array(totalPixels);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      if (!isOpaque(x, y) || isInkLine[idx] === 1 || visitedComp[idx]) continue;
+
+      currentComponent++;
+      const compId = currentComponent;
+      const queue: number[] = [idx];
+      visitedComp[idx] = 1;
+      componentMap[idx] = compId;
+
+      const p0 = idx * 4;
+      const baseR = data[p0];
+      const baseG = data[p0 + 1];
+      const baseB = data[p0 + 2];
+
+      let qHead = 0;
+      while (qHead < queue.length) {
+        const cur = queue[qHead++];
+        const cx = cur % width;
+        const cy = Math.floor(cur / width);
+
+        const neighbors = [
+          [cx + 1, cy],
+          [cx - 1, cy],
+          [cx, cy + 1],
+          [cx, cy - 1],
+        ];
+
+        for (const [nx, ny] of neighbors) {
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+          const nIdx = ny * width + nx;
+          if (!isOpaque(nx, ny) || isInkLine[nIdx] === 1 || visitedComp[nIdx]) continue;
+
+          const np = nIdx * 4;
+          const dr = Math.abs(data[np] - baseR);
+          const dg = Math.abs(data[np + 1] - baseG);
+          const db = Math.abs(data[np + 2] - baseB);
+
+          if (dr < 48 && dg < 48 && db < 48) {
+            visitedComp[nIdx] = 1;
+            componentMap[nIdx] = compId;
+            queue.push(nIdx);
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Global Macro Distance Field (Overall Form)
+  const macroDist = computeSeparableEDT(isOpaque, width, height);
+  let maxMacroD = 0;
+  for (let i = 0; i < totalPixels; i++) {
+    if (macroDist[i] > maxMacroD) maxMacroD = macroDist[i];
+  }
+  if (maxMacroD <= 0) maxMacroD = 1;
+
+  const macroHeightmap = new Float32Array(totalPixels);
+  for (let i = 0; i < totalPixels; i++) {
+    if (macroDist[i] > 0) {
+      macroHeightmap[i] = maxMacroD * Math.pow(Math.min(1.0, macroDist[i] / maxMacroD), 0.5);
+    }
+  }
+
+  // 6. Micro Local Part Distance & Beveling Field
+  const microDist = new Float32Array(totalPixels);
+  const bevelRadius = Math.max(2.5, Math.min(6.0, maxMacroD * 0.45));
+
+  if (currentComponent > 0) {
+    for (let c = 1; c <= currentComponent; c++) {
+      const compPixels: number[] = [];
+      const borderQueue: number[] = [];
+      const cDist = new Float32Array(totalPixels);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = y * width + x;
+          if (componentMap[idx] !== c) continue;
+          compPixels.push(idx);
+
+          const neighbors = [
+            [x + 1, y],
+            [x - 1, y],
+            [x, y + 1],
+            [x, y - 1],
+          ];
+          let isBorder = false;
+          for (const [nx, ny] of neighbors) {
+            if (nx < 0 || nx >= width || ny < 0 || ny >= height || componentMap[ny * width + nx] !== c) {
+              isBorder = true;
+              break;
+            }
+          }
+
+          if (isBorder) {
+            cDist[idx] = 1.0;
+            borderQueue.push(idx);
+          }
+        }
+      }
+
+      let bHead = 0;
+      let maxPartD = 1.0;
+      while (bHead < borderQueue.length) {
+        const cur = borderQueue[bHead++];
+        const curD = cDist[cur];
+        if (curD > maxPartD) maxPartD = curD;
+
+        const cx = cur % width;
+        const cy = Math.floor(cur / width);
+        const neighbors = [
+          [cx + 1, cy],
+          [cx - 1, cy],
+          [cx, cy + 1],
+          [cx, cy - 1],
+        ];
+
+        for (const [nx, ny] of neighbors) {
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+          const nIdx = ny * width + nx;
+          if (componentMap[nIdx] === c && cDist[nIdx] === 0) {
+            cDist[nIdx] = curD + 1.0;
+            borderQueue.push(nIdx);
+          }
+        }
+      }
+
+      for (const idx of compPixels) {
+        const norm = Math.min(1.0, cDist[idx] / Math.max(1.0, maxPartD));
+        microDist[idx] = Math.pow(norm, 0.55) * Math.min(maxPartD, bevelRadius);
+      }
+    }
+  }
+
+  const microHeightmap = new Float32Array(totalPixels);
+  for (let i = 0; i < totalPixels; i++) {
+    if (macroDist[i] > 0) {
+      const generalBevel = Math.min(1.0, macroDist[i] / bevelRadius);
+      const generalBevelH = Math.pow(generalBevel, 0.5) * bevelRadius;
+      microHeightmap[i] = Math.max(microDist[i], generalBevelH);
+    }
+  }
+
+  // 7. Composite Heightmap: Macro Form (58%) + Micro Part Domes (42%) + Crevice Carving
+  const compositeHeightmap = new Float32Array(totalPixels);
+  for (let i = 0; i < totalPixels; i++) {
+    if (macroDist[i] <= 0) continue;
+
+    if (isFeature[i] === 1) {
+      compositeHeightmap[i] = macroHeightmap[i] * 0.75;
+    } else if (isInkLine[i] === 1) {
+      compositeHeightmap[i] = macroHeightmap[i] * 0.28;
+    } else {
+      const microScaled = (microHeightmap[i] / bevelRadius) * maxMacroD;
+      compositeHeightmap[i] = macroHeightmap[i] * 0.58 + microScaled * 0.42;
+    }
+  }
+
+  // 8. Bilateral Filtering
+  const smoothHeightmap = applyBilateralFilter(compositeHeightmap, width, height, 1.2, 1.6);
+
+  // 9. Tangent-Space Normal Vector Field
+  const normalField = computeTangentNormalField(smoothHeightmap, width, height, depthScale);
+
+  // 10. Discrete Laplace Cavity Map / Ambient Occlusion
+  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, cavityStrength);
+
+  return {
+    isInkLine,
+    isFeature,
+    componentMap,
+    numComponents: currentComponent,
+    macroHeightmap,
+    microHeightmap,
+    compositeHeightmap,
+    smoothHeightmap,
+    normalField,
+    cavityAO,
+  };
+}
