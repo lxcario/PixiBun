@@ -305,3 +305,9 @@ export function executeRaymarchedCastShadowPipeline(
     releaseFloat32Buffer(visibilityMap);
   }
 }
+
+export {
+  inferRaymarchedShadowSettings,
+  type InferredShadowSettings,
+  type ShadowAnalysisOptions,
+} from './math/shadowAuto';

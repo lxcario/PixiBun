@@ -24,6 +24,16 @@ export type StudioEventMap = {
     shadowColor?: string;
     ditherMode?: 'none' | '2x2' | '4x4' | '8x8';
   };
+  'pixibun:render-cast-shadow-auto': void;
+  'pixibun:shadow-settings-inferred': {
+    lightX: number;
+    lightY: number;
+    lightRadius: number;
+    shadowOpacity: number;
+    shadowColor: string;
+    ditherMode: 'none' | '2x2' | '4x4' | '8x8';
+    rationale: string;
+  };
   'pixibun:apply-47-blob': void;
   'pixibun:wfc-synthesis': { n?: number; symmetries?: 1 | 4 | 8; seed?: number } | void;
   'pixibun:audio-onset': { flux: number; timestamp: number };

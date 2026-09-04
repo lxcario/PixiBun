@@ -33,6 +33,7 @@ import {
 import { synthesizeWfc } from '@/lib/procedural/waveFunctionCollapse';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
 
 interface UseViewportStudioEventsProps {
   mainCanvasRef: RefObject<HTMLCanvasElement | null>;
@@ -395,6 +396,52 @@ export function useViewportStudioEvents({
           shadowOpacity: detail.shadowOpacity ?? 0.6,
           shadowColor: detail.shadowColor ?? '#180B26',
           ditherMode: detail.ditherMode ?? '4x4',
+        }
+      );
+
+      updateTaggedLayer('Cast Shadow', 'cast-shadow', (outCtx) => {
+        outCtx.putImageData(shadowImgData, 0, 0);
+      });
+    };
+
+    const handleRenderCastShadowAutoEvent = () => {
+      const srcCtx = compositeSourceSnapshot('cast-shadow');
+      if (!srcCtx) return;
+
+      const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imgData.data;
+
+      const state = useStudioStore.getState();
+      const inferred = inferRaymarchedShadowSettings(data, canvasWidth, canvasHeight, {
+        keyLightAzimuth: state.tools.lightAzimuth,
+        keyLightElevation: state.tools.lightElevation,
+      });
+
+      // Synchronize inspector controls and listeners
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('pixibun:shadow-settings-inferred', { detail: inferred })
+        );
+      }
+
+      const isOpaque = (x: number, y: number) => {
+        if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
+        return data[(y * canvasWidth + x) * 4 + 3] > 30;
+      };
+
+      const edt = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+
+      const shadowImgData = executeRaymarchedCastShadowPipeline(
+        edt,
+        canvasWidth,
+        canvasHeight,
+        {
+          lightX: inferred.lightX,
+          lightY: inferred.lightY,
+          lightRadius: inferred.lightRadius,
+          shadowOpacity: inferred.shadowOpacity,
+          shadowColor: inferred.shadowColor,
+          ditherMode: inferred.ditherMode,
         }
       );
 
@@ -850,6 +897,7 @@ export function useViewportStudioEvents({
       studioEvents.on('pixibun:auto-outline', (detail) => handleAutoOutlineEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:ground-shadow', handleGroundShadowEvent),
       studioEvents.on('pixibun:render-cast-shadow', (detail) => handleRenderCastShadowEvent({ detail } as CustomEvent)),
+      studioEvents.on('pixibun:render-cast-shadow-auto', handleRenderCastShadowAutoEvent),
       studioEvents.on('pixibun:apply-47-blob', handle47BlobEvent),
       studioEvents.on('pixibun:wfc-synthesis', (detail) => handleWfcSynthesisEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:rot-sprite', (detail) => handleRotSpriteEvent({ detail } as CustomEvent)),
