@@ -179,6 +179,13 @@ export function useViewportStudioEvents({
         const newLayer = freshFrame?.layers[0];
         if (!newLayer) return;
         targetLayerId = newLayer.id;
+
+        if (tag === 'cast-shadow' || tag === 'ground-shadow') {
+          const layerCount = freshFrame.layers.length;
+          if (layerCount > 1) {
+            freshState.reorderLayers(0, layerCount - 1);
+          }
+        }
       }
 
       // Prune any extraneous duplicate layers with the same tag (e.g. from previous runs)
@@ -383,7 +390,10 @@ export function useViewportStudioEvents({
         return data[(y * canvasWidth + x) * 4 + 3] > 30;
       };
 
-      const edt = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+      // Measure distance from empty receiver canvas to the solid sprite occluder:
+      // Solid sprite pixels -> distance = 0
+      // Empty canvas pixels -> distance > 0 (distance to nearest sprite pixel)
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), canvasWidth, canvasHeight);
 
       const shadowImgData = executeRaymarchedCastShadowPipeline(
         edt,
@@ -429,7 +439,8 @@ export function useViewportStudioEvents({
         return data[(y * canvasWidth + x) * 4 + 3] > 30;
       };
 
-      const edt = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+      // Measure distance from empty receiver canvas to the solid sprite occluder
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), canvasWidth, canvasHeight);
 
       const shadowImgData = executeRaymarchedCastShadowPipeline(
         edt,

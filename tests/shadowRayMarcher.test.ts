@@ -176,6 +176,38 @@ describe('PixiBun 2D Ray Marcher & Soft Shadow Engine', () => {
         expect(alpha === 0 || alpha === 255).toBe(true);
       }
     });
+
+    it('leaves solid sprite pixels 100% transparent and casts shadow only on receiver pixels', async () => {
+      const width = 16;
+      const height = 16;
+      // 4x4 sprite from (6, 6) to (9, 9)
+      const isOpaque = (x: number, y: number) => x >= 6 && x <= 9 && y >= 6 && y <= 9;
+      const { computeSeparableEDT } = await import('@/lib/ai/math/edtNormalMap');
+      const edt = computeSeparableEDT((x, y) => !isOpaque(x, y), width, height);
+
+      const params: RaymarchedShadowParams = {
+        lightX: 0,
+        lightY: 0,
+        lightRadius: 8,
+        shadowOpacity: 0.8,
+        shadowColor: '#180B26',
+        ditherMode: 'none',
+      };
+
+      const imgData = executeRaymarchedCastShadowPipeline(edt, width, height, params);
+
+      // 1. All sprite pixels must be completely transparent (alpha = 0) so the sprite is never darkened
+      for (let y = 6; y <= 9; y++) {
+        for (let x = 6; x <= 9; x++) {
+          const alpha = imgData.data[(y * width + x) * 4 + 3];
+          expect(alpha).toBe(0);
+        }
+      }
+
+      // 2. Receiver pixel at (12, 12) (in the shadow cone behind the sprite) must have shadow alpha > 0
+      const shadowAlpha = imgData.data[(12 * width + 12) * 4 + 3];
+      expect(shadowAlpha).toBeGreaterThan(0);
+    });
   });
 
   describe('non-destructive layer tagging integration', () => {
