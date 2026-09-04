@@ -1,0 +1,178 @@
+/**
+ * Photometric Auto-Analysis Engine ("understands the art, then lights it").
+ *
+ * Analyzes the composited canvas artwork and infers the photometric studio
+ * settings a lighting artist would pick by hand:
+ *
+ * 1. Light azimuth — direction from the sprite's geometric centroid toward its
+ *    luminance centroid (the art's own brightest mass reads as the light side).
+ * 2. Light elevation — how strongly that bright mass biases toward the top of
+ *    the sprite silhouette (top-lit art => high sun, center/flat => overhead).
+ * 3. Material — scores Blinn-Phong families from pixel statistics:
+ *    highlight prevalence (specular share), chromatic warmth of the bright
+ *    mass (conductor gold), cool clarity (dielectric glass), and overall
+ *    contrast softness (matte clay vs velvet fabric).
+ * 4. Brightness — exposure compensation for dark or blown-out palettes.
+ *
+ * Pure, DOM-free and deterministic so it is unit-testable.
+ */
+
+import { MaterialType } from '@/types/tools';
+
+export interface InferredPhotometricSettings {
+  lightAzimuth: number; // 0-360
+  lightElevation: number; // 15-90
+  material: MaterialType;
+  brightness: number; // 0.5-2.0
+  rationale: string; // Human-readable explanation of the inference
+}
+
+const OPAQUE_ALPHA = 30;
+
+export function inferPhotometricSettings(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number
+): InferredPhotometricSettings {
+  const DEFAULTS: InferredPhotometricSettings = {
+    lightAzimuth: 315,
+    lightElevation: 45,
+    material: 'matte',
+    brightness: 1.15,
+    rationale: 'Canvas is empty — default top-left studio light.',
+  };
+
+  let count = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let lumSumX = 0;
+  let lumSumY = 0;
+  let lumTotal = 0;
+  let sumR = 0;
+  let sumB = 0;
+  let sumSat = 0;
+  let brightCount = 0;
+  let brightR = 0;
+  let brightB = 0;
+  // 32-bin luminance histogram for percentile + contrast statistics
+  const histogram = new Uint32Array(32);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const p = (y * width + x) * 4;
+      if (data[p + 3] <= OPAQUE_ALPHA) continue;
+
+      const r = data[p];
+      const g = data[p + 1];
+      const b = data[p + 2];
+      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+      count++;
+      sumX += x;
+      sumY += y;
+      lumSumX += x * lum;
+      lumSumY += y * lum;
+      lumTotal += lum;
+      sumR += r;
+      sumB += b;
+      sumSat += (Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b))) / 255;
+      histogram[Math.min(31, Math.floor(lum * 32))]++;
+      if (lum >= 0.82) {
+        brightCount++;
+        brightR += r;
+        brightB += b;
+      }
+    }
+  }
+
+  if (count === 0 || lumTotal === 0) return DEFAULTS;
+
+  // --- 1) Light azimuth: geometric centroid -> luminance centroid -------------
+  const cx = sumX / count;
+  const cy = sumY / count;
+  const lx = lumSumX / lumTotal;
+  const ly = lumSumY / lumTotal;
+  const dx = lx - cx;
+  const dy = ly - cy;
+  const offsetMag = Math.sqrt(dx * dx + dy * dy);
+
+  // Screen convention matches the pipeline: Lx = sin(az), Ly = -cos(az),
+  // so azimuth = atan2(dx, -dy) with +y pointing down.
+  let azimuthDeg: number;
+  if (offsetMag < 0.35) {
+    // Bright mass is centered — treat as a domed, overhead-lit subject.
+    azimuthDeg = 315; // Classic 3/4 studio key
+  } else {
+    azimuthDeg = Math.round(((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360);
+  }
+
+  // --- 2) Light elevation: vertical bias of the bright mass ------------------
+  // spriteRadius approximates the silhouette scale for normalization.
+  const spriteRadius = Math.sqrt(count / Math.PI) || 1;
+  const verticalBias = Math.max(-1, Math.min(1, -dy / (spriteRadius * 0.55)));
+  const elevationDeg = Math.round(Math.max(15, Math.min(90, 45 + 40 * verticalBias)));
+
+  // --- 3) Material scoring ----------------------------------------------------
+  const meanLum = lumTotal / count;
+  let variance = 0;
+  let binSum = 0;
+  for (let bin = 0; bin < 32; bin++) {
+    const mid = (bin + 0.5) / 32;
+    variance += histogram[bin] * (mid - meanLum) * (mid - meanLum);
+    binSum += histogram[bin];
+  }
+  const stdLum = Math.sqrt(variance / Math.max(1, binSum));
+
+  // Approximate 95th percentile from the histogram tail
+  let acc = 0;
+  let p95 = 1;
+  for (let bin = 31; bin >= 0; bin--) {
+    acc += histogram[bin];
+    if (acc >= count * 0.05) {
+      p95 = (bin + 1) / 32;
+      break;
+    }
+  }
+  const specRatio = brightCount / count; // share of true highlight pixels
+  const peakPush = Math.max(0, p95 - meanLum); // how far highlights outrun the mean
+  const warmth = (sumR - sumB) / (255 * count); // +warm / -cool
+  const meanSat = sumSat / count;
+  const contrast = stdLum / 0.29; // normalized: ~1.0 for full-range art
+
+  const brightWarmth =
+    brightCount > 0 ? (brightR - brightB) / (255 * brightCount) : 0;
+
+  const scores: Record<MaterialType, number> = {
+    // Soft, even falloff: low contrast, few blown highlights
+    matte: 0.45 + Math.max(0, 1 - contrast) * 0.5 - specRatio * 1.2,
+    // Mirror-like: strong highlight share pushed far above the mean
+    metal: specRatio * 2.2 + peakPush * 1.6 - Math.abs(warmth) * 0.3,
+    // Cool, wet dielectric clarity: highlights + cool tint + low saturation
+    glass: specRatio * 1.6 + peakPush * 1.2 - Math.max(0, warmth) * 1.4 - meanSat * 0.35,
+    // Velvet: mid contrast with muted highlights, rich saturation
+    fabric: (1 - Math.abs(contrast - 0.65)) * 0.55 + meanSat * 0.55 - specRatio * 0.9,
+    // Conductor gold: highlights rendered warm, not neutral
+    gold: specRatio * 1.7 + Math.max(0, brightWarmth) * 1.9 + Math.max(0, warmth) * 0.7,
+  };
+
+  let material: MaterialType = 'matte';
+  let bestScore = -Infinity;
+  (Object.keys(scores) as MaterialType[]).forEach((key) => {
+    if (scores[key] > bestScore) {
+      bestScore = scores[key];
+      material = key;
+    }
+  });
+
+  // --- 4) Exposure compensation ----------------------------------------------
+  let brightness = 1.15;
+  if (meanLum < 0.25) brightness = 1.35;
+  else if (meanLum > 0.7) brightness = 0.95;
+
+  const specPct = Math.round(specRatio * 100);
+  const rationale =
+    `Highlight mass sits at ${azimuthDeg}° / ${elevationDeg}° ` +
+    `(spec share ${specPct}%, contrast ${contrast.toFixed(2)}) → ${material} shading.`;
+
+  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, rationale };
+}

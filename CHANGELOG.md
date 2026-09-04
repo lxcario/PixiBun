@@ -4,6 +4,63 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
+## [v1.6.0] - 2026-09-04
+### Architectural Decoupling & Modularization (Phase 33)
+- **Viewport Custom Hook Refactoring (`src/hooks/viewport/`)**: Decomposed monolithic `CenterViewport.tsx` (2,328 lines $\to$ 1,176 lines) into five cohesive, single-responsibility hooks (totaling 1,972 lines across extracted hooks):
+  - `useViewportDrawing.ts`: Isolated stroke drawing hot path, stroke buffer point management, and `requestAnimationFrame`-throttled buffer version bumps.
+  - `useViewportSelection.ts`: Marquee, lasso, and wand selection state; Shift (union) / Alt (subtract) mask merging, floating selection dragging, and clean commit.
+  - `useViewportTransform.ts`: Viewport zoom, pan offsets, wheel zooming/panning, center canvas alignment, `Ctrl+0` (fit to screen), and `Ctrl+1` (100% zoom).
+  - `useViewportOverlays.ts`: Pixel grid rendering, 2:1 isometric guides, wallpaper symmetry lines, onion skin ghosts, brush ghost cursor, and CVD/Squint display lenses.
+  - `useViewportStudioEvents.ts`: Strongly typed subscriber pipeline for photometric lighting, normal map bakes, thinning, WFC synthesis, and procedural filters.
+- **Zustand Slices Pattern (`src/stores/slices/`)**: Decomposed monolithic `studioStore.ts` into five domain slices while preserving 100% backwards compatibility:
+  - `createToolSlice.ts`: Tool types, brush size, pixel-perfect rasterization, dither matrices, ramps, material presets, and light settings.
+  - `createLayerSlice.ts`: Layer stack management, opacity, blend modes, and non-destructive merge down.
+  - `createAnimationSlice.ts`: Frames list, active frame index, playback loop, FPS, and onion skinning.
+  - `createViewportSlice.ts`: Zoom, pan, grid, isometric guides, 3x3 tile preview, and perceptual lenses.
+  - `createHistorySlice.ts`: Selection bounding box, selection mask, buffer version incrementing, and canUndo/canRedo flags.
+- **Smart Math Modularization (`src/lib/ai/math/`)**: Extracted `smartMathEngine.ts` into modular domain modules with a clean barrel file:
+  - `edtNormalMap.ts`: Felzenszwalb & Huttenlocher (2012) exact Euclidean Distance Transform, inflated heightmaps, bilateral filtering, and tangent normal field computation.
+  - `photometricLighting.ts`: Parametric Blinn-Phong 2.5D lighting and volumetric raymarched soft shadows.
+  - `dithering.ts`: Atkinson and Riemersma error-diffusion dithering.
+  - `rotSprite.ts`: Xenowoz 8x Scale2X RotSprite rotation engine and Zhang-Suen morphological thinning.
+  - `minecraftSkin.ts`: Minecraft player skin UV detection and normal mapping.
+- **Dynamic Dialog Code-Splitting**: Code-split client-side dialogs (`ColorPickerModal`, `ExportModal`, `CanvasResizeModal`, `ProjectsGalleryModal`, `ShortcutsModal`) with `next/dynamic(..., { ssr: false })` to optimize initial page bundle payload.
+
+### Academic Research-Backed Graphics Intelligence (Phase 34)
+- **Blue-Noise Void-and-Cluster Dithering (`src/lib/canvas/ditherMatrix.ts`)**: Implemented Robert Ulichney's 1993 SPIE void-and-cluster matrix generation algorithm (`generateVoidAndClusterMatrix(16, 16, 1.9)`), producing high-frequency, isotropic dither masks without low-frequency periodic spikes characteristic of Bayer matrices. Verified in `tests/blueNoiseDither.test.ts`.
+- **WaveFunctionCollapse (WFC) Pattern Synthesis (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented Maxim Gumin's 2016 Overlapping Model constraint solver with Shannon entropy heuristics and deterministic backtracking. Extracts sample tiles and synthesizes seamless textures obeying local $N \times N$ neighborhood constraints with 0 violations. Verified in `tests/waveFunctionCollapse.test.ts`. Integrated into `RightInspector.tsx` and `useViewportStudioEvents.ts`.
+- **Kopf–Lischinski Vector SVG Export (`src/lib/export/depixelizeVector.ts`)**: Implemented Johannes Kopf & Dani Lischinski's SIGGRAPH 2011 pixel art depixelization algorithm: 8-connected pixel similarity graphs, diagonal crossing ambiguity resolution (valence and curve length heuristics), Voronoi cell smoothing, and smooth cubic Bézier SVG path generation. Verified in `tests/depixelizeVectorExport.test.ts`. Integrated as "Vector SVG" in `ExportModal.tsx`.
+- **Crystallographic Wallpaper Group Symmetry Brushes (`src/lib/canvas/wallpaperSymmetry.ts`)**: Implemented Doris Schattschneider's 1978 AMM crystallographic symmetry groups (`p2` 180° rotation, `pm` reflection, `p4` 4-fold rotation, `p4m` 4-fold rotation with reflection, and `p6m` 6-fold rotation with reflection). Multiplies canvas strokes deterministically across crystallographic group orbits. Verified in `tests/wallpaperSymmetry.test.ts`.
+
+### Direct-Manipulation Interaction Model (Phase 35)
+- **Direct-Manipulation PixiBud Light Gizmo (`src/components/studio/LightGizmoOverlay.tsx`, `src/lib/canvas/lightGizmoMath.ts`)**: Implemented Ben Shneiderman's 1983 direct manipulation interaction model on the viewport overlay canvas. Renders concentric elevation rings, an azimuth direction line, and a draggable sun disc with real-time spherical coordinate conversion $(x, y) \to (\text{azimuth}, \text{elevation})$. Verified in `tests/lightGizmo.test.ts`.
+
+### Sharing, Collaboration & Process Value (Phase 36)
+- **Live Peer-to-Peer WebRTC Canvas Pairing (`src/lib/sync/p2pSync.ts`, `src/components/modals/CoDrawModal.tsx`)**: Built a 100% serverless, accountless co-drawing system on top of `crdtPixelBuffer.ts`. Utilizes a dual `RTCDataChannel` architecture (reliable ordered channel for CRDT ops, lossy PR-SCTP channel for 60fps cursor awareness), copy-paste base64 signaling tokens with Google STUN NAT traversal, and automatic canvas reconciliation. Verified in `tests/p2pSync.test.ts` (4 tests).
+- **Process Replay Timelapse Video & GIF Export (`src/lib/export/processReplay.ts`, `src/lib/export/speedpaintExporter.ts`)**: Built a chronological speedpaint replay engine that extracts historical snapshot buffers via `getGlobalHistory()` and renders them into animated GIF and MP4 timelapse videos with nearest-neighbor scaling and progress reporting. Integrated as "Timelapse" in `ExportModal.tsx`. Verified in `tests/processReplayExport.test.ts` and `tests/mp4Encoder.test.ts`.
+- **CRDT Pixel-Merge Engine Foundation (`src/lib/collab/crdtPixelBuffer.ts`)**: Implemented Martin Kleppmann et al. (ACM Onward! 2019) and Marc Shapiro et al. (SSS 2011) Last-Write-Wins (LWW-Register) CRDT per pixel cell with monotonic Lamport logical clocks and deterministic peer ID tie-breaking, guaranteeing Strong Eventual Consistency (SEC) across network partitions. Verified in `tests/p2pCoDrawCrdt.test.ts`.
+- **Radio-Synced Visual Pulse (`src/lib/audio/spectralFlux.ts`, `src/lib/audio/lofiRadio.ts`)**: Implemented Simon Dixon (DAFx 2006) and Bello et al. (IEEE TASLP 2005) half-wave rectified spectral energy flux onset detection over Web Audio FFT frames with adaptive thresholding. Emits `pixibun:audio-onset` events on `studioEvents`, driving a gentle, warm amber pulse on the active frame thumbnail in `BottomTimeline.tsx`. Verified in `tests/audioOnsetDetection.test.ts`.
+
+### Competitive Parity & Platform Strategy (Phase 37)
+- **Tileset / Tile-Stamping Engine & Decomposer (`src/lib/canvas/tileStamp.ts`)**:
+  - Implemented 2D grid snapping (`snapToTileGrid`), buffer tile extraction, stamping, flip horizontal/vertical, and 90° clockwise rotation.
+  - Implemented `decomposeIntoTileset` converting canvas layers into deduplicated unique tile atlases and 2D tilemap matrices for Godot, Unity, and Tiled map pipelines.
+  - Integrated interactive "Tileset Decomposer" module in `RightInspector.tsx` with 8px, 16px, 32px grid slicing and one-click "Copy Tilemap JSON".
+  - Verified in `tests/tileStamp.test.ts` (9 tests).
+- **Lospec Palette Ecosystem Integration (`src/lib/color/lospecPalette.ts`)**:
+  - Multi-format parser for Lospec `.hex` files, GIMP `.gpl` (RGB triplets) files, and Lospec JSON schemas.
+  - Added "+ Lospec (.hex)" import button and native drag-and-drop file import in `RightInspector.tsx`.
+  - Verified in `tests/lospecPalette.test.ts` (5 tests).
+- **Social Video & Truecolor Animation Export (WebM, MP4, APNG) (`src/lib/export/webmEncoder.ts`, `src/lib/export/mp4Encoder.ts`, `src/lib/export/apngEncoder.ts`)**:
+  - Built standards-compliant Animated PNG (APNG) encoder (`acTL`, `fcTL`, `fdAT`) preserving full 24-bit/32-bit RGBA color without GIF 256-color palette limits.
+  - Built multi-tier MP4 encoder (native `MediaRecorder` + ISOBMFF FastStart box muxer) supporting nearest-neighbor integer scaling (1x, 2x, 4x, 8x, 16x) and per-frame duration timing.
+  - Implemented browser `MediaRecorder` canvas recording pipeline capturing animation sequences in WebM format (VP9/VP8).
+  - Integrated "WebM Video", "MP4 Video", and "APNG" format tabs in `ExportModal.tsx`.
+  - Verified in `tests/webmEncoder.test.ts` (4 tests), `tests/mp4Encoder.test.ts` (6 tests), and `tests/apngEncoder.test.ts` (5 tests).
+- **Tauri Desktop Packaging Assessment (`TASKS.md` §37.4)**: Documented architectural feasibility and distribution prerequisites for wrapping PixiBun Atelier in Tauri 2.0 with native filesystem access, file associations, and offline runtime guarantees.
+
+---
+
 ## [v1.5.0] - 2026-09-03
 ### Accessibility, Next.js 16 Security Proxy & Perceptual Color Lenses (Phase 32)
 - **Automated WCAG 2.2 Axe Audits (`tests/e2e/studio.spec.ts`)**: Integrated `@axe-core/playwright` automated a11y test suites across blank canvas workspace, open Export modal, and all expanded RightInspector panels (Layers, Palette, PixiBud AI). Achieved 100% compliance with zero violations.
@@ -68,14 +125,13 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **RotSprite Artifact-Free Canvas Rotation (`src/lib/ai/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
 - **GIF Export Multiframe Pooled Canvas Fix (`src/components/modals/ExportModal.tsx`, `src/lib/render/compositor.ts`)**: Passed `{ freshCanvas: true }` during multi-frame composite jobs, preventing the `sharedOffscreenCanvas` singleton from destructively overwriting all output frames with the final frame.
 - **GIF Delay Centisecond Clamping (`src/lib/export/gifEncoderCore.ts`)**: Added a lower bound of `2` centiseconds to GIF frame delays to bypass aggressive browser 100ms throttling penalties for fast animations.
-- **Selection Bounding Box & Undo History Restorations**: Fixed Lasso tool boundary drag locking and prevented `Ctrl+Z` hole-punching bugs by capturing snapshot buffers strictly pre-erasure.
 - **Test Suite Updates**: 123 tests passing. Added new unit tests for GIF chunk distinction and delay clamping.
 
 ---
 
-## [v1.2.0] â€” 2026-08-31
+## [v1.2.0] - 2026-08-31
 
-### â˜€ï¸ 2D Ray Marching & Physically Accurate Soft Shadows Engine
+### 2D Ray Marching & Physically Accurate Soft Shadows Engine
 - **Aaltonen Contact-Hardening Cone Tracing (`src/lib/ai/shadowRayMarcher.ts`)**: Implemented CPU-bound 2D sphere tracing directly over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) using Sebastian Aaltonen's tangent geometric correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$).
 - **Branchless $C^0$ Bilinear Field Interpolation (`sampleEDTBilinear`)**: Eliminates grid-stepping quantization and ray-stepping acne across fractional query coordinates.
 - **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with bulletproof `try...finally` deallocation guarantees.
@@ -86,9 +142,9 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
-## [v1.1.0] â€” 2026-08-30
+## [v1.1.0] - 2026-08-30
 
-### ðŸš€ Core Engine & Rendering Optimizations
+### Core Engine & Rendering Optimizations
 - **Zero-GC Compositor Canvas Pooling**: Added `sharedOffscreenCanvas` singleton and `targetCanvas` parameter in `compositeFrame()`, eliminating dynamic canvas element creation during onion skinning, scrubbing, and frame compositing.
 - **TypedArray Buffer Pool (`src/lib/engine/bufferPool.ts`)**: Built a memory-bounded scratch buffer pool (`acquireFloat32Buffer`, `releaseFloat32Buffer`, `acquireInt32Buffer`, `releaseInt32Buffer`, clamped arrays) with zero-fill reset guarantees.
 - **Zero-GC EDT Distance Transform (`src/lib/ai/smartMathEngine.ts`)**: Refactored 1D parabolic envelope calculations in `computeSeparableEDT` and `dt1D` to borrow scratch buffers from `TypedArrayPool`.
@@ -99,11 +155,11 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Pixel-Perfect 8-Way Connectivity (`src/lib/canvas/rasterMath.ts`)**: Enforced Chebyshev distance connectivity check (`Math.abs(dx) <= 1 && Math.abs(dy) <= 1`) before dropping corner pixels.
 - **Async Autosave Serialization (`src/lib/project/serialize.ts`)**: Added `rasterizeLayerPngAsync` with non-blocking `canvas.toBlob()` and wired `buildProjectFileAsync()` to background autosave.
 
-### ðŸ—ï¸ Architecture & State Management
+### Architecture & State Management
 - **Strongly-Typed Event Bus (`src/lib/events/studioEvents.ts`)**: Created a typed TypeScript event pub/sub system with discriminated payloads for 23 studio actions.
 - **Image-to-Pixel-Art Hook (`src/hooks/usePixelizeEngine.ts`)**: Decomposed monolithic modal logic from `ImportModal.tsx` into a reusable, testable React hook.
 
-### ðŸŒ Web Platform, Accessibility & Security
+### Web Platform, Accessibility & Security
 - **Node.js SSR Storage Warning**: Replaced bare `typeof localStorage !== 'undefined'` checks with `typeof window !== 'undefined' && window.localStorage` across `capture.ts` and `themeStore.ts`.
 - **Responsive Workspace Gate (< 1024px) (`src/components/layout/MobileStudioGate.tsx`)**: Added a tactile fallback screen with Bun mascot guiding users on small screens / mobile devices.
 - **Static Theme Initialization & Clean CSP Configuration**: Externalized theme bootstrapping script into `public/theme.js` with structured fallback error handling.
@@ -113,7 +169,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ---
 
-## [v1.0.0] â€” Initial Release
+## [v1.0.0] - Initial Release
 - Multi-layer timeline animation engine with customizable FPS and onion skinning.
 - Full artisan raster tools: Bresenham pen, dither brush, Wu 2:1 isometric guides, flood fill, bezier curves.
 - PixiBud Smart Studio: Photometric surface normal baking, Blinn-Phong lighting, volumetric sub-surface scattering, and autotiling.

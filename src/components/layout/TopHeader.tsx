@@ -17,6 +17,7 @@ interface TopHeaderProps {
   onOpenResize?: () => void;
   onNewDrawing?: () => void;
   onOpenGallery?: () => void;
+  onOpenCoDraw?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   canUndo?: boolean;
@@ -30,6 +31,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenResize,
   onNewDrawing,
   onOpenGallery,
+  onOpenCoDraw,
   onUndo,
   onRedo,
   canUndo: propCanUndo,
@@ -268,6 +270,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         >
           <PixelIcon name="layers" size={14} />
           <span>Projects</span>
+        </TactileButton>
+
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={onOpenCoDraw}
+          title="Peer-to-Peer Co-Draw Collaboration"
+          aria-label="Co-Draw P2P Collaboration"
+          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
+        >
+          <PixelIcon name="select-wand" size={14} />
+          <span>Co-Draw</span>
         </TactileButton>
 
         <TactileButton

@@ -6,6 +6,7 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LoopMode } from '@/types/animation';
 import { compositeFrame } from '@/lib/render/compositor';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -91,6 +92,23 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const [newClipName, setNewClipName] = useState('New Clip');
   const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(null);
   const [dragOverFrameIndex, setDragOverFrameIndex] = useState<number | null>(null);
+  const [audioPulseActive, setAudioPulseActive] = useState(false);
+  const pulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const unsub = studioEvents.on('pixibun:audio-onset', () => {
+      setAudioPulseActive(true);
+      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
+      pulseTimeoutRef.current = setTimeout(() => {
+        setAudioPulseActive(false);
+      }, 140);
+    });
+
+    return () => {
+      unsub();
+      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
+    };
+  }, []);
 
   const activeClip = clips.find(c => c.id === activeClipId);
   const minFrame = activeClip ? activeClip.startFrame : 0;
@@ -498,7 +516,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     : isDropTarget
                     ? 'border-[#f0be7c] bg-[#3d2757] ring-2 ring-[#f0be7c] shadow-[0_0_12px_rgba(240,190,124,0.6)] scale-105'
                     : isActive
-                    ? 'bg-[#2c1e40] border-[#f0be7c] shadow-[0_2px_0_#130e20]'
+                    ? audioPulseActive
+                      ? 'bg-[#3b2455] border-[#f0be7c] ring-2 ring-[#f0be7c]/60 shadow-[0_0_10px_rgba(240,190,124,0.45)] scale-[1.03]'
+                      : 'bg-[#2c1e40] border-[#f0be7c] shadow-[0_2px_0_#130e20]'
                     : isInsideClip
                     ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[#2e2040] hover:border-[#f0be7c]/60'
                     : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'

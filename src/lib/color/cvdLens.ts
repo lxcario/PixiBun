@@ -1,5 +1,5 @@
 /**
- * Perceptual Accessibility Lenses (DESIGN.md Â§12 & Â§13).
+ * Perceptual Accessibility Lenses (DESIGN.md Section 12 & 13).
  *
  * CVD (Color Vision Deficiency) simulation via the Machado, Oliveira &
  * Fernandes (2009, IEEE TVCG) severity 1.0 matrices, plus the Silhouette /
@@ -28,7 +28,7 @@ export const CVD_LENS_MODES: readonly CvdLensMode[] = [
 ];
 
 /**
- * Machado, Oliveira & Fernandes (2009) â€” severity 1.0 matrices, row-major
+ * Machado, Oliveira & Fernandes (2009) - severity 1.0 matrices, row-major
  * (R row, G row, B row), operating in linear-light-independent sRGB space as
  * published. Identity on grays (each row sums to 1).
  */
@@ -51,7 +51,7 @@ export const CVD_LENS_MATRICES: Readonly<
     0.004733, 0.691367, 0.3039,
   ],
   // Achromatopsia / monochromacy: pure Rec.709 luminance contrast validation
-  // (DESIGN.md Â§12 item 4).
+  // (DESIGN.md Section 12 item 4).
   monochromacy: [
     0.2126, 0.7152, 0.0722,
     0.2126, 0.7152, 0.0722,
@@ -59,7 +59,7 @@ export const CVD_LENS_MATRICES: Readonly<
   ],
 };
 
-/** Silhouette ink color #140C1E (DESIGN.md Â§13). */
+/** Silhouette ink color #140C1E (DESIGN.md Section 13). */
 export const SQUINT_SILHOUETTE_RGB: readonly [number, number, number] = [0x14, 0x0c, 0x1e];
 /** Squint mode background: solid white. */
 export const SQUINT_BACKGROUND_RGB: readonly [number, number, number] = [0xff, 0xff, 0xff];

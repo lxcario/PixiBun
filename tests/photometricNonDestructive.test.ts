@@ -266,6 +266,72 @@ describe('Photometric non-destructiveness', () => {
       expect(after[i]).toBe(snapshot[i]);
     }
   });
+
+  it('overwrites existing photometric layer instead of adding duplicate layers on re-render', async () => {
+    const { useStudioStore } = await import('@/stores/studioStore');
+    const store = useStudioStore.getState();
+
+    const currentFrame = store.frames[store.activeFrameIndex];
+    const initialLayerCount = currentFrame.layers.length;
+
+    // Simulate first photometric render by adding a tagged layer
+    store.addLayer('Photometric gold', 'photometric');
+    expect(useStudioStore.getState().frames[store.activeFrameIndex].layers.length).toBe(initialLayerCount + 1);
+
+    // Finding existing tagged layer
+    const frameAfterFirst = useStudioStore.getState().frames[store.activeFrameIndex];
+    const existing = frameAfterFirst.layers.find(
+      (l) => l.tag === 'photometric' || l.name.toLowerCase().startsWith('photometric')
+    );
+    expect(existing).toBeDefined();
+    expect(existing?.tag).toBe('photometric');
+
+    // On re-render with new azimuth, existing layer is found and renamed/overwritten in-place, NO new layer added
+    const displayName = 'Photometric gold (Updated)';
+    if (existing) {
+      if (existing.name !== displayName) {
+        store.renameLayer(existing.id, displayName);
+      }
+    }
+    const frameAfterSecond = useStudioStore.getState().frames[store.activeFrameIndex];
+    expect(frameAfterSecond.layers.length).toBe(initialLayerCount + 1);
+    expect(frameAfterSecond.layers.find((l) => l.id === existing?.id)?.name).toBe(displayName);
+  });
+
+  it('setLayerTag assigns tags to frozen store layers immutably (no "object is not extensible")', async () => {
+    const { useStudioStore } = await import('@/stores/studioStore');
+    const store = useStudioStore.getState();
+
+    // Legacy layer without a tag, matched only by name prefix (photometric fallback path)
+    store.addLayer('Photometric legacy');
+    const frame = useStudioStore.getState().frames[store.activeFrameIndex];
+    const legacy = frame.layers.find((l) => l.name === 'Photometric legacy');
+    expect(legacy).toBeDefined();
+    expect(legacy?.tag).toBeUndefined();
+
+    // Zustand + Immer autoFreeze: state objects retrieved via getState() are frozen.
+    // Direct mutation (the old `existing.tag = tag` bug) must throw.
+    expect(Object.isFrozen(legacy)).toBe(true);
+    expect(() => {
+      (legacy as { tag?: string }).tag = 'photometric';
+    }).toThrow();
+
+    // The immutable store action succeeds on both crash scenarios:
+    // 1. Adding a brand-new property to a frozen layer (photometric name-prefix path)
+    const store2 = useStudioStore.getState();
+    store2.setLayerTag(legacy!.id, 'photometric');
+    const frame2 = useStudioStore.getState().frames[store.activeFrameIndex];
+    expect(frame2.layers.find((l) => l.id === legacy?.id)?.tag).toBe('photometric');
+    // Layer count unchanged: tagging must never add or duplicate layers
+    expect(frame2.layers.length).toBe(frame.layers.length);
+
+    // 2. Re-assigning an existing (read-only) tag on a frozen layer (Bake Normals path)
+    const store3 = useStudioStore.getState();
+    store3.setLayerTag(legacy!.id, 'normal-map');
+    const frame3 = useStudioStore.getState().frames[store.activeFrameIndex];
+    expect(frame3.layers.find((l) => l.id === legacy?.id)?.tag).toBe('normal-map');
+    expect(frame3.layers.length).toBe(frame.layers.length);
+  });
 });
 
 // ---------------------------------------------------------------------------

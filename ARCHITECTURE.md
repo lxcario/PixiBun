@@ -195,14 +195,7 @@ The application state is managed by Zustand with Immer middleware:
 * **Live Worker Progress Bar:** Dispatches `{ type: 'progress', current, total }` messages, driving real-time progress percentages in the `ExportModal`.
 * **Transparent Main-Thread Fallback:** Automatically falls back to synchronous execution in environments without Web Worker support or under strict CSP policies.
 
----
 
-## 6. Vercel & CI/CD Deployment Pipeline
-
-* **Framework Engine:** Next.js 16 App Router on Vercel Edge Network.
-* **Continuous Deployment:** Every push to `main` triggers automated typechecking (`tsc --noEmit`), linting (`eslint`), unit testing (`vitest`), and static optimization before deploying to production.
-
----
 
 ## 7. 3D Minecraft Skin Recognition & Domain Shading Engine
 
@@ -328,5 +321,13 @@ Compute-bound tasks are balanced between background Web Workers and on-device Ty
 Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, raymarched shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
 - **Discriminated Event Map:** All 23 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
 - **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
+
+---
+
+## 15. Vercel & CI/CD Deployment Pipeline
+
+* **Framework Engine:** Next.js 16 App Router on Vercel Edge Network.
+* **Continuous Deployment:** Every push to `main` triggers automated typechecking (`tsc --noEmit`), linting (`eslint`), unit testing (`vitest`), and static optimization before deploying to production.
+
 
 

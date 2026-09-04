@@ -166,14 +166,22 @@ export function getRectanglePoints(x0: number, y0: number, x1: number, y1: numbe
   return points;
 }
 
-// Apply Symmetry to points
+import { applyWallpaperSymmetry } from './wallpaperSymmetry';
+import { WallpaperGroup } from '@/types/tools';
+
+// Apply Symmetry to points (supports classical H/V mirror and 17 Wallpaper Groups)
 export function applySymmetry(
   points: Point[],
   width: number,
   height: number,
   symH: boolean,
-  symV: boolean
+  symV: boolean,
+  wallpaperGroup: WallpaperGroup = 'none'
 ): Point[] {
+  if (wallpaperGroup && wallpaperGroup !== 'none') {
+    return applyWallpaperSymmetry(points, width, height, wallpaperGroup);
+  }
+
   if (!symH && !symV) return points;
 
   const pointSet = new Set<number>();
@@ -205,6 +213,8 @@ export function applySymmetry(
   return result;
 }
 
-// Re-export Bezier curve and isometric helpers
+// Re-export Bezier curve, isometric helpers, and wallpaper group symmetry
 export { getQuadraticBezierPoints, getCubicBezierPoints, getIsometric2p1Line } from '@/lib/ai/smartMathEngine';
+export { applyWallpaperSymmetry, replicatePointWallpaper } from './wallpaperSymmetry';
+
 

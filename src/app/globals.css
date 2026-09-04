@@ -92,7 +92,8 @@ html, body {
 }
 
 /* Crisp Pixel Rendering */
-.pixelated {
+.pixelated,
+.image-render-pixel {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;

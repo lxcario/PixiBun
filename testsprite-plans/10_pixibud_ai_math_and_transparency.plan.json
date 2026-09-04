@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "PixiBud AI circle artwork, in-place photometric relighting, and RotSprite rotation",
+  "description": "Verify drawing a circle shape, rendering 2.5D Photometric lighting with in-place overwrite upon azimuth change, applying specular glints, and executing 45° RotSprite rotation.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the drawing canvas workspace is visible in the center viewport"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool from the left toolbar"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag across the center canvas to draw a circle"
+    },
+    {
+      "type": "action",
+      "description": "Click the PixiBud AI tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 2.5D Photometric Studio section is displayed with an Auto/Manual mode switch"
+    },
+    {
+      "type": "action",
+      "description": "Keep Auto mode selected and click the Analyze & Render button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a dedicated Photometric layer is rendered on the canvas with AI-inferred lighting"
+    },
+    {
+      "type": "action",
+      "description": "Switch to Manual mode and select the Gold / Brass material chip"
+    },
+    {
+      "type": "action",
+      "description": "Change the Direction (azimuth) slider in the Light Direction panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the Render Photometric button again"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the photometric lighting updates in-place on the existing layer without creating a duplicate layer"
+    },
+    {
+      "type": "action",
+      "description": "Click the Specular Glint action button"
+    },
+    {
+      "type": "action",
+      "description": "Click the Execute RotSprite (45°) button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the rotated artwork and lighting remain cleanly rendered without orphan pixels"
+    }
+  ]
+}

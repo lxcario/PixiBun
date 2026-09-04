@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
-import { PixelIcon } from '@/components/ui/PixelIcon';
+import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { ToolType } from '@/types/tools';
 
 interface RadialContextMenuProps {
@@ -25,7 +25,7 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
     if (e.key === 'Escape') onClose();
   };
 
-  const primaryTools: { id: ToolType; label: string; icon: string }[] = [
+  const primaryTools: { id: ToolType; label: string; icon: PixelIconName }[] = [
     { id: 'pen', label: 'Pen', icon: 'pen' },
     { id: 'eraser', label: 'Eraser', icon: 'eraser' },
     { id: 'bucket', label: 'Fill', icon: 'bucket' },
@@ -42,15 +42,17 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
         aria-label="Close radial menu"
         tabIndex={-1}
       />
-      {/* eslint-disable */}
+      {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div 
         className="fixed z-50 flex flex-col items-center gap-2 outline-none"
         style={{ left: position.x - 48, top: position.y - 48 }}
         onKeyDown={handleKeyDown}
         role="dialog"
         aria-modal="true"
+        aria-label="Radial tools menu"
         tabIndex={0}
       >
+      {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div className="bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[4px] p-2 shadow-xl flex gap-2">
           {primaryTools.map(tool => (
             <button
@@ -64,7 +66,7 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
               title={tool.label}
               data-autofocus={tools.activeTool === tool.id}
             >
-              <PixelIcon name={tool.icon as any} size={16} />
+              <PixelIcon name={tool.icon} size={16} />
             </button>
           ))}
           <div className="w-px bg-[var(--desk-border)] mx-1" />

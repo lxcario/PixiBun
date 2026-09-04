@@ -6,6 +6,9 @@
  * Synthesizes vinyl/rain noise + warm pentatonic chords + sub-bass in real-time.
  */
 
+import { createSpectralFluxDetector, SpectralFluxDetector } from './spectralFlux';
+import { studioEvents } from '@/lib/events/studioEvents';
+
 export interface RadioState {
   isPlaying: boolean;
   trackTitle: string;
@@ -55,6 +58,10 @@ class LofiAudioEngine {
   private volume = 0.6;
   private listeners: Set<(state: RadioState) => void> = new Set();
   private freqArray: Uint8Array<ArrayBuffer> | null = null;
+  private fluxDetector: SpectralFluxDetector = createSpectralFluxDetector({
+    minThreshold: 12,
+    thresholdMultiplier: 1.35,
+  });
 
   private initContext() {
     if (this.ctx) return;
@@ -215,6 +222,7 @@ class LofiAudioEngine {
   public pause(): void {
     this.isPlaying = false;
     this.stopMusicLoop();
+    this.fluxDetector.reset();
     if (this.ctx && this.ctx.state === 'running') {
       this.ctx.suspend();
     }
@@ -232,6 +240,7 @@ class LofiAudioEngine {
   public nextTrack(): void {
     this.currentTrackIndex = (this.currentTrackIndex + 1) % TRACKS.length;
     this.chordIndex = 0;
+    this.fluxDetector.reset();
     if (this.isPlaying) {
       this.startMusicLoop();
     }
@@ -247,13 +256,24 @@ class LofiAudioEngine {
   }
 
   /**
-   * Returns normalized [0..1] values for 4 equalizer bands.
+   * Returns normalized [0..1] values for 4 equalizer bands and calculates
+   * real-time spectral-flux deltas to broadcast musical transients.
    */
   public getEqualizerLevels(): number[] {
     if (!this.isPlaying || !this.analyser || !this.freqArray) {
       return [0.05, 0.05, 0.05, 0.05];
     }
     this.analyser.getByteFrequencyData(this.freqArray);
+
+    // Simon Dixon 2006 Spectral-flux onset transient detection
+    const onsetRes = this.fluxDetector.processFrame(this.freqArray);
+    if (onsetRes.isOnset) {
+      studioEvents.emit('pixibun:audio-onset', {
+        flux: onsetRes.flux,
+        timestamp: Date.now(),
+      });
+    }
+
     // Sample 4 buckets across low to high mid
     const b0 = (this.freqArray[1] || 0) / 255;
     const b1 = (this.freqArray[3] || 0) / 255;

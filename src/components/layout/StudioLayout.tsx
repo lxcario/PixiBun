@@ -44,6 +44,10 @@ const ProjectsGalleryModal = dynamic(
   () => import('@/components/modals/ProjectsGalleryModal').then((m) => m.ProjectsGalleryModal),
   { ssr: false }
 );
+const CoDrawModal = dynamic(
+  () => import('@/components/modals/CoDrawModal').then((m) => m.CoDrawModal),
+  { ssr: false }
+);
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -69,6 +73,7 @@ export const StudioLayout: React.FC = () => {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -566,6 +571,7 @@ export const StudioLayout: React.FC = () => {
         onOpenResize={() => setIsResizeOpen(true)}
         onNewDrawing={() => setIsNewConfirmOpen(true)}
         onOpenGallery={() => setIsGalleryOpen(true)}
+        onOpenCoDraw={() => setIsCoDrawOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         canUndo={canUndo}
@@ -704,6 +710,14 @@ export const StudioLayout: React.FC = () => {
           onOpenImport={() => {
             setIsImportOpen(true);
           }}
+        />
+      )}
+
+      {/* Peer-to-Peer Co-Draw Modal (lazy-loaded) */}
+      {isCoDrawOpen && (
+        <CoDrawModal
+          isOpen={isCoDrawOpen}
+          onClose={() => setIsCoDrawOpen(false)}
         />
       )}
     </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
-import { DitherMatrixType } from '@/types/tools';
+import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
@@ -52,6 +52,7 @@ export const ContextOptionsBar: React.FC = () => {
     setIsoAngleSnap,
     toggleSymmetryH,
     toggleSymmetryV,
+    setSymmetryGroup,
     showGrid,
     toggleGrid,
     showIsoGuides,
@@ -187,6 +188,7 @@ export const ContextOptionsBar: React.FC = () => {
               <option value="2x2">Bayer 2x2</option>
               <option value="4x4">Bayer 4x4</option>
               <option value="8x8">Bayer 8x8</option>
+              <option value="blue-noise">Blue Noise (Void & Cluster)</option>
               <option value="atkinson">Atkinson (Retro Mac)</option>
               <option value="riemersma">Riemersma (Hilbert)</option>
             </select>
@@ -272,6 +274,22 @@ export const ContextOptionsBar: React.FC = () => {
         >
           Sym-V
         </button>
+
+        {/* Wallpaper Group Symmetry Brush (Schattschneider 1978) */}
+        <select
+          value={tools.symmetryGroup || 'none'}
+          aria-label="Wallpaper group symmetry brush mode"
+          onChange={(e) => setSymmetryGroup(e.target.value as WallpaperGroup)}
+          className="bg-[var(--desk-surface-raised)] text-[#f0be7c] font-bold text-[10px] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
+          title="Crystallographic Wallpaper Group Symmetry Brush (Schattschneider 1978): p2, pm, p4, p4m, p6m"
+        >
+          <option value="none">Group: None</option>
+          <option value="p2">p2 (180° Rot)</option>
+          <option value="pm">pm (Mirror)</option>
+          <option value="p4">p4 (4-Fold 90°)</option>
+          <option value="p4m">p4m (8-Way D4)</option>
+          <option value="p6m">p6m (12-Way D6 Hex)</option>
+        </select>
 
         <div className="h-4 w-px bg-[var(--desk-border)] mx-0.5" />
 

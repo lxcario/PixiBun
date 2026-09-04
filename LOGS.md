@@ -580,7 +580,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 29 � SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
+## Phase 29 � SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
 **Delivered:**
 - **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Meijster's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
 - **Automated Morph Relighting Pipeline (src/components/layout/CenterViewport.tsx)**: Re-architected handleInBetweenFrameEvent to strip AI-generated layers (photometrics, drop shadows) prior to morphing via a pure getCleanCtx extraction. Automatically re-dispatches \pixibun:photometric-lighting\ and \pixibun:volumetric-optics\ events to dynamically shade the new frame, completely fixing the "muddy baked colors" artifact.
@@ -594,7 +594,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 30 � Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
+## Phase 30 � Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
 **Delivered:**
 - **Progressive Onboarding (eat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact seamlessly before transitioning fully into the studio workspace.
 - **Advanced Selection Utilities (eat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
@@ -713,4 +713,21 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
   - Landing (http://localhost:3000/): Performance 0.85, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
   - Studio (http://localhost:3000/studio): Performance 0.86, Accessibility 1.00, Best Practices 1.00, SEO 1.00.
   - First-load JS Bundle on /studio: 260.79 KB (< 300 KB budget).
+**Status:** Complete
+
+---
+
+## Hotfix — Specular Glints Smeared On The Silhouette Outline + Photometric Studio UX Redesign (2026-09-04)
+
+User report: "why the glint on edge?" — after Render Photometric / Specular Glint, chalky white sparkle pixels appeared *on the black outline* instead of on the lit surface.
+
+**Root cause:** the 2.5D normal field is derived from an EDT-inflated height dome. At the silhouette rim the height gradient is near-vertical, so rim normals point *outward* (N·V ≈ 0). Because the glint picker used an absolute `NdotH^shininess ≥ 0.70` cutoff and then kept the global top-N brightest pixels, rim normals that happened to align with the light's half-vector always won the sort — guaranteeing outline glints. The composite pipeline had the same flaw (`Ispec = ks·(N·H)^α` with no view-alignment masking), so metal/gold/glass material renders glowed white along their edges.
+
+**Fix (`src/lib/ai/math/photometricLighting.ts`):**
+1. `executePhotometricPipeline`: specular is now masked by view alignment (`rimSpecMask = min(1, N·V / 0.35)`), fading edge-on surfaces to zero specular — standard geometric attenuation.
+2. `renderParametric2p5DLighting`: glint candidates are restricted to *interior* pixels (EDT distance ≥ 2 px), judged against a *relative* alignment knee (within 0.08 of the sprite's own best-aligned interior pixel) and filtered by 8-neighbour non-maximum suppression, with glint alpha normalized relative to the sprite apex. Result: pinpoint sparkles on the surface slope facing the light, never on the outline.
+
+**UI/UX (`src/components/layout/inspector/PhotometricLightingSection.tsx`):** the jargon `<select>` ("Matte Clay (Kd: 1.0, Ks: 0.08)") was replaced by a visual material chip grid (emoji + plain-language label + one-line vibe; physical coefficients moved to hover tooltips via `MATERIAL_PROFILES`). Light direction is now a single coherent control group: the draggable sun-dome gizmo plus always-visible "Direction"/"Height" sliders beneath it (previously duplicated and hidden inside the collapsed "Sobel Normals & Lighting" accordion, now renamed "Advanced Shading" and holding only Brightness / Cavity AO / Dither Mod, with a live summary badge on the collapsed header).
+
+**Checks run:** `npx tsc --noEmit` (0 errors), `eslint src tests` (0 errors), `npx vitest run` (271/271 across 48 suites), `npm run verify:docs` (all integrity checks passed).
 **Status:** Complete

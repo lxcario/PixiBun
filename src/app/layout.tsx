@@ -1,30 +1,38 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
-import { Plus_Jakarta_Sans, JetBrains_Mono, Silkscreen } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import './globals.css';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
 
-// Self-hosted at build time via next/font: no external stylesheet requests,
-// so the studio CSP cannot block them (and production gets them for free).
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+// Self-hosted via next/font/local: 100% offline-capable, zero external network egress
+// during build or runtime, satisfying CSP and air-gapped environment requirements.
+const jakarta = localFont({
+  src: './fonts/PlusJakartaSans-Variable.woff2',
   variable: '--font-jakarta',
   display: 'swap',
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const jetbrainsMono = localFont({
+  src: './fonts/JetBrainsMono-Variable.woff2',
   variable: '--font-jetbrains-mono',
   display: 'swap',
 });
 
-const silkscreen = Silkscreen({
-  subsets: ['latin'],
-  weight: ['400', '700'],
+const silkscreen = localFont({
+  src: [
+    {
+      path: './fonts/Silkscreen-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Silkscreen-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   variable: '--font-silkscreen',
   display: 'swap',
 });

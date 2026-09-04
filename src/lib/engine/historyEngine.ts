@@ -14,6 +14,8 @@ export interface HistoryEngine {
   peekRedo(): HistoryStep | null;
   /** Clear both stacks (new drawing, canvas resize, frame switch). */
   clear(): void;
+  /** Get an immutable array copy of all history steps in the undo stack (for process replay speedpaint export). */
+  getHistory(): readonly HistoryStep[];
   readonly canUndo: boolean;
   readonly canRedo: boolean;
   readonly depth: number;
@@ -75,6 +77,10 @@ export function createHistoryEngine(maxDepth: number = 50): HistoryEngine {
       redoStack = [];
     },
 
+    getHistory(): readonly HistoryStep[] {
+      return [...undoStack];
+    },
+
     get canUndo(): boolean {
       return undoStack.length > 0;
     },
@@ -87,4 +93,14 @@ export function createHistoryEngine(maxDepth: number = 50): HistoryEngine {
       return undoStack.length;
     },
   };
+}
+
+let activeGlobalHistoryEngine: HistoryEngine | null = null;
+
+export function setGlobalHistoryEngine(engine: HistoryEngine | null): void {
+  activeGlobalHistoryEngine = engine;
+}
+
+export function getGlobalHistory(): readonly HistoryStep[] {
+  return activeGlobalHistoryEngine ? activeGlobalHistoryEngine.getHistory() : [];
 }

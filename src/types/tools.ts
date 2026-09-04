@@ -14,7 +14,7 @@ export type ToolType =
   | 'ellipse' 
   | 'color-replace';
 
-export type DitherMatrixType = '2x2' | '4x4' | '8x8' | 'atkinson' | 'riemersma';
+export type DitherMatrixType = '2x2' | '4x4' | '8x8' | 'atkinson' | 'riemersma' | 'blue-noise';
 
 export type MaterialType = 'matte' | 'metal' | 'glass' | 'fabric' | 'gold';
 
@@ -51,6 +51,7 @@ export interface ToolSettings {
   shapeFilled: boolean;
   symmetryHorizontal: boolean;
   symmetryVertical: boolean;
+  symmetryGroup?: WallpaperGroup;
   lightAzimuth: number; // 0 to 360 deg
   lightElevation: number; // 0 to 90 deg
   lightRadius: number; // Distance attenuation radius (16 to 256)
@@ -67,6 +68,8 @@ export interface ToolSettings {
   anisoFlow: AnisoFlowPreset;
   opticalCelTones: CelToneCount; // 2, 3, 4, or 'smooth'
 }
+
+export type WallpaperGroup = 'none' | 'pm' | 'p2' | 'p4' | 'p4m' | 'p6m';
 
 export type OpticalPresetType = 'gemstone' | 'slime' | 'hair' | 'foliage' | 'metal_aniso';
 export type AnisoFlowPreset = 'vertical' | 'horizontal' | 'radial' | 'curvature';

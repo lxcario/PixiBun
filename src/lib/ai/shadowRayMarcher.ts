@@ -196,31 +196,35 @@ export function generateRaymarchedShadowMap(
   maxSteps: number = 64
 ): Float32Array {
   const shadowMap = acquireFloat32Buffer(width * height);
-
-  for (let y = 0; y < height; y++) {
-    const row = y * width;
-    for (let x = 0; x < width; x++) {
-      const idx = row + x;
-      // If inside an obstacle/solid pixel, it is completely shadowed
-      if (edt[idx] <= 0) {
-        shadowMap[idx] = 0.0;
-      } else {
-        shadowMap[idx] = tracePhysical2DSoftShadow(
-          edt,
-          width,
-          height,
-          x,
-          y,
-          lx,
-          ly,
-          lightRadius,
-          maxSteps
-        );
+  try {
+    for (let y = 0; y < height; y++) {
+      const row = y * width;
+      for (let x = 0; x < width; x++) {
+        const idx = row + x;
+        // If inside an obstacle/solid pixel, it is completely shadowed
+        if (edt[idx] <= 0) {
+          shadowMap[idx] = 0.0;
+        } else {
+          shadowMap[idx] = tracePhysical2DSoftShadow(
+            edt,
+            width,
+            height,
+            x,
+            y,
+            lx,
+            ly,
+            lightRadius,
+            maxSteps
+          );
+        }
       }
     }
-  }
 
-  return shadowMap;
+    return shadowMap;
+  } catch (err) {
+    releaseFloat32Buffer(shadowMap);
+    throw err;
+  }
 }
 
 /**
