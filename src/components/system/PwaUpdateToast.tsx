@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PixelIcon } from '@/components/ui/PixelIcon';
 
 interface PwaUpdateToastProps {
   onUpdate: () => void;
@@ -17,7 +18,7 @@ export const PwaUpdateToast: React.FC<PwaUpdateToastProps> = ({
       className="fixed bottom-4 right-4 z-50 bg-[#201431] border-2 border-[#f0be7c] p-3 rounded-[3px] shadow-[0_8px_20px_rgba(0,0,0,0.6)] flex items-center gap-3 font-mono text-xs text-[#ede8f4] animate-bounce-subtle"
     >
       <div className="flex items-center gap-2">
-        <span className="text-sm">✨</span>
+        <PixelIcon name="sun" size={14} />
         <span>A fresh atelier build is ready.</span>
       </div>
       <div className="flex items-center gap-1.5">

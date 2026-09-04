@@ -165,7 +165,7 @@ export const PhotometricLightingSection: React.FC = () => {
               : 'text-[var(--text-body)] hover:text-[#f0be7c]'
           }`}
         >
-          <PixelIcon name="sparkles" size={12} />
+          <PixelIcon name="sun" size={12} />
           <span>Auto</span>
         </button>
         <button
@@ -186,12 +186,11 @@ export const PhotometricLightingSection: React.FC = () => {
       {mode === 'auto' && (
         <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
           <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-            ✨ Smart Art Analysis
+            Smart Art Analysis
           </span>
           <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
-            PixiBud reads your artwork — highlight mass, palette warmth, contrast and
-            saturation — then picks the light direction, height, material and exposure
-            that fit it. Your gizmo and material chips sync with the result.
+            Analyzes the canvas art and sets light direction, height, material and
+            exposure automatically. The gizmo and material chips sync with the result.
           </p>
           <TactileButton
             size="sm"
@@ -200,7 +199,7 @@ export const PhotometricLightingSection: React.FC = () => {
             title="Analyze the canvas art and render photometric lighting with inferred settings"
             className="text-xs py-2 font-bold justify-center"
           >
-            <PixelIcon name="sparkles" size={14} />
+            <PixelIcon name="sun" size={14} />
             <span>Analyze &amp; Render</span>
           </TactileButton>
         </div>
@@ -211,7 +210,7 @@ export const PhotometricLightingSection: React.FC = () => {
       {/* 1) Light Direction — single source of truth: drag the sun, or fine-tune below */}
       <div className="bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
         <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-          ☀ Light Direction
+          Light Direction
         </span>
         <LightGizmoOverlay
           size={104}
@@ -272,7 +271,7 @@ export const PhotometricLightingSection: React.FC = () => {
       {/* 2) Material — visual chips instead of a jargon dropdown */}
       <div className="bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
         <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-          ◆ Material
+          Material
         </span>
         <div className="grid grid-cols-2 gap-1" role="group" aria-label="Material shading preset">
           {MATERIAL_CHIPS.map((chip) => {
