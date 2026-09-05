@@ -21,7 +21,8 @@ import {
   AnisoFlowPreset,
 } from '@/types/tools';
 import { hexToRgba } from '@/lib/canvas/floodFill';
-import { rgbToOKLab, deltaEOKLab, okLabToOKLCH } from './colorSpace';
+import { rgbToOKLab, deltaEOKLab, okLabToOKLCH, oklchToOKLab, okLabToRGB, shiftHue } from './colorSpace';
+import { inferPhotometricSettings } from './photometricAuto';
 import {
   type NormalVectorField,
   computeSeparableEDT,
@@ -366,11 +367,30 @@ export function executePhotometricPipeline(
     return executeMinecraftSkinShadingPipeline(srcCtx, width, height, params);
   }
 
-  const distanceMap = computeSeparableEDT(isOpaque, width, height);
-  const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
-  const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
-  const normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
-  const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
+  let formType = params.formType;
+  if (!formType || formType === 'auto') {
+    const inferred = inferPhotometricSettings(data, width, height);
+    formType = inferred.formType;
+  }
+
+  let normalField: NormalVectorField;
+  let cavityAO: Float32Array;
+  let isFeatureMask: Uint8Array | null = null;
+  let isInkLineMask: Uint8Array | null = null;
+
+  if (formType === 'character') {
+    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0);
+    normalField = analysis.normalField;
+    cavityAO = analysis.cavityAO;
+    isFeatureMask = analysis.isFeature;
+    isInkLineMask = analysis.isInkLine;
+  } else {
+    const distanceMap = computeSeparableEDT(isOpaque, width, height);
+    const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
+    const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
+    normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
+    cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
+  }
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
   const brightness = params.lightBrightness ?? 1.15;
@@ -402,7 +422,9 @@ export function executePhotometricPipeline(
   const paletteRgba = paletteHex.map(hexToRgba);
   const paletteOKLab = paletteRgba.map((c) => rgbToOKLab(c.r, c.g, c.b));
 
-  const outputCanvas = document.createElement('canvas');
+  const outputCanvas = typeof document !== 'undefined'
+    ? document.createElement('canvas')
+    : (new OffscreenCanvas(width, height) as unknown as HTMLCanvasElement);
   outputCanvas.width = width;
   outputCanvas.height = height;
   const outCtx = outputCanvas.getContext('2d')!;
@@ -419,6 +441,27 @@ export function executePhotometricPipeline(
         continue;
       }
 
+      // 1. Feature protection: eyes, pupils, mouth, nose retain exact artist colors
+      if (isFeatureMask && isFeatureMask[idx] === 1) {
+        outData[pIdx] = data[pIdx];
+        outData[pIdx + 1] = data[pIdx + 1];
+        outData[pIdx + 2] = data[pIdx + 2];
+        outData[pIdx + 3] = data[pIdx + 3];
+        continue;
+      }
+
+      // 2. Outline & whisker protection: keep dark line art crisp
+      if (isInkLineMask && isInkLineMask[idx] === 1) {
+        const origLum = (0.2126 * data[pIdx] + 0.7152 * data[pIdx + 1] + 0.0722 * data[pIdx + 2]) / 255;
+        if (origLum < 0.22) {
+          outData[pIdx] = data[pIdx];
+          outData[pIdx + 1] = data[pIdx + 1];
+          outData[pIdx + 2] = data[pIdx + 2];
+          outData[pIdx + 3] = data[pIdx + 3];
+          continue;
+        }
+      }
+
       const origR = data[pIdx] / 255;
       const origG = data[pIdx + 1] / 255;
       const origB = data[pIdx + 2] / 255;
@@ -429,14 +472,61 @@ export function executePhotometricPipeline(
 
       const ao = cavityAO[idx];
 
-      // 1. Half-Lambert Wrap Lighting (prevents muddy dark black crush)
+      // Half-Lambert Wrap Lighting
       const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
       const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.35) / 1.35), 1.25);
+      const effectiveAmbient = Math.max(0.35, params.ambientIntensity ?? 0.35) * brightness;
+
+      if (formType === 'character' && paletteOKLab.length === 0) {
+        // Character cel-shading mode: discrete OKLCH tone stepping
+        const diffSignal = wrapNdotL * ao;
+        const lightLevel = (diffSignal * 0.75 + (effectiveAmbient / 0.35) * 0.25) * brightness;
+
+        const byteR = data[pIdx];
+        const byteG = data[pIdx + 1];
+        const byteB = data[pIdx + 2];
+        const lab = rgbToOKLab(byteR, byteG, byteB);
+        const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
+
+        if (lightLevel < 0.80) {
+          // SHADOW TONE (along the right unlit contour / crevices)
+          const shadowDepth = Math.min(1.0, (0.80 - lightLevel) / 0.45);
+          const newL = Math.max(0.18, lch.L * (1.0 - 0.22 * shadowDepth));
+          const newH = shiftHue(lch.h, 260, 14 * shadowDepth);
+          const newC = Math.min(0.35, lch.C * 1.05);
+          const targetLab = oklchToOKLab(newL, newC, newH);
+          const rgb = okLabToRGB(targetLab.L, targetLab.a, targetLab.b);
+          outData[pIdx] = rgb.r;
+          outData[pIdx + 1] = rgb.g;
+          outData[pIdx + 2] = rgb.b;
+          outData[pIdx + 3] = data[pIdx + 3];
+        } else if (lightLevel > 1.30 && (mat.ks > 0.1 || params.material !== 'matte')) {
+          // HIGHLIGHT TONE (light-facing ear tips or apex)
+          const highIntensity = Math.min(1.0, (lightLevel - 1.30) / 0.45);
+          const newL = Math.min(0.98, lch.L + (0.98 - lch.L) * (0.28 * highIntensity));
+          const newH = shiftHue(lch.h, 65, 10 * highIntensity);
+          const newC = Math.min(0.35, lch.C * 0.95);
+          const targetLab = oklchToOKLab(newL, newC, newH);
+          const rgb = okLabToRGB(targetLab.L, targetLab.a, targetLab.b);
+          outData[pIdx] = rgb.r;
+          outData[pIdx + 1] = rgb.g;
+          outData[pIdx + 2] = rgb.b;
+          outData[pIdx + 3] = data[pIdx + 3];
+        } else {
+          // BASE TONE (artist's original hand-drawn color)
+          outData[pIdx] = byteR;
+          outData[pIdx + 1] = byteG;
+          outData[pIdx + 2] = byteB;
+          outData[pIdx + 3] = data[pIdx + 3];
+        }
+        continue;
+      }
+
+      // Standard diffuse + specular shading (for orbs, props, or when palette snapping)
       const diffR = mat.kd * wrapNdotL * (origR * lightR);
       const diffG = mat.kd * wrapNdotL * (origG * lightG);
       const diffB = mat.kd * wrapNdotL * (origB * lightB);
 
-      // 2. Blinn-Phong Specular (N . H)^alpha
       const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
       const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);
 
@@ -450,13 +540,10 @@ export function executePhotometricPipeline(
         specB *= origB;
       }
 
-      // 3. Ambient
-      const effectiveAmbient = Math.max(0.35, params.ambientIntensity ?? 0.35) * brightness;
       const ambR = origR * effectiveAmbient * ao;
       const ambG = origG * effectiveAmbient * ao;
       const ambB = origB * effectiveAmbient * ao;
 
-      // 4. Total continuous color: (Ambient + Diffuse * AO + Specular) * brightness
       let totalR = Math.max(0, Math.min(1.0, (ambR + diffR * ao + specR) * (brightness * 0.9)));
       let totalG = Math.max(0, Math.min(1.0, (ambG + diffG * ao + specG) * (brightness * 0.9)));
       let totalB = Math.max(0, Math.min(1.0, (ambB + diffB * ao + specB) * (brightness * 0.9)));
@@ -533,20 +620,34 @@ export function renderParametric2p5DLighting(
   };
 
   const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
-  const normalField = isMcSkin
-    ? computeMinecraftSkinNormalField(width, height)
-    : computeTangentNormalField(
-        applyBilateralFilter(
-          generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
-          width,
-          height,
-          1.5,
-          2.0
-        ),
+  const inferred = inferPhotometricSettings(data, width, height);
+  const isCharacter = inferred.formType === 'character';
+
+  let normalField: NormalVectorField;
+  let charFeatureMask: Uint8Array | null = null;
+  let charInkMask: Uint8Array | null = null;
+
+  if (isMcSkin) {
+    normalField = computeMinecraftSkinNormalField(width, height);
+  } else if (isCharacter) {
+    const analysis = computeContentAwareHeightmap(data, width, height, 1.0, 2.0);
+    normalField = analysis.normalField;
+    charFeatureMask = analysis.isFeature;
+    charInkMask = analysis.isInkLine;
+  } else {
+    normalField = computeTangentNormalField(
+      applyBilateralFilter(
+        generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
         width,
         height,
+        1.5,
         2.0
-      );
+      ),
+      width,
+      height,
+      2.0
+    );
+  }
 
   const azRad = (params.azimuthDeg * Math.PI) / 180;
   const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
@@ -582,6 +683,7 @@ export function renderParametric2p5DLighting(
       cavityStrength: 1.0,
       ditherModulation: 0,
       bayerSize: '4x4',
+      formType: inferred.formType,
     },
     []
   );
@@ -609,7 +711,9 @@ export function renderParametric2p5DLighting(
           a: pData[pIdx + 3],
         });
 
-        // Exclude pure black outline pixels from receiving specular highlight
+        // Exclude facial features (eyes, mouth) and line art/outlines from receiving specular highlight
+        if (charFeatureMask && charFeatureMask[idx] === 1) continue;
+        if (charInkMask && charInkMask[idx] === 1) continue;
         const isBlackOutline = data[pIdx] < 30 && data[pIdx + 1] < 30 && data[pIdx + 2] < 30;
         if (isBlackOutline) continue;
 

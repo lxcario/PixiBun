@@ -4,6 +4,42 @@
 import { describe, it, expect } from 'vitest';
 import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
 
+class MockImageData {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+  constructor(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.data = new Uint8ClampedArray(width * height * 4);
+  }
+}
+
+if (typeof (globalThis as unknown as { document?: unknown }).document === 'undefined') {
+  (globalThis as unknown as { document: unknown }).document = {
+    createElement: (tag: string) => {
+      if (tag === 'canvas') {
+        let _img = new MockImageData(32, 32);
+        return {
+          width: 32,
+          height: 32,
+          getContext: () => ({
+            createImageData: (w: number, h: number) => {
+              _img = new MockImageData(w, h);
+              return _img;
+            },
+            putImageData: (img: MockImageData) => {
+              _img = img;
+            },
+            getImageData: () => _img,
+          }),
+        };
+      }
+      return {};
+    },
+  };
+}
+
 function makeData(
   width: number,
   height: number,
@@ -177,4 +213,127 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     expect(analysis.normalField.nx[leftEarLeftFlank]).toBeLessThan(0); // angles toward the left
     expect(analysis.normalField.nx[rightEarRightFlank]).toBeGreaterThan(0); // angles toward the right
   });
+
+  it('classifies drawn cat character, protects eyes/mouth from diffuse crush, and applies cel-shading', async () => {
+    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+
+    // Construct a 32x32 cat sprite matching media_1788546468414.png
+    // Cream body: [255, 245, 230, 255]
+    // Black eyes: [0, 0, 0, 255] at (11, 15) and (19, 15)
+    // Dark mouth: [30, 20, 30, 255] at (14..16, 19)
+    // Black whiskers: [0, 0, 0, 255] at (4..6, 15) and (25..27, 15)
+    const catData = makeData(32, 32, (x, y) => {
+      // Left ear (x: 9..12, y: 5..9)
+      if (x >= 9 && x <= 12 && y >= 5 && y <= 9) {
+        if (x === 9 || x === 12 || y === 5) return [0, 0, 0, 255]; // outline
+        return [255, 245, 230, 255];
+      }
+      // Right ear (x: 19..22, y: 5..9)
+      if (x >= 19 && x <= 22 && y >= 5 && y <= 9) {
+        if (x === 19 || x === 22 || y === 5) return [0, 0, 0, 255]; // outline
+        return [255, 245, 230, 255];
+      }
+      // Whiskers (thin 1px lateral lines)
+      if (y === 15 && ((x >= 4 && x <= 6) || (x >= 25 && x <= 27))) {
+        return [0, 0, 0, 255];
+      }
+      // Face / Body (x: 7..24, y: 10..22)
+      if (x >= 7 && x <= 24 && y >= 10 && y <= 22) {
+        // Outline
+        if (x === 7 || x === 24 || y === 10 || y === 22) return [0, 0, 0, 255];
+        // Left eye
+        if (x === 11 && (y === 14 || y === 15)) return [0, 0, 0, 255];
+        // Right eye
+        if (x === 19 && (y === 14 || y === 15)) return [0, 0, 0, 255];
+        // Mouth
+        if ((x === 14 || x === 15 || x === 16) && y === 18) return [30, 20, 30, 255];
+        // Cream body
+        return [255, 245, 230, 255];
+      }
+      return null;
+    });
+
+    // 1. Inferred Settings: Recognizes character with anatomical features
+    const settings = inferPhotometricSettings(catData, 32, 32);
+    expect(settings.formType).toBe('character');
+    expect(settings.lightAzimuth).toBe(315);
+    expect(settings.lightElevation).toBe(48);
+    expect(settings.rationale).toContain('character with anatomical features');
+
+    // 2. Content-Aware Heightmap & Feature Isolation
+    const analysis = computeContentAwareHeightmap(catData, 32, 32);
+    const leftEyeIdx = 15 * 32 + 11;
+    const rightEyeIdx = 15 * 32 + 19;
+    const mouthIdx = 18 * 32 + 15;
+    expect(analysis.isFeature[leftEyeIdx]).toBe(1);
+    expect(analysis.isFeature[rightEyeIdx]).toBe(1);
+    expect(analysis.isFeature[mouthIdx]).toBe(1);
+
+    // Frontal cushion normal on the face interior maintains camera-facing orientation (Nz >= 0.85)
+    const faceCenterIdx = 16 * 32 + 15;
+    expect(analysis.normalField.nz[faceCenterIdx]).toBeGreaterThanOrEqual(0.85);
+
+    // 3. Shading Execution: Features (eyes, mouth) are protected from being muddied
+    // Mock canvas context
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(catData) }),
+    } as unknown as CanvasRenderingContext2D;
+
+    const shadedCanvas = executePhotometricPipeline(
+      mockCtx,
+      32,
+      32,
+      {
+        lightAzimuth: 315,
+        lightElevation: 48,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.35,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+      },
+      []
+    );
+
+    const outData = shadedCanvas.getContext('2d')!.getImageData(0, 0, 32, 32).data;
+
+    // Verify left and right eyes remain pure crisp black (not muddied or washed out)
+    const leftEyeP = leftEyeIdx * 4;
+    expect(outData[leftEyeP]).toBe(0);
+    expect(outData[leftEyeP + 1]).toBe(0);
+    expect(outData[leftEyeP + 2]).toBe(0);
+
+    const rightEyeP = rightEyeIdx * 4;
+    expect(outData[rightEyeP]).toBe(0);
+    expect(outData[rightEyeP + 1]).toBe(0);
+    expect(outData[rightEyeP + 2]).toBe(0);
+
+    // Verify mouth retains its exact artist color
+    const mouthP = mouthIdx * 4;
+    expect(outData[mouthP]).toBe(30);
+    expect(outData[mouthP + 1]).toBe(20);
+    expect(outData[mouthP + 2]).toBe(30);
+
+    // Verify whiskers retain crisp black outline
+    const whiskerP = (15 * 32 + 5) * 4;
+    expect(outData[whiskerP]).toBe(0);
+    expect(outData[whiskerP + 1]).toBe(0);
+    expect(outData[whiskerP + 2]).toBe(0);
+
+    // Verify face interior retains clean cream base color, NOT crushed to muddy brown
+    const faceP = faceCenterIdx * 4;
+    expect(outData[faceP]).toBe(255);
+    expect(outData[faceP + 1]).toBe(245);
+    expect(outData[faceP + 2]).toBe(230);
+
+    // Verify unlit right cheek contour has a soft, stepped shadow tone (not pitch black or muddy brown)
+    const rightCheekP = (16 * 32 + 23) * 4;
+    expect(outData[rightCheekP]).toBeGreaterThan(160); // light and readable
+    expect(outData[rightCheekP]).toBeLessThan(255); // in shadow
+  });
 });
+

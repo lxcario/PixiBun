@@ -38,6 +38,8 @@ export interface PhotometricLightingParams {
   cavityStrength: number; // 0.0 to 2.0 (Laplace AO)
   ditherModulation: number; // 0.0 to 1.0 (Bayer threshold offset strength)
   bayerSize: '2x2' | '4x4' | '8x8';
+  formType?: 'character' | 'orb' | 'prop' | 'auto';
+  celShading?: boolean;
 }
 
 export interface ToolSettings {

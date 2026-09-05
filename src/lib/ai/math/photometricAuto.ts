@@ -19,11 +19,14 @@
 
 import { MaterialType } from '@/types/tools';
 
+export type RecognizedFormType = 'character' | 'orb' | 'prop';
+
 export interface InferredPhotometricSettings {
   lightAzimuth: number; // 0-360
   lightElevation: number; // 15-90
   material: MaterialType;
   brightness: number; // 0.5-2.0
+  formType: RecognizedFormType;
   rationale: string; // Human-readable explanation of the inference
 }
 
@@ -39,6 +42,7 @@ export function inferPhotometricSettings(
     lightElevation: 45,
     material: 'matte',
     brightness: 1.15,
+    formType: 'prop',
     rationale: 'Canvas is empty — default top-left studio light.',
   };
 
@@ -117,9 +121,9 @@ export function inferPhotometricSettings(
   const circularity = perimeter > 0 ? (4 * Math.PI * count) / (perimeter * perimeter) : 0;
   const isOrb = circularity > 0.65 && aspectRatio >= 0.8 && aspectRatio <= 1.25;
 
-  // Detect top appendages/ears: check if top 25% of sprite bounding box splits into 2 distinct islands
+  // Detect top appendages/ears: check if top 15-35% of sprite bounding box splits into 2 distinct islands
   let hasEarsOrHorns = false;
-  const earScanRows = Math.min(6, Math.max(2, Math.floor(boxH * 0.25)));
+  const earScanRows = Math.min(8, Math.max(2, Math.floor(boxH * 0.35)));
   for (let y = minY; y < minY + earScanRows; y++) {
     let segments = 0;
     let inSegment = false;
@@ -138,6 +142,81 @@ export function inferPhotometricSettings(
     }
   }
 
+  // Detect internal facial features (eyes, mouth, nose):
+  // Find dark/contrast pixels enclosed within the interior body (not touching transparent background)
+  let hasFacialFeatures = false;
+  const isOpaqueAt = (px: number, py: number) => {
+    if (px < 0 || px >= width || py < 0 || py >= height) return false;
+    return data[(py * width + px) * 4 + 3] > OPAQUE_ALPHA;
+  };
+
+  const internalDarkSet = new Set<number>();
+  const meanLum = lumTotal / count;
+
+  for (let y = minY + 1; y < maxY; y++) {
+    for (let x = minX + 1; x < maxX; x++) {
+      const p = (y * width + x) * 4;
+      if (data[p + 3] <= OPAQUE_ALPHA) continue;
+
+      // Must have opaque neighbors on all sides (fully interior)
+      if (
+        !isOpaqueAt(x - 1, y) ||
+        !isOpaqueAt(x + 1, y) ||
+        !isOpaqueAt(x, y - 1) ||
+        !isOpaqueAt(x, y + 1)
+      ) {
+        continue;
+      }
+
+      const r = data[p];
+      const g = data[p + 1];
+      const b = data[p + 2];
+      const pLum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+      if (pLum < 0.25 || (meanLum > 0.45 && meanLum - pLum > 0.28)) {
+        internalDarkSet.add(y * width + x);
+      }
+    }
+  }
+
+  if (internalDarkSet.size > 0 && internalDarkSet.size <= Math.max(36, Math.floor(count * 0.22))) {
+    const visitedSet = new Set<number>();
+    let featureClusterCount = 0;
+    for (const pIdx of internalDarkSet) {
+      if (visitedSet.has(pIdx)) continue;
+      featureClusterCount++;
+      const queue = [pIdx];
+      visitedSet.add(pIdx);
+      let qHead = 0;
+      while (qHead < queue.length) {
+        const cur = queue[qHead++];
+        const cx = cur % width;
+        const cy = Math.floor(cur / width);
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nIdx = (cy + dy) * width + (cx + dx);
+            if (internalDarkSet.has(nIdx) && !visitedSet.has(nIdx)) {
+              visitedSet.add(nIdx);
+              queue.push(nIdx);
+            }
+          }
+        }
+      }
+    }
+    if (featureClusterCount >= 1 && featureClusterCount <= 6) {
+      hasFacialFeatures = true;
+    }
+  }
+
+  const isCharacter = hasEarsOrHorns || hasFacialFeatures;
+  let formType: RecognizedFormType = 'prop';
+  if (isCharacter) {
+    formType = 'character';
+  } else if (isOrb) {
+    formType = 'orb';
+  }
+
   // --- 2) Light azimuth: geometric centroid -> luminance centroid -------------
   const cx = sumX / count;
   const cy = sumY / count;
@@ -145,12 +224,15 @@ export function inferPhotometricSettings(
   const ly = lumSumY / lumTotal;
   const dx = lx - cx;
   const dy = ly - cy;
+  const spriteRadius = Math.sqrt(count / Math.PI) || 1;
   const offsetMag = Math.sqrt(dx * dx + dy * dy);
+  const minShadingCueThreshold = Math.max(1.1, spriteRadius * 0.12);
+  const hasPaintedShadingCues = offsetMag >= minShadingCueThreshold;
 
   let azimuthDeg: number;
-  if (offsetMag < 0.35) {
+  if (!hasPaintedShadingCues) {
     // Subject has flat or unshaded base colors — assign optimal studio key light based on form
-    if (hasEarsOrHorns) {
+    if (formType === 'character') {
       // Flattering 3/4 studio key light for character/creature: lights left ear, sculpts face, casts subtle right shadow
       azimuthDeg = 315;
     } else if (isOrb) {
@@ -165,15 +247,13 @@ export function inferPhotometricSettings(
   }
 
   // --- 3) Light elevation: vertical bias of the bright mass ------------------
-  const spriteRadius = Math.sqrt(count / Math.PI) || 1;
   const verticalBias = Math.max(-1, Math.min(1, -dy / (spriteRadius * 0.55)));
   let elevationDeg = Math.round(Math.max(15, Math.min(90, 45 + 40 * verticalBias)));
-  if (hasEarsOrHorns && offsetMag < 0.35) {
+  if (formType === 'character' && !hasPaintedShadingCues) {
     elevationDeg = 48; // Optimal anatomical elevation for character features
   }
 
   // --- 4) Material scoring ----------------------------------------------------
-  const meanLum = lumTotal / count;
   let variance = 0;
   let binSum = 0;
   for (let bin = 0; bin < 32; bin++) {
@@ -231,12 +311,14 @@ export function inferPhotometricSettings(
 
   const specPct = Math.round(specRatio * 100);
   let formDesc = 'canvas art';
-  if (hasEarsOrHorns) formDesc = 'character with anatomical features';
+  if (hasEarsOrHorns && hasFacialFeatures) formDesc = 'character with anatomical features (ears & facial details)';
+  else if (hasEarsOrHorns) formDesc = 'character with anatomical features';
+  else if (hasFacialFeatures) formDesc = 'character with facial features';
   else if (isOrb) formDesc = 'spherical form';
 
   const rationale =
     `Recognized ${formDesc} (highlight mass ${azimuthDeg}° / ${elevationDeg}°, ` +
     `spec share ${specPct}%, contrast ${contrast.toFixed(2)}) → ${material} shading.`;
 
-  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, rationale };
+  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, formType, rationale };
 }

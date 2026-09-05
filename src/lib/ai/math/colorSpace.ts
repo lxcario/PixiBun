@@ -78,3 +78,14 @@ export function oklchToOKLab(L: number, C: number, h: number): OKLabColor {
     b: C * Math.sin(hRad),
   };
 }
+
+/**
+ * Shifts hue towards target hue by at most maxShiftDeg along the shortest arc.
+ */
+export function shiftHue(currentH: number, targetH: number, maxShiftDeg: number): number {
+  let diff = (targetH - currentH + 360) % 360;
+  if (diff > 180) diff -= 360;
+  const shift = Math.sign(diff) * Math.min(Math.abs(diff), maxShiftDeg);
+  return (currentH + shift + 360) % 360;
+}
+

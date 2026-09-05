@@ -710,6 +710,7 @@ export function useViewportStudioEvents({
           cavityStrength: state.tools.cavityStrength,
           ditherModulation: state.tools.ditherModulation,
           bayerSize: '4x4',
+          formType: inferred.formType,
         },
         []
       );
@@ -719,24 +720,27 @@ export function useViewportStudioEvents({
         outCtx.drawImage(shadedCanvas, 0, 0);
       });
 
-      // 2. Automatically generate the Specular Glint layer (matching Photo 2!)
-      const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
-        azimuthDeg: inferred.lightAzimuth,
-        elevationDeg: inferred.lightElevation,
-        shadowIntensity: 0.8,
-        specularShininess: 16,
-        rimLight: false,
-        selOut: false,
-        material: inferred.material,
-      });
-
-      if (specularPixels.length > 0) {
-        updateTaggedLayer(`Specular ${inferred.lightAzimuth}°`, 'specular', (outCtx) => {
-          specularPixels.forEach((p) => {
-            outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-            outCtx.fillRect(p.x, p.y, 1, 1);
-          });
+      // 2. Automatically generate the Specular Glint layer (orbs/glossy materials, avoiding glare on matte character fur)
+      const isMatteCharacter = inferred.formType === 'character' && (inferred.material === 'matte' || inferred.material === 'fabric');
+      if (!isMatteCharacter) {
+        const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
+          azimuthDeg: inferred.lightAzimuth,
+          elevationDeg: inferred.lightElevation,
+          shadowIntensity: 0.8,
+          specularShininess: 16,
+          rimLight: false,
+          selOut: false,
+          material: inferred.material,
         });
+
+        if (specularPixels.length > 0) {
+          updateTaggedLayer(`Specular ${inferred.lightAzimuth}°`, 'specular', (outCtx) => {
+            specularPixels.forEach((p) => {
+              outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+              outCtx.fillRect(p.x, p.y, 1, 1);
+            });
+          });
+        }
       }
     };
 

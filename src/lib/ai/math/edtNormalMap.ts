@@ -472,7 +472,8 @@ export function computeContentAwareHeightmap(
         }
       }
 
-      if (!touchesBackground && cluster.length <= 12) {
+      const maxFeatureSize = Math.max(36, Math.floor(opaqueCount * 0.18));
+      if (!touchesBackground && cluster.length <= maxFeatureSize) {
         for (const fIdx of cluster) {
           isFeature[fIdx] = 1;
         }
@@ -541,10 +542,59 @@ export function computeContentAwareHeightmap(
   }
   if (maxMacroD <= 0) maxMacroD = 1;
 
+  // Determine if artwork represents a character/creature (ears or internal facial features)
+  let isCharacter = false;
+  for (let i = 0; i < totalPixels; i++) {
+    if (isFeature[i] === 1) {
+      isCharacter = true;
+      break;
+    }
+  }
+
+  let minX = width, maxX = 0, minY = height, maxY = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (isOpaque(x, y)) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  const boxH = Math.max(1, maxY - minY + 1);
+
+  if (!isCharacter) {
+    const scanRows = Math.min(8, Math.max(2, Math.floor(boxH * 0.35)));
+    for (let y = minY; y < minY + scanRows; y++) {
+      let segments = 0;
+      let inSeg = false;
+      for (let x = minX; x <= maxX; x++) {
+        const op = isOpaque(x, y);
+        if (op && !inSeg) {
+          segments++;
+          inSeg = true;
+        } else if (!op && inSeg) {
+          inSeg = false;
+        }
+      }
+      if (segments >= 2) {
+        isCharacter = true;
+        break;
+      }
+    }
+  }
+
   const macroHeightmap = new Float32Array(totalPixels);
   for (let i = 0; i < totalPixels; i++) {
     if (macroDist[i] > 0) {
-      macroHeightmap[i] = maxMacroD * Math.pow(Math.min(1.0, macroDist[i] / maxMacroD), 0.5);
+      if (isCharacter) {
+        // Frontal face cushion: 2.8px outer bevel rim, level camera-facing plateau across face interior
+        const rimRatio = Math.min(1.0, macroDist[i] / 2.8);
+        macroHeightmap[i] = maxMacroD * Math.pow(rimRatio, 0.5);
+      } else {
+        macroHeightmap[i] = maxMacroD * Math.pow(Math.min(1.0, macroDist[i] / maxMacroD), 0.5);
+      }
     }
   }
 
@@ -627,18 +677,22 @@ export function computeContentAwareHeightmap(
     }
   }
 
-  // 7. Composite Heightmap: Macro Form (58%) + Micro Part Domes (42%) + Crevice Carving
+  // 7. Composite Heightmap: Macro Form + Micro Part Domes + Crevice Carving
   const compositeHeightmap = new Float32Array(totalPixels);
   for (let i = 0; i < totalPixels; i++) {
     if (macroDist[i] <= 0) continue;
 
     if (isFeature[i] === 1) {
-      compositeHeightmap[i] = macroHeightmap[i] * 0.75;
+      compositeHeightmap[i] = macroHeightmap[i];
     } else if (isInkLine[i] === 1) {
-      compositeHeightmap[i] = macroHeightmap[i] * 0.28;
+      compositeHeightmap[i] = macroHeightmap[i] * (isCharacter ? 0.70 : 0.28);
     } else {
       const microScaled = (microHeightmap[i] / bevelRadius) * maxMacroD;
-      compositeHeightmap[i] = macroHeightmap[i] * 0.58 + microScaled * 0.42;
+      if (isCharacter) {
+        compositeHeightmap[i] = macroHeightmap[i] * 0.70 + microScaled * 0.30;
+      } else {
+        compositeHeightmap[i] = macroHeightmap[i] * 0.58 + microScaled * 0.42;
+      }
     }
   }
 
@@ -647,6 +701,37 @@ export function computeContentAwareHeightmap(
 
   // 9. Tangent-Space Normal Vector Field
   const normalField = computeTangentNormalField(smoothHeightmap, width, height, depthScale);
+
+  if (isCharacter) {
+    // Flatten normals across facial features and thin whiskers to protect them from distortion
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = y * width + x;
+        if (!isOpaque(x, y)) continue;
+
+        if (isFeature[idx] === 1) {
+          // Pure frontal normal for eyes/mouth
+          normalField.nx[idx] = 0;
+          normalField.ny[idx] = 0;
+          normalField.nz[idx] = 1.0;
+          continue;
+        }
+
+        // Whisker / thin lateral 1px protrusion detection
+        const hasLeft = isOpaque(x - 1, y);
+        const hasRight = isOpaque(x + 1, y);
+        const hasTop = isOpaque(x, y - 1);
+        const hasBottom = isOpaque(x, y + 1);
+        const isThinHorizontal = (!hasTop && !hasBottom) && (hasLeft || hasRight);
+        const isThinVertical = (!hasLeft && !hasRight) && (hasTop || hasBottom);
+        if (isThinHorizontal || isThinVertical) {
+          normalField.nx[idx] = 0;
+          normalField.ny[idx] = 0;
+          normalField.nz[idx] = 1.0;
+        }
+      }
+    }
+  }
 
   // 10. Discrete Laplace Cavity Map / Ambient Occlusion
   const cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, cavityStrength);
