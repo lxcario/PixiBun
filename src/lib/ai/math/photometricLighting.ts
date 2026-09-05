@@ -546,16 +546,19 @@ export function executePhotometricPipeline(
 
       if (formType === 'character' && paletteOKLab.length === 0) {
         // Character cel-shading mode: discrete OKLCH tone stepping with cached ramps
-        const diffSignal = wrapNdotL * ao;
-        const lightLevel = (diffSignal * 0.75 + (effectiveAmbient / 0.35) * 0.25) * brightness;
+        // Physically correct: direct key light illuminates surfaces facing the light (wrapNdotL),
+        // while ambient occlusion (ao) modulates ambient hemisphere bounce.
+        const diffSignal = wrapNdotL;
+        const ambSignal = (effectiveAmbient / 0.35) * ao;
+        const lightLevel = (diffSignal * 0.75 + ambSignal * 0.25) * brightness;
 
         const byteR = data[pIdx];
         const byteG = data[pIdx + 1];
         const byteB = data[pIdx + 2];
         const ramp = getCelRamp(byteR, byteG, byteB);
 
-        // Discrete cel threshold with optional Bayer stippling
-        let shadowThresh = 0.82;
+        // Calibrated cel shadow terminator threshold (0.58) with optional Bayer stippling
+        let shadowThresh = 0.58;
         if (params.ditherModulation > 0) {
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
