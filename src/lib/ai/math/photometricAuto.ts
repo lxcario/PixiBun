@@ -121,9 +121,9 @@ export function inferPhotometricSettings(
   const circularity = perimeter > 0 ? (4 * Math.PI * count) / (perimeter * perimeter) : 0;
   const isOrb = circularity > 0.65 && aspectRatio >= 0.8 && aspectRatio <= 1.25;
 
-  // Detect top appendages/ears: check if top 15-35% of sprite bounding box splits into 2 distinct islands
+  // Detect top appendages/ears/horns: check if upper 15-45% of sprite bounding box splits into 2+ distinct islands
   let hasEarsOrHorns = false;
-  const earScanRows = Math.min(8, Math.max(2, Math.floor(boxH * 0.35)));
+  const earScanRows = Math.max(4, Math.floor(boxH * 0.45));
   for (let y = minY; y < minY + earScanRows; y++) {
     let segments = 0;
     let inSegment = false;
@@ -142,7 +142,29 @@ export function inferPhotometricSettings(
     }
   }
 
-  // Detect internal facial features (eyes, mouth, nose):
+  // Also check vertical columns in upper region for lateral appendages (e.g. side ears, wings, cheek tufts)
+  if (!hasEarsOrHorns && boxW >= 12) {
+    const earScanCols = Math.max(4, Math.floor(boxW * 0.35));
+    for (let x = minX; x < minX + earScanCols; x++) {
+      let segments = 0;
+      let inSegment = false;
+      for (let y = minY; y <= minY + earScanRows; y++) {
+        const opaque = data[(y * width + x) * 4 + 3] > OPAQUE_ALPHA;
+        if (opaque && !inSegment) {
+          segments++;
+          inSegment = true;
+        } else if (!opaque && inSegment) {
+          inSegment = false;
+        }
+      }
+      if (segments >= 2) {
+        hasEarsOrHorns = true;
+        break;
+      }
+    }
+  }
+
+  // Detect internal facial features (eyes, mouth, nose, whiskers, brow ticks):
   // Find dark/contrast pixels enclosed within the interior body (not touching transparent background)
   let hasFacialFeatures = false;
   const isOpaqueAt = (px: number, py: number) => {
@@ -173,13 +195,18 @@ export function inferPhotometricSettings(
       const b = data[p + 2];
       const pLum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
-      if (pLum < 0.25 || (meanLum > 0.45 && meanLum - pLum > 0.28)) {
+      const isDarkFeature =
+        pLum < 0.25 ||
+        (pLum < meanLum - 0.18) ||
+        (pLum < 0.35 && meanLum > 0.30);
+
+      if (isDarkFeature) {
         internalDarkSet.add(y * width + x);
       }
     }
   }
 
-  if (internalDarkSet.size > 0 && internalDarkSet.size <= Math.max(36, Math.floor(count * 0.22))) {
+  if (internalDarkSet.size > 0 && internalDarkSet.size <= Math.max(64, Math.floor(count * 0.28))) {
     const visitedSet = new Set<number>();
     let featureClusterCount = 0;
     for (const pIdx of internalDarkSet) {
@@ -204,7 +231,7 @@ export function inferPhotometricSettings(
         }
       }
     }
-    if (featureClusterCount >= 1 && featureClusterCount <= 6) {
+    if (featureClusterCount >= 1 && featureClusterCount <= 32) {
       hasFacialFeatures = true;
     }
   }

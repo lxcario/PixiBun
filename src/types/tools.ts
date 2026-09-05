@@ -61,6 +61,7 @@ export interface ToolSettings {
   lightRadius: number; // Distance attenuation radius (16 to 256)
   lightBrightness: number; // 0.5 to 2.0 (exposure / brightness)
   materialPreset: MaterialType;
+  formType?: 'character' | 'orb' | 'prop' | 'auto';
   cavityStrength: number; // 0 to 1
   ditherModulation: number; // 0 to 1
   curveTightness: number; // 0 to 1

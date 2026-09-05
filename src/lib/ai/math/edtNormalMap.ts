@@ -583,7 +583,7 @@ export function computeContentAwareHeightmap(
   const boxH = Math.max(1, maxY - minY + 1);
 
   if (!isCharacter) {
-    const scanRows = Math.min(8, Math.max(2, Math.floor(boxH * 0.35)));
+    const scanRows = Math.max(4, Math.floor(boxH * 0.45));
     for (let y = minY; y < minY + scanRows; y++) {
       let segments = 0;
       let inSeg = false;

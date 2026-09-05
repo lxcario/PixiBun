@@ -355,5 +355,111 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     expect(outData[leftEarInteriorP2 + 1]).toBe(245);
     expect(outData[leftEarInteriorP2 + 2]).toBe(230);
   });
+
+  it('correctly classifies and cel-shades 128x128 character with asymmetrical ears and whiskers', async () => {
+    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+
+    const w = 128;
+    const h = 128;
+    const data = new Uint8ClampedArray(w * h * 4);
+
+    // Red bunny character (#e55050)
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let isInside = false;
+        // Tall left ear (y: 15..55, x: 40..60)
+        if (x >= 40 && x <= 60 && y >= 15 && y <= 55) {
+          if (Math.hypot(x - 50, y - 35) <= 18) isInside = true;
+        }
+        // Sideways right ear (y: 40..60, x: 55..95)
+        if (x >= 55 && x <= 95 && y >= 40 && y <= 60) {
+          if (Math.hypot(x - 75, y - 50) <= 15) isInside = true;
+        }
+        // Main head body (y: 45..95, x: 35..85)
+        if (x >= 35 && x <= 85 && y >= 45 && y <= 95) {
+          if (Math.hypot(x - 60, y - 70) <= 25) isInside = true;
+        }
+
+        if (isInside) {
+          const idx = (y * w + x) * 4;
+          data[idx] = 229;
+          data[idx + 1] = 80;
+          data[idx + 2] = 80;
+          data[idx + 3] = 255;
+        }
+      }
+    }
+
+    // Facial features: eyes, brow marks, mouth, whiskers
+    const drawDark = (x: number, y: number) => {
+      const idx = (y * w + x) * 4;
+      data[idx] = 40;
+      data[idx + 1] = 40;
+      data[idx + 2] = 60;
+      data[idx + 3] = 255;
+    };
+    for (let x = 48; x <= 53; x++) drawDark(x, 62); // left eye
+    for (let x = 67; x <= 72; x++) drawDark(x, 62); // right eye
+    for (let y = 54; y <= 58; y++) drawDark(58, y); // forehead tick 1
+    for (let y = 54; y <= 58; y++) drawDark(62, y); // forehead tick 2
+    for (let x = 54; x <= 66; x++) drawDark(x, 75); // mouth
+    for (let x = 36; x <= 42; x++) drawDark(x, 68); // whisker 1
+    for (let x = 36; x <= 42; x++) drawDark(x, 72); // whisker 2
+    for (let x = 36; x <= 42; x++) drawDark(x, 76); // whisker 3
+
+    // 1. Classification: Successfully detects character despite asymmetrical height & 8 feature clusters
+    const settings = inferPhotometricSettings(data, w, h);
+    expect(settings.formType).toBe('character');
+    expect(settings.rationale).toContain('character with anatomical features');
+
+    // 2. Content-aware heightmap: Isolates eye and mouth features
+    const analysis = computeContentAwareHeightmap(data, w, h);
+    const eyeIdx = 62 * w + 50;
+    expect(analysis.isFeature[eyeIdx]).toBe(1);
+
+    // 3. Shading execution: Produces discrete cel-shading ramps, NOT 24-bit floating point gradient mud
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(data), width: w, height: h }),
+    } as unknown as CanvasRenderingContext2D;
+
+    const shadedCanvas = executePhotometricPipeline(
+      mockCtx,
+      w,
+      h,
+      {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        lightBrightness: 1.15,
+        material: 'fabric',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+      },
+      []
+    );
+
+    const outData = shadedCanvas.getContext('2d')!.getImageData(0, 0, w, h).data;
+
+    // Verify dark eye pixel is 100% preserved
+    const eyeP = eyeIdx * 4;
+    expect(outData[eyeP]).toBe(40);
+    expect(outData[eyeP + 1]).toBe(40);
+    expect(outData[eyeP + 2]).toBe(60);
+
+    // Verify body pixels are quantized to discrete cel tones (<= 6 distinct color values across entire sprite)
+    const colorSet = new Set<string>();
+    for (let i = 0; i < w * h; i++) {
+      const p = i * 4;
+      if (outData[p + 3] > 30) {
+        colorSet.add(`${outData[p]},${outData[p + 1]},${outData[p + 2]}`);
+      }
+    }
+    expect(colorSet.size).toBeLessThanOrEqual(6);
+  });
 });
 

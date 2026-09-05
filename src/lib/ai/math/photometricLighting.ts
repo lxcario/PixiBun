@@ -440,12 +440,19 @@ export function executePhotometricPipeline(
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeature;
     isInkLineMask = analysis.isInkLine;
-  } else {
+  } else if (formType === 'orb') {
     const distanceMap = computeSeparableEDT(isOpaque, width, height);
     const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
     const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
     normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
     cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
+  } else {
+    // Props and general shapes: computeContentAwareHeightmap decomposes artwork into parts, lines, and crevices
+    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
+    normalField = analysis.normalField;
+    cavityAO = analysis.cavityAO;
+    isFeatureMask = analysis.isFeature;
+    isInkLineMask = analysis.isInkLine;
   }
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;

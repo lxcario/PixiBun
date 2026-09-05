@@ -706,16 +706,20 @@ export function useViewportStudioEvents({
       let elevation = state.tools.lightElevation;
       let material = state.tools.materialPreset;
       let brightness = state.tools.lightBrightness;
-      let formType: RecognizedFormType = 'prop';
+
+      const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const inferred = inferPhotometricSettings(imgData.data, canvasWidth, canvasHeight);
+
+      const formType: RecognizedFormType =
+        state.tools.formType && state.tools.formType !== 'auto'
+          ? state.tools.formType
+          : inferred.formType;
 
       if (detail?.auto) {
-        const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
-        const inferred = inferPhotometricSettings(imgData.data, canvasWidth, canvasHeight);
         azimuth = inferred.lightAzimuth;
         elevation = inferred.lightElevation;
         material = inferred.material;
         brightness = inferred.brightness;
-        formType = inferred.formType;
 
         state.setLightAzimuth(azimuth);
         state.setLightElevation(elevation);
@@ -932,6 +936,7 @@ export function useViewportStudioEvents({
           cavityStrength: detail.cavityStrength ?? tools.cavityStrength,
           ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
           bayerSize: detail.bayerSize || '4x4',
+          formType: detail.formType ?? tools.formType ?? 'auto',
         },
         detail.paletteColors || []
       );
