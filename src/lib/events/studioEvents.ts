@@ -68,7 +68,12 @@ export type StudioEventMap = {
   'pixibun:photometric-gizmo-start': { auto?: boolean } | void;
   'pixibun:photometric-gizmo-commit': void;
   'pixibun:photometric-gizmo-cancel': void;
-  'pixibun:photometric-lighting-live': { lightAzimuth: number; lightElevation: number };
+  'pixibun:photometric-lighting-live': {
+    lightAzimuth: number;
+    lightElevation: number;
+    lightCenterX?: number;
+    lightCenterY?: number;
+  };
   'pixibun:volumetric-optics': {
     preset?: string;
     translucencyDepth?: number;

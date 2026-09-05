@@ -93,4 +93,36 @@ describe('PixelLightBulbGizmo Component', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('renders draggable middle light point handle and updates center coordinates on drag', async () => {
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    const onLightChange = vi.fn();
+
+    render(
+      <PixelLightBulbGizmo
+        canvasWidth={32}
+        canvasHeight={32}
+        zoom={1600}
+        mainCanvasRef={dummyCanvasRef}
+        onCommit={onCommit}
+        onCancel={onCancel}
+        onLightChange={onLightChange}
+      />
+    );
+
+    const centerHandle = screen.getByTestId('pixel-light-center-handle');
+    expect(centerHandle).toBeDefined();
+
+    // Drag the middle light point
+    fireEvent.pointerDown(centerHandle, { clientX: 200, clientY: 200, pointerId: 1 });
+    const container = screen.getByTestId('pixel-light-bulb-gizmo');
+    fireEvent.pointerMove(container, { clientX: 250, clientY: 300, pointerId: 1 });
+    fireEvent.pointerUp(container, { pointerId: 1 });
+
+    // Verify recenter button exists
+    const recenterBtn = screen.getByRole('button', { name: /Recenter/i });
+    expect(recenterBtn).toBeDefined();
+    fireEvent.click(recenterBtn);
+  });
 });

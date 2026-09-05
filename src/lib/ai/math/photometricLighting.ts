@@ -498,6 +498,14 @@ export function executePhotometricPipeline(
   const outImgData = outCtx.createImageData(width, height);
   const outData = outImgData.data;
 
+  const hasCustomCenter = params.lightCenterX !== undefined && params.lightCenterY !== undefined;
+  const lCenterX = hasCustomCenter ? params.lightCenterX! : width / 2;
+  const lCenterY = hasCustomCenter ? params.lightCenterY! : height / 2;
+  const lightDist = Math.max(width, height) * 0.95;
+  const lightSourceX = lCenterX + lightDist * Lx;
+  const lightSourceY = lCenterY + lightDist * Ly;
+  const lightSourceZ = lightDist * Lz;
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = y * width + x;
@@ -539,9 +547,40 @@ export function executePhotometricPipeline(
 
       const ao = cavityAO[idx];
 
+      let pixLx = Lx;
+      let pixLy = Ly;
+      let pixLz = Lz;
+      let pixNormHx = normHx;
+      let pixNormHy = normHy;
+      let pixNormHz = normHz;
+
+      if (hasCustomCenter) {
+        const pVx = lightSourceX - x;
+        const pVy = lightSourceY - y;
+        const pVz = lightSourceZ;
+        const pLen = Math.sqrt(pVx * pVx + pVy * pVy + pVz * pVz) || 1;
+
+        // Blend 70% directional with 30% local positional perspective for natural focus shift
+        pixLx = Lx * 0.70 + (pVx / pLen) * 0.30;
+        pixLy = Ly * 0.70 + (pVy / pLen) * 0.30;
+        pixLz = Lz * 0.70 + (pVz / pLen) * 0.30;
+        const pLLen = Math.sqrt(pixLx * pixLx + pixLy * pixLy + pixLz * pixLz) || 1;
+        pixLx /= pLLen;
+        pixLy /= pLLen;
+        pixLz /= pLLen;
+
+        const pHx = pixLx + Vx;
+        const pHy = pixLy + Vy;
+        const pHz = pixLz + Vz;
+        const phLen = Math.sqrt(pHx * pHx + pHy * pHy + pHz * pHz) || 1;
+        pixNormHx = pHx / phLen;
+        pixNormHy = pHy / phLen;
+        pixNormHz = pHz / phLen;
+      }
+
       // Half-Lambert Wrap Lighting (Valve Mitchell/McTaggart/Green 2006 formulation)
       // w = 0.55 softens the shadow terminator so light wraps gently around rounded volumes.
-      const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
+      const rawNdotL = Nx * pixLx + Ny * pixLy + Nz * pixLz;
       const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.55) / 1.55), 1.25);
       const effectiveAmbient = Math.max(0.48, params.ambientIntensity ?? 0.48) * brightness;
 
@@ -606,7 +645,7 @@ export function executePhotometricPipeline(
       const diffG = mat.kd * wrapNdotL * (origG * lightG);
       const diffB = mat.kd * wrapNdotL * (origB * lightB);
 
-      const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
+      const NdotH = Math.max(0, Nx * pixNormHx + Ny * pixNormHy + Nz * pixNormHz);
       const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);
 
       let specR = Ispec * lightR;

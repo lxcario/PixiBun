@@ -16,7 +16,7 @@ interface PixelLightBulbGizmoProps {
   mainCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   onCommit: () => void;
   onCancel: () => void;
-  onLightChange?: (azimuth: number, elevation: number) => void;
+  onLightChange?: (azimuth: number, elevation: number, centerX?: number, centerY?: number) => void;
 }
 
 export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
@@ -33,20 +33,26 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   const setLightAzimuth = useStudioStore((s) => s.setLightAzimuth);
   const setLightElevation = useStudioStore((s) => s.setLightElevation);
 
-  const [isDragging, setIsDragging] = useState(false);
+  const [dragTarget, setDragTarget] = useState<'none' | 'bulb' | 'center'>('none');
   const rafIdRef = useRef<number | null>(null);
-  const pendingAnglesRef = useRef<{ azimuth: number; elevation: number } | null>(null);
+  const pendingChangeRef = useRef<{
+    azimuth: number;
+    elevation: number;
+    centerX: number;
+    centerY: number;
+  } | null>(null);
 
   const scale = zoom / 100;
   const stageWidth = canvasWidth * scale;
   const stageHeight = canvasHeight * scale;
 
-  // Calculate sprite centroid in canvas pixels once or when canvas content changes
+  // Middle light point in canvas coordinates (freely draggable, not locked to dead center)
   const [canvasCentroid, setCanvasCentroid] = useState<GizmoPoint>(() => ({
     x: Math.round(canvasWidth / 2),
     y: Math.round(canvasHeight / 2),
   }));
 
+  // Initialize from artwork centroid on mount
   useEffect(() => {
     const mainCanvas = mainCanvasRef.current;
     if (!mainCanvas) return;
@@ -65,7 +71,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     }
   }, [canvasWidth, canvasHeight, mainCanvasRef]);
 
-  // Centroid in stage coordinates
+  // Middle light point in stage coordinates
   const stageCentroid = useMemo<GizmoPoint>(() => ({
     x: canvasCentroid.x * scale,
     y: canvasCentroid.y * scale,
@@ -109,18 +115,23 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
 
   // Throttled 60 FPS update loop during drag
   const flushLightChange = useCallback(() => {
-    if (pendingAnglesRef.current) {
-      const { azimuth, elevation } = pendingAnglesRef.current;
+    if (pendingChangeRef.current) {
+      const { azimuth, elevation, centerX, centerY } = pendingChangeRef.current;
       setLightAzimuth(azimuth);
       setLightElevation(elevation);
-      onLightChange?.(azimuth, elevation);
-      pendingAnglesRef.current = null;
+      onLightChange?.(azimuth, elevation, centerX, centerY);
+      pendingChangeRef.current = null;
     }
     rafIdRef.current = null;
   }, [setLightAzimuth, setLightElevation, onLightChange]);
 
-  const scheduleLightChange = useCallback((azimuth: number, elevation: number) => {
-    pendingAnglesRef.current = { azimuth, elevation };
+  const scheduleLightChange = useCallback((
+    azimuth: number,
+    elevation: number,
+    centerX: number,
+    centerY: number
+  ) => {
+    pendingChangeRef.current = { azimuth, elevation, centerX, centerY };
     if (rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(flushLightChange);
     }
@@ -150,38 +161,84 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       maxRadius
     );
 
-    scheduleLightChange(angles.azimuth, angles.elevation);
-  }, [stageCentroid, maxRadius, scheduleLightChange]);
+    scheduleLightChange(angles.azimuth, angles.elevation, canvasCentroid.x, canvasCentroid.y);
+  }, [stageCentroid, maxRadius, canvasCentroid, scheduleLightChange]);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  // Update center position from client pointer event
+  const updateCenterFromPointer = useCallback((clientX: number, clientY: number) => {
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const px = clientX - rect.left;
+    const py = clientY - rect.top;
+
+    const clampedPx = Math.max(0, Math.min(stageWidth, px));
+    const clampedPy = Math.max(0, Math.min(stageHeight, py));
+    const newCanvasX = Math.round(clampedPx / scale);
+    const newCanvasY = Math.round(clampedPy / scale);
+
+    setCanvasCentroid({ x: newCanvasX, y: newCanvasY });
+    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, newCanvasX, newCanvasY);
+  }, [stageWidth, stageHeight, scale, tools.lightAzimuth, tools.lightElevation, scheduleLightChange]);
+
+  const handleBulbPointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    setIsDragging(true);
+    setDragTarget('bulb');
     updateAnglesFromPointer(e.clientX, e.clientY);
+  };
+
+  const handleCenterPointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    setDragTarget('center');
+    updateCenterFromPointer(e.clientX, e.clientY);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    e.stopPropagation();
-    updateAnglesFromPointer(e.clientX, e.clientY);
+    if (dragTarget === 'bulb') {
+      e.preventDefault();
+      e.stopPropagation();
+      updateAnglesFromPointer(e.clientX, e.clientY);
+    } else if (dragTarget === 'center') {
+      e.preventDefault();
+      e.stopPropagation();
+      updateCenterFromPointer(e.clientX, e.clientY);
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDragging) {
+    if (dragTarget !== 'none') {
       e.preventDefault();
       e.stopPropagation();
-      setIsDragging(false);
+      setDragTarget('none');
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
       } catch {
         // Pointer capture may already have been released by browser
       }
-      // Ensure latest pending angle is applied
-      if (pendingAnglesRef.current) {
+      if (pendingChangeRef.current) {
         flushLightChange();
       }
+    }
+  };
+
+  const handleResetCenter = () => {
+    const mainCanvas = mainCanvasRef.current;
+    if (!mainCanvas) return;
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    try {
+      const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const centroid = computeArtworkCentroid(imgData.data, canvasWidth, canvasHeight);
+      setCanvasCentroid(centroid);
+      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, centroid.x, centroid.y);
+    } catch {
+      const def = { x: Math.round(canvasWidth / 2), y: Math.round(canvasHeight / 2) };
+      setCanvasCentroid(def);
+      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, def.x, def.y);
     }
   };
 
@@ -197,20 +254,43 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     >
       {/* Floating Viewport HUD Bar */}
       <div
-        className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto"
+        className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
         role="toolbar"
         aria-label="Live Light Bulb Controls"
       >
-        <div className="flex items-center gap-1.5 text-[#f0be7c] font-bold">
+        <div className="flex items-center gap-1 text-[#f0be7c] font-bold">
           <span className="text-sm drop-shadow-[0_0_8px_#f0be7c]">💡</span>
           <span className="tracking-wide uppercase text-[10px]">Live Light Bulb</span>
         </div>
 
-        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#dcabdf] font-bold text-[11px]">
+        {/* Angle Readout */}
+        <div
+          title="Light Azimuth & Elevation"
+          className="flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#dcabdf] font-bold text-[11px]"
+        >
           <span>{tools.lightAzimuth}°</span>
           <span className="opacity-50">/</span>
           <span>{tools.lightElevation}°</span>
         </div>
+
+        {/* Middle Light Center Readout */}
+        <div
+          title="Current Middle Light Point (Drag center reticle to move focus)"
+          className="flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[10px]"
+        >
+          <span className="opacity-75">📍</span>
+          <span>({Math.round(canvasCentroid.x)}, {Math.round(canvasCentroid.y)})</span>
+        </div>
+
+        {/* Recenter Button */}
+        <button
+          type="button"
+          onClick={handleResetCenter}
+          title="Reset middle light point to artwork centroid"
+          className="px-1.5 py-0.5 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/30 rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[10px]"
+        >
+          <span>↺ Recenter</span>
+        </button>
 
         <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
 
@@ -275,7 +355,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           opacity="0.2"
         />
 
-        {/* Ray from Sprite Centroid to Light Bulb */}
+        {/* Ray from Middle Light Point to Light Bulb */}
         <line
           x1={stageCentroid.x}
           y1={stageCentroid.y}
@@ -286,36 +366,66 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           strokeDasharray="5 3"
           opacity="0.85"
         />
-
-        {/* Anchor at Sprite Centroid */}
-        <circle
-          cx={stageCentroid.x}
-          cy={stageCentroid.y}
-          r="4.5"
-          fill="#f0be7c"
-          stroke="#181124"
-          strokeWidth="1.5"
-        />
-        <circle
-          cx={stageCentroid.x}
-          cy={stageCentroid.y}
-          r="1.5"
-          fill="#ffffff"
-        />
       </svg>
+
+      {/* Interactive Draggable Middle Light Point Reticle */}
+      <div
+        role="slider"
+        tabIndex={0}
+        data-testid="pixel-light-center-handle"
+        aria-label="Middle Light Point. Drag to reposition light focus on canvas."
+        aria-valuenow={Math.round(canvasCentroid.x)}
+        onPointerDown={handleCenterPointerDown}
+        className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing pointer-events-auto touch-none group ${
+          dragTarget === 'center' ? 'scale-125' : 'hover:scale-115'
+        } transition-transform z-35`}
+        style={{
+          left: `${stageCentroid.x}px`,
+          top: `${stageCentroid.y}px`,
+        }}
+      >
+        {/* Retro 16-bit Pixel Art Center Reticle */}
+        <div className="relative flex items-center justify-center w-7 h-7">
+          {/* Pulsing focal aura */}
+          <div
+            className={`absolute inset-0 rounded-full border-2 border-[#f0be7c] ${
+              dragTarget === 'center' ? 'opacity-90 scale-110 shadow-[0_0_12px_#f0be7c]' : 'opacity-40 animate-pulse'
+            } pointer-events-none transition-all`}
+            aria-hidden="true"
+          />
+          {/* Reticle Disk */}
+          <div className="w-5 h-5 rounded-full bg-[#181124]/90 border-2 border-[#f0be7c] shadow-[0_0_8px_rgba(240,190,124,0.7)] flex items-center justify-center">
+            {/* 4 Directional Crosshair Ticks */}
+            <div className="absolute -top-1 w-0.5 h-1.5 bg-[#f0be7c]" />
+            <div className="absolute -bottom-1 w-0.5 h-1.5 bg-[#f0be7c]" />
+            <div className="absolute -left-1 h-0.5 w-1.5 bg-[#f0be7c]" />
+            <div className="absolute -right-1 h-0.5 w-1.5 bg-[#f0be7c]" />
+            {/* Center Core Bead */}
+            <div className="w-2 h-2 rounded-full bg-[#f0be7c] flex items-center justify-center">
+              <div className="w-0.5 h-0.5 rounded-full bg-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Center Coordinate Tooltip */}
+        <div className="absolute left-1/2 -top-5 -translate-x-1/2 px-1.5 py-0.5 bg-[#181124] text-[#f0be7c] text-[9px] font-mono font-bold rounded-[2px] border border-[#f0be7c]/60 shadow-xs whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
+          Light Center ({Math.round(canvasCentroid.x)}, {Math.round(canvasCentroid.y)})
+        </div>
+      </div>
 
       {/* Interactive Pixel Light Bulb Token */}
       <div
         role="slider"
         tabIndex={0}
+        data-testid="pixel-light-bulb-handle"
         aria-label="Directional Light Bulb. Drag to rotate light around sprite."
         aria-valuenow={tools.lightAzimuth}
         aria-valuemin={0}
         aria-valuemax={360}
-        onPointerDown={handlePointerDown}
+        onPointerDown={handleBulbPointerDown}
         className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing pointer-events-auto touch-none group ${
-          isDragging ? 'scale-110' : 'hover:scale-105'
-        } transition-transform`}
+          dragTarget === 'bulb' ? 'scale-110' : 'hover:scale-105'
+        } transition-transform z-40`}
         style={{
           left: `${bulbCoords.x}px`,
           top: `${bulbCoords.y}px`,
@@ -326,7 +436,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           className="absolute -inset-4 rounded-full pointer-events-none transition-opacity duration-150 animate-pulse"
           style={{
             background: 'radial-gradient(circle, rgba(250,204,21,0.5) 0%, rgba(240,190,124,0.2) 50%, rgba(0,0,0,0) 75%)',
-            opacity: isDragging ? 0.9 : 0.65,
+            opacity: dragTarget === 'bulb' ? 0.9 : 0.65,
           }}
           aria-hidden="true"
         />

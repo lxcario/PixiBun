@@ -248,4 +248,80 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
     // High specular highlight on metallic orb
     expect(maxLum).toBeGreaterThan(0.65);
   });
+
+  it('shifts illumination focus across the sprite when middle light point (lightCenterX, lightCenterY) changes', () => {
+    const width = 32;
+    const height = 32;
+    const circleData = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (Math.hypot(x - 16, y - 16) <= 10) {
+          const idx = (y * width + x) * 4;
+          circleData[idx] = 134;
+          circleData[idx + 1] = 75;
+          circleData[idx + 2] = 162;
+          circleData[idx + 3] = 255;
+        }
+      }
+    }
+
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(circleData) }),
+    } as unknown as CanvasRenderingContext2D;
+
+    // Render with light center at left side (x = 8, y = 16)
+    const leftFocusCanvas = executePhotometricPipeline(
+      mockCtx,
+      width,
+      height,
+      {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'orb',
+        lightCenterX: 8,
+        lightCenterY: 16,
+      },
+      []
+    );
+
+    // Render with light center at right side (x = 24, y = 16)
+    const rightFocusCanvas = executePhotometricPipeline(
+      mockCtx,
+      width,
+      height,
+      {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'orb',
+        lightCenterX: 24,
+        lightCenterY: 16,
+      },
+      []
+    );
+
+    const leftData = leftFocusCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+    const rightData = rightFocusCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+    // Sample pixel on the right side of the circle (x = 22, y = 16)
+    const sampleIdx = (16 * width + 22) * 4;
+    const lumWhenLeftFocus = (0.2126 * leftData[sampleIdx] + 0.7152 * leftData[sampleIdx + 1] + 0.0722 * leftData[sampleIdx + 2]) / 255;
+    const lumWhenRightFocus = (0.2126 * rightData[sampleIdx] + 0.7152 * rightData[sampleIdx + 1] + 0.0722 * rightData[sampleIdx + 2]) / 255;
+
+    // The right pixel must receive higher luminance when the light center is shifted to the right!
+    expect(lumWhenRightFocus).toBeGreaterThan(lumWhenLeftFocus);
+  });
 });

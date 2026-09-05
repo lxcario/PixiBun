@@ -74,6 +74,8 @@ export function useViewportStudioEvents({
     brightness: number;
     formType: RecognizedFormType;
     paletteColors: string[];
+    lastCenterX?: number;
+    lastCenterY?: number;
   } | null>(null);
 
   // Helper: composite source snapshot of all layers excluding tagged target
@@ -797,9 +799,17 @@ export function useViewportStudioEvents({
       state.setPhotometricGizmoActive(true);
     };
 
-    const handlePhotometricLightingLiveEvent = (detail: { lightAzimuth: number; lightElevation: number }) => {
+    const handlePhotometricLightingLiveEvent = (detail: {
+      lightAzimuth: number;
+      lightElevation: number;
+      lightCenterX?: number;
+      lightCenterY?: number;
+    }) => {
       const session = photometricSessionRef.current;
       if (!session) return;
+
+      if (detail.lightCenterX !== undefined) session.lastCenterX = detail.lightCenterX;
+      if (detail.lightCenterY !== undefined) session.lastCenterY = detail.lightCenterY;
 
       const state = useStudioStore.getState();
       const shadedCanvas = executePhotometricPipeline(
@@ -818,6 +828,8 @@ export function useViewportStudioEvents({
           ditherModulation: state.tools.ditherModulation,
           bayerSize: '4x4',
           formType: session.formType,
+          lightCenterX: session.lastCenterX,
+          lightCenterY: session.lastCenterY,
         },
         session.paletteColors
       );

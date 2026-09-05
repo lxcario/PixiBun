@@ -40,6 +40,8 @@ export interface PhotometricLightingParams {
   bayerSize: '2x2' | '4x4' | '8x8';
   formType?: 'character' | 'orb' | 'prop' | 'auto';
   celShading?: boolean;
+  lightCenterX?: number; // Center anchor X in canvas coordinates (middle light point)
+  lightCenterY?: number; // Center anchor Y in canvas coordinates (middle light point)
 }
 
 export interface ToolSettings {
