@@ -98,15 +98,26 @@ The undo/redo pipeline is fully decoupled from the React rendering tree into a p
 
 ---
 
-## 3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/smartMathEngine.ts`)
+## 3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)
+
+The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
+- `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau ($N_z \ge 0.85$), independent ear cone ridges, and Sobel tangent normal vector fields.
+- `photometricLighting.ts`: Parametric 2.5D Blinn-Phong lighting, feature preservation (eyes/mouth/outlines), stepped OKLCH cel-shading with perceptual hue shifts, and in-place tagged relighting (`Photometric <material>`).
+- `photometricAuto.ts`: Canvas art morphology analysis, anatomical classification (`character`, `orb`, `prop`), connected-component feature clustering (eyes, mouth, whiskers), convex lobe ear/horn scanning, and automated lighting parameter inference.
+- `shadowAuto.ts`: Canvas sprite geometry analysis, contact baseline detection, and directional shadow parameter inference.
+- `shadowRayMarcher.ts`: 2.5D bounded sprite cast shadows with 1-to-1 sheared silhouette projection, classic ground contact drop shadow ellipses (`shadowStyle: 'drop'`), and uniform flat opacity (`ditherMode: 'none'`).
+- `colorSpace.ts`: sRGB $\leftrightarrow$ linear $\leftrightarrow$ OKLab $\leftrightarrow$ OKLCH conversions and perceptual hue shifting (`shiftHue`).
 
 ```mermaid
 graph TD
     RawSprite["2D Pixel Sprite Layer"] --> Mask["Binary Alpha Mask M(x,y)"]
+    Mask --> Classify["Anatomical Classification (Character / Orb / Prop)"]
     Mask --> EDT["Linear-Time O(N) EDT (Felzenszwalb-Huttenlocher)"]
-    EDT --> Profile["Power-Law Dome Inflation H(p) = (D/max)^γ"]
-    Profile --> Bilateral["Edge-Preserving Bilateral Smoothing"]
     
+    Classify -->|Character| Cushion["Frontal Face Cushion Plateau (Nz >= 0.85) & Ear Cones"]
+    Classify -->|Orb / Prop| Dome["Power-Law Dome Inflation H(p) = (D/max)^γ"]
+    
+    Cushion & Dome --> Bilateral["Edge-Preserving Bilateral Smoothing"]
     Bilateral --> Sobel["Sobel Partial Derivatives (Gx, Gy)"]
     Sobel --> Normals["Tangent-Space Normal Vectors N"]
     Normals --> Bake["Bake Normal Map (RGB 128, 128, 255)"]
@@ -114,10 +125,9 @@ graph TD
     Bilateral --> Laplace["Discrete Laplace Operator ∇²H"]
     Laplace --> AO["Cavity Ambient Occlusion Map"]
 
-    Normals & AO & RawSprite --> Lighting["Photometric Lighting Composite (Lambert + Blinn-Phong Specular)"]
-    Lighting --> BayerDither["Bayer Matrix Threshold Modulation"]
-    BayerDither --> OKLab["OKLab Perceptual Quantization ΔE"]
-    OKLab --> FinalOutput["Shaded Pixel Art Output"]
+    Normals & AO & RawSprite --> Protect["Feature Segmentation (Eyes, Mouth, Inks Bypassed)"]
+    Protect --> Lighting["Stepped OKLCH Cel-Shading (Cool Skylight / Warm Sun)"]
+    Lighting --> FinalOutput["Shaded Pixel Art Output Layer"]
 ```
 
 ### Key Mathematical Formulations:
@@ -127,24 +137,36 @@ graph TD
 2. **Analytical Tangent Normals & Light Vector (Compass Convention):**
    $$\mathbf{N} = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}, \quad \mathbf{L}(\theta, \phi) = \begin{pmatrix} \sin\theta \cos\phi \\ -\cos\theta \cos\phi \\ \sin\phi \end{pmatrix}$$
    *Standard navigation/Photoshop azimuth convention: $0^\circ = \text{North (Top)}, 45^\circ = \text{North-East}, 135^\circ = \text{South-East}, 225^\circ = \text{South-West}, 315^\circ = \text{North-West (Top-Left)}$.*
-3. **Blinn-Phong Specular Half-Vector:**
-   $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
-4. **Discrete Laplace Cavity Occlusion:**
+3. **Frontal Face Cushion Plateau & Feature Normal Stabilization:**
+   For character forms, to avoid "bowling-ball" inflation where half the face is plunged into darkness ($N \cdot L < 0$), height within 2.8px of the boundary contour bevels smoothly while the interior reaches a flat plateau:
+   $$\text{ratio} = \min\left(1.0, \frac{D(p)}{2.8}\right), \quad H_{\text{face}}(p) = H(p) \cdot (0.6 + 0.4 \cdot \text{ratio})$$
+   Normals across the face interior satisfy $N_z \ge 0.85$, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
+4. **100% Feature Preservation & Stepped OKLCH Cel-Shading:**
+   Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH:
+   * **Shadow:** $L_{\text{shadow}} = L_{\text{base}} \times 0.72$, $H_{\text{shadow}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 18^\circ)$ (Skylight cool indigo)
+   * **Highlight:** $L_{\text{highlight}} = \min(1, L_{\text{base}} \times 1.18)$, $H_{\text{highlight}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 15^\circ)$ (Sunlight warm amber)
+5. **Blinn-Phong Specular Half-Vector with View-Alignment Masking:**
+   $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha \cdot \min\left(1, \frac{\mathbf{N} \cdot \mathbf{V}}{0.35}\right)$$
+6. **Discrete Laplace Cavity Occlusion:**
    $$\nabla^2 H \approx H * \begin{bmatrix} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{bmatrix}, \quad AO(p) = \text{clamp}(1.0 - k_{\text{ao}} \max(0, -\nabla^2 H), 0, 1)$$
-5. **2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein Forward Phase):**
+7. **2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein Forward Phase):**
    $$T(\mathbf{x}) = 2\sqrt{\max\left(0, R^2 - D(\mathbf{x})^2\right)}, \quad I_{SSS}(\mathbf{x}) = C_{scatter} \exp\left(-\boldsymbol{\sigma}_t \frac{T(\mathbf{x})}{d_{trans}}\right) \cdot P_{2D}(\mathbf{L}', \mathbf{V}, g)$$
    $$P_{2D}(\theta, g) = \frac{1 - g^2}{2\pi (1 + g^2 - 2g \cos\theta)^{3/2}}$$
-6. **Dielectric Fresnel Reflectance with Cauchy Chromatic Dispersion:**
+8. **Dielectric Fresnel Reflectance with Cauchy Chromatic Dispersion:**
    $$F(\theta) = F_0 + (\max(1 - \alpha, F_0) - F_0) \cdot (1 - \cos\theta)^{p_{fresnel}}, \quad \eta_R = \eta_0 - \Delta\eta, \; \eta_B = \eta_0 + \Delta\eta$$
-7. **Kajiya-Kay Anisotropic Cylindrical Specular:**
+9. **Kajiya-Kay Anisotropic Cylindrical Specular:**
    $$\sin(\mathbf{T}, \mathbf{H}) = \sqrt{\max\left(0, 1 - (\mathbf{T}\cdot\mathbf{H})^2\right)}, \quad I_{aniso} = k_{s1} \sin^{p_1}(\mathbf{T}_1, \mathbf{H}) + k_{s2} \sin^{p_2}(\mathbf{T}_2, \mathbf{H})$$
-8. **2D Raymarched Soft Shadows with Sebastian Aaltonen Contact Hardening (`shadowRayMarcher.ts`):**
-   * **Bilinear Continuous Distance:** $D(x, y) = (1 - u)(1 - v)D_{00} + u(1 - v)D_{10} + (1 - u)v D_{01} + uv D_{11}$
-   * **Aaltonen Tangent Geometric Correction:** Point of closest approach along ray segment between steps $P_{\text{prev}}$ and $P_{\text{cur}}$:
-     $$y = \frac{h^2}{2 \cdot ph}, \quad d = \sqrt{\max(0, h^2 - y^2)}, \quad t_{\text{closest}} = \max(\epsilon, t - y)$$
-   * **Physical Light Cone Tracing & Cubic Hermite Occlusion:**
-     $$r_{\text{cone}} = R_L \cdot \frac{t_{\text{closest}}}{T}, \quad s = \text{clamp}\left(\frac{d}{r_{\text{cone}}}, 0, 1\right), \quad V = \min(V, s^2(3 - 2s))$$
-   * **Non-Destructive Tagged Output:** Writes directly to `Layer.tag = 'cast-shadow'` with zero GC allocation via `acquireFloat32Buffer` / `releaseFloat32Buffer`.
+10. **Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`):**
+    * **1-to-1 Sheared Silhouette Ground Projection:**
+      $$h = y_{\text{base}} - y_s \ge 0$$
+      $$\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x), \quad \text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$$
+      Sub-step traversal strictly along the shear vector preserves hollow leg arches and waist indentations without bounding-box bloat.
+    * **Ground Contact Drop Shadow Style (`shadowStyle: 'drop'`):**
+      Renders a crisp Bresenham pixel ellipse under the character contact baseline ($y_{\text{base}}$):
+      $$\frac{(x - x_{\text{center}})^2}{r_x^2} + \frac{(y - y_{\text{base}})^2}{r_y^2} \le 1.0$$
+    * **Uniform Flat Pixel Art Opacity (`ditherMode: 'none'`):**
+      Shadow pixels receive uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating continuous 256-level float gradients.
+    * **Non-Destructive Tagged Output:** Writes directly to `Layer.tag = 'cast-shadow'`.
 
 ---
 
@@ -312,14 +334,14 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Deterministic On-Device Graphics Math (`src/lib/ai/smartMathEngine.ts`, `shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and Raymarched Soft Shadows run synchronously with zero latency using pre-allocated `bufferPool.ts` scratch buffers.
+- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, content-aware heightmaps, and bounded sprite cast shadows run synchronously with zero latency using pre-allocated `bufferPool.ts` scratch buffers.
 
 ---
 
 ## 14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
 Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, raymarched shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
-- **Discriminated Event Map:** All 23 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
+- **Discriminated Event Map:** All 28 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
 - **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
 
 ---

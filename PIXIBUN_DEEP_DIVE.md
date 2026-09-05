@@ -30,21 +30,29 @@ src/
 │   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
 ├── lib/
 │   ├── ai/
+│   │   ├── math/                    # Modular graphics math laboratory
+│   │   │   ├── edtNormalMap.ts      # O(N) EDT, dome inflation, content-aware heightmaps, frontal cushion
+│   │   │   ├── photometricLighting.ts# Blinn-Phong lighting, feature protection, stepped OKLCH cel-shading
+│   │   │   ├── photometricAuto.ts   # Art morphology analysis, anatomical classification (character/orb/prop)
+│   │   │   ├── shadowAuto.ts        # Sprite bounds, ground contact detection, shadow parameter inference
+│   │   │   ├── colorSpace.ts        # sRGB/OKLab/OKLCH conversions and perceptual hue-shifting
+│   │   │   ├── dithering.ts         # Atkinson and Riemersma error-diffusion dithering
+│   │   │   ├── rotSprite.ts         # Xenowoz 8x Scale2X RotSprite rotation engine and thinning
+│   │   │   └── minecraftSkin.ts     # Minecraft player skin UV detection and normal mapping
 │   │   ├── pixelAiEngine.ts         # Optical flow tweening, jaggy cleanup, ground shadow, outline
-│   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++, Floyd-Steinberg/Atkinson
-│   │   ├── shadowRayMarcher.ts      # 2D Ray Marching, Aaltonen contact hardening, cone tracing
-│   │   └── smartMathEngine.ts       # 2.5D Photometric lighting, O(N) EDT, Sobel normals, Minecraft 3D skin shader, RotSprite, Zhang-Suen
+│   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
+│   │   └── shadowRayMarcher.ts      # Bounded 2.5D sprite cast shadow projection, drop shadow, Aaltonen cone tracing
 │   ├── art/                         # Starter templates (Hearth Ghost, Desk Mushroom, Bun, Little Lantern)
 │   ├── audio/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
 │   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices
 │   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool
 │   ├── events/                      # Typed event bus (studioEvents.ts)
-│   ├── export/                      # Export pipeline: spriteSheetPacker (Godot/Unity/Phaser), gifEncoder (LZW GIF89a)
+│   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
 │   ├── render/                      # Pure compositor (compositor.ts) and template renderer (templateRenderer.ts)
 │   └── storage/
-│       └── db.ts                    # Dexie.js (IndexedDB) local database and continuous autosave
+│       └── db.ts                    # Dexie.js (IndexedDB Schema v4) local database and continuous autosave
 ├── stores/
 │   ├── studioStore.ts               # Zustand + Immer studio state manager (Tools, Layers, Frames, Palettes)
 │   └── themeStore.ts                # Dual theme manager and Zero-Lag CSS transition suppressor
@@ -157,6 +165,13 @@ Unit vectors $\mathbf{N} = (N_x, N_y, N_z)$ map directly to RGB $[0, 255]$ for G
 
 R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad B = \lfloor (N_z \cdot 0.5 + 0.5) \cdot 255 \rfloor
 
+### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation
+For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
+* **Frontal Cushion Plateau:** Within 2.8px of the boundary contour, height bevels smoothly down while the face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the unlit 1–2px silhouette edge.
+* **Independent Ear Cones:** Distinct convex lobes in the top 15%–35% of the silhouette retain independent 3D height peaks.
+* **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving 100% artist color fidelity.
+* **Stepped OKLCH Cel-Shading:** Unshaded flat base colors receive stepped tone quantization with cool skylight shifts toward 260° in shadow and warm sunlight shifts toward 65° in highlights.
+
 ---
 
 # 5. 3D Minecraft Skin Recognition & Dedicated Shading
@@ -216,9 +231,8 @@ W_{\text{salience}}(x, y) = W_{\text{box}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x,
 
 # 9. Storage, Serialization & Game Engine Exports
 
-### 1. IndexedDB Workspace (db.ts, Schema v3)
-* Dexie-backed multi-project workspace with persistent storage guards (
-avigator.storage.persist()).
+### 1. IndexedDB Workspace (db.ts, Schema v4)
+* Dexie-backed multi-project workspace with dedicated binary `layerBlobs` table storing raw PNG blobs directly (eliminating base64 serialization overhead).
 * Asynchronous autosave snapshots layers, palettes, and thumbnails without main-thread stalls.
 
 ### 2. Game Engine Export Pipeline (spriteSheetPacker.ts)
@@ -231,10 +245,17 @@ avigator.storage.persist()).
 
 ---
 
-# 10. 2D Ray Marching Soft Shadows (shadowRayMarcher.ts)
+# 10. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (shadowRayMarcher.ts)
 
-Direct CPU sphere tracing over Euclidean Distance Fields with Aaltonen contact hardening:
+### 1. Exact 1-to-1 Sheared Silhouette Projection
+Rather than tracing an unbounded 2D planar wedge across the floor, the engine projects sprite pixels directly onto the ground plane:
+$$h = y_{\text{base}} - y_s \ge 0$$
+$$\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x), \quad \text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$$
+Sub-step sampling strictly along the shear vector prevents pinhole gaps without expanding bounding spans, preserving hollow leg arches and waist indentations.
 
-y = \frac{h^2}{2 \cdot ph}, \quad d = \sqrt{\max(0, h^2 - y^2)}, \quad t_{\text{closest}} = \max(\epsilon, t - y)
+### 2. Ground Contact Drop Shadows (shadowStyle: 'drop')
+For classic top-down RPG style (*The Legend of Zelda*, *Pokémon*), renders a crisp stylized Bresenham pixel ellipse anchored at the contact base:
+$$\frac{(x - x_{\text{center}})^2}{r_x^2} + \frac{(y - y_{\text{base}})^2}{r_y^2} \le 1.0$$
 
-r_{\text{cone}}(t_{\text{closest}}) = R_L \cdot \frac{t_{\text{closest}}}{T}, \quad s = \text{clamp}\left(\frac{d}{r_{\text{cone}}}, 0, 1\right), \quad V = \min(V, s^2(3 - 2s))
+### 3. Authentic Uniform Flat Opacity (ditherMode: 'none')
+When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating continuous 256-level float gradients. Optional Bayer matrix stippling is available via `2x2`, `4x4`, and `8x8` modes.

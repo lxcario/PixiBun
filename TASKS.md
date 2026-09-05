@@ -224,6 +224,45 @@
 
 ---
 
+## Phase 36 — Smart Canvas Art Analysis & Bounded 2.5D Sprite Cast Shadows
+**Goal:** Replace the infinite 2D planar cone-tracing wedge that covered the canvas floor with professional length-bounded 2.5D sprite cast shadows and classic pixel art ground drop shadows.
+
+**Deliverables:**
+- [x] **Smart Canvas Shadow Analysis (`src/lib/ai/math/shadowAuto.ts`)**: Auto-infers light source coordinates, elevation, radius, opacity, and shadow style (`cast` vs `drop`) by analyzing sprite bounds, contact baseline, and silhouette mass (`tests/shadowAutoAnalysis.test.ts`).
+- [x] **Bounded 2.5D Sprite Cast Shadow Engine (`src/lib/ai/shadowRayMarcher.ts`)**: Exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$) anchored at the sprite contact baseline ($y_{\text{base}}$). Preserves hollow leg arches without bounding-box bloat or muddy groin puddles (`tests/shadowRayMarcher.test.ts`).
+- [x] **Ground Contact Drop Shadow Mode (`shadowStyle: 'drop'`)**: Stylized Bresenham pixel ellipse/capsule centered under the character contact baseline.
+- [x] **Authentic Pixel Art Flat Opacity (`ditherMode: 'none'`)**: Uniform opacity $\text{round}(\text{shadowOpacity} \times 255)$ when `ditherMode === 'none'`, eliminating blurry continuous float alpha gradients.
+- [x] **Default Dither Mode**: Default `ditherMode` changed to `'none'` across the shadow engine and inspector UI.
+
+**Acceptance criteria:**
+- Bounded sprite cast shadow preserves hollow leg arches with zero pixels painted in the arch: Verified (`tests/shadowRayMarcher.test.ts`).
+- Flat opacity mode paints uniform alpha without continuous float gradients: Verified.
+- All 287 tests pass across 50 suites: Verified.
+
+**Status:** Complete (2026-09-04)
+
+---
+
+## Phase 37 — PixiBud Deep Art Understanding, Anatomical Feature Isolation & OKLCH Cel-Shading
+**Goal:** Eliminate "bowling-ball" face inflation, diffuse mud, feature obliteration, and specular glare on character and animal sprites by implementing intelligent art morphology classification, facial feature segmentation, frontal face cushion normals, and stepped OKLCH cel-shading.
+
+**Deliverables:**
+- [x] **Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**: Classifies drawings into `character` (ears, horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
+- [x] **Frontal Face Cushion Plateau & Ridge Normals (`src/lib/ai/math/edtNormalMap.ts`)**: For characters, face height within 2.8px of silhouette bevels smoothly while interior remains flat facing camera ($N_z \ge 0.85$). Confines form shadows to unlit silhouette bevel while keeping the face lit and legible. Preserves independent 3D cone/ridge geometry for ears and horns. Stabilizes feature and whisker normals to $N = (0, 0, 1)$.
+- [x] **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**: Pixels marked `isFeature` and `isInkLine` bypass diffuse/ambient lighting multipliers entirely, keeping artist colors 100% intact. Flat base colors receive discrete stepped cel-shading with perceptual hue shifts toward 260° (skylight cool shadows) and 65° (sunlight warm highlights). Excludes features and line art from receiving specular highlights.
+- [x] **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**: Automatically skips generating specular glint overlays on matte/fabric character fur and skin.
+- [x] **Comprehensive Regression Testing (`tests/photometricAutoAnalysis.test.ts`)**: 32x32 cat sprite test verifying character classification, eye/mouth preservation, frontal cushion $N_z \ge 0.85$, and contour shadow stepping.
+
+**Acceptance criteria:**
+- Eyes, mouth, and whiskers retain exact original RGB values after photometric rendering: Verified (`tests/photometricAutoAnalysis.test.ts`).
+- Frontal face interior normal achieves $N_z \ge 0.85$: Verified.
+- All 296 unit/integration tests pass across 50 suites: Verified.
+- Zero TypeScript, ESLint, or Next.js production build errors: Verified.
+
+**Status:** Complete (2026-09-05)
+
+---
+
 ## Excluded Claims (Transparency Audit)
 The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
 - Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.

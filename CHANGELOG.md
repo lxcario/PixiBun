@@ -2,6 +2,45 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.7.0] - 2026-09-05
+### Deep Art Understanding, Anatomical Part Segmentation & OKLCH Cel-Shading
+- **Art Morphology & Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**:
+  - Implemented automatic classification of canvas drawings into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres/circles) vs. `prop`.
+  - Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
+  - Scans the top 15%–35% of the silhouette for distinct local convex lobes to detect ears and horns.
+  - Distinguishes flat unshaded base colors from intentional pre-painted highlights to prevent double-shading artifacts.
+  - Verified in `tests/photometricAutoAnalysis.test.ts`.
+- **Frontal Face Cushion Plateau & Ridge Normals (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Eliminated "bowling-ball" face inflation on character sprites: for `character` forms, the height reaches a smooth plateau within 2.8px of the boundary contour while the interior remains flat facing the camera ($N_z \ge 0.85$), ensuring light illuminates faces without splitting them in half with shadow.
+  - Preserves dedicated local 3D peaks for ears and horns so they catch directional light independently from the head.
+  - Stabilizes facial feature and whisker normals to $N = (0, 0, 1)$.
+- **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
+  - Excludes facial features and line art from receiving specular highlights.
+  - Added discrete stepped OKLCH cel-shading (`shiftHue` in `src/lib/ai/math/colorSpace.ts`): cool skylight hue shifts toward 260° in shadows and warm sunlight hue shifts toward 65° in highlights, rendering authentic retro pixel-art tones without noisy 24-bit float gradients.
+- **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
+  - Automatically suppresses harsh specular glint overlays on matte/fabric character fur and skin, preventing random white spots across character faces.
+  - Maintains non-destructive tagged layer replacement (`Photometric <material>`).
+
+### Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows
+- **Length-Bounded 2.5D Sprite Cast Shadow Projection (`src/lib/ai/shadowRayMarcher.ts`)**:
+  - Replaced infinite 2D planar cone-tracing wedge with professional length-bounded 2.5D sprite cast shadows.
+  - Implemented exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$) anchored at the sprite contact baseline ($y_{\text{base}}$).
+  - Preserves hollow leg arches, waist indentations, and wing gaps without bounding-box bloat or muddy center ambient occlusion blobs.
+  - Verified in `tests/shadowRayMarcher.test.ts`.
+- **Classic Ground Contact Drop Shadows (`src/lib/ai/shadowRayMarcher.ts`, `src/components/layout/inspector/RaymarchedShadowSection.tsx`)**:
+  - Added dedicated `shadowStyle: 'cast' | 'drop'` support: 'cast' renders directional sheared silhouette on the floor, while 'drop' renders a crisp stylized Bresenham pixel ellipse/capsule under the character contact baseline.
+- **Crisp Pixel Art Uniform Opacity (`ditherMode: 'none'`)**:
+  - When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating blurry continuous float alpha gradients and digital airbrush smear.
+  - Changed default `ditherMode` across the shadow engine and inspector UI to `'none'`.
+- **Smart Shadow Auto-Analysis (`src/lib/ai/math/shadowAuto.ts`)**:
+  - Implemented "Analyze & Render" for shadows: analyzes canvas sprite morphology to auto-infer optimal light source coordinates, elevation, radius, opacity, and shadow style with plain-language rationale chips.
+  - Verified in `tests/shadowAutoAnalysis.test.ts`.
+
+### Test Suite & Verification Expansion
+- **Vitest Unit & Integration Suites**: Expanded test suite from 276 tests across 49 suites to 296 tests across 50 suites with 100% pass rate (`tests/photometricAutoAnalysis.test.ts`, `tests/shadowAutoAnalysis.test.ts`, `tests/shadowRayMarcher.test.ts`).
+- **Zero-Error Quality Gates**: Clean TypeScript typecheck (`tsc --noEmit`), zero ESLint errors/warnings, Next.js 16 Turbopack production build passing, and all documentation integrity checks passing.
+
 ---
 
 ## [v1.6.0] - 2026-09-04

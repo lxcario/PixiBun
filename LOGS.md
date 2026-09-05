@@ -731,3 +731,54 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Checks run:** `npx tsc --noEmit` (0 errors), `eslint src tests` (0 errors), `npx vitest run` (271/271 across 48 suites), `npm run verify:docs` (all integrity checks passed).
 **Status:** Complete
+
+---
+
+## Phase 36 — Smart Canvas Art Analysis & Bounded 2.5D Sprite Cast Shadows (2026-09-04 / 2026-09-05)
+
+**User feedback & motivation:** The previous 2D planar raymarch cast shadow traced an infinite wedge over Euclidean distance fields, darkening the entire bottom of the canvas and obscuring sprites with continuous float gradients. The system needed bounded, grounded sprite cast shadows and classic pixel art ground drop shadows.
+
+**Delivered:**
+- **Smart Shadow Auto-Analysis (`src/lib/ai/math/shadowAuto.ts`)**: Implemented `inferRaymarchedShadowSettings` scanning silhouette bounds, sprite center, ground contact baseline, and directional bias to auto-infer light coordinates, elevation, radius, and opacity with descriptive rationale badges.
+- **Bounded 2.5D Sprite Cast Shadow Projection (`src/lib/ai/shadowRayMarcher.ts`)**:
+  - Replaced infinite planar raymarching with exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$, $\text{projX} = \text{round}(x_s + h \cdot \text{shear}_x)$, $\text{projY} = \text{round}(y_{\text{ground}} + h \cdot \text{shear}_y)$).
+  - Preserves hollow leg arches, waist indentations, and wing gaps without bounding-box bloat or muddy center AO puddles.
+- **Classic Ground Contact Drop Shadow Style (`shadowStyle: 'drop'`)**: Stylized Bresenham pixel ellipse/capsule centered under the character contact baseline (matching classic 2D pixel art RPG standards).
+- **Default Dither Mode: None**: Switched default `ditherMode` across the engine and inspector UI to `'none'`. When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$ without continuous float alpha gradients or digital airbrush smear.
+- **Dedicated Regression Testing (`tests/shadowAutoAnalysis.test.ts`, `tests/shadowRayMarcher.test.ts`)**: Verified 1-to-1 projection, hollow leg arch preservation, ground drop shadow oval generation, and uniform flat opacity.
+
+**Checks run:** `npx tsc --noEmit` (0 errors), `eslint src tests` (0 errors), `npx vitest run` (287/287 across 50 suites), `npm run verify:docs`.
+**Status:** Complete
+
+---
+
+## Phase 37 — PixiBud Deep Art Understanding, Anatomical Feature Isolation & OKLCH Cel-Shading (2026-09-05)
+
+**User feedback & motivation:** "Analyze & Render" of photometric lighting added nonsense shading to animal and character sprites (such as the cat sprite), inflating faces into bowling balls, plunging eyes/mouth into diffuse mud, and splashing white specular glare across matte fur.
+
+**Delivered:**
+- **Art Morphology & Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**:
+  - Automatically classifies canvas drawings into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres/circles) vs. `prop`.
+  - Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`).
+  - Scans the top 15%–35% of the silhouette for distinct local convex lobes to identify ears and horns.
+  - Distinguishes flat base colors with outline asymmetry from intentional pre-painted highlights.
+- **Frontal Face Cushion Plateau & Feature Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Eliminated "bowling-ball" face inflation on characters: height within 2.8px of the boundary contour bevels smoothly down while the interior forms a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the 1–2px unlit silhouette bevel, keeping the face interior bright and legible.
+  - Preserves independent 3D cone/ridge geometry for ears and horns so they catch directional light independently.
+  - Whiskers and facial features are assigned stabilized camera-facing normals ($N = [0, 0, 1]$).
+- **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
+  - Excludes facial features and line art from receiving specular highlights.
+  - Applied discrete stepped OKLCH cel-shading (`shiftHue` in `src/lib/ai/math/colorSpace.ts`): cool skylight hue shifts toward 260° in shadows and warm sunlight hue shifts toward 65° in highlights, rendering authentic retro pixel-art tones without noisy 24-bit float gradients.
+- **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
+  - Automatically suppresses harsh specular glint overlays on matte/fabric character fur and skin, preventing random white spots across character faces.
+  - Maintains non-destructive tagged layer replacement (`Photometric <material>`).
+- **Dedicated Regression Testing (`tests/photometricAutoAnalysis.test.ts`)**: Added comprehensive 32x32 cat sprite test verifying character classification, eye/mouth preservation, frontal cushion $N_z \ge 0.85$, and contour shadow stepping.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 296/296 tests passed across 50 suites
+- `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete
