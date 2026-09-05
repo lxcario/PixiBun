@@ -347,12 +347,68 @@ export function cleanOrphanPixelConfetti(
   }
 }
 
+interface CelRamp {
+  baseR: number;
+  baseG: number;
+  baseB: number;
+  shadowR: number;
+  shadowG: number;
+  shadowB: number;
+  deepR: number;
+  deepG: number;
+  deepB: number;
+  hiR: number;
+  hiG: number;
+  hiB: number;
+}
+
+function buildCelRamp(r: number, g: number, b: number): CelRamp {
+  const lab = rgbToOKLab(r, g, b);
+  const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
+
+  // 1. Unified Shadow Tone: cool ambient hue shift towards blue-violet (260°), crisp luminance drop
+  const shadowL = Math.max(0.18, lch.L * 0.78);
+  const shadowH = shiftHue(lch.h, 260, 14);
+  const shadowC = Math.min(0.35, lch.C * 1.05);
+  const shadowLab = oklchToOKLab(shadowL, shadowC, shadowH);
+  const shadowRgb = okLabToRGB(shadowLab.L, shadowLab.a, shadowLab.b);
+
+  // 2. Deep Crevice Tone (occluded seams, under-chin, inner folds)
+  const deepL = Math.max(0.12, lch.L * 0.60);
+  const deepH = shiftHue(lch.h, 260, 20);
+  const deepC = Math.min(0.35, lch.C * 1.08);
+  const deepLab = oklchToOKLab(deepL, deepC, deepH);
+  const deepRgb = okLabToRGB(deepLab.L, deepLab.a, deepLab.b);
+
+  // 3. Highlight Tone: warm shift towards sunlight (65°)
+  const hiL = Math.min(0.98, lch.L + (0.98 - lch.L) * 0.28);
+  const hiH = shiftHue(lch.h, 65, 10);
+  const hiC = Math.min(0.35, lch.C * 0.95);
+  const hiLab = oklchToOKLab(hiL, hiC, hiH);
+  const hiRgb = okLabToRGB(hiLab.L, hiLab.a, hiLab.b);
+
+  return {
+    baseR: r,
+    baseG: g,
+    baseB: b,
+    shadowR: shadowRgb.r,
+    shadowG: shadowRgb.g,
+    shadowB: shadowRgb.b,
+    deepR: deepRgb.r,
+    deepG: deepRgb.g,
+    deepB: deepRgb.b,
+    hiR: hiRgb.r,
+    hiG: hiRgb.g,
+    hiB: hiRgb.b,
+  };
+}
+
 export function executePhotometricPipeline(
   srcCtx: CanvasRenderingContext2D,
   width: number,
   height: number,
   params: PhotometricLightingParams,
-  paletteHex: string[]
+  paletteHex: string[] = []
 ): HTMLCanvasElement {
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
@@ -379,7 +435,7 @@ export function executePhotometricPipeline(
   let isInkLineMask: Uint8Array | null = null;
 
   if (formType === 'character') {
-    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0);
+    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
     normalField = analysis.normalField;
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeature;
@@ -421,6 +477,17 @@ export function executePhotometricPipeline(
 
   const paletteRgba = paletteHex.map(hexToRgba);
   const paletteOKLab = paletteRgba.map((c) => rgbToOKLab(c.r, c.g, c.b));
+
+  const celRampCache = new Map<number, CelRamp>();
+  const getCelRamp = (r: number, g: number, b: number): CelRamp => {
+    const key = (r << 16) | (g << 8) | b;
+    let ramp = celRampCache.get(key);
+    if (!ramp) {
+      ramp = buildCelRamp(r, g, b);
+      celRampCache.set(key, ramp);
+    }
+    return ramp;
+  };
 
   const outputCanvas = typeof document !== 'undefined'
     ? document.createElement('canvas')
@@ -478,45 +545,45 @@ export function executePhotometricPipeline(
       const effectiveAmbient = Math.max(0.35, params.ambientIntensity ?? 0.35) * brightness;
 
       if (formType === 'character' && paletteOKLab.length === 0) {
-        // Character cel-shading mode: discrete OKLCH tone stepping
+        // Character cel-shading mode: discrete OKLCH tone stepping with cached ramps
         const diffSignal = wrapNdotL * ao;
         const lightLevel = (diffSignal * 0.75 + (effectiveAmbient / 0.35) * 0.25) * brightness;
 
         const byteR = data[pIdx];
         const byteG = data[pIdx + 1];
         const byteB = data[pIdx + 2];
-        const lab = rgbToOKLab(byteR, byteG, byteB);
-        const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
+        const ramp = getCelRamp(byteR, byteG, byteB);
 
-        if (lightLevel < 0.80) {
-          // SHADOW TONE (along the right unlit contour / crevices)
-          const shadowDepth = Math.min(1.0, (0.80 - lightLevel) / 0.45);
-          const newL = Math.max(0.18, lch.L * (1.0 - 0.22 * shadowDepth));
-          const newH = shiftHue(lch.h, 260, 14 * shadowDepth);
-          const newC = Math.min(0.35, lch.C * 1.05);
-          const targetLab = oklchToOKLab(newL, newC, newH);
-          const rgb = okLabToRGB(targetLab.L, targetLab.a, targetLab.b);
-          outData[pIdx] = rgb.r;
-          outData[pIdx + 1] = rgb.g;
-          outData[pIdx + 2] = rgb.b;
+        // Discrete cel threshold with optional Bayer stippling
+        let shadowThresh = 0.82;
+        if (params.ditherModulation > 0) {
+          const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
+          shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
+        }
+
+        if (ao < 0.60) {
+          // DEEP CREVICE TONE (ambient occlusion in concave seams, under-chin, inner folds)
+          outData[pIdx] = ramp.deepR;
+          outData[pIdx + 1] = ramp.deepG;
+          outData[pIdx + 2] = ramp.deepB;
           outData[pIdx + 3] = data[pIdx + 3];
-        } else if (lightLevel > 1.30 && (mat.ks > 0.1 || params.material !== 'matte')) {
-          // HIGHLIGHT TONE (light-facing ear tips or apex)
-          const highIntensity = Math.min(1.0, (lightLevel - 1.30) / 0.45);
-          const newL = Math.min(0.98, lch.L + (0.98 - lch.L) * (0.28 * highIntensity));
-          const newH = shiftHue(lch.h, 65, 10 * highIntensity);
-          const newC = Math.min(0.35, lch.C * 0.95);
-          const targetLab = oklchToOKLab(newL, newC, newH);
-          const rgb = okLabToRGB(targetLab.L, targetLab.a, targetLab.b);
-          outData[pIdx] = rgb.r;
-          outData[pIdx + 1] = rgb.g;
-          outData[pIdx + 2] = rgb.b;
+        } else if (lightLevel < shadowThresh) {
+          // UNIFIED SHADOW TONE (single crisp shadow value across entire unlit side)
+          outData[pIdx] = ramp.shadowR;
+          outData[pIdx + 1] = ramp.shadowG;
+          outData[pIdx + 2] = ramp.shadowB;
+          outData[pIdx + 3] = data[pIdx + 3];
+        } else if (lightLevel > 1.28 && (mat.ks > 0.1 || params.material !== 'matte')) {
+          // HIGHLIGHT TONE (only for non-matte / shiny surfaces)
+          outData[pIdx] = ramp.hiR;
+          outData[pIdx + 1] = ramp.hiG;
+          outData[pIdx + 2] = ramp.hiB;
           outData[pIdx + 3] = data[pIdx + 3];
         } else {
-          // BASE TONE (artist's original hand-drawn color)
-          outData[pIdx] = byteR;
-          outData[pIdx + 1] = byteG;
-          outData[pIdx + 2] = byteB;
+          // BASE TONE (hand-drawn artist color)
+          outData[pIdx] = ramp.baseR;
+          outData[pIdx + 1] = ramp.baseG;
+          outData[pIdx + 2] = ramp.baseB;
           outData[pIdx + 3] = data[pIdx + 3];
         }
         continue;
@@ -630,7 +697,7 @@ export function renderParametric2p5DLighting(
   if (isMcSkin) {
     normalField = computeMinecraftSkinNormalField(width, height);
   } else if (isCharacter) {
-    const analysis = computeContentAwareHeightmap(data, width, height, 1.0, 2.0);
+    const analysis = computeContentAwareHeightmap(data, width, height, 1.0, 2.0, params.azimuthDeg);
     normalField = analysis.normalField;
     charFeatureMask = analysis.isFeature;
     charInkMask = analysis.isInkLine;

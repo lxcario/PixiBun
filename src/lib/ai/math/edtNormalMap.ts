@@ -291,11 +291,6 @@ export function computeDiscreteLaplaceCavity(
 ): Float32Array {
   const cavity = new Float32Array(width * height);
 
-  const getH = (x: number, y: number) => {
-    if (x < 0 || x >= width || y < 0 || y >= height) return 0;
-    return heightmap[y * width + x];
-  };
-
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = y * width + x;
@@ -305,15 +300,33 @@ export function computeDiscreteLaplaceCavity(
         continue;
       }
 
-      // Discrete Laplace operator: d^2H/dx^2 + d^2H/dy^2
-      const laplace =
-        getH(x, y - 1) +
-        getH(x - 1, y) - 4 * center + getH(x + 1, y) +
-        getH(x, y + 1);
+      // Cavity occurs where surrounding opaque geometry rises higher than center (concave valley/crevice/seam)
+      // Transparent background pixels (nH <= 0) represent open environment and do not occlude.
+      let occlusion = 0;
+      let count = 0;
+      const neighbors = [
+        [x, y - 1],
+        [x - 1, y],
+        [x + 1, y],
+        [x, y + 1],
+      ];
 
-      // Cavity occurs where curvature is concave (valleys/crevices)
-      const concaveCurvature = Math.max(0, -laplace);
-      cavity[idx] = Math.max(0.0, Math.min(1.0, 1.0 - cavityStrength * (concaveCurvature / 4.0)));
+      for (let n = 0; n < 4; n++) {
+        const nx = neighbors[n][0];
+        const ny = neighbors[n][1];
+        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+          const nH = heightmap[ny * width + nx];
+          if (nH > 0) {
+            count++;
+            if (nH > center) {
+              occlusion += nH - center;
+            }
+          }
+        }
+      }
+
+      const meanOcclusion = count > 0 ? occlusion / count : 0;
+      cavity[idx] = Math.max(0.0, Math.min(1.0, 1.0 - cavityStrength * (meanOcclusion * 2.0)));
     }
   }
 
@@ -347,7 +360,8 @@ export function computeContentAwareHeightmap(
   width: number,
   height: number,
   cavityStrength: number = 1.0,
-  depthScale: number = 2.0
+  depthScale: number = 2.0,
+  lightAzimuth?: number
 ): ContentAwareAnalysis {
   const totalPixels = width * height;
   const isInkLine = new Uint8Array(totalPixels);
@@ -703,7 +717,12 @@ export function computeContentAwareHeightmap(
   const normalField = computeTangentNormalField(smoothHeightmap, width, height, depthScale);
 
   if (isCharacter) {
-    // Flatten normals across facial features and thin whiskers to protect them from distortion
+    const charCenterX = (minX + maxX) / 2;
+    const az = lightAzimuth ?? 315;
+    const azRad = (az * Math.PI) / 180;
+    const lightDirX = Math.sin(azRad); // < 0 when light comes from left (e.g. 315°)
+
+    // Flatten normals across facial features, thin whiskers, and narrow lit-side appendages
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const idx = y * width + x;
@@ -728,6 +747,37 @@ export function computeContentAwareHeightmap(
           normalField.nx[idx] = 0;
           normalField.ny[idx] = 0;
           normalField.nz[idx] = 1.0;
+          continue;
+        }
+
+        // Narrow appendage (ear / horn / antenna) normal stabilization
+        if (y <= minY + boxH * 0.45) {
+          let segLeft = x;
+          while (segLeft > 0 && isOpaque(segLeft - 1, y)) segLeft--;
+          let segRight = x;
+          while (segRight < width - 1 && isOpaque(segRight + 1, y)) segRight++;
+          const segW = segRight - segLeft + 1;
+
+          if (segW <= 5) {
+            // Narrow appendage: prevent harsh vertical split down narrow 2-4px ears
+            const isLitSide = (lightDirX <= 0 && segRight <= charCenterX) || (lightDirX > 0 && segLeft >= charCenterX);
+            if (isLitSide) {
+              // On the lit side of the character, prevent normals from facing away from the key light
+              if (lightDirX <= 0 && normalField.nx[idx] > 0) {
+                normalField.nx[idx] = 0;
+              } else if (lightDirX > 0 && normalField.nx[idx] < 0) {
+                normalField.nx[idx] = 0;
+              }
+              normalField.nz[idx] = Math.max(0.88, normalField.nz[idx]);
+            } else {
+              // On the unlit side, smooth the cross-section
+              normalField.nz[idx] = Math.max(0.78, normalField.nz[idx]);
+            }
+            const len = Math.hypot(normalField.nx[idx], normalField.ny[idx], normalField.nz[idx]) || 1;
+            normalField.nx[idx] /= len;
+            normalField.ny[idx] /= len;
+            normalField.nz[idx] /= len;
+          }
         }
       }
     }

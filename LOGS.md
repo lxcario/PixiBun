@@ -766,14 +766,20 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Eliminated "bowling-ball" face inflation on characters: height within 2.8px of the boundary contour bevels smoothly down while the interior forms a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the 1–2px unlit silhouette bevel, keeping the face interior bright and legible.
   - Preserves independent 3D cone/ridge geometry for ears and horns so they catch directional light independently.
   - Whiskers and facial features are assigned stabilized camera-facing normals ($N = [0, 0, 1]$).
-- **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**:
+- **100% Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/ai/math/photometricLighting.ts`)**:
   - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
   - Excludes facial features and line art from receiving specular highlights.
-  - Applied discrete stepped OKLCH cel-shading (`shiftHue` in `src/lib/ai/math/colorSpace.ts`): cool skylight hue shifts toward 260° in shadows and warm sunlight hue shifts toward 65° in highlights, rendering authentic retro pixel-art tones without noisy 24-bit float gradients.
+  - Implemented discrete OKLCH cel-shading ramps cached per unique base color (`CelRamp`): maps each artist base color to exactly one unified crisp shadow tone (cool skylight hue shifted to 260°, $L \times 0.78$), one deep crevice tone for concave seams/folds ($AO < 0.60$, $L \times 0.60$), and optional warm highlight tone (65°).
+  - Completely eliminates continuous float gradients and dirty multi-shade banding across character fills.
+  - Supports optional Bayer ordered dithering stippling along the cel shadow boundary when `ditherModulation > 0`.
+- **Narrow Appendage (Ear / Horn) Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Detects narrow appendages ($\le 5$px wide) in the upper silhouette. On the light-facing side (e.g. left ear under 315° key light), clamps normal $N_x \le 0$ and reinforces camera alignment ($N_z \ge 0.88$).
+  - Prevents narrow 2–4px ears from bisecting into a 1px lit tube and a 1px dark shadow tube.
+  - Overhauled `computeDiscreteLaplaceCavity` to evaluate true opaque neighbor occlusion so convex silhouette edges are not falsely darkened as cavities.
 - **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
   - Automatically suppresses harsh specular glint overlays on matte/fabric character fur and skin, preventing random white spots across character faces.
   - Maintains non-destructive tagged layer replacement (`Photometric <material>`).
-- **Dedicated Regression Testing (`tests/photometricAutoAnalysis.test.ts`)**: Added comprehensive 32x32 cat sprite test verifying character classification, eye/mouth preservation, frontal cushion $N_z \ge 0.85$, and contour shadow stepping.
+- **Dedicated Regression Testing (`tests/photometricAutoAnalysis.test.ts`)**: Added comprehensive 32x32 cat sprite tests verifying character classification, eye/mouth preservation, frontal cushion $N_z \ge 0.85$, zero gradient banding across shadow fills, and lit-side ear base tone retention.
 
 **Checks run:**
 - `npx tsc --noEmit`: 0 errors

@@ -10,14 +10,17 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Scans the top 15%–35% of the silhouette for distinct local convex lobes to detect ears and horns.
   - Distinguishes flat unshaded base colors from intentional pre-painted highlights to prevent double-shading artifacts.
   - Verified in `tests/photometricAutoAnalysis.test.ts`.
-- **Frontal Face Cushion Plateau & Ridge Normals (`src/lib/ai/math/edtNormalMap.ts`)**:
+- **Frontal Face Cushion Plateau & Narrow Appendage Stabilization (`src/lib/ai/math/edtNormalMap.ts`)**:
   - Eliminated "bowling-ball" face inflation on character sprites: for `character` forms, the height reaches a smooth plateau within 2.8px of the boundary contour while the interior remains flat facing the camera ($N_z \ge 0.85$), ensuring light illuminates faces without splitting them in half with shadow.
   - Preserves dedicated local 3D peaks for ears and horns so they catch directional light independently from the head.
+  - Stabilizes narrow appendages (ears, horns, antennae, tails $\le 5$px wide) on the light-facing side: clamps $N_x \le 0$ when light comes from the left and enforces $N_z \ge 0.88$, preventing narrow 2–4px ears from bisecting into a 1px lit tube and a 1px dark shadow tube.
   - Stabilizes facial feature and whisker normals to $N = (0, 0, 1)$.
-- **100% Feature Preservation & Stepped OKLCH Cel-Shading (`src/lib/ai/math/photometricLighting.ts`)**:
+- **100% Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/ai/math/photometricLighting.ts`)**:
   - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
   - Excludes facial features and line art from receiving specular highlights.
-  - Added discrete stepped OKLCH cel-shading (`shiftHue` in `src/lib/ai/math/colorSpace.ts`): cool skylight hue shifts toward 260° in shadows and warm sunlight hue shifts toward 65° in highlights, rendering authentic retro pixel-art tones without noisy 24-bit float gradients.
+  - Implemented discrete OKLCH cel-shading ramps cached per unique base color (`CelRamp`): maps each artist base color to exactly one unified crisp shadow tone (cool skylight hue shifted to 260°, $L \times 0.78$), one deep crevice tone for concave seams/folds ($AO < 0.60$, $L \times 0.60$), and optional warm highlight tone (65°).
+  - Completely eliminates continuous float gradients and dirty multi-shade banding across character fills.
+  - Supports optional Bayer ordered dithering stippling along the cel shadow boundary when `ditherModulation > 0`.
 - **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
   - Automatically suppresses harsh specular glint overlays on matte/fabric character fur and skin, preventing random white spots across character faces.
   - Maintains non-destructive tagged layer replacement (`Photometric <material>`).

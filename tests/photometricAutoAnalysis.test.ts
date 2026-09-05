@@ -334,6 +334,26 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     const rightCheekP = (16 * 32 + 23) * 4;
     expect(outData[rightCheekP]).toBeGreaterThan(160); // light and readable
     expect(outData[rightCheekP]).toBeLessThan(255); // in shadow
+
+    // 4. Verification of ZERO gradient banding (all shadow pixels share the exact same cel ramp color)
+    const shadowR = outData[rightCheekP];
+    const shadowG = outData[rightCheekP + 1];
+    const shadowB = outData[rightCheekP + 2];
+
+    const anotherShadowP = (17 * 32 + 23) * 4;
+    expect(outData[anotherShadowP]).toBe(shadowR);
+    expect(outData[anotherShadowP + 1]).toBe(shadowG);
+    expect(outData[anotherShadowP + 2]).toBe(shadowB);
+
+    // 5. Lit-side ear stabilization: left ear (facing the 315° key light) must NOT be bisected into a 1px shadow tube
+    const leftEarInteriorP1 = (7 * 32 + 10) * 4;
+    const leftEarInteriorP2 = (7 * 32 + 11) * 4;
+    expect(outData[leftEarInteriorP1]).toBe(255); // retains base cream color
+    expect(outData[leftEarInteriorP1 + 1]).toBe(245);
+    expect(outData[leftEarInteriorP1 + 2]).toBe(230);
+    expect(outData[leftEarInteriorP2]).toBe(255); // retains base cream color (not bisected!)
+    expect(outData[leftEarInteriorP2 + 1]).toBe(245);
+    expect(outData[leftEarInteriorP2 + 2]).toBe(230);
   });
 });
 
