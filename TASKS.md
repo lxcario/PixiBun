@@ -312,12 +312,14 @@
   - Relocated `47-Blob Autotile Edges` to the dedicated Tileset Decomposer panel alongside `Decompose Layer`.
 - [x] **Light Gizmo Collision Prevention (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
   - Repositioned the floating action bar from `-top-12` to `top-3` within the canvas boundary, completely eliminating visual collisions with the secondary context options bar.
-- [x] **Regression & Unit Test Suite Verification (`tests/components/TactileButton.test.tsx`)**:
-  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, and variant styling with 100% pass rate.
+- [x] **Regression & Unit Test Suite Verification (`tests/components/TactileButton.test.tsx`, `tests/components/PixelLightBulbGizmo.test.tsx`, `tests/components/InspectorDeduplication.test.tsx`)**:
+  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, dual-band specular light sweep, and variant styling with 100% pass rate.
+  - Verified floating light gizmo toolbar position (`top-3`) within canvas boundaries.
+  - Added dedicated inspector control deduplication suite verifying 47-blob and drop shadow isolation.
 
 **Acceptance criteria:**
 - Hovering TactileButton displays `#603B82` background with visible dual-band specular light-sweep: Verified.
-- All 313 unit tests pass across 52 test suites: Verified.
+- All 317 unit tests pass across 53 test suites: Verified.
 - TypeScript strict checking, ESLint, Next.js production build, and documentation integrity verification pass with 0 errors: Verified.
 
 **Status:** Complete (2026-09-05)

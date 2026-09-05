@@ -1,10 +1,13 @@
 // @vitest-environment happy-dom
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import { TactileButton } from '@/components/ui/TactileButton';
 
 describe('TactileButton component', () => {
+  afterEach(() => {
+    cleanup();
+  });
   it('renders button with children and handles clicks', () => {
     const handleClick = vi.fn();
     render(
@@ -60,5 +63,30 @@ describe('TactileButton component', () => {
     const dangerBtn = screen.getByRole('button', { name: 'Danger' });
     expect(dangerBtn.className).toContain('hover:bg-[#c24e61]');
     unmountDanger();
+  });
+
+  it('renders dual-band wisteria specular light sweep gradient on enabled non-ghost buttons', () => {
+    const { container, unmount } = render(<TactileButton variant="default">Gleam</TactileButton>);
+    const sweepDiv = container.querySelector('div.pointer-events-none.absolute.inset-0.z-10');
+    expect(sweepDiv).not.toBeNull();
+    expect(sweepDiv?.getAttribute('style')).toContain('linear-gradient(115deg');
+    expect(sweepDiv?.getAttribute('style')).toContain('220,171,223');
+    unmount();
+
+    // Ghost variant excludes specular sweep
+    const { container: ghostContainer, unmount: unmountGhost } = render(<TactileButton variant="ghost">No Gleam</TactileButton>);
+    expect(ghostContainer.querySelector('div.pointer-events-none.absolute.inset-0.z-10')).toBeNull();
+    unmountGhost();
+
+    // Disabled button excludes specular sweep
+    const { container: disabledContainer, unmount: unmountDisabled } = render(<TactileButton disabled variant="default">No Gleam</TactileButton>);
+    expect(disabledContainer.querySelector('div.pointer-events-none.absolute.inset-0.z-10')).toBeNull();
+    unmountDisabled();
+  });
+
+  it('renders image button with rounded-[2px] when selected', () => {
+    render(<TactileButton imageSrc="/test.png" active />);
+    const imgBtn = screen.getByRole('button');
+    expect(imgBtn.className).toContain('rounded-[2px]');
   });
 });

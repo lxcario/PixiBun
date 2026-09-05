@@ -850,13 +850,15 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Relocated `47-Blob Autotile Edges` to the dedicated Tileset Decomposer panel alongside `Decompose Layer`.
 - **Light Gizmo Collision Prevention (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
   - Repositioned the floating action bar from `-top-12` to `top-3` within the canvas boundary, completely eliminating visual collisions with the secondary context options bar.
-- **Dedicated Unit & Integration Testing (`tests/components/TactileButton.test.tsx`)**:
-  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, and variant styling with 100% pass rate.
+- **Dedicated Unit & Integration Testing (`tests/components/TactileButton.test.tsx`, `tests/components/PixelLightBulbGizmo.test.tsx`, `tests/components/InspectorDeduplication.test.tsx`)**:
+  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, dual-band specular sweep, and variant styling with 100% pass rate.
+  - Verified floating light gizmo toolbar position (`top-3`) within canvas boundaries.
+  - Added dedicated inspector control deduplication suite verifying 47-blob and drop shadow isolation.
 
 **Checks run:**
 - `npx tsc --noEmit`: 0 errors
 - `eslint src tests`: 0 errors, 0 warnings
-- `npx vitest run`: 313/313 tests passed across 52 suites
+- `npx vitest run`: 317/317 tests passed across 53 suites
 - `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete

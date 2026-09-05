@@ -7,7 +7,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Harmonized Tactile Button Design System (`src/components/ui/TactileButton.tsx`, `src/app/globals.css`)**:
   - Replaced blinding white hover states (`hover:bg-[#f0ecf6]`, `hover:bg-[#fff8db]`) that washed out amber text and obscured specular light sweeps with calibrated Amethyst Wisteria (`#603B82`, OKLCH $L \approx 0.42, C \approx 0.13, H \approx 312^\circ$).
   - Guarantees WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
-  - Upgraded specular CC light sweep animation to a dual-band gradient with wisteria flanking wings (`linear-gradient(115deg, transparent 0%, rgba(220,171,223,0.15) 20%, rgba(255,255,255,0.75) 48%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.75) 52%, rgba(220,171,223,0.15) 80%, transparent 100%)`).
+  - Upgraded specular CC light sweep animation to a dual-band gradient with wisteria flanking wings (`linear-gradient(115deg, transparent 0%, rgba(220,171,223,0.15) 20%, rgba(255,255,255,0.75) 50%, rgba(220,171,223,0.15) 80%, transparent 100%)`).
   - Standardized microinteraction spring physics across all studio buttons (`scale: 1.025` on hover, `scale: 0.97` on tap, `rounded-[2px]`).
   - Harmonized modal action buttons across `src/components/layout/TopHeader.tsx`, `src/components/modals/ExportModal.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/modals/CanvasResizeModal.tsx`, and `src/components/system/PwaUpdateToast.tsx`.
 - **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
@@ -18,8 +18,10 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Relocated `47-Blob Autotile Edges` to the dedicated Tileset Decomposer panel alongside `Decompose Layer`.
 - **Light Gizmo Header Collision Prevention (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
   - Repositioned the floating gizmo action bar from `-top-12` to `top-3` within the canvas boundary, completely eliminating visual collisions with the secondary context options bar.
-- **Unit & Integration Test Suite Verification (`tests/components/TactileButton.test.tsx`)**:
-  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, and variant styling with 100% pass rate.
+- **Unit & Integration Test Suite Verification (`tests/components/TactileButton.test.tsx`, `tests/components/PixelLightBulbGizmo.test.tsx`, `tests/components/InspectorDeduplication.test.tsx`)**:
+  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, dual-band specular light sweep, and variant styling with 100% pass rate.
+  - Verified floating light gizmo toolbar position (`top-3`) inside viewport boundaries.
+  - Verified inspector deduplication suite isolating autotile contours to the tileset decomposition engine.
 
 ---
 
