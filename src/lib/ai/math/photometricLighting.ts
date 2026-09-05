@@ -545,8 +545,8 @@ export function executePhotometricPipeline(
       const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.55) / 1.55), 1.25);
       const effectiveAmbient = Math.max(0.48, params.ambientIntensity ?? 0.48) * brightness;
 
-      if (paletteOKLab.length === 0) {
-        // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for all forms.
+      if (formType === 'character' && paletteOKLab.length === 0) {
+        // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for character anatomy.
         // Preserves hand-drawn pixel art palette purity instead of generating muddy 24-bit float gradients.
         const diffSignal = wrapNdotL;
         const ambSignal = (effectiveAmbient / 0.48) * ao;
