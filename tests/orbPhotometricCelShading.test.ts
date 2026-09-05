@@ -324,4 +324,95 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
     // The right pixel must receive higher luminance when the light center is shifted to the right!
     expect(lumWhenRightFocus).toBeGreaterThan(lumWhenLeftFocus);
   });
+
+  it('guarantees peak highlight shifts to the directional light position and is not locked to the center apex', () => {
+    const width = 32;
+    const height = 32;
+    const circleData = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (Math.hypot(x - 16, y - 16) <= 10) {
+          const idx = (y * width + x) * 4;
+          circleData[idx] = 134;
+          circleData[idx + 1] = 64;
+          circleData[idx + 2] = 180;
+          circleData[idx + 3] = 255;
+        }
+      }
+    }
+
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(circleData) }),
+    } as unknown as CanvasRenderingContext2D;
+
+    // 1. Light from Top-Right (azimuth 42°, elevation 35°, center 26, 5)
+    const topRightCanvas = executePhotometricPipeline(
+      mockCtx,
+      width,
+      height,
+      {
+        lightAzimuth: 42,
+        lightElevation: 35,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'orb',
+        lightCenterX: 26,
+        lightCenterY: 5,
+      },
+      []
+    );
+
+    const trData = topRightCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+    const lum = (x: number, y: number) => {
+      const idx = (y * width + x) * 4;
+      return (0.2126 * trData[idx] + 0.7152 * trData[idx + 1] + 0.0722 * trData[idx + 2]) / 255;
+    };
+
+    const trLum = lum(22, 10);
+    const centerLum = lum(16, 16);
+    const blLum = lum(10, 22);
+
+    expect(trLum).toBeGreaterThan(centerLum);
+    expect(centerLum).toBeGreaterThan(blLum);
+
+    // 2. Light from Bottom-Left (azimuth 222°, elevation 35°, center 5, 26)
+    const bottomLeftCanvas = executePhotometricPipeline(
+      mockCtx,
+      width,
+      height,
+      {
+        lightAzimuth: 222,
+        lightElevation: 35,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'orb',
+        lightCenterX: 5,
+        lightCenterY: 26,
+      },
+      []
+    );
+
+    const blData = bottomLeftCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+    const lumBL = (x: number, y: number) => {
+      const idx = (y * width + x) * 4;
+      return (0.2126 * blData[idx] + 0.7152 * blData[idx + 1] + 0.0722 * blData[idx + 2]) / 255;
+    };
+
+    const blLum2 = lumBL(10, 22);
+    const centerLum2 = lumBL(16, 16);
+    const trLum2 = lumBL(22, 10);
+
+    expect(blLum2).toBeGreaterThan(centerLum2);
+    expect(centerLum2).toBeGreaterThan(trLum2);
+  });
 });

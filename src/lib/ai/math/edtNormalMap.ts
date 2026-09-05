@@ -124,8 +124,12 @@ export function generateInflatedHeightmap(
   for (let i = 0; i < distanceMap.length; i++) {
     if (distanceMap[i] > 0) {
       const normalizedD = Math.min(1.0, distanceMap[i] / maxD);
-      // Non-linear curvature inflated to full 3D dome height
-      heightmap[i] = maxD * Math.pow(normalizedD, gamma);
+      // Spherical dome inflation: z = sqrt(1 - (1 - d)^2).
+      // Zero derivative at apex eliminates conical pinch artifacts; vertical slope at perimeter matches 3D sphere.
+      const u = 1.0 - normalizedD;
+      const sphereDome = Math.sqrt(Math.max(0, 1.0 - u * u));
+      const gammaDome = Math.pow(normalizedD, gamma);
+      heightmap[i] = maxD * (sphereDome * 0.75 + gammaDome * 0.25);
     }
   }
 

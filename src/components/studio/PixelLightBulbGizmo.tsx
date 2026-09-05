@@ -56,7 +56,13 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   const stageWidth = canvasWidth * scale;
   const stageHeight = canvasHeight * scale;
 
-  // Middle light point in canvas coordinates (freely draggable, not locked to dead center)
+  // Subject anchor in canvas coordinates (where artwork is located)
+  const [artworkAnchor, setArtworkAnchor] = useState<GizmoPoint>(() => ({
+    x: Math.round(canvasWidth / 2),
+    y: Math.round(canvasHeight / 2),
+  }));
+
+  // Middle light point in canvas coordinates (freely draggable focus)
   const [canvasCentroid, setCanvasCentroid] = useState<GizmoPoint>(() => ({
     x: Math.round(canvasWidth / 2),
     y: Math.round(canvasHeight / 2),
@@ -72,14 +78,23 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     try {
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       const centroid = computeArtworkCentroid(imgData.data, canvasWidth, canvasHeight);
+      setArtworkAnchor(centroid);
       setCanvasCentroid(centroid);
     } catch {
-      setCanvasCentroid({
+      const def = {
         x: Math.round(canvasWidth / 2),
         y: Math.round(canvasHeight / 2),
-      });
+      };
+      setArtworkAnchor(def);
+      setCanvasCentroid(def);
     }
   }, [canvasWidth, canvasHeight, mainCanvasRef]);
+
+  // Subject anchor in stage coordinates
+  const stageAnchor = useMemo<GizmoPoint>(() => ({
+    x: artworkAnchor.x * scale,
+    y: artworkAnchor.y * scale,
+  }), [artworkAnchor, scale]);
 
   // Middle light point in stage coordinates
   const stageCentroid = useMemo<GizmoPoint>(() => ({
@@ -97,11 +112,11 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     return lightAnglesToCoords(
       tools.lightAzimuth,
       tools.lightElevation,
-      stageCentroid.x,
-      stageCentroid.y,
+      stageAnchor.x,
+      stageAnchor.y,
       maxRadius
     );
-  }, [tools.lightAzimuth, tools.lightElevation, stageCentroid, maxRadius]);
+  }, [tools.lightAzimuth, tools.lightElevation, stageAnchor, maxRadius]);
 
   // Throttled 60 FPS update loop during drag
   const flushLightChange = useCallback(() => {
@@ -190,19 +205,23 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     const container = containerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    const px = clientX - rect.left;
-    const py = clientY - rect.top;
+    const px = Math.max(0, Math.min(stageWidth, clientX - rect.left));
+    const py = Math.max(0, Math.min(stageHeight, clientY - rect.top));
 
     const angles = coordsToLightAngles(
       px,
       py,
-      stageCentroid.x,
-      stageCentroid.y,
+      stageAnchor.x,
+      stageAnchor.y,
       maxRadius
     );
 
-    scheduleLightChange(angles.azimuth, angles.elevation, canvasCentroid.x, canvasCentroid.y, brightness);
-  }, [stageCentroid, maxRadius, canvasCentroid, brightness, scheduleLightChange]);
+    const newCanvasX = Math.round(px / scale);
+    const newCanvasY = Math.round(py / scale);
+    setCanvasCentroid({ x: newCanvasX, y: newCanvasY });
+
+    scheduleLightChange(angles.azimuth, angles.elevation, newCanvasX, newCanvasY, brightness);
+  }, [stageWidth, stageHeight, stageAnchor, maxRadius, scale, brightness, scheduleLightChange]);
 
   // Update center position from client pointer event
   const updateCenterFromPointer = useCallback((clientX: number, clientY: number) => {
@@ -217,9 +236,17 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     const newCanvasX = Math.round(clampedPx / scale);
     const newCanvasY = Math.round(clampedPy / scale);
 
+    const angles = coordsToLightAngles(
+      clampedPx,
+      clampedPy,
+      stageAnchor.x,
+      stageAnchor.y,
+      maxRadius
+    );
+
     setCanvasCentroid({ x: newCanvasX, y: newCanvasY });
-    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, newCanvasX, newCanvasY, brightness);
-  }, [stageWidth, stageHeight, scale, tools.lightAzimuth, tools.lightElevation, brightness, scheduleLightChange]);
+    scheduleLightChange(angles.azimuth, angles.elevation, newCanvasX, newCanvasY, brightness);
+  }, [stageWidth, stageHeight, scale, stageAnchor, maxRadius, brightness, scheduleLightChange]);
 
   const handleBulbPointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
@@ -302,10 +329,12 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     try {
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       const centroid = computeArtworkCentroid(imgData.data, canvasWidth, canvasHeight);
+      setArtworkAnchor(centroid);
       setCanvasCentroid(centroid);
       scheduleLightChange(tools.lightAzimuth, tools.lightElevation, centroid.x, centroid.y, brightness);
     } catch {
       const def = { x: Math.round(canvasWidth / 2), y: Math.round(canvasHeight / 2) };
+      setArtworkAnchor(def);
       setCanvasCentroid(def);
       scheduleLightChange(tools.lightAzimuth, tools.lightElevation, def.x, def.y, brightness);
     }
@@ -466,8 +495,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
 
         {/* Horizon Range Guide Ring */}
         <circle
-          cx={stageCentroid.x}
-          cy={stageCentroid.y}
+          cx={stageAnchor.x}
+          cy={stageAnchor.y}
           r={maxRadius}
           fill="none"
           stroke="#f0be7c"
@@ -478,8 +507,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
 
         {/* Zenith Overhead Ring */}
         <circle
-          cx={stageCentroid.x}
-          cy={stageCentroid.y}
+          cx={stageAnchor.x}
+          cy={stageAnchor.y}
           r={maxRadius * 0.33}
           fill="none"
           stroke="#f0be7c"
@@ -488,10 +517,10 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           opacity="0.2"
         />
 
-        {/* Ray from Middle Light Point to Light Bulb */}
+        {/* Ray from Artwork Subject Anchor to Light Bulb */}
         <line
-          x1={stageCentroid.x}
-          y1={stageCentroid.y}
+          x1={stageAnchor.x}
+          y1={stageAnchor.y}
           x2={bulbCoords.x}
           y2={bulbCoords.y}
           stroke="#f0be7c"

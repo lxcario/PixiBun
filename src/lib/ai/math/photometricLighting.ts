@@ -501,15 +501,6 @@ export function executePhotometricPipeline(
   const hasCustomCenter = params.lightCenterX !== undefined && params.lightCenterY !== undefined;
   const lCenterX = hasCustomCenter ? params.lightCenterX! : width / 2;
   const lCenterY = hasCustomCenter ? params.lightCenterY! : height / 2;
-
-  const maxRadiusCanvas = Math.max(12, Math.min(width, height) * 0.44);
-  const clampedEl = Math.max(0, Math.min(90, params.lightElevation));
-  const r = maxRadiusCanvas * (1 - clampedEl / 90);
-
-  const bulbX = lCenterX + r * Math.sin(azRad);
-  const bulbY = lCenterY - r * Math.cos(azRad);
-  const bulbZ = Math.max(8, maxRadiusCanvas * Math.sin(elRad) + 4);
-
   const attRadius = Math.max(params.lightRadius ?? 64, Math.max(width, height) * 1.6);
 
   for (let y = 0; y < height; y++) {
@@ -553,35 +544,21 @@ export function executePhotometricPipeline(
 
       const ao = cavityAO[idx];
 
-      let pixLx = Lx;
-      let pixLy = Ly;
-      let pixLz = Lz;
-      let pixNormHx = normHx;
-      let pixNormHy = normHy;
-      let pixNormHz = normHz;
+      const pixLx = Lx;
+      const pixLy = Ly;
+      const pixLz = Lz;
+      const pixNormHx = normHx;
+      const pixNormHy = normHy;
+      const pixNormHz = normHz;
       let effectiveFalloff = 1.0;
 
       if (hasCustomCenter) {
-        const dx = bulbX - x;
-        const dy = bulbY - y;
-        const dz = bulbZ;
-        const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-
-        pixLx = dx / dist3D;
-        pixLy = dy / dist3D;
-        pixLz = dz / dist3D;
-
-        const pHx = pixLx + Vx;
-        const pHy = pixLy + Vy;
-        const pHz = pixLz + Vz;
-        const phLen = Math.sqrt(pHx * pHx + pHy * pHy + pHz * pHz) || 1;
-        pixNormHx = pHx / phLen;
-        pixNormHy = pHy / phLen;
-        pixNormHz = pHz / phLen;
-
-        const normDist = Math.min(1.0, dist3D / attRadius);
+        const dx = lCenterX - x;
+        const dy = lCenterY - y;
+        const dist2D = Math.sqrt(dx * dx + dy * dy);
+        const normDist = Math.min(1.0, dist2D / attRadius);
         const falloff = (1 - normDist * normDist) * (1 - normDist * normDist);
-        effectiveFalloff = falloff * 0.65 + 0.35;
+        effectiveFalloff = falloff * 0.25 + 0.75;
       }
 
       // Half-Lambert Wrap Lighting (Valve Mitchell/McTaggart/Green 2006 formulation)
@@ -664,13 +641,14 @@ export function executePhotometricPipeline(
         specB *= origB;
       }
 
-      const ambR = origR * effectiveAmbient * ao;
-      const ambG = origG * effectiveAmbient * ao;
-      const ambB = origB * effectiveAmbient * ao;
+      const effectiveAO = formType === 'orb' ? Math.max(0.85, ao) : ao;
+      const ambR = origR * effectiveAmbient * effectiveAO;
+      const ambG = origG * effectiveAmbient * effectiveAO;
+      const ambB = origB * effectiveAmbient * effectiveAO;
 
-      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR * ao + specR) * (brightness * 0.9)));
-      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG * ao + specG) * (brightness * 0.9)));
-      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB * ao + specB) * (brightness * 0.9)));
+      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR + specR) * (brightness * 0.9)));
+      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG + specG) * (brightness * 0.9)));
+      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB + specB) * (brightness * 0.9)));
 
       if (params.ditherModulation > 0) {
         const threshold = getBayerMatrixThreshold(x, y, params.bayerSize);
@@ -1057,6 +1035,7 @@ export function executeVolumetricOpticalPipeline(
       let r255: number;
       let g255: number;
       let b255: number;
+      let toneStep = 0;
 
       const baseLab = rgbToOKLab(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
       const _baseLch = okLabToOKLCH(baseLab.L, baseLab.a, baseLab.b);
@@ -1070,7 +1049,7 @@ export function executeVolumetricOpticalPipeline(
         g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
         b255 = Math.max(0, Math.min(255, Math.round(finalB * 255)));
       } else {
-        const toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
+        toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
 
         const finalR = origR * 0.4 + (origR * diffuseLight * 0.6) + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
         const finalG = origG * 0.4 + (origG * diffuseLight * 0.6) + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
@@ -1088,22 +1067,33 @@ export function executeVolumetricOpticalPipeline(
       }
 
       if (paletteOKLab.length > 0) {
-        const pixelLab = rgbToOKLab(r255, g255, b255);
-        let bestDist = Infinity;
-        let bestColor = paletteRgba[0];
+        if (celTones !== 'smooth' && numTones > 0) {
+          const paletteIdx = Math.min(
+            paletteRgba.length - 1,
+            Math.round((toneStep / Math.max(1, numTones - 1)) * (paletteRgba.length - 1))
+          );
+          const chosen = paletteRgba[paletteIdx];
+          r255 = chosen.r;
+          g255 = chosen.g;
+          b255 = chosen.b;
+        } else {
+          const pixelLab = rgbToOKLab(r255, g255, b255);
+          let bestDist = Infinity;
+          let bestColor = paletteRgba[0];
 
-        for (let i = 0; i < paletteOKLab.length; i++) {
-          const pLab = paletteOKLab[i];
-          const dist = deltaEOKLab(pixelLab, pLab);
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestColor = paletteRgba[i];
+          for (let i = 0; i < paletteOKLab.length; i++) {
+            const pLab = paletteOKLab[i];
+            const dist = deltaEOKLab(pixelLab, pLab);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestColor = paletteRgba[i];
+            }
           }
-        }
 
-        r255 = bestColor.r;
-        g255 = bestColor.g;
-        b255 = bestColor.b;
+          r255 = bestColor.r;
+          g255 = bestColor.g;
+          b255 = bestColor.b;
+        }
       }
 
       outData[pIdx] = r255;

@@ -166,4 +166,39 @@ describe('PixelLightBulbGizmo Component', () => {
     const container = screen.getByTestId('pixel-light-bulb-gizmo');
     fireEvent.wheel(container, { deltaY: -100 });
   });
+
+  it('updates azimuth and elevation to top-right when center handle is dragged to the top-right', () => {
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    const onLightChange = vi.fn();
+
+    render(
+      <PixelLightBulbGizmo
+        canvasWidth={32}
+        canvasHeight={32}
+        zoom={1600}
+        mainCanvasRef={dummyCanvasRef}
+        onCommit={onCommit}
+        onCancel={onCancel}
+        onLightChange={onLightChange}
+      />
+    );
+
+    const centerHandle = screen.getByTestId('pixel-light-center-handle');
+    const container = screen.getByTestId('pixel-light-bulb-gizmo');
+
+    // Canvas is 32x32 at zoom 1600% = 512x512 stage. Center is at (256, 256).
+    // Top right is at (400, 100) -> dx = 144 > 0, dy = -156 < 0
+    fireEvent.pointerDown(centerHandle, { clientX: 256, clientY: 256, pointerId: 1 });
+    fireEvent.pointerMove(container, { clientX: 400, clientY: 100, pointerId: 1 });
+    fireEvent.pointerUp(container, { pointerId: 1 });
+
+    expect(onLightChange).toHaveBeenCalled();
+    const lastCall = onLightChange.mock.calls[onLightChange.mock.calls.length - 1];
+    const [azimuth, elevation] = lastCall;
+    // Azimuth for top-right (dx > 0, dy < 0) must be in the first quadrant (0° to 90°)
+    expect(azimuth).toBeGreaterThan(0);
+    expect(azimuth).toBeLessThan(90);
+    expect(elevation).toBeGreaterThan(0);
+  });
 });
