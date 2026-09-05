@@ -45,16 +45,6 @@ export const VolumetricOpticsSection: React.FC = () => {
     );
   };
 
-  const handle47Blob = () => {
-    if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:apply-47-blob'));
-  };
-
-  const handleGroundShadow = () => {
-    if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:ground-shadow'));
-  };
-
   return (
     <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
       <div className="flex items-center justify-between">
@@ -228,31 +218,6 @@ export const VolumetricOpticsSection: React.FC = () => {
         <PixelIcon name="sparkles" size={14} />
         <span>Render Volumetric Optics</span>
       </TactileButton>
-
-      {/* Additional Utility Buttons */}
-      <div className="grid grid-cols-2 gap-1.5 mt-0.5">
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={handle47Blob}
-          title="Calculate 47-tile bitmask connectivity and generate autotile edge contours"
-          className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
-        >
-          <PixelIcon name="grid-iso" size={12} />
-          <span>47-Blob Autotile Edges</span>
-        </TactileButton>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={handleGroundShadow}
-          title="Calculate bounding base and cast elliptical ground shadow"
-          className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
-        >
-          <PixelIcon name="sparkles" size={12} />
-          <span>Ground Drop Shadow</span>
-        </TactileButton>
-      </div>
     </div>
   );
 };

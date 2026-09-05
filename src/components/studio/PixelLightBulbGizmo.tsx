@@ -333,7 +333,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     >
       {/* Floating Viewport HUD Bar */}
       <div
-        className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
+        className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
         role="toolbar"
         aria-label="Live Light Bulb Controls"
       >

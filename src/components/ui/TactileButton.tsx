@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { motion, HTMLMotionProps, useReducedMotion } from 'motion/react';
@@ -38,26 +38,26 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
     // Alabaster, Thistle, Plum, and Wisteria theme styling
     const variantClasses = isImageButton
       ? isSelected
-        ? 'bg-transparent border-0 p-0 rounded-[4px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
+        ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
         : 'bg-transparent border-0 p-0 shadow-none'
       : {
           default: isSelected
             ? 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-surface-raised text-text-primary border-border-dark hover:bg-[#f0ecf6] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(58,46,76,0.2)]',
+            : 'bg-surface-raised text-text-primary border-border-dark hover:bg-[#603B82] hover:border-[var(--accent-wisteria)] hover:shadow-[0_0_10px_rgba(199,146,223,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(58,46,76,0.2)]',
           primary: isSelected
             ? 'bg-[#b673d3] text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
             : 'bg-accent-primary text-text-primary font-bold border-border-dark hover:bg-[#d4a5ea] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
           accent: isSelected
             ? 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-accent-secondary text-text-primary font-bold border-border-dark hover:bg-[#e4bce7] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
+            : 'bg-accent-secondary text-text-primary font-bold border-border-dark hover:bg-[#b673d3] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
           danger: isSelected
             ? 'bg-[#c24e61] text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-danger text-[#ffffff] font-bold border-border-dark hover:bg-[#e77c8d] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(58,46,76,0.3)]',
-          ghost: 'bg-transparent text-text-secondary border-transparent hover:bg-[#ded6e8] hover:text-text-primary',
+            : 'bg-danger text-[#ffffff] font-bold border-border-dark hover:bg-[#c24e61] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(58,46,76,0.3)]',
+          ghost: 'bg-transparent text-text-secondary border-transparent hover:bg-[#603B82]/40 hover:text-[var(--text-heading)]',
           active: 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]',
           inset: 'bg-surface-inset texture-dither text-text-primary border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.25)]',
           image: isSelected
-            ? 'bg-transparent border-0 p-0 rounded-[4px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
+            ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
             : 'bg-transparent border-0 p-0 shadow-none',
         }[variant];
 
@@ -72,23 +72,23 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
         variants={{
           rest: { scale: 1, y: 0 },
           active: { 
-            scale: shouldReduceMotion ? 1 : 0.96, 
+            scale: shouldReduceMotion ? 1 : 0.97, 
             y: shouldReduceMotion ? 0 : 1, 
             transition: { type: 'spring', stiffness: 420, damping: 28 } 
           },
           hover: { 
-            scale: shouldReduceMotion ? 1 : (isSelected ? 0.98 : 1.035), 
+            scale: shouldReduceMotion ? 1 : (isSelected ? 0.98 : 1.025), 
             transition: { type: 'spring', stiffness: 420, damping: 28 } 
           },
           tap: { 
-            scale: shouldReduceMotion ? 1 : 0.93, 
-            y: shouldReduceMotion ? 0 : 1.5, 
+            scale: shouldReduceMotion ? 1 : 0.97, 
+            y: shouldReduceMotion ? 0 : 1, 
             transition: { type: 'spring', stiffness: 550, damping: 22 } 
           }
         }}
         className={twMerge(
           clsx(
-            'group relative select-none rounded-[4px] font-mono',
+            'group relative select-none rounded-[2px] font-mono',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lamp focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
             !isImageButton && 'border-2',
             'transition-colors duration-150',
@@ -118,7 +118,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
 
             {/* Soft, rich lavender/plum glow tint when active/selected */}
             {isSelected && (
-              <div className="absolute inset-0 bg-accent-primary/20 rounded-[4px] pointer-events-none shadow-[inset_0_1px_3px_rgba(58,46,76,0.3)]" />
+              <div className="absolute inset-0 bg-accent-primary/20 rounded-[2px] pointer-events-none shadow-[inset_0_1px_3px_rgba(58,46,76,0.3)]" />
             )}
           </div>
         ) : (
@@ -152,7 +152,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
             }}
             className="pointer-events-none absolute inset-0 z-10 h-[200%] w-[80%] -top-[50%]"
             style={{
-              background: 'linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.1) 80%, transparent 100%)',
+              background: 'linear-gradient(115deg, transparent 0%, rgba(220,171,223,0.15) 20%, rgba(255,255,255,0.75) 50%, rgba(220,171,223,0.15) 80%, transparent 100%)',
               transformOrigin: 'center center'
             }}
           />

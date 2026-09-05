@@ -994,7 +994,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               ? handleExportMp4
               : handleExportPNG
           }
-          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fff8db] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
           <span>{isExporting ? 'Encoding Video...' : `Download ${exportType.toUpperCase()}`}</span>

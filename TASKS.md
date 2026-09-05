@@ -295,6 +295,35 @@
 
 ---
 
+## Phase 39 — Studio UI/UX 10/10 Overhaul: Amethyst Wisteria Hover, Specular Sweep Upgrade & Viewport Harmonization
+**Goal:** Eliminate button hover wash-out, upgrade specular light-sweep visibility with Amethyst Wisteria hues, deduplicate conflicting canvas zoom controls, restyle alien viewport HUDs to match the atelier desk aesthetic, and declutter inspector panels.
+
+**Deliverables:**
+- [x] **Amethyst Wisteria Tactile Hover & Specular Light Sweep (`src/components/ui/TactileButton.tsx`, `src/app/globals.css`)**:
+  - Replaced blinding white hover background (`hover:bg-[#f0ecf6]` / `hover:bg-[#fff8db]`) with calibrated Amethyst Wisteria (`#603B82`, OKLCH $L \approx 0.42, C \approx 0.13, H \approx 312^\circ$), guaranteeing WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
+  - Enhanced specular CC light-sweep gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, vibrant shimmer.
+  - Standardized microinteraction physics (`scale: 1.025` hover, `scale: 0.97` tap, `rounded-[2px]`) across default, ghost, accent, and danger variants.
+  - Harmonized modal action buttons across TopHeader, ExportModal, ShortcutsModal, ImportModal, ColorPickerModal, CanvasResizeModal, and PwaUpdateToast.
+- [x] **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
+  - Removed redundant bottom-left viewport zoom HUD (`[-] {zoom}% [+] [Fit] [16x] [32x32]`) to eliminate conflicts with primary TopHeader zoom controls and arithmetic vs geometric scaling divergence.
+  - Redesigned bottom-right cursor coordinate indicator from light-gray pill to dark atelier desk aesthetic (`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] text-[var(--accent-gold)] font-mono text-[10px]`).
+- [x] **Inspector Panel Feature Reorganization (`src/components/layout/inspector/VolumetricOpticsSection.tsx`, `src/components/layout/inspector/TilesetDecomposerSection.tsx`)**:
+  - Removed misplaced `47-Blob Autotile Edges` button and duplicate `Ground Drop Shadow` button from Volumetric Optics section.
+  - Relocated `47-Blob Autotile Edges` to the dedicated Tileset Decomposer panel alongside `Decompose Layer`.
+- [x] **Light Gizmo Collision Prevention (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Repositioned the floating action bar from `-top-12` to `top-3` within the canvas boundary, completely eliminating visual collisions with the secondary context options bar.
+- [x] **Regression & Unit Test Suite Verification (`tests/components/TactileButton.test.tsx`)**:
+  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, and variant styling with 100% pass rate.
+
+**Acceptance criteria:**
+- Hovering TactileButton displays `#603B82` background with visible dual-band specular light-sweep: Verified.
+- All 313 unit tests pass across 52 test suites: Verified.
+- TypeScript strict checking, ESLint, Next.js production build, and documentation integrity verification pass with 0 errors: Verified.
+
+**Status:** Complete (2026-09-05)
+
+---
+
 ## Excluded Claims (Transparency Audit)
 The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
 - Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.

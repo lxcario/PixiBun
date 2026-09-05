@@ -387,7 +387,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 }
                 onClose();
               }}
-              className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fff8db] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4"
+              className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4"
             >
               <PixelIcon name="pen" size={14} />
               <span>Import Image</span>

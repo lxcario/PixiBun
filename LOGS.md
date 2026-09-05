@@ -825,3 +825,38 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-05 — Phase 39: Studio UI/UX 10/10 Overhaul: Amethyst Wisteria Hover, Specular Sweep Upgrade & Viewport Harmonization
+
+**Problem Statement:**
+1. TactileButton hover turned blindingly white (`hover:bg-[#f0ecf6]` / `hover:bg-[#fff8db]`), causing extreme contrast loss against `#f0be7c` gold text (1.25:1 contrast ratio, failing WCAG AA) and washing out the specular CC light-sweep animation.
+2. Viewport HUD in `CenterViewport.tsx` duplicated zoom controls present in `TopHeader.tsx` with diverging scale arithmetic (linear 200% jumps vs geometric 1.5x scaling), while the bottom-right coordinate badge had an alien light-gray pill design that clashed with the dark atelier palette.
+3. The floating light bulb action bar collided with the secondary context options bar at `-top-12`.
+4. The Volumetric Optics inspector section contained misplaced features (`47-Blob Autotile Edges` and duplicate `Ground Drop Shadow`).
+
+**Engineering Remediation:**
+- **Amethyst Wisteria Tactile Hover & Specular Sweep (`src/components/ui/TactileButton.tsx`, `src/app/globals.css`)**:
+  - Replaced blinding white hover backgrounds with calibrated Amethyst Wisteria (`#603B82`, OKLCH $L \approx 0.42, C \approx 0.13, H \approx 312^\circ$), guaranteeing WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
+  - Enhanced specular CC light sweep to a dual-band gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, vibrant shimmer.
+  - Standardized microinteraction physics (`scale: 1.025` hover, `scale: 0.97` tap, `rounded-[2px]`) across default, ghost, accent, and danger variants.
+  - Harmonized modal action buttons across `src/components/layout/TopHeader.tsx`, `src/components/modals/ExportModal.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/modals/CanvasResizeModal.tsx`, and `src/components/system/PwaUpdateToast.tsx`.
+- **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
+  - Removed redundant bottom-left viewport zoom HUD (`[-] {zoom}% [+] [Fit] [16x] [32x32]`) to eliminate conflicts with primary TopHeader zoom controls.
+  - Redesigned bottom-right cursor coordinate indicator from generic gray pill to dark atelier desk aesthetic (`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] text-[var(--accent-gold)] font-mono text-[10px]`).
+- **Inspector Panel Feature Reorganization (`src/components/layout/inspector/VolumetricOpticsSection.tsx`, `src/components/layout/inspector/TilesetDecomposerSection.tsx`)**:
+  - Removed misplaced `47-Blob Autotile Edges` button and duplicate `Ground Drop Shadow` button from Volumetric Optics section.
+  - Relocated `47-Blob Autotile Edges` to the dedicated Tileset Decomposer panel alongside `Decompose Layer`.
+- **Light Gizmo Collision Prevention (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Repositioned the floating action bar from `-top-12` to `top-3` within the canvas boundary, completely eliminating visual collisions with the secondary context options bar.
+- **Dedicated Unit & Integration Testing (`tests/components/TactileButton.test.tsx`)**:
+  - Updated button unit tests validating `rounded-[2px]`, Amethyst Wisteria hover classes, and variant styling with 100% pass rate.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 313/313 tests passed across 52 suites
+- `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete

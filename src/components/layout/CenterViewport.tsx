@@ -102,8 +102,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setPanStart,
     clientToCanvasCoords,
     handleWheel,
-    handleFitToScreen,
-    handleResetZoom,
   } = useViewportTransform({
     containerRef,
     mainCanvasRef,
@@ -1150,55 +1148,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         )}
       </div>
 
-      {/* Viewport Floating HUD Controls */}
-      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 bg-[#DDDFDF]/90 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-[#C792DF]/40 shadow-sm font-mono text-xs text-[#3A2E4C]">
-        <button
-          type="button"
-          onClick={() => setZoom(Math.max(100, zoom - 200))}
-          className="hover:text-[#A86EC6] font-bold px-1 active:scale-95"
-          title="Zoom Out (Ctrl+-)"
-          aria-label="Zoom out"
-        >
-          -
-        </button>
-        <span className="w-12 text-center select-none font-semibold">{zoom}%</span>
-        <button
-          type="button"
-          onClick={() => setZoom(Math.min(6400, zoom + 200))}
-          className="hover:text-[#A86EC6] font-bold px-1 active:scale-95"
-          title="Zoom In (Ctrl++)"
-          aria-label="Zoom in"
-        >
-          +
-        </button>
-        <span className="w-px h-3 bg-[#C792DF]/40 mx-1" />
-        <button
-          type="button"
-          onClick={handleFitToScreen}
-          className="hover:text-[#A86EC6] active:scale-95 px-1 font-semibold"
-          title="Fit to Screen (Ctrl+0)"
-          aria-label="Fit to screen"
-        >
-          Fit
-        </button>
-        <button
-          type="button"
-          onClick={handleResetZoom}
-          className="hover:text-[#A86EC6] active:scale-95 px-1 font-semibold"
-          title="Reset to 16x"
-          aria-label="Reset zoom"
-        >
-          16x
-        </button>
-        <span className="w-px h-3 bg-[#C792DF]/40 mx-1" />
-        <span className="text-[#6A5880]">
-          {canvasWidth}×{canvasHeight}
-        </span>
-      </div>
-
       {/* Coordinate & Tool Status Indicator */}
       {cursorCoords && (
-        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-[#DDDFDF]/90 backdrop-blur-md px-3 py-1 rounded-lg border border-[#C792DF]/40 shadow-sm font-mono text-xs text-[#6A5880]">
+        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-[0_2px_0_var(--btn-shadow)] text-[var(--accent-gold)] font-mono text-[10px] px-2.5 py-1">
           <span>
             X: {cursorCoords.x} Y: {cursorCoords.y}
           </span>

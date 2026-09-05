@@ -36,7 +36,7 @@
   --accent-plum: #dcabdf;
   --accent-wisteria: #c792df;
   --btn-bg: #281b3d;
-  --btn-hover: #342450;
+  --btn-hover: #603B82;
   --btn-border: #3a2e4c;
   --btn-text: #ede8f4;
   --btn-shadow: #130e20;
@@ -210,7 +210,7 @@ html, body {
 
 .pixel-primary-btn:hover {
   transform: scale(1.025);
-  background-color: #fff8db;
+  background-color: #fcd699;
   box-shadow:
     inset 2px 2px 0px #ffffff,
     inset -2px -2px 0px #b87428,

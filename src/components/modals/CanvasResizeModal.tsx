@@ -181,7 +181,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
           size="sm"
           variant="primary"
           onClick={handleApply}
-          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fff8db] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           Apply Resize
         </TactileButton>

@@ -26,6 +26,11 @@ export const TilesetDecomposerSection: React.FC = () => {
     studioEvents.emit('pixibun:wfc-synthesis', { n: wfcN, symmetries: 8 });
   };
 
+  const handle47Blob = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
+    studioEvents.emit('pixibun:apply-47-blob');
+  };
+
   const handleDecomposeTileset = () => {
     const state = useStudioStore.getState();
     const activeId = state.activeLayerId;
@@ -160,6 +165,17 @@ export const TilesetDecomposerSection: React.FC = () => {
         >
           <PixelIcon name="layers" size={12} />
           <span>Decompose Layer</span>
+        </TactileButton>
+
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={handle47Blob}
+          title="Calculate 47-tile bitmask connectivity and generate autotile edge contours"
+          className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] justify-center flex items-center gap-1"
+        >
+          <PixelIcon name="grid-iso" size={12} />
+          <span>47-Blob Autotile Edges</span>
         </TactileButton>
 
         {tilesetResult && (

@@ -25,7 +25,7 @@ export const PwaUpdateToast: React.FC<PwaUpdateToastProps> = ({
         <button
           type="button"
           onClick={onUpdate}
-          className="px-2.5 py-1 bg-[#f0be7c] hover:bg-[#fff8db] text-[#140d1f] font-bold rounded-[2px] border border-[#8c5120] cursor-pointer"
+          className="px-2.5 py-1 bg-[#f0be7c] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] text-[#140d1f] font-bold rounded-[2px] border border-[#8c5120] cursor-pointer"
         >
           Reload
         </button>
