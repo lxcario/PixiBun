@@ -351,7 +351,7 @@ Compute-bound tasks are balanced between background Web Workers and on-device Ty
 ## 14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
 Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, raymarched shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
-- **Discriminated Event Map:** All 28 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
+- **Discriminated Event Map:** All 32 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
 - **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
 
 ---

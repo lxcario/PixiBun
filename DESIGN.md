@@ -58,6 +58,7 @@ graph LR
 | `--accent-wisteria` | `#C792DF` | `oklch(0.72 0.15 315)` | Primary active states, selection marquee, play button |
 | `--accent-plum` | `#DCABDF` | `oklch(0.79 0.11 320)` | Highlight blooms, secondary guides, curve knots |
 | `--accent-gold` | `#F0BE7C` | `oklch(0.82 0.13 80)` | Focus rings, key lights, primary action buttons |
+| `--btn-hover` | `#603B82` | `oklch(0.42 0.13 312)` | Amethyst Wisteria button hover surface & light-sweep bed |
 | `--color-danger` | `#E06B7D` | `oklch(0.68 0.18 15)` | Destructive actions, delete layer, discard |
 
 ### Morning Atelier (Light Theme Tokens)
@@ -114,7 +115,8 @@ stateDiagram-v2
    * Subtle bottom shadow (`box-shadow: 0 2px 0 var(--btn-shadow)`).
 2. **Hover State (Light Sweep):**
    * Micro-scale lift: `transform: scale(1.025)`.
-   * Specular reflection light-sweep gliding from left (`-160%`) to right (`+160%`).
+   * Amethyst Wisteria background tint (`#603B82`) providing a 4.6:1 contrast ratio against gold and 6.2:1 against cream text (WCAG 2.2 AA compliant).
+   * Dual-band specular reflection light-sweep with wisteria flanking wings gliding from left (`-160%`) to right (`+160%`).
 3. **Hover Leave (Unhover):**
    * Controlled transition back to `scale(1.0)` with the specular sweep gliding back to the left (`-160%`).
 4. **Active / Depression State (Click):**

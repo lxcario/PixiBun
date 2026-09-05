@@ -24,9 +24,9 @@ src/
 │   └── studio/page.tsx              # Main studio drawing editor and workspace
 ├── components/
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
-│   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, RightInspector, BottomTimeline, ContextOptionsBar)
-│   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal)
-│   ├── studio/                      # Floating windows (FloatingPreviewWindow)
+│   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
+│   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal)
+│   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, ViewportLensFilters)
 │   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
 ├── lib/
 │   ├── ai/
