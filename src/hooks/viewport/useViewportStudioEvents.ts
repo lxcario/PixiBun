@@ -804,12 +804,14 @@ export function useViewportStudioEvents({
       lightElevation: number;
       lightCenterX?: number;
       lightCenterY?: number;
+      lightBrightness?: number;
     }) => {
       const session = photometricSessionRef.current;
       if (!session) return;
 
       if (detail.lightCenterX !== undefined) session.lastCenterX = detail.lightCenterX;
       if (detail.lightCenterY !== undefined) session.lastCenterY = detail.lightCenterY;
+      if (detail.lightBrightness !== undefined) session.brightness = detail.lightBrightness;
 
       const state = useStudioStore.getState();
       const shadedCanvas = executePhotometricPipeline(
@@ -852,6 +854,7 @@ export function useViewportStudioEvents({
 
       if (session) {
         commitSnapshot();
+        state.setLightBrightness(session.brightness);
 
         // Optional Specular Glint layer for shiny/metallic materials (never on matte or fabric)
         const isMatteOrFabric = session.material === 'matte' || session.material === 'fabric';

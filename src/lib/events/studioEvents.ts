@@ -73,6 +73,7 @@ export type StudioEventMap = {
     lightElevation: number;
     lightCenterX?: number;
     lightCenterY?: number;
+    lightBrightness?: number;
   };
   'pixibun:volumetric-optics': {
     preset?: string;

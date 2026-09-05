@@ -16,7 +16,13 @@ interface PixelLightBulbGizmoProps {
   mainCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   onCommit: () => void;
   onCancel: () => void;
-  onLightChange?: (azimuth: number, elevation: number, centerX?: number, centerY?: number) => void;
+  onLightChange?: (
+    azimuth: number,
+    elevation: number,
+    centerX?: number,
+    centerY?: number,
+    brightness?: number
+  ) => void;
 }
 
 export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
@@ -32,14 +38,18 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   const tools = useStudioStore((s) => s.tools);
   const setLightAzimuth = useStudioStore((s) => s.setLightAzimuth);
   const setLightElevation = useStudioStore((s) => s.setLightElevation);
+  const setLightBrightness = useStudioStore((s) => s.setLightBrightness);
 
   const [dragTarget, setDragTarget] = useState<'none' | 'bulb' | 'center'>('none');
+  const [brightness, setBrightness] = useState<number>(() => tools.lightBrightness ?? 1.15);
+
   const rafIdRef = useRef<number | null>(null);
   const pendingChangeRef = useRef<{
     azimuth: number;
     elevation: number;
     centerX: number;
     centerY: number;
+    brightness: number;
   } | null>(null);
 
   const scale = zoom / 100;
@@ -93,45 +103,33 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     );
   }, [tools.lightAzimuth, tools.lightElevation, stageCentroid, maxRadius]);
 
-  // Global keyboard shortcuts: Enter to apply, Escape to cancel
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        e.stopPropagation();
-        onCommit();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        onCancel();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown, { capture: true });
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, { capture: true });
-    };
-  }, [onCommit, onCancel]);
-
   // Throttled 60 FPS update loop during drag
   const flushLightChange = useCallback(() => {
     if (pendingChangeRef.current) {
-      const { azimuth, elevation, centerX, centerY } = pendingChangeRef.current;
+      const { azimuth, elevation, centerX, centerY, brightness: b } = pendingChangeRef.current;
       setLightAzimuth(azimuth);
       setLightElevation(elevation);
-      onLightChange?.(azimuth, elevation, centerX, centerY);
+      setLightBrightness(b);
+      onLightChange?.(azimuth, elevation, centerX, centerY, b);
       pendingChangeRef.current = null;
     }
     rafIdRef.current = null;
-  }, [setLightAzimuth, setLightElevation, onLightChange]);
+  }, [setLightAzimuth, setLightElevation, setLightBrightness, onLightChange]);
 
   const scheduleLightChange = useCallback((
     azimuth: number,
     elevation: number,
     centerX: number,
-    centerY: number
+    centerY: number,
+    newBrightness: number
   ) => {
-    pendingChangeRef.current = { azimuth, elevation, centerX, centerY };
+    pendingChangeRef.current = {
+      azimuth,
+      elevation,
+      centerX,
+      centerY,
+      brightness: newBrightness,
+    };
     if (rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(flushLightChange);
     }
@@ -144,6 +142,48 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       }
     };
   }, []);
+
+  const updateStrength = useCallback((val: number) => {
+    const clamped = Math.max(0.3, Math.min(2.5, Math.round(val * 100) / 100));
+    setBrightness(clamped);
+    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, canvasCentroid.x, canvasCentroid.y, clamped);
+  }, [tools.lightAzimuth, tools.lightElevation, canvasCentroid, scheduleLightChange]);
+
+  const adjustStrength = useCallback((delta: number) => {
+    setBrightness((prev) => {
+      const next = Math.max(0.3, Math.min(2.5, Math.round((prev + delta) * 100) / 100));
+      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, canvasCentroid.x, canvasCentroid.y, next);
+      return next;
+    });
+  }, [tools.lightAzimuth, tools.lightElevation, canvasCentroid, scheduleLightChange]);
+
+  // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCommit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCancel();
+      } else if (e.key === '[' || e.key === '-') {
+        e.preventDefault();
+        e.stopPropagation();
+        adjustStrength(-0.15);
+      } else if (e.key === ']' || e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        e.stopPropagation();
+        adjustStrength(+0.15);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+    };
+  }, [onCommit, onCancel, adjustStrength]);
 
   // Update angles from client pointer event
   const updateAnglesFromPointer = useCallback((clientX: number, clientY: number) => {
@@ -161,8 +201,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       maxRadius
     );
 
-    scheduleLightChange(angles.azimuth, angles.elevation, canvasCentroid.x, canvasCentroid.y);
-  }, [stageCentroid, maxRadius, canvasCentroid, scheduleLightChange]);
+    scheduleLightChange(angles.azimuth, angles.elevation, canvasCentroid.x, canvasCentroid.y, brightness);
+  }, [stageCentroid, maxRadius, canvasCentroid, brightness, scheduleLightChange]);
 
   // Update center position from client pointer event
   const updateCenterFromPointer = useCallback((clientX: number, clientY: number) => {
@@ -178,8 +218,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     const newCanvasY = Math.round(clampedPy / scale);
 
     setCanvasCentroid({ x: newCanvasX, y: newCanvasY });
-    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, newCanvasX, newCanvasY);
-  }, [stageWidth, stageHeight, scale, tools.lightAzimuth, tools.lightElevation, scheduleLightChange]);
+    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, newCanvasX, newCanvasY, brightness);
+  }, [stageWidth, stageHeight, scale, tools.lightAzimuth, tools.lightElevation, brightness, scheduleLightChange]);
 
   const handleBulbPointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
@@ -195,6 +235,35 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     setDragTarget('center');
     updateCenterFromPointer(e.clientX, e.clientY);
+  };
+
+  const handleContainerPointerDown = (e: React.PointerEvent) => {
+    // Ignore clicks on HUD buttons or inputs
+    if ((e.target as HTMLElement).closest('button, input, [role="toolbar"]')) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+
+    // If pointer is near center reticle (< 24px), drag center
+    const distCenter = Math.hypot(px - stageCentroid.x, py - stageCentroid.y);
+    if (distCenter <= 24) {
+      e.preventDefault();
+      e.stopPropagation();
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      setDragTarget('center');
+      updateCenterFromPointer(e.clientX, e.clientY);
+      return;
+    }
+
+    // Otherwise, drag/aim light bulb towards pointer position
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    setDragTarget('bulb');
+    updateAnglesFromPointer(e.clientX, e.clientY);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -234,12 +303,20 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       const centroid = computeArtworkCentroid(imgData.data, canvasWidth, canvasHeight);
       setCanvasCentroid(centroid);
-      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, centroid.x, centroid.y);
+      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, centroid.x, centroid.y, brightness);
     } catch {
       const def = { x: Math.round(canvasWidth / 2), y: Math.round(canvasHeight / 2) };
       setCanvasCentroid(def);
-      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, def.x, def.y);
+      scheduleLightChange(tools.lightAzimuth, tools.lightElevation, def.x, def.y, brightness);
     }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    // Allow adjusting strength with mouse wheel scroll over gizmo
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY < 0 ? 0.10 : -0.10;
+    adjustStrength(delta);
   };
 
   return (
@@ -248,9 +325,11 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       data-testid="pixel-light-bulb-gizmo"
       className="absolute inset-0 z-30 pointer-events-auto select-none"
       style={{ width: `${stageWidth}px`, height: `${stageHeight}px` }}
+      onPointerDown={handleContainerPointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}
     >
       {/* Floating Viewport HUD Bar */}
       <div
@@ -291,6 +370,60 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         >
           <span>↺ Recenter</span>
         </button>
+
+        <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
+
+        {/* Light Strength / Intensity Steppers & Slider */}
+        <div
+          title="Light Strength / Brightness (Click - / + or use mouse wheel)"
+          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
+        >
+          <span className="text-xs">☀️</span>
+          <span className="text-[10px] text-[#dcabdf] uppercase">Strength</span>
+          <button
+            type="button"
+            data-testid="pixel-light-strength-dec"
+            onClick={(e) => {
+              e.stopPropagation();
+              adjustStrength(-0.15);
+            }}
+            className="w-4 h-4 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            title="Decrease light strength (- / [)"
+            aria-label="Decrease light strength"
+          >
+            -
+          </button>
+          <span
+            data-testid="pixel-light-strength-val"
+            className="min-w-[34px] text-center font-mono text-[11px] text-[#ffe082]"
+          >
+            {Math.round(brightness * 100)}%
+          </span>
+          <button
+            type="button"
+            data-testid="pixel-light-strength-inc"
+            onClick={(e) => {
+              e.stopPropagation();
+              adjustStrength(+0.15);
+            }}
+            className="w-4 h-4 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            title="Increase light strength (+ / ])"
+            aria-label="Increase light strength"
+          >
+            +
+          </button>
+          <input
+            type="range"
+            aria-label="Light Strength Slider"
+            min={0.3}
+            max={2.5}
+            step={0.05}
+            value={brightness}
+            onChange={(e) => updateStrength(parseFloat(e.target.value))}
+            title={`Strength: ${Math.round(brightness * 100)}%`}
+            className="w-14 h-1.5 accent-[#f0be7c] bg-[#181124] rounded cursor-pointer ml-0.5"
+          />
+        </div>
 
         <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
 

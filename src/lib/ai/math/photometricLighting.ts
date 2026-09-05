@@ -501,10 +501,16 @@ export function executePhotometricPipeline(
   const hasCustomCenter = params.lightCenterX !== undefined && params.lightCenterY !== undefined;
   const lCenterX = hasCustomCenter ? params.lightCenterX! : width / 2;
   const lCenterY = hasCustomCenter ? params.lightCenterY! : height / 2;
-  const lightDist = Math.max(width, height) * 0.95;
-  const lightSourceX = lCenterX + lightDist * Lx;
-  const lightSourceY = lCenterY + lightDist * Ly;
-  const lightSourceZ = lightDist * Lz;
+
+  const maxRadiusCanvas = Math.max(12, Math.min(width, height) * 0.44);
+  const clampedEl = Math.max(0, Math.min(90, params.lightElevation));
+  const r = maxRadiusCanvas * (1 - clampedEl / 90);
+
+  const bulbX = lCenterX + r * Math.sin(azRad);
+  const bulbY = lCenterY - r * Math.cos(azRad);
+  const bulbZ = Math.max(8, maxRadiusCanvas * Math.sin(elRad) + 4);
+
+  const attRadius = Math.max(params.lightRadius ?? 64, Math.max(width, height) * 1.6);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -553,21 +559,17 @@ export function executePhotometricPipeline(
       let pixNormHx = normHx;
       let pixNormHy = normHy;
       let pixNormHz = normHz;
+      let effectiveFalloff = 1.0;
 
       if (hasCustomCenter) {
-        const pVx = lightSourceX - x;
-        const pVy = lightSourceY - y;
-        const pVz = lightSourceZ;
-        const pLen = Math.sqrt(pVx * pVx + pVy * pVy + pVz * pVz) || 1;
+        const dx = bulbX - x;
+        const dy = bulbY - y;
+        const dz = bulbZ;
+        const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
 
-        // Blend 70% directional with 30% local positional perspective for natural focus shift
-        pixLx = Lx * 0.70 + (pVx / pLen) * 0.30;
-        pixLy = Ly * 0.70 + (pVy / pLen) * 0.30;
-        pixLz = Lz * 0.70 + (pVz / pLen) * 0.30;
-        const pLLen = Math.sqrt(pixLx * pixLx + pixLy * pixLy + pixLz * pixLz) || 1;
-        pixLx /= pLLen;
-        pixLy /= pLLen;
-        pixLz /= pLLen;
+        pixLx = dx / dist3D;
+        pixLy = dy / dist3D;
+        pixLz = dz / dist3D;
 
         const pHx = pixLx + Vx;
         const pHy = pixLy + Vy;
@@ -576,6 +578,10 @@ export function executePhotometricPipeline(
         pixNormHx = pHx / phLen;
         pixNormHy = pHy / phLen;
         pixNormHz = pHz / phLen;
+
+        const normDist = Math.min(1.0, dist3D / attRadius);
+        const falloff = (1 - normDist * normDist) * (1 - normDist * normDist);
+        effectiveFalloff = falloff * 0.65 + 0.35;
       }
 
       // Half-Lambert Wrap Lighting (Valve Mitchell/McTaggart/Green 2006 formulation)
@@ -587,7 +593,7 @@ export function executePhotometricPipeline(
       if (formType === 'character' && paletteOKLab.length === 0) {
         // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for character anatomy.
         // Preserves hand-drawn pixel art palette purity instead of generating muddy 24-bit float gradients.
-        const diffSignal = wrapNdotL;
+        const diffSignal = wrapNdotL * effectiveFalloff;
         const ambSignal = (effectiveAmbient / 0.48) * ao;
         const lightLevel = (diffSignal * 0.75 + ambSignal * 0.25) * brightness;
 
@@ -641,9 +647,9 @@ export function executePhotometricPipeline(
       }
 
       // Standard diffuse + specular shading (for orbs, props, or when palette snapping)
-      const diffR = mat.kd * wrapNdotL * (origR * lightR);
-      const diffG = mat.kd * wrapNdotL * (origG * lightG);
-      const diffB = mat.kd * wrapNdotL * (origB * lightB);
+      const diffR = mat.kd * wrapNdotL * (origR * lightR) * effectiveFalloff;
+      const diffG = mat.kd * wrapNdotL * (origG * lightG) * effectiveFalloff;
+      const diffB = mat.kd * wrapNdotL * (origB * lightB) * effectiveFalloff;
 
       const NdotH = Math.max(0, Nx * pixNormHx + Ny * pixNormHy + Nz * pixNormHz);
       const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);

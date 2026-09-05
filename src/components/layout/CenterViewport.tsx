@@ -1128,12 +1128,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             mainCanvasRef={mainCanvasRef}
             onCommit={() => studioEvents.emit('pixibun:photometric-gizmo-commit')}
             onCancel={() => studioEvents.emit('pixibun:photometric-gizmo-cancel')}
-            onLightChange={(azimuth, elevation, cx, cy) => {
+            onLightChange={(azimuth, elevation, cx, cy, brightness) => {
               studioEvents.emit('pixibun:photometric-lighting-live', {
                 lightAzimuth: azimuth,
                 lightElevation: elevation,
                 lightCenterX: cx,
                 lightCenterY: cy,
+                lightBrightness: brightness,
               });
             }}
           />

@@ -125,4 +125,45 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(recenterBtn).toBeDefined();
     fireEvent.click(recenterBtn);
   });
+
+  it('adjusts light strength via [-] / [+] steppers, keyboard hotkeys, and mouse wheel', () => {
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    const onLightChange = vi.fn();
+
+    render(
+      <PixelLightBulbGizmo
+        canvasWidth={32}
+        canvasHeight={32}
+        zoom={1600}
+        mainCanvasRef={dummyCanvasRef}
+        onCommit={onCommit}
+        onCancel={onCancel}
+        onLightChange={onLightChange}
+      />
+    );
+
+    const valDisplay = screen.getByTestId('pixel-light-strength-val');
+    expect(valDisplay).toBeDefined();
+    const initialText = valDisplay.textContent;
+
+    // Click increment button [+]
+    const incBtn = screen.getByTestId('pixel-light-strength-inc');
+    fireEvent.click(incBtn);
+    expect(valDisplay.textContent).not.toBe(initialText);
+
+    // Click decrement button [-]
+    const decBtn = screen.getByTestId('pixel-light-strength-dec');
+    fireEvent.click(decBtn);
+
+    // Keyboard shortcut [-]
+    fireEvent.keyDown(window, { key: '-' });
+
+    // Keyboard shortcut [+]
+    fireEvent.keyDown(window, { key: '+' });
+
+    // Wheel event over gizmo
+    const container = screen.getByTestId('pixel-light-bulb-gizmo');
+    fireEvent.wheel(container, { deltaY: -100 });
+  });
 });
