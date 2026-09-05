@@ -914,3 +914,40 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-05 — Phase 41: TestSprite Cloud End-to-End Suite & Complex Feature Verification
+
+**Problem Statement:**
+1. Stand up remote cloud testing with official TestSprite CLI for PixiBun's complex and newly added features (on-canvas light bulb gizmo, wisteria hover states, variable frame duration timeline, P2P co-draw, export capability handling, photometric cel-shading).
+2. Guarantee 100% pass rate against live production deployment (`https://pixibun.vercel.app`) with zero failed or flaky tests.
+
+**Engineering Execution:**
+- **P2P Co-Draw Modal & Serverless WebRTC Signaling Test (`c2ef43f3-cb81-4b9a-914b-6995344f953f`)**:
+  - Validated top header `Co-Draw` button with calibrated Amethyst Wisteria hover and dual-band sweep.
+  - Verified `CoDrawModal` rendering with `Host Session` and `Join Session` tabs.
+  - Verified on-device encrypted WebRTC offer generation and copy action in `Host Session`.
+  - Verified tab switching to `Join Session` and clean modal dismissal (8/8 steps passed).
+- **On-Canvas Pixel Light Bulb Gizmo & Live Shading Preview Test (`d4bc65ba-70f5-4951-9c72-89f467290cf3`)**:
+  - Validated circle drawing with Ellipse tool on canvas.
+  - Activated PixiBud studio and triggered `Analyze & Light Bulb` photometric cel-shading.
+  - Verified `PixelLightBulbGizmo` and top floating action bar (`top-3`) with `Apply` and `Cancel` buttons mounted without colliding with header options bar.
+  - Verified discarding preview with `Cancel` dismissed gizmo cleanly and preserved canvas interactivity (11/11 steps passed).
+- **Export Modal Multi-Format & Codec Capability Detection Test (`fca5c184-839d-4c09-a96c-ca6d560a5f3d`)**:
+  - Verified opening `ExportModal` from top header.
+  - Verified `Sprite Sheet` format tab and packing layout configurations.
+  - Verified `MP4 Video` format tab and codec capability detection notice (evaluating native MediaRecorder support).
+  - Verified clean modal dismissal (8/8 steps passed).
+- **PWA Web Application Manifest & Strict Security Headers Backend Test (`8aaeceaa-265c-4ead-94df-fcfbf723cd57`)**:
+  - Verified `GET /manifest.webmanifest` returns HTTP 200 OK.
+  - Verified `Content-Type: application/manifest+json`.
+  - Verified PWA manifest JSON structure (`name`, `short_name`, `display: standalone`, `start_url: /studio`, high-DPI icons).
+  - Verified strict security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`) passed.
+
+**Checks run:**
+- `testsprite test list --project 3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8`: 13/13 frontend tests passed (0 failed)
+- `testsprite test list --project cd9cd8ca-2fd2-4595-afd1-933c0eeb2fd8`: 9/9 backend tests passed (0 failed)
+- Total TestSprite suite: 22/22 tests passed (100% green pass rate)
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete

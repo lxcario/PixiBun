@@ -2,6 +2,18 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.9.2] - 2026-09-05
+### TestSprite Cloud End-to-End Suite & Complex Feature Verification (Phase 41)
+- **P2P Co-Draw Modal & Serverless Signaling Token Generation (`src/components/modals/CoDrawModal.tsx`)**:
+  - Authored and verified TestSprite frontend test plan (`c2ef43f3-cb81-4b9a-914b-6995344f953f`) evaluating header button integration, WebRTC host invite generation, join answer inputs, and clean modal dismissal (8/8 steps passed).
+- **On-Canvas Pixel Light Bulb Gizmo & Live Shading Preview (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Authored and verified TestSprite frontend test plan (`d4bc65ba-70f5-4951-9c72-89f467290cf3`) evaluating circular artwork drawing, PixiBud studio activation, on-canvas pixel light bulb gizmo and top floating action bar (`Apply` / `Cancel`) mounting, and clean cancellation restoring canvas interactivity (11/11 steps passed).
+- **Export Modal Multi-Format & Codec Capability Detection (`src/components/modals/ExportModal.tsx`)**:
+  - Authored and verified TestSprite frontend test plan (`fca5c184-839d-4c09-a96c-ca6d560a5f3d`) evaluating Sprite Sheet layout packing options and MP4 video format codec capability notice evaluation (8/8 steps passed).
+- **PWA Web Application Manifest & Strict Security Headers (`public/manifest.webmanifest`)**:
+  - Authored and verified TestSprite backend test (`8aaeceaa-265c-4ead-94df-fcfbf723cd57`) asserting HTTP 200 OK, `application/manifest+json` MIME type, manifest JSON structure, and strict security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`) passed.
+- **Suite-Wide Verification**: Achieved 22/22 (100%) pass rate across TestSprite frontend (13 tests) and backend (9 tests) suites with zero failures.
+
 ## [v1.9.1] - 2026-09-05
 ### Audit Remediation & Quality Gate Parity (Phase 40)
 - **Honest MP4 Capability Detection & CI Test Harness (`src/lib/export/mp4Encoder.ts`, `src/components/modals/ExportModal.tsx`, `tests/mp4Encoder.test.ts`)**:

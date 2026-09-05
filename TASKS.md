@@ -368,6 +368,24 @@
 
 ---
 
+## Phase 41 — TestSprite Cloud End-to-End Suite & Complex Feature Verification
+**Goal:** Stand up comprehensive remote cloud testing using the official TestSprite CLI, authoring, linting, executing, and achieving a 100% pass rate across frontend and backend suites for all newly added complex features.
+
+**Deliverables:**
+- [x] **P2P Co-Draw Modal & Serverless WebRTC Signaling Test (`c2ef43f3-cb81-4b9a-914b-6995344f953f`)**: Verified header button wisteria hover state, modal opening, Host Session invite token generation, Join Session tab switching, and clean modal dismissal (8/8 steps passed).
+- [x] **On-Canvas Pixel Light Bulb Gizmo & Dynamic Shading Preview Test (`d4bc65ba-70f5-4951-9c72-89f467290cf3`)**: Verified circular artwork drawing, PixiBud studio activation, on-canvas pixel light bulb gizmo and top floating action bar (`Apply` / `Cancel`) mounting, and clean cancellation restoring canvas interactivity (11/11 steps passed).
+- [x] **Export Modal Multi-Format & Codec Capability Detection Test (`fca5c184-839d-4c09-a96c-ca6d560a5f3d`)**: Verified Sprite Sheet packing layout options and MP4 video format codec capability notice evaluation (8/8 steps passed).
+- [x] **PWA Web Application Manifest & Security Headers Backend Test (`8aaeceaa-265c-4ead-94df-fcfbf723cd57`)**: Verified `GET /manifest.webmanifest` HTTP 200 OK, `application/manifest+json` MIME type, JSON structure, and strict security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`) passed.
+
+**Acceptance criteria:**
+- All 13 TestSprite frontend tests pass with 0 failures: Verified.
+- All 9 TestSprite backend tests pass with 0 failures: Verified.
+- Total TestSprite suite achieves 22/22 (100%) pass rate against production deployment: Verified.
+
+**Status:** Complete (2026-09-05)
+
+---
+
 ## Excluded Claims (Transparency Audit)
 The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
 - Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.
