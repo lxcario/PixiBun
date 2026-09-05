@@ -38,6 +38,8 @@ export interface CrdtCell {
   peerId: string;
 }
 
+export const MAX_OP_LOG_SIZE = 10000;
+
 export class CrdtPixelBuffer {
   public readonly width: number;
   public readonly height: number;
@@ -65,6 +67,42 @@ export class CrdtPixelBuffer {
         peerId: '',
       };
     }
+  }
+
+  /**
+   * Appends an op to the local log with a bounded sliding window to prevent unbounded memory growth.
+   */
+  private appendOpToLog(op: PixelOp): void {
+    this.opLog.push(op);
+    if (this.opLog.length > MAX_OP_LOG_SIZE) {
+      this.opLog.splice(0, this.opLog.length - MAX_OP_LOG_SIZE);
+    }
+  }
+
+  /**
+   * Generates a snapshot of all active pixel operations across the canvas,
+   * enabling full canvas synchronization to newly joined peers.
+   */
+  public getStateSnapshotOps(): PixelOp[] {
+    const snapshot: PixelOp[] = [];
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const cell = this.cells[y * this.width + x];
+        if (cell.timestamp > 0) {
+          snapshot.push({
+            x,
+            y,
+            r: cell.r,
+            g: cell.g,
+            b: cell.b,
+            a: cell.a,
+            timestamp: cell.timestamp,
+            peerId: cell.peerId,
+          });
+        }
+      }
+    }
+    return snapshot;
   }
 
   /**
@@ -112,7 +150,7 @@ export class CrdtPixelBuffer {
       peerId: op.peerId,
     };
 
-    this.opLog.push(op);
+    this.appendOpToLog(op);
     return op;
   }
 
@@ -152,7 +190,7 @@ export class CrdtPixelBuffer {
         timestamp: op.timestamp,
         peerId: op.peerId,
       };
-      this.opLog.push(op);
+      this.appendOpToLog(op);
       return true;
     }
 

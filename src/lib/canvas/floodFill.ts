@@ -1,4 +1,4 @@
-// High-performance Flood Fill (BFS) & Color Swap algorithms for pixel buffers
+// High-performance Iterative 4-connected stack-based Flood Fill & Color Swap algorithms for pixel buffers
 
 export interface RGBA {
   r: number;
@@ -58,7 +58,7 @@ export function colorsMatch(
   return diff <= tolerance;
 }
 
-// Fast Span-based & 4/8-connected Flood Fill (DFS (iterative stack))
+// Iterative 4-connected stack-based Flood Fill
 export function performFloodFill(
   ctx: CanvasRenderingContext2D,
   startX: number,

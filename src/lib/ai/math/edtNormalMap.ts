@@ -146,10 +146,23 @@ export function applyBilateralFilter(
   sigmaSpatial: number = 1.5,
   sigmaRange: number = 2.0
 ): Float32Array {
+  if (width <= 0 || height <= 0) return new Float32Array(0);
+  if (sigmaSpatial <= 0 || sigmaRange <= 0) return new Float32Array(src);
+
   const dst = new Float32Array(width * height);
   const radius = Math.ceil(sigmaSpatial * 2);
   const twoSigmaSpatialSq = 2 * sigmaSpatial * sigmaSpatial;
   const twoSigmaRangeSq = 2 * sigmaRange * sigmaRange;
+
+  // Precompute 2D spatial Gaussian distance lookup table (spatialLUT) once per (radius, sigmaSpatial)
+  const kernelDim = 2 * radius + 1;
+  const spatialLUT = new Float32Array(kernelDim * kernelDim);
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const spatialDistSq = dx * dx + dy * dy;
+      spatialLUT[(dy + radius) * kernelDim + (dx + radius)] = Math.exp(-spatialDistSq / twoSigmaSpatialSq);
+    }
+  }
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -160,18 +173,20 @@ export function applyBilateralFilter(
       let totalWeight = 0;
 
       for (let dy = -radius; dy <= radius; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= height) continue;
+        const rowOffset = (dy + radius) * kernelDim;
+
         for (let dx = -radius; dx <= radius; dx++) {
           const nx = x + dx;
-          const ny = y + dy;
-          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+          if (nx < 0 || nx >= width) continue;
 
           const neighborH = src[ny * width + nx];
           if (neighborH <= 0) continue;
 
-          const spatialDistSq = dx * dx + dy * dy;
           const rangeDistSq = (centerH - neighborH) * (centerH - neighborH);
-
-          const w = Math.exp(-spatialDistSq / twoSigmaSpatialSq) * Math.exp(-rangeDistSq / twoSigmaRangeSq);
+          const spatialWeight = spatialLUT[rowOffset + (dx + radius)];
+          const w = spatialWeight * Math.exp(-rangeDistSq / twoSigmaRangeSq);
           sum += neighborH * w;
           totalWeight += w;
         }

@@ -5,6 +5,11 @@
  * - https://wiki.mozilla.org/APNG_Specification
  * - https://www.w3.org/TR/PNG/
  *
+ * Compression Architecture:
+ * - Employs uncompressed DEFLATE store blocks (BTYPE 00) wrapped in RFC 1950 zlib containers.
+ *   This ensures 100% offline, zero-dependency generation in browser and Node test environments
+ *   with minimal CPU overhead, though output files will be larger than compressed DEFLATE streams.
+ *
  * Features:
  * - True 24-bit / 32-bit RGBA color animation without GIF's 256-color palette limitation.
  * - Variable per-frame duration timing (supporting Richard Williams animation holds).

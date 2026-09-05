@@ -178,7 +178,7 @@ export const LayersPanel: React.FC = () => {
               </div>
 
               {/* Actions: Merge Down, Visibility & Lock Toggles */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 {canMergeDown && (
                   <button
                     type="button"
@@ -186,7 +186,7 @@ export const LayersPanel: React.FC = () => {
                       e.stopPropagation();
                       mergeLayerDown(layer.id);
                     }}
-                    className="p-1 transition-colors cursor-pointer text-[var(--text-body)]/50 hover:text-[#f0be7c]"
+                    className="w-6 h-6 flex items-center justify-center transition-colors cursor-pointer text-[var(--text-body)]/50 hover:text-[#f0be7c]"
                     aria-label={`Merge down layer ${layer.name}`}
                     title="Merge Down"
                   >
@@ -199,7 +199,7 @@ export const LayersPanel: React.FC = () => {
                     e.stopPropagation();
                     toggleLayerLock(layer.id);
                   }}
-                  className={`p-1 transition-colors cursor-pointer ${
+                  className={`w-6 h-6 flex items-center justify-center transition-colors cursor-pointer ${
                     layer.locked ? 'text-[#f0be7c]' : 'text-[var(--text-body)]/50 hover:text-[var(--text-heading)]'
                   }`}
                   aria-label={layer.locked ? `Unlock layer ${layer.name}` : `Lock layer ${layer.name}`}
@@ -214,7 +214,7 @@ export const LayersPanel: React.FC = () => {
                     e.stopPropagation();
                     toggleLayerVisibility(layer.id);
                   }}
-                  className={`p-1 transition-colors cursor-pointer ${
+                  className={`w-6 h-6 flex items-center justify-center transition-colors cursor-pointer ${
                     layer.visible
                       ? isActive
                         ? 'text-[#f0be7c]'

@@ -199,6 +199,7 @@ export const FloatingPreviewWindow: React.FC = () => {
           }}
           className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5 cursor-pointer"
           title="Close Preview Window"
+          aria-label="Close Preview Window"
         >
           ×
         </button>
@@ -240,6 +241,7 @@ export const FloatingPreviewWindow: React.FC = () => {
                 : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:text-[#f0be7c]'
             }`}
             title={isPlaying ? 'Pause Animation' : 'Play Animation'}
+            aria-label={isPlaying ? 'Pause Animation' : 'Play Animation'}
           >
             <PixelIcon name={isPlaying ? 'pause' : 'play'} size={12} />
           </button>
@@ -267,24 +269,30 @@ export const FloatingPreviewWindow: React.FC = () => {
         </div>
 
         {/* Backdrop Swatches */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {(['checker', 'obsidian', 'alabaster', 'amber'] as const).map((bg) => (
             <button
               key={bg}
+              type="button"
               onClick={() => setPreviewBackdrop(bg)}
-              className={`w-3.5 h-3.5 rounded-[1px] border cursor-pointer ${
-                previewBackdrop === bg ? 'border-[#f0be7c] scale-110' : 'border-[#140d1f]'
-              } ${
-                bg === 'obsidian'
-                  ? 'bg-[#2A2130]'
-                  : bg === 'alabaster'
-                  ? 'bg-[#EDE8F4]'
-                  : bg === 'amber'
-                  ? 'bg-[#F0BE7C]'
-                  : 'bg-[repeating-conic-gradient(#888_0%_25%,#444_0%_50%)] bg-[length:6px_6px]'
-              }`}
+              className="min-w-[24px] min-h-[24px] w-6 h-6 flex items-center justify-center cursor-pointer bg-transparent border-0 p-0"
               title={`Backdrop: ${bg}`}
-            />
+              aria-label={`Backdrop: ${bg}`}
+            >
+              <span
+                className={`w-3.5 h-3.5 rounded-[1px] border block ${
+                  previewBackdrop === bg ? 'border-[#f0be7c] scale-110' : 'border-[#140d1f]'
+                } ${
+                  bg === 'obsidian'
+                    ? 'bg-[#2A2130]'
+                    : bg === 'alabaster'
+                    ? 'bg-[#EDE8F4]'
+                    : bg === 'amber'
+                    ? 'bg-[#F0BE7C]'
+                    : 'bg-[repeating-conic-gradient(#888_0%_25%,#444_0%_50%)] bg-[length:6px_6px]'
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>

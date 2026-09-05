@@ -326,6 +326,48 @@
 
 ---
 
+## Phase 40 — Audit Remediation & Quality Gate Parity
+**Goal:** Address and fix all 7 audit issues across MP4 export fallbacks, studio accessibility rigor without rule carve-outs, photometric normal-map memoization, P2P WebRTC sync bounds and batching, APNG store block documentation, color ramp unit tests, and codebase polish.
+
+**Deliverables:**
+- [x] **Honest MP4 Capability Detection & CI Harness (`src/lib/export/mp4Encoder.ts`, `src/components/modals/ExportModal.tsx`, `tests/mp4Encoder.test.ts`)**:
+  - Replaced non-functional ~200-byte stub container generation with strict capability detection via `isMp4ExportSupported()` verifying both `MediaRecorder` and `captureStream`.
+  - Added honest UI warning in `ExportModal.tsx` advising users to export as WebM or GIF when native MP4 is unsupported.
+  - Implemented comprehensive mock `MediaRecorder` test harness in Vitest (`tests/mp4Encoder.test.ts` expanded to 12 tests).
+- [x] **Studio Accessibility Rigor & Complete Rule Carve-Out Elimination (`tests/e2e/studio.spec.ts`, `src/components/studio/FloatingPreviewWindow.tsx`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`, `playwright.config.ts`, `src/stores/themeStore.ts`)**:
+  - Completely eliminated `.disableRules(['target-size', 'color-contrast'])` in `tests/e2e/studio.spec.ts`.
+  - Upgraded touch targets to $\ge 24\times24$px across `FloatingPreviewWindow.tsx` backdrop options, `LayersPanel.tsx` layer lock button, and `BottomTimeline.tsx` clip delete button.
+  - Enhanced frame duration text contrast to $>6:1$ against dark panel surfaces.
+  - Configured dark color scheme parity in `playwright.config.ts` and `themeStore.ts`.
+  - Verified 17 Playwright E2E tests pass with 0 axe violations.
+- [x] **Photometric & Tangent-Space Normal Map Optimization (`src/lib/ai/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
+  - Precomputed 2D spatial Gaussian distance lookup table (`spatialLUT`) in `applyBilateralFilter`, eliminating 50% of inner-loop `Math.exp()` calls, with bounds guards for non-positive dimensions and sigmas.
+  - Memoized normal map preview canvas in `CenterViewport.tsx` using an offscreen canvas ref cache invalidated only when `bufferVersion`, `activeFrameIndex`, layer structure signature, or floating selection key changes.
+  - Removed inert `isDrawingRef` dependency from `CenterViewport.tsx`'s `useEffect`.
+- [x] **P2P WebRTC Sync Hardening & Bounded CRDT Log (`src/lib/sync/p2pSync.ts`, `src/lib/collab/crdtPixelBuffer.ts`, `tests/p2pValidation.test.ts`)**:
+  - Enforced 256KB DataChannel payload ceiling.
+  - Implemented strict runtime schema and integer bounds validation on incoming `PixelOp`s.
+  - Added automatic chunking into 1000-op batches for `broadcastPixelOps` and `broadcastInitialSync`.
+  - Bounded `opLog` in `CrdtPixelBuffer` (`MAX_OP_LOG_SIZE = 10000`) with sliding window eviction.
+  - Created 17 unit tests in `tests/p2pValidation.test.ts`.
+- [x] **APNG Store Block Documentation (`src/lib/export/apngEncoder.ts`)**:
+  - Documented uncompressed DEFLATE store blocks (BTYPE 00) and byte-exact CRC32/Adler-32 chunking.
+- [x] **Color Ramp Generator Hardening & Unit Tests (`src/lib/color/rampGenerator.ts`, `tests/rampGenerator.test.ts`)**:
+  - Fixed `hexToRgb` to slice 8-character and 4-character hex inputs with alpha before parsing, eliminating blue channel bit-shift drift.
+  - Created 11 comprehensive unit tests in `tests/rampGenerator.test.ts`.
+- [x] **Codebase Polish (`src/hooks/viewport/useViewportDrawing.ts`, `src/lib/canvas/floodFill.ts`)**:
+  - Translated Turkish comment to English in `useViewportDrawing.ts`.
+  - Corrected docstring in `floodFill.ts` to document iterative 4-connected stack-based fill.
+
+**Acceptance criteria:**
+- All 351 unit and integration tests pass across 55 test suites: Verified.
+- All 17 Playwright E2E tests pass including axe-core WCAG 2.2 AA audits with zero rule carve-outs: Verified.
+- TypeScript strict checking, ESLint, Next.js 16 Turbopack production build, and doc integrity verification pass with 0 errors: Verified.
+
+**Status:** Complete (2026-09-05)
+
+---
+
 ## Excluded Claims (Transparency Audit)
 The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
 - Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.

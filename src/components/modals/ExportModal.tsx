@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -11,7 +11,7 @@ import { exportProcessReplayGifAsync } from '@/lib/export/processReplay';
 import { depixelizeToSvg } from '@/lib/export/depixelizeVector';
 import { exportAnimationToWebmAsync } from '@/lib/export/webmEncoder';
 import { exportAnimationToApngAsync } from '@/lib/export/apngEncoder';
-import { exportAnimationToMp4Async } from '@/lib/export/mp4Encoder';
+import { exportAnimationToMp4Async, isMp4ExportSupported } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { getGlobalHistory } from '@/lib/engine/historyEngine';
 import { compositeFrame } from '@/lib/render/compositor';
@@ -48,7 +48,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const [holdLastFrameMs, setHoldLastFrameMs] = useState<number>(1000);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<{ current: number; total: number } | null>(null);
+  const [isMp4Supported, setIsMp4Supported] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? isMp4ExportSupported() : false
+  );
   const abortControllerRef = React.useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    setIsMp4Supported(isMp4ExportSupported());
+  }, [isOpen]);
 
   // Compute targeted frames based on selected clip scope with inverted/out-of-bounds safety
   const selectedClip = clips.find((c) => c.id === selectedClipId);
@@ -624,7 +631,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           </div>
 
           <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Animated PNG (APNG) retains 100% full 24-bit/32-bit RGBA color without GIF&apos;s 256-color degradation or palette quantization noise.
+            Animated PNG (APNG) retains 100% full 24-bit/32-bit RGBA color without GIF&apos;s 256-color degradation or palette quantization noise. Encoded with uncompressed DEFLATE store blocks (BTYPE 00) for instant, zero-dependency offline generation (file sizes may be larger than compressed PNGs).
           </p>
         </div>
       )}
@@ -724,6 +731,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               ))}
             </div>
           </div>
+
+          {replayFormat === 'mp4' && !isMp4Supported && (
+            <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
+              <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+                <PixelIcon name="warning" size={13} />
+                <span>MP4 Video Recording Unsupported</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
+                Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>Animated GIF</strong> for timelapse export.
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
@@ -900,6 +919,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
       {exportType === 'mp4' && (
         <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
+          {!isMp4Supported && (
+            <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
+              <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+                <PixelIcon name="warning" size={13} />
+                <span>MP4 Video Recording Unsupported</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
+                Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>WebM</strong> for video or <strong>GIF / APNG</strong> for animation export instead.
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
             <div className="flex gap-1">
@@ -974,7 +1005,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         <TactileButton
           size="sm"
           variant="primary"
-          disabled={isExporting || (exportType === 'replay' && historyLength === 0)}
+          disabled={
+            isExporting ||
+            (exportType === 'replay' && (historyLength === 0 || (replayFormat === 'mp4' && !isMp4Supported))) ||
+            (exportType === 'mp4' && !isMp4Supported)
+          }
           onClick={
             exportType === 'project'
               ? handleExportProjectJson

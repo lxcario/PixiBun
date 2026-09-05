@@ -149,6 +149,36 @@ export function createMoovBox(width: number, height: number, durationMs: number)
 }
 
 /**
+ * Checks if in-browser MP4 (H.264) video encoding is supported via MediaRecorder and Canvas captureStream.
+ */
+export function isMp4ExportSupported(): boolean {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return false;
+  }
+  const hasMediaRecorder =
+    typeof (window as unknown as { MediaRecorder?: typeof MediaRecorder }).MediaRecorder !== 'undefined';
+  if (!hasMediaRecorder) {
+    return false;
+  }
+  const hasCaptureStream =
+    typeof HTMLCanvasElement !== 'undefined' &&
+    (typeof HTMLCanvasElement.prototype.captureStream === 'function' ||
+      typeof (HTMLCanvasElement.prototype as unknown as { mozCaptureStream?: unknown }).mozCaptureStream ===
+        'function');
+  if (!hasCaptureStream) {
+    return false;
+  }
+  try {
+    return (
+      MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
+      MediaRecorder.isTypeSupported('video/mp4')
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Encodes an array of frame canvases into an MP4 (H.264) video Blob.
  *
  * @param frameCanvases Sequence of HTMLCanvasElements representing animation frames
@@ -185,34 +215,10 @@ export async function exportAnimationToMp4Async(
     return Math.max(10, Math.round(1000 / fps));
   });
 
-  const totalCycleDurationMs = frameDelaysMs.reduce((sum, d) => sum + d, 0);
-  const totalDurationMs = totalCycleDurationMs * loopCount;
-
-  // Check MediaRecorder MP4 capability in current browser environment
-  const hasMediaRecorder =
-    typeof window !== 'undefined' &&
-    typeof document !== 'undefined' &&
-    typeof (window as unknown as { MediaRecorder?: typeof MediaRecorder }).MediaRecorder !== 'undefined';
-
-  const isMp4Supported =
-    hasMediaRecorder &&
-    (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
-      MediaRecorder.isTypeSupported('video/mp4'));
-
-  if (!hasMediaRecorder || !isMp4Supported) {
-    // Pure ISOBMFF FastStart container fallback (for headless test environments or browsers lacking native MP4 MediaRecorder)
-    const ftyp = createFtypBox();
-    const moov = createMoovBox(width, height, totalDurationMs);
-    const mdatPayload = new Uint8Array(16); // Stub media sample payload
-    const mdat = buildIsoBox('mdat', mdatPayload);
-
-    const mp4Bytes = new Uint8Array(ftyp.length + moov.length + mdat.length);
-    mp4Bytes.set(ftyp, 0);
-    mp4Bytes.set(moov, ftyp.length);
-    mp4Bytes.set(mdat, ftyp.length + moov.length);
-
-    options.onProgress?.(frameCanvases.length * loopCount, frameCanvases.length * loopCount);
-    return new Blob([mp4Bytes.buffer as ArrayBuffer], { type: 'video/mp4' });
+  if (!isMp4ExportSupported()) {
+    throw new Error(
+      'MP4 export is not supported in this browser environment (MediaRecorder with video/mp4 MIME type is unavailable). Please export using WebM, GIF, or APNG instead.'
+    );
   }
 
   // Active Browser MediaRecorder Path
@@ -241,10 +247,20 @@ export async function exportAnimationToMp4Async(
 
   return new Promise<Blob>((resolve, reject) => {
     let isFinished = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
 
     const cleanup = () => {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
       if (options.signal) {
         options.signal.removeEventListener('abort', onAbort);
+      }
+      try {
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        // ignore track stop errors
       }
     };
 
@@ -296,7 +312,7 @@ export async function exportAnimationToMp4Async(
 
       if (currentLoop >= loopCount) {
         // Allow buffered frames to flush before stopping recorder
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           if (recorder.state !== 'inactive') {
             recorder.stop();
           }
@@ -319,7 +335,7 @@ export async function exportAnimationToMp4Async(
         currentLoop++;
       }
 
-      setTimeout(renderNext, delay);
+      timerId = setTimeout(renderNext, delay);
     };
 
     renderNext();

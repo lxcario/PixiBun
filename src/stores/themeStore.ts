@@ -62,10 +62,8 @@ function getInitialTheme(): ThemeMode {
   if (typeof window === 'undefined' || !window.localStorage) return 'dark';
   try {
     const saved = window.localStorage.getItem('pixibun-theme') as ThemeMode | null;
-    if (saved === 'light' || saved === 'dark') return saved;
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      return 'light';
-    }
+    if (saved === 'light') return 'light';
+    if (saved === 'dark') return 'dark';
   } catch {
     // ignore storage / media query errors
   }

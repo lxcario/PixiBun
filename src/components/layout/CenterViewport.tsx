@@ -169,6 +169,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     commitSnapshot,
   });
 
+  const normalMapCacheRef = useRef<{ cacheKey: string; canvas: HTMLCanvasElement } | null>(null);
+
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
     const mainCanvas = mainCanvasRef.current;
@@ -202,16 +204,29 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     // 3. Tangent-Space Normal Map Live Viewport Mode
     if (state.showNormalMapPreview) {
-      const data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
-      const isOpaque = (x: number, y: number) => {
-        if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
-        return data[(y * canvasWidth + x) * 4 + 3] > 30;
-      };
-      const distanceMap = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
-      const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
-      const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
-      const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
-      const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
+      const layersSig = currentFrame
+        ? currentFrame.layers.map((l) => `${l.id}:${l.visible ? 1 : 0}:${l.opacity}:${l.blendMode}`).join(';')
+        : '';
+      const floatKey = floatingSelection ? `${floatingSelection.x}_${floatingSelection.y}` : 'none';
+      const cacheKey = `${state.bufferVersion}_${state.activeFrameIndex}_${canvasWidth}_${canvasHeight}_${layersSig}_${floatKey}`;
+      let normalCanvas: HTMLCanvasElement;
+
+      if (normalMapCacheRef.current && normalMapCacheRef.current.cacheKey === cacheKey) {
+        normalCanvas = normalMapCacheRef.current.canvas;
+      } else {
+        const data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+        const isOpaque = (x: number, y: number) => {
+          if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;
+          return data[(y * canvasWidth + x) * 4 + 3] > 30;
+        };
+        const distanceMap = computeSeparableEDT(isOpaque, canvasWidth, canvasHeight);
+        const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
+        const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
+        const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
+        normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
+        normalMapCacheRef.current = { cacheKey, canvas: normalCanvas };
+      }
+
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       ctx.drawImage(normalCanvas, 0, 0);
     }
@@ -267,6 +282,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       renderComposite();
     }
     renderOnionSkin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isDrawingRef is an inert mutable ref
   }, [
     renderComposite,
     renderOnionSkin,
@@ -276,7 +292,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     showNormalMapPreview,
     onionSkin,
     isPlaying,
-    isDrawingRef,
   ]);
 
   // Pointer Event Handlers

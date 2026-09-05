@@ -46,7 +46,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
             : 'bg-surface-raised text-text-primary border-border-dark hover:bg-[#603B82] hover:border-[var(--accent-wisteria)] hover:shadow-[0_0_10px_rgba(199,146,223,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(58,46,76,0.2)]',
           primary: isSelected
             ? 'bg-[#b673d3] text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-accent-primary text-text-primary font-bold border-border-dark hover:bg-[#d4a5ea] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
+            : 'bg-accent-primary text-[#140c1e] font-bold border-border-dark hover:bg-[#d4a5ea] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
           accent: isSelected
             ? 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
             : 'bg-accent-secondary text-text-primary font-bold border-border-dark hover:bg-[#b673d3] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',

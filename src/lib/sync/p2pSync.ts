@@ -78,6 +78,110 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun1.l.google.com:19302' },
 ];
 
+export const MAX_P2P_PAYLOAD_SIZE = 256 * 1024; // 256 KB
+
+/**
+ * Validates whether an incoming object conforms to a valid PixelOp with strict boundary constraints:
+ * - 0 <= x, y < 4096 (canvas coordinate bounds)
+ * - 0 <= r, g, b, a <= 255 (8-bit color channel bounds)
+ * - valid numeric timestamp and non-empty peerId
+ */
+export function isValidPixelOp(op: unknown): op is PixelOp {
+  if (typeof op !== 'object' || op === null) return false;
+  const o = op as Record<string, unknown>;
+
+  if (typeof o.x !== 'number' || !Number.isFinite(o.x) || Math.floor(o.x) !== o.x || o.x < 0 || o.x >= 4096) {
+    return false;
+  }
+  if (typeof o.y !== 'number' || !Number.isFinite(o.y) || Math.floor(o.y) !== o.y || o.y < 0 || o.y >= 4096) {
+    return false;
+  }
+  if (typeof o.r !== 'number' || !Number.isFinite(o.r) || Math.floor(o.r) !== o.r || o.r < 0 || o.r > 255) {
+    return false;
+  }
+  if (typeof o.g !== 'number' || !Number.isFinite(o.g) || Math.floor(o.g) !== o.g || o.g < 0 || o.g > 255) {
+    return false;
+  }
+  if (typeof o.b !== 'number' || !Number.isFinite(o.b) || Math.floor(o.b) !== o.b || o.b < 0 || o.b > 255) {
+    return false;
+  }
+  if (typeof o.a !== 'number' || !Number.isFinite(o.a) || Math.floor(o.a) !== o.a || o.a < 0 || o.a > 255) {
+    return false;
+  }
+  if (typeof o.timestamp !== 'number' || !Number.isFinite(o.timestamp) || o.timestamp <= 0) {
+    return false;
+  }
+  if (typeof o.peerId !== 'string' || o.peerId.length === 0 || o.peerId.length > 128) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validates and sanitizes an incoming CRDT sync message.
+ */
+export function validateCrdtSyncMessage(data: unknown): CrdtSyncMessage | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const msg = data as Record<string, unknown>;
+
+  if (msg.type !== 'INITIAL_SYNC' && msg.type !== 'PIXEL_OPS' && msg.type !== 'PING') {
+    return null;
+  }
+  if (typeof msg.peerId !== 'string' || msg.peerId.length === 0 || msg.peerId.length > 128) {
+    return null;
+  }
+
+  if (msg.type === 'INITIAL_SYNC' || msg.type === 'PIXEL_OPS') {
+    if (!Array.isArray(msg.ops)) return null;
+    const validOps: PixelOp[] = [];
+    for (const op of msg.ops) {
+      if (isValidPixelOp(op)) {
+        validOps.push(op);
+      } else {
+        // Discard invalid / out-of-bounds operations
+        return null;
+      }
+    }
+    return {
+      type: msg.type,
+      peerId: msg.peerId,
+      ops: validOps,
+      timestamp: typeof msg.timestamp === 'number' && Number.isFinite(msg.timestamp) ? msg.timestamp : undefined,
+    };
+  }
+
+  return {
+    type: 'PING',
+    peerId: msg.peerId,
+    timestamp: typeof msg.timestamp === 'number' && Number.isFinite(msg.timestamp) ? msg.timestamp : undefined,
+  };
+}
+
+/**
+ * Validates and sanitizes an incoming Presence message.
+ */
+export function validatePresenceMessage(data: unknown): PresenceMessage | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const msg = data as Record<string, unknown>;
+
+  if (msg.type !== 'CURSOR') return null;
+  if (typeof msg.peerId !== 'string' || msg.peerId.length === 0 || msg.peerId.length > 128) return null;
+  if (typeof msg.name !== 'string' || msg.name.length > 64) return null;
+  if (typeof msg.color !== 'string' || msg.color.length > 32) return null;
+  if (typeof msg.x !== 'number' || !Number.isFinite(msg.x)) return null;
+  if (typeof msg.y !== 'number' || !Number.isFinite(msg.y)) return null;
+
+  return {
+    type: 'CURSOR',
+    peerId: msg.peerId,
+    name: msg.name,
+    color: msg.color,
+    x: msg.x,
+    y: msg.y,
+  };
+}
+
 /**
  * Encodes signaling payload into a compact URL-safe base64 string.
  */
@@ -193,7 +297,16 @@ export class P2PSyncSession {
       };
       channel.onmessage = (e) => {
         try {
-          const msg = JSON.parse(e.data) as CrdtSyncMessage;
+          if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
+            console.warn('P2P payload exceeded 256KB limit. Discarding message.');
+            return;
+          }
+          const raw = JSON.parse(e.data);
+          const msg = validateCrdtSyncMessage(raw);
+          if (!msg) {
+            console.warn('P2P CRDT sync message failed validation.');
+            return;
+          }
           if (msg.type === 'INITIAL_SYNC' && msg.ops) {
             this.options.onInitialSync?.(msg.ops);
           } else if (msg.type === 'PIXEL_OPS' && msg.ops) {
@@ -207,7 +320,16 @@ export class P2PSyncSession {
       this.presenceChannel = channel;
       channel.onmessage = (e) => {
         try {
-          const msg = JSON.parse(e.data) as PresenceMessage;
+          if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
+            console.warn('P2P presence payload exceeded 256KB limit. Discarding message.');
+            return;
+          }
+          const raw = JSON.parse(e.data);
+          const msg = validatePresenceMessage(raw);
+          if (!msg) {
+            console.warn('P2P presence message failed validation.');
+            return;
+          }
           if (msg.type === 'CURSOR') {
             this.options.onRemoteCursor?.({
               peerId: msg.peerId,
@@ -355,33 +477,51 @@ export class P2PSyncSession {
       return false;
     }
 
-    const msg: CrdtSyncMessage = {
-      type: 'PIXEL_OPS',
-      peerId: this.peerId,
-      ops,
-      timestamp: Date.now(),
-    };
-
-    this.syncChannel.send(JSON.stringify(msg));
+    const CHUNK_SIZE = 1000;
+    for (let i = 0; i < ops.length; i += CHUNK_SIZE) {
+      const chunk = ops.slice(i, i + CHUNK_SIZE);
+      const msg: CrdtSyncMessage = {
+        type: 'PIXEL_OPS',
+        peerId: this.peerId,
+        ops: chunk,
+        timestamp: Date.now(),
+      };
+      this.syncChannel.send(JSON.stringify(msg));
+    }
     return true;
   }
 
   /**
    * Broadcasts initial full state over the reliable ordered channel.
+   * Chunks large snapshots into batches of 1,000 ops to stay safely within the 256KB frame limit.
    */
   public broadcastInitialSync(allOps: PixelOp[]): boolean {
     if (!this.syncChannel || this.syncChannel.readyState !== 'open') {
       return false;
     }
 
-    const msg: CrdtSyncMessage = {
-      type: 'INITIAL_SYNC',
-      peerId: this.peerId,
-      ops: allOps,
-      timestamp: Date.now(),
-    };
+    if (allOps.length === 0) {
+      const msg: CrdtSyncMessage = {
+        type: 'INITIAL_SYNC',
+        peerId: this.peerId,
+        ops: [],
+        timestamp: Date.now(),
+      };
+      this.syncChannel.send(JSON.stringify(msg));
+      return true;
+    }
 
-    this.syncChannel.send(JSON.stringify(msg));
+    const CHUNK_SIZE = 1000;
+    for (let i = 0; i < allOps.length; i += CHUNK_SIZE) {
+      const chunk = allOps.slice(i, i + CHUNK_SIZE);
+      const msg: CrdtSyncMessage = {
+        type: 'INITIAL_SYNC',
+        peerId: this.peerId,
+        ops: chunk,
+        timestamp: Date.now(),
+      };
+      this.syncChannel.send(JSON.stringify(msg));
+    }
     return true;
   }
 

@@ -12,11 +12,19 @@ export interface ColorRampStep {
 
 // Convert Hex to RGB [0-255]
 function hexToRgb(hex: string): [number, number, number] {
-  let clean = hex.replace('#', '');
-  if (clean.length === 3) {
-    clean = clean.split('').map(c => c + c).join('');
+  if (!hex || typeof hex !== 'string') {
+    return [0, 0, 0];
+  }
+  let clean = hex.replace('#', '').trim();
+  if (clean.length === 3 || clean.length === 4) {
+    clean = clean.slice(0, 3).split('').map(c => c + c).join('');
+  } else if (clean.length > 6) {
+    clean = clean.slice(0, 6);
   }
   const num = parseInt(clean, 16);
+  if (Number.isNaN(num)) {
+    return [0, 0, 0];
+  }
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 

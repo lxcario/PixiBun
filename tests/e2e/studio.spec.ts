@@ -6,7 +6,6 @@ const AXE_WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const scanStudioAccessibility = async (page: import('@playwright/test').Page) => {
   return await new AxeBuilder({ page })
     .withTags(AXE_WCAG_TAGS)
-    .disableRules(['target-size', 'color-contrast'])
     .analyze();
 };
 

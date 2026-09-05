@@ -349,7 +349,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 }}
                 className="w-14 bg-[#181124] text-[#f0be7c] font-bold text-right px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] focus:border-[#f0be7c] outline-none text-xs font-mono"
               />
-              <span className="text-[var(--text-body)]/60 text-[10px]">ms</span>
+              <span className="text-[var(--text-body)] text-[10px]">ms</span>
             </div>
 
             {/* Onion Skinning Toggle */}
@@ -449,7 +449,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     e.stopPropagation();
                     deleteClip(clip.id);
                   }}
-                  className="text-[#ff99aa] hover:text-[#ffffff] ml-0.5 cursor-pointer bg-transparent border-0 p-0"
+                  className="w-6 h-6 flex items-center justify-center text-[#ff99aa] hover:text-[#ffffff] cursor-pointer bg-transparent border-0 p-0 text-sm font-bold"
                   aria-label={`Delete clip ${clip.name}`}
                   title="Delete Clip"
                 >

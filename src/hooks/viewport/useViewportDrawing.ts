@@ -47,7 +47,7 @@ export function useViewportDrawing({
   useEffect(() => {
     setGlobalHistoryEngine(historyEngineRef.current);
 
-    // Event listener: Proje değiştiğinde veya yeni çizim açıldığında geçmişi temizle
+    // Event listener: Clear history when project changes or a new drawing is opened
     const handleHistoryClear = () => {
       if (historyEngineRef.current) {
         historyEngineRef.current.clear();

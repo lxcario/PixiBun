@@ -208,7 +208,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 317 unit and integration tests across 53 suites and 17 E2E specs with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 351 unit and integration tests across 55 suites and 17 E2E specs with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -227,7 +227,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 317 unit and integration tests across 53 suites and 17 E2E specs + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 351 unit and integration tests across 55 suites and 17 E2E specs + Axe WCAG scans + LHCI budgets. |
 
 ---
 

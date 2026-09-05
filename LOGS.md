@@ -862,3 +862,55 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-05 — Phase 40: Audit Remediation & Quality Gate Parity
+
+**Problem Statement:**
+1. MP4 export fallback was non-functional: when native MediaRecorder MP4 encoding was unavailable, the encoder emitted an unplayable ~200-byte stub without sample tables or frame data, and CI ran in happy-dom where MediaRecorder was absent, giving false test coverage.
+2. Studio automated accessibility tests had rule carve-outs (`.disableRules(['target-size', 'color-contrast'])`), leaving touch-target sizes and contrast unverified in the studio environment.
+3. Photometric normal-map computation in `CenterViewport.tsx` lacked memoization against composite state, recalculating unnecessarily, and bilateral filtering in `edtNormalMap.ts` evaluated Gaussian spatial distances dynamically in the inner loop.
+4. P2P WebRTC data sync lacked message size bounding, bounds validation on incoming operations, and batch chunking, risking channel drops on whole-canvas transfers.
+5. APNG encoder lacked explicit documentation for uncompressed DEFLATE store blocks.
+6. Color ramp generator had an alpha-channel slicing bug in `hexToRgb` causing blue channel bit-shift drift on 8-digit hex values, and lacked dedicated unit tests.
+7. Codebase had a stray Turkish comment in `useViewportDrawing.ts` and a docstring inaccuracy in `floodFill.ts`.
+
+**Engineering Remediation:**
+- **Honest MP4 Capability Detection & Vitest CI Mock Harness (`src/lib/export/mp4Encoder.ts`, `src/components/modals/ExportModal.tsx`, `tests/mp4Encoder.test.ts`)**:
+  - Exported `isMp4ExportSupported()` requiring both `MediaRecorder` and `captureStream` support.
+  - Added user warning in `ExportModal.tsx` guiding users to WebM or GIF when native MP4 is unsupported.
+  - Added mock `MediaRecorder` and `captureStream` test harness in Vitest, expanding `tests/mp4Encoder.test.ts` to 12 tests.
+- **Studio Accessibility Rigor & Zero Rule Carve-Outs (`tests/e2e/studio.spec.ts`, `src/components/studio/FloatingPreviewWindow.tsx`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`, `playwright.config.ts`, `src/stores/themeStore.ts`)**:
+  - Completely eliminated `.disableRules(['target-size', 'color-contrast'])` in `tests/e2e/studio.spec.ts`.
+  - Upgraded touch targets to $\ge 24\times24$px across `FloatingPreviewWindow.tsx` backdrop options, `LayersPanel.tsx` layer lock button, and `BottomTimeline.tsx` clip delete button.
+  - Upgraded frame duration text contrast to $>6:1$ against dark panel surfaces.
+  - Configured dark color scheme parity in `playwright.config.ts` and `themeStore.ts`.
+  - All 17 Playwright E2E tests pass with 0 axe violations.
+- **Photometric & Normal-Map Optimization (`src/lib/ai/math/edtNormalMap.ts`, `src/components/layout/CenterViewport.tsx`)**:
+  - Precomputed 2D spatial Gaussian distance lookup table (`spatialLUT`) in `applyBilateralFilter`, eliminating 50% of inner-loop `Math.exp()` calls, with bounds guards for non-positive dimensions and sigmas.
+  - Memoized normal map preview canvas in `CenterViewport.tsx` using an offscreen canvas ref cache invalidated only when `bufferVersion`, `activeFrameIndex`, layer structure signature, or floating selection key changes.
+  - Removed inert `isDrawingRef` dependency from `CenterViewport.tsx`'s `useEffect`.
+- **P2P WebRTC Sync Hardening & Bounded CRDT Log (`src/lib/sync/p2pSync.ts`, `src/lib/collab/crdtPixelBuffer.ts`, `tests/p2pValidation.test.ts`)**:
+  - Enforced 256KB DataChannel payload ceiling in `p2pSync.ts`.
+  - Implemented strict runtime schema and integer bounds validation on incoming `PixelOp`s.
+  - Added automatic chunking into 1000-op batches for `broadcastPixelOps` and `broadcastInitialSync`.
+  - Bounded `opLog` in `CrdtPixelBuffer` (`MAX_OP_LOG_SIZE = 10000`) with sliding window eviction.
+  - Added 17 unit tests in `tests/p2pValidation.test.ts`.
+- **APNG Store Block Documentation (`src/lib/export/apngEncoder.ts`)**:
+  - Honestly documented uncompressed DEFLATE store blocks (BTYPE 00) and byte-exact CRC32/Adler-32 chunking.
+- **Color Ramp Generator Hardening & Unit Tests (`src/lib/color/rampGenerator.ts`, `tests/rampGenerator.test.ts`)**:
+  - Fixed `hexToRgb` to slice 8-character and 4-character hex inputs with alpha before parsing, eliminating blue channel bit-shift drift.
+  - Added 11 comprehensive unit tests in `tests/rampGenerator.test.ts`.
+- **Codebase Polish (`src/hooks/viewport/useViewportDrawing.ts`, `src/lib/canvas/floodFill.ts`)**:
+  - Translated Turkish comment to English in `useViewportDrawing.ts`.
+  - Corrected docstring in `floodFill.ts` to document iterative 4-connected stack-based fill.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 351/351 tests passed across 55 suites
+- `npx playwright test`: 17/17 E2E tests passed with 0 axe violations and 0 rule carve-outs
+- `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete
