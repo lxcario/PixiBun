@@ -168,9 +168,14 @@ R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \cdo
 ### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation
 For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
 * **Frontal Cushion Plateau:** Within 2.8px of the boundary contour, height bevels smoothly down while the face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the unlit 1–2px silhouette edge.
-* **Independent Ear Cones:** Distinct convex lobes in the top 15%–35% of the silhouette retain independent 3D height peaks.
-* **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving 100% artist color fidelity.
+* **Independent Ear Cones:** Distinct convex lobes in the silhouette retain independent 3D height peaks without arbitrary pixel caps.
+* **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving 100% artist color fidelity across up to 32 clusters.
 * **Stepped OKLCH Cel-Shading:** Unshaded flat base colors receive stepped tone quantization with cool skylight shifts toward 260° in shadow and warm sunlight shifts toward 65° in highlights.
+
+### 6. Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Architecture
+* **Decoupled Orbit and Focus Reticle:** A draggable bulb token orbits smoothly around a draggable middle focus reticle (`stageCentroid`). Dragging the bulb rotates light azimuth ($\theta = \text{atan2}(dx, -dy)$) and elevation without mutating the center anchor position.
+* **60fps Throttled Direct Pipeline:** Renders in-place preview frames during pointer movement using `requestAnimationFrame` with zero UI latency.
+* **Spherical Dome Normal Math Calibration:** Calibrated dome inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) provides an exact zero derivative at the apex peak to prevent conical creases and center-locked highlights on spherical primitives.
 
 ---
 

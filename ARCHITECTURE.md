@@ -167,6 +167,16 @@ graph TD
     * **Uniform Flat Pixel Art Opacity (`ditherMode: 'none'`):**
       Shadow pixels receive uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating continuous 256-level float gradients.
     * **Non-Destructive Tagged Output:** Writes directly to `Layer.tag = 'cast-shadow'`.
+11. **Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Mathematics (`PixelLightBulbGizmo.tsx`):**
+    * Dynamic azimuth calculation from pointer coordinates orbiting around a stationary subject center reticle:
+      $$\theta = \left(\text{atan2}(x_{\text{ptr}} - x_{\text{center}}, -(y_{\text{ptr}} - y_{\text{center}})) \times \frac{180}{\pi} + 360\right) \pmod{360}$$
+    * Decoupled focal point reticle handle ($x_{\text{center}}, y_{\text{center}}$) allowing artists to reposition the lighting anchor without altering the light direction angle.
+    * 60fps `requestAnimationFrame` throttled preview updates.
+12. **Spherical Convex Dome Inflation & Slope AO Decoupling:**
+    * Spherical dome height inflation with exact zero derivative at the apex peak:
+      $$H(p) = R \sqrt{\max\left(0, 1 - \left(1 - \frac{D(p)}{R}\right)^2\right)}$$
+    * Eliminates conical pinch creases on convex primitives while providing true vertical silhouette tangents.
+    * Decouples direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
 ---
 

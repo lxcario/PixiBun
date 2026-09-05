@@ -788,3 +788,40 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-05 — Phase 38: Live On-Canvas Pixel Light Bulb Gizmo, Dynamic Direction Alignment & Character Analysis Hardening
+
+**Problem Statement:**
+1. Artists needed live-time interactive on-canvas lighting controls: dragging a light source directly over their artwork with immediate 60fps lighting updates, rather than exclusively adjusting modal sliders.
+2. In early iterations, the light source and subject focus anchor were coupled together, causing the center reticle to follow the cursor and collapse onto the bulb.
+3. Spherical primitive domes exhibited center-locked highlights due to discrete Laplace cavity attenuation on convex slopes and conical pinch artifacts from power-law gamma inflation.
+4. On 128x128 hand-drawn characters with asymmetrical ears and expressive facial features, the art auto-classifier fell back to non-character prop mode due to hardcoded 8px scan bounds and restrictive `<= 6` cluster caps, causing the character to render as an inflated continuous 24-bit floating point gradient balloon.
+
+**Engineering Remediation:**
+- **Interactive On-Canvas Pixel Light Bulb Gizmo (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Live on-canvas draggable bulb handle (`pixel-light-bulb-handle`) updating light azimuth and elevation in real time with throttled 60fps `requestAnimationFrame` loop.
+  - Dedicated focal center reticle handle (`pixel-light-center-handle`) allowing artists to reposition the lighting subject anchor anywhere across the canvas.
+  - Decoupled bulb orbit from center reticle: dragging the bulb updates azimuth and elevation around the stationary center reticle without moving the focus anchor.
+  - Dynamically calculates light azimuth from pointer coordinates relative to the subject anchor ($\text{azimuth} = \text{round}((\text{atan2}(dx, -dy) \times 180 / \pi + 360) \pmod{360})$).
+  - Added on-canvas keyboard bindings: quick commit with Enter, cancel with Escape, reset focus with R, and brightness/exposure adjustments via `+` / `-` keys or mouse wheel scrolling over the gizmo.
+- **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+  - Removed 8-pixel cap on silhouette appendage scanning. Scans up to 45% of sprite dimensions across horizontal and vertical sweeps, reliably identifying asymmetrical ears, horns, wings, and cheek tufts at any canvas resolution.
+- **Expressive Facial Feature Recognition (`src/lib/ai/math/photometricAuto.ts`)**:
+  - Expanded cluster limits to support up to 32 facial feature clusters and improved contrast thresholds for darker and red fur tones, protecting eyes, eyebrows, nose, mouth, and whiskers from diffuse crush.
+- **Prop & Complex Shape Content-Aware Decomposition (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
+  - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` across Auto and Manual studio modes.
+- **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+  - Calibrated spherical dome heightmap inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) with zero derivative at the apex to eliminate conical pinch creases on spherical primitives.
+  - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
+- **Dedicated Regression Testing (`tests/components/PixelLightBulbGizmo.test.tsx`, `tests/photometricAutoAnalysis.test.ts`, `tests/orbPhotometricCelShading.test.ts`)**: Added 16 new unit and integration tests verifying handle isolation, 128x128 asymmetrical character classification, feature protection, and spherical dome peak luminance.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 312/312 tests passed across 52 suites
+- `npm run build`: Next.js 16.3.2 Turbopack production build succeeded
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete

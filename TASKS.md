@@ -263,6 +263,38 @@
 
 ---
 
+## Phase 38 — Live On-Canvas Pixel Light Bulb Gizmo, Dynamic Direction Alignment & Character Analysis Hardening
+**Goal:** Implement a live-time on-canvas draggable pixel light bulb gizmo with throttled 60fps rendering, isolate bulb rotation from subject focus positioning, calibrate spherical convex normal mapping, and harden character/shape analysis against arbitrary ear/feature cluster bounds.
+
+**Deliverables:**
+- [x] **Interactive On-Canvas Pixel Light Bulb Gizmo (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Live on-canvas draggable bulb handle (`pixel-light-bulb-handle`) updating light azimuth and elevation in real time with throttled 60fps `requestAnimationFrame` loop.
+  - Dedicated focal center reticle handle (`pixel-light-center-handle`) allowing artists to reposition the lighting subject anchor anywhere across the canvas.
+  - Decoupled bulb orbit from center reticle so dragging the bulb rotates azimuth/elevation around the stationary center reticle without moving the focus anchor (`tests/components/PixelLightBulbGizmo.test.tsx`).
+  - Dynamic directional vector calculation aligning azimuth directly with on-canvas pointer position.
+  - Mouse wheel and hotkey strength adjustments (`+` / `-` or wheel scroll), quick commit with Enter, cancel with Escape, and focus reset with R.
+- [x] **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+  - Removed 8-pixel cap on silhouette scanning. Scans up to 45% of sprite dimensions across horizontal and vertical sweeps, reliably identifying asymmetrical ears, horns, and tufts on sprites of any resolution (`tests/photometricAutoAnalysis.test.ts`).
+- [x] **Expressive Facial Feature Recognition (`src/lib/ai/math/photometricAuto.ts`)**:
+  - Expanded cluster limits to support up to 32 facial feature clusters and improved contrast thresholds for darker and red fur tones, protecting eyes, eyebrows, nose, mouth, and whiskers from diffuse crush.
+- [x] **Prop & Complex Shape Content-Aware Decomposition (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
+  - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` across Auto and Manual studio modes.
+- [x] **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+  - Calibrated spherical dome heightmap inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) with zero derivative at the apex to eliminate conical pinch creases on spherical primitives (`tests/orbPhotometricCelShading.test.ts`).
+  - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
+
+**Acceptance criteria:**
+- Dragging the bulb updates azimuth/elevation without moving the center reticle: Verified (`tests/components/PixelLightBulbGizmo.test.tsx`).
+- Asymmetrical 128x128 character with whiskers and 8+ feature clusters is correctly classified as `character` with 100% feature protection and discrete OKLCH cel-shading: Verified (`tests/photometricAutoAnalysis.test.ts`).
+- Spherical orb top-right luminance exceeds center and bottom-left: Verified (`tests/orbPhotometricCelShading.test.ts`).
+- All 312 unit/integration tests pass across 52 suites: Verified.
+- Zero TypeScript, ESLint, or Next.js production build errors: Verified.
+
+**Status:** Complete (2026-09-05)
+
+---
+
 ## Excluded Claims (Transparency Audit)
 The following claims from preliminary inspection were investigated and confirmed false or invalid, and have been deliberately excluded from this roadmap:
 - Excluded: "Palette swatch buttons lack hex code in aria-label" — Verified false; `RightInspector.tsx:519` already implements `aria-label={\`Select color ${color}\`}`.

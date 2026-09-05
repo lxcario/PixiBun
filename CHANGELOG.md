@@ -2,6 +2,33 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.8.0] - 2026-09-05
+### Live-Time On-Canvas Pixel Light Bulb Gizmo & Dynamic Focus Alignment
+- **Interactive On-Canvas Light Bulb Gizmo (`src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Implemented an on-canvas draggable light bulb widget (`pixel-light-bulb-handle`) updating light azimuth and elevation in real time with throttled 60fps requestAnimationFrame rendering.
+  - Added dedicated focal center reticle handle (`pixel-light-center-handle`), decoupling bulb orbit from focal center positioning so artists can reposition the lighting subject anchor anywhere across the canvas.
+  - Isolated bulb orbit from the center reticle: dragging the bulb updates azimuth and elevation around the stationary center reticle without moving the focus anchor.
+  - Dynamically calculates light azimuth from pointer coordinates relative to the subject anchor ($\text{azimuth} = \text{round}((\text{atan2}(dx, -dy) \times 180 / \pi + 360) \pmod{360})$).
+  - Added on-canvas keyboard bindings: quick commit with Enter, cancel with Escape, reset focus with R, and brightness/exposure adjustments via `+` / `-` keys or mouse wheel scrolling over the gizmo.
+  - Verified in `tests/components/PixelLightBulbGizmo.test.tsx`.
+
+### Deep Character / Object Analysis Hardening & Cel-Shading Engine Restoration
+- **Uncapped Asymmetrical Ear & Appendage Scanning (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+  - Removed the arbitrary 8-pixel cap on silhouette appendage scanning. Scans up to 45% of sprite dimensions across horizontal and vertical sweeps, reliably identifying asymmetrical ears, horns, wings, and cheek tufts at any canvas resolution.
+- **Expressive Facial Feature Recognition (`src/lib/ai/math/photometricAuto.ts`)**:
+  - Expanded cluster detection limits to support up to 32 facial feature clusters and improved contrast thresholds for darker and red fur tones, protecting eyes, eyebrows, nose, mouth, and whiskers from diffuse crush.
+- **Prop & Complex Shape Content-Aware Decomposition (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
+  - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` for both Auto and Manual studio modes, ensuring hand-drawn characters receive anatomical part segmentation and discrete OKLCH cel-shading even when setting light direction manually.
+- **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+  - Calibrated spherical dome heightmap inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) with zero derivative at the apex to eliminate conical pinch creases on spherical primitives (`tests/orbPhotometricCelShading.test.ts`).
+  - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
+
+### Test Suite & Verification Expansion
+- **Vitest Unit & Integration Suites**: Expanded test suite to 312 tests across 52 suites with 100% pass rate (`tests/components/PixelLightBulbGizmo.test.tsx`, `tests/photometricAutoAnalysis.test.ts`, `tests/orbPhotometricCelShading.test.ts`).
+
+---
+
 ## [v1.7.0] - 2026-09-05
 ### Deep Art Understanding, Anatomical Part Segmentation & OKLCH Cel-Shading
 - **Art Morphology & Anatomical Form Classification (`src/lib/ai/math/photometricAuto.ts`)**:
