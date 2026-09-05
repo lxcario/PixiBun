@@ -75,7 +75,12 @@ export const PhotometricLightingSection: React.FC = () => {
 
   const handleAutoRenderPhotometric = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:photometric-auto'));
+    window.dispatchEvent(new CustomEvent('pixibun:photometric-gizmo-start', { detail: { auto: true } }));
+  };
+
+  const handleStartLightGizmo = () => {
+    if (showNormalMapPreview) toggleNormalMapPreview();
+    window.dispatchEvent(new CustomEvent('pixibun:photometric-gizmo-start', { detail: { auto: false } }));
   };
 
   const handleRenderPhotometricLighting = () => {
@@ -191,18 +196,18 @@ export const PhotometricLightingSection: React.FC = () => {
             Smart Art Analysis
           </span>
           <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
-            Analyzes the canvas art and sets light direction, height, material and
-            exposure automatically. The gizmo and material chips sync with the result.
+            Analyzes the canvas art and mounts a live-time pixel light bulb directly on the canvas.
+            Drag the bulb to adjust lighting live-time, then press Enter to apply.
           </p>
           <TactileButton
             size="sm"
             variant="primary"
             onClick={handleAutoRenderPhotometric}
-            title="Analyze the canvas art and render photometric lighting with inferred settings"
+            title="Analyze the canvas art, mount live pixel light bulb on canvas, and adjust live-time"
             className="text-xs py-2 font-bold justify-center"
           >
-            <PixelIcon name="sun" size={14} />
-            <span>Analyze &amp; Render</span>
+            <span className="text-sm">💡</span>
+            <span>Analyze &amp; Light Bulb</span>
           </TactileButton>
         </div>
       )}
@@ -394,16 +399,29 @@ export const PhotometricLightingSection: React.FC = () => {
       {/* Main Lighting Action Buttons */}
       <div className="flex flex-col gap-1.5 mt-1">
         {mode === 'manual' && (
-          <TactileButton
-            size="sm"
-            variant="primary"
-            onClick={handleRenderPhotometricLighting}
-            title="Compute 2.5D analytical normal field and render photometric lighting (updates the existing photometric layer in place)"
-            className="text-xs py-2 font-bold justify-center"
-          >
-            <PixelIcon name="sun" size={14} />
-            <span>Render Photometric</span>
-          </TactileButton>
+          <div className="grid grid-cols-2 gap-1.5">
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={handleRenderPhotometricLighting}
+              title="Compute 2.5D analytical normal field and bake photometric lighting"
+              className="text-xs py-2 font-bold justify-center"
+            >
+              <PixelIcon name="sun" size={14} />
+              <span>Bake Light</span>
+            </TactileButton>
+
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={handleStartLightGizmo}
+              title="Mount live-time pixel light bulb on canvas (Enter to apply, Esc to cancel)"
+              className="text-xs py-2 font-bold justify-center bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
+            >
+              <span className="text-sm">💡</span>
+              <span>Light Bulb</span>
+            </TactileButton>
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-1.5">

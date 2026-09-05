@@ -35,6 +35,8 @@ import { useViewportOverlays } from '@/hooks/viewport/useViewportOverlays';
 import { useViewportSelection } from '@/hooks/viewport/useViewportSelection';
 import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
 import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvents';
+import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -66,6 +68,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const photometricGizmoActive = useStudioStore((s) => s.photometricGizmoActive);
   const cvdLens = useStudioStore((s) => s.cvdLens);
   const squintMode = useStudioStore((s) => s.squintMode);
   const onionSkin = useStudioStore((s) => s.onionSkin);
@@ -1115,6 +1118,24 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           height={stageHeight}
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
+
+        {/* Layer 7: Interactive On-Canvas Pixel Light Bulb Gizmo */}
+        {photometricGizmoActive && (
+          <PixelLightBulbGizmo
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            zoom={zoom}
+            mainCanvasRef={mainCanvasRef}
+            onCommit={() => studioEvents.emit('pixibun:photometric-gizmo-commit')}
+            onCancel={() => studioEvents.emit('pixibun:photometric-gizmo-cancel')}
+            onLightChange={(azimuth, elevation) => {
+              studioEvents.emit('pixibun:photometric-lighting-live', {
+                lightAzimuth: azimuth,
+                lightElevation: elevation,
+              });
+            }}
+          />
+        )}
 
         {/* Drag Over Overlay */}
         {isDragOver && (

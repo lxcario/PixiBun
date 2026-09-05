@@ -20,6 +20,13 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   previewBackdrop: 'checker',
   cvdLens: 'none',
   squintMode: false,
+  photometricGizmoActive: false,
+
+  setPhotometricGizmoActive: (active: boolean) => {
+    set(state => {
+      state.photometricGizmoActive = active;
+    });
+  },
 
   setCurrentProjectId: (id: string) => {
     set(state => {

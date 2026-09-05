@@ -347,7 +347,7 @@ export function cleanOrphanPixelConfetti(
   }
 }
 
-interface CelRamp {
+export interface CelRamp {
   baseR: number;
   baseG: number;
   baseB: number;
@@ -362,7 +362,7 @@ interface CelRamp {
   hiB: number;
 }
 
-function buildCelRamp(r: number, g: number, b: number): CelRamp {
+export function buildCelRamp(r: number, g: number, b: number): CelRamp {
   const lab = rgbToOKLab(r, g, b);
   const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
 
@@ -539,17 +539,17 @@ export function executePhotometricPipeline(
 
       const ao = cavityAO[idx];
 
-      // Half-Lambert Wrap Lighting
+      // Half-Lambert Wrap Lighting (Valve Mitchell/McTaggart/Green 2006 formulation)
+      // w = 0.55 softens the shadow terminator so light wraps gently around rounded volumes.
       const rawNdotL = Nx * Lx + Ny * Ly + Nz * Lz;
-      const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.35) / 1.35), 1.25);
-      const effectiveAmbient = Math.max(0.35, params.ambientIntensity ?? 0.35) * brightness;
+      const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.55) / 1.55), 1.25);
+      const effectiveAmbient = Math.max(0.48, params.ambientIntensity ?? 0.48) * brightness;
 
-      if (formType === 'character' && paletteOKLab.length === 0) {
-        // Character cel-shading mode: discrete OKLCH tone stepping with cached ramps
-        // Physically correct: direct key light illuminates surfaces facing the light (wrapNdotL),
-        // while ambient occlusion (ao) modulates ambient hemisphere bounce.
+      if (paletteOKLab.length === 0) {
+        // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for all forms.
+        // Preserves hand-drawn pixel art palette purity instead of generating muddy 24-bit float gradients.
         const diffSignal = wrapNdotL;
-        const ambSignal = (effectiveAmbient / 0.35) * ao;
+        const ambSignal = (effectiveAmbient / 0.48) * ao;
         const lightLevel = (diffSignal * 0.75 + ambSignal * 0.25) * brightness;
 
         const byteR = data[pIdx];
@@ -557,14 +557,23 @@ export function executePhotometricPipeline(
         const byteB = data[pIdx + 2];
         const ramp = getCelRamp(byteR, byteG, byteB);
 
-        // Calibrated cel shadow terminator threshold (0.58) with optional Bayer stippling
-        let shadowThresh = 0.58;
+        // Form-calibrated cel shadow terminator threshold:
+        // - Character: 0.58 (crisp anatomical sculpting under ears, chin, snout)
+        // - Orb / Prop: 0.42 (reserves 55%-60% of visible surface for artist's base tone, with a clean crescent shadow)
+        let shadowThresh = formType === 'character' ? 0.58 : 0.42;
         if (params.ditherModulation > 0) {
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
         }
 
-        if (ao < 0.60) {
+        // Cavity AO crevice threshold:
+        // Orbs are convex domes with ao ~ 1.0; only deep actual seams (ao < 0.40) trigger deep crevice darkening.
+        const creviceAOThresh = formType === 'character' ? 0.60 : 0.40;
+
+        // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
+        const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
+
+        if (ao < creviceAOThresh) {
           // DEEP CREVICE TONE (ambient occlusion in concave seams, under-chin, inner folds)
           outData[pIdx] = ramp.deepR;
           outData[pIdx + 1] = ramp.deepG;
@@ -576,14 +585,14 @@ export function executePhotometricPipeline(
           outData[pIdx + 1] = ramp.shadowG;
           outData[pIdx + 2] = ramp.shadowB;
           outData[pIdx + 3] = data[pIdx + 3];
-        } else if (lightLevel > 1.28 && (mat.ks > 0.1 || params.material !== 'matte')) {
+        } else if (lightLevel > 1.10 && isShinyMaterial) {
           // HIGHLIGHT TONE (only for non-matte / shiny surfaces)
           outData[pIdx] = ramp.hiR;
           outData[pIdx + 1] = ramp.hiG;
           outData[pIdx + 2] = ramp.hiB;
           outData[pIdx + 3] = data[pIdx + 3];
         } else {
-          // BASE TONE (hand-drawn artist color)
+          // BASE TONE (hand-drawn artist color preserved across 55%-60% of the surface)
           outData[pIdx] = ramp.baseR;
           outData[pIdx + 1] = ramp.baseG;
           outData[pIdx + 2] = ramp.baseB;

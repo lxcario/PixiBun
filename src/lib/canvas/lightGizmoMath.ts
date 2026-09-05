@@ -91,3 +91,37 @@ export function lightAnglesToCoords(
 
   return { x, y };
 }
+
+/**
+ * Computes the geometric centroid (average center of mass) of opaque pixels in the artwork.
+ * If canvas has no opaque pixels, returns the canvas center.
+ */
+export function computeArtworkCentroid(
+  data: Uint8ClampedArray | Uint8Array,
+  width: number,
+  height: number
+): GizmoPoint {
+  let count = 0;
+  let sumX = 0;
+  let sumY = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const a = data[(y * width + x) * 4 + 3];
+      if (a > 30) {
+        count++;
+        sumX += x;
+        sumY += y;
+      }
+    }
+  }
+
+  if (count === 0) {
+    return { x: Math.round(width / 2), y: Math.round(height / 2) };
+  }
+
+  return {
+    x: Math.round(sumX / count),
+    y: Math.round(sumY / count),
+  };
+}

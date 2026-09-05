@@ -38,6 +38,7 @@ export interface ViewportSlice {
   previewBackdrop: 'alabaster' | 'obsidian' | 'checker' | 'amber';
   cvdLens: CvdLensMode;
   squintMode: boolean;
+  photometricGizmoActive: boolean;
 
   setZoom: (zoom: number) => void;
   setPan: (x: number, y: number) => void;
@@ -51,6 +52,7 @@ export interface ViewportSlice {
   setPreviewBackdrop: (bg: 'alabaster' | 'obsidian' | 'checker' | 'amber') => void;
   setCvdLens: (mode: CvdLensMode) => void;
   toggleSquintMode: () => void;
+  setPhotometricGizmoActive: (active: boolean) => void;
 }
 
 export interface ToolSlice {

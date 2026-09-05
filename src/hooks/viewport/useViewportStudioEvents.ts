@@ -1,7 +1,8 @@
-import { useEffect, useCallback, RefObject } from 'react';
+import { useEffect, useCallback, useRef, RefObject } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { rgbaToHex } from '@/lib/canvas/floodFill';
+import { MaterialType } from '@/types/tools';
 import {
   cleanJaggiesOnCanvas,
   generateSelOutData,
@@ -32,7 +33,7 @@ import {
 } from '@/lib/ai/smartMathEngine';
 import { synthesizeWfc } from '@/lib/procedural/waveFunctionCollapse';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
-import { inferPhotometricSettings } from '@/lib/ai/math/photometricAuto';
+import { inferPhotometricSettings, RecognizedFormType } from '@/lib/ai/math/photometricAuto';
 import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
 
 interface UseViewportStudioEventsProps {
@@ -64,6 +65,16 @@ export function useViewportStudioEvents({
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
   const primaryColor = useStudioStore((s) => s.primaryColor);
   const tools = useStudioStore((s) => s.tools);
+
+  const photometricSessionRef = useRef<{
+    srcCtx: CanvasRenderingContext2D;
+    targetLayerId: string;
+    isNewLayer: boolean;
+    material: MaterialType;
+    brightness: number;
+    formType: RecognizedFormType;
+    paletteColors: string[];
+  } | null>(null);
 
   // Helper: composite source snapshot of all layers excluding tagged target
   const compositeSourceSnapshot = useCallback(
@@ -678,70 +689,209 @@ export function useViewportStudioEvents({
       }
     };
 
-    // Deep art analysis: infer light direction, elevation, material and exposure
-    // from the composited artwork itself, then render photometric lighting with
-    // the inferred settings (the "old" auto shading system, now non-destructive).
-    const handlePhotometricAutoEvent = () => {
+    // Deep art analysis & interactive on-canvas live light bulb gizmo session.
+    // Infers light direction, elevation, material and exposure, mounts the pixel light bulb
+    // on canvas, and allows real-time dragging before committing with Enter or cancelling with Esc.
+    const handlePhotometricGizmoStartEvent = (detail?: { auto?: boolean }) => {
       const srcCtx = compositeSourceSnapshot('photometric');
       if (!srcCtx) return;
 
-      const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
-      const inferred = inferPhotometricSettings(imgData.data, canvasWidth, canvasHeight);
-
-      // Reflect the AI's choices back into the studio controls (gizmo + chips move)
       const state = useStudioStore.getState();
-      state.setLightAzimuth(inferred.lightAzimuth);
-      state.setLightElevation(inferred.lightElevation);
-      state.setMaterialPreset(inferred.material);
-      state.setLightBrightness(inferred.brightness);
+      const currentFrame = state.frames[state.activeFrameIndex];
+      if (!currentFrame) return;
 
+      let azimuth = state.tools.lightAzimuth;
+      let elevation = state.tools.lightElevation;
+      let material = state.tools.materialPreset;
+      let brightness = state.tools.lightBrightness;
+      let formType: RecognizedFormType = 'prop';
+
+      if (detail?.auto) {
+        const imgData = srcCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const inferred = inferPhotometricSettings(imgData.data, canvasWidth, canvasHeight);
+        azimuth = inferred.lightAzimuth;
+        elevation = inferred.lightElevation;
+        material = inferred.material;
+        brightness = inferred.brightness;
+        formType = inferred.formType;
+
+        state.setLightAzimuth(azimuth);
+        state.setLightElevation(elevation);
+        state.setMaterialPreset(material);
+        state.setLightBrightness(brightness);
+      }
+
+      // Find or create target layer
+      let targetLayerId: string;
+      let isNewLayer = false;
+      const tag = 'photometric';
+      const displayName = `Photometric ${material}`;
+
+      const existing = currentFrame.layers.find(
+        (l) =>
+          l.tag === tag ||
+          (l.tag === 'photometric' || l.name.toLowerCase().startsWith('photometric'))
+      );
+
+      if (existing) {
+        targetLayerId = existing.id;
+        if (existing.tag !== tag) state.setLayerTag(targetLayerId, tag);
+        if (existing.name !== displayName) state.renameLayer(targetLayerId, displayName);
+      } else {
+        isNewLayer = true;
+        state.addLayer(displayName, tag);
+        const freshState = useStudioStore.getState();
+        const freshFrame = freshState.frames[freshState.activeFrameIndex];
+        const newLayer = freshFrame?.layers[0];
+        if (!newLayer) return;
+        targetLayerId = newLayer.id;
+      }
+
+      // Capture single clean snapshot before modifying
+      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined);
+
+      // Render initial photometric lighting
       const shadedCanvas = executePhotometricPipeline(
         srcCtx,
         canvasWidth,
         canvasHeight,
         {
-          lightAzimuth: inferred.lightAzimuth,
-          lightElevation: inferred.lightElevation,
+          lightAzimuth: azimuth,
+          lightElevation: elevation,
           lightRadius: 64,
           lightColor: '#FFFFFF',
-          ambientIntensity: 0.35,
-          lightBrightness: inferred.brightness,
-          material: inferred.material,
+          ambientIntensity: 0.48,
+          lightBrightness: brightness,
+          material,
           cavityStrength: state.tools.cavityStrength,
           ditherModulation: state.tools.ditherModulation,
           bayerSize: '4x4',
-          formType: inferred.formType,
+          formType,
         },
         []
       );
 
-      // 1. Shaded 2.5D diffuse body layer
-      updateTaggedLayer(`Photometric ${inferred.material}`, 'photometric', (outCtx) => {
-        outCtx.drawImage(shadedCanvas, 0, 0);
-      });
-
-      // 2. Automatically generate the Specular Glint layer (orbs/glossy materials, avoiding glare on matte character fur)
-      const isMatteCharacter = inferred.formType === 'character' && (inferred.material === 'matte' || inferred.material === 'fabric');
-      if (!isMatteCharacter) {
-        const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
-          azimuthDeg: inferred.lightAzimuth,
-          elevationDeg: inferred.lightElevation,
-          shadowIntensity: 0.8,
-          specularShininess: 16,
-          rimLight: false,
-          selOut: false,
-          material: inferred.material,
-        });
-
-        if (specularPixels.length > 0) {
-          updateTaggedLayer(`Specular ${inferred.lightAzimuth}°`, 'specular', (outCtx) => {
-            specularPixels.forEach((p) => {
-              outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-              outCtx.fillRect(p.x, p.y, 1, 1);
-            });
-          });
-        }
+      const lCanvas = getOrCreateLayerCanvas(targetLayerId);
+      const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+      if (lCtx) {
+        lCtx.imageSmoothingEnabled = false;
+        lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        lCtx.drawImage(shadedCanvas, 0, 0);
       }
+
+      renderComposite();
+      bumpBufferVersion();
+
+      // Store in session ref for live updates
+      photometricSessionRef.current = {
+        srcCtx,
+        targetLayerId,
+        isNewLayer,
+        material,
+        brightness,
+        formType,
+        paletteColors: [],
+      };
+
+      // Activate interactive on-canvas light bulb gizmo
+      state.setPhotometricGizmoActive(true);
+    };
+
+    const handlePhotometricLightingLiveEvent = (detail: { lightAzimuth: number; lightElevation: number }) => {
+      const session = photometricSessionRef.current;
+      if (!session) return;
+
+      const state = useStudioStore.getState();
+      const shadedCanvas = executePhotometricPipeline(
+        session.srcCtx,
+        canvasWidth,
+        canvasHeight,
+        {
+          lightAzimuth: detail.lightAzimuth,
+          lightElevation: detail.lightElevation,
+          lightRadius: 64,
+          lightColor: '#FFFFFF',
+          ambientIntensity: 0.48,
+          lightBrightness: session.brightness,
+          material: session.material,
+          cavityStrength: state.tools.cavityStrength,
+          ditherModulation: state.tools.ditherModulation,
+          bayerSize: '4x4',
+          formType: session.formType,
+        },
+        session.paletteColors
+      );
+
+      const lCanvas = getOrCreateLayerCanvas(session.targetLayerId);
+      const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+      if (lCtx) {
+        lCtx.imageSmoothingEnabled = false;
+        lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        lCtx.drawImage(shadedCanvas, 0, 0);
+      }
+
+      renderComposite();
+      bumpBufferVersion();
+    };
+
+    const handlePhotometricGizmoCommitEvent = () => {
+      const session = photometricSessionRef.current;
+      const state = useStudioStore.getState();
+
+      if (session) {
+        commitSnapshot();
+
+        // Optional Specular Glint layer for shiny/metallic materials (never on matte or fabric)
+        const isMatteOrFabric = session.material === 'matte' || session.material === 'fabric';
+        if (!isMatteOrFabric) {
+          const { specularPixels } = renderParametric2p5DLighting(session.srcCtx, canvasWidth, canvasHeight, {
+            azimuthDeg: state.tools.lightAzimuth,
+            elevationDeg: state.tools.lightElevation,
+            shadowIntensity: 0.8,
+            specularShininess: 16,
+            rimLight: false,
+            selOut: false,
+            material: session.material,
+          });
+
+          if (specularPixels.length > 0) {
+            updateTaggedLayer(`Specular ${state.tools.lightAzimuth}°`, 'specular', (outCtx) => {
+              specularPixels.forEach((p) => {
+                outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+                outCtx.fillRect(p.x, p.y, 1, 1);
+              });
+            });
+          }
+        }
+
+        photometricSessionRef.current = null;
+      }
+
+      state.setPhotometricGizmoActive(false);
+      renderComposite();
+      bumpBufferVersion();
+    };
+
+    const handlePhotometricGizmoCancelEvent = () => {
+      const session = photometricSessionRef.current;
+      const state = useStudioStore.getState();
+
+      if (session) {
+        if (session.isNewLayer) {
+          state.deleteLayer(session.targetLayerId);
+        } else {
+          performUndo();
+        }
+        photometricSessionRef.current = null;
+      }
+
+      state.setPhotometricGizmoActive(false);
+      renderComposite();
+      bumpBufferVersion();
+    };
+
+    const handlePhotometricAutoEvent = () => {
+      handlePhotometricGizmoStartEvent({ auto: true });
     };
 
     const handlePhotometricLightingEvent = (e: Event) => {
@@ -940,6 +1090,10 @@ export function useViewportStudioEvents({
       studioEvents.on('pixibun:remove-strays', handleRemoveStraysEvent),
       studioEvents.on('pixibun:photometric-lighting', (detail) => handlePhotometricLightingEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:photometric-auto', () => handlePhotometricAutoEvent()),
+      studioEvents.on('pixibun:photometric-gizmo-start', (detail) => handlePhotometricGizmoStartEvent(detail || undefined)),
+      studioEvents.on('pixibun:photometric-lighting-live', (detail) => handlePhotometricLightingLiveEvent(detail)),
+      studioEvents.on('pixibun:photometric-gizmo-commit', handlePhotometricGizmoCommitEvent),
+      studioEvents.on('pixibun:photometric-gizmo-cancel', handlePhotometricGizmoCancelEvent),
       studioEvents.on('pixibun:volumetric-optics', (detail) => handleVolumetricOpticsEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:bake-normal-map', handleBakeNormalMapEvent),
       studioEvents.on('pixibun:in-between-frame', handleInBetweenFrameEvent),

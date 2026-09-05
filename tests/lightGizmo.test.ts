@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   coordsToLightAngles,
   lightAnglesToCoords,
+  computeArtworkCentroid,
 } from '@/lib/canvas/lightGizmoMath';
 
 describe('Phase 35.1: Direct-Manipulation Light Gizmo Engine (Shneiderman 1983)', () => {
@@ -73,5 +74,29 @@ describe('Phase 35.1: Direct-Manipulation Light Gizmo Engine (Shneiderman 1983)'
       expect(res.azimuth).toBe(tc.az);
       expect(res.elevation).toBe(tc.el);
     }
+  });
+
+  describe('computeArtworkCentroid', () => {
+    it('returns canvas center for empty canvas', () => {
+      const data = new Uint8ClampedArray(32 * 32 * 4);
+      const centroid = computeArtworkCentroid(data, 32, 32);
+      expect(centroid.x).toBe(16);
+      expect(centroid.y).toBe(16);
+    });
+
+    it('computes exact center of mass for off-center sprite', () => {
+      const data = new Uint8ClampedArray(32 * 32 * 4);
+      // Paint 4 pixels around (8, 8)
+      for (let y = 7; y <= 8; y++) {
+        for (let x = 7; x <= 8; x++) {
+          const idx = (y * 32 + x) * 4;
+          data[idx] = 255;
+          data[idx + 3] = 255;
+        }
+      }
+      const centroid = computeArtworkCentroid(data, 32, 32);
+      expect(centroid.x).toBe(8);
+      expect(centroid.y).toBe(8);
+    });
   });
 });
