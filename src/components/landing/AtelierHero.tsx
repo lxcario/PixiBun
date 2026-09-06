@@ -55,7 +55,8 @@ export const AtelierHero: React.FC = () => {
               className="relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-6 shadow-sm"
             >
               <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
-              <ShinyText text="A LITTLE PLACE TO DRAW" speed={2.6} />
+              <ShinyText text="2.5D PIXEL ART STUDIO & ANIMATION SUITE" speed={2.6} />
+              <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
             </motion.div>
 
             {/* Headline with Plum Highlight */}
@@ -65,9 +66,9 @@ export const AtelierHero: React.FC = () => {
               transition={{ duration: 0.55, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-4xl sm:text-5xl lg:text-6xl text-[var(--text-heading)] leading-[1.14] tracking-tight drop-shadow-sm"
             >
-              A QUIET DESK TO DRAW, ANIMATE, &amp;{' '}
+              THE OFFLINE-FIRST PIXEL ART ATELIER &amp;{' '}
               <span className="inline-block text-[var(--accent-plum)]">
-                UNWIND.
+                2.5D GAME STUDIO.
               </span>
             </motion.h1>
 
@@ -78,7 +79,8 @@ export const AtelierHero: React.FC = () => {
               transition={{ duration: 0.55, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 text-base sm:text-lg leading-relaxed text-[var(--text-body)] max-w-lg font-sans"
             >
-              Put on the radio. Draw for a while. See where it goes.
+              Photometric cel-shading, RotSprite geometry, frame-by-frame animation, and native Godot 4 &amp; Unity exports.
+              Put on the radio and draw.
             </motion.p>
 
             {/* Honest Feature Pills (Static Non-Clickable Tags) */}
@@ -86,19 +88,23 @@ export const AtelierHero: React.FC = () => {
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-6 flex items-center gap-3 flex-wrap text-xs font-mono text-[var(--text-heading)] select-none"
+              className="mt-6 flex items-center gap-2.5 flex-wrap text-xs font-mono text-[var(--text-heading)] select-none"
             >
-              <span className="px-3 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
+              <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
                 <span className="text-[var(--accent-gold)]">✦</span>
-                <span>TAKE YOUR TIME</span>
+                <span>2.5D PHOTOMETRIC LIGHT</span>
               </span>
-              <span className="px-3 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
+              <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
                 <span className="text-[var(--accent-gold)]">✦</span>
-                <span>RADIO&apos;S ON</span>
+                <span>ROTSPRITE 8X</span>
               </span>
-              <span className="px-3 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
+              <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
                 <span className="text-[var(--accent-gold)]">✦</span>
-                <span>DRAW SOMETHING</span>
+                <span>GODOT 4 &amp; UNITY EXPORTS</span>
+              </span>
+              <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
+                <span className="text-[var(--accent-gold)]">✦</span>
+                <span>LO-FI RADIO</span>
               </span>
             </motion.div>
 
@@ -118,10 +124,11 @@ export const AtelierHero: React.FC = () => {
               </Link>
 
               <a
-                href="#gallery"
+                href="#engine-showcase"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-[2px] pixel-tactile-btn text-[var(--text-heading)] font-display text-xs font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
               >
-                LOOK AROUND
+                <span>EXPLORE THE ENGINE</span>
+                <span className="text-[var(--accent-gold)]">↓</span>
               </a>
             </motion.div>
 
@@ -161,9 +168,9 @@ export const AtelierHero: React.FC = () => {
         className="mt-10 flex flex-col items-center justify-center pointer-events-auto z-20"
       >
         <a
-          href="#features"
+          href="#engine-showcase"
           className="flex flex-col items-center gap-1.5 text-xs font-mono text-[var(--accent-plum)] hover:text-[var(--accent-gold)] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] px-3 py-1 rounded-[2px]"
-          aria-label="Scroll down to features"
+          aria-label="Scroll down to engine showcase"
         >
           <span className="text-[10px] font-bold tracking-widest uppercase flex items-center gap-1">
             <span>SCROLL A LITTLE</span>

@@ -179,43 +179,43 @@ const ExportVignette: React.FC = () => (
 
 const FEATURES: FeatureCardData[] = [
   {
-    id: 'canvas',
-    tag: '01 / CANVAS',
-    title: 'PIXEL TOOLS',
+    id: 'photometric',
+    tag: '01 / LIGHTING',
+    title: '2.5D PHOTOMETRIC STUDIO',
     description:
-      'A pen, eraser, line tool, and bucket. Everything stays pixel-sharp.',
-    pill: 'CLEAN PIXELS',
-    linkText: 'OPEN CANVAS →',
+      'Inflate flat 2D silhouettes into continuous normal fields with Blinn-Phong specular and stepped OKLCH cel-shading.',
+    pill: 'REAL-TIME NORMALS',
+    linkText: 'OPEN LIGHTING STUDIO →',
     illustration: <BrushVignette />,
   },
   {
-    id: 'animation',
-    tag: '02 / TIMELINE',
-    title: 'FRAME BY FRAME',
+    id: 'rotsprite',
+    tag: '02 / GEOMETRY',
+    title: 'ROTSPRITE PRECISION',
     description:
-      'Draw one frame, then the next. Onion skinning makes it easy to see what moved.',
-    pill: 'Onion Skinning',
-    linkText: 'TRY ANIMATION →',
-    illustration: <TimelineVignette />,
-  },
-  {
-    id: 'palette',
-    tag: '03 / PALETTE',
-    title: 'HOMESTYLE PALETTES',
-    description:
-      'A few colors we love, with plenty of room for your own.',
-    pill: 'STARTER COLORS',
-    linkText: 'VIEW PALETTE →',
+      '8x Scale2X subpixel rotation preserving 1px contours and single-pixel connectivity without blurry distortion.',
+    pill: 'ZERO PIXEL LOSS',
+    linkText: 'TEST ROTSPRITE →',
     illustration: <PaletteVignette />,
   },
   {
-    id: 'privacy',
-    tag: '04 / SAVE',
-    title: 'YOURS TO KEEP',
+    id: 'animation',
+    tag: '03 / TIMELINE',
+    title: 'ANIMATION & SDF MORPH',
     description:
-      'Save PNGs, GIFs, and spritesheets straight to your computer.',
-    pill: 'STAYS ON YOUR DEVICE',
-    linkText: 'SAVE & EXPORT →',
+      'Variable holds (+125ms), dual-color onion skinning, tag clips, and automated SDF optical flow in-betweens.',
+    pill: 'SDF TWEENING',
+    linkText: 'OPEN TIMELINE →',
+    illustration: <TimelineVignette />,
+  },
+  {
+    id: 'export',
+    tag: '04 / PIPELINES',
+    title: 'GAME ENGINE EXPORTS',
+    description:
+      'Direct Godot 4 .tres SpriteFrames, Unity & Phaser JSON metadata, 24-bit Truecolor APNG, and Web Worker GIF.',
+    pill: 'GODOT & UNITY',
+    linkText: 'EXPORT PIPELINES →',
     illustration: <ExportVignette />,
   },
 ];
@@ -237,14 +237,15 @@ export const CozyFeatureGrid: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-4 shadow-sm">
               <span className="text-[var(--accent-gold)] text-xs animate-gold-pulse inline-block">✦</span>
-              <ShinyText text="A FEW THINGS TO PLAY WITH" speed={2.6} />
+              <ShinyText text="FOUR CORE STUDIO PILLARS" speed={2.6} />
+              <span className="text-[var(--accent-gold)] text-xs animate-gold-pulse inline-block">✦</span>
             </div>
 
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-[var(--text-heading)] flex items-center justify-center gap-3 drop-shadow-sm">
-              <span>A FEW THINGS TO PLAY WITH</span>
+              <span>CRAFTED FOR ARTISTS &amp; GAME MAKERS</span>
             </h2>
             <p className="mt-3 text-sm sm:text-base font-sans text-[var(--text-body)]">
-              Everything you need to sit down and draw.
+              Built from scratch with deterministic computer graphics and zero cloud dependencies.
             </p>
           </div>
         </CozyScrollReveal>

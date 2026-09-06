@@ -10,7 +10,8 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 const NAV_LINKS = [
   { href: '/playground', label: 'Playground', isExternal: true },
   { href: '/studio', label: 'Studio', isExternal: true },
-  { href: '#features', label: 'Canvas', sectionId: 'features' },
+  { href: '#engine-showcase', label: 'Engine', sectionId: 'engine-showcase' },
+  { href: '#features', label: 'Pillars', sectionId: 'features' },
   { href: '#gallery', label: 'Shelf', sectionId: 'gallery' },
   { href: '#story', label: 'Story', sectionId: 'story' },
 ];
@@ -37,7 +38,7 @@ export const LandingNav: React.FC = () => {
     handleScroll();
 
     // 2. Zero-reflow IntersectionObserver for active section spying
-    const sections = ['features', 'gallery', 'story'];
+    const sections = ['engine-showcase', 'features', 'gallery', 'story'];
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
