@@ -219,19 +219,23 @@ class LofiAudioEngine {
     this.notify();
   }
 
-  public pause(): void {
+  public async pause(): Promise<void> {
     this.isPlaying = false;
     this.stopMusicLoop();
     this.fluxDetector.reset();
     if (this.ctx && this.ctx.state === 'running') {
-      this.ctx.suspend();
+      try {
+        await this.ctx.suspend();
+      } catch {
+        // Ignore audio context state transition errors
+      }
     }
     this.notify();
   }
 
   public toggle(): void {
     if (this.isPlaying) {
-      this.pause();
+      void this.pause();
     } else {
       this.play();
     }
