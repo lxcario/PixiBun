@@ -95,6 +95,11 @@ export async function exportAnimationToWebmAsync(
       if (options.signal) {
         options.signal.removeEventListener('abort', onAbort);
       }
+      try {
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        // Ignore track stopping errors in mock/headless environments
+      }
     };
 
     const onAbort = () => {
