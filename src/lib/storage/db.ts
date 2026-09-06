@@ -58,23 +58,102 @@ export class PixiBunDatabase extends Dexie {
 
 export const db = new PixiBunDatabase();
 
-// Save layer binary blobs to layerBlobs table
+async function blobsEqual(b1: Blob, b2: Blob): Promise<boolean> {
+  if (b1 === b2) return true;
+  if (!b1 || !b2 || b1.size !== b2.size || b1.type !== b2.type) return false;
+  if (b1.size === 0) return true;
+  const buf1 = await b1.arrayBuffer();
+  const buf2 = await b2.arrayBuffer();
+  if (buf1.byteLength !== buf2.byteLength) return false;
+  const u1 = new Uint8Array(buf1);
+  const u2 = new Uint8Array(buf2);
+  for (let i = 0; i < u1.length; i++) {
+    if (u1[i] !== u2[i]) return false;
+  }
+  return true;
+}
+
+// Save layer binary blobs to layerBlobs table with incremental upsert & dirty-diffing
 export async function saveLayerBlobs(
   projectId: string,
   blobs: Array<{ layerId: string; frameIndex: number; blob: Blob }>
 ): Promise<void> {
   const now = Date.now();
+  const keyOf = (layerId: string, frameIndex: number) => `${layerId}::${frameIndex}`;
+
+  // Deduplicate incoming blobs by keeping the latest entry for each (layerId, frameIndex)
+  const incomingMap = new Map<string, { layerId: string; frameIndex: number; blob: Blob }>();
+  for (const b of blobs) {
+    incomingMap.set(keyOf(b.layerId, b.frameIndex), b);
+  }
+  const deduplicatedBlobs = Array.from(incomingMap.values());
+
   await db.transaction('rw', db.layerBlobs, async () => {
-    await db.layerBlobs.where('projectId').equals(projectId).delete();
-    const records: StoredLayerBlob[] = blobs.map((b) => ({
-      projectId,
-      layerId: b.layerId,
-      frameIndex: b.frameIndex,
-      blob: b.blob,
-      updatedAt: now,
-    }));
-    if (records.length > 0) {
-      await db.layerBlobs.bulkAdd(records);
+    // 1. Query existing records for this project
+    const existingRecords = await db.layerBlobs.where('projectId').equals(projectId).toArray();
+
+    const existingMap = new Map<string, StoredLayerBlob>();
+    const idsToDelete: number[] = [];
+
+    for (const rec of existingRecords) {
+      const k = keyOf(rec.layerId, rec.frameIndex);
+      if (!incomingMap.has(k)) {
+        if (rec.id !== undefined) {
+          idsToDelete.push(rec.id);
+        }
+      } else {
+        if (existingMap.has(k)) {
+          // If a duplicate record already exists in the database for this key, mark it for pruning
+          if (rec.id !== undefined) {
+            idsToDelete.push(rec.id);
+          }
+        } else {
+          existingMap.set(k, rec);
+        }
+      }
+    }
+
+    // 2. Prune obsolete frames or layers without wiping the whole table
+    if (idsToDelete.length > 0) {
+      await db.layerBlobs.bulkDelete(idsToDelete);
+    }
+
+    const recordsToAdd: StoredLayerBlob[] = [];
+    const recordsToPut: StoredLayerBlob[] = [];
+
+    // 3. Incrementally upsert only changed or new layer blobs
+    for (const b of deduplicatedBlobs) {
+      const k = keyOf(b.layerId, b.frameIndex);
+      const existing = existingMap.get(k);
+
+      if (!existing) {
+        recordsToAdd.push({
+          projectId,
+          layerId: b.layerId,
+          frameIndex: b.frameIndex,
+          blob: b.blob,
+          updatedAt: now,
+        });
+      } else {
+        const isIdentical = await blobsEqual(existing.blob, b.blob);
+        if (!isIdentical) {
+          recordsToPut.push({
+            id: existing.id,
+            projectId,
+            layerId: b.layerId,
+            frameIndex: b.frameIndex,
+            blob: b.blob,
+            updatedAt: now,
+          });
+        }
+      }
+    }
+
+    if (recordsToAdd.length > 0) {
+      await db.layerBlobs.bulkAdd(recordsToAdd);
+    }
+    if (recordsToPut.length > 0) {
+      await db.layerBlobs.bulkPut(recordsToPut);
     }
   });
 }

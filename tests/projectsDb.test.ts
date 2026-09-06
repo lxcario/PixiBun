@@ -168,4 +168,88 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
     expect(clonedBlobs[0].layerId).toBe('layer-src');
     expect(clonedBlobs[0].projectId).toBe(duplicate!.id);
   });
+
+  it('incrementally upserts layerBlobs, pruning deleted layers while avoiding rewrites for unchanged layers', async () => {
+    const proj = await createBlankProject('Incremental Sprite', 16, 16);
+    const blob1 = new Blob(['layer1-content'], { type: 'image/png' });
+    const blob2 = new Blob(['layer2-content'], { type: 'image/png' });
+
+    // 1. Initial save of layer1 and layer2
+    await saveLayerBlobs(proj.id, [
+      { layerId: 'layer-1', frameIndex: 0, blob: blob1 },
+      { layerId: 'layer-2', frameIndex: 0, blob: blob2 },
+    ]);
+
+    const initialBlobs = await getLayerBlobsForProject(proj.id);
+    expect(initialBlobs).toHaveLength(2);
+    const l1Record = initialBlobs.find((b) => b.layerId === 'layer-1')!;
+    const l2Record = initialBlobs.find((b) => b.layerId === 'layer-2')!;
+    expect(l1Record.id).toBeDefined();
+    expect(l2Record.id).toBeDefined();
+
+    // 2. Second save where layer1 is unchanged, but layer2 is updated with new content
+    const blob2Updated = new Blob(['layer2-MUTATED-content'], { type: 'image/png' });
+    await new Promise((r) => setTimeout(r, 10));
+
+    await saveLayerBlobs(proj.id, [
+      { layerId: 'layer-1', frameIndex: 0, blob: blob1 }, // identical
+      { layerId: 'layer-2', frameIndex: 0, blob: blob2Updated }, // changed
+    ]);
+
+    const secondSaveBlobs = await getLayerBlobsForProject(proj.id);
+    expect(secondSaveBlobs).toHaveLength(2);
+
+    const l1AfterSecond = secondSaveBlobs.find((b) => b.layerId === 'layer-1')!;
+    const l2AfterSecond = secondSaveBlobs.find((b) => b.layerId === 'layer-2')!;
+
+    // Layer 1 was NOT rewritten: preserved identical id and updatedAt
+    expect(l1AfterSecond.id).toBe(l1Record.id);
+    expect(l1AfterSecond.updatedAt).toBe(l1Record.updatedAt);
+
+    // Layer 2 was updated: preserved same id, but updatedAt advanced
+    expect(l2AfterSecond.id).toBe(l2Record.id);
+    expect(l2AfterSecond.updatedAt).toBeGreaterThan(l2Record.updatedAt);
+
+    // 3. Third save where layer-2 is deleted and layer-3 is added
+    const blob3 = new Blob(['layer3-brand-new'], { type: 'image/png' });
+    await saveLayerBlobs(proj.id, [
+      { layerId: 'layer-1', frameIndex: 0, blob: blob1 },
+      { layerId: 'layer-3', frameIndex: 0, blob: blob3 },
+    ]);
+
+    const thirdSaveBlobs = await getLayerBlobsForProject(proj.id);
+    expect(thirdSaveBlobs).toHaveLength(2);
+
+    const remainingLayerIds = thirdSaveBlobs.map((b) => b.layerId).sort();
+    expect(remainingLayerIds).toEqual(['layer-1', 'layer-3']);
+
+    // Layer 1 was still untouched
+    const l1AfterThird = thirdSaveBlobs.find((b) => b.layerId === 'layer-1')!;
+    expect(l1AfterThird.id).toBe(l1Record.id);
+    expect(l1AfterThird.updatedAt).toBe(l1Record.updatedAt);
+  });
+
+  it('safely handles duplicate keys in payload and prunes all layers when payload is empty', async () => {
+    const proj = await createBlankProject('Edge Case Sprite', 16, 16);
+    const blobA = new Blob(['layer1-v1'], { type: 'image/png' });
+    const blobB = new Blob(['layer1-v2-latest'], { type: 'image/png' });
+
+    // Payload with duplicate (layerId, frameIndex) entries
+    await saveLayerBlobs(proj.id, [
+      { layerId: 'layer-dup', frameIndex: 0, blob: blobA },
+      { layerId: 'layer-dup', frameIndex: 0, blob: blobB },
+    ]);
+
+    const records = await getLayerBlobsForProject(proj.id);
+    // Should be deduplicated to exactly 1 record with latest blob content
+    expect(records).toHaveLength(1);
+    expect(records[0].layerId).toBe('layer-dup');
+    const text = await records[0].blob.text();
+    expect(text).toBe('layer1-v2-latest');
+
+    // Saving with empty array prunes all layer records cleanly
+    await saveLayerBlobs(proj.id, []);
+    const cleared = await getLayerBlobsForProject(proj.id);
+    expect(cleared).toHaveLength(0);
+  });
 });

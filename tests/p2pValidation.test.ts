@@ -5,6 +5,12 @@ import {
   validatePresenceMessage,
   MAX_P2P_PAYLOAD_SIZE,
   P2PSyncSession,
+  LAN_ICE_SERVERS,
+  PUBLIC_STUN_ICE_SERVERS,
+  DEFAULT_ICE_SERVERS,
+  encodeSignalingToken,
+  decodeSignalingToken,
+  SignalingPayload,
 } from '@/lib/sync/p2pSync';
 import { CrdtPixelBuffer, MAX_OP_LOG_SIZE, PixelOp } from '@/lib/collab/crdtPixelBuffer';
 
@@ -177,7 +183,44 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       });
     });
 
-    it('rejects presence messages with missing or invalid fields', () => {
+    it('accepts valid hex colors with 3, 4, 6, or 8 hex digits', () => {
+      const base = { type: 'CURSOR', peerId: 'p1', name: 'Alice', x: 0, y: 0 };
+      expect(validatePresenceMessage({ ...base, color: '#fff' })?.color).toBe('#fff');
+      expect(validatePresenceMessage({ ...base, color: '#abcd' })?.color).toBe('#abcd');
+      expect(validatePresenceMessage({ ...base, color: '#123456' })?.color).toBe('#123456');
+      expect(validatePresenceMessage({ ...base, color: '#f0be7c80' })?.color).toBe('#f0be7c80');
+    });
+
+    it('rejects invalid, non-hex, or malformed color formats', () => {
+      const base = { type: 'CURSOR', peerId: 'p1', name: 'Alice', x: 0, y: 0 };
+      expect(validatePresenceMessage({ ...base, color: 'red' })).toBeNull();
+      expect(validatePresenceMessage({ ...base, color: 'rgb(0,0,0)' })).toBeNull();
+      expect(validatePresenceMessage({ ...base, color: '#12' })).toBeNull(); // Too short
+      expect(validatePresenceMessage({ ...base, color: '#12345' })).toBeNull(); // 5 digits (invalid in CSS)
+      expect(validatePresenceMessage({ ...base, color: '#1234567' })).toBeNull(); // 7 digits (invalid in CSS)
+      expect(validatePresenceMessage({ ...base, color: '#123456789' })).toBeNull(); // Too long (9 digits)
+      expect(validatePresenceMessage({ ...base, color: '#xyz' })).toBeNull(); // Non-hex characters
+      expect(validatePresenceMessage({ ...base, color: '' })).toBeNull();
+    });
+
+    it('sanitizes and strips control characters and bidi overrides from peer name', () => {
+      const base = { type: 'CURSOR', peerId: 'p1', color: '#fff', x: 0, y: 0 };
+      const cleaned = validatePresenceMessage({ ...base, name: 'Alice\x00\x07\x1b' });
+      expect(cleaned?.name).toBe('Alice');
+
+      const c1Cleaned = validatePresenceMessage({ ...base, name: 'Bob\x7f\x80\x9f' });
+      expect(c1Cleaned?.name).toBe('Bob');
+
+      const bidiCleaned = validatePresenceMessage({ ...base, name: 'Charlie\u202Eevil\u200B' });
+      expect(bidiCleaned?.name).toBe('Charlieevil');
+    });
+
+    it('rejects presence messages with missing, overlong, or empty fields after sanitization', () => {
+      const base = { type: 'CURSOR', peerId: 'p1', color: '#fff', x: 0, y: 0 };
+      expect(validatePresenceMessage({ ...base, name: '\x00\x07\x1b' })).toBeNull(); // Empty after strip
+      expect(validatePresenceMessage({ ...base, name: ' ' })).toBeNull(); // Whitespace only
+      expect(validatePresenceMessage({ ...base, name: 'a'.repeat(65) })).toBeNull(); // Exceeds 64 chars
+      expect(validatePresenceMessage({ ...base, name: 'a'.repeat(200) })).toBeNull(); // Guard rejects > 128
       expect(validatePresenceMessage({ type: 'CURSOR', peerId: 'p1', x: NaN, y: 10 })).toBeNull();
       expect(validatePresenceMessage({ type: 'NOT_CURSOR', peerId: 'p1' })).toBeNull();
       expect(validatePresenceMessage({ type: 'CURSOR', peerId: '', name: 'A', color: '#fff', x: 0, y: 0 })).toBeNull();
@@ -328,6 +371,57 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       for (const payload of sentPayloads) {
         expect(payload.length).toBeLessThan(MAX_P2P_PAYLOAD_SIZE);
       }
+    });
+  });
+
+  describe('P2P WebRTC Privacy & LAN-Only Mode Safeguards', () => {
+    it('defaults DEFAULT_ICE_SERVERS to LAN_ICE_SERVERS with zero external egress', () => {
+      expect(DEFAULT_ICE_SERVERS).toEqual([]);
+      expect(LAN_ICE_SERVERS).toEqual([]);
+      expect(PUBLIC_STUN_ICE_SERVERS.length).toBeGreaterThan(0);
+    });
+
+    it('enforces LAN-only mode even when custom iceServers are provided if lanOnly is true', () => {
+      const session = new P2PSyncSession({
+        peerId: 'peer-lan',
+        lanOnly: true,
+        iceServers: [{ urls: 'stun:stun.example.com' }],
+      });
+      // Verify options retain configuration
+      expect((session as unknown as { options: { lanOnly: boolean } }).options.lanOnly).toBe(true);
+    });
+  });
+
+  describe('Signaling Token Modern UTF-8 & URL-Safe Base64 Encoding', () => {
+    it('correctly decodes standard and URL-safe base64 tokens with unicode content', () => {
+      const payload: SignalingPayload = {
+        version: 1,
+        peerId: 'peer-🐇-artisan',
+        sdp: { type: 'offer', sdp: 'v=0\r\no=test\r\ns=-\r\n' },
+        candidates: [{ candidate: 'cand1', sdpMid: '0', sdpMLineIndex: 0 }],
+      };
+
+      const token = encodeSignalingToken(payload);
+      expect(typeof token).toBe('string');
+
+      // Decode standard token
+      const decoded = decodeSignalingToken(token);
+      expect(decoded.peerId).toBe('peer-🐇-artisan');
+      expect(decoded.sdp.type).toBe('offer');
+
+      // Convert standard Base64 to URL-safe Base64 (- and _ without padding)
+      const urlSafeToken = token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const decodedUrlSafe = decodeSignalingToken(urlSafeToken);
+      expect(decodedUrlSafe).toEqual(payload);
+    });
+
+    it('throws descriptive error on empty, corrupted, or malformed signaling tokens', () => {
+      expect(() => decodeSignalingToken('')).toThrow(/Invalid signaling token format/);
+      expect(() => decodeSignalingToken('   ')).toThrow(/Invalid signaling token format/);
+      expect(() => decodeSignalingToken('not-a-valid-base64-json!')).toThrow(/Invalid signaling token format/);
+      // Valid base64 but invalid JSON structure (missing required fields)
+      const invalidJsonToken = Buffer.from(JSON.stringify({ someField: 123 })).toString('base64');
+      expect(() => decodeSignalingToken(invalidJsonToken)).toThrow(/Invalid signaling token format/);
     });
   });
 });

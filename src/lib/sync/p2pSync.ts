@@ -66,6 +66,7 @@ export interface P2PSyncSessionOptions {
   peerName?: string;
   peerColor?: string;
   iceServers?: RTCIceServer[];
+  lanOnly?: boolean;
   onRemotePixelOps?: (ops: PixelOp[]) => void;
   onInitialSync?: (ops: PixelOp[]) => void;
   onRemoteCursor?: (cursor: RemoteCursor) => void;
@@ -73,18 +74,22 @@ export interface P2PSyncSessionOptions {
   onError?: (error: Error) => void;
 }
 
-const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
+export const LAN_ICE_SERVERS: RTCIceServer[] = [];
+export const PUBLIC_STUN_ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
 ];
+export const DEFAULT_ICE_SERVERS: RTCIceServer[] = LAN_ICE_SERVERS;
 
 export const MAX_P2P_PAYLOAD_SIZE = 256 * 1024; // 256 KB
+export const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
  * Validates whether an incoming object conforms to a valid PixelOp with strict boundary constraints:
  * - 0 <= x, y < 4096 (canvas coordinate bounds)
  * - 0 <= r, g, b, a <= 255 (8-bit color channel bounds)
  * - valid numeric timestamp and non-empty peerId
+ * - optional valid HLC tuple [l, c]
  */
 export function isValidPixelOp(op: unknown): op is PixelOp {
   if (typeof op !== 'object' || op === null) return false;
@@ -113,6 +118,22 @@ export function isValidPixelOp(op: unknown): op is PixelOp {
   }
   if (typeof o.peerId !== 'string' || o.peerId.length === 0 || o.peerId.length > 128) {
     return false;
+  }
+  if (o.hlc !== undefined) {
+    if (
+      !Array.isArray(o.hlc) ||
+      o.hlc.length !== 2 ||
+      typeof o.hlc[0] !== 'number' ||
+      !Number.isFinite(o.hlc[0]) ||
+      o.hlc[0] <= 0 ||
+      Math.floor(o.hlc[0]) !== o.hlc[0] ||
+      typeof o.hlc[1] !== 'number' ||
+      !Number.isFinite(o.hlc[1]) ||
+      o.hlc[1] < 0 ||
+      Math.floor(o.hlc[1]) !== o.hlc[1]
+    ) {
+      return false;
+    }
   }
 
   return true;
@@ -159,7 +180,33 @@ export function validateCrdtSyncMessage(data: unknown): CrdtSyncMessage | null {
 }
 
 /**
- * Validates and sanitizes an incoming Presence message.
+ * Strips C0 control characters (0-31), DEL (127), C1 control characters (128-159),
+ * bidi override characters (8234-8238, 8294-8297), and zero-width spaces (8203, 65279).
+ */
+export function sanitizePeerName(rawName: string): string {
+  let result = '';
+  const limit = Math.min(rawName.length, 256);
+  for (let i = 0; i < limit; i++) {
+    const code = rawName.charCodeAt(i);
+    if (
+      (code >= 0 && code <= 31) ||
+      (code >= 127 && code <= 159) ||
+      (code >= 0x202a && code <= 0x202e) ||
+      (code >= 0x2066 && code <= 0x2069) ||
+      code === 0x200b ||
+      code === 0xfeff
+    ) {
+      continue;
+    }
+    result += rawName[i];
+  }
+  return result.trim();
+}
+
+/**
+ * Validates and sanitizes an incoming Presence message:
+ * - Sanitizes and strips control characters from peer name, enforcing length bounds [1, 64]
+ * - Strictly validates hex color matching /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
  */
 export function validatePresenceMessage(data: unknown): PresenceMessage | null {
   if (typeof data !== 'object' || data === null) return null;
@@ -167,50 +214,91 @@ export function validatePresenceMessage(data: unknown): PresenceMessage | null {
 
   if (msg.type !== 'CURSOR') return null;
   if (typeof msg.peerId !== 'string' || msg.peerId.length === 0 || msg.peerId.length > 128) return null;
-  if (typeof msg.name !== 'string' || msg.name.length > 64) return null;
-  if (typeof msg.color !== 'string' || msg.color.length > 32) return null;
+  if (typeof msg.name !== 'string' || msg.name.length === 0 || msg.name.length > 128) return null;
+
+  // Sanitize and strip control characters (C0 and C1 sets, bidi overrides) and trim whitespace
+  const sanitizedName = sanitizePeerName(msg.name);
+  if (sanitizedName.length === 0 || sanitizedName.length > 64) return null;
+
+  // Strictly validate hex color format (#rgb, #rgba, #rrggbb, #rrggbbaa)
+  if (typeof msg.color !== 'string' || !HEX_COLOR_REGEX.test(msg.color)) return null;
+
   if (typeof msg.x !== 'number' || !Number.isFinite(msg.x)) return null;
   if (typeof msg.y !== 'number' || !Number.isFinite(msg.y)) return null;
 
   return {
     type: 'CURSOR',
     peerId: msg.peerId,
-    name: msg.name,
+    name: sanitizedName,
     color: msg.color,
     x: msg.x,
     y: msg.y,
   };
 }
 
-/**
- * Encodes signaling payload into a compact URL-safe base64 string.
- */
-export function encodeSignalingToken(payload: SignalingPayload): string {
-  const json = JSON.stringify(payload);
-  if (typeof btoa !== 'undefined') {
-    return btoa(unescape(encodeURIComponent(json)));
+function bytesToBase64(bytes: Uint8Array): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64');
   }
-  return Buffer.from(json, 'utf-8').toString('base64');
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  // Normalize URL-safe Base64 to standard Base64
+  let stdBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = stdBase64.length % 4;
+  if (pad) {
+    stdBase64 += '='.repeat(4 - pad);
+  }
+
+  if (typeof Buffer !== 'undefined') {
+    const buf = Buffer.from(stdBase64, 'base64');
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+  }
+  const binary = atob(stdBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 /**
- * Decodes signaling token from a base64 string.
+ * Encodes signaling payload into a compact base64 string using modern TextEncoder.
+ */
+export function encodeSignalingToken(payload: SignalingPayload): string {
+  const json = JSON.stringify(payload);
+  const bytes = new TextEncoder().encode(json);
+  return bytesToBase64(bytes);
+}
+
+/**
+ * Decodes signaling token from a base64 string using modern TextDecoder.
+ * Fully supports both standard Base64 and URL-safe Base64 formats.
  */
 export function decodeSignalingToken(token: string): SignalingPayload {
-  const clean = token.trim();
-  let json = '';
-  if (typeof atob !== 'undefined') {
-    json = decodeURIComponent(escape(atob(clean)));
-  } else {
-    json = Buffer.from(clean, 'base64').toString('utf-8');
-  }
+  try {
+    if (typeof token !== 'string' || token.trim().length === 0) {
+      throw new Error('Token string cannot be empty.');
+    }
+    const clean = token.trim();
+    const bytes = base64ToBytes(clean);
+    const json = new TextDecoder('utf-8').decode(bytes);
 
-  const parsed = JSON.parse(json);
-  if (!parsed || parsed.version !== 1 || !parsed.sdp || !Array.isArray(parsed.candidates)) {
-    throw new Error('Invalid PixiBun signaling token format.');
-  }
+    const parsed = JSON.parse(json);
+    if (!parsed || parsed.version !== 1 || !parsed.sdp || !Array.isArray(parsed.candidates)) {
+      throw new Error('Invalid PixiBun signaling token format.');
+    }
 
-  return parsed as SignalingPayload;
+    return parsed as SignalingPayload;
+  } catch (err) {
+    throw new Error(`Invalid signaling token format: ${(err as Error).message}`);
+  }
 }
 
 /**
@@ -255,8 +343,12 @@ export class P2PSyncSession {
       throw new Error('WebRTC RTCPeerConnection is not supported in this environment.');
     }
 
+    const iceServers = this.options.lanOnly
+      ? LAN_ICE_SERVERS
+      : (this.options.iceServers ?? DEFAULT_ICE_SERVERS);
+
     const pc = new RTCPeerConnection({
-      iceServers: this.options.iceServers ?? DEFAULT_ICE_SERVERS,
+      iceServers,
     });
 
     pc.onicecandidate = (e) => {

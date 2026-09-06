@@ -29,6 +29,30 @@ const PRECACHE_ASSETS = [
   '/icons/maskable-512.png',
   '/icons/apple-touch-icon.png',
 ];
+const MAX_DYNAMIC_CACHE_ENTRIES = 50;
+
+async function trimCache(cacheName, maxEntries) {
+  try {
+    const cache = await caches.open(cacheName);
+    const requests = await cache.keys();
+    // Exclude core precached assets so essential offline shell is never evicted
+    const evictable = requests.filter((req) => {
+      try {
+        const pathname = new URL(req.url).pathname;
+        return !PRECACHE_ASSETS.includes(pathname);
+      } catch {
+        return true;
+      }
+    });
+    if (evictable.length > maxEntries) {
+      const deleteCount = evictable.length - maxEntries;
+      const toDelete = evictable.slice(0, deleteCount);
+      await Promise.all(toDelete.map((req) => cache.delete(req)));
+    }
+  } catch (err) {
+    // Ignore cache eviction failures gracefully
+  }
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -75,7 +99,12 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response.status === 200) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            event.waitUntil(
+              caches.open(CACHE_NAME).then(async (cache) => {
+                await cache.put(request, copy);
+                await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
+              })
+            );
           }
           return response;
         })
@@ -108,7 +137,13 @@ self.addEventListener('fetch', (event) => {
         const fetchPromise = fetch(request)
           .then((networkResponse) => {
             if (networkResponse.status === 200) {
-              cache.put(request, networkResponse.clone());
+              const copy = networkResponse.clone();
+              event.waitUntil(
+                caches.open(CACHE_NAME).then(async (c) => {
+                  await c.put(request, copy);
+                  await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
+                })
+              );
             }
             return networkResponse;
           })
@@ -120,14 +155,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Default: Cache-first with network fallback
+  // 4. Default: Cache-first with network fallback and bounded dynamic storage
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
       return fetch(request).then((response) => {
         if (response.status === 200 && response.type === 'basic') {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(async (cache) => {
+              await cache.put(request, copy);
+              await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
+            })
+          );
         }
         return response;
       });

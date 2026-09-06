@@ -160,7 +160,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - `edtNormalMap.ts`: Felzenszwalb & Huttenlocher (2012) exact Euclidean Distance Transform, inflated heightmaps, bilateral filtering, and tangent normal field computation.
   - `photometricLighting.ts`: Parametric Blinn-Phong 2.5D lighting and volumetric raymarched soft shadows.
   - `dithering.ts`: Atkinson and Riemersma error-diffusion dithering.
-  - `rotSprite.ts`: Xenowoz 8x Scale2X RotSprite rotation engine and Zhang-Suen morphological thinning.
+  - `rotSprite.ts`: Xenowhirl 8x Scale2X RotSprite rotation engine and Zhang-Suen morphological thinning.
   - `minecraftSkin.ts`: Minecraft player skin UV detection and normal mapping.
 - **Dynamic Dialog Code-Splitting**: Code-split client-side dialogs (`ColorPickerModal`, `ExportModal`, `CanvasResizeModal`, `ProjectsGalleryModal`, `ShortcutsModal`) with `next/dynamic(..., { ssr: false })` to optimize initial page bundle payload.
 
