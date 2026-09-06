@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { P2PSyncSession, P2PConnectionState } from '@/lib/sync/p2pSync';
+import {
+  P2PSyncSession,
+  P2PConnectionState,
+  LAN_ICE_SERVERS,
+  PUBLIC_STUN_ICE_SERVERS,
+} from '@/lib/sync/p2pSync';
 import { createId } from '@/lib/engine/id';
 
 interface CoDrawModalProps {
@@ -25,6 +30,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   const [connectionState, setConnectionState] = useState<P2PConnectionState>(
     activeSession?.getState() ?? 'idle'
   );
+  const [networkMode, setNetworkMode] = useState<'internet' | 'lan'>('internet');
 
   const [inviteToken, setInviteToken] = useState<string>('');
   const [guestAnswerToken, setGuestAnswerToken] = useState<string>('');
@@ -39,6 +45,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
       const newSession = new P2PSyncSession({
         peerId,
         peerName: 'Atelier Host',
+        iceServers: networkMode === 'internet' ? PUBLIC_STUN_ICE_SERVERS : LAN_ICE_SERVERS,
+        lanOnly: networkMode === 'lan',
         onConnectionStateChange: (state) => setConnectionState(state),
         onError: (err) => setErrorMsg(err.message),
       });
@@ -72,6 +80,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
       const newSession = new P2PSyncSession({
         peerId,
         peerName: 'Atelier Guest',
+        iceServers: networkMode === 'internet' ? PUBLIC_STUN_ICE_SERVERS : LAN_ICE_SERVERS,
+        lanOnly: networkMode === 'lan',
         onConnectionStateChange: (state) => setConnectionState(state),
         onError: (err) => setErrorMsg(err.message),
       });
@@ -157,6 +167,44 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
           </div>
         ) : (
           <>
+            {/* Network Mode Switch */}
+            <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border-2 border-[var(--desk-border)]">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[var(--text-heading)]">P2P Routing Mode:</span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    disabled={connectionState !== 'idle'}
+                    onClick={() => setNetworkMode('internet')}
+                    className={`px-2 py-1 rounded-[2px] font-bold cursor-pointer transition-colors ${
+                      networkMode === 'internet'
+                        ? 'bg-[#f0be7c] text-[#140d1f]'
+                        : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                    }`}
+                  >
+                    Internet (STUN)
+                  </button>
+                  <button
+                    type="button"
+                    disabled={connectionState !== 'idle'}
+                    onClick={() => setNetworkMode('lan')}
+                    className={`px-2 py-1 rounded-[2px] font-bold cursor-pointer transition-colors ${
+                      networkMode === 'lan'
+                        ? 'bg-[#a3be8c] text-[#140d1f]'
+                        : 'text-[var(--text-body)] hover:text-[#a3be8c]'
+                    }`}
+                  >
+                    Local LAN (Zero-Egress)
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
+                {networkMode === 'internet'
+                  ? '🌐 Uses Google STUN for cross-network NAT traversal. Zero canvas pixels ever touch external servers.'
+                  : '🔒 100% offline & airgapped. Both peers must share the same local Wi-Fi or hotspot.'}
+              </p>
+            </div>
+
             {/* Host / Join Tabs */}
             <div className="flex gap-1 bg-[var(--desk-surface)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
               <button
