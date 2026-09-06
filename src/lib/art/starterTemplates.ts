@@ -45,7 +45,7 @@ const HEARTH_GHOST_ROWS = withRows([
   [1,  '....ooFFFFoo....'],
   [2,  '...oFFffffFFo...'],
   [3,  '..oFfffffffffo..'],
-  [4,  '..offffofffffo..'],
+  [4,  '..offffffffffo..'],
   [5,  '..offooffooffo..'],
   [6,  '..offffffffffo..'],
   [7,  '..ofrffffffrfo..'],
