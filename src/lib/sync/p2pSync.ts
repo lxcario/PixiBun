@@ -440,7 +440,10 @@ export class P2PSyncSession {
   }
 
   /**
-   * Helper waiting for ICE candidate gathering completion (with a 1500ms safety timeout).
+   * Helper waiting for ICE candidate gathering completion:
+   * - 5000ms hard safety ceiling (ensuring slow cellular/VPN/STUN candidates are gathered).
+   * - Resolves immediately when gathering state is 'complete' or null candidate is received.
+   * - Resolves on a 600ms idle debounce once candidate gathering settles.
    */
   private waitForIceGathering(pc: RTCPeerConnection): Promise<void> {
     return new Promise((resolve) => {
@@ -449,20 +452,39 @@ export class P2PSyncSession {
         return;
       }
 
-      const timeoutId = setTimeout(() => {
+      let done = false;
+      let idleTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(hardTimeoutId);
+        if (idleTimeoutId) clearTimeout(idleTimeoutId);
         pc.removeEventListener('icegatheringstatechange', checkState);
+        pc.removeEventListener('icecandidate', checkCandidate);
         resolve();
-      }, 1500);
+      };
+
+      const hardTimeoutId = setTimeout(finish, 5000);
 
       const checkState = () => {
         if (pc.iceGatheringState === 'complete') {
-          clearTimeout(timeoutId);
-          pc.removeEventListener('icegatheringstatechange', checkState);
-          resolve();
+          finish();
+        }
+      };
+
+      const checkCandidate = (e: RTCPeerConnectionIceEvent) => {
+        if (e.candidate) {
+          if (idleTimeoutId) clearTimeout(idleTimeoutId);
+          idleTimeoutId = setTimeout(finish, 600);
+        } else {
+          // null candidate signals end of candidate gathering
+          finish();
         }
       };
 
       pc.addEventListener('icegatheringstatechange', checkState);
+      pc.addEventListener('icecandidate', checkCandidate);
     });
   }
 
