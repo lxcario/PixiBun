@@ -155,10 +155,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. Default: Cache-first with network fallback and bounded dynamic storage
+  // 4. Default: Cache-first with network fallback and bounded dynamic storage (touch-on-hit LRU)
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
+      if (cached) {
+        // Touch on hit to promote entry to the newest position in CacheStorage (true LRU)
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cached.clone()))
+        );
+        return cached;
+      }
       return fetch(request).then((response) => {
         if (response.status === 200 && response.type === 'basic') {
           const copy = response.clone();
