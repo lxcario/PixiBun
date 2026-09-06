@@ -252,4 +252,52 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
     const cleared = await getLayerBlobsForProject(proj.id);
     expect(cleared).toHaveLength(0);
   });
+
+  it('stress tests multi-frame, multi-layer binary updates without Dexie transaction deactivation', async () => {
+    const proj = await createBlankProject('Stress Animation', 32, 32);
+
+    // Create 15 blobs across 5 frames and 3 layers
+    const initialBlobs: Array<{ layerId: string; frameIndex: number; blob: Blob }> = [];
+    for (let frame = 0; frame < 5; frame++) {
+      for (let layer = 0; layer < 3; layer++) {
+        const u8 = new Uint8Array([frame, layer, 42, 99, 128]);
+        initialBlobs.push({
+          layerId: `layer-${layer}`,
+          frameIndex: frame,
+          blob: new Blob([u8], { type: 'image/png' }),
+        });
+      }
+    }
+
+    await saveLayerBlobs(proj.id, initialBlobs);
+    const stored1 = await getLayerBlobsForProject(proj.id);
+    expect(stored1).toHaveLength(15);
+
+    // Mutate only frame 2, layer 1 with different bytes, keep others identical
+    const mutatedBlobs = initialBlobs.map((item) => {
+      if (item.frameIndex === 2 && item.layerId === 'layer-1') {
+        const mutatedBytes = new Uint8Array([2, 1, 99, 99, 255, 255]);
+        return {
+          ...item,
+          blob: new Blob([mutatedBytes], { type: 'image/png' }),
+        };
+      }
+      return item;
+    });
+
+    await saveLayerBlobs(proj.id, mutatedBlobs);
+    const stored2 = await getLayerBlobsForProject(proj.id);
+    expect(stored2).toHaveLength(15);
+
+    const targetRecord = stored2.find((b) => b.frameIndex === 2 && b.layerId === 'layer-1');
+    expect(targetRecord).toBeDefined();
+    const targetBuf = await targetRecord!.blob.arrayBuffer();
+    expect(new Uint8Array(targetBuf)).toEqual(new Uint8Array([2, 1, 99, 99, 255, 255]));
+
+    // Other layers remain intact and identical
+    const untouchedRecord = stored2.find((b) => b.frameIndex === 0 && b.layerId === 'layer-0');
+    expect(untouchedRecord).toBeDefined();
+    const untouchedBuf = await untouchedRecord!.blob.arrayBuffer();
+    expect(new Uint8Array(untouchedBuf)).toEqual(new Uint8Array([0, 0, 42, 99, 128]));
+  });
 });

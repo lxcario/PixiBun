@@ -88,67 +88,73 @@ export async function saveLayerBlobs(
   }
   const deduplicatedBlobs = Array.from(incomingMap.values());
 
-  await db.transaction('rw', db.layerBlobs, async () => {
-    // 1. Query existing records for this project
-    const existingRecords = await db.layerBlobs.where('projectId').equals(projectId).toArray();
+  // 1. Query existing records outside the write transaction
+  const existingRecords = await db.layerBlobs.where('projectId').equals(projectId).toArray();
 
-    const existingMap = new Map<string, StoredLayerBlob>();
-    const idsToDelete: number[] = [];
+  const existingMap = new Map<string, StoredLayerBlob>();
+  const idsToDelete: number[] = [];
 
-    for (const rec of existingRecords) {
-      const k = keyOf(rec.layerId, rec.frameIndex);
-      if (!incomingMap.has(k)) {
+  for (const rec of existingRecords) {
+    const k = keyOf(rec.layerId, rec.frameIndex);
+    if (!incomingMap.has(k)) {
+      if (rec.id !== undefined) {
+        idsToDelete.push(rec.id);
+      }
+    } else {
+      if (existingMap.has(k)) {
+        // If a duplicate record already exists in the database for this key, mark it for pruning
         if (rec.id !== undefined) {
           idsToDelete.push(rec.id);
         }
       } else {
-        if (existingMap.has(k)) {
-          // If a duplicate record already exists in the database for this key, mark it for pruning
-          if (rec.id !== undefined) {
-            idsToDelete.push(rec.id);
-          }
-        } else {
-          existingMap.set(k, rec);
-        }
+        existingMap.set(k, rec);
       }
     }
+  }
 
-    // 2. Prune obsolete frames or layers without wiping the whole table
-    if (idsToDelete.length > 0) {
-      await db.layerBlobs.bulkDelete(idsToDelete);
-    }
+  const recordsToAdd: StoredLayerBlob[] = [];
+  const recordsToPut: StoredLayerBlob[] = [];
 
-    const recordsToAdd: StoredLayerBlob[] = [];
-    const recordsToPut: StoredLayerBlob[] = [];
+  // 2. Perform native async Blob comparisons OUTSIDE the write transaction.
+  // Native microtasks from blob.arrayBuffer() can otherwise detach from Dexie's PSD zone
+  // and cause TransactionInactiveError in strict browser environments.
+  for (const b of deduplicatedBlobs) {
+    const k = keyOf(b.layerId, b.frameIndex);
+    const existing = existingMap.get(k);
 
-    // 3. Incrementally upsert only changed or new layer blobs
-    for (const b of deduplicatedBlobs) {
-      const k = keyOf(b.layerId, b.frameIndex);
-      const existing = existingMap.get(k);
-
-      if (!existing) {
-        recordsToAdd.push({
+    if (!existing) {
+      recordsToAdd.push({
+        projectId,
+        layerId: b.layerId,
+        frameIndex: b.frameIndex,
+        blob: b.blob,
+        updatedAt: now,
+      });
+    } else {
+      const isIdentical = await blobsEqual(existing.blob, b.blob);
+      if (!isIdentical) {
+        recordsToPut.push({
+          id: existing.id,
           projectId,
           layerId: b.layerId,
           frameIndex: b.frameIndex,
           blob: b.blob,
           updatedAt: now,
         });
-      } else {
-        const isIdentical = await blobsEqual(existing.blob, b.blob);
-        if (!isIdentical) {
-          recordsToPut.push({
-            id: existing.id,
-            projectId,
-            layerId: b.layerId,
-            frameIndex: b.frameIndex,
-            blob: b.blob,
-            updatedAt: now,
-          });
-        }
       }
     }
+  }
 
+  // 3. If nothing changed, return immediately without opening an IndexedDB transaction
+  if (idsToDelete.length === 0 && recordsToAdd.length === 0 && recordsToPut.length === 0) {
+    return;
+  }
+
+  // 4. Execute atomic batch writes with purely synchronous Dexie calls inside the transaction
+  await db.transaction('rw', db.layerBlobs, async () => {
+    if (idsToDelete.length > 0) {
+      await db.layerBlobs.bulkDelete(idsToDelete);
+    }
     if (recordsToAdd.length > 0) {
       await db.layerBlobs.bulkAdd(recordsToAdd);
     }
