@@ -79,6 +79,8 @@ export const StudioLayout: React.FC = () => {
   const [importError, setImportError] = useState<string | null>(null);
   const autosaveTimerRef = useRef<number | null>(null);
   const autosaveInFlightRef = useRef(false);
+  const autosavePendingRef = useRef(false);
+  const inFlightPromiseRef = useRef<Promise<void> | null>(null);
   const autosaveFailCountRef = useRef(0);
 
   const {
@@ -105,56 +107,75 @@ export const StudioLayout: React.FC = () => {
 
   // Serialize the full studio - pixels included - into IndexedDB. Debounced so
   // a fast stroke burst writes once at the end instead of per commit.
+  // Uses a coalescing pending-save loop to ensure in-flight saves never drop updates.
   const runAutosave = useCallback(async () => {
-    if (autosaveInFlightRef.current) return;
-    autosaveInFlightRef.current = true;
-    const { setSaveStatus } = useStudioStore.getState();
-    setSaveStatus('saving');
-    try {
-      const { project, layerBlobs } = await buildAutosavePayloadAsync();
-      const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
-      const state = useStudioStore.getState();
-      const success = await autoSaveWorkspace(
-        state.currentProjectId,
-        project.name,
-        project.width,
-        project.height,
-        project.fps,
-        project,
-        thumbnailDataUrl,
-        layerBlobs
-      );
-      if (success) {
-        autosaveFailCountRef.current = 0;
-        setAutosaveError(null);
-        setSaveStatus('saved');
-        // Reset to idle after a short delay so it doesn't stay 'saved' forever
-        setTimeout(() => {
-          if (useStudioStore.getState().saveStatus === 'saved') {
-            useStudioStore.getState().setSaveStatus('idle');
-          }
-        }, 2000);
-      } else {
-        autosaveFailCountRef.current += 1;
-        setSaveStatus('error');
-        if (autosaveFailCountRef.current >= 2) {
-          setAutosaveError(
-            'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
-          );
-        }
+    if (autosaveInFlightRef.current) {
+      autosavePendingRef.current = true;
+      if (inFlightPromiseRef.current) {
+        await inFlightPromiseRef.current;
       }
-    } catch (err) {
-      console.error('Autosave failed:', err);
-      autosaveFailCountRef.current += 1;
-      setSaveStatus('error');
-      if (autosaveFailCountRef.current >= 2) {
-        setAutosaveError(
-          'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
-        );
-      }
-    } finally {
-      autosaveInFlightRef.current = false;
+      return;
     }
+
+    autosaveInFlightRef.current = true;
+    const savePromise = (async () => {
+      try {
+        do {
+          autosavePendingRef.current = false;
+          const { setSaveStatus } = useStudioStore.getState();
+          setSaveStatus('saving');
+          try {
+            const { project, layerBlobs } = await buildAutosavePayloadAsync();
+            const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
+            const state = useStudioStore.getState();
+            const success = await autoSaveWorkspace(
+              state.currentProjectId,
+              project.name,
+              project.width,
+              project.height,
+              project.fps,
+              project,
+              thumbnailDataUrl,
+              layerBlobs
+            );
+            if (success) {
+              autosaveFailCountRef.current = 0;
+              setAutosaveError(null);
+              setSaveStatus('saved');
+              // Reset to idle after a short delay so it doesn't stay 'saved' forever
+              setTimeout(() => {
+                if (useStudioStore.getState().saveStatus === 'saved') {
+                  useStudioStore.getState().setSaveStatus('idle');
+                }
+              }, 2000);
+            } else {
+              autosaveFailCountRef.current += 1;
+              setSaveStatus('error');
+              if (autosaveFailCountRef.current >= 2) {
+                setAutosaveError(
+                  'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
+                );
+              }
+            }
+          } catch (err) {
+            console.error('Autosave failed:', err);
+            autosaveFailCountRef.current += 1;
+            setSaveStatus('error');
+            if (autosaveFailCountRef.current >= 2) {
+              setAutosaveError(
+                'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
+              );
+            }
+          }
+        } while (autosavePendingRef.current);
+      } finally {
+        autosaveInFlightRef.current = false;
+        inFlightPromiseRef.current = null;
+      }
+    })();
+
+    inFlightPromiseRef.current = savePromise;
+    await savePromise;
   }, []);
 
   const handleConfirmNewDrawing = useCallback(() => {
@@ -201,9 +222,19 @@ export const StudioLayout: React.FC = () => {
 
   // Best-effort flush when the tab is hidden or closed mid-debounce.
   useEffect(() => {
-    const flush = () => void runAutosave();
-    window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        void runAutosave();
+      }
+    };
+    const onPageHide = () => void runAutosave();
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
+    };
   }, [runAutosave]);
 
   // Restore the last session on mount and request persistent storage.
