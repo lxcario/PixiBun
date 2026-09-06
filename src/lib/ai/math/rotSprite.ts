@@ -101,11 +101,23 @@ export function rotateWithRotSprite(
     return outputCanvas;
   }
 
-  // 2. Exact Xenowoz 8x Scale2X (EPX) Cascade (3 successive passes: 1x -> 2x -> 4x -> 8x)
+  // 2. Exact Xenowhirl 8x Scale2X (EPX) Cascade with Color Similarity
+  function colorDist(c1: number, c2: number): number {
+    if (c1 === c2) return 0;
+    const a1 = (c1 >>> 24) & 0xff;
+    const a2 = (c2 >>> 24) & 0xff;
+    if (a1 < 16 && a2 < 16) return 0;
+    if (Math.abs(a1 - a2) > 64) return 10000;
+    const r1 = c1 & 0xff, g1 = (c1 >>> 8) & 0xff, b1 = (c1 >>> 16) & 0xff;
+    const r2 = c2 & 0xff, g2 = (c2 >>> 8) & 0xff, b2 = (c2 >>> 16) & 0xff;
+    return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+  }
+
   function applyScale2x(
     src: Uint8ClampedArray,
     curW: number,
-    curH: number
+    curH: number,
+    similarityThreshold = 28
   ): { data: Uint8ClampedArray; w: number; h: number } {
     const outW = curW * 2;
     const outH = curH * 2;
@@ -127,11 +139,12 @@ export function rotateWithRotSprite(
         const H = getPx(x, y + 1);
 
         let e0 = P, e1 = P, e2 = P, e3 = P;
-        if (B !== H && D !== F) {
-          e0 = D === B ? D : P;
-          e1 = B === F ? F : P;
-          e2 = D === H ? D : P;
-          e3 = H === F ? H : P;
+        // Xenowhirl similarity check: smooth if opposite pairs differ while adjacent pairs match/are similar
+        if (colorDist(B, H) > similarityThreshold && colorDist(D, F) > similarityThreshold) {
+          if (colorDist(D, B) <= similarityThreshold) e0 = (colorDist(D, P) <= colorDist(B, P)) ? D : B;
+          if (colorDist(B, F) <= similarityThreshold) e1 = (colorDist(B, P) <= colorDist(F, P)) ? B : F;
+          if (colorDist(D, H) <= similarityThreshold) e2 = (colorDist(D, P) <= colorDist(H, P)) ? D : H;
+          if (colorDist(H, F) <= similarityThreshold) e3 = (colorDist(H, P) <= colorDist(F, P)) ? H : F;
         }
 
         const outBase = (y * 2) * outW + (x * 2);
@@ -178,7 +191,7 @@ export function rotateWithRotSprite(
       const votes = new Map<number, number>();
       let nonTransparentWeight = 0;
       let totalWeight = 0;
-      let centerColor = 0;
+      let centerCoreWeight = 0;
 
       for (let vi = 0; vi < 8; vi++) {
         const v = SUB_OFFSETS[vi];
@@ -191,13 +204,15 @@ export function rotateWithRotSprite(
           const sx = cos * dx - sin * dy + cx;
           const sy = sin * dx + cos * dy + cy;
 
-          // Map to 8x scale raster
-          const sx8 = Math.floor(sx * 8);
-          const sy8 = Math.floor(sy * 8);
+          // Map to 8x scale raster with epsilon to eliminate floating-point floor jitter
+          const sx8 = Math.floor(sx * 8 + 1e-9);
+          const sy8 = Math.floor(sy * 8 + 1e-9);
 
-          // Center-weighted Gaussian spatial kernel
-          const distSq = (u * u + v * v) / 16;
-          const weight = Math.exp(-0.35 * distSq);
+          // Radially symmetric center-weighted kernel:
+          // Invariant under horizontal reflection, vertical reflection, diagonal reflection, and 90° rotation.
+          // Subpixels near center (u^2 + v^2 = 0.5) receive slightly higher weight than corner subpixels (u^2 + v^2 = 24.5).
+          const distSq = u * u + v * v;
+          const weight = 1.0 + 0.01 * (25 - distSq);
           totalWeight += weight;
 
           let color = 0;
@@ -205,22 +220,22 @@ export function rotateWithRotSprite(
             color = s8_32[sy8 * w8 + sx8];
           }
 
-          // Sample center pixel (ui = 3 or 4, vi = 3 or 4) for tie-breaking
-          if ((ui === 3 || ui === 4) && (vi === 3 || vi === 4) && centerColor === 0 && color !== 0) {
-            centerColor = color;
-          }
-
           if (color !== 0) {
             votes.set(color, (votes.get(color) || 0) + weight);
             nonTransparentWeight += weight;
+            if ((ui === 3 || ui === 4) && (vi === 3 || vi === 4)) {
+              centerCoreWeight += weight;
+            }
           }
         }
       }
 
-      // Feature conservation threshold: if >= 18% of cell energy is solid,
-      // preserve the pixel to ensure unbroken 1px contours and prevent diagonal gaps
-      if (nonTransparentWeight >= totalWeight * 0.18 && votes.size > 0) {
-        let bestColor = centerColor !== 0 ? centerColor : 0;
+      // Feature conservation threshold:
+      // If the 2x2 center core touches solid color, allow fine 1px line/dot preservation (threshold 0.20).
+      // Otherwise, require full perimeter threshold (0.38) to strictly prevent boundary dilation, pimples, or color bleeding.
+      const dynamicThreshold = centerCoreWeight > 0 ? 0.20 : 0.38;
+      if (nonTransparentWeight >= totalWeight * dynamicThreshold && votes.size > 0) {
+        let bestColor = 0;
         let maxVote = -1;
 
         votes.forEach((vote, color) => {

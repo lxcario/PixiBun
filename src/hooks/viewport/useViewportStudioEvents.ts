@@ -571,10 +571,9 @@ export function useViewportStudioEvents({
         text: `WaveFunctionCollapse synthesized a ${canvasWidth}×${canvasHeight} tileable pattern from the ${sampleW}×${sampleH} sample obeying local N=${n} neighborhood constraints with 0 adjacency violations!`,
       });
     };
-
     const handleRotSpriteEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
-      const angle = customEvent.detail?.angle || 45;
+      const angle = customEvent.detail?.angle ?? (typeof customEvent.detail === 'number' ? customEvent.detail : 45);
 
       captureSnapshot(`RotSprite ${angle}°`);
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);

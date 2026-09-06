@@ -138,15 +138,27 @@ export function makeCanvas(width: number, height: number): MockCanvas {
     },
     createImageData: ((w: number, h: number) => new FakeImageData(w, h)) as unknown as MockCtx['createImageData'],
     setTransform: () => {},
+    resetTransform: () => {},
     save: () => {},
     restore: () => {},
     translate: () => {},
     scale: () => {},
+    rotate: () => {},
     beginPath: () => {},
+    closePath: () => {},
     moveTo: () => {},
     lineTo: () => {},
+    arc: () => {},
+    fill: () => {},
     stroke: () => {},
+    strokeRect: () => {},
     setLineDash: () => {},
+    createLinearGradient: () => ({
+      addColorStop: () => {},
+    }),
+    createRadialGradient: () => ({
+      addColorStop: () => {},
+    }),
   } as unknown as MockCtx;
   Object.defineProperty(ctx, '_imageData', {
     get(): ImageDataShim {

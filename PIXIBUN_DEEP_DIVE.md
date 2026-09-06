@@ -37,7 +37,7 @@ src/
 │   │   │   ├── shadowAuto.ts        # Sprite bounds, ground contact detection, shadow parameter inference
 │   │   │   ├── colorSpace.ts        # sRGB/OKLab/OKLCH conversions and perceptual hue-shifting
 │   │   │   ├── dithering.ts         # Atkinson and Riemersma error-diffusion dithering
-│   │   │   ├── rotSprite.ts         # Xenowoz 8x Scale2X RotSprite rotation engine and thinning
+│   │   │   ├── rotSprite.ts         # Xenowhirl 8x Scale2X RotSprite rotation engine and thinning
 │   │   │   └── minecraftSkin.ts     # Minecraft player skin UV detection and normal mapping
 │   │   ├── pixelAiEngine.ts         # Optical flow tweening, jaggy cleanup, ground shadow, outline
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++

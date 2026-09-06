@@ -22,6 +22,7 @@ export const VolumetricOpticsSection: React.FC = () => {
   } = useStudioStore();
 
   const [opticsExpanded, setOpticsExpanded] = useState(false);
+  const [snapToPalette, setSnapToPalette] = useState(false);
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
   const handleRenderVolumetricOptics = () => {
@@ -38,7 +39,7 @@ export const VolumetricOpticsSection: React.FC = () => {
           lightAzimuth: tools.lightAzimuth,
           lightElevation: tools.lightElevation,
           lightColor: '#FFFFFF',
-          paletteColors: currentPalette.colors,
+          paletteColors: snapToPalette ? currentPalette.colors : [],
           ditherModulation: tools.ditherModulation,
         },
       })
@@ -206,6 +207,17 @@ export const VolumetricOpticsSection: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Snap to Palette Option */}
+      <label className="flex items-center gap-1.5 text-[9px] font-mono text-[var(--text-body)] cursor-pointer select-none px-0.5">
+        <input
+          type="checkbox"
+          checked={snapToPalette}
+          onChange={(e) => setSnapToPalette(e.target.checked)}
+          className="rounded-[1px] accent-[#f0be7c] cursor-pointer"
+        />
+        <span>Snap to active palette ({currentPalette.name.slice(0, 18)})</span>
+      </label>
 
       {/* Execute Volumetric Optics Action */}
       <TactileButton

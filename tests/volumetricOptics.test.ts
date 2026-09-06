@@ -323,6 +323,135 @@ describe('PixiBud AI 2D Volumetric Optics Engine', () => {
       expect(colors3.size).toBeLessThanOrEqual(3);
       expect(colors4.size).toBeLessThanOrEqual(4);
     });
+
+    it('preserves green crystal artwork colors without gray/purple corruption', () => {
+      const width = 16;
+      const height = 16;
+      const { ctx } = makeMockCanvas(width, height);
+
+      // Emerald green crystal (#10B981, RGB: 16, 185, 129)
+      ctx.fillStyle = '#10B981';
+      ctx.fillRect(2, 2, 12, 12);
+
+      const params: VolumetricOpticsParams = {
+        preset: 'gemstone',
+        translucencyDepth: 8,
+        fresnelPower: 4.5,
+        anisoAngle: 45,
+        anisoFlow: 'curvature',
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightColor: '#FFFFFF',
+        paletteColors: [], // Default when not forcing active palette
+        ditherModulation: 0.0,
+        celTones: 3,
+      };
+
+      const resultCanvas = executeVolumetricOpticalPipeline(
+        ctx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        params
+      );
+
+      const resData = resultCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+      // Check all opaque crystal pixels
+      let greenPixels = 0;
+      let alabasterGrayPixels = 0;
+      let wisteriaPurplePixels = 0;
+
+      for (let y = 2; y < 14; y++) {
+        for (let x = 2; x < 14; x++) {
+          const idx = (y * width + x) * 4;
+          const r = resData[idx];
+          const g = resData[idx + 1];
+          const b = resData[idx + 2];
+          const a = resData[idx + 3];
+
+          if (a > 0) {
+            // Must be emerald/green hue: green channel strictly dominates red and blue
+            if (g > r && g > b) {
+              greenPixels++;
+            }
+            // Check that theme gray (#DDDFDF: ~221, 223, 223) is NEVER present
+            if (Math.abs(r - 221) < 5 && Math.abs(g - 223) < 5 && Math.abs(b - 223) < 5) {
+              alabasterGrayPixels++;
+            }
+            // Check that theme purple (#C792DF / #A86EC6) is NEVER present
+            if (r > 150 && b > 180 && g < 160) {
+              wisteriaPurplePixels++;
+            }
+          }
+        }
+      }
+
+      expect(greenPixels).toBe(12 * 12);
+      expect(alabasterGrayPixels).toBe(0);
+      expect(wisteriaPurplePixels).toBe(0);
+    });
+
+    it('adapts gemstone SSS extinction to base hue (emerald transmits green, sapphire transmits blue)', () => {
+      const width = 16;
+      const height = 16;
+
+      // 1. Emerald green gem (#059669: R:5, G:150, B:105)
+      const { ctx: emeraldCtx } = makeMockCanvas(width, height);
+      emeraldCtx.fillStyle = '#059669';
+      emeraldCtx.fillRect(4, 4, 8, 8);
+
+      const resEmerald = executeVolumetricOpticalPipeline(
+        emeraldCtx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        {
+          preset: 'gemstone',
+          translucencyDepth: 10,
+          fresnelPower: 4.5,
+          anisoAngle: 0,
+          anisoFlow: 'curvature',
+          lightAzimuth: 180,
+          lightElevation: 30,
+          lightColor: '#FFFFFF',
+          paletteColors: [],
+          ditherModulation: 0.0,
+          celTones: 'smooth',
+        }
+      );
+      const emData = resEmerald.getContext('2d')!.getImageData(0, 0, width, height).data;
+      const emCenter = (8 * width + 8) * 4;
+      // console.log('Emerald (8, 8):', emData[emCenter], emData[emCenter + 1], emData[emCenter + 2]);
+      // At (8, 8), check that green is strictly greater than red (no ruby red contamination)
+      expect(emData[emCenter + 1]).toBeGreaterThan(emData[emCenter]); // G > R
+
+      // 2. Sapphire blue gem (#2563EB: R:37, G:99, B:235)
+      const { ctx: sapphireCtx } = makeMockCanvas(width, height);
+      sapphireCtx.fillStyle = '#2563EB';
+      sapphireCtx.fillRect(4, 4, 8, 8);
+
+      const resSapphire = executeVolumetricOpticalPipeline(
+        sapphireCtx as unknown as CanvasRenderingContext2D,
+        width,
+        height,
+        {
+          preset: 'gemstone',
+          translucencyDepth: 10,
+          fresnelPower: 4.5,
+          anisoAngle: 0,
+          anisoFlow: 'curvature',
+          lightAzimuth: 180,
+          lightElevation: 30,
+          lightColor: '#FFFFFF',
+          paletteColors: [],
+          ditherModulation: 0.0,
+          celTones: 'smooth',
+        }
+      );
+      const sapData = resSapphire.getContext('2d')!.getImageData(0, 0, width, height).data;
+      const sapCenter = (8 * width + 8) * 4;
+      // In center where SSS shines, blue should dominate
+      expect(sapData[sapCenter + 2]).toBeGreaterThan(sapData[sapCenter]); // B > R
+    });
   });
 
   describe('snapToGemstoneFacets', () => {

@@ -348,7 +348,7 @@ describe('RotSprite Engine & Precision Viewport Fixes', () => {
     expect(solidCount).toBeGreaterThanOrEqual(35);
   });
 
-  it('rotates 45 degrees using Xenowoz 8x Scale2X RotSprite with unbroken contour', () => {
+  it('rotates 45 degrees using Xenowhirl 8x Scale2X RotSprite with unbroken contour', () => {
     const canvas = makeCanvas(32, 32);
     const ctx = canvas.getContext('2d')!;
 

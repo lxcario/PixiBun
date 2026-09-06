@@ -659,10 +659,10 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Area-Preserving Downsampling, True Xenowoz 8x RotSprite & Live Preview Window Resize (2026-09-03)
+## Area-Preserving Downsampling, True Xenowhirl 8x RotSprite & Live Preview Window Resize (2026-09-03)
 **Delivered:**
 - **Area-Preserving Pixel Art Downsampling (src/lib/engine/bufferRegistry.ts)**: Implemented resamplePixelArtBuffer with presence-preserving area integration. For every downscaled destination pixel, scans its source footprint and preserves stroke presence if any solid pixel exists. Prevents odd-coordinate skipping and line perforation when resizing down (e.g. 32x32 to 16x16).
-- **True Xenowoz 8x Scale2X RotSprite Engine (src/lib/ai/smartMathEngine.ts)**: Replaced 3x expansion with true 3-pass Scale2X (EPX) upscaling (1x -> 2x -> 4x -> 8x). Added inverse rotation mapping in 8x space and 64-sample Gaussian radial center-weighted downsampling (sigma = 2.2) with a 25% outline threshold and centroid distance tie-breaking, completely eliminating gaps, broken lines, and corner spikes.
+- **True Xenowhirl 8x Scale2X RotSprite Engine (src/lib/ai/smartMathEngine.ts)**: Replaced 3x expansion with true 3-pass Scale2X (EPX) upscaling (1x -> 2x -> 4x -> 8x). Added inverse rotation mapping in 8x space and 64-sample Gaussian radial center-weighted downsampling (sigma = 2.2) with a 25% outline threshold and centroid distance tie-breaking, completely eliminating gaps, broken lines, and corner spikes.
 - **Floating Preview Dragging & Window Resizing (src/components/studio/FloatingPreviewWindow.tsx)**: Solved mouse stickiness defect by delegating drag tracking to window pointer listeners with e.buttons === 0 abort guards. Added an interactive bottom-right resize handle allowing smooth viewport resizing from 100x100 to 640x640.
 - **Testing (tests/rotSpriteAndPrecision.test.ts)**: Added unit tests verifying 32x32 to 16x16 line preservation and RotSprite 45-degree unbroken contour retention.
 

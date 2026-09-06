@@ -927,10 +927,12 @@ export function executeVolumetricOpticalPipeline(
   const lightG = lightRgba.g / 255;
   const lightB = lightRgba.b / 255;
 
-  const paletteRgba = params.paletteColors.map(hexToRgba);
+  const paletteRgba = (params.paletteColors || []).map(hexToRgba);
   const paletteOKLab = paletteRgba.map(c => rgbToOKLab(c.r, c.g, c.b));
 
-  const outputCanvas = document.createElement('canvas');
+  const outputCanvas = typeof document !== 'undefined'
+    ? document.createElement('canvas')
+    : (new OffscreenCanvas(width, height) as unknown as HTMLCanvasElement);
   outputCanvas.width = width;
   outputCanvas.height = height;
   const outCtx = outputCanvas.getContext('2d')!;
@@ -939,6 +941,17 @@ export function executeVolumetricOpticalPipeline(
 
   const celTones = params.celTones ?? 3;
   const numTones = typeof celTones === 'number' ? celTones : 3;
+
+  const celRampCache = new Map<number, CelRamp>();
+  const getCelRamp = (r: number, g: number, b: number): CelRamp => {
+    const key = (r << 16) | (g << 8) | b;
+    let ramp = celRampCache.get(key);
+    if (!ramp) {
+      ramp = buildCelRamp(r, g, b);
+      celRampCache.set(key, ramp);
+    }
+    return ramp;
+  };
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -969,9 +982,21 @@ export function executeVolumetricOpticalPipeline(
       const opticalChord = (2.0 * Math.max(0.5, dist)) / Math.max(0.08, NdotL + profile.wrap);
       const scaledChord = opticalChord / effectiveDepth;
 
-      const sssR = Math.exp(-profile.sigmaT[0] * scaledChord);
-      const sssG = Math.exp(-profile.sigmaT[1] * scaledChord);
-      const sssB = Math.exp(-profile.sigmaT[2] * scaledChord);
+      let sigmaR = profile.sigmaT[0];
+      let sigmaG = profile.sigmaT[1];
+      let sigmaB = profile.sigmaT[2];
+
+      if (params.preset === 'gemstone' || params.preset === 'slime') {
+        // Mineral & colloidal extinction adapts to the artwork's base pigment
+        // Transmits the crystal's own hue while absorbing complementary wavelengths
+        sigmaR = 0.35 + 2.5 * Math.max(0, 1 - origR);
+        sigmaG = 0.35 + 2.5 * Math.max(0, 1 - origG);
+        sigmaB = 0.35 + 2.5 * Math.max(0, 1 - origB);
+      }
+
+      const sssR = Math.exp(-sigmaR * scaledChord);
+      const sssG = Math.exp(-sigmaG * scaledChord);
+      const sssB = Math.exp(-sigmaB * scaledChord);
 
       const sLx = -(Lx + Nx * profile.distortion);
       const sLy = -(Ly + Ny * profile.distortion);
@@ -1056,51 +1081,78 @@ export function executeVolumetricOpticalPipeline(
         g255 = Math.max(0, Math.min(255, Math.round(finalG * 255)));
         b255 = Math.max(0, Math.min(255, Math.round(finalB * 255)));
       } else {
-        toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(totalLightSignal * (numTones + 0.3))));
+        let lightSignal = totalLightSignal;
+        if (params.ditherModulation && params.ditherModulation > 0) {
+          const ditherVal = getBayerMatrixThreshold(x, y, '4x4');
+          lightSignal += (ditherVal - 0.5) * 0.22 * params.ditherModulation;
+        }
 
-        const finalR = origR * 0.4 + (origR * diffuseLight * 0.6) + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
-        const finalG = origG * 0.4 + (origG * diffuseLight * 0.6) + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;
-        const finalB = origB * 0.4 + (origB * diffuseLight * 0.6) + sssRadianceB * 0.8 + rimRadianceB * 0.6 + anisoHighlightB * 0.7;
+        toneStep = Math.min(numTones - 1, Math.max(0, Math.floor(lightSignal * (numTones + 0.3))));
+        const ramp = getCelRamp(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
 
-        const toneFactor = toneStep / Math.max(1, numTones - 1);
-
-        const qR = origR * 0.4 + (finalR - origR * 0.4) * toneFactor;
-        const qG = origG * 0.4 + (finalG - origG * 0.4) * toneFactor;
-        const qB = origB * 0.4 + (finalB - origB * 0.4) * toneFactor;
-
-        r255 = Math.max(0, Math.min(255, Math.round(qR * 255)));
-        g255 = Math.max(0, Math.min(255, Math.round(qG * 255)));
-        b255 = Math.max(0, Math.min(255, Math.round(qB * 255)));
+        if (numTones === 2) {
+          if (toneStep === 0) {
+            r255 = ramp.shadowR;
+            g255 = ramp.shadowG;
+            b255 = ramp.shadowB;
+          } else {
+            r255 = ramp.hiR;
+            g255 = ramp.hiG;
+            b255 = ramp.hiB;
+          }
+        } else if (numTones === 3) {
+          if (toneStep === 0) {
+            r255 = ramp.shadowR;
+            g255 = ramp.shadowG;
+            b255 = ramp.shadowB;
+          } else if (toneStep === 1) {
+            r255 = ramp.baseR;
+            g255 = ramp.baseG;
+            b255 = ramp.baseB;
+          } else {
+            r255 = ramp.hiR;
+            g255 = ramp.hiG;
+            b255 = ramp.hiB;
+          }
+        } else {
+          // 4 tones
+          if (toneStep === 0) {
+            r255 = ramp.deepR;
+            g255 = ramp.deepG;
+            b255 = ramp.deepB;
+          } else if (toneStep === 1) {
+            r255 = ramp.shadowR;
+            g255 = ramp.shadowG;
+            b255 = ramp.shadowB;
+          } else if (toneStep === 2) {
+            r255 = ramp.baseR;
+            g255 = ramp.baseG;
+            b255 = ramp.baseB;
+          } else {
+            r255 = ramp.hiR;
+            g255 = ramp.hiG;
+            b255 = ramp.hiB;
+          }
+        }
       }
 
       if (paletteOKLab.length > 0) {
-        if (celTones !== 'smooth' && numTones > 0) {
-          const paletteIdx = Math.min(
-            paletteRgba.length - 1,
-            Math.round((toneStep / Math.max(1, numTones - 1)) * (paletteRgba.length - 1))
-          );
-          const chosen = paletteRgba[paletteIdx];
-          r255 = chosen.r;
-          g255 = chosen.g;
-          b255 = chosen.b;
-        } else {
-          const pixelLab = rgbToOKLab(r255, g255, b255);
-          let bestDist = Infinity;
-          let bestColor = paletteRgba[0];
+        const pixelLab = rgbToOKLab(r255, g255, b255);
+        let bestDist = Infinity;
+        let bestColor = paletteRgba[0];
 
-          for (let i = 0; i < paletteOKLab.length; i++) {
-            const pLab = paletteOKLab[i];
-            const dist = deltaEOKLab(pixelLab, pLab);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestColor = paletteRgba[i];
-            }
+        for (let i = 0; i < paletteOKLab.length; i++) {
+          const pLab = paletteOKLab[i];
+          const dist = deltaEOKLab(pixelLab, pLab);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestColor = paletteRgba[i];
           }
-
-          r255 = bestColor.r;
-          g255 = bestColor.g;
-          b255 = bestColor.b;
         }
+
+        r255 = bestColor.r;
+        g255 = bestColor.g;
+        b255 = bestColor.b;
       }
 
       outData[pIdx] = r255;
