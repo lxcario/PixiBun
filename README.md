@@ -18,7 +18,8 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 **PixiBun is designed to feel like a wooden drafting desk late at night.**
 
 * **No Accounts or Logins** — Open the studio and begin placing pixels immediately.
-* **100% On-Device & Private** — Zero tracking, zero telemetry, zero cloud data scraping. Your frames and palettes live exclusively in your local IndexedDB storage.
+* **100% On-Device & Private Core** — Zero tracking, zero telemetry, zero cloud data scraping. Your frames and palettes live exclusively in your local IndexedDB storage. (Optional diagnostic relay is strictly opt-in and disabled by default).
+* **Purpose-Built for Indie & Game Jam Sprites** — Optimized for $16\times16$ to $128\times128$ character sprites, tilesets, and animation loops. Rather than competing with heavy native desktop software (e.g., Aseprite) for 500+ frame 4K cinematic timelines, PixiBun is engineered for instant zero-install browser crafting, 2.5D photometric lighting, and frictionless game engine exports.
 * **Tactile Mechanical Feedback** — Integer-aligned strokes, physical button depression physics, specular light-sweeps, and homestyle palettes.
 * **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite 8x distortion-free rotation, OKLab perceptual color science, and intelligent image pixelization.
 * **Procedural Lo-Fi Radio** — Real-time Web Audio synthesizer with vinyl noise, gentle rain, and warm Rhodes chord progressions playing from a vintage desktop boombox.
@@ -205,10 +206,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 PixiBun is engineered as a true production-grade, local-first web application:
 
-* **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction.
+* **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The entire core creation and export suite runs 100% offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
-* **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and an explicit opt-in crash relay.
-* **Continuous Quality & Performance Gates:** 406 unit and integration tests across 63 suites and 17 E2E specs with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
+* **Continuous Quality & Performance Gates:** 406 unit and integration tests across 63 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 17 E2E specs with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -232,9 +233,9 @@ PixiBun is engineered as a true production-grade, local-first web application:
 ---
 
 ## 📜 Craft Values & Open Source
-
+ 
 * **100% Local-First & Zero Telemetry:** No accounts, no telemetry, no tracking, no subscriptions.
-* **100% Offline-Capable:** Runs fully without an active internet connection via installed PWA.
+* **Core Studio is 100% Offline-Capable:** Full drawing, animation, lighting, and export pipelines run entirely in-browser without network access via installed PWA.
 * **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
-
+ 
 *Handcrafted with pixels, coffee, and care.* ✦
