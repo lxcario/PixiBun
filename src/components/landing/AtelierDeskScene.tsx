@@ -2,8 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { lofiRadio, RadioState } from '@/lib/audio/lofiRadio';
-import { IconHintLamp, IconHintRadio, IconHintPen } from './AtelierIcons';
+import { IconHintLamp, IconHintPen } from './AtelierIcons';
 import { PixelCorners } from './CozyScrollReveal';
 import { BorderGlow } from '@/components/reactbits/BorderGlow';
 import { useThemeStore } from '@/stores/themeStore';
@@ -138,11 +137,6 @@ export const AtelierDeskScene: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { theme } = useThemeStore();
   const [lampLit, setLampLit] = useState(true);
-  const [radioState, setRadioState] = useState<RadioState>({
-    isPlaying: false,
-    trackTitle: 'lo-fi beats',
-    volume: 0.6,
-  });
 
   // Time-based 450ms smooth cubic-ease transition
   const themeProgressRef = useRef<number>(theme === 'light' ? 1.0 : 0.0);
@@ -178,14 +172,6 @@ export const AtelierDeskScene: React.FC = () => {
         }
       }
     });
-  }, []);
-
-  // Subscribe to audio engine
-  useEffect(() => {
-    const unsub = lofiRadio.subscribe((state) => {
-      setRadioState(state);
-    });
-    return () => unsub();
   }, []);
 
   // Main Canvas Render Loop
@@ -343,112 +329,97 @@ export const AtelierDeskScene: React.FC = () => {
       ctx.fillStyle = lerpRGB(THEME_COLORS.skyBot, p);
       ctx.fillRect(winX, winY + 95 * SCALE, winW, winH - 95 * SCALE);
 
-      // A. GLOWING CRESCENT MOON (Prominent at night p=0, sets down & fades as p->1)
+      // A. AUTHENTIC 16-BIT PIXEL ART CRESCENT MOON
       if (p < 0.98) {
-        const moonBloomAlpha = (1 - p);
-        const moonX = winX + winW - (58 - p * 20) * SCALE;
-        const moonY = winY + (36 + p * 60) * SCALE;
-        const moonRadius = 12 * SCALE;
+        const moonBloomAlpha = 1 - p;
+        const mx = Math.floor(winX + winW - (58 - p * 20) * SCALE);
+        const my = Math.floor(winY + (32 + p * 60) * SCALE);
 
-        // Soft Warm Radial Bloom Halo around the moon
-        const moonBloom = ctx.createRadialGradient(
-          moonX,
-          moonY,
-          2 * SCALE,
-          moonX,
-          moonY,
-          34 * SCALE
-        );
-        moonBloom.addColorStop(0, `rgba(255, 238, 170, ${(0.48 * moonBloomAlpha).toFixed(3)})`);
-        moonBloom.addColorStop(0.35, `rgba(240, 190, 124, ${(0.22 * moonBloomAlpha).toFixed(3)})`);
-        moonBloom.addColorStop(0.7, `rgba(240, 190, 124, ${(0.05 * moonBloomAlpha).toFixed(3)})`);
-        moonBloom.addColorStop(1, 'rgba(240, 190, 124, 0)');
-
-        ctx.fillStyle = moonBloom;
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, 34 * SCALE, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Yellowish Half-Moon
         ctx.save();
         ctx.globalAlpha = moonBloomAlpha;
+
+        // Pixel-stepped ambient halo (concentric integer pixel rings)
+        ctx.fillStyle = `rgba(240, 190, 124, ${(0.12 * moonBloomAlpha).toFixed(3)})`;
+        ctx.fillRect(mx - 8 * SCALE, my - 8 * SCALE, 26 * SCALE, 26 * SCALE);
+        ctx.fillStyle = `rgba(255, 238, 170, ${(0.2 * moonBloomAlpha).toFixed(3)})`;
+        ctx.fillRect(mx - 4 * SCALE, my - 4 * SCALE, 18 * SCALE, 18 * SCALE);
+
+        // 16-bit Handcrafted Pixel Crescent
+        // Outer dark/shadow rim
+        ctx.fillStyle = '#e89f30';
+        ctx.fillRect(mx + 4 * SCALE, my, 4 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 6 * SCALE, my + 2 * SCALE, 3 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 7 * SCALE, my + 4 * SCALE, 3 * SCALE, 6 * SCALE);
+        ctx.fillRect(mx + 6 * SCALE, my + 10 * SCALE, 3 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 4 * SCALE, my + 12 * SCALE, 4 * SCALE, 2 * SCALE);
+
+        // Main Golden Crescent body
         ctx.fillStyle = '#f0be7c';
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, moonRadius, -Math.PI / 2, Math.PI / 2, false);
-        ctx.closePath();
-        ctx.fill();
+        ctx.fillRect(mx + 3 * SCALE, my + 1 * SCALE, 4 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 5 * SCALE, my + 3 * SCALE, 4 * SCALE, 8 * SCALE);
+        ctx.fillRect(mx + 3 * SCALE, my + 11 * SCALE, 4 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 2 * SCALE, my + 3 * SCALE, 3 * SCALE, 8 * SCALE);
 
+        // Inner Bright Crescent highlight
         ctx.fillStyle = '#fff4d0';
-        ctx.beginPath();
-        ctx.arc(moonX - 1 * SCALE, moonY, moonRadius - 2.5 * SCALE, -Math.PI / 2, Math.PI / 2, false);
-        ctx.closePath();
-        ctx.fill();
+        ctx.fillRect(mx + 4 * SCALE, my + 2 * SCALE, 3 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 5 * SCALE, my + 4 * SCALE, 2 * SCALE, 6 * SCALE);
+        ctx.fillRect(mx + 4 * SCALE, my + 10 * SCALE, 3 * SCALE, 2 * SCALE);
 
+        // Pure white specular twinkle dots
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(moonX + 1.5 * SCALE, moonY - 5 * SCALE, 2.5 * SCALE, 3 * SCALE);
-        ctx.fillRect(moonX + 3.5 * SCALE, moonY - 1 * SCALE, 2.5 * SCALE, 2.5 * SCALE);
+        ctx.fillRect(mx + 5 * SCALE, my + 3 * SCALE, 2 * SCALE, 2 * SCALE);
+        ctx.fillRect(mx + 6 * SCALE, my + 6 * SCALE, 1.5 * SCALE, 2 * SCALE);
         ctx.restore();
       }
 
-      // B. RADIANT MORNING SUN (Rises from horizon as p->1 with warm rays)
+      // B. AUTHENTIC 16-BIT PIXEL ART MORNING SUN
       if (p > 0.02) {
         const sunAlpha = p;
-        const sunX = winX + 54 * SCALE;
-        const sunY = winY + (36 + (1 - p) * 75) * SCALE;
-        const sunRadius = 10 * SCALE;
+        const sx = Math.floor(winX + 54 * SCALE);
+        const sy = Math.floor(winY + (36 + (1 - p) * 75) * SCALE);
 
-        // Soft Warm Radial Sunbeam Bloom
-        const sunBloom = ctx.createRadialGradient(
-          sunX,
-          sunY,
-          3 * SCALE,
-          sunX,
-          sunY,
-          46 * SCALE
-        );
-        sunBloom.addColorStop(0, `rgba(255, 245, 175, ${(0.6 * sunAlpha).toFixed(3)})`);
-        sunBloom.addColorStop(0.3, `rgba(240, 190, 124, ${(0.3 * sunAlpha).toFixed(3)})`);
-        sunBloom.addColorStop(0.65, `rgba(240, 190, 124, ${(0.08 * sunAlpha).toFixed(3)})`);
-        sunBloom.addColorStop(1, 'rgba(240, 190, 124, 0)');
-
-        ctx.fillStyle = sunBloom;
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, 46 * SCALE, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 16-bit Golden Morning Sun Disk
         ctx.save();
         ctx.globalAlpha = sunAlpha;
 
+        // Stepped pixel warm halo
+        ctx.fillStyle = `rgba(240, 190, 124, ${(0.14 * sunAlpha).toFixed(3)})`;
+        ctx.fillRect(sx - 16 * SCALE, sy - 16 * SCALE, 32 * SCALE, 32 * SCALE);
+        ctx.fillStyle = `rgba(255, 245, 175, ${(0.24 * sunAlpha).toFixed(3)})`;
+        ctx.fillRect(sx - 11 * SCALE, sy - 11 * SCALE, 22 * SCALE, 22 * SCALE);
+
+        // Stepped Octagonal Sun Disk Outline (#e89f30)
         ctx.fillStyle = '#e89f30';
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, sunRadius + 2 * SCALE, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(sx - 4 * SCALE, sy - 9 * SCALE, 8 * SCALE, 18 * SCALE);
+        ctx.fillRect(sx - 7 * SCALE, sy - 7 * SCALE, 14 * SCALE, 14 * SCALE);
+        ctx.fillRect(sx - 9 * SCALE, sy - 4 * SCALE, 18 * SCALE, 8 * SCALE);
 
+        // Golden Sun Disk Core (#f0be7c)
         ctx.fillStyle = '#f0be7c';
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(sx - 3 * SCALE, sy - 7 * SCALE, 6 * SCALE, 14 * SCALE);
+        ctx.fillRect(sx - 5 * SCALE, sy - 5 * SCALE, 10 * SCALE, 10 * SCALE);
+        ctx.fillRect(sx - 7 * SCALE, sy - 3 * SCALE, 14 * SCALE, 6 * SCALE);
 
+        // Warm Cream Highlight Center (#fff9db)
         ctx.fillStyle = '#fff9db';
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, sunRadius - 3 * SCALE, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(sx - 2 * SCALE, sy - 4 * SCALE, 4 * SCALE, 8 * SCALE);
+        ctx.fillRect(sx - 4 * SCALE, sy - 2 * SCALE, 8 * SCALE, 4 * SCALE);
 
-        // Stepped Pixel Sun Rays
-        ctx.fillStyle = '#f0be7c';
-        ctx.fillRect(sunX - 1.5 * SCALE, sunY - 17 * SCALE, 3 * SCALE, 4 * SCALE); // N
-        ctx.fillRect(sunX - 1.5 * SCALE, sunY + 13 * SCALE, 3 * SCALE, 4 * SCALE); // S
-        ctx.fillRect(sunX - 17 * SCALE, sunY - 1.5 * SCALE, 4 * SCALE, 3 * SCALE); // W
-        ctx.fillRect(sunX + 13 * SCALE, sunY - 1.5 * SCALE, 4 * SCALE, 3 * SCALE); // E
-        ctx.fillRect(sunX + 9 * SCALE, sunY - 12 * SCALE, 3 * SCALE, 3 * SCALE); // NE
-        ctx.fillRect(sunX - 12 * SCALE, sunY - 12 * SCALE, 3 * SCALE, 3 * SCALE); // NW
-        ctx.fillRect(sunX + 9 * SCALE, sunY + 9 * SCALE, 3 * SCALE, 3 * SCALE); // SE
-        ctx.fillRect(sunX - 12 * SCALE, sunY + 9 * SCALE, 3 * SCALE, 3 * SCALE); // SW
-
+        // Pure White Glisten Dot
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(sunX - 3 * SCALE, sunY - 3 * SCALE, 3 * SCALE, 3 * SCALE);
-        ctx.fillRect(sunX - 1 * SCALE, sunY - 4 * SCALE, 2 * SCALE, 2 * SCALE);
+        ctx.fillRect(sx - 2 * SCALE, sy - 2 * SCALE, 3 * SCALE, 3 * SCALE);
+
+        // 8-Directional Crisp Stepped Pixel Sun Rays
+        ctx.fillStyle = '#f0be7c';
+        ctx.fillRect(sx - 1 * SCALE, sy - 15 * SCALE, 2 * SCALE, 4 * SCALE); // N
+        ctx.fillRect(sx - 1 * SCALE, sy + 11 * SCALE, 2 * SCALE, 4 * SCALE); // S
+        ctx.fillRect(sx - 15 * SCALE, sy - 1 * SCALE, 4 * SCALE, 2 * SCALE); // W
+        ctx.fillRect(sx + 11 * SCALE, sy - 1 * SCALE, 4 * SCALE, 2 * SCALE); // E
+        ctx.fillRect(sx + 8 * SCALE, sy - 10 * SCALE, 3 * SCALE, 3 * SCALE); // NE
+        ctx.fillRect(sx - 11 * SCALE, sy - 10 * SCALE, 3 * SCALE, 3 * SCALE); // NW
+        ctx.fillRect(sx + 8 * SCALE, sy + 7 * SCALE, 3 * SCALE, 3 * SCALE); // SE
+        ctx.fillRect(sx - 11 * SCALE, sy + 7 * SCALE, 3 * SCALE, 3 * SCALE); // SW
+
         ctx.restore();
       }
 
@@ -555,97 +526,133 @@ export const AtelierDeskScene: React.FC = () => {
       ctx.fillRect(winX, winY + winH / 2 - 1 * SCALE, winW, 2 * SCALE);
 
       // ==========================================
-      // COZY PURE PIXEL ART SLEEPING CAT ON WINDOWSILL
+      // ARCHITECTURAL WOODEN WINDOWSILL SHELF
       // ==========================================
-      const catX = winX + winW - 74 * SCALE;
-      const catY = winY + winH - 24 * SCALE;
+      const sillX = winX - 12 * SCALE;
+      const sillW = winW + 24 * SCALE;
+      const sillY = winY + winH - 2 * SCALE; // y = 189 logical
 
-      const breathY = reducedMotion ? 0 : Math.sin(t * 0.0022) * 1.8 * SCALE;
-      const tailAngle = reducedMotion ? 0 : Math.sin(t * 0.0018) * 0.16;
-      const isEarTwitch = !reducedMotion && Math.sin(t * 0.0008) > 0.93;
+      // Sill top highlight edge
+      ctx.fillStyle = lerpRGB(THEME_COLORS.shelfHigh, p);
+      ctx.fillRect(sillX, sillY, sillW, 2 * SCALE);
+
+      // Sill thick wooden stool body
+      ctx.fillStyle = lerpRGB(THEME_COLORS.shelfMid, p);
+      ctx.fillRect(sillX, sillY + 2 * SCALE, sillW, 6 * SCALE);
+
+      // Sill bottom shadow lip
+      ctx.fillStyle = lerpRGB(THEME_COLORS.shelfBase, p);
+      ctx.fillRect(sillX, sillY + 8 * SCALE, sillW, 3 * SCALE);
+
+      // Left & right decorative support brackets
+      ctx.fillRect(winX + 4 * SCALE, sillY + 11 * SCALE, 8 * SCALE, 6 * SCALE);
+      ctx.fillRect(winX + winW - 12 * SCALE, sillY + 11 * SCALE, 8 * SCALE, 6 * SCALE);
+
+      // ==========================================
+      // COZY 16-BIT HANDCRAFTED SLEEPING CAT ON SILL
+      // ==========================================
+      const catX = winX + winW - 68 * SCALE;
+      const catY = sillY - 18 * SCALE; // rests squarely on sillY
+
+      // Cat contact shadow on windowsill
+      ctx.fillStyle = 'rgba(18, 12, 28, 0.45)';
+      ctx.fillRect(catX - 2 * SCALE, sillY, 52 * SCALE, 2 * SCALE);
+
+      const breath = reducedMotion ? 0 : (Math.floor(t / 800) % 2 === 0 ? 0 : 1 * SCALE);
+      const earTwitch = !reducedMotion && ((Math.floor(t / 1400) % 5) === 0);
+      const tailFrame = reducedMotion ? 0 : (Math.floor(t / 700) % 2);
 
       const catOutline = lerpRGB(THEME_COLORS.catOutline, p);
       const catBodyFur = lerpRGB(THEME_COLORS.catBodyFur, p);
       const catMarkings = lerpRGB(THEME_COLORS.catMarkings, p);
       const catEarPink = lerpRGB(THEME_COLORS.catEarPink, p);
 
-      // Tail
-      const tailRootX = catX + 46 * SCALE;
-      const tailRootY = catY + 8 * SCALE;
-
-      ctx.save();
-      ctx.translate(tailRootX, tailRootY);
-      ctx.rotate(tailAngle);
+      // A. Curled Tail (stepped 2-frame pixel art)
+      const tx = catX + 42 * SCALE;
+      const ty = catY + 6 * SCALE - breath;
       ctx.fillStyle = catOutline;
-      ctx.fillRect(0, 0, 8 * SCALE, 6 * SCALE);
-      ctx.fillRect(3 * SCALE, 5 * SCALE, 6 * SCALE, 15 * SCALE);
-      ctx.fillRect(-3 * SCALE, 17 * SCALE, 8 * SCALE, 5 * SCALE);
-
-      ctx.fillStyle = '#c792df';
-      ctx.fillRect(1.5 * SCALE, 1.5 * SCALE, 5 * SCALE, 4 * SCALE);
-      ctx.fillRect(4.5 * SCALE, 5 * SCALE, 4 * SCALE, 13 * SCALE);
-      ctx.fillRect(-1.5 * SCALE, 18.5 * SCALE, 5 * SCALE, 3 * SCALE);
-      ctx.restore();
-
-      // Body Loaf
-      ctx.fillStyle = catOutline;
-      ctx.fillRect(catX + 13 * SCALE, catY + 1 * SCALE - breathY, 35 * SCALE, 18 * SCALE + breathY);
-      ctx.fillRect(catX + 46 * SCALE, catY + 4 * SCALE - breathY, 4 * SCALE, 12 * SCALE + breathY);
-
+      ctx.fillRect(tx, ty + 4 * SCALE, 8 * SCALE, 8 * SCALE);
+      ctx.fillRect(tx + 6 * SCALE, ty + (tailFrame === 0 ? 0 : 2 * SCALE), 6 * SCALE, 6 * SCALE);
       ctx.fillStyle = catBodyFur;
-      ctx.fillRect(catX + 14 * SCALE, catY + 2 * SCALE - breathY, 33 * SCALE, 16 * SCALE + breathY);
-      ctx.fillRect(catX + 46 * SCALE, catY + 5 * SCALE - breathY, 3 * SCALE, 10 * SCALE + breathY);
-
+      ctx.fillRect(tx + 2 * SCALE, ty + 6 * SCALE, 4 * SCALE, 4 * SCALE);
       ctx.fillStyle = catMarkings;
-      ctx.fillRect(catX + 22 * SCALE, catY + 2 * SCALE - breathY, 20 * SCALE, 9 * SCALE + breathY);
+      ctx.fillRect(tx + 8 * SCALE, ty + (tailFrame === 0 ? 2 * SCALE : 4 * SCALE), 3 * SCALE, 3 * SCALE);
 
+      // B. Body Loaf
+      // Body outline
+      ctx.fillStyle = catOutline;
+      ctx.fillRect(catX + 14 * SCALE, catY + 2 * SCALE - breath, 30 * SCALE, 16 * SCALE + breath);
+      ctx.fillRect(catX + 12 * SCALE, catY + 4 * SCALE - breath, 34 * SCALE, 12 * SCALE + breath);
+      // Body fur
+      ctx.fillStyle = catBodyFur;
+      ctx.fillRect(catX + 15 * SCALE, catY + 3 * SCALE - breath, 28 * SCALE, 14 * SCALE + breath);
+      ctx.fillRect(catX + 13 * SCALE, catY + 5 * SCALE - breath, 32 * SCALE, 10 * SCALE + breath);
+      // Back markings (soft lavender tabby stripe patches)
+      ctx.fillStyle = catMarkings;
+      ctx.fillRect(catX + 20 * SCALE, catY + 3 * SCALE - breath, 4 * SCALE, 8 * SCALE);
+      ctx.fillRect(catX + 28 * SCALE, catY + 3 * SCALE - breath, 4 * SCALE, 9 * SCALE);
+      ctx.fillRect(catX + 36 * SCALE, catY + 4 * SCALE - breath, 4 * SCALE, 7 * SCALE);
+
+      // Sunlight warm sheen across back during daytime
       if (p > 0.1) {
-        ctx.fillStyle = '#fff4d0';
-        ctx.fillRect(catX + 14 * SCALE, catY + 2 * SCALE - breathY, 33 * SCALE, 2 * SCALE);
+        ctx.fillStyle = '#fff9db';
+        ctx.fillRect(catX + 16 * SCALE, catY + 3 * SCALE - breath, 24 * SCALE, 2 * SCALE);
       }
 
-      // Head
+      // C. Sleeping Head & Face
+      const hx = catX;
+      const hy = catY + 1 * SCALE - breath;
+      // Head outline
       ctx.fillStyle = catOutline;
-      ctx.fillRect(catX - 2 * SCALE, catY - 2 * SCALE - breathY, 20 * SCALE, 19 * SCALE + breathY);
-
+      ctx.fillRect(hx + 2 * SCALE, hy + 2 * SCALE, 15 * SCALE, 15 * SCALE);
+      ctx.fillRect(hx, hy + 5 * SCALE, 18 * SCALE, 10 * SCALE);
+      // Head fur
       ctx.fillStyle = catBodyFur;
-      ctx.fillRect(catX, catY - breathY, 17 * SCALE, 16 * SCALE + breathY);
+      ctx.fillRect(hx + 3 * SCALE, hy + 3 * SCALE, 13 * SCALE, 13 * SCALE);
+      ctx.fillRect(hx + 1 * SCALE, hy + 6 * SCALE, 16 * SCALE, 8 * SCALE);
 
-      const earTwitchY = isEarTwitch ? -2 * SCALE : 0;
+      // Left Ear
+      const lTwitch = earTwitch ? -1 * SCALE : 0;
       ctx.fillStyle = catOutline;
-      ctx.fillRect(catX + 1 * SCALE, catY - 7 * SCALE - breathY + earTwitchY, 6 * SCALE, 7 * SCALE);
+      ctx.fillRect(hx + 2 * SCALE, hy - 4 * SCALE + lTwitch, 5 * SCALE, 6 * SCALE);
+      ctx.fillRect(hx + 3 * SCALE, hy - 6 * SCALE + lTwitch, 3 * SCALE, 3 * SCALE);
       ctx.fillStyle = catEarPink;
-      ctx.fillRect(catX + 2 * SCALE, catY - 5 * SCALE - breathY + earTwitchY, 3.5 * SCALE, 5 * SCALE);
+      ctx.fillRect(hx + 3 * SCALE, hy - 3 * SCALE + lTwitch, 3 * SCALE, 4 * SCALE);
 
+      // Right Ear
       ctx.fillStyle = catOutline;
-      ctx.fillRect(catX + 11 * SCALE, catY - 7 * SCALE - breathY, 6 * SCALE, 7 * SCALE);
+      ctx.fillRect(hx + 11 * SCALE, hy - 4 * SCALE, 5 * SCALE, 6 * SCALE);
+      ctx.fillRect(hx + 12 * SCALE, hy - 6 * SCALE, 3 * SCALE, 3 * SCALE);
       ctx.fillStyle = catEarPink;
-      ctx.fillRect(catX + 12 * SCALE, catY - 5 * SCALE - breathY, 3.5 * SCALE, 5 * SCALE);
+      ctx.fillRect(hx + 12 * SCALE, hy - 3 * SCALE, 3 * SCALE, 4 * SCALE);
 
-      // Eyelids (^ ^)
+      // Cute sleeping eyes (^ ^)
       ctx.fillStyle = '#3a2e4c';
-      ctx.fillRect(catX + 3 * SCALE, catY + 5 * SCALE - breathY, 4 * SCALE, 2 * SCALE);
-      ctx.fillRect(catX + 11 * SCALE, catY + 5 * SCALE - breathY, 4 * SCALE, 2 * SCALE);
+      // Left eye ^
+      ctx.fillRect(hx + 3 * SCALE, hy + 8 * SCALE, 1 * SCALE, 2 * SCALE);
+      ctx.fillRect(hx + 4 * SCALE, hy + 7 * SCALE, 2 * SCALE, 1 * SCALE);
+      ctx.fillRect(hx + 6 * SCALE, hy + 8 * SCALE, 1 * SCALE, 2 * SCALE);
+      // Right eye ^
+      ctx.fillRect(hx + 10 * SCALE, hy + 8 * SCALE, 1 * SCALE, 2 * SCALE);
+      ctx.fillRect(hx + 11 * SCALE, hy + 7 * SCALE, 2 * SCALE, 1 * SCALE);
+      ctx.fillRect(hx + 13 * SCALE, hy + 8 * SCALE, 1 * SCALE, 2 * SCALE);
 
-      // Button Nose
+      // Pink button nose
       ctx.fillStyle = '#dcabdf';
-      ctx.fillRect(catX + 7.5 * SCALE, catY + 8.5 * SCALE - breathY, 3 * SCALE, 2 * SCALE);
+      ctx.fillRect(hx + 8 * SCALE, hy + 10 * SCALE, 2 * SCALE, 1 * SCALE);
 
-      // Rosy Cheeks
-      ctx.fillStyle = 'rgba(220, 171, 223, 0.65)';
-      ctx.fillRect(catX + 2 * SCALE, catY + 8 * SCALE - breathY, 3 * SCALE, 2.5 * SCALE);
-      ctx.fillRect(catX + 13 * SCALE, catY + 8 * SCALE - breathY, 3 * SCALE, 2.5 * SCALE);
+      // Rosy blushing cheeks
+      ctx.fillStyle = 'rgba(220, 171, 223, 0.7)';
+      ctx.fillRect(hx + 2 * SCALE, hy + 10 * SCALE, 3 * SCALE, 2 * SCALE);
+      ctx.fillRect(hx + 13 * SCALE, hy + 10 * SCALE, 3 * SCALE, 2 * SCALE);
 
-      // Front Paws
+      // D. Tucked Paws
       ctx.fillStyle = catOutline;
-      ctx.fillRect(catX + 1.5 * SCALE, catY + 14 * SCALE, 6.5 * SCALE, 5.5 * SCALE);
+      ctx.fillRect(hx + 3 * SCALE, hy + 14 * SCALE, 6 * SCALE, 4 * SCALE);
+      ctx.fillRect(hx + 9 * SCALE, hy + 14 * SCALE, 6 * SCALE, 4 * SCALE);
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(catX + 2.5 * SCALE, catY + 15 * SCALE, 4.5 * SCALE, 3.5 * SCALE);
-
-      ctx.fillStyle = catOutline;
-      ctx.fillRect(catX + 9 * SCALE, catY + 14 * SCALE, 6.5 * SCALE, 5.5 * SCALE);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(catX + 10 * SCALE, catY + 15 * SCALE, 4.5 * SCALE, 3.5 * SCALE);
+      ctx.fillRect(hx + 4 * SCALE, hy + 15 * SCALE, 4 * SCALE, 2 * SCALE);
+      ctx.fillRect(hx + 10 * SCALE, hy + 15 * SCALE, 4 * SCALE, 2 * SCALE);
 
       // Cat Heart / Purr Particles
       if (!reducedMotion) {
@@ -828,94 +835,63 @@ export const AtelierDeskScene: React.FC = () => {
       }
 
       // ==========================================
-      // 6. COMPACT RETRO BOOMBOX RADIO
+      // 6. COZY CERAMIC BRUSH JAR & DESK ESSENTIALS
       // ==========================================
-      const radX = 402 * SCALE;
-      const radY = 240 * SCALE;
-      const radW = 90 * SCALE;
-      const radH = 68 * SCALE;
+      const jarX = 422 * SCALE;
+      const jarY = 246 * SCALE;
 
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioBase, p);
-      ctx.fillRect(radX - 2 * SCALE, radY - 2 * SCALE, radW + 4 * SCALE, radH + 4 * SCALE);
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioMid, p);
-      ctx.fillRect(radX, radY, radW, radH);
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioHigh, p);
-      ctx.fillRect(radX, radY, radW, 3 * SCALE);
+      // Cast shadow under jar
+      ctx.fillStyle = 'rgba(18, 12, 28, 0.3)';
+      ctx.fillRect(jarX - 2 * SCALE, jarY + 44 * SCALE, 34 * SCALE, 4 * SCALE);
 
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioBase, p);
-      ctx.fillRect(radX + 16 * SCALE, radY - 10 * SCALE, radW - 32 * SCALE, 6 * SCALE);
-      ctx.fillRect(radX + 16 * SCALE, radY - 10 * SCALE, 6 * SCALE, 10 * SCALE);
-      ctx.fillRect(radX + radW - 22 * SCALE, radY - 10 * SCALE, 6 * SCALE, 10 * SCALE);
-      ctx.fillStyle = '#c792df';
-      ctx.fillRect(radX + 18 * SCALE, radY - 8 * SCALE, radW - 36 * SCALE, 3 * SCALE);
-
-      ctx.fillStyle = '#dddfdf';
-      ctx.fillRect(radX + radW - 12 * SCALE, radY - 38 * SCALE, 2 * SCALE, 38 * SCALE);
-      ctx.fillRect(radX + radW - 14 * SCALE, radY - 41 * SCALE, 6 * SCALE, 3 * SCALE);
-
+      // Pencils & Styluses sticking out of jar
+      // Purple pencil
+      ctx.fillStyle = '#664482';
+      ctx.fillRect(jarX + 6 * SCALE, jarY - 14 * SCALE, 4 * SCALE, 20 * SCALE);
+      ctx.fillStyle = '#f0be7c';
+      ctx.fillRect(jarX + 6 * SCALE, jarY - 18 * SCALE, 4 * SCALE, 4 * SCALE);
       ctx.fillStyle = '#1e1730';
-      ctx.fillRect(radX + 8 * SCALE, radY + 8 * SCALE, radW - 16 * SCALE, 18 * SCALE);
-      ctx.fillStyle = radioState.isPlaying ? '#f0be7c' : '#a89bb8';
-      ctx.font = `bold ${6.5 * SCALE}px monospace`;
-      ctx.fillText(radioState.isPlaying ? '♫ PLAYING' : 'RADIO [CLICK]', radX + 12 * SCALE, radY + 16 * SCALE);
+      ctx.fillRect(jarX + 7 * SCALE, jarY - 21 * SCALE, 2 * SCALE, 3 * SCALE);
+
+      // Plum stylus
       ctx.fillStyle = '#dcabdf';
-      ctx.font = `${6 * SCALE}px monospace`;
-      ctx.fillText(radioState.trackTitle, radX + 12 * SCALE, radY + 23 * SCALE);
+      ctx.fillRect(jarX + 14 * SCALE, jarY - 20 * SCALE, 4 * SCALE, 26 * SCALE);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(jarX + 14 * SCALE, jarY - 24 * SCALE, 4 * SCALE, 4 * SCALE);
 
-      const deckX = radX + 8 * SCALE;
-      const deckY = radY + 28 * SCALE;
-      const deckW = radW - 16 * SCALE;
-      const deckH = 22 * SCALE;
-
-      ctx.fillStyle = '#1e1730';
-      ctx.fillRect(deckX, deckY, deckW, deckH);
-      ctx.fillStyle = '#261c36';
-      ctx.fillRect(deckX + 1.5 * SCALE, deckY + 1.5 * SCALE, deckW - 3 * SCALE, deckH - 3 * SCALE);
-
+      // Gold stylus
+      ctx.fillStyle = '#f0be7c';
+      ctx.fillRect(jarX + 22 * SCALE, jarY - 10 * SCALE, 4 * SCALE, 16 * SCALE);
       ctx.fillStyle = '#3a2e4c';
-      ctx.fillRect(deckX + 4 * SCALE, deckY + 3 * SCALE, deckW - 8 * SCALE, deckH - 6 * SCALE);
+      ctx.fillRect(jarX + 22 * SCALE, jarY - 14 * SCALE, 4 * SCALE, 4 * SCALE);
+
+      // Ceramic Jar body
+      ctx.fillStyle = lerpRGB(THEME_COLORS.deskBase, p);
+      ctx.fillRect(jarX - 2 * SCALE, jarY, 34 * SCALE, 46 * SCALE);
+      ctx.fillStyle = '#faf4ec';
+      ctx.fillRect(jarX, jarY + 2 * SCALE, 30 * SCALE, 42 * SCALE);
+      // Glaze rim highlight
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(jarX + 2 * SCALE, jarY + 4 * SCALE, 26 * SCALE, 4 * SCALE);
+      // Cozy glaze color bands (Wisteria & Plum stripes)
       ctx.fillStyle = '#c792df';
-      ctx.fillRect(deckX + 8 * SCALE, deckY + 5 * SCALE, deckW - 16 * SCALE, 10 * SCALE);
+      ctx.fillRect(jarX + 2 * SCALE, jarY + 18 * SCALE, 26 * SCALE, 6 * SCALE);
+      ctx.fillStyle = '#dcabdf';
+      ctx.fillRect(jarX + 2 * SCALE, jarY + 28 * SCALE, 26 * SCALE, 4 * SCALE);
+      // Soft ambient shadow on cylinder flank
+      ctx.fillStyle = 'rgba(58, 46, 76, 0.12)';
+      ctx.fillRect(jarX + 20 * SCALE, jarY + 2 * SCALE, 10 * SCALE, 42 * SCALE);
 
-      const reelAngle = radioState.isPlaying && !reducedMotion ? (t * 0.005) : 0;
-      const drawMiniReel = (cx: number, cy: number) => {
-        const r = 4 * SCALE;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#1e1730';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 1.5 * SCALE, 0, Math.PI * 2);
-        ctx.fill();
+      // Little pink pixel eraser beside the jar
+      const erX = 466 * SCALE;
+      const erY = 282 * SCALE;
+      ctx.fillStyle = lerpRGB(THEME_COLORS.deskBase, p);
+      ctx.fillRect(erX - 1 * SCALE, erY - 1 * SCALE, 16 * SCALE, 10 * SCALE);
+      ctx.fillStyle = '#dcabdf';
+      ctx.fillRect(erX, erY, 14 * SCALE, 8 * SCALE);
+      ctx.fillStyle = '#ede8f4';
+      ctx.fillRect(erX + 7 * SCALE, erY, 7 * SCALE, 8 * SCALE);
 
-        ctx.strokeStyle = '#3a2e4c';
-        ctx.lineWidth = 1 * SCALE;
-        for (let a = 0; a < 3; a++) {
-          const ang = reelAngle + (a * Math.PI * 2) / 3;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r);
-          ctx.stroke();
-        }
-      };
-
-      drawMiniReel(deckX + 18 * SCALE, deckY + 10 * SCALE);
-      drawMiniReel(deckX + deckW - 18 * SCALE, deckY + 10 * SCALE);
-
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioBase, p);
-      ctx.fillRect(radX + 10 * SCALE, radY + 53 * SCALE, 8 * SCALE, 8 * SCALE);
-      ctx.fillRect(radX + 22 * SCALE, radY + 53 * SCALE, 8 * SCALE, 8 * SCALE);
-      ctx.fillStyle = '#c792df';
-      ctx.fillRect(radX + 11 * SCALE, radY + 54 * SCALE, 6 * SCALE, 6 * SCALE);
-      ctx.fillRect(radX + 23 * SCALE, radY + 54 * SCALE, 6 * SCALE, 6 * SCALE);
-
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioBase, p);
-      ctx.fillRect(radX + 36 * SCALE, radY + 53 * SCALE, 46 * SCALE, 10 * SCALE);
-      ctx.fillStyle = lerpRGB(THEME_COLORS.radioHigh, p);
-      for (let sx = 0; sx < 5; sx++) {
-        ctx.fillRect((radX + 40 + sx * 7) * SCALE, (radY + 55) * SCALE, 3.5 * SCALE, 6 * SCALE);
-      }
 
       // ==========================================
       // 7. IPAD PRO WITH FOLIO KICKSTAND ON THE TABLE
@@ -1247,7 +1223,7 @@ export const AtelierDeskScene: React.FC = () => {
       observer.disconnect();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [lampLit, selectedColor, radioState.isPlaying, radioState.trackTitle]);
+  }, [lampLit, selectedColor]);
 
   // Pointer interactions
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -1277,11 +1253,6 @@ export const AtelierDeskScene: React.FC = () => {
 
     if (clickX >= 30 && clickX <= 145 && clickY >= 95 && clickY <= 265) {
       setLampLit((prev) => !prev);
-      return;
-    }
-
-    if (clickX >= 395 && clickX <= 500 && clickY >= 230 && clickY <= 315) {
-      lofiRadio.toggle();
       return;
     }
 
@@ -1334,8 +1305,6 @@ export const AtelierDeskScene: React.FC = () => {
       setHoverTarget('cat');
     } else if (clickX >= 30 && clickX <= 145 && clickY >= 95 && clickY <= 265) {
       setHoverTarget('lamp');
-    } else if (clickX >= 395 && clickX <= 500 && clickY >= 230 && clickY <= 315) {
-      setHoverTarget('radio');
     } else if (clickX >= 146 && clickX <= 362 && clickY >= 202 && clickY <= 348) {
       setHoverTarget('tablet');
     } else {
@@ -1391,7 +1360,7 @@ export const AtelierDeskScene: React.FC = () => {
           <canvas
             ref={canvasRef}
             className={`block w-full h-auto pixelated touch-none ${
-              hoverTarget === 'cat' || hoverTarget === 'lamp' || hoverTarget === 'radio'
+              hoverTarget === 'cat' || hoverTarget === 'lamp'
                 ? 'cursor-pointer'
                 : hoverTarget === 'tablet'
                 ? 'cursor-crosshair'
@@ -1402,30 +1371,25 @@ export const AtelierDeskScene: React.FC = () => {
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
             role="img"
-            aria-label="Interactive cozy pixel art desk with animated light and dark atmosphere: toggle the lamp, listen to lo-fi radio, pet the cat, and draw on the tablet"
+            aria-label="Interactive cozy pixel art desk: toggle the lamp, pet the cat, and draw on the sketchpad"
           />
         </div>
       </BorderGlow>
 
-      <div className="mt-3.5 flex items-center justify-between w-full px-2 text-xs font-mono text-[var(--text-body)]">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-none bg-[var(--accent-plum)] inline-block" />
-          <span>The lamp is on. The radio is playing.</span>
+      <div className="mt-3.5 flex items-center justify-between w-full px-2 text-xs font-mono text-[var(--text-muted)]">
+        <span className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-[var(--accent-gold)] inline-block" />
+          <span>{lampLit ? 'warm lamp glow' : 'soft twilight'} · tap desk lamp to toggle</span>
         </span>
         <span className="hidden sm:flex items-center gap-3 text-[11px] text-[var(--accent-gold)]">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <IconHintLamp size={11} />
             <span>Lamp</span>
           </span>
           <span>•</span>
-          <span className="flex items-center gap-1">
-            <IconHintRadio size={11} />
-            <span>Radio</span>
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <IconHintPen size={11} />
-            <span>Draw</span>
+            <span>Sketchpad</span>
           </span>
         </span>
       </div>

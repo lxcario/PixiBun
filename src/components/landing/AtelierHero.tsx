@@ -80,7 +80,7 @@ export const AtelierHero: React.FC = () => {
               className="mt-6 text-base sm:text-lg leading-relaxed text-[var(--text-body)] max-w-lg font-sans"
             >
               Photometric cel-shading, RotSprite geometry, frame-by-frame animation, and native Godot 4 &amp; Unity exports.
-              Put on the radio and draw.
+              An honest, quiet desk in your browser.
             </motion.p>
 
             {/* Honest Feature Pills (Static Non-Clickable Tags) */}
@@ -101,10 +101,6 @@ export const AtelierHero: React.FC = () => {
               <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
                 <span className="text-[var(--accent-gold)]">✦</span>
                 <span>GODOT 4 &amp; UNITY EXPORTS</span>
-              </span>
-              <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
-                <span className="text-[var(--accent-gold)]">✦</span>
-                <span>LO-FI RADIO</span>
               </span>
             </motion.div>
 
