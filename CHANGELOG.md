@@ -2,6 +2,13 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.10.2] - 2026-09-07
+### Cel-Shading Shadow Terminator Math Fix (Phase 43b)
+- **Fixed flat/invisible cel-shading on character sprites (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Root cause: the discrete OKLCH cel-shading branch mixed an ambient signal (`ambSignal ≈ 1.27`) into the `lightLevel` formula and applied a double brightness multiplication, making `lightLevel ≥ 1.0` for ALL pixels — mathematically impossible to drop below `shadowThresh = 0.58`.
+  - Fix: shadow placement is now driven purely by the directional diffuse signal (`diffSignal = wrapNdotL × effectiveFalloff`), with threshold `0.55`. The ambient contribution no longer factors into shadow termination — it fills all surfaces equally and must not overwhelm the directional terminator.
+  - Result: character sprites now show crisp anatomical cel-shadows on the unlit side (ears, chin, snout, limb backsides, body bottom), with ~40–50% surface coverage in shadow for typical side-lit compositions.
+
 ## [v1.10.1] - 2026-09-07
 ### Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty (Phase 43)
 - **Deep 8-Connected Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`)**:

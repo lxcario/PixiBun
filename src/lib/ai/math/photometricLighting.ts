@@ -586,30 +586,36 @@ export function executePhotometricPipeline(
       if (formType === 'character' && paletteOKLab.length === 0) {
         // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for character anatomy.
         // Preserves hand-drawn pixel art palette purity instead of generating muddy 24-bit float gradients.
+        //
+        // Shadow placement is driven PURELY by the directional diffuse signal (wrapNdotL).
+        // The ambient contribution must NOT factor into shadow threshold decisions — it fills all
+        // surfaces equally and would overwhelm the directional terminator (ambSignal ≈ 1.27 makes
+        // lightLevel > shadowThresh everywhere, producing a visually flat result with zero shadow).
         const diffSignal = wrapNdotL * effectiveFalloff;
-        const ambSignal = (effectiveAmbient / 0.48) * ao;
-        const lightLevel = (diffSignal * 0.75 + ambSignal * 0.25) * brightness;
 
         const byteR = data[pIdx];
         const byteG = data[pIdx + 1];
         const byteB = data[pIdx + 2];
         const ramp = getCelRamp(byteR, byteG, byteB);
 
-        // Form-calibrated cel shadow terminator threshold:
-        // - Character: 0.58 (crisp anatomical sculpting under ears, chin, snout)
-        // - Orb / Prop: 0.42 (reserves 55%-60% of visible surface for artist's base tone, with a clean crescent shadow)
-        let shadowThresh = formType === 'character' ? 0.58 : 0.42;
+        // Directional cel shadow terminator threshold:
+        // diffSignal ranges from 0 (surface facing away from light) to ~1 (surface facing light).
+        // Threshold of 0.55 places ~40-50% of visible surface in shadow for typical side-lit sprites,
+        // giving crisp anatomical sculpting under ears, chin, snout, and limb backsides.
+        let shadowThresh = 0.55;
         if (params.ditherModulation > 0) {
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
         }
 
-        // Cavity AO crevice threshold:
-        // Orbs are convex domes with ao ~ 1.0; only deep actual seams (ao < 0.40) trigger deep crevice darkening.
-        const creviceAOThresh = formType === 'character' ? 0.60 : 0.40;
+        // Cavity AO crevice threshold: deep concave seams (ao < 0.60) trigger the darkest tone
+        const creviceAOThresh = 0.60;
 
         // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
         const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
+
+        // Highlight uses the full directional signal amplified by brightness
+        const highlightLevel = diffSignal * brightness;
 
         if (ao < creviceAOThresh) {
           // DEEP CREVICE TONE (ambient occlusion in concave seams, under-chin, inner folds)
@@ -617,13 +623,13 @@ export function executePhotometricPipeline(
           outData[pIdx + 1] = ramp.deepG;
           outData[pIdx + 2] = ramp.deepB;
           outData[pIdx + 3] = data[pIdx + 3];
-        } else if (lightLevel < shadowThresh) {
+        } else if (diffSignal < shadowThresh) {
           // UNIFIED SHADOW TONE (single crisp shadow value across entire unlit side)
           outData[pIdx] = ramp.shadowR;
           outData[pIdx + 1] = ramp.shadowG;
           outData[pIdx + 2] = ramp.shadowB;
           outData[pIdx + 3] = data[pIdx + 3];
-        } else if (lightLevel > 1.10 && isShinyMaterial) {
+        } else if (highlightLevel > 1.10 && isShinyMaterial) {
           // HIGHLIGHT TONE (only for non-matte / shiny surfaces)
           outData[pIdx] = ramp.hiR;
           outData[pIdx + 1] = ramp.hiG;
