@@ -250,7 +250,7 @@ export const EngineExportShowcase: React.FC = () => {
                 onClick={handleCopy}
                 className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
               >
-                {copied ? '✔ Copied! ✦' : 'Copy Code'}
+                {copied ? 'Copied' : 'Copy Code'}
               </button>
               <button
                 onClick={handleDownloadSample}

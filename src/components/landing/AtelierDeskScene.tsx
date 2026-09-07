@@ -1428,7 +1428,9 @@ export const AtelierDeskScene: React.FC = () => {
             className="flex items-center gap-1 px-2 py-0.5 rounded-[1px] bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[var(--accent-plum)] text-[var(--text-muted)] hover:text-[var(--accent-plum)] text-[11px] font-mono transition-all active:translate-y-[1px] cursor-pointer"
             title="Click to pet the sleeping bun"
           >
-            <span>🐾</span>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="text-[var(--accent-plum)]">
+              <path d="M4 2h3v2H4V2zm5 0h3v2H9V2zM2 4h7v2H2V4zm7 0h5v2H9V4zM1 6h14v3H1V6zm1 3h14v2H2V9zm2 2h12v2H4v-2zm3 2h6v2H7v-2zm2 2h2v1H9v-1z" />
+            </svg>
             <span>Pet Bun</span>
           </button>
 

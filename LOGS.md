@@ -1075,4 +1075,30 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx vitest run`: 414/414 tests passed across 64 suites (0 warnings)
 - `npx playwright test`: 18/18 tests passed across 6 spec files (100% passing)
 - `npm run verify:docs`: all documentation integrity checks passed
+**Commit:** `b1f1d5b` → `origin/main`
+**Status:** Complete
+
+---
+
+## 2026-09-07 — Phase 45: Landing Page Anti-Slop Remediation & Silky-Smooth Animations (v1.10.4)
+
+**Problem Statement:**
+1. Tab switching flash: `AtelierEngineShowcase.tsx` previously used `next/dynamic` with `ShowcaseSkeleton`. When clicking a tab, the active panel unmounted, showed a dark screen with a spinning loader, and recompiled the chunk.
+2. Navigation jitter: `LandingNav.tsx` prepended an inline `<motion.span layoutId="activeNavSpark">✦</motion.span>` directly inside the link flex container, shifting link text horizontally by ~14px on focus. The scroll progress bar was unanchored at the base.
+3. Emojis and awkward copy: `WHAT WE HAS: DEEP GRAPHICS ENGINE` was grammatically broken. Residual emojis (`💡`, `✔ ✦`, `🐾`, `🐰`, `🎨`) persisted on showcase tabs, desk scene, and error boundaries.
+
+**Engineering Execution:**
+- **Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`)**: Replaced all dynamic lazy imports with direct static imports (`PhotometricShowcase`, `RotSpriteShowcase`, `PixelizeShowcase`, `EngineExportShowcase`), making tab switching 100% instant (0ms latency).
+- **Framer Motion `layoutId` Spring Pill Selector (`src/components/landing/AtelierEngineShowcase.tsx`)**: Added smooth spring pill highlight (`stiffness: 440, damping: 32`) and cross-fade panel animation (`mode="wait"`, cubic bezier `[0.16, 1, 0.3, 1]`).
+- **Jitter-Free Navigation (`src/components/landing/LandingNav.tsx`)**: Replaced the inline layout-shifting spark with an absolute bottom underline indicator (`layoutId="activeNavIndicator"`), and wrapped the scroll progress bar in a dedicated background track.
+- **Emoji Purge & Copy Polish**: Replaced tabs and action emojis with 16x16 pixel SVG icons, upgraded error boundaries to `<BunMascot size={28} />`, and replaced the badge with `"INTERACTIVE GRAPHICS BENCHMARK"`.
+- **Harness & Verification (`tests/components/AtelierEngineShowcase.test.tsx`)**: Updated test assertions for button copy; verified 8/8 tests pass.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run tests/components/AtelierEngineShowcase.test.tsx`: 8/8 passed
+- `npx vitest run`: 414/414 passed across 64 suites
+- `npx playwright test tests/e2e/landing.spec.ts`: 2/2 passed
+- `npm run verify:docs`: all integrity checks passed
 **Status:** Complete

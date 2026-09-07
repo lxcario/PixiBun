@@ -356,8 +356,10 @@ export const PhotometricShowcase: React.FC = () => {
             >
               {/* Pulsing Light Aura */}
               <div className="absolute inset-0 rounded-full bg-[var(--accent-gold)]/25 animate-ping" />
-              <div className="relative w-7 h-7 rounded-[2px] bg-[#241a33] border-2 border-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.6)] flex items-center justify-center text-sm select-none">
-                💡
+              <div className="relative w-7 h-7 rounded-[2px] bg-[#241a33] border-2 border-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.6)] flex items-center justify-center select-none">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className="text-[var(--accent-gold)]" aria-hidden="true">
+                  <path d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z" />
+                </svg>
               </div>
             </div>
           </div>
@@ -481,7 +483,7 @@ export const PhotometricShowcase: React.FC = () => {
                       : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
                   }`}
                 >
-                  {mode === 'cast' ? '✦ Cast Ray' : mode === 'drop' ? '● Drop AO' : '✕ None'}
+                  {mode === 'cast' ? 'Cast Ray' : mode === 'drop' ? 'Drop AO' : 'None'}
                 </button>
               ))}
             </div>

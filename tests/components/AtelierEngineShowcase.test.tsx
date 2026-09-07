@@ -29,6 +29,7 @@ vi.mock('motion/react', () => {
                 onAnimationComplete: _onAnimationComplete,
                 viewport: _viewport,
                 whileInView: _whileInView,
+                layoutId: _layoutId,
                 ...rest
               } = props;
               return React.createElement(prop, { ...rest, ref });
@@ -381,7 +382,7 @@ describe('AtelierEngineShowcase Component', () => {
     });
 
     expect(writeTextSpy).toHaveBeenCalled();
-    expect(screen.getByText(/✔ Copied!/i)).toBeDefined();
+    expect(screen.getByText(/Copied/i)).toBeDefined();
   });
 });
 

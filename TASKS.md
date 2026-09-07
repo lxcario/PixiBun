@@ -1,5 +1,28 @@
 # Build Plan — PixiBun
 
+## Phase 45 — Landing Page Anti-Slop Remediation & Silky-Smooth Animations
+**Goal:** Eliminate tab switching latency, repair landing navigation layout shifts, remove awkward badge copywriting, and purge residual emojis across public landing and error pages.
+
+**Evidence & Rationale:**
+- Tab Switching Flash: `AtelierEngineShowcase.tsx` dynamically imported showcase panels via `next/dynamic` with `ShowcaseSkeleton`, resulting in a jarring loading flicker and unmount delay on tab click.
+- Layout Shift on Navigation: `LandingNav.tsx` injected an inline `✦` spark element within active navigation links, shifting text horizontally by ~14px on focus. The scroll progress bar was also unanchored without a background track.
+- AI Slop & Emojis: Residual emojis (`💡`, `✔ ✦`, `🐾`, `🐰`, `🎨`) and ungrammatical badge text (`WHAT WE HAS: DEEP GRAPHICS ENGINE`) detracted from the artisan aesthetic.
+
+**Deliverables:**
+- [x] Zero-Lag Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`): Direct imports for all 4 showcase panels with Framer Motion `layoutId` spring pill selector and cross-fade animations.
+- [x] Jitter-Free Navigation (`src/components/landing/LandingNav.tsx`): Absolute bottom underline indicator with spring physics and dedicated background track for the scroll progress indicator.
+- [x] Complete Emoji Purge & Copy Polish: Replaced residual emojis with custom 16x16 pixel SVG icons across showcase tabs, light bulb gizmo, copy buttons, pet cat/bun actions, and error boundaries (`src/app/error.tsx`, `src/app/studio/error.tsx`, `src/app/global-error.tsx`).
+- [x] Verified Test Suite (`tests/components/AtelierEngineShowcase.test.tsx`): 8/8 tests pass with updated clipboard copy assertions.
+
+**Acceptance criteria:**
+- Tab switching has 0ms perceived lag with zero loading skeletons.
+- Navigation links maintain stable horizontal positioning during scroll.
+- All unit, integration, and E2E landing tests pass with 0 errors.
+
+**Status:** Complete (2026-09-07)
+
+---
+
 ## Phase 44 — Zero-Slop Hardening, Accessibility & Documentation Parity
 **Goal:** Eliminate residual AI slop, complete WCAG 2.2 AA accessibility coverage on auxiliary range inputs, purge all remaining Unicode emojis from studio UI, and align documentation metrics with physical code realities.
 

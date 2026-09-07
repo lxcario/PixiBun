@@ -110,20 +110,18 @@ export const LandingNav: React.FC = () => {
               <a
                 key={link.href}
                 href={link.href}
-                className={`relative text-xs font-mono font-bold tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px] flex items-center gap-1.5 ${
+                className={`relative px-2 py-1 text-xs font-mono font-bold tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px] flex items-center justify-center ${
                   isActive ? 'text-[var(--accent-gold)]' : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                 }`}
               >
-                {isActive && (
-                  <motion.span
-                    layoutId="activeNavSpark"
-                    className="text-[10px] text-[var(--accent-gold)]"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  >
-                    ✦
-                  </motion.span>
-                )}
                 <span>{link.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavIndicator"
+                    className="absolute -bottom-1 left-1.5 right-1.5 h-[2px] bg-[var(--accent-gold)] rounded-full shadow-[0_0_8px_rgba(240,190,124,0.6)]"
+                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  />
+                )}
               </a>
             );
           })}
@@ -144,10 +142,12 @@ export const LandingNav: React.FC = () => {
       </div>
 
       {/* Retro Phosphor Scroll Progress Bar */}
-      <motion.div
-        style={{ scaleX, transformOrigin: '0%' }}
-        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#f0be7c] via-[#dcabdf] to-[#c792df] shadow-[0_0_6px_rgba(240,190,124,0.6)] z-50 pointer-events-none"
-      />
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--desk-border)]/40 overflow-hidden pointer-events-none z-50">
+        <motion.div
+          style={{ scaleX, transformOrigin: '0%' }}
+          className="h-full w-full bg-gradient-to-r from-[#f0be7c] via-[#dcabdf] to-[#c792df] shadow-[0_0_6px_rgba(240,190,124,0.6)]"
+        />
+      </div>
 
       {/* Hanging Pixel Vines attached directly beneath the sticky top bar */}
       <PixelVines />

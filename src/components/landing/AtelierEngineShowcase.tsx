@@ -7,38 +7,39 @@ import { CardGoldenChains } from './CardGoldenChains';
 import { ShinyText } from '@/components/reactbits/ShinyText';
 import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 
-import dynamic from 'next/dynamic';
+import { PhotometricShowcase } from './showcase/PhotometricShowcase';
+import { RotSpriteShowcase } from './showcase/RotSpriteShowcase';
+import { PixelizeShowcase } from './showcase/PixelizeShowcase';
+import { EngineExportShowcase } from './showcase/EngineExportShowcase';
 
-const ShowcaseSkeleton: React.FC = () => (
-  <div className="w-full h-80 flex flex-col items-center justify-center gap-3 p-8">
-    <div className="w-6 h-6 border-2 border-[var(--accent-gold)] border-t-transparent rounded-full animate-spin" />
-    <span className="font-mono text-xs text-[var(--text-muted)] animate-pulse">
-      Assembling atelier laboratory...
-    </span>
-  </div>
+const IconLighting: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z" />
+  </svg>
 );
 
-const PhotometricShowcase = dynamic(
-  () => import('./showcase/PhotometricShowcase').then((m) => m.PhotometricShowcase),
-  { ssr: false, loading: () => <ShowcaseSkeleton /> }
+const IconRotate: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M6 1v2H3v3h2v2H1V3h2V1h3zm4 14v-2h3v-3h-2V8h4v5h-2v2h-3zm3-10h-2V3h-2V1h2v2h2v2zM3 11h2v2h2v2H5v-2H3v-2z" />
+  </svg>
 );
-const RotSpriteShowcase = dynamic(
-  () => import('./showcase/RotSpriteShowcase').then((m) => m.RotSpriteShowcase),
-  { ssr: false, loading: () => <ShowcaseSkeleton /> }
+
+const IconSynthesis: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M2 2h4v4H2V2zm8 0h4v4h-4V2zM2 10h4v4H2v-4zm8 0h4v4h-4v-4zm-2-4h2v2H8V6zm-2 2h2v2H6V8zm4 0h2v2h-2V8zm-2 2h2v2H8v-2z" />
+  </svg>
 );
-const PixelizeShowcase = dynamic(
-  () => import('./showcase/PixelizeShowcase').then((m) => m.PixelizeShowcase),
-  { ssr: false, loading: () => <ShowcaseSkeleton /> }
-);
-const EngineExportShowcase = dynamic(
-  () => import('./showcase/EngineExportShowcase').then((m) => m.EngineExportShowcase),
-  { ssr: false, loading: () => <ShowcaseSkeleton /> }
+
+const IconExport: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M2 4h12v8H2V4zm2 2v4h8V6H4zm1 1h2v1H5V7zm0 1h1v1H5V8zm4-1h2v2H9V7z" />
+  </svg>
 );
 
 interface ShowcaseTab {
   id: string;
   number: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   badge: string;
 }
@@ -47,28 +48,28 @@ const SHOWCASE_TABS: ShowcaseTab[] = [
   {
     id: 'photometric',
     number: '01',
-    icon: '💡',
+    icon: IconLighting,
     title: '2.5D Lighting & Shadows',
     badge: 'Blinn-Phong & Cast Ray',
   },
   {
     id: 'rotsprite',
     number: '02',
-    icon: '🔄',
+    icon: IconRotate,
     title: 'RotSprite Precision',
     badge: 'Xenowhirl 8x Subpixel',
   },
   {
     id: 'pixelize',
     number: '03',
-    icon: '✨',
+    icon: IconSynthesis,
     title: 'Image Synthesis',
     badge: 'Sobel & OKLab Clustering',
   },
   {
     id: 'export',
     number: '04',
-    icon: '🎮',
+    icon: IconExport,
     title: 'Game Engine Exports',
     badge: 'Godot 4, Unity & Phaser 3',
   },
@@ -116,7 +117,7 @@ export const AtelierEngineShowcase: React.FC = () => {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-4 shadow-sm">
               <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
-              <ShinyText text="WHAT WE HAS: DEEP GRAPHICS ENGINE" speed={2.6} />
+              <ShinyText text="INTERACTIVE GRAPHICS BENCHMARK" speed={2.6} />
               <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
             </div>
 
@@ -132,16 +133,17 @@ export const AtelierEngineShowcase: React.FC = () => {
           </div>
         </CozyScrollReveal>
 
-        {/* 8-Tab Selector Bar */}
+        {/* 4-Tab Smooth Animated Selector Bar */}
         <CozyScrollReveal variant="fade-up" delayMs={60}>
           <div className="w-full overflow-x-auto pb-3 mb-8 scrollbar-thin">
             <div
-              className="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm"
+              className="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm relative"
               role="tablist"
               aria-label="Atelier Engine Features"
             >
               {SHOWCASE_TABS.map((tab) => {
                 const isActive = tab.id === activeTabId;
+                const TabIcon = tab.icon;
                 return (
                   <button
                     key={tab.id}
@@ -150,16 +152,25 @@ export const AtelierEngineShowcase: React.FC = () => {
                     aria-selected={isActive}
                     aria-controls={`panel-${tab.id}`}
                     onClick={() => setActiveTabId(tab.id)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-[2px] font-mono text-xs transition-all select-none ${
+                    className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] ${
                       isActive
-                        ? 'bg-[var(--accent-gold)] text-[#140d1f] font-bold shadow-md scale-[1.02]'
-                        : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]'
+                        ? 'text-[#140d1f] font-bold'
+                        : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60'
                     }`}
                   >
-                    <span>{tab.icon}</span>
-                    <span className="font-display text-xs">{tab.title}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeEngineShowcaseTab"
+                        className="absolute inset-0 bg-[var(--accent-gold)] rounded-[2px] shadow-sm z-0"
+                        transition={{ type: 'spring', stiffness: 440, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center">
+                      <TabIcon className={isActive ? 'text-[#140d1f]' : 'text-[var(--accent-gold)]'} />
+                    </span>
+                    <span className="relative z-10 font-display text-xs tracking-wide">{tab.title}</span>
                     <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-[1px] ${
+                      className={`relative z-10 text-[9px] px-1.5 py-0.5 rounded-[1px] transition-colors ${
                         isActive
                           ? 'bg-[#140d1f]/20 text-[#140d1f]'
                           : 'bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[var(--text-muted)]'
@@ -207,19 +218,25 @@ export const AtelierEngineShowcase: React.FC = () => {
                   <button
                     onClick={handlePrev}
                     aria-label="Previous feature"
-                    className="px-2 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-bold"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
                   >
-                    ◀ Prev
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M10 2L4 8l6 6V2z" />
+                    </svg>
+                    <span>Prev</span>
                   </button>
-                  <span className="text-[11px] text-[var(--text-muted)]">
+                  <span className="text-[11px] font-mono text-[var(--text-muted)] px-1">
                     {activeIndex + 1} / {SHOWCASE_TABS.length}
                   </span>
                   <button
                     onClick={handleNext}
                     aria-label="Next feature"
-                    className="px-2 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-bold"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
                   >
-                    Next ▶
+                    <span>Next</span>
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M6 2l6 6-6 6V2z" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -228,10 +245,10 @@ export const AtelierEngineShowcase: React.FC = () => {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab.id}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {renderActiveShowcase(activeTab.id)}
                 </motion.div>
@@ -243,17 +260,17 @@ export const AtelierEngineShowcase: React.FC = () => {
         {/* Engine Philosophy Banner */}
         <div className="mt-8 text-center text-xs font-mono text-[var(--text-muted)] flex items-center justify-center gap-4 flex-wrap">
           <span className="flex items-center gap-1.5">
-            <span className="text-[var(--accent-gold)]">✦</span>
+            <span className="text-[var(--accent-gold)] text-xs">✦</span>
             <span>100% Offline in Browser</span>
           </span>
           <span className="text-[var(--desk-border)]">•</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-[var(--accent-plum)]">✦</span>
+            <span className="text-[var(--accent-plum)] text-xs">✦</span>
             <span>Deterministic Math &amp; Zero Cloud Lag</span>
           </span>
           <span className="text-[var(--desk-border)]">•</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-[var(--accent-gold)]">✦</span>
+            <span className="text-[var(--accent-gold)] text-xs">✦</span>
             <span>Zero Generative Hallucinations</span>
           </span>
         </div>

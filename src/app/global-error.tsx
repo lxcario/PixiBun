@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { BunMascot } from '@/components/ui/BunMascot';
 import { captureDiagnostic, exportDiagnosticsFile } from '@/lib/diagnostics/capture';
 
 export default function GlobalError({
@@ -22,8 +23,8 @@ export default function GlobalError({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[var(--desk-bg)] text-[var(--text-heading)] flex items-center justify-center p-6 font-mono m-0">
         <div className="max-w-md w-full bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[4px] p-6 shadow-[0_4px_0_var(--desk-bg)] flex flex-col gap-4 text-center">
-          <div className="w-12 h-12 mx-auto rounded-full bg-[var(--desk-surface-raised)] border border-[var(--accent-gold)] flex items-center justify-center text-xl">
-            🐰
+          <div className="w-12 h-12 mx-auto rounded-full bg-[var(--desk-surface-raised)] border border-[var(--accent-gold)] flex items-center justify-center">
+            <BunMascot size={28} />
           </div>
           <h1 className="text-xl font-bold text-[var(--accent-gold)] font-display m-0">
             PixiBun Atelier Interruption

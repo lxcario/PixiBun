@@ -2,6 +2,22 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.10.4] - 2026-09-07
+### Landing Page Anti-Slop Remediation & Silky-Smooth Animations (Phase 45)
+- **Direct Static Imports & Zero-Lag Tab Switching (`src/components/landing/AtelierEngineShowcase.tsx`)**:
+  - Replaced `next/dynamic` lazy imports with direct static imports for all 4 showcase panels (`PhotometricShowcase`, `RotSpriteShowcase`, `PixelizeShowcase`, `EngineExportShowcase`), eliminating dark flashing, loading skeletons, and unmounting delay.
+- **Framer Motion `layoutId` Spring Pill Selector (`src/components/landing/AtelierEngineShowcase.tsx`)**:
+  - Added spring physics pill indicator (`layoutId="activeEngineShowcaseTab"`, stiffness 440, damping 32) behind active tab labels and smooth cross-fade transition on panel swap.
+- **Landing Navigation Layout Stability & Progress Track (`src/components/landing/LandingNav.tsx`)**:
+  - Replaced inline text layout-shifting spark with absolute bottom underline indicator (`layoutId="activeNavIndicator"`), preventing horizontal text jitter during viewport scroll.
+  - Housed scroll progress bar within an explicit background track.
+- **Purge of Residual Emojis and Copy Polish (`src/components/landing/showcase/PhotometricShowcase.tsx`, `src/components/landing/showcase/EngineExportShowcase.tsx`, `src/components/landing/AtelierDeskScene.tsx`, `src/app/error.tsx`, `src/app/studio/error.tsx`, `src/app/global-error.tsx`)**:
+  - Replaced emoji buttons and icons with crisp 16x16 pixel SVG vectors (`<IconLighting />`, `<IconRotate />`, `<IconSynthesis />`, `<IconExport />`, pixel lamp, pixel heart, pixel chevrons).
+  - Upgraded error boundary visuals with official `<BunMascot size={28} />`.
+  - Replaced broken marketing badge with `"INTERACTIVE GRAPHICS BENCHMARK"`.
+- **Regression Suite Verification (`tests/components/AtelierEngineShowcase.test.tsx`)**:
+  - Updated clipboard copy assertion and verified all 8 integration tests pass.
+
 ## [v1.10.3] - 2026-09-07
 ### Zero-Slop Hardening, Accessibility & Documentation Parity (Phase 44)
 - **WCAG 2.2 AA Accessibility (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/onboarding/ArtisanHandbookPanel.tsx`)**:
