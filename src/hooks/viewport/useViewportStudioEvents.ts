@@ -778,6 +778,7 @@ export function useViewportStudioEvents({
           ditherModulation: state.tools.ditherModulation,
           bayerSize: '4x4',
           formType,
+          minecraftSkinMode: state.tools.minecraftSkinMode,
         },
         []
       );
@@ -839,6 +840,7 @@ export function useViewportStudioEvents({
           ditherModulation: state.tools.ditherModulation,
           bayerSize: '4x4',
           formType: session.formType,
+          minecraftSkinMode: state.tools.minecraftSkinMode,
           lightCenterX: session.lastCenterX,
           lightCenterY: session.lastCenterY,
         },
@@ -942,6 +944,7 @@ export function useViewportStudioEvents({
           ditherModulation: detail.ditherModulation ?? tools.ditherModulation,
           bayerSize: detail.bayerSize || '4x4',
           formType: detail.formType ?? tools.formType ?? 'auto',
+          minecraftSkinMode: detail.minecraftSkinMode ?? tools.minecraftSkinMode ?? 'auto',
         },
         detail.paletteColors || []
       );
@@ -994,7 +997,17 @@ export function useViewportStudioEvents({
         return data[(y * canvasWidth + x) * 4 + 3] > 30;
       };
 
-      const isMcSkin = detectMinecraftSkin(isOpaque, canvasWidth, canvasHeight);
+      const state = useStudioStore.getState();
+      const skinMode = state.tools.minecraftSkinMode ?? 'auto';
+      let isMcSkin = false;
+      if (canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32)) {
+        if (skinMode === 'enabled') {
+          isMcSkin = true;
+        } else if (skinMode === 'auto' && state.tools.formType !== 'character' && state.tools.formType !== 'orb' && state.tools.formType !== 'prop') {
+          isMcSkin = detectMinecraftSkin(isOpaque, canvasWidth, canvasHeight);
+        }
+      }
+
       const normalField = isMcSkin
         ? computeMinecraftSkinNormalField(canvasWidth, canvasHeight)
         : computeTangentNormalField(

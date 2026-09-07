@@ -62,6 +62,7 @@ export const PhotometricLightingSection: React.FC = () => {
     setLightElevation,
     setLightBrightness,
     setMaterialPreset,
+    setMinecraftSkinMode,
     setCavityStrength,
     setDitherModulation,
     showNormalMapPreview,
@@ -150,9 +151,50 @@ export const PhotometricLightingSection: React.FC = () => {
       </div>
 
       {canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32) && (
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-[#26140b] text-[#f0be7c] text-[10px] font-mono font-bold rounded-[2px] border border-[#8c5120]">
-          <PixelIcon name="layers" size={10} />
-          <span>Minecraft 3D Skin Shading Active ({canvasWidth}x{canvasHeight})</span>
+        <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
+          <div className="flex items-center justify-between text-[10px] font-mono">
+            <span className="flex items-center gap-1 font-bold text-[#f0be7c] uppercase">
+              <PixelIcon name="layers" size={11} />
+              <span>Skin 3D Shading ({canvasWidth}x{canvasHeight})</span>
+            </span>
+            <div className="flex items-center gap-0.5 bg-[var(--desk-bg)] p-0.5 rounded-[2px] border border-[var(--desk-border)]">
+              {(['auto', 'enabled', 'disabled'] as const).map((m) => {
+                const active = (tools.minecraftSkinMode ?? 'auto') === m;
+                const label = m === 'auto' ? 'Auto' : m === 'enabled' ? 'On' : 'Off';
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMinecraftSkinMode(m)}
+                    className={`px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase rounded-[1px] transition-colors cursor-pointer ${
+                      active
+                        ? 'bg-[#f0be7c] text-[#140d1f]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-body)]'
+                    }`}
+                    title={
+                      m === 'auto'
+                        ? 'Auto-detect: Only applies if canvas is a disjoint Minecraft UV atlas'
+                        : m === 'enabled'
+                        ? 'Force Minecraft 3D cuboid shading'
+                        : 'Disable: Always use standard 2.5D character lighting'
+                    }
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="text-[9px] font-mono text-[var(--text-muted)] leading-tight">
+            {(tools.minecraftSkinMode ?? 'auto') === 'disabled' ? (
+              <span className="text-[#a8e092]">✦ Standard 2.5D character lighting active (skin mode off)</span>
+            ) : (tools.minecraftSkinMode ?? 'auto') === 'enabled' ? (
+              <span className="text-[#f0be7c]">✦ Minecraft 3D cuboid shading forced on</span>
+            ) : (
+              <span>✦ Auto-discriminator active: Character silhouettes use 2.5D lighting; UV atlases use 3D skin shading.</span>
+            )}
+          </div>
         </div>
       )}
 

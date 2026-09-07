@@ -63,6 +63,8 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     lightRadius: 64,
     lightBrightness: 1.15,
     materialPreset: 'matte',
+    formType: 'auto',
+    minecraftSkinMode: 'auto',
     cavityStrength: 1.0,
     ditherModulation: 0.0,
     curveTightness: 0.5,
@@ -187,6 +189,12 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   setMaterialPreset: preset => {
     set(state => {
       state.tools.materialPreset = preset;
+    });
+  },
+
+  setMinecraftSkinMode: mode => {
+    set(state => {
+      state.tools.minecraftSkinMode = mode;
     });
   },
 

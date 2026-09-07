@@ -80,6 +80,7 @@ export interface ToolSlice {
   setLightRadius: (radius: number) => void;
   setLightBrightness: (brightness: number) => void;
   setMaterialPreset: (preset: MaterialType) => void;
+  setMinecraftSkinMode: (mode: 'auto' | 'enabled' | 'disabled') => void;
   setCavityStrength: (strength: number) => void;
   setDitherModulation: (mod: number) => void;
   setCurveTightness: (tightness: number) => void;

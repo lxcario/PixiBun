@@ -15,16 +15,133 @@ export interface MinecraftNormalField extends NormalVectorField {
   material?: Uint8Array;
 }
 
+export interface MinecraftTopologyAnalysis {
+  isSkin: boolean;
+  confidence: number;
+  islandCount: number;
+  largestComponentRatio: number;
+  voidOpaqueRatio: number;
+  hasHeadFaces: boolean;
+  hasTorsoOrLimbs: boolean;
+  isContiguousSingleSilhouette: boolean;
+  rationale: string;
+}
+
 /**
- * Detects if the current canvas image corresponds to a standard Minecraft skin (64x64 or 64x32).
+ * Deep topological discriminator distinguishing a 3D Minecraft Skin texture atlas
+ * from a contiguous 2.5D single-character or object sprite on 64x64 / 64x32 canvases.
+ *
+ * Citation: Mojang Minecraft Player Skin UV Texture Layout specification (Java & Bedrock).
+ *
+ * Topological principles:
+ * 1. Texture Atlas vs Contiguous Silhouette:
+ *    A Minecraft skin is an unwrap of 6 disconnected geometric cuboid islands separated by void channels.
+ *    No single connected component contains > 60% of all opaque pixels in a complete skin.
+ *    A character/object sprite on 64x64 is a contiguous 2D silhouette where the primary body component
+ *    contains >= 68% of all pixels and spans across the central vertical axis.
+ * 2. Lateral Margin Presence:
+ *    Minecraft skins place limbs (Right Arm, Right Leg) at the extreme lateral margins (x: 0..16, x: 40..56).
+ *    Centered character illustrations leave lateral flanks (x: 0..14 and x: 48..64) transparent.
+ * 3. Canonical Void Island Integrity:
+ *    Corner void zones in Mojang's specification must remain strictly unpainted.
  */
-export function detectMinecraftSkin(
+export function analyzeMinecraftSkinTopology(
   isOpaque: (x: number, y: number) => boolean,
   width: number,
   height: number
-): boolean {
-  if (width !== 64 || (height !== 64 && height !== 32)) return false;
+): MinecraftTopologyAnalysis {
+  if (width !== 64 || (height !== 64 && height !== 32)) {
+    return {
+      isSkin: false,
+      confidence: 0,
+      islandCount: 0,
+      largestComponentRatio: 0,
+      voidOpaqueRatio: 0,
+      hasHeadFaces: false,
+      hasTorsoOrLimbs: false,
+      isContiguousSingleSilhouette: false,
+      rationale: `Dimensions ${width}x${height} do not match Minecraft skin format (64x64 or 64x32).`,
+    };
+  }
 
+  // 1. Gather all opaque pixels and compute 8-connected components
+  const visited = new Uint8Array(width * height);
+  const components: number[] = [];
+  let totalOpaque = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x;
+      if (isOpaque(x, y)) {
+        totalOpaque++;
+        if (!visited[idx]) {
+          // BFS / flood fill for connected component
+          let compSize = 0;
+          const queue = [x, y];
+          visited[idx] = 1;
+
+          let qHead = 0;
+          while (qHead < queue.length) {
+            const qx = queue[qHead++];
+            const qy = queue[qHead++];
+            compSize++;
+
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = qx + dx;
+                const ny = qy + dy;
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                  const nIdx = ny * width + nx;
+                  if (!visited[nIdx] && isOpaque(nx, ny)) {
+                    visited[nIdx] = 1;
+                    queue.push(nx, ny);
+                  }
+                }
+              }
+            }
+          }
+          components.push(compSize);
+        }
+      }
+    }
+  }
+
+  if (totalOpaque < 16) {
+    return {
+      isSkin: false,
+      confidence: 0,
+      islandCount: 0,
+      largestComponentRatio: 0,
+      voidOpaqueRatio: 0,
+      hasHeadFaces: false,
+      hasTorsoOrLimbs: false,
+      isContiguousSingleSilhouette: false,
+      rationale: 'Fewer than 16 opaque pixels on canvas.',
+    };
+  }
+
+  components.sort((a, b) => b - a);
+  const largestComp = components[0];
+  const largestRatio = largestComp / totalOpaque;
+
+  let minX = width;
+  let maxX = -1;
+  let minY = height;
+  let maxY = -1;
+
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      if (isOpaque(px, py)) {
+        if (px < minX) minX = px;
+        if (px > maxX) maxX = px;
+        if (py < minY) minY = py;
+        if (py > maxY) maxY = py;
+      }
+    }
+  }
+
+  // 2. Canonical Void Zones Check
   const voidZones = [
     { x: 0, y: 0, w: 8, h: 8 },
     { x: 24, y: 0, w: 8, h: 8 },
@@ -48,15 +165,93 @@ export function detectMinecraftSkin(
       }
     }
   }
+  const voidOpaqueRatio = voidOpaque / (voidPixels || 1);
 
+  // 3. Check Head Faces (x: 0..32, y: 0..16)
   let headPixels = 0;
-  for (let py = 8; py < 16; py++) {
-    for (let px = 8; px < 16; px++) {
+  for (let py = 0; py < 16; py++) {
+    for (let px = 0; px < 32; px++) {
       if (isOpaque(px, py)) headPixels++;
     }
   }
+  const hasHeadFaces = headPixels >= 16;
 
-  return (voidOpaque / (voidPixels || 1) < 0.25) && (headPixels >= 16);
+  // 4. Check Torso (x: 16..40, y: 16..32) and Lateral Limbs (x: 0..16, y: 16..32 and x: 40..56, y: 16..32)
+  let torsoPixels = 0;
+  for (let py = 16; py < 32; py++) {
+    for (let px = 16; px < 40; px++) {
+      if (isOpaque(px, py)) torsoPixels++;
+    }
+  }
+
+  let leftLimbPixels = 0;
+  let rightLimbPixels = 0;
+  for (let py = 16; py < 32; py++) {
+    for (let px = 0; px < 16; px++) {
+      if (isOpaque(px, py)) leftLimbPixels++;
+    }
+    for (let px = 40; px < 56; px++) {
+      if (isOpaque(px, py)) rightLimbPixels++;
+    }
+  }
+
+  const hasTorso = torsoPixels >= 16;
+  const hasLeftLimb = leftLimbPixels >= 16;
+  const hasRightLimb = rightLimbPixels >= 16;
+  const hasBothLimbs = hasLeftLimb && hasRightLimb;
+  const hasTorsoOrLimbs = hasTorso && (hasLeftLimb || hasRightLimb);
+
+  // 5. Check if pixels form a centered single-character silhouette
+  // Centered character sprites have empty lateral flanks (minX >= 10 || maxX <= 48),
+  // lack dual lateral limbs, or have a single dominant body component covering >= 68% of pixels without dual limbs.
+  const isCenteredSpriteBounds = minX >= 10 || maxX <= 48;
+  const isContiguousSingleSilhouette =
+    (!hasBothLimbs && isCenteredSpriteBounds) ||
+    (largestRatio >= 0.68 && !hasBothLimbs);
+
+  // 6. Scoring
+  let confidence = 0.0;
+  if (voidOpaqueRatio < 0.20) confidence += 0.25;
+  if (hasHeadFaces) confidence += 0.25;
+  if (hasTorso) confidence += 0.25;
+  if (hasBothLimbs && !isContiguousSingleSilhouette) confidence += 0.25;
+
+  const isSkin =
+    !isContiguousSingleSilhouette &&
+    voidOpaqueRatio < 0.25 &&
+    hasHeadFaces &&
+    hasTorso &&
+    hasBothLimbs &&
+    confidence >= 0.70;
+
+  const rationale = isSkin
+    ? `Disjoint multi-island UV unwrap detected (${components.length} islands, left/right limbs confirmed, void pollution ${(voidOpaqueRatio * 100).toFixed(0)}%). Confidence: ${(confidence * 100).toFixed(0)}%.`
+    : isContiguousSingleSilhouette
+    ? `Centered contiguous character silhouette detected (bounds: [${minX}..${maxX}], dominant component ${(largestRatio * 100).toFixed(0)}%, both limbs: ${hasBothLimbs}). Classified as 2.5D Sprite/Character.`
+    : `Topology does not match Minecraft skin atlas (void pollution ${(voidOpaqueRatio * 100).toFixed(0)}%, head: ${hasHeadFaces}, torso: ${hasTorso}, limbs: ${hasBothLimbs}). Classified as 2.5D Sprite/Character.`;
+
+  return {
+    isSkin,
+    confidence,
+    islandCount: components.length,
+    largestComponentRatio: largestRatio,
+    voidOpaqueRatio,
+    hasHeadFaces,
+    hasTorsoOrLimbs,
+    isContiguousSingleSilhouette,
+    rationale,
+  };
+}
+
+/**
+ * Detects if the current canvas image corresponds to a standard Minecraft skin (64x64 or 64x32).
+ */
+export function detectMinecraftSkin(
+  isOpaque: (x: number, y: number) => boolean,
+  width: number,
+  height: number
+): boolean {
+  return analyzeMinecraftSkinTopology(isOpaque, width, height).isSkin;
 }
 
 /**

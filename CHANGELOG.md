@@ -2,6 +2,25 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.10.1] - 2026-09-07
+### Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty (Phase 43)
+- **Deep 8-Connected Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`)**:
+  - Replaced naive 2-condition void/head check with `analyzeMinecraftSkinTopology(isOpaque, width, height)`.
+  - Analyzes 8-connected component graph, dominant component pixel ratio (`largestComponentRatio`), bilateral limb presence ($x \in [0, 16)$ Right Leg, $x \in [40, 56)$ Right Arm), canonical void zone integrity ($<20\%$ pollution), and bounding box margins ($x < 10$ and $x > 48$).
+  - Corrects the false positive where centered 64x64 character illustrations (e.g. red bunny, cat, props) were misidentified as Minecraft UV atlases, which previously led to flat $(0, 0, 1.0)$ normal generation and disabled photometric shading. Centered silhouettes ($\ge 68\%$ pixels in dominant component, empty lateral flanks) are decisively routed to standard 2.5D lighting.
+- **Photometric Pipeline & Form Type Protection (`src/lib/ai/math/photometricLighting.ts`)**:
+  - `executePhotometricPipeline` and `renderParametric2p5DLighting` now honor `params.minecraftSkinMode`.
+  - When mode is `'disabled'` or `formType` is explicitly `'character' | 'orb' | 'prop'`, Minecraft skin shading is bypassed completely, ensuring continuous tangent normals and content-aware heightmaps.
+- **User Sovereignty & Studio Store (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/stores/slices/types.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`)**:
+  - Added `minecraftSkinMode?: 'auto' | 'enabled' | 'disabled'` to `PhotometricLightingParams` and `ToolSettings`.
+  - Added `setMinecraftSkinMode` action to Zustand tool slice.
+  - Forwarded `minecraftSkinMode` through viewport events (`handlePhotometricGizmoStartEvent`, `handlePhotometricLiveUpdateEvent`, `handleDirectPhotometricEvent`, `handleBakeNormalMapEvent`).
+- **Tactile Inspector Mode Selector (`src/components/layout/inspector/PhotometricLightingSection.tsx`)**:
+  - Added interactive `Skin 3D Shading: [ Auto | On | Off ]` button group in the lighting inspector whenever canvas dimensions are 64x64 or 64x32, complete with live status descriptions.
+- **Comprehensive Quality Gates & Testing (`tests/minecraftSkinDetection.test.ts`, `tests/photometricNonDestructive.test.ts`)**:
+  - Authored 8 new unit tests covering empty canvases, authentic Minecraft UV unwrap detection, centered character sprite classification, non-standard dimensions, and mode overrides.
+  - Total test count expanded to 414 tests across 64 suites (100% passing).
+
 ## [v1.10.0] - 2026-09-06
 ### Co-Draw Activation: End-to-End CRDT Sync & Deep Audit Remediation (Phase 42)
 - **P2P Co-Draw Wired End-to-End (`src/lib/sync/coDrawBridge.ts`, `src/lib/sync/p2pSync.ts`, `src/lib/collab/crdtPixelBuffer.ts`)**:

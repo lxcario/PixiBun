@@ -643,11 +643,14 @@ describe('Bake Normals layer index', () => {
   it('detects Minecraft skin and generates true 3D cuboid face normals', async () => {
     const { detectMinecraftSkin, computeMinecraftSkinNormalField } = await import('@/lib/ai/smartMathEngine');
 
-    // Simulate 64x64 Minecraft skin with head filled
+    // Simulate 64x64 Minecraft skin with head, torso, and limbs filled
     const isOpaque = (x: number, y: number) => {
       // Head front (8..16, 8..16) and Torso (20..28, 20..32) are opaque
       if (x >= 8 && x < 16 && y >= 8 && y < 16) return true;
       if (x >= 20 && x < 28 && y >= 20 && y < 32) return true;
+      // Right Leg (4..12, 20..32) and Right Arm (44..52, 20..32)
+      if (x >= 4 && x < 12 && y >= 20 && y < 32) return true;
+      if (x >= 44 && x < 52 && y >= 20 && y < 32) return true;
       return false;
     };
 

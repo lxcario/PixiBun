@@ -229,20 +229,38 @@ The application state is managed by Zustand with Immer middleware:
 
 
 
-## 7. 3D Minecraft Skin Recognition & Domain Shading Engine
+## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)
 
-When an imported or active sprite matches the standard Java/Bedrock $64\times64$ or $64\times32$ UV bounding template, the engine bypasses 2.5D heightmap inflation and routes directly into the dedicated **3D Minecraft Skin Photometric Shading Engine**:
+When an imported or active sprite canvas has dimensions $64\times64$ or $64\times32$, the photometric lighting system distinguishes between authentic Minecraft 3D player skin texture atlases and single-character / object illustrations before routing normal generation:
 
 ```mermaid
 graph TD
-    Skin["Minecraft Skin Texture (64x64 / 64x32)"] --> Detect["UV Template Void Pattern Classifier"]
-    Detect --> UVMap["12-Region Cuboid Face Normal Field N(x,y,z)"]
+    Canvas["Canvas Image (64x64 / 64x32)"] --> ModeCheck{"minecraftSkinMode"}
+    ModeCheck -->|enabled| ForceSkin["Force Minecraft 3D Pipeline"]
+    ModeCheck -->|disabled| Force2p5D["Force 2.5D Sprite Heightmap Pipeline"]
+    ModeCheck -->|auto| TopoAnalysis["analyzeMinecraftSkinTopology()"]
+    TopoAnalysis --> BoundingBox["Bounding Box Margin Check (Flanks x < 10 & x > 48)"]
+    TopoAnalysis --> Limbs["Bilateral Limb Verification (Right Leg x:0..16 & Right Arm x:40..56)"]
+    TopoAnalysis --> Voids["Canonical Void Zone Integrity Check (<20% pollution)"]
+    TopoAnalysis --> Components["8-Connected Component Silhouette Analysis"]
+    BoundingBox & Limbs & Voids & Components --> Decision{"Classification Verdict"}
+    Decision -->|Disjoint UV Atlas| UVMap["12-Region Cuboid Face Normal Field N(x,y,z)"]
+    Decision -->|Centered Contiguous Sprite| Force2p5D
     UVMap --> HalfLambert["Half-Lambert Wrap Lighting ((N·L + 0.4)/1.4)^1.2"]
     UVMap --> ContactAO["Raytraced Contact Occlusion Map (Neck, Limbs, Layers)"]
     HalfLambert & ContactAO --> SkyDome["Hemispheric Sky Radiance Gradient"]
     SkyDome --> OKLCH["OKLCH Perceptual Hue-Shifting"]
     OKLCH --> FinalSkin["Non-Destructive Minecraft Shaded Output Layer"]
 ```
+
+### Topological Invariant Discriminator:
+1. **Texture Atlas vs. Contiguous 2.5D Silhouette:**
+   * **Minecraft Skin Texture Atlas:** Disconnected planar unwrap of geometric cuboid islands separated by empty void channels. Bilateral limbs occupy the extreme lateral flanks ($x \in [0, 16)$ for Right Leg, $x \in [40, 56)$ for Right Arm). Both extremities must be populated for valid skin detection.
+   * **Centered 2D Character / Object Sprite:** Single contiguous silhouette centered horizontally with empty lateral flanks ($x < 10$ and $x > 48$). The dominant connected component contains $\ge 68\%$ of all opaque pixels, and lacks bilateral limb islands. Even if an ear or accessory touches the head coordinate quadrant, it is classified as a 2.5D character sprite and shaded with true continuous tangent normals, eliminating flat $(0, 0, 1.0)$ fallback vectors.
+2. **Canonical Void Zone Preservation:**
+   * Mojang's specification mandates empty rectangular corners at $(0, 0, 8, 8)$, $(24, 0, 8, 8)$, $(32, 0, 8, 8)$, $(56, 0, 8, 8)$, and joint voids at $y = 16$. Void pollution $> 25\%$ immediately rejects the atlas.
+3. **User Sovereignty (`PhotometricLightingSection.tsx`):**
+   * On $64\times64$ and $64\times32$ canvases, the inspector provides a tactile `Skin 3D Shading: [ Auto | On | Off ]` toggle (`setMinecraftSkinMode`), giving creators manual override over the auto-discriminator.
 
 ### Mathematical Formulations:
 1. **Half-Lambertian Wrapped Diffuse:**

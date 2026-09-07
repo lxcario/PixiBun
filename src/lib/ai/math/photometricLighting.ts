@@ -418,7 +418,16 @@ export function executePhotometricPipeline(
     return data[(y * width + x) * 4 + 3] > 30;
   };
 
-  const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+  const skinMode = params.minecraftSkinMode ?? 'auto';
+  let isMcSkin = false;
+  if (width === 64 && (height === 64 || height === 32)) {
+    if (skinMode === 'enabled') {
+      isMcSkin = true;
+    } else if (skinMode === 'auto' && params.formType !== 'character' && params.formType !== 'orb' && params.formType !== 'prop') {
+      isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+    }
+  }
+
   if (isMcSkin) {
     return executeMinecraftSkinShadingPipeline(srcCtx, width, height, params);
   }
@@ -708,6 +717,7 @@ export interface LightParameters {
   rimLight: boolean;
   selOut: boolean;
   material?: string;
+  minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
 }
 
 export function renderParametric2p5DLighting(
@@ -728,7 +738,15 @@ export function renderParametric2p5DLighting(
     return data[(y * width + x) * 4 + 3] > 30;
   };
 
-  const isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+  const skinMode = params.minecraftSkinMode ?? 'auto';
+  let isMcSkin = false;
+  if (width === 64 && (height === 64 || height === 32)) {
+    if (skinMode === 'enabled') {
+      isMcSkin = true;
+    } else if (skinMode === 'auto') {
+      isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+    }
+  }
   const inferred = inferPhotometricSettings(data, width, height);
   const isCharacter = inferred.formType === 'character';
 

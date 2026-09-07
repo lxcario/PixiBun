@@ -1,5 +1,41 @@
 # Build Plan — PixiBun
 
+## Phase 43 — Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty
+**Goal:** Eliminate false-positive Minecraft skin detection on centered 64x64 / 64x32 character sprites (which caused flat normal vectors and broke photometric shading), implement deep 8-connected topological analysis, and provide user manual override controls in the studio inspector.
+
+**Evidence & Rationale:**
+- False-Positive Regression on 64x64 Sprites: `detectMinecraftSkin` previously relied on an underspecified 2-condition heuristic (void corners < 25% polluted and $\ge 16$ pixels at $x \in [8, 16), y \in [8, 16)$). Any centered 2D character sprite (e.g. a red bunny, cat, or humanoid figure) whose head/ears touched $(8..16, 8..16)$ while leaving canvas corners empty was falsely classified as a Minecraft 3D skin texture atlas.
+- Shading Breakdown: Once misclassified as a Minecraft skin, the photometric pipeline assigned 3D cuboid face normals to predefined skin UV rectangles, assigning fallback $(0, 0, 1.0)$ planar normals to non-skin regions. As a result, standard 2.5D heightmap inflation and Sobel tangent normal generation were completely bypassed, causing photometric lighting to render flat, uniform diffuse color with zero surface shading.
+- Lack of User Sovereignty: Artists had no manual toggle to bypass or enforce Minecraft skin mode on 64x64 or 64x32 canvases.
+
+**Deliverables:**
+- [x] Deep Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`):
+  - Implemented `analyzeMinecraftSkinTopology(isOpaque, width, height): MinecraftTopologyAnalysis` with 8-connected component flood analysis, dominant component ratio (`largestComponentRatio`), dual lateral limb verification ($x \in [0, 16)$ Right Leg and $x \in [40, 56)$ Right Arm), canonical void zone integrity (<20% pollution), and bounding box margins.
+  - Centered sprites with empty lateral margins ($x < 10$ or $x > 48$) or contiguous single-body silhouettes ($\ge 68\%$ opaque pixels in a single component) are decisively classified as 2.5D Sprites.
+  - Updated `detectMinecraftSkin` to consume topological analysis results.
+- [x] Photometric Pipeline Integration (`src/lib/ai/math/photometricLighting.ts`):
+  - Updated `executePhotometricPipeline` and `renderParametric2p5DLighting` to check `params.minecraftSkinMode`.
+  - When mode is `'disabled'` or `formType` is explicitly `'character' | 'orb' | 'prop'`, Minecraft skin hijacking is completely bypassed.
+- [x] Viewport & Tool Store Synchronization (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`):
+  - Added `minecraftSkinMode?: 'auto' | 'enabled' | 'disabled'` to `PhotometricLightingParams` and `ToolSettings`.
+  - Added `setMinecraftSkinMode` action to Zustand store tool slice.
+  - Forwarded `minecraftSkinMode` across gizmo drag start, live update, direct apply, and bake normal map event handlers.
+- [x] Inspector UI Controls (`src/components/layout/inspector/PhotometricLightingSection.tsx`):
+  - Replaced static text notice with tactile `Skin 3D Shading: [ Auto | On | Off ]` button group and real-time explanatory state indicators on 64x64 / 64x32 canvases.
+- [x] Unit & Integration Test Suite (`tests/minecraftSkinDetection.test.ts`):
+  - Authored 8 comprehensive unit tests validating empty canvas rejection, authentic Minecraft UV unwrap detection, centered character sprite classification, non-standard dimension rejection, photometric output variation under auto mode, and `'disabled'`/`'enabled'`/`formType: 'character'` overrides.
+
+**Acceptance criteria:**
+- `npx vitest run tests/minecraftSkinDetection.test.ts` passes 8/8 tests.
+- Full vitest suite passes 414/414 tests across 64 suites.
+- `tsc --noEmit` and `eslint` pass with zero errors/warnings.
+- Centered 64x64 character sprites receive full 2.5D photometric shading with non-zero surface curvature and highlights.
+- `npm run verify:docs` passes with strictly valid phase headers and monotonic architecture sections.
+
+**Status:** Complete (2026-09-07)
+
+---
+
 ## Phase 42 — Co-Draw Activation, Deep Audit Remediation & Server Hardening
 **Goal:** Wire the previously test-only CRDT/P2P engine into the live studio so co-drawing actually synchronizes pixels, and fix every defect surfaced by the deep audit (undo-after-resize corruption, boot crash, bounds gaps, protocol hardening, relay rate limiting).
 

@@ -39,6 +39,7 @@ export interface PhotometricLightingParams {
   ditherModulation: number; // 0.0 to 1.0 (Bayer threshold offset strength)
   bayerSize: '2x2' | '4x4' | '8x8';
   formType?: 'character' | 'orb' | 'prop' | 'auto';
+  minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
   celShading?: boolean;
   lightCenterX?: number; // Center anchor X in canvas coordinates (middle light point)
   lightCenterY?: number; // Center anchor Y in canvas coordinates (middle light point)
@@ -62,6 +63,7 @@ export interface ToolSettings {
   lightBrightness: number; // 0.5 to 2.0 (exposure / brightness)
   materialPreset: MaterialType;
   formType?: 'character' | 'orb' | 'prop' | 'auto';
+  minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
   cavityStrength: number; // 0 to 1
   ditherModulation: number; // 0 to 1
   curveTightness: number; // 0 to 1
