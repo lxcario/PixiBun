@@ -30,7 +30,7 @@ function reportPass(msg) {
 const tasksPath = path.join(rootDir, 'TASKS.md');
 if (fs.existsSync(tasksPath)) {
   const tasksContent = fs.readFileSync(tasksPath, 'utf8');
-  const phaseHeaderRegex = /^## Phase ([\d.]+)/gm;
+  const phaseHeaderRegex = /^## Phase ([\d.]+[a-z]?)/gm;
   const seenPhases = new Map();
   let match;
 

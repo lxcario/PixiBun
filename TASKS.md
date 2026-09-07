@@ -1,5 +1,32 @@
 # Build Plan — PixiBun
 
+## Phase 43b — Cel-Shading Shadow Terminator Math Fix
+**Goal:** Fix the mathematically broken cel-shading threshold that made character sprite shading visually flat/invisible — all pixels rendered as BASE tone with zero shadow coverage.
+
+**Evidence & Rationale:**
+- After Phase 43 correctly prevented Minecraft skin false-positives, character sprites entered the discrete OKLCH cel-shading branch (`formType === 'character' && paletteOKLab.length === 0`) but produced zero visible shading.
+- Debug analysis revealed `lightLevel >= 1.0` for ALL pixels including the unlit side, making it mathematically impossible to drop below `shadowThresh = 0.58`.
+- Root cause 1: Ambient signal (`ambSignal = (effectiveAmbient / 0.48) * ao ~ 1.27`) dominated the `lightLevel` formula, overwhelming the directional component.
+- Root cause 2: Double brightness multiplication — `effectiveAmbient` already incorporated `brightness`, then `lightLevel` multiplied by `brightness` again.
+
+**Deliverables:**
+- [x] Shadow Terminator Fix (`src/lib/ai/math/photometricLighting.ts`):
+  - Removed ambient signal (`ambSignal`) from shadow placement decision entirely.
+  - Shadow termination now driven purely by directional diffuse signal: `diffSignal = wrapNdotL * effectiveFalloff`.
+  - Shadow threshold set to `0.55` (was `0.58`), placing ~40-50% of visible surface in shadow for typical side-lit sprites.
+  - Eliminated double brightness multiplication.
+  - Highlight condition uses `highlightLevel = diffSignal * brightness > 1.10 && isShinyMaterial`.
+  - Deep crevice threshold remains at `creviceAOThresh = 0.60`.
+
+**Acceptance criteria:**
+- Full vitest suite passes 414/414 tests across 64 suites.
+- `tsc --noEmit` and `eslint` pass with zero errors/warnings.
+- Character sprites show visible cel-shadow on unlit side (verified: unlit cheek `diffSignal = 0.44 < 0.55` -> SHADOW tone, body bottom `diffSignal = 0.43 < 0.55` -> SHADOW tone).
+
+**Status:** Complete (2026-09-07)
+
+---
+
 ## Phase 43 — Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty
 **Goal:** Eliminate false-positive Minecraft skin detection on centered 64x64 / 64x32 character sprites (which caused flat normal vectors and broke photometric shading), implement deep 8-connected topological analysis, and provide user manual override controls in the studio inspector.
 

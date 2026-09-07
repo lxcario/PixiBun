@@ -173,7 +173,7 @@ For character sprites, naive hemispherical dome inflation creates extreme slope 
 * **Frontal Cushion Plateau:** Within 2.8px of the boundary contour, height bevels smoothly down while the face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the unlit 1–2px silhouette edge.
 * **Independent Ear Cones:** Distinct convex lobes in the silhouette retain independent 3D height peaks without arbitrary pixel caps.
 * **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving 100% artist color fidelity across up to 32 clusters.
-* **Stepped OKLCH Cel-Shading:** Unshaded flat base colors receive stepped tone quantization with cool skylight shifts toward 260° in shadow and warm sunlight shifts toward 65° in highlights.
+* **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo), **Deep Crevice** ($L \times 0.60$, $20°$ shift, triggers at $AO < 0.60$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ toward $65°$ warm sunlight, shiny materials only). Shadow placement is driven purely by directional diffuse signal (`diffSignal = wrapNdotL × effectiveFalloff < 0.55`), decoupled from ambient fill.
 
 ### 6. Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Architecture
 * **Decoupled Orbit and Focus Reticle:** A draggable bulb token orbits smoothly around a draggable middle focus reticle (`stageCentroid`). Dragging the bulb rotates light azimuth ($\theta = \text{atan2}(dx, -dy)$) and elevation without mutating the center anchor position.
@@ -189,20 +189,23 @@ Minecraft skins (\times64$ or \times32$) require domain-specific 3D cuboid norma
 `mermaid
 graph LR
     Texture["Minecraft Skin (64x64 / 64x32)"] --> Detect["UV Void Mask Detection"]
-    Detect --> UVMap["12-Region 3D Face Normal Mapping"]
+    Detect --> Topo["8-Connected Topological Discriminator"]
+    Topo -->|"Minecraft UV"| UVMap["12-Region 3D Face Normal Mapping"]
+    Topo -->|"2.5D Character"| Standard["Standard Heightmap + Cel-Shading"]
     UVMap --> HalfLambert["Half-Lambert Diffuse Wrap"]
     UVMap --> ContactAO["Anatomical Contact AO (Armpits, Chin, Legs)"]
     HalfLambert & ContactAO --> OKLCH["OKLCH Warm Sunlight / Indigo Shift"]
     OKLCH --> LayerOut["Non-Destructive Tagged Output Layer"]
 `
 
-1. **UV Pattern Detection (detectMinecraftSkin):** Scans transparent void coordinates and head/torso layout to verify Java/Bedrock layout.
-2. **12-Region 3D Normal Mapping:** Assigns analytical 3D normals for Head, Hat, Torso, Jacket, Arms, and Legs.
-3. **Half-Lambert Wrap:**
+1. **Deep Topological Discriminator (`analyzeMinecraftSkinTopology`):** 8-connected component flood analysis with dominant component ratio ($\ge 68\%$ → centered sprite), bilateral limb verification ($x \in [0, 16)$ Right Leg, $x \in [40, 56)$ Right Arm), canonical void zone integrity ($<20\%$ pollution), and bounding box margin checks. Centered character sprites are decisively routed to standard 2.5D lighting instead of cuboid UV mapping.
+2. **User Sovereignty:** Tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector toggle with `minecraftSkinMode: 'auto' | 'enabled' | 'disabled'`.
+3. **12-Region 3D Normal Mapping:** Assigns analytical 3D normals for Head, Hat, Torso, Jacket, Arms, and Legs.
+4. **Half-Lambert Wrap:**
 
 \text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L} + 0.4}{1.4}\right)^{1.2}
 
-4. **Anatomical Contact AO:** Applies contact shadowing under chin (.80$), armpits (.82$), and inner limbs (.85$).
+5. **Anatomical Contact AO:** Applies contact shadowing under chin (.80$), armpits (.82$), and inner limbs (.85$).
 
 ---
 

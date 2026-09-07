@@ -1007,4 +1007,47 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx tsc --noEmit`: 0 errors
 - `eslint src tests`: 0 errors
 **Status:** Complete
-
+
+---
+
+## 2026-09-07 — Phase 43: Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty
+
+**Problem Statement:**
+1. `detectMinecraftSkin` used a naive 2-condition heuristic (void corners + head pixel check) that falsely classified centered 64x64 character sprites (e.g. red bunny, cat, humanoid) as Minecraft 3D skin texture atlases.
+2. When misclassified, the photometric pipeline assigned flat $(0, 0, 1.0)$ cuboid normals instead of heightmap-derived tangent normals, producing zero visible shading.
+3. Artists had no manual override to bypass or enforce Minecraft skin mode.
+
+**Engineering Execution:**
+- **Deep Topological Discriminator (`src/lib/ai/math/minecraftSkin.ts`)**: `analyzeMinecraftSkinTopology(isOpaque, width, height)` performs 8-connected component flood analysis with dominant component ratio ($\ge 68\%$ → centered sprite), bilateral limb verification ($x \in [0, 16)$ and $x \in [40, 56)$), canonical void zone integrity ($<20\%$ pollution), and bounding box margin checks.
+- **Pipeline Protection (`src/lib/ai/math/photometricLighting.ts`)**: `executePhotometricPipeline` and `renderParametric2p5DLighting` honor `params.minecraftSkinMode`. When `'disabled'` or `formType` is explicit, Minecraft skin shading is bypassed.
+- **Store & Viewport (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`)**: Added `minecraftSkinMode: 'auto' | 'enabled' | 'disabled'` to params and forwarded through all photometric event handlers.
+- **Inspector UI (`src/components/layout/inspector/PhotometricLightingSection.tsx`)**: Tactile `Skin 3D Shading: [ Auto | On | Off ]` button group on 64x64 / 64x32 canvases.
+- **Tests (`tests/minecraftSkinDetection.test.ts`)**: 8 comprehensive unit tests.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 414/414 tests passed across 64 suites (8 new tests)
+- `npm run verify:docs`: all integrity checks passed
+**Commit:** `a5797db` → `origin/main`
+**Status:** Complete
+
+---
+
+## 2026-09-07 — Phase 43b: Cel-Shading Shadow Terminator Math Fix (v1.10.2)
+
+**Problem Statement:**
+1. After Phase 43 correctly prevented Minecraft skin false-positives, character sprites entered the discrete OKLCH cel-shading branch but produced zero visible shading — all pixels rendered as BASE tone.
+2. Debug analysis revealed `lightLevel ≥ 1.0` for ALL pixels (including the unlit side), making it mathematically impossible to drop below `shadowThresh = 0.58`.
+3. Root cause: ambient signal (`ambSignal ≈ 1.27`) dominated the `lightLevel` formula, and double brightness multiplication (`effectiveAmbient` already includes brightness, then `lightLevel *= brightness` again).
+
+**Engineering Execution:**
+- **Shadow Terminator Fix (`src/lib/ai/math/photometricLighting.ts` lines 586–642)**: Removed `ambSignal` and `lightLevel` from shadow placement. Shadow termination now driven purely by directional diffuse signal: `diffSignal = wrapNdotL × effectiveFalloff` with `shadowThresh = 0.55`. Highlight uses `highlightLevel = diffSignal * brightness > 1.10 && isShinyMaterial`. Deep crevice threshold remains `creviceAOThresh = 0.60`.
+- **Verified fix**: Unlit cheek `diffSignal = 0.44 < 0.55` → SHADOW tone ✓. Body bottom `diffSignal = 0.43 < 0.55` → SHADOW tone ✓. Lit cheek `diffSignal = 0.89 > 0.55` → BASE tone ✓.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src/lib/ai/math/photometricLighting.ts`: 0 errors, 0 warnings
+- `npx vitest run`: 414/414 tests passed across 64 suites
+**Commit:** `1076bd4` → `origin/main`
+**Status:** Complete

@@ -193,12 +193,14 @@ Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Pri
 
 ---
 
-## 10. Direct Manipulation Lighting Gizmo (HUD Canvas Layer)
+## 10. Direct Manipulation Lighting Gizmo (`PixelLightBulbGizmo.tsx`)
 
 Grounded in Ben Shneiderman's 1983 direct-manipulation paradigm:
-* **Spatial Sun Handle:** A 12px circular brass token (`#F0BE7C`) positioned along an elliptical orbit representing the light vector ($\theta$ azimuth, $\phi$ elevation).
-* **Azimuth Sweep Arc:** A subtle dashed compass circle rendered on `gridCanvasRef` indicating azimuth direction ($0^\circ$ North to $315^\circ$ North-West).
-* **Interactive Physics:** Dragging the sun handle updates `tools.lightAzimuth` and `tools.lightElevation` in real-time, providing tactile 3D spatial feedback directly on the drafting desk without forcing the artist to fiddle with numeric sliders in the right inspector.
+* **Interactive Light Bulb Token:** A tactile incandescent pixel light bulb handle rendered on the canvas viewport representing the directional light vector ($\theta$ azimuth, $\phi$ elevation, and light distance radius).
+* **Decoupled Focal Reticle Anchor:** An independent central focal reticle handle (`lightCenterX`, `lightCenterY` / `stageCentroid`). Artists can reposition the focal anchor without perturbing the light direction angle, or orbit the bulb token around the anchor with zero drift.
+* **Azimuth Sweep Arc & Distance Line:** A subtle dashed indicator connecting the focal point to the orbiting bulb, visualizing the directional ray in real-time.
+* **Tactile Physics & 60fps rAF Updates:** Dragging either handle recalculates azimuth ($\theta = (\text{atan2}(dx, -dy) \times \frac{180}{\pi} + 360) \pmod{360}$) and elevation, rendering in-place preview frames via throttled `requestAnimationFrame` with zero perceptible UI latency.
+* **HUD Hotkeys & Micro-Steppers:** Embedded HUD pill with tactile `[-]` / `[+]` brightness steppers, mouse wheel scroll intensity adjustment, quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focal anchor reset (<kbd>R</kbd>).
 
 ---
 

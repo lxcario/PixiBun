@@ -141,10 +141,13 @@ graph TD
    For character forms, to avoid "bowling-ball" inflation where half the face is plunged into darkness ($N \cdot L < 0$), height within 2.8px of the boundary contour bevels smoothly while the interior reaches a flat plateau:
    $$\text{ratio} = \min\left(1.0, \frac{D(p)}{2.8}\right), \quad H_{\text{face}}(p) = H(p) \cdot (0.6 + 0.4 \cdot \text{ratio})$$
    Normals across the face interior satisfy $N_z \ge 0.85$, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
-4. **100% Feature Preservation & Stepped OKLCH Cel-Shading:**
-   Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH:
-   * **Shadow:** $L_{\text{shadow}} = L_{\text{base}} \times 0.72$, $H_{\text{shadow}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 18^\circ)$ (Skylight cool indigo)
-   * **Highlight:** $L_{\text{highlight}} = \min(1, L_{\text{base}} \times 1.18)$, $H_{\text{highlight}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 15^\circ)$ (Sunlight warm amber)
+4. **100% Feature Preservation & 4-Tone Discrete OKLCH Cel-Shading:**
+    Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH via `buildCelRamp()` (4 tones):
+    * **Base Tone:** Original artist color preserved (55%–60% of lit surface)
+    * **Unified Shadow:** $L_{\text{shadow}} = \max(0.18, L_{\text{base}} \times 0.78)$, $H_{\text{shadow}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 14^\circ)$, $C_{\text{shadow}} = \min(0.35, C_{\text{base}} \times 1.05)$ (cool indigo skylight)
+    * **Deep Crevice:** $L_{\text{deep}} = \max(0.12, L_{\text{base}} \times 0.60)$, $H_{\text{deep}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 20^\circ)$, $C_{\text{deep}} = \min(0.35, C_{\text{base}} \times 1.08)$ (concave seams where $AO < 0.60$)
+    * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.28)$, $H_{\text{hi}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 10^\circ)$, $C_{\text{hi}} = \min(0.35, C_{\text{base}} \times 0.95)$ (warm sunlight, shiny materials only: $k_s > 0.1$ and not matte/fabric)
+    * **Shadow Terminator (v1.10.2):** Shadow placement is driven purely by the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$, thresholded at $0.55$. The ambient contribution is excluded from shadow placement to prevent it from overwhelming the directional terminator ($\text{ambSignal} \approx 1.27$ would otherwise push all pixels above threshold). Optional Bayer matrix dither modulation perturbs the threshold for organic shadow edges.
 5. **Blinn-Phong Specular Half-Vector with View-Alignment Masking:**
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha \cdot \min\left(1, \frac{\mathbf{N} \cdot \mathbf{V}}{0.35}\right)$$
 6. **Discrete Laplace Cavity Occlusion:**
