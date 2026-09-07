@@ -28,6 +28,32 @@
 
 ---
 
+## Phase 41.5 — Landing v3: Interactive Engine Showcase & Navigation Architecture
+**Goal:** Prove PixiBun's mathematical computer graphics algorithms directly on the landing page before visitors enter the studio, providing tactile, interactive evidence of deterministic 2.5D lighting, RotSprite geometry, and Oklab synthesis.
+
+**Evidence & Rationale:**
+- Passive Hero Gap: Landing page previously featured only marketing copy and a simple 32x20 DoodlePad (Phase 13), failing to visually communicate the 2.5D photometric studio, RotSprite rotation, and game engine packing.
+- Anti-Slop Proof: Visitors needed tactile, interactive verification that PixiBud's pixel intelligence is deterministic computer graphics mathematics rather than cloud-based generative AI hallucinations.
+
+**Deliverables:**
+- [x] Interactive Engine Showcase (`src/components/landing/AtelierEngineShowcase.tsx`): 4-tab interactive workbench on the home desk (`#engine-showcase`):
+  - `src/components/landing/showcase/PhotometricShowcase.tsx`: Draggable pixel light bulb gizmo with azimuth/elevation orbital controls, stepped OKLCH cel-shading vs. normal vector fields, 4 sprite models (*Ghost, Shroom, Bun, Lantern*), 4 Blinn-Phong materials, and Aaltonen raymarched ground cast shadows vs. drop AO.
+  - `src/components/landing/showcase/RotSpriteShowcase.tsx`: Interactive angle comparison slider between blurry bicubic filtering and Xenowhirl 8x Scale2X continuous inverse sampling.
+  - `src/components/landing/showcase/PixelizeShowcase.tsx`: Real-time image downsampling demo in OKLab with Sobel salience edge-preservation.
+  - `src/components/landing/showcase/EngineExportShowcase.tsx`: Live sprite sheet packing inspector with Godot 4, Unity, and Phaser 3 metadata.
+- [x] Landing Navigation Architecture (`src/components/landing/LandingNav.tsx`, `src/app/page.tsx`): Upgraded navigation to `Playground / Studio / Engine (#engine-showcase) / Pillars (#features) / Shelf (#gallery) / Story (#story)`.
+- [x] Manifesto Badge: Added *'100% Offline in Browser • Deterministic Math & Zero Cloud Lag • Zero Generative Hallucinations'* footer banner.
+- [x] Comprehensive Test Suite (`tests/components/AtelierEngineShowcase.test.tsx`): 8 integration tests validating tab switching, light gizmo dragging, sprite model swaps, material chips, and shadow mode toggling (388 LOC).
+
+**Acceptance criteria:**
+- `npx vitest run tests/components/AtelierEngineShowcase.test.tsx` passes 8/8 tests.
+- Navigating to `#engine-showcase` smoothly scrolls to the interactive workbench.
+- Draggable pixel bulb gizmo updates photometric cel-shading live on canvas without UI lag.
+
+**Status:** Complete (2026-09-06)
+
+---
+
 ## Phase 30 — Critical Bug Remediation & Hot-Path Performance (P0/P1)
 **Goal:** Eliminate drawing stroke re-render cascades, prune unselected Zustand store subscriptions, secure illegal constructor fallbacks, convert monolithic autosave to binary blob storage, and eliminate compositor singleton aliasing risks.
 

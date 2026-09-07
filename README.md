@@ -39,6 +39,15 @@ graph LR
     end
 ```
 
+### 🎮 Live Interactive Engine Showcase (Landing Page)
+Before stepping into the full studio, visitors can interact directly with PixiBun's computer graphics algorithms right on the home desk (`#engine-showcase`):
+* **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading, sprite model switching (*Ghost, Shroom, Bun, Lantern*), Blinn-Phong material profiles (*Matte, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
+* **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard blurry bicubic filtering, maintaining crisp single-pixel contours at 45°.
+* **Intelligent Image Synthesis:** Real-time downsampling interactive demo showcasing Sobel gradient salience edge-preservation and OKLab color quantization.
+* **Game Engine Exports:** Live sprite sheet packing viewer with instant Godot 4 `.tres`, Unity, and Phaser 3 JSON metadata inspection.
+
+---
+
 ### 🖌️ Artisan Raster & Drawing Engine
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
 * **Wu's Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.

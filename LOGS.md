@@ -980,4 +980,31 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `eslint src tests`: 0 errors, 0 warnings
 - `npx vitest run`: 406/406 tests passed across 63 suites (20 new tests)
 - `npm run verify:docs`: all integrity checks passed
-**Status:** Complete
+**Status:** Complete
+
+---
+
+## 2026-09-06 — Phase 41.5: Landing v3 — Interactive Engine Showcase & Pillars Navigation
+
+**Problem Statement:**
+1. The landing page previously presented only passive marketing copy and a simple 32x20 DoodlePad (Phase 13), failing to visually prove PixiBun's mathematical graphics engines (2.5D photometric lighting, RotSprite, Oklab synthesis, game engine packing) before users entered the studio.
+2. Visitors needed tactile, interactive evidence that PixiBun's core intelligence is deterministic computer graphics math rather than cloud-based generative AI hallucinations.
+
+**Engineering Execution:**
+- **AtelierEngineShowcase (`src/components/landing/AtelierEngineShowcase.tsx`)**: Built a modular 4-tab interactive workbench on the home desk (`#engine-showcase`):
+  1. `PhotometricShowcase.tsx`: Live draggable pixel light bulb gizmo with continuous azimuth/elevation orbital controls, stepped OKLCH cel-shading vs. normal vector fields, 4 sprite models (*Ghost, Shroom, Bun, Lantern*), 4 Blinn-Phong materials (*Matte, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
+  2. `RotSpriteShowcase.tsx`: Live interactive angular comparison slider contrasting classic blurry bicubic rotation against Xenowhirl 8x Scale2X inverse sampling, preserving single-pixel contours at 45°.
+  3. `PixelizeShowcase.tsx`: Real-time image-to-pixel downsampling demo with Sobel gradient salience edge weighting and OKLab color quantization.
+  4. `EngineExportShowcase.tsx`: Interactive sprite sheet packing previewer with instant Godot 4 `.tres`, Unity, and Phaser 3 JSON metadata tabs.
+- **Navigation & Architectural Structure (`src/components/landing/LandingNav.tsx`, `src/app/page.tsx`)**:
+  - Upgraded navigation from legacy `Canvas / Shelf / Story` to `Playground / Studio / Engine (#engine-showcase) / Pillars (#features) / Shelf (#gallery) / Story (#story)`.
+  - Added bottom manifesto badge: *'100% Offline in Browser • Deterministic Math & Zero Cloud Lag • Zero Generative Hallucinations'*.
+- **Harness & Verification (`tests/components/AtelierEngineShowcase.test.tsx`)**:
+  - 8 comprehensive integration tests validating tab switching, light gizmo orbit dragging, sprite model swaps, material chips, and shadow mode toggling (388 LOC).
+
+**Checks run:**
+- `npx vitest run tests/components/AtelierEngineShowcase.test.tsx`: 8/8 passed
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors
+**Status:** Complete
+
