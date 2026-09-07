@@ -46,9 +46,13 @@ export interface SignalingPayload {
 }
 
 export interface CrdtSyncMessage {
-  type: 'INITIAL_SYNC' | 'PIXEL_OPS' | 'PING';
+  type: 'INITIAL_SYNC' | 'PIXEL_OPS' | 'PING' | 'STRUCTURE_SYNC';
   peerId: string;
   ops?: PixelOp[];
+  /** Layer whose buffer the ops apply to (layer IDs are shared via STRUCTURE_SYNC). */
+  layerId?: string;
+  /** Host layer/frame structure for STRUCTURE_SYNC messages. */
+  frames?: StructurePayload;
   timestamp?: number;
 }
 
@@ -67,8 +71,9 @@ export interface P2PSyncSessionOptions {
   peerColor?: string;
   iceServers?: RTCIceServer[];
   lanOnly?: boolean;
-  onRemotePixelOps?: (ops: PixelOp[]) => void;
-  onInitialSync?: (ops: PixelOp[]) => void;
+  onRemotePixelOps?: (ops: PixelOp[], layerId?: string) => void;
+  onInitialSync?: (ops: PixelOp[], layerId?: string) => void;
+  onStructureSync?: (payload: StructurePayload) => void;
   onRemoteCursor?: (cursor: RemoteCursor) => void;
   onConnectionStateChange?: (state: P2PConnectionState) => void;
   onError?: (error: Error) => void;
@@ -83,6 +88,92 @@ export const DEFAULT_ICE_SERVERS: RTCIceServer[] = LAN_ICE_SERVERS;
 
 export const MAX_P2P_PAYLOAD_SIZE = 256 * 1024; // 256 KB
 export const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+/** Blend modes that may appear in a STRUCTURE_SYNC payload (mirrors types/canvas.ts). */
+export const STRUCTURE_BLEND_MODES = ['source-over', 'multiply', 'screen', 'overlay', 'color-dodge'] as const;
+
+export interface StructureLayer {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  blendMode: (typeof STRUCTURE_BLEND_MODES)[number];
+  tag?: string;
+}
+
+export interface StructureFrame {
+  id: string;
+  durationMs: number;
+  layers: StructureLayer[];
+}
+
+export interface StructurePayload {
+  width: number;
+  height: number;
+  frames: StructureFrame[];
+}
+
+function isStructureBlendMode(value: unknown): value is StructureLayer['blendMode'] {
+  return typeof value === 'string' && (STRUCTURE_BLEND_MODES as readonly string[]).includes(value);
+}
+
+/**
+ * Validates a STRUCTURE_SYNC payload before it is allowed anywhere near the
+ * store: every field is bounds-checked so a malicious peer cannot inject
+ * malformed layer metadata, oversized structures, or invalid blend modes.
+ * Mirrors the guarantees of lib/project/schema.ts for untrusted inputs.
+ */
+export function validateStructurePayload(data: unknown): StructurePayload | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const p = data as Record<string, unknown>;
+
+  if (
+    typeof p.width !== 'number' || !Number.isInteger(p.width) || p.width < 1 || p.width > 4096 ||
+    typeof p.height !== 'number' || !Number.isInteger(p.height) || p.height < 1 || p.height > 4096
+  ) {
+    return null;
+  }
+  if (!Array.isArray(p.frames) || p.frames.length === 0 || p.frames.length > 4096) return null;
+
+  const frames: StructureFrame[] = [];
+  for (const rawFrame of p.frames) {
+    if (typeof rawFrame !== 'object' || rawFrame === null) return null;
+    const f = rawFrame as Record<string, unknown>;
+    if (typeof f.id !== 'string' || f.id.length === 0 || f.id.length > 128) return null;
+    if (
+      typeof f.durationMs !== 'number' || !Number.isInteger(f.durationMs) ||
+      f.durationMs < 1 || f.durationMs > 60_000
+    ) {
+      return null;
+    }
+    if (!Array.isArray(f.layers) || f.layers.length === 0 || f.layers.length > 256) return null;
+
+    const layers: StructureLayer[] = [];
+    for (const rawLayer of f.layers) {
+      if (typeof rawLayer !== 'object' || rawLayer === null) return null;
+      const l = rawLayer as Record<string, unknown>;
+      if (typeof l.id !== 'string' || l.id.length === 0 || l.id.length > 128) return null;
+      if (typeof l.name !== 'string' || l.name.length > 256) return null;
+      if (typeof l.visible !== 'boolean' || typeof l.locked !== 'boolean') return null;
+      if (typeof l.opacity !== 'number' || !Number.isFinite(l.opacity) || l.opacity < 0 || l.opacity > 1) return null;
+      if (!isStructureBlendMode(l.blendMode)) return null;
+      if (l.tag !== undefined && (typeof l.tag !== 'string' || l.tag.length > 64)) return null;
+      layers.push({
+        id: l.id,
+        name: l.name,
+        visible: l.visible,
+        locked: l.locked,
+        opacity: l.opacity,
+        blendMode: l.blendMode,
+        ...(l.tag !== undefined ? { tag: l.tag } : {}),
+      });
+    }
+    frames.push({ id: f.id, durationMs: f.durationMs, layers });
+  }
+
+  return { width: p.width, height: p.height, frames };
+}
 
 /**
  * Validates whether an incoming object conforms to a valid PixelOp with strict boundary constraints:
@@ -146,7 +237,12 @@ export function validateCrdtSyncMessage(data: unknown): CrdtSyncMessage | null {
   if (typeof data !== 'object' || data === null) return null;
   const msg = data as Record<string, unknown>;
 
-  if (msg.type !== 'INITIAL_SYNC' && msg.type !== 'PIXEL_OPS' && msg.type !== 'PING') {
+  if (
+    msg.type !== 'INITIAL_SYNC' &&
+    msg.type !== 'PIXEL_OPS' &&
+    msg.type !== 'PING' &&
+    msg.type !== 'STRUCTURE_SYNC'
+  ) {
     return null;
   }
   if (typeof msg.peerId !== 'string' || msg.peerId.length === 0 || msg.peerId.length > 128) {
@@ -155,6 +251,14 @@ export function validateCrdtSyncMessage(data: unknown): CrdtSyncMessage | null {
 
   if (msg.type === 'INITIAL_SYNC' || msg.type === 'PIXEL_OPS') {
     if (!Array.isArray(msg.ops)) return null;
+    // layerId is mandatory when ops target a specific layer buffer
+    if (
+      typeof msg.layerId !== 'string' ||
+      msg.layerId.length === 0 ||
+      msg.layerId.length > 128
+    ) {
+      return null;
+    }
     const validOps: PixelOp[] = [];
     for (const op of msg.ops) {
       if (isValidPixelOp(op)) {
@@ -168,6 +272,18 @@ export function validateCrdtSyncMessage(data: unknown): CrdtSyncMessage | null {
       type: msg.type,
       peerId: msg.peerId,
       ops: validOps,
+      layerId: msg.layerId,
+      timestamp: typeof msg.timestamp === 'number' && Number.isFinite(msg.timestamp) ? msg.timestamp : undefined,
+    };
+  }
+
+  if (msg.type === 'STRUCTURE_SYNC') {
+    const frames = validateStructurePayload(msg.frames);
+    if (!frames) return null;
+    return {
+      type: 'STRUCTURE_SYNC',
+      peerId: msg.peerId,
+      frames,
       timestamp: typeof msg.timestamp === 'number' && Number.isFinite(msg.timestamp) ? msg.timestamp : undefined,
     };
   }
@@ -400,9 +516,11 @@ export class P2PSyncSession {
             return;
           }
           if (msg.type === 'INITIAL_SYNC' && msg.ops) {
-            this.options.onInitialSync?.(msg.ops);
+            this.options.onInitialSync?.(msg.ops, msg.layerId);
           } else if (msg.type === 'PIXEL_OPS' && msg.ops) {
-            this.options.onRemotePixelOps?.(msg.ops);
+            this.options.onRemotePixelOps?.(msg.ops, msg.layerId);
+          } else if (msg.type === 'STRUCTURE_SYNC' && msg.frames) {
+            this.options.onStructureSync?.(msg.frames);
           }
         } catch (err) {
           console.error('Failed to parse CRDT sync message:', err);
@@ -586,7 +704,7 @@ export class P2PSyncSession {
   /**
    * Broadcasts CRDT pixel operations over the reliable ordered channel.
    */
-  public broadcastPixelOps(ops: PixelOp[]): boolean {
+  public broadcastPixelOps(ops: PixelOp[], layerId?: string): boolean {
     if (!this.syncChannel || this.syncChannel.readyState !== 'open' || ops.length === 0) {
       return false;
     }
@@ -598,6 +716,7 @@ export class P2PSyncSession {
         type: 'PIXEL_OPS',
         peerId: this.peerId,
         ops: chunk,
+        ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
       this.syncChannel.send(JSON.stringify(msg));
@@ -609,7 +728,7 @@ export class P2PSyncSession {
    * Broadcasts initial full state over the reliable ordered channel.
    * Chunks large snapshots into batches of 1,000 ops to stay safely within the 256KB frame limit.
    */
-  public broadcastInitialSync(allOps: PixelOp[]): boolean {
+  public broadcastInitialSync(allOps: PixelOp[], layerId?: string): boolean {
     if (!this.syncChannel || this.syncChannel.readyState !== 'open') {
       return false;
     }
@@ -619,6 +738,7 @@ export class P2PSyncSession {
         type: 'INITIAL_SYNC',
         peerId: this.peerId,
         ops: [],
+        ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
       this.syncChannel.send(JSON.stringify(msg));
@@ -632,10 +752,37 @@ export class P2PSyncSession {
         type: 'INITIAL_SYNC',
         peerId: this.peerId,
         ops: chunk,
+        ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
       this.syncChannel.send(JSON.stringify(msg));
     }
+    return true;
+  }
+
+  /**
+   * Broadcasts the host's layer/frame structure so both peers share one layer
+   * ID namespace (a prerequisite for per-layer CRDT op routing).
+   * The payload is metadata-only (no pixels) and validated on receipt by
+   * validateStructurePayload.
+   */
+  public broadcastStructure(payload: StructurePayload): boolean {
+    if (!this.syncChannel || this.syncChannel.readyState !== 'open') {
+      return false;
+    }
+
+    const msg: CrdtSyncMessage = {
+      type: 'STRUCTURE_SYNC',
+      peerId: this.peerId,
+      frames: payload,
+      timestamp: Date.now(),
+    };
+    const json = JSON.stringify(msg);
+    if (json.length > MAX_P2P_PAYLOAD_SIZE) {
+      console.warn('P2P structure payload exceeded 256KB limit. Discarding message.');
+      return false;
+    }
+    this.syncChannel.send(json);
     return true;
   }
 

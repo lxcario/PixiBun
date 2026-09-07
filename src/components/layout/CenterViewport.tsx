@@ -37,6 +37,8 @@ import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
 import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvents';
 import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { coDrawBridge, CODRAW_COMPOSITE_EVENT } from '@/lib/sync/coDrawBridge';
+import { RemoteCursorsOverlay } from '@/components/studio/RemoteCursorsOverlay';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -134,6 +136,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     performUndo,
     performRedo,
     drawPointsOnActiveLayer,
+    currentStrokeSnapshotRef,
     setPrimaryColor,
   } = useViewportDrawing({
     canvasWidth,
@@ -293,6 +296,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     onionSkin,
     isPlaying,
   ]);
+
+  // Remote co-draw peers paint layer buffers directly (outside React state),
+  // so the bridge requests an explicit composite re-render per applied batch.
+  useEffect(() => {
+    const handleRemoteComposite = () => renderComposite();
+    window.addEventListener(CODRAW_COMPOSITE_EVENT, handleRemoteComposite);
+    return () => window.removeEventListener(CODRAW_COMPOSITE_EVENT, handleRemoteComposite);
+  }, [renderComposite]);
 
   // Pointer Event Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -553,6 +564,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }
         isDrawingRef.current = false;
         setIsDrawing(false);
+        // Eyedropper never changes pixels: drop the stale pre-stroke snapshot
+        // so a fast pointer-up cannot commit a no-op undo step.
+        currentStrokeSnapshotRef.current = null;
         break;
       }
       case 'bucket': {
@@ -586,6 +600,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     if (coords) {
       setCursorCoords(coords);
       renderBrushGhost(coords);
+      // Throttled presence broadcast for co-draw peers (no-op when disconnected)
+      coDrawBridge.broadcastCursor(coords.x, coords.y);
     } else {
       renderBrushGhost(null);
     }
@@ -1077,6 +1093,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           style={{ filter: cvdFilterCss }}
           aria-hidden="true"
         />
+
+        {/* Remote co-draw peer cursors (presence channel) */}
+        <RemoteCursorsOverlay zoom={zoom} />
 
         {/* Layer 1: Onion Skin Ghost Canvases */}
         <canvas

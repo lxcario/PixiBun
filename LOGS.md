@@ -951,3 +951,33 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - Total TestSprite suite: 22/22 tests passed (100% green pass rate)
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-06 — Phase 42: Co-Draw Activation, Deep Audit Remediation & Server Hardening
+
+**Problem Statement:**
+1. The CRDT/P2P engine existed only in tests — `CoDrawModal` created `P2PSyncSession` instances with no sync callbacks, so connected peers never exchanged a pixel despite UI claims of automatic synchronization.
+2. A deep codebase audit surfaced critical defects: undo-after-resize corruption, a boot crash vector from unguarded localStorage parsing, bounds gaps in frame operations, and an unbounded diagnostics relay endpoint.
+3. Round 2 audit findings required academic-level fixes: autosave lost-update race, native `await` inside Dexie transactions, ICE gathering hard-capped too low, WebM encoder resource leak, FIFO cache eviction, and `Math.random` peer IDs.
+
+**Engineering Execution:**
+- **Co-Draw Bridge (`src/lib/sync/coDrawBridge.ts`)**: Module-scoped singleton wiring structure join, full-state antientropy (canvas-seeded `CrdtPixelBuffer` snapshots per layer), stroke-diff delta propagation via `src/lib/sync/strokeDiff.ts`, remote op application, throttled cursor presence, and session lifetime independent of modal mount.
+- **Protocol Hardening (`src/lib/sync/p2pSync.ts`)**: `STRUCTURE_SYNC` message with strict `validateStructurePayload`; `layerId` mandatory on ops messages; sender-side payload size ceiling for structure broadcasts.
+- **Presence Overlay (`src/components/studio/RemoteCursorsOverlay.tsx`)**: Zoom-aware remote cursor rendering with 4-second staleness pruning.
+- **Round 2 Audit Fixes (6 commits)**:
+  - `fix(autosave)`: do-while coalescing loop + `visibilitychange` flush — in-flight save no longer silently drops pending edits.
+  - `fix(storage)`: native `blob.arrayBuffer()` moved outside Dexie transaction block — prevents `TransactionInactiveError` in strict browser engines.
+  - `fix(p2p)`: ICE gathering cap raised to 5s with 600ms idle debounce + null candidate detection for mobile/VPN reliability.
+  - `fix(export)`: WebM encoder capture stream tracks stopped in cleanup.
+  - `fix(sw)`: FIFO cache eviction upgraded to touch-on-hit LRU promotion.
+  - `fix(minor)`: async audio suspend, `crypto.getRandomValues` peer IDs, `visibilitychange` flush.
+- **Deep Audit Fixes**: guarded localStorage parsing (`createToolSlice.ts`); bounds guards in `deleteFrame`/`reorderFrames` (`createAnimationSlice.ts`); cross-project state resets (`createHistorySlice.ts`); tag-preserving redo (`useViewportDrawing.ts`, `canvas.ts`); merge-down two-step confirm (`LayersPanel.tsx`); eyedropper stale-snapshot fix; 4-digit `#RGBA` support (`floodFill.ts`); `prefers-color-scheme` fallback (`themeStore.ts`).
+- **Relay Hardening (`src/app/api/diagnostics/relay/route.ts`, `src/lib/server/tokenBucket.ts`)**: Token-bucket rate limiting (12/min, burst 12, per IP), 64KB body ceiling, 100-event cap.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 406/406 tests passed across 63 suites (20 new tests)
+- `npm run verify:docs`: all integrity checks passed
+**Status:** Complete

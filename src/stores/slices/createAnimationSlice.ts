@@ -118,6 +118,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   deleteFrame: frameIndex => {
     set(state => {
       if (state.frames.length <= 1) return;
+      // Bounds guard: an out-of-range index would crash on removedFrame.layers
+      if (frameIndex < 0 || frameIndex >= state.frames.length) return;
       const removedFrame = state.frames[frameIndex];
       deleteBuffers(removedFrame.layers.map(l => l.id));
       state.frames.splice(frameIndex, 1);
@@ -137,6 +139,15 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   reorderFrames: (startIndex, endIndex) => {
     set(state => {
+      // Bounds guard: out-of-range indices would splice `undefined` into frames
+      if (
+        startIndex < 0 ||
+        startIndex >= state.frames.length ||
+        endIndex < 0 ||
+        endIndex >= state.frames.length
+      ) {
+        return;
+      }
       const [removed] = state.frames.splice(startIndex, 1);
       state.frames.splice(endIndex, 0, removed);
       state.activeFrameIndex = endIndex;

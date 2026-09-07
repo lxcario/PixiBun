@@ -76,6 +76,13 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
 
   loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
     set(state => {
+      // Cross-project boundary: viewport-local state that cannot be carried
+      // meaningfully into the restored document must be reset, or a stale
+      // selection / clip reference survives into an unrelated project.
+      state.selection = null;
+      state.selectionMask = null;
+      state.activeClipId = null;
+      state.isPlaying = false;
       if (projectId) state.currentProjectId = projectId;
       if (projectData.name) state.projectName = projectData.name;
       if (projectData.width) state.canvasWidth = projectData.width;

@@ -11,6 +11,9 @@ export function hexToRgba(hex: string): RGBA {
   let cleanHex = hex.replace('#', '');
   if (cleanHex.length === 3) {
     cleanHex = cleanHex.split('').map(c => c + c).join('') + 'ff';
+  } else if (cleanHex.length === 4) {
+    // #RGBA — double each nibble to its RRGGBBAA form (CSS Color 4 shorthand)
+    cleanHex = cleanHex.split('').map(c => c + c).join('');
   } else if (cleanHex.length === 6) {
     cleanHex += 'ff';
   } else if (cleanHex.length === 8) {

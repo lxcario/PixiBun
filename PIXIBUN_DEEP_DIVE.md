@@ -17,7 +17,7 @@ PixiBun is built on Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand 
 `	ext
 src/
 ├── app/
-│   ├── api/diagnostics/relay/route.ts # SSRF-guarded diagnostics proxy (optional, zero telemetry)
+│   ├── api/diagnostics/relay/route.ts # SSRF-guarded diagnostics proxy (optional, zero telemetry, token-bucket rate limited)
 │   ├── globals.css                  # Tailwind v4 @theme, OKLCH variables, tactile shadows, dither patterns
 │   ├── layout.tsx                   # Root layout (Silkscreen, Plus Jakarta Sans, JetBrains Mono fonts)
 │   ├── page.tsx                     # Landing Page (Living desk scene, diorama, artisan story)
@@ -26,7 +26,7 @@ src/
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
 │   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
 │   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal)
-│   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, ViewportLensFilters)
+│   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, ViewportLensFilters, RemoteCursorsOverlay)
 │   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
 ├── lib/
 │   ├── ai/
@@ -46,11 +46,14 @@ src/
 │   ├── audio/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
 │   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices
+│   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool
 │   ├── events/                      # Typed event bus (studioEvents.ts)
 │   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
 │   ├── render/                      # Pure compositor (compositor.ts) and template renderer (templateRenderer.ts)
+│   ├── server/                      # Pure server modules: tokenBucket.ts (token-bucket rate limiter for route handlers)
+│   ├── sync/                        # P2P co-draw: coDrawBridge (studio integration), p2pSync (WebRTC transport + validation), strokeDiff (stroke delta extraction)
 │   └── storage/
 │       └── db.ts                    # Dexie.js (IndexedDB Schema v4) local database and continuous autosave
 ├── stores/

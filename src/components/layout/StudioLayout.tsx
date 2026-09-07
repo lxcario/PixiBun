@@ -220,6 +220,15 @@ export const StudioLayout: React.FC = () => {
     }, AUTOSAVE_DEBOUNCE_MS);
   }, [runAutosave]);
 
+  // Remote co-draw strokes mutate pixel buffers without a local history
+  // commit, so schedule the same debounced autosave when a peer changes the
+  // canvas — otherwise peer artwork would only persist on the next local edit.
+  useEffect(() => {
+    const onRemoteChange = () => handleCommitHistory();
+    window.addEventListener('pixibun:remote-change', onRemoteChange);
+    return () => window.removeEventListener('pixibun:remote-change', onRemoteChange);
+  }, [handleCommitHistory]);
+
   // Best-effort flush when the tab is hidden or closed mid-debounce.
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -288,9 +297,14 @@ export const StudioLayout: React.FC = () => {
 
   // Handle Canvas Resize - anchor and resample choices flow through so
   // content lands where the user asked instead of hugging the top-left.
+  // History MUST be invalidated here: undo snapshots store full-canvas
+  // ImageData at the old dimensions, so Ctrl+Z after a resize would
+  // putImageData stale-size pixels onto the resized buffers and corrupt
+  // the artwork.
   const handleResize = useCallback(
     (newWidth: number, newHeight: number, anchor: AnchorPosition, resample: boolean) => {
       setCanvasSize(newWidth, newHeight, anchor, resample);
+      window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
     },
     [setCanvasSize]
   );
@@ -307,8 +321,10 @@ export const StudioLayout: React.FC = () => {
     const store = useStudioStore.getState();
 
     // 1. If user chose to match image dimensions, resize canvas first!
+    //    History is invalidated because undo snapshots hold old-dimension ImageData.
     if (resizeCanvasToMatch) {
       store.setCanvasSize(resizeCanvasToMatch.width, resizeCanvasToMatch.height, 'top-left', false);
+      window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
     }
 
     const currentStore = useStudioStore.getState();

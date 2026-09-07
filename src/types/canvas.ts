@@ -47,4 +47,7 @@ export interface HistoryStep {
   imageData: ImageData;
   // If this step created a new layer, its ID is stored here so undo can remove it cleanly
   createdLayerId?: string;
+  // Tag of the created layer (photometric, cast-shadow, ...), preserved so
+  // redo can re-create the layer with its machine identity intact
+  createdLayerTag?: string;
 }

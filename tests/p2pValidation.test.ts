@@ -101,16 +101,19 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       const msgOps = validateCrdtSyncMessage({
         type: 'PIXEL_OPS',
         peerId: 'peer-1',
+        layerId: 'layer-1',
         ops: [validPixelOp],
         timestamp: 2000,
       });
       expect(msgOps).not.toBeNull();
       expect(msgOps?.type).toBe('PIXEL_OPS');
       expect(msgOps?.ops?.length).toBe(1);
+      expect(msgOps?.layerId).toBe('layer-1');
 
       const msgSync = validateCrdtSyncMessage({
         type: 'INITIAL_SYNC',
         peerId: 'peer-1',
+        layerId: 'layer-1',
         ops: [validPixelOp],
       });
       expect(msgSync).not.toBeNull();
@@ -128,6 +131,14 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       expect(validateCrdtSyncMessage({ type: 'UNKNOWN', peerId: 'p' })).toBeNull();
       expect(validateCrdtSyncMessage({ type: 'PIXEL_OPS' })).toBeNull();
       expect(validateCrdtSyncMessage({ type: 'PIXEL_OPS', peerId: '' })).toBeNull();
+      // Ops messages MUST carry a layerId so per-layer CRDT routing is unambiguous
+      expect(
+        validateCrdtSyncMessage({
+          type: 'PIXEL_OPS',
+          peerId: 'p',
+          ops: [{ x: 0, y: 0, r: 0, g: 0, b: 0, a: 0, timestamp: 1, peerId: 'p' }],
+        })
+      ).toBeNull();
       expect(validateCrdtSyncMessage(null)).toBeNull();
       expect(validateCrdtSyncMessage('hello')).toBeNull();
     });
@@ -157,6 +168,7 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       const result = validateCrdtSyncMessage({
         type: 'PIXEL_OPS',
         peerId: 'peer-1',
+        layerId: 'layer-1',
         ops: [validOp, maliciousOp],
       });
       expect(result).toBeNull();

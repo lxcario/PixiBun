@@ -80,10 +80,19 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   palettes: PRESET_PALETTES,
   currentPaletteId: 'alabaster-wisteria-8',
   customRamps: [],
-  recentColors:
-    typeof window !== 'undefined' && window.localStorage
-      ? JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]')
-      : [],
+  recentColors: (() => {
+    // Module-scope JSON.parse of user-controlled localStorage: a corrupted
+    // value here would throw during store creation and crash the entire
+    // studio on load, so it must be defensively guarded.
+    if (typeof window === 'undefined' || !window.localStorage) return [];
+    try {
+      const parsed: unknown = JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((c): c is string => typeof c === 'string');
+    } catch {
+      return [];
+    }
+  })(),
 
   setActiveTool: tool => {
     set(state => {

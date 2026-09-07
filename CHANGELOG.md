@@ -2,6 +2,31 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.10.0] - 2026-09-06
+### Co-Draw Activation: End-to-End CRDT Sync & Deep Audit Remediation (Phase 42)
+- **P2P Co-Draw Wired End-to-End (`src/lib/sync/coDrawBridge.ts`, `src/lib/sync/p2pSync.ts`, `src/lib/collab/crdtPixelBuffer.ts`)**:
+  - The CRDT engine was previously exercised only by tests; the CoDrawModal created sessions with no sync callbacks, so connected peers never exchanged a single pixel despite UI claims. The new module-scoped `CoDrawBridge` singleton integrates the full pipeline: structure join, full-state antientropy, delta propagation, and presence.
+  - Full-state antientropy join per Shapiro et al. (SSS 2011, §4): on connect, the host broadcasts a `STRUCTURE_SYNC` payload so both peers share one layer-ID namespace, seeds one `CrdtPixelBuffer` per layer from the live canvases, and transmits complete per-layer state snapshots (with a bounded retry loop, since `RTCPeerConnection.connectionState === 'connected'` does not imply RFC 8831 data-channel openness).
+  - Delta propagation: committed strokes are diffed against their pre-stroke history snapshot via the new pure `diffImageDataToOps` in `src/lib/sync/strokeDiff.ts`; each changed pixel becomes an LWW op broadcast per layer. Remote ops are applied via `applyRemoteOp` (HLC + bounded drift + deterministic peerId tie-break) and painted onto layer buffers in a single `getImageData`/`putImageData` pass.
+  - Protocol extension in `src/lib/sync/p2pSync.ts`: new `STRUCTURE_SYNC` message with strict `validateStructurePayload` (bounds-checked dimensions, frame/layer counts, blend-mode whitelist, tag length); `layerId` is now mandatory on ops messages for unambiguous per-layer CRDT routing.
+  - Presence: throttled ~30fps cursor broadcast over the lossy PR-SCTP channel, rendered by the new zoom-aware `src/components/studio/RemoteCursorsOverlay.tsx` with 4-second staleness pruning.
+  - Sessions now outlive modal unmount (singleton-owned instead of modal `useState`-owned); `src/components/modals/CoDrawModal.tsx` rehydrates connection state on mount, and its copy now honestly states that the host owns the layer structure while connected.
+- **Deep Audit Remediation (Critical/High Severity)**:
+  - Canvas resize no longer corrupts artwork on undo: undo snapshots store full-canvas `ImageData` at capture-time dimensions, so `src/components/layout/StudioLayout.tsx` now dispatches `pixibun:history-clear` after both resize paths (resize modal and image-import resize-to-match).
+  - Studio boot crash eliminated: `src/stores/slices/createToolSlice.ts` parsed `pixibun_recent_colors` from localStorage with unguarded module-scope `JSON.parse`; a corrupted value would white-screen the studio permanently. Now guarded with try/catch, array/string type filtering, and a safe fallback.
+  - Frame operation bounds guards in `src/stores/slices/createAnimationSlice.ts`: `deleteFrame` no longer crashes on out-of-range indices, and `reorderFrames` can no longer splice `undefined` entries into `frames`.
+- **Deep Audit Remediation (Medium/Low Severity)**:
+  - Redo of created layers now re-inserts them into their originating frame (`nextStep.frameIndex`) instead of the currently active frame, and preserves the machine tag via the new `createdLayerTag` field on `HistoryStep` in `src/types/canvas.ts`, captured in `src/hooks/viewport/useViewportDrawing.ts` and `src/hooks/viewport/useViewportStudioEvents.ts`.
+  - Merge-down is now a two-step confirm in `src/components/layout/inspector/LayersPanel.tsx` (the pixel-granularity history engine cannot represent structural layer ops, so it was previously irreversible with a single misclick).
+  - Eyedropper no longer leaves a stale pre-stroke snapshot that a fast pointer-up could commit as a no-op undo step (`src/components/layout/CenterViewport.tsx`).
+  - `hexToRgba` in `src/lib/canvas/floodFill.ts` now expands 4-digit `#RGBA` shorthand per CSS Color 4 instead of silently returning white.
+  - Theme detection in `src/stores/themeStore.ts` respects `prefers-color-scheme` for first-time visitors.
+  - `loadProjectState` in `src/stores/slices/createHistorySlice.ts` resets viewport-local state (selection, selection mask, active clip, playback) across project boundaries.
+- **Diagnostics Relay Server Hardening (`src/app/api/diagnostics/relay/route.ts`, `src/lib/server/tokenBucket.ts`)**:
+  - Added token-bucket rate limiting (12 requests/minute, burst 12, keyed by client IP) via the new pure, unit-tested `src/lib/server/tokenBucket.ts`.
+  - Added a 64KB request-body ceiling enforced before JSON parsing and a 100-event cap on forwarded batches (413/429 responses), closing unbounded-body and upstream-flooding vectors. The SSRF/HTTPS-only upstream guard is unchanged.
+- **Documentation Integrity**: All changes verified with `tsc --noEmit`, `eslint`, 406/406 unit tests (20 new in `tests/strokeDiff.test.ts`, `tests/tokenBucket.test.ts`, `tests/structurePayload.test.ts`, `tests/floodFillHex.test.ts`), and a clean production build. Known documented limitation: while connected, the host owns the layer/frame structure; guest structural edits stay local and are overwritten by the next host structure push.
+
 ## [v1.9.2] - 2026-09-05
 ### TestSprite Cloud End-to-End Suite & Complex Feature Verification (Phase 41)
 - **P2P Co-Draw Modal & Serverless Signaling Token Generation (`src/components/modals/CoDrawModal.tsx`)**:

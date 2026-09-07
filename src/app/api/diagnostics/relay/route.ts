@@ -1,6 +1,36 @@
 import { NextResponse } from 'next/server';
+import { createTokenBucketStore } from '@/lib/server/tokenBucket';
+
+// Hard input ceilings: the relay accepts only small, bounded diagnostic
+// batches. An unbounded request.json() is a memory-exhaustion vector, and an
+// unbounded events array would let a single client flood the upstream.
+const MAX_BODY_BYTES = 64 * 1024;
+const MAX_EVENTS = 100;
+
+// Token-bucket rate limiting, keyed by client IP (OWASP REST Cheat Sheet:
+// rate limiting as baseline protection for public API endpoints). Per-process
+// memory: correct for a single Node instance; a per-instance limit on
+// multi-instance deployments.
+const relayLimiter = createTokenBucketStore({ capacity: 12, refillPerMinute: 12 });
+
+function clientKey(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return request.headers.get('x-real-ip') ?? 'unknown';
+}
 
 export async function POST(request: Request) {
+  if (!relayLimiter.take(clientKey(request))) {
+    relayLimiter.prune();
+    return NextResponse.json(
+      { error: 'Too many diagnostic reports. Try again later.' },
+      { status: 429 }
+    );
+  }
+  relayLimiter.prune();
+
   try {
     const targetUrl = process.env.DIAGNOSTICS_RELAY_URL;
 
@@ -28,9 +58,17 @@ export async function POST(request: Request) {
       );
     }
 
+    // Read as text first so the size ceiling is enforced BEFORE parsing.
     let body: Record<string, unknown> | null = null;
     try {
-      body = await request.json();
+      const rawBody = await request.text();
+      if (rawBody.length > MAX_BODY_BYTES) {
+        return NextResponse.json(
+          { error: 'Diagnostic payload exceeds the size limit.' },
+          { status: 413 }
+        );
+      }
+      body = JSON.parse(rawBody) as Record<string, unknown>;
     } catch (parseErr) {
       console.error('Failed to parse diagnostics relay request JSON:', parseErr);
       return NextResponse.json(
@@ -44,7 +82,7 @@ export async function POST(request: Request) {
       app: app || 'pixibun',
       version: version || '1.0.0',
       timestamp: Date.now(),
-      events: Array.isArray(events) ? events : [],
+      events: Array.isArray(events) ? events.slice(0, MAX_EVENTS) : [],
     };
 
     const upstreamResponse = await fetch(targetUrl, {

@@ -30,6 +30,22 @@ export const LayersPanel: React.FC = () => {
 
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
+  const [mergeConfirmLayerId, setMergeConfirmLayerId] = useState<string | null>(null);
+
+  // Merge-down is irreversible (the history engine tracks pixel strokes, not
+  // structural layer ops), so it requires a two-step confirm instead of
+  // executing destructively on a single click.
+  const requestMergeDown = (layerId: string) => {
+    if (mergeConfirmLayerId === layerId) {
+      setMergeConfirmLayerId(null);
+      mergeLayerDown(layerId);
+      return;
+    }
+    setMergeConfirmLayerId(layerId);
+    window.setTimeout(() => {
+      setMergeConfirmLayerId((current) => (current === layerId ? null : current));
+    }, 2500);
+  };
 
   return (
     <div className="flex-1 flex flex-col p-3 gap-3 overflow-hidden">
@@ -62,9 +78,17 @@ export const LayersPanel: React.FC = () => {
             size="icon-sm"
             variant="default"
             disabled={!activeLayer || !isMergeDownAvailable}
-            onClick={() => activeLayer && mergeLayerDown(activeLayer.id)}
-            title="Merge Down"
-            className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            onClick={() => activeLayer && requestMergeDown(activeLayer.id)}
+            title={
+              mergeConfirmLayerId === activeLayer?.id
+                ? 'Click again to confirm merge (irreversible)'
+                : 'Merge Down (irreversible)'
+            }
+            className={`w-8 h-8 ${
+              mergeConfirmLayerId && mergeConfirmLayerId === activeLayer?.id
+                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+            }`}
           >
             <PixelIcon name="merge-down" size={14} />
           </TactileButton>
@@ -184,11 +208,23 @@ export const LayersPanel: React.FC = () => {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      mergeLayerDown(layer.id);
+                      requestMergeDown(layer.id);
                     }}
-                    className="w-6 h-6 flex items-center justify-center transition-colors cursor-pointer text-[var(--text-body)]/50 hover:text-[#f0be7c]"
-                    aria-label={`Merge down layer ${layer.name}`}
-                    title="Merge Down"
+                    className={`w-6 h-6 flex items-center justify-center transition-colors cursor-pointer ${
+                      mergeConfirmLayerId === layer.id
+                        ? 'text-[#f0be7c]'
+                        : 'text-[var(--text-body)]/50 hover:text-[#f0be7c]'
+                    }`}
+                    aria-label={
+                      mergeConfirmLayerId === layer.id
+                        ? `Confirm merge down layer ${layer.name}`
+                        : `Merge down layer ${layer.name}`
+                    }
+                    title={
+                      mergeConfirmLayerId === layer.id
+                        ? 'Click again to confirm merge (irreversible)'
+                        : 'Merge Down (irreversible)'
+                    }
                   >
                     <PixelIcon name="merge-down" size={14} />
                   </button>

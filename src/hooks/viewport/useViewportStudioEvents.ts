@@ -43,7 +43,12 @@ interface UseViewportStudioEventsProps {
   activeLayerId: string;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
-  captureSnapshot: (description: string, overrideLayerId?: string, createdLayerId?: string) => void;
+  captureSnapshot: (
+    description: string,
+    overrideLayerId?: string,
+    createdLayerId?: string,
+    createdLayerTag?: string
+  ) => void;
   commitSnapshot: () => void;
   performUndo: () => void;
   performRedo: () => void;
@@ -214,7 +219,8 @@ export function useViewportStudioEvents({
       }
 
       // Crucially capture the layer's pristine state BEFORE writing AI output
-      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined);
+      // (tag preserved so redo can re-create the tagged layer correctly)
+      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined, tag);
 
       const lCanvas = getOrCreateLayerCanvas(targetLayerId);
       const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
@@ -752,8 +758,8 @@ export function useViewportStudioEvents({
         targetLayerId = newLayer.id;
       }
 
-      // Capture single clean snapshot before modifying
-      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined);
+      // Capture single clean snapshot before modifying (tag preserved for redo)
+      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined, tag);
 
       // Render initial photometric lighting
       const shadedCanvas = executePhotometricPipeline(

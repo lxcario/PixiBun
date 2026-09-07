@@ -19,10 +19,10 @@
 - **Procedural Lo-Fi Ambient Radio:** Built-in Web Audio API synthesizer with rain/vinyl pink noise, warm Rhodes chord progressions, sub-bass, and 4-band real-time spectrum visualizer on the desktop boombox.
 - **Theme System:** Dual Cozy Midnight (Dark) and Morning Atelier (Light) themes with zero-lag style transition suppression and animated Sun/Moon toggle.
 - **Export & Storage Pipeline:** Local-first IndexedDB autosave via Dexie.js (Schema v4 binary `layerBlobs`), project save/load (`.pixibun`), lossless PNG export (1x–32x), animated GIF export with per-frame centisecond delays, packed sprite sheet export + Godot 4, Unity, and Phaser 3 JSON metadata.
-- **P2P Collaboration:** Collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and LWW-CRDT synchronization.
+- **P2P Collaboration:** Collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC (RFC 8831 dual data channels) and per-pixel LWW-CRDT synchronization with Hybrid Logical Clocks; strokes and cursors sync between peers, with the host owning the layer/frame structure during a session.
 
 ### Explicitly out of scope for v1:
-- Centralized server-hosted WebSockets collaboration (reserved for v2; collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and LWW-CRDT synchronization).
+- Centralized server-hosted WebSockets collaboration (reserved for v2; collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and per-pixel LWW-CRDT synchronization, with the host owning the layer structure while connected).
 - Native 3D mesh voxel conversions.
 - Full multi-track digital audio workstation (DAW) or custom sound effect synthesizer (the built-in lo-fi ambient background radio is included for atmosphere; external audio creation tools are out of scope).
 

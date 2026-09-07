@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import {
-  P2PSyncSession,
-  P2PConnectionState,
-  LAN_ICE_SERVERS,
-  PUBLIC_STUN_ICE_SERVERS,
-} from '@/lib/sync/p2pSync';
-import { createId } from '@/lib/engine/id';
+import type { P2PSyncSession, P2PConnectionState } from '@/lib/sync/p2pSync';
+import { coDrawBridge, CODRAW_STATE_EVENT } from '@/lib/sync/coDrawBridge';
 
 interface CoDrawModalProps {
   isOpen: boolean;
@@ -23,7 +18,6 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   isOpen,
   onClose,
   activeSession,
-  onSessionCreated,
 }) => {
   const [tab, setTab] = useState<'host' | 'join'>('host');
   const [session, setSession] = useState<P2PSyncSession | null>(activeSession ?? null);
@@ -38,23 +32,25 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // The bridge is a module singleton, so a session outlives this modal being
+  // closed and reopened. Subscribe to connection-state changes and rehydrate
+  // the visible state from the live session on mount.
+  useEffect(() => {
+    const onStateChange = (e: Event) => {
+      const detail = (e as CustomEvent<P2PConnectionState>).detail;
+      setConnectionState(detail);
+    };
+    setConnectionState(coDrawBridge.getConnectionState());
+    setSession(coDrawBridge.getSession());
+    window.addEventListener(CODRAW_STATE_EVENT, onStateChange);
+    return () => window.removeEventListener(CODRAW_STATE_EVENT, onStateChange);
+  }, []);
+
   const handleCreateHostSession = async () => {
     setErrorMsg(null);
     try {
-      const peerId = createId('peer');
-      const newSession = new P2PSyncSession({
-        peerId,
-        peerName: 'Atelier Host',
-        iceServers: networkMode === 'internet' ? PUBLIC_STUN_ICE_SERVERS : LAN_ICE_SERVERS,
-        lanOnly: networkMode === 'lan',
-        onConnectionStateChange: (state) => setConnectionState(state),
-        onError: (err) => setErrorMsg(err.message),
-      });
-
-      setSession(newSession);
-      onSessionCreated?.(newSession);
-
-      const token = await newSession.createHostInvite();
+      const token = await coDrawBridge.startHost({ lanOnly: networkMode === 'lan' });
+      setSession(coDrawBridge.getSession());
       setInviteToken(token);
     } catch (err) {
       setErrorMsg((err as Error).message);
@@ -76,20 +72,10 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
     if (!inputToken.trim()) return;
     setErrorMsg(null);
     try {
-      const peerId = createId('peer');
-      const newSession = new P2PSyncSession({
-        peerId,
-        peerName: 'Atelier Guest',
-        iceServers: networkMode === 'internet' ? PUBLIC_STUN_ICE_SERVERS : LAN_ICE_SERVERS,
+      const answer = await coDrawBridge.startGuest(inputToken.trim(), {
         lanOnly: networkMode === 'lan',
-        onConnectionStateChange: (state) => setConnectionState(state),
-        onError: (err) => setErrorMsg(err.message),
       });
-
-      setSession(newSession);
-      onSessionCreated?.(newSession);
-
-      const answer = await newSession.acceptHostInvite(inputToken.trim());
+      setSession(coDrawBridge.getSession());
       setGuestAnswerToken(answer);
       setInputToken('');
     } catch (err) {
@@ -106,14 +92,12 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   };
 
   const handleDisconnect = () => {
-    if (session) {
-      session.disconnect();
-      setSession(null);
-      setConnectionState('idle');
-      setInviteToken('');
-      setGuestAnswerToken('');
-      setInputToken('');
-    }
+    coDrawBridge.disconnect();
+    setSession(null);
+    setConnectionState('idle');
+    setInviteToken('');
+    setGuestAnswerToken('');
+    setInputToken('');
   };
 
   return (
@@ -152,7 +136,13 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
         {connectionState === 'connected' ? (
           <div className="flex flex-col gap-3 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#a3be8c]">
             <p className="text-[var(--text-body)] leading-relaxed">
-              🎉 <strong className="text-[#a3be8c]">Direct P2P Connection Established!</strong> All strokes and cursor movements are synchronizing in real time via dual WebRTC data channels with Strong Eventual Consistency (SEC).
+              🎉 <strong className="text-[#a3be8c]">Direct P2P Connection Established!</strong> Strokes
+              and cursors now sync in real time over dual WebRTC data channels with Strong Eventual
+              Consistency (SEC). Remote strokes are merged per-pixel via a Last-Write-Wins CRDT.
+            </p>
+            <p className="text-[10px] text-[#ebcb8b] leading-relaxed">
+              Note: the host owns the layer structure while connected — layer/frame changes made by
+              the guest stay local.
             </p>
             <div className="flex justify-end pt-2">
               <TactileButton
@@ -242,6 +232,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                   <div className="flex flex-col gap-2">
                     <p className="text-[var(--text-body)] leading-relaxed">
                       Host an accountless, serverless co-drawing session directly from your browser.
+                      Your canvas — layers, frames and strokes — is shared with your peer.
                     </p>
                     <TactileButton
                       size="sm"
@@ -346,7 +337,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       </TactileButton>
                     </div>
                     <p className="text-[10px] text-[#ebcb8b] pt-1">
-                      Waiting for host to apply your answer token... Once connected, your canvases will sync automatically.
+                      Waiting for host to apply your answer token... Once connected, your canvas will
+                      be replaced with the host&apos;s artwork and stay in sync automatically.
                     </p>
                   </div>
                 )}

@@ -4,6 +4,7 @@ import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/li
 import { HistoryStep } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { useStudioStore } from '@/stores/studioStore';
+import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -70,7 +71,12 @@ export function useViewportDrawing({
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback(
-    (description: string = 'Stroke', overrideLayerId?: string, createdLayerId?: string) => {
+    (
+      description: string = 'Stroke',
+      overrideLayerId?: string,
+      createdLayerId?: string,
+      createdLayerTag?: string
+    ) => {
       const targetLayerId = overrideLayerId || activeLayerId;
       const currentLayerCanvas = getOrCreateLayerCanvas(targetLayerId);
       const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
@@ -83,6 +89,7 @@ export function useViewportDrawing({
         imageData: imgData,
         description,
         createdLayerId,
+        createdLayerTag,
       };
     },
     [activeFrameIndex, activeLayerId, canvasWidth, canvasHeight, getOrCreateLayerCanvas]
@@ -91,11 +98,16 @@ export function useViewportDrawing({
   // Commit Undo Snapshot to Stack
   const commitSnapshot = useCallback(() => {
     if (currentStrokeSnapshotRef.current) {
-      historyEngineRef.current.push(currentStrokeSnapshotRef.current);
+      const snapshot = currentStrokeSnapshotRef.current;
+      historyEngineRef.current.push(snapshot);
       currentStrokeSnapshotRef.current = null;
       setCanUndo(historyEngineRef.current.canUndo);
       setCanRedo(historyEngineRef.current.canRedo);
       onCommitHistory?.();
+      // Broadcast committed pixels to co-draw peers (no-op when disconnected).
+      // The snapshot holds the PRE-stroke pixels; the bridge diffs them against
+      // the live buffer to extract LWW-CRDT ops.
+      coDrawBridge.notifyStrokeCommitted(snapshot.layerId, snapshot.imageData);
     }
   }, [onCommitHistory, setCanRedo, setCanUndo]);
 
@@ -115,6 +127,7 @@ export function useViewportDrawing({
       imageData: currentImgData,
       description: previousStep.description,
       createdLayerId: previousStep.createdLayerId,
+      createdLayerTag: previousStep.createdLayerTag,
     };
 
     const stepToRestore = historyEngineRef.current.undo(currentStep);
@@ -140,11 +153,30 @@ export function useViewportDrawing({
     if (!nextStep) return;
 
     if (nextStep.createdLayerId) {
-      const state = useStudioStore.getState();
-      const currentFrame = state.frames[nextStep.frameIndex];
+      const currentFrame = useStudioStore.getState().frames[nextStep.frameIndex];
       const exists = currentFrame?.layers.some((l) => l.id === nextStep.createdLayerId);
       if (!exists) {
-        state.addLayer(nextStep.description, undefined, nextStep.createdLayerId);
+        // Re-create the layer in its ORIGINATING frame (nextStep.frameIndex),
+        // not the currently active one — the user may have switched frames
+        // between undo and redo. Inserted at the top of the layer stack,
+        // matching addLayer semantics, and preserving the machine tag so
+        // tagged-layer reuse (photometric etc.) keeps working after redo.
+        useStudioStore.setState((state) => {
+          const frame = state.frames[nextStep.frameIndex];
+          if (!frame) return;
+          frame.layers.unshift({
+            id: nextStep.createdLayerId!,
+            name: nextStep.description,
+            visible: true,
+            locked: false,
+            opacity: 1,
+            blendMode: 'source-over',
+            ...(nextStep.createdLayerTag ? { tag: nextStep.createdLayerTag } : {}),
+          });
+          if (state.activeFrameIndex === nextStep.frameIndex) {
+            state.activeLayerId = nextStep.createdLayerId!;
+          }
+        });
       }
     }
 
@@ -159,6 +191,7 @@ export function useViewportDrawing({
       imageData: currentImgData,
       description: nextStep.description,
       createdLayerId: nextStep.createdLayerId,
+      createdLayerTag: nextStep.createdLayerTag,
     };
 
     const stepToRestore = historyEngineRef.current.redo(currentStep);

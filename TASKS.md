@@ -1,5 +1,33 @@
 # Build Plan — PixiBun
 
+## Phase 42 — Co-Draw Activation, Deep Audit Remediation & Server Hardening
+**Goal:** Wire the previously test-only CRDT/P2P engine into the live studio so co-drawing actually synchronizes pixels, and fix every defect surfaced by the deep audit (undo-after-resize corruption, boot crash, bounds gaps, protocol hardening, relay rate limiting).
+
+**Evidence & Rationale:**
+- Dead Feature Path: `CoDrawModal.tsx` created `P2PSyncSession` instances with no `onRemotePixelOps`/`onInitialSync`/`onRemoteCursor` callbacks, and `CrdtPixelBuffer` was instantiated nowhere outside tests — two peers could complete a WebRTC handshake and never exchange a pixel, while the modal claimed automatic synchronization.
+- Undo-After-Resize Corruption: `HistoryStep.imageData` stores full-canvas pixels at capture-time dimensions; `setCanvasSize`/`resizeAllBuffers` never cleared the history engine, so `putImageData` after a resize wrote stale-dimension pixels onto resized buffers.
+- Boot Crash Vector: `createToolSlice.ts` ran unguarded module-scope `JSON.parse` on localStorage (`pixibun_recent_colors`); a corrupted value threw during Zustand store creation and permanently white-screened `/studio`.
+- Unbounded Server Input: `/api/diagnostics/relay` accepted unbounded `request.json()` bodies and unbounded event arrays with no rate limiting (OWASP REST: rate limiting and input-size ceilings as baseline protection).
+
+**Deliverables:**
+- [x] Co-Draw Bridge (`src/lib/sync/coDrawBridge.ts`): Module-scoped singleton integrating structure join (`STRUCTURE_SYNC`), full-state antientropy host join (canvas-seeded `CrdtPixelBuffer` snapshots per layer, retry loop for RFC 8831 channel openness), stroke-diff delta propagation via `src/lib/sync/strokeDiff.ts`, remote op application/painting, throttled cursor presence, and session lifetime independent of modal mount state.
+- [x] Protocol Hardening (`src/lib/sync/p2pSync.ts`): `STRUCTURE_SYNC` message with strict `validateStructurePayload`; `layerId` mandatory on ops messages; sender-side payload size ceiling for structure broadcasts.
+- [x] Presence Overlay (`src/components/studio/RemoteCursorsOverlay.tsx`): Zoom-aware remote cursor rendering with staleness pruning; cursor broadcast wired through `CenterViewport.tsx` pointer move.
+- [x] Autosave Parity (`src/components/layout/StudioLayout.tsx`): Remote co-draw strokes schedule the same debounced autosave as local commits.
+- [x] Audit Fixes: history invalidation after both canvas-resize paths; guarded localStorage parsing in `src/stores/slices/createToolSlice.ts`; bounds guards in `deleteFrame`/`reorderFrames` (`src/stores/slices/createAnimationSlice.ts`); frame-correct, tag-preserving redo of created layers (`src/hooks/viewport/useViewportDrawing.ts`, `src/types/canvas.ts`); merge-down two-step confirm (`src/components/layout/inspector/LayersPanel.tsx`); eyedropper stale-snapshot fix; 4-digit `#RGBA` support (`src/lib/canvas/floodFill.ts`); `prefers-color-scheme` fallback (`src/stores/themeStore.ts`); cross-project state resets (`src/stores/slices/createHistorySlice.ts`).
+- [x] Relay Hardening (`src/app/api/diagnostics/relay/route.ts`, `src/lib/server/tokenBucket.ts`): Token-bucket rate limiter (12/min, burst 12, per IP), 64KB body ceiling before parsing, 100-event cap on forwarded batches.
+
+**Acceptance criteria:**
+- `tsc --noEmit`, `eslint`, and `next build` all pass with zero errors.
+- 406/406 unit tests pass, including 20 new tests covering stroke diffing (with `CrdtPixelBuffer` round-trip), token-bucket semantics, `STRUCTURE_SYNC` payload validation, and `#RGBA` parsing.
+- Ops messages without `layerId` are rejected by `validateCrdtSyncMessage` (protocol strictness preserved and tested).
+- Remote strokes trigger composite re-render and debounced autosave via `pixibun:request-composite` / `pixibun:remote-change`.
+- Documented MVP limitation: while connected, the host owns the layer/frame structure; guest structural edits stay local (stated in CoDrawModal copy).
+
+**Status:** Complete (2026-09-06)
+
+---
+
 ## Phase 30 — Critical Bug Remediation & Hot-Path Performance (P0/P1)
 **Goal:** Eliminate drawing stroke re-render cascades, prune unselected Zustand store subscriptions, secure illegal constructor fallbacks, convert monolithic autosave to binary blob storage, and eliminate compositor singleton aliasing risks.
 
