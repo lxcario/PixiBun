@@ -45,6 +45,7 @@ describe('ArtisanHandbookPanel', () => {
     render(<ArtisanHandbookPanel />);
 
     expect(screen.getByText('Tracing Lightbox')).toBeDefined();
+    expect(screen.getByRole('slider', { name: 'Lightbox opacity' })).toBeDefined();
     const toggleBtn = screen.getByRole('button', { name: 'Hide Lightbox' });
     fireEvent.click(toggleBtn);
 

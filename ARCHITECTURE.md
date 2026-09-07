@@ -187,11 +187,7 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **Dynamic Canvas-Scaled Undo History:** Replaces static memory limits with an integer-pixel-scaled ring buffer of `ImageData` snapshots:
-  * $\le 64\times64$ ($4096\text{ px}$): 50 steps ($\sim 800\text{ KB}$)
-  * $\le 256\times256$ ($65536\text{ px}$): 35 steps ($\sim 8.9\text{ MB}$)
-  * $> 256\times256$ ($262144\text{ px}$): 20 steps ($\sim 20\text{ MB}$)
-  Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **50-Step Circular Ring Buffer Undo History:** Maintains a memory-efficient circular ring buffer of up to 50 `ImageData` snapshots (`createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Decoupled completely from `CenterViewport` to eliminate React reconciliation cascades during pen/eraser strokes (0 re-renders during pointer moves).

@@ -1051,3 +1051,28 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx vitest run`: 414/414 tests passed across 64 suites
 **Commit:** `1076bd4` → `origin/main`
 **Status:** Complete
+
+---
+
+## 2026-09-07 — Phase 44: Zero-Slop Hardening, Accessibility & Documentation Parity (v1.10.3)
+
+**Problem Statement:**
+1. Accessibility gaps: 3 auxiliary range sliders (`RotSpriteShowcase.tsx:170`, `ColorPickerModal.tsx:201`, `ArtisanHandbookPanel.tsx:271`) lacked programmatic accessible names (`aria-label`), violating WCAG 2.2 AA.
+2. Residual UI slop: 12 Unicode emojis remained across `PixelLightBulbGizmo.tsx`, `PhotometricLightingSection.tsx`, `ShortcutsModal.tsx`, and `CoDrawModal.tsx`, violating `SKILL.md` Rule 12 (craftsperson voice, pixel-art icon consistency).
+3. Documentation metric drift: `README.md` lines 221 and 240 reported 17 E2E tests instead of the physical 18 tests. `ARCHITECTURE.md` §4 cited "minimum 30 (recommended 50)" undo history, while physical code and `SKILL.md` strictly enforce a 50-step circular ring buffer.
+4. Test environment warnings: Node v26 emitted experimental `localStorage` warnings during `vitest` execution.
+
+**Engineering Execution:**
+- **Accessible Inputs (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/onboarding/ArtisanHandbookPanel.tsx`)**: Added explicit `aria-label="Rotation angle"`, `aria-label="Color hue"`, and `aria-label="Lightbox opacity"`.
+- **Anti-Slop Emoji Purge (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/ui/PixelIcon.tsx`)**: Replaced all Unicode emojis with semantic button text and added a custom $16 \times 16$ pixel-art `'lamp'` icon.
+- **Documentation & Version Parity (`README.md`, `ARCHITECTURE.md`, `package.json`, `CHANGELOG.md`)**: Corrected E2E test metric to 18; synchronized undo history description to 50-step circular buffer; bumped package version to 1.10.3 and added release notes.
+- **Test Environment Polyfill (`tests/setup.ts`, `vitest.config.mjs`)**: Added in-memory `localStorage` mock to eliminate experimental warnings in Node v26.
+- **Harness & Regression Tests (`tests/components/ArtisanHandbookPanel.test.tsx`, `tests/components/PixelLightBulbGizmo.test.tsx`)**: Added unit tests asserting proper `aria-label` attributes and zero emoji characters.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run`: 414/414 tests passed across 64 suites (0 warnings)
+- `npx playwright test`: 18/18 tests passed across 6 spec files (100% passing)
+- `npm run verify:docs`: all documentation integrity checks passed
+**Status:** Complete

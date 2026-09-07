@@ -162,14 +162,14 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
                   onClick={() => exportDiagnosticsFile()}
                   className="px-2.5 py-1 bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[#f0be7c] text-[11px] rounded text-[#f0be7c] font-medium cursor-pointer"
                 >
-                  📥 Export Diagnostics JSON
+                  Export Diagnostics JSON
                 </button>
                 <button
                   type="button"
                   onClick={handleClear}
                   className="px-2.5 py-1 bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[#fca5a5] text-[11px] rounded text-[#fca5a5] cursor-pointer"
                 >
-                  🧹 Clear Stored Logs
+                  Clear Stored Logs
                 </button>
                 {clearNotice && (
                   <span className="text-[10px] text-[#86efac]">Logs cleared!</span>

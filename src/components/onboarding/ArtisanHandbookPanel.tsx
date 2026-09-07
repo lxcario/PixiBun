@@ -269,6 +269,7 @@ export const ArtisanHandbookPanel: React.FC = () => {
                 <span>Opacity:</span>
                 <input
                   type="range"
+                  aria-label="Lightbox opacity"
                   min="0.1"
                   max="1.0"
                   step="0.05"

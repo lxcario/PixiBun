@@ -199,6 +199,7 @@ export const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
           <span className="text-[10px] text-[var(--text-body)] font-bold uppercase">Hue</span>
           <input
             type="range"
+            aria-label="Color hue"
             min="0"
             max="360"
             value={hue}

@@ -168,6 +168,7 @@ export const RotSpriteShowcase: React.FC = () => {
 
             <input
               type="range"
+              aria-label="Rotation angle"
               min="0"
               max="360"
               step="1"

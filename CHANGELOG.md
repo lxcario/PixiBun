@@ -2,6 +2,21 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.10.3] - 2026-09-07
+### Zero-Slop Hardening, Accessibility & Documentation Parity (Phase 44)
+- **WCAG 2.2 AA Accessibility (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/onboarding/ArtisanHandbookPanel.tsx`)**:
+  - Added programmatic `aria-label` attributes to the three auxiliary range inputs ("Rotation angle", "Color hue", "Lightbox opacity").
+  - Regression tested in `tests/components/ArtisanHandbookPanel.test.tsx`.
+- **Anti-Slop Emoji Purge (`SKILL.md` Rule 12)**:
+  - Eliminated all 12 residual Unicode emojis (`🎉`, `🌐`, `🔒`, `📥`, `🧹`, `💡`, `📍`, `☀️`, `✔`, `✖`) across `CoDrawModal.tsx`, `ShortcutsModal.tsx`, `PixelLightBulbGizmo.tsx`, and `PhotometricLightingSection.tsx`.
+  - Added native pixel-art `'lamp'` icon in `PixelIcon.tsx` on a 16x16 grid.
+  - Regression tested in `tests/components/PixelLightBulbGizmo.test.tsx` verifying zero emoji characters in HUD toolbar.
+- **Documentation Truthfulness & Metric Alignment (`README.md`, `ARCHITECTURE.md`)**:
+  - Corrected E2E metric in `README.md` to "6 E2E spec suites (18 tests)".
+  - Aligned `ARCHITECTURE.md` §4 undo history limit with physical 50-step circular ring buffer matching `SKILL.md` and `useViewportDrawing.ts:33`.
+- **Test Environment Polish (`tests/setup.ts`, `vitest.config.mjs`)**:
+  - Added in-memory `localStorage` mock in `tests/setup.ts` to eliminate all Node v26 experimental warnings during `vitest` runs.
+
 ## [v1.10.2] - 2026-09-07
 ### Cel-Shading Shadow Terminator Math Fix (Phase 43b)
 - **Fixed flat/invisible cel-shading on character sprites (`src/lib/ai/math/photometricLighting.ts`)**:

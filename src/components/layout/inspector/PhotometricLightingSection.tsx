@@ -248,7 +248,7 @@ export const PhotometricLightingSection: React.FC = () => {
             title="Analyze the canvas art, mount live pixel light bulb on canvas, and adjust live-time"
             className="text-xs py-2 font-bold justify-center"
           >
-            <span className="text-sm">💡</span>
+            <PixelIcon name="lamp" size={14} />
             <span>Analyze &amp; Light Bulb</span>
           </TactileButton>
         </div>
@@ -460,7 +460,7 @@ export const PhotometricLightingSection: React.FC = () => {
               title="Mount live-time pixel light bulb on canvas (Enter to apply, Esc to cancel)"
               className="text-xs py-2 font-bold justify-center bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
             >
-              <span className="text-sm">💡</span>
+              <PixelIcon name="lamp" size={14} />
               <span>Light Bulb</span>
             </TactileButton>
           </div>

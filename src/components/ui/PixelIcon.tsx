@@ -50,6 +50,7 @@ export type PixelIconName =
   | 'sun'
   | 'symmetry'
   | 'preview'
+  | 'lamp'
   | 'tag';
 
 interface PixelIconProps {
@@ -489,6 +490,17 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <rect width="4" height="4" x="17" y="3" opacity="0.5" />
             <rect width="4" height="4" x="3" y="17" opacity="0.5" />
             <rect width="4" height="4" x="17" y="17" opacity="0.5" />
+          </svg>
+        );
+
+      case 'lamp':
+        return (
+          <svg viewBox="0 0 16 16" width={size} height={size} fill="currentColor" shapeRendering="crispEdges" className={className}>
+            <rect x="5" y="1" width="6" height="2" />
+            <rect x="3" y="3" width="10" height="5" />
+            <rect x="4" y="8" width="8" height="3" />
+            <rect x="6" y="11" width="4" height="2" />
+            <rect x="7" y="13" width="2" height="1" />
           </svg>
         );
 

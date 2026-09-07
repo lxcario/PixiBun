@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { PixelIcon } from '@/components/ui/PixelIcon';
 import {
   coordsToLightAngles,
   lightAnglesToCoords,
@@ -337,8 +338,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         role="toolbar"
         aria-label="Live Light Bulb Controls"
       >
-        <div className="flex items-center gap-1 text-[#f0be7c] font-bold">
-          <span className="text-sm drop-shadow-[0_0_8px_#f0be7c]">💡</span>
+        <div className="flex items-center gap-1.5 text-[#f0be7c] font-bold">
+          <PixelIcon name="lamp" size={14} className="drop-shadow-[0_0_8px_#f0be7c]" />
           <span className="tracking-wide uppercase text-[10px]">Live Light Bulb</span>
         </div>
 
@@ -355,9 +356,24 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         {/* Middle Light Center Readout */}
         <div
           title="Current Middle Light Point (Drag center reticle to move focus)"
-          className="flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[10px]"
+          className="flex items-center gap-1.5 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[10px]"
         >
-          <span className="opacity-75">📍</span>
+          <svg
+            viewBox="0 0 12 12"
+            width={12}
+            height={12}
+            fill="none"
+            shapeRendering="crispEdges"
+            className="inline-block shrink-0 opacity-80"
+            aria-hidden="true"
+          >
+            <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.2" />
+            <circle cx="6" cy="6" r="1.5" fill="currentColor" />
+            <line x1="6" y1="0.5" x2="6" y2="2" stroke="currentColor" strokeWidth="1.2" />
+            <line x1="6" y1="10" x2="6" y2="11.5" stroke="currentColor" strokeWidth="1.2" />
+            <line x1="0.5" y1="6" x2="2" y2="6" stroke="currentColor" strokeWidth="1.2" />
+            <line x1="10" y1="6" x2="11.5" y2="6" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
           <span>({Math.round(canvasCentroid.x)}, {Math.round(canvasCentroid.y)})</span>
         </div>
 
@@ -378,7 +394,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Light Strength / Brightness (Click - / + or use mouse wheel)"
           className="flex items-center gap-1.5 px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
         >
-          <span className="text-xs">☀️</span>
+          <PixelIcon name="sun" size={12} className="text-[#f0be7c]" />
           <span className="text-[10px] text-[#dcabdf] uppercase">Strength</span>
           <button
             type="button"
@@ -433,7 +449,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Commit and bake lighting into layer (Enter)"
           className="px-2.5 py-1 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
         >
-          <span>✔ Apply</span>
+          <span>Apply</span>
           <span className="text-[9px] opacity-75 font-normal">(Enter)</span>
         </button>
 
@@ -443,7 +459,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Discard preview and restore layer (Esc)"
           className="px-2 py-1 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
         >
-          <span>✖ Cancel</span>
+          <span>Cancel</span>
           <span className="text-[9px] opacity-75 font-normal">(Esc)</span>
         </button>
       </div>

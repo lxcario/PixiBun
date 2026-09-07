@@ -1,5 +1,39 @@
 # Build Plan — PixiBun
 
+## Phase 44 — Zero-Slop Hardening, Accessibility & Documentation Parity
+**Goal:** Eliminate residual AI slop, complete WCAG 2.2 AA accessibility coverage on auxiliary range inputs, purge all remaining Unicode emojis from studio UI, and align documentation metrics with physical code realities.
+
+**Evidence & Rationale:**
+- Incomplete Accessibility: Three auxiliary `<input type="range">` sliders (`RotSpriteShowcase.tsx:170`, `ColorPickerModal.tsx:201`, `ArtisanHandbookPanel.tsx:271`) lacked programmatic `aria-label` attributes, violating WCAG 2.2 AA non-text contrast and name calculation standards.
+- Residual Emoji Slop: 12 Unicode emojis remained in `PixelLightBulbGizmo.tsx`, `PhotometricLightingSection.tsx`, `ShortcutsModal.tsx`, and `CoDrawModal.tsx`, violating `SKILL.md` Rule 12 (craftsperson voice, pixel-art icon consistency).
+- Documentation Metric Drift: `README.md` lines 221 and 240 cited "17 tests across 6 E2E spec suites", whereas `tests/e2e` actually contains 18 tests across 6 spec files. `ARCHITECTURE.md` §4 described undo history as "minimum 30 (recommended 50)" while code and `SKILL.md` strictly enforce a 50-step circular ring buffer.
+- Test Environment Warnings: Node v26 experimental warnings appeared during `vitest` runs due to native `localStorage` interactions without an explicit mock.
+
+**Deliverables:**
+- [x] WCAG 2.2 AA Accessible Inputs (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/onboarding/ArtisanHandbookPanel.tsx`):
+  - Added programmatic `aria-label` to rotation angle, color hue, and lightbox opacity range sliders.
+  - Added accessibility regression test in `tests/components/ArtisanHandbookPanel.test.tsx`.
+- [x] Anti-Slop Emoji Purge (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/ui/PixelIcon.tsx`):
+  - Purged all 12 residual Unicode emojis from studio components.
+  - Added pixel-art `'lamp'` icon ($16 \times 16$ grid) in `PixelIcon.tsx`.
+  - Added regression test in `tests/components/PixelLightBulbGizmo.test.tsx` verifying zero emoji presence.
+- [x] Documentation & Invariant Synchronization (`README.md`, `ARCHITECTURE.md`, `package.json`, `CHANGELOG.md`):
+  - Corrected E2E test metric to 18 in `README.md`.
+  - Aligned `ARCHITECTURE.md` §4 undo limit with 50-step circular buffer.
+  - Bumped version to v1.10.3 in `package.json` and added release notes to `CHANGELOG.md`.
+- [x] Test Environment Hardening (`tests/setup.ts`, `vitest.config.mjs`):
+  - Added in-memory `localStorage` mock to eliminate Node v26 experimental warnings.
+
+**Acceptance criteria:**
+- `npx vitest run` passes 414/414 tests across 64 suites with 0 warnings.
+- `npx playwright test` passes 18/18 tests across 6 spec files.
+- `tsc --noEmit` and `eslint` pass with zero errors/warnings.
+- `npm run verify:docs` passes with valid phase headers and documentation paths.
+
+**Status:** Complete (2026-09-07)
+
+---
+
 ## Phase 43b — Cel-Shading Shadow Terminator Math Fix
 **Goal:** Fix the mathematically broken cel-shading threshold that made character sprite shading visually flat/invisible — all pixels rendered as BASE tone with zero shadow coverage.
 

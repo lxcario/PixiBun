@@ -136,7 +136,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
         {connectionState === 'connected' ? (
           <div className="flex flex-col gap-3 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#a3be8c]">
             <p className="text-[var(--text-body)] leading-relaxed">
-              🎉 <strong className="text-[#a3be8c]">Direct P2P Connection Established!</strong> Strokes
+              <strong className="text-[#a3be8c]">Direct P2P Connection Established!</strong> Strokes
               and cursors now sync in real time over dual WebRTC data channels with Strong Eventual
               Consistency (SEC). Remote strokes are merged per-pixel via a Last-Write-Wins CRDT.
             </p>
@@ -190,8 +190,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
               </div>
               <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
                 {networkMode === 'internet'
-                  ? '🌐 Uses Google STUN for cross-network NAT traversal. Zero canvas pixels ever touch external servers.'
-                  : '🔒 100% offline & airgapped. Both peers must share the same local Wi-Fi or hotspot.'}
+                  ? 'Uses Google STUN for cross-network NAT traversal. Zero canvas pixels ever touch external servers.'
+                  : '100% offline & airgapped. Both peers must share the same local Wi-Fi or hotspot.'}
               </p>
             </div>
 

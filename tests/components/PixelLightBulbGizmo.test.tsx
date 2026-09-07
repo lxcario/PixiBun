@@ -33,6 +33,9 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(toolbar.className).not.toContain('-top-12');
     expect(screen.getByRole('slider', { name: /Directional Light Bulb/i })).toBeDefined();
     expect(screen.getByText(/Live Light Bulb/i)).toBeDefined();
+    expect(toolbar.textContent).not.toContain('💡');
+    expect(toolbar.textContent).not.toContain('📍');
+    expect(toolbar.textContent).not.toContain('☀️');
   });
 
   it('handles Apply and Cancel button clicks', () => {
@@ -51,10 +54,14 @@ describe('PixelLightBulbGizmo Component', () => {
     );
 
     const applyBtn = screen.getByRole('button', { name: /Apply/i });
+    expect(applyBtn.textContent).toContain('Apply');
+    expect(applyBtn.textContent).not.toContain('✔');
     fireEvent.click(applyBtn);
     expect(onCommit).toHaveBeenCalledTimes(1);
 
     const cancelBtn = screen.getByRole('button', { name: /Cancel/i });
+    expect(cancelBtn.textContent).toContain('Cancel');
+    expect(cancelBtn.textContent).not.toContain('✖');
     fireEvent.click(cancelBtn);
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
