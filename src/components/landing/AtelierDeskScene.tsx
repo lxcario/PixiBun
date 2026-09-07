@@ -329,47 +329,50 @@ export const AtelierDeskScene: React.FC = () => {
       ctx.fillStyle = lerpRGB(THEME_COLORS.skyBot, p);
       ctx.fillRect(winX, winY + 95 * SCALE, winW, winH - 95 * SCALE);
 
-      // A. AUTHENTIC 16-BIT PIXEL ART CRESCENT MOON
+      // A. GLOWING CRESCENT MOON (Prominent at night p=0, sets down & fades as p->1)
       if (p < 0.98) {
-        const moonBloomAlpha = 1 - p;
-        const mx = Math.floor(winX + winW - (58 - p * 20) * SCALE);
-        const my = Math.floor(winY + (32 + p * 60) * SCALE);
+        const moonBloomAlpha = (1 - p);
+        const moonX = winX + winW - (58 - p * 20) * SCALE;
+        const moonY = winY + (36 + p * 60) * SCALE;
+        const moonRadius = 12 * SCALE;
 
+        // Soft Warm Radial Bloom Halo around the moon
+        const moonBloom = ctx.createRadialGradient(
+          moonX,
+          moonY,
+          2 * SCALE,
+          moonX,
+          moonY,
+          34 * SCALE
+        );
+        moonBloom.addColorStop(0, `rgba(255, 238, 170, ${(0.48 * moonBloomAlpha).toFixed(3)})`);
+        moonBloom.addColorStop(0.35, `rgba(240, 190, 124, ${(0.22 * moonBloomAlpha).toFixed(3)})`);
+        moonBloom.addColorStop(0.7, `rgba(240, 190, 124, ${(0.05 * moonBloomAlpha).toFixed(3)})`);
+        moonBloom.addColorStop(1, 'rgba(240, 190, 124, 0)');
+
+        ctx.fillStyle = moonBloom;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 34 * SCALE, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Yellowish Half-Moon
         ctx.save();
         ctx.globalAlpha = moonBloomAlpha;
-
-        // Pixel-stepped ambient halo (concentric integer pixel rings)
-        ctx.fillStyle = `rgba(240, 190, 124, ${(0.12 * moonBloomAlpha).toFixed(3)})`;
-        ctx.fillRect(mx - 8 * SCALE, my - 8 * SCALE, 26 * SCALE, 26 * SCALE);
-        ctx.fillStyle = `rgba(255, 238, 170, ${(0.2 * moonBloomAlpha).toFixed(3)})`;
-        ctx.fillRect(mx - 4 * SCALE, my - 4 * SCALE, 18 * SCALE, 18 * SCALE);
-
-        // 16-bit Handcrafted Pixel Crescent
-        // Outer dark/shadow rim
-        ctx.fillStyle = '#e89f30';
-        ctx.fillRect(mx + 4 * SCALE, my, 4 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 6 * SCALE, my + 2 * SCALE, 3 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 7 * SCALE, my + 4 * SCALE, 3 * SCALE, 6 * SCALE);
-        ctx.fillRect(mx + 6 * SCALE, my + 10 * SCALE, 3 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 4 * SCALE, my + 12 * SCALE, 4 * SCALE, 2 * SCALE);
-
-        // Main Golden Crescent body
         ctx.fillStyle = '#f0be7c';
-        ctx.fillRect(mx + 3 * SCALE, my + 1 * SCALE, 4 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 5 * SCALE, my + 3 * SCALE, 4 * SCALE, 8 * SCALE);
-        ctx.fillRect(mx + 3 * SCALE, my + 11 * SCALE, 4 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 2 * SCALE, my + 3 * SCALE, 3 * SCALE, 8 * SCALE);
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius, -Math.PI / 2, Math.PI / 2, false);
+        ctx.closePath();
+        ctx.fill();
 
-        // Inner Bright Crescent highlight
         ctx.fillStyle = '#fff4d0';
-        ctx.fillRect(mx + 4 * SCALE, my + 2 * SCALE, 3 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 5 * SCALE, my + 4 * SCALE, 2 * SCALE, 6 * SCALE);
-        ctx.fillRect(mx + 4 * SCALE, my + 10 * SCALE, 3 * SCALE, 2 * SCALE);
+        ctx.beginPath();
+        ctx.arc(moonX - 1 * SCALE, moonY, moonRadius - 2.5 * SCALE, -Math.PI / 2, Math.PI / 2, false);
+        ctx.closePath();
+        ctx.fill();
 
-        // Pure white specular twinkle dots
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(mx + 5 * SCALE, my + 3 * SCALE, 2 * SCALE, 2 * SCALE);
-        ctx.fillRect(mx + 6 * SCALE, my + 6 * SCALE, 1.5 * SCALE, 2 * SCALE);
+        ctx.fillRect(moonX + 1.5 * SCALE, moonY - 5 * SCALE, 2.5 * SCALE, 3 * SCALE);
+        ctx.fillRect(moonX + 3.5 * SCALE, moonY - 1 * SCALE, 2.5 * SCALE, 2.5 * SCALE);
         ctx.restore();
       }
 
@@ -1376,22 +1379,67 @@ export const AtelierDeskScene: React.FC = () => {
         </div>
       </BorderGlow>
 
-      <div className="mt-3.5 flex items-center justify-between w-full px-2 text-xs font-mono text-[var(--text-muted)]">
-        <span className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 bg-[var(--accent-gold)] inline-block" />
-          <span>{lampLit ? 'warm lamp glow' : 'soft twilight'} · tap desk lamp to toggle</span>
-        </span>
-        <span className="hidden sm:flex items-center gap-3 text-[11px] text-[var(--accent-gold)]">
-          <span className="flex items-center gap-1.5">
-            <IconHintLamp size={11} />
-            <span>Lamp</span>
+      <div className="mt-3 w-full px-3 py-2 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex flex-wrap items-center justify-between gap-2.5 text-xs font-mono select-none shadow-sm">
+        {/* Left: Cozy Diegetic Status with glowing pixel indicator */}
+        <div className="flex items-center gap-2">
+          <span
+            className={`w-2 h-2 rounded-none inline-block transition-all duration-300 ${
+              lampLit
+                ? 'bg-[var(--accent-gold)] shadow-[0_0_8px_var(--accent-gold)]'
+                : 'bg-[var(--accent-plum)] opacity-60'
+            }`}
+          />
+          <span className="text-[11px] font-mono text-[var(--text-body)] font-medium">
+            {lampLit ? 'Lamplit Desk' : 'Twilight Desk'}
           </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <IconHintPen size={11} />
-            <span>Sketchpad</span>
+          <span className="text-[10px] text-[var(--text-muted)] hidden sm:inline">
+            · {lampLit ? 'warm glow' : 'indigo night'}
           </span>
-        </span>
+        </div>
+
+        {/* Right: Tactile interactive chips */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setLampLit((prev) => !prev)}
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-[1px] bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-body)] hover:text-[var(--accent-gold)] text-[11px] font-mono transition-all active:translate-y-[1px] cursor-pointer"
+            title="Click to toggle desk lamp"
+          >
+            <IconHintLamp size={11} className={lampLit ? 'text-[var(--accent-gold)]' : 'text-[var(--text-muted)]'} />
+            <span>Lamp: <strong className={lampLit ? 'text-[var(--accent-gold)] font-bold' : 'text-[var(--text-muted)] font-normal'}>{lampLit ? 'ON' : 'OFF'}</strong></span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const messages = ['♥ purr...', '♥ zZz', '♥ meow', '♥ ^..^', '♥ warm sun'];
+              const text = messages[Math.floor(Math.random() * messages.length)];
+              catHeartsRef.current.push({
+                x: 330 + (Math.random() * 20 - 10),
+                y: 160,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: -0.8 - Math.random() * 0.4,
+                text,
+                color: '#dcabdf',
+                alpha: 1,
+                life: 0,
+              });
+            }}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-[1px] bg-[var(--desk-bg)] border border-[var(--desk-border)] hover:border-[var(--accent-plum)] text-[var(--text-muted)] hover:text-[var(--accent-plum)] text-[11px] font-mono transition-all active:translate-y-[1px] cursor-pointer"
+            title="Click to pet the sleeping bun"
+          >
+            <span>🐾</span>
+            <span>Pet Bun</span>
+          </button>
+
+          <div
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-[1px] bg-[var(--desk-bg)] border border-[var(--desk-border)] text-[11px] font-mono text-[var(--text-muted)] cursor-crosshair"
+            title="Draw on the sketchpad in the canvas"
+          >
+            <IconHintPen size={11} className="text-[var(--accent-gold)]" />
+            <span>Draw</span>
+          </div>
+        </div>
       </div>
     </div>
   );
