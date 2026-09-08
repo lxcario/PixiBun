@@ -5,6 +5,7 @@ import { HistoryStep } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -58,10 +59,10 @@ export function useViewportDrawing({
       setCanRedo(false);
     };
 
-    window.addEventListener('pixibun:history-clear', handleHistoryClear);
+    const unsub = studioEvents.on('pixibun:history-clear', handleHistoryClear);
 
     return () => {
-      window.removeEventListener('pixibun:history-clear', handleHistoryClear);
+      unsub();
       setGlobalHistoryEngine(null);
       if (rafBufferBumpRef.current !== null) {
         cancelAnimationFrame(rafBufferBumpRef.current);
