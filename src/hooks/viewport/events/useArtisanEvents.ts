@@ -7,14 +7,13 @@ import {
   applyAtmosphericColorGrade,
   quantizeToActivePalette,
   cleanStrayPixelsOnCanvas,
-  morphInBetweenFrames,
 } from '@/lib/ai/pixelAiEngine';
 import {
   applyAtkinsonDither,
   applyRiemersmaDither,
   applyZhangSuenThinning,
 } from '@/lib/ai/smartMathEngine';
-import { synthesizeWfc } from '@/lib/procedural/waveFunctionCollapse';
+import { runWfcInWorker, runMorphInWorker } from '@/lib/engine/workerDispatcher';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import type { ViewportEventContext } from './types';
 
@@ -57,7 +56,7 @@ export function useArtisanEvents({
       });
     };
 
-    const handleWfcSynthesisEvent = (e: Event) => {
+    const handleWfcSynthesisEvent = async (e: Event) => {
       const customEvent = e as CustomEvent;
       const detail = customEvent.detail || {};
       const n = detail.n ?? 2;
@@ -87,7 +86,7 @@ export function useArtisanEvents({
 
       const sampleImg = srcCtx.getImageData(sampleX, sampleY, sampleW, sampleH);
 
-      const result = synthesizeWfc(
+      const result = await runWfcInWorker(
         {
           sampleData: sampleImg.data,
           sampleWidth: sampleW,
@@ -208,7 +207,7 @@ export function useArtisanEvents({
       }
     };
 
-    const handleInBetweenFrameEvent = () => {
+    const handleInBetweenFrameEvent = async () => {
       const state = useStudioStore.getState();
       const currentIdx = state.activeFrameIndex;
       const totalFrames = state.frames.length;
@@ -245,13 +244,20 @@ export function useArtisanEvents({
       const ctxA = getCleanCtx(frameA);
       const ctxB = getCleanCtx(frameB);
 
-      const morphedCanvas = morphInBetweenFrames(ctxA, ctxB, canvasWidth, canvasHeight, 0.5);
+      const dataA = ctxA.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      const dataB = ctxB.getImageData(0, 0, canvasWidth, canvasHeight).data;
+
+      const [morphed] = await runMorphInWorker(
+        { width: canvasWidth, height: canvasHeight, data: dataA },
+        { width: canvasWidth, height: canvasHeight, data: dataB },
+        1
+      );
 
       state.duplicateFrame(currentIdx);
       const updatedState = useStudioStore.getState();
       const newFrame = updatedState.frames[updatedState.activeFrameIndex];
 
-      if (newFrame) {
+      if (newFrame && morphed) {
         const nonTaggedLayers = newFrame.layers.filter((l) => !l.tag);
         const baseLayer = nonTaggedLayers[nonTaggedLayers.length - 1];
 
@@ -260,8 +266,9 @@ export function useArtisanEvents({
           const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
           if (tCtx) {
             tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-            tCtx.imageSmoothingEnabled = false;
-            tCtx.drawImage(morphedCanvas, 0, 0);
+            const imgData = tCtx.createImageData(canvasWidth, canvasHeight);
+            imgData.data.set(morphed.data);
+            tCtx.putImageData(imgData, 0, 0);
           }
         }
 

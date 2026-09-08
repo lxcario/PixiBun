@@ -476,6 +476,31 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 * **Video Encoding Dimension Alignment (`src/lib/export/mp4Encoder.ts`):** H.264 macroblock encoders and YUV 4:2:0 chroma subsampling require even-numbered dimensions ($2 \times 2$ pixel blocks). Video export canvases pad odd widths and heights to the nearest even integer `(w + 1) & ~1` and `(h + 1) & ~1`.
 * **Dynamic WebRTC Layer Antientropy (`src/lib/sync/coDrawBridge.ts`):** Layer tracking (`syncedLayerIds`) detects newly added layers and dimension changes post-connection, dynamically pushing initial state snapshots to peers and pruning obsolete CRDT replicas.
 
+---
+
+## 23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
+
+* **RotSprite Rotation Algorithm (`src/lib/canvas/rotSprite.ts`):** Implements the landmark rotation algorithm for pixel art by Ernst S. Brun and Pedro J. Estébanez (2007). Standard affine rotation on small sprites produces severe stair-stepping, disconnected diagonals, and color blurring when interpolated. RotSprite resolves this through a three-stage pipeline:
+  1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
+     $$E_0 = (C == A \land C \neq D \land A \neq B) ? A : P$$
+  2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
+  3. **Gaussian Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a Gaussian weighting mask $w_{u,v} = \exp(-( (u-3.5)^2 + (v-3.5)^2 ) / (2\sigma^2))$ with $\sigma \approx 2.4$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Fully transparent pixels are excluded unless alpha dominant. This preserves sharp single-pixel diagonal lines and maintains 100% strict palette fidelity.
+* **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
+  - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
+  - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 16x16px screen-space hit area regardless of canvas zoom factor ($100\% - 3200\%$).
+  - **Center Pivot Crosshair Reticle ($\oplus$):** Draggable pivot point initialized to selection center $((x_1+x_2)/2, (y_1+y_2)/2)$. Serves as the origin for both interactive scaling and RotSprite affine rotation.
+  - **Outer Corner Rotation Zone & HUD:** Corner hit zones extend $20\text{px}$ outside the boundary handles to detect rotational drag. Holding `Shift` snaps rotation to $15^\circ$ increments. A floating degree readout badge displays active angle, and a quick-action HUD bar exposes Flip Horizontal, Flip Vertical, Rotate 90° CW/CCW, Commit, and Cancel actions.
+* **Sprite Sheet Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`):**
+  - High-performance grid computation (`computeGridDimensions`) partitioning arbitrary atlas sheets into uniform cells (presets: 16x16, 24x24, 32x32, 48x48, 64x64, custom).
+  - 32-bit alpha scanning (`isCellEmpty`) to optionally filter blank cells.
+  - Live interactive cutline preview canvas rendering neon boundary lines and numbered frame badges (`#1`, `#2`, ...).
+  - Direct integration into `StudioLayout.tsx` supporting batch frame ingestion for timeline append and timeline replacement workflows.
+* **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`):**
+  - Dedicated background Web Worker executing CPU-intensive algorithms: RotSprite $8\times$ transformations, WaveFunctionCollapse (WFC) constraint synthesis, and In-Between frame SDF morphing.
+  - Zero-copy data passing via Transferable `ArrayBuffer` objects for input and output pixel buffers.
+  - Fault-tolerant graceful degradation: `workerDispatcher` automatically detects Worker and OffscreenCanvas support; in environments where Workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks seamlessly fall back to synchronous execution on the main thread.
+
+
 
 
 

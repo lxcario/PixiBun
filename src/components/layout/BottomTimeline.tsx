@@ -7,6 +7,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LoopMode } from '@/types/animation';
 import { compositeFrame } from '@/lib/render/compositor';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { TagManagerModal } from '@/components/modals/TagManagerModal';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -90,6 +91,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const isPingPongForwardRef = useRef(true);
   const [isCreatingClip, setIsCreatingClip] = useState(false);
   const [newClipName, setNewClipName] = useState('New Clip');
+  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(null);
   const [dragOverFrameIndex, setDragOverFrameIndex] = useState<number | null>(null);
   const [audioPulseActive, setAudioPulseActive] = useState(false);
@@ -470,14 +472,26 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 text-[10px] font-mono rounded-[2px] border border-[#f0be7c] outline-none w-20"
               />
             ) : (
-              <button
-                type="button"
-                onClick={() => setIsCreatingClip(true)}
-                className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer"
-                title="Add Tagged Animation Clip"
-              >
-                + Tag Clip
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingClip(true)}
+                  className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer"
+                  title="Add Tagged Animation Clip"
+                >
+                  + Tag Clip
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsTagManagerOpen(true)}
+                  className="px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[var(--text-body)] hover:text-[#f0be7c] border border-[var(--desk-border)] cursor-pointer flex items-center gap-1"
+                  title="Open Tag and Clip Manager"
+                  data-testid="manage-tags-button"
+                >
+                  <PixelIcon name="tag" size={10} />
+                  <span>Manage Tags</span>
+                </button>
+              </>
             )}
           </div>
         )}
@@ -552,6 +566,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           })}
         </div>
       </div>
+
+      {/* Tag Manager Modal */}
+      <TagManagerModal
+        isOpen={isTagManagerOpen}
+        onClose={() => setIsTagManagerOpen(false)}
+      />
     </footer>
   );
 };

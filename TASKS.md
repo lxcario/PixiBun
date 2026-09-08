@@ -1,5 +1,46 @@
 # Build Plan — PixiBun
 
+## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading
+**Goal:** Implement an academic-grade free-transform system for pixel art selections using the Ernst & Estébanez RotSprite algorithm, 8-handle transformation gizmo with center pivot reticle and marching ants contour, integrated timeline tag management, automatic sprite sheet slicing import with cutline preview, and asynchronous background Web Worker execution for heavy graphics computations.
+
+**Evidence & Rationale:**
+- Prior to Phase 48, selections lacked arbitrary angle rotation and scaling. Standard affine transforms degrade low-resolution pixel art through blur or jagged stair-stepping. RotSprite (Ernst S. Brun & Pedro J. Estébanez, 2007) preserves sharp single-pixel features and color integrity via an 8x Scale2x cascade, subpixel rotation, and Gaussian majority voting.
+- Selection visualization previously only supported simple rectangular bounding boxes. Arbitrary non-rectangular selection masks require per-pixel orthogonal boundary edge traversal with dual-tone animated marching ants and screen-space invariant transformation handles.
+- Sprite sheet imports required manual external splitting. A native sprite sheet slicer allows artists to specify cell dimensions, inspect neon cutlines with index badges, eliminate empty frames, and batch-import directly into the animation timeline.
+- Heavy computational tasks (RotSprite 8x, WaveFunctionCollapse synthesis, In-Between SDF morphing) blocked the main UI thread during processing. Offloading to a Web Worker with Transferable ArrayBuffers and automatic synchronous fallback keeps the studio responsive.
+
+**Deliverables:**
+- [x] RotSprite Rotation Engine (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`):
+  - Scale2x and Scale8x cascade without intermediate color interpolation.
+  - Subpixel backward mapping affine rotation around arbitrary pivot coordinates.
+  - Gaussian center-weighted majority voting filter downscaling 8x back to 1x with strict color fidelity.
+  - Academic unit tests verifying rotation symmetry, palette preservation, and 90° exact equivalence.
+- [x] Selection Boundary Extraction & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`):
+  - `extractSelectionBoundarySegments` traversing 1-bit binary selection masks along orthogonal cell boundaries.
+  - `boundarySegmentsToSvgPath` converting boundary edges to dual-tone animated SVG marching ants.
+- [x] Interactive Selection Free-Transform Gizmo (`src/components/studio/SelectionTransformGizmo.tsx`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/layout/CenterViewport.tsx`, `tests/components/SelectionTransformGizmo.test.tsx`):
+  - 8 transform handles maintaining constant 16x16px screen-space hitboxes across all zoom levels.
+  - Draggable center pivot reticle ($\oplus$), 4 corner rotation zones with 15° Shift snapping, angle readout badge, and quick-action HUD bar.
+  - 60 FPS nearest-neighbor drag preview with background RotSprite commit on release.
+- [x] Timeline TagManagerModal Integration (`src/components/layout/BottomTimeline.tsx`, `tests/components/BottomTimeline.test.tsx`):
+  - Embedded "Manage Tags" launcher button in the timeline clip bar next to `+ Tag Clip`.
+  - Accessible modal dialog for animation tag definitions and frame range configuration.
+- [x] Sprite Sheet Slicer & Import Pipeline (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`, `src/components/layout/StudioLayout.tsx`, `tests/spritesheetSlicer.test.ts`, `tests/components/ImportModal.test.tsx`):
+  - Slicer engine computing grid coordinates, filtering blank alpha cells, and extracting frames.
+  - Live interactive cutline preview canvas with indexed cell badges and timeline append/replace options.
+- [x] Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `tests/workerDispatcher.test.ts`):
+  - Background Web Worker processing `'rotSprite'`, `'wfc'`, and `'morph'` messages with Transferable ArrayBuffers.
+  - Automatic synchronous fallback for environments without Web Worker support.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors/warnings.
+- `npx vitest run` passes all 502 tests across 75 suites.
+- `npm run verify:docs` passes with valid phase headers and documentation paths.
+
+**Status:** Complete (2026-09-08)
+
+---
+
 ## Phase 47 — Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening
 **Goal:** Eliminate flood fill failure on colored opaque pixels, prevent export download race conditions, preserve semi-transparent alpha in vector SVG exports, protect MP4 video encoding on odd-dimension sprites, synchronize dynamically created layers in WebRTC co-drawing, decouple viewport HUD cursor re-renders, and complete formal academic benchmark documentation.
 

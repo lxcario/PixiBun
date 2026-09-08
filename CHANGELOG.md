@@ -2,6 +2,36 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.12.0] - 2026-09-08
+### Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine (Phase 48)
+- **RotSprite Rotation Engine (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`)**:
+  - Implemented the full Ernst S. Brun & Pedro J. Estébanez (2007) RotSprite algorithm for low-resolution pixel art.
+  - Features three-stage pipeline: Scale8x cascade via Scale2x corner-connectivity, subpixel inverse affine rotation, and Gaussian center-weighted majority voting filter to downscale back to 1x without introducing new color shades.
+  - Created unit tests in `tests/rotSpriteAcademic.test.ts` validating rotation symmetry, palette preservation, and 90° exact equivalence.
+- **Selection Boundary Extraction & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`)**:
+  - Implemented `extractSelectionBoundarySegments` traversing 1-bit binary selection masks along orthogonal cell boundaries to extract per-pixel edge segments for arbitrary irregular shapes.
+  - Implemented `boundarySegmentsToSvgPath` converting boundary edges to dual-tone SVG dashed marching ants paths.
+  - Added unit tests in `tests/selectionBoundary.test.ts` verifying boundary extraction and disconnected selection islands.
+- **Interactive Selection Free-Transform Gizmo (`src/components/studio/SelectionTransformGizmo.tsx`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/layout/CenterViewport.tsx`, `tests/components/SelectionTransformGizmo.test.tsx`)**:
+  - Mounted an interactive free-transform gizmo with 8 transform handles maintaining constant 16x16px screen-space hitboxes regardless of canvas zoom.
+  - Center pivot reticle ($\oplus$) draggable for setting custom rotation/scaling centers.
+  - 4 corner rotation hit zones with 15° Shift snapping, angle readout badge, 60 FPS nearest-neighbor preview during drag, and quick-action HUD bar (Flip H, Flip V, Rotate 90° CW/CCW, Commit, Cancel).
+  - Added component tests in `tests/components/SelectionTransformGizmo.test.tsx` verifying handle rendering, HUD controls, and interactive dragging.
+- **Timeline TagManagerModal Integration (`src/components/layout/BottomTimeline.tsx`, `tests/components/BottomTimeline.test.tsx`)**:
+  - Added "Manage Tags" launcher button in the timeline clip bar next to `+ Tag Clip`.
+  - Connected `TagManagerModal` dialog directly into timeline workflow for creating, editing, and deleting animation tags.
+  - Added component tests in `tests/components/BottomTimeline.test.tsx` verifying modal opening and tag creation.
+- **Sprite Sheet Auto-Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`, `src/components/layout/StudioLayout.tsx`, `tests/spritesheetSlicer.test.ts`, `tests/components/ImportModal.test.tsx`)**:
+  - Added pure slicer engine computing grid coordinates, filtering blank alpha cells, and extracting frames.
+  - Added dedicated "Sprite Sheet Slicer" tab in `ImportModal.tsx` with preset buttons (16x16, 24x24, 32x32, 48x48, 64x64, custom), live cutline canvas preview with indexed frame badges (`#1`, `#2`, ...), and timeline append/replace options.
+  - Updated `StudioLayout.tsx` to batch-import sliced frames directly into the timeline.
+  - Added unit tests in `tests/spritesheetSlicer.test.ts` and component tests in `tests/components/ImportModal.test.tsx`.
+- **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `tests/workerDispatcher.test.ts`)**:
+  - Created background Web Worker for heavy graphics tasks (`rotSprite`, `wfc`, `morph`) using Transferable `ArrayBuffer` objects for zero-copy transfers.
+  - Created `workerDispatcher.ts` with automatic synchronous fallback for Node.js test environments or when workers are unavailable.
+  - Integrated worker dispatcher into `useArtisanEvents.ts` for asynchronous WFC synthesis and in-between frame morphing.
+  - Added unit tests in `tests/workerDispatcher.test.ts` verifying task execution and fallback handling.
+
 ## [v1.11.1] - 2026-09-08
 ### Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening (Phase 47)
 - **Unsigned 32-Bit Bitwise Normalization (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`)**:

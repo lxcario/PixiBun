@@ -64,4 +64,17 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
     expect(updatedFrames.map(f => f.id)).toEqual(['f2', 'f3', 'f1']);
     expect(useStudioStore.getState().activeFrameIndex).toBe(2);
   });
+
+  it('renders Manage Tags button and opens TagManagerModal when clicked', () => {
+    render(<BottomTimeline />);
+
+    const manageTagsBtn = screen.getByTestId('manage-tags-button');
+    expect(manageTagsBtn).toBeDefined();
+
+    fireEvent.click(manageTagsBtn);
+
+    // Modal title should now be visible in DOM
+    const modalTitle = screen.getByText(/Animation Tags & Clips/);
+    expect(modalTitle).toBeDefined();
+  });
 });

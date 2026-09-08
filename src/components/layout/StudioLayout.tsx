@@ -317,7 +317,7 @@ export const StudioLayout: React.FC = () => {
 
   // Confirm Image Import & Inject Pixel Art to Target Buffer
   const handleConfirmImportImage = useCallback((confirmData: ImageImportConfirmPayload) => {
-    const { canvas, target, extractedPalette, addToPalette, filename, resizeCanvasToMatch } = confirmData;
+    const { canvas, target, extractedPalette, addToPalette, filename, resizeCanvasToMatch, slicedFrames } = confirmData;
     const store = useStudioStore.getState();
 
     // 1. If user chose to match image dimensions, resize canvas first!
@@ -331,29 +331,101 @@ export const StudioLayout: React.FC = () => {
     const width = currentStore.canvasWidth;
     const height = currentStore.canvasHeight;
 
-    let targetLayerId = currentStore.activeLayerId;
+    if (slicedFrames && slicedFrames.length > 0) {
+      if (target === 'sprite-sheet-replace') {
+        const existingCount = currentStore.frames.length;
+        const newCount = slicedFrames.length;
 
-    if (target === 'new-frame') {
-      currentStore.addFrame();
-      const updatedState = useStudioStore.getState();
-      const newFrame = updatedState.frames[updatedState.activeFrameIndex];
-      targetLayerId = newFrame?.layers[0]?.id || updatedState.activeLayerId;
-    } else if (target === 'new-layer') {
-      const layerName = filename ? `Import: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Layer';
-      currentStore.addLayer(layerName);
-      const updatedState = useStudioStore.getState();
-      targetLayerId = updatedState.activeLayerId;
-    }
-
-    if (targetLayerId) {
-      const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
-      const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
-      if (ctx) {
-        if (target === 'replace-layer') {
-          ctx.clearRect(0, 0, width, height);
+        // 1. Draw frame 0 onto the first frame's active layer
+        const targetLayerId = currentStore.activeLayerId;
+        if (targetLayerId) {
+          const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
+          const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
+          if (ctx) {
+            ctx.clearRect(0, 0, width, height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(slicedFrames[0], 0, 0, width, height);
+          }
         }
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(canvas, 0, 0);
+
+        // 2. Overwrite existing frames 1..min(existingCount, newCount) - 1
+        const overwriteCount = Math.min(existingCount, newCount);
+        for (let i = 1; i < overwriteCount; i++) {
+          const frame = currentStore.frames[i];
+          const lId = frame?.layers[0]?.id;
+          if (lId) {
+            const buf = getOrCreateBuffer(lId, width, height);
+            const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
+            if (fCtx) {
+              fCtx.clearRect(0, 0, width, height);
+              fCtx.imageSmoothingEnabled = false;
+              fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+            }
+          }
+        }
+
+        // 3. If new frames > existing frames, add new frames for the remainder
+        for (let i = existingCount; i < newCount; i++) {
+          currentStore.addFrame();
+          const st = useStudioStore.getState();
+          const frame = st.frames[st.activeFrameIndex];
+          const lId = frame?.layers[0]?.id || st.activeLayerId;
+          const buf = getOrCreateBuffer(lId, width, height);
+          const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
+          if (fCtx) {
+            fCtx.clearRect(0, 0, width, height);
+            fCtx.imageSmoothingEnabled = false;
+            fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+          }
+        }
+
+        // 4. If existing frames > new frames, delete excess frames from the end
+        for (let i = existingCount - 1; i >= newCount; i--) {
+          currentStore.deleteFrame(i);
+        }
+
+        currentStore.setActiveFrame(0);
+      } else {
+        // sprite-sheet-append (or default)
+        for (let i = 0; i < slicedFrames.length; i++) {
+          currentStore.addFrame();
+          const st = useStudioStore.getState();
+          const frame = st.frames[st.activeFrameIndex];
+          const lId = frame?.layers[0]?.id || st.activeLayerId;
+          const buf = getOrCreateBuffer(lId, width, height);
+          const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
+          if (fCtx) {
+            fCtx.clearRect(0, 0, width, height);
+            fCtx.imageSmoothingEnabled = false;
+            fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+          }
+        }
+      }
+    } else {
+      let targetLayerId = currentStore.activeLayerId;
+
+      if (target === 'new-frame') {
+        currentStore.addFrame();
+        const updatedState = useStudioStore.getState();
+        const newFrame = updatedState.frames[updatedState.activeFrameIndex];
+        targetLayerId = newFrame?.layers[0]?.id || updatedState.activeLayerId;
+      } else if (target === 'new-layer') {
+        const layerName = filename ? `Import: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Layer';
+        currentStore.addLayer(layerName);
+        const updatedState = useStudioStore.getState();
+        targetLayerId = updatedState.activeLayerId;
+      }
+
+      if (targetLayerId) {
+        const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
+        const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
+        if (ctx) {
+          if (target === 'replace-layer') {
+            ctx.clearRect(0, 0, width, height);
+          }
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(canvas, 0, 0);
+        }
       }
     }
 

@@ -24,6 +24,8 @@ import { buildCanvasPaletteIndexMap } from '@/lib/export/shaderExporter';
 import { useViewportTransform } from '@/hooks/viewport/useViewportTransform';
 import { useViewportOverlays } from '@/hooks/viewport/useViewportOverlays';
 import { useViewportSelection } from '@/hooks/viewport/useViewportSelection';
+import { useViewportSelectionTransform } from '@/hooks/viewport/useViewportSelectionTransform';
+import { SelectionTransformGizmo } from '@/components/studio/SelectionTransformGizmo';
 import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
 import { useViewportPointerEvents } from '@/hooks/viewport/useViewportPointerEvents';
 import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvents';
@@ -163,6 +165,35 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     commitSnapshot,
   });
 
+  const {
+    transform: selectionTransform,
+    handlePointerDown: handleGizmoPointerDown,
+    handlePointerMove: handleGizmoPointerMove,
+    handlePointerUp: handleGizmoPointerUp,
+    commitTransform: commitGizmoTransform,
+    cancelTransform: cancelGizmoTransform,
+    handleFlipH: handleGizmoFlipH,
+    handleFlipV: handleGizmoFlipV,
+    handleRotate90CW: handleGizmoRotate90CW,
+    handleRotate90CCW: handleGizmoRotate90CCW,
+  } = useViewportSelectionTransform({
+    canvasWidth,
+    canvasHeight,
+    activeLayerId,
+    selection,
+    selectionMask,
+    floatingSelection,
+    setFloatingSelection,
+    setSelection: (box) => useStudioStore.getState().setSelection(box),
+    getOrCreateLayerCanvas,
+    renderComposite: () => renderComposite(),
+    captureSnapshot,
+    commitSnapshot,
+    bumpBufferVersion: () => useStudioStore.getState().bumpBufferVersion(),
+    liftSelectionToFloating,
+    commitFloatingSelection,
+  });
+
   const normalMapCacheRef = useRef<{ cacheKey: string; canvas: HTMLCanvasElement } | null>(null);
 
   // Pure composite of all visible layers onto the main viewport canvas
@@ -183,9 +214,17 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     // 2. Floating Selection Buffer overlay
     if (floatingSelection) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
+      if (selectionTransform && Math.abs(selectionTransform.rotation) > 1e-4) {
+        ctx.translate(selectionTransform.pivot.x, selectionTransform.pivot.y);
+        ctx.rotate(selectionTransform.rotation);
+        ctx.translate(-selectionTransform.pivot.x, -selectionTransform.pivot.y);
+      }
       ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
+      ctx.restore();
     }
 
     // 3. Tangent-Space Normal Map Live Viewport Mode
@@ -252,7 +291,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
-  }, [canvasHeight, canvasWidth, floatingSelection, getOrCreateLayerCanvas]);
+  }, [
+    canvasHeight,
+    canvasWidth,
+    floatingSelection,
+    getOrCreateLayerCanvas,
+    selectionTransform,
+  ]);
 
   // Mark Ferrari 8-Bit Dynamic Palette Cycling 60 FPS Engine
   useEffect(() => {
@@ -649,6 +694,31 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           height={stageHeight}
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
+
+        {/* Layer 6.5: Selection Free-Transform Gizmo & Marching Ants */}
+        {(selection || floatingSelection) && (
+          <SelectionTransformGizmo
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            zoom={zoom}
+            selectionMask={selectionMask}
+            transform={selectionTransform}
+            interactive={
+              tools.activeTool.startsWith('select-') ||
+              !!floatingSelection ||
+              selectionTransform.isTransforming
+            }
+            onHandlePointerDown={handleGizmoPointerDown}
+            onPointerMove={handleGizmoPointerMove}
+            onPointerUp={handleGizmoPointerUp}
+            onCommit={commitGizmoTransform}
+            onCancel={cancelGizmoTransform}
+            onFlipH={handleGizmoFlipH}
+            onFlipV={handleGizmoFlipV}
+            onRotate90CW={handleGizmoRotate90CW}
+            onRotate90CCW={handleGizmoRotate90CCW}
+          />
+        )}
 
         {/* Layer 7: Interactive On-Canvas Pixel Light Bulb Gizmo */}
         {photometricGizmoActive && (
