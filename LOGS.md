@@ -1208,7 +1208,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Delivered:**
 - **RotSprite Algorithm (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`)**:
-  - Implemented Ernst S. Brun & Pedro J. Estébanez (2007) RotSprite algorithm with 3-pass Scale2x cascade (1x -> 2x -> 4x -> 8x).
+  - Implemented Xenowhirl (2007) RotSprite algorithm (as implemented in Aseprite by Pedro J. Estébanez) with 3-pass Scale2x cascade (1x -> 2x -> 4x -> 8x).
   - Continuous subpixel inverse affine rotation around arbitrary pivot coordinates with expanded output geometry preserving rotated corners.
   - Radially symmetric Gaussian center-weighted majority voting filter downscaling 8x back to 1x with strict color fidelity and zero color blurring.
 - **Selection Boundary Extraction & Animated Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`)**:

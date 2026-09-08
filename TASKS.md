@@ -1,10 +1,10 @@
 # Build Plan — PixiBun
 
 ## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading
-**Goal:** Implement an academic-grade free-transform system for pixel art selections using the Ernst & Estébanez RotSprite algorithm, 8-handle transformation gizmo with center pivot reticle and marching ants contour, integrated timeline tag management, automatic sprite sheet slicing import with cutline preview, and asynchronous background Web Worker execution for heavy graphics computations.
+**Goal:** Implement an academic-grade free-transform system for pixel art selections using the Xenowhirl RotSprite algorithm, 8-handle transformation gizmo with center pivot reticle and marching ants contour, integrated timeline tag management, automatic sprite sheet slicing import with cutline preview, and asynchronous background Web Worker execution for heavy graphics computations.
 
 **Evidence & Rationale:**
-- Prior to Phase 48, selections lacked arbitrary angle rotation and scaling. Standard affine transforms degrade low-resolution pixel art through blur or jagged stair-stepping. RotSprite (Ernst S. Brun & Pedro J. Estébanez, 2007) preserves sharp single-pixel features and color integrity via an 8x Scale2x cascade, subpixel rotation, and Gaussian majority voting.
+- Prior to Phase 48, selections lacked arbitrary angle rotation and scaling. Standard affine transforms degrade low-resolution pixel art through blur or jagged stair-stepping. RotSprite (Xenowhirl, 2007) preserves sharp single-pixel features and color integrity via an 8x Scale2x cascade, subpixel rotation, and Gaussian majority voting.
 - Selection visualization previously only supported simple rectangular bounding boxes. Arbitrary non-rectangular selection masks require per-pixel orthogonal boundary edge traversal with dual-tone animated marching ants and screen-space invariant transformation handles.
 - Sprite sheet imports required manual external splitting. A native sprite sheet slicer allows artists to specify cell dimensions, inspect neon cutlines with index badges, eliminate empty frames, and batch-import directly into the animation timeline.
 - Heavy computational tasks (RotSprite 8x, WaveFunctionCollapse synthesis, In-Between SDF morphing) blocked the main UI thread during processing. Offloading to a Web Worker with Transferable ArrayBuffers and automatic synchronous fallback keeps the studio responsive.

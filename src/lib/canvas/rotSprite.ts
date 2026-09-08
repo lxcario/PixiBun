@@ -2,7 +2,7 @@
  * RotSprite Algorithm Implementation.
  *
  * Academic & Historical Reference:
- * - Ernst S. Brun & Pedro J. Estébanez (2007), "RotSprite: An algorithm for rotating pixel art".
+ * - Xenowhirl (2007), "RotSprite: An algorithm for rotating pixel art" (as implemented in Aseprite by Pedro J. Estébanez).
  * - Eric Johnston (1992), "EPX / Scale2x algorithm", LucasArts.
  *
  * Architecture:

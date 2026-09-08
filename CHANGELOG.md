@@ -5,7 +5,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 ## [v1.12.0] - 2026-09-08
 ### Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine (Phase 48)
 - **RotSprite Rotation Engine (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`)**:
-  - Implemented the full Ernst S. Brun & Pedro J. Estébanez (2007) RotSprite algorithm for low-resolution pixel art.
+  - Implemented the full Xenowhirl (2007) RotSprite algorithm for low-resolution pixel art (as popularized in Aseprite).
   - Features three-stage pipeline: Scale8x cascade via Scale2x corner-connectivity, subpixel inverse affine rotation, and Gaussian center-weighted majority voting filter to downscale back to 1x without introducing new color shades.
   - Created unit tests in `tests/rotSpriteAcademic.test.ts` validating rotation symmetry, palette preservation, and 90° exact equivalence.
 - **Selection Boundary Extraction & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`)**:

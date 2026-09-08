@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   TransformHandleType,
   TransformState,
@@ -86,27 +86,41 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
   const startDrag = (handle: TransformHandleType, e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // noop
+    }
     const canvasPoint = clientToCanvas(e);
     onHandlePointerDown(handle, { x: e.clientX, y: e.clientY }, canvasPoint);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (transform.isTransforming) {
-      e.stopPropagation();
-      const canvasPoint = clientToCanvas(e);
-      onPointerMove(canvasPoint, { shiftKey: e.shiftKey, altKey: e.altKey });
-    }
-  };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (transform.isTransforming) {
-      if ((e.target as HTMLElement).hasPointerCapture?.(e.pointerId)) {
-        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-      }
+
+  // Robust window-level pointer tracking during drag (prevents missed events when cursor flies outside gizmo)
+  useEffect(() => {
+    if (!transform.isTransforming) return;
+
+    const onGlobalPointerMove = (e: PointerEvent) => {
+      const area = document.getElementById('center-canvas-area');
+      if (!area) return;
+      const rect = area.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / scale;
+      const py = (e.clientY - rect.top) / scale;
+      onPointerMove({ x: px, y: py }, { shiftKey: e.shiftKey, altKey: e.altKey });
+    };
+
+    const onGlobalPointerUp = () => {
       onPointerUp();
-    }
-  };
+    };
+
+    window.addEventListener('pointermove', onGlobalPointerMove);
+    window.addEventListener('pointerup', onGlobalPointerUp);
+    return () => {
+      window.removeEventListener('pointermove', onGlobalPointerMove);
+      window.removeEventListener('pointerup', onGlobalPointerUp);
+    };
+  }, [transform.isTransforming, scale, onPointerMove, onPointerUp]);
 
   const handles: { id: TransformHandleType; x: number; y: number; cursor: string }[] = [
     { id: 'tl', x: 0, y: 0, cursor: 'nwse-resize' },
@@ -172,7 +186,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
       {interactive && (
         <div
           data-testid="selection-transform-gizmo"
-          className="absolute top-0 left-0 pointer-events-auto select-none z-30"
+          className="absolute top-0 left-0 pointer-events-auto select-none z-40"
           style={{
             width: `${screenW}px`,
             height: `${screenH}px`,
@@ -180,8 +194,6 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             transform: `translate(${screenX}px, ${screenY}px) rotate(${transform.rotation}rad)`,
             touchAction: 'none',
           }}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
         >
         {/* Dual-Pass Marching Ants Bounding Box Outline */}
         <svg
@@ -217,17 +229,17 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
           onPointerDown={(e) => startDrag('translate', e)}
         />
 
-        {/* Outer Rotation Hit Zones (4 Corners Extended Annulus) */}
+        {/* Outer Rotation Hit Zones (4 Corners Extended Annulus, z-50 above handles) */}
         {[
-          { x: -16, y: -16, corner: 'tl' },
-          { x: screenW - 8, y: -16, corner: 'tr' },
-          { x: screenW - 8, y: screenH - 8, corner: 'br' },
-          { x: -16, y: screenH - 8, corner: 'bl' },
+          { x: -24, y: -24, corner: 'tl' },
+          { x: screenW, y: -24, corner: 'tr' },
+          { x: screenW, y: screenH, corner: 'br' },
+          { x: -24, y: screenH, corner: 'bl' },
         ].map((zone) => (
           <div
             key={`rot-zone-${zone.corner}`}
             data-testid={`gizmo-rotate-${zone.corner}`}
-            className="absolute w-6 h-6 rounded-full cursor-crosshair z-30 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-auto"
+            className="absolute w-6 h-6 rounded-full cursor-crosshair z-50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-auto"
             style={{
               left: `${zone.x}px`,
               top: `${zone.y}px`,
@@ -235,7 +247,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
             title="Drag to rotate selection (Shift to snap 15°)"
             onPointerDown={(e) => startDrag('rotate', e)}
           >
-            <div className="w-4 h-4 rounded-full border border-[#f0be7c] bg-[#140d1f]/70 text-[#f0be7c] text-[8px] flex items-center justify-center font-bold">
+            <div className="w-4 h-4 rounded-full border border-[#f0be7c] bg-[#140d1f]/70 text-[#f0be7c] text-[8px] flex items-center justify-center font-bold pointer-events-none">
               ↻
             </div>
           </div>

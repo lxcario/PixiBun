@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { downsampleImage, extractOklabPalette, rgbToOklab } from '@/lib/ai/pixelizeEngine';
 import { morphInBetweenFrames } from '@/lib/ai/pixelAiEngine';
+import { rotateNearest, PixelBuffer } from '@/lib/canvas/rotSprite';
 
 function createMockCtx(width: number, height: number, data?: Uint8ClampedArray): CanvasRenderingContext2D {
   const pixelData = data ?? new Uint8ClampedArray(width * height * 4);
@@ -122,4 +123,51 @@ describe('Performance Benchmarking Suite', () => {
     expect(morphedCanvas).toBeDefined();
     expect(durationMs).toBeLessThan(1000);
   });
+
+  it('benchmarks nearest-neighbor inverse affine transform for 32x32, 64x64, 128x128, and 256x256 selections', () => {
+    const resolutions = [32, 64, 128, 256];
+    const results: Record<number, { avgMs: number; p95Ms: number; fpsEquivalent: number }> = {};
+
+    for (const res of resolutions) {
+      const pixelCount = res * res;
+      const data = new Uint8ClampedArray(pixelCount * 4);
+      for (let i = 0; i < pixelCount; i++) {
+        data[i * 4] = (i * 13) % 256;
+        data[i * 4 + 1] = (i * 29) % 256;
+        data[i * 4 + 2] = (i * 47) % 256;
+        data[i * 4 + 3] = 255;
+      }
+      const buffer: PixelBuffer = { width: res, height: res, data };
+
+      // Warmup JIT
+      for (let w = 0; w < 10; w++) {
+        rotateNearest(buffer, 0.45);
+      }
+
+      // 100 iterations measuring inverse affine nearest neighbor
+      const iterations = 100;
+      const timings: number[] = [];
+      for (let i = 0; i < iterations; i++) {
+        const angle = (i / iterations) * Math.PI * 2;
+        const t0 = performance.now();
+        rotateNearest(buffer, angle);
+        const t1 = performance.now();
+        timings.push(t1 - t0);
+      }
+
+      timings.sort((a, b) => a - b);
+      const avg = timings.reduce((sum, t) => sum + t, 0) / iterations;
+      const p95 = timings[Math.floor(iterations * 0.95)];
+
+      results[res] = {
+        avgMs: Number(avg.toFixed(4)),
+        p95Ms: Number(p95.toFixed(4)),
+        fpsEquivalent: Math.round(1000 / Math.max(avg, 0.001)),
+      };
+
+      // Even 256x256 nearest-neighbor must finish well below the 16.66ms frame budget (60 FPS)
+      expect(avg).toBeLessThan(16.66);
+    }
+  });
 });
+
