@@ -15,6 +15,9 @@
 
 import { createSpectralFluxDetector, SpectralFluxDetector } from './spectralFlux';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { TRACKS, TrackTitle, TRACK_CONFIGS, SynthVoiceController } from './tracks';
+
+export { TRACKS, type TrackTitle };
 
 export interface RadioState {
   isPlaying: boolean;
@@ -22,15 +25,7 @@ export interface RadioState {
   volume: number;
 }
 
-export const TRACKS = [
-  'Cyber Run',
-  'Rainy Lilac',
-  'Neon Castle',
-] as const;
-
-export type TrackTitle = (typeof TRACKS)[number];
-
-class ProceduralSoundEngine {
+class ProceduralSoundEngine implements SynthVoiceController {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private limiter: DynamicsCompressorNode | null = null;
@@ -58,6 +53,7 @@ class ProceduralSoundEngine {
   private currentStep = 0;
   private nextStepTime = 0;
   private schedulerTimer: number | null = null;
+  private meterTimer: number | null = null;
   private listeners: Set<(state: RadioState) => void> = new Set();
   private freqArray: Uint8Array<ArrayBuffer> | null = null;
   private fluxDetector: SpectralFluxDetector = createSpectralFluxDetector({
@@ -182,7 +178,7 @@ class ProceduralSoundEngine {
   // 2. SYNTHESIZER VOICES
   // =========================================================================
 
-  private playPulse(
+  public playPulse(
     time: number,
     freq: number,
     duration: number,
@@ -214,7 +210,7 @@ class ProceduralSoundEngine {
     osc.stop(time + duration);
   }
 
-  private playFMBass(time: number, freq: number, duration: number, gainLevel = 0.38) {
+  public playFMBass(time: number, freq: number, duration: number, gainLevel = 0.38) {
     if (!this.ctx || !this.masterGain) return;
     const carrier = this.ctx.createOscillator();
     const modulator = this.ctx.createOscillator();
@@ -250,7 +246,7 @@ class ProceduralSoundEngine {
     carrier.stop(time + duration);
   }
 
-  private playOverdriveLead(time: number, freq: number, duration: number, gainLevel = 0.2) {
+  public playOverdriveLead(time: number, freq: number, duration: number, gainLevel = 0.2) {
     if (!this.ctx || !this.masterGain || !this.overdriveShaper) return;
     const osc1 = this.ctx.createOscillator();
     const osc2 = this.ctx.createOscillator();
@@ -289,7 +285,7 @@ class ProceduralSoundEngine {
     osc2.stop(time + duration);
   }
 
-  private playWarmPad(time: number, freqs: number[], duration: number, gainLevel = 0.12) {
+  public playWarmPad(time: number, freqs: number[], duration: number, gainLevel = 0.12) {
     if (!this.ctx || !this.masterGain) return;
     const perOscGain = gainLevel / freqs.length;
 
@@ -333,7 +329,7 @@ class ProceduralSoundEngine {
   // 3. PERCUSSION SYNTHESIS
   // =========================================================================
 
-  private playKick(time: number) {
+  public playKick(time: number) {
     if (!this.ctx || !this.masterGain) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -351,7 +347,7 @@ class ProceduralSoundEngine {
     osc.stop(time + 0.2);
   }
 
-  private playSnare(time: number) {
+  public playSnare(time: number) {
     if (!this.ctx || !this.masterGain || !this.whiteNoiseBuffer) return;
 
     // Tonal punch
@@ -387,7 +383,7 @@ class ProceduralSoundEngine {
     noiseSource.stop(time + 0.12);
   }
 
-  private playHiHat(time: number, isOpen = false) {
+  public playHiHat(time: number, isOpen = false) {
     if (!this.ctx || !this.masterGain || !this.whiteNoiseBuffer) return;
     const source = this.ctx.createBufferSource();
     source.buffer = this.whiteNoiseBuffer;
@@ -410,7 +406,7 @@ class ProceduralSoundEngine {
     source.stop(time + dur + 0.01);
   }
 
-  private playMetallicZap(time: number, duration = 0.06) {
+  public playMetallicZap(time: number, duration = 0.06) {
     if (!this.ctx || !this.masterGain || !this.metallicNoiseBuffer) return;
     const source = this.ctx.createBufferSource();
     source.buffer = this.metallicNoiseBuffer;
@@ -431,132 +427,9 @@ class ProceduralSoundEngine {
   // =========================================================================
 
   private scheduleTrackStep(trackIdx: number, step: number, time: number) {
-    if (trackIdx === 0) {
-      // "Cyber Run" — 140 BPM, F Dorian Fast Ostinato & FM Bass
-      const stepDur = (60.0 / 140.0) / 4.0;
-      const arpNotes: (number | null)[] = [
-        349.23, 415.30, 523.25, 311.13, 349.23, 523.25, 415.30, 293.66,
-        349.23, 415.30, 523.25, 311.13, 349.23, 293.66, 261.63, 233.08,
-        311.13, 392.00, 466.16, 293.66, 311.13, 466.16, 392.00, 261.63,
-        293.66, 349.23, 415.30, 261.63, 293.66, 261.63, 233.08, 207.65,
-      ];
-      const note = arpNotes[step % 32];
-      if (note) {
-        this.playPulse(time, note, stepDur * 0.9, '12', 0.16, true);
-      }
-
-      // Syncopated FM Bass
-      const bassNotes: { [key: number]: number } = {
-        0: 87.31, 2: 174.61, 5: 87.31, 7: 103.83, 10: 116.54, 13: 130.81, 15: 155.56,
-        16: 87.31, 18: 174.61, 21: 87.31, 24: 116.54, 27: 103.83, 30: 130.81,
-      };
-      if (bassNotes[step % 32]) {
-        this.playFMBass(time, bassNotes[step % 32], stepDur * 1.5, 0.42);
-      }
-
-      // Warm Saw Pad (Fm9 bar 1 -> Bb7 bar 2)
-      if (step % 32 === 0) {
-        this.playWarmPad(time, [174.61, 207.65, 261.63, 311.13], stepDur * 16, 0.12);
-      } else if (step % 32 === 16) {
-        this.playWarmPad(time, [233.08, 293.66, 349.23, 415.30], stepDur * 16, 0.12);
-      }
-
-      // Overdrive Battle Accent Stabs
-      if (step % 32 === 0 || step % 32 === 10 || step % 32 === 16 || step % 32 === 26) {
-        this.playOverdriveLead(time, 349.23, stepDur * 1.6, 0.2);
-      }
-
-      // Drums
-      if (step % 8 === 0 || step % 8 === 6) {
-        this.playKick(time);
-      }
-      if (step % 8 === 4) {
-        this.playSnare(time);
-      }
-      const isOpenHat = step % 4 === 2;
-      this.playHiHat(time, isOpenHat);
-
-      if (step % 32 === 30 || step % 32 === 31) {
-        this.playMetallicZap(time, 0.05);
-      }
-    } else if (trackIdx === 1) {
-      // "Rainy Lilac" — 84 BPM, Pentatonic Rhodes Chords & Warm Flutter
-      const stepDur = (60.0 / 84.0) / 4.0;
-      const chordStep = step % 64;
-
-      if (chordStep === 0) {
-        // Fmaj7
-        this.playPulse(time, 174.61, stepDur * 14, '50', 0.12);
-        this.playPulse(time, 220.00, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 261.63, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 329.63, stepDur * 14, '50', 0.08);
-        this.playFMBass(time, 87.31, stepDur * 14, 0.3);
-      } else if (chordStep === 16) {
-        // Em7
-        this.playPulse(time, 164.81, stepDur * 14, '50', 0.12);
-        this.playPulse(time, 196.00, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 246.94, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 293.66, stepDur * 14, '50', 0.08);
-        this.playFMBass(time, 82.41, stepDur * 14, 0.3);
-      } else if (chordStep === 32) {
-        // Dm7
-        this.playPulse(time, 146.83, stepDur * 14, '50', 0.12);
-        this.playPulse(time, 174.61, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 220.00, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 261.63, stepDur * 14, '50', 0.08);
-        this.playFMBass(time, 73.42, stepDur * 14, 0.3);
-      } else if (chordStep === 48) {
-        // Cmaj7
-        this.playPulse(time, 130.81, stepDur * 14, '50', 0.12);
-        this.playPulse(time, 164.81, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 196.00, stepDur * 14, '50', 0.1);
-        this.playPulse(time, 246.94, stepDur * 14, '50', 0.08);
-        this.playFMBass(time, 65.41, stepDur * 14, 0.3);
-      }
-
-      // Soft brushed hat and subtle kick
-      if (chordStep % 16 === 0) {
-        this.playKick(time);
-      }
-      if (chordStep % 8 === 4) {
-        this.playHiHat(time, false);
-      }
-    } else {
-      // "Neon Castle" — 128 BPM, A Aeolian Driving Chiptune
-      const stepDur = (60.0 / 128.0) / 4.0;
-      const melodyNotes: { [key: number]: number } = {
-        0: 329.63, 3: 440.00, 6: 523.25, 8: 493.88, 11: 392.00, 14: 440.00,
-        16: 329.63, 19: 440.00, 22: 587.33, 24: 523.25, 27: 493.88, 30: 392.00,
-      };
-      const mel = melodyNotes[step % 32];
-      if (mel) {
-        this.playPulse(time, mel, stepDur * 2.2, '25', 0.22, true);
-      }
-
-      // Syncopated Bassline
-      const bassNotes: { [key: number]: number } = {
-        0: 110.00, 4: 110.00, 7: 130.81, 10: 146.83, 12: 164.81, 14: 98.00,
-        16: 110.00, 20: 110.00, 23: 164.81, 26: 146.83, 28: 130.81, 30: 82.41,
-      };
-      if (bassNotes[step % 32]) {
-        this.playFMBass(time, bassNotes[step % 32], stepDur * 1.8, 0.4);
-      }
-
-      // Pad backdrop
-      if (step % 32 === 0) {
-        this.playWarmPad(time, [220.00, 261.63, 329.63, 392.00], stepDur * 16, 0.12);
-      } else if (step % 32 === 16) {
-        this.playWarmPad(time, [174.61, 220.00, 261.63, 329.63], stepDur * 16, 0.12);
-      }
-
-      // Driving beat
-      if (step % 8 === 0) {
-        this.playKick(time);
-      }
-      if (step % 8 === 4) {
-        this.playSnare(time);
-      }
-      this.playHiHat(time, step % 4 === 2);
+    const config = TRACK_CONFIGS[trackIdx];
+    if (config) {
+      config.scheduleStep(step, time, this);
     }
   }
 
@@ -567,8 +440,8 @@ class ProceduralSoundEngine {
     this.currentStep = 0;
     this.nextStepTime = this.ctx.currentTime + 0.05;
 
-    // Start subtle rain background for track 1
-    if (this.currentTrackIndex === 1) {
+    const config = TRACK_CONFIGS[this.currentTrackIndex];
+    if (config?.hasRainNoise) {
       this.startRainNoise();
     } else {
       this.stopRainNoise();
@@ -577,7 +450,8 @@ class ProceduralSoundEngine {
     const scheduleLoop = () => {
       if (!this.isPlaying || !this.ctx) return;
 
-      const tempo = this.currentTrackIndex === 0 ? 140.0 : this.currentTrackIndex === 1 ? 84.0 : 128.0;
+      const currentConfig = TRACK_CONFIGS[this.currentTrackIndex];
+      const tempo = currentConfig ? currentConfig.tempo : 128.0;
       const secondsPer16th = (60.0 / tempo) / 4.0;
 
       // Lookahead window: schedule up to 120ms into the future
@@ -591,12 +465,32 @@ class ProceduralSoundEngine {
     };
 
     scheduleLoop();
+
+    // Dedicated internal meter loop: ensures Dixon onset detection fires continuously during playback
+    // even if no visualizer widget is currently mounted or polling.
+    const meterLoop = () => {
+      if (!this.isPlaying || !this.analyser || !this.freqArray) return;
+      this.analyser.getByteFrequencyData(this.freqArray);
+      const onsetRes = this.fluxDetector.processFrame(this.freqArray);
+      if (onsetRes.isOnset) {
+        studioEvents.emit('pixibun:audio-onset', {
+          flux: onsetRes.flux,
+          timestamp: Date.now(),
+        });
+      }
+      this.meterTimer = window.setTimeout(meterLoop, 40);
+    };
+    this.meterTimer = window.setTimeout(meterLoop, 40);
   }
 
   private stopMusicLoop() {
     if (this.schedulerTimer !== null) {
       window.clearTimeout(this.schedulerTimer);
       this.schedulerTimer = null;
+    }
+    if (this.meterTimer !== null) {
+      window.clearTimeout(this.meterTimer);
+      this.meterTimer = null;
     }
     this.stopRainNoise();
   }

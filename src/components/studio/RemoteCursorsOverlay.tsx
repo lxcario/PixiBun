@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { coDrawBridge, CODRAW_CURSORS_EVENT, CURSOR_STALE_MS } from '@/lib/sync/coDrawBridge';
+import { coDrawBridge, CURSOR_STALE_MS } from '@/lib/sync/coDrawBridge';
+import { studioEvents } from '@/lib/events/studioEvents';
 import type { RemoteCursor } from '@/lib/sync/p2pSync';
 
 /**
@@ -17,11 +18,11 @@ export const RemoteCursorsOverlay: React.FC<{ zoom: number }> = ({ zoom }) => {
   useEffect(() => {
     const sync = () => setCursors(coDrawBridge.getActiveCursors(CURSOR_STALE_MS));
     sync();
-    window.addEventListener(CODRAW_CURSORS_EVENT, sync);
-    const pruneTimer = window.setInterval(sync, 1000);
+    const unsub = studioEvents.on('pixibun:remote-cursors', sync);
+    const pruneTimer = typeof window !== 'undefined' ? window.setInterval(sync, 1000) : null;
     return () => {
-      window.removeEventListener(CODRAW_CURSORS_EVENT, sync);
-      window.clearInterval(pruneTimer);
+      unsub();
+      if (pruneTimer !== null) window.clearInterval(pruneTimer);
     };
   }, []);
 

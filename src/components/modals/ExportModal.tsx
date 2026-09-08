@@ -21,6 +21,16 @@ import {
   generateUnityUrpShader,
   generateLoopAnimationCanvases,
 } from '@/lib/export/shaderExporter';
+import { ExportTabsNav, type ExportType } from './export/ExportTabsNav';
+import { ExportScopeSelector } from './export/ExportScopeSelector';
+import { ExportProgressBar } from './export/ExportProgressBar';
+import { PngExportTab } from './export/PngExportTab';
+import { AnimatedExportTab } from './export/AnimatedExportTab';
+import { SpritesheetExportTab } from './export/SpritesheetExportTab';
+import { ReplayExportTab } from './export/ReplayExportTab';
+import { VectorSvgExportTab } from './export/VectorSvgExportTab';
+import { ShaderExportTab } from './export/ShaderExportTab';
+import { ProjectExportTab } from './export/ProjectExportTab';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -40,9 +50,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     currentPaletteId,
   } = useStudioStore();
 
-  const [exportType, setExportType] = useState<
-    'png' | 'gif' | 'apng' | 'spritesheet' | 'replay' | 'svg' | 'webm' | 'mp4' | 'project' | 'shader' | 'palette-cycle'
-  >('png');
+  const [exportType, setExportType] = useState<ExportType>('png');
   const [shaderTarget, setShaderTarget] = useState<'godot' | 'unity'>('godot');
   const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
   const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
@@ -554,637 +562,118 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   return (
     <ModalWrapper isOpen={isOpen} onClose={handleCancel} title="Export Studio Assets" maxWidth="w-[560px]">
       {/* Format Selector Tabs */}
-      <div className="flex gap-1 bg-[var(--desk-surface)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-        {(['png', 'gif', 'apng', 'webm', 'mp4', 'spritesheet', 'replay', 'svg', 'shader', 'palette-cycle', 'project'] as const).map((type) => (
-          <button
-            key={type}
-            disabled={isExporting}
-            onClick={() => setExportType(type)}
-            className={`flex-1 py-1.5 rounded-[2px] text-xs font-mono font-bold transition-colors cursor-pointer capitalize ${
-              exportType === type
-                ? 'bg-[#f0be7c] text-[#140d1f] shadow-xs'
-                : 'text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[var(--desk-surface)]'
-            } ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {type === 'spritesheet'
-              ? 'Sprite Sheet'
-              : type === 'replay'
-              ? 'Timelapse'
-              : type === 'svg'
-              ? 'Vector SVG'
-              : type === 'webm'
-              ? 'WebM Video'
-              : type === 'mp4'
-              ? 'MP4 Video'
-              : type === 'apng'
-              ? 'APNG'
-              : type === 'shader'
-              ? 'Shaders'
-              : type === 'palette-cycle'
-              ? 'Cycle Loop'
-              : type === 'project'
-              ? '.pixibun'
-              : type.toUpperCase()}
-          </button>
-        ))}
-      </div>
+      <ExportTabsNav
+        exportType={exportType}
+        onSelectType={setExportType}
+        isExporting={isExporting}
+      />
 
       {/* Export Scope (Tag Clips) Selector */}
       {clips.length > 0 && exportType !== 'project' && (
-        <div className="flex items-center justify-between bg-[var(--desk-surface)] px-3 py-2 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono">
-          <span className="text-[var(--text-body)] font-bold">Export Scope:</span>
-          <select
-            value={selectedClipId}
-            aria-label="Export frame scope"
-            disabled={isExporting}
-            onChange={(e) => setSelectedClipId(e.target.value)}
-            className="bg-[#181124] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer focus:border-[#f0be7c]"
-          >
-            <option value="all">All Frames (1–{frames.length})</option>
-            {clips.map((clip) => (
-              <option key={clip.id} value={clip.id}>
-                {clip.name} (Frames {clip.startFrame + 1}–{clip.endFrame + 1})
-              </option>
-            ))}
-          </select>
-        </div>
+        <ExportScopeSelector
+          clips={clips}
+          selectedClipId={selectedClipId}
+          onSelectClipId={setSelectedClipId}
+          isExporting={isExporting}
+          totalFrames={frames.length}
+        />
       )}
 
       {/* Web Worker Export Progress Bar */}
       {isExporting && exportProgress && (
-        <div className="bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#f0be7c] flex flex-col gap-2 shadow-md animate-pulse">
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[#f0be7c] font-bold">Encoding {exportType.toUpperCase()} via Browser Codec:</span>
-            <span className="text-[var(--text-heading)] font-bold">
-              {exportProgress.current} / {exportProgress.total} frames ({Math.round((exportProgress.current / Math.max(1, exportProgress.total)) * 100)}%)
-            </span>
-          </div>
-          <div className="w-full bg-[#181124] h-2.5 rounded-[2px] overflow-hidden border border-[var(--desk-border)]">
-            <div
-              className="bg-[#f0be7c] h-full transition-all duration-100 ease-out"
-              style={{
-                width: `${Math.round((exportProgress.current / Math.max(1, exportProgress.total)) * 100)}%`,
-              }}
-            />
-          </div>
-        </div>
+        <ExportProgressBar
+          exportType={exportType}
+          exportProgress={exportProgress}
+        />
       )}
 
-      {/* Export Configuration Options */}
+      {/* Modular Export Configuration Options */}
       {exportType === 'png' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8, 16].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)]">
-            <span className="font-bold">Output Size:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px
-            </span>
-          </div>
-        </div>
+        <PngExportTab
+          scale={scale}
+          setScale={setScale}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
+        />
       )}
 
-      {exportType === 'gif' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)]">
-            <span className="font-bold">Output Info:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px, {frames.length} frames at {fps} FPS
-            </span>
-          </div>
-          
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Animated GIF with crisp nearest-neighbor integer scaling
-          </p>
-        </div>
-      )}
-
-      {exportType === 'apng' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8, 16].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)]">
-            <span className="font-bold">Output Animation Info:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px, {targetFrames.length} frames (24-bit Truecolor APNG)
-            </span>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Animated PNG (APNG) retains 100% full 24-bit/32-bit RGBA color without GIF&apos;s 256-color degradation or palette quantization noise. Encoded with uncompressed DEFLATE store blocks (BTYPE 00) for instant, zero-dependency offline generation (file sizes may be larger than compressed PNGs).
-          </p>
-        </div>
+      {(exportType === 'gif' || exportType === 'apng' || exportType === 'webm' || exportType === 'mp4') && (
+        <AnimatedExportTab
+          exportType={exportType}
+          scale={scale}
+          setScale={setScale}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
+          totalFrames={targetFrames.length}
+          fps={fps}
+          videoLoopCount={videoLoopCount}
+          setVideoLoopCount={setVideoLoopCount}
+          isMp4Supported={isMp4Supported}
+        />
       )}
 
       {exportType === 'spritesheet' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Layout Packing:</span>
-            <div className="flex gap-1">
-              {(['horizontal', 'vertical', 'grid'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setLayoutMode(mode)}
-                  className={`px-2 py-0.5 rounded-[2px] border capitalize font-bold cursor-pointer transition-colors ${
-                    layoutMode === mode
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Frame Scale:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Padding:</span>
-            <div className="flex gap-1">
-              {[0, 1, 2, 4].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPadding(p)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    padding === p
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {p}px
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1 border-t border-[var(--desk-border)]">
-            <span className="text-[var(--text-body)] font-bold">Engine Metadata (Godot & JSON):</span>
-            <button
-              onClick={() => setIncludeMetadata(!includeMetadata)}
-              className={`px-2 py-0.5 rounded-[2px] border text-[10px] font-bold cursor-pointer transition-colors ${
-                includeMetadata
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border-[var(--desk-border)]'
-              }`}
-            >
-              {includeMetadata ? 'ENABLED' : 'OFF'}
-            </button>
-          </div>
-        </div>
+        <SpritesheetExportTab
+          layoutMode={layoutMode}
+          setLayoutMode={setLayoutMode}
+          scale={scale}
+          setScale={setScale}
+          padding={padding}
+          setPadding={setPadding}
+          includeMetadata={includeMetadata}
+          setIncludeMetadata={setIncludeMetadata}
+        />
       )}
 
       {exportType === 'replay' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Timelapse Format:</span>
-            <div className="flex gap-1">
-              {(['gif', 'mp4'] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  onClick={() => setReplayFormat(fmt)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors uppercase ${
-                    replayFormat === fmt
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {fmt === 'mp4' ? 'MP4 Video' : 'Animated GIF'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {replayFormat === 'mp4' && !isMp4Supported && (
-            <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
-              <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
-                <PixelIcon name="warning" size={13} />
-                <span>MP4 Video Recording Unsupported</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
-                Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>Animated GIF</strong> for timelapse export.
-              </p>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Playback Speed:</span>
-            <div className="flex gap-1">
-              {[6, 12, 18, 24].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setReplayFps(f)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    replayFps === f
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {f} FPS
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Hold Final Frame:</span>
-            <div className="flex gap-1">
-              {[500, 1000, 2000].map((ms) => (
-                <button
-                  key={ms}
-                  onClick={() => setHoldLastFrameMs(ms)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    holdLastFrameMs === ms
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {ms / 1000}s
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
-            <span className="font-bold">History Steps:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {historyLength} stroke snapshots recorded
-            </span>
-          </div>
-
-          {historyLength === 0 && (
-            <p className="text-[#e06c75] text-[11px] pt-1">
-              No drawing strokes recorded in current session yet. Draw on the canvas to generate a timelapse.
-            </p>
-          )}
-        </div>
+        <ReplayExportTab
+          replayFormat={replayFormat}
+          setReplayFormat={setReplayFormat}
+          scale={scale}
+          setScale={setScale}
+          replayFps={replayFps}
+          setReplayFps={setReplayFps}
+          holdLastFrameMs={holdLastFrameMs}
+          setHoldLastFrameMs={setHoldLastFrameMs}
+          historyLength={historyLength}
+          isMp4Supported={isMp4Supported}
+        />
       )}
 
       {exportType === 'svg' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[4, 8, 16, 32].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Contour Smoothing:</span>
-            <button
-              onClick={() => setSvgSmooth(!svgSmooth)}
-              className={`px-2 py-0.5 rounded-[2px] border text-[10px] font-bold cursor-pointer transition-colors ${
-                svgSmooth
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border-[var(--desk-border)]'
-              }`}
-            >
-              {svgSmooth ? 'SMOOTH SPLINES (BÉZIER)' : 'CRISP POLYGONS'}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
-            <span className="font-bold">Output Format:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px (Lossless Vector SVG)
-            </span>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Kopf–Lischinski depixelization resolves diagonal pixel ambiguity and fits smooth cubic Bézier curves for high-DPI merchandise, print, and stickers.
-          </p>
-        </div>
-      )}
-
-      {exportType === 'webm' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Animation Cycles:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setVideoLoopCount(c)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    videoLoopCount === c
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {c} {c === 1 ? 'loop' : 'loops'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
-            <span className="font-bold">Output Video Info:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px WebM (VP9/VP8)
-            </span>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Encodes animation with exact per-frame millisecond holds for high-quality game dev video showcases and social sharing.
-          </p>
-        </div>
-      )}
-
-      {exportType === 'mp4' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          {!isMp4Supported && (
-            <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
-              <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
-                <PixelIcon name="warning" size={13} />
-                <span>MP4 Video Recording Unsupported</span>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
-                Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>WebM</strong> for video or <strong>GIF / APNG</strong> for animation export instead.
-              </p>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8, 16].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Animation Cycles:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setVideoLoopCount(c)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    videoLoopCount === c
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {c} {c === 1 ? 'loop' : 'loops'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
-            <span className="font-bold">Output Video Info:</span>
-            <span className="text-[#f0be7c] font-bold">
-              {canvasWidth * scale} × {canvasHeight * scale} px MP4 (H.264 / ISOBMFF)
-            </span>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Universal MP4 container optimized for instant video previews across Discord, Twitter/X, and modern video players.
-          </p>
-        </div>
-      )}
-
-      {exportType === 'project' && (
-        <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <p className="text-[var(--text-body)] leading-relaxed font-medium">
-            Export the full project file (.pixibun) containing all {frames.length} frames, layers, palettes, and timing metadata.
-          </p>
-        </div>
+        <VectorSvgExportTab
+          scale={scale}
+          setScale={setScale}
+          svgSmooth={svgSmooth}
+          setSvgSmooth={setSvgSmooth}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
+        />
       )}
 
       {exportType === 'shader' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Engine Target:</span>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setShaderTarget('godot')}
-                className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                  shaderTarget === 'godot'
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                }`}
-              >
-                Godot 4 (.gdshader)
-              </button>
-              <button
-                onClick={() => setShaderTarget('unity')}
-                className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                  shaderTarget === 'unity'
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                }`}
-              >
-                Unity URP 2D (.shader)
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-            <span>Active Tracks:</span>
-            <span className="font-bold text-[#f0be7c]">{activeCycleTracks.length} tracks configured</span>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Hardware-accelerated pixel shader with point-filtering, ping-pong oscillation, and sub-step color interpolation.
-          </p>
-        </div>
+        <ShaderExportTab
+          isPaletteCycle={false}
+          shaderTarget={shaderTarget}
+          setShaderTarget={setShaderTarget}
+          activeCycleTracksCount={activeCycleTracks.length}
+        />
       )}
 
       {exportType === 'palette-cycle' && (
-        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Target Loop Duration:</span>
-            <div className="flex gap-1">
-              {[1.0, 2.0, 3.0, 4.0, 5.0].map((sec) => (
-                <button
-                  key={sec}
-                  onClick={() => setCycleLoopDuration(sec)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    cycleLoopDuration === sec
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {sec}s
-                </button>
-              ))}
-            </div>
-          </div>
+        <ShaderExportTab
+          isPaletteCycle={true}
+          cycleLoopDuration={cycleLoopDuration}
+          setCycleLoopDuration={setCycleLoopDuration}
+          cycleLoopFormat={cycleLoopFormat}
+          setCycleLoopFormat={setCycleLoopFormat}
+          scale={scale}
+          setScale={setScale}
+        />
+      )}
 
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Animation Format:</span>
-            <div className="flex gap-1">
-              {(['apng', 'gif'] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  onClick={() => setCycleLoopFormat(fmt)}
-                  className={`px-2.5 py-0.5 rounded-[2px] border font-bold cursor-pointer uppercase transition-colors ${
-                    cycleLoopFormat === fmt
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {fmt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
-            <div className="flex gap-1">
-              {[1, 2, 4, 8].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setScale(s)}
-                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                    scale === s
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-                  }`}
-                >
-                  {s}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-            Powered by Farey rational retuning to guarantee 100% seamless zero-pop looping across all cycle tracks.
-          </p>
-        </div>
+      {exportType === 'project' && (
+        <ProjectExportTab totalFrames={frames.length} />
       )}
 
       {/* Modal Actions */}

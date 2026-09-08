@@ -225,9 +225,8 @@ export const StudioLayout: React.FC = () => {
   // commit, so schedule the same debounced autosave when a peer changes the
   // canvas — otherwise peer artwork would only persist on the next local edit.
   useEffect(() => {
-    const onRemoteChange = () => handleCommitHistory();
-    window.addEventListener('pixibun:remote-change', onRemoteChange);
-    return () => window.removeEventListener('pixibun:remote-change', onRemoteChange);
+    const unsub = studioEvents.on('pixibun:remote-change', () => handleCommitHistory());
+    return unsub;
   }, [handleCommitHistory]);
 
   // Best-effort flush when the tab is hidden or closed mid-debounce.

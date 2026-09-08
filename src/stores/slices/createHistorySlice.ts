@@ -3,6 +3,20 @@ import { createId } from '@/lib/engine/id';
 import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectFile } from '@/types/project';
 
+/**
+ * Studio Session & History Metadata Slice
+ *
+ * NOTE: Actual raster undo/redo snapshot buffers reside in `src/lib/engine/historyEngine.ts`
+ * and are operated imperatively via `useViewportDrawing.ts` (using off-screen canvas ImageData).
+ *
+ * This slice manages reactive session-level metadata:
+ * - `canUndo` / `canRedo` flags (reflected by UI undo/redo buttons)
+ * - `bufferVersion` (reactive revision counter for rendering buffers)
+ * - `saveStatus` (autosave status)
+ * - `selection` / `selectionMask` (viewport selection)
+ * - `aiMessages` / `isAiThinking` (PixiBud assistant chat state)
+ * - `loadProjectState` / `resetCanvas` (document lifecycle)
+ */
 export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
   canUndo: false,
   canRedo: false,
@@ -172,3 +186,6 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
     });
   },
 });
+
+export const createSessionSlice = createHistorySlice;
+

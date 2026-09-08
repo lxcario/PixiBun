@@ -5,6 +5,7 @@
  * type safety, lifecycle cleanup, and predictable event dispatch across studio panels.
  */
 import type { AnisoFlowPreset, CelToneCount, OpticalPresetType } from '@/types/tools';
+import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
 
 export type StudioEventMap = {
   'pixibun:undo': void;
@@ -91,6 +92,10 @@ export type StudioEventMap = {
   };
   'pixibun:bake-normal-map': void;
   'pixibun:in-between-frame': void;
+  'pixibun:codraw-state': P2PConnectionState;
+  'pixibun:remote-cursors': RemoteCursor[];
+  'pixibun:request-composite': void;
+  'pixibun:remote-change': void;
 };
 
 type EventHandler<T> = (data: T) => void;

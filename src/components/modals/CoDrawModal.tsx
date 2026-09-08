@@ -5,7 +5,8 @@ import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import type { P2PSyncSession, P2PConnectionState } from '@/lib/sync/p2pSync';
-import { coDrawBridge, CODRAW_STATE_EVENT } from '@/lib/sync/coDrawBridge';
+import { coDrawBridge } from '@/lib/sync/coDrawBridge';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface CoDrawModalProps {
   isOpen: boolean;
@@ -36,14 +37,12 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   // closed and reopened. Subscribe to connection-state changes and rehydrate
   // the visible state from the live session on mount.
   useEffect(() => {
-    const onStateChange = (e: Event) => {
-      const detail = (e as CustomEvent<P2PConnectionState>).detail;
-      setConnectionState(detail);
-    };
     setConnectionState(coDrawBridge.getConnectionState());
     setSession(coDrawBridge.getSession());
-    window.addEventListener(CODRAW_STATE_EVENT, onStateChange);
-    return () => window.removeEventListener(CODRAW_STATE_EVENT, onStateChange);
+    const unsub = studioEvents.on('pixibun:codraw-state', (state) => {
+      setConnectionState(state);
+    });
+    return unsub;
   }, []);
 
   const handleCreateHostSession = async () => {

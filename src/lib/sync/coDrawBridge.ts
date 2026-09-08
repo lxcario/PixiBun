@@ -156,9 +156,7 @@ export class CoDrawBridge {
       }
     }
 
-    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-      window.dispatchEvent(new CustomEvent(CODRAW_STATE_EVENT, { detail: state }));
-    }
+    studioEvents.emit('pixibun:codraw-state', state);
   }
 
   private sendInitialStateWithRetry(attempt: number): void {
@@ -332,10 +330,8 @@ export class CoDrawBridge {
     if (mutated > 0) {
       entry.ctx.putImageData(img, 0, 0);
       useStudioStore.getState().bumpBufferVersion();
-      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-        window.dispatchEvent(new CustomEvent(CODRAW_COMPOSITE_EVENT));
-        window.dispatchEvent(new CustomEvent(CODRAW_REMOTE_CHANGE_EVENT));
-      }
+      studioEvents.emit('pixibun:request-composite');
+      studioEvents.emit('pixibun:remote-change');
     }
   }
 
@@ -390,10 +386,8 @@ export class CoDrawBridge {
       entry.ctx.putImageData(img, 0, 0);
     }
 
-    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-      window.dispatchEvent(new CustomEvent(CODRAW_COMPOSITE_EVENT));
-      window.dispatchEvent(new CustomEvent(CODRAW_REMOTE_CHANGE_EVENT));
-    }
+    studioEvents.emit('pixibun:request-composite');
+    studioEvents.emit('pixibun:remote-change');
   }
 
   /** Throttled cursor broadcast over the unreliable presence channel. */
@@ -424,10 +418,7 @@ export class CoDrawBridge {
   }
 
   private emitCursors(): void {
-    if (typeof window === 'undefined') return;
-    window.dispatchEvent(
-      new CustomEvent(CODRAW_CURSORS_EVENT, { detail: this.getActiveCursors() })
-    );
+    studioEvents.emit('pixibun:remote-cursors', this.getActiveCursors());
   }
 }
 
