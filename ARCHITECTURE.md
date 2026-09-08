@@ -480,7 +480,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ## 23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
 
-* **RotSprite Rotation Algorithm (`src/lib/canvas/rotSprite.ts`):** Implements the landmark rotation algorithm for pixel art by Xenowhirl (2007, as implemented in Aseprite by Pedro J. Estébanez). Standard affine rotation on small sprites produces severe stair-stepping, disconnected diagonals, and color blurring when interpolated. RotSprite resolves this through a three-stage pipeline:
+* **RotSprite Rotation Algorithm (`src/lib/canvas/rotSprite.ts`):** Implements the landmark rotation algorithm for pixel art by Xenowhirl (2007, as popularized in Aseprite). Standard affine rotation on small sprites produces severe stair-stepping, disconnected diagonals, and color blurring when interpolated. RotSprite resolves this through a three-stage pipeline:
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
      $$E_0 = (C == A \land C \neq D \land A \neq B) ? A : P$$
   2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
