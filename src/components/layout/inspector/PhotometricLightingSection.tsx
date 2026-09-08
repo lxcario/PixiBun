@@ -7,6 +7,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LightGizmoOverlay } from '@/components/studio/LightGizmoOverlay';
 import { MaterialType } from '@/types/tools';
 import { MATERIAL_PROFILES } from '@/lib/ai/math/photometricLighting';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface MaterialChip {
   value: MaterialType;
@@ -76,63 +77,51 @@ export const PhotometricLightingSection: React.FC = () => {
 
   const handleAutoRenderPhotometric = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:photometric-gizmo-start', { detail: { auto: true } }));
+    studioEvents.emit('pixibun:photometric-gizmo-start', { auto: true });
   };
 
   const handleStartLightGizmo = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:photometric-gizmo-start', { detail: { auto: false } }));
+    studioEvents.emit('pixibun:photometric-gizmo-start', { auto: false });
   };
 
   const handleRenderPhotometricLighting = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:photometric-lighting', {
-        detail: {
-          lightAzimuth: tools.lightAzimuth,
-          lightElevation: tools.lightElevation,
-          lightRadius: tools.lightRadius,
-          lightBrightness: tools.lightBrightness,
-          lightColor: '#FFFFFF',
-          ambientIntensity: 0.35,
-          material: tools.materialPreset,
-          cavityStrength: tools.cavityStrength,
-          ditherModulation: tools.ditherModulation,
-          bayerSize: '4x4',
-          paletteColors: [],
-        },
-      })
-    );
+    studioEvents.emit('pixibun:photometric-lighting', {
+      lightAzimuth: tools.lightAzimuth,
+      lightElevation: tools.lightElevation,
+      lightRadius: tools.lightRadius,
+      lightBrightness: tools.lightBrightness,
+      lightColor: '#FFFFFF',
+      ambientIntensity: 0.35,
+      material: tools.materialPreset,
+      cavityStrength: tools.cavityStrength,
+      ditherModulation: tools.ditherModulation,
+      bayerSize: '4x4',
+      paletteColors: [],
+    });
   };
 
   const handleBakeNormalMap = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(new CustomEvent('pixibun:bake-normal-map'));
+    studioEvents.emit('pixibun:bake-normal-map');
   };
 
   const handleSpecularHighlight = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:highlight', {
-        detail: {
-          lightAzimuth: tools.lightAzimuth,
-          lightElevation: tools.lightElevation,
-          highlightColor: '#FFFFFF',
-        },
-      })
-    );
+    studioEvents.emit('pixibun:highlight', {
+      lightAzimuth: tools.lightAzimuth,
+      lightElevation: tools.lightElevation,
+      highlightColor: '#FFFFFF',
+    });
   };
 
   const handleSelOut = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:sel-out', {
-        detail: {
-          lightAzimuth: tools.lightAzimuth,
-          lightElevation: tools.lightElevation,
-        },
-      })
-    );
+    studioEvents.emit('pixibun:sel-out', {
+      lightAzimuth: tools.lightAzimuth,
+      lightElevation: tools.lightElevation,
+    });
   };
 
   return (

@@ -11,6 +11,7 @@ import {
   type SerializedLayer,
 } from '@/types/project';
 import type { StoredLayerBlob } from '@/lib/storage/db';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 function requireBrowser(): void {
   if (typeof document === 'undefined') {
@@ -337,7 +338,5 @@ export async function hydrateProject(
   loadProjectState(file, projectId);
 
   // Invalidate history stack across project boundary to prevent cross-project undo corruption
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
-  }
+  studioEvents.emit('pixibun:history-clear');
 }

@@ -11,12 +11,24 @@
 
 import { hexToRgba, rgbaToHex } from '@/lib/canvas/floodFill';
 import { acquireFloat32Buffer, releaseFloat32Buffer } from '@/lib/engine/bufferPool';
+import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
+import {
+  srgbToLinear,
+  linearToSrgb,
+  rgbToOklab,
+  oklabToRgb,
+  deltaEOklab,
+} from './math/colorSpace';
+import type { OklabColor } from './math/colorSpace';
 
-export interface OklabColor {
-  L: number;
-  a: number;
-  b: number;
-}
+export {
+  srgbToLinear,
+  linearToSrgb,
+  rgbToOklab,
+  oklabToRgb,
+  deltaEOklab,
+};
+export type { OklabColor };
 
 export interface PixelizeOptions {
   targetWidth: number;
@@ -44,55 +56,7 @@ export interface PixelizeResult {
 // 1. Color Space Conversions: sRGB <-> Linear RGB <-> Oklab
 // -----------------------------------------------------------------------------
 
-export function srgbToLinear(c: number): number {
-  const norm = c / 255;
-  return norm <= 0.04045 ? norm / 12.92 : Math.pow((norm + 0.055) / 1.055, 2.4);
-}
 
-export function linearToSrgb(c: number): number {
-  const clamped = Math.max(0, Math.min(1, c));
-  const srgb = clamped <= 0.0031308 ? clamped * 12.92 : 1.055 * Math.pow(clamped, 1.0 / 2.4) - 0.055;
-  return Math.round(Math.max(0, Math.min(255, srgb * 255)));
-}
-
-export function rgbToOklab(r: number, g: number, b: number): OklabColor {
-  const rLin = srgbToLinear(r);
-  const gLin = srgbToLinear(g);
-  const bLin = srgbToLinear(b);
-
-  const l = Math.cbrt(0.4122214708 * rLin + 0.5363325363 * gLin + 0.0514459929 * bLin);
-  const m = Math.cbrt(0.2119034982 * rLin + 0.6806995451 * gLin + 0.1073969566 * bLin);
-  const s = Math.cbrt(0.0883024619 * rLin + 0.2817188376 * gLin + 0.6299787005 * bLin);
-
-  return {
-    L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
-    a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
-    b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
-  };
-}
-
-export function oklabToRgb(L: number, a: number, b: number): [number, number, number] {
-  const l = L + 0.3963377774 * a + 0.2158037573 * b;
-  const m = L - 0.1055613458 * a - 0.0638541728 * b;
-  const s = L - 0.0894841775 * a - 1.291485548 * b;
-
-  const l3 = l * l * l;
-  const m3 = m * m * m;
-  const s3 = s * s * s;
-
-  const rLin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-  const gLin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-  const bLin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.707614701 * s3;
-
-  return [linearToSrgb(rLin), linearToSrgb(gLin), linearToSrgb(bLin)];
-}
-
-export function deltaEOklab(c1: OklabColor, c2: OklabColor): number {
-  const dL = c1.L - c2.L;
-  const da = c1.a - c2.a;
-  const db = c1.b - c2.b;
-  return Math.sqrt(dL * dL + da * da + db * db);
-}
 
 // -----------------------------------------------------------------------------
 // 2. Spatial Downsampling & Salience Integration
@@ -410,12 +374,7 @@ export function extractOklabPalette(pixels: OklabColor[], maxColors: number): Ok
 // 4. Quantization Mapping & Dithering Suite
 // -----------------------------------------------------------------------------
 
-const BAYER_4X4 = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5],
-];
+
 
 export function quantizeAndDither(
   imgData: ImageData,

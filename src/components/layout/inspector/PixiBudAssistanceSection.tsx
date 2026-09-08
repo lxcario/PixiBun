@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const PixiBudAssistanceSection: React.FC = () => {
   const {
@@ -17,35 +18,27 @@ export const PixiBudAssistanceSection: React.FC = () => {
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
   const handleRotSprite = (angle: number) => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:rot-sprite', {
-        detail: { angle },
-      })
-    );
+    studioEvents.emit('pixibun:rot-sprite', { angle });
   };
 
   const handleCleanJaggies = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:clean-jaggies'));
+    studioEvents.emit('pixibun:clean-jaggies');
   };
 
   const handleSkeletonThinning = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:skeleton-thinning'));
+    studioEvents.emit('pixibun:skeleton-thinning');
   };
 
   const handleRemoveStrays = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:remove-strays'));
+    studioEvents.emit('pixibun:remove-strays');
   };
 
   const handleColorGrade = (grade: 'sunset' | 'moonlight' | 'neon') => {
-    window.dispatchEvent(new CustomEvent('pixibun:color-grade', { detail: { grade } }));
+    studioEvents.emit('pixibun:color-grade', { grade });
   };
 
   const handleQuantizePalette = () => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:quantize-palette', {
-        detail: { colors: currentPalette.colors },
-      })
-    );
+    studioEvents.emit('pixibun:quantize-palette', { colors: currentPalette.colors });
   };
 
   const handleHarmonizePalette = () => {
@@ -54,23 +47,15 @@ export const PixiBudAssistanceSection: React.FC = () => {
   };
 
   const handleInBetweenFrame = () => {
-    window.dispatchEvent(new CustomEvent('pixibun:in-between-frame'));
+    studioEvents.emit('pixibun:in-between-frame');
   };
 
   const handleAtkinsonDither = () => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:atkinson-dither', {
-        detail: { colors: currentPalette.colors },
-      })
-    );
+    studioEvents.emit('pixibun:atkinson-dither', { colors: currentPalette.colors });
   };
 
   const handleRiemersmaDither = () => {
-    window.dispatchEvent(
-      new CustomEvent('pixibun:riemersma-dither', {
-        detail: { colors: currentPalette.colors },
-      })
-    );
+    studioEvents.emit('pixibun:riemersma-dither', { colors: currentPalette.colors });
   };
 
   return (

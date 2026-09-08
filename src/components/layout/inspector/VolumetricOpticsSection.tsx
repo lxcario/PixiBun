@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { OpticalPresetType, CelToneCount, AnisoFlowPreset } from '@/types/tools';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const VolumetricOpticsSection: React.FC = () => {
   const {
@@ -27,23 +28,19 @@ export const VolumetricOpticsSection: React.FC = () => {
 
   const handleRenderVolumetricOptics = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:volumetric-optics', {
-        detail: {
-          preset: tools.opticalPreset,
-          translucencyDepth: tools.translucencyDepth,
-          fresnelPower: tools.fresnelPower,
-          anisoAngle: tools.anisoAngle,
-          anisoFlow: tools.anisoFlow,
-          celTones: tools.opticalCelTones,
-          lightAzimuth: tools.lightAzimuth,
-          lightElevation: tools.lightElevation,
-          lightColor: '#FFFFFF',
-          paletteColors: snapToPalette ? currentPalette.colors : [],
-          ditherModulation: tools.ditherModulation,
-        },
-      })
-    );
+    studioEvents.emit('pixibun:volumetric-optics', {
+      preset: tools.opticalPreset,
+      translucencyDepth: tools.translucencyDepth,
+      fresnelPower: tools.fresnelPower,
+      anisoAngle: tools.anisoAngle,
+      anisoFlow: tools.anisoFlow,
+      celTones: tools.opticalCelTones,
+      lightAzimuth: tools.lightAzimuth,
+      lightElevation: tools.lightElevation,
+      lightColor: '#FFFFFF',
+      paletteColors: snapToPalette ? currentPalette.colors : [],
+      ditherModulation: tools.ditherModulation,
+    });
   };
 
   return (

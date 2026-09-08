@@ -20,6 +20,7 @@ import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail }
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -182,7 +183,7 @@ export const StudioLayout: React.FC = () => {
     clearAllBuffers();
     resetToNewProject();
     setIsNewConfirmOpen(false);
-    window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+    studioEvents.emit('pixibun:history-clear');
     void runAutosave();
   }, [resetToNewProject, runAutosave]);
 
@@ -288,11 +289,11 @@ export const StudioLayout: React.FC = () => {
 
   // Undo / Redo handlers dispatching to canvas engine
   const handleUndo = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('pixibun:undo'));
+    studioEvents.emit('pixibun:undo');
   }, []);
 
   const handleRedo = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('pixibun:redo'));
+    studioEvents.emit('pixibun:redo');
   }, []);
 
   // Handle Canvas Resize - anchor and resample choices flow through so
@@ -304,7 +305,7 @@ export const StudioLayout: React.FC = () => {
   const handleResize = useCallback(
     (newWidth: number, newHeight: number, anchor: AnchorPosition, resample: boolean) => {
       setCanvasSize(newWidth, newHeight, anchor, resample);
-      window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+      studioEvents.emit('pixibun:history-clear');
     },
     [setCanvasSize]
   );
@@ -324,7 +325,7 @@ export const StudioLayout: React.FC = () => {
     //    History is invalidated because undo snapshots hold old-dimension ImageData.
     if (resizeCanvasToMatch) {
       store.setCanvasSize(resizeCanvasToMatch.width, resizeCanvasToMatch.height, 'top-left', false);
-      window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+      studioEvents.emit('pixibun:history-clear');
     }
 
     const currentStore = useStudioStore.getState();
@@ -751,7 +752,7 @@ export const StudioLayout: React.FC = () => {
           onNewProject={() => {
             clearAllBuffers();
             resetToNewProject();
-            window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
+            studioEvents.emit('pixibun:history-clear');
             void runAutosave();
           }}
           onOpenImport={() => {

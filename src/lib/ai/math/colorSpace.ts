@@ -12,18 +12,32 @@ export interface OKLabColor {
   b: number;
 }
 
-export function linearToSrgb(v: number): number {
-  return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1.0 / 2.4) - 0.055;
+export type OklabColor = OKLabColor;
+
+/**
+ * Converts sRGB [0..255] to Linear float [0..1].
+ */
+export function srgbToLinear(c: number): number {
+  const norm = c / 255;
+  return norm <= 0.04045 ? norm / 12.92 : Math.pow((norm + 0.055) / 1.055, 2.4);
 }
 
-export function srgbToLinear(v: number): number {
-  return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+/**
+ * Converts Linear float [0..1] to sRGB integer [0..255].
+ */
+export function linearToSrgb(c: number): number {
+  const clamped = Math.max(0, Math.min(1, c));
+  const srgb = clamped <= 0.0031308 ? clamped * 12.92 : 1.055 * Math.pow(clamped, 1.0 / 2.4) - 0.055;
+  return Math.round(Math.max(0, Math.min(255, srgb * 255)));
 }
 
+/**
+ * Converts sRGB [0..255] to OKLab { L: 0..1, a, b }.
+ */
 export function rgbToOKLab(r: number, g: number, b: number): OKLabColor {
-  const lr = srgbToLinear(r / 255);
-  const lg = srgbToLinear(g / 255);
-  const lb = srgbToLinear(b / 255);
+  const lr = srgbToLinear(r);
+  const lg = srgbToLinear(g);
+  const lb = srgbToLinear(b);
 
   const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
   const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
@@ -36,6 +50,9 @@ export function rgbToOKLab(r: number, g: number, b: number): OKLabColor {
   };
 }
 
+/**
+ * Converts OKLab to sRGB object { r, g, b } in [0..255].
+ */
 export function okLabToRGB(L: number, a: number, b: number): { r: number; g: number; b: number } {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
@@ -50,12 +67,23 @@ export function okLabToRGB(L: number, a: number, b: number): { r: number; g: num
   const lb = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
 
   return {
-    r: Math.max(0, Math.min(255, Math.round(linearToSrgb(lr) * 255))),
-    g: Math.max(0, Math.min(255, Math.round(linearToSrgb(lg) * 255))),
-    b: Math.max(0, Math.min(255, Math.round(linearToSrgb(lb) * 255))),
+    r: linearToSrgb(lr),
+    g: linearToSrgb(lg),
+    b: linearToSrgb(lb),
   };
 }
 
+/**
+ * Converts OKLab to sRGB tuple [r, g, b] in [0..255].
+ */
+export function oklabToRgb(L: number, a: number, b: number): [number, number, number] {
+  const rgb = okLabToRGB(L, a, b);
+  return [rgb.r, rgb.g, rgb.b];
+}
+
+/**
+ * Perceptual color difference delta E in OKLab space.
+ */
 export function deltaEOKLab(c1: OKLabColor, c2: OKLabColor): number {
   const dL = c1.L - c2.L;
   const da = c1.a - c2.a;
@@ -80,6 +108,27 @@ export function oklchToOKLab(L: number, C: number, h: number): OKLabColor {
 }
 
 /**
+ * Converts RGB [0..255] to OKLCH perceptual cylindrical color space [L: 0..1, C: 0..0.4, H: 0..360].
+ */
+export function rgbToOklch(r: number, g: number, b: number): [number, number, number] {
+  const lab = rgbToOKLab(r, g, b);
+  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
+  let H = (Math.atan2(lab.b, lab.a) * 180) / Math.PI;
+  if (H < 0) H += 360;
+  return [lab.L, C, H];
+}
+
+/**
+ * Converts OKLCH [0..1, 0..0.4, 0..360] to RGB [0..255].
+ */
+export function oklchToRgb(L: number, C: number, H: number): [number, number, number] {
+  const hRad = (H * Math.PI) / 180;
+  const a = C * Math.cos(hRad);
+  const b = C * Math.sin(hRad);
+  return oklabToRgb(L, a, b);
+}
+
+/**
  * Shifts hue towards target hue by at most maxShiftDeg along the shortest arc.
  */
 export function shiftHue(currentH: number, targetH: number, maxShiftDeg: number): number {
@@ -88,4 +137,10 @@ export function shiftHue(currentH: number, targetH: number, maxShiftDeg: number)
   const shift = Math.sign(diff) * Math.min(Math.abs(diff), maxShiftDeg);
   return (currentH + shift + 360) % 360;
 }
+
+// Aliases for cross-engine compatibility
+export const rgbToOklab = rgbToOKLab;
+export const deltaEOklab = deltaEOKLab;
+export const oklabDistance = deltaEOKLab;
+export const shiftHueToward = shiftHue;
 

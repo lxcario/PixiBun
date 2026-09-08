@@ -11,6 +11,7 @@ import {
   wrapIFFChunk,
 } from '@/lib/color/paletteCycling';
 import { createId } from '@/lib/engine/id';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const PalettePanel: React.FC = () => {
   const {
@@ -165,7 +166,7 @@ export const PalettePanel: React.FC = () => {
         <>
           <div className="flex gap-1.5">
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('pixibun:extract-palette'))}
+              onClick={() => studioEvents.emit('pixibun:extract-palette')}
               className="flex-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#f0be7c] font-bold text-[10px] font-mono py-1 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center"
               title="Scan canvas for unique colors and create new palette"
             >

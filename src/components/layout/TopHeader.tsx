@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import { AutosaveIndicator } from '@/components/ui/AutosaveIndicator';
+import { StudioRadioWidget } from '@/components/audio/StudioRadioWidget';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
@@ -257,6 +258,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           onChange={handleFileChange}
           className="hidden"
         />
+
+        <StudioRadioWidget />
 
         <ThemeToggle />
 

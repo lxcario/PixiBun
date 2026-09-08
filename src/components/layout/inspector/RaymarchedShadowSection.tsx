@@ -53,31 +53,23 @@ export const RaymarchedShadowSection: React.FC = () => {
 
   const handleAutoRenderCastShadow = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:render-cast-shadow-auto', {
-        detail: { shadowStyle },
-      })
-    );
+    studioEvents.emit('pixibun:render-cast-shadow-auto', { shadowStyle });
   };
 
   const handleRenderCastShadow = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
-    window.dispatchEvent(
-      new CustomEvent('pixibun:render-cast-shadow', {
-        detail: {
-          lightX: shadowLightX,
-          lightY: shadowLightY,
-          lightAzimuth: shadowAzimuth,
-          lightElevation: shadowElevation,
-          lightRadius: shadowLightRadius,
-          shadowOpacity: shadowOpacity,
-          shadowColor: shadowColor,
-          ditherMode: shadowDitherMode,
-          shadowStyle: shadowStyle,
-          mode: 'bounded-2.5d',
-        },
-      })
-    );
+    studioEvents.emit('pixibun:render-cast-shadow', {
+      lightX: shadowLightX,
+      lightY: shadowLightY,
+      lightAzimuth: shadowAzimuth,
+      lightElevation: shadowElevation,
+      lightRadius: shadowLightRadius,
+      shadowOpacity: shadowOpacity,
+      shadowColor: shadowColor,
+      ditherMode: shadowDitherMode,
+      shadowStyle: shadowStyle,
+      mode: 'bounded-2.5d',
+    });
   };
 
   const handleAlignWithKeyLight = () => {

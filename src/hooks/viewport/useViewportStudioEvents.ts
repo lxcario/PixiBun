@@ -479,16 +479,10 @@ export function useViewportStudioEvents({
       });
 
       // Synchronize inspector controls and listeners
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('pixibun:shadow-settings-inferred', {
-            detail: {
-              ...inferred,
-              shadowStyle: detail.shadowStyle ?? 'cast',
-            },
-          })
-        );
-      }
+      studioEvents.emit('pixibun:shadow-settings-inferred', {
+        ...inferred,
+        shadowStyle: detail?.shadowStyle ?? 'cast',
+      });
 
       const isOpaque = (x: number, y: number) => {
         if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return false;

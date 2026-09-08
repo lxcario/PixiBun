@@ -9,40 +9,18 @@
 // -----------------------------------------------------------------------------
 
 import { ShadedPixel } from '@/lib/ai/smartMathEngine';
-import { rgbToOKLab, okLabToRGB, deltaEOKLab, computeSeparableEDT } from '@/lib/ai/smartMathEngine';
+import {
+  rgbToOKLab,
+  okLabToRGB,
+  deltaEOKLab,
+  computeSeparableEDT,
+  rgbToOklch,
+  oklchToRgb,
+  shiftHueToward,
+} from '@/lib/ai/smartMathEngine';
 import { hexToRgba } from '@/lib/canvas/floodFill';
 
-/**
- * Converts RGB to OKLCH perceptual cylindrical color space (Lightness, Chroma, Hue in degrees).
- */
-export function rgbToOklch(r: number, g: number, b: number): [number, number, number] {
-  const lab = rgbToOKLab(r, g, b);
-  const C = Math.sqrt(lab.a * lab.a + lab.b * lab.b);
-  let H = (Math.atan2(lab.b, lab.a) * 180) / Math.PI;
-  if (H < 0) H += 360;
-  return [lab.L, C, H];
-}
-
-/**
- * Converts OKLCH to RGB [0..255].
- */
-export function oklchToRgb(L: number, C: number, H: number): [number, number, number] {
-  const hRad = (H * Math.PI) / 180;
-  const a = C * Math.cos(hRad);
-  const b = C * Math.sin(hRad);
-  const rgb = okLabToRGB(L, a, b);
-  return [rgb.r, rgb.g, rgb.b];
-}
-
-/**
- * Shifts hue toward a target hue by a given maximum angular delta (in degrees).
- */
-export function shiftHueToward(currentH: number, targetH: number, maxShiftDeg: number): number {
-  let diff = (targetH - currentH + 360) % 360;
-  if (diff > 180) diff -= 360;
-  const shift = Math.sign(diff) * Math.min(Math.abs(diff), maxShiftDeg);
-  return (currentH + shift + 360) % 360;
-}
+export { rgbToOklch, oklchToRgb, shiftHueToward };
 
 /**
  * Helper to compute shaded RGB for highlights and shadows.

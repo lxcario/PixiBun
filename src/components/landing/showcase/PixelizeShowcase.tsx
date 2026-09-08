@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { createScenicCanvas, createInteriorCanvas } from './showcaseSprites';
-import { processImageToPixelArt, PixelizeOptions } from '@/lib/ai/pixelizeEngine';
+import { processImageToPixelArt, type PixelizeOptions } from '@/lib/ai/pixelizeEngine';
 
 export const PixelizeShowcase: React.FC = () => {
   const [sceneType, setSceneType] = useState<'mountain' | 'hearth'>('mountain');

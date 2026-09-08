@@ -195,16 +195,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const state = useStudioStore.getState();
     const currentFrame = state.frames[state.activeFrameIndex];
 
-    // 1. Main Active Frame Layers (Bottom-to-Top Compositing)
-    if (currentFrame) {
-      currentFrame.layers.slice().reverse().forEach((layer) => {
-        if (!layer.visible) return;
-        const lCanvas = getOrCreateLayerCanvas(layer.id);
-        ctx.globalAlpha = layer.opacity;
-        ctx.globalCompositeOperation = layer.blendMode;
-        ctx.drawImage(lCanvas, 0, 0);
-      });
-    }
+    // 1. Main Active Frame Layers (Unified Bottom-to-Top Compositing)
+    compositeFrame(state.frames, state.activeFrameIndex, canvasWidth, canvasHeight, {}, mainCanvas);
 
     // 2. Floating Selection Buffer overlay
     if (floatingSelection) {

@@ -23,6 +23,7 @@
 
 import { useStudioStore } from '@/stores/studioStore';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { studioEvents } from '@/lib/events/studioEvents';
 import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
 import type { PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import {
@@ -380,9 +381,7 @@ export class CoDrawBridge {
       state.bufferVersion += 1;
     });
 
-    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-      window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
-    }
+    studioEvents.emit('pixibun:history-clear');
 
     for (const [layerId, crdt] of this.crdtBuffers) {
       const entry = getOrCreateBuffer(layerId, payload.width, payload.height);

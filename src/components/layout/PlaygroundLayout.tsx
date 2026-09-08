@@ -16,6 +16,7 @@ import { BunMascot } from '@/components/ui/BunMascot';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const PlaygroundLayout: React.FC = () => {
   const router = useRouter();
@@ -85,11 +86,11 @@ export const PlaygroundLayout: React.FC = () => {
 
   // Undo / Redo handlers
   const handleUndo = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('pixibun:undo'));
+    studioEvents.emit('pixibun:undo');
   }, []);
 
   const handleRedo = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('pixibun:redo'));
+    studioEvents.emit('pixibun:redo');
   }, []);
 
   // Keyboard shortcuts in playground (Pen, Eraser, Undo, Redo, Play)

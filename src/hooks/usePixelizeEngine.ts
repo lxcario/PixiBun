@@ -3,8 +3,8 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   processImageToPixelArt,
-  PixelizeOptions,
-  PixelizeResult,
+  type PixelizeOptions,
+  type PixelizeResult,
 } from '@/lib/ai/pixelizeEngine';
 
 export interface UsePixelizeEngineOptions {

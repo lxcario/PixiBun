@@ -4,6 +4,7 @@
  * Eliminates loose window.dispatchEvent(new CustomEvent(...)) strings and provides
  * type safety, lifecycle cleanup, and predictable event dispatch across studio panels.
  */
+import type { AnisoFlowPreset, CelToneCount, OpticalPresetType } from '@/types/tools';
 
 export type StudioEventMap = {
   'pixibun:undo': void;
@@ -76,12 +77,12 @@ export type StudioEventMap = {
     lightBrightness?: number;
   };
   'pixibun:volumetric-optics': {
-    preset?: string;
+    preset?: OpticalPresetType;
     translucencyDepth?: number;
     fresnelPower?: number;
     anisoAngle?: number;
-    anisoFlow?: boolean;
-    celTones?: number;
+    anisoFlow?: AnisoFlowPreset;
+    celTones?: CelToneCount;
     lightAzimuth?: number;
     lightElevation?: number;
     lightColor?: string;
@@ -106,6 +107,10 @@ class StudioEventBus {
     set.add(handler as EventHandler<unknown>);
 
     const windowListener = (e: Event) => {
+      if ((e as unknown as { _studioBus?: boolean })._studioBus) {
+        // Event was already dispatched in-memory by studioEvents.emit()
+        return;
+      }
       const customEvent = e as CustomEvent<StudioEventMap[K]>;
       try {
         handler(customEvent.detail);
@@ -131,8 +136,24 @@ class StudioEventBus {
     ...args: StudioEventMap[K] extends void ? [] : [StudioEventMap[K]]
   ): void {
     const data = args[0];
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(event, { detail: data }));
+
+    // 1. Direct in-memory dispatch to registered handlers
+    const handlers = this.handlers.get(event);
+    if (handlers) {
+      handlers.forEach((h) => {
+        try {
+          h(data);
+        } catch (err) {
+          console.error(`Error executing in-memory handler for ${String(event)}:`, err);
+        }
+      });
+    }
+
+    // 2. Dispatch to DOM window for external listeners and test spies
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      const customEvent = new CustomEvent(event, { detail: data });
+      (customEvent as unknown as { _studioBus: boolean })._studioBus = true;
+      window.dispatchEvent(customEvent);
     }
   }
 }

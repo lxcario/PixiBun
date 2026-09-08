@@ -13,35 +13,16 @@
 
 import { rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
+import { BAYER_2X2, BAYER_4X4, BAYER_8X8 } from '@/lib/canvas/ditherMatrix';
 
 export function getBayerMatrixThreshold(x: number, y: number, size: '2x2' | '4x4' | '8x8'): number {
   if (size === '2x2') {
-    const bayer2 = [
-      [0, 2],
-      [3, 1],
-    ];
-    return (bayer2[y % 2][x % 2] + 0.5) / 4.0;
+    return (BAYER_2X2[((y % 2) + 2) % 2][((x % 2) + 2) % 2] + 0.5) / 4.0;
   }
   if (size === '4x4') {
-    const bayer4 = [
-      [ 0,  8,  2, 10],
-      [12,  4, 14,  6],
-      [ 3, 11,  1,  9],
-      [15,  7, 13,  5],
-    ];
-    return (bayer4[y % 4][x % 4] + 0.5) / 16.0;
+    return (BAYER_4X4[((y % 4) + 4) % 4][((x % 4) + 4) % 4] + 0.5) / 16.0;
   }
-  const bayer8 = [
-    [ 0, 32,  8, 40,  2, 34, 10, 42],
-    [48, 16, 56, 24, 50, 18, 58, 26],
-    [12, 44,  4, 36, 14, 46,  6, 38],
-    [60, 28, 52, 20, 62, 30, 54, 22],
-    [ 3, 35, 11, 43,  1, 33,  9, 41],
-    [51, 19, 59, 27, 49, 17, 57, 25],
-    [15, 47,  7, 39, 13, 45,  5, 37],
-    [63, 31, 55, 23, 61, 29, 53, 21],
-  ];
-  return (bayer8[y % 8][x % 8] + 0.5) / 64.0;
+  return (BAYER_8X8[((y % 8) + 8) % 8][((x % 8) + 8) % 8] + 0.5) / 64.0;
 }
 
 /**

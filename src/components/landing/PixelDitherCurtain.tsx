@@ -1,18 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-
-// 8x8 Bayer Ordered Dithering Matrix (Normalized 0 to 63)
-const BAYER_8X8 = [
-  [0, 32, 8, 40, 2, 34, 10, 42],
-  [48, 16, 56, 24, 50, 18, 58, 26],
-  [12, 44, 4, 36, 14, 46, 6, 38],
-  [60, 28, 52, 20, 62, 30, 54, 22],
-  [3, 35, 11, 43, 1, 33, 9, 41],
-  [51, 19, 59, 27, 49, 17, 57, 25],
-  [15, 47, 7, 39, 13, 45, 5, 37],
-  [63, 31, 55, 23, 61, 29, 53, 21],
-];
+import { BAYER_8X8 } from '@/lib/canvas/ditherMatrix';
 
 export const PixelDitherCurtain: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
