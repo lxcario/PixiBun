@@ -1,0 +1,20 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Configures animation loop tags in TagManagerModal and imports a spritesheet via the interactive auto-slicer",
+  "description": "Verify opening the dedicated TagManagerModal from the timeline ribbon, adding and reordering loop clips, then launching the ImportModal, selecting Sprite Sheet Slicer mode with 16x16 grid cells, inspecting neon cutlines, and batch-importing sliced animation frames.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
+    { "type": "assertion", "description": "Verify the studio workspace and bottom animation timeline are rendered" },
+    { "type": "action", "description": "In the bottom timeline clip ribbon, click the Manage Tags button (data-testid manage-tags-button)" },
+    { "type": "assertion", "description": "Verify the Animation Tags & Clips modal opens displaying tag lists and frame range selectors" },
+    { "type": "action", "description": "Type a tag name like Walk Cycle, pick a loop color, set frame range, click Add Tag, and then close the modal" },
+    { "type": "assertion", "description": "Verify the tagged clip ribbon appears on the animation timeline with the designated loop color" },
+    { "type": "action", "description": "Click the Import button in the top header to open the Import and Convert Image modal" },
+    { "type": "action", "description": "Switch the import mode tab to Sprite Sheet Slicer" },
+    { "type": "assertion", "description": "Verify the sprite sheet slicer controls appear with preset buttons for 16x16, 24x24, 32x32 and a live grid cutline preview canvas" },
+    { "type": "action", "description": "Click the 16x16 cell size preset and verify the cutline grid overlays the canvas preview with cell index badges" }
+  ]
+}
