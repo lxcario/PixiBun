@@ -29,6 +29,9 @@ import {
   computeTangentNormalField,
   bakeNormalMapToCanvas,
 } from '@/lib/ai/smartMathEngine';
+import { ChiselStrokeSession, decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
+import { updateLivePaletteLUT32 } from '@/lib/color/paletteCycling';
+import { buildCanvasPaletteIndexMap } from '@/lib/export/shaderExporter';
 
 import { useViewportTransform } from '@/hooks/viewport/useViewportTransform';
 import { useViewportOverlays } from '@/hooks/viewport/useViewportOverlays';
@@ -82,6 +85,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const activeLayerId = useStudioStore((s) => s.activeLayerId);
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
+  const isPaletteCycling = useStudioStore((s) => s.isPaletteCycling);
+  const paletteCycleSpeedMultiplier = useStudioStore((s) => s.paletteCycleSpeedMultiplier);
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
   const selection = useStudioStore((s) => s.selection);
   const selectionMask = useStudioStore((s) => s.selectionMask);
   const setSelection = useStudioStore((s) => s.setSelection);
@@ -173,6 +180,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   });
 
   const normalMapCacheRef = useRef<{ cacheKey: string; canvas: HTMLCanvasElement } | null>(null);
+  const chiselSessionRef = useRef<ChiselStrokeSession | null>(null);
 
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
@@ -226,6 +234,39 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         const rawHeightmap = generateInflatedHeightmap(distanceMap, canvasWidth, canvasHeight, 0.5);
         const smoothHeightmap = applyBilateralFilter(rawHeightmap, canvasWidth, canvasHeight, 1.5, 2.0);
         const normalField = computeTangentNormalField(smoothHeightmap, canvasWidth, canvasHeight, 2.0);
+
+        // Blend custom normal sculpt layers (e.g. tag === 'normal') using RNM
+        if (currentFrame) {
+          const normalLayers = currentFrame.layers.filter(
+            (l) => l.visible && (l.tag === 'normal' || l.tag === 'normal-map')
+          );
+          for (const nLayer of normalLayers) {
+            const nlCanvas = getOrCreateLayerCanvas(nLayer.id);
+            const nlCtx = nlCanvas.getContext('2d', { willReadFrequently: true });
+            if (nlCtx) {
+              const nlData = nlCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+              for (let y = 0; y < canvasHeight; y++) {
+                for (let x = 0; x < canvasWidth; x++) {
+                  const pIdx = (y * canvasWidth + x) * 4;
+                  const idx = y * canvasWidth + x;
+                  if (nlData[pIdx + 3] > 20) {
+                    const detail = decodeNormalRGB(nlData[pIdx], nlData[pIdx + 1], nlData[pIdx + 2], true);
+                    const base: [number, number, number] = [
+                      normalField.nx[idx],
+                      normalField.ny[idx],
+                      normalField.nz[idx],
+                    ];
+                    const blended = blendNormalsRNM(base, detail);
+                    normalField.nx[idx] = blended[0];
+                    normalField.ny[idx] = blended[1];
+                    normalField.nz[idx] = blended[2];
+                  }
+                }
+              }
+            }
+          }
+        }
+
         normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
         normalMapCacheRef.current = { cacheKey, canvas: normalCanvas };
       }
@@ -237,6 +278,63 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
   }, [canvasHeight, canvasWidth, floatingSelection, getOrCreateLayerCanvas]);
+
+  // Mark Ferrari 8-Bit Dynamic Palette Cycling 60 FPS Engine
+  useEffect(() => {
+    if (!isPaletteCycling) return;
+    const currentPalette = palettes.find((p) => p.id === currentPaletteId);
+    const tracks = currentPalette?.cycleTracks?.filter((t) => t.enabled && t.rate > 0);
+    if (!currentPalette || !tracks || tracks.length === 0) return;
+
+    const mainCanvas = mainCanvasRef.current;
+    if (!mainCanvas) return;
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const baseImg = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    const indexMap = buildCanvasPaletteIndexMap(ctx, canvasWidth, canvasHeight, currentPalette.colors);
+    const numPixels = canvasWidth * canvasHeight;
+    const outLUT32 = new Uint32Array(currentPalette.colors.length);
+
+    const frameData = ctx.createImageData(canvasWidth, canvasHeight);
+    const data32 = new Uint32Array(frameData.data.buffer);
+    const baseData32 = new Uint32Array(baseImg.data.buffer);
+
+    let animationFrameId: number;
+    const startTime = performance.now();
+
+    const cycleLoop = (time: number) => {
+      const elapsedSec = ((time - startTime) / 1000) * paletteCycleSpeedMultiplier;
+      updateLivePaletteLUT32(currentPalette.colors, tracks, elapsedSec, outLUT32);
+
+      for (let i = 0; i < numPixels; i++) {
+        const palIdx = indexMap[i];
+        if (palIdx === 255) {
+          data32[i] = baseData32[i];
+        } else {
+          data32[i] = outLUT32[palIdx] ?? baseData32[i];
+        }
+      }
+
+      ctx.putImageData(frameData, 0, 0);
+      animationFrameId = requestAnimationFrame(cycleLoop);
+    };
+
+    animationFrameId = requestAnimationFrame(cycleLoop);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      renderComposite();
+    };
+  }, [
+    isPaletteCycling,
+    currentPaletteId,
+    palettes,
+    paletteCycleSpeedMultiplier,
+    canvasWidth,
+    canvasHeight,
+    renderComposite,
+  ]);
 
   // Hook 4: Viewport overlays
   const {
@@ -585,6 +683,57 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         setIsDrawing(false);
         break;
       }
+      case 'normal-chisel': {
+        const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+        if (targetLayerId) {
+          chiselSessionRef.current = new ChiselStrokeSession(canvasWidth, canvasHeight);
+          chiselSessionRef.current.stampChisel(coords.x, coords.y, {
+            azimuth: tools.chiselAzimuth,
+            incline: tools.chiselIncline,
+            width: tools.chiselWidth,
+            ridgeMode: tools.chiselRidgeMode,
+            blendMode: tools.normalBlendMode,
+          });
+          const lCanvas = getOrCreateLayerCanvas(targetLayerId);
+          const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+          if (lCtx && currentStrokeSnapshotRef.current) {
+            const workingImg = new ImageData(
+              new Uint8ClampedArray(currentStrokeSnapshotRef.current.imageData.data),
+              canvasWidth,
+              canvasHeight
+            );
+            chiselSessionRef.current.compositeOnto(workingImg, tools.normalBlendMode);
+            lCtx.putImageData(workingImg, 0, 0);
+            renderComposite();
+          }
+        }
+        break;
+      }
+      case 'rivet-stamp': {
+        const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+        if (targetLayerId) {
+          const session = new ChiselStrokeSession(canvasWidth, canvasHeight);
+          session.stampRivet(coords.x, coords.y, {
+            radius: tools.rivetRadius,
+            flatten: tools.rivetFlatten,
+            invert: tools.rivetInvert,
+            blendMode: tools.normalBlendMode,
+          });
+          const lCanvas = getOrCreateLayerCanvas(targetLayerId);
+          const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+          if (lCtx) {
+            const imgData = lCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            session.compositeOnto(imgData, tools.normalBlendMode);
+            lCtx.putImageData(imgData, 0, 0);
+            renderComposite();
+            commitSnapshot();
+            bumpBufferVersion();
+          }
+        }
+        isDrawingRef.current = false;
+        setIsDrawing(false);
+        break;
+      }
       default:
         break;
     }
@@ -692,6 +841,43 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     } else if (tools.activeTool === 'dither') {
       if (shouldDitherPixel(coords.x, coords.y, tools.ditherMatrix, tools.ditherDensity)) {
         drawPointsOnActiveLayer([coords], drawColor, false);
+      }
+      setLastPoint(coords);
+    } else if (tools.activeTool === 'normal-chisel') {
+      if (lastPoint && chiselSessionRef.current) {
+        const dx = coords.x - lastPoint.x;
+        const dy = coords.y - lastPoint.y;
+        const linePoints = getBresenhamLine(lastPoint.x, lastPoint.y, coords.x, coords.y);
+        for (const pt of linePoints) {
+          chiselSessionRef.current.stampChisel(
+            pt.x,
+            pt.y,
+            {
+              azimuth: tools.chiselAzimuth,
+              incline: tools.chiselIncline,
+              width: tools.chiselWidth,
+              ridgeMode: tools.chiselRidgeMode,
+              blendMode: tools.normalBlendMode,
+            },
+            { dx, dy }
+          );
+        }
+        const currentFrame = frames[activeFrameIndex];
+        const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+        if (targetLayerId && currentStrokeSnapshotRef.current) {
+          const lCanvas = getOrCreateLayerCanvas(targetLayerId);
+          const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+          if (lCtx) {
+            const workingImg = new ImageData(
+              new Uint8ClampedArray(currentStrokeSnapshotRef.current.imageData.data),
+              canvasWidth,
+              canvasHeight
+            );
+            chiselSessionRef.current.compositeOnto(workingImg, tools.normalBlendMode);
+            lCtx.putImageData(workingImg, 0, 0);
+            renderComposite();
+          }
+        }
       }
       setLastPoint(coords);
     } else if (
@@ -929,6 +1115,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     setStrokeStart(null);
     setLastPoint(null);
+    chiselSessionRef.current = null;
   };
 
   // Drag and drop imports

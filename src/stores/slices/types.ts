@@ -10,7 +10,7 @@ import {
   CelToneCount,
   WallpaperGroup,
 } from '@/types/tools';
-import { ColorPalette, ColorRamp } from '@/types/palette';
+import { ColorPalette, ColorRamp, PaletteCycleTrack } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
 import { AiMessage } from '@/types/ai';
 import type { CvdLensMode } from '@/lib/color/cvdLens';
@@ -91,6 +91,23 @@ export interface ToolSlice {
   setAnisoAngle: (angle: number) => void;
   setAnisoFlow: (flow: AnisoFlowPreset) => void;
   setOpticalCelTones: (tones: CelToneCount) => void;
+  setChiselAzimuth: (azimuth: number) => void;
+  setChiselIncline: (incline: number) => void;
+  setChiselWidth: (width: number) => void;
+  setChiselRidgeMode: (ridge: boolean) => void;
+  setRivetRadius: (radius: number) => void;
+  setRivetFlatten: (flatten: number) => void;
+  setRivetInvert: (invert: boolean) => void;
+  setNormalBlendMode: (mode: 'rnm' | 'udn' | 'overwrite') => void;
+
+  isPaletteCycling: boolean;
+  paletteCycleSpeedMultiplier: number;
+  togglePaletteCycling: () => void;
+  setPaletteCycling: (cycling: boolean) => void;
+  setPaletteCycleSpeedMultiplier: (mult: number) => void;
+  addPaletteCycleTrack: (paletteId: string, track: PaletteCycleTrack) => void;
+  updatePaletteCycleTrack: (paletteId: string, trackId: string, updates: Partial<PaletteCycleTrack>) => void;
+  deletePaletteCycleTrack: (paletteId: string, trackId: string) => void;
   setPrimaryColor: (color: string) => void;
   setSecondaryColor: (color: string) => void;
   addRecentColor: (color: string) => void;

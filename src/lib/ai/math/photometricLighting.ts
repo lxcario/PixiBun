@@ -21,6 +21,7 @@ import {
   AnisoFlowPreset,
 } from '@/types/tools';
 import { hexToRgba } from '@/lib/canvas/floodFill';
+import { decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
 import { rgbToOKLab, deltaEOKLab, okLabToOKLCH, oklchToOKLab, okLabToRGB, shiftHue } from './colorSpace';
 import { inferPhotometricSettings } from './photometricAuto';
 import {
@@ -462,6 +463,31 @@ export function executePhotometricPipeline(
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeature;
     isInkLineMask = analysis.isInkLine;
+  }
+
+  // Blend custom manual sculpt normals (from dedicated normal layers or chisel strokes) using RNM
+  if (params.normalMapData) {
+    const nData = params.normalMapData instanceof ImageData
+      ? params.normalMapData.data
+      : params.normalMapData;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const pIdx = (y * width + x) * 4;
+        const idx = y * width + x;
+        if (nData[pIdx + 3] > 20) {
+          const detail = decodeNormalRGB(nData[pIdx], nData[pIdx + 1], nData[pIdx + 2], true);
+          const base: [number, number, number] = [
+            normalField.nx[idx],
+            normalField.ny[idx],
+            normalField.nz[idx],
+          ];
+          const blended = blendNormalsRNM(base, detail);
+          normalField.nx[idx] = blended[0];
+          normalField.ny[idx] = blended[1];
+          normalField.nz[idx] = blended[2];
+        }
+      }
+    }
   }
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;

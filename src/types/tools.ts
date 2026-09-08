@@ -12,7 +12,9 @@ export type ToolType =
   | 'isometric-line'
   | 'rectangle' 
   | 'ellipse' 
-  | 'color-replace';
+  | 'color-replace'
+  | 'normal-chisel'
+  | 'rivet-stamp';
 
 export type DitherMatrixType = '2x2' | '4x4' | '8x8' | 'atkinson' | 'riemersma' | 'blue-noise';
 
@@ -43,6 +45,7 @@ export interface PhotometricLightingParams {
   celShading?: boolean;
   lightCenterX?: number; // Center anchor X in canvas coordinates (middle light point)
   lightCenterY?: number; // Center anchor Y in canvas coordinates (middle light point)
+  normalMapData?: ImageData | Uint8ClampedArray; // Optional manual normal sculpt layer data
 }
 
 export interface ToolSettings {
@@ -74,6 +77,14 @@ export interface ToolSettings {
   anisoAngle: number; // 0 to 180 deg
   anisoFlow: AnisoFlowPreset;
   opticalCelTones: CelToneCount; // 2, 3, 4, or 'smooth'
+  chiselAzimuth: number; // 0 to 360 deg
+  chiselIncline: number; // 15 to 75 deg
+  chiselWidth: number; // 1 to 32px
+  chiselRidgeMode: boolean;
+  rivetRadius: number; // 1 to 32px
+  rivetFlatten: number; // 0.1 to 1.0
+  rivetInvert: boolean;
+  normalBlendMode: 'rnm' | 'udn' | 'overwrite';
 }
 
 export type WallpaperGroup = 'none' | 'pm' | 'p2' | 'p4' | 'p4m' | 'p6m';

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { NormalSculptorSection } from './NormalSculptorSection';
 import { PhotometricLightingSection } from './PhotometricLightingSection';
 import { RaymarchedShadowSection } from './RaymarchedShadowSection';
 import { VolumetricOpticsSection } from './VolumetricOpticsSection';
@@ -10,6 +10,9 @@ import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
 export const AiToolsPanel: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col p-3 gap-3 overflow-y-auto">
+      {/* 0. 2.5D Normal Chisel & Bas-Relief Sculptor */}
+      <NormalSculptorSection />
+
       {/* 1. Photometric Studio & Relighting */}
       <PhotometricLightingSection />
 

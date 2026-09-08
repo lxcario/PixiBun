@@ -81,6 +81,7 @@ export function useViewportStudioEvents({
     paletteColors: string[];
     lastCenterX?: number;
     lastCenterY?: number;
+    normalMapData?: ImageData | null;
   } | null>(null);
 
   // Helper: composite source snapshot of all layers excluding tagged target
@@ -108,8 +109,8 @@ export function useViewportStudioEvents({
             (layer.tag === excludeTag ||
               (excludeTag === 'photometric' &&
                 (layer.tag === 'specular' ||
-                  layer.name.toLowerCase().startsWith('photometric') ||
-                  layer.name.toLowerCase().startsWith('specular'))))
+                  layer.tag === 'normal' ||
+                  layer.tag === 'normal-map')))
           ) {
             return;
           }
@@ -160,6 +161,37 @@ export function useViewportStudioEvents({
     [canvasHeight, canvasWidth, getOrCreateLayerCanvas]
   );
 
+  // Helper: composite manual normal sculpt layers (e.g. tag === 'normal')
+  const compositeNormalMapSnapshot = useCallback((): ImageData | null => {
+    const state = useStudioStore.getState();
+    const currentFrame = state.frames[state.activeFrameIndex];
+    if (!currentFrame) return null;
+
+    const normalLayers = currentFrame.layers.filter(
+      (l) => l.visible && (l.tag === 'normal' || l.tag === 'normal-map')
+    );
+    if (normalLayers.length === 0) return null;
+
+    const scratch = document.createElement('canvas');
+    scratch.width = canvasWidth;
+    scratch.height = canvasHeight;
+    const sCtx = scratch.getContext('2d', { willReadFrequently: true });
+    if (!sCtx) return null;
+    sCtx.imageSmoothingEnabled = false;
+
+    normalLayers
+      .slice()
+      .reverse()
+      .forEach((layer) => {
+        const lCanvas = getOrCreateLayerCanvas(layer.id);
+        sCtx.globalAlpha = layer.opacity;
+        sCtx.globalCompositeOperation = layer.blendMode;
+        sCtx.drawImage(lCanvas, 0, 0);
+      });
+
+    return sCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+  }, [canvasHeight, canvasWidth, getOrCreateLayerCanvas]);
+
   // Helper: write AI generated content to a dedicated tagged layer
   const updateTaggedLayer = useCallback(
     (displayName: string, tag: string, drawFn: (ctx: CanvasRenderingContext2D) => void) => {
@@ -171,13 +203,8 @@ export function useViewportStudioEvents({
       let targetLayerId: string;
       let isNewLayer = false;
 
-      // Find existing tagged layer by explicit tag OR by name prefix fallback
-      const isPhotometric = tag === 'photometric';
-      const existing = currentFrame.layers.find(
-        (l) =>
-          l.tag === tag ||
-          (isPhotometric && (l.tag === 'photometric' || l.name.toLowerCase().startsWith('photometric')))
-      );
+      // Find existing tagged layer strictly by explicit tag
+      const existing = currentFrame.layers.find((l) => l.tag === tag);
 
       if (existing) {
         targetLayerId = existing.id;
@@ -208,9 +235,7 @@ export function useViewportStudioEvents({
 
       // Prune any extraneous duplicate layers with the same tag (e.g. from previous runs)
       const duplicateLayers = currentFrame.layers.filter(
-        (l) =>
-          (l.tag === tag || (isPhotometric && l.name.toLowerCase().startsWith('photometric'))) &&
-          l.id !== targetLayerId
+        (l) => l.tag === tag && l.id !== targetLayerId
       );
       if (duplicateLayers.length > 0) {
         duplicateLayers.forEach((dup) => {
@@ -738,11 +763,7 @@ export function useViewportStudioEvents({
       const tag = 'photometric';
       const displayName = `Photometric ${material}`;
 
-      const existing = currentFrame.layers.find(
-        (l) =>
-          l.tag === tag ||
-          (l.tag === 'photometric' || l.name.toLowerCase().startsWith('photometric'))
-      );
+      const existing = currentFrame.layers.find((l) => l.tag === tag);
 
       if (existing) {
         targetLayerId = existing.id;
@@ -760,6 +781,8 @@ export function useViewportStudioEvents({
 
       // Capture single clean snapshot before modifying (tag preserved for redo)
       captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined, tag);
+
+      const normalMapData = compositeNormalMapSnapshot();
 
       // Render initial photometric lighting
       const shadedCanvas = executePhotometricPipeline(
@@ -779,6 +802,7 @@ export function useViewportStudioEvents({
           bayerSize: '4x4',
           formType,
           minecraftSkinMode: state.tools.minecraftSkinMode,
+          normalMapData: normalMapData || undefined,
         },
         []
       );
@@ -803,6 +827,7 @@ export function useViewportStudioEvents({
         brightness,
         formType,
         paletteColors: [],
+        normalMapData,
       };
 
       // Activate interactive on-canvas light bulb gizmo
@@ -843,6 +868,7 @@ export function useViewportStudioEvents({
           minecraftSkinMode: state.tools.minecraftSkinMode,
           lightCenterX: session.lastCenterX,
           lightCenterY: session.lastCenterY,
+          normalMapData: session.normalMapData || undefined,
         },
         session.paletteColors
       );
@@ -927,6 +953,7 @@ export function useViewportStudioEvents({
       const srcCtx = compositeSourceSnapshot('photometric');
       if (!srcCtx) return;
 
+      const normalMapData = compositeNormalMapSnapshot();
       const materialName = detail.material ?? tools.materialPreset;
       const shadedCanvas = executePhotometricPipeline(
         srcCtx,
@@ -945,6 +972,7 @@ export function useViewportStudioEvents({
           bayerSize: detail.bayerSize || '4x4',
           formType: detail.formType ?? tools.formType ?? 'auto',
           minecraftSkinMode: detail.minecraftSkinMode ?? tools.minecraftSkinMode ?? 'auto',
+          normalMapData: normalMapData || undefined,
         },
         detail.paletteColors || []
       );
@@ -1148,6 +1176,7 @@ export function useViewportStudioEvents({
     canvasWidth,
     captureSnapshot,
     commitSnapshot,
+    compositeNormalMapSnapshot,
     compositeSourceSnapshot,
     getOrCreateLayerCanvas,
     mainCanvasRef,

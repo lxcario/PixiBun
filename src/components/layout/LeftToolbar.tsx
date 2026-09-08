@@ -50,6 +50,13 @@ const TOOL_GROUPS: { groupName: string; tools: ToolItem[] }[] = [
     ],
   },
   {
+    groupName: '2.5D Sculpt',
+    tools: [
+      { id: 'normal-chisel', label: 'Normal Chisel', shortcut: 'K', icon: 'chisel' },
+      { id: 'rivet-stamp', label: 'Rivet Stamp', shortcut: 'N', icon: 'rivet' },
+    ],
+  },
+  {
     groupName: 'Utility',
     tools: [
       { id: 'eyedropper', label: 'Eyedropper', shortcut: 'I', icon: 'eyedropper' },

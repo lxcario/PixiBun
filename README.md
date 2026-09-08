@@ -73,6 +73,14 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
 * **Analytical Tangent-Space Normal Generation & Compass Alignment:** Discrete Sobel kernels derive surface normal vectors with standard artist compass heading navigation ($0^\circ = \text{North/Top}, 315^\circ = \text{North-West/Top-Left}$) and a dynamic rotating SVG compass needle in the studio inspector.
 * **1-Click Normal Map Baking:** Exports standard blue tangent-space normal maps $(128, 128, 255)$ directly to a new layer for immediate use in **Godot**, **Unity**, and **Unreal Engine**.
+* **2.5D Normal Sculptor & Micro-Relief Chisel:** Directional bevel/chamfer carving (<kbd>K</kbd>) with analytical surface normal orientation $(\alpha \in [0, 360^\circ), \phi \in (0, 90^\circ])$, V-groove blade ridge carving, and shallow spherical rivet/stud stamp (<kbd>Shift+K</kbd>) with flattening factor $h \in (0, 1]$ and countersunk screwhole dimpling.
+* **Reoriented Normal Mapping (RNM):** Quaternion-based detail normal blending (Colin Barré-Brisebois & Stephen Hill 2012) rotating sculpted micro-relief onto base EDT normal maps without slope flattening or loss of high-frequency details.
+* **Real-Time Normal Preview & Live Relighting:** Interactive Studio toggle rendering tangent-space normal maps directly on canvas, with immediate 3D photometric relighting responding to the draggable pixel light bulb gizmo.
+
+| Tangent Normal Preview (RNM Blended) | 45° vs 225° Relit Difference (32,558 px) | Rivet Dome Stamping |
+|:---:|:---:|:---:|
+| ![Tangent Normal Preview](docs/assets/screenshots/proof_20260908_1215_02_normal_preview_on.png) | ![45° vs 225° Relit Difference](docs/assets/screenshots/proof_20260908_1215_05_diff_heatmap.png) | ![Rivet Dome Stamping](docs/assets/screenshots/proof_20260908_1215_07_rivet_dome_closeup.png) |
+
 * **Directional Selective Outlining (Sel-Out):** Evaluates surface normal azimuth alignment against the light source, applying illuminated rim tones to light-facing edges and deep saturated material tones to shadow edges.
 * **Smart Sub-Pixel Anti-Aliasing (De-Jaggy):** Evaluates staircase L-crooks in 1px lines and inserts soft intermediate OKLab blend pixels for smooth hand-drawn contours without creating holes.
 * **2D Volumetric Optics & Subsurface Scattering (SSS):** Beer-Lambert exponential spectral decay through distance-field chord lengths $T(\mathbf{x}) = 2\sqrt{\max(0, R^2 - D(\mathbf{x})^2)}$ combined with 2D Henyey-Greenstein forward phase scattering for luminous gemstones, potion vials, and translucent slimes.
@@ -104,6 +112,11 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Harmonic Ramp Generator:** Generates 5-step highlight and shadow ramps in OKLCH space with natural warm sun / cool shadow hue-shifting.
 * **Atmospheric Photographic Color Grading:** Physical Kelvin temperature shifts (+2800K Golden Sunset, -3500K Cool Moonlight, Neon Dusk, DMG Game Boy).
 * **Scan & Snap Palette Tools:** Scan entire canvas to create instant palettes or snap layer pixels to the active palette colors.
+* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS, triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, Farey rational retuning for seamless loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
+
+<p align="center">
+  <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Mark Ferrari Palette Cycling Live in Studio" width="680" />
+</p>
 
 ---
 
@@ -169,6 +182,8 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 | <kbd>J</kbd> | **Wu's 2:1 Isometric Line** Tool |
 | <kbd>U</kbd> | **Rectangle** Tool |
 | <kbd>O</kbd> | **Ellipse** Tool |
+| <kbd>K</kbd> | **Normal Chisel** Tool |
+| <kbd>Shift</kbd> + <kbd>K</kbd> | **Rivet Stamp** Tool |
 | <kbd>R</kbd> | **Color Replace** Tool |
 | <kbd>X</kbd> | **Swap Primary / Secondary Colors** |
 | <kbd>[</kbd> / <kbd>]</kbd> | **Decrease / Increase Brush Size** |
@@ -218,7 +233,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The entire core creation and export suite runs 100% offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 414 unit and integration tests across 64 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 6 E2E spec suites (18 tests) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 445 unit and integration tests across 66 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 7 E2E spec suites (19 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -229,7 +244,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, React Compiler memoization, zero client bundle bloat. |
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
-| **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, Aaltonen Ray Marching | Deterministic on-device computer graphics math for 2.5D shading, raymarched soft shadows, and normal baking. |
+| **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, RNM Normal Sculptor, Aaltonen Ray Marching, Mark Ferrari Cycling | Deterministic on-device computer graphics math for 2.5D shading, micro-relief carving, raymarched soft shadows, 60 FPS palette cycling, and normal baking. |
 | **Image Synthesis** | Sobel Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
 | **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines. |
@@ -237,7 +252,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 414 unit and integration tests across 64 suites and 6 E2E spec suites (18 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 445 unit and integration tests across 66 suites and 7 E2E spec suites (19 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

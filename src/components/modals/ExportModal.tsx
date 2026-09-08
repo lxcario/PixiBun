@@ -16,6 +16,11 @@ import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { getGlobalHistory } from '@/lib/engine/historyEngine';
 import { compositeFrame } from '@/lib/render/compositor';
 import { buildProjectFile } from '@/lib/project/serialize';
+import {
+  generateGodot4Shader,
+  generateUnityUrpShader,
+  generateLoopAnimationCanvases,
+} from '@/lib/export/shaderExporter';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -31,11 +36,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     activeFrameIndex,
     fps,
     clips,
+    palettes,
+    currentPaletteId,
   } = useStudioStore();
 
   const [exportType, setExportType] = useState<
-    'png' | 'gif' | 'apng' | 'spritesheet' | 'replay' | 'svg' | 'webm' | 'mp4' | 'project'
+    'png' | 'gif' | 'apng' | 'spritesheet' | 'replay' | 'svg' | 'webm' | 'mp4' | 'project' | 'shader' | 'palette-cycle'
   >('png');
+  const [shaderTarget, setShaderTarget] = useState<'godot' | 'unity'>('godot');
+  const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
+  const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
   const [replayFormat, setReplayFormat] = useState<'gif' | 'mp4'>('gif');
   const [scale, setScale] = useState<number>(4);
   const [svgSmooth, setSvgSmooth] = useState<boolean>(true);
@@ -460,13 +470,92 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     onClose();
   };
 
+  const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
+  const activeCycleTracks = currentPalette?.cycleTracks?.filter((t) => t.enabled && t.rate > 0) || [];
+
+  const handleExportShader = () => {
+    const code =
+      shaderTarget === 'godot'
+        ? generateGodot4Shader(activeCycleTracks, currentPalette.colors.length)
+        : generateUnityUrpShader(activeCycleTracks, currentPalette.colors.length);
+    const ext = shaderTarget === 'godot' ? 'gdshader' : 'shader';
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-palette-cycling.${ext}`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    onClose();
+  };
+
+  const handleExportCycleLoop = async () => {
+    const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
+    if (!source) return;
+
+    setIsExporting(true);
+    try {
+      const loopFps = 30;
+      const frameCanvases = generateLoopAnimationCanvases(
+        source,
+        currentPalette.colors,
+        activeCycleTracks,
+        cycleLoopDuration,
+        loopFps
+      );
+
+      if (cycleLoopFormat === 'apng') {
+        const delays = frameCanvases.map(() => 1000 / loopFps);
+        const apngBlob = await exportAnimationToApngAsync(frameCanvases, {
+          fps: loopFps,
+          scale,
+          durationsMs: delays,
+          loopCount: 0,
+          onProgress: (current: number, total: number) => {
+            setExportProgress({ current, total });
+          },
+        });
+        const url = URL.createObjectURL(apngBlob);
+        const link = document.createElement('a');
+        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.png`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const delays = frameCanvases.map(() => Math.max(2, Math.round((1000 / loopFps) / 10)));
+        const gifBlob = await createAnimatedGifBlobAsync(
+          frameCanvases,
+          loopFps,
+          scale,
+          (current: number, total: number) => {
+            setExportProgress({ current, total });
+          },
+          undefined,
+          delays
+        );
+        const url = URL.createObjectURL(gifBlob);
+        const link = document.createElement('a');
+        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.gif`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Palette cycle loop export failed:', err);
+    } finally {
+      setIsExporting(false);
+      setExportProgress(null);
+      onClose();
+    }
+  };
+
   const historyLength = getGlobalHistory().length;
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={handleCancel} title="Export Studio Assets" maxWidth="w-[560px]">
       {/* Format Selector Tabs */}
       <div className="flex gap-1 bg-[var(--desk-surface)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-        {(['png', 'gif', 'apng', 'webm', 'mp4', 'spritesheet', 'replay', 'svg', 'project'] as const).map((type) => (
+        {(['png', 'gif', 'apng', 'webm', 'mp4', 'spritesheet', 'replay', 'svg', 'shader', 'palette-cycle', 'project'] as const).map((type) => (
           <button
             key={type}
             disabled={isExporting}
@@ -489,6 +578,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               ? 'MP4 Video'
               : type === 'apng'
               ? 'APNG'
+              : type === 'shader'
+              ? 'Shaders'
+              : type === 'palette-cycle'
+              ? 'Cycle Loop'
               : type === 'project'
               ? '.pixibun'
               : type.toUpperCase()}
@@ -990,6 +1083,110 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         </div>
       )}
 
+      {exportType === 'shader' && (
+        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--text-body)] font-bold">Engine Target:</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setShaderTarget('godot')}
+                className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
+                  shaderTarget === 'godot'
+                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                }`}
+              >
+                Godot 4 (.gdshader)
+              </button>
+              <button
+                onClick={() => setShaderTarget('unity')}
+                className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
+                  shaderTarget === 'unity'
+                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                }`}
+              >
+                Unity URP 2D (.shader)
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+            <span>Active Tracks:</span>
+            <span className="font-bold text-[#f0be7c]">{activeCycleTracks.length} tracks configured</span>
+          </div>
+
+          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
+            Hardware-accelerated pixel shader with point-filtering, ping-pong oscillation, and sub-step color interpolation.
+          </p>
+        </div>
+      )}
+
+      {exportType === 'palette-cycle' && (
+        <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--text-body)] font-bold">Target Loop Duration:</span>
+            <div className="flex gap-1">
+              {[1.0, 2.0, 3.0, 4.0, 5.0].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => setCycleLoopDuration(sec)}
+                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
+                    cycleLoopDuration === sec
+                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  }`}
+                >
+                  {sec}s
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--text-body)] font-bold">Animation Format:</span>
+            <div className="flex gap-1">
+              {(['apng', 'gif'] as const).map((fmt) => (
+                <button
+                  key={fmt}
+                  onClick={() => setCycleLoopFormat(fmt)}
+                  className={`px-2.5 py-0.5 rounded-[2px] border font-bold cursor-pointer uppercase transition-colors ${
+                    cycleLoopFormat === fmt
+                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  }`}
+                >
+                  {fmt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
+            <div className="flex gap-1">
+              {[1, 2, 4, 8].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setScale(s)}
+                  className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
+                    scale === s
+                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+                      : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  }`}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
+            Powered by Farey rational retuning to guarantee 100% seamless zero-pop looping across all cycle tracks.
+          </p>
+        </div>
+      )}
+
       {/* Modal Actions */}
       <div className="flex justify-end gap-2 pt-2 border-t border-[var(--desk-border)]">
         <TactileButton
@@ -1011,7 +1208,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             (exportType === 'mp4' && !isMp4Supported)
           }
           onClick={
-            exportType === 'project'
+            exportType === 'shader'
+              ? handleExportShader
+              : exportType === 'palette-cycle'
+              ? handleExportCycleLoop
+              : exportType === 'project'
               ? handleExportProjectJson
               : exportType === 'spritesheet'
               ? handleExportSpriteSheet

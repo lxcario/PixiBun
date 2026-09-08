@@ -1,5 +1,58 @@
 # Build Plan — PixiBun
 
+## Phase 46 — 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite
+**Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, Farey rational retuning, and Godot 4 / Unity URP shader generation).
+
+**Evidence & Rationale:**
+- Prior to Phase 46, normal maps could only be automatically generated from 2D layer silhouettes via Euclidean Distance Transform (EDT). Artists had no manual chisel, directional chamfer, or stud/rivet carving tools to sculpt micro-relief directly on normal maps.
+- Standard linear normal map blending flattens slopes and distorts high-frequency details. Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) accurately rotates detail normals into the tangent space oriented by the base normal vector via shortest-arc quaternion transformation.
+- Prior palette cycling in web tools often allocated objects every frame, lacked Commodore/Amiga IFF binary chunk support (`CRNG`/`CCRT`), had fencepost errors in ping-pong triangle waves, or suffered from coprime LCM period explosion during export. Farey rational retuning calculates harmonic cycle rates over a target duration $T$ for zero-pop seamless loop unrolling.
+
+**Deliverables:**
+- [x] 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`):
+  - Normal vector encoding/decoding: $[-1, 1]^3 \leftrightarrow [0, 255]^3$ with OpenGL $+Y$ up convention ($(128, 128, 255)$ flat perpendicular baseline).
+  - Directional bevel & chamfer geometry from compass azimuth $\alpha \in [0, 360^\circ)$ and slope incline $\phi \in (0, 90^\circ]$.
+  - Shallow spherical rivet/stud stamp: $\mathbf{N} = \text{normalize}\left(h \frac{dx}{R}, h \frac{dy}{R}, \sqrt{1 - (r/R)^2}\right)$ with flattening factor $h \in (0, 1]$ and inverted dimple.
+  - Reoriented Normal Mapping (RNM) and UDN detail normal blending.
+  - Two-phase `ChiselStrokeSession` envelope buffer preventing intra-stroke angular accumulation artifacts.
+- [x] Studio Integration for Normal Sculpting (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/AiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`):
+  - Added `'normal-chisel'` and `'rivet-stamp'` tool modes.
+  - Interactive 3D normal vector sphere gizmo displaying real-time normal vector orientation.
+  - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
+- [x] Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`):
+  - Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunk parsing and serialization.
+  - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS without GC thrashing.
+  - Triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
+  - Sub-step `BlendShift` linear color interpolation.
+  - Farey rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop seamlessly over duration $T$.
+- [x] Palette Inspector Controls & Export Codecs (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`):
+  - Play/pause live palette cycling in studio inspector with frequency, direction, and BlendShift controls.
+  - Export standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shaders.
+  - Unroll seamless loopable APNG and animated GIF with Farey retuning.
+- [x] Verification & Automated Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`):
+  - 31 new unit tests covering vector conversions, compass bevel azimuths, rivet dome flattening, RNM quaternion blending, IFF chunk serialization, ping-pong fenceposts, and shader generation.
+  - Full suite passes: 445/445 tests across 66 suites.
+- [x] Zero Name-Sniffing & Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`):
+  - Completely purged legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Enforced strict machine-tag matching (`l.tag === tag`) and excluded `normal` / `normal-map` vector layers from diffuse albedo composites.
+- [x] Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`):
+  - Implemented explicit `window.__pixibunDb.close()` prior to database schema deletion.
+  - Wrapped `indexedDB.deleteDatabase('PixiBunDB')` in a Promise that explicitly rejects on `req.onblocked` to eliminate hanging connection races.
+  - Added post-reload store assertions (`frameCount === 1`, `layerCount === 1`, `hasNormalLayer === false`, `showNormalPreview === false`) guaranteeing clean test starting states.
+- [x] Live Studio E2E Verification Proof (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`):
+  - Built comprehensive Playwright E2E test verifying live chisel carving, normal preview overlay toggle, 45° vs 225° relighting contrast inversion (32,558 modified pixels), and live Mark Ferrari palette cycling.
+  - Archived 8 verified visual integration proof artifacts in `docs/assets/screenshots/`.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors/warnings.
+- `npx vitest run` passes all 445 tests.
+- `npx playwright test tests/e2e/chiselAndPaletteLiveProof.spec.ts` passes with 100% green verdict.
+- `npm run verify:docs` passes with valid phase headers and documentation paths.
+
+**Status:** Complete (2026-09-08)
+
+---
+
 ## Phase 45 — Landing Page Anti-Slop Remediation & Silky-Smooth Animations
 **Goal:** Eliminate tab switching latency, repair landing navigation layout shifts, remove awkward badge copywriting, and purge residual emojis across public landing and error pages.
 

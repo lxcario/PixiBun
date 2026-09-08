@@ -58,6 +58,10 @@ export class PixiBunDatabase extends Dexie {
 
 export const db = new PixiBunDatabase();
 
+if (typeof window !== 'undefined') {
+  (window as unknown as { __pixibunDb?: PixiBunDatabase }).__pixibunDb = db;
+}
+
 async function blobsEqual(b1: Blob, b2: Blob): Promise<boolean> {
   if (b1 === b2) return true;
   if (!b1 || !b2 || b1.size !== b2.size || b1.type !== b2.type) return false;

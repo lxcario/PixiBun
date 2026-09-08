@@ -42,14 +42,15 @@ src/
 │   │   ├── pixelAiEngine.ts         # Optical flow tweening, jaggy cleanup, ground shadow, outline
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
 │   │   └── shadowRayMarcher.ts      # Bounded 2.5D sprite cast shadow projection, drop shadow, Aaltonen cone tracing
-│   ├── art/                         # Starter templates (Hearth Ghost, Desk Mushroom, Bun, Little Lantern)
+│   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
 │   ├── audio/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
 │   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
+│   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, Farey retuning)
 │   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool
 │   ├── events/                      # Typed event bus (studioEvents.ts)
-│   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder
+│   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder, shaderExporter.ts
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
 │   ├── render/                      # Pure compositor (compositor.ts) and template renderer (templateRenderer.ts)
 │   ├── server/                      # Pure server modules: tokenBucket.ts (token-bucket rate limiter for route handlers)
@@ -270,3 +271,58 @@ $$\frac{(x - x_{\text{center}})^2}{r_x^2} + \frac{(y - y_{\text{base}})^2}{r_y^2
 
 ### 3. Authentic Uniform Flat Opacity (ditherMode: 'none')
 When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\text{round}(\text{shadowOpacity} \times 255)$, completely eliminating continuous 256-level float gradients. Optional Bayer matrix stippling is available via `2x2`, `4x4`, and `8x8` modes.
+
+---
+
+# 11. 2.5D Normal Sculptor & Reoriented Normal Mapping (normalSculptor.ts)
+
+### 1. Tangent Space Normal Vector Encoding
+Normal vectors follow the standard OpenGL tangent space convention ($+Y$ points up, $+X$ points right, $+Z$ points outward towards the camera):
+$$\mathbf{C}_{\text{encoded}} = \text{round}\left((\mathbf{N} + 1) \times 127.5\right)$$
+Flat perpendicular baseline planes $(0, 0, 1)$ map to $(128, 128, 255)$ lavender.
+
+### 2. Analytical Directional Bevels & Rivet Dome Stamping
+* **Directional Bevel:** Given compass heading $\alpha \in [0, 360^\circ)$ and slope incline $\phi \in (0, 90^\circ]$:
+  $$N_x = \sin\phi \sin\alpha, \quad N_{y,\text{OpenGL}} = \sin\phi \cos\alpha, \quad N_z = \cos\phi$$
+* **Rivet Dome Stamp:** For circular stamps of radius $R$ and flattening factor $h \in (0, 1]$:
+  $$\mathbf{N} = \text{normalize}\left(h \frac{dx}{R}, h \frac{dy}{R}, \sqrt{1 - \frac{dx^2 + dy^2}{R^2}}\right)$$
+
+### 3. Reoriented Normal Mapping (RNM)
+Rotates stamped micro-relief normals $\mathbf{D}$ into the tangent frame of the underlying base surface $\mathbf{B}$ via shortest-arc quaternion rotation without slope flattening:
+$$\mathbf{t} = (B_x, B_y, B_z + 1), \quad \mathbf{u} = (-D_x, -D_y, D_z)$$
+$$\mathbf{r} = \mathbf{t}(\mathbf{t} \cdot \mathbf{u}) - \mathbf{u} \, t_z, \quad \mathbf{N}_{\text{blended}} = \frac{\mathbf{r}}{\|\mathbf{r}\|}$$
+
+| Live Normal Preview (RNM Blended) | 45° vs 225° Relit Difference (32,558 px) | Rivet Dome Stamping |
+|:---:|:---:|:---:|
+| ![Normal Preview](docs/assets/screenshots/proof_20260908_1215_02_normal_preview_on.png) | ![Relit Diff Heatmap](docs/assets/screenshots/proof_20260908_1215_05_diff_heatmap.png) | ![Rivet Dome Stamping](docs/assets/screenshots/proof_20260908_1215_07_rivet_dome_closeup.png) |
+
+---
+
+# 12. Mark Ferrari 8-Bit Dynamic Palette Cycling (paletteCycling.ts)
+
+### 1. IFF ILBM `CRNG` & Commodore `CCRT` Binary Codecs
+Binary parser and serializer supporting classic Deluxe Paint II/III/IV animation tracks:
+* 8-byte `CRNG`: 16-bit big-endian cycle rate ($16384 = 60\text{Hz}$), flags (active, reverse), and range bounds `[low..high]`.
+* 14-byte `CCRT`: Microsecond timing precision with custom color register offsets.
+
+### 2. Zero-Allocation 60 FPS 32-Bit LUT Renderer
+Preallocated `Uint32Array` LUT packed in little-endian `0xAABBGGRR` blits directly into canvas `ImageData` 32-bit buffers:
+```typescript
+lut32[idx] = (a << 24) | (b << 16) | (g << 8) | r;
+```
+Eliminates intermediate garbage collection allocations and provides buttery 60 FPS animation.
+
+### 3. Ping-Pong Triangle Wave Fencepost Safety
+Period $M = 2(S - 1)$ where $S = \text{high} - \text{low} + 1$:
+$$p = \lfloor\text{phase}\rfloor \pmod M; \quad \text{offset} = \begin{cases} p & \text{if } p < S \\ M - p & \text{otherwise} \end{cases}$$
+Registers ping-pong smoothly across boundaries without double-frame dwell pauses.
+
+### 4. Farey Rational Retuning
+Snaps each track's rate to harmonic periods over target duration $T$:
+$$k = \operatorname{round}\left(\frac{T \cdot \text{rate}}{M}\right), \quad \text{rate}_{\text{retuned}} = \frac{k \cdot M}{T}$$
+Guarantees seamless loop unrolling into loopable APNG, GIF, and standalone Godot 4 (`.gdshader`) / Unity URP 2D HLSL shaders.
+
+<p align="center">
+  <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Live Palette Cycling Engine in Studio" width="680" />
+</p>
+

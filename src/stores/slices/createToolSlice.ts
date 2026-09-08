@@ -11,7 +11,19 @@ export const PRESET_PALETTES: ColorPalette[] = [
     colors: [
       '#DDDFDF', '#DDDDDF', '#D0C4DF', '#DCABDF',
       '#C792DF', '#A86EC6', '#6A5880', '#3A2E4C'
-    ]
+    ],
+    cycleTracks: [
+      {
+        id: 'wisteria-pulse',
+        name: 'Wisteria Shimmer',
+        low: 2,
+        high: 6,
+        rate: 4,
+        direction: 'ping-pong',
+        blendShift: true,
+        enabled: true,
+      },
+    ],
   },
   {
     id: 'cozy-hearth-16',
@@ -21,7 +33,29 @@ export const PRESET_PALETTES: ColorPalette[] = [
       '#782216', '#ab3324', '#de4b39', '#f27463',
       '#9c6307', '#c98314', '#f5a623', '#f8be66',
       '#3b672c', '#6eb257', '#8cd075', '#f7efe6'
-    ]
+    ],
+    cycleTracks: [
+      {
+        id: 'hearth-fire',
+        name: 'Ember Cascade',
+        low: 4,
+        high: 7,
+        rate: 8,
+        direction: 'forward',
+        blendShift: true,
+        enabled: true,
+      },
+      {
+        id: 'gold-glow',
+        name: 'Gold Glow',
+        low: 8,
+        high: 11,
+        rate: 5,
+        direction: 'ping-pong',
+        blendShift: true,
+        enabled: false,
+      },
+    ],
   },
   {
     id: 'pico-8',
@@ -75,6 +109,14 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     anisoAngle: 90,
     anisoFlow: 'vertical',
     opticalCelTones: 3,
+    chiselAzimuth: 315,
+    chiselIncline: 45,
+    chiselWidth: 4,
+    chiselRidgeMode: false,
+    rivetRadius: 6,
+    rivetFlatten: 0.5,
+    rivetInvert: false,
+    normalBlendMode: 'rnm',
   },
 
   primaryColor: '#3A2E4C',
@@ -82,6 +124,8 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   palettes: PRESET_PALETTES,
   currentPaletteId: 'alabaster-wisteria-8',
   customRamps: [],
+  isPaletteCycling: false,
+  paletteCycleSpeedMultiplier: 1.0,
   recentColors: (() => {
     // Module-scope JSON.parse of user-controlled localStorage: a corrupted
     // value here would throw during store creation and crash the entire
@@ -255,6 +299,103 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   setOpticalCelTones: tones => {
     set(state => {
       state.tools.opticalCelTones = tones;
+    });
+  },
+
+  setChiselAzimuth: azimuth => {
+    set(state => {
+      state.tools.chiselAzimuth = ((azimuth % 360) + 360) % 360;
+    });
+  },
+
+  setChiselIncline: incline => {
+    set(state => {
+      state.tools.chiselIncline = Math.max(15, Math.min(75, incline));
+    });
+  },
+
+  setChiselWidth: width => {
+    set(state => {
+      state.tools.chiselWidth = Math.max(1, Math.min(32, width));
+    });
+  },
+
+  setChiselRidgeMode: ridge => {
+    set(state => {
+      state.tools.chiselRidgeMode = ridge;
+    });
+  },
+
+  setRivetRadius: radius => {
+    set(state => {
+      state.tools.rivetRadius = Math.max(1, Math.min(32, radius));
+    });
+  },
+
+  setRivetFlatten: flatten => {
+    set(state => {
+      state.tools.rivetFlatten = Math.max(0.1, Math.min(1.0, flatten));
+    });
+  },
+
+  setRivetInvert: invert => {
+    set(state => {
+      state.tools.rivetInvert = invert;
+    });
+  },
+
+  setNormalBlendMode: mode => {
+    set(state => {
+      state.tools.normalBlendMode = mode;
+    });
+  },
+
+  togglePaletteCycling: () => {
+    set(state => {
+      state.isPaletteCycling = !state.isPaletteCycling;
+    });
+  },
+
+  setPaletteCycling: cycling => {
+    set(state => {
+      state.isPaletteCycling = cycling;
+    });
+  },
+
+  setPaletteCycleSpeedMultiplier: mult => {
+    set(state => {
+      state.paletteCycleSpeedMultiplier = Math.max(0.1, Math.min(10, mult));
+    });
+  },
+
+  addPaletteCycleTrack: (paletteId, track) => {
+    set(state => {
+      const pal = state.palettes.find(p => p.id === paletteId);
+      if (pal) {
+        if (!pal.cycleTracks) pal.cycleTracks = [];
+        pal.cycleTracks.push(track);
+      }
+    });
+  },
+
+  updatePaletteCycleTrack: (paletteId, trackId, updates) => {
+    set(state => {
+      const pal = state.palettes.find(p => p.id === paletteId);
+      if (pal?.cycleTracks) {
+        const trk = pal.cycleTracks.find(t => t.id === trackId);
+        if (trk) {
+          Object.assign(trk, updates);
+        }
+      }
+    });
+  },
+
+  deletePaletteCycleTrack: (paletteId, trackId) => {
+    set(state => {
+      const pal = state.palettes.find(p => p.id === paletteId);
+      if (pal?.cycleTracks) {
+        pal.cycleTracks = pal.cycleTracks.filter(t => t.id !== trackId);
+      }
     });
   },
 

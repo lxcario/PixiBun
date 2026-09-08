@@ -1102,3 +1102,54 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx playwright test tests/e2e/landing.spec.ts`: 2/2 passed
 - `npm run verify:docs`: all integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-08 — Phase 46: 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite (v1.11.0)
+
+**Problem Statement:**
+1. Manual Normal Sculpting: Previously, tangent-space normal maps could only be generated from silhouette distance transforms. Artists lacked manual micro-relief carving, bevel/chamfer chisels, and spherical rivet/stud stampers.
+2. Normal Blending Distortion: Naive linear blending or vector averaging flattens slopes and creates severe lighting artifacts. Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) was needed to rotate detail normals onto base normals without geometric distortion.
+3. Intra-Stroke Accumulation: Painting normal vectors continuously along a brush stroke causes angular buildup if stamped iteratively. A two-phase stroke envelope buffer was needed to composite facets cleanly.
+4. Mark Ferrari Palette Cycling: Amiga IFF ILBM `CRNG` and Commodore Graphicraft `CCRT` binary chunk parsing/serialization, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, and Farey rational retuning were needed to prevent coprime LCM explosion during animation loop baking and shader exports (Godot 4, Unity URP).
+
+**Engineering Execution:**
+- **2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)**:
+  - Implemented unit tangent normal vector encoding and decoding with OpenGL $+Y$ up convention ($N_x, N_y, N_z \in [-1, 1] \leftrightarrow [0, 255]$ with flat baseline at $(128, 128, 255)$).
+  - Implemented directional bevel geometry with compass azimuth $\alpha \in [0, 360^\circ)$ and incline $\phi \in (0, 90^\circ]$.
+  - Implemented shallow spherical rivet/stud stamp calculation with flattening factor $h \in (0, 1]$ and inversion flag.
+  - Implemented Reoriented Normal Mapping (RNM) via shortest-arc quaternion rotation, plus UDN detail normal blending.
+  - Implemented `ChiselStrokeSession` envelope buffer preventing intra-stroke angular accumulation.
+- **Studio Chisel & Rivet Integration (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/AiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`)**:
+  - Integrated `'normal-chisel'` and `'rivet-stamp'` tool modes into studio state, toolbar, viewport event handlers, and inspector with interactive 3D normal vector sphere gizmo.
+- **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)**:
+  - Implemented binary codecs for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks.
+  - Implemented zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) updating canvas ImageData buffers at 60 FPS without GC thrashing.
+  - Implemented triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
+  - Implemented sub-step `BlendShift` linear color interpolation.
+  - Implemented Farey rational retuning (`retuneTracksForSeamlessLoop`) preventing coprime LCM period explosion.
+- **Palette Inspector Controls & Exporters (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`)**:
+  - Added live palette cycling controls to palette inspector.
+  - Added standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator.
+  - Added seamless APNG and animated GIF cycle loop unroller.
+- **Unit Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`)**:
+  - Created 31 unit tests validating normal math, RNM quaternion blending, IFF chunk codecs, ping-pong fenceposts, and shader syntax.
+- **Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
+  - Completely purged all legacy display-name sniffing fallbacks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Enforced strict machine-tag matching (`l.tag === tag`) and excluded `normal` / `normal-map` vector layers from diffuse albedo composites to protect base sprite textures.
+- **Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
+  - Implemented explicit `window.__pixibunDb.close()` prior to database schema deletion.
+  - Wrapped `indexedDB.deleteDatabase('PixiBunDB')` in a Promise that explicitly rejects on `req.onblocked` to eliminate hanging connection races.
+  - Added post-reload store assertions (`frameCount === 1`, `layerCount === 1`, `hasNormalLayer === false`, `showNormalPreview === false`) guaranteeing clean test starting states.
+- **Live Studio E2E Verification (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
+  - Built comprehensive Playwright E2E test verifying live chisel carving, normal preview overlay toggle, 45° vs 225° relighting contrast inversion (32,558 modified pixels), and live Mark Ferrari palette cycling.
+  - Archived 8 verified visual integration proof artifacts in `docs/assets/screenshots/`.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run tests/normalSculptor.test.ts tests/paletteCycling.test.ts`: 31/31 passed
+- `npx vitest run`: 445/445 passed across 66 suites
+- `npx playwright test tests/e2e/chiselAndPaletteLiveProof.spec.ts`: passed (14.0s)
+- `npm run verify:docs`: all documentation integrity checks passed (monotonic sections 1-21, all files verified on disk)
+**Status:** Complete

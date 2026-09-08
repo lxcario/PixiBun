@@ -51,7 +51,9 @@ export type PixelIconName =
   | 'symmetry'
   | 'preview'
   | 'lamp'
-  | 'tag';
+  | 'tag'
+  | 'chisel'
+  | 'rivet';
 
 interface PixelIconProps {
   name: PixelIconName;
@@ -509,6 +511,24 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
           <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <path d="M12 2H2v10l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L12 2Z" />
             <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+          </svg>
+        );
+
+      case 'chisel':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M14 2 8 8l4 4 6-6Z" />
+            <path d="m8 8-5 5 3 3 5-5" />
+            <path d="m3 13-1 8 8-1" />
+          </svg>
+        );
+
+      case 'rivet':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+            <path d="M12 4v2m0 12v2M4 12h2m12 0h2" />
           </svg>
         );
 

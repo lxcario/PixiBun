@@ -37,3 +37,7 @@ export const useStudioStore = create<StudioState>()(
     ...createHistorySlice(...a),
   }))
 );
+
+if (typeof window !== 'undefined') {
+  (window as unknown as { __studioStore?: typeof useStudioStore }).__studioStore = useStudioStore;
+}

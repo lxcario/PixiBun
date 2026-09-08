@@ -2,6 +2,42 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.11.0] - 2026-09-08
+### 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite (Phase 46)
+- **2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)**:
+  - Implemented unit tangent normal vector encoding and decoding with OpenGL $+Y$ up convention ($N_x, N_y, N_z \in [-1, 1] \leftrightarrow [0, 255]$ with flat baseline at $(128, 128, 255)$).
+  - Analytical directional bevel geometry with compass azimuth $\alpha \in [0, 360^\circ)$ and incline $\phi \in (0, 90^\circ]$.
+  - Shallow spherical rivet/stud stamp calculation with flattening factor $h \in (0, 1]$ and inversion flag for dimples/countersunk holes.
+  - Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) via shortest-arc quaternion rotation, plus UDN detail normal blending.
+  - Two-phase `ChiselStrokeSession` envelope buffer preventing intra-stroke angular accumulation.
+- **Studio Chisel & Rivet Integration (`src/types/tools.ts`, `src/stores/slices/createToolSlice.ts`, `src/components/layout/LeftToolbar.tsx`, `src/components/ui/PixelIcon.tsx`, `src/components/layout/inspector/NormalSculptorSection.tsx`, `src/components/layout/inspector/AiToolsPanel.tsx`, `src/components/layout/CenterViewport.tsx`)**:
+  - Added `'normal-chisel'` and `'rivet-stamp'` tool options and state slices.
+  - Interactive 3D normal vector sphere gizmo visualizing active normal azimuth and incline in real time.
+  - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
+- **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)**:
+  - Binary parsing and serialization for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks.
+  - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) updating canvas ImageData buffers at 60 FPS without garbage collection thrashing.
+  - Mathematically sound triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
+  - Sub-step `BlendShift` linear color interpolation between adjacent palette registers.
+  - Farey rational retuning (`retuneTracksForSeamlessLoop`) preventing coprime LCM period explosion during loop baking.
+- **Palette Inspector Controls & Exporters (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`)**:
+  - In-studio palette cycling preview with speed, direction, ping-pong, and BlendShift controls.
+  - Standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator with point filtering.
+  - Seamless APNG and animated GIF cycle loop unroller.
+- **Zero Name-Sniffing & Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
+  - Purged all legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Excluded `tag === 'normal'` and `tag === 'normal-map'` from diffuse albedo composites to protect base sprite textures from vector byte corruption.
+  - Enforced strict machine-tag matching (`l.tag === tag`) across all layer types in the raster and photometric pipeline.
+- **Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
+  - Implemented explicit `window.__pixibunDb.close()` prior to database schema deletion.
+  - Wrapped `indexedDB.deleteDatabase('PixiBunDB')` in a Promise that explicitly rejects on `req.onblocked` to eliminate hanging connection races.
+  - Added post-reload store assertions (`frameCount === 1`, `layerCount === 1`, `hasNormalLayer === false`, `showNormalPreview === false`) guaranteeing clean test starting states.
+- **Live Studio E2E Verification Suite (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
+  - Built comprehensive Playwright E2E test verifying live chisel carving, normal preview overlay toggle, 45° vs 225° relighting contrast inversion (32,558 modified pixels), and live Mark Ferrari palette cycling.
+  - Archived 8 verified visual integration proof artifacts in `docs/assets/screenshots/`.
+- **Unit & Integration Suite (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`)**:
+  - Added 31 unit tests validating normal math, RNM quaternion blending, IFF chunk codecs, ping-pong fenceposts, and shader syntax. Full suite passes: 445 tests across 66 suites.
+
 ## [v1.10.4] - 2026-09-07
 ### Landing Page Anti-Slop Remediation & Silky-Smooth Animations (Phase 45)
 - **Direct Static Imports & Zero-Lag Tab Switching (`src/components/landing/AtelierEngineShowcase.tsx`)**:
