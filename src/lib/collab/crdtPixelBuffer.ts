@@ -2,19 +2,22 @@
  * Last-Write-Wins Conflict-Free Replicated Data Type (LWW-CRDT) Pixel Buffer
  * with Hybrid Logical Clock (HLC) & Bounded Clock Drift Skew Protection.
  *
- * Academic Citations:
- * - Sandeep S. Kulkarni, Murat Demirbas, David Madeppa, Bharath Balasubramanian,
- *   Jagadeesh Radhakrishnan, "Logical Physical Clocks and Consistent Snapshots
- *   in Globally Distributed Databases," State University of New York at Buffalo
- *   & Michigan State University Tech Report 2014-04 / IEEE TPDS 2014.
- * - Murat Demirbas, Sandeep Kulkarni, et al., "Hybrid Logical Clocks: Finding
- *   Logical Time with Physical Clocks," SSS 2014.
+ * Algorithm References:
+ * - Marc Shapiro, Nuno Preguiça, Carlos Baquero, Marek Zawirski,
+ *   "Conflict-Free Replicated Data Types," Symposium on Self-Stabilizing
+ *   Systems (SSS 2011), LNCS Vol. 6976, pp. 386-400.
+ *   (Defines the LWW-Register CRDT used for per-pixel conflict resolution.)
+ * - Sandeep S. Kulkarni, Murat Demirbas, Deepak Madappa, Bharadwaj Avva,
+ *   Marcelo Leone, "Logical Physical Clocks," 18th International Conference
+ *   on Principles of Distributed Systems (OPODIS 2014), LNCS Vol. 8878,
+ *   pp. 17-32, Springer, 2014.
+ *   (Defines the Hybrid Logical Clock mechanism used for causal ordering.)
+ *
+ * Design Philosophy:
  * - Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, Mark McGranaghan,
  *   "Local-First Software: You Own Your Data, in spite of the Cloud,"
  *   ACM Onward! Essays, pp. 154-178, 2019.
- * - Marc Shapiro, Nuno Preguiça, Carlos Baquero, Marek Zawirski,
- *   "Conflict-Free Replicated Data Types," Symposium on Self-Stabilizing Systems (SSS 2011),
- *   Lecture Notes in Computer Science, Vol. 6976, pp. 386-400.
+ *   (Architectural motivation for the serverless, accountless, user-owned design.)
  *
  * Implements an accountless, serverless peer-to-peer co-drawing engine where every pixel
  * cell is modeled as an independent LWW-Register governed by a monotonic Hybrid Logical Clock

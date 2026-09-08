@@ -1,13 +1,16 @@
 /**
  * Local-First Peer-to-Peer WebRTC Synchronization Engine for PixiBun Atelier.
  *
- * Academic Citations:
- * - Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, Mark McGranaghan,
- *   "Local-First Software: You Own Your Data, in spite of the Cloud,"
- *   ACM Onward! Essays, pp. 154-178, 2019.
+ * Algorithm & Standards References:
  * - Marc Shapiro, Nuno Preguiça, Carlos Baquero, Marek Zawirski,
  *   "Conflict-Free Replicated Data Types," SSS 2011, LNCS 6976, pp. 386-400.
  * - RFC 8831: WebRTC Data Channels / RFC 8832: WebRTC Data Channel Establishment Protocol.
+ *
+ * Design Philosophy:
+ * - Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, Mark McGranaghan,
+ *   "Local-First Software: You Own Your Data, in spite of the Cloud,"
+ *   ACM Onward! Essays, pp. 154-178, 2019.
+ *   (Architectural motivation for the serverless, accountless, user-owned design.)
  *
  * Architecture:
  * - 100% serverless, accountless, zero-cloud architecture with manual copy-paste token signaling.

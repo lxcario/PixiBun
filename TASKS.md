@@ -476,8 +476,8 @@
 5. Perceptual CVD Colorblindness Simulation: Machado, Oliveira & Fernandes, 2009 (IEEE TVCG). Real-time on-device protanopia, deuteranopia, and tritanopia simulation lenses.
 6. Silhouette & Squint Mode: Game art production discipline. Instant 1-bit solid black silhouette overlay testing character silhouette readability.
 7. Direct-Manipulation Lighting Gizmo: Ben Shneiderman, 1983 ("Direct Manipulation"). Draggable 3D sun azimuth/elevation arc gizmo rendered directly on the viewport HUD.
-8. P2P Local-First Canvas Sync: Martin Kleppmann et al. (ACM Onward! 2019) and Marc Shapiro et al. (SSS 2011) Last-Write-Wins (LWW-Register) CRDT engine with monotonic HLC and deterministic peerId tie-breaking.
-9. Audio-Synchronized Visual Pulse: Spectral flux onset detection (Dixon 2006; Bello et al. 2005, IEEE TASLP) tied to procedural lofi radio FFT analysis.
+8. P2P Local-First Canvas Sync: Marc Shapiro et al. (SSS 2011) Last-Write-Wins (LWW-Register) CRDT engine with Kulkarni et al. (OPODIS 2014) Hybrid Logical Clocks and deterministic peerId tie-breaking, following the local-first architecture advocated by Kleppmann et al. (Onward! 2019).
+9. Audio-Synchronized Visual Pulse: Spectral flux onset detection (Dixon 2006; Bello et al. 2005, IEEE Trans. Speech Audio Process.) tied to procedural lofi radio FFT analysis.
 10. Speedpaint History Playback: Replay engine rendering animated GIF from serialized `HistoryStep` ring buffers.
 
 **Deliverables:**
