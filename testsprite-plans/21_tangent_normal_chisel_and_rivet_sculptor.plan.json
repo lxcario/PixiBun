@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "2.5D Normal Sculptor sculpts directional bevels and rivet dimples with RNM blending",
+  "description": "Verify sculpting directional tangent normal maps using the Normal Chisel and Rivet Stamp tools, configuring chisel bevel azimuth and incline, and composing normals with Reoriented Normal Mapping (RNM).",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the '2.5D Normal Chisel & Bas-Relief' section is visible with the interactive 3D Normal Sphere Gizmo"
+    },
+    {
+      "type": "action",
+      "description": "Click the '+ Add Dedicated Normal Layer' button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a new dedicated normal layer is added to the active frame"
+    },
+    {
+      "type": "action",
+      "description": "Click the Normal Chisel tool button in the left toolbar (or press K on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Carve several strokes across the canvas to lay down directional surface normal bevels"
+    },
+    {
+      "type": "action",
+      "description": "Click the Rivet Stamp tool button in the left toolbar (or press N on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click in several positions on the canvas to stamp spherical dome rivets"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the rivets and chisel bevels blend smoothly using Reoriented Normal Mapping without clipping RGB vector bounds"
+    }
+  ]
+}

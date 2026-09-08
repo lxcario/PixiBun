@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Regression: Centered 64x64 character sprites avoid Minecraft UV misclassification and preserve smooth 2.5D lighting",
+  "description": "Verify drawing a centered character illustration on a 64x64 canvas correctly classifies as a standard 2.5D continuous sprite rather than a Minecraft UV atlas, allowing full spherical/cylindrical normal lighting.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the canvas dimension indicator in the top header (e.g. '32x32')"
+    },
+    {
+      "type": "action",
+      "description": "Click the '64x64' preset button and click 'Apply Resize'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the canvas updates to 64x64 bounds"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode is filled, and draw a centered bunny/character silhouette with empty side flanks"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Analyze & Light Bulb' button in the 2.5D Photometric Studio section"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the light gizmo mounts with full 3D curved spherical lighting across the centered character rather than flat UV plane normals"
+    },
+    {
+      "type": "action",
+      "description": "Click 'Cancel (Esc)' on the light gizmo to dismiss"
+    }
+  ]
+}

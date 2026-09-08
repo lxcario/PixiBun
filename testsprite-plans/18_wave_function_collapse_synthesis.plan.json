@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "WaveFunctionCollapse (WFC) procedural pattern synthesis",
+  "description": "Verify sampling a canvas pattern, configuring WFC constraint solver parameters (N=2 or N=3), and synthesizing a seamless tileable pattern onto a dedicated WFC layer.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Rectangle tool and draw a textured 8x8 checker pattern in the center of the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 'WFC Pattern Synthesis' panel is displayed with neighborhood constraint settings"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'N=2' neighborhood constraint button"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Extend Pattern (WFC)' button (or Synthesize WFC Pattern)"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a dedicated 'WFC Synthesis' layer is generated containing a tileable procedural pattern obeying local pixel adjacency constraints"
+    }
+  ]
+}

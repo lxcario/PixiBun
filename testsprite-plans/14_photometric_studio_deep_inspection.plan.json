@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "2.5D Photometric Studio configures light direction, material shaders, and bakes tangent normal maps",
+  "description": "Verify drawing a solid colored circular ball on canvas, navigating to PixiBud AI, switching between Auto and Manual modes, tweaking Direction and Elevation, testing Material chips, and baking tangent-space normal maps.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), select an amber/gold color swatch, and click inside the circle to solidly fill it with color"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circular ball is clearly visible on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 2.5D Photometric Studio section is visible with Auto and Manual mode toggles"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'MANUAL' mode toggle button"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Gold / Brass' material chip"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Bake Light' button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a dedicated 'Photometric' layer is rendered over the ball with 3D cel-shading and specular shine"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Bake Normal Map' button in the photometric panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a dedicated 'Normal Map' layer is created containing encoded tangent-space normal vector colors (#8080FF baseline)"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Volumetric optical pipeline renders subsurface scattering and anisotropic hair highlights",
+  "description": "Verify drawing a solid colored circular gemstone on canvas, selecting volumetric optical presets including Gem and Hair, adjusting discrete cel tones, and rendering volumetric subsurface scattering.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), select a green or purple color swatch, and click inside the circle to solidly fill and color it"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circular shape is clearly visible on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 'VOLUMETRIC OPTICS & SSS' section is displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Gem' material preset button in the optics panel"
+    },
+    {
+      "type": "action",
+      "description": "Select '3 Tones' from the Cel Tones quantization selector"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Render Volumetric Optics' button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a dedicated tagged layer named 'Optics (gemstone)' is created containing simulated refraction and internal subsurface scatter over the ball"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Hair' optical preset button and select 'Smooth' cel tones"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Render Volumetric Optics' button again"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the existing optics layer updates in-place to render anisotropic flowing hair sheen across the ball"
+    }
+  ]
+}

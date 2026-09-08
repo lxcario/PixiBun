@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Regression: Mark Ferrari palette cycling maintains 60 FPS without polluting undo history buffers",
+  "description": "Verify that running live palette cycling updates color lookup tables dynamically without mutating underlying raster buffers or pushing phantom undo states to the history engine.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and draw three colored bars using swatches from the palette"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Palette' tab in the right inspector panel, then switch to the 'Cycle Engine' sub-tab"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Play Cycle' toggle button and let it run for 2 seconds"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the palette cycling engine actively shifts color lookup registers"
+    },
+    {
+      "type": "action",
+      "description": "Click 'Pause Cycle' to stop dynamic cycling"
+    },
+    {
+      "type": "action",
+      "description": "Press Ctrl+Z on the keyboard to trigger Undo"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the last drawn pen stroke is immediately removed, confirming that 60 FPS palette cycling frames never polluted the circular history stack"
+    }
+  ]
+}

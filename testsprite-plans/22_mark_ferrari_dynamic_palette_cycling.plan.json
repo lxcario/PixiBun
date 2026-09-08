@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Mark Ferrari 8-bit dynamic palette cycling engine runs 60 FPS color shifts",
+  "description": "Verify drawing a solid colored ball with multiple palette color bands, switching to the Cycle Engine tab, and toggling live 60 FPS Mark Ferrari palette cycling.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), select color swatch #1 from the palette, and click inside the circle to color it"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool (press B), choose color swatch #2, and paint stripes across the ball"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the multicolored ball is clearly visible on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Palette' tab button in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Cycle Engine' sub-tab button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 8-Bit Dynamic Palette Cycling controls appear with play toggle, speed multiplier, and track lists"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Play Cycle' toggle button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the palette cycle engine starts active 60 FPS dynamic color rotation on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Pause Cycle' toggle button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the cycling engine pauses and original pixel colors are preserved"
+    }
+  ]
+}

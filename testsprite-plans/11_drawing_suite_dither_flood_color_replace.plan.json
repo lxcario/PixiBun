@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Drawing suite exercises Pen, Dither Brush, Flood Fill, Color Replace, and Eyedropper",
+  "description": "Verify drawing a solid circle, coloring it with Flood Fill, applying ordered Bayer dithering across its surface, replacing target colors with Color Replace, and sampling colors using Eyedropper.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the pixel art canvas workspace is visible in the center viewport"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool by pressing O on keyboard, ensure shape mode in context bar is 'Shape: Filled Solid', then press and drag diagonally across the center canvas for at least 150 pixels to draw a prominent solid circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), pick a contrasting color swatch from the palette, and click inside the drawn circle to solidly fill and color it"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circle is visibly rendered on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the Dither Brush tool button in the left toolbar (press D on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Drag across one hemisphere of the colored circle to apply an authentic Bayer dither pattern"
+    },
+    {
+      "type": "action",
+      "description": "Click the Color Replace tool button in the left toolbar (press R on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click on the colored circle to execute an instant color replacement across all matching pixels"
+    },
+    {
+      "type": "action",
+      "description": "Click the Eyedropper tool button in the left toolbar (press I on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click on any colored pixel on the canvas to pick its color"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the primary color swatch in the left toolbar updates to match the sampled color without producing drawing artifacts"
+    }
+  ]
+}

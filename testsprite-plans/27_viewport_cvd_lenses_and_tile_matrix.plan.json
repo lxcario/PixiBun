@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Viewport accessibility lenses simulate colorblindness and preview 3x3 repeating tiles",
+  "description": "Verify drawing a solid colored ball and patterns, cycling through CVD colorblindness simulation lenses (Protanopia, Deuteranopia, Tritanopia, Monochromacy), toggling squint contrast mode, and enabling 3x3 seamless tile matrix previews.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), select a bright red color, and click inside the circle to solidly fill it"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool (press B), choose green, and draw green foliage accents around the red ball"
+    },
+    {
+      "type": "action",
+      "description": "Click the CVD Lens button in the top context options bar (or press P on keyboard)"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the viewport applies SVG color matrix filtering to simulate Protanopia"
+    },
+    {
+      "type": "action",
+      "description": "Click the CVD Lens button again to cycle to Deuteranopia"
+    },
+    {
+      "type": "action",
+      "description": "Click the CVD Lens button until it cycles back to OFF"
+    },
+    {
+      "type": "action",
+      "description": "Click the Squint Mode button in the top context options bar (labeled 'SIL')"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the canvas stage applies optical blur filtering for value and silhouette contrast auditing"
+    },
+    {
+      "type": "action",
+      "description": "Toggle Squint Mode off, then click the 3x3 button for Seamless Tile Preview"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify 8 repeating border tiles surround the center canvas for real-time seamless tiling inspection"
+    }
+  ]
+}

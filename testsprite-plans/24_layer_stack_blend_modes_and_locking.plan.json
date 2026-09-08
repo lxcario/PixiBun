@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Layer stack manages opacity, blend modes, lock protection, and merge down",
+  "description": "Verify drawing a solid colored ball, adding a secondary shadow layer with Multiply blend mode, locking a layer and asserting paint attempts trigger locked warnings, and executing merge down.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select Flood Fill (press G), choose a bright color, and click inside the circle to solidly color it"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab button in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the '+ Add Layer' button to add a second layer over the ball"
+    },
+    {
+      "type": "action",
+      "description": "Change the active layer's blend mode dropdown to 'Multiply'"
+    },
+    {
+      "type": "action",
+      "description": "Click the lock icon button on the active layer to lock it"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and attempt to draw on the center canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the stroke is blocked and a warning toast appears stating 'Active layer is locked! Unlock it in the inspector to paint.'"
+    },
+    {
+      "type": "action",
+      "description": "Click the lock icon button again to unlock the layer"
+    },
+    {
+      "type": "action",
+      "description": "Click the Merge Down button, then confirm the merge step"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layers merge down into a single flattened layer"
+    }
+  ]
+}

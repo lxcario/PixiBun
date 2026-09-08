@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Geometric shapes and bilateral symmetry mirrored drawing",
+  "description": "Verify drawing straight Lines, 2:1 Isometric lines, Rectangles, and Ellipses, and executing bilateral symmetry across horizontal and vertical mirror axes.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the drawing workspace is ready with canvas centered"
+    },
+    {
+      "type": "action",
+      "description": "Click the Line tool button in the left toolbar (or press L on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag diagonally on the canvas to draw a crisp Bresenham line"
+    },
+    {
+      "type": "action",
+      "description": "Click the 2:1 Iso Line tool button in the left toolbar (or press J on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag horizontally across the canvas to draw an authentic 2:1 isometric pixel line"
+    },
+    {
+      "type": "action",
+      "description": "Click the Rectangle tool button in the left toolbar (or press U on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag across the canvas to draw a rectangular boundary"
+    },
+    {
+      "type": "action",
+      "description": "Toggle the Horizontal Symmetry button (labeled 'H') in the top context options bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the vertical red symmetry guide axis appears down the center of the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and draw on the left half of the canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify mirrored strokes are simultaneously rendered on the right half of the canvas"
+    }
+  ]
+}

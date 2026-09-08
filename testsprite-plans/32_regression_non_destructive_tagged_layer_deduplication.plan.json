@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Regression: Non-destructive tagged layer updates prevent duplicate layer accumulation",
+  "description": "Verify that repeatedly adjusting and rendering 2.5D Photometric lighting in-place updates the existing tagged layer rather than accumulating multiple duplicate layers (protects against name-sniffing regressions).",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode is filled, and draw a solid circular sprite in the center of the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify exactly 1 layer exists in the layer stack (Base Layer)"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Switch to 'Manual' mode in the 2.5D Photometric Studio section"
+    },
+    {
+      "type": "action",
+      "description": "Select 'Gold / Brass' material and click 'Bake Light'"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layer stack now contains exactly 2 layers (Base Layer and Photometric layer)"
+    },
+    {
+      "type": "action",
+      "description": "Return to the 'PixiBud AI' tab, change the Light Direction slider to a different angle, and click 'Bake Light' a second time"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab again"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layer count strictly remains at exactly 2 layers, confirming the existing Photometric layer was updated in-place without creating duplicate layers"
+    }
+  ]
+}

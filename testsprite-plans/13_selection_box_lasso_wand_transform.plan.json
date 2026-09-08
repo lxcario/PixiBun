@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Selection operations cover Marquee Box, Lasso, Magic Wand, and floating pixel movement",
+  "description": "Verify drawing a solid colored circle, selecting regions with Marquee Box, Lasso, and Magic Wand, dragging floating selections to reposition artwork, and using selection modifiers.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool by pressing O, ensure shape mode in context bar is 'Shape: Filled Solid', press down on the canvas, drag diagonally for at least 150 pixels, and release to draw a prominent solid circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), choose a bright palette color, and click inside the circle to color it solidly"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circle is rendered in the center of the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the Marquee Box tool button in the left toolbar (or press M on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag across the top-left quadrant of the circle to enclose it in a bounding box"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify marching ants selection boundary outlines the selected box"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag inside the selection box to lift and reposition the floating pixels"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the floating pixels move dynamically with the cursor to the new canvas position"
+    },
+    {
+      "type": "action",
+      "description": "Click the Magic Wand tool button in the left toolbar (or press W on keyboard)"
+    },
+    {
+      "type": "action",
+      "description": "Click on the colored circle on the canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the contiguous colored circular shape is immediately selected by the magic wand"
+    }
+  ]
+}

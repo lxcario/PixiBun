@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Animation in-between frame morphing synthesizes intermediate keyframes",
+  "description": "Verify drawing two distinct poses across multiple animation frames and executing PixiBud AI in-between morphing to generate a smooth intermediate tween frame.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and draw a standing character stick pose on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Add Frame' button in the bottom animation timeline bar"
+    },
+    {
+      "type": "action",
+      "description": "On Frame 2, draw the character in an outstretched jumping pose"
+    },
+    {
+      "type": "action",
+      "description": "Click back on Frame 1 in the timeline to set it as active"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Generate In-Between Frame' action button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a new intermediate frame is inserted into the timeline containing mathematically blended in-between geometry"
+    }
+  ]
+}

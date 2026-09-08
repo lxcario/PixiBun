@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Regression: Locked layer blocks painting tools, displays warning toast, and preserves history buffers",
+  "description": "Verify locking an active artwork layer blocks destructive painting attempts, fires an informative warning toast notification, and prevents empty or corrupt strokes from polluting the history stack.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool (press B) and draw an initial base artwork mark on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the lock icon button on the active layer to lock it"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the lock icon reflects the locked state (title 'Unlock Layer')"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and attempt to draw across the canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a prominent warning toast appears stating 'Active layer is locked! Unlock it in the inspector to paint.'"
+    },
+    {
+      "type": "action",
+      "description": "Select the Eraser tool (press E) and attempt to erase on the canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the stroke remains blocked by the lock protection"
+    },
+    {
+      "type": "action",
+      "description": "Press Ctrl+Z on the keyboard to trigger Undo"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the initial base artwork mark is cleanly undone, proving blocked strokes never created corrupt history steps"
+    }
+  ]
+}

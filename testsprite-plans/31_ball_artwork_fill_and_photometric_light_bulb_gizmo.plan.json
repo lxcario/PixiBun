@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Draws a solid ball, fills with color, launches Photometric Light Bulb gizmo, and repositions light direction",
+  "description": "Verify drawing a complete circular ball on the canvas using the Ellipse tool, filling it solidly with color using Flood Fill, launching the 2.5D Photometric light bulb gizmo from PixiBud AI, dragging the light handle to alter light direction live, and baking the 3D lighting.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the drawing workspace is loaded with the pixel canvas in the center"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool from the left toolbar by clicking the button with title 'Ellipse (O)' or pressing the O key"
+    },
+    {
+      "type": "action",
+      "description": "In the top context options bar, ensure the shape mode is set to 'Shape: Filled Solid' (click the Shape mode button if it currently shows 'Shape: Outline Stroke')"
+    },
+    {
+      "type": "action",
+      "description": "Draw a large circular ball in the middle of the canvas by pressing down on the canvas, dragging diagonally for at least 150 pixels, and releasing the mouse"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool by pressing G on the keyboard, pick a distinct color swatch, and click inside the ball shape to ensure it is solidly filled"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circular ball is clearly visible on the center canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 2.5D Photometric Studio section is displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Analyze & Light Bulb' button (or 'Light Bulb' button) to mount the live pixel light bulb gizmo over the ball"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the interactive on-canvas pixel light bulb gizmo appears with the directional bulb handle and action bar showing Apply and Cancel buttons"
+    },
+    {
+      "type": "action",
+      "description": "Click and drag the directional light bulb handle around the ball to change the light source angle"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the live 3D photometric shading and specular highlight update in real-time on the ball matching the new light direction"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Apply (Enter)' button in the on-canvas light gizmo action bar to commit and bake the lighting into the canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the light gizmo overlay is dismissed and the finished 3D-shaded ball remains baked on the canvas without artifacts"
+    }
+  ]
+}

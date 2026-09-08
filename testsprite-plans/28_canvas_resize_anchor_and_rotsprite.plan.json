@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Canvas Resize modal scales canvas dimensions with anchor grid and aspect lock",
+  "description": "Verify opening the Canvas Resize modal from the header, choosing quick dimension presets (e.g. 64x64), toggling aspect ratio lock and anchor positions, and applying canvas boundary resizes.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the canvas dimension indicator button in the top header (e.g. '32x32' or 'Resize Canvas')"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 'Resize Canvas & Frame Bounds' modal appears showing presets (16, 24, 32, 48, 64, 128) and a 3x3 anchor grid"
+    },
+    {
+      "type": "action",
+      "description": "Click the '64x64' preset button in the quick dimension presets row"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the width and height input values update to 64"
+    },
+    {
+      "type": "action",
+      "description": "Click the center anchor cell in the 3x3 anchor grid"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Apply Resize' button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the modal closes and the center canvas updates to 64x64 dimensions"
+    }
+  ]
+}

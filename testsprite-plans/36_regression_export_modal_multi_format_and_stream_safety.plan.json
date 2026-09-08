@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Regression: Export modal multi-format navigation and deferred object URL teardown prevents download aborts",
+  "description": "Verify opening the Export modal, switching between tabs (PNG, GIF, APNG, WebM, MP4, Sprite Sheet, Vector SVG, Shaders, .Pixibun), and verifying scale calculations without premature blob URL revocation.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Draw custom sprite artwork on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Export' button in the top header to open the Export modal"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Export modal header shows 'EXPORT STUDIO ASSETS'"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Vector SVG' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify SVG scale and smoothing options ('SMOOTH SPLINES' vs 'PIXEL RECTANGLES') are displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Shaders' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify shader engine options appear for Godot 4 and Unity URP 2D"
+    },
+    {
+      "type": "action",
+      "description": "Click the '.Pixibun' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Project export tab shows the JSON download action"
+    },
+    {
+      "type": "action",
+      "description": "Close the Export modal"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the studio canvas remains responsive without uncaught Promise rejections or memory leaks"
+    }
+  ]
+}

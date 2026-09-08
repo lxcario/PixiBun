@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Lo-Fi procedural Web Audio radio plays tracks with Dixon spectral flux equalizer",
+  "description": "Verify starting procedural 16-bit chiptune radio playback from the bottom bar, skipping between tracks, checking the animated 4-band equalizer, and observing Dixon spectral flux onset visualizer pulses.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the bottom studio bar displays the Studio Synthesizer Radio widget"
+    },
+    {
+      "type": "action",
+      "description": "Click the play button in the Studio Synthesizer Radio widget (aria-label 'Play radio')"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the radio state updates to playing, the track title displays 'Cyber Run', and the 4-band equalizer bars animate actively"
+    },
+    {
+      "type": "action",
+      "description": "Click the next track button (aria-label 'Next track') in the radio widget"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the radio smoothly transitions to the next track 'Rainy Lilac' without throwing Web Audio context errors"
+    },
+    {
+      "type": "action",
+      "description": "Click the next track button again"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the radio transitions to 'Neon Castle'"
+    },
+    {
+      "type": "action",
+      "description": "Click the pause button (aria-label 'Pause radio') in the radio widget"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the procedural audio synthesizer stops and the equalizer levels return to idle"
+    }
+  ]
+}

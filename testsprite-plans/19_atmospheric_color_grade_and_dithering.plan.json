@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Atmospheric color grading and mathematical Atkinson and Riemersma dithering",
+  "description": "Verify drawing a solid colored ball and sprite, applying atmospheric mood color grades (Sunset, Moonlight, Neon), and executing mathematical error-diffusion dithering algorithms.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool (press G), select a vibrant color, and click inside the circle to solidly fill and color it"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a solid colored circular ball is clearly visible on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 'COLOR SCIENCE & MORPHING' section is visible"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Sunset' atmosphere LUT button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the ball colors shift to a warm orange and amber twilight atmosphere"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Atkinson Dither' button in the color science panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify MacPaint-style 75% error-diffusion dithering is applied across the ball"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Riemersma Dither' button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Hilbert-curve space-filling error diffusion is applied cleanly across the layer"
+    }
+  ]
+}

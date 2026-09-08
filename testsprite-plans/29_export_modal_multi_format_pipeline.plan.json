@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Export modal multi-format pipeline validates PNG, Animated, Spritesheet, Vector, and Game Shaders",
+  "description": "Verify drawing a solid colored ball, opening the Export modal, navigating across format tabs (PNG, Animated, Sprite Sheet, Replay, Vector SVG, Game Shaders, Project), and configuring scaling and metadata.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+    },
+    {
+      "type": "action",
+      "description": "Select Flood Fill (press G), select a color, and click inside the circle to solidly color it"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Export' button in the top header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Export modal opens displaying the export tabs: PNG, Animated, Sprite Sheet, Replay, Vector SVG, Game Shaders, and Project"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PNG' tab and select 4x upscale multiplier"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the calculated resolution displays 4x larger than the base canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Animated' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the animated format selector shows GIF, APNG, WebM, and MP4 options"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Sprite Sheet' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the spritesheet grid parameters appear with column and spacing controls"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Shaders' tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify shader engine options appear for Godot 4.x, Unity URP, and GLSL Palette Cycle loops"
+    },
+    {
+      "type": "action",
+      "description": "Click the close button on the Export modal"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Export modal is dismissed cleanly"
+    }
+  ]
+}

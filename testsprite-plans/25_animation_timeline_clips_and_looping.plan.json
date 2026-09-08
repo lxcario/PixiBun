@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Animation timeline tags clips and controls playback with onion skinning",
+  "description": "Verify adding and duplicating animation frames, adjusting frame rate (FPS), toggling onion skinning ghosts, and managing animation loop clips.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool and draw a bouncing ball in the center canvas on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Click the '+ Add Frame' button in the bottom animation timeline bar"
+    },
+    {
+      "type": "action",
+      "description": "Draw the ball slightly lower on Frame 2"
+    },
+    {
+      "type": "action",
+      "description": "Click the '+ Add Frame' button to create Frame 3"
+    },
+    {
+      "type": "action",
+      "description": "Draw the ball flattened against the bottom ground on Frame 3"
+    },
+    {
+      "type": "action",
+      "description": "Click the Onion Skin toggle button in the timeline bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify onion skinning ghosts render previous frames in tinted alpha behind the active canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the Play animation button (spacebar or Play button)"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline actively cycles through frames 1, 2, and 3 in a continuous loop"
+    },
+    {
+      "type": "action",
+      "description": "Click the Pause button to stop animation playback"
+    }
+  ]
+}
