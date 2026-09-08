@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Playground animation onboarding guides user through squash, stretch, and stencil evaluation",
+  "description": "Verify the dedicated /playground interactive tutorial: displays The Bouncing Mochi lesson, verifies Artisan Handbook animation theory, draws Frame 1 (Apex Float), Frame 2 (Kinetic Stretch), Frame 3 (Impact Squash), and validates timeline playback.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/playground"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Playground layout loads displaying the 16x16 beginner canvas and the Artisan Handbook panel on the right"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the lesson header shows 'The Bouncing Mochi' and explains squash, stretch, and mass invariance"
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool (press B) and draw a circular resting mass in the upper center of the canvas matching the Apex Float stencil guidance"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Frame' button (or next frame button) in the bottom timeline to advance to Frame 2"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Artisan Handbook updates to 'Frame 2: Kinetic Plummet' with stretch discipline guidance"
+    },
+    {
+      "type": "action",
+      "description": "Draw the elongated falling shape on Frame 2"
+    },
+    {
+      "type": "action",
+      "description": "Click 'Frame' to add Frame 3"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the handbook updates to 'Frame 3: Impact Squash' with ground contact guidance"
+    },
+    {
+      "type": "action",
+      "description": "Draw the flattened squashed shape across the ground line on Frame 3"
+    },
+    {
+      "type": "action",
+      "description": "Click the Onion Skin toggle button in the bottom timeline"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify previous frame silhouettes appear as onion skin ghosts"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PLAY' button in the timeline"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 3-frame bouncing animation plays continuously and completes the interactive onboarding milestone"
+    }
+  ]
+}

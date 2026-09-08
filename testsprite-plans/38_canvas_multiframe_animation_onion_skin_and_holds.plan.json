@@ -1,0 +1,74 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Canvas multi-frame animation workflow creates bouncing ball with onion skinning and custom frame holds",
+  "description": "Verify drawing a multi-frame animation sequence from scratch in the Studio: drawing a solid colored ball at apex on Frame 1, adding Frame 2 with onion skinning, drawing squashed contact on Frame 3, configuring frame hold durations, setting loop mode to BOUNCE, and playing.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode is 'Shape: Filled Solid', and draw a solid circular ball near the top of the canvas on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Select Flood Fill (press G), select a bright red color, and fill the ball solidly"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the high resting ball is visible on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Onion Skin' button in the bottom timeline bar to enable ghost previews"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Frame' button in the timeline to create Frame 2"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Frame 1 ball appears as a translucent onion skin ghost"
+    },
+    {
+      "type": "action",
+      "description": "On Frame 2, select Ellipse, draw an elongated falling ball in the middle canvas, and fill with the same red color"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Frame' button in the timeline to create Frame 3"
+    },
+    {
+      "type": "action",
+      "description": "On Frame 3, draw a wide, flattened ball squashed against the bottom floor line and fill with red"
+    },
+    {
+      "type": "action",
+      "description": "Change the active frame duration input on Frame 3 from 100ms to 250ms (for ground impact hold)"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Frame #3 thumbnail pill reflects the 250ms duration"
+    },
+    {
+      "type": "action",
+      "description": "Click the Loop Mode button in the bottom timeline until it switches to 'BOUNCE' (ping-pong playback)"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PLAY' button in the timeline"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline actively plays and bounces forward (1 -> 2 -> 3) and backward (3 -> 2 -> 1) without tearing or dropping frames"
+    },
+    {
+      "type": "action",
+      "description": "Click 'PAUSE' to stop animation playback"
+    }
+  ]
+}

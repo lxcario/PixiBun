@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "In-Between Frame (Morph) synthesizes intermediate tween keyframes with SDF optical flow",
+  "description": "Verify the in-between framing AI engine: draws a solid ball in top-left on Frame 1, draws a solid ball in bottom-right on Frame 2, triggers '+ In-Between Frame (Morph)' from PixiBud AI, asserts a 3rd intermediate frame is created, and verifies the transitional shape sits halfway along the motion vector.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure shape mode is 'Shape: Filled Solid', and draw a solid circular ball in the upper-left quadrant of the canvas on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Select Flood Fill (press G), choose an amber color, and click inside the circle to solidly fill it"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Frame 1 contains the filled ball in the upper-left corner"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Frame' button in the bottom timeline bar to add Frame 2"
+    },
+    {
+      "type": "action",
+      "description": "On Frame 2, select Ellipse (O), draw the ball in the lower-right quadrant of the canvas, and fill with the same amber color"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline currently contains exactly 2 keyframes"
+    },
+    {
+      "type": "action",
+      "description": "Click the Frame #1 selector in the timeline thumbnail strip to set it as active"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the COLOR SCIENCE & MORPHING section is displayed"
+    },
+    {
+      "type": "action",
+      "description": "Click the '+ In-Between Frame (Morph)' action button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline frame count automatically increases from 2 to 3 frames"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the newly inserted middle frame (Frame #2) contains an interpolated tween shape situated along the diagonal path between the start and end positions"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PLAY' button in the bottom timeline bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 3-frame sequence plays as a smooth, continuous interpolated animation loop"
+    }
+  ]
+}

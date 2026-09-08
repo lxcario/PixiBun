@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "Stress & Boundary: Rapid 6-frame multi-layer compositing under 30 FPS live playback and tool switching",
+  "description": "Stress-test the studio rendering pipeline to its physical limits: rapidly construct 6 animation frames, add multiple blended layers per frame, crank the playback speed to 30 FPS, enable onion skinning, and switch tools while running active playback without dropped frames or context loss.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool (press O), ensure filled shape mode is active, and draw a solid colored ball on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab in the right inspector panel and click '+ Add Layer' to create Layer 2 on Frame 1, setting its blend mode to Multiply"
+    },
+    {
+      "type": "action",
+      "description": "Select the Dither Brush (press D) and paint shadow textures onto Layer 2"
+    },
+    {
+      "type": "action",
+      "description": "Rapidly click the '+ Add Frame' button (or Duplicate button) 5 consecutive times in the bottom timeline to expand the project to 6 full frames"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the bottom timeline cleanly holds 6 active animation frames without memory exhaustion"
+    },
+    {
+      "type": "action",
+      "description": "Click the Onion Skin button to enable multi-frame translucent ghost rendering"
+    },
+    {
+      "type": "action",
+      "description": "Drag the FPS playback slider all the way to 30 FPS (maximum framerate)"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline FPS indicator displays '30'"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PLAY' button to start 30 FPS full-speed multi-layer composite playback"
+    },
+    {
+      "type": "action",
+      "description": "While playback is actively cycling at 30 FPS, press B (Pen), then E (Eraser), then D (Dither), then G (Bucket) in rapid succession to test event bus robustness under heavy RAF load"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify active tool selection switches immediately in the context bar without frame stuttering or canvas tearing"
+    },
+    {
+      "type": "action",
+      "description": "Click 'PAUSE' to safely stop the 30 FPS animation stress test"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify all 6 frames retain intact image buffer data and the viewport remains completely responsive"
+    }
+  ]
+}
