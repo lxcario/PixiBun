@@ -54,7 +54,7 @@ graph LR
 | `--desk-border` | `#3A2E4C` | `oklch(0.32 0.07 310)` | 2px tactile bezel divider, structural outline |
 | `--text-heading` | `#EDE8F4` | `oklch(0.93 0.02 300)` | Crisp white/cream headings, button icons |
 | `--text-body` | `#D0C4DF` | `oklch(0.82 0.05 305)` | Functional labels, coordinates, layer names |
-| `--text-muted` | `#8C7B9E` | `oklch(0.58 0.06 305)` | Inactive tools, helper hints, unit tags |
+| `--text-muted` | `#a496b8` | `oklch(0.66 0.05 305)` | Inactive tools, helper hints, unit tags |
 | `--accent-wisteria` | `#C792DF` | `oklch(0.72 0.15 315)` | Primary active states, selection marquee, play button |
 | `--accent-plum` | `#DCABDF` | `oklch(0.79 0.11 320)` | Highlight blooms, secondary guides, curve knots |
 | `--accent-gold` | `#F0BE7C` | `oklch(0.82 0.13 80)` | Focus rings, key lights, primary action buttons |
@@ -72,7 +72,7 @@ graph LR
 | `--text-heading` | `#221233` | `oklch(0.20 0.06 315)` | High-contrast dark violet titles & buttons |
 | `--text-body` | `#4A3559` | `oklch(0.35 0.06 315)` | Body text, tool parameters, coordinates |
 | `--text-muted` | `#78608A` | `oklch(0.50 0.06 315)` | Subtle badges, shortcut keys, secondary text |
-| `--accent-gold` | `#D97818` | `oklch(0.65 0.17 65)` | Warm sunlit highlights & primary button fill |
+| `--accent-gold` | `#8a4500` | `oklch(0.48 0.14 55)` | Warm sunlit highlights & primary button fill |
 | `--accent-plum` | `#7E2B96` | `oklch(0.48 0.19 320)` | Active tool accents and focus outlines |
 | `--accent-wisteria` | `#9940B5` | `oklch(0.55 0.20 315)` | Timeline scrubbers and hover rings |
 

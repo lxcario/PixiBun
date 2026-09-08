@@ -25,8 +25,8 @@ src/
 ├── components/
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
 │   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, CursorStatusBadge, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
-│   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal)
-│   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, ViewportLensFilters, RemoteCursorsOverlay)
+│   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal, TagManagerModal)
+│   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, SelectionTransformGizmo, ViewportLensFilters, RemoteCursorsOverlay)
 │   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
 ├── lib/
 │   ├── ai/
@@ -45,21 +45,23 @@ src/
 │   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
 │   ├── audio/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
-│   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices
+│   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, Farey retuning)
-│   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool
+│   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool, workerDispatcher.ts
 │   ├── events/                      # Typed event bus (studioEvents.ts)
 │   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder, shaderExporter.ts
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
+│   ├── procedural/                  # waveFunctionCollapse.ts (WFC overlapping constraint satisfaction pattern synthesis)
 │   ├── render/                      # Pure compositor (compositor.ts) and template renderer (templateRenderer.ts)
 │   ├── server/                      # Pure server modules: tokenBucket.ts (token-bucket rate limiter for route handlers)
 │   ├── sync/                        # P2P co-draw: coDrawBridge (studio integration), p2pSync (WebRTC transport + validation), strokeDiff (stroke delta extraction)
 │   └── storage/
 │       └── db.ts                    # Dexie.js (IndexedDB Schema v4) local database and continuous autosave
 ├── stores/
-│   ├── studioStore.ts               # Zustand + Immer studio state manager (Tools, Layers, Frames, Palettes)
+│   ├── studioStore.ts               # Zustand + Immer studio state manager (composed from 5 modular slices)
 │   └── themeStore.ts                # Dual theme manager and Zero-Lag CSS transition suppressor
+├── workers/                         # Background Web Workers (heavyCompute.worker.ts offloading RotSprite 8x, WFC & In-Between morphing)
 └── types/                           # TypeScript definitions (canvas, tools, animation, project, theme)
 `
 

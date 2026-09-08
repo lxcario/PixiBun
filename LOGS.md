@@ -123,7 +123,7 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
 - **DoodlePad**: seeds a small wisteria heart on mount so it never greets anyone empty.
 - **StarterGallery**: sprites now sit on a wooden shelf plank; **FeatureStory** icon plates warmed to lamp-tint; wood-grain and lamp-pool alphas raised so the desk actually reads as wood and light.
 
-## 2026-08-26 - Phase 14: Landing Hero Overhaul — Pixel Vines, Articulated Lamp, Windowsill Cat & Vintage Cassette Boombox
+## 2026-08-26 - Interim Phase 13.5: Landing Hero Overhaul — Pixel Vines, Articulated Lamp, Windowsill Cat & Vintage Cassette Boombox
 
 **What changed:**
 - **Interactive Pixel Foliage (`PixelVines.tsx`)**: Created dynamic hanging pixel ivy & wisteria strands on left and right hero borders with multi-layer physics:
@@ -584,7 +584,8 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 **Delivered:**
 - **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Meijster's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
 - **Automated Morph Relighting Pipeline (src/components/layout/CenterViewport.tsx)**: Re-architected handleInBetweenFrameEvent to strip AI-generated layers (photometrics, drop shadows) prior to morphing via a pure getCleanCtx extraction. Automatically re-dispatches \pixibun:photometric-lighting\ and \pixibun:volumetric-optics\ events to dynamically shade the new frame, completely fixing the "muddy baked colors" artifact.
-- **RotSprite Artifact-Free Canvas Rotation (src/lib/ai/smartMathEngine.ts)**: Fixed floating-point holes created by native \ctx.rotate\ by implementing a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm (\otateWithRotSprite\).
+- **RotSprite Artifact-Free Canvas Rotation (src/lib/ai/smartMathEngine.ts)**: Fixed floating-point holes created by native \ctx.rotate\ by implementing a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm (\
+otateWithRotSprite\).
 - **Selection Bounding Box & Undo History Fixes**: Fixed Lasso tool movement by isolating drag-boundary checks to \.startsWith('select-')\. Fixed Ctrl+Z restoration of dragged pixels by freezing the history snapshot pre-erasure in commitFloatingSelection.
 - **GIF Export Multiframe Rendering Bug (src/components/modals/ExportModal.tsx, src/lib/render/compositor.ts)**: Discovered the pooled \sharedOffscreenCanvas\ singleton was overwriting all frames with the last drawn frame during batch exports. Added \{ freshCanvas: true }\ allocation strategy during multi-frame composite jobs.
 - **GIF Delay Centisecond Clamping (src/lib/export/gifEncoderCore.ts)**: Clamped minimum GIF delay to \2\ centiseconds (\Math.max(2, ...)\) to prevent aggressive browser 100ms throttling penalties for ultra-fast animations.
@@ -594,13 +595,13 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 30 � Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
+## Phase 29 — Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
 **Delivered:**
-- **Progressive Onboarding (eat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact seamlessly before transitioning fully into the studio workspace.
-- **Advanced Selection Utilities (eat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
-- **Workflow UX Enhancements (eat(ux))**: Shipped a new contextual Radial Menu, live Autosave indicator, tracked Recent Colors palette, and progressive disclosure toggles for advanced tools.
-- **Hydration Fixes (ix(hydration))**: Resolved React SSR hydration mismatch console warnings related to the \ecentColors\ store mapping.
-- **Physical Rendering Pass (ix(rendering))**: Restored omitted Lambertian diffuse reflection to the photometric rendering composite for enhanced volume presence.
+- **Progressive Onboarding (feat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact seamlessly before transitioning fully into the studio workspace.
+- **Advanced Selection Utilities (feat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
+- **Workflow UX Enhancements (feat(ux))**: Shipped a new contextual Radial Menu, live Autosave indicator, tracked Recent Colors palette, and progressive disclosure toggles for advanced tools.
+- **Hydration Fixes (fix(hydration))**: Resolved React SSR hydration mismatch console warnings related to the `recentColors` store mapping.
+- **Physical Rendering Pass (fix(rendering))**: Restored omitted Lambertian diffuse reflection to the photometric rendering composite for enhanced volume presence.
 
 **Status:** Complete
 
@@ -700,7 +701,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
   - ExportModal.tsx: Export frame scope.
 - **Next.js 16 Security Proxy Nonce-Based CSP (src/proxy.ts)**: Replaced deprecated middleware with Next.js 16 proxy.ts, generating per-request crypto nonces, injecting script-src 'self' 'nonce-{nonce}' with production 'unsafe-inline' script elimination, and bounding matchers strictly to dynamic page routes (skipping static assets, icons, and service workers).
 - **Dynamic Service Worker Route Handler (src/app/sw.js/route.ts)**: Transitioned static public/sw.js into a dynamic Next.js route handler with build-time cache versioning (CACHE_NAME = 'pixibun-v2'), serving authoritative Cache-Control: no-cache, no-store, must-revalidate and Service-Worker-Allowed: / headers.
-- **Machado 2009 CVD Colorblindness Simulation & Squint Silhouette Mode (src/lib/color/cvdLens.ts, src/components/studio/ViewportLensFilters.tsx)**: Implemented mathematically rigorous on-device color vision deficiency simulation lenses (Protanopia, Deuteranopia, Tritanopia, Monochromacy) based on Machado et al. 2009 IEEE TVCG matrices, plus an instant 1-bit Squint silhouette filter. Rendered via zero-mutation GPU SVG eColorMatrix CSS display filters, guaranteeing canvas pixel buffers and export outputs remain completely pristine.
+- **Machado 2009 CVD Colorblindness Simulation & Squint Silhouette Mode (src/lib/color/cvdLens.ts, src/components/studio/ViewportLensFilters.tsx)**: Implemented mathematically rigorous on-device color vision deficiency simulation lenses (Protanopia, Deuteranopia, Tritanopia, Monochromacy) based on Machado et al. 2009 IEEE TVCG matrices, plus an instant 1-bit Squint silhouette filter. Rendered via zero-mutation GPU SVG feColorMatrix CSS display filters, guaranteeing canvas pixel buffers and export outputs remain completely pristine.
 - **HUD Controls & Keyboard Shortcuts**: Added CVD lens cycle and SIL silhouette toggle buttons to ContextOptionsBar.tsx, wired hotkeys p (CVD cycle) and s (Squint toggle) in StudioLayout.tsx, and documented them in ShortcutsModal.tsx.
 - **E2E Test Fixes (tests/e2e/projects.spec.ts, tests/e2e/studio.spec.ts)**: Added visibility wait for lazy-loaded gallery project cards, preventing count race conditions.
 
@@ -1135,7 +1136,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **Unit Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`)**:
   - Created 31 unit tests validating normal math, RNM quaternion blending, IFF chunk codecs, ping-pong fenceposts, and shader syntax.
 - **Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
-  - Completely purged all legacy display-name sniffing fallbacks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Completely purged all legacy display-name sniffing fallbacks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeSourceSnapshot`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
   - Enforced strict machine-tag matching (`l.tag === tag`) and excluded `normal` / `normal-map` vector layers from diffuse albedo composites to protect base sprite textures.
 - **Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
   - Implemented explicit `window.__pixibunDb.close()` prior to database schema deletion.
@@ -1200,3 +1201,37 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx playwright test tests/e2e/studio.spec.ts`: 9/9 passed (16.0s)
 - `npm run verify:docs`: all documentation integrity checks passed
 **Status:** Complete
+
+---
+
+## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading (2026-09-08)
+
+**Delivered:**
+- **RotSprite Algorithm (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`)**:
+  - Implemented Ernst S. Brun & Pedro J. Estébanez (2007) RotSprite algorithm with 3-pass Scale2x cascade (1x -> 2x -> 4x -> 8x).
+  - Continuous subpixel inverse affine rotation around arbitrary pivot coordinates with expanded output geometry preserving rotated corners.
+  - Radially symmetric Gaussian center-weighted majority voting filter downscaling 8x back to 1x with strict color fidelity and zero color blurring.
+- **Selection Boundary Extraction & Animated Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`)**:
+  - `extractSelectionBoundarySegments` traversing 1-bit binary selection masks along orthogonal cell boundaries.
+  - `boundarySegmentsToSvgPath` converting boundary edges to dual-tone animated SVG marching ants with CSS keyframe translation.
+- **Interactive Selection Free-Transform Gizmo (`src/components/studio/SelectionTransformGizmo.tsx`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/layout/CenterViewport.tsx`)**:
+  - 8 transform handles maintaining constant 16x16px screen-space hitboxes across all zoom levels.
+  - Draggable center pivot crosshair, 4 corner rotation zones with 15° Shift snapping, angle readout badge, and quick-action HUD bar.
+  - 60 FPS nearest-neighbor drag preview with background RotSprite commit on Enter key release.
+- **Timeline TagManagerModal Integration (`src/components/layout/BottomTimeline.tsx`, `tests/components/BottomTimeline.test.tsx`)**:
+  - Embedded "Manage Tags" launcher button in the timeline clip bar next to `+ Tag Clip`.
+  - Accessible modal dialog for animation tag definitions, color swatches, and frame range configuration.
+- **Sprite Sheet Slicer & Import Pipeline (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`, `src/components/layout/StudioLayout.tsx`, `tests/spritesheetSlicer.test.ts`, `tests/components/ImportModal.test.tsx`)**:
+  - Slicer engine computing grid coordinates, filtering blank alpha cells, and extracting frames.
+  - Live interactive cutline preview canvas with indexed cell badges and timeline append/replace options.
+- **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `tests/workerDispatcher.test.ts`)**:
+  - Background Web Worker processing `'rotSprite'`, `'wfc'`, and `'morph'` messages with zero-copy Transferable ArrayBuffers.
+  - Automatic synchronous fallback for environments without Web Worker support.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run`: 502/502 passed across 75 suites
+- `npm run verify:docs`: all documentation integrity checks passed
+**Status:** Complete
+

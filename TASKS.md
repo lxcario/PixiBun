@@ -118,7 +118,7 @@
   - 31 new unit tests covering vector conversions, compass bevel azimuths, rivet dome flattening, RNM quaternion blending, IFF chunk serialization, ping-pong fenceposts, and shader generation.
   - Full suite passes: 445/445 tests across 66 suites.
 - [x] Zero Name-Sniffing & Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`):
-  - Completely purged legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Completely purged legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeSourceSnapshot`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
   - Enforced strict machine-tag matching (`l.tag === tag`) and excluded `normal` / `normal-map` vector layers from diffuse albedo composites.
 - [x] Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`):
   - Implemented explicit `window.__pixibunDb.close()` prior to database schema deletion.
@@ -451,7 +451,7 @@
   - `useViewportStudioEvents.ts`: Photometric lighting, normal map bake, and thinning subscribers (777 LOC).
   - `useViewportOverlays.ts`: Onion skin, brush cursor, and guide overlays (383 LOC).
   - Decomposed `CenterViewport.tsx` (2,328 lines → 1,176 lines + 1,972 lines across 5 hooks).
-- [x] Zustand Store Slices Migration (`src/stores/slices/`): Split `studioStore.ts` into 5 modular slices (`createToolSlice`, `createLayerSlice`, `createTimelineSlice`, `createPaletteSlice`, `createHistorySlice`) composed in a 39-line root store while maintaining 100% public API compatibility.
+- [x] Zustand Store Slices Migration (`src/stores/slices/`): Split `studioStore.ts` into 5 modular slices (`createToolSlice`, `createLayerSlice`, `createAnimationSlice`, `createViewportSlice`, `createHistorySlice`) composed in a 44-line root store while maintaining 100% public API compatibility.
 - [x] Lazy Modal Code-Splitting (`StudioLayout.tsx`): Dynamically import `ExportModal`, `CanvasResizeModal`, `ProjectsGalleryModal`, `ShortcutsModal`, and `ImportModal` via `next/dynamic(..., { ssr: false })`.
 - [x] Smart Math Modularization (`src/lib/ai/math/`): Split `smartMathEngine.ts` into `edtNormalMap.ts`, `photometricLighting.ts`, `sobelNormalMap.ts`, `rotSprite.ts`, and `minecraftSkin.ts`.
 - [x] Inspector God-Component Decomposition (`src/components/layout/inspector/`): Extracted `RightInspector.tsx` (1,540 lines) into 8 focused subcomponents (<300 lines each): `LayersPanel.tsx`, `PalettePanel.tsx`, `PhotometricLightingSection.tsx`, `RaymarchedShadowSection.tsx`, `VolumetricOpticsSection.tsx`, `TilesetDecomposerSection.tsx`, `PixiBudAssistanceSection.tsx`, and `AiToolsPanel.tsx`, reducing `RightInspector.tsx` to a 61-line orchestrator.
@@ -482,7 +482,7 @@
 
 **Deliverables:**
 - [x] Blue-Noise Dither Mask Generator (`src/lib/canvas/ditherMatrix.ts`): Precomputed 16x16 void-and-cluster matrix (`generateVoidAndClusterMatrix` / `BLUE_NOISE_16X16`) integrated into dither brush options (`tests/blueNoiseDither.test.ts`).
-- [x] WaveFunctionCollapse Texture Fill (`src/lib/procedural/wfcEngine.ts`): Overlapping model solver generating seamless pattern tiles from canvas selections (`tests/waveFunctionCollapse.test.ts`).
+- [x] WaveFunctionCollapse Texture Fill (`src/lib/procedural/waveFunctionCollapse.ts`): Overlapping model solver generating seamless pattern tiles from canvas selections (`tests/waveFunctionCollapse.test.ts`).
 - [x] Vector SVG Exporter (`src/lib/export/depixelizeVector.ts`): Kopf-Lischinski topological resolution graph generator producing smooth SVG files (`tests/depixelizeVectorExport.test.ts`).
 - [x] Wallpaper Symmetry Brush (`src/lib/canvas/wallpaperSymmetry.ts`): Multi-axis symmetry engine supporting p2, p4, and p4m group drawing (`tests/wallpaperSymmetry.test.ts`).
 - [x] Machado CVD Colorblindness Filter (`src/lib/color/cvdLens.ts`): Real-time canvas filter simulating protanopia, deuteranopia, and tritanopia (`tests/cvdLens.test.ts`).

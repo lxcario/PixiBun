@@ -6,7 +6,7 @@ This document records empirical benchmarks, algorithmic execution budgets, and h
 
 ## 1. Palette Cycling 32-Bit LUT Remapping Performance
 
-**Function:** `updateLivePaletteLUT32` & `applyPaletteLUT32`  
+**Function:** `updateLivePaletteLUT32` (with direct `ImageData` `Uint32Array` LUT remapping)  
 **File:** [`src/lib/color/paletteCycling.ts`](file:///d:/PixiBun/src/lib/color/paletteCycling.ts)  
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous animation)
 

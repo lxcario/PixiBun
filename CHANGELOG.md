@@ -76,7 +76,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator with point filtering.
   - Seamless APNG and animated GIF cycle loop unroller.
 - **Zero Name-Sniffing & Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
-  - Purged all legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeBaseArtwork`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
+  - Purged all legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeSourceSnapshot`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
   - Excluded `tag === 'normal'` and `tag === 'normal-map'` from diffuse albedo composites to protect base sprite textures from vector byte corruption.
   - Enforced strict machine-tag matching (`l.tag === tag`) across all layer types in the raster and photometric pipeline.
 - **Sequential Test Isolation & Clean Database Teardown (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)**:
