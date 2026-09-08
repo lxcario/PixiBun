@@ -1153,3 +1153,50 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx playwright test tests/e2e/chiselAndPaletteLiveProof.spec.ts`: passed (14.0s)
 - `npm run verify:docs`: all documentation integrity checks passed (monotonic sections 1-21, all files verified on disk)
 **Status:** Complete
+
+---
+
+## 2026-09-08 — Phase 47: Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening (v1.11.1)
+
+**Problem Statement:**
+1. Bucket Fill Failure: Users reported bucket fill terminating after only 1 pixel on already-colored opaque artwork. JavaScript bitwise operations (`<< 24`) yield signed 32-bit integers, causing opaque alpha values ($255$) to overflow into negative numbers (`-16777216`), which failed equality tests against unsigned `Uint32Array` values (`4278190335`).
+2. Premature Blob URL Revocation: In `ExportModal.tsx`, synchronous `URL.revokeObjectURL(url)` immediately followed `link.click()`. In Firefox, Safari, or under CPU load, the object URL was deleted before the browser download manager initiated file fetching, aborting downloads.
+3. SVG Vector Alpha Loss: `packRgbaKey` in `depixelizeVector.ts` treated all non-zero alphas as opaque `rgb(...)`, stripping semi-transparency from vector exports.
+4. MP4 Odd Dimensions: Video encoder crashed or produced distorted frames when exporting sprites with odd width or height (e.g. 15×15 or 33×33 at scale 1x) due to H.264 macroblock ($16\times16$) and YUV 4:2:0 requirements.
+5. P2P Layer Desync: Adding a layer post-connection in WebRTC co-draw sessions left guest peers without an initial snapshot of the new layer, and host sync packets reset guest frame/layer navigation.
+6. Viewport Drawing Re-render Cascade: Storing cursor coordinates in parent `CenterViewport.tsx` state caused re-renders on every `pointermove` during active brush strokes.
+
+**Engineering Execution:**
+- **Unsigned 32-Bit Bitwise Normalization (`src/lib/canvas/floodFill.ts`)**:
+  - Appended `>>> 0` to both `targetColor32` and `replacementColor32`, ensuring unsigned matching against `Uint32Array` buffer elements.
+  - Added safe `Uint32Array` view instantiation with `data.byteOffset` and `data.byteLength >> 2`.
+  - Added unit test in `tests/floodFillHex.test.ts` verifying opaque pixel flood fill expansion.
+- **Export Modal Deferred Revocation (`src/components/modals/ExportModal.tsx`)**:
+  - Replaced synchronous `URL.revokeObjectURL` with 1000ms deferred `setTimeout` across all 11 download handlers.
+  - Created component test in `tests/components/ExportModal.test.tsx` verifying asynchronous revocation.
+- **Semi-Transparent Vector SVG Alpha Preservation (`src/lib/export/depixelizeVector.ts`)**:
+  - Serialized fractional alpha values via `rgba(r,g,b,(a/255).toFixed(3))` for $0 < a < 255$.
+  - Added unit test in `tests/depixelizeVectorExport.test.ts`.
+- **MP4 Even-Dimension Padding (`src/lib/export/mp4Encoder.ts`)**:
+  - Padded export canvas dimensions to even bounds: `(width * scale + 1) & ~1` and `(height * scale + 1) & ~1`.
+  - Added unit test in `tests/mp4Encoder.test.ts`.
+- **P2P Post-Connection Sync & State Hardening (`src/lib/sync/coDrawBridge.ts`)**:
+  - Implemented `syncedLayerIds` and canvas dimension tracking to automatically push layer snapshots on creation and canvas resize.
+  - Pruned deleted layer CRDT replicas and isolated guest navigation pointers.
+  - Added tests in `tests/p2pSync.test.ts`.
+- **Viewport Drawing HUD Decoupling (`src/components/layout/CursorStatusBadge.tsx`, `src/components/layout/CenterViewport.tsx`, `src/hooks/viewport/useViewportDrawing.ts`)**:
+  - Decoupled cursor coordinates into dedicated `CursorStatusBadge` subscriber.
+  - Added component test in `tests/components/CursorStatusBadge.test.tsx`.
+- **Photometric Lighting Cel-Shading Backlight Verification (`tests/orbPhotometricCelShading.test.ts`)**:
+  - Added unit test for light azimuth $180^\circ$ and $N \cdot L = -1.0$ confirming zero `NaN` and proper shadow tone selection.
+- **Documentation & Benchmarks (`BENCHMARKS.md`, `ARCHITECTURE.md`)**:
+  - Created `BENCHMARKS.md` documenting empirical frame budgets and memory scaling models.
+  - Aligned Blinn-Phong specular formula in `ARCHITECTURE.md`.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run`: 460/460 passed across 68 suites
+- `npx playwright test tests/e2e/studio.spec.ts`: 9/9 passed (16.0s)
+- `npm run verify:docs`: all documentation integrity checks passed
+**Status:** Complete

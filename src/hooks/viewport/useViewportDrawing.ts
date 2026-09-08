@@ -25,7 +25,7 @@ export function useViewportDrawing({
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokeStart, setStrokeStart] = useState<Point | null>(null);
   const [lastPoint, setLastPoint] = useState<Point | null>(null);
-  const [cursorCoords, setCursorCoords] = useState<Point | null>(null);
+  const cursorCoordsRef = useRef<Point | null>(null);
 
   const [lockedWarning, setLockedWarning] = useState(false);
   const lockedWarningTimerRef = useRef<number | null>(null);
@@ -282,8 +282,7 @@ export function useViewportDrawing({
     setStrokeStart,
     lastPoint,
     setLastPoint,
-    cursorCoords,
-    setCursorCoords,
+    cursorCoordsRef,
     lockedWarning,
     setLockedWarning,
     lockedWarningTimerRef,

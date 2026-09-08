@@ -4,8 +4,12 @@ import {
   decodeSignalingToken,
   P2PSyncSession,
   SignalingPayload,
+  StructurePayload,
 } from '@/lib/sync/p2pSync';
 import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
+import { CoDrawBridge } from '@/lib/sync/coDrawBridge';
+import { useStudioStore } from '@/stores/studioStore';
+import { installDocumentCanvasMock } from './helpers/mockCanvas';
 
 describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
   it('encodes and decodes signaling tokens without loss', () => {
@@ -115,5 +119,256 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
     expect(session.getState()).toBe('disconnected');
     expect(mockSyncChannel.close).toHaveBeenCalled();
     expect(mockPresenceChannel.close).toHaveBeenCalled();
+  });
+
+  it('tracks synced layer IDs so newly created layers added after initial sync send their initial canvas snapshot', () => {
+    installDocumentCanvasMock();
+    const bridge = new CoDrawBridge();
+    const broadcastInitialSync = vi.fn();
+    const broadcastStructure = vi.fn(() => true);
+
+    const mockSession = {
+      getState: () => 'connected',
+      broadcastStructure,
+      broadcastInitialSync,
+      disconnect: vi.fn(),
+    };
+
+    (bridge as unknown as { session: unknown; role: string }).session = mockSession;
+    (bridge as unknown as { role: string }).role = 'host';
+
+    useStudioStore.setState({
+      canvasWidth: 8,
+      canvasHeight: 8,
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Background',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+    });
+
+    // Initial sync
+    const ok1 = (bridge as unknown as { sendStructureAndSnapshots: () => boolean }).sendStructureAndSnapshots();
+    expect(ok1).toBe(true);
+    expect(broadcastStructure).toHaveBeenCalledTimes(1);
+    expect(broadcastInitialSync).toHaveBeenCalledTimes(1);
+    expect(broadcastInitialSync).toHaveBeenCalledWith(expect.any(Array), 'layer-1');
+
+    broadcastInitialSync.mockClear();
+
+    // Now a new layer is added after initial sync
+    useStudioStore.setState({
+      canvasWidth: 8,
+      canvasHeight: 8,
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Background',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+            {
+              id: 'layer-2',
+              name: 'Foreground',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+    });
+
+    // Subsequent structure update
+    const ok2 = (bridge as unknown as { sendStructureAndSnapshots: () => boolean }).sendStructureAndSnapshots();
+    expect(ok2).toBe(true);
+    expect(broadcastStructure).toHaveBeenCalledTimes(2);
+    // Newly created layer-2 must send its initial canvas snapshot, while layer-1 is not re-sent
+    expect(broadcastInitialSync).toHaveBeenCalledTimes(1);
+    expect(broadcastInitialSync).toHaveBeenCalledWith(expect.any(Array), 'layer-2');
+
+    broadcastInitialSync.mockClear();
+
+    // Now delete layer-2
+    useStudioStore.setState({
+      canvasWidth: 8,
+      canvasHeight: 8,
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Background',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+    });
+
+    const ok3 = (bridge as unknown as { sendStructureAndSnapshots: () => boolean }).sendStructureAndSnapshots();
+    expect(ok3).toBe(true);
+    // layer-2 should be pruned from syncedLayerIds
+    const syncedLayerIds = (bridge as unknown as { syncedLayerIds: Set<string> }).syncedLayerIds;
+    expect(syncedLayerIds.has('layer-2')).toBe(false);
+    expect(syncedLayerIds.has('layer-1')).toBe(true);
+
+    // Re-adding layer-2 should re-trigger initial sync for layer-2
+    useStudioStore.setState({
+      canvasWidth: 8,
+      canvasHeight: 8,
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Background',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+            {
+              id: 'layer-2',
+              name: 'Foreground',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+    });
+
+    const ok4 = (bridge as unknown as { sendStructureAndSnapshots: () => boolean }).sendStructureAndSnapshots();
+    expect(ok4).toBe(true);
+    expect(broadcastInitialSync).toHaveBeenCalledWith(expect.any(Array), 'layer-2');
+  });
+
+  it('automatically triggers structure broadcast and re-syncs all layers when canvas dimensions change', () => {
+    installDocumentCanvasMock();
+    const bridge = new CoDrawBridge();
+    const broadcastInitialSync = vi.fn();
+    const broadcastStructure = vi.fn((_payload: StructurePayload) => true);
+
+    const mockSession = {
+      getState: () => 'connected',
+      broadcastStructure,
+      broadcastInitialSync,
+      disconnect: vi.fn(),
+    };
+
+    (bridge as unknown as { session: unknown; role: string }).session = mockSession;
+    (bridge as unknown as { role: string }).role = 'host';
+
+    useStudioStore.setState({
+      canvasWidth: 8,
+      canvasHeight: 8,
+      frames: [
+        {
+          id: 'frame-1',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-1',
+              name: 'Background',
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+    });
+
+    // Start structure listener
+    (bridge as unknown as { subscribeToStructureChanges: () => void }).subscribeToStructureChanges();
+
+    broadcastStructure.mockClear();
+    broadcastInitialSync.mockClear();
+
+    // Resize canvas via store
+    useStudioStore.setState({
+      canvasWidth: 16,
+      canvasHeight: 16,
+    });
+
+    // Both structure broadcast and re-seeding of layer-1 must be triggered with new dimensions
+    expect(broadcastStructure).toHaveBeenCalledTimes(1);
+    expect(broadcastStructure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        width: 16,
+        height: 16,
+      })
+    );
+
+    expect(broadcastInitialSync).toHaveBeenCalledTimes(1);
+    expect(broadcastInitialSync).toHaveBeenCalledWith(expect.any(Array), 'layer-1');
+
+    (bridge as unknown as { reset: () => void }).reset();
+  });
+
+  it('preserves valid activeFrameIndex and prunes deleted layer replicas during adoptStructure', () => {
+    installDocumentCanvasMock();
+    const bridge = new CoDrawBridge();
+
+    // Seed dummy CRDT buffer for an existing layer
+    const buffer = new CrdtPixelBuffer(8, 8, 'peer-host');
+    (bridge as unknown as { crdtBuffers: Map<string, CrdtPixelBuffer> }).crdtBuffers.set('layer-keep', buffer);
+    (bridge as unknown as { crdtBuffers: Map<string, CrdtPixelBuffer> }).crdtBuffers.set('layer-delete', buffer);
+
+    useStudioStore.setState({
+      activeFrameIndex: 1,
+      activeLayerId: 'layer-keep',
+      frames: [
+        { id: 'f1', durationMs: 100, layers: [{ id: 'l1', name: 'L1', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }] },
+        { id: 'f2', durationMs: 100, layers: [{ id: 'layer-keep', name: 'Keep', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }] },
+      ],
+    });
+
+    // Host sends structure that excludes layer-delete
+    (bridge as unknown as { adoptStructure: (p: unknown) => void }).adoptStructure({
+      width: 8,
+      height: 8,
+      frames: [
+        { id: 'f1', durationMs: 100, layers: [{ id: 'l1', name: 'L1', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }] },
+        { id: 'f2', durationMs: 100, layers: [{ id: 'layer-keep', name: 'Keep', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }] },
+      ],
+    });
+
+    const crdtBuffers = (bridge as unknown as { crdtBuffers: Map<string, CrdtPixelBuffer> }).crdtBuffers;
+    expect(crdtBuffers.has('layer-delete')).toBe(false);
+    expect(crdtBuffers.has('layer-keep')).toBe(true);
+
+    // Guest active frame should be preserved since frame index 1 still exists
+    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    expect(useStudioStore.getState().activeLayerId).toBe('layer-keep');
   });
 });

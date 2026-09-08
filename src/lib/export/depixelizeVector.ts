@@ -35,6 +35,9 @@ interface Point2D {
  */
 function packRgbaKey(r: number, g: number, b: number, a: number): string {
   if (a === 0) return 'transparent';
+  if (a < 255) {
+    return `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`;
+  }
   return `rgb(${r},${g},${b})`;
 }
 

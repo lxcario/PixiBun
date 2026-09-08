@@ -295,4 +295,20 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     expect(blob.type).toBe('video/mp4');
     expect(blob.size).toBeGreaterThan(0);
   });
+
+  it('pads odd frame dimensions to nearest even integer for H.264 macroblock alignment', async () => {
+    installMediaRecorderMock();
+    // 15x33 odd dimensions at scale 1 -> padded to 16x34
+    const frame = createMockCanvas(15, 33);
+
+    await exportAnimationToMp4Async([frame], {
+      fps: 30,
+      scale: 1,
+      loopCount: 1,
+      durationsMs: [10],
+    });
+
+    expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 16, 34);
+    expect(mockCtx.drawImage).toHaveBeenCalledWith(frame, 0, 0, 16, 34);
+  });
 });

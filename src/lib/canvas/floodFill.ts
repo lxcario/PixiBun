@@ -77,7 +77,7 @@ export function performFloodFill(
 
   const imgData = ctx.getImageData(0, 0, width, height);
   const data = imgData.data;
-  const pixels32 = new Uint32Array(data.buffer);
+  const pixels32 = new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2);
 
   const targetOffset = (startY * width + startX) * 4;
   const targetColor: RGBA = {
@@ -92,8 +92,8 @@ export function performFloodFill(
   // If target color already matches replacement color, abort to avoid infinite loop
   if (colorsMatch(targetColor, replacementColor, 0)) return;
 
-  const targetColor32 = (targetColor.a << 24) | (targetColor.b << 16) | (targetColor.g << 8) | targetColor.r;
-  const replacementColor32 = (replacementColor.a << 24) | (replacementColor.b << 16) | (replacementColor.g << 8) | replacementColor.r;
+  const targetColor32 = ((targetColor.a << 24) | (targetColor.b << 16) | (targetColor.g << 8) | targetColor.r) >>> 0;
+  const replacementColor32 = ((replacementColor.a << 24) | (replacementColor.b << 16) | (replacementColor.g << 8) | replacementColor.r) >>> 0;
 
   if (!contiguous) {
     // Global Color Replacement: Replace all matching pixels across the entire layer

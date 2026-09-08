@@ -148,13 +148,15 @@ graph TD
     * **Deep Crevice:** $L_{\text{deep}} = \max(0.12, L_{\text{base}} \times 0.60)$, $H_{\text{deep}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 20^\circ)$, $C_{\text{deep}} = \min(0.35, C_{\text{base}} \times 1.08)$ (concave seams where $AO < 0.60$)
     * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.28)$, $H_{\text{hi}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 10^\circ)$, $C_{\text{hi}} = \min(0.35, C_{\text{base}} \times 0.95)$ (warm sunlight, shiny materials only: $k_s > 0.1$ and not matte/fabric)
     * **Shadow Terminator (v1.10.2):** Shadow placement is driven purely by the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$, thresholded at $0.55$. The ambient contribution is excluded from shadow placement to prevent it from overwhelming the directional terminator ($\text{ambSignal} \approx 1.27$ would otherwise push all pixels above threshold). Optional Bayer matrix dither modulation perturbs the threshold for organic shadow edges.
-5. **Blinn-Phong Specular Half-Vector with View-Alignment Masking:**
-   $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha \cdot \min\left(1, \frac{\mathbf{N} \cdot \mathbf{V}}{0.35}\right)$$
+5. **Blinn-Phong Specular Half-Vector:**
+   $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
+   In discrete pixel-art ramps, sparse specular highlights are isolated when $I_s > 0.35$.
 6. **Discrete Laplace Cavity Occlusion:**
    $$\nabla^2 H \approx H * \begin{bmatrix} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{bmatrix}, \quad AO(p) = \text{clamp}(1.0 - k_{\text{ao}} \max(0, -\nabla^2 H), 0, 1)$$
 7. **2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein Forward Phase):**
    $$T(\mathbf{x}) = 2\sqrt{\max\left(0, R^2 - D(\mathbf{x})^2\right)}, \quad I_{SSS}(\mathbf{x}) = C_{scatter} \exp\left(-\boldsymbol{\sigma}_t \frac{T(\mathbf{x})}{d_{trans}}\right) \cdot P_{2D}(\mathbf{L}', \mathbf{V}, g)$$
    $$P_{2D}(\theta, g) = \frac{1 - g^2}{2\pi (1 + g^2 - 2g \cos\theta)^{3/2}}$$
+   *(Note: Evaluates the 3D Henyey-Greenstein kernel in 2D with a $2\pi$ circumference prefactor as an empirical forward-scattering highlight curve, clamped to $[0, 1.0]$ in the relighting pipeline).*
 8. **Dielectric Fresnel Reflectance with Cauchy Chromatic Dispersion:**
    $$F(\theta) = F_0 + (\max(1 - \alpha, F_0) - F_0) \cdot (1 - \cos\theta)^{p_{fresnel}}, \quad \eta_R = \eta_0 - \Delta\eta, \; \eta_B = \eta_0 + \Delta\eta$$
 9. **Kajiya-Kay Anisotropic Cylindrical Specular:**
@@ -463,6 +465,17 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - `hasNormalLayer === false`
   - `showNormalPreview === false`
 * **Zero State Leakage:** Prevents concentric-circle stamp accumulation or dirty layer retention across consecutive automated test runs, guaranteeing deterministic ground-truth verification from turn one.
+
+---
+
+## 22. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening
+
+* **Signed vs. Unsigned 32-Bit Bitwise Invariant (`src/lib/canvas/floodFill.ts`):** JavaScript bitwise operators coerce values to 32-bit signed integers. When packing RGBA color words via `(a << 24 | b << 16 | g << 8 | r)`, any fully opaque pixel ($a = 255$) sets the sign bit (bit 31), yielding a negative number (e.g. `-16777216`). Direct comparison against values from a `Uint32Array` view (which yields unsigned integers, e.g. `4278190335`) evaluated to `false`, terminating flood fill after a single pixel on opaque regions. All 32-bit color word conversions strictly enforce unsigned casting via the zero-fill right shift operator `>>> 0`. In addition, `Uint32Array` buffer views are constructed with explicit byte offset and aligned byte length parameters `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
+* **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber prevents React re-render cascades on every pointer move event during active brush strokes, preserving sub-16ms interactive latency.
+* **Deferred Object URL Revocation (`src/components/modals/ExportModal.tsx`):** Synchronously invoking `URL.revokeObjectURL(url)` immediately following `link.click()` creates race conditions in browser download managers (such as Firefox and Safari) where the memory blob is released before the file stream is opened. Revocations are deferred by 1000ms via `setTimeout(() => URL.revokeObjectURL(url), 1000)` across all export codecs.
+* **Video Encoding Dimension Alignment (`src/lib/export/mp4Encoder.ts`):** H.264 macroblock encoders and YUV 4:2:0 chroma subsampling require even-numbered dimensions ($2 \times 2$ pixel blocks). Video export canvases pad odd widths and heights to the nearest even integer `(w + 1) & ~1` and `(h + 1) & ~1`.
+* **Dynamic WebRTC Layer Antientropy (`src/lib/sync/coDrawBridge.ts`):** Layer tracking (`syncedLayerIds`) detects newly added layers and dimension changes post-connection, dynamically pushing initial state snapshots to peers and pruning obsolete CRDT replicas.
+
 
 
 

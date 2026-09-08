@@ -1,5 +1,49 @@
 # Build Plan — PixiBun
 
+## Phase 47 — Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening
+**Goal:** Eliminate flood fill failure on colored opaque pixels, prevent export download race conditions, preserve semi-transparent alpha in vector SVG exports, protect MP4 video encoding on odd-dimension sprites, synchronize dynamically created layers in WebRTC co-drawing, decouple viewport HUD cursor re-renders, and complete formal academic benchmark documentation.
+
+**Evidence & Rationale:**
+- Flood Fill Failure on Colored Pixels: JavaScript bitwise shift operations (`<< 24`) produce signed 32-bit integers. When packing RGBA with $A=255$, bit 31 was set, yielding a negative integer (`-16777216`). Comparing this against unsigned `Uint32Array` values (`4278190335`) evaluated to `false` for every neighbor pixel, causing flood fill to abort after 1 pixel on colored backgrounds.
+- Export Revocation Race Condition: Synchronously calling `URL.revokeObjectURL(url)` immediately after `link.click()` in `ExportModal.tsx` revoked object URLs before the browser download manager could initialize stream reads, aborting file saves on Firefox/Safari and under heavy loads.
+- SVG Alpha Loss: In `depixelizeVector.ts`, `packRgbaKey` mapped all $a > 0$ pixels to `rgb(...)`, stripping alpha channels from semi-transparent pixel art.
+- MP4 Odd-Dimension Encoding Failure: H.264 macroblock encoding ($16\times16$) and YUV 4:2:0 subsampling require even canvas dimensions. Odd dimensions (e.g. $15\times15$, $33\times33$ at 1x) caused video capture failure.
+- P2P Post-Connection Sync: Layers created after initial WebRTC session setup failed to push state snapshots to guest peers, and remote packets caused guest active frame/layer pointers to reset.
+- Viewport Re-render Cascades: Cursor coordinate state in `CenterViewport.tsx` caused component re-render cascades on every pointer move during active brush strokes.
+
+**Deliverables:**
+- [x] Unsigned 32-Bit Bitwise Normalization (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`):
+  - Appended `>>> 0` to `targetColor32` and `replacementColor32`, ensuring proper unsigned matching against `Uint32Array` elements.
+  - Added view-safe buffer offset instantiation `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
+  - Added unit test verifying opaque flood fill expansion across canvas.
+- [x] Deferred Object URL Revocation (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`):
+  - Replaced synchronous `URL.revokeObjectURL` with 1000ms deferred timer across all 11 download handlers (PNG, SVG, GIF, MP4, WebM, APNG, Spritesheet, Replay).
+  - Added component tests validating deferred teardown timing.
+- [x] Semi-Transparent Vector Alpha Preservation (`src/lib/export/depixelizeVector.ts`, `tests/depixelizeVectorExport.test.ts`):
+  - Updated `packRgbaKey` to serialize fractional alpha values via `rgba(r,g,b,(a/255).toFixed(3))` for $0 < a < 255$.
+- [x] MP4 Even-Dimension Padding (`src/lib/export/mp4Encoder.ts`, `tests/mp4Encoder.test.ts`):
+  - Padded export canvas dimensions to even integers `(width * scale + 1) & ~1` and `(height * scale + 1) & ~1`.
+- [x] P2P Post-Connection Layer Sync & State Hardening (`src/lib/sync/coDrawBridge.ts`, `tests/p2pSync.test.ts`):
+  - Added `syncedLayerIds` tracking and canvas dimension change detection to push snapshots on layer creation and resize.
+  - Pruned deleted layer CRDT replicas and isolated guest active frame/layer selections.
+- [x] Viewport HUD Decoupling (`src/components/layout/CursorStatusBadge.tsx`, `src/components/layout/CenterViewport.tsx`, `src/hooks/viewport/useViewportDrawing.ts`, `tests/components/CursorStatusBadge.test.tsx`):
+  - Decoupled cursor coordinates into dedicated `CursorStatusBadge` subscriber, preventing `CenterViewport` re-renders on mouse/stylus moves.
+- [x] Photometric Lighting Backlight Unit Test (`tests/orbPhotometricCelShading.test.ts`):
+  - Added test verifying light azimuth $180^\circ$ and $N \cdot L = -1.0$ evaluates safely without `NaN` and selects shadow tone.
+- [x] Formal Benchmarks & Academic Derivations (`BENCHMARKS.md`, `ARCHITECTURE.md`):
+  - Created `BENCHMARKS.md` documenting frame budgets and memory scaling models across canvas sizes ($64\times64$ through $512\times512$).
+  - Corrected Blinn-Phong formulation in `ARCHITECTURE.md`.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors/warnings.
+- `npx vitest run` passes all 460 tests across 68 suites.
+- `npx playwright test tests/e2e/studio.spec.ts` passes 9/9 specs.
+- `npm run verify:docs` passes with valid phase headers and documentation paths.
+
+**Status:** Complete (2026-09-08)
+
+---
+
 ## Phase 46 — 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite
 **Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, Farey rational retuning, and Godot 4 / Unity URP shader generation).
 

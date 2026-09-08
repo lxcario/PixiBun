@@ -415,4 +415,71 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
     expect(blLum2).toBeGreaterThan(centerLum2);
     expect(centerLum2).toBeGreaterThan(trLum2);
   });
+
+  it('handles full backlight angles (N·L <= -0.4 down to -1.0) without producing NaN or corrupted pixels', () => {
+    const width = 32;
+    const height = 32;
+    const circleData = new Uint8ClampedArray(width * height * 4);
+    const cx = 16;
+    const cy = 16;
+    const radius = 10;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        if (Math.hypot(dx, dy) <= radius) {
+          const idx = (y * width + x) * 4;
+          circleData[idx] = 134;
+          circleData[idx + 1] = 75;
+          circleData[idx + 2] = 162;
+          circleData[idx + 3] = 255;
+        }
+      }
+    }
+
+    const mockCtx = {
+      getImageData: () => ({
+        data: circleData,
+        width,
+        height,
+      }),
+    } as unknown as CanvasRenderingContext2D;
+
+    // Direct backlight: lightAzimuth 180°, elevation -30° (light behind the sprite)
+    const backlitCanvas = executePhotometricPipeline(
+      mockCtx,
+      width,
+      height,
+      {
+        lightAzimuth: 180,
+        lightElevation: -30,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+        lightCenterX: 16,
+        lightCenterY: 16,
+      },
+      []
+    );
+
+    const outData = backlitCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+    // Assert no NaN in any channel across all pixels
+    for (let i = 0; i < outData.length; i++) {
+      expect(Number.isNaN(outData[i])).toBe(false);
+    }
+
+    // Orb center pixel should be in shadow tone under backlight
+    const centerIdx = (16 * width + 16) * 4;
+    expect(outData[centerIdx + 3]).toBe(255);
+    const centerLum =
+      (0.2126 * outData[centerIdx] + 0.7152 * outData[centerIdx + 1] + 0.0722 * outData[centerIdx + 2]) / 255;
+    expect(centerLum).toBeLessThan(0.60);
+  });
 });

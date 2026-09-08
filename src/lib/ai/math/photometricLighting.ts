@@ -184,6 +184,13 @@ export const OPTICAL_PROFILES: Record<OpticalPresetType, OpticalMaterialProfile>
   },
 };
 
+/**
+ * Henyey-Greenstein phase function approximation for 2.5D sprite subsurface scattering.
+ * Note: Evaluates the canonical 3D Henyey-Greenstein (1941) kernel (exponent 1.5) with a 2D circumference
+ * prefactor (1 / 2π). While non-normalized as a pure 2D angular density on S¹ (where the 2D Poisson
+ * kernel uses exponent 1.0), it serves as a bounded, artistic forward-scattering highlight curve, clamped
+ * to [0, 1.0] at line 1059 in the relighting pipeline.
+ */
 export function phaseHG2D(cosTheta: number, g: number): number {
   const gClamped = Math.max(-0.95, Math.min(0.95, g));
   const g2 = gClamped * gClamped;

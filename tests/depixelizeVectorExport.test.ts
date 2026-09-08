@@ -109,4 +109,18 @@ describe('Phase 34.3: Kopf–Lischinski Vector Depixelization (SVG Export)', () 
     expect(result.svgString).not.toContain('transparent');
     expect(result.svgString).toContain('fill="rgb(100,200,150)"');
   });
+
+  it('preserves alpha for semi-transparent pixels in vector paths', () => {
+    const width = 4;
+    const height = 4;
+    const data = makeBuffer(width, height);
+
+    // Semi-transparent red pixel: [255, 0, 0, 128] -> 128/255 = 0.502
+    setPixel(data, width, 1, 1, [255, 0, 0, 128]);
+
+    const result = depixelizeToSvg({ data, width, height }, { scale: 5 });
+
+    expect(result.colorCount).toBe(1);
+    expect(result.svgString).toContain('fill="rgba(255,0,0,0.502)"');
+  });
 });

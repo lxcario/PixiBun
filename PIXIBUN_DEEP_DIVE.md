@@ -24,7 +24,7 @@ src/
 │   └── studio/page.tsx              # Main studio drawing editor and workspace
 ├── components/
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
-│   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
+│   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, CursorStatusBadge, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
 │   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal)
 │   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, ViewportLensFilters, RemoteCursorsOverlay)
 │   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
@@ -325,4 +325,31 @@ Guarantees seamless loop unrolling into loopable APNG, GIF, and standalone Godot
 <p align="center">
   <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Live Palette Cycling Engine in Studio" width="680" />
 </p>
+
+---
+
+# 13. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety
+
+### 1. Unsigned 32-Bit Bitwise Invariant (`floodFill.ts`)
+JavaScript bitwise operations evaluate in signed 32-bit two's complement. For fully opaque pixels with alpha $A = 255$:
+$$(255 \ll 24) = -16,777,216$$
+Comparing this against an unsigned `Uint32Array` view (`4,278,190,335`) evaluated to `false`, terminating flood fill on the first clicked pixel on opaque colored backgrounds.
+Enforcing zero-fill right shift (`>>> 0`) guarantees unsigned integer parity:
+```typescript
+const targetColor32 = ((targetA << 24) | (targetB << 16) | (targetG << 8) | targetR) >>> 0;
+```
+Buffer views are safely offset via `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
+
+### 2. Viewport Cursor HUD Decoupling (`CursorStatusBadge.tsx`)
+Cursor coordinate state is isolated from the parent `CenterViewport` component tree. By subscribing `CursorStatusBadge` directly to pointer move coordinates, active pen and brush drawing strokes achieve zero component re-renders on the hot-path canvas.
+
+### 3. Asynchronous Object URL Teardown (`ExportModal.tsx`)
+Synchronous `URL.revokeObjectURL` calls immediately following synthetic link clicks risk aborting downloads before browser streams finish reading the blob. All export formats employ a 1000ms deferred teardown:
+```typescript
+setTimeout(() => URL.revokeObjectURL(url), 1000);
+```
+
+### 4. H.264 / YUV 4:2:0 Macroblock Alignment (`mp4Encoder.ts`)
+Hardware video encoders require even integer dimensions for $16 \times 16$ macroblock partitioning. Export canvases are padded via `(width * scale + 1) & ~1` and `(height * scale + 1) & ~1`.
+
 

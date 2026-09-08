@@ -2,6 +2,27 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.11.1] - 2026-09-08
+### Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening (Phase 47)
+- **Unsigned 32-Bit Bitwise Normalization (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`)**:
+  - Fixed flood fill failure on opaque colored regions caused by signed 32-bit shift overflow (`(a << 24)` returning negative signed integers for $a = 255$) failing strict equality against unsigned `Uint32Array` values.
+  - Appended `>>> 0` to `targetColor32` and `replacementColor32`, and added view-safe `Uint32Array` buffer offset instantiation.
+  - Added unit tests in `tests/floodFillHex.test.ts` verifying opaque colored pixel expansion.
+- **Export Modal Download Stream Race Prevention (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`)**:
+  - Replaced synchronous `URL.revokeObjectURL(url)` immediately after `link.click()` with a 1000ms deferred teardown (`setTimeout`) across all 11 download handlers (PNG, SVG, GIF, MP4, WebM, APNG, Spritesheet, Replay) to prevent premature blob invalidation in Firefox and Safari.
+  - Added component tests in `tests/components/ExportModal.test.tsx` verifying asynchronous revocation timing.
+- **Semi-Transparent Vector SVG Alpha Preservation (`src/lib/export/depixelizeVector.ts`, `tests/depixelizeVectorExport.test.ts`)**:
+  - Corrected `packRgbaKey` to serialize fractional alpha via `rgba(r,g,b,(a/255).toFixed(3))` for $0 < a < 255$, preserving translucent sprite elements upon SVG export.
+- **MP4 Odd-Dimension Macroblock Alignment (`src/lib/export/mp4Encoder.ts`, `tests/mp4Encoder.test.ts`)**:
+  - Padded export canvas dimensions to even integer bounds via `(width * scale + 1) & ~1` and `(height * scale + 1) & ~1` to prevent hardware H.264 macroblock encoding and YUV 4:2:0 subsampling crashes on odd sprite dimensions.
+- **P2P Post-Connection Layer Sync & State Hardening (`src/lib/sync/coDrawBridge.ts`, `tests/p2pSync.test.ts`)**:
+  - Tracked `syncedLayerIds` and canvas dimensions to push initial snapshots when layers are added post-connection or canvas is resized.
+  - Pruned deleted layer CRDT replicas and isolated guest active frame/layer pointers from incoming host updates.
+- **Viewport Drawing HUD Decoupling (`src/components/layout/CursorStatusBadge.tsx`, `src/components/layout/CenterViewport.tsx`, `src/hooks/viewport/useViewportDrawing.ts`, `tests/components/CursorStatusBadge.test.tsx`)**:
+  - Decoupled cursor coordinate state from parent `CenterViewport.tsx` into isolated subscriber `CursorStatusBadge.tsx`, eliminating component re-render cascades during active pen and brush strokes.
+- **Photometric Lighting Cel-Shading Backlight Verification (`src/lib/ai/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`)**:
+  - Verified existing `Math.max(0, ...)` guard in `wrapNdotL` and added unit test verifying that azimuth $180^\circ$ and negative elevation ($N \cdot L = -1.0$) evaluates to shadow tones without `NaN`.
+
 ## [v1.11.0] - 2026-09-08
 ### 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite (Phase 46)
 - **2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)**:

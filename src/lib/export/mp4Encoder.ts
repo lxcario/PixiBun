@@ -201,8 +201,9 @@ export async function exportAnimationToMp4Async(
   const scale = Math.max(1, Math.min(16, options.scale ?? 4));
   const loopCount = Math.max(1, Math.min(10, options.loopCount ?? 2));
 
-  const width = frameCanvases[0].width * scale;
-  const height = frameCanvases[0].height * scale;
+  // H.264 macroblock encoding and YUV 4:2:0 subsampling require even dimensions
+  const width = (frameCanvases[0].width * scale + 1) & ~1;
+  const height = (frameCanvases[0].height * scale + 1) & ~1;
 
   // Calculate millisecond durations per frame
   const frameDelaysMs: number[] = frameCanvases.map((_, idx) => {

@@ -148,7 +148,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         tresLink.download = `${baseFilename}.tres`;
         tresLink.href = tresUrl;
         tresLink.click();
-        URL.revokeObjectURL(tresUrl);
+        setTimeout(() => URL.revokeObjectURL(tresUrl), 1000);
       }
 
       // Export standard TexturePacker & Unity JSON metadata
@@ -160,7 +160,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         metaLink.download = `${baseFilename}.json`;
         metaLink.href = metaUrl;
         metaLink.click();
-        URL.revokeObjectURL(metaUrl);
+        setTimeout(() => URL.revokeObjectURL(metaUrl), 1000);
       }
     }
 
@@ -209,7 +209,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.gif`;
       link.href = url;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -261,7 +261,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-timelapse-${scale}x.${ext}`;
       link.href = url;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -313,7 +313,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.png`;
       link.href = url;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -365,7 +365,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.mp4`;
       link.href = url;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -395,7 +395,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-vector-${scale}x.svg`;
     link.href = url;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     onClose();
   };
 
@@ -437,7 +437,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.webm`;
       link.href = url;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -466,7 +466,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}.pixibun`;
     link.href = url;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     onClose();
   };
 
@@ -485,7 +485,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-palette-cycling.${ext}`;
     link.href = url;
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     onClose();
   };
 
@@ -520,7 +520,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.png`;
         link.href = url;
         link.click();
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       } else {
         const delays = frameCanvases.map(() => Math.max(2, Math.round((1000 / loopFps) / 10)));
         const gifBlob = await createAnimatedGifBlobAsync(
@@ -538,7 +538,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.gif`;
         link.href = url;
         link.click();
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     } catch (err) {
       console.error('Palette cycle loop export failed:', err);

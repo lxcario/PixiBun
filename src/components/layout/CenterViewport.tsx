@@ -42,6 +42,7 @@ import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { coDrawBridge, CODRAW_COMPOSITE_EVENT } from '@/lib/sync/coDrawBridge';
 import { RemoteCursorsOverlay } from '@/components/studio/RemoteCursorsOverlay';
+import { CursorStatusBadge, updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -133,8 +134,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     setStrokeStart,
     lastPoint,
     setLastPoint,
-    cursorCoords,
-    setCursorCoords,
+    cursorCoordsRef,
     lockedWarning,
     setLockedWarning,
     lockedWarningTimerRef,
@@ -747,11 +747,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     const coords = clientToCanvasCoords(e.clientX, e.clientY, isDrawing);
     if (coords) {
-      setCursorCoords(coords);
+      cursorCoordsRef.current = coords;
+      updateCursorHUD(coords);
       renderBrushGhost(coords);
       // Throttled presence broadcast for co-draw peers (no-op when disconnected)
       coDrawBridge.broadcastCursor(coords.x, coords.y);
     } else {
+      cursorCoordsRef.current = null;
+      updateCursorHUD(null);
       renderBrushGhost(null);
     }
 
@@ -977,7 +980,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       isDrawingRef.current = false;
       setIsDrawing(false);
 
-      let endCoords = cursorCoords;
+      let endCoords = cursorCoordsRef.current;
       if (e) {
         const upCoords = clientToCanvasCoords(e.clientX, e.clientY, true);
         if (upCoords) endCoords = upCoords;
@@ -1186,6 +1189,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerLeave={() => {
+        cursorCoordsRef.current = null;
+        updateCursorHUD(null);
+        renderBrushGhost(null);
+      }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -1369,16 +1377,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         )}
       </div>
 
-      {/* Coordinate & Tool Status Indicator */}
-      {cursorCoords && (
-        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-[0_2px_0_var(--btn-shadow)] text-[var(--accent-gold)] font-mono text-[10px] px-2.5 py-1">
-          <span>
-            X: {cursorCoords.x} Y: {cursorCoords.y}
-          </span>
-          <span className="w-1 h-1 rounded-full bg-[#C792DF]" />
-          <span className="capitalize">{tools.activeTool}</span>
-        </div>
-      )}
+      {/* Coordinate & Tool Status Indicator (Decoupled leaf subscriber) */}
+      <CursorStatusBadge />
     </main>
   );
 };

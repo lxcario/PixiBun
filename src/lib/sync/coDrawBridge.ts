@@ -57,7 +57,7 @@ export interface CoDrawStartOptions {
   lanOnly?: boolean;
 }
 
-class CoDrawBridge {
+export class CoDrawBridge {
   private session: P2PSyncSession | null = null;
   private role: CoDrawRole | null = null;
   private peerId = createId('peer');
@@ -65,8 +65,11 @@ class CoDrawBridge {
   private cursors = new Map<string, RemoteCursor>();
   private lastCursorBroadcast = 0;
   private initialSyncComplete = false;
+  private syncedLayerIds = new Set<string>();
   private unsubscribeStructure: (() => void) | null = null;
   private lastSeenFrames: unknown = null;
+  private lastSeenWidth = 0;
+  private lastSeenHeight = 0;
 
   getRole(): CoDrawRole | null {
     return this.role;
@@ -121,16 +124,20 @@ class CoDrawBridge {
     this.crdtBuffers.clear();
     this.cursors.clear();
     this.initialSyncComplete = false;
+    this.syncedLayerIds.clear();
     if (this.unsubscribeStructure) {
       this.unsubscribeStructure();
       this.unsubscribeStructure = null;
     }
     this.lastSeenFrames = null;
+    this.lastSeenWidth = 0;
+    this.lastSeenHeight = 0;
   }
 
   private handleConnectionState(state: P2PConnectionState): void {
     if (state === 'connected') {
       this.initialSyncComplete = false;
+      this.syncedLayerIds.clear();
       if (this.role === 'host') {
         // Data channels may not be 'open' yet when the PC reports connected;
         // retry until the structure + snapshots actually go out (RFC 8831:
@@ -141,13 +148,14 @@ class CoDrawBridge {
       }
     } else if (state === 'disconnected' || state === 'failed') {
       this.initialSyncComplete = false;
+      this.syncedLayerIds.clear();
       if (this.unsubscribeStructure) {
         this.unsubscribeStructure();
         this.unsubscribeStructure = null;
       }
     }
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
       window.dispatchEvent(new CustomEvent(CODRAW_STATE_EVENT, { detail: state }));
     }
   }
@@ -188,28 +196,51 @@ class CoDrawBridge {
     };
     if (!this.session.broadcastStructure(payload)) return false;
 
-    if (!this.initialSyncComplete) {
-      for (const frame of state.frames) {
-        for (const layer of frame.layers) {
+    const activeLayerIds = new Set<string>();
+    for (const frame of state.frames) {
+      for (const layer of frame.layers) {
+        activeLayerIds.add(layer.id);
+        if (!this.syncedLayerIds.has(layer.id)) {
           const crdt = this.getBuffer(layer.id, state.canvasWidth, state.canvasHeight);
           const ops = this.seedCrdtFromCanvas(crdt, layer.id, state.canvasWidth, state.canvasHeight);
           this.session.broadcastInitialSync(ops, layer.id);
+          this.syncedLayerIds.add(layer.id);
         }
       }
-      this.initialSyncComplete = true;
     }
+    for (const id of this.syncedLayerIds) {
+      if (!activeLayerIds.has(id)) {
+        this.syncedLayerIds.delete(id);
+        this.crdtBuffers.delete(id);
+      }
+    }
+    this.initialSyncComplete = true;
     return true;
   }
 
   private subscribeToStructureChanges(): void {
-    this.lastSeenFrames = useStudioStore.getState().frames;
+    const initialState = useStudioStore.getState();
+    this.lastSeenFrames = initialState.frames;
+    this.lastSeenWidth = initialState.canvasWidth;
+    this.lastSeenHeight = initialState.canvasHeight;
+
     this.unsubscribeStructure = useStudioStore.subscribe(() => {
       if (this.role !== 'host' || !this.session || this.session.getState() !== 'connected') {
         return;
       }
-      const frames = useStudioStore.getState().frames;
-      if (frames !== this.lastSeenFrames) {
-        this.lastSeenFrames = frames;
+      const state = useStudioStore.getState();
+      const framesChanged = state.frames !== this.lastSeenFrames;
+      const dimensionsChanged =
+        state.canvasWidth !== this.lastSeenWidth || state.canvasHeight !== this.lastSeenHeight;
+
+      if (framesChanged || dimensionsChanged) {
+        this.lastSeenFrames = state.frames;
+        this.lastSeenWidth = state.canvasWidth;
+        this.lastSeenHeight = state.canvasHeight;
+        if (dimensionsChanged) {
+          this.syncedLayerIds.clear();
+          this.crdtBuffers.clear();
+        }
         this.sendStructureAndSnapshots();
       }
     });
@@ -300,7 +331,7 @@ class CoDrawBridge {
     if (mutated > 0) {
       entry.ctx.putImageData(img, 0, 0);
       useStudioStore.getState().bumpBufferVersion();
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent(CODRAW_COMPOSITE_EVENT));
         window.dispatchEvent(new CustomEvent(CODRAW_REMOTE_CHANGE_EVENT));
       }
@@ -316,9 +347,16 @@ class CoDrawBridge {
     if (typeof document === 'undefined') return;
     clearAllBuffers();
 
-    // Drop replicas whose dimensions no longer match the shared canvas size.
+    const activeLayerIds = new Set<string>();
+    for (const frame of payload.frames) {
+      for (const layer of frame.layers) {
+        activeLayerIds.add(layer.id);
+      }
+    }
+
+    // Drop replicas whose dimensions no longer match the shared canvas size, or layers that were deleted.
     for (const [layerId, crdt] of this.crdtBuffers) {
-      if (crdt.width !== payload.width || crdt.height !== payload.height) {
+      if (!activeLayerIds.has(layerId) || crdt.width !== payload.width || crdt.height !== payload.height) {
         this.crdtBuffers.delete(layerId);
       }
     }
@@ -331,12 +369,18 @@ class CoDrawBridge {
         durationMs: f.durationMs,
         layers: f.layers.map((l) => ({ ...l })),
       }));
-      state.activeFrameIndex = 0;
-      state.activeLayerId = payload.frames[0]?.layers[0]?.id ?? state.activeLayerId;
+      if (state.activeFrameIndex >= payload.frames.length) {
+        state.activeFrameIndex = 0;
+      }
+      const activeFrame = payload.frames[state.activeFrameIndex];
+      const layerStillExists = activeFrame?.layers.some((l) => l.id === state.activeLayerId);
+      if (!layerStillExists) {
+        state.activeLayerId = activeFrame?.layers[0]?.id ?? '';
+      }
       state.bufferVersion += 1;
     });
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
       window.dispatchEvent(new CustomEvent('pixibun:history-clear'));
     }
 
@@ -347,7 +391,7 @@ class CoDrawBridge {
       entry.ctx.putImageData(img, 0, 0);
     }
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
       window.dispatchEvent(new CustomEvent(CODRAW_COMPOSITE_EVENT));
       window.dispatchEvent(new CustomEvent(CODRAW_REMOTE_CHANGE_EVENT));
     }

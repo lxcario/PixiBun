@@ -53,7 +53,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Wu's Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
 * **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Rational Bézier Curves:** Exact quadratic and cubic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
-* **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with adjustable tolerance.
+* **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with unsigned 32-bit bitwise normalization and adjustable tolerance.
 * **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
 * **Canvas Brush Ghost Cursor & Zoom Ergonomics:** Non-destructive 1px footprint bounding box matching brush size at $\ge 400\%$ zoom, with `Ctrl + + / - / 0 / 1` integer keyboard navigation.
 * **Dual Overlapping Tactile Color Wells:** Primary/Secondary color slots with quick swap (<kbd>X</kbd>), custom HSV/HEX modal picker, and 8-color quick palette dock.
@@ -233,7 +233,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The entire core creation and export suite runs 100% offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 445 unit and integration tests across 66 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 7 E2E spec suites (19 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 460 unit and integration tests across 68 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 7 E2E spec suites (19 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -252,7 +252,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 445 unit and integration tests across 66 suites and 7 E2E spec suites (19 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 460 unit and integration tests across 68 suites and 7 E2E spec suites (19 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 
