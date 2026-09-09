@@ -20,39 +20,39 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the Export modal header shows 'EXPORT STUDIO ASSETS'"
+      "description": "Verify the Export Studio Assets modal opens showing format tabs"
     },
     {
       "type": "action",
-      "description": "Click the 'Vector SVG' tab"
+      "description": "Click the Vector SVG format tab"
     },
     {
       "type": "assertion",
-      "description": "Verify SVG scale and smoothing options ('SMOOTH SPLINES' vs 'PIXEL RECTANGLES') are displayed"
+      "description": "Verify SVG scale and smoothing options are displayed"
     },
     {
       "type": "action",
-      "description": "Click the 'Shaders' tab"
+      "description": "Click the Shaders format tab"
     },
     {
       "type": "assertion",
-      "description": "Verify shader engine options appear for Godot 4 and Unity URP 2D"
+      "description": "Verify shader engine options appear for Godot and Unity"
     },
     {
       "type": "action",
-      "description": "Click the '.Pixibun' tab"
+      "description": "Click the .pixibun format tab"
     },
     {
       "type": "assertion",
-      "description": "Verify the Project export tab shows the JSON download action"
+      "description": "Verify the Project export options are displayed"
     },
     {
       "type": "action",
-      "description": "Close the Export modal"
+      "description": "Click the Cancel button"
     },
     {
       "type": "assertion",
-      "description": "Verify the studio canvas remains responsive without uncaught Promise rejections or memory leaks"
+      "description": "Verify the export modal is dismissed and the studio workspace remains responsive"
     }
   ]
 }
