@@ -20,10 +20,16 @@ export function getQuadraticBezierPoints(
   p0: Point,
   p1: Point,
   p2: Point,
-  steps: number = 32
+  customSteps?: number
 ): Point[] {
   const points: Point[] = [];
   const seen = new Set<string>();
+
+  const approxDist =
+    Math.hypot(p1.x - p0.x, p1.y - p0.y) +
+    Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+  const steps = customSteps ?? Math.max(16, Math.ceil(approxDist * 1.5));
 
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
@@ -42,55 +48,32 @@ export function getQuadraticBezierPoints(
   return points;
 }
 
-export function getCubicBezierPoints(
-  p0: Point,
-  p1: Point,
-  p2: Point,
-  p3: Point
-): Point[] {
-  const points: Point[] = [];
-  const seen = new Set<string>();
-
-  const approxDist =
-    Math.hypot(p1.x - p0.x, p1.y - p0.y) +
-    Math.hypot(p2.x - p1.x, p2.y - p1.y) +
-    Math.hypot(p3.x - p2.x, p3.y - p2.y);
-
-  const steps = Math.max(16, Math.ceil(approxDist * 1.5));
-
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const mt = 1 - t;
-
-    const x = Math.round(
-      mt * mt * mt * p0.x +
-      3 * mt * mt * t * p1.x +
-      3 * mt * t * t * p2.x +
-      t * t * t * p3.x
-    );
-    const y = Math.round(
-      mt * mt * mt * p0.y +
-      3 * mt * mt * t * p1.y +
-      3 * mt * t * t * p2.y +
-      t * t * t * p3.y
-    );
-
-    const key = `${x},${y}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      points.push({ x, y });
-    }
-  }
-
-  return points;
-}
-
 export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: number): Point[] {
   const points: Point[] = [];
   const dx = x1 - x0;
   const dy = y1 - y0;
 
   if (dx === 0 && dy === 0) return [{ x: x0, y: y0 }];
+
+  // Pure vertical line
+  if (dx === 0) {
+    const sy = dy >= 0 ? 1 : -1;
+    const count = Math.abs(dy);
+    for (let k = 0; k <= count; k++) {
+      points.push({ x: x0, y: y0 + k * sy });
+    }
+    return points;
+  }
+
+  // Pure horizontal line
+  if (dy === 0) {
+    const sx = dx >= 0 ? 1 : -1;
+    const count = Math.abs(dx);
+    for (let k = 0; k <= count; k++) {
+      points.push({ x: x0 + k * sx, y: y0 });
+    }
+    return points;
+  }
 
   const sx = dx >= 0 ? 1 : -1;
   const sy = dy >= 0 ? 1 : -1;
