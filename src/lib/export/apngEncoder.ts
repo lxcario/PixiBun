@@ -175,62 +175,10 @@ export function createPngChunk(typeStr: string, data: Uint8Array): Uint8Array {
   return chunk;
 }
 
-/**
- * Helper to extract RGBA pixel data from an HTMLCanvasElement with optional integer scaling.
- */
-export function extractScaledCanvasRgba(
-  canvas: HTMLCanvasElement,
-  scale: number
-): { width: number; height: number; data: Uint8ClampedArray } {
-  const s = Math.max(1, Math.floor(scale));
-  const srcW = canvas.width;
-  const srcH = canvas.height;
+import { extractScaledCanvasRgba, ScaledRgbaFrame } from '@/lib/canvas/scaleCanvas';
 
-  if (s === 1 && typeof canvas.getContext === 'function') {
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const imgData = ctx.getImageData(0, 0, srcW, srcH);
-      return { width: srcW, height: srcH, data: imgData.data };
-    }
-  }
-
-  // Handle scaling via offscreen buffer or nearest-neighbor replication
-  const dstW = srcW * s;
-  const dstH = srcH * s;
-
-  if (typeof document !== 'undefined') {
-    const scaledCanvas = document.createElement('canvas');
-    scaledCanvas.width = dstW;
-    scaledCanvas.height = dstH;
-    const ctx = scaledCanvas.getContext('2d');
-    if (ctx) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(canvas, 0, 0, dstW, dstH);
-      const imgData = ctx.getImageData(0, 0, dstW, dstH);
-      return { width: dstW, height: dstH, data: imgData.data };
-    }
-  }
-
-  // Fallback: direct pixel replication
-  const ctx = canvas.getContext ? canvas.getContext('2d') : null;
-  const srcData = ctx ? ctx.getImageData(0, 0, srcW, srcH).data : new Uint8ClampedArray(srcW * srcH * 4);
-  const dstData = new Uint8ClampedArray(dstW * dstH * 4);
-
-  for (let dy = 0; dy < dstH; dy++) {
-    const sy = Math.floor(dy / s);
-    for (let dx = 0; dx < dstW; dx++) {
-      const sx = Math.floor(dx / s);
-      const srcIdx = (sy * srcW + sx) * 4;
-      const dstIdx = (dy * dstW + dx) * 4;
-      dstData[dstIdx] = srcData[srcIdx];
-      dstData[dstIdx + 1] = srcData[srcIdx + 1];
-      dstData[dstIdx + 2] = srcData[srcIdx + 2];
-      dstData[dstIdx + 3] = srcData[srcIdx + 3];
-    }
-  }
-
-  return { width: dstW, height: dstH, data: dstData };
-}
+export { extractScaledCanvasRgba };
+export type { ScaledRgbaFrame };
 
 /**
  * Encodes an array of frame canvases into an Animated PNG (APNG) Blob.

@@ -11,6 +11,8 @@ import type { WorkerRequest, WorkerResponse } from './gifEncoder.worker';
 export { quantizePixels, lzwEncode, encodeGifRawFrames };
 export type { RawFrameData };
 
+import { extractScaledCanvasRgba } from '@/lib/canvas/scaleCanvas';
+
 /**
  * Extracts scaled RawFrameData array from a list of HTMLCanvasElements.
  */
@@ -19,30 +21,8 @@ export function extractScaledRawFrames(
   scale: number = 1
 ): RawFrameData[] {
   if (frameCanvases.length === 0) return [];
-  const width = frameCanvases[0].width * scale;
-  const height = frameCanvases[0].height * scale;
-
-  const rawFrames: RawFrameData[] = [];
-
-  for (let i = 0; i < frameCanvases.length; i++) {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) continue;
-
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(frameCanvases[i], 0, 0, width, height);
-
-    const imageData = ctx.getImageData(0, 0, width, height);
-    rawFrames.push({
-      width,
-      height,
-      data: imageData.data,
-    });
-  }
-
-  return rawFrames;
+  const s = Math.max(1, Math.floor(scale));
+  return frameCanvases.map((canvas) => extractScaledCanvasRgba(canvas, s));
 }
 
 /**
@@ -148,19 +128,5 @@ export async function createAnimatedGifBlobAsync(
 
   // Main thread fallback
   const gifUint8 = encodeGifRawFrames(rawFrames, fps, onProgress, delays);
-  return new Blob([gifUint8 as unknown as BlobPart], { type: 'image/gif' });
-}
-
-/**
- * Synchronous legacy wrapper for backward compatibility and tests.
- */
-export function createAnimatedGifBlob(
-  frameCanvases: HTMLCanvasElement[],
-  fps: number,
-  scale: number = 1,
-  delays?: number[]
-): Blob {
-  const rawFrames = extractScaledRawFrames(frameCanvases, scale);
-  const gifUint8 = encodeGifRawFrames(rawFrames, fps, undefined, delays);
   return new Blob([gifUint8 as unknown as BlobPart], { type: 'image/gif' });
 }
