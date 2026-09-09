@@ -17,10 +17,11 @@ import {
   rgbToOklch,
   oklchToRgb,
   shiftHueToward,
+  calculate47TileBitmask,
 } from '@/lib/ai/smartMathEngine';
 import { hexToRgba } from '@/lib/canvas/floodFill';
 
-export { rgbToOklch, oklchToRgb, shiftHueToward };
+export { rgbToOklch, oklchToRgb, shiftHueToward, calculate47TileBitmask };
 
 /**
  * Helper to compute shaded RGB for highlights and shadows.
@@ -539,22 +540,6 @@ export function harmonizePaletteColors(existingColors: string[]): string[] {
 /**
  * 8. 47-Tile Blob Autotiling Edge & Corner Contour Generator
  */
-export function calculate47TileBitmask(
-  isOpaque: (x: number, y: number) => boolean,
-  x: number,
-  y: number
-): number {
-  let mask = 0;
-  if (isOpaque(x, y - 1)) mask |= 1;     // North
-  if (isOpaque(x + 1, y - 1)) mask |= 2; // North-East
-  if (isOpaque(x + 1, y)) mask |= 4;     // East
-  if (isOpaque(x + 1, y + 1)) mask |= 8; // South-East
-  if (isOpaque(x, y + 1)) mask |= 16;    // South
-  if (isOpaque(x - 1, y + 1)) mask |= 32;// South-West
-  if (isOpaque(x - 1, y)) mask |= 64;    // West
-  if (isOpaque(x - 1, y - 1)) mask |= 128;// North-West
-  return mask;
-}
 
 export function generate47BlobEdgeData(
   srcCtx: CanvasRenderingContext2D,

@@ -248,50 +248,6 @@ export function buildCanvasPaletteIndexMap(
   return indexMap;
 }
 
-/**
- * Unrolls a cycling animation into a sequence of ImageData frames using Farey rational retuning.
- * Guaranteed to loop seamlessly with zero seam pop.
- */
-export function generateLoopAnimationFrames(
-  sourceCanvas: HTMLCanvasElement,
-  basePaletteHex: string[],
-  tracks: PaletteCycleTrack[],
-  targetDurationSec: number = 2.0,
-  fps: number = 30
-): ImageData[] {
-  const width = sourceCanvas.width;
-  const height = sourceCanvas.height;
-  const ctx = sourceCanvas.getContext('2d');
-  if (!ctx) return [];
-
-  const indexMap = buildCanvasPaletteIndexMap(ctx, width, height, basePaletteHex);
-  const retunedTracks = retuneTracksForSeamlessLoop(tracks, targetDurationSec);
-
-  const totalFrames = Math.max(1, Math.round(targetDurationSec * fps));
-  const frames: ImageData[] = [];
-  const lut32 = new Uint32Array(basePaletteHex.length);
-
-  for (let f = 0; f < totalFrames; f++) {
-    const elapsedSec = f / fps;
-    updateLivePaletteLUT32(basePaletteHex, retunedTracks, elapsedSec, lut32);
-
-    const frameData = ctx.createImageData(width, height);
-    const data32 = new Uint32Array(frameData.data.buffer);
-
-    for (let i = 0; i < width * height; i++) {
-      const palIdx = indexMap[i];
-      if (palIdx === 255) {
-        data32[i] = 0; // transparent
-      } else {
-        data32[i] = lut32[palIdx] ?? 0;
-      }
-    }
-
-    frames.push(frameData);
-  }
-
-  return frames;
-}
 
 /**
  * Unrolls a cycling animation into a sequence of HTMLCanvasElement frames,

@@ -214,7 +214,7 @@ export function applySymmetry(
 }
 
 // Re-export Bezier curve, isometric helpers, and wallpaper group symmetry
-export { getQuadraticBezierPoints, getCubicBezierPoints, getIsometric2p1Line } from '@/lib/ai/smartMathEngine';
+export { getQuadraticBezierPoints, getIsometric2p1Line } from '@/lib/ai/smartMathEngine';
 export { applyWallpaperSymmetry, replicatePointWallpaper } from './wallpaperSymmetry';
 
 

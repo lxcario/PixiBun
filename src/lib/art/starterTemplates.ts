@@ -1,4 +1,4 @@
-import { StarterTemplate, TemplateId } from '@/types/landing';
+import { StarterTemplate } from '@/types/landing';
 
 /**
  * Shared char-to-hex palette for every starter sprite. Keys are single ASCII
@@ -149,11 +149,3 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     rows: LANTERN_ROWS,
   },
 ];
-
-export function getTemplate(id: TemplateId): StarterTemplate {
-  const found = STARTER_TEMPLATES.find((t) => t.id === id);
-  if (!found) {
-    throw new Error(`Unknown starter template: ${id}`);
-  }
-  return found;
-}

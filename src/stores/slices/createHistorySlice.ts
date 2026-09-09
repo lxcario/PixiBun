@@ -187,5 +187,3 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
   },
 });
 
-export const createSessionSlice = createHistorySlice;
-
