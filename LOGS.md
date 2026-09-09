@@ -1235,3 +1235,45 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run verify:docs`: all documentation integrity checks passed
 **Status:** Complete
 
+---
+
+## Comprehensive Codebase Audit & Algorithmic Remediation (2026-09-09)
+
+**Goal:** Remediate all 21 audit findings across security vulnerabilities, dead code elimination, frame scaling DRY consolidation, MP4 native MediaRecorder pipeline alignment, quadratic Bézier adaptive stepping, isometric line zero-drift fixes, React timer/listener lifecycle cleanup, and full documentation integrity.
+
+**Deliverables:**
+- **Security & Dependency Hardening (`package.json`)**:
+  - Upgraded `next` to `^16.3.4` (mitigating GHSA-p293-qw3h-jr36 & GHSA-2xp9-vwfh-vxw4) and `sharp` to `^0.35.4`.
+  - Zero production vulnerabilities confirmed via `npm audit --omit=dev`.
+- **Dead Code Elimination & Bitmask Consolidation**:
+  - Pruned unused buffer pool routines in `src/lib/engine/bufferPool.ts` while preserving active `Float32Array` and `Int32Array` pools.
+  - Pruned dead helpers across `src/lib/art/starterTemplates.ts`, `src/lib/export/shaderExporter.ts`, `src/lib/canvas/tileStamp.ts`, `src/lib/ai/pixelizeEngine.ts`, `src/lib/export/gifEncoder.ts`, `src/stores/slices/createHistorySlice.ts`, and `src/lib/canvas/rasterMath.ts`.
+  - Consolidated `calculate47TileBitmask` in `src/lib/ai/math/curvesAndLines.ts`, imported canonically via `@/lib/ai/smartMathEngine`.
+  - Removed orphaned `components.json`.
+- **Frame Scaling DRY Consolidation (`src/lib/canvas/scaleCanvas.ts`)**:
+  - Extracted canonical `extractScaledCanvasRgba` with `scale === 1` fast path, reused across APNG and GIF encoders.
+- **MP4 Pipeline & Non-Blocking Project Serialization (`src/lib/export/mp4Encoder.ts`, `src/lib/project/serialize.ts`, `src/components/modals/ExportModal.tsx`)**:
+  - Pruned unused manual MP4 box builders and documented browser `MediaRecorder` pipeline.
+  - Wired `buildProjectFileAsync()` to non-blocking `.pixibun` export in `ExportModal.tsx`.
+- **Adaptive Bézier Stepping & Isometric Line Invariants (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:
+  - Replaced hardcoded `steps = 32` with adaptive stepping `Math.max(16, Math.ceil(approxDist * 1.5))`, ensuring 8-connected continuity on large curves.
+  - Resolved `getIsometric2p1Line` vertical (`dx === 0`) and horizontal (`dy === 0`) false-drift pixel anomalies.
+  - Added 13 comprehensive unit tests covering endpoints, subset collinearity, 8-connectivity, 2:1 slope run lengths, zero-length, and 47-blob corner suppression.
+- **React Lifecycle & Memory Leak Remediation**:
+  - Managed ephemeral confirmation timers with `useRef` and unmount cleanup in `LayersPanel.tsx` and `ShortcutsModal.tsx`.
+  - Refactored `ServiceWorkerRegistrar.tsx` using `AbortController.signal` for `updatefound`, `statechange`, and `controllerchange` with `reg.waiting` preservation.
+  - Added `imageAlt` prop to `TactileButton.tsx` for accessible image labels.
+  - Documented canonical PascalCase vs lowercase aliases in `src/lib/ai/math/colorSpace.ts`.
+- **Documentation Integrity Reconciled**:
+  - Reconciled file paths, test metrics (524 tests across 76 suites), buffer pool specs, and quadratic Bézier descriptions across `BENCHMARKS.md`, `ARCHITECTURE.md`, `CHANGELOG.md`, `LOGS.md`, and `README.md`.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run`: 524/524 passed across 76 suites
+- `npm run verify:docs`: all documentation integrity checks passed (149/149 file paths verified)
+- `npm run build`: Next.js 16.3.4 clean production build
+- `npm audit --omit=dev`: 0 vulnerabilities
+**Status:** Complete
+
+

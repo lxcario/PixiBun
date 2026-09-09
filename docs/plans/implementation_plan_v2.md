@@ -70,7 +70,7 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 - CTA banner assets (potted plants, easel with canvas)
 
 #### New file
-#### [NEW] [PixelSprite.tsx](file:///d:/PixiBun/src/components/ui/PixelSprite.tsx)
+#### [NEW] [PixelSprite.tsx](../../src/components/ui/PixelSprite.tsx)
 - Shared component for rendering a generated PNG layer with `image-rendering: pixelated`, consistent integer scaling, and a fixed aspect-ratio box to prevent layout shift while assets load.
 
 ---
@@ -78,12 +78,12 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 ## Proposed Changes
 
 ### 1. Web Audio Ambience & Sound Engine
-#### [NEW] [lofiRadio.ts](file:///d:/PixiBun/src/lib/audio/lofiRadio.ts)
+#### [NEW] [lofiRadio.ts](../../src/lib/audio/lofiRadio.ts)
 - Unchanged from v1: Web Audio synthesizer for rain/tape-hiss noise and chiptune chord progressions, with play/pause, volume, and track switching (Lo-Fi Beats, Rainy Night, Cozy Hearth).
 - Note for verification: this logic is not meaningfully unit-testable in jsdom — treat as manual-QA only, don't imply coverage from `npm run test`.
 
 ### 2. Interactive Atelier Hero & Pixel Desk Scene
-#### [NEW] [AtelierDeskScene.tsx](file:///d:/PixiBun/src/components/landing/AtelierDeskScene.tsx)
+#### [NEW] [AtelierDeskScene.tsx](../../src/components/landing/AtelierDeskScene.tsx)
 - Composites the generated background/desk/cat sprites via `PixelSprite`.
 - Rain: either a looping generated sprite or a lightweight procedural particle overlay (this one is fine procedurally — rain is just moving lines).
 - Lamp: click toggles a crossfade between the two generated lamp states, plus a CSS radial-gradient glow overlay and dust-mote particles (procedural, cheap).
@@ -91,15 +91,15 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 - Drawing tablet: renders the **existing Studio canvas/brush component** in a constrained preview size and palette, linking "transfer to studio" to the real editor — not a second hand-built pen engine.
 - Lazy-load this whole component (dynamic import, mount on intersection) so the generated-image payload and audio engine don't block initial page load.
 
-#### [NEW] [AtelierHero.tsx](file:///d:/PixiBun/src/components/landing/AtelierHero.tsx)
+#### [NEW] [AtelierHero.tsx](../../src/components/landing/AtelierHero.tsx)
 - Unchanged from v1: "WELCOME TO" pill, headline with pink-accented "create & share", value prop copy, "Enter the Studio →" / "Explore Gallery" CTAs, footnote.
 
 ### 3. Navigation Bar & Header
-#### [NEW] [LandingNav.tsx](file:///d:/PixiBun/src/components/landing/LandingNav.tsx)
+#### [NEW] [LandingNav.tsx](../../src/components/landing/LandingNav.tsx)
 - Unchanged from v1.
 
 ### 4. Tactile Feature Cards ("✦ Everything you need to create ✦")
-#### [NEW] [CozyFeatureGrid.tsx](file:///d:/PixiBun/src/components/landing/CozyFeatureGrid.tsx)
+#### [NEW] [CozyFeatureGrid.tsx](../../src/components/landing/CozyFeatureGrid.tsx)
 - 4 cards using the **actual sampled per-card backgrounds** (`--surface-card-white/pink/lavender/gray`), each with a generated pixel icon and an arrow link:
   1. **Pixel Canvas** — drawing tools, onion skinning, frame-by-frame animation.
   2. **Save & Organize** — IndexedDB local storage, project packaging (pink-highlighted card).
@@ -107,23 +107,23 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
   4. **Built for Lovers** — crafted for pixel art lovers, by pixel art creators.
 
 ### 5. Interactive Starter Shelf
-#### [NEW] [AtelierGallery.tsx](file:///d:/PixiBun/src/components/landing/AtelierGallery.tsx)
+#### [NEW] [AtelierGallery.tsx](../../src/components/landing/AtelierGallery.tsx)
 - Unchanged from v1: pixel-bordered starter template cards (Potion, Campfire, Sword, Cozy Bun) linking to the Studio editor.
 
 ### 6. Artisan Story & Cozy Vignette
-#### [NEW] [ArtisanStory.tsx](file:///d:/PixiBun/src/components/landing/ArtisanStory.tsx)
+#### [NEW] [ArtisanStory.tsx](../../src/components/landing/ArtisanStory.tsx)
 - Composites generated vignette assets (arched window, sleeping cat, bookshelf/candle) with the artisan statement copy.
 
 ### 7. Call To Action Banner & Site Footer
-#### [NEW] [AtelierCtaBanner.tsx](file:///d:/PixiBun/src/components/landing/AtelierCtaBanner.tsx)
-#### [NEW] [AtelierFooter.tsx](file:///d:/PixiBun/src/components/landing/AtelierFooter.tsx)
+#### [NEW] [AtelierCtaBanner.tsx](../../src/components/landing/AtelierCtaBanner.tsx)
+#### [NEW] [AtelierFooter.tsx](../../src/components/landing/AtelierFooter.tsx)
 - Unchanged from v1.
 
 ### 8. Page Assembly & Styling
-#### [MODIFY] [page.tsx](file:///d:/PixiBun/src/app/page.tsx)
+#### [MODIFY] [page.tsx](../../src/app/page.tsx)
 - Assemble: `LandingNav`, `AtelierHero`, `CozyFeatureGrid`, `AtelierGallery`, `ArtisanStory`, `AtelierCtaBanner`, `AtelierFooter`.
 
-#### [MODIFY] [globals.css](file:///d:/PixiBun/src/app/globals.css)
+#### [MODIFY] [globals.css](../../src/app/globals.css)
 - Define the locked palette as CSS variables, import the chosen pixel font, add tactile button/card utilities and dust-mote/steam animations.
 
 ---
