@@ -191,6 +191,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             disabled={!isUndoEnabled}
             onClick={onUndo}
             title="Undo (Ctrl+Z)"
+            aria-label="Undo"
+            data-testid="undo-button"
             className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
           >
             <PixelIcon name="undo" size={16} />
@@ -201,6 +203,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             disabled={!isRedoEnabled}
             onClick={onRedo}
             title="Redo (Ctrl+Y)"
+            aria-label="Redo"
+            data-testid="redo-button"
             className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
           >
             <PixelIcon name="redo" size={16} />

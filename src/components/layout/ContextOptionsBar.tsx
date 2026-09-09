@@ -216,6 +216,8 @@ export const ContextOptionsBar: React.FC = () => {
         {(tools.activeTool === 'rectangle' || tools.activeTool === 'ellipse') && (
           <button
             onClick={() => setShapeFilled(!tools.shapeFilled)}
+            aria-label={tools.shapeFilled ? 'Shape: Filled Solid' : 'Shape: Outline Stroke'}
+            data-testid="shape-fill-toggle"
             className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
               tools.shapeFilled
                 ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'

@@ -447,6 +447,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           type="button"
           onClick={onCommit}
           title="Commit and bake lighting into layer (Enter)"
+          aria-label="Apply"
+          data-testid="pixel-light-apply"
           className="px-2.5 py-1 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
         >
           <span>Apply</span>
@@ -457,6 +459,8 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           type="button"
           onClick={onCancel}
           title="Discard preview and restore layer (Esc)"
+          aria-label="Cancel"
+          data-testid="pixel-light-cancel"
           className="px-2 py-1 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
         >
           <span>Cancel</span>

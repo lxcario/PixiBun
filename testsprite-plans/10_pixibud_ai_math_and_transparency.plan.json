@@ -48,7 +48,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Render Photometric' button"
+      "description": "Click the 'Bake Light' button in the 2.5D Photometric Studio panel"
     },
     {
       "type": "assertion",

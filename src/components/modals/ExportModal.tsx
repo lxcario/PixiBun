@@ -684,6 +684,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           variant="default"
           disabled={isExporting}
           onClick={handleCancel}
+          aria-label="Cancel"
+          data-testid="export-cancel-button"
           className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
         >
           Cancel

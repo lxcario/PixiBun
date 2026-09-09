@@ -438,6 +438,8 @@ export const PhotometricLightingSection: React.FC = () => {
               variant="primary"
               onClick={handleRenderPhotometricLighting}
               title="Compute 2.5D analytical normal field and bake photometric lighting"
+              aria-label="Bake Light"
+              data-testid="bake-light-button"
               className="text-xs py-2 font-bold justify-center"
             >
               <PixelIcon name="sun" size={14} />
@@ -449,6 +451,8 @@ export const PhotometricLightingSection: React.FC = () => {
               variant="default"
               onClick={handleStartLightGizmo}
               title="Mount live-time pixel light bulb on canvas (Enter to apply, Esc to cancel)"
+              aria-label="Light Bulb"
+              data-testid="light-bulb-button"
               className="text-xs py-2 font-bold justify-center bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
             >
               <PixelIcon name="lamp" size={14} />
