@@ -16,23 +16,23 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool from the left toolbar by clicking the button with title 'Ellipse (O)' or pressing the O key"
+      "description": "Select the Ellipse tool from the left toolbar or press the O key"
     },
     {
       "type": "action",
-      "description": "In the top context options bar, ensure the shape mode is set to 'Shape: Filled Solid' (click the Shape mode button if it currently shows 'Shape: Outline Stroke')"
+      "description": "Click on the center drawing canvas to stamp a circular shape"
     },
     {
       "type": "action",
-      "description": "Draw a large circular ball in the middle of the canvas by pressing down on the canvas, dragging diagonally for at least 150 pixels, and releasing the mouse"
+      "description": "Select the Flood Fill tool by pressing G on the keyboard"
     },
     {
       "type": "action",
-      "description": "Select the Flood Fill tool by pressing G on the keyboard, pick a distinct color swatch, and click inside the ball shape to ensure it is solidly filled"
+      "description": "Click inside the shape to ensure it is solidly filled with color"
     },
     {
       "type": "assertion",
-      "description": "Verify a solid colored circular ball is clearly visible on the center canvas"
+      "description": "Verify artwork is visible on the center canvas"
     },
     {
       "type": "action",

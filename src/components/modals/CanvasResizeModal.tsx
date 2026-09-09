@@ -126,6 +126,8 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             <input
               type="checkbox"
               checked={resample}
+              data-testid="resample-checkbox"
+              aria-label="Scale Artwork (Resample)"
               onChange={(e) => setResample(e.target.checked)}
               className="accent-[#f0be7c]"
             />
@@ -136,7 +138,10 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
 
       {/* 9-Point Anchor Grid (Only shown when not resampling) */}
       {!resample && (
-        <div className="flex items-center justify-between bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs">
+        <div
+          data-testid="anchor-grid"
+          className="flex items-center justify-between bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs"
+        >
           <div className="flex flex-col">
             <span className="text-xs font-mono font-bold text-[var(--text-heading)]">ANCHOR ALIGNMENT</span>
             <span className="text-[10px] font-mono text-[#a89ab8]">
@@ -148,7 +153,10 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             {anchorPositions.map((pos) => (
               <button
                 key={pos}
+                type="button"
                 onClick={() => setAnchor(pos)}
+                aria-label={`Anchor ${pos}`}
+                data-testid={`anchor-${pos}`}
                 className={`w-6 h-6 rounded-[2px] border flex items-center justify-center transition-all cursor-pointer ${
                   anchor === pos
                     ? 'bg-[#f0be7c] border-[#8c5120] shadow-xs scale-105'

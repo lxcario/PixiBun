@@ -12,7 +12,7 @@
     },
     {
       "type": "action",
-      "description": "Click the Shortcuts button in the top header"
+      "description": "Click the Guide button in the top header (with title 'Atelier Guide, Diagnostics & Shortcuts (?)')"
     },
     {
       "type": "assertion",

@@ -20,11 +20,11 @@
     },
     {
       "type": "action",
-      "description": "Select the Pen tool (press B) and draw a circular resting mass in the upper center of the canvas matching the Apex Float stencil guidance"
+      "description": "Click on the canvas to paint a pixel for Frame 1"
     },
     {
       "type": "action",
-      "description": "Click the 'Frame' button (or next frame button) in the bottom timeline to advance to Frame 2"
+      "description": "Click the Frame button in the bottom timeline to advance to Frame 2"
     },
     {
       "type": "assertion",
@@ -32,11 +32,11 @@
     },
     {
       "type": "action",
-      "description": "Draw the elongated falling shape on Frame 2"
+      "description": "Click on the canvas to paint a pixel for Frame 2"
     },
     {
       "type": "action",
-      "description": "Click 'Frame' to add Frame 3"
+      "description": "Click the Frame button in the bottom timeline to advance to Frame 3"
     },
     {
       "type": "assertion",
@@ -44,7 +44,7 @@
     },
     {
       "type": "action",
-      "description": "Draw the flattened squashed shape across the ground line on Frame 3"
+      "description": "Click on the canvas to paint a pixel for Frame 3"
     },
     {
       "type": "action",

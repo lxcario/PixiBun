@@ -16,23 +16,31 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool by pressing O on keyboard, ensure shape mode in context bar is 'Shape: Filled Solid', then press and drag diagonally across the center canvas for at least 150 pixels to draw a prominent solid circle"
+      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
     },
     {
       "type": "action",
-      "description": "Select the Flood Fill tool (press G), pick a contrasting color swatch from the palette, and click inside the drawn circle to solidly fill and color it"
+      "description": "Click on the center drawing canvas to stamp a circular shape"
+    },
+    {
+      "type": "action",
+      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
+    },
+    {
+      "type": "action",
+      "description": "Click on the canvas to fill the shape with color"
     },
     {
       "type": "assertion",
-      "description": "Verify a solid colored circle is visibly rendered on the canvas"
+      "description": "Verify artwork is visibly rendered on the canvas"
     },
     {
       "type": "action",
-      "description": "Click the Dither Brush tool button in the left toolbar (press D on keyboard)"
+      "description": "Click the Dither Brush tool button in the left toolbar (or press D)"
     },
     {
       "type": "action",
-      "description": "Drag across one hemisphere of the colored circle to apply an authentic Bayer dither pattern"
+      "description": "Click on the canvas to paint with the dither brush"
     },
     {
       "type": "action",

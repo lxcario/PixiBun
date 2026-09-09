@@ -16,7 +16,7 @@
     },
     {
       "type": "action",
-      "description": "Click the + Frame button in the timeline controls"
+      "description": "Click the Frame button (title 'Add Blank Frame') in the timeline controls"
     },
     {
       "type": "assertion",

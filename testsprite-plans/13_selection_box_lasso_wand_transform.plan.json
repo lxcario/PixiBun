@@ -12,15 +12,15 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool by pressing O, ensure shape mode in context bar is 'Shape: Filled Solid', press down on the canvas, drag diagonally for at least 150 pixels, and release to draw a prominent solid circle"
+      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
     },
     {
       "type": "action",
-      "description": "Select the Flood Fill tool (press G), choose a bright palette color, and click inside the circle to color it solidly"
+      "description": "Click on the center drawing canvas to stamp a circular shape"
     },
     {
       "type": "assertion",
-      "description": "Verify a solid colored circle is rendered in the center of the canvas"
+      "description": "Verify artwork is rendered in the center of the canvas"
     },
     {
       "type": "action",

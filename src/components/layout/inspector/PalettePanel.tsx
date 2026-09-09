@@ -177,6 +177,8 @@ export const PalettePanel: React.FC = () => {
               onClick={() => generateAndAddRamp(primaryColor)}
               className="flex-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#dcabdf] font-bold text-[10px] font-mono py-1 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center"
               title="Generate 5-step highlight & shadow ramp in OKLCH"
+              aria-label="+ OKLCH Ramp"
+              data-testid="oklch-ramp-button"
             >
               + OKLCH Ramp
             </button>

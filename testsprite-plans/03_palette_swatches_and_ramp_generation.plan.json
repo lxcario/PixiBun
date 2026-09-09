@@ -20,7 +20,7 @@
     },
     {
       "type": "action",
-      "description": "Click the + 5-Step Ramp button in the palette panel"
+      "description": "Click the + OKLCH Ramp button in the palette panel"
     },
     {
       "type": "assertion",

@@ -20,7 +20,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the Eraser tool is active with highlighted gold styling in the tool dock"
+      "description": "Verify the Eraser tool is active with highlighted styling in the tool dock"
     },
     {
       "type": "action",
@@ -28,23 +28,23 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the Flood Fill tool is active and displays the fill mode modifier button"
+      "description": "Verify the Flood Fill tool is active and displays the fill mode modifier button in the top options bar"
     },
     {
       "type": "action",
-      "description": "Click the Dither tool button in the left toolbar"
+      "description": "Click the Dither Brush tool button in the left toolbar"
     },
     {
       "type": "assertion",
-      "description": "Verify the Dither tool is active and displays the Bayer matrix button with 2x2, 4x4, or 8x8"
+      "description": "Verify the Dither tool is active and displays the Bayer matrix button in the top options bar"
     },
     {
       "type": "action",
-      "description": "Click the brush size cycler button in the left toolbar"
+      "description": "Change the brush size slider in the top context options bar"
     },
     {
       "type": "assertion",
-      "description": "Verify the brush size button updates its text to 2px"
+      "description": "Verify the brush size display in the top context options bar reflects the updated size"
     }
   ]
 }

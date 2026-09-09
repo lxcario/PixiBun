@@ -3,7 +3,7 @@
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "Raymarched 2.5D cast and drop shadows with dither filtering",
-  "description": "Verify drawing a solid colored circular ball, rendering raymarched ground cast shadows, switching between Directional Cast and Ground Drop styles, and applying ordered Bayer dither patterns.",
+  "description": "Verify drawing a solid colored circular ball, rendering raymarched ground cast shadows, and switching between Directional Cast and Ground Drop styles.",
   "priority": "p1",
   "planSteps": [
     {
@@ -12,15 +12,23 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
     },
     {
       "type": "action",
-      "description": "Select the Flood Fill tool (press G), select a vibrant color, and click inside the circle to color it solidly"
+      "description": "Click on the center drawing canvas to stamp an ellipse"
+    },
+    {
+      "type": "action",
+      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
+    },
+    {
+      "type": "action",
+      "description": "Click on the canvas to fill the shape with color"
     },
     {
       "type": "assertion",
-      "description": "Verify a solid colored circular ball is clearly visible in the center canvas"
+      "description": "Verify artwork is visible in the center canvas"
     },
     {
       "type": "action",

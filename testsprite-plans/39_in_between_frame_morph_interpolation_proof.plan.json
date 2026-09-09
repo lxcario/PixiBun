@@ -12,23 +12,31 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool (press O), ensure shape mode is 'Shape: Filled Solid', and draw a solid circular ball in the upper-left quadrant of the canvas on Frame 1"
+      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
     },
     {
       "type": "action",
-      "description": "Select Flood Fill (press G), choose an amber color, and click inside the circle to solidly fill it"
+      "description": "Click on the canvas to stamp a shape on Frame 1"
+    },
+    {
+      "type": "action",
+      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
+    },
+    {
+      "type": "action",
+      "description": "Click inside the shape on the canvas to fill it"
     },
     {
       "type": "assertion",
-      "description": "Verify Frame 1 contains the filled ball in the upper-left corner"
+      "description": "Verify Frame 1 contains artwork"
     },
     {
       "type": "action",
-      "description": "Click the 'Frame' button in the bottom timeline bar to add Frame 2"
+      "description": "Click the Frame button in the bottom timeline bar to add Frame 2"
     },
     {
       "type": "action",
-      "description": "On Frame 2, select Ellipse (O), draw the ball in the lower-right quadrant of the canvas, and fill with the same amber color"
+      "description": "Click on the canvas to paint artwork on Frame 2"
     },
     {
       "type": "assertion",

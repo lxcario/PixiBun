@@ -12,7 +12,7 @@
     },
     {
       "type": "action",
-      "description": "Click the PixiBud tab in the right inspector panel"
+      "description": "Click the PixiBud AI tab button in the right inspector panel"
     },
     {
       "type": "assertion",

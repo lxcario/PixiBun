@@ -16,8 +16,13 @@ export const PixelDitherCurtain: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Respect reduced motion
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Respect reduced motion or automated test runners
+    if (
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        Boolean(navigator.webdriver) ||
+        window.location.search.includes('skipCurtain'))
+    ) {
       dismiss();
       return;
     }
@@ -132,6 +137,7 @@ export const PixelDitherCurtain: React.FC = () => {
     <div
       role="button"
       tabIndex={0}
+      data-testid="curtain-overlay"
       className={`fixed inset-0 z-50 pointer-events-auto cursor-pointer select-none transition-colors duration-100 ${
         hasStarted ? 'bg-transparent' : 'bg-[#1e1730]'
       }`}
@@ -149,9 +155,17 @@ export const PixelDitherCurtain: React.FC = () => {
         className="w-full h-full block pixelated pointer-events-none"
       />
       {/* 16-Bit Skip Hint Badge */}
-      <div className="absolute top-4 right-4 px-3 py-1.5 bg-[#1e1730] border-2 border-[#3a2e4c] rounded-[1px] text-[#f0be7c] font-mono text-[10px] tracking-wider shadow-[0_3px_0_#130e20] pointer-events-auto">
+      <button
+        type="button"
+        data-testid="curtain-skip"
+        onClick={(e) => {
+          e.stopPropagation();
+          dismiss();
+        }}
+        className="absolute top-4 right-4 px-3 py-1.5 bg-[#1e1730] border-2 border-[#3a2e4c] rounded-[1px] text-[#f0be7c] font-mono text-[10px] tracking-wider shadow-[0_3px_0_#130e20] pointer-events-auto cursor-pointer"
+      >
         CLICK OR ESC TO SKIP ✦
-      </div>
+      </button>
     </div>
   );
 };

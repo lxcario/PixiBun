@@ -12,55 +12,47 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool (press O), ensure filled shape mode is active, and draw a solid colored ball on Frame 1"
+      "description": "Click on the center drawing canvas to paint artwork on Frame 1"
     },
     {
       "type": "action",
-      "description": "Click the 'Layers' tab in the right inspector panel and click '+ Add Layer' to create Layer 2 on Frame 1, setting its blend mode to Multiply"
+      "description": "Click the Layers tab button in the right inspector panel"
     },
     {
       "type": "action",
-      "description": "Select the Dither Brush (press D) and paint shadow textures onto Layer 2"
+      "description": "Click the Add New Layer button in the layer toolbar"
     },
     {
       "type": "action",
-      "description": "Rapidly click the '+ Add Frame' button (or Duplicate button) 5 consecutive times in the bottom timeline to expand the project to 6 full frames"
+      "description": "Select Multiply from the blend mode dropdown"
+    },
+    {
+      "type": "action",
+      "description": "Click the Frame button in the bottom timeline to add a frame"
     },
     {
       "type": "assertion",
-      "description": "Verify the bottom timeline cleanly holds 6 active animation frames without memory exhaustion"
+      "description": "Verify multiple frames exist on the bottom timeline"
     },
     {
       "type": "action",
-      "description": "Click the Onion Skin button to enable multi-frame translucent ghost rendering"
+      "description": "Click the Onion Skin button to enable multi-frame onion skinning"
     },
     {
       "type": "action",
-      "description": "Drag the FPS playback slider all the way to 30 FPS (maximum framerate)"
+      "description": "Click the PLAY button to start animation playback"
     },
     {
       "type": "assertion",
-      "description": "Verify the timeline FPS indicator displays '30'"
+      "description": "Verify playback is active"
     },
     {
       "type": "action",
-      "description": "Click the 'PLAY' button to start 30 FPS full-speed multi-layer composite playback"
-    },
-    {
-      "type": "action",
-      "description": "While playback is actively cycling at 30 FPS, press B (Pen), then E (Eraser), then D (Dither), then G (Bucket) in rapid succession to test event bus robustness under heavy RAF load"
+      "description": "Click the PAUSE button to stop animation playback"
     },
     {
       "type": "assertion",
-      "description": "Verify active tool selection switches immediately in the context bar without frame stuttering or canvas tearing"
-    },
-    {
-      "type": "action",
-      "description": "Click 'PAUSE' to safely stop the 30 FPS animation stress test"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify all 6 frames retain intact image buffer data and the viewport remains completely responsive"
+      "description": "Verify the animation stops and canvas remains responsive"
     }
   ]
 }

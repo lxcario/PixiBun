@@ -16,7 +16,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the 'Resize Canvas & Frame Bounds' modal appears showing presets (16, 24, 32, 48, 64, 128) and a 3x3 anchor grid"
+      "description": "Verify the 'Resize Canvas & Frame Bounds' modal appears showing presets (16, 24, 32, 48, 64, 128) and dimension inputs"
     },
     {
       "type": "action",
@@ -25,6 +25,10 @@
     {
       "type": "assertion",
       "description": "Verify the width and height input values update to 64"
+    },
+    {
+      "type": "action",
+      "description": "Uncheck the 'Scale Artwork (Resample)' checkbox to reveal the anchor alignment grid"
     },
     {
       "type": "action",

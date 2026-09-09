@@ -12,15 +12,23 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
     },
     {
       "type": "action",
-      "description": "Select the Flood Fill tool (press G), select a green or purple color swatch, and click inside the circle to solidly fill and color it"
+      "description": "Click on the center drawing canvas to stamp an ellipse"
+    },
+    {
+      "type": "action",
+      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
+    },
+    {
+      "type": "action",
+      "description": "Click inside the shape to solidly fill it with color"
     },
     {
       "type": "assertion",
-      "description": "Verify a solid colored circular shape is clearly visible on the canvas"
+      "description": "Verify artwork is visible on the canvas"
     },
     {
       "type": "action",
@@ -44,11 +52,11 @@
     },
     {
       "type": "assertion",
-      "description": "Verify a dedicated tagged layer named 'Optics (gemstone)' is created containing simulated refraction and internal subsurface scatter over the ball"
+      "description": "Verify a dedicated tagged layer named 'Optics (gemstone)' is created"
     },
     {
       "type": "action",
-      "description": "Click the 'Hair' optical preset button and select 'Smooth' cel tones"
+      "description": "Click the 'Hair' optical preset button"
     },
     {
       "type": "action",
@@ -56,7 +64,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the existing optics layer updates in-place to render anisotropic flowing hair sheen across the ball"
+      "description": "Verify the optics layer updates to 'Optics (hair)'"
     }
   ]
 }

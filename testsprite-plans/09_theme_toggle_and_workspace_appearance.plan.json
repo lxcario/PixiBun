@@ -12,7 +12,7 @@
     },
     {
       "type": "action",
-      "description": "Click the Theme Toggle button in the top header"
+      "description": "Click the button with label 'Toggle Theme' in the top header"
     },
     {
       "type": "assertion",
@@ -20,7 +20,7 @@
     },
     {
       "type": "action",
-      "description": "Click the Theme Toggle button again"
+      "description": "Click the button with label 'Toggle Theme' again"
     },
     {
       "type": "assertion",

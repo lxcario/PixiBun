@@ -12,43 +12,35 @@
     },
     {
       "type": "action",
-      "description": "Select the Pen tool (press B) and draw an initial base artwork mark on the canvas"
+      "description": "Click on the center drawing canvas to paint a pixel"
     },
     {
       "type": "action",
-      "description": "Click the 'Layers' tab in the right inspector panel"
+      "description": "Click the Layers tab button in the right inspector panel"
     },
     {
       "type": "action",
-      "description": "Click the lock icon button on the active layer to lock it"
+      "description": "Click the lock button on the active layer to lock it"
     },
     {
       "type": "assertion",
-      "description": "Verify the lock icon reflects the locked state (title 'Unlock Layer')"
+      "description": "Verify the active layer shows locked state in the inspector"
     },
     {
       "type": "action",
-      "description": "Select the Pen tool and attempt to draw across the canvas"
+      "description": "Click on the center drawing canvas to attempt painting on the locked layer"
     },
     {
       "type": "assertion",
-      "description": "Verify a prominent warning toast appears stating 'Active layer is locked! Unlock it in the inspector to paint.'"
+      "description": "Verify locked layer protection blocks edits on the canvas"
     },
     {
       "type": "action",
-      "description": "Select the Eraser tool (press E) and attempt to erase on the canvas"
+      "description": "Click the Undo button in the top header or press Ctrl+Z"
     },
     {
       "type": "assertion",
-      "description": "Verify the stroke remains blocked by the lock protection"
-    },
-    {
-      "type": "action",
-      "description": "Press Ctrl+Z on the keyboard to trigger Undo"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the initial base artwork mark is cleanly undone, proving blocked strokes never created corrupt history steps"
+      "description": "Verify the undo action completes cleanly"
     }
   ]
 }

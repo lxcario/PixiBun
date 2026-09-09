@@ -12,7 +12,7 @@
     },
     {
       "type": "action",
-      "description": "Dismiss the introductory dither curtain by clicking on the screen"
+      "description": "Click the skip badge labeled CLICK OR ESC TO SKIP in the top right to dismiss the introductory pixel curtain"
     },
     {
       "type": "assertion",

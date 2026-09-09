@@ -303,7 +303,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           variant="default"
           onClick={onOpenShortcuts}
           title="Atelier Guide, Diagnostics & Shortcuts (?)"
-          aria-label="Atelier Guide, Diagnostics and Shortcuts"
+          aria-label="Shortcuts"
+          data-testid="shortcuts-guide-button"
           className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
         >
           <PixelIcon name="help" size={14} />
@@ -326,6 +327,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           variant="primary"
           onClick={onOpenExport}
           title="Export PNG, GIF, or Spritesheet"
+          aria-label="Export Studio Assets"
+          data-testid="export-button"
           className="text-xs px-3 py-1.5 bg-[#f0be7c] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] text-[#140d1f] border-2 border-[#8c5120] font-mono font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5"
         >
           <PixelIcon name="export" size={14} />

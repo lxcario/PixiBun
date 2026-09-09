@@ -12,15 +12,15 @@
     },
     {
       "type": "action",
-      "description": "Select the Pen tool and draw three colored bars using swatches from the palette"
+      "description": "Click on the center drawing canvas to paint a stroke"
     },
     {
       "type": "action",
-      "description": "Click the 'Palette' tab in the right inspector panel, then switch to the 'Cycle Engine' sub-tab"
+      "description": "Click the Palette tab button in the right inspector panel, then switch to the 'Cycle Engine' sub-tab"
     },
     {
       "type": "action",
-      "description": "Click the 'Play Cycle' toggle button and let it run for 2 seconds"
+      "description": "Click the 'Play Cycle' toggle button and let it run"
     },
     {
       "type": "assertion",
@@ -32,11 +32,11 @@
     },
     {
       "type": "action",
-      "description": "Press Ctrl+Z on the keyboard to trigger Undo"
+      "description": "Click the Undo button in the top header or press Ctrl+Z"
     },
     {
       "type": "assertion",
-      "description": "Verify the last drawn pen stroke is immediately removed, confirming that 60 FPS palette cycling frames never polluted the circular history stack"
+      "description": "Verify the undo action completes cleanly"
     }
   ]
 }

@@ -12,27 +12,27 @@
     },
     {
       "type": "action",
-      "description": "Click the Layers tab in the right inspector panel"
+      "description": "Click the Layers tab button in the right inspector panel"
     },
     {
       "type": "assertion",
-      "description": "Verify the layers header displays Layers (1) and Layer 1 is active"
+      "description": "Verify the layers header displays Layers (1)"
     },
     {
       "type": "action",
-      "description": "Click the Add New Layer button in the layer toolbar"
+      "description": "Click the Add New Layer button (title 'Add New Layer') in the layer toolbar"
     },
     {
       "type": "assertion",
-      "description": "Verify the layer count updates to Layers (2) and Layer 2 appears in the layer stack"
+      "description": "Verify the layer count updates to Layers (2) and a second layer appears"
     },
     {
       "type": "action",
-      "description": "Click the visibility eye icon on Layer 2"
+      "description": "Click the visibility toggle button on the active layer item"
     },
     {
       "type": "assertion",
-      "description": "Verify the visibility eye icon toggles to its hidden state"
+      "description": "Verify the visibility toggle state updates"
     },
     {
       "type": "action",

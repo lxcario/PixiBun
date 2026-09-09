@@ -117,6 +117,8 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                   key={tool.id}
                   onClick={() => setActiveTool(tool.id)}
                   title={`${tool.label} (${tool.shortcut})`}
+                  aria-label={tool.label}
+                  data-testid={`${tool.id}-tool`}
                   data-tutorial={`${tool.id}-tool`}
                   className={`w-9 h-9 rounded-[2px] border-2 flex items-center justify-center cursor-pointer transition-all ${
                     isActive

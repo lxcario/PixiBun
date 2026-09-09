@@ -12,7 +12,7 @@
     },
     {
       "type": "action",
-      "description": "Click the Export button in the top header"
+      "description": "Click the 'Export' button in the top header (with title 'Export PNG, GIF, or Spritesheet')"
     },
     {
       "type": "assertion",

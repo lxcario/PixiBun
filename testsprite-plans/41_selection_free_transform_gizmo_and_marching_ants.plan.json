@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
@@ -8,7 +8,8 @@
   "planSteps": [
     { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "assertion", "description": "Verify the drawing studio workspace is loaded with center drawing canvas" },
-    { "type": "action", "description": "Select the Ellipse tool (press O), ensure Filled Solid mode is active in the context options bar, and draw a 20x20 pixel filled shape in the center of the canvas" },
+    { "type": "action", "description": "Click the Ellipse tool button in the left toolbar (or press O)" },
+    { "type": "action", "description": "Click on the center drawing canvas to stamp a shape" },
     { "type": "action", "description": "Select the Box Selection tool (press M or click Select Box in the left toolbar)" },
     { "type": "action", "description": "Click and drag a selection rectangle that completely encloses the drawn artwork shape on the canvas" },
     { "type": "assertion", "description": "Verify the interactive Selection Transform Gizmo appears mounted over the selection with 8 square handles, center pivot crosshair, and dual-tone animated marching ants" },

@@ -16,6 +16,8 @@ export const RightInspector: React.FC = () => {
       <div className="flex bg-[var(--desk-surface-raised)] border-b-2 border-[var(--desk-border)] p-1.5 gap-1.5">
         <button
           onClick={() => setActiveInspectorTab('layers')}
+          aria-label="Layers"
+          data-testid="tab-layers"
           className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-mono font-bold py-2 rounded-[2px] border transition-colors cursor-pointer ${
             activeInspectorTab === 'layers'
               ? 'bg-[var(--desk-surface-raised)] border-[#f0be7c] text-[#f0be7c] shadow-[0_2px_0_#130e20]'
@@ -28,6 +30,8 @@ export const RightInspector: React.FC = () => {
 
         <button
           onClick={() => setActiveInspectorTab('palette')}
+          aria-label="Palette"
+          data-testid="tab-palette"
           className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-mono font-bold py-2 rounded-[2px] border transition-colors cursor-pointer ${
             activeInspectorTab === 'palette'
               ? 'bg-[var(--desk-surface-raised)] border-[#f0be7c] text-[#f0be7c] shadow-[0_2px_0_#130e20]'
@@ -40,6 +44,8 @@ export const RightInspector: React.FC = () => {
 
         <button
           onClick={() => setActiveInspectorTab('ai')}
+          aria-label="PixiBud AI"
+          data-testid="tab-ai"
           className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-mono font-bold py-2 rounded-[2px] border transition-colors cursor-pointer ${
             activeInspectorTab === 'ai'
               ? 'bg-[var(--desk-surface-raised)] border-[#f0be7c] text-[#f0be7c] shadow-[0_2px_0_#130e20]'

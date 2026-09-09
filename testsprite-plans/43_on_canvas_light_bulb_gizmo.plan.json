@@ -1,0 +1,42 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+  "type": "frontend",
+  "name": "On-canvas pixel light bulb gizmo controls light direction with live shading preview",
+  "description": "Verify triggering photometric lighting activates the on-canvas light bulb gizmo and top action bar, and pressing cancel restores the canvas.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Ellipse tool button in the left toolbar or press the O key"
+    },
+    {
+      "type": "action",
+      "description": "Click on the center drawing canvas (main composite canvas) to draw a circular shape"
+    },
+    {
+      "type": "action",
+      "description": "Click the PixiBud AI tab button in the right inspector panel"
+    },
+    {
+      "type": "action",
+      "description": "Click the Analyze & Render button in the 2.5D Photometric Studio"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the on-canvas light bulb gizmo appears with a directional light handle and action bar"
+    },
+    {
+      "type": "action",
+      "description": "Click the Cancel button in the on-canvas light gizmo action bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the on-canvas light bulb gizmo and action bar are dismissed"
+    }
+  ]
+}

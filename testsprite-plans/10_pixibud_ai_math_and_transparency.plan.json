@@ -20,7 +20,7 @@
     },
     {
       "type": "action",
-      "description": "Click and drag across the center canvas to draw a circle"
+      "description": "Click on the center drawing canvas to stamp a shape"
     },
     {
       "type": "action",
@@ -32,7 +32,7 @@
     },
     {
       "type": "action",
-      "description": "Keep the 'Auto' mode button active and click the 'Analyze & Render' button in the Smart Art Analysis panel"
+      "description": "Keep the 'Auto' mode button active and click the 'Analyze & Light Bulb' button in the Smart Art Analysis panel"
     },
     {
       "type": "assertion",

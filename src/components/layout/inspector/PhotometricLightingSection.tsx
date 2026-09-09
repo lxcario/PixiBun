@@ -235,6 +235,8 @@ export const PhotometricLightingSection: React.FC = () => {
             variant="primary"
             onClick={handleAutoRenderPhotometric}
             title="Analyze the canvas art, mount live pixel light bulb on canvas, and adjust live-time"
+            aria-label="Analyze & Light Bulb"
+            data-testid="analyze-light-bulb"
             className="text-xs py-2 font-bold justify-center"
           >
             <PixelIcon name="lamp" size={14} />

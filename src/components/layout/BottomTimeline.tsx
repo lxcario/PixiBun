@@ -379,6 +379,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             variant="default"
             onClick={addFrame}
             title="Add Blank Frame"
+            aria-label="+ Frame"
+            data-testid="add-frame-button"
             data-tutorial="add-frame"
             className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1 font-bold"
           >

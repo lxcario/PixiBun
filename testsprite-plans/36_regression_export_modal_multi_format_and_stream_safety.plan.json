@@ -12,11 +12,11 @@
     },
     {
       "type": "action",
-      "description": "Draw custom sprite artwork on the canvas"
+      "description": "Click on the center drawing canvas to paint a pixel"
     },
     {
       "type": "action",
-      "description": "Click the 'Export' button in the top header to open the Export modal"
+      "description": "Click the 'Export' button in the top header (with title 'Export PNG, GIF, or Spritesheet')"
     },
     {
       "type": "assertion",
