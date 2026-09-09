@@ -52,6 +52,7 @@ export function rgbToOKLab(r: number, g: number, b: number): OKLabColor {
 
 /**
  * Converts OKLab to sRGB object { r, g, b } in [0..255].
+ * Canonical core math routine returning structured RGB channels.
  */
 export function okLabToRGB(L: number, a: number, b: number): { r: number; g: number; b: number } {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
@@ -75,6 +76,7 @@ export function okLabToRGB(L: number, a: number, b: number): { r: number; g: num
 
 /**
  * Converts OKLab to sRGB tuple [r, g, b] in [0..255].
+ * Array tuple wrapper for shader pipelines and pixel array packing.
  */
 export function oklabToRgb(L: number, a: number, b: number): [number, number, number] {
   const rgb = okLabToRGB(L, a, b);
@@ -138,7 +140,11 @@ export function shiftHue(currentH: number, targetH: number, maxShiftDeg: number)
   return (currentH + shift + 360) % 360;
 }
 
-// Aliases for cross-engine compatibility
+/**
+ * Cross-Engine Compatibility Aliases.
+ * Canonical = OKLab certified uppercase PascalCase conventions (e.g. `rgbToOKLab`, `deltaEOKLab`).
+ * Lowercase camelCase aliases provide seamless drop-in interoperability for shaders, tools, and tests.
+ */
 export const rgbToOklab = rgbToOKLab;
 export const deltaEOklab = deltaEOKLab;
 export const oklabDistance = deltaEOKLab;

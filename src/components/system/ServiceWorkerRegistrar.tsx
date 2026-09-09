@@ -33,30 +33,52 @@ export function ServiceWorkerRegistrar() {
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    const ac = new AbortController();
+    const { signal } = ac;
+
     registerServiceWorker().then((reg) => {
-      if (!reg) return;
+      if (!reg || signal.aborted) return;
 
       // Check if a worker is already waiting
-      if (reg.waiting) {
+      if (reg.waiting && navigator.serviceWorker.controller) {
         setWaitingWorker(reg.waiting);
         setShowToast(true);
       }
 
-      // Listen for new worker installation
-      reg.addEventListener('updatefound', () => {
-        const installingWorker = reg.installing;
-        if (!installingWorker) return;
+      const trackInstalling = (worker: ServiceWorker) => {
+        worker.addEventListener(
+          'statechange',
+          () => {
+            if (
+              worker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
+              if (!signal.aborted) {
+                setWaitingWorker(worker);
+                setShowToast(true);
+              }
+            }
+          },
+          { signal }
+        );
+      };
 
-        installingWorker.addEventListener('statechange', () => {
-          if (
-            installingWorker.state === 'installed' &&
-            navigator.serviceWorker.controller
-          ) {
-            setWaitingWorker(installingWorker);
-            setShowToast(true);
+      if (reg.installing) {
+        trackInstalling(reg.installing);
+      }
+
+      // Listen for new worker installation
+      reg.addEventListener(
+        'updatefound',
+        () => {
+          if (reg.installing) {
+            trackInstalling(reg.installing);
           }
-        });
-      });
+        },
+        { signal }
+      );
     });
 
     let refreshing = false;
@@ -68,14 +90,10 @@ export function ServiceWorkerRegistrar() {
       }
     };
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-    }
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange, { signal });
 
     return () => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      }
+      ac.abort();
     };
   }, []);
 

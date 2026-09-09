@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -31,19 +31,34 @@ export const LayersPanel: React.FC = () => {
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
   const [mergeConfirmLayerId, setMergeConfirmLayerId] = useState<string | null>(null);
+  const mergeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (mergeTimerRef.current !== null) {
+        window.clearTimeout(mergeTimerRef.current);
+      }
+    };
+  }, []);
 
   // Merge-down is irreversible (the history engine tracks pixel strokes, not
   // structural layer ops), so it requires a two-step confirm instead of
   // executing destructively on a single click.
   const requestMergeDown = (layerId: string) => {
+    if (mergeTimerRef.current !== null) {
+      window.clearTimeout(mergeTimerRef.current);
+      mergeTimerRef.current = null;
+    }
+
     if (mergeConfirmLayerId === layerId) {
       setMergeConfirmLayerId(null);
       mergeLayerDown(layerId);
       return;
     }
     setMergeConfirmLayerId(layerId);
-    window.setTimeout(() => {
+    mergeTimerRef.current = window.setTimeout(() => {
       setMergeConfirmLayerId((current) => (current === layerId ? null : current));
+      mergeTimerRef.current = null;
     }, 2500);
   };
 

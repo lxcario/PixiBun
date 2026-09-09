@@ -13,12 +13,13 @@ export interface TactileButtonProps extends Omit<HTMLMotionProps<'button'>, 'siz
   size?: TactileSize;
   active?: boolean;
   imageSrc?: string;
+  imageAlt?: string;
   children?: React.ReactNode;
   className?: string;
 }
 
 export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonProps>(
-  ({ variant = 'default', size = 'md', active = false, imageSrc, children, className, disabled, ...props }, ref) => {
+  ({ variant = 'default', size = 'md', active = false, imageSrc, imageAlt, children, className, disabled, ...props }, ref) => {
     
     const shouldReduceMotion = useReducedMotion();
 
@@ -106,7 +107,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
           <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={imageSrc}
-              alt="Button Asset"
+              alt={imageAlt ?? ((props['aria-label'] as string) || '')}
               className="w-full h-full object-contain pixelated pointer-events-none select-none transition-all duration-200"
               style={{
                 imageRendering: 'pixelated',

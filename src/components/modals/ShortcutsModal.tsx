@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import {
@@ -62,6 +62,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [diagSettings, setDiagSettings] = useState(getDiagnosticsSettings());
   const [clearNotice, setClearNotice] = useState(false);
+  const clearNoticeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -69,6 +70,14 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       setClearNotice(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (clearNoticeTimerRef.current !== null) {
+        window.clearTimeout(clearNoticeTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleToggleLocal = (enabled: boolean) => {
     const updated = setDiagnosticsSettings({ enabled });
@@ -82,8 +91,14 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   const handleClear = async () => {
     await clearDiagnostics();
+    if (clearNoticeTimerRef.current !== null) {
+      window.clearTimeout(clearNoticeTimerRef.current);
+    }
     setClearNotice(true);
-    setTimeout(() => setClearNotice(false), 2500);
+    clearNoticeTimerRef.current = window.setTimeout(() => {
+      setClearNotice(false);
+      clearNoticeTimerRef.current = null;
+    }, 2500);
   };
 
   return (

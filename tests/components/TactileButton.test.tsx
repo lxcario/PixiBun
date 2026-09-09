@@ -89,4 +89,15 @@ describe('TactileButton component', () => {
     const imgBtn = screen.getByRole('button');
     expect(imgBtn.className).toContain('rounded-[2px]');
   });
+
+  it('supports custom imageAlt and falls back to aria-label for accessibility', () => {
+    const { unmount } = render(<TactileButton imageSrc="/test.png" imageAlt="Custom Brush Icon" />);
+    const img = screen.getByAltText('Custom Brush Icon');
+    expect(img).toBeDefined();
+    unmount();
+
+    render(<TactileButton imageSrc="/test.png" aria-label="Eraser Tool" />);
+    const imgAria = screen.getByAltText('Eraser Tool');
+    expect(imgAria).toBeDefined();
+  });
 });
