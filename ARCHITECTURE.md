@@ -352,7 +352,7 @@ To prevent simultaneous layout recalculations and repaint stutter across thousan
 ## 12. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)
 
 High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral Filters, Laplace Normal Map baking, downsampling) require substantial TypedArray scratch space. To eliminate garbage collection pauses during live canvas interactions:
-- **Pool Sizing & Lifecycle:** Pre-allocates and bounds reusable `Float32Array`, `Int32Array`, and `Uint8ClampedArray` buffers.
+- **Pool Sizing & Lifecycle:** Pre-allocates and bounds reusable `Float32Array` and `Int32Array` buffers.
 - **Resource Borrows:** Callers acquire buffers with `acquireFloat32Buffer(minLen)` and release them in `finally` blocks with `releaseFloat32Buffer(buf)`.
 - **Zero-Fill Guarantees:** Buffers are sanitized/cleared on release, preventing cross-frame data corruption.
 - **Compositor Canvas Pooling:** `compositeFrame()` leverages a persistent offscreen canvas singleton and accepts an optional `targetCanvas` destination to avoid allocating DOM canvas elements on every render tick.

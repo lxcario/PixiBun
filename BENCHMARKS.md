@@ -7,7 +7,7 @@ This document records empirical benchmarks, algorithmic execution budgets, and h
 ## 1. Palette Cycling 32-Bit LUT Remapping Performance
 
 **Function:** `updateLivePaletteLUT32` (with direct `ImageData` `Uint32Array` LUT remapping)  
-**File:** [`src/lib/color/paletteCycling.ts`](file:///d:/PixiBun/src/lib/color/paletteCycling.ts)  
+**File:** [`src/lib/color/paletteCycling.ts`](src/lib/color/paletteCycling.ts)  
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous animation)
 
 The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32Array` lookup table. In each animation frame, cycle tracks rotate color indices into `outLUT32`, which is then mapped directly across the canvas pixel buffer.
@@ -28,7 +28,7 @@ The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32A
 ## 2. HistoryEngine Memory Footprint & Ceilings
 
 **Class:** `HistoryEngine`  
-**File:** [`src/lib/engine/historyEngine.ts`](file:///d:/PixiBun/src/lib/engine/historyEngine.ts)  
+**File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
 **Ring Buffer Size:** 50 undo steps + up to 50 redo steps (100 steps total max capacity)
 
 Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$).
@@ -60,7 +60,7 @@ To guarantee sub-16ms interactive drawing latency without frame drops or garbage
 ## 4. Interactive Selection Transform & Inverse Affine Sampling Performance
 
 **Function:** `rotateNearest` (nearest-neighbor inverse affine point sampling) & `drawImage` (uncapped hardware blit with `imageSmoothingEnabled = false`)  
-**File:** [`src/lib/canvas/rotSprite.ts`](file:///d:/PixiBun/src/lib/canvas/rotSprite.ts), [`src/hooks/viewport/useViewportSelectionTransform.ts`](file:///d:/PixiBun/src/hooks/viewport/useViewportSelectionTransform.ts)  
+**File:** [`src/lib/canvas/rotSprite.ts`](src/lib/canvas/rotSprite.ts), [`src/hooks/viewport/useViewportSelectionTransform.ts`](src/hooks/viewport/useViewportSelectionTransform.ts)  
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous pointer drag)
 
 During interactive selection transforms (corner scaling, edge stretching, translation, and rotation), PixiBun executes a fast nearest-neighbor inverse affine point sampling pass per pointer movement. This provides instantaneous visual feedback at full monitor refresh rates (60–144 Hz) without introducing blurry bilinear artifacts, deferring the heavy multi-pass RotSprite downscale until the transform is committed.

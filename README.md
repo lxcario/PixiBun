@@ -52,7 +52,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
 * **Wu's Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
 * **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
-* **Rational Bézier Curves:** Exact quadratic and cubic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
+* **Rational Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
 * **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with unsigned 32-bit bitwise normalization and adjustable tolerance.
 * **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
 * **Canvas Brush Ghost Cursor & Zoom Ergonomics:** Non-destructive 1px footprint bounding box matching brush size at $\ge 400\%$ zoom, with `Ctrl + + / - / 0 / 1` integer keyboard navigation.

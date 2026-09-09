@@ -200,7 +200,7 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
   - Inverse square distance attenuation ($\text{Atten}(d) = \text{clamp}(1 - (d/r)^2, 0, 1)^2$).
   - 5 Physical Material Presets (*Matte Clay*, *Polished Metal*, *Glossy Glass*, *Velvet Fabric*, *Gold / Brass*).
 - **OKLab Perceptual Matching & Bayer Dither Offset Modulation**: Exact sRGB $\leftrightarrow$ Linear $\leftrightarrow$ LMS $\leftrightarrow$ OKLab ($L, a, b$) conversions with $\Delta E_{\text{OKLab}}$ distance matching and Bayer threshold offset modulation to eliminate dirty pixel artifacts.
-- **Geometric Pixel Math Suite**: Wu's quantized 2:1 isometric lines, rational quadratic/cubic Bézier curves, 47-Tile Blob autotiling bitmask utility (`calculate47TileBitmask()` — pure computation; tile-placement requires a tileset atlas feature that is not yet shipped), RotSprite 8x Scale2X rotation, and Zhang-Suen 1px skeleton line thinning.
+- **Geometric Pixel Math Suite**: Wu's quantized 2:1 isometric lines, rational quadratic Bézier curves, 47-Tile Blob autotiling bitmask utility (`calculate47TileBitmask()` — pure computation; tile-placement requires a tileset atlas feature that is not yet shipped), RotSprite 8x Scale2X rotation, and Zhang-Suen 1px skeleton line thinning.
 - **Contextual Tool Options Strip**: 30px dynamic toolbar beneath TopHeader displaying active tool controls.
 - **Artisan Left Toolbar**: 56px rail with 4 categorized groups, dual overlapping tactile color wells with swap/reset, and 8-color quick palette dock.
 - **Interactive Right Inspector PixiBud Studio**: Upgraded 3 tabs with comprehensive 2.5D Photometric Studio Lab, Material selector, and normal map baking actions.

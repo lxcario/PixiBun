@@ -459,8 +459,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Web Worker GIF Encoding Engine (`src/lib/export/gifEncoder.worker.ts`)**: Offloaded heavy LZW compression and median-cut color quantization to a dedicated worker thread with transferable ArrayBuffers.
 - **Buffer Registry Memory Safety (`src/stores/studioStore.ts`)**: Integrated `clearAllBuffers()` calls during `resetToNewProject()` and `loadProjectState()`, preventing memory leaks on project switches.
 - **Flood Fill Exact Tolerance 0 (`src/lib/canvas/floodFill.ts`)**: Added strict integer RGBA comparison when `tolerance === 0`, preventing floating-point alpha edge case false positives.
-- **Pixel-Perfect 8-Way Connectivity (`src/lib/canvas/rasterMath.ts`)**: Enforced Chebyshev distance connectivity check (`Math.abs(dx) <= 1 && Math.abs(dy) <= 1`) before dropping corner pixels.
-- **Async Autosave Serialization (`src/lib/project/serialize.ts`)**: Added `rasterizeLayerPngAsync` with non-blocking `canvas.toBlob()` and wired `buildProjectFileAsync()` to background autosave.
+- **Async Autosave & Project Serialization (`src/lib/project/serialize.ts`)**: Added `rasterizeLayerPngAsync` with non-blocking `canvas.toBlob()`, wired `buildAutosavePayloadAsync()` to background autosave with Dexie binary blobs, and provided `buildProjectFileAsync()` for non-blocking project file exports.
 
 ### Architecture & State Management
 - **Strongly-Typed Event Bus (`src/lib/events/studioEvents.ts`)**: Created a typed TypeScript event pub/sub system with discriminated payloads for 23 studio actions.
