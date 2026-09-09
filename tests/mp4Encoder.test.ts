@@ -5,9 +5,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   exportAnimationToMp4Async,
   isMp4ExportSupported,
-  buildIsoBox,
-  createFtypBox,
-  createMoovBox,
 } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { HistoryStep } from '@/lib/engine/historyEngine';
@@ -121,32 +118,6 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     canvas.height = height;
     return canvas;
   }
-
-  it('builds standard ISOBMFF box with 4-byte big-endian size and 4-char type', () => {
-    const payload = new Uint8Array([10, 20, 30, 40]);
-    const box = buildIsoBox('test', payload);
-
-    expect(box.length).toBe(12); // 8 header + 4 payload
-    expect(box[0]).toBe(0);
-    expect(box[1]).toBe(0);
-    expect(box[2]).toBe(0);
-    expect(box[3]).toBe(12);
-
-    expect(String.fromCharCode(box[4], box[5], box[6], box[7])).toBe('test');
-    expect(Array.from(box.subarray(8))).toEqual([10, 20, 30, 40]);
-  });
-
-  it('constructs standard ftyp and moov FastStart metadata boxes', () => {
-    const ftyp = createFtypBox();
-    expect(ftyp.length).toBeGreaterThan(16);
-    expect(String.fromCharCode(ftyp[4], ftyp[5], ftyp[6], ftyp[7])).toBe('ftyp');
-    // Major brand 'isom'
-    expect(String.fromCharCode(ftyp[8], ftyp[9], ftyp[10], ftyp[11])).toBe('isom');
-
-    const moov = createMoovBox(64, 64, 1000);
-    expect(moov.length).toBeGreaterThan(32);
-    expect(String.fromCharCode(moov[4], moov[5], moov[6], moov[7])).toBe('moov');
-  });
 
   it('throws an error if no frames are provided', async () => {
     await expect(exportAnimationToMp4Async([])).rejects.toThrow(

@@ -15,7 +15,7 @@ import { exportAnimationToMp4Async, isMp4ExportSupported } from '@/lib/export/mp
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { getGlobalHistory } from '@/lib/engine/historyEngine';
 import { compositeFrame } from '@/lib/render/compositor';
-import { buildProjectFile } from '@/lib/project/serialize';
+import { buildProjectFileAsync } from '@/lib/project/serialize';
 import {
   generateGodot4Shader,
   generateUnityUrpShader,
@@ -459,10 +459,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     }
   };
 
-  const handleExportProjectJson = () => {
+  const handleExportProjectJson = async () => {
     let projectData: string;
     try {
-      projectData = JSON.stringify(buildProjectFile(), null, 2);
+      const project = await buildProjectFileAsync();
+      projectData = JSON.stringify(project, null, 2);
     } catch (err) {
       console.error('Project serialization failed during export:', err);
       return;

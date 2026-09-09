@@ -36,6 +36,9 @@ export async function rasterizeLayerPngAsync(layerId: string, width: number, hei
   if (!hasContent || !hasContent.canvas) return undefined;
 
   return new Promise((resolve) => {
+    if (typeof hasContent.canvas.toBlob !== 'function') {
+      return resolve(rasterizeLayerPng(layerId, width, height));
+    }
     hasContent.canvas.toBlob((blob) => {
       if (!blob) {
         // Fallback to sync if blob fails
@@ -62,6 +65,21 @@ export async function rasterizeLayerBlobAsync(layerId: string, width: number, he
   if (!hasContent || !hasContent.canvas) return undefined;
 
   return new Promise((resolve) => {
+    if (typeof hasContent.canvas.toBlob !== 'function') {
+      // Fallback: convert data URL to Blob
+      try {
+        const dataUrl = hasContent.canvas.toDataURL('image/png');
+        const binStr = atob(dataUrl.split(',')[1]);
+        const len = binStr.length;
+        const arr = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          arr[i] = binStr.charCodeAt(i);
+        }
+        return resolve(new Blob([arr], { type: 'image/png' }));
+      } catch {
+        return resolve(undefined);
+      }
+    }
     hasContent.canvas.toBlob((blob) => {
       resolve(blob || undefined);
     }, 'image/png');

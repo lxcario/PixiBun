@@ -6,6 +6,57 @@ import { ExportModal } from '@/components/modals/ExportModal';
 import { useStudioStore } from '@/stores/studioStore';
 import { makeCanvas, type MockCtx } from '../helpers/mockCanvas';
 
+vi.mock('@/lib/project/serialize', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/project/serialize')>();
+  return {
+    ...actual,
+    buildProjectFileAsync: vi.fn().mockResolvedValue({
+      format: 'PIXIBUN_PROJECT',
+      version: 1,
+      name: 'Test Project',
+      width: 8,
+      height: 8,
+      fps: 8,
+      frames: [],
+    }),
+  };
+});
+
+const motionComponentCache: Record<string, React.ComponentType<Record<string, unknown>>> = {};
+vi.mock('motion/react', () => {
+  return {
+    useReducedMotion: () => true,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    motion: new Proxy(
+      {},
+      {
+        get: (_target, prop: string) => {
+          if (!motionComponentCache[prop]) {
+            motionComponentCache[prop] = React.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
+              const {
+                initial: _initial,
+                animate: _animate,
+                exit: _exit,
+                transition: _transition,
+                variants: _variants,
+                whileHover: _whileHover,
+                whileTap: _whileTap,
+                onAnimationComplete: _onAnimationComplete,
+                viewport: _viewport,
+                whileInView: _whileInView,
+                layoutId: _layoutId,
+                ...rest
+              } = props;
+              return React.createElement(prop, { ...rest, ref });
+            });
+          }
+          return motionComponentCache[prop];
+        },
+      }
+    ),
+  };
+});
+
 describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
@@ -59,7 +110,7 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     vi.restoreAllMocks();
   });
 
-  it('defers URL.revokeObjectURL by 1000ms on project JSON export to prevent download abortion', () => {
+  it('defers URL.revokeObjectURL by 1000ms on project JSON export to prevent download abortion', async () => {
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-project-url');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
@@ -74,6 +125,9 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     // Click download button
     const downloadBtn = screen.getByRole('button', { name: /Download PROJECT/i });
     fireEvent.click(downloadBtn);
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     // Object URL should have been created and clicked
     expect(createObjectURLSpy).toHaveBeenCalled();
