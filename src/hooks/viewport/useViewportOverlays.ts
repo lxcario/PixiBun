@@ -5,6 +5,7 @@ import { CvdLensMode, CVD_FILTER_IDS, getViewportFilterCss } from '@/lib/color/c
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { getTemplateRows, getTemplateGridSize } from '@/lib/art/playgroundLessons';
 import { compositeFrame } from '@/lib/render/compositor';
 import { getOnionSkinSpecs } from '@/lib/render/onionSkin';
 
@@ -128,6 +129,7 @@ export function useViewportOverlays({
   const currentStepIndex = useOnboardingStore((state) => state.currentStepIndex);
   const activeLessonId = useOnboardingStore((state) => state.activeLessonId);
   const activeFrameIndex = useStudioStore((state) => state.activeFrameIndex);
+  const isPlaying = useStudioStore((state) => state.isPlaying);
 
   useEffect(() => {
     const canvas = stencilCanvasRef.current;
@@ -139,19 +141,36 @@ export function useViewportOverlays({
     if (!showStencilGuide || !isPlaygroundActive) return;
 
     const currentStep = useOnboardingStore.getState().getCurrentStep();
-    if (currentStep.type !== 'DRAW_FRAME') return;
-    if (currentStep.frameIndex !== undefined && activeFrameIndex !== currentStep.frameIndex) return;
+    const currentLesson = useOnboardingStore.getState().getCurrentLesson();
 
-    const template = useOnboardingStore.getState().getCurrentFrameTemplate();
+    // Synchronize studio active frame if out of sync (only when paused in drawing steps)
+    if (!isPlaying && currentStep.type === 'DRAW_FRAME') {
+      if (currentStep.frameIndex !== undefined && activeFrameIndex !== currentStep.frameIndex) {
+        useStudioStore.getState().setActiveFrame(currentStep.frameIndex);
+      }
+    }
+
+    // Determine which template to render:
+    // During active playback, render the template corresponding to activeFrameIndex so the animation animates on the canvas!
+    // When paused, render current step's template or activeFrame's template.
+    const template = isPlaying
+      ? (currentLesson.frames[activeFrameIndex] || currentStep.template)
+      : (currentStep.template ||
+         useOnboardingStore.getState().getCurrentFrameTemplate() ||
+         (currentStep.frameIndex !== undefined
+           ? currentLesson.frames[currentStep.frameIndex]
+           : null));
     if (!template) return;
 
     ctx.imageSmoothingEnabled = false;
     ctx.globalAlpha = stencilOpacity;
 
-    const cellW = canvasWidth / 16;
-    const cellH = canvasHeight / 16;
+    const rows = getTemplateRows(template);
+    const gridSize = getTemplateGridSize(template);
+    const cellW = canvasWidth / gridSize;
+    const cellH = canvasHeight / gridSize;
 
-    template.grid16.forEach((row, y) => {
+    rows.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) {
         const char = row[x];
         if (char === '.') continue;
@@ -171,6 +190,7 @@ export function useViewportOverlays({
     currentStepIndex,
     activeLessonId,
     activeFrameIndex,
+    isPlaying,
     canvasWidth,
     canvasHeight,
     stencilCanvasRef,
@@ -209,6 +229,49 @@ export function useViewportOverlays({
         ctx.moveTo(0, y * scale);
         ctx.lineTo(width, y * scale);
         ctx.stroke();
+      }
+    }
+
+    // 1.1 Ground Baseline Guide (Playground physics mode)
+    if (
+      isPlaygroundActive &&
+      (activeLessonId === 'master-bouncing-ball' ||
+        activeLessonId === 'character-hop-shock' ||
+        activeLessonId === 'combat-slash-hitstop')
+    ) {
+      const groundY = 26 * scale;
+      ctx.strokeStyle = 'rgba(240, 190, 124, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 2]);
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(width, groundY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // 1.2 Trajectory Guide Hints (Playground physics mode)
+    if (isPlaygroundActive) {
+      if (activeLessonId === 'master-bouncing-ball') {
+        const cx = 16 * scale;
+        ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx, 10 * scale);
+        ctx.lineTo(cx, 26 * scale);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (activeLessonId === 'character-hop-shock') {
+        const cx = 16 * scale;
+        ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx, 8 * scale);
+        ctx.lineTo(cx, 26 * scale);
+        ctx.stroke();
+        ctx.setLineDash([]);
       }
     }
 
@@ -299,10 +362,12 @@ export function useViewportOverlays({
       ctx.setLineDash([]);
     }
   }, [
+    activeLessonId,
     canvasHeight,
     canvasWidth,
     floatingSelection,
     gridCanvasRef,
+    isPlaygroundActive,
     selection,
     selectionMask,
     showGrid,

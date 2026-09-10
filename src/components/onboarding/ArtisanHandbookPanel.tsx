@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOnboardingStore, generateLessonSteps } from '@/stores/onboardingStore';
 import { useStudioStore } from '@/stores/studioStore';
-import { PLAYGROUND_LESSONS } from '@/lib/art/playgroundLessons';
+import { PLAYGROUND_LESSONS, getTemplateRows, getTemplateGridSize } from '@/lib/art/playgroundLessons';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -59,14 +59,24 @@ export const ArtisanHandbookPanel: React.FC = () => {
     const ctx = buf.ctx;
     ctx.imageSmoothingEnabled = false;
 
-    currentTemplate.grid16.forEach((row, y) => {
+    const rows = getTemplateRows(currentTemplate);
+    const gridSize = getTemplateGridSize(currentTemplate);
+    const cellW = canvasWidth / gridSize;
+    const cellH = canvasHeight / gridSize;
+
+    rows.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) {
         const char = row[x];
         if (char === '.') continue;
         const color = TEMPLATE_PALETTE[char];
         if (color) {
           ctx.fillStyle = color;
-          ctx.fillRect(x, y, 1, 1);
+          ctx.fillRect(
+            Math.floor(x * cellW),
+            Math.floor(y * cellH),
+            Math.max(1, Math.ceil(cellW)),
+            Math.max(1, Math.ceil(cellH))
+          );
         }
       }
     });
@@ -222,6 +232,43 @@ export const ArtisanHandbookPanel: React.FC = () => {
             <span className="text-[9px] font-mono text-[var(--text-body)]/70">
               {latestAnalysis?.statusMessage || 'Trace the outline stencil on the canvas, or click Trace Stencil.'}
             </span>
+          </div>
+        )}
+
+        {/* Senior Artisan Physics & Timing Monitor */}
+        {currentTemplate && (
+          <div className="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[2px] p-2.5 flex flex-col gap-2 shadow-xs">
+            <div className="flex items-center justify-between text-[10px] font-mono font-bold">
+              <span className="text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+                <PixelIcon name="sparkles" size={11} className="text-[#f0be7c]" />
+                <span>Physics & Timing</span>
+              </span>
+              {currentTemplate.kineticPhase && (
+                <span className="bg-[#2e2040] text-[#f0be7c] px-1.5 py-0.5 rounded-[2px] text-[9px] border border-[#8c5120]">
+                  {currentTemplate.kineticPhase}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+              <div className="bg-[#140d1f] border border-[var(--desk-border)] p-1.5 rounded-[1px] flex flex-col">
+                <span className="text-[9px] text-[var(--text-muted)]">Pacing Hold:</span>
+                <span className="font-bold text-[#f0be7c]">~{currentTemplate.recommendedHoldMs} ms</span>
+              </div>
+              <div className="bg-[#140d1f] border border-[var(--desk-border)] p-1.5 rounded-[1px] flex flex-col">
+                <span className="text-[9px] text-[var(--text-muted)]">Target Volume:</span>
+                <span className="font-bold text-[#7fae6b]">
+                  {currentTemplate.effectivePixelArea ? `${currentTemplate.effectivePixelArea} px` : 'Preserved'}
+                </span>
+              </div>
+            </div>
+
+            {currentTemplate.opticalTrick && (
+              <div className="bg-[#1f152b] border-l-2 border-[#c792df] p-1.5 text-[10px] font-mono text-[#ede8f4] leading-relaxed">
+                <span className="text-[#c792df] font-bold mr-1">Optical Note:</span>
+                {currentTemplate.opticalTrick}
+              </div>
+            )}
           </div>
         )}
 

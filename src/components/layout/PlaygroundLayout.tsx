@@ -28,7 +28,7 @@ export const PlaygroundLayout: React.FC = () => {
   } = useOnboardingStore();
 
   const {
-    frames,
+    activeFrameIndex,
     activeLayerId,
     canvasWidth,
     canvasHeight,
@@ -61,18 +61,43 @@ export const PlaygroundLayout: React.FC = () => {
     recordAnalysis(analysis);
   }, [getCurrentFrameTemplate, activeLayerId, canvasWidth, canvasHeight, recordAnalysis]);
 
-  // Monitor frame additions when user clicks + Frame on timeline
-  const prevFramesCountRef = React.useRef(frames.length);
+  // Synchronize timeline frame selection with playground step
+  const prevActiveFrameIndexRef = React.useRef(activeFrameIndex);
+  const prevIsPlayingRef = React.useRef(isPlaying);
+
   useEffect(() => {
-    if (frames.length > prevFramesCountRef.current) {
-      if (stepConfig.type === 'DRAW_FRAME' && stepConfig.frameIndex !== undefined) {
-        if (frames.length - 1 > stepConfig.frameIndex) {
-          useOnboardingStore.getState().nextStep();
+    // If playback just stopped (pause transition), snap step to the active paused frame
+    if (prevIsPlayingRef.current && !isPlaying) {
+      const { steps } = useOnboardingStore.getState();
+      const targetStepIndex = steps.findIndex(
+        (s) => s.type === 'DRAW_FRAME' && s.frameIndex === activeFrameIndex
+      );
+      if (targetStepIndex !== -1) {
+        useOnboardingStore.getState().setStepIndex(targetStepIndex);
+      }
+    }
+    prevIsPlayingRef.current = isPlaying;
+
+    // While playing, freeze step updates so top bar and handbook do not jump or flicker
+    if (isPlaying) {
+      prevActiveFrameIndexRef.current = activeFrameIndex;
+      return;
+    }
+
+    if (prevActiveFrameIndexRef.current !== activeFrameIndex) {
+      prevActiveFrameIndexRef.current = activeFrameIndex;
+      const { steps, currentStepIndex } = useOnboardingStore.getState();
+      const currentStep = steps[currentStepIndex];
+      if (currentStep && currentStep.type === 'DRAW_FRAME' && currentStep.frameIndex !== activeFrameIndex) {
+        const targetStepIndex = steps.findIndex(
+          (s) => s.type === 'DRAW_FRAME' && s.frameIndex === activeFrameIndex
+        );
+        if (targetStepIndex !== -1) {
+          useOnboardingStore.getState().setStepIndex(targetStepIndex);
         }
       }
     }
-    prevFramesCountRef.current = frames.length;
-  }, [frames.length, stepConfig.type, stepConfig.frameIndex]);
+  }, [activeFrameIndex, isPlaying]);
 
   // Monitor playback to automatically celebrate completion
   useEffect(() => {

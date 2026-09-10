@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useOnboardingStore, generateLessonSteps } from '@/stores/onboardingStore';
-import { PLAYGROUND_LESSONS } from '@/lib/art/playgroundLessons';
+import { PLAYGROUND_LESSONS, getTemplateRows } from '@/lib/art/playgroundLessons';
 import { StencilAnalysis } from '@/lib/art/stencilEvaluator';
 
 describe('onboardingStore', () => {
@@ -13,7 +13,7 @@ describe('onboardingStore', () => {
     const state = useOnboardingStore.getState();
     expect(state.currentStepIndex).toBe(0);
     expect(state.isPlaygroundActive).toBe(true);
-    expect(state.activeLessonId).toBe('bouncing-mochi');
+    expect(state.activeLessonId).toBe(PLAYGROUND_LESSONS[0].id);
     expect(state.showStencilGuide).toBe(true);
     expect(state.hasDrawnCurrentFrame).toBe(false);
     expect(state.getCurrentStep().type).toBe('DRAW_FRAME');
@@ -53,7 +53,8 @@ describe('onboardingStore', () => {
     const template1 = useOnboardingStore.getState().getCurrentFrameTemplate();
     expect(template1).toBeDefined();
     expect(template1?.name).toContain('Frame 1');
-    expect(template1?.grid16.length).toBe(16);
+    const rows = getTemplateRows(template1!);
+    expect(rows.length).toBeGreaterThanOrEqual(16);
   });
 
   it('records outline analysis and marks complete when outline is covered', () => {

@@ -4,6 +4,41 @@ import { create } from 'zustand';
 import { BunPose } from '@/lib/art/bunSprite';
 import { PLAYGROUND_LESSONS, PlaygroundLesson, LessonFrameTemplate } from '@/lib/art/playgroundLessons';
 import { StencilAnalysis } from '@/lib/art/stencilEvaluator';
+import { useStudioStore } from '@/stores/studioStore';
+
+export function syncStudioWithLesson(lesson: PlaygroundLesson) {
+  const targetSize = lesson.canvasSize || 16;
+  const studio = useStudioStore.getState();
+
+  // 1. Sync canvas dimensions if different
+  if (studio.canvasWidth !== targetSize || studio.canvasHeight !== targetSize) {
+    studio.setCanvasSize(targetSize, targetSize);
+  }
+
+  // 2. Sync FPS
+  studio.setFps(lesson.fps);
+
+  // 3. Sync frames: adjust frame count to match lesson.totalFrames exactly without stale snapshots
+  let freshFrames = useStudioStore.getState().frames;
+  while (freshFrames.length < lesson.totalFrames) {
+    useStudioStore.getState().addFrame();
+    freshFrames = useStudioStore.getState().frames;
+  }
+  while (freshFrames.length > lesson.totalFrames) {
+    useStudioStore.getState().deleteFrame(freshFrames.length - 1);
+    freshFrames = useStudioStore.getState().frames;
+  }
+
+  // 4. Assign durationMs for each frame from template using fresh store state
+  const updatedState = useStudioStore.getState();
+  lesson.frames.forEach((frameTemplate, idx) => {
+    if (idx < updatedState.frames.length && frameTemplate.recommendedHoldMs) {
+      updatedState.setFrameDuration(idx, frameTemplate.recommendedHoldMs);
+    }
+  });
+
+  updatedState.setActiveFrame(0);
+}
 
 export type StepType = 'DRAW_FRAME' | 'PLAYBACK' | 'COMPLETE';
 
@@ -144,6 +179,11 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     const nextCompleted = new Set(completedStepIndices);
     nextCompleted.add(currentStepIndex);
 
+    const targetStep = steps[validIndex];
+    if (targetStep && targetStep.type === 'DRAW_FRAME' && targetStep.frameIndex !== undefined) {
+      useStudioStore.getState().setActiveFrame(targetStep.frameIndex);
+    }
+
     set({
       currentStepIndex: validIndex,
       completedStepIndices: nextCompleted,
@@ -167,6 +207,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   selectLesson: (lessonId: string) => {
     const lesson = PLAYGROUND_LESSONS.find((l) => l.id === lessonId) || PLAYGROUND_LESSONS[0];
     const newSteps = generateLessonSteps(lesson);
+    syncStudioWithLesson(lesson);
+    useStudioStore.getState().setActiveFrame(0);
 
     set({
       activeLessonId: lesson.id,
@@ -199,6 +241,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
 
   resetOnboarding: () => {
     const lesson = PLAYGROUND_LESSONS[0];
+    syncStudioWithLesson(lesson);
+    useStudioStore.getState().setActiveFrame(0);
     set({
       activeLessonId: lesson.id,
       steps: generateLessonSteps(lesson),
@@ -213,6 +257,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
 
   startPlayground: () => {
     const lesson = get().getCurrentLesson();
+    syncStudioWithLesson(lesson);
+    useStudioStore.getState().setActiveFrame(0);
     set({
       isPlaygroundActive: true,
       steps: generateLessonSteps(lesson),

@@ -1,0 +1,834 @@
+[
+  {
+    "id": "TC001",
+    "title": "Enter the studio from the landing page",
+    "description": "A first-time visitor can open the landing page and launch the studio workspace successfully.",
+    "category": "Landing Page Navigation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to launch the studio workspace"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the studio editor is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the canvas workspace is available"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Launch the studio from the landing page",
+    "description": "This verifies a first-time visitor can open the public landing page and enter the studio workspace from the main call to action.",
+    "category": "Launch Studio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to launch the studio"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the studio workspace is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Draw with the pencil tool on the canvas",
+    "description": "A creator can select a drawing tool and make visible pixel changes on the canvas.",
+    "category": "Canvas Drawing Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Select the pencil tool"
+      },
+      {
+        "type": "action",
+        "description": "Draw on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify artwork is visible on the canvas"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Draw and erase on the canvas",
+    "description": "This verifies a user can create pixel art on the canvas with drawing tools and remove marks with the eraser.",
+    "category": "Launch Studio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Select the pencil tool"
+      },
+      {
+        "type": "action",
+        "description": "Draw on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select the eraser tool"
+      },
+      {
+        "type": "action",
+        "description": "Erase part of the drawing"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the canvas reflects both the drawing and erasing actions"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Export artwork as PNG",
+    "description": "This verifies a user can open the export dialog, choose PNG, select a scale, and download a still image export.",
+    "category": "Export Modal",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Open the export dialog"
+      },
+      {
+        "type": "action",
+        "description": "Select PNG export"
+      },
+      {
+        "type": "action",
+        "description": "Choose a valid export scale"
+      },
+      {
+        "type": "action",
+        "description": "Start the download"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a PNG export is available to download"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Export animation as GIF",
+    "description": "This verifies an animator can export the current project as a GIF with the chosen scale.",
+    "category": "Export Modal",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create a short animated sequence"
+      },
+      {
+        "type": "action",
+        "description": "Open the export dialog"
+      },
+      {
+        "type": "action",
+        "description": "Select GIF export"
+      },
+      {
+        "type": "action",
+        "description": "Choose a valid export scale"
+      },
+      {
+        "type": "action",
+        "description": "Start the download"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a GIF export is available to download"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Review the landing page before starting",
+    "description": "A visitor can view the landing page overview and then enter the studio to begin working.",
+    "category": "Landing Page Navigation",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to review the featured capabilities"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to launch the studio workspace"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the studio editor is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Use fill and eyedropper to recolor artwork",
+    "description": "This verifies a creator can sample an existing color and recolor areas of the artwork using the fill and eyedropper tools.",
+    "category": "Launch Studio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Draw at least two differently colored regions on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select the eyedropper tool"
+      },
+      {
+        "type": "action",
+        "description": "Sample one of the drawn colors"
+      },
+      {
+        "type": "action",
+        "description": "Select the fill tool"
+      },
+      {
+        "type": "action",
+        "description": "Fill a bounded area on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the artwork uses the sampled color and the filled region changes as expected"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Erase part of a drawing",
+    "description": "A creator can remove pixels from existing artwork using the eraser tool.",
+    "category": "Canvas Drawing Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Select the pencil tool"
+      },
+      {
+        "type": "action",
+        "description": "Draw on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select the eraser tool"
+      },
+      {
+        "type": "action",
+        "description": "Erase part of the drawing"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the canvas updates to reflect the erased area"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Add and edit content on a new layer",
+    "description": "This verifies a user can create a new layer and continue drawing so the composition is built across layers.",
+    "category": "Layer Stack Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Add a new layer"
+      },
+      {
+        "type": "action",
+        "description": "Select the pencil tool"
+      },
+      {
+        "type": "action",
+        "description": "Draw on the new layer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the layer stack includes the new layer and the artwork remains visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Use fill or recolor to change an area",
+    "description": "A creator can flood fill or recolor a region and see the selected area update to the chosen color.",
+    "category": "Canvas Drawing Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Draw a closed shape on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select the fill tool"
+      },
+      {
+        "type": "action",
+        "description": "Click inside the enclosed area on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the filled area is displayed on the canvas"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Create and duplicate animation frames",
+    "description": "This verifies an animator can add a frame, duplicate it, and edit the copy while keeping both frames in the timeline.",
+    "category": "Animation Timeline",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Add a frame"
+      },
+      {
+        "type": "action",
+        "description": "Duplicate the current frame"
+      },
+      {
+        "type": "action",
+        "description": "Edit the duplicated frame"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the timeline shows both frames and the duplicate can be distinguished by its edited content"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Play and pause the animation",
+    "description": "This verifies a user can preview sprite motion by starting playback and then pausing it.",
+    "category": "Animation Timeline",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create at least two frames with different drawings"
+      },
+      {
+        "type": "action",
+        "description": "Start animation playback"
+      },
+      {
+        "type": "action",
+        "description": "Pause animation playback"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify frame playback can be started and stopped"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Mirror a drawing across the canvas",
+    "description": "A creator can enable symmetry mode and see drawing mirrored on the opposite side of the canvas.",
+    "category": "Canvas Drawing Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Enable symmetry mode"
+      },
+      {
+        "type": "action",
+        "description": "Draw on one side of the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a mirrored drawing appears on the opposite side of the canvas"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Export a spritesheet with metadata",
+    "description": "This verifies a user can export animation frames as a spritesheet package and obtain the accompanying metadata.",
+    "category": "Export Modal",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create a multi-frame animation"
+      },
+      {
+        "type": "action",
+        "description": "Open the export dialog"
+      },
+      {
+        "type": "action",
+        "description": "Select spritesheet export"
+      },
+      {
+        "type": "action",
+        "description": "Start the download"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a spritesheet export and its metadata are available"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Use symmetry mode while drawing",
+    "description": "This verifies a pixel artist can enable symmetry and create mirrored strokes on the canvas.",
+    "category": "Launch Studio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Enable symmetry mode"
+      },
+      {
+        "type": "action",
+        "description": "Select the pencil tool"
+      },
+      {
+        "type": "action",
+        "description": "Draw a stroke on one side of the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the drawing appears mirrored across the symmetry axis"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Sample a color and continue drawing with it",
+    "description": "A creator can use the eyedropper to pick an existing color and then draw with the sampled color.",
+    "category": "Canvas Drawing Suite",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Draw with two different colors on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select the eyedropper tool"
+      },
+      {
+        "type": "action",
+        "description": "Sample one of the drawn colors from the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Continue drawing on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sampled color is used for the new drawing"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Export the project as JSON",
+    "description": "This verifies a developer can export the current project data as a JSON file for reuse or inspection.",
+    "category": "Export Modal",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Make a recognizable change to the project"
+      },
+      {
+        "type": "action",
+        "description": "Open the export dialog"
+      },
+      {
+        "type": "action",
+        "description": "Select project JSON export"
+      },
+      {
+        "type": "action",
+        "description": "Start the download"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a project JSON export is available to download"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "Reorder layers and see the composition update",
+    "description": "This verifies a user can change layer order and continue editing with the new stacking order reflected in the artwork.",
+    "category": "Layer Stack Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create two layers and draw a distinct mark on each layer"
+      },
+      {
+        "type": "action",
+        "description": "Reorder the layers in the stack"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the composited artwork reflects the new layer order"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "Hide and lock layers to protect artwork",
+    "description": "This verifies a user can hide a layer from the composition and lock a layer so it cannot be edited accidentally.",
+    "category": "Layer Stack Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create a layer with visible artwork"
+      },
+      {
+        "type": "action",
+        "description": "Toggle the layer's visibility off"
+      },
+      {
+        "type": "action",
+        "description": "Toggle the layer's lock on"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the hidden layer is not shown and the locked layer remains protected"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Switch active colors from the palette while drawing",
+    "description": "A creator can pick a different swatch from the palette and continue drawing with the new active color.",
+    "category": "Palette and Swatches",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Select one swatch in the palette"
+      },
+      {
+        "type": "action",
+        "description": "Draw on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select a different swatch in the palette"
+      },
+      {
+        "type": "action",
+        "description": "Draw again on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the canvas contains artwork in both selected colors"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "Switch between palette colors while artwork exists",
+    "description": "This verifies a user can change active colors from the palette and continue drawing on existing artwork.",
+    "category": "Launch Studio",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Draw a simple mark on the canvas"
+      },
+      {
+        "type": "action",
+        "description": "Select a different palette color"
+      },
+      {
+        "type": "action",
+        "description": "Draw another mark on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the artwork contains marks in more than one selected color"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC023",
+    "title": "Use primary and secondary colors while editing",
+    "description": "A creator can set primary and secondary colors and switch between them for subsequent drawing.",
+    "category": "Palette and Swatches",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Set the primary color"
+      },
+      {
+        "type": "action",
+        "description": "Set the secondary color"
+      },
+      {
+        "type": "action",
+        "description": "Draw using the primary color"
+      },
+      {
+        "type": "action",
+        "description": "Switch to the secondary color"
+      },
+      {
+        "type": "action",
+        "description": "Draw again on the canvas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the canvas shows artwork using both active colors"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC024",
+    "title": "Change playback speed with FPS",
+    "description": "This verifies an animator can adjust FPS and observe the animation timing change during playback.",
+    "category": "Animation Timeline",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create at least two frames with different drawings"
+      },
+      {
+        "type": "action",
+        "description": "Adjust the playback FPS to a different value"
+      },
+      {
+        "type": "action",
+        "description": "Start animation playback"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the animation plays at the updated speed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC025",
+    "title": "Adjust layer opacity and continue editing",
+    "description": "This verifies a user can make a layer partially transparent and keep working with the updated composite view.",
+    "category": "Layer Stack Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create a layer with visible artwork"
+      },
+      {
+        "type": "action",
+        "description": "Adjust the layer opacity to a lower value"
+      },
+      {
+        "type": "action",
+        "description": "Continue drawing on another layer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the layer appears more transparent in the composition"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC026",
+    "title": "Create a custom swatch and generate a color ramp",
+    "description": "A creator can add a custom swatch and generate additional ramp colors for palette work.",
+    "category": "Palette and Swatches",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Add a new custom swatch"
+      },
+      {
+        "type": "action",
+        "description": "Generate a color ramp"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify additional palette steps are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new swatch remains available in the palette"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC027",
+    "title": "Use onion skinning while moving between frames",
+    "description": "This verifies a user can enable onion skinning and see neighboring frames for alignment while editing animation.",
+    "category": "Animation Timeline",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create at least two frames with different drawings"
+      },
+      {
+        "type": "action",
+        "description": "Toggle onion skinning on"
+      },
+      {
+        "type": "action",
+        "description": "Move to a different frame"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ghosted neighboring frames are displayed for alignment"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC028",
+    "title": "Reorder frames in an animation sequence",
+    "description": "This verifies a user can change frame order and see the timeline update to the new animation sequence.",
+    "category": "Animation Timeline",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /studio"
+      },
+      {
+        "type": "action",
+        "description": "Create at least three frames with distinct drawings"
+      },
+      {
+        "type": "action",
+        "description": "Reorder the frames in the timeline"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the timeline reflects the new frame sequence"
+      }
+    ],
+    "priority": "Medium"
+  }
+]

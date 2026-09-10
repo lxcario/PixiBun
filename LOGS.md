@@ -1276,4 +1276,30 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm audit --omit=dev`: 0 vulnerabilities
 **Status:** Complete
 
+## 2026-09-09 — Senior Pixel Art Animation Physics & Dynamic Discrete Mechanics
+
+**Changes:**
+- **Playground Senior Physics & Optical Dynamics**:
+  - Implemented 4 flagship senior animation physics lessons on 32x32 canvases: *The Master Bouncing Ball* (12 frames, mass preservation $A = 112\text{ px}$ with Richard Williams apex cushioning and ground hitstop), *Sub-Pixel Character Idle* (3 frames, anti-boiling contour locking with sub-pixel breathing), *Sword Slash & Combat Hitstop* (4 frames, 180° crescent smear and visceral impact freeze), and *Character Hop & Shock Absorption* (5 frames, athletic anticipation, launch stretch, apex ear drag, and ground impact squash).
+  - Generalised `stencilEvaluator.ts` to support dynamic grid dimensions (16x16 and 32x32) with bounds-safe character indexing and area metrics.
+  - Added dedicated test suite `tests/playgroundSeniorPhysics.test.ts` (9 tests) verifying mass preservation, timing hierarchies, outer contour stability, and store sync.
+- **Playback UI Freezing & Real-time Canvas Stencil**:
+  - Guarded step synchronization in `PlaygroundLayout.tsx` with `if (isPlaying) return;`, eliminating 12 Hz UI title and handbook flickering during playback.
+  - Enhanced pause transition (`prevIsPlayingRef && !isPlaying`) to snap active step and handbook immediately to the paused frame index.
+  - Updated `useViewportOverlays.ts` to project `currentLesson.frames[activeFrameIndex]` onto the canvas during active playback, enabling smooth animation visualization even on empty drawing layers without blanking the canvas.
+- **Pixel-Art Quality & Code Audit Remediation**:
+  - Eliminated artificial white `F` highlights across all 4 senior animation physics lessons, returning dynamic lighting responsibility to PixiBun Studio's Photometric engine.
+  - Re-authored senior animation frames with 100% closed outline boundaries, zero leaks to background dots, and bilateral symmetry.
+  - Fixed stale store snapshot in `onboardingStore.ts:syncStudioWithLesson`, ensuring fresh state queries, bidirectional frame count pruning, and duration assignments across all frames.
+  - Resolved all ESLint errors/warnings (unused vars, missing hook deps) and replaced raw `⚡` emoji in `ArtisanHandbookPanel.tsx` with `<PixelIcon name="sparkles" />`.
+  - Reconciled metric documentation across `README.md` and `LOGS.md` (533 unit/integration tests across 77 suites, 8 E2E spec suites with 20 tests).
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint`: 0 errors, 0 warnings across all target files
+- `npx vitest run`: 533/533 passed across 77 suites
+- `npm run build`: Next.js 16.3.4 Turbopack clean production build
+**Status:** Complete
+
+
 

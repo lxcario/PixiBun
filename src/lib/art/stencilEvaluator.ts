@@ -1,4 +1,4 @@
-import { LessonFrameTemplate } from './playgroundLessons';
+import { LessonFrameTemplate, getTemplateRows, getTemplateGridSize } from './playgroundLessons';
 
 export interface StencilAnalysis {
   targetOutlineCells: number;
@@ -18,6 +18,9 @@ export interface StencilAnalysis {
   isComplete: boolean;
   completionScore: number; // 0 to 100
   statusMessage: string;
+
+  effectivePixelArea?: number;
+  areaDeviation?: number;
 }
 
 export function evaluateStencilCoverage(
@@ -29,32 +32,35 @@ export function evaluateStencilCoverage(
   const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
   const data = imgData.data;
 
+  const rows = getTemplateRows(template);
+  const gridSize = getTemplateGridSize(template);
+
   let targetOutlineCells = 0;
   let coveredOutlineCells = 0;
   let totalDrawnPixels = 0;
 
-  let targetMinX = 16;
-  let targetMinY = 16;
+  let targetMinX = gridSize;
+  let targetMinY = gridSize;
   let targetMaxX = 0;
   let targetMaxY = 0;
 
-  let drawnMinX = 16;
-  let drawnMinY = 16;
+  let drawnMinX = gridSize;
+  let drawnMinY = gridSize;
   let drawnMaxX = 0;
   let drawnMaxY = 0;
   let hasAnyDrawnCell = false;
 
-  const cellW = canvasWidth / 16;
-  const cellH = canvasHeight / 16;
+  const cellW = canvasWidth / gridSize;
+  const cellH = canvasHeight / gridSize;
   const totalPixelsPerCell = cellW * cellH;
 
-  for (let gy = 0; gy < 16; gy++) {
-    const row = template.grid16[gy];
+  for (let gy = 0; gy < gridSize; gy++) {
+    const row = rows[gy];
     if (!row) continue;
 
-    for (let gx = 0; gx < 16; gx++) {
+    for (let gx = 0; gx < gridSize; gx++) {
       const char = row[gx];
-      const isTarget = char !== '.';
+      const isTarget = char !== '.' && char !== undefined;
 
       if (isTarget) {
         if (gx < targetMinX) targetMinX = gx;
@@ -133,6 +139,9 @@ export function evaluateStencilCoverage(
     statusMessage = `Outline in progress (${completionScore}%). Finish inking all edges!`;
   }
 
+  const effectivePixelArea = template.effectivePixelArea;
+  const areaDeviation = effectivePixelArea ? totalDrawnPixels - effectivePixelArea : 0;
+
   return {
     targetOutlineCells,
     coveredOutlineCells,
@@ -147,5 +156,7 @@ export function evaluateStencilCoverage(
     isComplete,
     completionScore,
     statusMessage,
+    effectivePixelArea,
+    areaDeviation,
   };
 }

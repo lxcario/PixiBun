@@ -25,8 +25,9 @@ describe('ArtisanHandbookPanel', () => {
   it('renders lesson title and step progression', () => {
     render(<ArtisanHandbookPanel />);
 
-    expect(screen.getByText('The Bouncing Mochi')).toBeDefined();
-    expect(screen.getByText('Physics 101')).toBeDefined();
+    const firstLesson = useOnboardingStore.getState().getCurrentLesson();
+    expect(screen.getByText(firstLesson.title)).toBeDefined();
+    expect(screen.getByText(firstLesson.badge)).toBeDefined();
     expect(screen.getByText(/Step 1 of/)).toBeDefined();
   });
 
