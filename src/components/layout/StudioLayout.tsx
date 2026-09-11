@@ -624,6 +624,16 @@ export const StudioLayout: React.FC = () => {
         case 'r':
           setActiveTool('color-replace');
           break;
+        case 'k':
+          if (e.shiftKey) {
+            setActiveTool('rivet-stamp');
+          } else {
+            setActiveTool('normal-chisel');
+          }
+          break;
+        case 'n':
+          setActiveTool('rivet-stamp');
+          break;
         case 's': {
           // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens
           useStudioStore.getState().toggleSquintMode();

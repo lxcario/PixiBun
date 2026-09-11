@@ -33,7 +33,14 @@ class ProceduralSoundEngine implements SynthVoiceController {
   private delayNode: DelayNode | null = null;
   private delayFeedback: GainNode | null = null;
   private delayFilter: BiquadFilterNode | null = null;
+  private delayReturnGain: GainNode | null = null;
   private overdriveShaper: WaveShaperNode | null = null;
+
+  // Lush Procedural Convolver Reverb Bus
+  private reverbNode: ConvolverNode | null = null;
+  private reverbFilter: BiquadFilterNode | null = null;
+  private reverbGain: GainNode | null = null;
+  private reverbSendNode: GainNode | null = null;
 
   // Periodic Wave references
   private pulse12Wave: PeriodicWave | null = null;
@@ -70,16 +77,16 @@ class ProceduralSoundEngine implements SynthVoiceController {
 
     this.ctx = new AudioCtx();
 
-    // Master Output & Brickwall Limiter
+    // Master Output & Musical Soft-Knee Compressor (prevents clipping/distortion)
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
 
     this.limiter = this.ctx.createDynamicsCompressor();
-    this.limiter.threshold.setValueAtTime(-1.0, this.ctx.currentTime);
-    this.limiter.knee.setValueAtTime(0.0, this.ctx.currentTime);
-    this.limiter.ratio.setValueAtTime(20.0, this.ctx.currentTime);
-    this.limiter.attack.setValueAtTime(0.002, this.ctx.currentTime);
-    this.limiter.release.setValueAtTime(0.05, this.ctx.currentTime);
+    this.limiter.threshold.setValueAtTime(-4.0, this.ctx.currentTime);
+    this.limiter.knee.setValueAtTime(6.0, this.ctx.currentTime);
+    this.limiter.ratio.setValueAtTime(3.5, this.ctx.currentTime);
+    this.limiter.attack.setValueAtTime(0.01, this.ctx.currentTime);
+    this.limiter.release.setValueAtTime(0.12, this.ctx.currentTime);
 
     // Spectrum Analyzer for Equalizer & Onset Detection
     this.analyser = this.ctx.createAnalyser();
@@ -157,25 +164,80 @@ class ProceduralSoundEngine implements SynthVoiceController {
     this.overdriveShaper.curve = curve;
   }
 
+  private buildReverbImpulse(duration = 1.6, decay = 2.6): AudioBuffer | null {
+    if (!this.ctx) return null;
+    const sampleRate = this.ctx.sampleRate;
+    const length = Math.floor(sampleRate * duration);
+    const buffer = this.ctx.createBuffer(2, length, sampleRate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+
+    for (let i = 0; i < length; i++) {
+      const t = i / length;
+      const env = Math.pow(1 - t, decay);
+      left[i] = (Math.random() * 2 - 1) * env;
+      right[i] = (Math.random() * 2 - 1) * env;
+    }
+    return buffer;
+  }
+
+  private sendToReverb(source: AudioNode, amount = 0.25) {
+    if (!this.ctx || !this.reverbSendNode) return;
+    const send = this.ctx.createGain();
+    send.gain.value = amount;
+    source.connect(send);
+    send.connect(this.reverbSendNode);
+  }
+
   private initEffects() {
     if (!this.ctx || !this.masterGain) return;
-    // Dotted-8th delay bus
+
+    // 1. Procedural Lush Plate Reverb Bus
+    const irBuffer = this.buildReverbImpulse(1.6, 2.6);
+    if (irBuffer) {
+      try {
+        this.reverbNode = this.ctx.createConvolver();
+        this.reverbNode.buffer = irBuffer;
+
+        this.reverbFilter = this.ctx.createBiquadFilter();
+        this.reverbFilter.type = 'lowpass';
+        this.reverbFilter.frequency.value = 2400; // Velvety warm damping, zero harsh sizzle
+
+        this.reverbGain = this.ctx.createGain();
+        this.reverbGain.gain.value = 0.22; // Cozy parallel wet blend
+
+        this.reverbSendNode = this.ctx.createGain();
+        this.reverbSendNode.gain.value = 1.0;
+
+        this.reverbSendNode.connect(this.reverbNode);
+        this.reverbNode.connect(this.reverbFilter);
+        this.reverbFilter.connect(this.reverbGain);
+        this.reverbGain.connect(this.masterGain);
+      } catch {
+        // Fallback gracefully if convolver is unsupported in older test environment
+      }
+    }
+
+    // 2. Toby Fox Dreamy Vintage Tape Delay Bus
     this.delayNode = this.ctx.createDelay();
-    this.delayNode.delayTime.value = 0.214; // ~140 BPM 8th
+    this.delayNode.delayTime.value = 0.288; // ~104 BPM dotted 8th note delay
     this.delayFeedback = this.ctx.createGain();
-    this.delayFeedback.gain.value = 0.32;
+    this.delayFeedback.gain.value = 0.26;
     this.delayFilter = this.ctx.createBiquadFilter();
     this.delayFilter.type = 'lowpass';
-    this.delayFilter.frequency.value = 3400;
+    this.delayFilter.frequency.value = 1800; // Warm analog tape cutoff
 
     this.delayNode.connect(this.delayFilter);
     this.delayFilter.connect(this.delayFeedback);
     this.delayFeedback.connect(this.delayNode);
-    this.delayFilter.connect(this.masterGain);
+    this.delayReturnGain = this.ctx.createGain();
+    this.delayReturnGain.gain.value = 0.12; // Very soft 12% ambient echo only
+    this.delayFilter.connect(this.delayReturnGain);
+    this.delayReturnGain.connect(this.masterGain);
   }
 
   // =========================================================================
-  // 2. SYNTHESIZER VOICES
+  // 2. SYNTHESIZER VOICES (Toby Fox Authentic Sound Design)
   // =========================================================================
 
   public playPulse(
@@ -183,11 +245,12 @@ class ProceduralSoundEngine implements SynthVoiceController {
     freq: number,
     duration: number,
     duty: '12' | '25' | '50' = '25',
-    gainLevel = 0.22,
+    gainLevel = 0.10,
     sendDelay = false
   ) {
     if (!this.ctx || !this.masterGain) return;
     const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
     const gain = this.ctx.createGain();
 
     if (duty === '12' && this.pulse12Wave) osc.setPeriodicWave(this.pulse12Wave);
@@ -196,60 +259,250 @@ class ProceduralSoundEngine implements SynthVoiceController {
 
     osc.frequency.setValueAtTime(freq, time);
 
+    // Warm Lowpass Filter: softens pulse waves so they sound smooth, mellow, and non-fatiguing
+    filter.type = 'lowpass';
+    const cutoff = duty === '50' ? 1100 : (duty === '25' ? 1200 : 1350);
+    filter.frequency.setValueAtTime(Math.min(cutoff, Math.max(600, freq * 1.5)), time);
+    filter.Q.value = 0.7;
+
+    // Toby Fox expressive retro vibrato: for sustained lead notes, apply a gentle 5.0Hz pitch LFO
+    if (sendDelay && duration > 0.18) {
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.frequency.setValueAtTime(5.0, time);
+      lfoGain.gain.setValueAtTime(0, time);
+      lfoGain.gain.setValueAtTime(0, time + 0.08);
+      lfoGain.gain.linearRampToValueAtTime(freq * 0.010, time + 0.22);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.start(time);
+      lfo.stop(time + duration);
+    }
+
+    const safeGain = Math.min(gainLevel, 0.12);
     gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.linearRampToValueAtTime(gainLevel, time + 0.004);
-    gain.gain.exponentialRampToValueAtTime(gainLevel * 0.7, time + 0.04);
-    gain.gain.setValueAtTime(gainLevel * 0.7, time + duration - 0.01);
+    gain.gain.linearRampToValueAtTime(safeGain, time + 0.020); // 20ms smooth attack eliminates clicks
+    gain.gain.exponentialRampToValueAtTime(safeGain * 0.70, time + 0.08);
+    gain.gain.setValueAtTime(safeGain * 0.70, time + Math.max(0.02, duration - 0.03));
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+    if (sendDelay && this.delayNode) gain.connect(this.delayNode);
+    this.sendToReverb(gain, 0.20);
+
+    osc.start(time);
+    osc.stop(time + duration + 0.02);
+  }
+
+  /**
+   * Expressive Toby Fox Wooden Flute / Whistle (Cozy Deltarune Lead Voice).
+   * Warm, mellow sine + soft triangle with lowpass warmth, delayed expressive vibrato,
+   * and lush reverb wash. Completely eliminates harsh square buzz or grating frequencies.
+   */
+  public playFlute(time: number, freq: number, duration: number, gainLevel = 0.095, vibrato = true) {
+    if (!this.ctx || !this.masterGain) return;
+
+    const oscSine = this.ctx.createOscillator();
+    const oscTri = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+
+    oscSine.type = 'sine';
+    oscTri.type = 'triangle';
+    oscSine.frequency.setValueAtTime(freq, time);
+    oscTri.frequency.setValueAtTime(freq, time);
+
+    // Expression / Delayed Vibrato: gentle 4.8Hz vibrato fading in after 100ms
+    if (vibrato && duration > 0.18) {
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.frequency.setValueAtTime(4.8, time);
+      lfoGain.gain.setValueAtTime(0, time);
+      lfoGain.gain.setValueAtTime(0, time + 0.09);
+      lfoGain.gain.linearRampToValueAtTime(freq * 0.009, time + 0.24);
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscSine.frequency);
+      lfoGain.connect(oscTri.frequency);
+      lfo.start(time);
+      lfo.stop(time + duration);
+    }
+
+    // Warm wooden acoustic filter: removes all shrill high frequencies above 1050Hz
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(Math.min(1050, Math.max(650, freq * 1.4)), time);
+    filter.Q.value = 0.75;
+
+    const safeGain = Math.min(gainLevel, 0.12);
+    const gSine = this.ctx.createGain();
+    gSine.gain.value = 0.75;
+    const gTri = this.ctx.createGain();
+    gTri.gain.value = 0.25;
+
+    oscSine.connect(gSine);
+    oscTri.connect(gTri);
+    gSine.connect(filter);
+    gTri.connect(filter);
+
+    // Soft breath attack (24ms) completely prevents clicks and harsh transients
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(safeGain, time + 0.024);
+    gain.gain.setValueAtTime(safeGain * 0.82, time + Math.max(0.03, duration - 0.04));
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    // Send into the lush reverb bus for dreamy acoustic body
+    this.sendToReverb(gain, 0.25);
+
+    const stopTime = time + duration + 0.04;
+    oscSine.start(time);
+    oscTri.start(time);
+    oscSine.stop(stopTime);
+    oscTri.stop(stopTime);
+  }
+
+  /**
+   * Tok Acoustic Felt Piano / Rhodes Timbre (Toby Fox style).
+   * Generates a warm, resonant, full-bodied piano strike:
+   * - Sine fundamental + 2nd octave harmonic + subtle 3rd harmonic for woody warmth
+   * - 15ms tactile hammer transient ("tok" attack)
+   * - Dynamic lowpass filter: starts at ~1250Hz, quickly darkens to ~550Hz
+   * - Exponential natural string decay
+   * - Lush reverb send for acoustic room bloom
+   */
+  public playPiano(time: number, freq: number, duration: number, gainLevel = 0.12) {
+    if (!this.ctx || !this.masterGain) return;
+
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const osc3 = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+
+    osc1.type = 'sine';
+    osc2.type = 'sine';
+    osc3.type = 'sine';
+
+    // Tactile felt hammer attack: micro pitch ramp gives satisfying wooden "tok"
+    osc1.frequency.setValueAtTime(freq * 1.012, time);
+    osc1.frequency.exponentialRampToValueAtTime(freq, time + 0.015);
+
+    osc2.frequency.setValueAtTime(freq * 2.0, time);
+    osc3.frequency.setValueAtTime(freq * 3.0, time);
+
+    const safeGain = Math.min(gainLevel, 0.15);
+
+    const g1 = this.ctx.createGain();
+    g1.gain.value = 0.72;
+    const g2 = this.ctx.createGain();
+    g2.gain.value = 0.22;
+    const g3 = this.ctx.createGain();
+    g3.gain.value = 0.06;
+
+    osc1.connect(g1);
+    osc2.connect(g2);
+    osc3.connect(g3);
+
+    // Warm felt filter: rounds off treble, eliminates clicks, darkens naturally
+    filter.type = 'lowpass';
+    const fStart = Math.min(1250, Math.max(650, freq * 2.0));
+    const fEnd = Math.min(600, Math.max(320, freq * 1.0));
+    filter.frequency.setValueAtTime(fStart, time);
+    filter.frequency.exponentialRampToValueAtTime(fEnd, time + Math.min(duration, 0.35));
+    filter.Q.value = 0.7;
+
+    g1.connect(filter);
+    g2.connect(filter);
+    g3.connect(filter);
+
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(safeGain, time + 0.009); // 9ms soft felt hammer strike
+    gain.gain.exponentialRampToValueAtTime(safeGain * 0.55, time + 0.10);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    // Send to lush procedural reverb (adds rich acoustic room dimension)
+    this.sendToReverb(gain, 0.26);
+
+    const stopTime = time + duration + 0.05;
+    osc1.start(time);
+    osc2.start(time);
+    osc3.start(time);
+
+    osc1.stop(stopTime);
+    osc2.stop(stopTime);
+    osc3.stop(stopTime);
+  }
+
+  /**
+   * Delicate Music-Box Chime (soft high pure sine with gentle bell decay).
+   */
+  public playChime(time: number, freq: number, duration: number, gainLevel = 0.04) {
+    if (!this.ctx || !this.masterGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, time);
+
+    const safeGain = Math.min(gainLevel, 0.06);
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(safeGain, time + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
 
     osc.connect(gain);
     gain.connect(this.masterGain);
-    if (sendDelay && this.delayNode) gain.connect(this.delayNode);
+    this.sendToReverb(gain, 0.22);
 
     osc.start(time);
-    osc.stop(time + duration);
+    osc.stop(time + duration + 0.02);
   }
 
-  public playFMBass(time: number, freq: number, duration: number, gainLevel = 0.38) {
+  /**
+   * Authentic NES Triangle Wave Sub-Bass (as used in Toby Fox's NES VST setup).
+   * Pure, woody, warm bass with zero harsh FM sideband distortion.
+   */
+  public playTriangleBass(time: number, freq: number, duration: number, gainLevel = 0.24) {
     if (!this.ctx || !this.masterGain) return;
-    const carrier = this.ctx.createOscillator();
-    const modulator = this.ctx.createOscillator();
-    const modGain = this.ctx.createGain();
-    const carrierGain = this.ctx.createGain();
+    const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
 
-    carrier.type = 'sine';
-    carrier.frequency.setValueAtTime(freq, time);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, time);
 
-    modulator.type = 'sine';
-    modulator.frequency.setValueAtTime(freq, time);
+    // 240Hz 2nd-order lowpass filter ensures pure, pillowy, grounding sub-bass
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(240, time);
+    filter.Q.value = 0.7;
 
-    // Modulation index decay for punchy transient
-    const peakMod = freq * 3.2;
-    modGain.gain.setValueAtTime(peakMod, time);
-    modGain.gain.exponentialRampToValueAtTime(freq * 0.15, time + 0.08);
-    modGain.gain.exponentialRampToValueAtTime(1.0, time + duration);
+    const safeGain = Math.min(gainLevel, 0.30);
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.linearRampToValueAtTime(safeGain, time + 0.014);
+    gain.gain.setValueAtTime(safeGain * 0.85, time + Math.max(0.02, duration - 0.04));
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
 
-    carrierGain.gain.setValueAtTime(0.0001, time);
-    carrierGain.gain.linearRampToValueAtTime(gainLevel, time + 0.005);
-    carrierGain.gain.exponentialRampToValueAtTime(gainLevel * 0.8, time + 0.05);
-    carrierGain.gain.setValueAtTime(gainLevel * 0.8, time + duration - 0.01);
-    carrierGain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
 
-    modulator.connect(modGain);
-    modGain.connect(carrier.frequency);
-    carrier.connect(carrierGain);
-    carrierGain.connect(this.masterGain);
-
-    modulator.start(time);
-    carrier.start(time);
-    modulator.stop(time + duration);
-    carrier.stop(time + duration);
+    osc.start(time);
+    osc.stop(time + duration + 0.02);
   }
 
-  public playOverdriveLead(time: number, freq: number, duration: number, gainLevel = 0.2) {
+  public playFMBass(time: number, freq: number, duration: number, gainLevel = 0.24) {
+    // Forward to authentic NES Triangle Bass for a warm, comfortable acoustic sub
+    this.playTriangleBass(time, freq, duration, gainLevel);
+  }
+
+  public playOverdriveLead(time: number, freq: number, duration: number, gainLevel = 0.12) {
     if (!this.ctx || !this.masterGain || !this.overdriveShaper) return;
     const osc1 = this.ctx.createOscillator();
-    const osc2 = this.ctx.createOscillator();
     const preGain = this.ctx.createGain();
     const cabFilter = this.ctx.createBiquadFilter();
     const envGain = this.ctx.createGain();
@@ -257,22 +510,17 @@ class ProceduralSoundEngine implements SynthVoiceController {
     if (this.pulse25Wave) osc1.setPeriodicWave(this.pulse25Wave);
     osc1.frequency.setValueAtTime(freq, time);
 
-    osc2.type = 'sawtooth';
-    osc2.frequency.setValueAtTime(freq, time);
-    osc2.detune.setValueAtTime(-10, time);
-
     cabFilter.type = 'lowpass';
-    cabFilter.frequency.setValueAtTime(3600, time);
-    cabFilter.Q.value = 2.0;
+    cabFilter.frequency.setValueAtTime(2200, time);
+    cabFilter.Q.value = 1.0;
 
-    preGain.gain.value = 2.4;
+    preGain.gain.value = 1.4;
     envGain.gain.setValueAtTime(0.0001, time);
-    envGain.gain.linearRampToValueAtTime(gainLevel, time + 0.008);
-    envGain.gain.setValueAtTime(gainLevel * 0.85, time + duration - 0.02);
+    envGain.gain.linearRampToValueAtTime(gainLevel, time + 0.016);
+    envGain.gain.setValueAtTime(gainLevel * 0.8, time + duration - 0.02);
     envGain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
 
     osc1.connect(preGain);
-    osc2.connect(preGain);
     preGain.connect(this.overdriveShaper);
     this.overdriveShaper.connect(cabFilter);
     cabFilter.connect(envGain);
@@ -280,107 +528,93 @@ class ProceduralSoundEngine implements SynthVoiceController {
     if (this.delayNode) envGain.connect(this.delayNode);
 
     osc1.start(time);
-    osc2.start(time);
     osc1.stop(time + duration);
-    osc2.stop(time + duration);
   }
 
-  public playWarmPad(time: number, freqs: number[], duration: number, gainLevel = 0.12) {
+  public playWarmPad(time: number, freqs: number[], duration: number, gainLevel = 0.08) {
     if (!this.ctx || !this.masterGain) return;
-    const perOscGain = gainLevel / freqs.length;
+    const perOscGain = (gainLevel / freqs.length) * 0.8;
 
     freqs.forEach((freq) => {
       if (!this.ctx || !this.masterGain) return;
-      const osc1 = this.ctx.createOscillator();
-      const osc2 = this.ctx.createOscillator();
+      const osc = this.ctx.createOscillator();
       const filter = this.ctx.createBiquadFilter();
       const gain = this.ctx.createGain();
 
-      osc1.type = 'sawtooth';
-      osc2.type = 'sawtooth';
-      osc1.frequency.setValueAtTime(freq, time);
-      osc2.frequency.setValueAtTime(freq, time);
-
-      osc1.detune.setValueAtTime(+8, time);
-      osc2.detune.setValueAtTime(-8, time);
+      // Triangle pad gives that warm, mellow Rhodes / Mellotron tape blanket
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, time);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(950, time);
-      filter.Q.value = 1.0;
+      filter.frequency.setValueAtTime(560, time);
+      filter.Q.value = 0.8;
 
       gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.linearRampToValueAtTime(perOscGain, time + 0.15);
-      gain.gain.setValueAtTime(perOscGain, time + duration - 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration + 0.1);
+      gain.gain.linearRampToValueAtTime(perOscGain, time + 0.22);
+      gain.gain.setValueAtTime(perOscGain, time + Math.max(0.05, duration - 0.08));
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration + 0.15);
 
-      osc1.connect(filter);
-      osc2.connect(filter);
+      osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.masterGain);
+      if (this.delayNode) gain.connect(this.delayNode);
+      this.sendToReverb(gain, 0.30);
 
-      osc1.start(time);
-      osc2.start(time);
-      osc1.stop(time + duration + 0.12);
-      osc2.stop(time + duration + 0.12);
+      osc.start(time);
+      osc.stop(time + duration + 0.16);
     });
   }
 
   // =========================================================================
-  // 3. PERCUSSION SYNTHESIS
+  // 3. MELLOW PERCUSSION SYNTHESIS (Gentle Pillow Drums)
   // =========================================================================
 
   public playKick(time: number) {
     if (!this.ctx || !this.masterGain) return;
     const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
     const gain = this.ctx.createGain();
 
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(45, time + 0.05);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(85, time);
+    osc.frequency.exponentialRampToValueAtTime(38, time + 0.08);
 
-    gain.gain.setValueAtTime(0.85, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(130, time);
 
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0.28, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(this.masterGain);
 
     osc.start(time);
-    osc.stop(time + 0.2);
+    osc.stop(time + 0.18);
   }
 
   public playSnare(time: number) {
     if (!this.ctx || !this.masterGain || !this.whiteNoiseBuffer) return;
 
-    // Tonal punch
-    const bodyOsc = this.ctx.createOscillator();
-    const bodyGain = this.ctx.createGain();
-    bodyOsc.frequency.setValueAtTime(220, time);
-    bodyOsc.frequency.exponentialRampToValueAtTime(70, time + 0.03);
-    bodyGain.gain.setValueAtTime(0.55, time);
-    bodyGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-    bodyOsc.connect(bodyGain);
-    bodyGain.connect(this.masterGain);
-
-    // Gated noise shell
+    // Gentle brushed tape tap
     const noiseSource = this.ctx.createBufferSource();
     noiseSource.buffer = this.whiteNoiseBuffer;
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1800, time);
-    filter.Q.value = 1.2;
+    filter.frequency.setValueAtTime(800, time);
+    filter.Q.value = 1.0;
 
     const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.45, time);
-    noiseGain.gain.setValueAtTime(0.35, time + 0.06);
-    noiseGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+    noiseGain.gain.setValueAtTime(0.08, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.09);
 
     noiseSource.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(this.masterGain);
+    this.sendToReverb(noiseGain, 0.16);
 
-    bodyOsc.start(time);
     noiseSource.start(time);
-    bodyOsc.stop(time + 0.09);
-    noiseSource.stop(time + 0.12);
+    noiseSource.stop(time + 0.10);
   }
 
   public playHiHat(time: number, isOpen = false) {
@@ -390,13 +624,13 @@ class ProceduralSoundEngine implements SynthVoiceController {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'highpass';
-    filter.frequency.setValueAtTime(8000, time);
-    filter.Q.value = 2.0;
+    filter.frequency.setValueAtTime(4500, time);
+    filter.Q.value = 1.0;
 
     const gain = this.ctx.createGain();
-    const dur = isOpen ? 0.25 : 0.04;
-    gain.gain.setValueAtTime(0.32, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    const dur = isOpen ? 0.12 : 0.035;
+    gain.gain.setValueAtTime(isOpen ? 0.045 : 0.03, time);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
     source.connect(filter);
     filter.connect(gain);
@@ -406,14 +640,14 @@ class ProceduralSoundEngine implements SynthVoiceController {
     source.stop(time + dur + 0.01);
   }
 
-  public playMetallicZap(time: number, duration = 0.06) {
+  public playMetallicZap(time: number, duration = 0.04) {
     if (!this.ctx || !this.masterGain || !this.metallicNoiseBuffer) return;
     const source = this.ctx.createBufferSource();
     source.buffer = this.metallicNoiseBuffer;
     const gain = this.ctx.createGain();
 
-    gain.gain.setValueAtTime(0.35, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    gain.gain.setValueAtTime(0.05, time);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
 
     source.connect(gain);
     gain.connect(this.masterGain);
@@ -452,12 +686,17 @@ class ProceduralSoundEngine implements SynthVoiceController {
 
       const currentConfig = TRACK_CONFIGS[this.currentTrackIndex];
       const tempo = currentConfig ? currentConfig.tempo : 128.0;
-      const secondsPer16th = (60.0 / tempo) / 4.0;
+      const secondsPerStep = currentConfig?.stepDuration ?? ((60.0 / tempo) / 4.0);
+
+      // Prevent timestamp drift / burst-fire if audio context resumes or lags
+      if (this.nextStepTime < this.ctx.currentTime) {
+        this.nextStepTime = this.ctx.currentTime + 0.01;
+      }
 
       // Lookahead window: schedule up to 120ms into the future
       while (this.nextStepTime < this.ctx.currentTime + 0.12) {
         this.scheduleTrackStep(this.currentTrackIndex, this.currentStep, this.nextStepTime);
-        this.nextStepTime += secondsPer16th;
+        this.nextStepTime += secondsPerStep;
         this.currentStep++;
       }
 
@@ -501,12 +740,13 @@ class ProceduralSoundEngine implements SynthVoiceController {
     this.rainNoiseNode.buffer = this.whiteNoiseBuffer;
     this.rainNoiseNode.loop = true;
 
+    // Warm vinyl rain crackle: soft 520Hz cutoff creates relaxing fireplace/rain mood
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(750, this.ctx.currentTime);
+    filter.frequency.setValueAtTime(520, this.ctx.currentTime);
 
     this.rainGainNode = this.ctx.createGain();
-    this.rainGainNode.gain.setValueAtTime(0.07, this.ctx.currentTime);
+    this.rainGainNode.gain.setValueAtTime(0.032, this.ctx.currentTime);
 
     this.rainNoiseNode.connect(filter);
     filter.connect(this.rainGainNode);

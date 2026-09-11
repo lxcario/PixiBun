@@ -36,6 +36,8 @@ const SHORTCUTS: ShortcutEntry[] = [
   { key: 'U', description: 'Rectangle Tool', category: 'Tools' },
   { key: 'O', description: 'Ellipse Tool', category: 'Tools' },
   { key: 'R', description: 'Color Replace Tool', category: 'Tools' },
+  { key: 'K', description: 'Normal Chisel Tool', category: 'Tools' },
+  { key: 'Shift + K / N', description: 'Rivet Stamp Tool', category: 'Tools' },
   { key: 'X', description: 'Swap Colors', category: 'Editing' },
   { key: '[ / ]', description: 'Decrease / Increase Size', category: 'Editing' },
   { key: 'H / V', description: 'Flip Selection H / V', category: 'Editing' },

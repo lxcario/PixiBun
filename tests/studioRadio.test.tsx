@@ -20,7 +20,7 @@ describe('Procedural Web Audio Engine & StudioRadioWidget', () => {
     it('initializes with default state, 3 procedural tracks, and 0.6 volume', () => {
       const state = lofiRadio.getState();
       expect(state.isPlaying).toBe(false);
-      expect(TRACKS).toEqual(['Cyber Run', 'Rainy Lilac', 'Neon Castle']);
+      expect(TRACKS).toEqual(['Field of Hopes', 'My Castle Town', 'Empty Town']);
       expect(TRACKS).toContain(state.trackTitle);
       expect(state.volume).toBe(0.6);
     });

@@ -20,7 +20,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the radio state updates to playing, the track title displays 'Cyber Run', and the 4-band equalizer bars animate actively"
+      "description": "Verify the radio state updates to playing, the track title displays 'Field of Hopes', and the 4-band equalizer bars animate actively"
     },
     {
       "type": "action",
@@ -28,7 +28,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the radio smoothly transitions to the next track 'Rainy Lilac' without throwing Web Audio context errors"
+      "description": "Verify the radio smoothly transitions to the next track 'My Castle Town' without throwing Web Audio context errors"
     },
     {
       "type": "action",
@@ -36,7 +36,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the radio transitions to 'Neon Castle'"
+      "description": "Verify the radio transitions to 'Empty Town'"
     },
     {
       "type": "action",

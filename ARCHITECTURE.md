@@ -335,7 +335,7 @@ graph LR
     Analyser --> EqualizerBars["Animated Boombox LED Spectrum Bars"]
 ```
 
-* **Zero-Bandwidth:** Synthesizes warm rain ambiance, subtle vinyl crackles, Rhodes chords, and sub-bass completely in code without loading external `.mp3` or `.wav` assets.
+* **Zero-Bandwidth Procedural Synth (`src/lib/audio/tracks.ts`):** Synthesizes warm rain ambiance, subtle vinyl crackles, acoustic felt piano, 25%/50% pulse flutes with delayed vibrato, NES triangle bass, and warm pad chords completely in code without loading external `.mp3` or `.wav` assets. Features 3 complete in-memory procedural arrangements: *"Field of Hopes"*, *"My Castle Town"*, and *"Empty Town"*.
 * **Real-Time Spectrum Visualizer:** 4-band FFT frequency analyzer samples frequency buckets ($b_0, b_1, b_2, b_3$) on every animation frame for animated LED spectrum feedback.
 
 ---

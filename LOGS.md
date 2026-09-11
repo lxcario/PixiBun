@@ -1301,5 +1301,25 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js 16.3.4 Turbopack clean production build
 **Status:** Complete
 
+---
 
+## 2026-09-11 — Procedural Lofi Track Synthesis, Normal Sculpt Shortcuts & Doc Alignment
 
+**Changes:**
+- **Procedural Web Audio Engine & Sound Design (`src/lib/audio/tracks.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/audio/StudioRadioWidget.tsx`)**:
+  - Implemented 3 complete in-memory procedural track transcriptions: *"Field of Hopes"* (The Field of Hopes and Dreams, 104 BPM, Bb Major), *"My Castle Town"* (Relaxing Cafe Lounge, 102 BPM, Eb Major with Minor Plagal Cadence), and *"Empty Town"* (Atmospheric Music Box Lullaby, 138 BPM in 6/8, A Minor Andalusian Cadence).
+  - Expanded procedural voice synthesis with authentic sound design: warm acoustic felt piano (`playPiano`), 25% and 50% pulse flutes with delayed vibrato (`playFlute`), authentic NES triangle bass (`playTriangleBass`), gentle chime arpeggios, and warm string section pad chords.
+  - Updated `StudioRadioWidget.tsx` track listing and synced `tests/studioRadio.test.tsx` and TestSprite plan `23_lofi_procedural_radio_and_onset_equalizer.plan.json`.
+- **Keyboard Shortcut Wiring & Accessibility (`src/components/layout/StudioLayout.tsx`, `src/components/modals/ShortcutsModal.tsx`)**:
+  - Bound <kbd>K</kbd> to `normal-chisel` and <kbd>Shift+K</kbd> / <kbd>N</kbd> to `rivet-stamp` in `StudioLayout.tsx`'s global keydown dispatcher, aligning live keyboard behavior with `LeftToolbar.tsx` and `README.md`.
+  - Added Normal Chisel (<kbd>K</kbd>) and Rivet Stamp (<kbd>Shift+K / N</kbd>) to `ShortcutsModal.tsx` under the Tools category.
+- **Documentation Reconciliation**:
+  - Updated `ARCHITECTURE.md` (§10) and `PIXIBUN_DEEP_DIVE.md` (§8) to document the procedural tracks and multi-voice synthesis pipeline.
+  - Re-ran documentation integrity harness (`scripts/verifyDocIntegrity.mjs`), unit tests (`vitest run`), and TypeScript compilation (`tsc --noEmit`).
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors, 0 warnings
+- `npx vitest run`: 533/533 passed across 77 suites
+- `npm run verify:docs`: all documentation integrity checks passed
+**Status:** Complete

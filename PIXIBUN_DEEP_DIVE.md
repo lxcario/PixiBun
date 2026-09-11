@@ -239,7 +239,7 @@ W_{\text{salience}}(x, y) = W_{\text{box}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x,
 * **Pink Noise & Vinyl Rain:** Synthesizes rain/vinyl crackle through an 800Hz lowpass filter with zero network audio assets.
 * **Tape Flutter:** 0.3Hz LFO introduces $\pm 1.5\text{ Hz}$ subtle analog pitch waver.
 * **Equalizer Spectrum:** 4-band real-time FFT analyzer powers boombox visualizer bars.
-* **Pentatonic Progressions:** Features 3 distinct jazz/lo-fi chord progressions.
+* **Procedural Track Arrangements (`src/lib/audio/tracks.ts`):** Features 3 complete in-memory procedural arrangements ("Field of Hopes", "My Castle Town", "Empty Town") with acoustic felt piano, 25%/50% pulse flutes with delayed vibrato, NES triangle bass, warm pad chords, and subtle tape percussion.
 
 ---
 

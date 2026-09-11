@@ -92,7 +92,7 @@ export const StudioRadioWidget: React.FC<{ className?: string }> = ({ className 
 
       {/* Track Title */}
       <span
-        className="text-[11px] font-mono font-bold text-[var(--text-heading)] max-w-[82px] truncate leading-tight cursor-default"
+        className="text-[11px] font-mono font-bold text-[var(--text-heading)] max-w-[105px] truncate leading-tight cursor-default"
         title={`Current Track: ${state.trackTitle} (${state.isPlaying ? 'Playing' : 'Paused'})`}
       >
         {state.trackTitle}
