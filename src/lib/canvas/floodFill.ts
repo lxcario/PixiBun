@@ -31,11 +31,22 @@ export function hexToRgba(hex: string): RGBA {
   };
 }
 
+/**
+ * Converts color channels to a standard 6-character hex string (#RRGGBB).
+ *
+ * Design Contract:
+ * - Output format is strictly 6-digit `#RRGGBB` (clamped to 0..255).
+ * - Alpha channel `_a` is accepted for call-site symmetry with RGBA tuples, but is
+ *   intentionally excluded from hex output because studio color inputs
+ *   (such as setPrimaryColor in useViewportPointerEvents) require 6-digit hex format.
+ */
 export function rgbaToHex(r: number, g: number, b: number, _a: number = 255): string {
-  // Alpha is accepted for call-site symmetry but hex output stays opaque RGB.
   const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
+
+/** Direct alias for rgbaToHex reflecting opaque 6-digit RGB conversion contract */
+export const rgbToHex = rgbaToHex;
 
 export function colorsMatch(
   c1: RGBA,

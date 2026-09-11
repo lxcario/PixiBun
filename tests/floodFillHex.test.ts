@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hexToRgba, performFloodFill } from '@/lib/canvas/floodFill';
+import { hexToRgba, performFloodFill, rgbaToHex, rgbToHex } from '@/lib/canvas/floodFill';
 import { makeCanvas } from './helpers/mockCanvas';
 
 describe('hexToRgba: hex color parsing', () => {
@@ -110,5 +110,34 @@ describe('performFloodFill: 32-bit unsigned pixel matching', () => {
     expect(after.data[1]).toBe(0);
     expect(after.data[2]).toBe(0);
     expect(after.data[3]).toBe(255);
+  });
+});
+
+describe('rgbaToHex / rgbToHex Conversion Contract', () => {
+  it('converts standard RGB values to 6-digit uppercase-safe hex format', () => {
+    expect(rgbaToHex(255, 0, 0)).toBe('#ff0000');
+    expect(rgbaToHex(0, 255, 0)).toBe('#00ff00');
+    expect(rgbaToHex(0, 0, 255)).toBe('#0000ff');
+    expect(rgbaToHex(255, 255, 255)).toBe('#ffffff');
+    expect(rgbaToHex(0, 0, 0)).toBe('#000000');
+  });
+
+  it('clamps out-of-range channel values to [0, 255]', () => {
+    expect(rgbaToHex(-20, 300, 128)).toBe('#00ff80');
+  });
+
+  it('rounds floating point color values cleanly', () => {
+    expect(rgbaToHex(127.6, 64.2, 0.4)).toBe('#804000');
+  });
+
+  it('maintains 6-character output regardless of provided alpha argument', () => {
+    expect(rgbaToHex(255, 0, 0, 128)).toBe('#ff0000');
+    expect(rgbaToHex(255, 0, 0, 0)).toBe('#ff0000');
+    expect(rgbaToHex(255, 0, 0, 255)).toBe('#ff0000');
+  });
+
+  it('rgbToHex is an exact functional alias of rgbaToHex', () => {
+    expect(rgbToHex).toBe(rgbaToHex);
+    expect(rgbToHex(10, 20, 30)).toBe('#0a141e');
   });
 });

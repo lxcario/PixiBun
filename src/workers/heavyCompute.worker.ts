@@ -6,7 +6,7 @@
 
 import { rotSprite } from '@/lib/canvas/rotSprite';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
-import { morphInBetweenFramesSync } from '@/lib/ai/pixelAiEngine';
+import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
 
 export type HeavyWorkerRequest =
   | {
@@ -35,6 +35,7 @@ export type HeavyWorkerRequest =
       frameA: { width: number; height: number; data: Uint8ClampedArray };
       frameB: { width: number; height: number; data: Uint8ClampedArray };
       steps?: number;
+      fraction?: number;
     };
 
 export type HeavyWorkerResponse =
@@ -97,8 +98,11 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
       }
 
       case 'morph': {
-        const { id, frameA, frameB, steps } = req;
-        const res = morphInBetweenFramesSync(frameA, frameB, steps);
+        const { id, frameA, frameB, steps, fraction } = req;
+        const res =
+          fraction !== undefined
+            ? [morphInBetweenFrameAtFraction(frameA, frameB, fraction)]
+            : morphInBetweenFramesSync(frameA, frameB, steps);
         const transfer = res.map((r) => r.data.buffer);
         (self as unknown as Worker).postMessage(
           { id, type: 'morph:done', result: res },

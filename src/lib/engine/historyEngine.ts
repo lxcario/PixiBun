@@ -41,11 +41,9 @@ export function createHistoryEngine(maxDepth: number = 50): HistoryEngine {
       const step = undoStack.pop()!;
       if (currentState) {
         redoStack.push(currentState);
-      } else {
-        redoStack.push(step);
-      }
-      while (redoStack.length > limit) {
-        redoStack.shift();
+        while (redoStack.length > limit) {
+          redoStack.shift();
+        }
       }
       return step;
     },
@@ -55,11 +53,9 @@ export function createHistoryEngine(maxDepth: number = 50): HistoryEngine {
       const step = redoStack.pop()!;
       if (currentState) {
         undoStack.push(currentState);
-      } else {
-        undoStack.push(step);
-      }
-      while (undoStack.length > limit) {
-        undoStack.shift();
+        while (undoStack.length > limit) {
+          undoStack.shift();
+        }
       }
       return step;
     },

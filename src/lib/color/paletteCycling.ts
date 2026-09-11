@@ -4,7 +4,7 @@
  * 
  * Deluxe Paint IFF ILBM CRNG & CCRT chunk parsing and serialization,
  * zero-allocation 32-bit LUT renderer, ping-pong fencepost oscillation,
- * sub-step BlendShift linear color interpolation, and Farey rational retuning
+ * sub-step BlendShift linear color interpolation, and harmonic rational retuning
  * for seamless loop unrolling.
  */
 
@@ -351,9 +351,9 @@ export function updateLivePaletteLUT32(
 }
 
 /**
- * Farey rational retuning for seamless loop unrolling without coprime LCM explosion.
+ * Harmonic rational retuning for seamless loop unrolling without coprime LCM period explosion.
  * Given a target loop duration T (e.g. 2.0s, 3.0s, 4.0s), retunes each track's rate to
- * the nearest harmonic integer cycle count over T, guaranteeing 100% seamless zero-pop looping.
+ * the nearest harmonic integer cycle count k = round(T * rate / M) over T, guaranteeing 100% seamless zero-pop looping.
  */
 export function retuneTracksForSeamlessLoop(
   tracks: PaletteCycleTrack[],

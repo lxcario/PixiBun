@@ -310,7 +310,125 @@ export function applyAtmosphericColorGrade(
 }
 
 /**
- * Pure buffer optical flow tweening for frames A and B.
+ * Precomputes nearest opaque pixel index for all pixels in O(W * H) using multi-source BFS.
+ * Replaces per-pixel concentric spiral/Chebyshev ring searches.
+ */
+function computeNearestColorMap(data: Uint8ClampedArray, width: number, height: number): Int32Array {
+  const totalPixels = width * height;
+  const nearest = new Int32Array(totalPixels).fill(-1);
+  const queue = new Int32Array(totalPixels);
+  let head = 0;
+  let tail = 0;
+
+  for (let i = 0; i < totalPixels; i++) {
+    if (data[i * 4 + 3] > 10) {
+      nearest[i] = i;
+      queue[tail++] = i;
+    }
+  }
+
+  const dx = [-1, 0, 1, -1, 1, -1, 0, 1];
+  const dy = [-1, -1, -1, 0, 0, 1, 1, 1];
+
+  while (head < tail) {
+    const curr = queue[head++];
+    const cx = curr % width;
+    const cy = Math.floor(curr / width);
+    const seed = nearest[curr];
+
+    for (let k = 0; k < 8; k++) {
+      const nx = cx + dx[k];
+      const ny = cy + dy[k];
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        const nIdx = ny * width + nx;
+        if (nearest[nIdx] === -1) {
+          nearest[nIdx] = seed;
+          queue[tail++] = nIdx;
+        }
+      }
+    }
+  }
+
+  return nearest;
+}
+
+/**
+ * Generates an in-between frame at arbitrary fraction t in [0, 1] using Signed Distance Field
+ * interpolation with multi-source nearest-color sampling and linear sRGB cross-fading.
+ */
+export function morphInBetweenFrameAtFraction(
+  frameA: { width: number; height: number; data: Uint8ClampedArray },
+  frameB: { width: number; height: number; data: Uint8ClampedArray },
+  fraction: number
+): { width: number; height: number; data: Uint8ClampedArray } {
+  const { width, height } = frameA;
+  const t = Math.max(0, Math.min(1, fraction));
+
+  if (t === 0) {
+    return { width, height, data: new Uint8ClampedArray(frameA.data) };
+  }
+  if (t === 1) {
+    return { width, height, data: new Uint8ClampedArray(frameB.data) };
+  }
+
+  const dataA = frameA.data;
+  const dataB = frameB.data;
+
+  const getSDF = (data: Uint8ClampedArray) => {
+    const insideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] > 10, width, height);
+    const outsideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] <= 10, width, height);
+    const sdf = new Float32Array(width * height);
+    for (let i = 0; i < width * height; i++) {
+      sdf[i] = outsideDist[i] - insideDist[i];
+    }
+    return sdf;
+  };
+
+  const sdfA = getSDF(dataA);
+  const sdfB = getSDF(dataB);
+  const nearestA = computeNearestColorMap(dataA, width, height);
+  const nearestB = computeNearestColorMap(dataB, width, height);
+
+  const outData = new Uint8ClampedArray(width * height * 4);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      const outIdx = i * 4;
+
+      const tweenedSDF = sdfA[i] * (1 - t) + sdfB[i] * t;
+      if (tweenedSDF <= 0) {
+        const seedA = nearestA[i];
+        const seedB = nearestB[i];
+
+        const hasA = seedA >= 0;
+        const hasB = seedB >= 0;
+        if (!hasA && !hasB) continue;
+
+        const aIdx = hasA ? seedA * 4 : 0;
+        const bIdx = hasB ? seedB * 4 : 0;
+
+        const rA = hasA ? dataA[aIdx] : (hasB ? dataB[bIdx] : 0);
+        const gA = hasA ? dataA[aIdx + 1] : (hasB ? dataB[bIdx + 1] : 0);
+        const bA = hasA ? dataA[aIdx + 2] : (hasB ? dataB[bIdx + 2] : 0);
+
+        const rB = hasB ? dataB[bIdx] : (hasA ? dataA[aIdx] : 0);
+        const gB = hasB ? dataB[bIdx + 1] : (hasA ? dataA[aIdx + 1] : 0);
+        const bB = hasB ? dataB[bIdx + 2] : (hasA ? dataA[aIdx + 2] : 0);
+
+        outData[outIdx] = Math.round(rA * (1 - t) + rB * t);
+        outData[outIdx + 1] = Math.round(gA * (1 - t) + gB * t);
+        outData[outIdx + 2] = Math.round(bA * (1 - t) + bB * t);
+        outData[outIdx + 3] = 255;
+      }
+    }
+  }
+
+  return { width, height, data: outData };
+}
+
+/**
+ * Pure buffer Signed Distance Field (SDF) tweening for frames A and B.
  */
 export function morphInBetweenFramesSync(
   frameA: { width: number; height: number; data: Uint8ClampedArray },
@@ -321,11 +439,8 @@ export function morphInBetweenFramesSync(
   const dataA = frameA.data;
   const dataB = frameB.data;
 
-  // 1. Helper to compute SDF
   const getSDF = (data: Uint8ClampedArray) => {
-    // insideDist: distance to transparent (positive inside, 0 outside)
     const insideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] > 10, width, height);
-    // outsideDist: distance to opaque (positive outside, 0 inside)
     const outsideDist = computeSeparableEDT((x, y) => data[(y * width + x) * 4 + 3] <= 10, width, height);
 
     const sdf = new Float32Array(width * height);
@@ -337,33 +452,8 @@ export function morphInBetweenFramesSync(
 
   const sdfA = getSDF(dataA);
   const sdfB = getSDF(dataB);
-
-  // 2. Helper to find closest opaque pixel color using BFS/spiral search
-  const findClosestColor = (data: Uint8ClampedArray, cx: number, cy: number): [number, number, number, number] => {
-    if (data[(cy * width + cx) * 4 + 3] > 10) {
-      const idx = (cy * width + cx) * 4;
-      return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
-    }
-    
-    let r = 1;
-    while (r < Math.max(width, height)) {
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
-          const px = cx + dx;
-          const py = cy + dy;
-          if (px >= 0 && px < width && py >= 0 && py < height) {
-            const idx = (py * width + px) * 4;
-            if (data[idx + 3] > 10) {
-              return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
-            }
-          }
-        }
-      }
-      r++;
-    }
-    return [0, 0, 0, 0];
-  };
+  const nearestA = computeNearestColorMap(dataA, width, height);
+  const nearestB = computeNearestColorMap(dataB, width, height);
 
   const results: { width: number; height: number; data: Uint8ClampedArray }[] = [];
 
@@ -376,26 +466,29 @@ export function morphInBetweenFramesSync(
         const i = y * width + x;
         const outIdx = i * 4;
 
-        // Tween SDF
         const tweenedSDF = sdfA[i] * (1 - t) + sdfB[i] * t;
-
-        // If inside shape or exactly on boundary
         if (tweenedSDF <= 0) {
-          // Sample nearest colors
-          const colorA = findClosestColor(dataA, x, y);
-          const colorB = findClosestColor(dataB, x, y);
-          
-          if (colorA[3] === 0 && colorB[3] === 0) continue;
+          const seedA = nearestA[i];
+          const seedB = nearestB[i];
 
-          let cA = colorA;
-          let cB = colorB;
-          if (colorA[3] === 0) cA = colorB;
-          if (colorB[3] === 0) cB = colorA;
+          const hasA = seedA >= 0;
+          const hasB = seedB >= 0;
+          if (!hasA && !hasB) continue;
 
-          // Simple sRGB cross-fade
-          outData[outIdx] = Math.round(cA[0] * (1 - t) + cB[0] * t);
-          outData[outIdx + 1] = Math.round(cA[1] * (1 - t) + cB[1] * t);
-          outData[outIdx + 2] = Math.round(cA[2] * (1 - t) + cB[2] * t);
+          const aIdx = hasA ? seedA * 4 : 0;
+          const bIdx = hasB ? seedB * 4 : 0;
+
+          const rA = hasA ? dataA[aIdx] : (hasB ? dataB[bIdx] : 0);
+          const gA = hasA ? dataA[aIdx + 1] : (hasB ? dataB[bIdx + 1] : 0);
+          const bA = hasA ? dataA[aIdx + 2] : (hasB ? dataB[bIdx + 2] : 0);
+
+          const rB = hasB ? dataB[bIdx] : (hasA ? dataA[aIdx] : 0);
+          const gB = hasB ? dataB[bIdx + 1] : (hasA ? dataA[aIdx + 1] : 0);
+          const bB = hasB ? dataB[bIdx + 2] : (hasA ? dataA[aIdx + 2] : 0);
+
+          outData[outIdx] = Math.round(rA * (1 - t) + rB * t);
+          outData[outIdx + 1] = Math.round(gA * (1 - t) + gB * t);
+          outData[outIdx + 2] = Math.round(bA * (1 - t) + bB * t);
           outData[outIdx + 3] = 255;
         }
       }
@@ -407,16 +500,16 @@ export function morphInBetweenFramesSync(
 }
 
 /**
- * 4. Optical Flow & Signed Distance Field (SDF) In-Between Frame Morphing:
- * Given Frame A and Frame B, computes 2D block-matching motion flow vectors and
- * interpolates boundaries and color trajectories to generate a smooth intermediate tween frame.
+ * 4. Signed Distance Field (SDF) In-Between Frame Morphing:
+ * Given Frame A and Frame B, computes Euclidean distance fields to interpolate
+ * shape boundaries and color trajectories at fractional time t in [0, 1].
  */
 export function morphInBetweenFrames(
   ctxA: CanvasRenderingContext2D,
   ctxB: CanvasRenderingContext2D,
   width: number,
   height: number,
-  _t: number = 0.5
+  t: number = 0.5
 ): HTMLCanvasElement {
   const dataA = ctxA.getImageData(0, 0, width, height).data;
   const dataB = ctxB.getImageData(0, 0, width, height).data;
@@ -427,16 +520,13 @@ export function morphInBetweenFrames(
   const outCtx = outCanvas.getContext('2d')!;
   const outImgData = outCtx.createImageData(width, height);
 
-  const [result] = morphInBetweenFramesSync(
+  const result = morphInBetweenFrameAtFraction(
     { width, height, data: dataA },
     { width, height, data: dataB },
-    1
+    t
   );
 
-  if (result) {
-    outImgData.data.set(result.data);
-  }
-
+  outImgData.data.set(result.data);
   outCtx.putImageData(outImgData, 0, 0);
   return outCanvas;
 }

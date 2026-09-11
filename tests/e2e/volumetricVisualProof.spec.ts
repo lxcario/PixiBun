@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import fs from 'node:fs';
 
 test.describe('Volumetric Optics Visual Proof', () => {
   test('renders green crystal with 3D volumetric facets and zero gray/purple corruption', async ({ page }) => {
@@ -51,7 +52,8 @@ test.describe('Volumetric Optics Visual Proof', () => {
 
     await page.waitForTimeout(500);
 
-    const artifactDir = 'C:\\Users\\Resque\\.gemini\\antigravity\\brain\\2d539d32-5f07-413a-8cbe-17b41101f3e4';
+    const artifactDir = path.join(process.cwd(), 'test-results', 'e2e-artifacts');
+    fs.mkdirSync(artifactDir, { recursive: true });
     const beforeShot = path.join(artifactDir, 'emerald_crystal_before.png');
     await canvas.screenshot({ path: beforeShot });
 

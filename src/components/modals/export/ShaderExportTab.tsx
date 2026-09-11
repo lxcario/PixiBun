@@ -91,7 +91,7 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
         </div>
 
         <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-          Powered by Farey rational retuning to guarantee 100% seamless zero-pop looping across all cycle tracks.
+          Powered by harmonic rational retuning to guarantee 100% seamless zero-pop looping across all cycle tracks.
         </p>
       </div>
     );

@@ -36,7 +36,7 @@ graph TD
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, Wu 2:1 Iso, Bézier)"]
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
-        PixelizeCore["Image Synthesis Engine (Sobel Salience, OKLab Median-Cut, Floyd-Steinberg)"]
+        PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
         AudioCore["Web Audio Lo-Fi Synthesizer (Vinyl Rain Noise, Rhodes Chords, FFT Analyser)"]
     end
@@ -139,7 +139,7 @@ graph TD
    *Standard navigation/Photoshop azimuth convention: $0^\circ = \text{North (Top)}, 45^\circ = \text{North-East}, 135^\circ = \text{South-East}, 225^\circ = \text{South-West}, 315^\circ = \text{North-West (Top-Left)}$.*
 3. **Frontal Face Cushion Plateau & Feature Normal Stabilization:**
    For character forms, to avoid "bowling-ball" inflation where half the face is plunged into darkness ($N \cdot L < 0$), height within 2.8px of the boundary contour bevels smoothly while the interior reaches a flat plateau:
-   $$\text{ratio} = \min\left(1.0, \frac{D(p)}{2.8}\right), \quad H_{\text{face}}(p) = H(p) \cdot (0.6 + 0.4 \cdot \text{ratio})$$
+   $$\text{rimRatio} = \min\left(1.0, \frac{D(p)}{2.8}\right), \quad H_{\text{face}}(p) = \max(D) \cdot \sqrt{\text{rimRatio}}$$
    Normals across the face interior satisfy $N_z \ge 0.85$, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
 4. **100% Feature Preservation & 4-Tone Discrete OKLCH Cel-Shading:**
     Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH via `buildCelRamp()` (4 tones):
@@ -274,15 +274,20 @@ graph TD
 
 ---
 
-## 8. Optical Flow In-Between Animation Morphing
+## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)
 
-The frame morphing engine (`src/lib/ai/pixelAiEngine.ts`) implements **2D Block-Matching Optical Flow & Signed Distance Field (SDF)** interpolation:
+The frame morphing engine generates smooth intermediate tween frames between keyframes via **Separable Euclidean Distance Transform (EDT) Signed Distance Fields (SDF)** combined with multi-source nearest-color sampling:
 
-1. **Motion Displacement Field (with Zero-Motion Center Bias):**
-   $$\mathbf{v}(x, y) = \arg\min_{(u, v) \in \mathcal{W}} \left( \sum_{p \in \mathcal{B}} |I_A(p) - I_B(p + (u, v))| + 0.05 \cdot (u^2 + v^2) \right)$$
-   *The quadratic displacement penalty $0.05 \cdot (u^2 + v^2)$ provides tie-break stabilization, preventing false ghosting artifacts across uniform, solid color, or transparent background regions.*
-2. **Intermediate Synthesis at $t = 0.5$:**
-   Pixels are displaced along trajectory vectors $\mathbf{x} - t \mathbf{v}$ and blended in OKLab perceptual color space, producing clean tween frames between keyframes without ghosting or tearing.
+1. **Signed Distance Field Generation:**
+   Continuous distance fields $D_{\text{opaque}}$ and $D_{\text{transparent}}$ are evaluated using 1D separable parabolic envelope scans ($O(W \times H)$ complexity):
+   $$\text{SDF}(p) = D_{\text{opaque}}(p) - D_{\text{transparent}}(p)$$
+   where $\text{SDF}(p) \le 0$ represents pixels within the active shape boundary and $\text{SDF}(p) > 0$ denotes transparent background.
+2. **Intermediate Boundary Tweening at Fraction $t \in [0, 1]$:**
+   $$\text{SDF}_t(p) = (1 - t) \cdot \text{SDF}_A(p) + t \cdot \text{SDF}_B(p)$$
+   Pixels satisfying $\text{SDF}_t(p) \le 0$ form the morphed silhouette at fractional time $t$.
+3. **Multi-Source BFS Nearest-Color Sampling & Cross-Fade:**
+   An 8-connected multi-source Breadth-First Search precomputes nearest opaque color seeds for all pixels in $O(W \times H)$ time once per frame. Lit pixels sample nearest seed colors $\mathbf{C}_A$ and $\mathbf{C}_B$ and blend via linear sRGB cross-fading:
+   $$\mathbf{C}_t(p) = \operatorname{round}\left( (1 - t) \cdot \mathbf{C}_A(p) + t \cdot \mathbf{C}_B(p) \right)$$
 
 ---
 
@@ -291,8 +296,8 @@ The frame morphing engine (`src/lib/ai/pixelAiEngine.ts`) implements **2D Block-
 ```mermaid
 graph TD
     InputImg["Source Image / Texture"] --> BoxDown["Linear Optical Area Box Filter (Gamma-Corrected)"]
-    InputImg --> SobelSalience["Sobel Gradient Magnitude Map (Edge Preservation)"]
-    BoxDown & SobelSalience --> SalientDown["Salient Downsampled ImageData"]
+    InputImg --> GradSalience["2x2 Forward-Difference Gradient Salience (Edge Preservation)"]
+    BoxDown & GradSalience --> SalientDown["Salient Downsampled ImageData"]
     SalientDown --> BGKey["4-Corner Background Keying & 1-Bit Alpha"]
     BGKey --> Quantize["OKLab Median-Cut Partitioning + K-Means++ Refinement"]
     Quantize --> DitherBranch{"Dither Mode"}
@@ -305,8 +310,12 @@ graph TD
 
 1. **Linear Optical Gamma Correction:**
    $$C_{\text{linear}} = \begin{cases} C_{\text{sRGB}} / 12.92 & C_{\text{sRGB}} \le 0.04045 \\ \left(\frac{C_{\text{sRGB}} + 0.055}{1.055}\right)^{2.4} & C_{\text{sRGB}} > 0.04045 \end{cases}$$
-2. **Sobel Salience Weighting:**
-   $$W_{\text{salience}}(x, y) = W_{\text{area}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x, y)\|)$$
+2. **2x2 Forward-Difference Gradient Salience Weighting:**
+   High-frequency edges are extracted using a forward-difference gradient on luminance $Y = 0.2126R + 0.7152G + 0.0722B$:
+   $$G_x(x, y) = Y(x + 1, y) - Y(x, y), \quad G_y(x, y) = Y(x, y + 1) - Y(x, y), \quad \|\nabla I(x, y)\| = \sqrt{G_x^2 + G_y^2}$$
+   During area box downsampling, edge pixels receive boosted accumulation weights:
+   $$W_{\text{salience}}(x, y) = W_{\text{box}}(x, y) \cdot \left(1.0 + \min(2.5, 3.0 \cdot \|\nabla I(x, y)\|)\right)$$
+   This prevents delicate 1-pixel line art, silhouettes, and character facial features from blurring away during downscaling.
 3. **OKLab Median-Cut & Lloyd K-Means Refinement:**
    Clusters color bounding boxes along the axis of maximal perceptual variance in OKLab space ($L, a, b$), followed by iterative centroid convergence:
    $$\mu_k^{(t+1)} = \frac{1}{|S_k|} \sum_{p \in S_k} p$$
@@ -408,7 +417,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 
 * **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. Unlike native desktop applications (e.g. Aseprite) optimized for 500+ frame 4K cinematic timelines using native C++ file I/O, PixiBun targets instant zero-install browser crafting with IndexedDB binary blob persistence (`layerBlobs`), zero-copy Web Worker export codecs, and real-time 2.5D photometric cel-shading.
 * **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Implements an overlapping pattern synthesis model with periodic boundary conditions optimized specifically for small pixel art tiles and terrain textures ($16\times16$ to $64\times64$ output dimensions, $N=2$ or $N=3$ neighborhood kernels). Adjacency constraint graphs are bounded to input sample entropy, with deterministic pseudorandom seed stepping.
-* **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-tailored planar graph ambiguity solver based on Kopf-Lischinski (SIGGRAPH 2011) principles, converting 2D pixel clusters into valence-aware polygonal boundaries with Catmull-Rom cubic Bézier smoothing specifically for scalable SVG sprite sheet export.
+* **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-tailored planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
 * **Zero-Egress LAN Default & Network Boundaries:** Core creative features (raster engine, layers, animation timeline, photometric studio, color science, export encoders, and IndexedDB persistence) operate 100% on-device without network access. P2P co-draw defaults to `LAN_ICE_SERVERS = []` for true zero-egress local network collaboration. Public Internet WebRTC STUN NAT traversal and the optional diagnostics relay are the only subsystems that require network access, both requiring explicit user activation.
 
 ---
@@ -444,7 +453,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
   Guarantees registers visit endpoints once per period without double-dwell glitches.
 * **Sub-Step BlendShift:** Linear interpolation of RGB color components at fractional phase offsets:
   $$\mathbf{C}(t) = (1 - \text{frac}) \cdot \mathbf{C}_{\lfloor p \rfloor} + \text{frac} \cdot \mathbf{C}_{\lfloor p \rfloor + 1}$$
-* **Farey Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly seamless loop cycles with zero boundary seam pop.
+* **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM period explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly seamless loop cycles with zero boundary seam pop.
 * **Hardware Shader Generation (`src/lib/export/shaderExporter.ts`):** Produces standalone Godot 4 CanvasItem shaders (`.gdshader`) and Unity URP 2D HLSL shaders with nearest-neighbor point filtering and half-texel LUT sampling.
 
 <p align="center">
@@ -484,7 +493,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
      $$E_0 = (C == A \land C \neq D \land A \neq B) ? A : P$$
   2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
-  3. **Gaussian Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a Gaussian weighting mask $w_{u,v} = \exp(-( (u-3.5)^2 + (v-3.5)^2 ) / (2\sigma^2))$ with $\sigma \approx 2.4$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Fully transparent pixels are excluded unless alpha dominant. This preserves sharp single-pixel diagonal lines and maintains 100% strict palette fidelity.
+  3. **Parabolic Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a radially symmetric parabolic center-weighted kernel $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$ for $(u, v) \in \{-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5\}^2$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Feature conservation thresholds preserve 1px thin lines when the center core touches solid pixels, otherwise requiring a solid majority (38%) to prevent outline dilation while preserving 100% strict palette fidelity.
 * **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
   - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
   - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 16x16px screen-space hit area regardless of canvas zoom factor ($100\% - 3200\%$).

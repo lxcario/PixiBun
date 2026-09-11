@@ -7,7 +7,7 @@
  * Vol. 30, No. 4, Article 99.
  *
  * Resolves diagonal pixel-neighbor ambiguities using planar graph topology heuristics,
- * constructs dual polygonal cell boundaries with valence-aware corner fillets,
+ * constructs cell boundaries with local corner offsets,
  * and fits smooth piecewise cubic Bézier splines to produce publication-grade vector graphics.
  */
 

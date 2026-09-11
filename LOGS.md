@@ -1323,3 +1323,43 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx vitest run`: 533/533 passed across 77 suites
 - `npm run verify:docs`: all documentation integrity checks passed
 **Status:** Complete
+
+---
+
+## 2026-09-12 — Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Quality Gate Verification
+
+**Changes:**
+- **RotSprite Rectangular Fast Paths (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`)**:
+  - Removed `w === h` restrictions on orthogonal 90° and 270° fast paths across both canvas API and AI math engine chains, properly transposing dimensions ($W' = H, H' = W$) and updating coordinate indexing to $y' \cdot H + x'$.
+  - Corrected downsampling kernel documentation from Gaussian to Xenowhirl's parabolic center-weighted majority voting kernel: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
+  - Added dedicated test suite `tests/rotSpriteRectangular.test.ts` (5 tests) verifying rectangular canvas rotation equivalence.
+- **Morph Fraction Forwarding & Multi-Source BFS Color Map (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`)**:
+  - Replaced $O(W \times H \times R^2)$ spiral search with 8-connected multi-source BFS in $O(W \times H)$ time for nearest opaque color lookups.
+  - Exported `morphInBetweenFrameAtFraction` and forwarded parameter $t$ in `morphInBetweenFrames`.
+  - Added `fraction` property support across Web Worker message schemas and dispatcher fallback routes.
+  - Added dedicated test suite `tests/pixelAiEngineMorphFraction.test.ts` (5 tests) asserting intermediate fraction transitions.
+- **History Engine Popped Step Loop Elimination (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**:
+  - Guarded opposite stack push on `undo()` and `redo()` to execute only when `currentState !== undefined`, eliminating ghost state cycles.
+  - Added unit test in `tests/historyEngine.test.ts` verifying no-arg undo behavior.
+- **FloodFill Hex Parsing & Complete Test Coverage (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`)**:
+  - Documented strict 6-digit `#RRGGBB` contract for color picker inputs and exported explicit `rgbToHex` alias.
+  - Unified test suite in `tests/floodFillHex.test.ts` to 14 tests preserving all 5 `hexToRgba` tests (including CSS Color 4 4/8-digit `#RGBA` expansion), 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex` contract tests.
+- **Diagnostics Relay Fallback Version Synchronization (`src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
+  - Synchronized `APP_VERSION = '1.12.0'` in `capture.ts` and default route fallback in `src/app/api/diagnostics/relay/route.ts`.
+- **E2E Spec Test Artifact Portability (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`)**:
+  - Replaced hardcoded machine-specific brain directory paths with dynamic `path.join(process.cwd(), 'test-results', 'e2e-artifacts')` and recursive directory creation.
+- **Documentation Algorithmic Rigor & Integrity (`ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`)**:
+  - Replaced optical flow claims with Signed Distance Field (SDF) morphing and 8-connected multi-source BFS.
+  - Aligned frontal cushion formula to $\text{rimRatio} = \min(1, D / 2.8)$ and $H = \max(D) \cdot \sqrt{\text{rimRatio}}$.
+  - Aligned salience weighting to $2\times2$ forward differences with $[1.0, 3.5]$ clamp.
+  - Aligned palette cycling retuning to harmonic rational retuning: $k = \operatorname{round}(T \cdot \text{rate} / M)$.
+  - Documented missing keyboard shortcuts (<kbd>N</kbd>, <kbd>S</kbd>, <kbd>P</kbd>), `/playground` sandbox route, and APNG/MP4/WebM export nuances.
+  - Harmonized `SKILL.md:12` emoji rule to distinguish functional documentation markers from decorative AI slop emojis.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 549/549 passed across 79 suites (0 regressions, 0 deleted tests)
+- `node scripts/verifyDocIntegrity.mjs`: all documentation integrity checks passed (41 phases, 23 sections, 149/149 file paths verified)
+- `npx next build`: Next.js 16.3.4 clean production build across 7 routes
+**Status:** Complete

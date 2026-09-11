@@ -21,6 +21,7 @@ src/
 │   ├── globals.css                  # Tailwind v4 @theme, OKLCH variables, tactile shadows, dither patterns
 │   ├── layout.tsx                   # Root layout (Silkscreen, Plus Jakarta Sans, JetBrains Mono fonts)
 │   ├── page.tsx                     # Landing Page (Living desk scene, diorama, artisan story)
+│   ├── playground/page.tsx          # Interactive tutorial and sandbox workspace
 │   └── studio/page.tsx              # Main studio drawing editor and workspace
 ├── components/
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
@@ -39,7 +40,7 @@ src/
 │   │   │   ├── dithering.ts         # Atkinson and Riemersma error-diffusion dithering
 │   │   │   ├── rotSprite.ts         # Xenowhirl 8x Scale2X RotSprite rotation engine and thinning
 │   │   │   └── minecraftSkin.ts     # Minecraft player skin UV detection and normal mapping
-│   │   ├── pixelAiEngine.ts         # Optical flow tweening, jaggy cleanup, ground shadow, outline
+│   │   ├── pixelAiEngine.ts         # SDF morphing, jaggy cleanup, ground shadow, outline
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
 │   │   └── shadowRayMarcher.ts      # Bounded 2.5D sprite cast shadow projection, drop shadow, Aaltonen cone tracing
 │   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
@@ -47,10 +48,10 @@ src/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
 │   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
-│   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, Farey retuning)
+│   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, harmonic rational retuning)
 │   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool, workerDispatcher.ts
 │   ├── events/                      # Typed event bus (studioEvents.ts)
-│   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder, shaderExporter.ts
+│   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder, processReplayExport, depixelizeVector, shaderExporter.ts
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
 │   ├── procedural/                  # waveFunctionCollapse.ts (WFC overlapping constraint satisfaction pattern synthesis)
 │   ├── render/                      # Pure compositor (compositor.ts) and template renderer (templateRenderer.ts)
@@ -61,7 +62,7 @@ src/
 ├── stores/
 │   ├── studioStore.ts               # Zustand + Immer studio state manager (composed from 5 modular slices)
 │   └── themeStore.ts                # Dual theme manager and Zero-Lag CSS transition suppressor
-├── workers/                         # Background Web Workers (heavyCompute.worker.ts offloading RotSprite 8x, WFC & In-Between morphing)
+├── workers/                         # Background Web Workers (heavyCompute.worker.ts offloading RotSprite 8x, WFC & SDF in-between morphing)
 └── types/                           # TypeScript definitions (canvas, tools, animation, project, theme)
 `
 
@@ -173,7 +174,7 @@ R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \cdo
 
 ### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation
 For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
-* **Frontal Cushion Plateau:** Within 2.8px of the boundary contour, height bevels smoothly down while the face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$). Form shadows naturally hug only the unlit 1–2px silhouette edge.
+* **Frontal Cushion Plateau:** Within the rim band $D(x, y) < D_{\text{plateau}} = \max(D) \cdot \sqrt{\text{rimRatio}}$ (where default $\text{rimRatio} = 0.35$, yielding $D_{\text{plateau}} \approx 0.59 \cdot \max(D)$), height bevels smoothly down via $\sqrt{D / D_{\text{plateau}}}$. The face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$), ensuring form shadows naturally hug only the unlit silhouette rim.
 * **Independent Ear Cones:** Distinct convex lobes in the silhouette retain independent 3D height peaks without arbitrary pixel caps.
 * **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving 100% artist color fidelity across up to 32 clusters.
 * **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo), **Deep Crevice** ($L \times 0.60$, $20°$ shift, triggers at $AO < 0.60$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ toward $65°$ warm sunlight, shiny materials only). Shadow placement is driven purely by directional diffuse signal (`diffSignal = wrapNdotL × effectiveFalloff < 0.55`), decoupled from ambient fill.
@@ -208,29 +209,37 @@ graph LR
 
 \text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L} + 0.4}{1.4}\right)^{1.2}
 
-5. **Anatomical Contact AO:** Applies contact shadowing under chin (.80$), armpits (.82$), and inner limbs (.85$).
+5. **Anatomical Contact AO:** Applies contact shadowing under chin ($0.80$), armpits ($0.82$), and inner limbs ($0.85$).
 
 ---
 
-# 6. Optical Flow In-Between Animation Synthesis
+# 6. Signed Distance Field (SDF) In-Between Animation Morphing
 
-src/lib/ai/pixelAiEngine.ts implements 2D block-matching motion estimation with zero-motion bias:
+`src/lib/ai/pixelAiEngine.ts` implements Signed Distance Field (SDF) shape morphing paired with 8-connected multi-source BFS color sampling:
 
-\mathbf{v}(x, y) = \arg\min_{(u, v) \in \mathcal{W}} \left( \sum_{p \in \mathcal{B}} |I_A(p) - I_B(p + (u, v))| + 0.05 \cdot (u^2 + v^2) \right)
-
-Interpolation at  = 0.5$ blends colors in perceptual OKLab space to prevent ghosting and tearing.
+1. **Signed Distance Field Computation:** For keyframes $A$ and $B$, separable Euclidean Distance Transforms (EDT) compute boundary distance metrics:
+   $$\text{sdf}_A(x, y) = d_{\text{outside}}^A(x, y) - d_{\text{inside}}^A(x, y)$$
+   $$\text{sdf}_B(x, y) = d_{\text{outside}}^B(x, y) - d_{\text{inside}}^B(x, y)$$
+2. **Linear SDF Interpolation:** For any in-between time fraction $t \in [0, 1]$:
+   $$\text{sdf}_t(x, y) = (1 - t) \cdot \text{sdf}_A(x, y) + t \cdot \text{sdf}_B(x, y)$$
+   A coordinate $(x, y)$ belongs to the morphed sprite if $\text{sdf}_t(x, y) \le 0$.
+3. **Multi-Source BFS Color Sampling:** Precomputes the nearest opaque pixel index across the grid in $O(W \times H)$ time via 8-connected queue propagation (eliminating $O(W \times H \times R^2)$ spiral searches).
+4. **Perceptual OKLab Blending:** Colors from source pixels $C_A$ and $C_B$ are blended at fraction $t$ in OKLab color space:
+   $$C_t(x, y) = \operatorname{round}\left((1 - t) \cdot C_A + t \cdot C_B\right)$$
 
 ---
 
-# 7. Image-to-Pixel Synthesis (pixelizeEngine.ts)
+# 7. Image-to-Pixel Synthesis (`pixelizeEngine.ts`)
 
-1. **Linear Optical Gamma Correction:** Downsamples in linear energy space to avoid dark fringe artifacts.
-2. **Sobel Salience Edge Preservation:** Weights high-frequency facial and weapon contours:
-
-W_{\text{salience}}(x, y) = W_{\text{box}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x, y)\|)
-
-3. **OKLab Median-Cut + K-Means++:** Quantizes palettes along maximum perceptual variance axes.
-4. **Serpentine Floyd-Steinberg & Atkinson Dithering:** Alternating scan direction prevents worming artifacts.
+1. **Linear Optical Gamma Correction:** Downsamples in linear energy space ($sRGB \to \text{Linear}$) to prevent dark fringe perimeter artifacts:
+   $$I_{\text{linear}} = \begin{cases} \frac{C}{12.92} & C \le 0.04045 \\ \left(\frac{C + 0.055}{1.055}\right)^{2.4} & C > 0.04045 \end{cases}$$
+2. **Forward-Difference Salience Edge Preservation:** Weights high-frequency facial and weapon contours using $2\times2$ forward differences:
+   $$G_x = I_{\text{lum}}(x + 1, y) - I_{\text{lum}}(x, y), \quad G_y = I_{\text{lum}}(x, y + 1) - I_{\text{lum}}(x, y)$$
+   $$\|\nabla I(x, y)\| = \sqrt{G_x^2 + G_y^2}$$
+   $$W_{\text{salience}}(x, y) = W_{\text{box}} \cdot \left(1.0 + \min\left(2.5, 3.0 \cdot \|\nabla I(x, y)\|\right)\right)$$
+   This guarantees edge weight boosts remain stably bounded in $[1.0, 3.5]$.
+3. **OKLab Median-Cut & K-Means++:** Quantizes palettes along maximum perceptual variance axes in OKLab space.
+4. **Serpentine Floyd-Steinberg & Atkinson Dithering:** Alternating scan direction prevents directional worming artifacts.
 
 ---
 
@@ -256,6 +265,19 @@ W_{\text{salience}}(x, y) = W_{\text{box}} \cdot (1.0 + 0.05 \cdot \|\nabla I(x,
 
 ### 3. GIF89a LZW Encoder (gifEncoderCore.ts)
 * Lightweight, multithreaded worker encoder with per-frame Local Color Tables and Uint8Array stream buffering.
+
+### 4. Animated PNG Encoder (apngEncoder.ts)
+* Zero-dependency streaming APNG builder assembling `acTL` (animation control), `fcTL` (frame control), and `fdAT` (frame data) chunks with lossless deflate compression and full 32-bit RGBA alpha support.
+
+### 5. WebM & MP4 Hardware-Accelerated Video (webmEncoder.ts, mp4Encoder.ts)
+* **WebM Encoder:** Encodes VP8/VP9 frames via `VideoEncoder` / MediaStream recording with alpha transparency preservation.
+* **MP4 Encoder:** Emits H.264 video streams with even integer dimension clamping (`(w * scale + 1) & ~1`) for $16\times16$ macroblock alignment.
+
+### 6. Process Replay Speedpaint Timelapse (processReplayExport.ts)
+* Serializes the session's fine-grained stroke command log, synthesizing variable-speed timelapse animations from blank canvas to finished artwork.
+
+### 7. Standalone Game Engine Shaders (shaderExporter.ts)
+* Emits production-ready Godot 4 `.gdshader` (visual shader canvas item with normal/lighting pass and dynamic palette cycling uniform arrays) and Unity URP 2D HLSL shaders.
 
 ---
 
@@ -319,7 +341,7 @@ Period $M = 2(S - 1)$ where $S = \text{high} - \text{low} + 1$:
 $$p = \lfloor\text{phase}\rfloor \pmod M; \quad \text{offset} = \begin{cases} p & \text{if } p < S \\ M - p & \text{otherwise} \end{cases}$$
 Registers ping-pong smoothly across boundaries without double-frame dwell pauses.
 
-### 4. Farey Rational Retuning
+### 4. Harmonic Rational Retuning
 Snaps each track's rate to harmonic periods over target duration $T$:
 $$k = \operatorname{round}\left(\frac{T \cdot \text{rate}}{M}\right), \quad \text{rate}_{\text{retuned}} = \frac{k \cdot M}{T}$$
 Guarantees seamless loop unrolling into loopable APNG, GIF, and standalone Godot 4 (`.gdshader`) / Unity URP 2D HLSL shaders.
@@ -353,5 +375,46 @@ setTimeout(() => URL.revokeObjectURL(url), 1000);
 
 ### 4. H.264 / YUV 4:2:0 Macroblock Alignment (`mp4Encoder.ts`)
 Hardware video encoders require even integer dimensions for $16 \times 16$ macroblock partitioning. Export canvases are padded via `(width * scale + 1) & ~1` and `(height * scale + 1) & ~1`.
+
+---
+
+# 14. Xenowhirl RotSprite Algorithm & Vector Depixelization
+
+### 1. Xenowhirl RotSprite Rotation (`rotSprite.ts`)
+Standard bilinear or nearest-neighbor rotation of low-resolution pixel art causes severe distortion, jagged edges, and destroyed thin lines. PixiBun implements Xenowhirl's RotSprite algorithm (2007):
+* **Scale2x (EPX) Cascade:** 3 sequential passes of the Scale2x expansion kernel scale the input buffer by $8\times$ ($800\%$) along both axes, reconstructing diagonal edges without introducing blurred intermediate colors.
+* **Inverse Coordinate Mapping:** Destination subpixel coordinates $(x', y')$ are rotated by $-\theta$ around the transformed bounding box center to map back into source space:
+  $$\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{pmatrix} \begin{pmatrix} x' - cx' \\ y' - cy' \end{pmatrix} + \begin{pmatrix} cx \\ cy \end{pmatrix}$$
+* **Parabolic Majority Voting Downsampling:** An $8\times8$ subpixel window reconstructs each destination pixel. Candidate colors are evaluated by radial distance from the cell center using a parabolic kernel:
+  $$w(u, v) = 1.0 + 0.01 \cdot \left(25 - (u^2 + v^2)\right), \quad u, v \in [-4, 3]$$
+  The color with the highest cumulative weight wins the pixel cell.
+* **Fast Orthogonal Transformations:** For exact $90^\circ$ and $270^\circ$ rotations on arbitrary rectangular canvases ($W \ne H$), the algorithm transposes dimensions ($W' = H, H' = W$) and directly permutes pixel coordinates:
+  $$90^\circ: (x', y') = (H - 1 - y, x), \quad 270^\circ: (x', y') = (y, W - 1 - x)$$
+  This bypasses the $8\times$ cascade entirely for instantaneous, lossless orthogonal rotation.
+
+### 2. Adapted Kopf-Lischinski Vector Depixelization (`depixelizeVector.ts`)
+Converts pixel art into resolution-independent SVG vector graphics following the principles of Kopf & Lischinski (*ACM Trans. Graph. / SIGGRAPH 2011*):
+* **Pixel Grid Dual Graph:** Reconstructs the 8-connected planar graph where vertices represent pixel corners.
+* **1-Hop Parity Crossing Heuristic:** Resolves ambiguous diagonal $2\times2$ checkerboard crossings by evaluating local 1-hop color valence to decide whether diagonals connect or stay separate.
+* **Corner Shifts:** Displaces vertices by $\pm 0.05$ based on local contour curvature to soften staircase turns.
+* **Cubic Bézier Spline Fitting:** Fits smooth cubic Bézier splines across simplified boundary contours, outputting clean SVG `<path>` elements.
+
+---
+
+# 15. Viewport Lenses, Accessibility & Direct Hotkeys
+
+### 1. Silhouette / Squint Mode Lens (<kbd>S</kbd>)
+Toggles a high-contrast binary luminance lens on the viewport display. It computes perceived luminance $Y = 0.299R + 0.587G + 0.114B$ and maps pixels to pure black or pure white against a configurable threshold. This allows artists to evaluate readability, value hierarchies, and negative space without mutating the artwork's color data.
+
+### 2. CVD Colorblindness Simulation Lens (<kbd>P</kbd>)
+Cycles display-only simulation matrices for color vision deficiencies:
+* **Protanopia:** Red-cone absence simulation via Brettel-Viénot LMS transformation.
+* **Deuteranopia:** Green-cone absence simulation.
+* **Tritanopia:** Blue-cone absence simulation.
+* **Achromatopsia / Grayscale:** Total absence of color perception.
+
+### 3. Precision Tool Hotkeys
+* <kbd>N</kbd> (or <kbd>Shift</kbd> + <kbd>K</kbd>): Direct activation of the 2.5D Rivet Dome Stamp tool.
+* <kbd>K</kbd>: Direct activation of the Normal Chisel tool.
 
 

@@ -26,7 +26,7 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 
 ---
 
-## ✨ Features & Capabilities
+## Features & Capabilities
 
 ```mermaid
 graph LR
@@ -112,7 +112,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Harmonic Ramp Generator:** Generates 5-step highlight and shadow ramps in OKLCH space with natural warm sun / cool shadow hue-shifting.
 * **Atmospheric Photographic Color Grading:** Physical Kelvin temperature shifts (+2800K Golden Sunset, -3500K Cool Moonlight, Neon Dusk, DMG Game Boy).
 * **Scan & Snap Palette Tools:** Scan entire canvas to create instant palettes or snap layer pixels to the active palette colors.
-* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS, triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, Farey rational retuning for seamless loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
+* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS, triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, harmonic rational retuning for seamless loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
 
 <p align="center">
   <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Mark Ferrari Palette Cycling Live in Studio" width="680" />
@@ -121,11 +121,12 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 ---
 
 ### 🎬 Animation Suite & Layer Stack
-* **2D Optical Flow In-Between Morphing:** Block-matching motion displacement fields with zero-motion center bias and Signed Distance Field (SDF) interpolation generating smooth intermediate tween frames in OKLab space without background ghosting.
+* **Signed Distance Field (SDF) In-Between Morphing:** Euclidean distance field tweening with multi-source nearest-color sampling and linear cross-fading, producing smooth intermediate in-between frames at arbitrary fractional time $t \in [0, 1]$ without background ghosting.
 * **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (`🔒 Active layer is locked`), visibility, and 5 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge*).
 * **Frame-by-Frame Timeline & Tag Clips:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.
 * **Floating Live Preview Popout:** Draggable, resizable $1\times/2\times/4\times$ live preview window with custom backdrops (*Checkerboard, Dark Obsidian, Alabaster Paper, Amber Lamp*).
+* **Interactive Beginner Playground (`/playground`):** Guided tutorial sandbox with Bun covering core pixel art animation fundamentals — squash and stretch, anticipation, and onion skinning.
 
 ---
 
@@ -133,6 +134,9 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
 * **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag, featuring cancellation via `AbortController` and a live progress bar.
 * **Lossless PNG:** Integer scaling from $1\times$ to $32\times$ with crisp nearest-neighbor sampling.
+* **APNG Animated PNG:** Lossless full 24-bit RGB + 8-bit alpha animated sequences with configurable loop iteration control (zero-dependency uncompressed deflate store-block streaming for instant client-side rendering).
+* **MP4 & WebM Video:** Hardware-accelerated canvas video encoding with automated even-dimension macroblock padding (WebM with VP8/VP9; MP4 recording via H.264 MediaRecorder where supported by the browser platform, with WebM fallback).
+* **Timelapse Speedpaint Recorder:** Step-by-step canvas history replay exported to animated GIF or video.
 * **Packed Sprite Sheets:** Horizontal, vertical, or matrix packed layouts with ready-to-use JSON metadata for **Godot 4**, **Unity**, and **Phaser 3**.
 * **Native `.pixibun` Files:** Single-click project file export and restore with schema v2 migration and forward-compatibility guards.
 
@@ -183,8 +187,10 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 | <kbd>U</kbd> | **Rectangle** Tool |
 | <kbd>O</kbd> | **Ellipse** Tool |
 | <kbd>K</kbd> | **Normal Chisel** Tool |
-| <kbd>Shift</kbd> + <kbd>K</kbd> | **Rivet Stamp** Tool |
+| <kbd>Shift</kbd> + <kbd>K</kbd> / <kbd>N</kbd> | **Rivet Stamp** Tool |
 | <kbd>R</kbd> | **Color Replace** Tool |
+| <kbd>S</kbd> | **Toggle Squint / Silhouette Mode** (Display-Only Value Lens) |
+| <kbd>P</kbd> | **Cycle CVD Colorblindness Lens** (Protanopia, Deuteranopia, Tritanopia, Grayscale) |
 | <kbd>X</kbd> | **Swap Primary / Secondary Colors** |
 | <kbd>[</kbd> / <kbd>]</kbd> | **Decrease / Increase Brush Size** |
 | <kbd>H</kbd> / <kbd>V</kbd> | **Flip Selection Horizontally / Vertically** |
@@ -233,7 +239,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The entire core creation and export suite runs 100% offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 533 unit and integration tests across 77 suites (including an automated $4000\times3000$ photo downsampling benchmark in 2.2s in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 549 unit and integration tests across 79 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 

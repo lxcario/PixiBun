@@ -2,11 +2,40 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.12.1] - 2026-09-12
+### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)
+- **RotSprite Rectangular 90°/270° Fast Path (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`)**:
+  - Removed `w === h` restriction on orthogonal 90° and 270° fast paths across both canvas and math processing chains, transposing output canvas dimensions ($W' = H, H' = W$) and updating coordinate indexing to $y' \cdot H + x'$.
+  - Corrected downsampling kernel documentation from Gaussian to Xenowhirl's parabolic center-weighted majority voting kernel: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
+  - Created unit tests in `tests/rotSpriteRectangular.test.ts` (5 tests) verifying rectangular canvas rotation equivalence.
+- **Morph Fraction Forwarding & Multi-Source BFS Color Sampling (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`)**:
+  - Replaced $O(W \times H \times R^2)$ spiral search with an 8-connected multi-source Breadth-First Search (BFS) in exact $O(W \times H)$ time for nearest opaque color lookups.
+  - Exported `morphInBetweenFrameAtFraction` and forwarded time fraction parameter `t` in `morphInBetweenFrames`.
+  - Added `fraction` property support across Web Worker message schemas and dispatcher fallback routes.
+  - Created unit tests in `tests/pixelAiEngineMorphFraction.test.ts` (5 tests) asserting intermediate fraction color transitions.
+- **History Engine Popped Step Loop Elimination (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**:
+  - Guarded opposite stack push on `undo()` and `redo()` to execute only when `currentState !== undefined`, eliminating ghost state cycles.
+  - Added unit test in `tests/historyEngine.test.ts` verifying no-arg undo behavior.
+- **FloodFill Hex Parsing & Unsigned 32-Bit Contract (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`)**:
+  - Documented strict 6-digit `#RRGGBB` contract for color picker inputs and exported explicit `rgbToHex` alias.
+  - Unified test suite in `tests/floodFillHex.test.ts` to 14 tests preserving all 5 `hexToRgba` tests (including CSS Color 4 4/8-digit `#RGBA` expansion), 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex` contract tests.
+- **Diagnostics Relay Fallback Version Synchronization (`src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
+  - Synchronized `APP_VERSION = '1.12.0'` in `capture.ts` and default route fallback in `src/app/api/diagnostics/relay/route.ts`.
+- **E2E Spec Test Artifact Portability (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`)**:
+  - Replaced hardcoded machine-specific brain directory paths with dynamic `path.join(process.cwd(), 'test-results', 'e2e-artifacts')` and recursive folder creation.
+- **Documentation Algorithmic Rigor & Integrity (`ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`)**:
+  - Replaced optical flow claims with Signed Distance Field (SDF) morphing and 8-connected multi-source BFS.
+  - Aligned frontal cushion formula to $\text{rimRatio} = \min(1, D / 2.8)$ and $H = \max(D) \cdot \sqrt{\text{rimRatio}}$.
+  - Aligned salience weighting to $2\times2$ forward differences with $[1.0, 3.5]$ clamp.
+  - Aligned palette cycling retuning to harmonic rational retuning: $k = \operatorname{round}(T \cdot \text{rate} / M)$.
+  - Documented missing keyboard shortcuts (<kbd>N</kbd>, <kbd>S</kbd>, <kbd>P</kbd>), `/playground` sandbox route, and APNG/MP4/WebM export nuances.
+  - Harmonized `SKILL.md:12` emoji rule to distinguish functional documentation markers from decorative AI slop emojis.
+
 ## [v1.12.0] - 2026-09-08
 ### Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine (Phase 48)
 - **RotSprite Rotation Engine (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteAcademic.test.ts`)**:
   - Implemented the full Xenowhirl (2007) RotSprite algorithm for low-resolution pixel art (as popularized in Aseprite).
-  - Features three-stage pipeline: Scale8x cascade via Scale2x corner-connectivity, subpixel inverse affine rotation, and Gaussian center-weighted majority voting filter to downscale back to 1x without introducing new color shades.
+  - Features three-stage pipeline: Scale8x cascade via Scale2x corner-connectivity, subpixel inverse affine rotation, and parabolic center-weighted majority voting filter to downscale back to 1x without introducing new color shades.
   - Created unit tests in `tests/rotSpriteAcademic.test.ts` validating rotation symmetry, palette preservation, and 90° exact equivalence.
 - **Selection Boundary Extraction & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `tests/selectionBoundary.test.ts`)**:
   - Implemented `extractSelectionBoundarySegments` traversing 1-bit binary selection masks along orthogonal cell boundaries to extract per-pixel edge segments for arbitrary irregular shapes.
@@ -70,7 +99,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) updating canvas ImageData buffers at 60 FPS without garbage collection thrashing.
   - Mathematically sound triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
   - Sub-step `BlendShift` linear color interpolation between adjacent palette registers.
-  - Farey rational retuning (`retuneTracksForSeamlessLoop`) preventing coprime LCM period explosion during loop baking.
+  - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) preventing coprime LCM period explosion during loop baking.
 - **Palette Inspector Controls & Exporters (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`)**:
   - In-studio palette cycling preview with speed, direction, ping-pong, and BlendShift controls.
   - Standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator with point filtering.
@@ -336,7 +365,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 ### Academic Research-Backed Graphics Intelligence (Phase 34)
 - **Blue-Noise Void-and-Cluster Dithering (`src/lib/canvas/ditherMatrix.ts`)**: Implemented Robert Ulichney's 1993 SPIE void-and-cluster matrix generation algorithm (`generateVoidAndClusterMatrix(16, 16, 1.9)`), producing high-frequency, isotropic dither masks without low-frequency periodic spikes characteristic of Bayer matrices. Verified in `tests/blueNoiseDither.test.ts`.
 - **WaveFunctionCollapse (WFC) Pattern Synthesis (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented Maxim Gumin's 2016 Overlapping Model constraint solver with Shannon entropy heuristics and deterministic backtracking. Extracts sample tiles and synthesizes seamless textures obeying local $N \times N$ neighborhood constraints with 0 violations. Verified in `tests/waveFunctionCollapse.test.ts`. Integrated into `RightInspector.tsx` and `useViewportStudioEvents.ts`.
-- **Kopf–Lischinski Vector SVG Export (`src/lib/export/depixelizeVector.ts`)**: Implemented Johannes Kopf & Dani Lischinski's SIGGRAPH 2011 pixel art depixelization algorithm: 8-connected pixel similarity graphs, diagonal crossing ambiguity resolution (valence and curve length heuristics), Voronoi cell smoothing, and smooth cubic Bézier SVG path generation. Verified in `tests/depixelizeVectorExport.test.ts`. Integrated as "Vector SVG" in `ExportModal.tsx`.
+- **Kopf–Lischinski Inspired Vector SVG Export (`src/lib/export/depixelizeVector.ts`)**: Implemented pixel art vectorization inspired by Johannes Kopf & Dani Lischinski (SIGGRAPH 2011): 8-connected pixel similarity graphs, diagonal crossing ambiguity resolution via 1-hop parity connectivity heuristics, cell corner offsets ($\pm 0.05$), and smooth cubic Bézier SVG path generation. Verified in `tests/depixelizeVectorExport.test.ts`. Integrated as "Vector SVG" in `ExportModal.tsx`.
 - **Crystallographic Wallpaper Group Symmetry Brushes (`src/lib/canvas/wallpaperSymmetry.ts`)**: Implemented Doris Schattschneider's 1978 AMM crystallographic symmetry groups (`p2` 180° rotation, `pm` reflection, `p4` 4-fold rotation, `p4m` 4-fold rotation with reflection, and `p6m` 6-fold rotation with reflection). Multiplies canvas strokes deterministically across crystallographic group orbits. Verified in `tests/wallpaperSymmetry.test.ts`.
 
 ### Direct-Manipulation Interaction Model (Phase 35)

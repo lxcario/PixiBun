@@ -9,7 +9,7 @@ BEFORE GENERATING ANYTHING
 3. Validate that any color transformation uses the defined OKLCH / warm studio tokens rather than arbitrary ad-hoc hex values.
 
 NEVER DO THIS
-- Never use emojis anywhere in the codebase, UI, markdown documentation, or commit messages.
+- Never use decorative AI slop emojis or sparkles (such as "✨" or artificial marketing emojis) in technical documentation, code comments, UI copy, or commit messages. (Functional markdown section markers in user documentation are permitted, but decorative AI embellishments are strictly forbidden).
 - Never output generic AI slop copy ("Transform your workflow", "The ultimate all-in-one platform", "Seamlessly manage", "Supercharge your productivity") or cold robotic status strings ("Processing payload...", "Canvas dimensions verified").
 - Never write narrative, redundant, or boilerplate AI comments (e.g., "// increments count"). Comment only non-obvious rationale and mathematical invariants.
 - Never allow anti-aliased image smoothing on the pixel canvas (`ctx.imageSmoothingEnabled = false` must always be enforced).

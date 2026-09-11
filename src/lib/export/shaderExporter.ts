@@ -3,7 +3,7 @@
  * Standalone Godot 4 & Unity URP 2D Palette Cycling Shader Exporter & Frame Unroller
  * 
  * Generates hardware shaders with point-filtering, ping-pong oscillation, and sub-step BlendShift,
- * and generates unrolled animation frames using Farey rational retuning for seamless APNG/GIF loops.
+ * and generates unrolled animation frames using harmonic rational retuning for seamless APNG/GIF loops.
  */
 
 import {

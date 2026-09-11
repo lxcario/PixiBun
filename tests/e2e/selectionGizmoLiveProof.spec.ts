@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
+import fs from 'node:fs';
 
-const outDir = 'C:/Users/Resque/.gemini/antigravity/brain/19545ea8-edd5-46bb-b7bb-7d47cbf84e0b';
+const outDir = path.join(process.cwd(), 'test-results', 'e2e-artifacts');
+fs.mkdirSync(outDir, { recursive: true });
 
 interface WindowWithStudio {
   __pixibunDb?: {

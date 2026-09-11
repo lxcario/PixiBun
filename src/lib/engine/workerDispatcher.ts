@@ -11,7 +11,7 @@
 
 import { rotSprite, PixelBuffer } from '@/lib/canvas/rotSprite';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
-import { morphInBetweenFramesSync } from '@/lib/ai/pixelAiEngine';
+import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
 import type { HeavyWorkerRequest, HeavyWorkerResponse } from '@/workers/heavyCompute.worker';
 
 let sharedWorker: Worker | null = null;
@@ -179,11 +179,15 @@ export async function runWfcInWorker(
 export async function runMorphInWorker(
   frameA: { width: number; height: number; data: Uint8ClampedArray },
   frameB: { width: number; height: number; data: Uint8ClampedArray },
-  steps: number = 1
+  steps: number = 1,
+  fraction?: number
 ): Promise<{ width: number; height: number; data: Uint8ClampedArray }[]> {
   const worker = getOrCreateWorker();
 
   if (!worker) {
+    if (fraction !== undefined) {
+      return [morphInBetweenFrameAtFraction(frameA, frameB, fraction)];
+    }
     return morphInBetweenFramesSync(frameA, frameB, steps);
   }
 
@@ -205,6 +209,7 @@ export async function runMorphInWorker(
         frameA: { width: frameA.width, height: frameA.height, data: dataACopy },
         frameB: { width: frameB.width, height: frameB.height, data: dataBCopy },
         steps,
+        fraction,
       };
 
       try {
@@ -212,7 +217,11 @@ export async function runMorphInWorker(
       } catch {
         pendingCallbacks.delete(id);
         try {
-          resolve(morphInBetweenFramesSync(frameA, frameB, steps));
+          if (fraction !== undefined) {
+            resolve([morphInBetweenFrameAtFraction(frameA, frameB, fraction)]);
+          } else {
+            resolve(morphInBetweenFramesSync(frameA, frameB, steps));
+          }
         } catch (syncErr) {
           reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
         }

@@ -56,18 +56,30 @@ describe('HistoryEngine', () => {
     engine.push(step1);
     engine.push(step2);
 
-    const undoneStep = engine.undo();
+    // Caller provides current canvas state before restoring undone step
+    const currentAtStep2 = createMockStep('current-at-2', 25);
+    const undoneStep = engine.undo(currentAtStep2);
     expect(undoneStep?.description).toBe('Step 2');
     expect(engine.depth).toBe(1);
     expect(engine.canUndo).toBe(true);
     expect(engine.canRedo).toBe(true);
-    expect(engine.peekRedo()?.description).toBe('Step 2');
+    expect(engine.peekRedo()?.description).toBe('Step current-at-2');
 
-    const redoneStep = engine.redo();
-    expect(redoneStep?.description).toBe('Step 2');
+    const currentAtStep1 = createMockStep('current-at-1', 15);
+    const redoneStep = engine.redo(currentAtStep1);
+    expect(redoneStep?.description).toBe('Step current-at-2');
     expect(engine.depth).toBe(2);
     expect(engine.canUndo).toBe(true);
     expect(engine.canRedo).toBe(false);
+  });
+
+  it('does not push to redo stack when undo is called without currentState', () => {
+    const engine = createHistoryEngine();
+    engine.push(createMockStep('1'));
+    const undone = engine.undo();
+    expect(undone?.description).toBe('Step 1');
+    expect(engine.canRedo).toBe(false);
+    expect(engine.peekRedo()).toBeNull();
   });
 
   it('correctly records currentState when supplied during undo and redo', () => {
@@ -88,10 +100,13 @@ describe('HistoryEngine', () => {
 
   it('invalidates redo tail upon pushing a new step', () => {
     const engine = createHistoryEngine();
-    engine.push(createMockStep('1'));
-    engine.push(createMockStep('2'));
+    const step1 = createMockStep('1');
+    const step2 = createMockStep('2');
+    engine.push(step1);
+    engine.push(step2);
 
-    engine.undo();
+    const current = createMockStep('current');
+    engine.undo(current);
     expect(engine.canRedo).toBe(true);
 
     engine.push(createMockStep('3'));
@@ -121,7 +136,7 @@ describe('HistoryEngine', () => {
     const engine = createHistoryEngine();
     engine.push(createMockStep('1'));
     engine.push(createMockStep('2'));
-    engine.undo();
+    engine.undo(createMockStep('current'));
 
     expect(engine.canUndo).toBe(true);
     expect(engine.canRedo).toBe(true);

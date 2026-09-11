@@ -50,7 +50,7 @@ describe('diagnostics capture & settings', () => {
       expect(entry.detail?.length).toBeLessThanOrEqual(2048 + '...[truncated]'.length);
       expect(entry.detail?.endsWith('...[truncated]')).toBe(true);
       expect(entry.route).toBe('/studio');
-      expect(entry.appVersion).toBe('1.0.0');
+      expect(entry.appVersion).toBe('1.12.0');
     }
   });
 

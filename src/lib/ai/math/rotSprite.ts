@@ -55,19 +55,19 @@ export function rotateWithRotSprite(
     return outputCanvas;
   }
 
-  if (normAngle === 90 && w === h) {
+  if (normAngle === 90) {
     const outputCanvas = document.createElement('canvas');
-    outputCanvas.width = w;
-    outputCanvas.height = h;
+    outputCanvas.width = h;
+    outputCanvas.height = w;
     const outCtx = outputCanvas.getContext('2d')!;
-    const outImgData = outCtx.createImageData(w, h);
+    const outImgData = outCtx.createImageData(h, w);
     const outData = outImgData.data;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const srcIdx = (y * w + x) * 4;
         const dstX = h - 1 - y;
         const dstY = x;
-        const dstIdx = (dstY * w + dstX) * 4;
+        const dstIdx = (dstY * h + dstX) * 4;
         outData[dstIdx] = sData[srcIdx];
         outData[dstIdx + 1] = sData[srcIdx + 1];
         outData[dstIdx + 2] = sData[srcIdx + 2];
@@ -78,19 +78,19 @@ export function rotateWithRotSprite(
     return outputCanvas;
   }
 
-  if (normAngle === 270 && w === h) {
+  if (normAngle === 270) {
     const outputCanvas = document.createElement('canvas');
-    outputCanvas.width = w;
-    outputCanvas.height = h;
+    outputCanvas.width = h;
+    outputCanvas.height = w;
     const outCtx = outputCanvas.getContext('2d')!;
-    const outImgData = outCtx.createImageData(w, h);
+    const outImgData = outCtx.createImageData(h, w);
     const outData = outImgData.data;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const srcIdx = (y * w + x) * 4;
         const dstX = y;
         const dstY = w - 1 - x;
-        const dstIdx = (dstY * w + dstX) * 4;
+        const dstIdx = (dstY * h + dstX) * 4;
         outData[dstIdx] = sData[srcIdx];
         outData[dstIdx + 1] = sData[srcIdx + 1];
         outData[dstIdx + 2] = sData[srcIdx + 2];

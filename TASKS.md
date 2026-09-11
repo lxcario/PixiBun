@@ -1,5 +1,50 @@
 # Build Plan — PixiBun
 
+## Phase 49 — Deep Audit Algorithmic Remediation, RotSprite Fast Paths, SDF Morphing & Test Coverage Re-alignment
+**Goal:** Remediate verified bugs, algorithmic discrepancies, documentation untruths, and untested edge cases identified in deep code audits. Implement rectangular canvas transpositions for RotSprite orthogonal rotations, $O(W \times H)$ multi-source BFS color sampling and fraction forwarding for SDF morphing, history engine popped-step guard, 14-test complete flood fill verification, diagnostics relay version synchronization, portable test artifact output paths, and strict academic documentation truthfulness.
+
+**Evidence & Rationale:**
+- RotSprite Rectangular Canvas Constraint (BUG-05): `src/lib/ai/math/rotSprite.ts` and `src/lib/canvas/rotSprite.ts` previously enforced `w === h` on 90° and 270° rotations, forcing rectangular non-square canvases into slow 8x Scale2x fallback cascades. Transposing output bounds ($W' = H, H' = W$) and updating coordinate indexing enables instant $O(1)$ orthogonal rotation on arbitrary rectangular sprites.
+- Morph In-Between Fraction Ignored & Spiral Search Complexity (TASK-001 / TASK-007): `morphInBetweenFrames` previously discarded its fraction parameter $t$. Furthermore, color lookup evaluated concentric spiral rings per pixel ($O(W \times H \times R^2)$). Replacing this with an 8-connected multi-source BFS seeded from opaque pixels guarantees exact $O(W \times H)$ color mapping across the grid.
+- History Engine Ghost State Loop (BUG-02): Calling `undo()` or `redo()` without supplying `currentState` popped the active step and pushed it onto the opposite stack, creating circular phantom transitions.
+- FloodFill Contract & Coverage (BUG-03): Native HTML `<input type="color">` pickers mandate strict 6-digit `#RRGGBB` strings. Verifying all 5 `hexToRgba` tests, 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex`/`rgbToHex` contract tests guarantees zero regressions across 549 unit tests.
+- Documentation Integrity: Mathematical descriptions across `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, and `SKILL.md` must truthfully match source implementations (SDF morphing, forward-difference gradient salience, harmonic rational retuning, and parabolic RotSprite majority voting).
+
+**Deliverables:**
+- [x] RotSprite Rectangular 90°/270° Fast Path (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`):
+  - Transposed output dimensions ($W' = H, H' = W$) and corrected coordinate mapping ($y' \cdot H + x'$).
+  - Corrected downsampling kernel documentation to Xenowhirl's parabolic center-weighted majority voting: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
+  - Created 5 unit tests in `tests/rotSpriteRectangular.test.ts` verifying rectangular rotations.
+- [x] Morph Fraction Forwarding & Multi-Source BFS Color Map (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`):
+  - Implemented `computeNearestColorMap` using 8-connected multi-source BFS in $O(W \times H)$ time.
+  - Exported `morphInBetweenFrameAtFraction` and forwarded parameter $t$ in `morphInBetweenFrames`.
+  - Added `fraction` property support across worker messages and dispatchers.
+  - Created 5 unit tests in `tests/pixelAiEngineMorphFraction.test.ts`.
+- [x] History Engine Popped Step Loop Elimination (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`):
+  - Guarded opposite stack push to execute only when `currentState !== undefined`.
+  - Added unit test in `tests/historyEngine.test.ts`.
+- [x] FloodFill Hex Parsing & Unsigned 32-Bit Contract (`src/lib/canvas/floodFill.ts`, `tests/floodFillHex.test.ts`):
+  - Documented strict 6-digit contract and exported `rgbToHex` alias.
+  - Unified test suite in `tests/floodFillHex.test.ts` to 14 tests covering `#RGBA` parsing, contiguous fill, global replace, transparent canvas, and alias equality.
+- [x] Diagnostics Relay Fallback Version Synchronization (`src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`):
+  - Synchronized `APP_VERSION = '1.12.0'` across client and server fallback handlers.
+- [x] Portable E2E Test Artifact Directories (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`):
+  - Replaced hardcoded machine paths with `path.join(process.cwd(), 'test-results', 'e2e-artifacts')`.
+- [x] Documentation & Academic Attributions (`ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`):
+  - Aligned formulas for frontal face cushion ($\text{rimRatio} = \min(1, D / 2.8)$), SDF morphing, gradient salience edge weighting, and harmonic retuning.
+  - Added missing shortcuts (<kbd>N</kbd>, <kbd>S</kbd>, <kbd>P</kbd>), `/playground` sandbox route, and export format notes.
+  - Harmonized `SKILL.md:12` emoji rules.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors/warnings.
+- `npx vitest run` passes all 549 tests across 79 suites with 0 failures and 0 regressions.
+- `node scripts/verifyDocIntegrity.mjs` passes all 4 integrity checks.
+- `npx next build` passes with clean Turbopack compilation across all 7 routes.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading
 **Goal:** Implement an academic-grade free-transform system for pixel art selections using the Xenowhirl RotSprite algorithm, 8-handle transformation gizmo with center pivot reticle and marching ants contour, integrated timeline tag management, automatic sprite sheet slicing import with cutline preview, and asynchronous background Web Worker execution for heavy graphics computations.
 
@@ -86,12 +131,12 @@
 ---
 
 ## Phase 46 — 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite
-**Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, Farey rational retuning, and Godot 4 / Unity URP shader generation).
+**Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, harmonic rational retuning, and Godot 4 / Unity URP shader generation).
 
 **Evidence & Rationale:**
 - Prior to Phase 46, normal maps could only be automatically generated from 2D layer silhouettes via Euclidean Distance Transform (EDT). Artists had no manual chisel, directional chamfer, or stud/rivet carving tools to sculpt micro-relief directly on normal maps.
 - Standard linear normal map blending flattens slopes and distorts high-frequency details. Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) accurately rotates detail normals into the tangent space oriented by the base normal vector via shortest-arc quaternion transformation.
-- Prior palette cycling in web tools often allocated objects every frame, lacked Commodore/Amiga IFF binary chunk support (`CRNG`/`CCRT`), had fencepost errors in ping-pong triangle waves, or suffered from coprime LCM period explosion during export. Farey rational retuning calculates harmonic cycle rates over a target duration $T$ for zero-pop seamless loop unrolling.
+- Prior palette cycling in web tools often allocated objects every frame, lacked Commodore/Amiga IFF binary chunk support (`CRNG`/`CCRT`), had fencepost errors in ping-pong triangle waves, or suffered from coprime LCM period explosion during export. Harmonic rational retuning calculates integer cycle rates over a target duration $T$ for zero-pop seamless loop unrolling.
 
 **Deliverables:**
 - [x] 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`):
@@ -109,11 +154,11 @@
   - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS without GC thrashing.
   - Triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
   - Sub-step `BlendShift` linear color interpolation.
-  - Farey rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop seamlessly over duration $T$.
+  - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop seamlessly over duration $T$.
 - [x] Palette Inspector Controls & Export Codecs (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`):
   - Play/pause live palette cycling in studio inspector with frequency, direction, and BlendShift controls.
   - Export standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shaders.
-  - Unroll seamless loopable APNG and animated GIF with Farey retuning.
+  - Unroll seamless loopable APNG and animated GIF with harmonic retuning.
 - [x] Verification & Automated Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`):
   - 31 new unit tests covering vector conversions, compass bevel azimuths, rivet dome flattening, RNM quaternion blending, IFF chunk serialization, ping-pong fenceposts, and shader generation.
   - Full suite passes: 445/445 tests across 66 suites.

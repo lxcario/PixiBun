@@ -9,7 +9,7 @@
  * 1. Lossless integer fast-paths for 0°, 90°, 180°, 270°.
  * 2. 3-pass Scale2x / EPX expansion (1x -> 2x -> 4x -> 8x) respecting color similarity thresholds.
  * 3. Inverse affine point sampling on the 8x raster with subpixel center alignment.
- * 4. Gaussian center-weighted majority voting downscaler (8x -> 1x) that strictly preserves
+ * 4. Parabolic center-weighted majority voting downscaler (8x -> 1x) that strictly preserves
  *    original palette colors (0 new color artifacts) and preserves single-pixel line continuity.
  */
 
@@ -188,7 +188,7 @@ export function downscale8xMajorityVote(
           const sx8 = Math.floor(sx * 8 + 1e-9);
           const sy8 = Math.floor(sy * 8 + 1e-9);
 
-          // Radially symmetric Gaussian center-weighted falloff
+          // Radially symmetric parabolic center-weighted falloff
           const distSq = u * u + v * v;
           const weight = 1.0 + 0.01 * (25 - distSq);
           totalWeight += weight;
@@ -235,7 +235,7 @@ export function downscale8xMajorityVote(
 
 /**
  * Main RotSprite Algorithm entry point.
- * Rotates pixel art with Scale8x and Gaussian majority-voting.
+ * Rotates pixel art with Scale8x and parabolic majority-voting.
  */
 export function rotSprite(
   src: PixelBuffer,
@@ -248,8 +248,14 @@ export function rotSprite(
   outPivotY?: number
 ): PixelBuffer {
   const { width: w, height: h, data } = src;
-  const outW = targetW ?? w;
-  const outH = targetH ?? h;
+  const EPSILON = 1e-5;
+  const TWO_PI = Math.PI * 2;
+  const normAngle = ((angleRad % TWO_PI) + TWO_PI) % TWO_PI;
+  const isNear = (target: number) => Math.abs(normAngle - target) < EPSILON;
+  const isQuarterTurn = isNear(Math.PI / 2) || isNear((3 * Math.PI) / 2);
+
+  const outW = targetW ?? (isQuarterTurn ? h : w);
+  const outH = targetH ?? (isQuarterTurn ? w : h);
 
   if (w <= 0 || h <= 0 || data.length === 0) {
     const safeW = Math.max(1, outW);
@@ -261,11 +267,6 @@ export function rotSprite(
   const cy = pivotY ?? h / 2;
   const ocx = outPivotX ?? cx;
   const ocy = outPivotY ?? cy;
-
-  const EPSILON = 1e-5;
-  const TWO_PI = Math.PI * 2;
-  const normAngle = ((angleRad % TWO_PI) + TWO_PI) % TWO_PI;
-  const isNear = (target: number) => Math.abs(normAngle - target) < EPSILON;
 
   // 1. Lossless fast-paths for exact orthogonal 90-degree multiples when output dimensions match
   if ((isNear(0) || isNear(TWO_PI)) && outW === w && outH === h) {
@@ -294,9 +295,8 @@ export function rotSprite(
 
   if (
     isNear(Math.PI / 2) &&
-    w === h &&
-    outW === w &&
-    outH === h &&
+    outW === h &&
+    outH === w &&
     Math.abs(cx - w / 2) < EPSILON &&
     Math.abs(cy - h / 2) < EPSILON
   ) {
@@ -305,17 +305,16 @@ export function rotSprite(
     const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, w * h);
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        out32[x * w + (h - 1 - y)] = src32[y * w + x];
+        out32[x * h + (h - 1 - y)] = src32[y * w + x];
       }
     }
-    return { width: w, height: h, data: outBytes };
+    return { width: h, height: w, data: outBytes };
   }
 
   if (
     isNear((3 * Math.PI) / 2) &&
-    w === h &&
-    outW === w &&
-    outH === h &&
+    outW === h &&
+    outH === w &&
     Math.abs(cx - w / 2) < EPSILON &&
     Math.abs(cy - h / 2) < EPSILON
   ) {
@@ -324,10 +323,10 @@ export function rotSprite(
     const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, w * h);
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        out32[(w - 1 - x) * w + y] = src32[y * w + x];
+        out32[(w - 1 - x) * h + y] = src32[y * w + x];
       }
     }
-    return { width: w, height: h, data: outBytes };
+    return { width: h, height: w, data: outBytes };
   }
 
   // 2. Perform 3-pass Scale2x cascade to 8x

@@ -3,7 +3,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
-const outDir = 'C:/Users/Resque/.gemini/antigravity/brain/2d539d32-5f07-413a-8cbe-17b41101f3e4';
+const outDir = path.join(process.cwd(), 'test-results', 'e2e-artifacts');
+fs.mkdirSync(outDir, { recursive: true });
 const RUN_ID = 'proof_20260908_1215';
 
 interface WindowWithStudio {
