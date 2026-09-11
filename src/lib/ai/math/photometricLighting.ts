@@ -633,9 +633,12 @@ export function executePhotometricPipeline(
 
         // Directional cel shadow terminator threshold:
         // diffSignal ranges from 0 (surface facing away from light) to ~1 (surface facing light).
-        // Threshold of 0.55 places ~40-50% of visible surface in shadow for typical side-lit sprites,
-        // giving crisp anatomical sculpting under ears, chin, snout, and limb backsides.
-        let shadowThresh = 0.55;
+        // Modulated inversely by brightness relative to default (1.15) so increasing light strength
+        // pushes the shadow boundary back, while dimmer light expands shadow coverage across anatomy.
+        let shadowThresh =
+          Math.abs(brightness - 1.15) < 1e-6
+            ? 0.55
+            : Math.max(0.15, Math.min(0.85, (0.55 * 1.15) / Math.max(0.2, brightness)));
         if (params.ditherModulation > 0) {
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;

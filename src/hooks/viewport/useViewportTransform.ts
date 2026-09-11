@@ -1,5 +1,7 @@
 import { useState, useCallback, RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
+import { useStudioStore } from '@/stores/studioStore';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface UseViewportTransformProps {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -29,19 +31,20 @@ export function useViewportTransform({
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState<Point>({ x: 0, y: 0 });
 
-  // Map browser screen coordinates to integer pixel coordinates on the canvas
+  // Convert client viewport coordinates (e.g. mouse event) directly to canvas pixel space
   const clientToCanvasCoords = useCallback(
-    (clientX: number, clientY: number, clamp: boolean = false): Point | null => {
+    (clientX: number, clientY: number, clamped = false): Point | null => {
       const canvas = mainCanvasRef.current;
       if (!canvas) return null;
 
       const rect = canvas.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return null;
+      const scaleX = canvasWidth / rect.width;
+      const scaleY = canvasHeight / rect.height;
 
-      let x = Math.floor((clientX - rect.left) / (rect.width / canvasWidth));
-      let y = Math.floor((clientY - rect.top) / (rect.height / canvasHeight));
+      let x = Math.floor((clientX - rect.left) * scaleX);
+      let y = Math.floor((clientY - rect.top) * scaleY);
 
-      if (clamp) {
+      if (clamped) {
         x = Math.max(0, Math.min(canvasWidth - 1, x));
         y = Math.max(0, Math.min(canvasHeight - 1, y));
         return { x, y };
@@ -59,6 +62,14 @@ export function useViewportTransform({
   // Wheel Handler: Mouse Wheel / Ctrl+Wheel = Zoom to cursor; Shift+Wheel = Pan Horizontally
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
+      // Intercept wheel when photometric lighting gizmo is active and route to bulb strength
+      const { photometricGizmoActive } = useStudioStore.getState();
+      if (photometricGizmoActive) {
+        const delta = e.deltaY < 0 ? 0.05 : -0.05;
+        studioEvents.emit('pixibun:photometric-strength-delta', delta);
+        return;
+      }
+
       e.preventDefault();
 
       if (e.shiftKey) {

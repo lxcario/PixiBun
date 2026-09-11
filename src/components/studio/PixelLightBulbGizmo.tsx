@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { studioEvents } from '@/lib/events/studioEvents';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import {
   coordsToLightAngles,
@@ -186,6 +187,16 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     };
   }, [onCommit, onCancel, adjustStrength]);
 
+  // Listen for wheel events dispatched from viewport background
+  useEffect(() => {
+    const unsub = studioEvents.on('pixibun:photometric-strength-delta', (delta) => {
+      adjustStrength(delta);
+    });
+    return () => {
+      unsub();
+    };
+  }, [adjustStrength]);
+
   // Update angles from client pointer event (drags bulb around center point)
   const updateAnglesFromPointer = useCallback((clientX: number, clientY: number) => {
     const container = containerRef.current;
@@ -239,8 +250,11 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   };
 
   const handleContainerPointerDown = (e: React.PointerEvent) => {
-    // Ignore clicks on HUD buttons or inputs
-    if ((e.target as HTMLElement).closest('button, input, [role="toolbar"]')) return;
+    // Ignore clicks on HUD buttons or inputs and stop propagation to viewport
+    if ((e.target as HTMLElement).closest('button, input, [role="toolbar"]')) {
+      e.stopPropagation();
+      return;
+    }
 
     const container = containerRef.current;
     if (!container) return;
@@ -332,11 +346,12 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       onPointerCancel={handlePointerUp}
       onWheel={handleWheel}
     >
-      {/* Floating Viewport HUD Bar */}
+      {/* Floating Viewport HUD Bar (positioned below bottom canvas edge) */}
       <div
-        className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
+        className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
         role="toolbar"
         aria-label="Live Light Bulb Controls"
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-1.5 text-[#f0be7c] font-bold">
           <PixelIcon name="lamp" size={14} className="drop-shadow-[0_0_8px_#f0be7c]" />

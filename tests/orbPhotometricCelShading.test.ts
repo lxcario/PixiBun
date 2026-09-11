@@ -482,4 +482,75 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
       (0.2126 * outData[centerIdx] + 0.7152 * outData[centerIdx + 1] + 0.0722 * outData[centerIdx + 2]) / 255;
     expect(centerLum).toBeLessThan(0.60);
   });
+
+  it('modulates character cel shadow coverage when lightBrightness varies (eliminating byte-identical output)', () => {
+    const width = 32;
+    const height = 32;
+    const charData = new Uint8ClampedArray(width * height * 4);
+    const cx = 16;
+    const cy = 16;
+    const radius = 12;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        if (Math.hypot(dx, dy) <= radius) {
+          const idx = (y * width + x) * 4;
+          charData[idx] = 180;
+          charData[idx + 1] = 120;
+          charData[idx + 2] = 80;
+          charData[idx + 3] = 255;
+        }
+      }
+    }
+
+    const mockCtx = {
+      getImageData: () => ({
+        data: charData,
+        width,
+        height,
+      }),
+    } as unknown as CanvasRenderingContext2D;
+
+    const baseConfig = {
+      lightAzimuth: 45,
+      lightElevation: 30,
+      lightRadius: 64,
+      lightColor: '#FFFFFF',
+      ambientIntensity: 0.48,
+      material: 'matte' as const,
+      cavityStrength: 1.0,
+      ditherModulation: 0,
+      bayerSize: '4x4' as const,
+      formType: 'character' as const,
+      lightCenterX: 16,
+      lightCenterY: 16,
+    };
+
+    // Dim light: low brightness pushes shadow terminator forward
+    const dimCanvas = executePhotometricPipeline(mockCtx, width, height, { ...baseConfig, lightBrightness: 0.5 }, []);
+    const dimData = dimCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+    // Bright light: high brightness pushes shadow terminator back
+    const brightCanvas = executePhotometricPipeline(mockCtx, width, height, { ...baseConfig, lightBrightness: 2.2 }, []);
+    const brightData = brightCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+
+    // Outputs must NOT be byte-identical (fixing BUG: character path previously ignored lightBrightness)
+    let differentPixels = 0;
+    let dimShadowCount = 0;
+    let brightShadowCount = 0;
+
+    for (let i = 0; i < dimData.length; i += 4) {
+      if (dimData[i + 3] === 0) continue;
+      if (dimData[i] !== brightData[i] || dimData[i + 1] !== brightData[i + 1] || dimData[i + 2] !== brightData[i + 2]) {
+        differentPixels++;
+      }
+      if (dimData[i] < 160) dimShadowCount++;
+      if (brightData[i] < 160) brightShadowCount++;
+    }
+
+    expect(differentPixels).toBeGreaterThan(0);
+    expect(dimShadowCount).toBeGreaterThan(brightShadowCount);
+  });
 });

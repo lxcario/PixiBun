@@ -70,6 +70,7 @@ export type StudioEventMap = {
   'pixibun:photometric-gizmo-start': { auto?: boolean } | void;
   'pixibun:photometric-gizmo-commit': void;
   'pixibun:photometric-gizmo-cancel': void;
+  'pixibun:photometric-strength-delta': number;
   'pixibun:photometric-lighting-live': {
     lightAzimuth: number;
     lightElevation: number;

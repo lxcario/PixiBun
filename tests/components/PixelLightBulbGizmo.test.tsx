@@ -29,7 +29,7 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(screen.getByTestId('pixel-light-bulb-gizmo')).toBeDefined();
     const toolbar = screen.getByRole('toolbar', { name: 'Live Light Bulb Controls' });
     expect(toolbar).toBeDefined();
-    expect(toolbar.className).toContain('top-3');
+    expect(toolbar.className).toContain('top-full');
     expect(toolbar.className).not.toContain('-top-12');
     expect(screen.getByRole('slider', { name: /Directional Light Bulb/i })).toBeDefined();
     expect(screen.getByText(/Live Light Bulb/i)).toBeDefined();

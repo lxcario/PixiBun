@@ -226,7 +226,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
 
   setLightBrightness: brightness => {
     set(state => {
-      state.tools.lightBrightness = Math.max(0.4, Math.min(2.5, brightness));
+      state.tools.lightBrightness = Math.max(0.3, Math.min(2.5, brightness));
     });
   },
 

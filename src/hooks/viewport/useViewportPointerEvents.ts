@@ -129,6 +129,12 @@ export function useViewportPointerEvents({
   const chiselSessionRef = useRef<ChiselStrokeSession | null>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    // Suppress drawing tools while live photometric lighting bulb is active
+    const { photometricGizmoActive } = useStudioStore.getState();
+    if (photometricGizmoActive) {
+      return;
+    }
+
     // Middle Click or Alt+Click = Pan Viewport
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       setIsPanning(true);
