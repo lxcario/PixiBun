@@ -90,6 +90,8 @@ export const PUBLIC_STUN_ICE_SERVERS: RTCIceServer[] = [
 export const DEFAULT_ICE_SERVERS: RTCIceServer[] = LAN_ICE_SERVERS;
 
 export const MAX_P2P_PAYLOAD_SIZE = 256 * 1024; // 256 KB
+export const MAX_DATA_CHANNEL_BUFFERED_AMOUNT = 1024 * 1024; // 1 MB backpressure ceiling
+export const MAX_PRESENCE_BUFFERED_AMOUNT = 64 * 1024; // 64 KB presence buffer ceiling
 export const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /** Blend modes that may appear in a STRUCTURE_SYNC payload (mirrors types/canvas.ts). */
@@ -712,6 +714,11 @@ export class P2PSyncSession {
       return false;
     }
 
+    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
+      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit, yielding.');
+      return false;
+    }
+
     const CHUNK_SIZE = 1000;
     for (let i = 0; i < ops.length; i += CHUNK_SIZE) {
       const chunk = ops.slice(i, i + CHUNK_SIZE);
@@ -733,6 +740,11 @@ export class P2PSyncSession {
    */
   public broadcastInitialSync(allOps: PixelOp[], layerId?: string): boolean {
     if (!this.syncChannel || this.syncChannel.readyState !== 'open') {
+      return false;
+    }
+
+    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
+      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit during initial sync.');
       return false;
     }
 
@@ -774,6 +786,11 @@ export class P2PSyncSession {
       return false;
     }
 
+    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
+      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit during structure sync.');
+      return false;
+    }
+
     const msg: CrdtSyncMessage = {
       type: 'STRUCTURE_SYNC',
       peerId: this.peerId,
@@ -794,6 +811,11 @@ export class P2PSyncSession {
    */
   public broadcastCursor(x: number, y: number): boolean {
     if (!this.presenceChannel || this.presenceChannel.readyState !== 'open') {
+      return false;
+    }
+
+    // Drop lossy cursor frame under backpressure
+    if ((this.presenceChannel.bufferedAmount ?? 0) > MAX_PRESENCE_BUFFERED_AMOUNT) {
       return false;
     }
 

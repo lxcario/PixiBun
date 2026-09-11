@@ -4,6 +4,13 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## [v1.12.1] - 2026-09-12
 ### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)
+- **P2P WebRTC Data Channel Backpressure & Buffer Ceilings (`src/lib/sync/p2pSync.ts`, `tests/p2pSync.test.ts`)**:
+  - Implemented `MAX_DATA_CHANNEL_BUFFERED_AMOUNT` (1 MB) and `MAX_PRESENCE_BUFFERED_AMOUNT` (64 KB) backpressure thresholds for dual RTCDataChannel transports.
+  - Enforced backpressure guards in `broadcastPixelOps`, `broadcastInitialSync`, `broadcastStructure`, and `broadcastCursor` to eliminate channel buffer congestion and memory bloat.
+  - Added unit test in `tests/p2pSync.test.ts` verifying graceful yielding and cursor frame dropping when data channel `bufferedAmount` exceeds thresholds.
+- **Palette Cycling & History Engine Runtime Memory Benchmarks (`tests/benchmark.test.ts`, `BENCHMARKS.md`)**:
+  - Added automated empirical benchmarks for zero-allocation 32-bit `updateLivePaletteLUT32` and raster pixel remapping across 64x64, 128x128, 256x256, and 512x512 sprite dimensions, verifying execution within 16.66ms (60 FPS budget).
+  - Added formal memory footprint and ring buffer pruning capacity assertions for `HistoryEngine` across 16x16 through 512x512 resolutions, confirming exact agreement with `BENCHMARKS.md` ceilings (e.g. 13.1 MB for 50 steps at 256x256).
 - **Photometric Light Bulb Gizmo UX & Cel Shading Remediation (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useViewportTransform.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/lib/events/studioEvents.ts`, `src/stores/slices/createToolSlice.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/components/PixelLightBulbGizmo.test.tsx`)**:
   - Modulated directional cel shadow terminator threshold inversely by brightness (`(0.55 * 1.15) / max(0.2, brightness)` clamped to `[0.15, 0.85]`), ensuring bulb strength changes physically drive the shadow boundary back on character sprites while preserving exact palette purity and leaving default 1.15 output bit-identical.
   - Added event propagation suppression (`e.stopPropagation()`) across HUD buttons, steppers, inputs, and container `onPointerDown`, alongside an explicit `photometricGizmoActive` guard in `useViewportPointerEvents.ts` to eliminate canvas draw tool leakage when interacting with HUD controls.

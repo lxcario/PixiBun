@@ -6,7 +6,7 @@ import {
   SignalingPayload,
   StructurePayload,
 } from '@/lib/sync/p2pSync';
-import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
+import { CrdtPixelBuffer, type PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { CoDrawBridge } from '@/lib/sync/coDrawBridge';
 import { useStudioStore } from '@/stores/studioStore';
 import { installDocumentCanvasMock } from './helpers/mockCanvas';
@@ -370,5 +370,60 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
     // Guest active frame should be preserved since frame index 1 still exists
     expect(useStudioStore.getState().activeFrameIndex).toBe(1);
     expect(useStudioStore.getState().activeLayerId).toBe('layer-keep');
+  });
+
+  it('enforces backpressure when data channel or presence channel bufferedAmount exceeds safety ceilings', () => {
+    const session = new P2PSyncSession({ peerId: 'peer-backpressure' });
+
+    const congestedSyncChannel = {
+      label: 'pixibun-crdt-sync',
+      readyState: 'open',
+      bufferedAmount: 2 * 1024 * 1024, // 2MB (exceeds 1MB ceiling)
+      send: vi.fn(),
+      close: vi.fn(),
+    } as unknown as RTCDataChannel;
+
+    const normalPresenceChannel = {
+      label: 'pixibun-presence',
+      readyState: 'open',
+      bufferedAmount: 0,
+      send: vi.fn(),
+      close: vi.fn(),
+    } as unknown as RTCDataChannel;
+
+    (session as unknown as { syncChannel: RTCDataChannel }).syncChannel = congestedSyncChannel;
+    (session as unknown as { presenceChannel: RTCDataChannel }).presenceChannel = normalPresenceChannel;
+
+    const ops: PixelOp[] = [{ x: 0, y: 0, r: 255, g: 255, b: 255, a: 255, timestamp: 1, peerId: 'p1' }];
+
+    // broadcastPixelOps should yield and return false due to backpressure
+    const opsResult = session.broadcastPixelOps(ops, 'l1');
+    expect(opsResult).toBe(false);
+    expect(congestedSyncChannel.send).not.toHaveBeenCalled();
+
+    // broadcastInitialSync should yield under backpressure
+    const initResult = session.broadcastInitialSync(ops, 'l1');
+    expect(initResult).toBe(false);
+    expect(congestedSyncChannel.send).not.toHaveBeenCalled();
+
+    // broadcastCursor succeeds on uncongested presence channel
+    const cursorResult = session.broadcastCursor(10, 20);
+    expect(cursorResult).toBe(true);
+    expect(normalPresenceChannel.send).toHaveBeenCalled();
+
+    // Now congest the presence channel
+    const congestedPresenceChannel = {
+      label: 'pixibun-presence',
+      readyState: 'open',
+      bufferedAmount: 128 * 1024, // 128 KB (exceeds 64 KB ceiling)
+      send: vi.fn(),
+      close: vi.fn(),
+    } as unknown as RTCDataChannel;
+    (session as unknown as { presenceChannel: RTCDataChannel }).presenceChannel = congestedPresenceChannel;
+
+    // broadcastCursor should drop frame and return false under backpressure
+    const congestedCursorResult = session.broadcastCursor(15, 25);
+    expect(congestedCursorResult).toBe(false);
+    expect(congestedPresenceChannel.send).not.toHaveBeenCalled();
   });
 });
