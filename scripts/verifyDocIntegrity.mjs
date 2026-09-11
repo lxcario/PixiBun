@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * verifyDocIntegrity.mjs
  * Automated verification harness for PixiBun documentation integrity:
@@ -7,8 +5,10 @@
  * 2. Checks for duplicate section numbers and monotonicity in ARCHITECTURE.md.
  * 3. Asserts all local filepaths cited in CHANGELOG.md exist on disk.
  * 4. Asserts line-count claims in CHANGELOG.md match measured file lengths.
+ * 5. Asserts test count and suite claims in README.md match live Vitest and Playwright test suites.
  */
 
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -142,12 +142,92 @@ if (fs.existsSync(changelogPath)) {
 }
 
 // -----------------------------------------------------------------------------
+// 5. Verify Documentation Test Count Claims against Live Test Suites
+// -----------------------------------------------------------------------------
+const readmePath = path.join(rootDir, 'README.md');
+if (fs.existsSync(readmePath)) {
+  const readmeContent = fs.readFileSync(readmePath, 'utf8');
+
+  try {
+    const vitestRaw = execSync('npx vitest list --json', {
+      cwd: rootDir,
+      encoding: 'utf8',
+      maxBuffer: 20 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const vitestTests = JSON.parse(vitestRaw);
+    const liveUnitTests = vitestTests.length;
+    const liveUnitSuites = new Set(vitestTests.map((item) => item.file)).size;
+
+    const pwRaw = execSync('npx playwright test --list', {
+      cwd: rootDir,
+      encoding: 'utf8',
+      maxBuffer: 20 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const pwMatch = pwRaw.match(/Total:\s+(\d+)\s+tests\s+in\s+(\d+)\s+files/);
+    if (!pwMatch) {
+      reportError('Failed to parse Playwright test list output');
+    } else {
+      const liveE2ETests = parseInt(pwMatch[1], 10);
+      const liveE2ESuites = parseInt(pwMatch[2], 10);
+
+      const unitRegex = /(\d+)\s+unit and integration tests across\s+(\d+)\s+suites/g;
+      let unitMatch;
+      let unitClaimsFound = 0;
+      while ((unitMatch = unitRegex.exec(readmeContent)) !== null) {
+        unitClaimsFound++;
+        const claimedTests = parseInt(unitMatch[1], 10);
+        const claimedSuites = parseInt(unitMatch[2], 10);
+        if (claimedTests !== liveUnitTests || claimedSuites !== liveUnitSuites) {
+          reportError(
+            `README.md unit test claim mismatch: claimed ${claimedTests} tests across ${claimedSuites} suites, but live Vitest runner reports ${liveUnitTests} tests across ${liveUnitSuites} suites.`
+          );
+        }
+      }
+
+      if (unitClaimsFound === 0) {
+        reportError('No unit test count claims found in README.md to verify.');
+      }
+
+      const e2eRegex = /(\d+)\s+E2E spec suites\s*\(\s*(\d+)\s+tests/g;
+      let e2eMatch;
+      let e2eClaimsFound = 0;
+      while ((e2eMatch = e2eRegex.exec(readmeContent)) !== null) {
+        e2eClaimsFound++;
+        const claimedSuites = parseInt(e2eMatch[1], 10);
+        const claimedTests = parseInt(e2eMatch[2], 10);
+        if (claimedSuites !== liveE2ESuites || claimedTests !== liveE2ETests) {
+          reportError(
+            `README.md E2E test claim mismatch: claimed ${claimedSuites} suites (${claimedTests} tests), but live Playwright runner reports ${liveE2ESuites} suites (${liveE2ETests} tests).`
+          );
+        }
+      }
+
+      if (e2eClaimsFound === 0) {
+        reportError('No E2E test count claims found in README.md to verify.');
+      }
+
+      if (unitClaimsFound > 0 && e2eClaimsFound > 0 && errorCount === 0) {
+        reportPass(
+          `README.md test metrics verified against live runners (${liveUnitTests} unit tests across ${liveUnitSuites} suites; ${liveE2ETests} E2E tests across ${liveE2ESuites} suites)`
+        );
+      }
+    }
+  } catch (err) {
+    reportError(`Failed to query live test runners: ${err.message}`);
+  }
+} else {
+  reportError('README.md not found');
+}
+
+// -----------------------------------------------------------------------------
 // Verdict
 // -----------------------------------------------------------------------------
 if (errorCount > 0) {
-  console.error(`\n💥 Doc integrity audit failed with ${errorCount} error(s).\n`);
+  console.error(`\nDoc integrity audit failed with ${errorCount} error(s).\n`);
   process.exit(1);
 } else {
-  console.log('\n🌟 All documentation integrity checks passed successfully!\n');
+  console.log('\nAll documentation integrity checks passed successfully.\n');
   process.exit(0);
 }

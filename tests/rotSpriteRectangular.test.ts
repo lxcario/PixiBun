@@ -101,6 +101,19 @@ describe('RotSprite Rectangular Fast Paths', () => {
       expect(res.data[outIdx02 + 1]).toBe(0);
     });
 
+    it('rotates rectangular buffer 90° and 270° with fixed container dimensions via centered fast-path', () => {
+      // Fixed bounds (targetW = w, targetH = h)
+      const res90 = rotSprite(src, Math.PI / 2, undefined, undefined, w, h);
+      expect(res90.width).toBe(w);
+      expect(res90.height).toBe(h);
+      expect(res90.data.length).toBe(w * h * 4);
+
+      const res270 = rotSprite(src, (3 * Math.PI) / 2, undefined, undefined, w, h);
+      expect(res270.width).toBe(w);
+      expect(res270.height).toBe(h);
+      expect(res270.data.length).toBe(w * h * 4);
+    });
+
     it('rotates rectangular buffer 180° preserving dimensions', () => {
       const res = rotSprite(src, Math.PI);
       expect(res.width).toBe(3);

@@ -329,6 +329,50 @@ export function rotSprite(
     return { width: h, height: w, data: outBytes };
   }
 
+  if (
+    isNear(Math.PI / 2) &&
+    outW === w &&
+    outH === h &&
+    Math.abs(cx - w / 2) < EPSILON &&
+    Math.abs(cy - h / 2) < EPSILON
+  ) {
+    const outBytes = new Uint8ClampedArray(w * h * 4);
+    const src32 = new Uint32Array(data.buffer, data.byteOffset, w * h);
+    const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const sx = Math.floor(cx + (y - ocy));
+        const sy = Math.floor(cy - (x - ocx));
+        if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+          out32[y * w + x] = src32[sy * w + sx];
+        }
+      }
+    }
+    return { width: w, height: h, data: outBytes };
+  }
+
+  if (
+    isNear((3 * Math.PI) / 2) &&
+    outW === w &&
+    outH === h &&
+    Math.abs(cx - w / 2) < EPSILON &&
+    Math.abs(cy - h / 2) < EPSILON
+  ) {
+    const outBytes = new Uint8ClampedArray(w * h * 4);
+    const src32 = new Uint32Array(data.buffer, data.byteOffset, w * h);
+    const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const sx = Math.floor(cx - (y - ocy));
+        const sy = Math.floor(cy + (x - ocx));
+        if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+          out32[y * w + x] = src32[sy * w + sx];
+        }
+      }
+    }
+    return { width: w, height: h, data: outBytes };
+  }
+
   // 2. Perform 3-pass Scale2x cascade to 8x
   const src8x = scale8x(src);
 

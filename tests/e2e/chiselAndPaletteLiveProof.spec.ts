@@ -286,7 +286,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     await page.waitForTimeout(200);
 
     // In 2.5D Normal Sculptor, select "Rivet Stamp" and "Hemisphere Dome" preset (r: 8)
-    const rivetToolBtn = page.getByRole('button', { name: /^Rivet Stamp$/ });
+    const rivetToolBtn = page.getByRole('button', { name: /^Rivet Stamp$/ }).first();
     if (await rivetToolBtn.isVisible()) {
       await rivetToolBtn.click();
       await page.waitForTimeout(100);

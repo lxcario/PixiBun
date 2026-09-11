@@ -233,7 +233,9 @@ export function useGeometricEvents({
       if (tCtx) {
         const rotated = rotateWithRotSprite(tCtx, canvasWidth, canvasHeight, angle);
         tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-        tCtx.drawImage(rotated, 0, 0);
+        const dx = Math.round((canvasWidth - rotated.width) / 2);
+        const dy = Math.round((canvasHeight - rotated.height) / 2);
+        tCtx.drawImage(rotated, dx, dy);
 
         const state = useStudioStore.getState();
         const currentFrame = state.frames[state.activeFrameIndex];
@@ -245,7 +247,9 @@ export function useGeometricEvents({
               if (lCtx) {
                 const lRotated = rotateWithRotSprite(lCtx, canvasWidth, canvasHeight, angle);
                 lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-                lCtx.drawImage(lRotated, 0, 0);
+                const ldx = Math.round((canvasWidth - lRotated.width) / 2);
+                const ldy = Math.round((canvasHeight - lRotated.height) / 2);
+                lCtx.drawImage(lRotated, ldx, ldy);
               }
             }
           });

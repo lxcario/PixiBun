@@ -28,7 +28,11 @@ test.describe('Landing Page & Accessibility', () => {
     // Dismiss introductory curtain if active
     const curtain = page.locator('div[role="button"][aria-label*="Skip introductory"]');
     if (await curtain.isVisible()) {
-      await curtain.click();
+      try {
+        await curtain.click({ timeout: 2000 });
+      } catch {
+        await page.keyboard.press('Escape');
+      }
     }
     // Wait for entrance animations to settle completely to ensure 100% contrast opacity
     await page.waitForTimeout(1100);

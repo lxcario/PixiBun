@@ -307,7 +307,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           variant="default"
           onClick={onOpenShortcuts}
           title="Atelier Guide, Diagnostics & Shortcuts (?)"
-          aria-label="Shortcuts"
+          aria-label="Atelier Guide, Diagnostics and Shortcuts"
           data-testid="shortcuts-guide-button"
           className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
         >

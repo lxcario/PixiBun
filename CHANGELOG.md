@@ -4,10 +4,11 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## [v1.12.1] - 2026-09-12
 ### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)
-- **RotSprite Rectangular 90°/270° Fast Path (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `tests/rotSpriteRectangular.test.ts`)**:
+- **RotSprite Rectangular 90°/270° Fast Path & Centered Layer Rotation (`src/lib/ai/math/rotSprite.ts`, `src/lib/canvas/rotSprite.ts`, `src/hooks/viewport/events/useGeometricEvents.ts`, `tests/rotSpriteRectangular.test.ts`)**:
   - Removed `w === h` restriction on orthogonal 90° and 270° fast paths across both canvas and math processing chains, transposing output canvas dimensions ($W' = H, H' = W$) and updating coordinate indexing to $y' \cdot H + x'$.
+  - Added dedicated fixed-dimension centered fast-paths for $90^\circ$ and $270^\circ$ rotations on non-square bounds ($O(W \times H)$) when `outW === w && outH === h`, and centered rotated content in `useGeometricEvents.ts` to prevent asymmetrical layer clipping.
   - Corrected downsampling kernel documentation from Gaussian to Xenowhirl's parabolic center-weighted majority voting kernel: $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$.
-  - Created unit tests in `tests/rotSpriteRectangular.test.ts` (5 tests) verifying rectangular canvas rotation equivalence.
+  - Created unit tests in `tests/rotSpriteRectangular.test.ts` (6 tests) verifying rectangular canvas rotation equivalence.
 - **Morph Fraction Forwarding & Multi-Source BFS Color Sampling (`src/lib/ai/pixelAiEngine.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `tests/pixelAiEngineMorphFraction.test.ts`)**:
   - Replaced $O(W \times H \times R^2)$ spiral search with an 8-connected multi-source Breadth-First Search (BFS) in exact $O(W \times H)$ time for nearest opaque color lookups.
   - Exported `morphInBetweenFrameAtFraction` and forwarded time fraction parameter `t` in `morphInBetweenFrames`.
@@ -21,9 +22,12 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Unified test suite in `tests/floodFillHex.test.ts` to 14 tests preserving all 5 `hexToRgba` tests (including CSS Color 4 4/8-digit `#RGBA` expansion), 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex` contract tests.
 - **Diagnostics Relay Fallback Version Synchronization (`src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
   - Synchronized `APP_VERSION = '1.12.0'` in `capture.ts` and default route fallback in `src/app/api/diagnostics/relay/route.ts`.
-- **E2E Spec Test Artifact Portability (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`)**:
+- **E2E Spec Test Reliability & Artifact Portability (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/landing.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`, `src/components/layout/TopHeader.tsx`)**:
+  - Disambiguated `Rivet Stamp` role queries between LeftToolbar and RightInspector, added accessible `aria-label` to Guide button in `TopHeader.tsx`, and handled intro curtain detachment timeouts in `landing.spec.ts`.
   - Replaced hardcoded machine-specific brain directory paths with dynamic `path.join(process.cwd(), 'test-results', 'e2e-artifacts')` and recursive folder creation.
-- **Documentation Algorithmic Rigor & Integrity (`ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`)**:
+  - All 8 Playwright E2E suites (20 tests) pass 100% green.
+- **Automated Semantic Verifier & Documentation Algorithmic Rigor (`scripts/verifyDocIntegrity.mjs`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`)**:
+  - Added Check 5 in `scripts/verifyDocIntegrity.mjs` verifying claimed unit and E2E test counts against live `npx vitest list` and `npx playwright test --list` runners.
   - Replaced optical flow claims with Signed Distance Field (SDF) morphing and 8-connected multi-source BFS.
   - Aligned frontal cushion formula to $\text{rimRatio} = \min(1, D / 2.8)$ and $H = \max(D) \cdot \sqrt{\text{rimRatio}}$.
   - Aligned salience weighting to $2\times2$ forward differences with $[1.0, 3.5]$ clamp.
