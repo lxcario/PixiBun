@@ -266,6 +266,7 @@ PixiBun is engineered as a true production-grade, local-first web application:
  
 * **100% Local-First & Zero Telemetry:** No accounts, no telemetry, no tracking, no subscriptions.
 * **Core Studio is 100% Offline-Capable:** Full drawing, animation, lighting, and export pipelines run entirely in-browser without network access via installed PWA.
+* **Musical Compositions & Sound Design Attribution:** In-studio procedural lofi radio arrangements are non-commercial fan homages to musical themes composed by Toby Fox (*Deltarune* Chapter 1 & 2 © Toby Fox / Materia Collective). Arranged procedurally via Web Audio API for educational demonstration and creative focus.
 * **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
  
 *Handcrafted with pixels, coffee, and care.* ✦

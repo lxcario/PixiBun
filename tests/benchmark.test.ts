@@ -88,7 +88,7 @@ describe('Performance Benchmarking Suite', () => {
     }
   });
 
-  it('evaluates optical flow on complex checkerboard patterns', () => {
+  it('evaluates signed distance field morphing on complex checkerboard patterns', () => {
     const W = 32;
     const H = 32;
     const frameA = new Uint8ClampedArray(W * H * 4);

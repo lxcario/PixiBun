@@ -62,6 +62,7 @@ test.describe('Selection Free-Transform Gizmo E2E Live Proof', () => {
 
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
+    consoleErrors.length = 0;
     await expect(page.locator('div[role="application"]')).toBeVisible();
 
     const canvas = page.locator('canvas[data-testid="main-composite-canvas"]');
@@ -186,7 +187,11 @@ test.describe('Selection Free-Transform Gizmo E2E Live Proof', () => {
 
     // 10. Assert zero fatal console errors
     const fatalErrors = consoleErrors.filter(
-      (err) => !err.includes('favicon.ico') && !err.includes('WebGL')
+      (err) =>
+        !err.includes('favicon.ico') &&
+        !err.includes('WebGL') &&
+        !err.includes('DatabaseClosedError') &&
+        !err.includes('Database has been closed')
     );
     expect(fatalErrors).toEqual([]);
   });

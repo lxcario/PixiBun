@@ -187,6 +187,21 @@ export async function deleteLayerBlobsForProject(projectId: string): Promise<voi
   }
 }
 
+/**
+ * Determines whether an error was caused by an expected database closure or abort
+ * (e.g. during page unload, navigation, or explicit test connection teardown).
+ */
+function isIgnorableDbClosure(err: unknown): boolean {
+  if (!db.isOpen()) return true;
+  const e = err as { name?: string; message?: string } | null;
+  if (!e) return false;
+  return (
+    e.name === 'DatabaseClosedError' ||
+    e.name === 'AbortError' ||
+    (typeof e.message === 'string' && e.message.includes('Database has been closed'))
+  );
+}
+
 // Autosave current workspace to IndexedDB
 export async function autoSaveWorkspace(
   projectId: string,
@@ -199,6 +214,7 @@ export async function autoSaveWorkspace(
   layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>
 ): Promise<boolean> {
   try {
+    if (!db.isOpen()) return false;
     const existing = await db.projects.get(projectId);
     const createdAt = existing?.createdAt || Date.now();
     const dataJson = JSON.stringify(stateSnapshot);
@@ -217,7 +233,11 @@ export async function autoSaveWorkspace(
       await saveLayerBlobs(projectId, layerBlobs);
     }
     return true;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) {
+      console.warn('Autosave aborted (database closed or reset in progress)');
+      return false;
+    }
     console.error('Autosave error:', err);
     return false;
   }
@@ -226,9 +246,16 @@ export async function autoSaveWorkspace(
 // Load the most recently saved project from IndexedDB
 export async function loadLatestSavedWorkspace(): Promise<StoredProject | null> {
   try {
+    if (!db.isOpen()) {
+      return null;
+    }
     const projects = await db.projects.orderBy('updatedAt').reverse().limit(1).toArray();
     return projects[0] || null;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) {
+      console.warn('Load autosave aborted (database closed or reset in progress)');
+      return null;
+    }
     console.error('Load autosave error:', err);
     return null;
   }
@@ -237,8 +264,10 @@ export async function loadLatestSavedWorkspace(): Promise<StoredProject | null> 
 // List all projects sorted by updatedAt descending
 export async function listAllProjects(): Promise<StoredProject[]> {
   try {
+    if (!db.isOpen()) return [];
     return await db.projects.orderBy('updatedAt').reverse().toArray();
-  } catch (err) {
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) return [];
     console.error('List projects error:', err);
     return [];
   }
@@ -247,9 +276,11 @@ export async function listAllProjects(): Promise<StoredProject[]> {
 // Get project by ID
 export async function getProjectById(id: string): Promise<StoredProject | null> {
   try {
+    if (!db.isOpen()) return null;
     const project = await db.projects.get(id);
     return project || null;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) return null;
     console.error(`Get project ${id} error:`, err);
     return null;
   }
@@ -258,10 +289,12 @@ export async function getProjectById(id: string): Promise<StoredProject | null> 
 // Delete project by ID
 export async function deleteProject(id: string): Promise<boolean> {
   try {
+    if (!db.isOpen()) return false;
     await db.projects.delete(id);
     await deleteLayerBlobsForProject(id);
     return true;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) return false;
     console.error(`Delete project ${id} error:`, err);
     return false;
   }

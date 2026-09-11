@@ -2,6 +2,12 @@
  * Procedural Musical Tracks & Tracker Step Tables
  * 100% in-memory procedural note and percussion arrangements.
  *
+ * Musical Attribution & Copyright Notice:
+ * Underlying musical compositions and melodies ("The Field of Hopes and Dreams",
+ * "My Castle Town", "Empty Town") are © Toby Fox / Materia Collective (Deltarune Ch. 1 & 2).
+ * Arranged procedurally for educational and non-commercial fan appreciation.
+ * PixiBun claims no copyright over the underlying musical compositions.
+ *
  * Authored using Toby Fox's authentic music theory, NES VST 1.1 sound design,
  * Hooktheory chord voicings, and cozy lofi aesthetics:
  * 1. "Field of Hopes" (The Field of Hopes and Dreams — Cozy Lofi Rest, 104 BPM, Bb Major)
