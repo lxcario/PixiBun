@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import type { DiagnosticEntry } from '@/types/diagnostics';
 import { createId } from '@/lib/engine/id';
 import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/types/project';
+import { StorageResilience } from '@/lib/safety/storageResilience';
 
 export interface StoredProject {
   id: string;
@@ -155,17 +156,25 @@ export async function saveLayerBlobs(
   }
 
   // 4. Execute atomic batch writes with purely synchronous Dexie calls inside the transaction
-  await db.transaction('rw', db.layerBlobs, async () => {
-    if (idsToDelete.length > 0) {
-      await db.layerBlobs.bulkDelete(idsToDelete);
+  try {
+    await db.transaction('rw', db.layerBlobs, async () => {
+      if (idsToDelete.length > 0) {
+        await db.layerBlobs.bulkDelete(idsToDelete);
+      }
+      if (recordsToAdd.length > 0) {
+        await db.layerBlobs.bulkAdd(recordsToAdd);
+      }
+      if (recordsToPut.length > 0) {
+        await db.layerBlobs.bulkPut(recordsToPut);
+      }
+    });
+  } catch (err: unknown) {
+    if (StorageResilience.isQuotaExceeded(err)) {
+      console.warn('[saveLayerBlobs] IndexedDB QuotaExceededError encountered. Pruning volatile caches.');
+      await StorageResilience.pruneVolatileCaches(db);
     }
-    if (recordsToAdd.length > 0) {
-      await db.layerBlobs.bulkAdd(recordsToAdd);
-    }
-    if (recordsToPut.length > 0) {
-      await db.layerBlobs.bulkPut(recordsToPut);
-    }
-  });
+    throw err;
+  }
 }
 
 // Retrieve layer binary blobs for a project
@@ -236,6 +245,11 @@ export async function autoSaveWorkspace(
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) {
       console.warn('Autosave aborted (database closed or reset in progress)');
+      return false;
+    }
+    if (StorageResilience.isQuotaExceeded(err)) {
+      console.warn('[autoSaveWorkspace] Storage quota exceeded. Pruning volatile caches.');
+      await StorageResilience.pruneVolatileCaches(db);
       return false;
     }
     console.error('Autosave error:', err);

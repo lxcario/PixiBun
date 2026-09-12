@@ -2,6 +2,7 @@ import { useState, useCallback, RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { MathInvariants } from '@/lib/safety/mathInvariants';
 
 interface UseViewportTransformProps {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -86,20 +87,23 @@ export function useViewportTransform({
 
       // Mouse Wheel scrolling (and Ctrl/Cmd+Wheel) = Zoom in/out anchored to cursor
       const zoomDelta = e.deltaY < 0 ? 1.25 : 0.8;
-      const newZoom = Math.max(100, Math.min(6400, Math.round(zoom * zoomDelta)));
-      if (newZoom === zoom) return;
+      const safeCurrentZoom = Math.max(100, Math.min(6400, MathInvariants.isSafeFinite(zoom) ? zoom : 100));
+      const newZoom = Math.max(100, Math.min(6400, Math.round(safeCurrentZoom * zoomDelta)));
+      if (newZoom === safeCurrentZoom) return;
 
       // Instant cursor-anchored zooming (1:1 deterministic, zero animation lag)
       const container = containerRef.current;
       if (container) {
         const rect = container.getBoundingClientRect();
+        const safePanX = MathInvariants.isSafeFinite(panX) ? panX : 0;
+        const safePanY = MathInvariants.isSafeFinite(panY) ? panY : 0;
         // Cursor position relative to canvas center on screen
-        const cursorOffsetX = e.clientX - (rect.left + rect.width / 2) - panX;
-        const cursorOffsetY = e.clientY - (rect.top + rect.height / 2) - panY;
+        const cursorOffsetX = e.clientX - (rect.left + rect.width / 2) - safePanX;
+        const cursorOffsetY = e.clientY - (rect.top + rect.height / 2) - safePanY;
 
-        const ratio = newZoom / zoom;
-        const newPanX = Math.round(panX + cursorOffsetX * (1 - ratio));
-        const newPanY = Math.round(panY + cursorOffsetY * (1 - ratio));
+        const ratio = MathInvariants.safeDivide(newZoom, safeCurrentZoom, 1);
+        const newPanX = Math.round(safePanX + cursorOffsetX * (1 - ratio));
+        const newPanY = Math.round(safePanY + cursorOffsetY * (1 - ratio));
 
         if (setZoomAndPan) {
           setZoomAndPan(newZoom, newPanX, newPanY);
@@ -123,8 +127,11 @@ export function useViewportTransform({
     const availW = Math.max(100, container.clientWidth - pad);
     const availH = Math.max(100, container.clientHeight - pad);
 
-    const scaleX = availW / canvasWidth;
-    const scaleY = availH / canvasHeight;
+    const safeW = Math.max(1, MathInvariants.isSafeFinite(canvasWidth) ? canvasWidth : 32);
+    const safeH = Math.max(1, MathInvariants.isSafeFinite(canvasHeight) ? canvasHeight : 32);
+
+    const scaleX = MathInvariants.safeDivide(availW, safeW, 1);
+    const scaleY = MathInvariants.safeDivide(availH, safeH, 1);
     const bestScale = Math.min(scaleX, scaleY);
 
     const integerZoom = Math.max(100, Math.floor(bestScale) * 100);

@@ -108,6 +108,10 @@ export class IsobmffWriter {
  * from SPS and PPS NALUs per ISO/IEC 14496-15 section 5.2.4.1.
  */
 export function createAvcCRecord(sps: Uint8Array, pps: Uint8Array): Uint8Array {
+  if (!sps || sps.length < 4 || !pps || pps.length === 0) {
+    throw new RangeError('[createAvcCRecord] Invalid or truncated SPS/PPS NALU parameters');
+  }
+
   const writer = new IsobmffWriter(32 + sps.length + pps.length);
   writer.u8(1); // configurationVersion = 1
   writer.u8(sps[1]); // AVCProfileIndication
@@ -146,6 +150,16 @@ export interface Mp4MuxerTrack {
  * Muxes video track and H.264 samples into a compliant, playable Fast-Start MP4 Blob.
  */
 export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
+  if (!track || !Number.isFinite(track.width) || track.width <= 0 || !Number.isFinite(track.height) || track.height <= 0) {
+    throw new RangeError(`[muxToMp4Blob] Invalid MP4 track dimensions: ${track?.width}x${track?.height}`);
+  }
+  if (!Array.isArray(track.samples) || track.samples.length === 0) {
+    throw new RangeError('[muxToMp4Blob] Cannot mux MP4: sample list is empty');
+  }
+  if (!track.avcCData || track.avcCData.length === 0) {
+    throw new Error('[muxToMp4Blob] Missing AVC configuration record (avcCData)');
+  }
+
   const timescale = track.timescale ?? 1000;
   const totalDuration = track.samples.reduce((acc, s) => acc + s.durationMs, 0);
   const totalSamples = track.samples.length;

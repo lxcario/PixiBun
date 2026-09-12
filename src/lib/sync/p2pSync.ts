@@ -22,6 +22,7 @@
  */
 
 import { PixelOp } from '@/lib/collab/crdtPixelBuffer';
+import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBucket';
 
 export interface RemoteCursor {
   peerId: string;
@@ -438,6 +439,10 @@ export class P2PSyncSession {
   private iceCandidates: RTCIceCandidateInit[] = [];
   private options: P2PSyncSessionOptions;
 
+  // Defensive Token Bucket Rate Limiters (Turner 1986 / Tanenbaum §5.3)
+  private syncRateLimiter: TokenBucketStore = createTokenBucketStore({ capacity: 100, refillPerMinute: 6000 });
+  private presenceRateLimiter: TokenBucketStore = createTokenBucketStore({ capacity: 150, refillPerMinute: 7200 });
+
   constructor(options: P2PSyncSessionOptions) {
     this.peerId = options.peerId;
     this.peerName = options.peerName ?? `Artisan-${options.peerId.slice(0, 4)}`;
@@ -510,6 +515,10 @@ export class P2PSyncSession {
       };
       channel.onmessage = (e) => {
         try {
+          if (!this.syncRateLimiter.take('crdt-sync')) {
+            console.warn('P2P sync rate limit exceeded, throttling incoming message.');
+            return;
+          }
           if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
             console.warn('P2P payload exceeded 256KB limit. Discarding message.');
             return;
@@ -535,6 +544,10 @@ export class P2PSyncSession {
       this.presenceChannel = channel;
       channel.onmessage = (e) => {
         try {
+          if (!this.presenceRateLimiter.take('presence')) {
+            // Drop excessive presence frame silently
+            return;
+          }
           if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
             console.warn('P2P presence payload exceeded 256KB limit. Discarding message.');
             return;

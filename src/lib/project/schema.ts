@@ -9,6 +9,7 @@ import {
   type ProjectValidationResult,
   type SerializedFrame,
 } from '@/types/project';
+import { SafeJson } from '@/lib/safety/safeJson';
 
 const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
@@ -31,21 +32,28 @@ function isHexColor(value: unknown): value is string {
 
 function validateFrame(input: unknown, frameIndex: number): SerializedFrame | string {
   if (!isPlainObject(input)) return `Frame ${frameIndex + 1} is not structured the way PixiBun expects.`;
-  if (typeof input.id !== 'string' || input.id.length === 0) return `Frame ${frameIndex + 1} is missing its identifier.`;
+  if (typeof input.id !== 'string' || input.id.length === 0 || input.id.length > 128) {
+    return `Frame ${frameIndex + 1} has an invalid or missing identifier.`;
+  }
   if (!isIntegerInRange(input.durationMs, 1, 60_000)) return `Frame ${frameIndex + 1} has an out-of-range duration.`;
 
   if (!Array.isArray(input.layers) || input.layers.length === 0) {
     return `Frame ${frameIndex + 1} carries no layers — the file may have been truncated.`;
+  }
+  if (input.layers.length > 100) {
+    return `Frame ${frameIndex + 1} exceeds the 100 layer ceiling.`;
   }
 
   const layers: SerializedFrame['layers'] = [];
   for (let i = 0; i < input.layers.length; i++) {
     const rawLayer = input.layers[i];
     if (!isPlainObject(rawLayer)) return `Frame ${frameIndex + 1}, layer ${i + 1} is malformed.`;
-    if (typeof rawLayer.id !== 'string' || rawLayer.id.length === 0) {
-      return `Frame ${frameIndex + 1}, layer ${i + 1} is missing its identifier.`;
+    if (typeof rawLayer.id !== 'string' || rawLayer.id.length === 0 || rawLayer.id.length > 128) {
+      return `Frame ${frameIndex + 1}, layer ${i + 1} has an invalid identifier.`;
     }
-    if (typeof rawLayer.name !== 'string') return `Frame ${frameIndex + 1}, layer ${i + 1} has no name.`;
+    if (typeof rawLayer.name !== 'string' || rawLayer.name.length > 128) {
+      return `Frame ${frameIndex + 1}, layer ${i + 1} has an invalid name.`;
+    }
     if (typeof rawLayer.visible !== 'boolean' || typeof rawLayer.locked !== 'boolean') {
       return `Frame ${frameIndex + 1}, layer ${i + 1} has corrupted visibility or lock flags.`;
     }
@@ -137,28 +145,35 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (!isPlainObject(input)) {
     return { ok: false, error: 'That file does not look like a PixiBun project.' };
   }
-  if (input.format !== PROJECT_FORMAT_ID) {
+
+  // Defensively strip any prototype pollution vectors before processing
+  const cleanInput = SafeJson.sanitizeObject(input);
+
+  if (cleanInput.format !== PROJECT_FORMAT_ID) {
     return { ok: false, error: 'This file was not saved by PixiBun, so it cannot be opened here.' };
   }
 
   // 1. Forward-compatibility guard: reject files saved with a newer PixiBun format
-  if (typeof input.version === 'number' && input.version > PROJECT_FORMAT_VERSION) {
+  if (typeof cleanInput.version === 'number' && cleanInput.version > PROJECT_FORMAT_VERSION) {
     return {
       ok: false,
-      error: `This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file.`,
+      error: `This project was saved in format v${cleanInput.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file.`,
     };
   }
 
   // 2. Backward-compatibility: migrate legacy/unversioned payloads before validation
-  const normalized = migrateProjectPayload(input);
+  const normalized = migrateProjectPayload(cleanInput);
   if (!isIntegerInRange(normalized.version, 1, PROJECT_FORMAT_VERSION)) {
     return {
       ok: false,
-      error: `This project uses an invalid format version (${String(input.version)}).`,
+      error: `This project uses an invalid format version (${String(cleanInput.version)}).`,
     };
   }
   if (typeof normalized.name !== 'string' || normalized.name.trim().length === 0) {
     return { ok: false, error: 'The project inside this file has no usable name.' };
+  }
+  if (normalized.name.length > 256) {
+    return { ok: false, error: 'The project name exceeds the 256 character limit.' };
   }
   if (!isIntegerInRange(normalized.width, 1, 2048) || !isIntegerInRange(normalized.height, 1, 2048)) {
     return { ok: false, error: 'The project canvas dimensions are out of range.' };
@@ -184,6 +199,9 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (!Array.isArray(normalized.palettes) || normalized.palettes.length === 0) {
     return { ok: false, error: 'The file carries no color palettes.' };
   }
+  if (normalized.palettes.length > 50) {
+    return { ok: false, error: 'The project exceeds the 50 color palette limit.' };
+  }
   for (let i = 0; i < normalized.palettes.length; i++) {
     const pal = normalized.palettes[i];
     if (!isPlainObject(pal) || typeof pal.id !== 'string' || typeof pal.name !== 'string' || !Array.isArray(pal.colors)) {
@@ -199,6 +217,9 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (!Array.isArray(normalized.customRamps)) return { ok: false, error: 'The custom ramp list is malformed.' };
 
   if (!Array.isArray(normalized.clips)) return { ok: false, error: 'The animation clip list is malformed.' };
+  if (normalized.clips.length > 100) {
+    return { ok: false, error: 'The project exceeds the 100 animation clip limit.' };
+  }
   for (let i = 0; i < normalized.clips.length; i++) {
     const clip = normalized.clips[i];
     if (
@@ -214,6 +235,9 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
 
   if (!Array.isArray(normalized.frames) || normalized.frames.length === 0) {
     return { ok: false, error: 'This project has no animation frames to open.' };
+  }
+  if (normalized.frames.length > 500) {
+    return { ok: false, error: 'The project exceeds the 500 animation frame limit.' };
   }
   const frames: SerializedFrame[] = [];
   for (let i = 0; i < normalized.frames.length; i++) {
