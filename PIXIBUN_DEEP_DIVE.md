@@ -32,6 +32,8 @@ src/
 ├── lib/
 │   ├── ai/
 │   │   ├── math/                    # Modular graphics math laboratory
+│   │   │   ├── curvesAndLines.ts    # Rational quadratic Bézier curves and 2:1 isometric line stepping
+│   │   │   ├── morphology.ts        # Zhang-Suen 1px topological skeleton thinning
 │   │   │   ├── edtNormalMap.ts      # O(N) EDT, dome inflation, content-aware heightmaps, frontal cushion
 │   │   │   ├── photometricLighting.ts# Blinn-Phong lighting, feature protection, stepped OKLCH cel-shading
 │   │   │   ├── photometricAuto.ts   # Art morphology analysis, anatomical classification (character/orb/prop)
@@ -46,7 +48,7 @@ src/
 │   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
 │   ├── audio/
 │   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
-│   ├── canvas/                      # Raster fundamentals: Bresenham, Wu 2:1 iso, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
+│   ├── canvas/                      # Raster fundamentals: Bresenham, 2:1 iso stepper, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, harmonic rational retuning)
 │   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool, workerDispatcher.ts
@@ -115,8 +117,8 @@ Standard Bresenham produces duplicate "L" corner pixels on rapid turns. A 3-poin
 
 \text{If } (x_i = x_{i-1} \lor y_i = y_{i-1}) \land (x_{i+1} \ne x_i \land y_{i+1} \ne y_i) \implies \text{Prune middle pixel}
 
-### 2. Wu's Quantized 2:1 Isometric Line (`getIsometric2p1Line`)
-For standard $26.565^\circ$ isometric projections:
+### 2. Quantized 2:1 Isometric Line Stepper (`getIsometric2p1Line`)
+For standard $26.565^\circ$ ($\arctan(0.5)$ dimetric) isometric projections:
 
 y_{\text{iso}} = y_0 + \text{sign}(dy) \cdot \left\lfloor \frac{|x - x_0|}{2} \right\rfloor
 

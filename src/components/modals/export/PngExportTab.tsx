@@ -20,7 +20,7 @@ export const PngExportTab: React.FC<PngExportTabProps> = ({
       <div className="flex items-center justify-between">
         <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
         <div className="flex gap-1">
-          {[1, 2, 4, 8, 16].map((s) => (
+          {[1, 2, 4, 8, 16, 32].map((s) => (
             <button
               key={s}
               type="button"

@@ -34,7 +34,7 @@ graph TD
     end
 
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
-        RasterCore["Artisan Raster Engine (Bresenham, Wu 2:1 Iso, Bézier)"]
+        RasterCore["Artisan Raster Engine (Bresenham, 2:1 Iso Stepper, Bézier)"]
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
         PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
@@ -56,22 +56,26 @@ graph TD
 ## 2. Canvas & Rendering Pipeline
 
 ### Multi-Canvas Layered Viewport Stack
-To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 5-layer stack:
+To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 6-canvas layered stack:
 
 ```mermaid
 graph TD
     subgraph Viewport_Stack ["🖥️ CenterViewport Canvas Stack (Bottom to Top)"]
         L0["0. Solid Background (White #ffffff)"]
         L1["1. Onion Skin Underlay (onionCanvasRef: Tinted Ghosts & Falloff)"]
-        L2["2. Main Artwork Composite (mainCanvasRef: Layers & Normal Map Preview)"]
-        L3["3. Interactive Shape Preview (previewCanvasRef: Bézier & Vector Shapes)"]
-        L4["4. Precision HUD (gridCanvasRef: Pixel Grid, Iso Guides & Marquee)"]
+        L2["2. Playground Tracing Stencil (stencilCanvasRef: Lessons & Guides)"]
+        L3["3. Main Artwork Composite (mainCanvasRef: Layers & Normal Map Preview)"]
+        L4["4. Interactive Shape Preview (previewCanvasRef: Bézier & Vector Shapes)"]
+        L5["5. Precision HUD (gridCanvasRef: Pixel Grid, Iso Guides & Marquee)"]
+        L6["6. Brush Ghost Cursor (cursorCanvasRef: Dynamic Brush Reticle)"]
     end
     
     L0 --> L1
     L1 --> L2
     L2 --> L3
     L3 --> L4
+    L4 --> L5
+    L5 --> L6
 ```
 
 ### Pure Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)

@@ -248,7 +248,13 @@ export const StudioLayout: React.FC = () => {
 
   // Restore the last session on mount and request persistent storage.
   useEffect(() => {
-    void requestPersistentStorage();
+    void requestPersistentStorage().then((persisted) => {
+      if (!persisted && typeof navigator !== 'undefined' && navigator.storage) {
+        console.warn(
+          'Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure.'
+        );
+      }
+    });
 
     // Studio mode must never display playground tracing stencils
     useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });

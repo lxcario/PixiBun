@@ -41,10 +41,10 @@ Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times hei
 | **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$** | **$409.6\text{ KB}$** |
 | **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$** | **$1.64\text{ MB}$** |
 | **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$** | **$6.55\text{ MB}$** |
-| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$12.80\text{ MB}$** | **$25.60\text{ MB}$** |
+| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$** | **$26.21\text{ MB}$** |
 | **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$** | **$104.86\text{ MB}$** |
 
-> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$12.8\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$), well within browser tab memory quotas ($>1\text{ GB}$).
+> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$), well within browser tab memory quotas ($>1\text{ GB}$).
 
 ---
 

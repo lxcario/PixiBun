@@ -529,7 +529,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## [v1.0.0] - Initial Release
 - Multi-layer timeline animation engine with customizable FPS and onion skinning.
-- Full artisan raster tools: Bresenham pen, dither brush, Wu 2:1 isometric guides, flood fill, bezier curves.
+- Full artisan raster tools: Bresenham pen, dither brush, 2:1 isometric guides, flood fill, bezier curves.
 - PixiBud Smart Studio: Photometric surface normal baking, Blinn-Phong lighting, volumetric sub-surface scattering, and autotiling.
 - Offline-first storage with Dexie IndexedDB and multi-engine export suite (PNG, GIF, Godot, Unity, Phaser 3).
 

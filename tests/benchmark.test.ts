@@ -251,7 +251,7 @@ describe('Performance Benchmarking Suite', () => {
       expect(theoretical50StepsBytes).toBe(res * res * 4 * 50);
       expect(theoretical100StepsBytes).toBe(res * res * 4 * 100);
 
-      // Verify 256x256 matches exact BENCHMARKS.md specification (13,107,200 bytes = 12.8 MB)
+      // Verify 256x256 matches exact BENCHMARKS.md specification (13,107,200 bytes ≈ 13.11 MB)
       if (res === 256) {
         expect(theoretical50StepsBytes).toBe(13107200);
       }

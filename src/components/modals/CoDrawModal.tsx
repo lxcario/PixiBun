@@ -25,7 +25,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   const [connectionState, setConnectionState] = useState<P2PConnectionState>(
     activeSession?.getState() ?? 'idle'
   );
-  const [networkMode, setNetworkMode] = useState<'internet' | 'lan'>('internet');
+  const [networkMode, setNetworkMode] = useState<'internet' | 'lan'>('lan');
 
   const [inviteToken, setInviteToken] = useState<string>('');
   const [guestAnswerToken, setGuestAnswerToken] = useState<string>('');

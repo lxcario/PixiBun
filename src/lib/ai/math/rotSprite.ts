@@ -2,7 +2,7 @@
  * RotSprite Distortion-Free Pixel Art Rotation Adapter.
  *
  * Citations:
- * 1. Xenowoz (Xenowhirl), "RotSprite: An algorithm for scaling and rotating pixel art", 2007.
+ * 1. Xenowhirl, "RotSprite: An algorithm for scaling and rotating pixel art", 2007.
  * 2. Eric Johnston, "Scale2x / EPX (Eric's Pixel Expansion) algorithm", LucasArts, 1992.
  *
  * Thin DOM adapter delegating to the canonical rotSprite engine in '@/lib/canvas/rotSprite'.

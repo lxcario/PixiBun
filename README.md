@@ -31,7 +31,7 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 ```mermaid
 graph LR
     subgraph Atelier ["🐇 PixiBun Studio"]
-        Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• Wu's 2:1 Iso Lines<br/>• Rational Bézier Splines"]
+        Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Rational Bézier Splines"]
         Math["☀️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
         Anim["🎬 Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
         Import["🖼️ Smart Import & Pixelize<br/>• Sobel Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
@@ -50,7 +50,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ### 🖌️ Artisan Raster & Drawing Engine
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
-* **Wu's Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
+* **Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° ($\arctan 0.5$ dimetric) isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
 * **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Rational Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
 * **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with unsigned 32-bit bitwise normalization and adjustable tolerance.
@@ -183,7 +183,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 | <kbd>Q</kbd> | **Lasso Select** |
 | <kbd>W</kbd> | **Magic Wand Select** |
 | <kbd>L</kbd> | **Bresenham Line** Tool |
-| <kbd>J</kbd> | **Wu's 2:1 Isometric Line** Tool |
+| <kbd>J</kbd> | **2:1 Isometric Line** Tool |
 | <kbd>U</kbd> | **Rectangle** Tool |
 | <kbd>O</kbd> | **Ellipse** Tool |
 | <kbd>K</kbd> | **Normal Chisel** Tool |
