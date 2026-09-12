@@ -60,7 +60,7 @@ describe('Project Schema Defensive Hardening Suite', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(Object.prototype.hasOwnProperty.call(result.value, '__proto__')).toBe(false);
-      expect((Object.prototype as any).isAdmin).toBeUndefined();
+      expect(Reflect.get(Object.prototype, 'isAdmin')).toBeUndefined();
     }
   });
 

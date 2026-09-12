@@ -88,12 +88,12 @@ describe('Defensive Hardening Suite', () => {
   describe('SafeJson & Prototype Pollution Defense (CWE-1321)', () => {
     it('strips __proto__, constructor, and prototype during JSON parsing', () => {
       const maliciousPayload = '{"title":"Cozy","__proto__":{"polluted":true},"constructor":{"hacked":true}}';
-      const parsed = SafeJson.parse<Record<string, any>>(maliciousPayload);
+      const parsed = SafeJson.parse<Record<string, unknown>>(maliciousPayload);
 
       expect(parsed.title).toBe('Cozy');
       expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(false);
       expect(Object.prototype.hasOwnProperty.call(parsed, 'constructor')).toBe(false);
-      expect((Object.prototype as any).polluted).toBeUndefined();
+      expect(Reflect.get(Object.prototype, 'polluted')).toBeUndefined();
     });
 
     it('enforces maximum recursion depth against stack overflow exploits', () => {
@@ -120,7 +120,7 @@ describe('Defensive Hardening Suite', () => {
 
       const clean = SafeJson.sanitizeObject(obj);
       expect(clean.name).toBe('Project');
-      expect((clean as any).__proto__).toBeUndefined();
+      expect(Reflect.get(clean, '__proto__')).toBeUndefined();
       expect(clean.nested.constructor).toBeUndefined();
       expect(clean.nested.colors).toEqual(['#fff']);
     });

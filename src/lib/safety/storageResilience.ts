@@ -8,45 +8,49 @@
  *    - Specification of QuotaExceededError DOMException (legacy code 22).
  */
 
+export interface VolatileDiagnosticsDb {
+  diagnostics?: {
+    count(): Promise<number>;
+    clear(): Promise<void>;
+  };
+}
+
+export interface StorageEstimateResult {
+  usageBytes: number;
+  quotaBytes: number;
+  usagePercent: number;
+}
+
 export class StorageResilience {
   /**
-   * Identifies whether an error was caused by browser storage exhaustion (QuotaExceededError).
-   * Works across Chromium, WebKit (Safari), and Gecko (Firefox).
+   * Defensive detector for IndexedDB QuotaExceededError across all major browsers.
+   * Handles Chromium (name: 'QuotaExceededError'), WebKit/Safari (code: 22 / DOMException),
+   * and Firefox storage exhaustion variants.
    */
   public static isQuotaExceeded(err: unknown): boolean {
     if (!err || typeof err !== 'object') return false;
 
-    const e = err as { name?: string; code?: number; message?: string };
+    const error = err as { name?: string; code?: number; message?: string };
 
-    return (
-      e.name === 'QuotaExceededError' ||
-      e.code === 22 ||
-      (typeof e.message === 'string' && /quota/i.test(e.message))
-    );
+    if (error.name === 'QuotaExceededError') return true;
+    if (error.code === 22) return true; // Legacy DOMException.QUOTA_EXCEEDED_ERR
+    if (typeof error.message === 'string' && error.message.toLowerCase().includes('quota')) return true;
+
+    return false;
   }
 
   /**
-   * Safely estimates current storage usage and quota via navigator.storage.estimate().
+   * Queries the browser StorageManager estimate defensively.
+   * Returns safe fallbacks if the API is unsupported or rejects.
    */
-  public static async estimateQuota(): Promise<{
-    usageBytes: number;
-    quotaBytes: number;
-    usagePercent: number;
-  }> {
-    if (
-      typeof navigator !== 'undefined' &&
-      navigator.storage &&
-      typeof navigator.storage.estimate === 'function'
-    ) {
+  public static async queryStorageEstimate(): Promise<StorageEstimateResult> {
+    if (typeof navigator !== 'undefined' && navigator.storage && typeof navigator.storage.estimate === 'function') {
       try {
-        const est = await navigator.storage.estimate();
-        const usage = est.usage || 0;
-        const quota = est.quota || 1;
-        return {
-          usageBytes: usage,
-          quotaBytes: quota,
-          usagePercent: (usage / quota) * 100,
-        };
+        const estimate = await navigator.storage.estimate();
+        const usageBytes = estimate.usage ?? 0;
+        const quotaBytes = estimate.quota ?? 0;
+        const usagePercent = quotaBytes > 0 ? (usageBytes / quotaBytes) * 100 : 0;
+        return { usageBytes, quotaBytes, usagePercent };
       } catch {
         // Ignore estimation errors
       }
@@ -59,12 +63,15 @@ export class StorageResilience {
    * Emergency cache eviction of non-critical telemetry and diagnostics tables.
    * Protects core project data and active layer buffers from being purged.
    */
-  public static async pruneVolatileCaches(dbInstance: any): Promise<number> {
+  public static async pruneVolatileCaches(
+    dbInstance: VolatileDiagnosticsDb | Record<string, unknown> | null | undefined
+  ): Promise<number> {
     let evictedCount = 0;
     try {
-      if (dbInstance && dbInstance.diagnostics && typeof dbInstance.diagnostics.clear === 'function') {
-        const count = await dbInstance.diagnostics.count();
-        await dbInstance.diagnostics.clear();
+      const candidate = dbInstance as VolatileDiagnosticsDb | undefined;
+      if (candidate?.diagnostics && typeof candidate.diagnostics.clear === 'function') {
+        const count = await candidate.diagnostics.count();
+        await candidate.diagnostics.clear();
         evictedCount += count;
       }
     } catch (e) {
