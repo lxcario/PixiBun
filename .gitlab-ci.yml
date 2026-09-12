@@ -1,0 +1,32 @@
+﻿# .gitlab-ci.yml — PixiBun Atelier CI/CD Pipeline
+# Standard Node.js container for automated multi-stage verification
+image: node:22-alpine
+
+stages:
+  - gate
+  - build
+
+# Cache dependencies for fast pipeline execution
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .npm/
+    - node_modules/
+    - .next/cache/
+
+before_script:
+  - npm ci --cache .npm --prefer-offline
+
+# Core autonomous quality gate
+quality_gate:
+  stage: gate
+  script:
+    - npm run gate
+
+# Production build gate for main branch commits
+production_build:
+  stage: build
+  script:
+    - npm run build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
