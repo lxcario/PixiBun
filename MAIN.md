@@ -51,3 +51,6 @@
 - Phased Implementation Plan → [`TASKS.md`](./TASKS.md)
 - Build Logs → [`LOGS.md`](./LOGS.md)
 - v2 Architecture & Strategic Vision → [`V2_VISION.md`](./V2_VISION.md)
+- Open Source Contribution & Quality Gate → [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- Security Policy & Defensive Invariants → [`SECURITY.md`](./SECURITY.md)
+

@@ -228,7 +228,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+### 🛡️ Autonomous Quality Gate & Git Pre-Push Protection
+PixiBun includes an automated, zero-dependency local Quality Gate runner that executes before every push:
+```bash
+# Run the 3-stage validation suite (docs, typecheck, 609 tests) in ~16s
+npm run gate
+
+# Run full suite including Next.js production compilation
+npm run gate:full
+```
+The Git pre-push hook (`.git/hooks/pre-push`) is automatically configured on `npm install` via `npm run prepare`, blocking any push if a test, typecheck, or document check fails.
 
 ---
 
@@ -272,7 +281,9 @@ For an academic deep-dive into the next-generation architecture of PixiBun — e
  
 * **Local-First & Zero Telemetry:** No user accounts, no telemetry, no tracking, no subscriptions.
 * **Offline-First Studio:** Core drawing, animation, lighting, and export pipelines run entirely in-browser without network access via the installable PWA.
-* **Musical Compositions & Sound Design Attribution:** In-studio procedural lofi radio arrangements are non-commercial fan homages to musical themes composed by Toby Fox (*Deltarune* Chapter 1 & 2 © Toby Fox / Materia Collective). Arranged procedurally via Web Audio API for educational demonstration and creative focus.
+* **Contributing & Governance:** Check [`CONTRIBUTING.md`](./CONTRIBUTING.md) for local Quality Gate workflow and pure-TS invariant guidelines.
+* **Security & Invariants:** Read our defense-in-depth policy in [`SECURITY.md`](./SECURITY.md).
 * **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
  
 *Handcrafted with pixels, coffee, and care.* ✦
+

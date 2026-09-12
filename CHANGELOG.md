@@ -3,6 +3,38 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.13.0] - 2026-09-12
+### Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection (Phase 56)
+- **Local Quality Gate Runner (`scripts/runQualityGate.mjs`, `package.json`)**:
+  - Engineered an autonomous, zero-dependency Node.js ESM release gatekeeper that executes 3 sequential validation stages (`npm run gate`) in ~16 seconds:
+    - Stage 1: Documentation Integrity & Sync Invariant Audit (`npm run verify:docs`)
+    - Stage 2: Strict Static Type Safety (`npm run typecheck` - 0 compiler errors)
+    - Stage 3: Comprehensive Unit & Defensive Invariant Test Suite (`npm test` - 609 tests across 88 suites)
+    - Stage 4: Next.js Production Compilation & Bundling (`npm run gate:full`)
+- **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`, `package.json`)**:
+  - Implemented automatic pre-push git hook installation via `npm run prepare` lifecycle script.
+  - Intercepts all `git push` commands locally; if any test, typecheck, or doc verification fails, the push is blocked before leaving the developer workstation.
+- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.gitlab-ci.yml`)**:
+  - Authored comprehensive `CONTRIBUTING.md` documenting zero-dependency architecture, testing standards, and Quality Gate workflows.
+  - Expanded `SECURITY.md` with Section 4 detailing Defense-in-Depth pre-push invariants (CWE-409, CWE-1321, IEEE 754 float invariants, Token Bucket rate limiting).
+  - Added drop-in `.gitlab-ci.yml` pipeline configuration for future repository mirroring or self-hosted runners.
+
+### Comprehensive Defensive Hardening & Mathematical Invariants (Phase 55)
+- **Mathematical Viewport Invariants & Line Clipping (`src/lib/safety/mathInvariants.ts`, `src/hooks/viewport/useViewportTransform.ts`)**:
+  - Grounded in Foley et al. (1990) and Newman & Sproull (1973), implemented Cohen-Sutherland 4-bit outcode line clipping (`clipLineToCanvas`) to eliminate out-of-bounds loop stalls and canvas coordinate corruption.
+  - Grounded in David Goldberg (1991) and Donald E. Knuth (1997, TAOCP Vol. 2), implemented IEEE 754 floating-point invariant guards (`clampZoom`, `safeDivide`) in `useViewportTransform.ts`, immunizing trackpad pinch and mouse wheel operations against `NaN`, `Infinity`, and division-by-zero singularities.
+- **Safe Canvas Hardware Boundary Clamping (`src/lib/safety/safeCanvas.ts`)**:
+  - Created `SafeCanvas.createImageData` and `SafeCanvas.getImageData`, clamping dimensions to positive integers, normalizing negative coordinate drag rectangles, bounding buffer requests against GPU hardware limits (8192px / 16384px), and eliminating browser-crashing `IndexSizeError` exceptions on zero-area selections.
+- **CWE-409 Decompression Bomb & Pixel Bomb Mitigation (`src/lib/safety/imageHeaderProbe.ts`)**:
+  - Implemented zero-dependency pre-flight binary header parser inspecting PNG (IHDR), JPEG (SOF0/SOF2), GIF, and BMP headers in the first 64KB, rejecting malicious decompression bombs ($>8192\text{px}$ or $>67\text{MP}$) BEFORE allocating canvas memory or calling `createImageBitmap`.
+- **CWE-1321 Prototype Pollution Defense & Depth Limiting (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`)**:
+  - Grounded in Olivier Arteau (NorthSec 2018), built `safeJsonParse` stripping `__proto__`, `constructor`, and `prototype` keys and enforcing a recursion depth limit ($\le 32$). Hardened `projectSchema.ts` with strict upper bounds (names $\le 256$ chars, frames $\le 500$, layers $\le 100$, palettes $\le 50$, clips $\le 100$).
+- **Storage Resilience & QuotaExceeded Protection (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`)**:
+  - Standardized detection of WHATWG `QuotaExceededError` across Chromium, WebKit/Safari, and Firefox. Added automatic volatile telemetry cache pruning (`pruneVolatileCaches`) to safeguard active user project data during disk pressure.
+- **WebRTC Token Bucket Traffic Shaping (`src/lib/sync/p2pSync.ts`)**:
+  - Grounded in Jonathan S. Turner (1986), Tanenbaum & Wetherall (§5.3.4), and RFC 2212, added Token Bucket rate limiting to P2P sync and presence channels, mitigating packet flood and CPU starvation attacks from malicious peers.
+- **Safety Test Suites (`tests/safetyHardening.test.ts`, `tests/isobmffHardening.test.ts`, `tests/schemaHardening.test.ts`)**:
+  - Added 25 new defensive engineering tests across 3 dedicated suites, expanding total test coverage to 609 unit tests across 88 suites (100% green).
+
 ### Workstation-Class Architectural Upgrades (Phase 54)
 - **P2P Co-Draw Guest UI Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`)**:
   - Implemented host-authoritative structural protection. When joining a session as a guest (`peerRole === 'guest'`), layer add, duplicate, merge-down, delete, frame creation, deletion, and timeline drag-and-drop reordering are disabled with clear tooltips and `cursor-not-allowed` styles, preventing guest structural edits from being overwritten by incoming host `STRUCTURE_SYNC` packets.

@@ -1507,6 +1507,59 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npx next build`: Turbopack clean production build across 8 routes
 **Status:** Complete
 
+---
+
+## Phase 55 — Comprehensive Defensive Hardening & Mathematical Invariants (2026-09-12)
+**Delivered:**
+- **Mathematical Viewport Invariants & Line Clipping (`src/lib/safety/mathInvariants.ts`, `src/hooks/viewport/useViewportTransform.ts`)**:
+  - Implemented Cohen-Sutherland 4-bit outcode line clipping (`clipLineToCanvas`) based on Foley et al. (1990) and Newman & Sproull (1973).
+  - Implemented IEEE 754 floating-point invariant guards (`clampZoom`, `safeDivide`) based on Goldberg (1991) and Knuth (1997), immunizing trackpad pinch and mouse wheel zoom against `NaN`, `Infinity`, and division-by-zero singularities.
+- **Safe Canvas Hardware Boundary Clamping (`src/lib/safety/safeCanvas.ts`)**:
+  - Implemented `SafeCanvas.createImageData` and `SafeCanvas.getImageData`, clamping dimensions to positive integers, normalizing negative coordinate drag rectangles, bounding buffer requests against GPU limits (8192px / 16384px), and eliminating browser-crashing `IndexSizeError` exceptions on zero-area selections.
+- **CWE-409 Decompression Bomb & Pixel Bomb Mitigation (`src/lib/safety/imageHeaderProbe.ts`)**:
+  - Implemented zero-dependency pre-flight binary header parser inspecting PNG (IHDR), JPEG (SOF0/SOF2), GIF, and BMP headers in the first 64KB, rejecting malicious decompression bombs ($>8192\text{px}$ or $>67\text{MP}$) BEFORE allocating canvas memory or calling `createImageBitmap`.
+- **CWE-1321 Prototype Pollution Defense & Depth Limiting (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`)**:
+  - Built `safeJsonParse` stripping `__proto__`, `constructor`, and `prototype` keys based on Arteau (2018), enforcing a maximum nesting recursion depth of 32. Hardened project schema asserts explicit ceilings (256 char names, 50 palettes, 100 clips, 500 frames, 100 layers).
+- **Storage Resilience & Quota Exhaustion Recovery (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`)**:
+  - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs and orphaned layer blobs during disk pressure, safeguarding active user project data.
+- **WebRTC Token Bucket Traffic Shaping (`src/lib/sync/p2pSync.ts`)**:
+  - Implemented RFC 2212 Token Bucket rate limiting on peer data and presence channels, shielding client threads against packet floods and CPU starvation.
+- **Automated Hardening Tests (`tests/safetyHardening.test.ts`, `tests/isobmffHardening.test.ts`, `tests/schemaHardening.test.ts`)**:
+  - Added 25 new defensive engineering tests across 3 dedicated suites, expanding total test coverage to 609 unit tests across 88 suites (100% green).
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 609/609 passed across 88 suites (0 regressions)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+- `npx next build`: Turbopack clean production build
+**Status:** Complete
+
+---
+
+## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection (2026-09-12)
+**Delivered:**
+- **Local Quality Gate Runner (`scripts/runQualityGate.mjs`, `package.json`)**:
+  - Built zero-dependency Node.js ESM release gatekeeper that executes 3 sequential validation stages (`npm run gate`) in ~16 seconds:
+    - Stage 1: Documentation Integrity & Sync Invariant Audit (`npm run verify:docs`)
+    - Stage 2: Strict Static Type Safety (`npm run typecheck` - 0 compiler errors)
+    - Stage 3: Comprehensive Unit & Defensive Invariant Test Suite (`npm test` - 609 tests across 88 suites)
+    - Stage 4: Next.js Production Compilation & Bundling (`npm run gate:full`)
+- **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`, `package.json`)**:
+  - Implemented automatic pre-push git hook installation via `npm run prepare` lifecycle script.
+  - Intercepts all `git push` commands locally; if any test, typecheck, or doc verification fails, the push is blocked before leaving the developer workstation.
+- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.gitlab-ci.yml`)**:
+  - Authored comprehensive `CONTRIBUTING.md` documenting zero-dependency architecture, testing standards, and Quality Gate workflows.
+  - Expanded `SECURITY.md` with Section 4 detailing Defense-in-Depth pre-push invariants.
+  - Added drop-in `.gitlab-ci.yml` pipeline configuration for future repository mirroring or self-hosted runners.
+
+**Checks run:**
+- `npm run gate`: ALL 3 STAGES PASSED in 16.30s
+- `git push origin main`: Pre-push hook automatically intercepted, validated invariants, and passed cleanly
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
+
 
 
 

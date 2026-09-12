@@ -543,6 +543,46 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Formats boxes for progressive download Fast-Start playback (`moov` preceding `mdat`) and dynamically back-patches chunk offsets in `stco`.
   - Integrates hardware-accelerated WebCodecs `VideoEncoder` (`avc1.42001f`) with instant off-screen encoding, retaining graceful `MediaRecorder` fallback.
 
+---
+
+## 25. Comprehensive Defensive Hardening & Invariant Architecture
+
+To immunize the client-side graphics workstation against browser anomalies, memory exhaustion, floating-point singularity, and malicious payloads, PixiBun introduces a dedicated, zero-dependency safety substrate (`src/lib/safety/`):
+
+* **Mathematical Viewport Invariants & Line Clipping (`src/lib/safety/mathInvariants.ts`):**
+  - **IEEE 754 Floating-Point Invariants:** Grounded in Goldberg (1991) and Knuth (1997), `clampZoom(zoom, fallback)` sanitizes zoom values against `NaN`, `Infinity`, $\le 0$, and bounds to $[0.05, 64.0]$. `safeDivide(n, d, fallback)` prevents zero-division singularities.
+  - **Cohen-Sutherland 2D Line Clipping (`clipLineToCanvas`):** Formulates 4-bit outcodes (`INSIDE=0`, `LEFT=1`, `RIGHT=2`, `BOTTOM=4`, `TOP=8`) based on Foley et al. (1990) to clip raster line segments to canvas boundaries $[0, w-1] \times [0, h-1]$ prior to pixel traversal.
+* **Safe Canvas Hardware Boundary Clamping (`src/lib/safety/safeCanvas.ts`):**
+  - Defensively wraps `createImageData` and `getImageData`. Enforces positive integer dimensions, clamps selection bounds against hardware GPU limits (8192px / 16384px ceiling), and returns safe empty/padded `ImageData` buffers rather than throwing browser-crashing `IndexSizeError` exceptions on zero-area selections.
+* **CWE-409 Decompression Bomb & Pixel Bomb Mitigation (`src/lib/safety/imageHeaderProbe.ts`):**
+  - Pre-flight parses raw binary file headers (first 64KB) for PNG (`IHDR`), JPEG (`SOF0`/`SOF2`), GIF, and BMP formats. Rejects dimensions $>8192\text{px}$ or pixel areas $>67\text{ MP}$ before memory buffer allocation or `createImageBitmap` invocation.
+* **CWE-1321 Prototype Pollution Defense & Safe JSON Parsing (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`):**
+  - Recursive JSON sanitizer stripping `__proto__`, `constructor`, and `prototype` keys based on Arteau (2018), enforcing a maximum nesting recursion depth of 32. Hardened project schema asserts explicit ceilings (256 char names, 50 palettes, 100 clips, 500 frames, 100 layers).
+* **Storage Resilience & Quota Exhaustion Recovery (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`):**
+  - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs and orphaned layer blobs during disk pressure, safeguarding active user project data.
+* **WebRTC Token Bucket Traffic Shaping (`src/lib/sync/p2pSync.ts`):**
+  - Implements RFC 2212 Token Bucket rate limiting on peer data and presence channels, shielding client threads against packet floods and CPU starvation.
+
+---
+
+## 26. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
+
+To decouple development from cloud CI billing constraints while maintaining uncompromising release standards:
+
+* **Zero-Dependency Local Quality Gate Runner (`scripts/runQualityGate.mjs`):**
+  - Executes a 3-stage sequential validation pipeline via `npm run gate` in ~16 seconds:
+    1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
+    2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
+    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 609 Vitest unit tests across 88 suites.
+    4. **Stage 4 (Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
+* **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
+  - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
+  - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
+* **Open Source Governance & Ready-to-Use GitLab CI:**
+  - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
+  - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
+
+
 
 
 

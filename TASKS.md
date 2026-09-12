@@ -2,6 +2,59 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
+**Goal:** Establish an autonomous, zero-cost, fail-fast local Quality Gate runner (`npm run gate`) and automated Git pre-push hook (`.git/hooks/pre-push`) guaranteeing that 0 broken commits, type errors, test regressions, or documentation drift can leave the developer workstation, bypassing cloud CI billing quotas.
+
+**Evidence & Rationale:**
+- Private Cloud CI Constraints: GitHub Actions billing limits on private repositories can shut off cloud pipelines unexpectedly. An internal, zero-dependency Node.js ESM verification runner executing in ~16s guarantees continuous verification before every remote push.
+- Automated Pre-Push Gatekeeper: By installing a pre-push hook via npm's `prepare` lifecycle, any developer or agent attempting `git push` triggers full documentation checks, static type checks, and 609 Vitest unit tests. If any stage fails, the push is aborted before leaving the workstation.
+- Open Source Governance: Authored `CONTRIBUTING.md` and expanded `SECURITY.md` to formally document our zero-dependency pure TypeScript architecture and defense-in-depth invariants.
+
+**Deliverables:**
+- [x] Local Quality Gate Runner (`scripts/runQualityGate.mjs`, `package.json`): Multi-stage fail-fast verification (`verify:docs`, `typecheck`, `test`, optional `build`).
+- [x] Pre-Push Git Hook (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`): Automated git push interceptor installed via `npm run prepare`.
+- [x] Open Source Guide (`CONTRIBUTING.md`): Contributor guidelines, testing expectations, and Quality Gate manual.
+- [x] Security Policy Hardening (`SECURITY.md`): Section 4 defense-in-depth invariants specification.
+- [x] Drop-in GitLab CI (`.gitlab-ci.yml`): Ready-to-use pipeline configuration for GitLab mirroring.
+
+**Acceptance criteria:**
+- `npm run gate` passes all 3 stages in <20s.
+- `.git/hooks/pre-push` successfully intercepts `git push` and allows only clean commits.
+- `node scripts/verifyDocIntegrity.mjs` passes all checks.
+
+**Status:** Complete (2026-09-12)
+
+---
+
+## Phase 55 — Comprehensive Defensive Hardening & Mathematical Invariants
+**Goal:** Address real-world browser graphics failure modes through comprehensive defensive engineering: Cohen-Sutherland 2D line clipping, IEEE 754 floating-point invariant guards (`clampZoom`, `safeDivide`), safe canvas allocation, pre-flight binary header sniffing against CWE-409 decompression bombs, prototype pollution mitigation (CWE-1321), IndexedDB `QuotaExceededError` resilience, and Token Bucket traffic shaping.
+
+**Evidence & Rationale:**
+- Floating-Point Viewport Singularity: Rapid pinch-zooming on trackpads or extreme wheel deltas can produce `NaN` or `Infinity`, corrupting canvas coordinates and throwing `IndexSizeError` in downstream canvas blits. Clamping zoom to `[0.05, 64.0]` and safeguarding division prevents NaN propagation.
+- Out-of-Bounds Raster Lines: Bresenham lines spanning outside the canvas viewport can trigger out-of-bounds array reads. Cohen-Sutherland 4-bit outcode clipping bounds line segments to valid canvas bounds before rasterization.
+- CWE-409 Decompression Bombs: Malicious image files (e.g. 1 KB compressed PNG claiming $30000\times30000$ pixels) exhaust browser heap memory upon `createImageBitmap`. Pre-flight probing of binary headers rejects oversized images before memory allocation.
+- CWE-1321 Prototype Pollution: Untrusted `.pixibun` project files could inject `__proto__` or `constructor` properties. Defensive JSON parsing strips forbidden keys and bounds nesting depth to 32.
+- Storage Quota Depletion: Local IndexedDB storage under disk pressure throws `QuotaExceededError`. Detecting this exception and non-destructively purging volatile telemetry caches prevents active user project loss.
+- WebRTC Packet Flood: Malicious peers in P2P co-draw sessions could flood data channels. Token Bucket rate limiting throttles sync and presence packets according to RFC 2212.
+
+**Deliverables:**
+- [x] Math Invariants (`src/lib/safety/mathInvariants.ts`): `clampZoom`, `safeDivide`, `normalizeRect`, Cohen-Sutherland `clipLineToCanvas`.
+- [x] Safe Canvas Operations (`src/lib/safety/safeCanvas.ts`): Zero-area selection protection, GPU limit bounds, `IndexSizeError` immunity.
+- [x] Image Header Prober (`src/lib/safety/imageHeaderProbe.ts`): Pre-flight binary sniffer for PNG, JPEG, GIF, BMP preventing CWE-409.
+- [x] Safe JSON Parser (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`): Prototype pollution stripping and depth limiting.
+- [x] Storage Resilience (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`): `QuotaExceededError` detection and volatile cache pruning.
+- [x] Token Bucket Traffic Shaper (`src/lib/sync/p2pSync.ts`): WebRTC packet throttling.
+- [x] Automated Hardening Tests (`tests/safetyHardening.test.ts`, `tests/isobmffHardening.test.ts`, `tests/schemaHardening.test.ts`): 25 new tests, test total reached 609 across 88 suites.
+
+**Acceptance criteria:**
+- All 609 unit tests across 88 suites pass (100% green).
+- `node scripts/verifyDocIntegrity.mjs` passes all checks.
+- 0 TypeScript compiler errors.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 54 — Six Workstation Architectural Upgrades (100% Pure-TypeScript, Zero Dependencies)
 **Goal:** Implement 6 foundational workstation-grade architectural capabilities for PixiBun: P2P guest UI mutation locking to prevent host structure overwrites, an undo/redo engine supporting structural layer and frame mutations, worker offloading for EDT distance transforms and normal map baking via zero-copy Transferable ArrayBuffers, native desktop File System Access API with `Ctrl+S` in-place disk overwriting and Save As picker dialogs, 47-blob autotiling engine with $O(1)$ 256-element bitmask lookup and $3\times3$ reactive updates, and a 100% scratch pure-TypeScript ISOBMFF Fast-Start MP4 container muxer with progressive box ordering (`ftyp`, `moov`, `mdat`).
 
