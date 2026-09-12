@@ -262,6 +262,12 @@ PixiBun is engineered as a local-first web application:
 
 ---
 
+## 🌌 Future Roadmap & v2 Architecture
+
+For an academic deep-dive into the next-generation architecture of PixiBun — exploring WebGPU Compute Shaders (WGSL), WASM 128-bit SIMD, Kleppmann-Beresford Move-Tree CRDTs, Display-P3 wide color gamuts, and Tauri 2.0 desktop packaging — see the comprehensive blueprint in [`V2_VISION.md`](./V2_VISION.md).
+
+---
+
 ## 📜 Craft Values & Open Source
  
 * **Local-First & Zero Telemetry:** No user accounts, no telemetry, no tracking, no subscriptions.

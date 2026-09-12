@@ -50,3 +50,4 @@
 - AI Agent Constraints & Rules → [`SKILL.md`](./SKILL.md)
 - Phased Implementation Plan → [`TASKS.md`](./TASKS.md)
 - Build Logs → [`LOGS.md`](./LOGS.md)
+- v2 Architecture & Strategic Vision → [`V2_VISION.md`](./V2_VISION.md)
