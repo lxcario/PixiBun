@@ -190,7 +190,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
               <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
                 {networkMode === 'internet'
                   ? 'Uses Google STUN for cross-network NAT traversal. Zero canvas pixels ever touch external servers.'
-                  : '100% offline & airgapped. Both peers must share the same local Wi-Fi or hotspot.'}
+                  : 'Fully local & offline-capable. Both peers share the same local Wi-Fi or hotspot with zero STUN egress.'}
               </p>
             </div>
 

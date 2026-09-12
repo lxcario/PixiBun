@@ -1,5 +1,5 @@
 /**
- * Rational Bézier Curves, Isometric 2:1 Lines, and 47-Tile Blob Autotile Bitmasks.
+ * Quadratic Bézier Curves, Isometric 2:1 Lines, and 47-Tile Blob Autotile Bitmasks.
  */
 
 export interface Point {

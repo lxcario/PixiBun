@@ -1,5 +1,32 @@
 # Build Plan — PixiBun
 
+## Phase 52 — Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation
+**Goal:** Address 6 critical findings from external code-diff and documentation audit: establish cross-platform canvas safety bounds (4096 px / 16.7 MP) for high-resolution PNG exports, dynamically disable out-of-bounds scales and isolate export tab scale states, implement a visible persistent storage warning banner with backup export in `StudioLayout`, correct "Rational Bézier" nomenclature to "Quadratic Bézier" across documentation and code, calibrate marketing hyperbole while rigorously preserving legitimate academic and distributed systems terms (CRDT Strong Eventual Consistency, WFC constraints), synchronize package.json version to 1.12.1, and establish an automated CI verification check in `verifyDocIntegrity.mjs` ensuring documentation and package versions never diverge.
+
+**Evidence & Rationale:**
+- 32× Export Canvas Risk: 32× scaling on a 512×512 canvas generates a 16,384×16,384 px canvas requiring ~1 GB raw RGBA buffer memory, exceeding mobile WebKit / iOS Safari hardware limits and causing tab crashes. Calibrating `MAX_SAFE_CANVAS_DIMENSION = 4096` and `MAX_SAFE_CANVAS_PIXELS = 16_777_216` ensures safety across all platforms.
+- Storage Persistence Visibility: Silent `console.warn` left users vulnerable to silent storage eviction under Safari/iOS disk pressure. A visible amber warning banner alerts users and provides an immediate backup export action with session dismissal persistence.
+- Bézier Nomenclature Accuracy: `getQuadraticBezierPoints` evaluates an unweighted degree-2 polynomial de Casteljau formula ($B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2$). Rational Bézier curves by definition require projective weights ($w_i$). Corrected to "Quadratic Bézier Curves".
+- Nuanced Invariant Calibration: Academic terms with strict mathematical meanings (CRDT Strong Eventual Consistency, WFC constraints) must be preserved, while unprovable promotional claims ("100% pure", "100% stable", "completely eliminates") were calibrated.
+- Automated Integrity Protection: Adding Check 6 to `scripts/verifyDocIntegrity.mjs` guarantees `package.json` and `CHANGELOG.md` version parity.
+
+**Deliverables:**
+- [x] Canvas Safety Ceilings & Isolation (`src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`, `tests/exportCanvasScaleBounds.test.ts`): Enforced 4096px / 16.7MP limits; disabled out-of-bounds scales dynamically with tooltips and in-card notices; isolated scale per modal tab.
+- [x] Persistent Storage Eviction Banner (`src/components/layout/StudioLayout.tsx`): Added dismissible amber warning banner with instant "Export Backup" action.
+- [x] Quadratic Bézier Precision (`src/lib/ai/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`, `LOGS.md`): Corrected nomenclature across all files.
+- [x] Codebase Hyperbole Calibration (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/lib/art/playgroundLessons.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/modals/export/ShaderExportTab.tsx`, `src/lib/color/paletteCycling.ts`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/modals/ShortcutsModal.tsx`): Replaced marketing puffery with calibrated technical descriptions.
+- [x] Version Synchronization & Automated Check (`package.json`, `package-lock.json`, `scripts/verifyDocIntegrity.mjs`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`): Bumped to 1.12.1 and added automated check 6.
+
+**Acceptance criteria:**
+- `npx vitest run` passes all 558 tests across 80 suites.
+- `node scripts/verifyDocIntegrity.mjs` passes all 6 checks (0 errors).
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors.
+- `npx next build` compiles cleanly with Turbopack.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 51 — Deep Documentation Truthfulness, Academic Rigor & Marketing De-Escalation
 **Goal:** Eliminate marketing puffery, ungrounded superlatives, over-promoted algorithmic claims, and documentation inaccuracies across the entire repository to achieve true 10/10 documentation truthfulness and academic integrity.
 
@@ -1170,7 +1197,7 @@ The following claims from preliminary inspection were investigated and confirmed
 - [x] Full Photometric Lighting equation with Lambert diffuse, Blinn-Phong specular, cavity AO, and inverse square distance attenuation.
 - [x] 5 Material Presets: *Matte Clay*, *Polished Metal*, *Glossy Glass*, *Velvet Fabric*, *Gold / Brass*.
 - [x] OKLab Perceptual Color Matching ($\Delta E_{\text{OKLab}}$) and recursive Bayer matrix dither offset modulation.
-- [x] Rational Bézier curves, quantized 2:1 isometric lines, RotSprite 8x rotation, and Zhang-Suen 1px skeleton thinning.
+- [x] Quadratic Bézier curves, quantized 2:1 isometric lines, RotSprite 8x rotation, and Zhang-Suen 1px skeleton thinning.
 - [x] Contextual Tool Options Strip (30px high dynamic toolbar beneath header) and categorized artisan Left Toolbar.
 - [x] Live Viewport Normal Map Preview inspection toggle.
 

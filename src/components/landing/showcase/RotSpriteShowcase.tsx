@@ -256,7 +256,7 @@ export const RotSpriteShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Continuous Inverse Rotation</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Maps destination pixels back into the 8x upscaled domain, guaranteeing zero gaps or orphan floating pixels.
+                Maps destination pixels back into the 8x upscaled domain, preventing unwanted gaps and orphan floating pixels.
               </span>
             </div>
           </div>
@@ -266,7 +266,7 @@ export const RotSpriteShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Palette Purity &amp; 1px Conservation</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Never introduces interpolated intermediary shades. Your hand-picked palette remains 100% pure at any angle.
+                Never introduces interpolated intermediary shades. Your hand-picked palette is preserved without color blending at any angle.
               </span>
             </div>
           </div>

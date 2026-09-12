@@ -96,25 +96,63 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     onClose();
   };
 
+  const MAX_SAFE_CANVAS_DIMENSION = 4096;
+  const MAX_SAFE_CANVAS_PIXELS = 16_777_216;
+
+  const handleSelectExportType = (type: ExportType) => {
+    setExportType(type);
+    if (type === 'spritesheet') {
+      setScale((prev) => Math.min(prev, 4));
+    } else if (type === 'gif') {
+      setScale((prev) => Math.min(prev, 8));
+    } else if (type === 'apng' || type === 'webm' || type === 'mp4' || type === 'replay') {
+      setScale((prev) => Math.min(prev, 16));
+    }
+  };
+
   const handleExportPNG = () => {
     const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
     if (!source) return;
 
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = canvasWidth * scale;
-    exportCanvas.height = canvasHeight * scale;
-    const ctx = exportCanvas.getContext('2d');
-    if (!ctx) return;
+    const exportWidth = canvasWidth * scale;
+    const exportHeight = canvasHeight * scale;
 
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(source, 0, 0, exportCanvas.width, exportCanvas.height);
+    if (
+      exportWidth > MAX_SAFE_CANVAS_DIMENSION ||
+      exportHeight > MAX_SAFE_CANVAS_DIMENSION ||
+      exportWidth * exportHeight > MAX_SAFE_CANVAS_PIXELS
+    ) {
+      console.error(
+        `PNG export aborted: requested dimensions ${exportWidth}x${exportHeight} exceed browser safety limit (${MAX_SAFE_CANVAS_DIMENSION}px / 16.7MP).`
+      );
+      return;
+    }
 
-    const dataUrl = exportCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${canvasWidth * scale}x${canvasHeight * scale}.png`;
-    link.href = dataUrl;
-    link.click();
-    onClose();
+    try {
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = exportWidth;
+      exportCanvas.height = exportHeight;
+      const ctx = exportCanvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Failed to acquire 2D rendering context for export.');
+      }
+
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(source, 0, 0, exportCanvas.width, exportCanvas.height);
+
+      const dataUrl = exportCanvas.toDataURL('image/png');
+      if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 64) {
+        throw new Error('toDataURL returned empty or corrupted data.');
+      }
+
+      const link = document.createElement('a');
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${exportWidth}x${exportHeight}.png`;
+      link.href = dataUrl;
+      link.click();
+      onClose();
+    } catch (err) {
+      console.error('PNG export failed:', err);
+    }
   };
 
   const handleExportSpriteSheet = () => {
@@ -134,14 +172,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       }
     }
 
+    const effectiveScale = Math.min(scale, 4);
     const packed = packSpriteSheet(frameCanvases, canvasWidth, canvasHeight, fps, projectName, {
       layout: layoutMode,
-      scale,
+      scale: effectiveScale,
       padding,
     });
 
     const dataUrl = packed.canvas.toDataURL('image/png');
-    const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${scale}x`;
+    const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${effectiveScale}x`;
     const link = document.createElement('a');
     link.download = `${baseFilename}.png`;
     link.href = dataUrl;
@@ -200,11 +239,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       return Math.max(2, Math.round(ms / 10));
     });
 
+    const effectiveScale = Math.min(scale, 8);
     try {
       const blob = await createAnimatedGifBlobAsync(
         frameCanvases,
         fps,
-        scale,
+        effectiveScale,
         (current, total) => {
           setExportProgress({ current, total });
         },
@@ -214,7 +254,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.gif`;
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.gif`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -242,11 +282,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setExportProgress({ current: 0, total: history.length });
 
     const isMp4 = replayFormat === 'mp4';
+    const effectiveScale = Math.min(scale, 8);
     try {
       const blob = isMp4
         ? await exportProcessReplayMp4Async(history, {
             fps: replayFps,
-            scale,
+            scale: effectiveScale,
             holdLastFrameMs,
             onProgress: (current, total) => {
               setExportProgress({ current, total });
@@ -255,7 +296,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           })
         : await exportProcessReplayGifAsync(history, {
             fps: replayFps,
-            scale,
+            scale: effectiveScale,
             holdLastFrameMs,
             onProgress: (current, total) => {
               setExportProgress({ current, total });
@@ -266,7 +307,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       const ext = isMp4 ? 'mp4' : 'gif';
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-timelapse-${scale}x.${ext}`;
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-timelapse-${effectiveScale}x.${ext}`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -304,10 +345,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
+    const effectiveScale = Math.min(scale, 16);
     try {
       const blob = await exportAnimationToApngAsync(frameCanvases, {
         fps,
-        scale,
+        scale: effectiveScale,
         durationsMs,
         loopCount: 0,
         onProgress: (current, total) => {
@@ -318,7 +360,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.png`;
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.png`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -355,11 +397,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
+    const effectiveScale = Math.min(scale, 16);
 
     try {
       const blob = await exportAnimationToMp4Async(frameCanvases, {
         fps,
-        scale,
+        scale: effectiveScale,
         durationsMs,
         loopCount: videoLoopCount,
         onProgress: (current, total) => {
@@ -370,7 +413,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.mp4`;
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.mp4`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -394,13 +437,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     const ctx = source.getContext('2d');
     if (!ctx) return;
 
+    const effectiveScale = Math.min(scale, 32);
     const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-    const result = depixelizeToSvg(imgData, { scale: Math.max(1, scale), smooth: svgSmooth });
+    const result = depixelizeToSvg(imgData, { scale: Math.max(1, effectiveScale), smooth: svgSmooth });
 
     const blob = new Blob([result.svgString], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-vector-${scale}x.svg`;
+    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-vector-${effectiveScale}x.svg`;
     link.href = url;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -427,11 +471,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
+    const effectiveScale = Math.min(scale, 16);
 
     try {
       const blob = await exportAnimationToWebmAsync(frameCanvases, {
         fps,
-        scale,
+        scale: effectiveScale,
         durationsMs,
         loopCount: videoLoopCount,
         onProgress: (current, total) => {
@@ -442,7 +487,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${scale}x.webm`;
+      link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.webm`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -514,10 +559,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       );
 
       if (cycleLoopFormat === 'apng') {
+        const effectiveScale = Math.min(scale, 16);
         const delays = frameCanvases.map(() => 1000 / loopFps);
         const apngBlob = await exportAnimationToApngAsync(frameCanvases, {
           fps: loopFps,
-          scale,
+          scale: effectiveScale,
           durationsMs: delays,
           loopCount: 0,
           onProgress: (current: number, total: number) => {
@@ -526,16 +572,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         });
         const url = URL.createObjectURL(apngBlob);
         const link = document.createElement('a');
-        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.png`;
+        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${effectiveScale}x.png`;
         link.href = url;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       } else {
+        const effectiveScale = Math.min(scale, 8);
         const delays = frameCanvases.map(() => Math.max(2, Math.round((1000 / loopFps) / 10)));
         const gifBlob = await createAnimatedGifBlobAsync(
           frameCanvases,
           loopFps,
-          scale,
+          effectiveScale,
           (current: number, total: number) => {
             setExportProgress({ current, total });
           },
@@ -544,7 +591,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         );
         const url = URL.createObjectURL(gifBlob);
         const link = document.createElement('a');
-        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${scale}x.gif`;
+        link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${effectiveScale}x.gif`;
         link.href = url;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -565,7 +612,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       {/* Format Selector Tabs */}
       <ExportTabsNav
         exportType={exportType}
-        onSelectType={setExportType}
+        onSelectType={handleSelectExportType}
         isExporting={isExporting}
       />
 

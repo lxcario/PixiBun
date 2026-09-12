@@ -5,7 +5,7 @@ import type { DiagnosticEntry, DiagnosticsSettings } from '@/types/diagnostics';
 const SETTINGS_KEY = 'pixibun-diagnostics';
 const MAX_DIAGNOSTICS_ENTRIES = 200;
 const MAX_DETAIL_LENGTH = 2048;
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.12.1';
 
 let memorySettings: DiagnosticsSettings = { enabled: true, relayOptIn: false };
 

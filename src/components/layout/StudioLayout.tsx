@@ -76,6 +76,7 @@ export const StudioLayout: React.FC = () => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const autosaveTimerRef = useRef<number | null>(null);
@@ -249,10 +250,23 @@ export const StudioLayout: React.FC = () => {
   // Restore the last session on mount and request persistent storage.
   useEffect(() => {
     void requestPersistentStorage().then((persisted) => {
-      if (!persisted && typeof navigator !== 'undefined' && navigator.storage) {
-        console.warn(
-          'Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure.'
-        );
+      if (!persisted) {
+        if (typeof navigator !== 'undefined' && navigator.storage) {
+          console.warn(
+            'Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure.'
+          );
+        }
+        let dismissed = false;
+        try {
+          dismissed = typeof window !== 'undefined' && sessionStorage.getItem('pixibun:storage-dismissed') === '1';
+        } catch {
+          // sessionStorage may be blocked in strict privacy modes
+        }
+        if (!dismissed) {
+          setStorageWarning(
+            'Persistent storage not granted: artwork is saved in IndexedDB but may be evicted by the browser under disk pressure (common on iOS / Safari). Please export backups regularly.'
+          );
+        }
       }
     });
 
@@ -713,7 +727,42 @@ export const StudioLayout: React.FC = () => {
         canRedo={canRedo}
       />
 
-      {/* Persistent Storage Warning Banner */}
+      {/* Persistent Storage Eviction Warning Banner */}
+      {storageWarning && !autosaveError && (
+        <div className="bg-[#f0be7c]/20 border-b-2 border-[#f0be7c] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#f0be7c] z-30 shadow-md transition-all">
+          <div className="flex items-center gap-2">
+            <PixelIcon name="warning" size={14} />
+            <span>{storageWarning}</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={() => setIsExportOpen(true)}
+              title="Open Export Dialog"
+              className="text-xs px-2.5 py-1 bg-[#f0be7c] hover:bg-[#ffd699] text-[#140d1f] font-bold border border-[#8c5120]"
+            >
+              Export Backup
+            </TactileButton>
+            <button
+              onClick={() => {
+                setStorageWarning(null);
+                try {
+                  sessionStorage.setItem('pixibun:storage-dismissed', '1');
+                } catch {
+                  // sessionStorage may be blocked in strict privacy modes
+                }
+              }}
+              className="px-2 py-1 text-xs text-[#f0be7c] hover:text-[#fff] transition-colors cursor-pointer"
+              title="Dismiss warning"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Autosave Disk Write Error Banner */}
       {autosaveError && (
         <div className="bg-[#eb5a66]/20 border-b-2 border-[#eb5a66] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#ffb4b9] z-30 shadow-md transition-all">
           <div className="flex items-center gap-2">

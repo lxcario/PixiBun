@@ -78,3 +78,32 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 
 > **Conclusion:** Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$, consuming $\approx 2.0\%$ of the 16.66ms 60 FPS frame budget. Continuous interactive transform preview comfortably satisfies the 60 FPS target, validated against automated regression budgets in CI.
 
+---
+
+## 5. Export Memory Budgets & Canvas Safety Bounds
+
+**Components:** `ExportModal.tsx`, `PngExportTab.tsx`  
+**Max Safe Single-Axis Dimension:** $4,096\text{ px}$ (`MAX_SAFE_CANVAS_DIMENSION`)  
+**Max Safe Pixel Area:** $16,777,216\text{ pixels}$ (`MAX_SAFE_CANVAS_PIXELS`)  
+**Target Invariant:** Guard browser tab stability, prevent OOM heap exhaustion, and eliminate iOS Safari / WebKit canvas allocation crashes.
+
+Raw uncompressed 32-bit RGBA pixel buffers allocated during scale transformations scale quadratically with respect to dimension:
+$$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \times \text{scale}) \times 4\text{ bytes}$$
+
+### Memory Footprint & Safety Evaluation
+
+| Sprite Canvas | Scale Factor | Output Dimensions | Total Pixels | Raw 32-Bit Buffer | Status | Bound Evaluation |
+|---|---|---|---|---|---|---|
+| **16 × 16** | 32× | 512 × 512 | 262,144 | $1.05\text{ MB}$ | **Allowed** | Within bounds |
+| **32 × 32** | 32× | 1,024 × 1,024 | 1,048,576 | $4.19\text{ MB}$ | **Allowed** | Within bounds |
+| **64 × 64** | 32× | 2,048 × 2,048 | 4,194,304 | $16.78\text{ MB}$ | **Allowed** | Within bounds |
+| **128 × 128** | 32× | 4,096 × 4,096 | 16,777,216 | $67.11\text{ MB}$ | **Allowed** | Exact safety boundary ($4096\text{px}$) |
+| **256 × 256** | 16× | 4,096 × 4,096 | 16,777,216 | $67.11\text{ MB}$ | **Allowed** | Exact safety boundary ($4096\text{px}$) |
+| **256 × 256** | 32× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
+| **512 × 512** | 8× | 4,096 × 4,096 | 16,777,216 | $67.11\text{ MB}$ | **Allowed** | Exact safety boundary ($4096\text{px}$) |
+| **512 × 512** | 16× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
+| **512 × 512** | 32× | 16,384 × 16,384 | 268,435,456 | **$1.07\text{ GB}$** | **Blocked** | Severe memory risk; iOS Safari tab crash |
+
+> **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, peak transient export allocations are constrained to $\le 67.11\text{ MB}$, completely preventing 1 GB allocation spikes and guaranteeing cross-platform export stability across mobile and desktop browsers.
+
+

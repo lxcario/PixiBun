@@ -200,7 +200,7 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
   - Inverse square distance attenuation ($\text{Atten}(d) = \text{clamp}(1 - (d/r)^2, 0, 1)^2$).
   - 5 Physical Material Presets (*Matte Clay*, *Polished Metal*, *Glossy Glass*, *Velvet Fabric*, *Gold / Brass*).
 - **OKLab Perceptual Matching & Bayer Dither Offset Modulation**: Exact sRGB $\leftrightarrow$ Linear $\leftrightarrow$ LMS $\leftrightarrow$ OKLab ($L, a, b$) conversions with $\Delta E_{\text{OKLab}}$ distance matching and Bayer threshold offset modulation to eliminate dirty pixel artifacts.
-- **Geometric Pixel Math Suite**: Quantized 2:1 isometric lines, rational quadratic Bézier curves, 47-Tile Blob autotiling bitmask utility (`calculate47TileBitmask()` — pure computation; tile-placement requires a tileset atlas feature that is not yet shipped), RotSprite 8x Scale2X rotation, and Zhang-Suen 1px skeleton line thinning.
+- **Geometric Pixel Math Suite**: Quantized 2:1 isometric lines, quadratic Bézier curves, 47-Tile Blob autotiling bitmask utility (`calculate47TileBitmask()` — pure computation; tile-placement requires a tileset atlas feature that is not yet shipped), RotSprite 8x Scale2X rotation, and Zhang-Suen 1px skeleton line thinning.
 - **Contextual Tool Options Strip**: 30px dynamic toolbar beneath TopHeader displaying active tool controls.
 - **Artisan Left Toolbar**: 56px rail with 4 categorized groups, dual overlapping tactile color wells with swap/reset, and 8-color quick palette dock.
 - **Interactive Right Inspector PixiBud Studio**: Upgraded 3 tabs with comprehensive 2.5D Photometric Studio Lab, Material selector, and normal map baking actions.
@@ -1406,4 +1406,34 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all documentation integrity checks passed
 - `npx next build`: Turbopack clean production build across 7 routes
 **Status:** Complete
+
+---
+
+## 2026-09-12 — Phase 52: Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation
+
+**Changes:**
+- **Export Canvas Safety Bounds & Scale Tab Isolation (`src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`, `tests/exportCanvasScaleBounds.test.ts`)**:
+  - Established cross-platform hardware safety bounds (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`) based on mobile WebKit / iOS Safari canvas allocation limits.
+  - Dynamically disabled out-of-bounds scale options in `PngExportTab` (e.g. 16× and 32× on 512×512 canvases) to prevent tab crashes and 1 GB raw memory buffer allocations. Added explanatory in-card warning.
+  - Isolated and clamped `scale` across export modal tabs (GIF max 8×, Spritesheet max 4×, APNG/MP4 max 16×, PNG/SVG max 32× subject to canvas bounds) so high PNG scaling does not bleed into animation encoders.
+  - Added unit test suite in `tests/exportCanvasScaleBounds.test.ts` verifying safe dimension and pixel area evaluation across all canvas sizes.
+- **Persistent Storage Eviction Warning Banner (`src/components/layout/StudioLayout.tsx`)**:
+  - Added a visible, non-blocking, dismissible warning banner when `requestPersistentStorage()` is denied or not granted by the browser.
+  - Warns users that local IndexedDB storage may be evicted under disk pressure (common on iOS/Safari) and provides a direct "Export Backup" action with session dismissal persistence.
+- **Quadratic Bézier Precision Nomenclature (`src/lib/ai/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`, `LOGS.md`)**:
+  - Corrected misnamed "Rational Bézier" references to "Quadratic Bézier", accurately reflecting the unweighted degree-2 polynomial de Casteljau formula implemented in source code ($B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2$).
+- **Codebase Hyperbole Calibration (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/lib/art/playgroundLessons.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/modals/export/ShaderExportTab.tsx`, `src/lib/color/paletteCycling.ts`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/modals/ShortcutsModal.tsx`)**:
+  - Calibrated promotional UI text and comments removing unprovable assertions ("100% stable", "completely eliminates", "guaranteeing zero gaps", "100% pure") while intentionally preserving legitimate academic and distributed systems terms (CRDT Strong Eventual Consistency, WFC constraints).
+- **Automated Version & Documentation Synchronization (`package.json`, `package-lock.json`, `scripts/verifyDocIntegrity.mjs`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
+  - Synchronized `package.json`, `package-lock.json`, `capture.ts`, and test fixtures to `1.12.1`.
+  - Added Check 6 to `scripts/verifyDocIntegrity.mjs` asserting that `package.json` version matches the latest release header in `CHANGELOG.md`.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 558/558 passed across 80 suites (0 regressions)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 documentation integrity checks passed
+- `npx next build`: Turbopack clean production build across 8 routes
+**Status:** Complete
+
 

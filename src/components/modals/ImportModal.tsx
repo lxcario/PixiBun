@@ -344,7 +344,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                             Match Image Size ({srcW}×{srcH} px)
                           </span>
                           <span className="text-[9px] text-[#a89ab8]">
-                            Keeps 100% exact 1:1 original pixels (Recommended for skins, sprites, textures)
+                            Keeps exact 1:1 original pixels (Recommended for skins, sprites, textures)
                           </span>
                         </div>
                       </label>

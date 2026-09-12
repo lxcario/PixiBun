@@ -142,7 +142,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
           {showDiagnostics && (
             <div className="mt-2 p-3 bg-[var(--desk-surface)] rounded-[3px] border border-[var(--desk-border)] flex flex-col gap-2.5 text-xs font-mono text-[var(--text-heading)]">
               <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                PixiBun honors a strict <strong className="text-[#f0be7c]">zero-telemetry guarantee</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting.
+                PixiBun honors a strict <strong className="text-[#f0be7c]">zero-telemetry policy</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting.
               </p>
 
               <label className="flex items-center gap-2 cursor-pointer text-[11px]">

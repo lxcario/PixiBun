@@ -3,6 +3,23 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.12.1] - 2026-09-12
+### Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation (Phase 52)
+- **Export Canvas Safety Bounds & Scale Tab Isolation (`src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`, `tests/exportCanvasScaleBounds.test.ts`)**:
+  - Established cross-platform hardware safety bounds (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`) based on mobile WebKit / iOS Safari canvas allocation limits.
+  - Dynamically disabled out-of-bounds scale options in `PngExportTab` (e.g. 16× and 32× on 512×512 canvases) to prevent tab crashes and 1 GB raw memory buffer allocations.
+  - Isolated and clamped `scale` across export modal tabs (GIF max 8×, Spritesheet max 4×, APNG/MP4 max 16×, PNG/SVG max 32× subject to canvas bounds) so high PNG scaling does not bleed into animation encoders.
+  - Added unit test suite in `tests/exportCanvasScaleBounds.test.ts` verifying safe dimension and pixel area evaluation across all canvas sizes.
+- **Persistent Storage Eviction Warning Banner (`src/components/layout/StudioLayout.tsx`)**:
+  - Added a visible, non-blocking, dismissible warning banner when `requestPersistentStorage()` is denied or not granted by the browser.
+  - Warns users that local IndexedDB storage may be evicted under disk pressure (common on iOS/Safari) and provides a direct "Export Backup" action with session dismissal persistence.
+- **Quadratic Bézier Precision Nomenclature (`src/lib/ai/math/curvesAndLines.ts`, `PIXIBUN_DEEP_DIVE.md`, `README.md`, `MAIN.md`)**:
+  - Corrected misnamed "Rational Bézier" references to "Quadratic Bézier", accurately reflecting the unweighted degree-2 polynomial de Casteljau formula implemented in source code ($B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2$).
+- **Codebase Hyperbole Calibration (`src/components/landing/showcase/RotSpriteShowcase.tsx`, `src/lib/art/playgroundLessons.ts`, `src/lib/audio/lofiRadio.ts`, `src/components/modals/export/ShaderExportTab.tsx`, `src/lib/color/paletteCycling.ts`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/CoDrawModal.tsx`, `src/components/modals/ShortcutsModal.tsx`)**:
+  - Calibrated promotional UI text and comments removing unprovable assertions ("100% stable", "completely eliminates", "guaranteeing zero gaps", "100% pure") while intentionally preserving legitimate academic and distributed systems terms (CRDT Strong Eventual Consistency, WFC constraints).
+- **Automated Version & Documentation Synchronization (`package.json`, `package-lock.json`, `scripts/verifyDocIntegrity.mjs`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
+  - Synchronized `package.json`, `package-lock.json`, `capture.ts`, and test fixtures to `1.12.1`.
+  - Added Check 6 to `scripts/verifyDocIntegrity.mjs` asserting that `package.json` version matches the latest release header in `CHANGELOG.md`.
+
 ### Documentation Truthfulness, Academic Rigor & Tone De-Escalation (Phase 51)
 - **Marketing Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`)**: Softened marketing puffery, absolute guarantees, and hyperbolic adjectives across all documentation, replacing them with modest, academically precise technical descriptions.
 - **RotSprite Claims Calibration (`README.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`, `LOGS.md`)**: Replaced over-reaching phrases ("completely eliminated 45° distortion", "micro-details never vanish", "100% leak-proof") with accurate descriptions of Xenowhirl's 8x Scale2x cascade, subpixel continuous inverse sampling, and parabolic majority voting reducing distortion and outline erosion while preserving palette purity.

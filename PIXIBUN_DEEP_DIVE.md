@@ -32,7 +32,7 @@ src/
 ├── lib/
 │   ├── ai/
 │   │   ├── math/                    # Modular graphics math laboratory
-│   │   │   ├── curvesAndLines.ts    # Rational quadratic Bézier curves and 2:1 isometric line stepping
+│   │   │   ├── curvesAndLines.ts    # Quadratic Bézier curves and 2:1 isometric line stepping
 │   │   │   ├── morphology.ts        # Zhang-Suen 1px topological skeleton thinning
 │   │   │   ├── edtNormalMap.ts      # O(N) EDT, dome inflation, content-aware heightmaps, frontal cushion
 │   │   │   ├── photometricLighting.ts# Blinn-Phong lighting, feature protection, stepped OKLCH cel-shading
@@ -122,7 +122,7 @@ For standard $26.565^\circ$ ($\arctan(0.5)$ dimetric) isometric projections:
 
 y_{\text{iso}} = y_0 + \text{sign}(dy) \cdot \left\lfloor \frac{|x - x_0|}{2} \right\rfloor
 
-### 3. Rational Bezier Curves (`getQuadraticBezierPoints`)
+### 3. Quadratic Bézier Curves (`getQuadraticBezierPoints`)
 Calculates integer de Casteljau curves across 3 control points ($P_0, P_1, P_2$):
 
 B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]

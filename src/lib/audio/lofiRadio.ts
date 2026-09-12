@@ -299,7 +299,7 @@ class ProceduralSoundEngine implements SynthVoiceController {
   /**
    * Expressive Toby Fox Wooden Flute / Whistle (Cozy Deltarune Lead Voice).
    * Warm, mellow sine + soft triangle with lowpass warmth, delayed expressive vibrato,
-   * and lush reverb wash. Completely eliminates harsh square buzz or grating frequencies.
+   * and lush reverb wash. Attenuates harsh square harmonics and grating frequencies.
    */
   public playFlute(time: number, freq: number, duration: number, gainLevel = 0.095, vibrato = true) {
     if (!this.ctx || !this.masterGain) return;

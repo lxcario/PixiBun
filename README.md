@@ -31,11 +31,11 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 ```mermaid
 graph LR
     subgraph Atelier ["🐇 PixiBun Studio"]
-        Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Rational Bézier Splines"]
+        Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
         Math["☀️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
         Anim["🎬 Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
         Import["🖼️ Smart Import & Pixelize<br/>• Sobel Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
-        Export["📦 Export Pipeline<br/>• 1x–32x Lossless PNG<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
+        Export["📦 Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
     end
 ```
 
@@ -52,7 +52,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
 * **Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° ($\arctan 0.5$ dimetric) isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
 * **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
-* **Rational Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
+* **Quadratic Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
 * **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with unsigned 32-bit bitwise normalization and adjustable tolerance.
 * **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
 * **Canvas Brush Ghost Cursor & Zoom Ergonomics:** Non-destructive 1px footprint bounding box matching brush size at $\ge 400\%$ zoom, with `Ctrl + + / - / 0 / 1` integer keyboard navigation.
@@ -133,7 +133,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 ### 📦 Game-Ready Export Pipeline
 * **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
 * **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag, featuring cancellation via `AbortController` and a live progress bar.
-* **Lossless PNG:** Integer scaling from $1\times$ to $32\times$ with crisp nearest-neighbor sampling.
+* **Lossless PNG:** Integer scaling from $1\times$ up to $32\times$ with crisp nearest-neighbor sampling (available up to the universal $4096\text{px}$ / $16.7\text{ MP}$ browser safety ceiling; up to $32\times$ for sprites $\le 128\times128$, with higher scales dynamically disabled on larger canvases to prevent browser allocation crashes).
 * **APNG Animated PNG:** Lossless full 24-bit RGB + 8-bit alpha animated sequences with configurable loop iteration control (zero-dependency uncompressed deflate store-block streaming for instant client-side rendering).
 * **MP4 & WebM Video:** Hardware-accelerated canvas video encoding with automated even-dimension macroblock padding (WebM with VP8/VP9; MP4 recording via H.264 MediaRecorder where supported by the browser platform, with WebM fallback).
 * **Timelapse Speedpaint Recorder:** Step-by-step canvas history replay exported to animated GIF or video.
@@ -174,7 +174,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 | Key | Tool / Action |
 |---|---|
 | <kbd>B</kbd> | **Pen** Tool (Pixel-Perfect) |
-| <kbd>C</kbd> | **Rational Bézier Curve** Tool |
+| <kbd>C</kbd> | **Quadratic Bézier Curve** Tool |
 | <kbd>E</kbd> | **Eraser** Tool |
 | <kbd>G</kbd> | **Flood Fill / Bucket** |
 | <kbd>D</kbd> | **Dither Brush** |
@@ -239,7 +239,7 @@ PixiBun is engineered as a local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 554 unit and integration tests across 79 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 558 unit and integration tests across 80 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -258,7 +258,7 @@ PixiBun is engineered as a local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 554 unit and integration tests across 79 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 558 unit and integration tests across 80 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

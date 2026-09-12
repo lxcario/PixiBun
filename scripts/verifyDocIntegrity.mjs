@@ -6,6 +6,7 @@
  * 3. Asserts all local filepaths cited in CHANGELOG.md exist on disk.
  * 4. Asserts line-count claims in CHANGELOG.md match measured file lengths.
  * 5. Asserts test count and suite claims in README.md match live Vitest and Playwright test suites.
+ * 6. Asserts package.json version matches the latest release version in CHANGELOG.md.
  */
 
 import { execSync } from 'node:child_process';
@@ -219,6 +220,34 @@ if (fs.existsSync(readmePath)) {
   }
 } else {
   reportError('README.md not found');
+}
+
+// -----------------------------------------------------------------------------
+// 6. Verify package.json Version Synchronized with CHANGELOG.md
+// -----------------------------------------------------------------------------
+const packageJsonPath = path.join(rootDir, 'package.json');
+if (fs.existsSync(packageJsonPath) && fs.existsSync(changelogPath)) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const changelogContent = fs.readFileSync(changelogPath, 'utf8');
+    const versionMatch = changelogContent.match(/^##\s+\[v?(\d+\.\d+\.\d+)\]/m);
+    if (!versionMatch) {
+      reportError('Could not find latest version release header in CHANGELOG.md (expected "## [vX.Y.Z]")');
+    } else {
+      const changelogVersion = versionMatch[1];
+      if (pkg.version !== changelogVersion) {
+        reportError(
+          `Version mismatch: package.json has version "${pkg.version}", but latest CHANGELOG.md entry specifies "${changelogVersion}"!`
+        );
+      } else {
+        reportPass(`package.json version synchronized with latest CHANGELOG.md release (v${pkg.version})`);
+      }
+    }
+  } catch (err) {
+    reportError(`Failed to verify package.json version: ${err.message}`);
+  }
+} else {
+  reportError('package.json or CHANGELOG.md not found');
 }
 
 // -----------------------------------------------------------------------------

@@ -105,7 +105,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
         {exportType === 'gif' && 'Animated GIF with crisp nearest-neighbor integer scaling.'}
         {exportType === 'apng' &&
-          'Animated PNG (APNG) retains 100% full 24-bit/32-bit RGBA color without GIF palette degradation. Encoded with uncompressed DEFLATE store blocks for instant offline generation.'}
+          'Animated PNG (APNG) retains full 24-bit/32-bit RGBA color without GIF palette degradation. Encoded with uncompressed DEFLATE store blocks for instant offline generation.'}
         {exportType === 'webm' &&
           'Encodes animation with exact per-frame millisecond holds for high-quality game dev video showcases and social sharing.'}
         {exportType === 'mp4' &&
