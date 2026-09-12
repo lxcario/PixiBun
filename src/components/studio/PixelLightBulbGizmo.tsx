@@ -326,13 +326,20 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     }
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    // Allow adjusting strength with mouse wheel scroll over gizmo
-    e.preventDefault();
-    e.stopPropagation();
-    const delta = e.deltaY < 0 ? 0.10 : -0.10;
-    adjustStrength(delta);
-  };
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onNativeWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.deltaY < 0 ? 0.10 : -0.10;
+      adjustStrength(delta);
+    };
+    el.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onNativeWheel);
+    };
+  }, [adjustStrength]);
 
   return (
     <div
@@ -344,7 +351,6 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onWheel={handleWheel}
     >
       {/* Floating Viewport HUD Bar (positioned below bottom canvas edge) */}
       <div

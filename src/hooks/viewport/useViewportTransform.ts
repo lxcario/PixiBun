@@ -62,7 +62,7 @@ export function useViewportTransform({
 
   // Wheel Handler: Mouse Wheel / Ctrl+Wheel = Zoom to cursor; Shift+Wheel = Pan Horizontally
   const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+    (e: React.WheelEvent | WheelEvent) => {
       // Intercept wheel when photometric lighting gizmo is active and route to bulb strength
       const { photometricGizmoActive } = useStudioStore.getState();
       if (photometricGizmoActive) {

@@ -200,7 +200,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const renderComposite = useCallback(() => {
     const mainCanvas = mainCanvasRef.current;
     if (!mainCanvas) return;
-    const ctx = mainCanvas.getContext('2d');
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -524,6 +524,19 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     }
   };
 
+  // Native non-passive wheel listener to allow smooth zoom preventDefault without Chrome passive warnings
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onNativeWheel = (e: WheelEvent) => {
+      handleWheel(e);
+    };
+    el.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onNativeWheel);
+    };
+  }, [handleWheel]);
+
   const stageWidth = (canvasWidth * zoom) / 100;
   const stageHeight = (canvasHeight * zoom) / 100;
 
@@ -534,7 +547,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       tabIndex={-1}
       aria-label="Pixel art canvas workspace"
       className="relative flex-1 h-full w-full overflow-hidden bg-dot-grid flex items-center justify-center select-none outline-none"
-      onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
