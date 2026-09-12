@@ -3,6 +3,7 @@ import { Layer, AnimationFrame } from '@/types/canvas';
 import { AnimationClip } from '@/types/animation';
 import { createId } from '@/lib/engine/id';
 import { cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 const initialLayerId = 'layer-1';
 const initialFrameId = 'frame-1';
@@ -51,6 +52,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   activeClipId: null,
 
   addFrame: () => {
+    pushStructuralHistoryStep('Kare Eklendi');
     set(state => {
       const newFrameId = createId('frame');
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -86,6 +88,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   duplicateFrame: frameIndex => {
+    pushStructuralHistoryStep('Kare Çoğaltıldı');
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
@@ -116,6 +119,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   deleteFrame: frameIndex => {
+    pushStructuralHistoryStep('Kare Silindi');
     set(state => {
       if (state.frames.length <= 1) return;
       // Bounds guard: an out-of-range index would crash on removedFrame.layers
@@ -138,6 +142,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   reorderFrames: (startIndex, endIndex) => {
+    pushStructuralHistoryStep('Kareler Yeniden Sıralandı');
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
       if (

@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BlendMode } from '@/types/canvas';
 
 export const LayersPanel: React.FC = () => {
+  const { isGuest } = useCoDrawStatus();
+  const guestLockTitle = 'Katman yapısı oturum sahibi (Host) tarafından yönetilmektedir.';
   const {
     frames,
     activeFrameIndex,
@@ -73,29 +76,36 @@ export const LayersPanel: React.FC = () => {
           <TactileButton
             size="icon-sm"
             variant="default"
+            disabled={isGuest}
             onClick={() => addLayer()}
-            title="Add New Layer"
-            className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            title={isGuest ? guestLockTitle : 'Add New Layer'}
+            className={`w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] ${
+              isGuest ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
           >
             <PixelIcon name="plus" size={14} />
           </TactileButton>
           <TactileButton
             size="icon-sm"
             variant="default"
-            disabled={!activeLayer}
+            disabled={!activeLayer || isGuest}
             onClick={() => activeLayer && duplicateLayer(activeLayer.id)}
-            title="Duplicate Layer"
-            className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            title={isGuest ? guestLockTitle : 'Duplicate Layer'}
+            className={`w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] ${
+              isGuest ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
           >
             <PixelIcon name="copy" size={14} />
           </TactileButton>
           <TactileButton
             size="icon-sm"
             variant="default"
-            disabled={!activeLayer || !isMergeDownAvailable}
+            disabled={!activeLayer || !isMergeDownAvailable || isGuest}
             onClick={() => activeLayer && requestMergeDown(activeLayer.id)}
             title={
-              mergeConfirmLayerId === activeLayer?.id
+              isGuest
+                ? guestLockTitle
+                : mergeConfirmLayerId === activeLayer?.id
                 ? 'Click again to confirm merge (irreversible)'
                 : 'Merge Down (irreversible)'
             }
@@ -103,17 +113,19 @@ export const LayersPanel: React.FC = () => {
               mergeConfirmLayerId && mergeConfirmLayerId === activeLayer?.id
                 ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
                 : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
-            }`}
+            } ${isGuest ? 'opacity-40 cursor-not-allowed' : ''}`}
           >
             <PixelIcon name="merge-down" size={14} />
           </TactileButton>
           <TactileButton
             size="icon-sm"
             variant="danger"
-            disabled={!currentFrame || currentFrame.layers.length <= 1}
+            disabled={!currentFrame || currentFrame.layers.length <= 1 || isGuest}
             onClick={() => activeLayer && deleteLayer(activeLayer.id)}
-            title="Delete Layer"
-            className="w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33]"
+            title={isGuest ? guestLockTitle : 'Delete Layer'}
+            className={`w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33] ${
+              isGuest ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
           >
             <PixelIcon name="trash" size={14} />
           </TactileButton>
@@ -164,7 +176,7 @@ export const LayersPanel: React.FC = () => {
       <div className="flex-1 overflow-y-auto flex flex-col gap-1.5 pr-1">
         {currentFrame?.layers.map((layer, index) => {
           const isActive = layer.id === activeLayerId;
-          const canMergeDown = index < (currentFrame?.layers.length || 0) - 1;
+          const canMergeDown = !isGuest && index < (currentFrame?.layers.length || 0) - 1;
           return (
             <div
               key={layer.id}

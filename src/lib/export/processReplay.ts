@@ -31,7 +31,7 @@ export function convertHistoryToRawFrames(
   const rawFrames: RawFrameData[] = [];
 
   for (const step of steps) {
-    if (!step.imageData) continue;
+    if (step.type === 'structural' || !step.imageData) continue;
     const srcW = step.imageData.width;
     const srcH = step.imageData.height;
     const srcData = step.imageData.data;
@@ -82,7 +82,7 @@ export function convertHistoryToCanvases(steps: readonly HistoryStep[]): HTMLCan
   const canvases: HTMLCanvasElement[] = [];
 
   for (const step of steps) {
-    if (!step.imageData) continue;
+    if (step.type === 'structural' || !step.imageData) continue;
     const canvas = document.createElement('canvas');
     canvas.width = step.imageData.width;
     canvas.height = step.imageData.height;

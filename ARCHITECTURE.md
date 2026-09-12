@@ -514,6 +514,36 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Zero-copy data passing via Transferable `ArrayBuffer` objects for input and output pixel buffers.
   - Fault-tolerant graceful degradation: `workerDispatcher` automatically detects Worker and OffscreenCanvas support; in environments where Workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks seamlessly fall back to synchronous execution on the main thread.
 
+---
+
+## 24. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)
+
+* **P2P Co-Draw Guest UI Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`):**
+  - Establishes host-authoritative structural protection across WebRTC peer connections.
+  - When connected as a guest (`peerRole === 'guest'`), layer creation, duplication, merge-down, deletion, frame creation, deletion, and timeline drag-and-drop reordering are disabled (`opacity-40 cursor-not-allowed`) with informative tooltips.
+  - Guarantees predictable UX by preventing guest structural edits from being silently overwritten on the next host `STRUCTURE_SYNC` push.
+* **Undo / Redo Structural Command Pattern (`src/types/canvas.ts`, `src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`):**
+  - Upgrades `HistoryEngine` to a hybrid Command Pattern (`HistoryStep = PixelHistoryStep | StructuralHistoryStep`).
+  - Destructive structural operations (layer additions, deletions, reorderings, merge-downs, frame insertions, frame deletions) record a `StructuralHistoryStep` containing full multi-frame layer hierarchies and byte-accurate raster pixel backups (`LayerBufferBackup`).
+  - Restores both layer/frame structures and layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
+* **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/ai/math/edtNormalMap.ts`):**
+  - Offloads CPU-intensive 2D Euclidean Distance Transform, bilateral Gaussian smoothing, and Sobel normal field baking to `heavyCompute.worker.ts`.
+  - Uses zero-copy Transferable ArrayBuffers with defensive buffer slicing (`.slice(0)`) on the outgoing main-thread snapshot to prevent live canvas detachment.
+  - Retains synchronous fallback in `runEdtNormalMapInWorker` for headless environments.
+* **Native Desktop File System Access API (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`):**
+  - Integrates W3C File System Access API (`window.showSaveFilePicker`, `window.showOpenFilePicker`, `FileSystemFileHandle`).
+  - Binds `Ctrl+S` to instantaneous in-place disk overwriting without file picker prompts once a file handle is active, and `Ctrl+Shift+S` to explicit Save As dialogs.
+  - Provides seamless fallback to browser anchor downloads (`<a download>`) and file inputs in unsupported browsers.
+* **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`):**
+  - Implements canonical 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into 47 Wang/Blob equivalence classes.
+  - Utilizes a precomputed $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX: Uint8Array`) and a reactive $3\times3$ Chebyshev dirty neighborhood updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
+  - Includes a zero-dependency procedural 47-tile pixel renderer for instant terrain, wall, and platform synthesis.
+* **Pure-TypeScript ISOBMFF Fast-Start MP4 Container Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`):**
+  - Pure-TS ISO Base Media File Format container writer (`ftyp`, `moov`, `mdat`) eliminating reliance on non-standard browser `MediaRecorder` H.264 implementations.
+  - Formats boxes for progressive download Fast-Start playback (`moov` preceding `mdat`) and dynamically back-patches chunk offsets in `stco`.
+  - Integrates hardware-accelerated WebCodecs `VideoEncoder` (`avc1.42001f`) with instant off-screen encoding, retaining graceful `MediaRecorder` fallback.
+
+
 
 
 

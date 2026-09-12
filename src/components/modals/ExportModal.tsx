@@ -21,6 +21,7 @@ import {
   generateUnityUrpShader,
   generateLoopAnimationCanvases,
 } from '@/lib/export/shaderExporter';
+import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { ExportTabsNav, type ExportType } from './export/ExportTabsNav';
 import { ExportScopeSelector } from './export/ExportScopeSelector';
 import { ExportProgressBar } from './export/ExportProgressBar';
@@ -531,13 +532,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       return;
     }
 
-    const blob = new Blob([projectData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}.pixibun`;
-    link.href = url;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
+    await DesktopFileSystem.saveProject(projectData, filename, true);
     onClose();
   };
 

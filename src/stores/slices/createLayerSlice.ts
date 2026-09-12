@@ -2,6 +2,7 @@ import { LayerSlice, StudioSliceCreator } from './types';
 import { Layer } from '@/types/canvas';
 import { createId } from '@/lib/engine/id';
 import { getOrCreateBuffer, cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
   activeLayerId: 'layer-1',
@@ -35,6 +36,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
   },
 
   deleteLayer: layerId => {
+    pushStructuralHistoryStep('Katman Silindi');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;
@@ -48,6 +50,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
   },
 
   duplicateLayer: layerId => {
+    pushStructuralHistoryStep('Katman Çoğaltıldı');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -70,6 +73,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
   },
 
   reorderLayers: (startIndex, endIndex) => {
+    pushStructuralHistoryStep('Katmanlar Yeniden Sıralandı');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -149,6 +153,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
   },
 
   mergeLayerDown: layerId => {
+    pushStructuralHistoryStep('Katman Aşağı Birleştirildi');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;

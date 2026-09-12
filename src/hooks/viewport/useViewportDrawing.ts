@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { HistoryStep } from '@/types/canvas';
-import { deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { deleteBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { captureProjectBuffers } from '@/lib/engine/structuralHistory';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -85,6 +86,7 @@ export function useViewportDrawing({
 
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       currentStrokeSnapshotRef.current = {
+        type: 'pixel',
         layerId: targetLayerId,
         frameIndex: activeFrameIndex,
         imageData: imgData,
@@ -108,38 +110,74 @@ export function useViewportDrawing({
       // Broadcast committed pixels to co-draw peers (no-op when disconnected).
       // The snapshot holds the PRE-stroke pixels; the bridge diffs them against
       // the live buffer to extract LWW-CRDT ops.
-      coDrawBridge.notifyStrokeCommitted(snapshot.layerId, snapshot.imageData);
+      if (snapshot.type !== 'structural' && snapshot.layerId && snapshot.imageData) {
+        coDrawBridge.notifyStrokeCommitted(snapshot.layerId, snapshot.imageData);
+      }
     }
   }, [onCommitHistory, setCanRedo, setCanUndo]);
 
-  // Undo Action
+  // Undo Action (Supports both Pixel and Structural steps)
   const performUndo = useCallback(() => {
     const previousStep = historyEngineRef.current.peekUndo();
     if (!previousStep) return;
 
-    const currentLayerCanvas = getOrCreateLayerCanvas(previousStep.layerId);
-    const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
+    let currentStep: HistoryStep;
 
-    const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-    const currentStep: HistoryStep = {
-      layerId: previousStep.layerId,
-      frameIndex: previousStep.frameIndex,
-      imageData: currentImgData,
-      description: previousStep.description,
-      createdLayerId: previousStep.createdLayerId,
-      createdLayerTag: previousStep.createdLayerTag,
-    };
+    if (previousStep.type === 'structural') {
+      const state = useStudioStore.getState();
+      currentStep = {
+        type: 'structural',
+        description: previousStep.description,
+        frameIndex: state.activeFrameIndex,
+        frames: JSON.parse(JSON.stringify(state.frames)),
+        activeFrameIndex: state.activeFrameIndex,
+        activeLayerId: state.activeLayerId,
+        layerBuffers: captureProjectBuffers(),
+      };
+    } else {
+      const currentLayerCanvas = getOrCreateLayerCanvas(previousStep.layerId);
+      const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      currentStep = {
+        type: 'pixel',
+        layerId: previousStep.layerId,
+        frameIndex: previousStep.frameIndex,
+        imageData: currentImgData,
+        description: previousStep.description,
+        createdLayerId: previousStep.createdLayerId,
+        createdLayerTag: previousStep.createdLayerTag,
+      };
+    }
 
     const stepToRestore = historyEngineRef.current.undo(currentStep);
     if (!stepToRestore) return;
 
-    if (previousStep.createdLayerId) {
-      const state = useStudioStore.getState();
-      state.deleteLayer(previousStep.createdLayerId);
-      deleteBuffers([previousStep.createdLayerId]);
+    if (stepToRestore.type === 'structural') {
+      useStudioStore.setState({
+        frames: stepToRestore.frames,
+        activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),
+        activeLayerId: stepToRestore.activeLayerId,
+      });
+      if (stepToRestore.layerBuffers) {
+        for (const buf of stepToRestore.layerBuffers) {
+          const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
+          entry.ctx.putImageData(buf.imageData, 0, 0);
+        }
+      }
     } else {
-      ctx.putImageData(stepToRestore.imageData, 0, 0);
+      if (previousStep.type !== 'structural' && previousStep.createdLayerId) {
+        const state = useStudioStore.getState();
+        state.deleteLayer(previousStep.createdLayerId);
+        deleteBuffers([previousStep.createdLayerId]);
+      } else if (stepToRestore.imageData && stepToRestore.layerId) {
+        const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
+        const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+        if (targetCtx) {
+          targetCtx.putImageData(stepToRestore.imageData, 0, 0);
+        }
+      }
     }
 
     setCanUndo(historyEngineRef.current.canUndo);
@@ -148,57 +186,88 @@ export function useViewportDrawing({
     bumpBufferVersion();
   }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
-  // Redo Action
+  // Redo Action (Supports both Pixel and Structural steps)
   const performRedo = useCallback(() => {
     const nextStep = historyEngineRef.current.peekRedo();
     if (!nextStep) return;
 
-    if (nextStep.createdLayerId) {
-      const currentFrame = useStudioStore.getState().frames[nextStep.frameIndex];
-      const exists = currentFrame?.layers.some((l) => l.id === nextStep.createdLayerId);
-      if (!exists) {
-        // Re-create the layer in its ORIGINATING frame (nextStep.frameIndex),
-        // not the currently active one — the user may have switched frames
-        // between undo and redo. Inserted at the top of the layer stack,
-        // matching addLayer semantics, and preserving the machine tag so
-        // tagged-layer reuse (photometric etc.) keeps working after redo.
-        useStudioStore.setState((state) => {
-          const frame = state.frames[nextStep.frameIndex];
-          if (!frame) return;
-          frame.layers.unshift({
-            id: nextStep.createdLayerId!,
-            name: nextStep.description,
-            visible: true,
-            locked: false,
-            opacity: 1,
-            blendMode: 'source-over',
-            ...(nextStep.createdLayerTag ? { tag: nextStep.createdLayerTag } : {}),
-          });
-          if (state.activeFrameIndex === nextStep.frameIndex) {
-            state.activeLayerId = nextStep.createdLayerId!;
-          }
-        });
-      }
+    let currentStep: HistoryStep;
+
+    if (nextStep.type === 'structural') {
+      const state = useStudioStore.getState();
+      currentStep = {
+        type: 'structural',
+        description: nextStep.description,
+        frameIndex: state.activeFrameIndex,
+        frames: JSON.parse(JSON.stringify(state.frames)),
+        activeFrameIndex: state.activeFrameIndex,
+        activeLayerId: state.activeLayerId,
+        layerBuffers: captureProjectBuffers(),
+      };
+    } else {
+      const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
+      const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return;
+
+      const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      currentStep = {
+        type: 'pixel',
+        layerId: nextStep.layerId,
+        frameIndex: nextStep.frameIndex,
+        imageData: currentImgData,
+        description: nextStep.description,
+        createdLayerId: nextStep.createdLayerId,
+        createdLayerTag: nextStep.createdLayerTag,
+      };
     }
-
-    const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
-    const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
-
-    const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-    const currentStep: HistoryStep = {
-      layerId: nextStep.layerId,
-      frameIndex: nextStep.frameIndex,
-      imageData: currentImgData,
-      description: nextStep.description,
-      createdLayerId: nextStep.createdLayerId,
-      createdLayerTag: nextStep.createdLayerTag,
-    };
 
     const stepToRestore = historyEngineRef.current.redo(currentStep);
     if (!stepToRestore) return;
 
-    ctx.putImageData(stepToRestore.imageData, 0, 0);
+    if (stepToRestore.type === 'structural') {
+      useStudioStore.setState({
+        frames: stepToRestore.frames,
+        activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),
+        activeLayerId: stepToRestore.activeLayerId,
+      });
+      if (stepToRestore.layerBuffers) {
+        for (const buf of stepToRestore.layerBuffers) {
+          const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
+          entry.ctx.putImageData(buf.imageData, 0, 0);
+        }
+      }
+    } else {
+      if (stepToRestore.createdLayerId) {
+        const currentFrame = useStudioStore.getState().frames[stepToRestore.frameIndex];
+        const exists = currentFrame?.layers.some((l) => l.id === stepToRestore.createdLayerId);
+        if (!exists) {
+          useStudioStore.setState((state) => {
+            const frame = state.frames[stepToRestore.frameIndex];
+            if (!frame) return;
+            frame.layers.unshift({
+              id: stepToRestore.createdLayerId!,
+              name: stepToRestore.description,
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+              ...(stepToRestore.createdLayerTag ? { tag: stepToRestore.createdLayerTag } : {}),
+            });
+            if (state.activeFrameIndex === stepToRestore.frameIndex) {
+              state.activeLayerId = stepToRestore.createdLayerId!;
+            }
+          });
+        }
+      }
+
+      if (stepToRestore.imageData && stepToRestore.layerId) {
+        const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
+        const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
+        if (targetCtx) {
+          targetCtx.putImageData(stepToRestore.imageData, 0, 0);
+        }
+      }
+    }
 
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);

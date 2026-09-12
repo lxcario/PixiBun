@@ -12,6 +12,14 @@
 import { rotSprite, PixelBuffer } from '@/lib/canvas/rotSprite';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
 import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
+import {
+  computeSeparableEDT,
+  generateInflatedHeightmap,
+  applyBilateralFilter,
+  computeTangentNormalField,
+  bakeNormalMapToRgba,
+} from '@/lib/ai/math/edtNormalMap';
+import { computeMinecraftSkinNormalField } from '@/lib/ai/math/minecraftSkin';
 import type { HeavyWorkerRequest, HeavyWorkerResponse } from '@/workers/heavyCompute.worker';
 
 let sharedWorker: Worker | null = null;
@@ -229,3 +237,89 @@ export async function runMorphInWorker(
     }
   );
 }
+
+export interface EdtNormalMapOptions {
+  isMinecraftSkin?: boolean;
+  depthScale?: number;
+}
+
+/**
+ * Offload Euclidean Distance Transform (EDT) and Normal Map baking to Web Worker,
+ * with zero-copy Transferable ArrayBuffers and automatic synchronous fallback.
+ */
+export async function runEdtNormalMapInWorker(
+  rgba: Uint8ClampedArray,
+  width: number,
+  height: number,
+  options: EdtNormalMapOptions = {}
+): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
+  const worker = getOrCreateWorker();
+
+  const runSync = () => {
+    const isOpaque = (x: number, y: number) => {
+      if (x < 0 || x >= width || y < 0 || y >= height) return false;
+      return rgba[(y * width + x) * 4 + 3] > 10;
+    };
+    const normalField = options.isMinecraftSkin
+      ? computeMinecraftSkinNormalField(width, height)
+      : computeTangentNormalField(
+          applyBilateralFilter(
+            generateInflatedHeightmap(
+              computeSeparableEDT(isOpaque, width, height),
+              width,
+              height,
+              0.5
+            ),
+            width,
+            height,
+            1.5,
+            2.0
+          ),
+          width,
+          height,
+          options.depthScale ?? 2.0
+        );
+    const data = bakeNormalMapToRgba(normalField, width, height, isOpaque);
+    return { width, height, data };
+  };
+
+  if (!worker) {
+    return runSync();
+  }
+
+  const id = getNextId();
+  // Clone buffer to avoid detaching caller's live buffer on main thread
+  const bufferCopy = (rgba.buffer as ArrayBuffer).slice(0);
+
+  return new Promise<{ width: number; height: number; data: Uint8ClampedArray }>(
+    (resolve, reject) => {
+      pendingCallbacks.set(id, {
+        resolve: (val: unknown) =>
+          resolve(val as { width: number; height: number; data: Uint8ClampedArray }),
+        reject,
+      });
+
+      const req: HeavyWorkerRequest = {
+        id,
+        type: 'edtNormalMap',
+        buffer: bufferCopy,
+        width,
+        height,
+        isMinecraftSkin: options.isMinecraftSkin,
+        depthScale: options.depthScale,
+      };
+
+      try {
+        worker.postMessage(req, [bufferCopy]);
+      } catch {
+        pendingCallbacks.delete(id);
+        try {
+          resolve(runSync());
+        } catch (syncErr) {
+          reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
+        }
+      }
+    }
+  );
+}
+

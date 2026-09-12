@@ -2,6 +2,31 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.13.0] - 2026-09-12
+### Workstation-Class Architectural Upgrades (Phase 54)
+- **P2P Co-Draw Guest UI Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`)**:
+  - Implemented host-authoritative structural protection. When joining a session as a guest (`peerRole === 'guest'`), layer add, duplicate, merge-down, delete, frame creation, deletion, and timeline drag-and-drop reordering are disabled with clear tooltips and `cursor-not-allowed` styles, preventing guest structural edits from being overwritten by incoming host `STRUCTURE_SYNC` packets.
+- **Undo/Redo Engine Structural Command Pattern (`src/types/canvas.ts`, `src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`, `src/hooks/viewport/useViewportDrawing.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createAnimationSlice.ts`, `tests/historyEngineStructural.test.ts`)**:
+  - Upgraded `HistoryEngine` from a pixel-only delta store to a hybrid Command Pattern supporting both pixel stroke diffs and full structural operations (`type: 'structural'`).
+  - Added snapshots capturing layer additions, deletions, reordering, merge-downs, and frame insertions/reordering with byte-accurate `LayerBufferBackup` preservation across all frames.
+  - Verified undo and redo of destructive structural mutations in `tests/historyEngineStructural.test.ts`.
+- **Worker EDT Distance Transform & Normal Map Offloading (`src/lib/ai/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`)**:
+  - Offloaded CPU-heavy 2D Euclidean Distance Transform, bilateral Gaussian filtering, and Sobel normal map generation to `heavyCompute.worker.ts` using zero-copy Transferable ArrayBuffers.
+  - Guarded main-thread canvas stability by defensively cloning outgoing buffer snapshots (`.slice(0)`), while achieving zero-copy transfer on the worker-to-main return trip.
+  - Provided automatic synchronous fallback in `runEdtNormalMapInWorker` for headless/unsupported worker environments, verified in `tests/workerEdtNormalMap.test.ts`.
+- **Native Desktop File System Access API & Save As (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`, `src/components/modals/ExportModal.tsx`, `tests/desktopFileSystem.test.ts`)**:
+  - Built zero-dependency native desktop ergonomics with `window.showSaveFilePicker` and `window.showOpenFilePicker`.
+  - Bound `Ctrl+S` to instantaneous in-place disk overwriting via retained `FileSystemFileHandle`s, and `Ctrl+Shift+S` to "Save As" picker dialogs.
+  - Implemented robust browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
+- **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
+  - Implemented complete 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into the canonical 47 Wang/Blob equivalence classes.
+  - Precomputed an $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX`) and built a Chebyshev $3\times3$ dirty neighborhood reactive updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
+  - Authored procedural 47-tile pixel renderer and validated full mathematical proofs in `tests/autotileEngine.test.ts`.
+- **Pure-TypeScript ISOBMFF Fast-Start MP4 Container Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`, `tests/isobmffWriter.test.ts`)**:
+  - Built a 100% scratch pure-TypeScript ISO Base Media File Format container muxer (`ftyp`, `moov`, `mdat`) with progressive download Fast-Start box ordering and chunk offset back-patching in `stco`.
+  - Eliminated reliance on real-time `MediaRecorder` stream playback by coupling hardware-accelerated WebCodecs `VideoEncoder` (`avc1.42001f`) with the scratch ISOBMFF muxer, while preserving graceful `MediaRecorder` fallback.
+  - Verified bitstream box hierarchies and chunk offset calculations in `tests/isobmffWriter.test.ts`.
+
 ## [v1.12.1] - 2026-09-12
 ### Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (Phase 53)
 - **Dimetric Ray Projection for Isometric Lines (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:

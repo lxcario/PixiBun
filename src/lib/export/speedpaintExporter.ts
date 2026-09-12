@@ -5,7 +5,7 @@
  * into an animated MP4 timelapse video of the artwork's creation process.
  */
 
-import { HistoryStep } from '@/lib/engine/historyEngine';
+import { HistoryStep, PixelHistoryStep } from '@/lib/engine/historyEngine';
 import { exportAnimationToMp4Async, Mp4ExportOptions } from './mp4Encoder';
 import { convertHistoryToCanvases } from './processReplay';
 
@@ -13,15 +13,15 @@ export interface SpeedpaintMp4Options {
   fps?: number; // Playback speed in frames per second (default: 12)
   scale?: number; // Integer output scaling factor (default: 2)
   holdLastFrameMs?: number; // Hold duration on the finished artwork in ms (default: 1000)
-  onProgress?: (current: number, total: number) => void;
   signal?: AbortSignal;
+  onProgress?: (current: number, total: number) => void;
 }
 
 /**
  * Encodes an array of HistoryStep snapshots into an animated MP4 timelapse Blob.
  *
  * @param steps Array of HistoryStep snapshots from historyEngine.getHistory()
- * @param options Configuration options (fps, scale, holdLastFrameMs, onProgress, signal)
+ * @param options Timing, scaling, and progress callback configurations
  * @returns Promise resolving to an MP4 video Blob (MIME type: 'video/mp4')
  */
 export async function exportProcessReplayMp4Async(
@@ -46,11 +46,11 @@ export async function exportProcessReplayMp4Async(
   // Fallback if headless / no DOM: create mock canvases from step imageData
   if (canvases.length === 0) {
     canvases = steps
-      .filter((s) => s.imageData)
+      .filter((s): s is PixelHistoryStep => s.type !== 'structural' && !!s.imageData)
       .map((step) => {
         const c = {
-          width: step.imageData!.width,
-          height: step.imageData!.height,
+          width: step.imageData.width,
+          height: step.imageData.height,
           getContext: () => ({
             getImageData: () => step.imageData,
             drawImage: () => {},

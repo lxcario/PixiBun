@@ -5,15 +5,10 @@ import { MaterialType } from '@/types/tools';
 import {
   executePhotometricPipeline,
   executeVolumetricOpticalPipeline,
-  computeSeparableEDT,
-  generateInflatedHeightmap,
-  applyBilateralFilter,
-  computeTangentNormalField,
-  bakeNormalMapToCanvas,
   detectMinecraftSkin,
-  computeMinecraftSkinNormalField,
   renderParametric2p5DLighting,
 } from '@/lib/ai/smartMathEngine';
+import { runEdtNormalMapInWorker } from '@/lib/engine/workerDispatcher';
 import { inferPhotometricSettings, RecognizedFormType } from '@/lib/ai/math/photometricAuto';
 import type { ViewportPhotometricContext } from './types';
 
@@ -330,7 +325,7 @@ export function usePhotometricEvents({
       });
     };
 
-    const handleBakeNormalMapEvent = () => {
+    const handleBakeNormalMapEvent = async () => {
       const srcCtx = compositeSourceSnapshot('normal-map');
       if (!srcCtx) return;
 
@@ -357,29 +352,19 @@ export function usePhotometricEvents({
         }
       }
 
-      const normalField = isMcSkin
-        ? computeMinecraftSkinNormalField(canvasWidth, canvasHeight)
-        : computeTangentNormalField(
-            applyBilateralFilter(
-              generateInflatedHeightmap(
-                computeSeparableEDT(isOpaque, canvasWidth, canvasHeight),
-                canvasWidth,
-                canvasHeight,
-                0.5
-              ),
-              canvasWidth,
-              canvasHeight,
-              1.5,
-              2.0
-            ),
-            canvasWidth,
-            canvasHeight,
-            2.0
-          );
-      const normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
+      const res = await runEdtNormalMapInWorker(data, canvasWidth, canvasHeight, {
+        isMinecraftSkin: isMcSkin,
+        depthScale: 2.0,
+      });
+
+      const normalImgData = new ImageData(
+        new Uint8ClampedArray(res.data.buffer as ArrayBuffer),
+        canvasWidth,
+        canvasHeight
+      );
 
       updateTaggedLayer('Normal Map', 'normal-map', (outCtx) => {
-        outCtx.drawImage(normalCanvas, 0, 0);
+        outCtx.putImageData(normalImgData, 0, 0);
       });
     };
 

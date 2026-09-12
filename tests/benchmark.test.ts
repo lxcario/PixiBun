@@ -285,7 +285,9 @@ describe('Performance Benchmarking Suite', () => {
 
       let totalRetainedBytes = 0;
       for (const step of history) {
-        totalRetainedBytes += step.imageData.data.byteLength;
+        if ('imageData' in step) {
+          totalRetainedBytes += step.imageData.data.byteLength;
+        }
       }
 
       expect(totalRetainedBytes).toBe(theoretical50StepsBytes);

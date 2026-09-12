@@ -425,7 +425,7 @@ export function useViewportPointerEvents({
           });
           const lCanvas = getOrCreateLayerCanvas(targetLayerId);
           const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
-          if (lCtx && currentStrokeSnapshotRef.current) {
+          if (lCtx && currentStrokeSnapshotRef.current && 'imageData' in currentStrokeSnapshotRef.current) {
             const workingImg = new ImageData(
               new Uint8ClampedArray(currentStrokeSnapshotRef.current.imageData.data),
               canvasWidth,
@@ -595,7 +595,7 @@ export function useViewportPointerEvents({
         }
         const currentFrame = frames[activeFrameIndex];
         const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
-        if (targetLayerId && currentStrokeSnapshotRef.current) {
+        if (targetLayerId && currentStrokeSnapshotRef.current && 'imageData' in currentStrokeSnapshotRef.current) {
           const lCanvas = getOrCreateLayerCanvas(targetLayerId);
           const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
           if (lCtx) {

@@ -2,6 +2,35 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 54 — Six Workstation Architectural Upgrades (100% Pure-TypeScript, Zero Dependencies)
+**Goal:** Implement 6 foundational workstation-grade architectural capabilities for PixiBun: P2P guest UI mutation locking to prevent host structure overwrites, an undo/redo engine supporting structural layer and frame mutations, worker offloading for EDT distance transforms and normal map baking via zero-copy Transferable ArrayBuffers, native desktop File System Access API with `Ctrl+S` in-place disk overwriting and Save As picker dialogs, 47-blob autotiling engine with $O(1)$ 256-element bitmask lookup and $3\times3$ reactive updates, and a 100% scratch pure-TypeScript ISOBMFF Fast-Start MP4 container muxer with progressive box ordering (`ftyp`, `moov`, `mdat`).
+
+**Evidence & Rationale:**
+- P2P Host Authority: Guests adding or deleting layers in WebRTC co-draw were having their local changes silently overwritten on the next host `STRUCTURE_SYNC` push. Disabling layer/frame structural mutations for guests with informative tooltips preserves host consistency and guarantees predictable UX.
+- Structural Undo/Redo: PixiBun's `HistoryEngine` was historically limited to pixel-only canvas diffs; destructive actions like adding/deleting layers, reordering, and frame manipulation were irreversible. The hybrid Command Pattern snapshot engine (`StructuralHistoryStep`) stores byte-accurate multi-frame buffer backups (`LayerBufferBackup`) enabling complete undo/redo.
+- Zero-Copy Worker EDT: Offloading intensive 2D Euclidean Distance Transform and Sobel normal map filters prevents main-thread frame drops on high-resolution sprites. Transferring array buffers directly to/from `heavyCompute.worker.ts` eliminates allocation pauses while defensively cloning outgoing canvas snapshots (`.slice(0)`) prevents live layer buffer detachment.
+- Desktop FS Ergonomics: Desktop creators require direct disk integration. `window.showSaveFilePicker` and `window.showOpenFilePicker` provide native `Ctrl+S` in-place disk overwriting and `Ctrl+Shift+S` Save As workflows, with graceful fallback to browser downloads in unsupported environments.
+- 47-Blob Autotiling: 8-neighbor Moore bitmasking with cardinal corner masking collapses $2^8 = 256$ neighborhood variations into exactly 47 canonical Wang/Blob tile shapes. Precomputing an $O(1)$ 256-element lookup table and Chebyshev $3\times3$ dirty neighborhood updates guarantees instant, reactive autotiling without third-party libraries.
+- Pure-TS ISOBMFF Muxer: Rather than relying on non-standard `MediaRecorder` codec implementations or slow real-time stream playback, our scratch ISO BMFF container writer produces compliant Fast-Start progressive download MP4s (`ftyp`, `moov`, `mdat`) with backpatched `stco` offsets directly from WebCodecs `VideoEncoder` samples.
+
+**Deliverables:**
+- [x] P2P Guest Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`): Disabled structural controls for guests with clear tooltips.
+- [x] Undo Structural Actions Engine (`src/types/canvas.ts`, `src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`, `src/hooks/viewport/useViewportDrawing.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createAnimationSlice.ts`, `tests/historyEngineStructural.test.ts`): Implemented structural undo/redo command pattern.
+- [x] Worker EDT & Normal Map Offloading (`src/lib/ai/math/edtNormalMap.ts`, `src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/workerEdtNormalMap.test.ts`): Zero-copy transferable worker execution with synchronous fallback.
+- [x] Desktop File System Access API (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`, `src/components/modals/ExportModal.tsx`, `tests/desktopFileSystem.test.ts`): Native save/open with `Ctrl+S` in-place overwriting and browser fallback.
+- [x] 47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`): $O(1)$ bitmask lookup table, $3\times3$ dirty neighborhood reactive updater, and procedural tile renderer.
+- [x] Pure-TypeScript ISOBMFF MP4 Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`, `tests/isobmffWriter.test.ts`): Scratch Fast-Start MP4 muxer integrating hardware WebCodecs `VideoEncoder` and backpatched `stco`.
+
+**Acceptance criteria:**
+- `npx vitest run` passes all 584 tests across 85 suites (0 regressions).
+- `node scripts/verifyDocIntegrity.mjs` passes all 6 checks.
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors.
+- `npx next build` compiles cleanly with Turbopack.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 53 — Comprehensive Audit Resolution, Algorithmic Precision & State Isolation
 **Goal:** Address all 19 findings identified in the external adversarial audit report (`PIXIBUN_AUDIT_RESULTS.md`): implement dimetric ray projection for `getIsometric2p1Line` to accurately snap arbitrary cursor inputs to the 2:1 line, isolate export scale states across modal tabs to prevent scale bleed, fix Scale2x border conditions using non-matching out-of-bounds sentinels, align DPaint CRNG parsing strictly with canonical Amiga ILBM `RNG_ACTIVE` specification (removing unmotivated `rateRaw !== 36`), purge stale temporary snapshot files, and calibrate documentation across all files.
 

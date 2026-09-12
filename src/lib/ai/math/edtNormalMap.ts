@@ -257,18 +257,13 @@ export function computeTangentNormalField(
 /**
  * Bakes tangent space normal vector field to canvas image data (Standard Tangent Space RGB 128, 128, 255).
  */
-export function bakeNormalMapToCanvas(
+export function bakeNormalMapToRgba(
   normalField: NormalVectorField,
   width: number,
   height: number,
   mask?: (x: number, y: number) => boolean
-): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d')!;
-  const imgData = ctx.createImageData(width, height);
-  const data = imgData.data;
+): Uint8ClampedArray {
+  const data = new Uint8ClampedArray(width * height * 4);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -295,6 +290,21 @@ export function bakeNormalMapToCanvas(
     }
   }
 
+  return data;
+}
+
+export function bakeNormalMapToCanvas(
+  normalField: NormalVectorField,
+  width: number,
+  height: number,
+  mask?: (x: number, y: number) => boolean
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+  const rgba = bakeNormalMapToRgba(normalField, width, height, mask);
+  const imgData = new ImageData(new Uint8ClampedArray(rgba.buffer as ArrayBuffer), width, height);
   ctx.putImageData(imgData, 0, 0);
   return canvas;
 }

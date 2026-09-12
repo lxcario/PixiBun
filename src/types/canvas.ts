@@ -40,7 +40,13 @@ export interface ProjectMetadata {
   updatedAt: number;
 }
 
-export interface HistoryStep {
+export interface LayerBufferBackup {
+  layerId: string;
+  imageData: ImageData;
+}
+
+export interface PixelHistoryStep {
+  type?: 'pixel';
   description: string;
   frameIndex: number;
   layerId: string;
@@ -51,3 +57,16 @@ export interface HistoryStep {
   // redo can re-create the layer with its machine identity intact
   createdLayerTag?: string;
 }
+
+export interface StructuralHistoryStep {
+  type: 'structural';
+  description: string;
+  frameIndex: number;
+  frames: AnimationFrame[];
+  activeFrameIndex: number;
+  activeLayerId: string;
+  layerBuffers?: LayerBufferBackup[];
+}
+
+export type HistoryStep = PixelHistoryStep | StructuralHistoryStep;
+

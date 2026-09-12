@@ -8,6 +8,7 @@ import { LoopMode } from '@/types/animation';
 import { compositeFrame } from '@/lib/render/compositor';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { TagManagerModal } from '@/components/modals/TagManagerModal';
+import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -87,6 +88,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     addClip,
     deleteClip,
   } = useStudioStore();
+  const { isGuest } = useCoDrawStatus();
+  const guestFrameLockTitle = 'Kare yapısı oturum sahibi (Host) tarafından yönetilmektedir.';
 
   const isPingPongForwardRef = useRef(true);
   const [isCreatingClip, setIsCreatingClip] = useState(false);
@@ -118,6 +121,10 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
   // Frame Drag-and-Drop Reordering Handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (isGuest) {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.setData('text/plain', String(index));
     e.dataTransfer.effectAllowed = 'move';
     setDraggedFrameIndex(index);
@@ -377,12 +384,15 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           <TactileButton
             size="sm"
             variant="default"
+            disabled={isGuest}
             onClick={addFrame}
-            title="Add Blank Frame"
+            title={isGuest ? guestFrameLockTitle : 'Add Blank Frame'}
             aria-label="+ Frame"
             data-testid="add-frame-button"
             data-tutorial="add-frame"
-            className="text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1 font-bold"
+            className={`text-xs py-1.5 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1 font-bold ${
+              isGuest ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
           >
             <PixelIcon name="plus" size={13} />
             <span>Frame</span>
@@ -393,9 +403,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <TactileButton
                 size="icon-sm"
                 variant="default"
+                disabled={isGuest}
                 onClick={() => duplicateFrame(activeFrameIndex)}
-                title="Duplicate Active Frame"
-                className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+                title={isGuest ? guestFrameLockTitle : 'Duplicate Active Frame'}
+                className={`w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] ${
+                  isGuest ? 'opacity-40 cursor-not-allowed' : ''
+                }`}
               >
                 <PixelIcon name="copy" size={13} />
               </TactileButton>
@@ -403,10 +416,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <TactileButton
                 size="icon-sm"
                 variant="danger"
-                disabled={frames.length <= 1}
+                disabled={frames.length <= 1 || isGuest}
                 onClick={() => deleteFrame(activeFrameIndex)}
-                title="Delete Active Frame"
-                className="w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33]"
+                title={isGuest ? guestFrameLockTitle : 'Delete Active Frame'}
+                className={`w-8 h-8 bg-[#3d1928] border-[#6b283d] text-[#ff99aa] hover:bg-[#521e33] ${
+                  isGuest ? 'opacity-40 cursor-not-allowed' : ''
+                }`}
               >
                 <PixelIcon name="trash" size={13} />
               </TactileButton>
@@ -516,7 +531,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <button
                 type="button"
                 key={frame.id}
-                draggable={!isPlaying}
+                draggable={!isPlaying && !isGuest}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragLeave={(e) => handleDragLeave(e, index)}
@@ -524,9 +539,15 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 onDragEnd={handleDragEnd}
                 onClick={() => setActiveFrame(index)}
                 aria-label={`Select frame ${index + 1}. Duration: ${duration}ms. Drag to reorder.`}
-                title={`Frame #${index + 1} (${duration}ms) - Drag to reorder`}
+                title={
+                  isGuest
+                    ? `Frame #${index + 1} (${duration}ms) - ${guestFrameLockTitle}`
+                    : `Frame #${index + 1} (${duration}ms) - Drag to reorder`
+                }
                 style={{ width: `${cardWidth}px` }}
-                className={`relative min-w-[48px] h-12 rounded-[2px] border-2 cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
+                className={`relative min-w-[48px] h-12 rounded-[2px] border-2 ${
+                  isGuest ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
+                } transition-all flex flex-col items-center justify-between p-1 select-none text-left ${
                   isBeingDragged
                     ? 'opacity-30 scale-95 border-dashed border-[#f0be7c] bg-[#1a0f2e]'
                     : isDropTarget

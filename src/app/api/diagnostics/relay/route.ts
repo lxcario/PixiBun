@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     const upstreamPayload = {
       app: app || 'pixibun',
-      version: version || '1.12.1',
+      version: version || '1.13.0',
       timestamp: Date.now(),
       events: Array.isArray(events) ? events.slice(0, MAX_EVENTS) : [],
     };

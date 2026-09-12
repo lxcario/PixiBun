@@ -1,5 +1,5 @@
-import type { HistoryStep } from '@/types/canvas';
-export type { HistoryStep };
+import type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup } from '@/types/canvas';
+export type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup };
 
 export interface HistoryEngine {
   /** Push a completed stroke snapshot; drops redo tail, prunes to maxDepth (50), returns new undo depth. */
@@ -97,6 +97,11 @@ export function setGlobalHistoryEngine(engine: HistoryEngine | null): void {
   activeGlobalHistoryEngine = engine;
 }
 
+export function getGlobalHistoryEngine(): HistoryEngine | null {
+  return activeGlobalHistoryEngine;
+}
+
 export function getGlobalHistory(): readonly HistoryStep[] {
   return activeGlobalHistoryEngine ? activeGlobalHistoryEngine.getHistory() : [];
 }
+

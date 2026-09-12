@@ -16,11 +16,12 @@ import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById, getLayerBlobsForProject } from '@/lib/storage/db';
-import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
+import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail, buildProjectFileAsync } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -99,6 +100,7 @@ export const StudioLayout: React.FC = () => {
     frames,
     activeFrameIndex,
     currentProjectId,
+    projectName,
     resetToNewProject,
     zoom,
     setZoom,
@@ -520,6 +522,24 @@ export const StudioLayout: React.FC = () => {
     void hydrateProject(result.value);
   }, [importPayload]);
 
+  // Desktop In-Place Save (File System Access API)
+  const handleSaveDesktopProject = useCallback(
+    async (forceSaveAs = false) => {
+      try {
+        const project = await buildProjectFileAsync();
+        const jsonStr = JSON.stringify(project, null, 2);
+        const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
+        const res = await DesktopFileSystem.saveProject(jsonStr, filename, forceSaveAs);
+        if (res.success) {
+          useStudioStore.getState().setSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Desktop save error:', err);
+      }
+    },
+    [projectName]
+  );
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -529,6 +549,13 @@ export const StudioLayout: React.FC = () => {
         document.activeElement?.tagName === 'TEXTAREA' ||
         document.activeElement?.tagName === 'SELECT'
       ) {
+        return;
+      }
+
+      // Desktop Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        void handleSaveDesktopProject(e.shiftKey);
         return;
       }
 
@@ -550,6 +577,7 @@ export const StudioLayout: React.FC = () => {
         return;
       }
 
+      // Redo Alternate (Ctrl/Cmd + Y)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         handleRedo();
@@ -703,6 +731,7 @@ export const StudioLayout: React.FC = () => {
     setIsPlaying,
     handleUndo,
     handleRedo,
+    handleSaveDesktopProject,
     zoom,
     setZoom,
     setPan,
