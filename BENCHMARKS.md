@@ -2,6 +2,8 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
+> **Environment Note:** Empirical micro-benchmarks were captured on a modern reference development workstation (x86-64 / Apple Silicon equivalent, Node v20 / V8 engine). Automated CI tests in `tests/benchmark.test.ts` verify that operations remain within generous upper-bound latency ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting identical machine-specific timings.
+
 ---
 
 ## 1. Palette Cycling 32-Bit LUT Remapping Performance
@@ -50,7 +52,7 @@ Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times hei
 
 ## 3. Viewport Decoupling & React Render Performance
 
-To guarantee sub-16ms interactive drawing latency without frame drops or garbage collection spikes during pen strokes:
+To maintain sub-16ms interactive drawing latency without frame drops or garbage collection spikes during pen strokes:
 - **`bufferVersion` Signal:** Decoupled from `CenterViewport`. Atomic integer signal subscribed exclusively by leaf widgets (`BottomTimeline`, `FloatingPreviewWindow`).
 - **`CursorStatusBadge`:** Decoupled from `CenterViewport`. Pointer movements across pixel boundaries broadcast via `updateCursorHUD(coords)` to an isolated subscriber leaf badge, incurring **0** re-renders on `CenterViewport`.
 - **Canvas Stack Separation:** Layered multi-canvas architecture ensures tool previews, grid lines, and marching ants redraw independently without dirtying or re-rasterizing base layer bitmaps.
@@ -74,5 +76,5 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 | **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** | $> 11,000\text{ FPS}$ |
 | **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** | $> 3,000\text{ FPS}$ |
 
-> **Conclusion:** Even under extreme 256 × 256 continuous affine rotations, nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$, consuming only $2.0\%$ of the browser's 16.66ms frame budget. The claim of 60 FPS continuous interactive transform preview is an empirically measured guarantee.
+> **Conclusion:** Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$, consuming $\approx 2.0\%$ of the 16.66ms 60 FPS frame budget. Continuous interactive transform preview comfortably satisfies the 60 FPS target, validated against automated regression budgets in CI.
 

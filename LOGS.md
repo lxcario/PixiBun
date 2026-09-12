@@ -580,9 +580,9 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 29 � SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
+## Phase 29 — SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
 **Delivered:**
-- **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Meijster's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
+- **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Felzenszwalb-Huttenlocher's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
 - **Automated Morph Relighting Pipeline (src/components/layout/CenterViewport.tsx)**: Re-architected handleInBetweenFrameEvent to strip AI-generated layers (photometrics, drop shadows) prior to morphing via a pure getCleanCtx extraction. Automatically re-dispatches \pixibun:photometric-lighting\ and \pixibun:volumetric-optics\ events to dynamically shade the new frame, completely fixing the "muddy baked colors" artifact.
 - **RotSprite Artifact-Free Canvas Rotation (src/lib/ai/smartMathEngine.ts)**: Fixed floating-point holes created by native \ctx.rotate\ by implementing a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm (\
 otateWithRotSprite\).
@@ -679,7 +679,7 @@ otateWithRotSprite\).
 **Delivered:**
 - **Canonical Xenowhirl RotSprite Engine (src/lib/ai/smartMathEngine.ts)**: Completely resolved the 45-degree rotation distortion reported by the user (2-3px blooming on convex top-left outlines, erased bottom-right outlines, and asymmetrical corner spurs). Replaced the weighted voting alpha threshold engine with native 32-bit 3-pass Scale2X cascade (1x -> 2x -> 4x -> 8x) combined with strict subpixel center continuous inverse sampling.
 - **Exact Symmetrical Coordinate Inverse Mapping**: Symmetrically maps continuous destination centers (x + 0.5, y + 0.5) around canvas pivot (W/2, H/2) to continuous source coordinates, sampling directly from the 8x raster with floor(sx * 8), floor(sy * 8). Eliminates all directional coordinate drift and threshold competition between outlines and fills.
-- **Single-Pixel Detail Restoration**: Added forward-mapping presence conservation for isolated source features, guaranteeing micro-details and single-pixel highlighty�never yvanish after non-orthogonal rotations.
+- **Single-Pixel Detail Restoration**: Added forward-mapping presence conservation for isolated source features, preserving micro-details and single-pixel highlights after non-orthogonal rotations.
 - **Zero Palette Mutation**: Strictly point-samples from the Scale2X palette without color blending or averaging.
 - **Comprehensive Unit Testing (tests/rotSpriteAndPrecision.test.ts)**: Added multi-color outline 45-degree rotation tests verifying 100% closed contour via flood fill (0 fill leaks), 4-quadrant bilateral symmetry, exact 100.0% area preservation (144 -> 144 pixels), isolated dot conservation, and a full 360-degree rotation leak test at 15-degree increments (0 leaks across all 24 angles).
 
@@ -771,7 +771,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
   - Excludes facial features and line art from receiving specular highlights.
   - Implemented discrete OKLCH cel-shading ramps cached per unique base color (`CelRamp`): maps each artist base color to exactly one unified crisp shadow tone (cool skylight hue shifted to 260°, $L \times 0.78$), one deep crevice tone for concave seams/folds ($AO < 0.60$, $L \times 0.60$), and optional warm highlight tone (65°).
-  - Completely eliminates continuous float gradients and dirty multi-shade banding across character fills.
+  - Replaces continuous float gradients and intermediate hue banding with discrete cel steps across character fills.
   - Supports optional Bayer ordered dithering stippling along the cel shadow boundary when `ditherModulation > 0`.
 - **Narrow Appendage (Ear / Horn) Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`)**:
   - Detects narrow appendages ($\le 5$px wide) in the upper silhouette. On the light-facing side (e.g. left ear under 315° key light), clamps normal $N_x \le 0$ and reinforces camera alignment ($N_z \ge 0.88$).
@@ -1089,7 +1089,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 3. Emojis and awkward copy: `WHAT WE HAS: DEEP GRAPHICS ENGINE` was grammatically broken. Residual emojis (`💡`, `✔ ✦`, `🐾`, `🐰`, `🎨`) persisted on showcase tabs, desk scene, and error boundaries.
 
 **Engineering Execution:**
-- **Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`)**: Replaced all dynamic lazy imports with direct static imports (`PhotometricShowcase`, `RotSpriteShowcase`, `PixelizeShowcase`, `EngineExportShowcase`), making tab switching 100% instant (0ms latency).
+- **Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`)**: Replaced all dynamic lazy imports with direct static imports (`PhotometricShowcase`, `RotSpriteShowcase`, `PixelizeShowcase`, `EngineExportShowcase`), making tab switching immediate with zero dynamic bundle chunk load delays.
 - **Framer Motion `layoutId` Spring Pill Selector (`src/components/landing/AtelierEngineShowcase.tsx`)**: Added smooth spring pill highlight (`stiffness: 440, damping: 32`) and cross-fade panel animation (`mode="wait"`, cubic bezier `[0.16, 1, 0.3, 1]`).
 - **Jitter-Free Navigation (`src/components/landing/LandingNav.tsx`)**: Replaced the inline layout-shifting spark with an absolute bottom underline indicator (`layoutId="activeNavIndicator"`), and wrapped the scroll progress bar in a dedicated background track.
 - **Emoji Purge & Copy Polish**: Replaced tabs and action emojis with 16x16 pixel SVG icons, upgraded error boundaries to `<BunMascot size={28} />`, and replaced the badge with `"INTERACTIVE GRAPHICS BENCHMARK"`.
@@ -1386,3 +1386,24 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all documentation integrity checks passed
 - `npx next build`: Turbopack clean production build across 7 routes
 **Status:** Complete
+
+---
+
+## 2026-09-12 — Phase 51: Deep Documentation Truthfulness, Academic Rigor & Marketing De-Escalation
+
+**Changes:**
+- **Marketing Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`)**: Softened marketing puffery, absolute guarantees, and hyperbolic adjectives across all documentation, replacing them with modest, academically precise technical descriptions.
+- **RotSprite Claims Calibration (`README.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`, `LOGS.md`)**: Replaced over-reaching phrases ("completely eliminated 45° distortion", "micro-details never vanish", "100% leak-proof") with accurate descriptions of Xenowhirl's 8x Scale2x cascade, subpixel continuous inverse sampling, and parabolic majority voting reducing distortion and outline erosion while preserving palette purity.
+- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations tailored for pixel art rather than claiming full 3D volumetric simulations.
+- **Felzenszwalb-Huttenlocher EDT Citation Synchronization (`CHANGELOG.md`, `LOGS.md`)**: Corrected references that erroneously attributed the EDT algorithm to Meijster, standardizing across all documentation on the actual implemented algorithm by Pedro F. Felzenszwalb & Daniel P. Huttenlocher (2012 / 2004).
+- **Benchmark Hardware Context & Budget Ceilings (`BENCHMARKS.md`)**: Added reference hardware environment notice and clarified that automated CI gates assert upper-bound budget ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting machine-specific timings as universal guarantees.
+- **Character Encoding & Markdown Polish (`LOGS.md`, `CHANGELOG.md`)**: Fixed Unicode replacement character corruptions in `LOGS.md` and purged decorative emoji clutter from `CHANGELOG.md` subheaders to maintain clean, technical documentation standards.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 554/554 passed across 79 suites (0 regressions)
+- `node scripts/verifyDocIntegrity.mjs`: all documentation integrity checks passed
+- `npx next build`: Turbopack clean production build across 7 routes
+**Status:** Complete
+

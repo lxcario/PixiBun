@@ -3,6 +3,14 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.12.1] - 2026-09-12
+### Documentation Truthfulness, Academic Rigor & Tone De-Escalation (Phase 51)
+- **Marketing Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`)**: Softened marketing puffery, absolute guarantees, and hyperbolic adjectives across all documentation, replacing them with modest, academically precise technical descriptions.
+- **RotSprite Claims Calibration (`README.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`, `LOGS.md`)**: Replaced over-reaching phrases ("completely eliminated 45° distortion", "micro-details never vanish", "100% leak-proof") with accurate descriptions of Xenowhirl's 8x Scale2x cascade, subpixel continuous inverse sampling, and parabolic majority voting reducing distortion and outline erosion while preserving palette purity.
+- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations tailored for pixel art rather than claiming full 3D volumetric simulations.
+- **Felzenszwalb-Huttenlocher EDT Citation Synchronization (`CHANGELOG.md`, `LOGS.md`)**: Corrected references that erroneously attributed the EDT algorithm to Meijster, standardizing across all documentation on the actual implemented algorithm by Pedro F. Felzenszwalb & Daniel P. Huttenlocher (2012 / 2004).
+- **Benchmark Hardware Context & Budget Ceilings (`BENCHMARKS.md`)**: Added reference hardware environment notice and clarified that automated CI gates assert upper-bound budget ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting machine-specific timings as universal guarantees.
+- **Character Encoding & Markdown Polish (`LOGS.md`, `CHANGELOG.md`)**: Fixed Unicode replacement character corruptions in `LOGS.md` and purged decorative emoji clutter from `CHANGELOG.md` subheaders to maintain clean, technical documentation standards.
+
 ### External Audit Remediation & Terminology Harmonization (Phase 50)
 - **P2P Co-Draw Modal Network Default (`src/components/modals/CoDrawModal.tsx`)**: Changed default network mode from `'internet'` to `'lan'`, matching the zero-egress LAN promise (`iceServers: []`) in `README.md`.
 - **Lossless PNG Export 32× Resolution Option (`src/components/modals/export/PngExportTab.tsx`)**: Added `32` to the scale button array (`[1, 2, 4, 8, 16, 32]`), fulfilling the documented "1× to 32× lossless PNG" export capability in the UI.
@@ -342,11 +350,11 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Preserves dedicated local 3D peaks for ears and horns so they catch directional light independently from the head.
   - Stabilizes narrow appendages (ears, horns, antennae, tails $\le 5$px wide) on the light-facing side: clamps $N_x \le 0$ when light comes from the left and enforces $N_z \ge 0.88$, preventing narrow 2–4px ears from bisecting into a 1px lit tube and a 1px dark shadow tube.
   - Stabilizes facial feature and whisker normals to $N = (0, 0, 1)$.
-- **100% Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/ai/math/photometricLighting.ts`)**:
+- **Feature Preservation & Discrete OKLCH Cel-Shading Ramps (`src/lib/ai/math/photometricLighting.ts`)**:
   - Pixels identified as `isFeature` (eyes, mouth) or `isInkLine` (outlines, whiskers) bypass diffuse and ambient multipliers entirely, maintaining exact artist colors without diffuse brown mud or dark ambient crush.
   - Excludes facial features and line art from receiving specular highlights.
   - Implemented discrete OKLCH cel-shading ramps cached per unique base color (`CelRamp`): maps each artist base color to exactly one unified crisp shadow tone (cool skylight hue shifted to 260°, $L \times 0.78$), one deep crevice tone for concave seams/folds ($AO < 0.60$, $L \times 0.60$), and optional warm highlight tone (65°).
-  - Completely eliminates continuous float gradients and dirty multi-shade banding across character fills.
+  - Replaces continuous float gradients and intermediate hue banding with discrete cel steps across character fills.
   - Supports optional Bayer ordered dithering stippling along the cel shadow boundary when `ditherModulation > 0`.
 - **Matte Character Specular Suppression (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
   - Automatically suppresses harsh specular glint overlays on matte/fabric character fur and skin, preventing random white spots across character faces.
@@ -471,7 +479,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Playground Animation Transfer**: Added `?fromPlayground=true` parameter in `PlaygroundLayout.tsx` to preserve animated frame sequences authored during onboarding when entering the studio, autosaving to IndexedDB under the project name `'Playground Animation'`.
 - **Viewport Zoom Aspect Ratio Fix**: Added `shrink-0` and explicit `flexShrink: 0`, `minWidth`, and `minHeight` styles to `#center-canvas-area` in `CenterViewport.tsx`, eliminating horizontal flexbox compression at high zoom levels (e.g. 2625%) and maintaining an exact 1:1 square aspect ratio up to 6400% zoom.
 - **Area-Preserving Pixel Art Downsampling (`bufferRegistry.ts`)**: Replaced naive `drawImage` downsampling with mathematical presence conservation (`resamplePixelArtBuffer`). By integrating source footprints and voting among solid pixels, 1-pixel strokes and continuous outlines (e.g. circles, character silhouettes) are preserved with 0 holes or dropouts when downscaling (e.g. 32x32 to 16x16).
-- **Canonical Xenowhirl RotSprite Engine (`smartMathEngine.ts`)**: Completely eliminated 45-degree rotation distortion (bloated 2-3px top-left outlines, erased bottom-right outlines, and asymmetrical corner spurs). Replaced the weighted voting alpha threshold engine with native 32-bit 3-pass Scale2X cascade ($1\times \to 2\times \to 4\times \to 8\times$) combined with strict subpixel center continuous inverse sampling ($x_s = \cos(-\theta)(x + 0.5 - C_x) - \sin(-\theta)(y + 0.5 - C_y) + C_x$). Added single-pixel detail restoration / presence conservation so micro-details and isolated dots never vanish. Verified 100% leak-proof closed contours (flood fill confirms 0 fill leaks across all 360 degrees), 4-quadrant bilateral symmetry, and exact 100.0% area preservation ($144 \to 144$ pixels on 32x32 star sprite).
+- **Canonical Xenowhirl RotSprite Engine (`smartMathEngine.ts`)**: Mitigated 45-degree rotation distortion (bloated top-left outlines, erased bottom-right outlines, and asymmetrical corner spurs). Replaced the weighted voting alpha threshold engine with native 32-bit 3-pass Scale2X cascade ($1\times \to 2\times \to 4\times \to 8\times$) combined with subpixel center continuous inverse sampling ($x_s = \cos(-\theta)(x + 0.5 - C_x) - \sin(-\theta)(y + 0.5 - C_y) + C_x$). Added single-pixel detail presence conservation to protect isolated dots and micro-features from erosion. Verified closed contours under flood fill across 360-degree rotation sweeps and 4-quadrant bilateral symmetry on reference star sprites.
 - **Floating Preview Dragging & Resize Window (`FloatingPreviewWindow.tsx`)**: Completely resolved the sticky mouse dragging defect by binding pointer movement and release to `window` with `e.buttons === 0` abort guards. Added an interactive bottom-right resize handle (`◢`) allowing smooth drag-to-resize viewport scaling from 100x100 to 640x640.
 - **Test Suite Updates**: 169 tests passing across 31 suites (+10 comprehensive tests in `tests/rotSpriteAndPrecision.test.ts`).
 
@@ -479,17 +487,17 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## [v1.3.0] - 2026-09-01
 
-### 🚀 UX & Onboarding Overhaul
+### UX & Onboarding Overhaul
 - **Progressive Playground & Onboarding**: Implemented a seamless onboarding flow with a progressive playground, allowing users to transition smoothly into the full studio experience.
 - **Radial Menu & Recent Colors**: Added a contextual radial menu for rapid tool access, an autosave activity indicator, progressive disclosure of advanced tools, and a tracked "Recent Colors" palette.
 - **Hydration & SSR**: Fixed hydration mismatch and console warnings in the `recentColors` component logic.
 
-### 🎨 Advanced Selection Tools
+### Advanced Selection Tools
 - **Magic Wand & Lasso Rasterization**: Shipped the Magic Wand tool for continuous flood-fill color selection and implemented precise polygon rasterization for the freehand Lasso tool.
 
-### ✨ Rendering Pipeline & AI Morphing Rewrite
-- **Signed Distance Field (SDF) Morphing Engine (`src/lib/ai/pixelAiEngine.ts`)**: Replaced artifact-prone optical flow with Meijster's O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
-- **Smart Morph Relighting (`src/components/layout/CenterViewport.tsx`)**: Re-architected in-between generation to cleanly extract base artwork, perform the SDF morph, and automatically re-dispatch `pixibun:photometric-lighting` and `pixibun:volumetric-optics` passes so newly generated frames perfectly match the dynamic lighting of the scene.
+### Rendering Pipeline & AI Morphing Rewrite
+- **Signed Distance Field (SDF) Morphing Engine (`src/lib/ai/pixelAiEngine.ts`)**: Replaced artifact-prone optical flow with Felzenszwalb-Huttenlocher O(N) EDT (Euclidean Distance Transform) to provide pixel-perfect topological morphing for in-between frames.
+- **Smart Morph Relighting (`src/components/layout/CenterViewport.tsx`)**: Re-architected in-between generation to cleanly extract base artwork, perform the SDF morph, and automatically re-dispatch `pixibun:photometric-lighting` and `pixibun:volumetric-optics` passes so newly generated frames match the dynamic lighting of the scene.
 - **Physical Rendering Fix**: Restored omitted Lambertian diffuse reflection to physical composites, vastly improving lighting realism.
 - **RotSprite Artifact-Free Canvas Rotation (`src/lib/ai/smartMathEngine.ts`)**: Implemented a custom Scale3x + Nearest-Neighbor Inverse Mapping algorithm to fix floating-point holes created by native `ctx.rotate`.
 - **GIF Export Multiframe Pooled Canvas Fix (`src/components/modals/ExportModal.tsx`, `src/lib/render/compositor.ts`)**: Passed `{ freshCanvas: true }` during multi-frame composite jobs, preventing the `sharedOffscreenCanvas` singleton from destructively overwriting all output frames with the final frame.
@@ -503,7 +511,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 ### 2D Ray Marching & Physically Accurate Soft Shadows Engine
 - **Aaltonen Contact-Hardening Cone Tracing (`src/lib/ai/shadowRayMarcher.ts`)**: Implemented CPU-bound 2D sphere tracing directly over discrete Euclidean Distance Fields ($O(N)$ Felzenszwalb EDT) using Sebastian Aaltonen's tangent geometric correction ($y = \frac{h^2}{2ph}, d = \sqrt{h^2 - y^2}$) and physical area light cone tracing ($r_{\text{cone}} = R_L \frac{t_{\text{closest}}}{T}$).
 - **Branchless $C^0$ Bilinear Field Interpolation (`sampleEDTBilinear`)**: Eliminates grid-stepping quantization and ray-stepping acne across fractional query coordinates.
-- **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with bulletproof `try...finally` deallocation guarantees.
+- **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with structured `try...finally` deallocation blocks.
 - **Bayer Matrix Ordered Penumbra Dithering**: Converts continuous float visibility gradients into authentic retro pixel art stippling patterns (`2x2`, `4x4`, `8x8`).
 - **Studio Inspector UI (`src/components/layout/RightInspector.tsx`)**: Built a dedicated **Raymarched Soft Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector.
 - **Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`)**: Added `pixibun:render-cast-shadow` handler routing output non-destructively to a tagged `'cast-shadow'` layer without mutating hand-drawn base artwork.

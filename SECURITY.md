@@ -1,9 +1,9 @@
-﻿# Security Policy — PixiBun Atelier
+# Security Policy — PixiBun Atelier
 
 ## 1. Zero-Cloud & Local-First Philosophy
 PixiBun Atelier is architected as an offline-first, client-side application:
-- All canvas manipulation, photometric lighting calculations, and animation exports run 100% on the client device.
-- Artwork and project data persist strictly in the browser's IndexedDB storage.
+- All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
+- Artwork and project data persist on-device in browser IndexedDB storage.
 - No user accounts, credentials, or tracking telemetry are collected.
 
 ## 2. Secrets & Secret Hygiene

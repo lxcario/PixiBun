@@ -1,5 +1,33 @@
 # Build Plan — PixiBun
 
+## Phase 51 — Deep Documentation Truthfulness, Academic Rigor & Marketing De-Escalation
+**Goal:** Eliminate marketing puffery, ungrounded superlatives, over-promoted algorithmic claims, and documentation inaccuracies across the entire repository to achieve true 10/10 documentation truthfulness and academic integrity.
+
+**Evidence & Rationale:**
+- Independent Audit Finding: External review noted that while underlying engineering was solid, claims of "100% leak-proof", "completely eliminates 45° distortion", "never vanish", and "100% On-Device" across documentation introduced hyperbole that damaged project credibility.
+- Algorithmic Calibration: RotSprite mitigates and substantially reduces 45° stair-stepping and outline erosion via 8x Scale2x and parabolic majority voting, but discrete raster rotation cannot guarantee zero loss in arbitrary geometric edge cases.
+- Stylized 2D Optics: Volumetric subsurface scattering and Cauchy dispersion are stylized 2D screen-space approximations tailored for pixel art rather than 3D path tracing.
+- Attribution Synchronization: Historical logs misattributed the Euclidean Distance Transform to Meijster; standardized on Felzenszwalb-Huttenlocher (2012 / 2004) matching `src/lib/ai/math/edtNormalMap.ts`.
+- Unicode Glitch Remediation: Fixed corrupted replacement characters in `LOGS.md`.
+
+**Deliverables:**
+- [x] Documentation Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`): Toned down hyperbolic superlatives and absolute guarantees to modest, precise technical language.
+- [x] RotSprite Realism (`README.md`, `ARCHITECTURE.md`, `CHANGELOG.md`, `LOGS.md`, `TASKS.md`): Calibrated rotation claims to reflect discrete raster graphics realities.
+- [x] Screen-Space Optics Qualification (`README.md`): Explicitly qualified SSS, Fresnel, and Kajiya-Kay highlights as stylized 2D screen-space pixel art algorithms.
+- [x] Felzenszwalb-Huttenlocher Citation Synchronization (`CHANGELOG.md`, `LOGS.md`): Replaced leftover Meijster references with canonical author citations.
+- [x] Benchmark Environment & Ceilings (`BENCHMARKS.md`): Added reference hardware context and clarified CI upper-bound budget ceilings ($\le 16.66\text{ ms}$).
+- [x] Character Encoding & Subheading Cleanup (`LOGS.md`, `CHANGELOG.md`): Cleaned Unicode replacement characters and removed decorative emoji markers from technical subheaders.
+
+**Acceptance criteria:**
+- `npx vitest run` passes all 554 tests across 79 suites.
+- `node scripts/verifyDocIntegrity.mjs` passes all checks (0 errors).
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors.
+- Working tree clean and committed.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 50 — External Audit Remediation & Terminology Harmonization
 **Goal:** Address 8 precision points and documentation/code alignments from external review: set P2P co-draw default to LAN mode, add 32× lossless PNG scale option in UI, remove misattribution of Xiaolin Wu from 2:1 isometric stepping across all documentation, remove leftover "Xenowoz" alias in `rotSprite.ts`, correct 256×256 memory arithmetic in `BENCHMARKS.md`, expand `ARCHITECTURE.md` CenterViewport canvas diagram to all 6 layers, align `PIXIBUN_DEEP_DIVE.md` file tree with `curvesAndLines.ts` and `morphology.ts`, and handle `requestPersistentStorage()` rejection with diagnostic logging.
 
@@ -452,7 +480,7 @@
 - [x] Photometric Dither Modulation Default (`studioStore.ts`): Reset initial `tools.ditherModulation` from `0.35` (35%) to `0.0` (0%).
 - [x] PixiBud AI Undo Layer Deletion (`canvas.ts`, `CenterViewport.tsx`): Added `createdLayerId` to `HistoryStep`. Pressing `Ctrl+Z` after applying an AI effect deletes the created layer from the frame stack and frees buffer memory.
 - [x] Base Layer Active Focus Anchor (`CenterViewport.tsx`): Automatically restored active layer focus to the base artwork after generating an AI pass, enabling sequential effect chaining.
-- [x] True Xenowhirl 8x Scale2X RotSprite Engine (`smartMathEngine.ts`): Implemented 3-pass Scale2X (EPX) upscaling ($1\times \to 2\times \to 4\times \to 8\times$) combined with high-resolution inverse rotation and a 64-sample Gaussian radial center-weighted downsampler ($\sigma = 2.2$) with a 25% outline threshold and luminance tie-breaking, completely eliminating gaps and spikes at arbitrary angles.
+- [x] True Xenowhirl 8x Scale2X RotSprite Engine (`smartMathEngine.ts`): Implemented 3-pass Scale2X (EPX) upscaling ($1\times \to 2\times \to 4\times \to 8\times$) combined with high-resolution inverse rotation and a 64-sample Gaussian radial center-weighted downsampler ($\sigma = 2.2$) with a 25% outline threshold and luminance tie-breaking, substantially reducing gaps and spikes at arbitrary angles.
 - [x] Live Preview Window Dragging & Resizing (`FloatingPreviewWindow.tsx`): Fixed mouse stickiness by moving drag listeners to `window` with `e.buttons === 0` termination guards. Added an interactive bottom-right resize handle (`◢`) allowing smooth viewport resizing from 100x100 to 640x640.
 - [x] Unit Tests (`tests/rotSpriteAndPrecision.test.ts`): 7 comprehensive unit tests verifying 32x32->16x16 line preservation, 45-degree contour continuity, orthogonal fast-paths, dither modulation 0.0, and default resample canvas sizing.
 

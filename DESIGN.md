@@ -36,7 +36,7 @@ graph TD
 
 ## 2. Semantic Color Tokens
 
-Our color system is authored in **OKLCH** color space to guarantee perceptual uniformity, verified WCAG AA contrast compliance (4.5:1 for body copy, 3:1 for large controls), and natural directional hue-shifting.
+Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, verified WCAG AA contrast compliance (4.5:1 for body copy, 3:1 for large controls), and natural directional hue-shifting.
 
 ```mermaid
 graph LR
@@ -221,7 +221,7 @@ Grounded in Machado, Oliveira & Fernandes (2009, IEEE TVCG):
   2. **Deuteranopia:** M-cone deficiency (green-weakness).
   3. **Tritanopia:** S-cone deficiency (blue-weakness).
   4. **Monochromacy:** Pure luminance contrast validation.
-* **Lens Invariant:** Operates strictly on viewport display output; project data and exported files remain 100% untouched.
+* **Lens Invariant:** Operates strictly on viewport display output; project data and exported files remain untouched.
 
 ---
 

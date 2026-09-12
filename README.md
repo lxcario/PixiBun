@@ -18,7 +18,7 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 **PixiBun is designed to feel like a wooden drafting desk late at night.**
 
 * **No Accounts or Logins** — Open the studio and begin placing pixels immediately.
-* **100% On-Device & Private Core** — Zero tracking, zero telemetry, zero cloud data scraping. Your frames and palettes live exclusively in your local IndexedDB storage. (Optional diagnostic relay is strictly opt-in and disabled by default).
+* **Local-First & Private Core** — Zero tracking, zero telemetry, zero cloud data scraping. Frames and project history persist on-device in local IndexedDB storage. Co-draw defaults to zero-egress LAN mode; public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
 * **Purpose-Built for Indie & Game Jam Sprites** — Optimized for $16\times16$ to $128\times128$ character sprites, tilesets, and animation loops. Rather than competing with heavy native desktop software (e.g., Aseprite) for 500+ frame 4K cinematic timelines, PixiBun is engineered for instant zero-install browser crafting, 2.5D photometric lighting, and frictionless game engine exports.
 * **Tactile Mechanical Feedback** — Integer-aligned strokes, physical button depression physics, specular light-sweeps, and homestyle palettes.
 * **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite 8x distortion-free rotation, OKLab perceptual color science, and intelligent image pixelization.
@@ -62,7 +62,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 ---
 
 ### ☀️ PixiBud 2.5D Photometric Studio & Smart Math Engine
-* **Deep Canvas Art Understanding & Anatomical Classification:** Analyzes artwork morphology to classify forms into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`), completely protecting them from diffuse darkening or ambient crush.
+* **Deep Canvas Art Understanding & Anatomical Classification:** Analyzes artwork morphology to classify forms into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`), preserving original artist RGB values from diffuse darkening or ambient crush.
 * **Frontal Face Cushion Plateau & Independent Ear Geometry:** For character forms, the interior face height forms a flat camera-facing plateau ($N_z \ge 0.85$), ensuring light illuminates faces without splitting them in half with shadow, while form shadows hug only the 1–2px unlit silhouette bevel. Distinct convex lobes preserve independent 3D cone geometry for ears and horns.
 * **Perceptual 4-Tone OKLCH Stepped Cel-Shading:** Unshaded flat character sprites receive crisp discrete tone steps — **Base**, **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo skylight), **Deep Crevice** ($L \times 0.60$, $20°$ hue shift, triggers at $AO < 0.60$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ shift toward $65°$ warm sunlight, shiny materials only). Shadow placement is driven purely by directional diffuse signal (`diffSignal < 0.55`), decoupled from ambient fill to ensure crisp anatomical shadow termination.
 * **Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows:** Replaced infinite planar raymarch wedges with professional 2.5D bounded sprite cast shadows. Evaluates exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$) anchored at the sprite contact baseline, strictly preserving leg arches and waist indentations without bounding-box bloat or muddy center blobs. Includes classic RPG ground contact drop shadows (`shadowStyle: 'drop'`) with crisp Bresenham ellipses under feet, defaulting to uniform flat opacity (`ditherMode: 'none'`).
@@ -83,11 +83,11 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 * **Directional Selective Outlining (Sel-Out):** Evaluates surface normal azimuth alignment against the light source, applying illuminated rim tones to light-facing edges and deep saturated material tones to shadow edges.
 * **Smart Sub-Pixel Anti-Aliasing (De-Jaggy):** Evaluates staircase L-crooks in 1px lines and inserts soft intermediate OKLab blend pixels for smooth hand-drawn contours without creating holes.
-* **2D Volumetric Optics & Subsurface Scattering (SSS):** Beer-Lambert exponential spectral decay through distance-field chord lengths $T(\mathbf{x}) = 2\sqrt{\max(0, R^2 - D(\mathbf{x})^2)}$ combined with 2D Henyey-Greenstein forward phase scattering for luminous gemstones, potion vials, and translucent slimes.
-* **Dielectric Fresnel Rim Reflection with Cauchy Dispersion:** Schlick grazing angle reflectance modulated by per-channel IOR splitting ($F_{0, R} < F_{0, G} < F_{0, B}$) for crystalline edges and rim-lit character contours.
-* **Kajiya-Kay Anisotropic Highlight:** Curvature and directional tangent vector fields $\mathbf{T}(\mathbf{x})$ with dual-cuticle shifts for continuous specular highlight bands across hair strands, fur, and brushed metal blades.
+* **2D Screen-Space Volumetric Optics & Subsurface Scattering (SSS):** Stylized 2D approximation of Beer-Lambert exponential spectral decay through distance-field chord lengths $T(\mathbf{x}) = 2\sqrt{\max(0, R^2 - D(\mathbf{x})^2)}$ paired with a 2D Henyey-Greenstein forward phase function for luminous gemstones, potion vials, and translucent slimes.
+* **Dielectric Fresnel Rim Reflection with Cauchy Dispersion:** Stylized grazing angle reflectance modulated by per-channel index-of-refraction splitting ($F_{0, R} < F_{0, G} < F_{0, B}$) for crystalline edges and rim-lit character contours.
+* **Kajiya-Kay Anisotropic Highlight:** Directional tangent vector fields $\mathbf{T}(\mathbf{x})$ with dual-cuticle shifts for continuous specular highlight bands across hair strands, fur, and brushed metal blades.
 * **Contact Ground Drop Shadows & Auto Outline:** 1-click generation of soft elliptical contact shadows under feet and clean 1px outer stroke silhouette layers.
-* **Canonical Xenowhirl RotSprite Engine:** 3-pass Scale2X (EPX) cascade ($1\times \to 2\times \to 4\times \to 8\times$) + strict subpixel center continuous inverse sampling with single-pixel presence conservation, completely eliminating 45° distortion, blooming, and outline erosion while preserving 100% bilateral symmetry and palette purity.
+* **Canonical Xenowhirl RotSprite Engine:** 3-pass Scale2X (EPX) cascade ($1\times \to 2\times \to 4\times \to 8\times$) combined with subpixel continuous inverse sampling and parabolic majority voting, substantially reducing 45° distortion, blooming, and outline erosion while preserving palette purity.
 * **Zhang-Suen Line Thinning:** Morphological skeleton algorithm for normalizing thick strokes down to clean 1px lines.
 * **5 Physical Material Presets:** Matte Clay, Polished Metal, Glossy Glass/Gem, Velvet Fabric, and Gold/Brass.
 
@@ -234,9 +234,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📱 Offline PWA, Accessibility & Privacy Observability
 
-PixiBun is engineered as a true production-grade, local-first web application:
+PixiBun is engineered as a local-first web application:
 
-* **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The entire core creation and export suite runs 100% offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
+* **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
 * **Continuous Quality & Performance Gates:** 554 unit and integration tests across 79 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
@@ -264,8 +264,8 @@ PixiBun is engineered as a true production-grade, local-first web application:
 
 ## 📜 Craft Values & Open Source
  
-* **100% Local-First & Zero Telemetry:** No accounts, no telemetry, no tracking, no subscriptions.
-* **Core Studio is 100% Offline-Capable:** Full drawing, animation, lighting, and export pipelines run entirely in-browser without network access via installed PWA.
+* **Local-First & Zero Telemetry:** No user accounts, no telemetry, no tracking, no subscriptions.
+* **Offline-First Studio:** Core drawing, animation, lighting, and export pipelines run entirely in-browser without network access via the installable PWA.
 * **Musical Compositions & Sound Design Attribution:** In-studio procedural lofi radio arrangements are non-commercial fan homages to musical themes composed by Toby Fox (*Deltarune* Chapter 1 & 2 © Toby Fox / Materia Collective). Arranged procedurally via Web Audio API for educational demonstration and creative focus.
 * **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
  

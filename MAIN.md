@@ -37,12 +37,12 @@
 | Styling & Design Tokens | **Tailwind CSS v4** | CSS-first configuration (`@theme`), OKLCH color space native support, container queries, and custom tactile pixel utility classes. |
 | Tactile Motion | **Motion (`motion/react`)** | Fluid micro-interactions, floating cozy tool dock transitions, dialogs, and drawer animations without layout thrashing. |
 | Storage & Autosave | **Dexie.js (IndexedDB Schema v4)** | Local-first, continuous auto-save with dedicated binary `layerBlobs` table (zero base64 JSON stringify overhead), offline support, and schema-validated project file serialization. |
-| Smart Graphics Intelligence | **Deterministic On-Device Math Engine (`src/lib/ai/math/`)** | 2.5D Felzenszwalb EDT lighting, Sobel normal maps, content-aware heightmaps, OKLCH cel-shading, Minecraft 3D skin shading, and SDF morphing with 0 cloud dependencies, 0 latency, and 100% offline privacy. |
+| Smart Graphics Intelligence | **Deterministic On-Device Math Engine (`src/lib/ai/math/`)** | 2.5D Felzenszwalb EDT lighting, Sobel normal maps, content-aware heightmaps, OKLCH cel-shading, Minecraft 3D skin shading, and SDF morphing with 0 cloud dependencies, sub-millisecond execution, and offline privacy. |
 
 ## Repo & Environments
 - **GitHub repo:** Private (Planned Open Source MIT release)
 - **Environments:** 
-  - `dev`: Local development (`localhost:3000`) and static PWA build with 100% offline capability
+  - `dev`: Local development (`localhost:3000`) and static PWA build with offline capability
   - `production`: Vercel edge deployment with secure server-side environment variables
 
 ## Related Docs
