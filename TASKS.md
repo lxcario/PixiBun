@@ -1,5 +1,34 @@
 # Build Plan — PixiBun
 
+## Phase 50 — External Audit Remediation & Terminology Harmonization
+**Goal:** Address 8 precision points and documentation/code alignments from external review: set P2P co-draw default to LAN mode, add 32× lossless PNG scale option in UI, remove misattribution of Xiaolin Wu from 2:1 isometric stepping across all documentation, remove leftover "Xenowoz" alias in `rotSprite.ts`, correct 256×256 memory arithmetic in `BENCHMARKS.md`, expand `ARCHITECTURE.md` CenterViewport canvas diagram to all 6 layers, align `PIXIBUN_DEEP_DIVE.md` file tree with `curvesAndLines.ts` and `morphology.ts`, and handle `requestPersistentStorage()` rejection with diagnostic logging.
+
+**Evidence & Rationale:**
+- P2P Privacy Alignment: `README.md` promised zero-egress LAN default (`iceServers: []`), but `CoDrawModal.tsx` opened in `'internet'` mode. Setting `networkMode` to `'lan'` aligns default behavior with local-first privacy.
+- PNG Export UI Discrepancy: `README.md` advertised 1×–32× scaling, but `PngExportTab.tsx` only offered up to 16×. Adding 32× fulfills the capability.
+- Isometric Stepping Attribution: Xiaolin Wu's algorithm is exclusively an anti-aliasing technique. Integer 2:1 stepping ($\arctan 0.5 \approx 26.565^\circ$) is discrete 1980s dimetric pixel art rasterization. Renamed to "Quantized 2:1 Isometric Line Stepper".
+- Benchmark Arithmetic: Corrected $256 \times 256$ 50-step memory from 12.80 MB to 13.11 MB ($13{,}107{,}200 / 1{,}000{,}000$) and 100-step from 25.60 MB to 26.21 MB in decimal MB.
+
+**Deliverables:**
+- [x] P2P Co-Draw Modal Network Default (`src/components/modals/CoDrawModal.tsx`): Defaulted to `'lan'`.
+- [x] Lossless PNG Export 32× Resolution Option (`src/components/modals/export/PngExportTab.tsx`): Added `32` to scale array.
+- [x] Eradication of "Wu" Attribution (`README.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, `CHANGELOG.md`, `TASKS.md`, `LOGS.md`).
+- [x] Citation Cleanup (`src/lib/ai/math/rotSprite.ts`): Removed "Xenowoz".
+- [x] Benchmark Memory Arithmetic (`BENCHMARKS.md`, `tests/benchmark.test.ts`): Aligned to 13.11 MB / 26.21 MB.
+- [x] 6-Canvas Stack Diagram (`ARCHITECTURE.md`): Documented all 6 hardware-accelerated canvas layers.
+- [x] File Tree Alignment (`PIXIBUN_DEEP_DIVE.md`): Added `curvesAndLines.ts` and `morphology.ts`.
+- [x] Persistent Storage Handling (`src/components/layout/StudioLayout.tsx`): Logged diagnostic warning if permission is denied.
+
+**Acceptance criteria:**
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors.
+- `npx vitest run` passes all 554 tests across 79 suites.
+- `node scripts/verifyDocIntegrity.mjs` passes all checks.
+- `npx next build` compiles cleanly with Turbopack.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 49 — Deep Audit Algorithmic Remediation, RotSprite Fast Paths, SDF Morphing & Test Coverage Re-alignment
 **Goal:** Remediate verified bugs, algorithmic discrepancies, documentation untruths, and untested edge cases identified in deep code audits. Implement rectangular canvas transpositions for RotSprite orthogonal rotations, $O(W \times H)$ multi-source BFS color sampling and fraction forwarding for SDF morphing, history engine popped-step guard, 14-test complete flood fill verification, diagnostics relay version synchronization, portable test artifact output paths, and strict academic documentation truthfulness.
 

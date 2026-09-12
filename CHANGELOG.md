@@ -3,6 +3,16 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.12.1] - 2026-09-12
+### External Audit Remediation & Terminology Harmonization (Phase 50)
+- **P2P Co-Draw Modal Network Default (`src/components/modals/CoDrawModal.tsx`)**: Changed default network mode from `'internet'` to `'lan'`, matching the zero-egress LAN promise (`iceServers: []`) in `README.md`.
+- **Lossless PNG Export 32× Resolution Option (`src/components/modals/export/PngExportTab.tsx`)**: Added `32` to the scale button array (`[1, 2, 4, 8, 16, 32]`), fulfilling the documented "1× to 32× lossless PNG" export capability in the UI.
+- **Eradication of "Wu" Attribution on 2:1 Isometric Stepping (`README.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`, `CHANGELOG.md`, `TASKS.md`, `LOGS.md`)**: Replaced all mentions with "Quantized 2:1 Isometric Line Stepper", reflecting classic 1980s dimetric rasterization ($\arctan(0.5) \approx 26.565^\circ$) rather than Xiaolin Wu's anti-aliasing technique.
+- **Historical Citation Cleanup (`src/lib/ai/math/rotSprite.ts`)**: Standardized citation on canonical author name Xenowhirl (2007) and removed the leftover alias "Xenowoz".
+- **HistoryEngine Memory Arithmetic Correction (`BENCHMARKS.md`, `tests/benchmark.test.ts`)**: Corrected 256×256 50-step memory from 12.80 MB to 13.11 MB ($13{,}107{,}200 / 1{,}000{,}000$) and 100-step max memory from 25.60 MB to 26.21 MB.
+- **CenterViewport 6-Canvas Stack Diagram (`ARCHITECTURE.md`)**: Updated the mermaid diagram to include all 6 hardware-accelerated canvas layers (`onionCanvasRef`, `stencilCanvasRef`, `mainCanvasRef`, `previewCanvasRef`, `gridCanvasRef`, `cursorCanvasRef`).
+- **Deep Dive Directory Tree Alignment (`PIXIBUN_DEEP_DIVE.md`)**: Added `curvesAndLines.ts` and `morphology.ts` to the `src/lib/ai/math/` tree.
+- **Persistent Storage Rejection Handling (`src/components/layout/StudioLayout.tsx`)**: Handled the promise returned by `requestPersistentStorage()`, logging a diagnostic warning if persistence is not granted.
+
 ### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)
 - **P2P WebRTC Data Channel Backpressure & Buffer Ceilings (`src/lib/sync/p2pSync.ts`, `tests/p2pSync.test.ts`)**:
   - Implemented `MAX_DATA_CHANNEL_BUFFERED_AMOUNT` (1 MB) and `MAX_PRESENCE_BUFFERED_AMOUNT` (64 KB) backpressure thresholds for dual RTCDataChannel transports.
