@@ -3,6 +3,27 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.12.1] - 2026-09-12
+### Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (Phase 53)
+- **Dimetric Ray Projection for Isometric Lines (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:
+  - Replaced $dx$-only step scaling in `getIsometric2p1Line` with scalar dimetric ray projection ($t = (2|\Delta x| + |\Delta y|) / 5$), snapping arbitrary cursor endpoints $(x_1, y_1)$ to the true 2:1 line while maintaining exact cardinal horizontal/vertical lines.
+  - Added unit test cases in `curvesAndLines.test.ts` verifying projection for off-axis points (e.g. $(0,0) \to (10, 2)$, $(0,0) \to (3, 10)$) and negative quadrant coordinates.
+- **Per-Tab Export Scale State Isolation (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`)**:
+  - Replaced single shared scale state with `tabScales: Record<ExportType, number>`, eliminating scale bleed and downward clamping when switching between export tabs.
+- **Scale2x Border Non-Matching Sentinel (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteSymmetryAndThinLines.test.ts`)**:
+  - Replaced out-of-bounds `0` return with an explicit `OOB = -1` sentinel, ensuring out-of-bounds coordinates never match inside pixels or each other.
+  - Added regression test in `rotSpriteSymmetryAndThinLines.test.ts` verifying that solid edge-touching sprites maintain 100% opaque corners without transparent erosion.
+- **Canonical DPaint CRNG Parity (`src/lib/color/paletteCycling.ts`, `tests/paletteCycling.test.ts`)**:
+  - Removed unmotivated `rateRaw !== 36` check, aligning track activation strictly with the official Amiga IFF ILBM `RNG_ACTIVE` flag bit.
+  - Added unit test verifying that slow 0.13 Hz cycle tracks parse and round-trip cleanly.
+- **Documentation Truthfulness Alignment (`src/lib/ai/smartMathEngine.ts`, `src/lib/export/depixelizeVector.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/procedural/waveFunctionCollapse.ts`, `.env.example`, `SECURITY.md`, `README.md`, `MAIN.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`)**:
+  - Corrected `smartMathEngine.ts` line 18 comment to Quadratic Bézier.
+  - Added Kopf-Lischinski DOI `10.1145/2010324.1964994` and domain heuristic note in `depixelizeVector.ts`.
+  - Added Mozilla origins and W3C Third Edition integration citation in `apngEncoder.ts`.
+  - Clarified WFC constraint guarantee for converged outputs in `waveFunctionCollapse.ts`.
+  - Replaced `ghp_` prefixes in `.env.example`.
+  - Documented diagnostics relay rate limiting, payload ceiling, and HTTPS security in `SECURITY.md`.
+  - Synchronized showcase models, 5 materials, 6-canvas stack, 100-state history capacity, $Nz \ge 0.88$, and benchmark conclusions across README, MAIN, ARCHITECTURE, and BENCHMARKS.
+
 ### Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation (Phase 52)
 - **Export Canvas Safety Bounds & Scale Tab Isolation (`src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`, `tests/exportCanvasScaleBounds.test.ts`)**:
   - Established cross-platform hardware safety bounds (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`) based on mobile WebKit / iOS Safari canvas allocation limits.

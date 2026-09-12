@@ -1,14 +1,17 @@
 /**
- * Kopf–Lischinski Vector Depixelization Engine (Pixel Art to Smooth SVG).
+ * Vector Depixelization Engine (Pixel Art to Smooth SVG).
  *
- * Academic Citation:
- * Johannes Kopf and Dani Lischinski, "Depixelizing Pixel Art,"
- * ACM Transactions on Graphics (Proceedings of ACM SIGGRAPH 2011),
- * Vol. 30, No. 4, Article 99.
+ * Inspired by the landmark computer graphics principles of Kopf & Lischinski:
+ * - Johannes Kopf and Dani Lischinski, "Depixelizing Pixel Art,"
+ *   ACM Transactions on Graphics (Proceedings of ACM SIGGRAPH 2011),
+ *   Vol. 30, No. 4, Article 99. DOI: 10.1145/2010324.1964994.
  *
- * Resolves diagonal pixel-neighbor ambiguities using planar graph topology heuristics,
- * constructs cell boundaries with local corner offsets,
- * and fits smooth piecewise cubic Bézier splines to produce publication-grade vector graphics.
+ * Architecture Note:
+ * Rather than solving full non-linear Voronoi energy optimizations, PixiBun implements a
+ * lightweight, domain-tailored planar similarity graph ambiguity heuristic for real-time in-browser SVG export:
+ * 1. Resolves diagonal pixel-neighbor ambiguities using 1-hop parity connectivity heuristics.
+ * 2. Constructs orthogonal cell boundaries with local corner offsets (±0.05).
+ * 3. Fits smooth piecewise cubic Bézier paths for scalable vector asset export.
  */
 
 export interface DepixelizeOptions {

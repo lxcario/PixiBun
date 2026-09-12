@@ -30,7 +30,7 @@ graph TD
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["useThemeStore (Dark / Light Mode, Zero-Lag Style Override)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
-        UndoRedo["historyEngine (50-Step DOM-Free History Ring)"]
+        UndoRedo["historyEngine (50 Undo + 50 Redo DOM-Free History Ring, 100 States Max)"]
     end
 
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
@@ -56,7 +56,7 @@ graph TD
 ## 2. Canvas & Rendering Pipeline
 
 ### Multi-Canvas Layered Viewport Stack
-To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 6-canvas layered stack:
+To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 6-canvas layered stack (backed by L0 CSS background and topped by the interactive SVG selection gizmo overlay):
 
 ```mermaid
 graph TD

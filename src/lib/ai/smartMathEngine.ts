@@ -15,7 +15,7 @@
  * 11. Dithering: Bayer Matrix (1973), Atkinson (1984), Riemersma Hilbert Space-Filling Curve (1998)
  * 12. RotSprite 8x Scale2X Distortion-Free Rotation (Xenowhirl 2007; EPX Johnston 1992)
  * 13. Zhang-Suen Morphological Skeleton Line Thinning (Zhang & Suen 1984, CACM)
- * 14. Rational Bézier Curves, Isometric Lines & 47-Tile Blob Autotiling
+ * 14. Quadratic Bézier Curves, Isometric Lines & 47-Tile Blob Autotiling
  * 15. Minecraft Skin UV Projection & Normal Mapping
  * 16. Physically Accurate 2D Soft Shadows (Aaltonen Cone Tracing 2018)
  */

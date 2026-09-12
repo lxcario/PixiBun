@@ -89,7 +89,7 @@ New functions:
 Modified functions:
 
 - `applyThemeToDOM` / theme boot in `themeStore.ts` — coordinate `themeColor` meta updates with the new viewport metadata (minor).
-- `postMessage` handling in `public/sw.js` (`SKIP_WAITING`, `CACHE_VERSION` bump message).
+- `postMessage` handling in Service Worker (served dynamically via `src/app/sw.js/route.ts`) (`SKIP_WAITING`, `CACHE_VERSION` bump message).
 
 Removed: none.
 

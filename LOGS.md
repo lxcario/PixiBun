@@ -1,5 +1,7 @@
 # Build Log — PixiBun
 
+> **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
+
 ## Phase 0 — Intake, Architecture & Foundation Docs (2026-08-18)
 **Delivered:**
 - Completed the Part XII intake interview via /grill-me.
@@ -1435,5 +1437,40 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 documentation integrity checks passed
 - `npx next build`: Turbopack clean production build across 8 routes
 **Status:** Complete
+
+---
+
+## Phase 53 — Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (2026-09-12)
+**Delivered:**
+- **Dimetric Ray Projection for Isometric Lines (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`)**:
+  - Implemented scalar projection onto the canonical 2:1 dimetric direction vector ($t = (2|\Delta x| + |\Delta y|) / 5$), snapping arbitrary cursor drag coordinates $(x_1, y_1)$ to the true 2:1 line.
+  - Added unit test cases in `curvesAndLines.test.ts` verifying projection for off-axis points (e.g. $(0,0) \to (10, 2)$, $(0,0) \to (3, 10)$) and negative quadrant coordinates.
+- **Per-Tab Export Scale Isolation (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`)**:
+  - Replaced single shared scale state with `tabScales: Record<ExportType, number>`, eliminating scale bleed and downward clamping when switching between export tabs.
+- **Scale2x Border Non-Matching Sentinel (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteSymmetryAndThinLines.test.ts`)**:
+  - Replaced out-of-bounds `0` return with an explicit `OOB = -1` sentinel, ensuring out-of-bounds coordinates never match inside pixels or each other.
+  - Added regression test in `rotSpriteSymmetryAndThinLines.test.ts` verifying that solid edge-touching sprites maintain 100% opaque corners without transparent erosion.
+- **Canonical DPaint CRNG Parity (`src/lib/color/paletteCycling.ts`, `tests/paletteCycling.test.ts`)**:
+  - Removed unmotivated `rateRaw !== 36` check, aligning track activation strictly with the official Amiga IFF ILBM `RNG_ACTIVE` flag bit.
+  - Added unit test verifying that slow 0.13 Hz cycle tracks parse and round-trip cleanly.
+- **Purged Stale Snapshots (`testsprite_tests/tmp/prd_files/`)**:
+  - Removed obsolete snapshot markdown files that contained outdated terminology.
+- **Documentation Truthfulness Alignment (`smartMathEngine.ts`, `depixelizeVector.ts`, `apngEncoder.ts`, `waveFunctionCollapse.ts`, `.env.example`, `SECURITY.md`, `README.md`, `MAIN.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`)**:
+  - Corrected `smartMathEngine.ts` line 18 comment to Quadratic Bézier.
+  - Added Kopf-Lischinski DOI `10.1145/2010324.1964994` and domain heuristic note in `depixelizeVector.ts`.
+  - Added Mozilla origins and W3C Third Edition integration citation in `apngEncoder.ts`.
+  - Clarified WFC constraint guarantee for converged outputs in `waveFunctionCollapse.ts`.
+  - Replaced `ghp_` prefixes in `.env.example`.
+  - Documented diagnostics relay rate limiting, payload ceiling, and HTTPS security in `SECURITY.md`.
+  - Synchronized showcase models, 5 materials, 6-canvas stack, 100-state history capacity, $Nz \ge 0.88$, and benchmark conclusions across README, MAIN, ARCHITECTURE, and BENCHMARKS.
+
+**Checks run:**
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src tests`: 0 errors, 0 warnings
+- `npx vitest run`: 562/562 passed across 80 suites (0 regressions)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+- `npx next build`: Turbopack clean production build across 8 routes
+**Status:** Complete
+
 
 

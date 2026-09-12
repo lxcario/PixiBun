@@ -42,7 +42,11 @@ export function parseCRNG(chunkBytes: Uint8Array, id: string = 'crng-0'): Palett
   const low = view.getUint8(6);
   const high = view.getUint8(7);
 
-  const isActive = (flags & CRNG_FLAGS.RNG_ACTIVE) !== 0 && rateRaw > 0 && rateRaw !== 36;
+  // Electronic Arts / Commodore Amiga IFF ILBM CRNG specification:
+  // - rateRaw: Q2.14 fixed-point frequency where 16384 = 60 Hz (steps/sec)
+  // - flags: bit 0 = RNG_ACTIVE (1), bit 1 = RNG_REVERSE (2)
+  // Track activation is strictly controlled by RNG_ACTIVE flag bit and non-zero positive rate
+  const isActive = (flags & CRNG_FLAGS.RNG_ACTIVE) !== 0 && rateRaw > 0;
   const isReverse = (flags & CRNG_FLAGS.RNG_REVERSE) !== 0;
 
   // Rate scaling: 16384 = 60 steps/sec in standard DPaint

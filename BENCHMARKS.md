@@ -23,7 +23,7 @@ The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32A
 | **256 × 256** | 65,536 | $< 0.005\text{ ms}$ | $0.199\text{ ms}$ | **$0.204\text{ ms}$** | **1.22%** |
 | **512 × 512** | 262,144 | $< 0.005\text{ ms}$ | $0.802\text{ ms}$ | **$0.807\text{ ms}$** | **4.84%** |
 
-> **Conclusion:** 60 FPS continuous palette cycling comfortably holds across all supported sprite dimensions up to $512 \times 512$, consuming less than $5\%$ of the total 16.66ms browser frame budget.
+> **Conclusion:** Across empirical runs up to $512 \times 512$, continuous palette cycling measured $<5\%$ of the 16.66ms browser frame budget, remaining well within automated CI latency budgets.
 
 ---
 
@@ -76,7 +76,7 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 | **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** | $> 11,000\text{ FPS}$ |
 | **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** | $> 3,000\text{ FPS}$ |
 
-> **Conclusion:** Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$, consuming $\approx 2.0\%$ of the 16.66ms 60 FPS frame budget. Continuous interactive transform preview comfortably satisfies the 60 FPS target, validated against automated regression budgets in CI.
+> **Conclusion:** Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$ ($\approx 2.0\%$ of the 16.66ms 60 FPS frame budget), remaining within upper-bound latency ceilings enforced by automated CI regression tests.
 
 ---
 
@@ -104,6 +104,6 @@ $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \time
 | **512 × 512** | 16× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
 | **512 × 512** | 32× | 16,384 × 16,384 | 268,435,456 | **$1.07\text{ GB}$** | **Blocked** | Severe memory risk; iOS Safari tab crash |
 
-> **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, peak transient export allocations are constrained to $\le 67.11\text{ MB}$, completely preventing 1 GB allocation spikes and guaranteeing cross-platform export stability across mobile and desktop browsers.
+> **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, peak transient export allocations are constrained to $\le 67.11\text{ MB}$, mitigating 1 GB allocation spikes and significantly improving export reliability across mobile and desktop browsers.
 
 

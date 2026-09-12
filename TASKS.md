@@ -1,5 +1,35 @@
 # Build Plan — PixiBun
 
+> **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
+
+## Phase 53 — Comprehensive Audit Resolution, Algorithmic Precision & State Isolation
+**Goal:** Address all 19 findings identified in the external adversarial audit report (`PIXIBUN_AUDIT_RESULTS.md`): implement dimetric ray projection for `getIsometric2p1Line` to accurately snap arbitrary cursor inputs to the 2:1 line, isolate export scale states across modal tabs to prevent scale bleed, fix Scale2x border conditions using non-matching out-of-bounds sentinels, align DPaint CRNG parsing strictly with canonical Amiga ILBM `RNG_ACTIVE` specification (removing unmotivated `rateRaw !== 36`), purge stale temporary snapshot files, and calibrate documentation across all files.
+
+**Evidence & Rationale:**
+- Isometric Line Stepping (K-1): In `curvesAndLines.ts`, stepping solely on $dx$ missed the cursor endpoint for arbitrary drag coordinates. Dimetric ray projection ($t = (2|\Delta x| + |\Delta y|) / 5$) accurately maps any cursor position to the nearest canonical 2:1 pixel line while preserving straight cardinal lines.
+- Per-Tab Export Scale Isolation (Y-1): Storing scales in a per-tab record (`tabScales`) prevents lower-scale limits in GIF/Spritesheet tabs from clobbering higher scales chosen in PNG/SVG tabs.
+- Scale2x Edge Preservation (Y-2): Treating out-of-bounds coordinates as an explicit non-matching sentinel rather than 0 prevents solid edge-touching sprites from suffering transparent corner erosion.
+- Amiga CRNG Parity (Y-3): In EA/Commodore ILBM specs, track activation is strictly governed by `RNG_ACTIVE` bit 0. Removing `rateRaw !== 36` allows slow 0.13 Hz cycle tracks to parse and round-trip properly.
+- Documentation Truthfulness: Calibrated showcase models, 5 materials, 6-canvas stack, 100-state history capacity, $Nz \ge 0.88$, and benchmark conclusions across README, MAIN, ARCHITECTURE, and BENCHMARKS.
+
+**Deliverables:**
+- [x] Dimetric Ray Projection Line Tool (`src/lib/ai/math/curvesAndLines.ts`, `tests/curvesAndLines.test.ts`): Snapped arbitrary endpoints to true 2:1 lines with comprehensive unit tests for off-axis points and negative quadrants.
+- [x] Tab-Isolated Export Scales (`src/components/modals/ExportModal.tsx`, `tests/components/ExportModal.test.tsx`): Replaced shared scale with `tabScales: Record<ExportType, number>` preventing cross-tab clamping.
+- [x] Scale2x Border Sentinel (`src/lib/canvas/rotSprite.ts`, `tests/rotSpriteSymmetryAndThinLines.test.ts`): Out-of-bounds coordinates return non-matching sentinel preventing transparent corner erosion on border-touching sprites.
+- [x] Canonical DPaint CRNG Format (`src/lib/color/paletteCycling.ts`, `tests/paletteCycling.test.ts`): Removed `rateRaw !== 36` check, aligning with official Amiga IFF ILBM spec.
+- [x] Stale Snapshot Cleanup: Purged obsolete snapshot markdown files in `testsprite_tests/tmp/prd_files/`.
+- [x] Documentation Truthfulness Alignment: Updated `smartMathEngine.ts`, `depixelizeVector.ts`, `apngEncoder.ts`, `waveFunctionCollapse.ts`, `.env.example`, `SECURITY.md`, `README.md`, `MAIN.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`.
+
+**Acceptance criteria:**
+- `npx vitest run` passes all 562 tests across 80 suites (0 regressions).
+- `node scripts/verifyDocIntegrity.mjs` passes all 6 checks.
+- `npx tsc --noEmit` and `npm run lint` pass with 0 errors.
+- `npx next build` compiles cleanly with Turbopack.
+
+**Status:** Complete (2026-09-12)
+
+---
+
 ## Phase 52 — Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation
 **Goal:** Address 6 critical findings from external code-diff and documentation audit: establish cross-platform canvas safety bounds (4096 px / 16.7 MP) for high-resolution PNG exports, dynamically disable out-of-bounds scales and isolate export tab scale states, implement a visible persistent storage warning banner with backup export in `StudioLayout`, correct "Rational Bézier" nomenclature to "Quadratic Bézier" across documentation and code, calibrate marketing hyperbole while rigorously preserving legitimate academic and distributed systems terms (CRDT Strong Eventual Consistency, WFC constraints), synchronize package.json version to 1.12.1, and establish an automated CI verification check in `verifyDocIntegrity.mjs` ensuring documentation and package versions never diverge.
 

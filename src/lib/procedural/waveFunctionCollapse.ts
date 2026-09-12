@@ -9,7 +9,7 @@
  * across orthogonal directions, and collapses a wave of possibilities using minimum Shannon entropy
  * observation and constraint propagation (AC-3 arc consistency).
  *
- * Guarantees zero local neighborhood constraint violations across generated regions.
+ * For successfully converged outputs (status === 'complete'), guarantees zero local neighborhood constraint violations across generated regions.
  */
 
 export interface WfcOptions {

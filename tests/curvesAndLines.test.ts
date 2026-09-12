@@ -81,6 +81,41 @@ describe('curvesAndLines mathematical engine', () => {
       expect(points).toEqual([{ x: 7, y: 9 }]);
     });
 
+    it('projects arbitrary off-axis cursor endpoint onto the 2:1 dimetric ray', () => {
+      // (0,0) -> (10, 2): t = (2*10 + 2)/5 = 4.4 -> 4 steps -> ends at (8, 4)
+      const pts1 = getIsometric2p1Line(0, 0, 10, 2);
+      expect(pts1[0]).toEqual({ x: 0, y: 0 });
+      expect(pts1[pts1.length - 1]).toEqual({ x: 8, y: 4 });
+
+      // (0,0) -> (3, 10): t = (2*3 + 10)/5 = 3.2 -> 3 steps -> ends at (6, 3)
+      const pts2 = getIsometric2p1Line(0, 0, 3, 10);
+      expect(pts2[0]).toEqual({ x: 0, y: 0 });
+      expect(pts2[pts2.length - 1]).toEqual({ x: 6, y: 3 });
+
+      // Check strict 2:1 run-lengths on both projected segments
+      for (const pts of [pts1, pts2]) {
+        const yRuns = new Map<number, number[]>();
+        for (const pt of pts) {
+          if (!yRuns.has(pt.y)) yRuns.set(pt.y, []);
+          yRuns.get(pt.y)!.push(pt.x);
+        }
+        for (const xs of yRuns.values()) {
+          expect(xs.length).toBeGreaterThanOrEqual(1);
+          expect(xs.length).toBeLessThanOrEqual(2);
+        }
+      }
+    });
+
+    it('projects correctly in negative quadrants', () => {
+      const points = getIsometric2p1Line(0, 0, -10, -5);
+      expect(points[0]).toEqual({ x: 0, y: 0 });
+      expect(points[points.length - 1]).toEqual({ x: -10, y: -5 });
+      for (const pt of points) {
+        expect(pt.x).toBeLessThanOrEqual(0);
+        expect(pt.y).toBeLessThanOrEqual(0);
+      }
+    });
+
     it('handles vertical line edge case without horizontal drift', () => {
       const points = getIsometric2p1Line(15, 0, 15, 10);
       expect(points.length).toBe(11);

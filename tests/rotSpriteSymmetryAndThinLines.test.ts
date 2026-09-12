@@ -188,4 +188,32 @@ describe('RotSprite Symmetry & Precision Engine', () => {
       expect(rData[idx + 3]).toBeGreaterThan(0);
     }
   });
+
+  it('preserves opaque corner pixels without transparent erosion during scale2x on edge-touching sprites', async () => {
+    const { scale2x } = await import('@/lib/canvas/rotSprite');
+    // 4x4 solid red sprite touching all borders
+    const w = 4;
+    const h = 4;
+    const data = new Uint8ClampedArray(w * h * 4);
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255;     // R
+      data[i + 1] = 0;   // G
+      data[i + 2] = 0;   // B
+      data[i + 3] = 255; // A (fully opaque)
+    }
+
+    const scaled = scale2x({ width: w, height: h, data });
+    expect(scaled.width).toBe(8);
+    expect(scaled.height).toBe(8);
+
+    // Every single pixel in the 8x8 scaled output must remain 100% opaque red
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const idx = (y * 8 + x) * 4;
+        expect(scaled.data[idx]).toBe(255);
+        expect(scaled.data[idx + 3]).toBe(255);
+      }
+    }
+  });
 });
+

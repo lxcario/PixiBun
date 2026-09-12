@@ -1,9 +1,9 @@
 /**
  * In-Browser Animated PNG (APNG) Encoding Engine for PixiBun Atelier.
- *
- * Implements the official W3C APNG Specification:
- * - https://wiki.mozilla.org/APNG_Specification
- * - https://www.w3.org/TR/PNG/
+ * Implements the Animated Portable Network Graphics (APNG) Specification:
+ * - Originally authored by Stuart Parmenter & Vladimir Vukicevic (Mozilla Corporation, 2004)
+ * - Standardized under W3C PNG Specification (Third Edition): https://www.w3.org/TR/png-3/#animation
+ * - Reference: https://wiki.mozilla.org/APNG_Specification
  *
  * Compression Architecture:
  * - Employs uncompressed DEFLATE store blocks (BTYPE 00) wrapped in RFC 1950 zlib containers.

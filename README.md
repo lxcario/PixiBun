@@ -41,8 +41,8 @@ graph LR
 
 ### 🎮 Live Interactive Engine Showcase (Landing Page)
 Before stepping into the full studio, visitors can interact directly with PixiBun's computer graphics algorithms right on the home desk (`#engine-showcase`):
-* **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading, sprite model switching (*Ghost, Shroom, Bun, Lantern*), Blinn-Phong material profiles (*Matte, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
-* **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard blurry bicubic filtering, maintaining crisp single-pixel contours at 45°.
+* **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading on the Hearth Ghost sprite, 5 Blinn-Phong material profiles (*Matte, Metal, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
+* **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard nearest-neighbor affine rotation (`imageSmoothingEnabled = false`), maintaining crisp single-pixel contours at 45°.
 * **Intelligent Image Synthesis:** Real-time downsampling interactive demo showcasing Sobel gradient salience edge-preservation and OKLab color quantization.
 * **Game Engine Exports:** Live sprite sheet packing viewer with instant Godot 4 `.tres`, Unity, and Phaser 3 JSON metadata inspection.
 
@@ -63,7 +63,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ### ☀️ PixiBud 2.5D Photometric Studio & Smart Math Engine
 * **Deep Canvas Art Understanding & Anatomical Classification:** Analyzes artwork morphology to classify forms into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`), preserving original artist RGB values from diffuse darkening or ambient crush.
-* **Frontal Face Cushion Plateau & Independent Ear Geometry:** For character forms, the interior face height forms a flat camera-facing plateau ($N_z \ge 0.85$), ensuring light illuminates faces without splitting them in half with shadow, while form shadows hug only the 1–2px unlit silhouette bevel. Distinct convex lobes preserve independent 3D cone geometry for ears and horns.
+* **Frontal Face Cushion Plateau & Independent Ear Geometry:** For character forms, the interior face height forms a flat camera-facing plateau ($N_z \ge 0.88$), ensuring light illuminates faces without splitting them in half with shadow, while form shadows hug only the 1–2px unlit silhouette bevel. Distinct convex lobes preserve independent 3D cone geometry for ears and horns.
 * **Perceptual 4-Tone OKLCH Stepped Cel-Shading:** Unshaded flat character sprites receive crisp discrete tone steps — **Base**, **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo skylight), **Deep Crevice** ($L \times 0.60$, $20°$ hue shift, triggers at $AO < 0.60$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ shift toward $65°$ warm sunlight, shiny materials only). Shadow placement is driven purely by directional diffuse signal (`diffSignal < 0.55`), decoupled from ambient fill to ensure crisp anatomical shadow termination.
 * **Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows:** Replaced infinite planar raymarch wedges with professional 2.5D bounded sprite cast shadows. Evaluates exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$) anchored at the sprite contact baseline, strictly preserving leg arches and waist indentations without bounding-box bloat or muddy center blobs. Includes classic RPG ground contact drop shadows (`shadowStyle: 'drop'`) with crisp Bresenham ellipses under feet, defaulting to uniform flat opacity (`ditherMode: 'none'`).
 * **Smart Canvas Art Auto-Analysis:** Dedicated "Analyze & Render" engines for photometric lighting and cast shadows automatically infer optimal light azimuth, elevation, intensity, contact base, bounds, and material presets from canvas pixel data.
@@ -73,7 +73,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
 * **Analytical Tangent-Space Normal Generation & Compass Alignment:** Discrete Sobel kernels derive surface normal vectors with standard artist compass heading navigation ($0^\circ = \text{North/Top}, 315^\circ = \text{North-West/Top-Left}$) and a dynamic rotating SVG compass needle in the studio inspector.
 * **1-Click Normal Map Baking:** Exports standard blue tangent-space normal maps $(128, 128, 255)$ directly to a new layer for immediate use in **Godot**, **Unity**, and **Unreal Engine**.
-* **2.5D Normal Sculptor & Micro-Relief Chisel:** Directional bevel/chamfer carving (<kbd>K</kbd>) with analytical surface normal orientation $(\alpha \in [0, 360^\circ), \phi \in (0, 90^\circ])$, V-groove blade ridge carving, and shallow spherical rivet/stud stamp (<kbd>Shift+K</kbd>) with flattening factor $h \in (0, 1]$ and countersunk screwhole dimpling.
+* **2.5D Normal Sculptor & Micro-Relief Chisel:** Directional bevel/chamfer carving (<kbd>K</kbd>) with analytical surface normal orientation $(\alpha \in [0, 360^\circ), \phi \in (0, 90^\circ])$, V-groove blade ridge carving, and shallow spherical rivet/stud stamp (<kbd>N</kbd> / <kbd>Shift+K</kbd>) with flattening factor $h \in (0, 1]$ and countersunk screwhole dimpling.
 * **Reoriented Normal Mapping (RNM):** Quaternion-based detail normal blending (Colin Barré-Brisebois & Stephen Hill 2012) rotating sculpted micro-relief onto base EDT normal maps without slope flattening or loss of high-frequency details.
 * **Real-Time Normal Preview & Live Relighting:** Interactive Studio toggle rendering tangent-space normal maps directly on canvas, with immediate 3D photometric relighting responding to the draggable pixel light bulb gizmo.
 
@@ -237,9 +237,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 PixiBun is engineered as a local-first web application:
 
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
-* **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, minimum target hit sizes ($\ge 24\text{px}$), consistent help surfaces, and zero axe-core violations.
+* **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 558 unit and integration tests across 80 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 562 unit and integration tests across 80 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -247,7 +247,7 @@ PixiBun is engineered as a local-first web application:
 
 | Subsystem | Technology | Architectural Rationale |
 |---|---|---|
-| **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, React Compiler memoization, zero client bundle bloat. |
+| **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, fine-grained leaf subscriptions, zero client bundle bloat. |
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
 | **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, RNM Normal Sculptor, Aaltonen Ray Marching, Mark Ferrari Cycling | Deterministic on-device computer graphics math for 2.5D shading, micro-relief carving, raymarched soft shadows, 60 FPS palette cycling, and normal baking. |
@@ -258,7 +258,7 @@ PixiBun is engineered as a local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 558 unit and integration tests across 80 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 562 unit and integration tests across 80 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

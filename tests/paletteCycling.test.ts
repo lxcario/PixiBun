@@ -65,6 +65,23 @@ describe('Mark Ferrari 8-Bit Dynamic Palette Cycling Engine', () => {
       expect(parsed.high).toBe(47);
     });
 
+    it('correctly parses slow cycle tracks with rateRaw = 36 (~0.13 Hz) without erroneous deactivation', () => {
+      // Create an 8-byte CRNG buffer manually with rateRaw = 36 and RNG_ACTIVE flag (1)
+      const bytes = new Uint8Array(8);
+      const view = new DataView(bytes.buffer);
+      view.setInt16(0, 0, false); // pad1
+      view.setInt16(2, 36, false); // rateRaw = 36
+      view.setUint16(4, 1, false); // flags = RNG_ACTIVE (1)
+      view.setUint8(6, 10); // low
+      view.setUint8(7, 20); // high
+
+      const parsed = parseCRNG(bytes, 'slow-track');
+      expect(parsed.enabled).toBe(true);
+      expect(parsed.low).toBe(10);
+      expect(parsed.high).toBe(20);
+      expect(parsed.rate).toBeCloseTo(0.13, 2);
+    });
+
     it('wraps chunk into standard 8-byte IFF header', () => {
       const payload = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
       const chunk = wrapIFFChunk('CRNG', payload);

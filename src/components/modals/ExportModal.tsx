@@ -55,7 +55,31 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
   const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
   const [replayFormat, setReplayFormat] = useState<'gif' | 'mp4'>('gif');
-  const [scale, setScale] = useState<number>(4);
+  // Isolated export scale state per export tab to prevent cross-tab clamping and state bleed
+  const [tabScales, setTabScales] = useState<Record<ExportType, number>>({
+    png: 4,
+    gif: 4,
+    apng: 4,
+    webm: 4,
+    mp4: 4,
+    spritesheet: 2,
+    replay: 4,
+    svg: 4,
+    shader: 4,
+    'palette-cycle': 4,
+    project: 1,
+  });
+  const scale = tabScales[exportType] ?? 4;
+  const setScale = (newScale: number | ((prev: number) => number)) => {
+    setTabScales((prev) => {
+      const currentVal = prev[exportType] ?? 4;
+      const resolved = typeof newScale === 'function' ? newScale(currentVal) : newScale;
+      return {
+        ...prev,
+        [exportType]: resolved,
+      };
+    });
+  };
   const [svgSmooth, setSvgSmooth] = useState<boolean>(true);
   const [videoLoopCount, setVideoLoopCount] = useState<number>(2);
   const [layoutMode, setLayoutMode] = useState<'horizontal' | 'vertical' | 'grid'>('horizontal');
@@ -101,13 +125,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const handleSelectExportType = (type: ExportType) => {
     setExportType(type);
-    if (type === 'spritesheet') {
-      setScale((prev) => Math.min(prev, 4));
-    } else if (type === 'gif') {
-      setScale((prev) => Math.min(prev, 8));
-    } else if (type === 'apng' || type === 'webm' || type === 'mp4' || type === 'replay') {
-      setScale((prev) => Math.min(prev, 16));
-    }
   };
 
   const handleExportPNG = () => {

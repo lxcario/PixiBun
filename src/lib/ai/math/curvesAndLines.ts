@@ -48,8 +48,15 @@ export function getQuadraticBezierPoints(
   return points;
 }
 
+/**
+ * Quantized 2:1 isometric line rasterizer.
+ * In dimetric pixel art, standard 2:1 isometric lines follow an angle of ~26.565° (slope 1/2 or 2/1).
+ * When dragging between (x0, y0) and arbitrary cursor coordinates (x1, y1), this function
+ * projects the displacement onto the canonical 2:1 dimetric vector, snapping the line to
+ * clean alternating 2-pixel steps along X for every 1-pixel step along Y, terminating at the
+ * projected isometric ray endpoint while maintaining straight cardinal lines when dx=0 or dy=0.
+ */
 export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: number): Point[] {
-  const points: Point[] = [];
   const dx = x1 - x0;
   const dy = y1 - y0;
 
@@ -59,31 +66,37 @@ export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: numb
   if (dx === 0) {
     const sy = dy >= 0 ? 1 : -1;
     const count = Math.abs(dy);
+    const pts: Point[] = [];
     for (let k = 0; k <= count; k++) {
-      points.push({ x: x0, y: y0 + k * sy });
+      pts.push({ x: x0, y: y0 + k * sy });
     }
-    return points;
+    return pts;
   }
 
   // Pure horizontal line
   if (dy === 0) {
     const sx = dx >= 0 ? 1 : -1;
     const count = Math.abs(dx);
+    const pts: Point[] = [];
     for (let k = 0; k <= count; k++) {
-      points.push({ x: x0 + k * sx, y: y0 });
+      pts.push({ x: x0 + k * sx, y: y0 });
     }
-    return points;
+    return pts;
   }
 
   const sx = dx >= 0 ? 1 : -1;
   const sy = dy >= 0 ? 1 : -1;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
 
-  // Number of 2-pixel isometric steps along X axis
-  const numSteps = Math.max(1, Math.round(Math.abs(dx) / 2));
+  // Scalar projection of (|dx|, |dy|) onto the 2:1 dimetric direction vector (2, 1):
+  // t = (2 * absDx + absDy) / (2^2 + 1^2) = (2 * absDx + absDy) / 5
+  const numSteps = Math.max(1, Math.round((2 * absDx + absDy) / 5));
 
+  const points: Point[] = [];
   const seen = new Set<string>();
 
-  for (let k = 0; k <= numSteps; k++) {
+  for (let k = 0; k < numSteps; k++) {
     const curY = y0 + k * sy;
     const curX1 = x0 + (k * 2) * sx;
     const curX2 = x0 + (k * 2 + 1) * sx;
@@ -94,13 +107,20 @@ export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: numb
       points.push({ x: curX1, y: curY });
     }
 
-    if (k < numSteps) {
-      const key2 = `${curX2},${curY}`;
-      if (!seen.has(key2)) {
-        seen.add(key2);
-        points.push({ x: curX2, y: curY });
-      }
+    const key2 = `${curX2},${curY}`;
+    if (!seen.has(key2)) {
+      seen.add(key2);
+      points.push({ x: curX2, y: curY });
     }
+  }
+
+  // Snapped endpoint cap on the projected 2:1 ray
+  const finalX = x0 + (numSteps * 2) * sx;
+  const finalY = y0 + numSteps * sy;
+  const finalKey = `${finalX},${finalY}`;
+  if (!seen.has(finalKey)) {
+    seen.add(finalKey);
+    points.push({ x: finalX, y: finalY });
   }
 
   return points;

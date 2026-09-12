@@ -46,9 +46,16 @@ export function scale2x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer
   const src32 = new Uint32Array(srcBytes.buffer, srcBytes.byteOffset, curW * curH);
   const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, outW * outH);
 
+  const OOB = -1;
   const getPx = (x: number, y: number): number => {
-    if (x < 0 || x >= curW || y < 0 || y >= curH) return 0;
+    if (x < 0 || x >= curW || y < 0 || y >= curH) return OOB;
     return src32[y * curW + x];
+  };
+
+  // Safe distance helper ensuring out-of-bounds coordinates never match inside pixels or each other
+  const dist = (c1: number, c2: number): number => {
+    if (c1 === OOB || c2 === OOB) return 100000;
+    return colorDistance32(c1, c2);
   };
 
   for (let y = 0; y < curH; y++) {
@@ -65,18 +72,18 @@ export function scale2x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer
       let e3 = P;
 
       // Scale2x rule: if opposite neighbors differ and adjacent neighbors match
-      if (colorDistance32(B, H) > similarityThreshold && colorDistance32(D, F) > similarityThreshold) {
-        if (colorDistance32(D, B) <= similarityThreshold) {
-          e0 = colorDistance32(D, P) <= colorDistance32(B, P) ? D : B;
+      if (dist(B, H) > similarityThreshold && dist(D, F) > similarityThreshold) {
+        if (dist(D, B) <= similarityThreshold) {
+          e0 = dist(D, P) <= dist(B, P) ? D : B;
         }
-        if (colorDistance32(B, F) <= similarityThreshold) {
-          e1 = colorDistance32(B, P) <= colorDistance32(F, P) ? B : F;
+        if (dist(B, F) <= similarityThreshold) {
+          e1 = dist(B, P) <= dist(F, P) ? B : F;
         }
-        if (colorDistance32(D, H) <= similarityThreshold) {
-          e2 = colorDistance32(D, P) <= colorDistance32(H, P) ? D : H;
+        if (dist(D, H) <= similarityThreshold) {
+          e2 = dist(D, P) <= dist(H, P) ? D : H;
         }
-        if (colorDistance32(H, F) <= similarityThreshold) {
-          e3 = colorDistance32(H, P) <= colorDistance32(F, P) ? H : F;
+        if (dist(H, F) <= similarityThreshold) {
+          e3 = dist(H, P) <= dist(F, P) ? H : F;
         }
       }
 
