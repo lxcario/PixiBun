@@ -283,6 +283,29 @@ html.light .pixel-primary-btn:hover {
   box-shadow: 0 4px 0px rgba(0, 0, 0, 0.3);
 }
 
+/* Synchronous Theme-Synced Atmosphere Background Layers (prevents SSR/hydration split) */
+.atelier-base-dark,
+.atelier-vines-dark {
+  opacity: 1;
+}
+html.light .atelier-base-dark,
+html[data-theme="light"] .atelier-base-dark,
+html.light .atelier-vines-dark,
+html[data-theme="light"] .atelier-vines-dark {
+  opacity: 0;
+}
+
+.atelier-base-light,
+.atelier-vines-light {
+  opacity: 0;
+}
+html.light .atelier-base-light,
+html[data-theme="light"] .atelier-base-light,
+html.light .atelier-vines-light,
+html[data-theme="light"] .atelier-vines-light {
+  opacity: 1;
+}
+
 .footer-trim-bar {
   background-color: var(--desk-surface);
   border-top: 2px solid var(--desk-border);

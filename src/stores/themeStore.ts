@@ -64,16 +64,8 @@ function getInitialTheme(): ThemeMode {
     const saved = window.localStorage.getItem('pixibun-theme') as ThemeMode | null;
     if (saved === 'light') return 'light';
     if (saved === 'dark') return 'dark';
-    // First-time visitors: respect the OS-level color scheme preference
-    // (CSS Color Adjust Module Level 1, `prefers-color-scheme`).
-    if (
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-color-scheme: light)').matches
-    ) {
-      return 'light';
-    }
   } catch {
-    // ignore storage / media query errors
+    // ignore storage errors
   }
   return 'dark';
 }

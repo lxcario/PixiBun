@@ -316,9 +316,7 @@ export const PixelVines: React.FC = () => {
     >
       {/* Dark Mode Layer */}
       <div
-        className={`absolute inset-0 transition-opacity duration-300 will-change-opacity ${
-          isLight ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="atelier-vines-dark absolute inset-0 transition-opacity duration-300 will-change-opacity"
       >
         <FlankVineCluster isLight={false} />
         <FlankVineCluster isRight isLight={false} />
@@ -326,9 +324,7 @@ export const PixelVines: React.FC = () => {
 
       {/* Light Mode Layer */}
       <div
-        className={`absolute inset-0 transition-opacity duration-300 will-change-opacity ${
-          isLight ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="atelier-vines-light absolute inset-0 transition-opacity duration-300 will-change-opacity"
       >
         <FlankVineCluster isLight={true} />
         <FlankVineCluster isRight isLight={true} />

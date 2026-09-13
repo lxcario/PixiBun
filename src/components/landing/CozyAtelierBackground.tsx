@@ -62,13 +62,14 @@ export const CozyAtelierBackground: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
-      {/* 1. Dark Mode Base Layer (Hardware Composited) */}
+    <div
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none transition-colors duration-300"
+      style={{ backgroundColor: 'var(--desk-bg)' }}
+    >
+      {/* 1. Dark Mode Base Layer (Hardware Composited, Synchronously Theme-Synced) */}
       <div
         aria-hidden="true"
-        className={`absolute inset-0 transition-opacity duration-300 will-change-opacity ${
-          isLight ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="atelier-base-dark absolute inset-0 transition-opacity duration-300 will-change-opacity"
         style={{
           backgroundColor: '#140c1e',
           backgroundImage: `
@@ -79,12 +80,10 @@ export const CozyAtelierBackground: React.FC = () => {
         }}
       />
 
-      {/* 2. Light Mode Base Layer (Hardware Composited) */}
+      {/* 2. Light Mode Base Layer (Hardware Composited, Synchronously Theme-Synced) */}
       <div
         aria-hidden="true"
-        className={`absolute inset-0 transition-opacity duration-300 will-change-opacity ${
-          isLight ? 'opacity-100' : 'opacity-0'
-        }`}
+        className="atelier-base-light absolute inset-0 transition-opacity duration-300 will-change-opacity"
         style={{
           backgroundColor: '#fbf8f3',
           backgroundImage: `

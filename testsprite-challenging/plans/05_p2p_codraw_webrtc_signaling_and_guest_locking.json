@@ -1,0 +1,50 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "P2P Co-Draw modal creates encrypted host WebRTC signaling token and enforces guest structural mutation locking",
+  "description": "Validates opening the P2P Co-Draw collaboration modal from the studio header, generating an end-to-end encrypted room offer token, inspecting connection status indicators and security policies, and validating that structural mutations are host-authoritative.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the Co-Draw collaboration button in the top navigation bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the P2P Co-Draw modal dialog opens with Host Session and Join Session tabs"
+    },
+    {
+      "type": "action",
+      "description": "Click the Generate Invite Code button in the Host tab"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify an encrypted WebRTC room offer token string is generated inside the shareable text area"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the peer status indicator reflects waiting state and the LAN-first privacy notice confirms zero cloud data logging"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Join Session' tab in the modal header"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the join panel displays the invite code paste input and disabled Connect button awaiting input"
+    },
+    {
+      "type": "action",
+      "description": "Click the modal close button to dismiss the dialog"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the dialog dismisses and the studio canvas workspace remains interactive"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Photometric Studio renders resolution-scaled volumetric normal maps and cel shading across dark palettes",
+  "description": "Validates the 2.5D Photometric Studio on 128x128 canvases with dark crimson and navy body palettes, verifying that boundary-aware classification protects dark colors from unshaded ink-line masking, proportional bevel scaling prevents interior normal flattening, and cel-shading produces monotonic cool-indigo shadows.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Click the canvas dimensions resize control in the top navigation bar"
+    },
+    {
+      "type": "action",
+      "description": "Set canvas width to 128 and height to 128 in the resize dialog, then click Resize Canvas"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the viewport canvas updates to a 128x128 workspace and displays the dimension badge in the header"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool in the left toolbar and draw a circular character form on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the primary color well and set the active drawing color to dark crimson #8B1E3F"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool and click inside the drawn shape to color the character body"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the dark crimson character body is visible on the center viewport canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 2.5D Photometric Studio section is visible with degree readouts and mode controls"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Manual' mode toggle button"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Polished Metal' material chip in the material selection grid"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'View Normals' button to activate tangent-space normal preview"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the viewport switches to live normal preview displaying spherical tangent-space RGB colors across the 128x128 body"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Hide Normals' button to return to the composite artwork view"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Bake Light' button to execute directional photometric shading"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the dark crimson body receives directional OKLCH cel-shading with cool indigo shadow tones without being skipped as ink lines"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Bake Normal Map' button to persist tangent normals as a layer"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Layers' tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a new layer titled 'Normal Map' is present in the layers list containing the baked normal map"
+    }
+  ]
+}

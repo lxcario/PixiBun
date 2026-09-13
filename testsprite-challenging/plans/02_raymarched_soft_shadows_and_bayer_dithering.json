@@ -1,0 +1,70 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Raymarched soft shadows project directional penumbras with Bayer matrix dithering and key light alignment",
+  "description": "Validates the Raymarched Soft Shadows engine in the studio inspector, configuring bounded 2.5D directional cast shadows and elliptical contact drop shadows, selecting Obsidian and Indigo color presets, configuring Bayer matrix ordered dithering (2x2 and 4x4), and synchronizing shadow azimuth and elevation with the photometric key light.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/studio"
+    },
+    {
+      "type": "action",
+      "description": "Select the Ellipse tool in the left toolbar and draw a character silhouette on the canvas"
+    },
+    {
+      "type": "action",
+      "description": "Select the Flood Fill tool and color the character silhouette"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the filled character sprite is visible on the center canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab in the right inspector panel"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Raymarched Soft Shadows section is displayed with the 2.5D Ground Projection badge"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Manual' mode toggle button in the shadow card"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Drop (Contact)' shadow style button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Drop shadow style option indicates active selected state"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Cast (Directional)' shadow style button to restore directional ground projection"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Obsidian' shadow color preset chip"
+    },
+    {
+      "type": "action",
+      "description": "Select '4x4' from the shadow dither mode selector"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Align with Key Light' button to synchronize shadow azimuth and elevation with the photometric sun"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Render Shadow' button to execute the 2.5D bounded raymarch"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the ground plane beneath the character sprite renders a bounded directional cast shadow with Bayer dithered penumbra"
+    }
+  ]
+}

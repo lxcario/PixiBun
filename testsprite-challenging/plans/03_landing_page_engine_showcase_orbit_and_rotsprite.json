@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Landing page engine showcase validates 2.5D photometric orbit, RotSprite 8x EPX, and game engine exports",
+  "description": "Validates the interactive engine showcase on the home page across all four algorithm demonstration tabs: 2.5D Lighting orbit and material shine profiles, RotSprite Xenowhirl 8x continuous rotation slider maintaining crisp single-pixel contours at 45 degrees, Sobel salience downsampling, and Game Engine live JSON metadata generation for Godot 4, Unity, and Phaser 3.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://pixibun.vercel.app/"
+    },
+    {
+      "type": "action",
+      "description": "Scroll down to the interactive engine showcase section with id engine-showcase"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the engine showcase displays Tab 01 titled '2.5D Lighting & Shadows' with the interactive canvas"
+    },
+    {
+      "type": "action",
+      "description": "Click the tab button with id tab-rotsprite titled 'RotSprite Precision'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the RotSprite panel is active displaying the rotation controls and comparison view"
+    },
+    {
+      "type": "action",
+      "description": "Click the '45°' preset button in the RotSprite controls"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the RotSprite rotation angle displays 45°"
+    },
+    {
+      "type": "action",
+      "description": "Click the tab button with id tab-export titled 'Game Engine Exports'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Game Engine Exports panel renders displaying the code viewer with SpriteFrames resource definition"
+    }
+  ]
+}

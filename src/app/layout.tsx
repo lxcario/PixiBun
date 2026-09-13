@@ -34,7 +34,7 @@ const silkscreen = localFont({
     },
   ],
   variable: '--font-silkscreen',
-  display: 'swap',
+  display: 'block',
 });
 
 export const metadata: Metadata = {
