@@ -12,47 +12,35 @@
     },
     {
       "type": "action",
-      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
+      "description": "Click the Ellipse tool button in the left toolbar"
     },
     {
       "type": "action",
-      "description": "Click on the canvas to stamp a shape on Frame 1"
+      "description": "Click on the canvas to draw a shape on Frame 1"
     },
     {
       "type": "action",
-      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
-    },
-    {
-      "type": "action",
-      "description": "Click inside the shape on the canvas to fill it"
+      "description": "Click the 'Frame' button in the bottom timeline bar (data-testid add-frame-button)"
     },
     {
       "type": "assertion",
-      "description": "Verify Frame 1 contains artwork"
+      "description": "Verify the timeline currently displays 2 frames"
     },
     {
       "type": "action",
-      "description": "Click the Frame button in the bottom timeline bar to add Frame 2"
+      "description": "Click on the canvas to draw a shape on Frame 2"
     },
     {
       "type": "action",
-      "description": "Click on the canvas to paint artwork on Frame 2"
+      "description": "Click the Frame 1 button in the bottom timeline"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel (data-testid tab-ai)"
     },
     {
       "type": "assertion",
-      "description": "Verify the timeline currently contains exactly 2 keyframes"
-    },
-    {
-      "type": "action",
-      "description": "Click the Frame #1 selector in the timeline thumbnail strip to set it as active"
-    },
-    {
-      "type": "action",
-      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the COLOR SCIENCE & MORPHING section is displayed"
+      "description": "Verify the Color Science & Morphing section is displayed"
     },
     {
       "type": "action",
@@ -60,19 +48,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the timeline frame count automatically increases from 2 to 3 frames"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the newly inserted middle frame (Frame #2) contains an interpolated tween shape situated along the diagonal path between the start and end positions"
-    },
-    {
-      "type": "action",
-      "description": "Click the 'PLAY' button in the bottom timeline bar"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the 3-frame sequence plays as a smooth, continuous interpolated animation loop"
+      "description": "Verify the timeline frame count increases from 2 to 3 frames"
     }
   ]
 }

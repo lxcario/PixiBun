@@ -3,7 +3,7 @@
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "Layer stack manages opacity, blend modes, lock protection, and merge down",
-  "description": "Verify drawing a solid colored ball, adding a secondary shadow layer with Multiply blend mode, locking a layer and asserting paint attempts trigger locked warnings, and executing merge down.",
+  "description": "Verify drawing on canvas, adding a secondary layer in the Layers panel, changing blend mode to Multiply, locking the layer to assert paint prevention warning, unlocking, and merging down into a single layer.",
   "priority": "p1",
   "planSteps": [
     {
@@ -12,47 +12,47 @@
     },
     {
       "type": "action",
-      "description": "Select the Ellipse tool (press O), ensure shape mode in context bar is 'Shape: Filled Solid', press down on canvas, drag diagonally for at least 150 pixels, and release to draw a prominent circle"
+      "description": "Click the drawing canvas to draw an initial mark on Base Layer"
     },
     {
       "type": "action",
-      "description": "Select Flood Fill (press G), choose a bright color, and click inside the circle to solidly color it"
+      "description": "Click the 'Layers' tab button in the right inspector panel (data-testid tab-layers)"
     },
     {
       "type": "action",
-      "description": "Click the 'Layers' tab button in the right inspector panel"
-    },
-    {
-      "type": "action",
-      "description": "Click the '+ Add Layer' button to add a second layer over the ball"
-    },
-    {
-      "type": "action",
-      "description": "Change the active layer's blend mode dropdown to 'Multiply'"
-    },
-    {
-      "type": "action",
-      "description": "Click the lock icon button on the active layer to lock it"
-    },
-    {
-      "type": "action",
-      "description": "Select the Pen tool and attempt to draw on the center canvas"
+      "description": "Click the 'Add New Layer' button to create Layer 2"
     },
     {
       "type": "assertion",
-      "description": "Verify the stroke is blocked and a warning toast appears stating 'Active layer is locked! Unlock it in the inspector to paint.'"
+      "description": "Verify the layer stack displays 2 layers"
     },
     {
       "type": "action",
-      "description": "Click the lock icon button again to unlock the layer"
+      "description": "Select 'Multiply' from the Layer blend mode dropdown"
     },
     {
       "type": "action",
-      "description": "Click the Merge Down button, then confirm the merge step"
+      "description": "Click the 'Lock layer Layer 2' button to lock the active layer"
+    },
+    {
+      "type": "action",
+      "description": "Click or drag on the drawing canvas to attempt painting"
     },
     {
       "type": "assertion",
-      "description": "Verify the layers merge down into a single flattened layer"
+      "description": "Verify the locked layer warning toast appears stating 'Active layer is locked! Unlock it in the inspector to paint.'"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Unlock layer Layer 2' button to unlock the layer"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Merge down layer Layer 2' button, then click 'Confirm merge down layer Layer 2' to execute merge down"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layer stack merges down into 1 layer named 'Base Layer'"
     }
   ]
 }

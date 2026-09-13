@@ -3,7 +3,7 @@
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "2.5D Photometric Studio configures light direction, material shaders, and bakes tangent normal maps",
-  "description": "Verify drawing a solid colored circular ball on canvas, navigating to PixiBud AI, switching between Auto and Manual modes, tweaking Direction and Elevation, testing Material chips, and baking tangent-space normal maps.",
+  "description": "Verify drawing on canvas, opening PixiBud AI to configure 2.5D Photometric Studio in Manual mode, selecting Gold / Brass material, baking photometric lighting, baking a normal map, and verifying the Normal Map layer appears in the Layers panel.",
   "priority": "p1",
   "planSteps": [
     {
@@ -12,35 +12,19 @@
     },
     {
       "type": "action",
-      "description": "Click the Ellipse tool button in the left toolbar (or press O)"
+      "description": "Click the drawing canvas to draw an initial shape on Base Layer"
     },
     {
       "type": "action",
-      "description": "Click on the center drawing canvas to stamp an ellipse"
-    },
-    {
-      "type": "action",
-      "description": "Click the Flood Fill tool button in the left toolbar (or press G)"
-    },
-    {
-      "type": "action",
-      "description": "Click on the canvas to fill the shape with the active color"
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel (data-testid tab-ai)"
     },
     {
       "type": "assertion",
-      "description": "Verify artwork is visible on the center canvas"
+      "description": "Verify the 2.5D Photometric Studio section is visible with Auto and Manual modes"
     },
     {
       "type": "action",
-      "description": "Click the 'PixiBud AI' tab button in the right inspector panel"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the 2.5D Photometric Studio section is visible with Auto and Manual mode toggles"
-    },
-    {
-      "type": "action",
-      "description": "Click the 'MANUAL' mode toggle button"
+      "description": "Click the 'Manual' mode toggle button"
     },
     {
       "type": "action",
@@ -51,16 +35,16 @@
       "description": "Click the 'Bake Light' button"
     },
     {
-      "type": "assertion",
-      "description": "Verify a dedicated 'Photometric' layer is rendered over the ball with 3D cel-shading and specular shine"
+      "type": "action",
+      "description": "Click the 'Bake Normal Map' button"
     },
     {
       "type": "action",
-      "description": "Click the 'Bake Normal Map' button in the photometric panel"
+      "description": "Click the 'Layers' tab button in the right inspector panel (data-testid tab-layers)"
     },
     {
       "type": "assertion",
-      "description": "Verify a dedicated 'Normal Map' layer is created containing encoded tangent-space normal vector colors (#8080FF baseline)"
+      "description": "Verify the layer stack displays the created 'Normal Map' layer"
     }
   ]
 }

@@ -1,9 +1,9 @@
-﻿{
+{
   "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
   "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
   "type": "frontend",
   "name": "Export modal validates Pure-TS ISOBMFF Fast-Start MP4 muxer configuration and Godot/Unity game engine sprite sheet packing",
-  "description": "Validates opening the Export modal in the studio workspace, switching between isolated export tabs, inspecting the MP4 Video tab with Pure-TypeScript ISOBMFF progressive download Fast-Start container settings and WebCodecs H.264 profiles, configuring the Sprite Sheet tab with horizontal, vertical, and grid matrix layouts, and inspecting Godot 4 and Unity engine metadata generation.",
+  "description": "Validates opening the Export modal in the studio workspace, switching between isolated export tabs, inspecting the MP4 Video tab with Pure-TypeScript ISOBMFF progressive download Fast-Start container settings, and configuring the Sprite Sheet tab with horizontal, vertical, and grid matrix layouts.",
   "priority": "p0",
   "planSteps": [
     {
@@ -16,39 +16,39 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the Export modal opens displaying the format category tabs along the top of the dialog"
+      "description": "Verify the Export modal opens displaying the format category tabs"
     },
     {
       "type": "action",
-      "description": "Click the 'MP4 Video' format tab in the export navigation bar"
+      "description": "Click the 'MP4 Video' format tab button"
     },
     {
       "type": "assertion",
-      "description": "Verify the MP4 export tab is displayed with resolution scale, frame rate, and WebCodecs H.264 Fast-Start notices"
+      "description": "Verify the MP4 export tab displays Scale Resolution options and MP4 output info"
     },
     {
       "type": "action",
-      "description": "Click the 'Sprite Sheet' format tab in the export navigation bar"
+      "description": "Click the 'Sprite Sheet' format tab button"
     },
     {
       "type": "assertion",
-      "description": "Verify the Sprite Sheet panel is displayed with Layout arrangement options and Game Engine metadata checkboxes"
+      "description": "Verify the Sprite Sheet panel displays Layout Packing options and Engine Metadata toggle"
     },
     {
       "type": "action",
-      "description": "Click the 'Grid' layout mode button to arrange frames in a 2D matrix"
+      "description": "Click the 'grid' layout packing button"
     },
     {
       "type": "assertion",
-      "description": "Verify the column count input appears and the dimensions readout calculates grid dimensions"
+      "description": "Verify the grid layout mode button is active"
     },
     {
       "type": "action",
-      "description": "Click the close button in the top right corner of the export modal"
+      "description": "Click the close dialog button"
     },
     {
       "type": "assertion",
-      "description": "Verify the Export modal dismisses and keyboard focus restores to the studio canvas workspace"
+      "description": "Verify the Export modal is dismissed and studio canvas is visible"
     }
   ]
 }

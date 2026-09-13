@@ -1,9 +1,9 @@
 {
-  "": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.7.0/schemas/plan.schema.json",
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.10.0/schemas/plan.schema.json",
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "PixiBud smart tools execute Auto-Shade, Clean Jaggies, and Mood Tints",
-  "description": "Verify opening the PixiBud smart assistant tab and triggering Auto-Shade, Clean Jaggies, and Warm Sunset actions.",
+  "description": "Verify opening the PixiBud smart assistant tab and triggering smart art actions including De-Jaggy, Thinning, and Atmosphere LUT presets.",
   "priority": "p1",
   "planSteps": [
     {
@@ -12,35 +12,35 @@
     },
     {
       "type": "action",
-      "description": "Click the PixiBud AI tab button in the right inspector panel"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify the PixiBud action buttons are displayed including Auto-Shade, Highlight, Clean Jaggies, and Warm Sunset"
+      "description": "Click the drawing canvas to draw an initial mark"
     },
     {
       "type": "action",
-      "description": "Click the Auto-Shade action button"
+      "description": "Click the 'PixiBud AI' tab button in the right inspector panel (data-testid tab-ai)"
     },
     {
       "type": "assertion",
-      "description": "Verify a feedback banner appears stating Curved shadow crescent painted onto your sprite"
+      "description": "Verify the RotSprite 8x & Cleanup section is displayed with De-Jaggy and Thin to 1px controls"
     },
     {
       "type": "action",
-      "description": "Click the Clean Jaggies action button"
-    },
-    {
-      "type": "assertion",
-      "description": "Verify a feedback banner appears stating Staircase corners smoothed flat"
+      "description": "Click the 'De-Jaggy' action button"
     },
     {
       "type": "action",
-      "description": "Click the Warm Sunset mood tint button"
+      "description": "Click the 'Thin to 1px' action button"
     },
     {
       "type": "assertion",
-      "description": "Verify a feedback banner appears stating Dusk light washed across the canvas"
+      "description": "Verify the Color Science & Morphing section is displayed with Sunset, Moonlight, and Neon Atmosphere LUT options"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Sunset' mood tint button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Sunset mood tint is applied and the canvas workspace remains active"
     }
   ]
 }

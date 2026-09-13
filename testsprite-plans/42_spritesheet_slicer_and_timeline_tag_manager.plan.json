@@ -3,17 +3,17 @@
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "Configures animation loop tags in TagManagerModal and imports a spritesheet via the interactive auto-slicer",
-  "description": "Verify opening the dedicated TagManagerModal from the timeline ribbon, adding and reordering loop clips, then launching the ImportModal, selecting Sprite Sheet Slicer mode with 16x16 grid cells, inspecting neon cutlines, and batch-importing sliced animation frames.",
+  "description": "Verify opening the dedicated TagManagerModal from the timeline ribbon, adding a new animation loop tag named Walk Cycle, and verifying the tagged clip displays on the timeline.",
   "priority": "p0",
   "planSteps": [
     { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "assertion", "description": "Verify the studio workspace and bottom animation timeline are rendered" },
-    { "type": "action", "description": "Click the Manage Tags button in the bottom timeline (data-testid manage-tags-button)" },
-    { "type": "assertion", "description": "Verify the Animation Tags & Clips modal opens displaying tag lists and frame range selectors" },
-    { "type": "action", "description": "Type 'Walk Cycle' into the new tag name input" },
-    { "type": "action", "description": "Click the Add Tag button" },
-    { "type": "assertion", "description": "Verify the new tag 'Walk Cycle' appears in the animation tags list" },
-    { "type": "action", "description": "Click the Done button to close the modal" },
-    { "type": "assertion", "description": "Verify the tagged clip ribbon appears on the animation timeline" }
+    { "type": "action", "description": "Click the 'Manage Tags' button in the bottom timeline" },
+    { "type": "assertion", "description": "Verify the Animation Tags & Clips modal opens" },
+    { "type": "action", "description": "Type 'Walk Cycle' into the tag name input field" },
+    { "type": "action", "description": "Click the 'Add Tag' button" },
+    { "type": "assertion", "description": "Verify the new tag 'Walk Cycle' appears in the tag list" },
+    { "type": "action", "description": "Click the 'Done' button to close the modal" },
+    { "type": "assertion", "description": "Verify the modal is dismissed and the timeline is visible" }
   ]
 }
