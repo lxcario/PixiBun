@@ -41,4 +41,31 @@ describe('ModalWrapper component accessibility & focus management', () => {
 
     expect(container.firstChild).toBeNull();
   });
+
+  it('focuses the interactive element inside modal body rather than the close button', () => {
+    const handleClose = vi.fn();
+    render(
+      <ModalWrapper isOpen={true} onClose={handleClose} title="Focus Priority Modal">
+        <input data-testid="body-input" placeholder="Type here" />
+        <button data-testid="body-button">Save</button>
+      </ModalWrapper>
+    );
+
+    const input = screen.getByTestId('body-input');
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('includes aria-describedby pointing to modal-body on dialog and default viewport constraints', () => {
+    const handleClose = vi.fn();
+    const { container } = render(
+      <ModalWrapper isOpen={true} onClose={handleClose} title="Aria Modal">
+        <div>Modal content</div>
+      </ModalWrapper>
+    );
+
+    const dialog = container.querySelector('dialog');
+    expect(dialog?.getAttribute('aria-describedby')).toBe('modal-body');
+    const modalBody = container.querySelector('#modal-body');
+    expect(modalBody?.className).toContain('overflow-y-auto');
+  });
 });

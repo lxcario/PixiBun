@@ -5,28 +5,28 @@ test.describe('Offline Capability & Status', () => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
 
-    // Studio uygulamasının görünür olduğunu doğrula
+    // Verify studio application is visible
     const stage = page.locator('div[role="application"]');
     await expect(stage).toBeVisible();
     await page.waitForTimeout(400);
 
-    // Çevrimdışı durumunu tetikle
+    // Trigger offline status
     await page.evaluate(() => {
       Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
       window.dispatchEvent(new Event('offline'));
     });
 
-    // Offline göstergesinin belirdiğini doğrula
+    // Verify offline indicator appears
     const offlineIndicator = page.getByText(/Offline Mode \(IndexedDB Active\)/i);
     await expect(offlineIndicator).toBeVisible();
 
-    // Tekrar çevrimiçi yap
+    // Restore online status
     await page.evaluate(() => {
       Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
       window.dispatchEvent(new Event('online'));
     });
 
-    // Göstergenin kaybolduğunu doğrula
+    // Verify indicator disappears
     await expect(offlineIndicator).not.toBeVisible();
   });
 });

@@ -179,6 +179,9 @@ export interface HistorySlice {
 
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;
+  isDirty: boolean;
+  setDirty: (dirty: boolean) => void;
+  markClean: () => void;
 
   selection: { x: number; y: number; w: number; h: number } | null;
   selectionMask: Uint8Array | null;

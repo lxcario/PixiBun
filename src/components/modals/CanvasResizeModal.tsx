@@ -61,11 +61,11 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
   ];
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Resize Canvas & Frame Bounds" maxWidth="w-[460px]">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Resize Canvas & Frame Bounds" maxWidth="w-[500px] max-w-[95vw]">
       {/* Quick Dimension Presets */}
-      <div className="flex items-center gap-1.5 justify-between bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs">
-        <span className="text-[11px] font-mono font-bold text-[var(--text-body)]">PRESETS:</span>
-        <div className="flex gap-1">
+      <div className="flex items-center gap-2 justify-between bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs overflow-hidden">
+        <span className="text-[11px] font-mono font-bold text-[var(--text-body)] shrink-0">PRESETS:</span>
+        <div className="flex flex-wrap gap-1.5 justify-end">
           {PRESETS.map((p) => (
             <button
               key={p}
@@ -73,7 +73,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
                 setWidth(p);
                 setHeight(p);
               }}
-              className={`px-2 py-0.5 rounded-[2px] border text-xs font-mono font-bold cursor-pointer transition-colors ${
+              className={`px-2 py-1 rounded-[2px] border text-[11px] font-mono font-bold cursor-pointer transition-colors ${
                 width === p && height === p
                   ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
                   : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'

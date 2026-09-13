@@ -52,7 +52,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   activeClipId: null,
 
   addFrame: () => {
-    pushStructuralHistoryStep('Kare Eklendi');
+    pushStructuralHistoryStep('Add Frame');
     set(state => {
       const newFrameId = createId('frame');
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -84,11 +84,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.frames.push(newFrame);
       state.activeFrameIndex = state.frames.length - 1;
       state.activeLayerId = clonedLayers[0].id;
+      state.isDirty = true;
     });
   },
 
   duplicateFrame: frameIndex => {
-    pushStructuralHistoryStep('Kare Çoğaltıldı');
+    pushStructuralHistoryStep('Duplicate Frame');
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
@@ -115,11 +116,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.frames.splice(frameIndex + 1, 0, duplicate);
       state.activeFrameIndex = frameIndex + 1;
       state.activeLayerId = duplicatedLayers[0].id;
+      state.isDirty = true;
     });
   },
 
   deleteFrame: frameIndex => {
-    pushStructuralHistoryStep('Kare Silindi');
+    pushStructuralHistoryStep('Delete Frame');
     set(state => {
       if (state.frames.length <= 1) return;
       // Bounds guard: an out-of-range index would crash on removedFrame.layers
@@ -129,6 +131,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.frames.splice(frameIndex, 1);
       state.activeFrameIndex = Math.min(state.activeFrameIndex, state.frames.length - 1);
       state.activeLayerId = state.frames[state.activeFrameIndex].layers[0].id;
+      state.isDirty = true;
     });
   },
 
@@ -137,12 +140,13 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       const frame = state.frames[frameIndex];
       if (frame) {
         frame.durationMs = Math.max(10, Math.min(10000, Math.round(durationMs)));
+        state.isDirty = true;
       }
     });
   },
 
   reorderFrames: (startIndex, endIndex) => {
-    pushStructuralHistoryStep('Kareler Yeniden Sıralandı');
+    pushStructuralHistoryStep('Reorder Frames');
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
       if (
@@ -156,6 +160,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       const [removed] = state.frames.splice(startIndex, 1);
       state.frames.splice(endIndex, 0, removed);
       state.activeFrameIndex = endIndex;
+      state.isDirty = true;
     });
   },
 

@@ -3,6 +3,7 @@ import { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { MathInvariants } from '@/lib/safety/mathInvariants';
+import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
 
 interface UseViewportTransformProps {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -86,9 +87,8 @@ export function useViewportTransform({
       }
 
       // Mouse Wheel scrolling (and Ctrl/Cmd+Wheel) = Zoom in/out anchored to cursor
-      const zoomDelta = e.deltaY < 0 ? 1.25 : 0.8;
       const safeCurrentZoom = Math.max(100, Math.min(6400, MathInvariants.isSafeFinite(zoom) ? zoom : 100));
-      const newZoom = Math.max(100, Math.min(6400, Math.round(safeCurrentZoom * zoomDelta)));
+      const newZoom = e.deltaY < 0 ? getNextZoomStep(safeCurrentZoom) : getPrevZoomStep(safeCurrentZoom);
       if (newZoom === safeCurrentZoom) return;
 
       // Instant cursor-anchored zooming (1:1 deterministic, zero animation lag)

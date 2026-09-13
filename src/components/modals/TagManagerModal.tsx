@@ -167,7 +167,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                             }
                           }}
                           aria-label={`Start frame for tag ${clip.name}`}
-                          className="w-11 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px]"
+                          className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span>to</span>
                         <input
@@ -182,7 +182,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                             }
                           }}
                           aria-label={`End frame for tag ${clip.name}`}
-                          className="w-11 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px]"
+                          className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -252,7 +252,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                 value={newFromFrame}
                 onChange={(e) => setNewFromFrame(parseInt(e.target.value, 10) || 1)}
                 aria-label="New tag start frame"
-                className="w-11 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs"
+                className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span>-</span>
               <input
@@ -262,7 +262,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                 value={newToFrame}
                 onChange={(e) => setNewToFrame(parseInt(e.target.value, 10) || 1)}
                 aria-label="New tag end frame"
-                className="w-11 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs"
+                className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 

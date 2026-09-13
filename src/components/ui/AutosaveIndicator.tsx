@@ -5,27 +5,29 @@ import { useStudioStore } from '@/stores/studioStore';
 
 export const AutosaveIndicator: React.FC = () => {
   const saveStatus = useStudioStore((state) => state.saveStatus);
+  const isDirty = useStudioStore((state) => state.isDirty);
 
-  let ledColorClass = 'bg-[var(--text-muted)] opacity-50'; // idle
+  let ledColorClass = isDirty ? 'bg-[#f0be7c] opacity-80' : 'bg-[var(--text-muted)] opacity-50';
   let pulseClass = '';
-  let title = 'Saved locally';
+  let title = isDirty ? 'Unsaved changes pending' : 'Saved locally';
+  let text = isDirty ? 'Unsaved' : 'Saved';
 
   if (saveStatus === 'saving') {
     ledColorClass = 'bg-[#f0be7c]';
     pulseClass = 'animate-pulse';
     title = 'Saving...';
+    text = 'Saving...';
   } else if (saveStatus === 'saved') {
     ledColorClass = 'bg-[#f0be7c]';
-    pulseClass = 'opacity-100 transition-opacity duration-1000'; // fade out effect conceptually, but idle takes over
+    pulseClass = 'opacity-100 transition-opacity duration-1000';
     title = 'Saved locally';
+    text = 'Saved';
   } else if (saveStatus === 'error') {
     ledColorClass = 'bg-[var(--color-danger)] opacity-100';
-    pulseClass = 'animate-bounce'; // distinct error state
+    pulseClass = 'animate-bounce';
     title = 'Save failed!';
+    text = 'Error';
   }
-  let text = 'Saved';
-  if (saveStatus === 'saving') text = 'Saving...';
-  if (saveStatus === 'error') text = 'Error';
 
   return (
     <div 

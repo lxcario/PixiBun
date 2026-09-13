@@ -78,8 +78,8 @@ describe('useViewportTransform', () => {
     });
 
     expect(wheelEvent.preventDefault).toHaveBeenCalled();
-    // 1600 * 1.25 = 2000
-    expect(setZoom).toHaveBeenCalledWith(2000);
+    // Ladder step after 1600 is 2400
+    expect(setZoom).toHaveBeenCalledWith(2400);
   });
 
   it('zooms out when scrolling mouse wheel down (deltaY > 0)', () => {
@@ -101,8 +101,8 @@ describe('useViewportTransform', () => {
     });
 
     expect(wheelEvent.preventDefault).toHaveBeenCalled();
-    // 1600 * 0.8 = 1280
-    expect(setZoom).toHaveBeenCalledWith(1280);
+    // Ladder step before 1600 is 1200
+    expect(setZoom).toHaveBeenCalledWith(1200);
   });
 
   it('zooms anchored to mouse position without drifting', () => {
@@ -241,8 +241,8 @@ describe('useViewportTransform', () => {
       result.current.handleWheel(wheelEvent);
     });
 
-    // 1600 * 1.25 = 2000; center cursor keeps pan at (0, 0)
-    expect(setZoomAndPan).toHaveBeenCalledWith(2000, 0, 0);
+    // Ladder step after 1600 is 2400; center cursor keeps pan at (0, 0)
+    expect(setZoomAndPan).toHaveBeenCalledWith(2400, 0, 0);
     expect(setZoom).not.toHaveBeenCalled();
     expect(setPan).not.toHaveBeenCalled();
   });

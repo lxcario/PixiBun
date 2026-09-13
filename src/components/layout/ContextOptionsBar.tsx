@@ -5,13 +5,14 @@ import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
+import { TOOL_METADATA_MAP } from '@/config/shortcuts';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
-  protanopia: 'P',
-  deuteranopia: 'D',
-  tritanopia: 'T',
-  monochromacy: 'M',
+  protanopia: 'Pro',
+  deuteranopia: 'Deu',
+  tritanopia: 'Tri',
+  monochromacy: 'Mono',
 };
 
 const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
@@ -20,23 +21,6 @@ const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
   deuteranopia: 'Colorblindness Lens (P): Deuteranopia (green-weak) — cycles lens modes',
   tritanopia: 'Colorblindness Lens (P): Tritanopia (blue-weak) — cycles lens modes',
   monochromacy: 'Colorblindness Lens (P): Monochromacy (luminance only) — cycles lens modes',
-};
-
-const TOOL_METADATA: Record<string, { label: string; shortcut: string; icon: PixelIconName }> = {
-  pen: { label: 'Pen', shortcut: 'B', icon: 'pen' },
-  curve: { label: 'Bézier Curve', shortcut: 'C', icon: 'curve' },
-  eraser: { label: 'Eraser', shortcut: 'E', icon: 'eraser' },
-  bucket: { label: 'Flood Fill', shortcut: 'G', icon: 'bucket' },
-  dither: { label: 'Dither Brush', shortcut: 'D', icon: 'dither' },
-  eyedropper: { label: 'Eyedropper', shortcut: 'I', icon: 'eyedropper' },
-  'select-box': { label: 'Marquee Box', shortcut: 'M', icon: 'select-box' },
-  'select-lasso': { label: 'Lasso Select', shortcut: 'Q', icon: 'select-lasso' },
-  'select-wand': { label: 'Magic Wand', shortcut: 'W', icon: 'select-wand' },
-  line: { label: 'Line', shortcut: 'L', icon: 'line' },
-  'isometric-line': { label: '2:1 Iso Line', shortcut: 'J', icon: 'isometric-line' },
-  rectangle: { label: 'Rectangle', shortcut: 'U', icon: 'rectangle' },
-  ellipse: { label: 'Ellipse', shortcut: 'O', icon: 'ellipse' },
-  'color-replace': { label: 'Color Replace', shortcut: 'R', icon: 'color-replace' },
 };
 
 export const ContextOptionsBar: React.FC = () => {
@@ -67,7 +51,7 @@ export const ContextOptionsBar: React.FC = () => {
     toggleSquintMode,
   } = useStudioStore();
 
-  const currentToolMeta = TOOL_METADATA[tools.activeTool] || {
+  const currentToolMeta = TOOL_METADATA_MAP[tools.activeTool] || {
     label: tools.activeTool,
     shortcut: '',
     icon: 'pen' as PixelIconName,
@@ -79,10 +63,27 @@ export const ContextOptionsBar: React.FC = () => {
     tools.activeTool === 'line' ||
     tools.activeTool === 'isometric-line';
 
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  const checkScroll = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  React.useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, tools.activeTool]);
+
   return (
     <div className="h-8 bg-[var(--desk-surface)] border-b-2 border-[var(--desk-border)] px-3 flex items-center justify-between text-xs font-mono text-[var(--text-heading)] select-none z-10 transition-colors duration-300 shadow-xs">
       {/* 1. Left: Active Tool Identifier & Shortcut */}
-      <div className="flex items-center gap-2 pr-3 border-r border-[var(--desk-border)]">
+      <div className="flex items-center gap-2 pr-3 border-r border-[var(--desk-border)] shrink-0">
         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c] font-bold">
           <PixelIcon name={currentToolMeta.icon} size={14} />
           <span className="text-[11px]">{currentToolMeta.label}</span>
@@ -94,8 +95,21 @@ export const ContextOptionsBar: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Center: Contextual Tool Parameters */}
-      <div className="flex-1 flex items-center gap-3 px-3 overflow-x-auto">
+      {/* 2. Center: Contextual Tool Parameters with Horizontal Scroll Affordance (UX-12) */}
+      <div className="flex-1 relative min-w-0 overflow-hidden h-full flex items-center">
+        {canScrollLeft && (
+          <div
+            className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[var(--desk-surface)] via-[var(--desk-surface)]/80 to-transparent pointer-events-none z-10 flex items-center"
+            aria-hidden="true"
+          >
+            <span className="text-[8px] text-[var(--accent-gold)] pl-0.5">◀</span>
+          </div>
+        )}
+        <div
+          ref={scrollRef}
+          onScroll={checkScroll}
+          className="w-full flex items-center gap-3 px-3 overflow-x-auto scrollbar-none"
+        >
         {/* Brush Size Slider (for Pen, Curve, Eraser, Shapes) */}
         {(tools.activeTool === 'pen' ||
           tools.activeTool === 'curve' ||
@@ -248,10 +262,19 @@ export const ContextOptionsBar: React.FC = () => {
             <span>[Ctrl+C: Copy | Ctrl+X: Cut | H: Flip-H | V: Flip-V | Esc: Clear]</span>
           </div>
         )}
+        </div>
+        {canScrollRight && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--desk-surface)] via-[var(--desk-surface)]/80 to-transparent pointer-events-none z-10 flex items-center justify-end"
+            aria-hidden="true"
+          >
+            <span className="text-[8px] text-[var(--accent-gold)] pr-0.5">▶</span>
+          </div>
+        )}
       </div>
 
       {/* 3. Right: Symmetry & Viewport Quick Toggles */}
-      <div className="flex items-center gap-1.5 pl-3 border-l border-[var(--desk-border)]">
+      <div className="flex items-center gap-1.5 pl-3 border-l border-[var(--desk-border)] shrink-0">
         {/* Symmetry H / V */}
         <button
           onClick={toggleSymmetryH}

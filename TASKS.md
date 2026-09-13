@@ -2,6 +2,33 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 57 — Studio Workstation Ergonomics, Modal Focus Trapping & Unsaved Invariants
+**Goal:** Deliver sovereign desktop-grade workstation ergonomics and WCAG 2.2 accessibility: document title dirty indicators (`● Project — PixiBun`), native `beforeunload` unsaved exit guards, affirmative explicit save confirmation toasts, modal focus trap containment with return-to-opener recovery, shortcut conflict isolation (`s` key), quantized zoom stepping, and clean baseline non-intro landing page.
+
+**Evidence & Rationale:**
+- Unsaved Work Safety: Users working on extensive pixel art projects risk losing work if a tab is accidentally closed. Synchronizing the document title with `isDirty` and trapping `beforeunload` guarantees that users are prompted before navigating away.
+- Affirmative Feedback: Users who press `Ctrl+S` or click Save benefit from immediate, non-modal confirmation that their artwork was persisted to browser storage.
+- WCAG 2.4.3 & 2.4.11 Compliance: Modal dialogs must trap focus circularly and return focus to the opener upon closing to prevent keyboard focus from getting lost behind overlays.
+- Shortcut Conflict Isolation: Hotkeys like `s` (squint mode) must not trigger while the user is typing in form inputs or pressing modifier chords like `Ctrl+S`.
+- Non-Intrusive Landing Experience: The website maintains the lightweight, non-intrusive 1.1s dither curtain without blocking overlays or unrequested audio stingers.
+
+**Deliverables:**
+- [x] Document Title & Exit Guard (`src/components/layout/StudioLayout.tsx`): Synchronized title with `isDirty` and bound `beforeunload`.
+- [x] Affirmative Save Toast (`src/components/layout/StudioLayout.tsx`): Added non-modal save confirmation toast.
+- [x] Modal Focus Trapping & Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`): Programmatic initial focus, circular Tab trap, and opener recovery.
+- [x] Shortcut Conflict Shielding (`src/components/layout/StudioLayout.tsx`): Isolated `s` hotkey from input focus and modifier keys.
+- [x] Clean Non-Intro Landing Baseline (`src/components/landing/PixelDitherCurtain.tsx`, `src/app/globals.css`): Preserved lightweight 1.1s dither curtain with zero dead code.
+
+**Acceptance criteria:**
+- All 614 unit tests across 89 suites pass (100% green).
+- Playwright E2E landing page and WCAG scan pass cleanly.
+- `node scripts/verifyDocIntegrity.mjs` passes all checks.
+- 0 TypeScript compiler errors and 0 ESLint warnings.
+
+**Status:** Complete (2026-09-13)
+
+---
+
 ## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
 **Goal:** Establish an autonomous, zero-cost, fail-fast local Quality Gate runner (`npm run gate`) and automated Git pre-push hook (`.git/hooks/pre-push`) guaranteeing that 0 broken commits, type errors, test regressions, or documentation drift can leave the developer workstation, bypassing cloud CI billing quotas.
 

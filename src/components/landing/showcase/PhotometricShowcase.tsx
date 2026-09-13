@@ -308,6 +308,12 @@ export const PhotometricShowcase: React.FC = () => {
             <text x="16" y="143" fill="var(--text-muted)" fontSize="9" fontFamily="monospace" textAnchor="end">270° W</text>
           </svg>
 
+          {/* Draggable Bulb Interaction Hint Chip */}
+          <div className="absolute top-2 left-2 z-20 px-2 py-0.5 bg-[var(--desk-surface-raised)]/95 border border-[var(--desk-border)] rounded-[2px] text-[10px] font-mono text-[var(--accent-gold)] pointer-events-none shadow-xs flex items-center gap-1">
+            <span>✦</span>
+            <span>Drag bulb or use Arrow keys to orbit light</span>
+          </div>
+
           {/* Crisp Scaled Pixel Sprite Canvas (16x16 stretched to 144x144) */}
           <div className="relative z-10 p-2 bg-[var(--desk-surface-raised)]/90 border border-[var(--desk-border)] rounded-[2px] shadow-md">
             <canvas

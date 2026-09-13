@@ -1559,6 +1559,31 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## Phase 57 — Studio Workstation Ergonomics, Accessibility Focus Trapping & Unsaved Invariants (2026-09-13)
+**Delivered:**
+- **Document Title Unsaved Dirty Invariant & Exit Guard (`src/components/layout/StudioLayout.tsx`)**:
+  - Dynamically synchronizes document title with unsaved workspace state (`● Project — PixiBun`), clearing upon successful save.
+  - Implements native `beforeunload` window event guard whenever changes are unsaved (`isDirty === true`), shielding users against accidental tab closure.
+- **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`)**:
+  - Emits transient affirmative confirmation toast (`✦ Saved "project" to browser storage`) upon manual `Ctrl+S` keystrokes and toolbar save actions.
+- **Modal Accessibility Focus Containment & Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`)**:
+  - Implemented WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured) compliance with programmatic initial focus, circular Tab keyboard containment, and return-to-opener focus restoration upon dialog dismissal.
+- **Shortcut Collision Isolation & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`)**:
+  - Isolated viewport single-key hotkeys (e.g. `s` silhouette squint mode) from firing when users type in input fields or press modifier combinations (`Ctrl+S`).
+  - Standardized monotonic discrete power-of-two zoom magnification stepping (`[100, 200, 400, 800, 1600, 3200, 6400]`).
+- **Baseline Non-Intro Landing Page Restoration (`src/components/landing/PixelDitherCurtain.tsx`)**:
+  - Restored lightweight, non-intrusive 1.1s automatic Bayer $8\times8$ dither dissolve curtain directly from git baseline.
+  - Purged all experimental audio stingers and intro keyframe styles with zero residual dead code.
+
+**Checks run:**
+- `npm run gate`: ALL 3 STAGES PASSED (Docs, Typecheck, 614 Vitest tests in 89 suites)
+- `npx playwright test tests/e2e/landing.spec.ts`: 2/2 tests passed (WCAG 2.2 AA compliant)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
+
 
 
 

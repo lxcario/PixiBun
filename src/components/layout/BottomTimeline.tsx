@@ -89,7 +89,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     deleteClip,
   } = useStudioStore();
   const { isGuest } = useCoDrawStatus();
-  const guestFrameLockTitle = 'Kare yapısı oturum sahibi (Host) tarafından yönetilmektedir.';
+  const guestFrameLockTitle = 'Frame structure is managed by the session host.';
 
   const isPingPongForwardRef = useRef(true);
   const [isCreatingClip, setIsCreatingClip] = useState(false);

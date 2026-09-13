@@ -28,17 +28,17 @@ export const FloatingPreviewWindow: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Custom resizable viewport size
+  // Custom resizable viewport size (minimum 260px width to accommodate controls bar)
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
-    width: 144,
-    height: 144,
+    width: 260,
+    height: 160,
   });
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef<{ startX: number; startY: number; startW: number; startH: number }>({
     startX: 0,
     startY: 0,
-    startW: 144,
-    startH: 144,
+    startW: 260,
+    startH: 160,
   });
 
   // Render active composite frame to preview canvas whenever frames, activeFrameIndex, or canvas size changes
@@ -78,8 +78,8 @@ export const FloatingPreviewWindow: React.FC = () => {
         return;
       }
       setPosition({
-        x: Math.max(10, Math.min(window.innerWidth - 80, e.clientX - dragOffsetRef.current.x)),
-        y: Math.max(10, Math.min(window.innerHeight - 80, e.clientY - dragOffsetRef.current.y)),
+        x: Math.max(10, Math.min(window.innerWidth - 270, e.clientX - dragOffsetRef.current.x)),
+        y: Math.max(10, Math.min(window.innerHeight - 100, e.clientY - dragOffsetRef.current.y)),
       });
     };
 
@@ -110,8 +110,8 @@ export const FloatingPreviewWindow: React.FC = () => {
       const deltaX = e.clientX - resizeStartRef.current.startX;
       const deltaY = e.clientY - resizeStartRef.current.startY;
       setViewportSize({
-        width: Math.max(100, Math.min(640, resizeStartRef.current.startW + deltaX)),
-        height: Math.max(100, Math.min(640, resizeStartRef.current.startH + deltaY)),
+        width: Math.max(260, Math.min(640, resizeStartRef.current.startW + deltaX)),
+        height: Math.max(120, Math.min(640, resizeStartRef.current.startH + deltaY)),
       });
     };
 
@@ -177,7 +177,7 @@ export const FloatingPreviewWindow: React.FC = () => {
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
-      className="z-30 bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[3px] shadow-[0_12px_32px_rgba(0,0,0,0.6)] flex flex-col select-none overflow-hidden transition-colors duration-300 relative"
+      className="z-30 min-w-[280px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[3px] shadow-[0_12px_32px_rgba(0,0,0,0.6)] flex flex-col select-none overflow-hidden transition-colors duration-300 relative"
     >
       {/* 1. Window Titlebar / Drag Handle */}
       <div
@@ -230,7 +230,7 @@ export const FloatingPreviewWindow: React.FC = () => {
       </div>
 
       {/* 3. Controls Bar: Play/Pause, Scale (1x/2x/4x), Backdrop Switcher */}
-      <div className="px-2 py-1.5 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex items-center justify-between gap-2 text-xs font-mono pr-5">
+      <div className="px-2 py-1.5 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex flex-wrap items-center justify-between gap-1.5 text-xs font-mono pr-5">
         {/* Play / Pause Toggle */}
         <div className="flex items-center gap-1">
           <button

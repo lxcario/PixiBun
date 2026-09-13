@@ -73,8 +73,14 @@ export const LandingNav: React.FC = () => {
         {/* Brand / Logo */}
         <Link
           href="/"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.location.pathname === '/') {
+              window.dispatchEvent(new CustomEvent('pixibun:replay-intro'));
+            }
+          }}
           className="flex items-center gap-2.5 text-[var(--text-heading)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px]"
           aria-label="PixiBun Home"
+          title="Click to replay opening intro"
         >
           <div className="w-8 h-8 flex items-center justify-center bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] p-0.5 shadow-sm">
             <BunMascot size={22} animate />

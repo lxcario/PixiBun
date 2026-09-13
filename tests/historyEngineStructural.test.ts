@@ -11,7 +11,7 @@ describe('HistoryEngine - Hybrid Command Pattern (Structural Steps)', () => {
   it('correctly pushes and tracks structural history steps', () => {
     const structuralStep: StructuralHistoryStep = {
       type: 'structural',
-      description: 'Katman Silindi',
+      description: 'Delete Layer',
       frameIndex: 0,
       frames: [
         {
@@ -56,7 +56,7 @@ describe('HistoryEngine - Hybrid Command Pattern (Structural Steps)', () => {
     const peek = engine.peekUndo();
     expect(peek).not.toBeNull();
     expect(peek?.type).toBe('structural');
-    expect(peek?.description).toBe('Katman Silindi');
+    expect(peek?.description).toBe('Delete Layer');
   });
 
   it('correctly undoes and redoes structural state transitions', () => {

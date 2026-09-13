@@ -22,6 +22,7 @@ import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry'
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
+import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -50,6 +51,10 @@ const CoDrawModal = dynamic(
   () => import('@/components/modals/CoDrawModal').then((m) => m.CoDrawModal),
   { ssr: false }
 );
+const DiagnosticsModal = dynamic(
+  () => import('@/components/modals/DiagnosticsModal').then((m) => m.DiagnosticsModal),
+  { ssr: false }
+);
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -71,16 +76,19 @@ const AUTOSAVE_DEBOUNCE_MS = 800;
 export const StudioLayout: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
+  const [saveToast, setSaveToast] = useState<string | null>(null);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const [storageWarning, setStorageWarning] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const autosaveTimerRef = useRef<number | null>(null);
+  const saveToastTimerRef = useRef<number | null>(null);
   const autosaveInFlightRef = useRef(false);
   const autosavePendingRef = useRef(false);
   const inFlightPromiseRef = useRef<Promise<void> | null>(null);
@@ -146,6 +154,7 @@ export const StudioLayout: React.FC = () => {
               autosaveFailCountRef.current = 0;
               setAutosaveError(null);
               setSaveStatus('saved');
+              useStudioStore.getState().markClean();
               // Reset to idle after a short delay so it doesn't stay 'saved' forever
               setTimeout(() => {
                 if (useStudioStore.getState().saveStatus === 'saved') {
@@ -215,6 +224,7 @@ export const StudioLayout: React.FC = () => {
   }, [runAutosave]);
 
   const handleCommitHistory = useCallback(() => {
+    useStudioStore.getState().setDirty(true);
     if (autosaveTimerRef.current !== null) {
       window.clearTimeout(autosaveTimerRef.current);
     }
@@ -223,6 +233,52 @@ export const StudioLayout: React.FC = () => {
       void runAutosave();
     }, AUTOSAVE_DEBOUNCE_MS);
   }, [runAutosave]);
+
+  // Native exit guard when changes are unsaved (UX-2)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (useStudioStore.getState().isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const saveStatus = useStudioStore((s) => s.saveStatus);
+
+  // Synchronize document title with unsaved dirty indicator
+  useEffect(() => {
+    document.title = `${isDirty ? '● ' : ''}${projectName} — PixiBun`;
+    // Restore the landing metadata title when leaving /studio so a stale
+    // dirty indicator never survives in-app navigation. Keep in sync with
+    // the `title` in src/app/page.tsx metadata.
+    return () => {
+      document.title = 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine';
+    };
+  }, [isDirty, projectName]);
+
+  // Affirmative explicit save confirmation toast helper (UX-14)
+  const triggerSaveToast = useCallback(() => {
+    if (saveToastTimerRef.current !== null) {
+      window.clearTimeout(saveToastTimerRef.current);
+    }
+    setSaveToast(`✦ Saved "${projectName || 'project'}" to browser storage`);
+    saveToastTimerRef.current = window.setTimeout(() => {
+      setSaveToast(null);
+      saveToastTimerRef.current = null;
+    }, 2500);
+  }, [projectName]);
+
+  useEffect(() => {
+    return () => {
+      if (saveToastTimerRef.current !== null) {
+        window.clearTimeout(saveToastTimerRef.current);
+      }
+    };
+  }, []);
 
   // Remote co-draw strokes mutate pixel buffers without a local history
   // commit, so schedule the same debounced autosave when a peer changes the
@@ -532,6 +588,7 @@ export const StudioLayout: React.FC = () => {
         const res = await DesktopFileSystem.saveProject(jsonStr, filename, forceSaveAs);
         if (res.success) {
           useStudioStore.getState().setSaveStatus('saved');
+          useStudioStore.getState().markClean();
         }
       } catch (err) {
         console.error('Desktop save error:', err);
@@ -552,10 +609,22 @@ export const StudioLayout: React.FC = () => {
         return;
       }
 
-      // Desktop Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
+      // Desktop / Local Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        void handleSaveDesktopProject(e.shiftKey);
+        if (autosaveTimerRef.current !== null) {
+          window.clearTimeout(autosaveTimerRef.current);
+          autosaveTimerRef.current = null;
+        }
+        // Flush the debounced IndexedDB autosave first, then hand off to the
+        // desktop File System Access save — sequenced so the project is never
+        // serialized twice concurrently (and the OS dialog can't interleave
+        // with the local write).
+        void (async () => {
+          await runAutosave();
+          triggerSaveToast();
+          await handleSaveDesktopProject(e.shiftKey);
+        })();
         return;
       }
 
@@ -588,17 +657,13 @@ export const StudioLayout: React.FC = () => {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === '=' || e.key === '+') {
           e.preventDefault();
-          const ZOOM_STEPS = [100, 200, 400, 800, 1600, 3200, 6400];
-          const nextStep = ZOOM_STEPS.find((step) => step > zoom) || 6400;
-          setZoom(nextStep);
+          setZoom(getNextZoomStep(zoom));
           return;
         }
 
         if (e.key === '-' || e.key === '_') {
           e.preventDefault();
-          const ZOOM_STEPS = [100, 200, 400, 800, 1600, 3200, 6400];
-          const prevStep = [...ZOOM_STEPS].reverse().find((step) => step < zoom) || 100;
-          setZoom(prevStep);
+          setZoom(getPrevZoomStep(zoom));
           return;
         }
 
@@ -684,7 +749,9 @@ export const StudioLayout: React.FC = () => {
           break;
         case 's': {
           // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens
-          useStudioStore.getState().toggleSquintMode();
+          if (!e.ctrlKey && !e.metaKey) {
+            useStudioStore.getState().toggleSquintMode();
+          }
           break;
         }
         case 'p': {
@@ -732,6 +799,8 @@ export const StudioLayout: React.FC = () => {
     handleUndo,
     handleRedo,
     handleSaveDesktopProject,
+    runAutosave,
+    triggerSaveToast,
     zoom,
     setZoom,
     setPan,
@@ -754,7 +823,22 @@ export const StudioLayout: React.FC = () => {
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onSaveNow={() => {
+          void runAutosave();
+          triggerSaveToast();
+        }}
       />
+
+      {/* Accessible Status Announcements for Screen Readers (WCAG 4.1.3) */}
+      <div className="sr-only" role="status" aria-live="polite">
+        {saveStatus === 'saving'
+          ? 'Saving project...'
+          : saveStatus === 'error'
+          ? 'Error saving project'
+          : isDirty
+          ? 'Unsaved changes'
+          : 'All changes saved'}
+      </div>
 
       {/* Persistent Storage Eviction Warning Banner */}
       {storageWarning && !autosaveError && (
@@ -880,6 +964,15 @@ export const StudioLayout: React.FC = () => {
         <ShortcutsModal
           isOpen={isShortcutsOpen}
           onClose={() => setIsShortcutsOpen(false)}
+          onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
+        />
+      )}
+
+      {/* Privacy, Diagnostics & Offline Health Modal (lazy-loaded) */}
+      {isDiagnosticsOpen && (
+        <DiagnosticsModal
+          isOpen={isDiagnosticsOpen}
+          onClose={() => setIsDiagnosticsOpen(false)}
         />
       )}
 
@@ -932,6 +1025,19 @@ export const StudioLayout: React.FC = () => {
           isOpen={isCoDrawOpen}
           onClose={() => setIsCoDrawOpen(false)}
         />
+      )}
+
+      {/* Affirmative Explicit Save Confirmation Toast (UX-14) */}
+      {saveToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="save-affirmation-toast"
+          className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)] font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all"
+        >
+          <PixelIcon name="save" size={14} className="text-[var(--accent-gold,#f0be7c)] shrink-0" />
+          <span>{saveToast}</span>
+        </div>
       )}
     </div>
   );

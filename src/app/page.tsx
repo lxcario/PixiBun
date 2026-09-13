@@ -10,7 +10,6 @@ import { AtelierFooter } from '@/components/landing/AtelierFooter';
 import { LamplitIntroProvider } from '@/components/landing/LamplitIntroProvider';
 import { PixelDitherCurtain } from '@/components/landing/PixelDitherCurtain';
 import { ClickSpark } from '@/components/reactbits/ClickSpark';
-import { PixelCursor } from '@/components/reactbits/PixelCursor';
 import { CozyAtelierBackground } from '@/components/landing/CozyAtelierBackground';
 
 export const metadata: Metadata = {
@@ -24,24 +23,23 @@ export default function Home() {
     <LamplitIntroProvider>
       <PixelDitherCurtain />
       
-      {/* 1. Custom 16-Bit Golden Pixel Cursor */}
-      <PixelCursor />
-
-      {/* 2. Cozy Atelier Background (Soft Lamplight Radiance, Candle Follow, Embers, Shelves) */}
+      {/* Cozy Atelier Background (Soft Lamplight Radiance, Candle Follow, Embers, Shelves) */}
       <CozyAtelierBackground />
 
-      <ClickSpark
-        className="relative z-10"
-        sparkColors={['#f0be7c', '#fff8db', '#dcabdf']}
-        sparkSize={2.5}
-        sparkRadius={20}
-        sparkCount={5}
-        duration={320}
-      >
-        <main id="top" className="min-h-screen bg-transparent text-[var(--text-heading)] flex flex-col relative z-10">
+      <main id="top" className="min-h-screen bg-transparent text-[var(--text-heading)] flex flex-col relative z-10">
+        <LandingNav />
 
-          <LandingNav />
+        {/* Hero & Interactive Canvas Showcase with Tactile Cursor & Click Sparks (UX-11) */}
+        <ClickSpark
+          className="custom-cursor-active relative"
+          sparkColors={['#f0be7c', '#fff8db', '#dcabdf']}
+          sparkSize={2.5}
+          sparkRadius={20}
+          sparkCount={5}
+          duration={320}
+        >
           <AtelierHero />
+        </ClickSpark>
 
           {/* Decorative Section Divider */}
           <div className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-center gap-4 text-[var(--desk-border)]">
@@ -82,7 +80,6 @@ export default function Home() {
           <AtelierCtaBanner />
           <AtelierFooter />
         </main>
-      </ClickSpark>
     </LamplitIntroProvider>
   );
 }

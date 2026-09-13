@@ -133,18 +133,36 @@ export const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
 
   const handleHexSubmit = (newHex: string) => {
     setHexInput(newHex);
-    if (/^#[0-9A-Fa-f]{6}$/.test(newHex)) {
-      const [nr, ng, nb] = hexToRgb(newHex);
+    const cleaned = newHex.trim().replace(/^#/, '');
+    if (/^[0-9A-Fa-f]{3}$/.test(cleaned)) {
+      const expanded = '#' + cleaned.split('').map((c) => c + c).join('');
+      const [nr, ng, nb] = hexToRgb(expanded);
       const [h, s, v] = rgbToHsv(nr, ng, nb);
       setHue(h);
       setSat(s);
       setVal(v);
       if (target === 'primary') {
-        setPrimaryColor(newHex);
+        setPrimaryColor(expanded);
       } else {
-        setSecondaryColor(newHex);
+        setSecondaryColor(expanded);
+      }
+    } else if (/^[0-9A-Fa-f]{6}$/.test(cleaned)) {
+      const fullHex = '#' + cleaned;
+      const [nr, ng, nb] = hexToRgb(fullHex);
+      const [h, s, v] = rgbToHsv(nr, ng, nb);
+      setHue(h);
+      setSat(s);
+      setVal(v);
+      if (target === 'primary') {
+        setPrimaryColor(fullHex);
+      } else {
+        setSecondaryColor(fullHex);
       }
     }
+  };
+
+  const handleHexBlur = () => {
+    setHexInput(hex);
   };
 
   const handleAddToPalette = () => {
@@ -230,7 +248,13 @@ export const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
                 type="text"
                 value={hexInput}
                 onChange={(e) => handleHexSubmit(e.target.value)}
-                maxLength={7}
+                onBlur={handleHexBlur}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleHexBlur();
+                }}
+                maxLength={9}
+                placeholder="#000000"
+                aria-label="Color hex code"
                 className="bg-[var(--desk-surface)] text-[#f0be7c] font-bold px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] focus:border-[#f0be7c] outline-none text-xs w-28 uppercase"
               />
             </div>

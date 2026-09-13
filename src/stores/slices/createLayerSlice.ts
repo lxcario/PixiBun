@@ -32,11 +32,12 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
 
       currentFrame.layers.unshift(newLayer);
       state.activeLayerId = newLayerId;
+      state.isDirty = true;
     });
   },
 
   deleteLayer: layerId => {
-    pushStructuralHistoryStep('Katman Silindi');
+    pushStructuralHistoryStep('Delete Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;
@@ -46,11 +47,12 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (state.activeLayerId === layerId) {
         state.activeLayerId = currentFrame.layers[0].id;
       }
+      state.isDirty = true;
     });
   },
 
   duplicateLayer: layerId => {
-    pushStructuralHistoryStep('Katman Çoğaltıldı');
+    pushStructuralHistoryStep('Duplicate Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -69,17 +71,19 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       currentFrame.layers.splice(idx, 0, duplicate);
       cloneBuffers([layerId], [newLayerId], state.canvasWidth, state.canvasHeight);
       state.activeLayerId = newLayerId;
+      state.isDirty = true;
     });
   },
 
   reorderLayers: (startIndex, endIndex) => {
-    pushStructuralHistoryStep('Katmanlar Yeniden Sıralandı');
+    pushStructuralHistoryStep('Reorder Layers');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
 
       const [removed] = currentFrame.layers.splice(startIndex, 1);
       currentFrame.layers.splice(endIndex, 0, removed);
+      state.isDirty = true;
     });
   },
 
@@ -90,6 +94,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.visible = !layer.visible;
+        state.isDirty = true;
       }
     });
   },
@@ -112,6 +117,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.opacity = Math.max(0, Math.min(1, opacity));
+        state.isDirty = true;
       }
     });
   },
@@ -123,6 +129,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.blendMode = blendMode;
+        state.isDirty = true;
       }
     });
   },
@@ -134,6 +141,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.name = name;
+        state.isDirty = true;
       }
     });
   },
@@ -148,12 +156,13 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.tag = tag;
+        state.isDirty = true;
       }
     });
   },
 
   mergeLayerDown: layerId => {
-    pushStructuralHistoryStep('Katman Aşağı Birleştirildi');
+    pushStructuralHistoryStep('Merge Down Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;
@@ -183,6 +192,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
 
       state.activeLayerId = lower.id;
       state.bufferVersion += 1;
+      state.isDirty = true;
     });
   },
 });

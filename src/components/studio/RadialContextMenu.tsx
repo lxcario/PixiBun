@@ -32,6 +32,15 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
     { id: 'eyedropper', label: 'Eyedropper', icon: 'eyedropper' },
   ];
 
+  const menuWidth = 240;
+  const menuHeight = 56;
+  const clampedX = typeof window !== 'undefined'
+    ? Math.max(12, Math.min(window.innerWidth - menuWidth - 12, position.x - 48))
+    : position.x - 48;
+  const clampedY = typeof window !== 'undefined'
+    ? Math.max(12, Math.min(window.innerHeight - menuHeight - 12, position.y - 48))
+    : position.y - 48;
+
   return (
     <>
       <button 
@@ -45,7 +54,7 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
       {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div 
         className="fixed z-50 flex flex-col items-center gap-2 outline-none"
-        style={{ left: position.x - 48, top: position.y - 48 }}
+        style={{ left: clampedX, top: clampedY }}
         onKeyDown={handleKeyDown}
         role="dialog"
         aria-modal="true"
@@ -53,17 +62,35 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
         tabIndex={0}
       >
       {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
-        <div className="bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[4px] p-2 shadow-xl flex gap-2">
+        <div 
+          className="bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[4px] p-2 shadow-xl flex gap-2"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           {primaryTools.map(tool => (
             <button
               key={tool.id}
               onClick={() => handleTool(tool.id)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleTool(tool.id);
+              }}
+              onPointerUp={(e) => {
+                if (e.button === 0 || e.button === 2) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleTool(tool.id);
+                }
+              }}
               className={`w-9 h-9 flex items-center justify-center rounded-[2px] border-2 cursor-pointer transition-transform ${
                 tools.activeTool === tool.id 
                   ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] scale-110' 
                   : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[#2e2040] focus:ring-2 focus:ring-[#f0be7c]'
               }`}
-              title={tool.label}
+              title={`${tool.label} (Click or Right-Click to choose)`}
               data-autofocus={tools.activeTool === tool.id}
             >
               <PixelIcon name={tool.icon} size={16} />
@@ -74,15 +101,41 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
             <button
               type="button"
               onClick={() => { swapColors(); onClose(); }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                swapColors();
+                onClose();
+              }}
+              onPointerUp={(e) => {
+                if (e.button === 0 || e.button === 2) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  swapColors();
+                  onClose();
+                }
+              }}
               style={{ backgroundColor: secondaryColor }}
               className="absolute bottom-0 right-0 w-6 h-6 rounded-[2px] border-2 border-[var(--desk-border)] shadow-[0_2px_0_var(--btn-shadow)] cursor-pointer hover:scale-110 transition-transform focus:ring-2"
-              title="Secondary Color (Click to Swap)"
+              title="Secondary Color (Click or Right-Click to Swap)"
             />
             <button
               type="button"
               style={{ backgroundColor: primaryColor }}
               onClick={onClose}
-              className="absolute top-0 left-0 w-6 h-6 rounded-[2px] border-2 border-[#f0be7c] shadow-[0_2px_4px_rgba(0,0,0,0.6)] z-10"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+              onPointerUp={(e) => {
+                if (e.button === 0 || e.button === 2) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }
+              }}
+              className="absolute top-0 left-0 w-6 h-6 rounded-[2px] border-2 border-[#f0be7c] shadow-[0_2px_4px_rgba(0,0,0,0.6)] z-10 cursor-pointer"
               title="Primary Color"
             />
           </div>

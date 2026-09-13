@@ -1,4 +1,4 @@
-﻿# Contributing to PixiBun Atelier 🎨🐇
+# Contributing to PixiBun Atelier 🎨🐇
 
 Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a high-performance, in-browser pixel art and animation workstation built with a strict **zero-dependency, local-first, mathematically rigorous** engineering philosophy.
 
@@ -44,7 +44,7 @@ npm run gate:full
 | :--- | :--- | :--- |
 | **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, truthfulness of test counts in `README.md`, and version synchronization in `package.json`. |
 | **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
-| **Stage 3** | `npm test` | Runs all 609 unit and invariant tests across 88 test suites via Vitest. |
+| **Stage 3** | `npm test` | Runs all 614 unit and invariant tests across 89 test suites via Vitest. |
 | **Stage 4** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
 
 ---

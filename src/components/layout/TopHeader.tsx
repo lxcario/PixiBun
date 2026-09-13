@@ -10,6 +10,7 @@ import type { ImportPayload } from '@/components/modals/ImportModal';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import { AutosaveIndicator } from '@/components/ui/AutosaveIndicator';
 import { StudioRadioWidget } from '@/components/audio/StudioRadioWidget';
+import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
@@ -17,6 +18,7 @@ interface TopHeaderProps {
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
   onNewDrawing?: () => void;
+  onSaveNow?: () => void;
   onOpenGallery?: () => void;
   onOpenCoDraw?: () => void;
   onUndo?: () => void;
@@ -31,6 +33,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenShortcuts,
   onOpenResize,
   onNewDrawing,
+  onSaveNow,
   onOpenGallery,
   onOpenCoDraw,
   onUndo,
@@ -43,6 +46,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     setProjectName,
     canvasWidth,
     canvasHeight,
+    isDirty,
     zoom,
     setZoom,
     setPan,
@@ -103,11 +107,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     e.target.value = '';
   };
 
-  const handleZoomIn = () => setZoom(zoom * 1.5);
-  const handleZoomOut = () => setZoom(zoom / 1.5);
+  const handleZoomIn = () => setZoom(getNextZoomStep(zoom));
+  const handleZoomOut = () => setZoom(getPrevZoomStep(zoom));
   const handleResetZoom = () => {
-    setZoom(1600);
-    setPan(0, 0);
+    handleFitToScreen();
   };
   const handleFitToScreen = () => {
     // Calculate best fit zoom based on 600px stage viewport
@@ -127,9 +130,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   };
 
   return (
-    <header className="h-14 bg-[var(--desk-surface)] border-b-2 border-[var(--desk-border)] px-4 flex items-center justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-300">
+    <header className="h-14 bg-[var(--desk-surface)] border-b-2 border-[var(--desk-border)] px-4 flex items-center justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-300 overflow-x-auto scrollbar-none min-w-0">
       {/* Left: Brand & Project Name */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <a
           href="/"
           title="Back to the front porch"
@@ -158,10 +161,17 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsEditingName(true)}
-              className="text-sm font-bold text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors cursor-pointer"
+              className="text-sm font-bold text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors cursor-pointer flex items-center gap-1.5"
               title="Click to rename project"
             >
-              {projectName}
+              <span>{projectName}</span>
+              {isDirty && (
+                <span
+                  className="w-2 h-2 rounded-full bg-[var(--accent-gold)] shrink-0 animate-pulse"
+                  title="Unsaved changes"
+                  aria-label="Unsaved changes"
+                />
+              )}
             </button>
 
             <button
@@ -182,7 +192,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       </div>
 
       {/* Center Utilities: Undo/Redo, Zoom, Viewport Toggles */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {/* Undo / Redo */}
         <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
           <TactileButton
@@ -227,7 +237,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <button
             onClick={handleResetZoom}
             className="px-2 text-xs font-mono font-bold text-[#f0be7c] hover:text-[#fff8db] min-w-[52px] text-center cursor-pointer"
-            title="Reset Zoom (1600%)"
+            title="Fit to Screen (Ctrl+0)"
           >
             {zoom}%
           </button>
@@ -254,7 +264,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       </div>
 
       {/* Right Actions: Theme Toggle, Shortcuts, Import & Export */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <input
           ref={fileInputRef}
           type="file"
@@ -301,6 +311,21 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <PixelIcon name="pen" size={14} />
           <span>New</span>
         </TactileButton>
+
+        {onSaveNow && (
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={onSaveNow}
+            title="Save Now (Ctrl+S)"
+            aria-label="Save Project Now"
+            data-testid="save-now-button"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5 font-bold"
+          >
+            <PixelIcon name="save" size={14} />
+            <span>Save</span>
+          </TactileButton>
+        )}
 
         <TactileButton
           size="sm"

@@ -45,6 +45,18 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
     });
   },
 
+  isDirty: false,
+  setDirty: dirty => {
+    set(state => {
+      state.isDirty = dirty;
+    });
+  },
+  markClean: () => {
+    set(state => {
+      state.isDirty = false;
+    });
+  },
+
   selection: null,
   selectionMask: null,
   setSelection: (sel, mask = null) => {
@@ -136,6 +148,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
           };
         });
       }
+      state.isDirty = false;
     });
   },
 
@@ -151,6 +164,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
       state.zoom = 1600;
       state.panX = 0;
       state.panY = 0;
+      state.isDirty = false;
       state.frames = [
         {
           id: initialFrameId,

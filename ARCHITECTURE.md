@@ -573,7 +573,7 @@ To decouple development from cloud CI billing constraints while maintaining unco
   - Executes a 3-stage sequential validation pipeline via `npm run gate` in ~16 seconds:
     1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
     2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
-    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 609 Vitest unit tests across 88 suites.
+    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 614 Vitest unit tests across 89 suites.
     4. **Stage 4 (Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
 * **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
   - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
@@ -581,6 +581,26 @@ To decouple development from cloud CI billing constraints while maintaining unco
 * **Open Source Governance & Ready-to-Use GitLab CI:**
   - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
   - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
+
+---
+
+## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
+
+To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
+
+* **Unsaved Dirty Invariants & Native Exit Guards (`src/components/layout/StudioLayout.tsx`, `src/stores/slices/createHistorySlice.ts`):**
+  - Synchronizes active document title with unsaved dirty status (`● Project — PixiBun`), automatically clearing upon save.
+  - Implements `beforeunload` browser event trapping whenever `isDirty === true`, preventing accidental tab closure and loss of in-flight artwork.
+* **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`):**
+  - Triggers transient, non-modal confirmation toasts (`✦ Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
+* **Modal Accessibility & Focus Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`):**
+  - Conforms to WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured).
+  - Enforces programmatic initial focus on modal title or first focusable interactable.
+  - Implements circular Tab / Shift+Tab keyboard focus containment, preventing focus leakage to obscured background layers.
+  - Restores focus to the triggering opener button upon modal dismissal.
+* **Shortcut Collision Prevention & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`):**
+  - Shields viewport keyboard shortcuts (e.g. `s` silhouette squint mode) from firing when focused in text inputs or executing `Ctrl+S`.
+  - Enforces monotonic quantized zoom progression across discrete power-of-two magnification levels.
 
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { useStudioStore } from '@/stores/studioStore';
@@ -69,7 +69,23 @@ export const OnboardingOverlay: React.FC = () => {
     };
   }, [updateTargetBounds]);
 
-  // Automatically enable Onion Skinning when reaching Step 2 or beyond
+  const initialOnionSkinRef = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    // Capture user's existing onion skin setting before tutorial enablement
+    if (initialOnionSkinRef.current === null) {
+      initialOnionSkinRef.current = useStudioStore.getState().onionSkin.enabled;
+    }
+
+    return () => {
+      // Restore user's previous onion skin setting when onboarding completes or unmounts
+      if (initialOnionSkinRef.current !== null) {
+        useStudioStore.getState().setOnionSkin({ enabled: initialOnionSkinRef.current });
+      }
+    };
+  }, []);
+
+  // Automatically enable Onion Skinning during animation tutorial step
   useEffect(() => {
     if (currentStep.stepIndex > 0) {
       setOnionSkin({ enabled: true });

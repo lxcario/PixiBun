@@ -13,56 +13,7 @@ const ColorPickerModal = dynamic(
   { ssr: false }
 );
 
-interface ToolItem {
-  id: ToolType;
-  label: string;
-  shortcut: string;
-  icon: PixelIconName;
-}
-
-const TOOL_GROUPS: { groupName: string; tools: ToolItem[] }[] = [
-  {
-    groupName: 'Drawing',
-    tools: [
-      { id: 'pen', label: 'Pen', shortcut: 'B', icon: 'pen' },
-      { id: 'curve', label: 'Bézier Curve', shortcut: 'C', icon: 'curve' },
-      { id: 'eraser', label: 'Eraser', shortcut: 'E', icon: 'eraser' },
-      { id: 'bucket', label: 'Flood Fill', shortcut: 'G', icon: 'bucket' },
-      { id: 'dither', label: 'Dither Brush', shortcut: 'D', icon: 'dither' },
-      { id: 'color-replace', label: 'Color Replace', shortcut: 'R', icon: 'color-replace' },
-    ],
-  },
-  {
-    groupName: 'Selection',
-    tools: [
-      { id: 'select-box', label: 'Marquee Box', shortcut: 'M', icon: 'select-box' },
-      { id: 'select-lasso', label: 'Lasso Select', shortcut: 'Q', icon: 'select-lasso' },
-      { id: 'select-wand', label: 'Magic Wand', shortcut: 'W', icon: 'select-wand' },
-    ],
-  },
-  {
-    groupName: 'Geometry',
-    tools: [
-      { id: 'line', label: 'Line', shortcut: 'L', icon: 'line' },
-      { id: 'isometric-line', label: '2:1 Iso Line', shortcut: 'J', icon: 'isometric-line' },
-      { id: 'rectangle', label: 'Rectangle', shortcut: 'U', icon: 'rectangle' },
-      { id: 'ellipse', label: 'Ellipse', shortcut: 'O', icon: 'ellipse' },
-    ],
-  },
-  {
-    groupName: '2.5D Sculpt',
-    tools: [
-      { id: 'normal-chisel', label: 'Normal Chisel', shortcut: 'K', icon: 'chisel' },
-      { id: 'rivet-stamp', label: 'Rivet Stamp', shortcut: 'N', icon: 'rivet' },
-    ],
-  },
-  {
-    groupName: 'Utility',
-    tools: [
-      { id: 'eyedropper', label: 'Eyedropper', shortcut: 'I', icon: 'eyedropper' },
-    ],
-  },
-];
+import { TOOL_GROUPS } from '@/config/shortcuts';
 
 export interface LeftToolbarProps {
   isPlaygroundMode?: boolean;
@@ -157,10 +108,14 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
           <button
             type="button"
             onClick={() => setColorPickerTarget('primary')}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              swapColors();
+            }}
             style={{ backgroundColor: primaryColor }}
             className="absolute top-0 left-0 w-6 h-6 rounded-[2px] border-2 border-[#f0be7c] shadow-[0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:scale-110 transition-transform p-0 z-10"
-            aria-label={`Primary color ${primaryColor}. Click to choose`}
-            title={`Primary Color (${primaryColor}) - Click to Pick Color`}
+            aria-label={`Primary color ${primaryColor}. Click to choose, right click to swap`}
+            title={`Primary Color (${primaryColor}) - Click to Pick / Right-click to Swap`}
           />
         </div>
 

@@ -9,7 +9,7 @@ import { BlendMode } from '@/types/canvas';
 
 export const LayersPanel: React.FC = () => {
   const { isGuest } = useCoDrawStatus();
-  const guestLockTitle = 'Katman yapısı oturum sahibi (Host) tarafından yönetilmektedir.';
+  const guestLockTitle = 'Layer structure is managed by the session host.';
   const {
     frames,
     activeFrameIndex,
