@@ -450,14 +450,9 @@ export function computeContentAwareHeightmap(
       if (!isOpaque(x, y)) continue;
 
       const myLum = lum[idx];
-      if (myLum < 0.22) {
-        isInkLine[idx] = 1;
-        continue;
-      }
 
-      // Check if this pixel is significantly darker than neighboring interior pixels
+      let touchesTransparent = false;
       let maxNeighborLum = 0;
-      let hasOpaqueNeighbor = false;
       const neighbors = [
         [x + 1, y],
         [x - 1, y],
@@ -465,14 +460,28 @@ export function computeContentAwareHeightmap(
         [x, y - 1],
       ];
       for (const [nx, ny] of neighbors) {
-        if (isOpaque(nx, ny)) {
-          hasOpaqueNeighbor = true;
+        if (!isOpaque(nx, ny)) {
+          touchesTransparent = true;
+        } else {
           const nLum = lum[ny * width + nx];
           if (nLum > maxNeighborLum) maxNeighborLum = nLum;
         }
       }
 
-      if (hasOpaqueNeighbor && maxNeighborLum - myLum >= 0.30) {
+      // Outer dark contour: touches transparent background AND is very dark (black/dark border)
+      if (touchesTransparent && myLum < 0.14) {
+        isInkLine[idx] = 1;
+        continue;
+      }
+
+      // Interior ink crevice / contour: significantly darker than neighboring interior fill
+      if (maxNeighborLum - myLum >= 0.16) {
+        isInkLine[idx] = 1;
+        continue;
+      }
+
+      // True pure black pixels (#000000 or near-black) at or near boundary
+      if (myLum < 0.035 && (touchesTransparent || maxNeighborLum > 0.07)) {
         isInkLine[idx] = 1;
       }
     }
@@ -605,6 +614,7 @@ export function computeContentAwareHeightmap(
       }
     }
   }
+  const boxW = Math.max(1, maxX - minX + 1);
   const boxH = Math.max(1, maxY - minY + 1);
 
   if (!isCharacter) {
@@ -628,12 +638,14 @@ export function computeContentAwareHeightmap(
     }
   }
 
+  const scaleFactor = Math.max(1.0, Math.min(width, height) / 32);
+  const charBevelRadius = 2.8 * scaleFactor;
   const macroHeightmap = new Float32Array(totalPixels);
   for (let i = 0; i < totalPixels; i++) {
     if (macroDist[i] > 0) {
       if (isCharacter) {
-        // Frontal face cushion: 2.8px outer bevel rim, level camera-facing plateau across face interior
-        const rimRatio = Math.min(1.0, macroDist[i] / 2.8);
+        // Frontal face cushion: scaled outer bevel rim proportional to canvas scale, level camera-facing plateau across face interior
+        const rimRatio = Math.min(1.0, macroDist[i] / charBevelRadius);
         macroHeightmap[i] = maxMacroD * Math.pow(rimRatio, 0.5);
       } else {
         macroHeightmap[i] = maxMacroD * Math.pow(Math.min(1.0, macroDist[i] / maxMacroD), 0.5);
@@ -643,7 +655,7 @@ export function computeContentAwareHeightmap(
 
   // 6. Micro Local Part Distance & Beveling Field
   const microDist = new Float32Array(totalPixels);
-  const bevelRadius = Math.max(2.5, Math.min(6.0, maxMacroD * 0.45));
+  const bevelRadius = Math.max(2.5, Math.min(6.0 * scaleFactor, maxMacroD * 0.45));
 
   if (currentComponent > 0) {
     for (let c = 1; c <= currentComponent; c++) {
@@ -787,8 +799,9 @@ export function computeContentAwareHeightmap(
           while (segRight < width - 1 && isOpaque(segRight + 1, y)) segRight++;
           const segW = segRight - segLeft + 1;
 
-          if (segW <= 5) {
-            // Narrow appendage: prevent harsh vertical split down narrow 2-4px ears
+          const maxAppendageWidth = Math.max(5, Math.round(5 * scaleFactor));
+          if (segW <= maxAppendageWidth) {
+            // Narrow appendage: prevent harsh vertical split down narrow ears
             const isLitSide = (lightDirX <= 0 && segRight <= charCenterX) || (lightDirX > 0 && segLeft >= charCenterX);
             if (isLitSide) {
               // On the lit side of the character, prevent normals from facing away from the key light

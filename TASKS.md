@@ -2,6 +2,30 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 58 — Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
+**Goal:** Immunize the 2.5D Photometric Studio against resolution and palette edge cases: dynamically scale EDT bevel radii and macro heightmap inflation for higher resolutions ($64\times64$, $128\times128$), eliminate ink-line over-protection false positives on dark character body palettes (crimson, navy, dark earth tones), and guarantee monotonic cel-shading shadow ramps on dark colors.
+
+**Evidence & Rationale:**
+- High-Resolution Canvas Normal Collapse: In `edtNormalMap.ts`, macro heightmap inflation was clamped to `Math.min(1.0, macroDist[i] / 2.8)`. On a $128\times128$ canvas with a $70\text{px}$ character, all interior pixels deeper than $2.8\text{px}$ collapsed to flat forward plateaus ($N_z = 1.0$), neutralizing directional light azimuth. Proportional scale factor `scaleFactor = Math.max(1.0, Math.min(width, height) / 32)` scales bevel radii smoothly while maintaining byte-exact output at $32\times32$.
+- Dark Palette Line Art Masking: Any pixel with luminance $< 0.22$ was previously categorized as `isInkLine` and skipped from shading (`continue`). For characters drawn with crimson ($L = 0.18$) or navy ($L = 0.06$) body palettes, over $83\%$ of pixels were falsely skipped as line art. Replacing blind luminance thresholding with boundary-aware contrast checks restricts ink-line masking to actual outlines, dark boundaries, and high-contrast interior seams.
+- Inverted Shadow Tones: In `photometricLighting.ts`, `shadowL` was clamped with `Math.max(0.18, lch.L * 0.78)`. When base color luminance fell below $0.18$, the clamped shadow was lighter than the base color, inverting the shadow tone. Clamping relative to base luminance restores monotonic shadow contrast.
+
+**Deliverables:**
+- [x] Proportional Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`): Dynamic `scaleFactor` for bevel radius, macro distance, and appendage width bounds.
+- [x] Boundary-Aware Line Art Classification (`src/lib/ai/math/edtNormalMap.ts`): Replaced naive $lum < 0.22$ check with boundary adjacency, local contrast, and deep black checks.
+- [x] Monotonic Cel Ramp Luminance (`src/lib/ai/math/photometricLighting.ts`): Clamped shadow and deep shadow luminance relative to base color.
+- [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
+
+**Acceptance criteria:**
+- All 615 unit tests across 89 suites pass (100% green).
+- `node scripts/verifyDocIntegrity.mjs` passes all checks.
+- `npm run gate` passes with zero errors.
+- 0 TypeScript compiler errors and 0 ESLint warnings.
+
+**Status:** Complete (2026-09-13)
+
+---
+
 ## Phase 57 — Studio Workstation Ergonomics, Modal Focus Trapping & Unsaved Invariants
 **Goal:** Deliver sovereign desktop-grade workstation ergonomics and WCAG 2.2 accessibility: document title dirty indicators (`● Project — PixiBun`), native `beforeunload` unsaved exit guards, affirmative explicit save confirmation toasts, modal focus trap containment with return-to-opener recovery, shortcut conflict isolation (`s` key), quantized zoom stepping, and clean baseline non-intro landing page.
 

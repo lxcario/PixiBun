@@ -39,3 +39,7 @@ next-env.d.ts
 .env*
 testsprite_tests/tmp/
 testsprite_tests/tmp/config.json
+
+# reels and scratch video generation
+/public/reels/
+/scripts/reels/

@@ -375,14 +375,14 @@ export function buildCelRamp(r: number, g: number, b: number): CelRamp {
   const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
 
   // 1. Unified Shadow Tone: cool ambient hue shift towards blue-violet (260°), crisp luminance drop
-  const shadowL = Math.max(0.18, lch.L * 0.78);
+  const shadowL = Math.max(0.04, Math.min(lch.L * 0.78, lch.L - 0.03));
   const shadowH = shiftHue(lch.h, 260, 14);
   const shadowC = Math.min(0.35, lch.C * 1.05);
   const shadowLab = oklchToOKLab(shadowL, shadowC, shadowH);
   const shadowRgb = okLabToRGB(shadowLab.L, shadowLab.a, shadowLab.b);
 
   // 2. Deep Crevice Tone (occluded seams, under-chin, inner folds)
-  const deepL = Math.max(0.12, lch.L * 0.60);
+  const deepL = Math.max(0.02, Math.min(lch.L * 0.60, lch.L - 0.06));
   const deepH = shiftHue(lch.h, 260, 20);
   const deepC = Math.min(0.35, lch.C * 1.08);
   const deepLab = oklchToOKLab(deepL, deepC, deepH);

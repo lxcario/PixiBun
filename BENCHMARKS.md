@@ -132,9 +132,9 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 
 | Stage | Subsystem | Measured Duration | Status | Checked Invariants |
 |---|---|---|---|---|
-| **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 50 unique phases, 27 monotonic sections, 196 filepaths, line counts, test claims. |
+| **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 51 unique phases, 28 monotonic sections, 196 filepaths, line counts, test claims. |
 | **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
-| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | 614 unit tests across 89 suites (100% pass). |
+| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | 615 unit tests across 89 suites (100% pass). |
 | **Total** | **`npm run gate`** | **$16.30\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
 
 

@@ -461,5 +461,99 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     }
     expect(colorSet.size).toBeLessThanOrEqual(6);
   });
+
+  it('correctly shades characters with dark body palettes (crimson and navy) on 128x128 without line-art false positives', async () => {
+    const { computeContentAwareHeightmap } = await import('@/lib/ai/math/edtNormalMap');
+    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+    const w = 128;
+    const h = 128;
+    const catData = new Uint8ClampedArray(w * h * 4);
+
+    // Draw a dark crimson cat body (lum ~ 0.18) with a black outer contour
+    const cx = 64;
+    const cy = 64;
+    const r = 32;
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = (y * w + x) * 4;
+        const dist = Math.hypot(x - cx, y - cy);
+        if (dist <= r) {
+          if (dist >= r - 2) {
+            // True black outline
+            catData[idx] = 10;
+            catData[idx + 1] = 10;
+            catData[idx + 2] = 10;
+            catData[idx + 3] = 255;
+          } else {
+            // Dark crimson body fill (R=127, G=27, B=21, lum=0.18)
+            catData[idx] = 127;
+            catData[idx + 1] = 27;
+            catData[idx + 2] = 21;
+            catData[idx + 3] = 255;
+          }
+        }
+      }
+    }
+
+    // Add distinct facial features (eyes) so it classifies as character
+    const leftEyeIdx = (56 * w + 54) * 4;
+    catData[leftEyeIdx] = 0;
+    catData[leftEyeIdx + 1] = 0;
+    catData[leftEyeIdx + 2] = 0;
+    catData[leftEyeIdx + 3] = 255;
+
+    const rightEyeIdx = (56 * w + 74) * 4;
+    catData[rightEyeIdx] = 0;
+    catData[rightEyeIdx + 1] = 0;
+    catData[rightEyeIdx + 2] = 0;
+    catData[rightEyeIdx + 3] = 255;
+
+    const analysis = computeContentAwareHeightmap(catData, w, h);
+    
+    // True black border pixels must be flagged as ink lines
+    const borderIdx = ((cy - r) * w + cx);
+    expect(analysis.isInkLine[borderIdx]).toBe(1);
+
+    // Deep interior crimson body pixels must NOT be false-positive ink lines
+    const interiorIdx = (cy * w + cx);
+    expect(analysis.isInkLine[interiorIdx]).toBe(0);
+
+    // Shading execution with key light at 315°
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(catData) }),
+    } as unknown as CanvasRenderingContext2D;
+
+    const shadedCanvas = executePhotometricPipeline(
+      mockCtx,
+      w,
+      h,
+      {
+        lightAzimuth: 315,
+        lightElevation: 45,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        lightBrightness: 1.15,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+      },
+      []
+    );
+
+    const outData = shadedCanvas.getContext('2d')!.getImageData(0, 0, w, h).data;
+
+    // Verify unlit right side receives dark cel shadow
+    const rightSideP = (cy * w + (cx + 24)) * 4;
+    expect(outData[rightSideP]).toBeLessThan(127); // Darker than base crimson red
+    expect(outData[rightSideP + 3]).toBe(255);
+
+    // Verify lit left side retains base crimson or highlight
+    const leftSideP = (cy * w + (cx - 18)) * 4;
+    expect(outData[leftSideP]).toBeGreaterThanOrEqual(120);
+  });
 });
 

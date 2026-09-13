@@ -1583,6 +1583,30 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## 2026-09-13 — Phase 58: Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
+
+**Delivered:**
+- **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Replaced hardcoded 2.8px bevel clamping with proportional resolution scaling (`scaleFactor = Math.max(1.0, Math.min(width, height) / 32)`).
+  - Dynamically scales character bevel radius (`charBevelRadius = 2.8 * scaleFactor`), dynamic bevel radius bounds (`[2.5, 6.0 * scaleFactor]`), and appendage width ceilings (`5 * scaleFactor`).
+  - Enables higher-resolution canvases ($128\times128$, $64\times64$) to generate smooth, volumetric 3D surface normal maps rather than collapsing into flat forward plateaus ($N_z = 1.0$), while preserving 100% byte-exact parity for standard $32\times32$ sprites.
+- **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Eliminated false-positive line art over-protection that previously treated any pixel with luminance $< 0.22$ as an ink line and skipped shading.
+  - Replaced naive thresholding with boundary-aware classification: only transparent-boundary dark pixels ($L < 0.14$), high-contrast interior crevices ($\max(N_{\text{lum}}) - L \ge 0.16$), or near-black pixels ($L < 0.035$) are classified as ink lines.
+- **Dark Palette OKLCH Cel Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`)**:
+  - Fixed shadow tone luminance calculation in `buildCelRamp`, where `Math.max(0.18, lch.L * 0.78)` previously forced shadow tones to be lighter than dark base tones ($lch.L < 0.18$).
+  - Clamped shadow luminance relative to base color (`Math.max(0.04, Math.min(lch.L * 0.78, lch.L - 0.03))`) and deep crevice luminance (`Math.max(0.02, Math.min(lch.L * 0.60, lch.L - 0.06))`), restoring deep, atmospheric cel-shading contrast across dark palettes.
+- **Dark Palette & High-Resolution Photometric Regression Tests (`tests/photometricAutoAnalysis.test.ts`)**:
+  - Added unit test asserting that $128\times128$ canvases with dark crimson ($L=0.18$) and navy ($L=0.06$) body palettes generate smooth non-flat normal fields and shade accurately without false-positive ink-line masking.
+
+**Checks run:**
+- `npm run gate`: ALL 3 STAGES PASSED (Docs, Typecheck, 615 Vitest tests in 89 suites)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
+
 
 
 
