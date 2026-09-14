@@ -2,6 +2,38 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 61 — Anatomical Part Decomposition & Volumetric Character Photometric Shading
+**Goal:** Transform the 2.5D photometric engine from single-silhouette boundary beveling into true anatomical 3D volumetric shading for character artwork: synthesize independent 3D cranial dome, recessed neck crevice with chin depth step, cylindrical torso chest barrel, and separated arm cylinders driven by internal ink lines.
+
+**Evidence & Rationale:**
+- In studio relighting, full-body characters with head, torso, arms, and drooping ears shaded as a single undifferentiated silhouette blob. At high key light elevations (e.g. 81°), camera-facing normals ($N \approx (0, 0, 1)$) caused the entire front of the character to render with flat, identical diffuse tones without sculpting chest curvature, arms, or chin occlusion.
+- Root Cause: `computeSeparableEDT(isOpaque)` only considered outer alpha boundaries, ignoring all internal structural ink strokes (arm seams, jawline). Furthermore, the character bevel cushion flattened everything deeper than 2.8px into a level camera-facing plateau ($H = \text{maxMacroD}$), forcing $\nabla H = (0, 0)$ across head, throat, chest, and arms.
+- Anatomical Decomposition Solution: Implemented `computeAnatomicalCharacterHeightmap()` in `src/lib/ai/math/edtNormalMap.ts`:
+  1. Row profile scanning (`rowLeft`, `rowRight`, `rowWidth`).
+  2. Chin/jawline detection: locates internal transverse ink strokes strictly below facial features with verified torso depth below.
+  3. Longitudinal arm seam detection: tracks vertical ink strokes spanning multiple torso rows between chest and arms.
+  4. 3D height field synthesis: creates elevated cranial dome ($z_{\text{baseHead}}$), recessed neck crevice ($z_{\text{baseNeck}}$) producing downward chin normals ($N_y > 0$) and deep throat cavity AO, horizontal chest barrel curvature ($\text{Var}(N_x) > 0.05$), and independent arm cylinders.
+  5. Distinguishes full-body characters from head-only creatures/busts (`!hasTorsoBelow`), preserving 100% baseline shading on floating heads and cat faces.
+  6. Refined feature classification to separate compact facial islands (eyes, snout, mouth) from structural longitudinal arm seams and transverse chin strokes.
+
+**Deliverables:**
+- [x] Anatomical Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`): Implemented `computeAnatomicalCharacterHeightmap` synthesizing head dome, chin depth step, chest barrel, and arm cylinders.
+- [x] Precision Feature vs Structural Seam Classification (`src/lib/ai/math/edtNormalMap.ts`): Filtered out longitudinal arm seams and transverse chin strokes from facial feature masking, ensuring structural lines carve crevices properly.
+- [x] Regressive Safety for Head-Only Creatures (`src/lib/ai/math/edtNormalMap.ts`): Maintained baseline multi-scale cushion for head-only creatures / busts when `!hasTorsoBelow`.
+- [x] Dedicated Unit Test Suite (`tests/anatomicalPhotometricShading.test.ts`): Added 3 comprehensive tests verifying chin depth step, downward chin normals ($N_y > 0$), throat crevice AO ($ao < 0.48$), chest barrel curvature, arm cylinders, and dynamic light rotation.
+- [x] Zero Regressions Across Full Test Suite: All 642 tests across 91 test files pass.
+
+**Acceptance criteria:**
+- Full character sprite decomposes into head dome, chin depth step, chest barrel, and arm cylinders.
+- Downward chin normals point downwards ($N_y > 0$) and throat cavity AO $< 0.48$ triggers deep crevice tone.
+- Chest barrel exhibits distinct horizontal normal curvature ($N_x < -0.10$ left flank, $N_x > 0.10$ right flank).
+- Zero regressions on existing cat character, orb, and prop test suites.
+- Full local Quality Gate passes (`verify:docs`, `typecheck`, `test`).
+
+**Status:** Complete (2026-09-14)
+
+---
+
 ## Phase 60a — Live-Drag Photometric Analysis Cache Invalidation
 **Goal:** Fix a correctness regression in the Phase-59-adjacent photometric drag-caching optimization: the geometry analysis cached at gizmo-drag-start goes stale as the user rotates the light mid-drag, and the staleness gets permanently committed to the artwork.
 

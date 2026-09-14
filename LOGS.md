@@ -1668,6 +1668,34 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## 2026-09-14 — Phase 61: Anatomical Part Decomposition & Volumetric Character Photometric Shading
+
+**Delivered:**
+- **Anatomical Part Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Implemented `computeAnatomicalCharacterHeightmap()` replacing flat-silhouette macro heightmap clamping with true 3D anatomical volume synthesis for character artwork:
+    1. **Cranial Head Dome**: Elevated dome field ($z_{\text{baseHead}}$) with smooth camera-facing facial cushion preserving eyes and mouth geometry.
+    2. **Recessed Neck Crevice & Chin Depth Step**: Scans row profiles (`rowLeft`, `rowRight`, `rowWidth`) to detect transverse chin ink strokes strictly below facial features. Synthesizes a recessed throat level ($z_{\text{baseNeck}} = \text{maxMacroD} \times 0.05$) beneath an elevated chin plateau, generating downward chin normals ($N_y > 0$) and deep throat cavity ambient occlusion ($ao < 0.48$).
+    3. **Torso Chest Barrel**: Models genuine horizontal cylindrical curvature across the chest between arm seams ($\text{Var}(N_x) > 0.05$), creating directional shading contrast between lit flank ($x=18$) and unlit flank ($x=29$).
+    4. **Longitudinal Arm Cylinders**: Identifies internal vertical ink seams ($\ge 3$ consecutive rows) flanking the chest, generating separate cylindrical arm height fields separated by carved crevice valleys.
+  - Added morphological boundary checks distinguishing full-body characters from head-only creatures / busts (`!hasTorsoBelow`), maintaining 100% baseline cushion and zero regressions on floating heads, cat faces, or props.
+- **Precision Feature vs Structural Seam Classification (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Filtered out longitudinal arm seams ($\Delta y \ge 6, \Delta y > 1.8 \Delta x$) and transverse chin strokes ($\Delta x \ge 7, \Delta x > 1.8 \Delta y$) from facial feature masking (`isFeature`), preventing structural seams from being protected as facial features and allowing them to properly carve crevice valleys.
+  - Carves internal ink lines ($H \times 0.65$ where all 4 cardinal neighbors are opaque), preventing outer silhouette outlines touching background from carving artificial trenches along convex cheeks.
+- **Dedicated Anatomical Photometric Shading Suite (`tests/anatomicalPhotometricShading.test.ts`)**:
+  - Added 3 comprehensive tests:
+    1. Anatomical part decomposition (chin depth step, $N_y > 0$, throat $ao < 0.48$, chest barrel curvature $N_x < -0.10$ / $N_x > 0.10$, arm cylinders, arm seam crevices).
+    2. 3D volumetric shading under studio key light (317°/48°), chin cast shadow over throat, directional chest contrast, and feature protection.
+    3. Dynamic light rotation sweeping terminator across barrel curvature.
+  - Expanded test coverage to 642 unit tests across 91 suites (100% green).
+
+**Checks run:**
+- `npm run gate`: ALL 3 STAGES PASSED (Docs integrity, Typecheck, 642 Vitest tests in 91 suites)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
+
 
 
 

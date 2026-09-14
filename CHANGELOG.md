@@ -3,6 +3,21 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.13.1] - 2026-09-14
+### Anatomical Part Decomposition & Volumetric Character Photometric Shading (Phase 61)
+- **Anatomical Part Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Replaced flat-silhouette macro heightmap clamping with `computeAnatomicalCharacterHeightmap()`, decomposing character morphology into distinct volumetric parts:
+    1. **Cranial Head Dome**: Elevated dome ($z_{\text{baseHead}}$) with smooth camera-facing facial cushion protecting eyes and mouth.
+    2. **Recessed Neck Crevice & Chin Depth Step**: Detects transverse chin ink strokes strictly below facial features, establishing an elevated chin over recessed throat ($z_{\text{baseNeck}}$) that produces downward chin normals ($N_y > 0$) and deep throat cavity ambient occlusion ($ao < 0.48$).
+    3. **Torso Chest Barrel**: Synthesizes genuine horizontal barrel curvature across the chest between arm seams ($\text{Var}(N_x) > 0.05$), creating directional lighting contrast between lit and unlit flanks.
+    4. **Longitudinal Arm Cylinders**: Identifies internal vertical ink strokes flanking the torso, generating separate cylindrical arm height fields separated by carved crevice seams.
+  - Added morphological boundary checks distinguishing head+torso characters from head-only creatures / busts (`!hasTorsoBelow`), maintaining 100% baseline cushion and zero regressions on floating heads, cat faces, or props.
+- **Precision Feature vs Structural Seam Classification (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Filtered out longitudinal arm seams and transverse chin strokes from facial feature masking (`isFeature`), ensuring structural lines properly carve crevice valleys and participate in anatomical decomposition rather than being misclassified as facial features.
+  - Restricts outer boundary ink lines touching transparent background from being carved as internal crevices, preventing artificial trenching along convex cheeks.
+- **Dedicated Anatomical Photometric Shading Suite (`tests/anatomicalPhotometricShading.test.ts`)**:
+  - Added 3 comprehensive tests verifying chin depth step, downward chin normals ($N_y > 0$), throat cavity occlusion ($ao < 0.48$), chest barrel horizontal curvature, independent arm cylinders, and dynamic light rotation.
+  - Expanded test coverage to 642 unit tests across 91 test files (100% green).
+
 ### Photometric Drag-Session Correctness & Cavity AO Auto-Scaling (Phase 60)
 - **Live-Drag Photometric Analysis Cache Invalidation (Phase 60a) (`src/hooks/viewport/events/usePhotometricEvents.ts`)**:
   - Implemented 20° angular-drift cache invalidation during live light gizmo drags for character and appendage-bearing silhouettes, eliminating stale geometry caching while keeping 60 FPS performance.
