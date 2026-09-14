@@ -2,7 +2,30 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## [v1.13.1] - 2026-09-13
+## [v1.13.1] - 2026-09-14
+### Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning (Phase 59)
+- **Single Source of Truth Canvas Envelope (`src/config/canvasLimits.ts`)**:
+  - Exported canonical tier constants: `WORKSPACE_ENVELOPE` (`MAX_CANVAS_DIMENSION = 2048`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`), `EXPORT_ENVELOPE` (`MAX_EXPORT_DIMENSION = 4096`, `MAX_EXPORT_PIXELS = 16_777_216`), `PROBE_ENVELOPE` (`MAX_PROBE_DIMENSION = 8192`, `MAX_PROBE_PIXELS = 67_108_864`), and `HARDWARE_LIMITS` (`MAX_HARDWARE_DIMENSION = 16384`, `MAX_HARDWARE_PIXEL_AREA = 268_435_456`).
+  - Unified project schema validation in `src/lib/project/schema.ts` against `WORKSPACE_ENVELOPE`.
+  - Re-exported export boundary constants in `src/components/modals/export/PngExportTab.tsx` and `src/components/modals/ExportModal.tsx`.
+- **P2P Structural & Pixel Admission Boundary Alignment (`src/lib/sync/p2pSync.ts`)**:
+  - Bound `validateStructurePayload` to `WORKSPACE_ENVELOPE` dimensions ($2048\text{px}$), frame counts ($500$), and layer counts ($100$).
+  - Hardened `isValidPixelOp` to strictly reject negative coordinates and values $\ge 2048$, enforcing exact schema parity across network peers.
+- **Safe Canvas Hardware Bounds & TypedArray Offset Fix (`src/lib/safety/safeCanvas.ts`)**:
+  - Bound buffer clipping to canonical `HARDWARE_LIMITS`.
+  - Fixed `extractClampedRect` typed array instantiation by explicitly passing `(buffer, byteOffset, length)` to `Uint32Array`, eliminating offset copy bugs on non-zero view windows.
+- **Zero-Allocation Safe JSON Byte Accounting & Plain Object Sanitizer (`src/lib/safety/safeJson.ts`)**:
+  - Replaced wasteful string allocations with zero-heap `TextEncoder.encodeInto` UTF-8 byte counting in `getUtf8ByteLength`.
+  - Hardened `sanitizeObject` to return a clean plain object `{}` preserving `Object.prototype` methods while stripping prototype-pollution keys (`__proto__`, `constructor`, `prototype`).
+- **Progressive Multi-Window Image Header Probe (`src/lib/safety/imageHeaderProbe.ts`)**:
+  - Expanded initial probe window to 256KB and implemented multi-window `Blob` segment paging for late-SOF JPEGs with massive EXIF/ICC metadata.
+  - Added distinct `SOF_BEYOND_PROBE_WINDOW` error classification when markers exceed traversal limits.
+- **Canonical Version Single Source of Truth (`src/config/version.ts`)**:
+  - Defined canonical `APP_VERSION = '1.13.1'` consumed by `src/lib/diagnostics/capture.ts` and `src/app/api/diagnostics/relay/route.ts`.
+  - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
+- **Cross-Boundary & Defensive Hardening Test Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
+  - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 635 unit tests across 90 suites (100% green).
+
 ### Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection (Phase 58)
 - **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/ai/math/edtNormalMap.ts`)**:
   - Replaced hardcoded 2.8px bevel clamping with proportional resolution scaling (`scaleFactor = Math.max(1.0, Math.min(width, height) / 32)`).

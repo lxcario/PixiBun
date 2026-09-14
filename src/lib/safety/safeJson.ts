@@ -10,6 +10,37 @@
  *    NorthSec Conference, 2018.
  */
 
+/**
+ * Computes the exact UTF-8 byte length of a string without allocating memory on the heap.
+ * Handles single-byte ASCII, multi-byte code points, and UTF-16 surrogate pairs.
+ */
+export function getUtf8ByteLength(str: string): number {
+  let bytes = 0;
+  const len = str.length;
+  for (let i = 0; i < len; i++) {
+    const code = str.charCodeAt(i);
+    if (code <= 0x7f) {
+      bytes += 1;
+    } else if (code <= 0x7ff) {
+      bytes += 2;
+    } else if (code >= 0xd800 && code <= 0xdbff) {
+      // High surrogate: check if followed by low surrogate
+      if (i + 1 < len) {
+        const next = str.charCodeAt(i + 1);
+        if (next >= 0xdc00 && next <= 0xdfff) {
+          bytes += 4;
+          i++;
+          continue;
+        }
+      }
+      bytes += 3;
+    } else {
+      bytes += 3;
+    }
+  }
+  return bytes;
+}
+
 export class SafeJson {
   /**
    * Maximum allowed JSON payload size (50 MB).
@@ -31,9 +62,10 @@ export class SafeJson {
       throw new TypeError('[SafeJson] Input must be a string');
     }
 
-    if (rawJson.length > this.MAX_PAYLOAD_BYTES) {
+    const byteLength = getUtf8ByteLength(rawJson);
+    if (byteLength > this.MAX_PAYLOAD_BYTES) {
       throw new RangeError(
-        `[SafeJson] JSON payload size (${rawJson.length} bytes) exceeds maximum limit (${this.MAX_PAYLOAD_BYTES} bytes)`
+        `[SafeJson] JSON payload size (${byteLength} bytes) exceeds maximum limit (${this.MAX_PAYLOAD_BYTES} bytes)`
       );
     }
 
@@ -69,6 +101,7 @@ export class SafeJson {
 
   /**
    * Recursively sanitizes an existing in-memory object by removing any prototype pollution keys.
+   * Returns a standard plain object preserving Object.prototype methods.
    */
   public static sanitizeObject<T>(obj: T): T {
     if (obj === null || typeof obj !== 'object') {
@@ -79,7 +112,7 @@ export class SafeJson {
       return obj.map((item) => this.sanitizeObject(item)) as unknown as T;
     }
 
-    const clean: Record<string, unknown> = Object.create(null);
+    const clean: Record<string, unknown> = {};
     for (const key of Object.keys(obj as Record<string, unknown>)) {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         continue;

@@ -5,6 +5,9 @@ import {
   setDiagnosticsSettings,
   captureDiagnostic,
 } from '@/lib/diagnostics/capture';
+import { APP_VERSION } from '@/config/version';
+import packageJson from '../package.json';
+import packageLockJson from '../package-lock.json';
 
 describe('diagnostics capture & settings', () => {
   beforeEach(() => {
@@ -19,6 +22,12 @@ describe('diagnostics capture & settings', () => {
   afterEach(() => {
     setDiagnosticsSettings({ enabled: true, relayOptIn: false });
     vi.restoreAllMocks();
+  });
+
+  it('enforces version equality across APP_VERSION, package.json, and package-lock.json', () => {
+    expect(APP_VERSION).toBe('1.13.1');
+    expect(APP_VERSION).toBe(packageJson.version);
+    expect(APP_VERSION).toBe(packageLockJson.version);
   });
 
   it('provides default settings with local capture enabled and relay disabled', () => {
@@ -50,7 +59,7 @@ describe('diagnostics capture & settings', () => {
       expect(entry.detail?.length).toBeLessThanOrEqual(2048 + '...[truncated]'.length);
       expect(entry.detail?.endsWith('...[truncated]')).toBe(true);
       expect(entry.route).toBe('/studio');
-      expect(entry.appVersion).toBe('1.13.0');
+      expect(entry.appVersion).toBe(APP_VERSION);
     }
   });
 

@@ -32,17 +32,18 @@ describe('P2P WebRTC Message Validation & Security Safeguards', () => {
       peerId: 'peer-alice-1234',
     };
 
-    it('accepts valid PixelOp within [0, 4096) and [0, 255] color bounds', () => {
+    it('accepts valid PixelOp within [0, 2048) and [0, 255] color bounds', () => {
       expect(isValidPixelOp(validOp)).toBe(true);
       expect(isValidPixelOp({ ...validOp, x: 0, y: 0, r: 0, g: 0, b: 0, a: 0 })).toBe(true);
-      expect(isValidPixelOp({ ...validOp, x: 4095, y: 4095, r: 255, g: 255, b: 255, a: 255 })).toBe(true);
+      expect(isValidPixelOp({ ...validOp, x: 2047, y: 2047, r: 255, g: 255, b: 255, a: 255 })).toBe(true);
     });
 
-    it('rejects coordinate boundaries < 0 or >= 4096', () => {
+    it('rejects coordinate boundaries < 0 or >= 2048', () => {
       expect(isValidPixelOp({ ...validOp, x: -1 })).toBe(false);
       expect(isValidPixelOp({ ...validOp, y: -1 })).toBe(false);
+      expect(isValidPixelOp({ ...validOp, x: 2048 })).toBe(false);
+      expect(isValidPixelOp({ ...validOp, y: 2048 })).toBe(false);
       expect(isValidPixelOp({ ...validOp, x: 4096 })).toBe(false);
-      expect(isValidPixelOp({ ...validOp, y: 4096 })).toBe(false);
       expect(isValidPixelOp({ ...validOp, x: 10000 })).toBe(false);
     });
 

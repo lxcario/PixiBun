@@ -23,6 +23,7 @@
 
 import { PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBucket';
+import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 
 export interface RemoteCursor {
   peerId: string;
@@ -135,12 +136,12 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
   const p = data as Record<string, unknown>;
 
   if (
-    typeof p.width !== 'number' || !Number.isInteger(p.width) || p.width < 1 || p.width > 4096 ||
-    typeof p.height !== 'number' || !Number.isInteger(p.height) || p.height < 1 || p.height > 4096
+    typeof p.width !== 'number' || !Number.isInteger(p.width) || p.width < 1 || p.width > WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION ||
+    typeof p.height !== 'number' || !Number.isInteger(p.height) || p.height < 1 || p.height > WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION
   ) {
     return null;
   }
-  if (!Array.isArray(p.frames) || p.frames.length === 0 || p.frames.length > 4096) return null;
+  if (!Array.isArray(p.frames) || p.frames.length === 0 || p.frames.length > WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES) return null;
 
   const frames: StructureFrame[] = [];
   for (const rawFrame of p.frames) {
@@ -153,7 +154,7 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
     ) {
       return null;
     }
-    if (!Array.isArray(f.layers) || f.layers.length === 0 || f.layers.length > 256) return null;
+    if (!Array.isArray(f.layers) || f.layers.length === 0 || f.layers.length > WORKSPACE_ENVELOPE.MAX_CANVAS_LAYERS) return null;
 
     const layers: StructureLayer[] = [];
     for (const rawLayer of f.layers) {
@@ -183,7 +184,7 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
 
 /**
  * Validates whether an incoming object conforms to a valid PixelOp with strict boundary constraints:
- * - 0 <= x, y < 4096 (canvas coordinate bounds)
+ * - 0 <= x, y < WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION (canvas coordinate bounds)
  * - 0 <= r, g, b, a <= 255 (8-bit color channel bounds)
  * - valid numeric timestamp and non-empty peerId
  * - optional valid HLC tuple [l, c]
@@ -192,10 +193,10 @@ export function isValidPixelOp(op: unknown): op is PixelOp {
   if (typeof op !== 'object' || op === null) return false;
   const o = op as Record<string, unknown>;
 
-  if (typeof o.x !== 'number' || !Number.isFinite(o.x) || Math.floor(o.x) !== o.x || o.x < 0 || o.x >= 4096) {
+  if (typeof o.x !== 'number' || !Number.isFinite(o.x) || Math.floor(o.x) !== o.x || o.x < 0 || o.x >= WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION) {
     return false;
   }
-  if (typeof o.y !== 'number' || !Number.isFinite(o.y) || Math.floor(o.y) !== o.y || o.y < 0 || o.y >= 4096) {
+  if (typeof o.y !== 'number' || !Number.isFinite(o.y) || Math.floor(o.y) !== o.y || o.y < 0 || o.y >= WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION) {
     return false;
   }
   if (typeof o.r !== 'number' || !Number.isFinite(o.r) || Math.floor(o.r) !== o.r || o.r < 0 || o.r > 255) {

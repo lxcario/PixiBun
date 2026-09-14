@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-export const MAX_SAFE_CANVAS_DIMENSION = 4096;
-export const MAX_SAFE_CANVAS_PIXELS = 16_777_216; // 4096 * 4096 = 16.7M px (WebKit/iOS Safari texture area ceiling)
+import { MAX_SAFE_CANVAS_DIMENSION, MAX_SAFE_CANVAS_PIXELS } from '@/config/canvasLimits';
+export { MAX_SAFE_CANVAS_DIMENSION, MAX_SAFE_CANVAS_PIXELS };
 
 interface PngExportTabProps {
   scale: number;

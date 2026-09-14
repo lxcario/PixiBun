@@ -24,7 +24,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ## 🛡️ The Local Quality Gate
 
-We enforce an autonomous, zero-cost Quality Gate that runs in ~8-12 seconds on standard developer hardware.
+We enforce an autonomous, zero-cost Quality Gate that runs in ~16-19 seconds on standard developer hardware.
 
 ### Running the Quality Gate
 
@@ -44,7 +44,7 @@ npm run gate:full
 | :--- | :--- | :--- |
 | **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, truthfulness of test counts in `README.md`, and version synchronization in `package.json`. |
 | **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
-| **Stage 3** | `npm test` | Runs all 615 unit and invariant tests across 89 test suites via Vitest. |
+| **Stage 3** | `npm test` | Runs all 635 unit and invariant tests across 90 test suites via Vitest. |
 | **Stage 4** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
 
 ---

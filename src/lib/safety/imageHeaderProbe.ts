@@ -16,6 +16,8 @@
  *    Section 18 "Logical Screen Descriptor".
  */
 
+import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
+
 export interface ProbedImageDimensions {
   width: number;
   height: number;
@@ -26,29 +28,34 @@ export class ImageHeaderProbe {
   /**
    * Maximum allowed single-axis dimension (8192px).
    */
-  public static readonly MAX_ALLOWED_DIMENSION = 8192;
+  public static readonly MAX_ALLOWED_DIMENSION = WORKSPACE_ENVELOPE.MAX_PROBE_DIMENSION;
 
   /**
    * Maximum allowed total pixel area (67,108,864 pixels = 8192x8192).
    * Prevents allocating multi-gigabyte uncompressed RGBA pixel buffers.
    */
-  public static readonly MAX_ALLOWED_PIXELS = 8192 * 8192;
+  public static readonly MAX_ALLOWED_PIXELS = WORKSPACE_ENVELOPE.MAX_PROBE_PIXELS;
+
+  /** Maximum bytes to scan during JPEG marker segment traversal (16MB). */
+  private static readonly MAX_PROBE_SEARCH_WINDOW = 16 * 1024 * 1024;
 
   /**
    * Probes an image header from a Blob, File, or raw ArrayBuffer/Uint8Array.
+   * Supports streaming window paging for Blob/File inputs to handle late SOF segments.
    */
   public static async probe(
     input: Blob | File | ArrayBuffer | Uint8Array
   ): Promise<ProbedImageDimensions> {
     let headerBytes: Uint8Array;
+    let chunkStart = 0;
 
     if (input instanceof Blob) {
-      const slice = await input.slice(0, 65536).arrayBuffer();
-      headerBytes = new Uint8Array(slice);
+      const initialSlice = await input.slice(0, 262144).arrayBuffer();
+      headerBytes = new Uint8Array(initialSlice);
     } else if (input instanceof ArrayBuffer) {
-      headerBytes = new Uint8Array(input, 0, Math.min(input.byteLength, 65536));
+      headerBytes = new Uint8Array(input);
     } else {
-      headerBytes = input.subarray(0, Math.min(input.byteLength, 65536));
+      headerBytes = input;
     }
 
     if (headerBytes.length < 10) {
@@ -116,41 +123,81 @@ export class ImageHeaderProbe {
 
     // 4. Check JPEG (Magic: 0xFF 0xD8)
     if (headerBytes[0] === 0xff && headerBytes[1] === 0xd8) {
-      let offset = 2;
-      while (offset < headerBytes.length - 4) {
-        const markerPrefix = headerBytes[offset++];
-        if (markerPrefix !== 0xff) continue;
+      const ensureBytes = async (offset: number, length: number): Promise<boolean> => {
+        if (offset + length <= chunkStart + headerBytes.length) {
+          return true;
+        }
+        if (input instanceof Blob) {
+          if (offset >= input.size) return false;
+          const nextChunkSize = Math.max(262144, length);
+          chunkStart = offset;
+          const slice = await input.slice(chunkStart, chunkStart + nextChunkSize).arrayBuffer();
+          headerBytes = new Uint8Array(slice);
+          return headerBytes.length >= length;
+        }
+        return false;
+      };
 
-        let marker = headerBytes[offset++];
-        while (marker === 0xff && offset < headerBytes.length) {
-          marker = headerBytes[offset++];
+      let fileOffset = 2;
+      while (fileOffset < ImageHeaderProbe.MAX_PROBE_SEARCH_WINDOW) {
+        if (!(await ensureBytes(fileOffset, 2))) {
+          throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
         }
 
-        // Variable-length markers
+        const markerPrefix = headerBytes[fileOffset - chunkStart];
+        fileOffset++;
+        if (markerPrefix !== 0xff) continue;
+
+        if (!(await ensureBytes(fileOffset, 1))) {
+          throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
+        }
+
+        let marker = headerBytes[fileOffset - chunkStart];
+        fileOffset++;
+        while (marker === 0xff) {
+          if (!(await ensureBytes(fileOffset, 1))) {
+            throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
+          }
+          marker = headerBytes[fileOffset - chunkStart];
+          fileOffset++;
+        }
+
+        // Variable-length markers: EOI (0xD9) or SOS (0xDA) reached without finding SOF
         if (marker === 0xd9 || marker === 0xda) {
-          // EOI or SOS reached without finding SOF
-          break;
+          throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
         }
 
         // Check for Start Of Frame markers:
         // SOF0 (0xC0 - Baseline), SOF1 (0xC1 - Extended), SOF2 (0xC2 - Progressive)
         if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-          if (offset + 7 > headerBytes.length) break;
+          if (!(await ensureBytes(fileOffset, 7))) {
+            throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
+          }
+          const sofView = new DataView(headerBytes.buffer, headerBytes.byteOffset + (fileOffset - chunkStart), 7);
           // Segment length (2 bytes) + Sample precision (1 byte)
-          const height = view.getUint16(offset + 3, false); // Big Endian
-          const width = view.getUint16(offset + 5, false);
+          const height = sofView.getUint16(3, false); // Big Endian
+          const width = sofView.getUint16(5, false);
           return this.validate(width, height, 'JPEG');
         }
 
-        // Skip marker segment
-        if (offset + 2 <= headerBytes.length) {
-          const segmentLength = view.getUint16(offset, false);
-          if (segmentLength < 2) break;
-          offset += segmentLength;
-        } else {
-          break;
+        // Standalone markers without payload (RST0..RST7, TEM)
+        if ((marker >= 0xd0 && marker <= 0xd7) || marker === 0x01) {
+          continue;
         }
+
+        // Skip marker segment
+        if (!(await ensureBytes(fileOffset, 2))) {
+          throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
+        }
+        const segView = new DataView(headerBytes.buffer, headerBytes.byteOffset + (fileOffset - chunkStart), 2);
+        const segmentLength = segView.getUint16(0, false);
+        if (segmentLength < 2) {
+          throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
+        }
+        fileOffset += segmentLength;
       }
+
+      throw new Error('[ImageHeaderProbe] SOF_BEYOND_PROBE_WINDOW: Start of frame not found within probe window');
     }
 
     throw new Error('[ImageHeaderProbe] Unsupported or unrecognizable image signature');

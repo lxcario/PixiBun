@@ -1,11 +1,11 @@
 import { db } from '@/lib/storage/db';
 import { createId } from '@/lib/engine/id';
 import type { DiagnosticEntry, DiagnosticsSettings } from '@/types/diagnostics';
+import { APP_VERSION } from '@/config/version';
 
 const SETTINGS_KEY = 'pixibun-diagnostics';
 const MAX_DIAGNOSTICS_ENTRIES = 200;
 const MAX_DETAIL_LENGTH = 2048;
-const APP_VERSION = '1.13.0';
 
 let memorySettings: DiagnosticsSettings = { enabled: true, relayOptIn: false };
 

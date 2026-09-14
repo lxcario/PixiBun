@@ -10,6 +10,7 @@ import {
   type SerializedFrame,
 } from '@/types/project';
 import { SafeJson } from '@/lib/safety/safeJson';
+import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 
 const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
@@ -40,8 +41,8 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
   if (!Array.isArray(input.layers) || input.layers.length === 0) {
     return `Frame ${frameIndex + 1} carries no layers — the file may have been truncated.`;
   }
-  if (input.layers.length > 100) {
-    return `Frame ${frameIndex + 1} exceeds the 100 layer ceiling.`;
+  if (input.layers.length > WORKSPACE_ENVELOPE.MAX_CANVAS_LAYERS) {
+    return `Frame ${frameIndex + 1} exceeds the ${WORKSPACE_ENVELOPE.MAX_CANVAS_LAYERS} layer ceiling.`;
   }
 
   const layers: SerializedFrame['layers'] = [];
@@ -175,7 +176,10 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (normalized.name.length > 256) {
     return { ok: false, error: 'The project name exceeds the 256 character limit.' };
   }
-  if (!isIntegerInRange(normalized.width, 1, 2048) || !isIntegerInRange(normalized.height, 1, 2048)) {
+  if (
+    !isIntegerInRange(normalized.width, 1, WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION) ||
+    !isIntegerInRange(normalized.height, 1, WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION)
+  ) {
     return { ok: false, error: 'The project canvas dimensions are out of range.' };
   }
   if (!isIntegerInRange(normalized.fps, 1, 60)) return { ok: false, error: 'The project playback speed is out of range.' };
@@ -236,8 +240,8 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
   if (!Array.isArray(normalized.frames) || normalized.frames.length === 0) {
     return { ok: false, error: 'This project has no animation frames to open.' };
   }
-  if (normalized.frames.length > 500) {
-    return { ok: false, error: 'The project exceeds the 500 animation frame limit.' };
+  if (normalized.frames.length > WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES) {
+    return { ok: false, error: `The project exceeds the ${WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES} animation frame limit.` };
   }
   const frames: SerializedFrame[] = [];
   for (let i = 0; i < normalized.frames.length; i++) {

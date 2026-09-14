@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createTokenBucketStore } from '@/lib/server/tokenBucket';
+import { APP_VERSION } from '@/config/version';
 
 // Hard input ceilings: the relay accepts only small, bounded diagnostic
 // batches. Streaming the body with an early byte ceiling prevents memory exhaustion, and an
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
 
     const upstreamPayload = {
       app: app || 'pixibun',
-      version: version || process.env.npm_package_version || '1.13.1',
+      version: version || process.env.npm_package_version || APP_VERSION,
       timestamp: Date.now(),
       events: Array.isArray(events) ? events.slice(0, MAX_EVENTS) : [],
     };

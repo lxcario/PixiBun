@@ -23,6 +23,7 @@ import {
 } from '@/lib/export/shaderExporter';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { ExportTabsNav, type ExportType } from './export/ExportTabsNav';
+import { MAX_SAFE_CANVAS_DIMENSION, MAX_SAFE_CANVAS_PIXELS } from '@/config/canvasLimits';
 import { ExportScopeSelector } from './export/ExportScopeSelector';
 import { ExportProgressBar } from './export/ExportProgressBar';
 import { PngExportTab } from './export/PngExportTab';
@@ -121,8 +122,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     onClose();
   };
 
-  const MAX_SAFE_CANVAS_DIMENSION = 4096;
-  const MAX_SAFE_CANVAS_PIXELS = 16_777_216;
 
   const handleSelectExportType = (type: ExportType) => {
     setExportType(type);

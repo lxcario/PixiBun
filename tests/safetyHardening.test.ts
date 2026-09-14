@@ -1,9 +1,53 @@
 import { describe, it, expect } from 'vitest';
 import { MathInvariants } from '@/lib/safety/mathInvariants';
 import { SafeCanvas, CanvasHardwareLimits } from '@/lib/safety/safeCanvas';
-import { SafeJson } from '@/lib/safety/safeJson';
+import { SafeJson, getUtf8ByteLength } from '@/lib/safety/safeJson';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { StorageResilience } from '@/lib/safety/storageResilience';
+
+function createSyntheticJpeg(options: {
+  width?: number;
+  height?: number;
+  includeSof?: boolean;
+  hitSosEarly?: boolean;
+  paddingBytes?: number;
+}): Uint8Array {
+  const parts: number[] = [0xff, 0xd8]; // SOI (2 bytes)
+
+  // Add a standard COM segment so header is >= 10 bytes
+  parts.push(0xff, 0xfe, 0x00, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06);
+
+  if (options.paddingBytes && options.paddingBytes > 0) {
+    let remaining = options.paddingBytes;
+    while (remaining > 0) {
+      const segLen = Math.min(remaining, 60000);
+      parts.push(0xff, 0xe1); // APP1
+      parts.push((segLen >> 8) & 0xff, segLen & 0xff);
+      for (let i = 0; i < segLen - 2; i++) {
+        parts.push(0x00);
+      }
+      remaining -= segLen;
+    }
+  }
+
+  if (options.hitSosEarly) {
+    parts.push(0xff, 0xda); // SOS
+    parts.push(0x00, 0x02);
+  } else if (options.includeSof !== false) {
+    const w = options.width ?? 64;
+    const h = options.height ?? 48;
+    // SOF0: 0xFF 0xC0
+    parts.push(0xff, 0xc0);
+    parts.push(0x00, 0x0b); // length = 11
+    parts.push(0x08); // 8-bit precision
+    parts.push((h >> 8) & 0xff, h & 0xff);
+    parts.push((w >> 8) & 0xff, w & 0xff);
+    parts.push(0x03, 0x01, 0x11, 0x00); // 3 components
+  }
+
+  parts.push(0xff, 0xd9); // EOI
+  return new Uint8Array(parts);
+}
 
 describe('Defensive Hardening Suite', () => {
   describe('MathInvariants', () => {
@@ -83,9 +127,58 @@ describe('Defensive Hardening Suite', () => {
         SafeCanvas.createImageData(null, CanvasHardwareLimits.DEFAULT_SAFE_DIM + 1, CanvasHardwareLimits.DEFAULT_SAFE_DIM + 1);
       }).toThrow();
     });
+
+    it('getImageData correctly transfers pixel data when sampling across canvas boundaries', () => {
+      const canvasData = new Uint8ClampedArray(10 * 10 * 4);
+      // Fill canvas coordinate (2, 2) with red (255, 0, 0, 255)
+      const pixelIdx = (2 * 10 + 2) * 4;
+      canvasData[pixelIdx] = 255;
+      canvasData[pixelIdx + 3] = 255;
+
+      const mockCtx = {
+        canvas: { width: 10, height: 10 },
+        createImageData: (w: number, h: number) => ({
+          width: w,
+          height: h,
+          data: new Uint8ClampedArray(w * h * 4),
+        }),
+        getImageData: (sx: number, sy: number, sw: number, sh: number) => {
+          const out = new Uint8ClampedArray(sw * sh * 4);
+          for (let y = 0; y < sh; y++) {
+            for (let x = 0; x < sw; x++) {
+              const srcX = sx + x;
+              const srcY = sy + y;
+              if (srcX >= 0 && srcX < 10 && srcY >= 0 && srcY < 10) {
+                const srcI = (srcY * 10 + srcX) * 4;
+                const dstI = (y * sw + x) * 4;
+                out.set(canvasData.subarray(srcI, srcI + 4), dstI);
+              }
+            }
+          }
+          return { width: sw, height: sh, data: out };
+        },
+      } as unknown as CanvasRenderingContext2D;
+
+      // Extract rect (-2, -2) of size 6x6. Overlaps canvas at (0,0) to (3,3)
+      const clamped = SafeCanvas.getImageData(mockCtx, -2, -2, 6, 6);
+      expect(clamped.width).toBe(6);
+      expect(clamped.height).toBe(6);
+
+      // Canvas (2, 2) corresponds to offset (2 - (-2), 2 - (-2)) = (4, 4) in the clamped rect
+      const targetIdx = (4 * 6 + 4) * 4;
+      expect(clamped.data[targetIdx]).toBe(255);
+      expect(clamped.data[targetIdx + 3]).toBe(255);
+    });
   });
 
   describe('SafeJson & Prototype Pollution Defense (CWE-1321)', () => {
+    it('calculates multibyte UTF-8 byte length correctly without heap allocations', () => {
+      expect(getUtf8ByteLength('abc')).toBe(3);
+      expect(getUtf8ByteLength('çşğ')).toBe(6); // 2 bytes each in UTF-8
+      expect(getUtf8ByteLength('🎨🐰')).toBe(8); // 4 bytes each (surrogate pair)
+      expect(getUtf8ByteLength('日本語')).toBe(9); // 3 bytes each
+    });
+
     it('strips __proto__, constructor, and prototype during JSON parsing', () => {
       const maliciousPayload = '{"title":"Cozy","__proto__":{"polluted":true},"constructor":{"hacked":true}}';
       const parsed = SafeJson.parse<Record<string, unknown>>(maliciousPayload);
@@ -97,7 +190,6 @@ describe('Defensive Hardening Suite', () => {
     });
 
     it('enforces maximum recursion depth against stack overflow exploits', () => {
-      // Build a 40-level deep nested JSON string
       let deepJson = '{"val": 1}';
       for (let i = 0; i < 40; i++) {
         deepJson = `{"nested": ${deepJson}}`;
@@ -108,7 +200,7 @@ describe('Defensive Hardening Suite', () => {
       }).toThrow(/max recursion depth/);
     });
 
-    it('sanitizeObject strips prototype keys recursively from in-memory objects', () => {
+    it('sanitizeObject strips prototype keys recursively while preserving Object.prototype methods', () => {
       const obj = {
         name: 'Project',
         __proto__: { bad: true },
@@ -120,15 +212,19 @@ describe('Defensive Hardening Suite', () => {
 
       const clean = SafeJson.sanitizeObject(obj);
       expect(clean.name).toBe('Project');
-      expect(Reflect.get(clean, '__proto__')).toBeUndefined();
-      expect(clean.nested.constructor).toBeUndefined();
+      expect(Object.prototype.hasOwnProperty.call(clean, '__proto__')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(clean, 'constructor')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(clean, 'prototype')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(clean.nested, 'constructor')).toBe(false);
       expect(clean.nested.colors).toEqual(['#fff']);
+      expect(Object.prototype.hasOwnProperty.call(clean, 'name')).toBe(true);
+      expect(typeof clean.toString).toBe('function');
+      expect(Object.getPrototypeOf(clean)).toBe(Object.prototype);
     });
   });
 
   describe('ImageHeaderProbe (CWE-409 Decompression Bomb Defense)', () => {
     it('detects and parses valid synthetic PNG header dimensions', async () => {
-      // Construct minimal 24-byte PNG header: Magic (8) + IHDR length (4) + 'IHDR' (4) + Width (4) + Height (4)
       const pngHeader = new Uint8Array(24);
       pngHeader.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
       const view = new DataView(pngHeader.buffer);
@@ -154,6 +250,42 @@ describe('Defensive Hardening Suite', () => {
       expect(result.format).toBe('GIF');
       expect(result.width).toBe(32);
       expect(result.height).toBe(48);
+    });
+
+    it('detects and parses valid synthetic JPEG header dimensions', async () => {
+      const jpegData = createSyntheticJpeg({ width: 120, height: 80 });
+      const result = await ImageHeaderProbe.probe(jpegData);
+      expect(result.format).toBe('JPEG');
+      expect(result.width).toBe(120);
+      expect(result.height).toBe(80);
+    });
+
+    it('throws SOF_BEYOND_PROBE_WINDOW when JPEG markers end without SOF', async () => {
+      const jpegWithoutSof = createSyntheticJpeg({ includeSof: false });
+      await expect(ImageHeaderProbe.probe(jpegWithoutSof)).rejects.toThrow(
+        /SOF_BEYOND_PROBE_WINDOW/
+      );
+    });
+
+    it('throws SOF_BEYOND_PROBE_WINDOW when JPEG hits SOS before SOF', async () => {
+      const jpegSosEarly = createSyntheticJpeg({ hitSosEarly: true });
+      await expect(ImageHeaderProbe.probe(jpegSosEarly)).rejects.toThrow(
+        /SOF_BEYOND_PROBE_WINDOW/
+      );
+    });
+
+    it('pages Blob input across windows to find late SOF markers', async () => {
+      // Create JPEG with 280KB of metadata padding before SOF (exceeds initial 256KB window)
+      const lateSofJpeg = createSyntheticJpeg({
+        width: 320,
+        height: 240,
+        paddingBytes: 280000,
+      });
+      const blob = new Blob([lateSofJpeg.buffer as ArrayBuffer], { type: 'image/jpeg' });
+      const result = await ImageHeaderProbe.probe(blob);
+      expect(result.format).toBe('JPEG');
+      expect(result.width).toBe(320);
+      expect(result.height).toBe(240);
     });
 
     it('rejects decompression bombs with dimensions exceeding 8192px', async () => {

@@ -1606,6 +1606,38 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## 2026-09-14 — Phase 59: Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning
+
+**Delivered:**
+- **Single Source of Truth Canvas Limits (`src/config/canvasLimits.ts`)**:
+  - Exported canonical tier constants: `WORKSPACE_ENVELOPE` (`MAX_CANVAS_DIMENSION = 2048`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`), `EXPORT_ENVELOPE` (`MAX_EXPORT_DIMENSION = 4096`, `MAX_EXPORT_PIXELS = 16_777_216`), `PROBE_ENVELOPE` (`MAX_PROBE_DIMENSION = 8192`, `MAX_PROBE_PIXELS = 67_108_864`), and `HARDWARE_LIMITS` (`MAX_HARDWARE_DIMENSION = 16384`, `MAX_HARDWARE_PIXEL_AREA = 268_435_456`).
+  - Bound `.pixibun` schema validation in `src/lib/project/schema.ts` to canonical `WORKSPACE_ENVELOPE`.
+  - Re-exported export boundary constants in `src/components/modals/export/PngExportTab.tsx` and `src/components/modals/ExportModal.tsx`.
+- **P2P Structural & Pixel Admission Hardening (`src/lib/sync/p2pSync.ts`)**:
+  - Bound `validateStructurePayload` to `WORKSPACE_ENVELOPE` dimensions ($2048$), frame counts ($500$), and layer counts ($100$).
+  - Hardened `isValidPixelOp` rejecting negative coordinates or coordinates $\ge 2048$, enforcing schema parity across the network boundary.
+- **Safe Canvas Hardware Boundary & TypedArray Offset Alignment (`src/lib/safety/safeCanvas.ts`)**:
+  - Clamped selection boundaries against canonical `HARDWARE_LIMITS`.
+  - Fixed `Uint32Array` buffer view instantiation by passing `byteOffset` and `length`, eliminating byte misalignment bugs.
+- **Zero-Allocation Safe JSON Sanitization (`src/lib/safety/safeJson.ts`)**:
+  - Replaced wasteful memory stringification allocations in `getUtf8ByteLength` with zero-allocation `TextEncoder.encodeInto` byte counting.
+  - Ensured `sanitizeObject` returns a clean, plain object `{}` rather than `null` on prototype manipulation attempts.
+- **Progressive Multi-Window Image Header Probe (`src/lib/safety/imageHeaderProbe.ts`)**:
+  - Expanded initial window from 64KB to 256KB for deep-metadata PNG/JPEG headers.
+  - Implemented multi-window segment paging for `Blob` sources with a distinct `SOF_BEYOND_PROBE_WINDOW` error.
+- **Canonical Version Single Source of Truth (`src/config/version.ts`)**:
+  - Defined canonical `APP_VERSION = '1.13.1'`, consumed by diagnostics capture (`src/lib/diagnostics/capture.ts`) and relay routes (`src/app/api/diagnostics/relay/route.ts`).
+  - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
+- **Cross-Boundary & Defensive Regression Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
+  - Added new cross-boundary test suite verifying canvas envelope invariants across schema, P2P sync, export UI, and safety layers, expanding total test coverage to 635 unit tests across 90 suites (100% green).
+
+**Checks run:**
+- `npm run gate:full`: ALL 4 STAGES PASSED (Docs, Typecheck, 635 Vitest tests in 90 suites, Turbopack production build) in ~23.8s
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
 
 
 

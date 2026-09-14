@@ -45,8 +45,10 @@ Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times hei
 | **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$** | **$6.55\text{ MB}$** |
 | **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$** | **$26.21\text{ MB}$** |
 | **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$** | **$104.86\text{ MB}$** |
+| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$** | **$419.43\text{ MB}$** |
+| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$** | **$1.68\text{ GB}$** |
 
-> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$), well within browser tab memory quotas ($>1\text{ GB}$).
+> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$), well within browser tab memory quotas ($>1\text{ GB}$). At the canonical envelope limit of $2048 \times 2048$, a 50-step history requires $\approx 839\text{ MB}$, explaining why $2048\text{px}$ serves as the hard creation ceiling to keep allocations within standard 32-bit browser tab memory ceilings.
 
 ---
 
@@ -134,7 +136,7 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 |---|---|---|---|---|
 | **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 51 unique phases, 28 monotonic sections, 196 filepaths, line counts, test claims. |
 | **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
-| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | 615 unit tests across 89 suites (100% pass). |
+| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | 635 unit tests across 90 suites (100% pass). |
 | **Total** | **`npm run gate`** | **$16.30\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
 
 

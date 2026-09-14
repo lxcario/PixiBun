@@ -11,11 +11,12 @@
  */
 
 import { MathInvariants } from './mathInvariants';
+import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 
 export class CanvasHardwareLimits {
   private static cachedMaxDim: number | null = null;
-  public static readonly DEFAULT_SAFE_DIM = 8192;
-  public static readonly MAX_SAFE_PIXEL_AREA = 16384 * 16384; // 268 MP ceiling
+  public static readonly DEFAULT_SAFE_DIM = WORKSPACE_ENVELOPE.MAX_PROBE_DIMENSION;
+  public static readonly MAX_SAFE_PIXEL_AREA = WORKSPACE_ENVELOPE.MAX_HARDWARE_PIXEL_AREA; // 268 MP ceiling
 
   /**
    * Queries the hardware GPU maximum texture size via WebGL probe context.
@@ -150,8 +151,16 @@ export class SafeCanvas {
     const dstOffsetX = x1 - normX;
     const dstOffsetY = y1 - normY;
 
-    const srcU32 = new Uint32Array(sampleData.data.buffer);
-    const dstU32 = new Uint32Array(result.data.buffer);
+    const srcU32 = new Uint32Array(
+      sampleData.data.buffer,
+      sampleData.data.byteOffset,
+      interW * interH
+    );
+    const dstU32 = new Uint32Array(
+      result.data.buffer,
+      result.data.byteOffset,
+      normW * normH
+    );
 
     for (let row = 0; row < interH; row++) {
       const srcIdx = row * interW;
