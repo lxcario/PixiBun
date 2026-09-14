@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LayersPanel } from './inspector/LayersPanel';
 import { PalettePanel } from './inspector/PalettePanel';
-import { AiToolsPanel } from './inspector/AiToolsPanel';
+
+const AiToolsPanel = dynamic(
+  () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
+  { ssr: false }
+);
 
 export const RightInspector: React.FC = () => {
   const { activeInspectorTab, setActiveInspectorTab } = useStudioStore();
