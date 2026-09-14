@@ -38,6 +38,7 @@ export function usePhotometricEvents({
     lastCenterY?: number;
     normalMapData?: ImageData | null;
     analysis?: PhotometricAnalysisGeometry;
+    cachedAzimuth?: number;
   } | null>(null);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export function usePhotometricEvents({
         state.setLightElevation(elevation);
         state.setMaterialPreset(material);
         state.setLightBrightness(brightness);
+        state.setCavityStrength(inferred.cavityStrength);
       }
 
       let targetLayerId: string;
@@ -149,6 +151,7 @@ export function usePhotometricEvents({
         paletteColors: [],
         normalMapData,
         analysis,
+        cachedAzimuth: azimuth,
       };
 
       state.setPhotometricGizmoActive(true);
@@ -169,6 +172,35 @@ export function usePhotometricEvents({
       if (detail.lightBrightness !== undefined) session.brightness = detail.lightBrightness;
 
       const state = useStudioStore.getState();
+
+      // Phase 60a: Invalidate/recompute cached analysis when light azimuth drifts past threshold (20°)
+      // on character forms or appendage-bearing sprites, bounding any geometry drift during live drag.
+      if (session.formType === 'character' || session.analysis?.appendageData) {
+        const cachedAz = session.cachedAzimuth ?? detail.lightAzimuth;
+        const diff = Math.abs(detail.lightAzimuth - cachedAz);
+        const angularDrift = Math.min(diff, 360 - diff);
+
+        if (angularDrift >= 20) {
+          const params = {
+            lightAzimuth: detail.lightAzimuth,
+            lightElevation: detail.lightElevation,
+            lightRadius: 64,
+            lightColor: '#FFFFFF',
+            ambientIntensity: 0.48,
+            lightBrightness: session.brightness,
+            material: session.material,
+            cavityStrength: state.tools.cavityStrength,
+            ditherModulation: state.tools.ditherModulation,
+            bayerSize: '4x4' as const,
+            formType: session.formType,
+            minecraftSkinMode: state.tools.minecraftSkinMode,
+            normalMapData: session.normalMapData || undefined,
+          };
+          session.analysis = computePhotometricAnalysis(session.srcCtx, canvasWidth, canvasHeight, params);
+          session.cachedAzimuth = detail.lightAzimuth;
+        }
+      }
+
       const shadedCanvas = executePhotometricPipeline(
         session.srcCtx,
         canvasWidth,
@@ -211,6 +243,27 @@ export function usePhotometricEvents({
       const state = useStudioStore.getState();
 
       if (session) {
+        // Phase 60a: On drag release commit, perform fresh single-shot analysis recomputation
+        // for character silhouettes / appendage-bearing geometry to ensure 0 azimuth staleness is committed.
+        let commitAnalysis = session.analysis;
+        if (session.formType === 'character' || session.analysis?.appendageData) {
+          commitAnalysis = computePhotometricAnalysis(session.srcCtx, canvasWidth, canvasHeight, {
+            lightAzimuth: state.tools.lightAzimuth,
+            lightElevation: state.tools.lightElevation,
+            lightRadius: 64,
+            lightColor: '#FFFFFF',
+            ambientIntensity: 0.48,
+            lightBrightness: session.brightness,
+            material: session.material,
+            cavityStrength: state.tools.cavityStrength,
+            ditherModulation: state.tools.ditherModulation,
+            bayerSize: '4x4' as const,
+            formType: session.formType,
+            minecraftSkinMode: state.tools.minecraftSkinMode,
+            normalMapData: session.normalMapData || undefined,
+          });
+        }
+
         // Ensure the final commit render strictly aligns with the committed azimuth and elevation
         const shadedCanvas = executePhotometricPipeline(
           session.srcCtx,
@@ -232,7 +285,7 @@ export function usePhotometricEvents({
             lightCenterX: session.lastCenterX,
             lightCenterY: session.lastCenterY,
             normalMapData: session.normalMapData || undefined,
-            precomputedAnalysis: session.analysis,
+            precomputedAnalysis: commitAnalysis,
           },
           session.paletteColors
         );

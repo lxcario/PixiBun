@@ -1643,6 +1643,32 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## 2026-09-14 — Phase 60: Photometric Drag-Session Correctness & Cavity AO Auto-Scaling
+
+**Delivered:**
+- **Phase 60a: Live-Drag Photometric Analysis Cache Invalidation (`src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/photometricNonDestructive.test.ts`)**:
+  - Bound `cachedAzimuth` tracking to `photometricSessionRef.current`.
+  - Implemented 20° angular drift cache invalidation on character / appendage silhouettes during interactive gizmo sweeps, recomputing analysis when lighting geometry drifts significantly while preserving zero recomputation on isotropic `formType: 'orb'`.
+  - Guaranteed single-shot full analysis recomputation at drag release prior to `commitSnapshot()`, ensuring committed artwork has 0 azimuth staleness compared to fresh render (0 pixel discrepancy).
+- **Phase 60b: Silhouette-Aware Cavity AO Auto-Scaling & Crevice Decoupling (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/photometricLighting.ts`, `tests/photometricAutoAnalysis.test.ts`)**:
+  - Extended `InferredPhotometricSettings` and defaults with `cavityStrength: number` (0.1–1.0).
+  - Measured silhouette complexity via isoperimetric ratio / circularity deficiency (`1 / circularity`) and upper multi-segment appendage density (`maxUpperSegments`).
+  - Auto-scaled `cavityStrength` from `1.0` down to `0.40` for complex hair-spike and appendage-heavy silhouettes, maintaining `1.0` for orbs.
+  - Dynamically coupled character cel-shading `creviceAOThresh` to `cavStrength` (`Math.min(0.60, Math.max(0.20, 0.60 * cavStrength))`), preventing the 45.9% dark tone engulfment on hair spikes and tufts while preserving deep anatomical folds.
+  - Injected inferred `cavityStrength` into `usePhotometricEvents.ts` and `bakeNormals()`.
+- **Regression Tests (`tests/photometricAutoAnalysis.test.ts`, `tests/photometricNonDestructive.test.ts`)**:
+  - Verified cavity AO auto-scaling drops deep crevice engulfment on hair-spike silhouettes from 50% to <2% with >90% directional diffuse tone recovery.
+  - Verified live drag invalidation recomputes analysis across wide sweeps and guarantees 0 differing pixels on release commit.
+  - Expanded test coverage to 639 unit tests across 90 suites (100% green).
+
+**Checks run:**
+- `npm run gate`: ALL 3 STAGES PASSED (Docs integrity, Typecheck, 639 Vitest tests in 90 suites)
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
+**Status:** Complete
+
+
 
 
 

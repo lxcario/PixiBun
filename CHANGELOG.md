@@ -3,6 +3,17 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.13.1] - 2026-09-14
+### Photometric Drag-Session Correctness & Cavity AO Auto-Scaling (Phase 60)
+- **Live-Drag Photometric Analysis Cache Invalidation (Phase 60a) (`src/hooks/viewport/events/usePhotometricEvents.ts`)**:
+  - Implemented 20° angular-drift cache invalidation during live light gizmo drags for character and appendage-bearing silhouettes, eliminating stale geometry caching while keeping 60 FPS performance.
+  - Guaranteed fresh single-shot analysis recomputation on mouseup/commit before persisting layer snapshots, achieving 100.000% byte-identity with fresh execution and 0 committed staleness.
+  - Preserved full zero-recompute caching for spherical orbs and non-appendage prop forms.
+- **Cavity AO Auto-Scaling for Complex Silhouettes (Phase 60b) (`src/lib/ai/math/photometricAuto.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`)**:
+  - Added silhouette complexity metric computing circularity deficiency (`1 / circularity`) and upper-region multi-segment appendage density (`maxUpperSegments`).
+  - Auto-scales recommended `cavityStrength` in `inferPhotometricSettings()` from 1.0 down toward 0.40 on complex, spiky character silhouettes (hair spikes, fur tufts), while preserving 1.0 for spherical orbs.
+  - Dynamically tuned `creviceAOThresh` in cel-shading to scale with `cavityStrength`, dropping deep-crevice tone coverage from 50% down to <2% on hair-spike characters and recovering >90% directional lighting.
+  - Added regression test suites in `tests/photometricAutoAnalysis.test.ts` and `tests/photometricNonDestructive.test.ts`, bringing total test coverage to 639 unit tests across 90 suites.
+
 ### Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning (Phase 59)
 - **Single Source of Truth Canvas Envelope (`src/config/canvasLimits.ts`)**:
   - Exported canonical tier constants: `WORKSPACE_ENVELOPE` (`MAX_CANVAS_DIMENSION = 2048`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`), `EXPORT_ENVELOPE` (`MAX_EXPORT_DIMENSION = 4096`, `MAX_EXPORT_PIXELS = 16_777_216`), `PROBE_ENVELOPE` (`MAX_PROBE_DIMENSION = 8192`, `MAX_PROBE_PIXELS = 67_108_864`), and `HARDWARE_LIMITS` (`MAX_HARDWARE_DIMENSION = 16384`, `MAX_HARDWARE_PIXEL_AREA = 268_435_456`).

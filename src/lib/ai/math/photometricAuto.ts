@@ -27,6 +27,7 @@ export interface InferredPhotometricSettings {
   material: MaterialType;
   brightness: number; // 0.5-2.0
   formType: RecognizedFormType;
+  cavityStrength: number; // 0.1-1.0 auto-inferred default
   rationale: string; // Human-readable explanation of the inference
 }
 
@@ -43,6 +44,7 @@ export function inferPhotometricSettings(
     material: 'matte',
     brightness: 1.15,
     formType: 'prop',
+    cavityStrength: 1.0,
     rationale: 'Canvas is empty — default top-left studio light.',
   };
 
@@ -123,6 +125,7 @@ export function inferPhotometricSettings(
 
   // Detect top appendages/ears/horns: check if upper 15-45% of sprite bounding box splits into 2+ distinct islands
   let hasEarsOrHorns = false;
+  let maxUpperSegments = 0;
   const earScanRows = Math.max(4, Math.floor(boxH * 0.45));
   for (let y = minY; y < minY + earScanRows; y++) {
     let segments = 0;
@@ -136,14 +139,14 @@ export function inferPhotometricSettings(
         inSegment = false;
       }
     }
+    if (segments > maxUpperSegments) maxUpperSegments = segments;
     if (segments >= 2) {
       hasEarsOrHorns = true;
-      break;
     }
   }
 
   // Also check vertical columns in upper region for lateral appendages (e.g. side ears, wings, cheek tufts)
-  if (!hasEarsOrHorns && boxW >= 12) {
+  if (boxW >= 12) {
     const earScanCols = Math.max(4, Math.floor(boxW * 0.35));
     for (let x = minX; x < minX + earScanCols; x++) {
       let segments = 0;
@@ -157,9 +160,9 @@ export function inferPhotometricSettings(
           inSegment = false;
         }
       }
+      if (segments > maxUpperSegments) maxUpperSegments = segments;
       if (segments >= 2) {
         hasEarsOrHorns = true;
-        break;
       }
     }
   }
@@ -242,6 +245,23 @@ export function inferPhotometricSettings(
     formType = 'character';
   } else if (isOrb) {
     formType = 'orb';
+  }
+
+  // --- 1b) Silhouette Complexity & Cavity AO Auto-Scaling ----------------------
+  // Spiky, appendage-dense silhouettes (hair spikes, fur tufts) cause discrete Laplace
+  // cavity AO to falsely interpret adjacent strands as deep crevices, engulfing up to 46%
+  // of the sprite in non-directional crevice tone.
+  // We scale cavityStrength down from 1.0 toward 0.35–0.50 based on circularity deficiency
+  // and multi-segment appendage density.
+  let cavityStrength = 1.0;
+  if (!isOrb) {
+    const isoperimetricRatio = circularity > 0 ? 1 / circularity : 5;
+    if (isoperimetricRatio > 2.0 || maxUpperSegments >= 3) {
+      const ratioExcess = Math.min(1.0, Math.max(0, (isoperimetricRatio - 2.0) / 3.0));
+      const segmentExcess = Math.min(1.0, Math.max(0, (maxUpperSegments - 2) / 2.0));
+      const complexity = Math.max(ratioExcess, segmentExcess);
+      cavityStrength = +(1.0 - complexity * 0.60).toFixed(2); // Scales smoothly down from 1.0 to 0.40
+    }
   }
 
   // --- 2) Light azimuth: geometric centroid -> luminance centroid -------------
@@ -343,9 +363,14 @@ export function inferPhotometricSettings(
   else if (hasFacialFeatures) formDesc = 'character with facial features';
   else if (isOrb) formDesc = 'spherical form';
 
+  let cavityDesc = '';
+  if (cavityStrength < 0.95) {
+    cavityDesc = `, cavity AO auto-scaled to ${cavityStrength} (complex silhouette)`;
+  }
+
   const rationale =
     `Recognized ${formDesc} (highlight mass ${azimuthDeg}° / ${elevationDeg}°, ` +
-    `spec share ${specPct}%, contrast ${contrast.toFixed(2)}) → ${material} shading.`;
+    `spec share ${specPct}%, contrast ${contrast.toFixed(2)}${cavityDesc}) → ${material} shading.`;
 
-  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, formType, rationale };
+  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, formType, cavityStrength, rationale };
 }

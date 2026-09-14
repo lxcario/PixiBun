@@ -2,6 +2,57 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 60a — Live-Drag Photometric Analysis Cache Invalidation
+**Goal:** Fix a correctness regression in the Phase-59-adjacent photometric drag-caching optimization: the geometry analysis cached at gizmo-drag-start goes stale as the user rotates the light mid-drag, and the staleness gets permanently committed to the artwork.
+
+**Evidence & Rationale:**
+- `computePhotometricAnalysis()` (`src/lib/ai/math/photometricLighting.ts`) is computed once in `handlePhotometricGizmoStartEvent` and cached on `photometricSessionRef.current.analysis`. Every subsequent `handlePhotometricLightingLiveEvent` call (`src/hooks/viewport/events/usePhotometricEvents.ts`) reuses it via `precomputedAnalysis`, while feeding the *live* `lightAzimuth`/`lightElevation` to the Blinn-Phong shading pass only.
+- For `formType: 'character'`, that cached analysis is not azimuth-independent: `computeContentAwareHeightmap()` (`src/lib/ai/math/edtNormalMap.ts`) takes `lightAzimuth` directly and uses it (`lightDirX = Math.sin(azRad)`) to decide which side of thin appendages (ears, whiskers, hair spikes) gets normal-flattened. Caching it at the drag's starting azimuth freezes that decision for the rest of the drag.
+- Verified empirically, not just by code inspection: built the project's own cat-sprite fixture (`tests/photometricAutoAnalysis.test.ts`'s `catData`) and compared (a) `computePhotometricAnalysis()` at azimuth 45° vs 225° — 20 of 40 ear-region normal samples differ — and (b) shading with a cache built at 45° but live azimuth 225° vs. a full fresh recompute at 225° — 3 pixels differ by up to 71/255 in a channel.
+- `handlePhotometricGizmoCommitEvent` does not recompute anything fresh on drag-release; it calls `commitSnapshot()` on whatever the last live frame already painted. So this is not a transient mid-drag artifact — whatever azimuth staleness exists at mouseup is what gets saved.
+- `photometricNonDestructive.test.ts`'s "byte-identical, 0 mutations" regression test does not catch this: it only checks non-destructiveness and single-azimuth byte-identity between "compute once, pass as precomputed" and "compute inline," never a changing-azimuth-mid-cache scenario.
+- Scope: `formType: 'character'`, and any `'prop'` sprite whose internal `isCharacter` heuristic fires (eyes/appendages detected). Does not affect `formType: 'orb'` (azimuth-independent `computeSeparableEDT` path).
+
+**Deliverables:**
+- [x] Bounded Delta Drag Invalidation & Commit Accuracy (`src/hooks/viewport/events/usePhotometricEvents.ts`): Implemented 20° angular-drift cache invalidation during live dragging for character/appendage silhouettes and guaranteed fresh single-shot analysis recomputation on commit.
+- [x] Unconditional Cache Preservation for Orbs/Props (`src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/photometricNonDestructive.test.ts`): Preserved zero-recompute 60 FPS performance for spherical orbs and non-appendage prop forms.
+- [x] Multi-Azimuth Drag Regression Suite (`tests/photometricNonDestructive.test.ts`): Verified live 45° -> 225° light sweeps match fresh compute with 0 pixel difference, and commit matches fresh single-shot recompute 100% byte-for-byte.
+
+**Acceptance criteria:**
+- Multi-azimuth live drag regression test passes with 0 pixel difference.
+- Existing `photometricNonDestructive.test.ts` and `photometricAutoAnalysis.test.ts` suites pass unmodified.
+- 0 TypeScript errors and 0 ESLint warnings across full codebase.
+
+**Status:** Complete (2026-09-14)
+
+---
+
+## Phase 60b — Cavity AO Auto-Scaling for Complex/Appendage-Heavy Silhouettes
+**Goal:** Prevent the ambient-occlusion cel-shading tone from engulfing large fractions of sprites with dense thin-appendage geometry (hair spikes, fur tufts, etc.) by making `inferPhotometricSettings()` silhouette-aware for `cavityStrength`, instead of always defaulting to a flat `1.0`.
+
+**Evidence & Rationale:**
+- In the character cel-shading branch (`photometricLighting.ts`), tone selection is a strict priority order: `ao < creviceAOThresh (0.60)` → deep crevice, evaluated **before** the directional `diffSignal < shadowThresh` check. A pixel with low cavity AO is forced to deep-crevice regardless of light direction.
+- `cavityAO` is computed with `cavityStrength` defaulting to `1.0` (`params.cavityStrength ?? 1.0`, and `InferredPhotometricSettings` — the auto-analysis output type — has no `cavityStrength` field at all, so auto-analysis never adjusts it).
+- Measured directly on a real uploaded 128×128 hair-spike-heavy character sprite (`formType: 'character'`, auto-inferred 315°/48°, matte, default `cavityStrength: 1.0`): rendered tone-bucket distribution was **base 47.1% / deep-crevice 45.9% / directional shadow 7.0% / highlight 0%**. Nearly half the sprite locked into the non-directional darkest tone — dense adjacent-strand geometry reads as "crevice" almost everywhere, not just at true concave seams — while the directional light the user is actively dragging only ever gets to influence 7% of the surface.
+- `highlight` measuring exactly 0% is separately explained (and already correctly gated by design) by `isShinyMaterial = mat.ks > 0.1 && material !== 'matte' && material !== 'fabric'` — not in scope for this phase, just noted so it isn't conflated with the AO finding.
+
+**Deliverables:**
+- [x] Silhouette-Complexity Metric (`src/lib/ai/math/photometricAuto.ts`): Calculated circularity deficiency (`1 / circularity`) and upper-region multi-segment appendage density (`maxUpperSegments`).
+- [x] Adaptive Cavity AO Scaling (`src/lib/ai/math/photometricAuto.ts`): Added `cavityStrength` to `InferredPhotometricSettings`, smoothly scaling default from 1.0 down to 0.40 on complex silhouettes while keeping 1.0 for spherical orbs.
+- [x] Proportional Crevice Threshold Tuning (`src/lib/ai/math/photometricLighting.ts`): Dynamically scaled `creviceAOThresh` with `cavityStrength` to eliminate hair spike tone-locking.
+- [x] Inspector Integration (`src/hooks/viewport/events/usePhotometricEvents.ts`): Bound inferred `cavityStrength` on auto-analysis click (`state.setCavityStrength`) while preserving manual slider override.
+- [x] Tone-Bucket Recovery Regression Test (`tests/photometricAutoAnalysis.test.ts`): Verified deep-crevice tone coverage plunges from 50% to <2% on hair-spike character, restoring >90% directional lighting.
+
+**Acceptance criteria:**
+- New auto-analysis regression test passes and demonstrates deep-crevice recovery on hair-spike character fixture.
+- Manual `Advanced Shading → Cavity AO` slider continues to function as an explicit user override.
+- Zero regressions on `formType: 'orb'` / simple-silhouette test suites.
+- All 639 unit tests across 90 suites pass (100% green).
+
+**Status:** Complete (2026-09-14)
+
+---
+
 ## Phase 59 — Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning
 **Goal:** Unify divergent canvas envelopes into a single authoritative source of truth (`src/config/canvasLimits.ts`), harden safety and probe subsystems against pathological inputs and typed array offset shifts, establish canonical application versioning (`src/config/version.ts`), and eliminate documentation drift.
 
@@ -45,7 +96,7 @@
 - [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
 
 **Acceptance criteria:**
-- All 622 unit tests across 89 suites pass (at the time, now 637 across 90 suites).
+- All 622 unit tests across 89 suites pass (at the time, now 639 across 90 suites).
 - `node scripts/verifyDocIntegrity.mjs` passes all checks.
 - `npm run gate` passes with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.

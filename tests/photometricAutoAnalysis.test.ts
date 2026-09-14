@@ -555,5 +555,137 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     const leftSideP = (cy * w + (cx - 18)) * 4;
     expect(outData[leftSideP]).toBeGreaterThanOrEqual(120);
   });
+
+  it('auto-scales cavityStrength down on complex hair-spike / multi-appendage character silhouettes, preventing deep-crevice engulfment', async () => {
+    const { inferPhotometricSettings } = await import('@/lib/ai/math/photometricAuto');
+    const { executePhotometricPipeline } = await import('@/lib/ai/math/photometricLighting');
+
+    // Construct a 64x64 character sprite with multiple hair spikes/tufts on top and a character torso below
+    const w = 64;
+    const h = 64;
+    const blueColor: [number, number, number, number] = [40, 70, 220, 255]; // Blue body matching user sprite
+
+    const hairSpikeData = makeData(w, h, (x, y) => {
+      // 4 prominent hair spikes in top region (y: 6..20)
+      // Spike 1: x: 12..15, y: 8..20
+      if (x >= 12 && x <= 15 && y >= 8 && y <= 20) return blueColor;
+      // Spike 2: x: 22..25, y: 5..20
+      if (x >= 22 && x <= 25 && y >= 5 && y <= 20) return blueColor;
+      // Spike 3: x: 38..41, y: 5..20
+      if (x >= 38 && x <= 41 && y >= 5 && y <= 20) return blueColor;
+      // Spike 4: x: 48..51, y: 8..20
+      if (x >= 48 && x <= 51 && y >= 8 && y <= 20) return blueColor;
+
+      // Head & Torso body below (x: 16..47, y: 21..54)
+      if (x >= 16 && x <= 47 && y >= 21 && y <= 54) {
+        // Eyes at (24, 28) and (39, 28)
+        if ((x === 24 || x === 39) && (y === 28 || y === 29)) return [0, 0, 0, 255];
+        return blueColor;
+      }
+      return null;
+    });
+
+    // 1. Verify inferPhotometricSettings detects complex silhouette and scales down cavityStrength
+    const settings = inferPhotometricSettings(hairSpikeData, w, h);
+    expect(settings.formType).toBe('character');
+    expect(settings.cavityStrength).toBeGreaterThanOrEqual(0.35);
+    expect(settings.cavityStrength).toBeLessThanOrEqual(0.55);
+    expect(settings.rationale).toContain('cavity AO auto-scaled');
+
+    // 2. Verify spherical orb retains cavityStrength: 1.0
+    const orbData = makeData(32, 32, (x, y) => {
+      if (inCircle(x, y, 16, 16, 12)) return [200, 100, 50, 255];
+      return null;
+    });
+    const orbSettings = inferPhotometricSettings(orbData, 32, 32);
+    expect(orbSettings.formType).toBe('orb');
+    expect(orbSettings.cavityStrength).toBe(1.0);
+
+    // 3. Shading execution tone-bucket comparison: default cavityStrength 1.0 vs auto-scaled cavityStrength
+    const mockCtx = {
+      getImageData: () => ({ data: new Uint8ClampedArray(hairSpikeData) }),
+    } as unknown as CanvasRenderingContext2D;
+
+    // (a) Shading with flat cavityStrength: 1.0
+    const shadedFlat = executePhotometricPipeline(
+      mockCtx,
+      w,
+      h,
+      {
+        lightAzimuth: 315,
+        lightElevation: 48,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        lightBrightness: 1.15,
+        material: 'matte',
+        cavityStrength: 1.0,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+      },
+      []
+    );
+    const flatData = shadedFlat.getContext('2d')!.getImageData(0, 0, w, h).data;
+
+    // (b) Shading with auto-scaled cavityStrength (settings.cavityStrength)
+    const shadedAuto = executePhotometricPipeline(
+      mockCtx,
+      w,
+      h,
+      {
+        lightAzimuth: 315,
+        lightElevation: 48,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        lightBrightness: 1.15,
+        material: 'matte',
+        cavityStrength: settings.cavityStrength,
+        ditherModulation: 0,
+        bayerSize: '4x4',
+        formType: 'character',
+      },
+      []
+    );
+    const autoData = shadedAuto.getContext('2d')!.getImageData(0, 0, w, h).data;
+
+    const { buildCelRamp } = await import('@/lib/ai/math/photometricLighting');
+    const ramp = buildCelRamp(blueColor[0], blueColor[1], blueColor[2]);
+
+    // Count tone distribution on hair spike pixels (y: 6..20)
+    let totalHairPixels = 0;
+    let deepCreviceFlatCount = 0;
+    let deepCreviceAutoCount = 0;
+    let directionalOrBaseAutoCount = 0;
+
+    for (let y = 6; y <= 20; y++) {
+      for (let x = 0; x < w; x++) {
+        const p = (y * w + x) * 4;
+        if (hairSpikeData[p + 3] > 0) {
+          totalHairPixels++;
+          if (flatData[p] === ramp.deepR && flatData[p + 1] === ramp.deepG && flatData[p + 2] === ramp.deepB) {
+            deepCreviceFlatCount++;
+          }
+          if (autoData[p] === ramp.deepR && autoData[p + 1] === ramp.deepG && autoData[p + 2] === ramp.deepB) {
+            deepCreviceAutoCount++;
+          } else {
+            directionalOrBaseAutoCount++;
+          }
+        }
+      }
+    }
+
+    const flatCreviceShare = deepCreviceFlatCount / totalHairPixels;
+    const autoCreviceShare = deepCreviceAutoCount / totalHairPixels;
+    const directionalRecoveryShare = directionalOrBaseAutoCount / totalHairPixels;
+
+    // With flat cavityStrength: 1.0, adjacent spike pixels are overwhelmingly marked deep-crevice (>= 40%)
+    expect(flatCreviceShare).toBeGreaterThanOrEqual(0.40);
+    // With auto-scaled cavityStrength & dynamic crevice threshold, deep-crevice share drops to < 10%
+    expect(autoCreviceShare).toBeLessThan(0.10);
+    // Over 90% of hair spike pixels recover base color and directional shading responsive to the light
+    expect(directionalRecoveryShare).toBeGreaterThan(0.90);
+  });
 });
 

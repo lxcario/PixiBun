@@ -574,7 +574,7 @@ To decouple development from cloud CI billing constraints while maintaining unco
   - Executes a 3-stage sequential validation pipeline via `npm run gate` in ~16–19 seconds:
     1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
     2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
-    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 637 Vitest unit tests across 90 suites.
+    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 639 Vitest unit tests across 90 suites.
     4. **Stage 4 (Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
 * **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
   - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).

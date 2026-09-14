@@ -431,10 +431,14 @@ export function computePhotometricAnalysis(
   };
 
   let formType = params.formType;
-  if (!formType || formType === 'auto') {
+  let inferredCavity = 1.0;
+  if (!formType || formType === 'auto' || params.cavityStrength === undefined) {
     const inferred = inferPhotometricSettings(data, width, height);
-    formType = inferred.formType;
+    if (!formType || formType === 'auto') formType = inferred.formType;
+    inferredCavity = inferred.cavityStrength;
   }
+
+  const effectiveCavity = params.cavityStrength ?? inferredCavity ?? 1.0;
 
   let normalField: NormalVectorField;
   let baseNormalField: NormalVectorField | undefined = undefined;
@@ -444,7 +448,7 @@ export function computePhotometricAnalysis(
   let isInkLineMask: Uint8Array | null = null;
 
   if (formType === 'character') {
-    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
+    const analysis = computeContentAwareHeightmap(data, width, height, effectiveCavity, 2.0, params.lightAzimuth);
     normalField = analysis.normalField;
     baseNormalField = analysis.baseNormalField;
     appendageData = analysis.appendageData ?? null;
@@ -456,10 +460,10 @@ export function computePhotometricAnalysis(
     const rawHeightmap = generateInflatedHeightmap(distanceMap, width, height, 0.5);
     const smoothHeightmap = applyBilateralFilter(rawHeightmap, width, height, 1.5, 2.0);
     normalField = computeTangentNormalField(smoothHeightmap, width, height, 2.0);
-    cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, params.cavityStrength ?? 1.0);
+    cavityAO = computeDiscreteLaplaceCavity(smoothHeightmap, width, height, effectiveCavity);
   } else {
     // Props and general shapes: computeContentAwareHeightmap decomposes artwork into parts, lines, and crevices
-    const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
+    const analysis = computeContentAwareHeightmap(data, width, height, effectiveCavity, 2.0, params.lightAzimuth);
     normalField = analysis.normalField;
     baseNormalField = analysis.baseNormalField;
     appendageData = analysis.appendageData ?? null;
@@ -721,8 +725,10 @@ export function executePhotometricPipeline(
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
         }
 
-        // Cavity AO crevice threshold: deep concave seams (ao < 0.60) trigger the darkest tone
-        const creviceAOThresh = 0.60;
+        // Cavity AO crevice threshold: deep concave seams trigger the darkest tone.
+        // Dynamically scales with cavityStrength to prevent dense thin-appendage geometry from being engulfed.
+        const cavStrength = params.cavityStrength ?? 1.0;
+        const creviceAOThresh = Math.min(0.60, Math.max(0.20, 0.60 * cavStrength));
 
         // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
         const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
@@ -876,7 +882,7 @@ export function renderParametric2p5DLighting(
   if (isMcSkin) {
     normalField = computeMinecraftSkinNormalField(width, height);
   } else if (isCharacter) {
-    const analysis = computeContentAwareHeightmap(data, width, height, 1.0, 2.0, params.azimuthDeg);
+    const analysis = computeContentAwareHeightmap(data, width, height, inferred.cavityStrength ?? 1.0, 2.0, params.azimuthDeg);
     normalField = analysis.normalField;
     charFeatureMask = analysis.isFeature;
     charInkMask = analysis.isInkLine;

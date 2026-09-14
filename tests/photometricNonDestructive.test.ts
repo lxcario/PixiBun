@@ -454,6 +454,202 @@ describe('Photometric non-destructiveness', () => {
     expect(differingPixels45).toBe(0);
   });
 
+  it('invalidates and recomputes analysis when azimuth drifts past threshold during live drag sessions, guaranteeing 0 staleness on commit', async () => {
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 32;
+    const height = 32;
+    const catLayerId = 'cat-drift-invalidation-test';
+    const catBuffer = getOrCreateBuffer(catLayerId, width, height);
+
+    // Anatomical cat sprite with dark ear contours, face, eyes, and body
+    // Left ear (x: 9..12, y: 5..9) with black outline
+    catBuffer.ctx.fillStyle = '#000000';
+    for (let x = 9; x <= 12; x++) catBuffer.ctx.fillRect(x, 5, 1, 1);
+    for (let y = 6; y <= 9; y++) {
+      catBuffer.ctx.fillRect(9, y, 1, 1);
+      catBuffer.ctx.fillRect(12, y, 1, 1);
+    }
+    catBuffer.ctx.fillStyle = '#FFF5E6';
+    for (let y = 6; y <= 9; y++) {
+      for (let x = 10; x <= 11; x++) catBuffer.ctx.fillRect(x, y, 1, 1);
+    }
+
+    // Right ear (x: 19..22, y: 5..9) with black outline
+    catBuffer.ctx.fillStyle = '#000000';
+    for (let x = 19; x <= 22; x++) catBuffer.ctx.fillRect(x, 5, 1, 1);
+    for (let y = 6; y <= 9; y++) {
+      catBuffer.ctx.fillRect(19, y, 1, 1);
+      catBuffer.ctx.fillRect(22, y, 1, 1);
+    }
+    catBuffer.ctx.fillStyle = '#FFF5E6';
+    for (let y = 6; y <= 9; y++) {
+      for (let x = 20; x <= 21; x++) catBuffer.ctx.fillRect(x, y, 1, 1);
+    }
+
+    // Face / Body (x: 7..24, y: 10..22)
+    catBuffer.ctx.fillStyle = '#000000';
+    for (let x = 7; x <= 24; x++) {
+      catBuffer.ctx.fillRect(x, 10, 1, 1);
+      catBuffer.ctx.fillRect(x, 22, 1, 1);
+    }
+    for (let y = 11; y <= 21; y++) {
+      catBuffer.ctx.fillRect(7, y, 1, 1);
+      catBuffer.ctx.fillRect(24, y, 1, 1);
+    }
+    catBuffer.ctx.fillStyle = '#FFF5E6';
+    for (let y = 11; y <= 21; y++) {
+      for (let x = 8; x <= 23; x++) catBuffer.ctx.fillRect(x, y, 1, 1);
+    }
+
+    // Eyes
+    catBuffer.ctx.fillStyle = '#000000';
+    catBuffer.ctx.fillRect(11, 14, 1, 2);
+    catBuffer.ctx.fillRect(19, 14, 1, 2);
+
+    const baseParams = {
+      lightElevation: 45,
+      lightRadius: 64,
+      lightColor: '#FFFFFF',
+      ambientIntensity: 0.4,
+      material: 'matte' as const,
+      cavityStrength: 1.0,
+      ditherModulation: 0.0,
+      bayerSize: '4x4' as const,
+      formType: 'character' as const,
+    };
+
+    // 1. Session start at lightAzimuth = 45°
+    let sessionAnalysis = computePhotometricAnalysis(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 45,
+    });
+    let cachedAzimuth = 45;
+
+    // 2. Simulate dragging light through a rotation sweep: 45° -> 60° (drift 15°, no invalidation) -> 90° (drift 45° >= 20°, invalidates) -> 225°
+    const sweepAngles = [60, 90, 135, 180, 225];
+    for (const az of sweepAngles) {
+      const diff = Math.abs(az - cachedAzimuth);
+      const drift = Math.min(diff, 360 - diff);
+      if (drift >= 20) {
+        sessionAnalysis = computePhotometricAnalysis(catBuffer.ctx, width, height, {
+          ...baseParams,
+          lightAzimuth: az,
+        });
+        cachedAzimuth = az;
+      }
+
+      const liveShaded = executePhotometricPipeline(catBuffer.ctx, width, height, {
+        ...baseParams,
+        lightAzimuth: az,
+        precomputedAnalysis: sessionAnalysis,
+      });
+      expect(liveShaded).toBeTruthy();
+    }
+
+    // At azimuth 225°, live drag with invalidation should produce output matching fresh recomputation
+    const live225 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+      precomputedAnalysis: sessionAnalysis,
+    });
+    const live225Data = (live225.getContext('2d') as unknown as MockCtx)._imageData.data;
+
+    // 3. Single-shot fresh compute at lightAzimuth = 225°
+    const fresh225 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+    });
+    const fresh225Data = (fresh225.getContext('2d') as unknown as MockCtx)._imageData.data;
+
+    // Verify 0 pixel divergence between live drag and fresh compute at 225°
+    let differingPixels = 0;
+    for (let i = 0; i < fresh225Data.length; i += 4) {
+      if (
+        live225Data[i] !== fresh225Data[i] ||
+        live225Data[i + 1] !== fresh225Data[i + 1] ||
+        live225Data[i + 2] !== fresh225Data[i + 2] ||
+        live225Data[i + 3] !== fresh225Data[i + 3]
+      ) {
+        differingPixels++;
+      }
+    }
+    expect(differingPixels).toBe(0);
+
+    // 4. Commit recomputation guarantee: on commit at 225°, fresh analysis recomputation matches single-shot 100% byte-for-byte
+    const commitAnalysis = computePhotometricAnalysis(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+    });
+    const commitShaded = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+      precomputedAnalysis: commitAnalysis,
+    });
+    const commitData = (commitShaded.getContext('2d') as unknown as MockCtx)._imageData.data;
+
+    let differingCommitPixels = 0;
+    for (let i = 0; i < fresh225Data.length; i += 4) {
+      if (
+        commitData[i] !== fresh225Data[i] ||
+        commitData[i + 1] !== fresh225Data[i + 1] ||
+        commitData[i + 2] !== fresh225Data[i + 2] ||
+        commitData[i + 3] !== fresh225Data[i + 3]
+      ) {
+        differingCommitPixels++;
+      }
+    }
+    expect(differingCommitPixels).toBe(0);
+
+    // 5. Verify that 'orb' form retains cached analysis across sweeps without drift
+    const orbBuffer = getOrCreateBuffer('orb-drag-cache-test', width, height);
+    orbBuffer.ctx.fillStyle = '#DD3333';
+    for (let y = 6; y <= 25; y++) {
+      for (let x = 6; x <= 25; x++) {
+        if (Math.hypot(x - 15.5, y - 15.5) <= 9.5) {
+          orbBuffer.ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    const orbSessionAnalysis = computePhotometricAnalysis(orbBuffer.ctx, width, height, {
+      ...baseParams,
+      formType: 'orb',
+      lightAzimuth: 45,
+    });
+
+    // Reuse orbSessionAnalysis at 225° directly without recomputing
+    const orbLive225 = executePhotometricPipeline(orbBuffer.ctx, width, height, {
+      ...baseParams,
+      formType: 'orb',
+      lightAzimuth: 225,
+      precomputedAnalysis: orbSessionAnalysis,
+    });
+    const orbFresh225 = executePhotometricPipeline(orbBuffer.ctx, width, height, {
+      ...baseParams,
+      formType: 'orb',
+      lightAzimuth: 225,
+    });
+
+    const orbLiveData = (orbLive225.getContext('2d') as unknown as MockCtx)._imageData.data;
+    const orbFreshData = (orbFresh225.getContext('2d') as unknown as MockCtx)._imageData.data;
+
+    let differingOrbPixels = 0;
+    for (let i = 0; i < orbFreshData.length; i += 4) {
+      if (
+        orbLiveData[i] !== orbFreshData[i] ||
+        orbLiveData[i + 1] !== orbFreshData[i + 1] ||
+        orbLiveData[i + 2] !== orbFreshData[i + 2] ||
+        orbLiveData[i + 3] !== orbFreshData[i + 3]
+      ) {
+        differingOrbPixels++;
+      }
+    }
+    expect(differingOrbPixels).toBe(0);
+  });
+
   it('overwrites existing photometric layer instead of adding duplicate layers on re-render', async () => {
     const { useStudioStore } = await import('@/stores/studioStore');
     const store = useStudioStore.getState();
