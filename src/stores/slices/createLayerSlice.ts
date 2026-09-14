@@ -36,8 +36,8 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
     });
   },
 
-  deleteLayer: layerId => {
-    pushStructuralHistoryStep('Delete Layer');
+  deleteLayer: (layerId, skipHistory) => {
+    if (!skipHistory) pushStructuralHistoryStep('Delete Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;

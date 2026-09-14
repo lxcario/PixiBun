@@ -306,8 +306,7 @@ const FlankVineCluster: React.FC<{ isRight?: boolean; isLight?: boolean }> = ({
 };
 
 export const PixelVines: React.FC = () => {
-  const { theme } = useThemeStore();
-  const isLight = theme === 'light';
+  const { theme: _theme } = useThemeStore();
 
   return (
     <div

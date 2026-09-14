@@ -6,6 +6,7 @@ import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
 import {
   Point,
   getBresenhamLine,
+  getClippedLine,
   filterPixelPerfect,
   getRectanglePoints,
   getEllipsePoints,
@@ -628,7 +629,7 @@ export function useViewportPointerEvents({
 
           let previewPoints: Point[] = [];
           if (tools.activeTool === 'line') {
-            previewPoints = getBresenhamLine(strokeStart.x, strokeStart.y, coords.x, coords.y);
+            previewPoints = getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
           } else if (tools.activeTool === 'isometric-line') {
             previewPoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y);
           } else if (tools.activeTool === 'curve') {
@@ -726,7 +727,7 @@ export function useViewportPointerEvents({
       ) {
         let shapePoints: Point[] = [];
         if (tools.activeTool === 'line') {
-          shapePoints = getBresenhamLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y);
+          shapePoints = getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
         } else if (tools.activeTool === 'isometric-line') {
           shapePoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y);
         } else if (tools.activeTool === 'curve') {
@@ -849,9 +850,14 @@ export function useViewportPointerEvents({
     chiselSessionRef.current = null;
   };
 
+  const handlePointerCancel = (e?: React.PointerEvent) => {
+    handlePointerUp(e);
+  };
+
   return {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
+    handlePointerCancel,
   };
 }

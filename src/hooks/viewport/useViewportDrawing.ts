@@ -169,13 +169,13 @@ export function useViewportDrawing({
     } else {
       if (previousStep.type !== 'structural' && previousStep.createdLayerId) {
         const state = useStudioStore.getState();
-        state.deleteLayer(previousStep.createdLayerId);
+        state.deleteLayer(previousStep.createdLayerId, true);
         deleteBuffers([previousStep.createdLayerId]);
       } else if (stepToRestore.imageData && stepToRestore.layerId) {
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          targetCtx.putImageData(stepToRestore.imageData, 0, 0);
+          targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
         }
       }
     }
@@ -264,7 +264,7 @@ export function useViewportDrawing({
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          targetCtx.putImageData(stepToRestore.imageData, 0, 0);
+          targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
         }
       }
     }

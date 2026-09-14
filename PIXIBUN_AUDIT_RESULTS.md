@@ -1,144 +1,143 @@
-# PIXIBUN — Derin Kod ve Dokümantasyon Denetimi Sonuçları
+# PIXIBUN — Deep Code & Documentation Audit Results
 
-Tarih (UTC): 2026-09-12. Denetçi: dışarıdan şüpheci kıdemli denetçi. Yöntem: diskteki gerçek durum, bizzat okuma + bizzat çalıştırma + birincil harici kaynak. Kanıt etiketi olmayan cümle bu raporda hüküm bildirmez.
+Date (UTC): 2026-09-12. Auditor: External Senior Code Auditor. Methodology: Live state on disk, direct source inspection + command execution + primary external citations. Statements without evidentiary verification tags do not represent findings in this report.
 
-## 1. Özet — sadece rakamlar
+## 1. Summary — Numbers Only
 
-- Taranan depo (node_modules, .git, .next hariç): 421 dosya. [ÇALIŞTIRMA] `node audit-inv.cjs` çıktısı: `TOTAL_FILES_EXCL_DEPS=421`.
-- `src/` altında kod dosyası: 195 adet `.ts/.tsx/.css` (4 font `.woff2` ve 1 `.svg` dahil 200). Toplam satır: 50.243. [ÇALIŞTIRMA] `node audit2.cjs`: `SRC_CODE_FILES=195 TOTAL_LINES=50243`.
-- En büyük 5 kaynak: `src/lib/art/playgroundLessons.ts` 1617, `src/components/landing/AtelierDeskScene.tsx` 1449, `src/lib/ai/math/photometricLighting.ts` 1232, `src/components/layout/StudioLayout.tsx` 910, `src/lib/audio/lofiRadio.ts` 884. [ÇALIŞTIRMA]
-- Vitest birim/entegrasyon: 80 suite, 558 test; hepsi geçti. [ÇALIŞTIRMA] `npm test` son satırları: `Test Files 80 passed (80)`, `Tests 558 passed (558)`, süre 6.34s.
-- Playwright E2E: 8 spec dosyası, `test(` çağrısı sayımıyla 20 test (1+2+1+1+4+1+9+1). [KOD-OKUMA] E2E bu oturumda çalıştırılmadı.
-- Birincil `.md` envanteri (proje kökü + `docs/` + `.agents/`, `node_modules` ve `testsprite_tests/tmp` kopyaları hariç): 18 dosya. [ÇALIŞTIRMA] dosya yürüyüşüyle sayıldı. Liste bölüm 3-4'teki dosya adlarından izlenebilir. `testsprite_tests/tmp/prd_files/` altındaki 3 kopya + `raw_report.md` eski kopyalardır, ayrıca işaretlendi.
-- `node scripts/verifyDocIntegrity.mjs`: 6 kontrolün 6'sı geçti. [ÇALIŞTIRMA] Çıktı: TASKS 45 faz benzersiz; ARCHITECTURE 1-23 monoton; CHANGELOG 170/170 yol diskte; CenterViewport 759 satır; README metrikleri canlı koşuculara karşı 80 suite/558 test ve 8 suite/20 E2E; package.json–CHANGELOG sürüm eşleşmesi 1.12.1.
-- `npm run typecheck` (`tsc --noEmit`): sıfır hata. [ÇALIŞTIRMA]
-- `npm run lint` (`eslint src tests`): sıfır hata, sıfır uyarı. [ÇALIŞTIRMA]
-- `npm run build` (Next 16.3.4 Turbopack): başarılı. [ÇALIŞTIRMA] Rotalar: `/`, `/_not-found`, `/api/diagnostics/relay`, `/icon.svg`, `/playground`, `/studio`, `/sw.js` + Proxy.
-- Bulgu sayımı (bu raporun ataması): Kritik 1, Yüksek 4, Orta 7, Düşük 5, Kozmetik 2. Doğrulanamayan/şüpheli: 3 kalem.
+- Scanned repository (excluding node_modules, .git, .next): 421 files. [EXECUTION] `node audit-inv.cjs` output: `TOTAL_FILES_EXCL_DEPS=421`.
+- Source code files under `src/`: 195 `.ts/.tsx/.css` files (200 including 4 `.woff2` fonts and 1 `.svg`). Total lines: 50,243. [EXECUTION] `node audit2.cjs`: `SRC_CODE_FILES=195 TOTAL_LINES=50243`.
+- Top 5 largest source files: `src/lib/art/playgroundLessons.ts` 1617, `src/components/landing/AtelierDeskScene.tsx` 1449, `src/lib/ai/math/photometricLighting.ts` 1232, `src/components/layout/StudioLayout.tsx` 910, `src/lib/audio/lofiRadio.ts` 884. [EXECUTION]
+- Vitest unit/integration: 80 suites, 558 tests; all passed. [EXECUTION] `npm test` final line: `Test Files 80 passed (80)`, `Tests 558 passed (558)`, duration 6.34s.
+- Playwright E2E: 8 spec files, 20 tests counting `test(` calls (1+2+1+1+4+1+9+1). [CODE-INSPECTION] E2E was not run in this session.
+- Primary `.md` inventory (project root + `docs/` + `.agents/`, excluding `node_modules` and `testsprite_tests/tmp` copies): 18 files. [EXECUTION] Counted by filesystem walk. Follows names in sections 3-4. 3 copies under `testsprite_tests/tmp/prd_files/` + `raw_report.md` are archived copies, noted separately.
+- `node scripts/verifyDocIntegrity.mjs`: 6 of 6 checks passed. [EXECUTION] Output: TASKS 45 phases unique; ARCHITECTURE 1-23 monotonic; CHANGELOG 170/170 paths on disk; CenterViewport 759 lines; README metrics matched live test runners (80 suites/558 tests and 8 suites/20 E2E); package.json–CHANGELOG version match 1.12.1.
+- `npm run typecheck` (`tsc --noEmit`): 0 errors. [EXECUTION]
+- `npm run lint` (`eslint src tests`): 0 errors, 0 warnings. [EXECUTION]
+- `npm run build` (Next 16.3.4 Turbopack): Succeeded. [EXECUTION] Routes: `/`, `/_not-found`, `/api/diagnostics/relay`, `/icon.svg`, `/playground`, `/studio`, `/sw.js` + Proxy.
+- Finding count (assigned in this report): Critical 1, High 4, Medium 7, Low 5, Cosmetic 2. Unverified/suspect: 3 items.
 
-## 2. Kritik ve Yüksek Öncelikli Buglar
+## 2. Critical and High Priority Bugs
 
-### K-1. `getIsometric2p1Line` bitiş noktasını ıskalıyor — Kritik [KOD-OKUMA]
+### C-1. `getIsometric2p1Line` Misses Endpoints — Critical [CODE-INSPECTION]
 
-- Dosya:satır: `src/lib/ai/math/curvesAndLines.ts:51-107`.
-- Kod: `numSteps = Math.max(1, Math.round(Math.abs(dx) / 2))`, sonra `curX1 = x0 + k*2*sx`, `curY = y0 + k*sy`. Fonksiyon `dy`'yi hiç kullanmıyor (`sy` işareti hariç).
-- Tetikleme: `getIsometric2p1Line(0, 0, 10, 2)` yine `numSteps=5` üretir ve `(10,5)` civarında biter; istenen `(10,2)` üretilmez. `getIsometric2p1Line(0, 0, 3, 10)` en fazla `(4,2)` civarında durur. Genel doğru-parçası değil, `dy`'den bağımsız sabit 2:1 desen üretecidir.
-- Test boşluğu: `tests/curvesAndLines.test.ts:60-99` yalnızca `(0,0)->(10,5)`, sıfır-uzunluk, saf dikey ve saf yatay durumları test eder. Rastgele bitiş-noktası testi yoktur.
-- Doküman etkisi: `README.md:34`, `MAIN.md:11`, `ARCHITECTURE.md:37` bu fonksiyonu genel izometrik doğru aracı gibi sunar.
+- File:line: `src/lib/ai/math/curvesAndLines.ts:51-107`.
+- Code: `numSteps = Math.max(1, Math.round(Math.abs(dx) / 2))`, then `curX1 = x0 + k*2*sx`, `curY = y0 + k*sy`. The function does not use `dy` (except for `sy` sign).
+- Trigger: `getIsometric2p1Line(0, 0, 10, 2)` produces `numSteps=5` and terminates near `(10,5)`; the requested `(10,2)` is not produced. `getIsometric2p1Line(0, 0, 3, 10)` stops near `(4,2)`. This is not a general line segment rasterizer, but a fixed 2:1 pattern generator independent of `dy`.
+- Test gap: `tests/curvesAndLines.test.ts:60-99` tests only `(0,0)->(10,5)`, zero-length, pure vertical, and pure horizontal cases. No random endpoint test exists.
+- Doc impact: `README.md:34`, `MAIN.md:11`, `ARCHITECTURE.md:37` describe this function as a general isometric line tool.
 
-### Y-1. Export ölçeği sekmeler arasında paylaşılıyor — Yüksek [KOD-OKUMA]
+### H-1. Export Scale State Shared Across Tabs — High [CODE-INSPECTION]
 
-- Dosya:satır: `src/components/modals/ExportModal.tsx:58` (tek `scale` state), `:103-111` (yalnızca `Math.min` kırpma), kullanımlar `:640-720` (tüm sekmeler aynı çifti alır).
-- Tetikleme: PNG sekmesinde 32x seç, GIF sekmesine geç — yalnızca `Math.min(prev, 8)` uygulanır. PNG'ye dönünce 8x'te kalınır.
-- Çelişki: `TASKS.md:14` ("Isolated and clamped scale ... does not bleed") ve `ARCHITECTURE.md:490` ("per-tab export scale states are fully isolated") kodla çelişir.
-- İkincil: `TASKS.md:10` ölçek tavanları kısmen doğru (GIF `[1,2,4,8]`, spritesheet `[1,2,4]`, APNG/WebM/MP4 `[1,2,4,8,16]`, PNG `[1,2,4,8,16,32]`), fakat palette-cycle `[1,2,4,8]` ile sınırlıdır (`ShaderExportTab.tsx:76`). 4096px/16.7MP UI koruması yalnızca PNG sekmesindedir; yalnızca PNG çalıştırma yolu abort eder (`ExportModal.tsx:118-130`).
+- File:line: `src/components/modals/ExportModal.tsx:58` (single `scale` state), `:103-111` (only `Math.min` clamping), usages `:640-720` (all tabs receive the same pair).
+- Trigger: Selecting 32x in PNG tab and switching to GIF tab clamps via `Math.min(prev, 8)`. Returning to PNG leaves the scale at 8x.
+- Contradiction: `TASKS.md:14` ("Isolated and clamped scale ... does not bleed") and `ARCHITECTURE.md:490` ("per-tab export scale states are fully isolated") contradict the code.
+- Secondary: `TASKS.md:10` scale ceilings are partially correct (GIF `[1,2,4,8]`, spritesheet `[1,2,4]`, APNG/WebM/MP4 `[1,2,4,8,16]`, PNG `[1,2,4,8,16,32]`), but palette-cycle is capped at `[1,2,4,8]` (`ShaderExportTab.tsx:76`). 4096px/16.7MP UI guard is only in PNG tab; only the PNG execution path aborts (`ExportModal.tsx:118-130`).
 
-### Y-2. `scale2x` sınır pikselleri saydam komşu sayar — Yüksek [KOD-OKUMA]
+### H-2. `scale2x` Boundary Pixels Treat Out-of-Bounds as Transparent Neighbors — High [CODE-INSPECTION]
 
-- Dosya:satır: `src/lib/canvas/rotSprite.ts:49-52` (`getPx` sınır-dışı `0`) + `:29` (`a1<16 && a2<16` ise mesafe 0).
-- Etki: opak kenar piksellerinde kural yanlış tetiklenebilir. RotSprite testleri opak-kenar regresyonu içermez.
+- File:line: `src/lib/canvas/rotSprite.ts:49-52` (`getPx` out-of-bounds `0`) + `:29` (`a1<16 && a2<16` gives distance 0).
+- Impact: Rules may trigger incorrectly on opaque boundary pixels. RotSprite tests do not include opaque edge regression coverage.
 
-### Y-3. `parseCRNG` içinde açıklanmayan `rateRaw !== 36` sihri — Yüksek [KOD-OKUMA]
+### H-3. Unexplained Magic `rateRaw !== 36` in `parseCRNG` — High [CODE-INSPECTION]
 
-- Dosya:satır: `src/lib/color/paletteCycling.ts:45`, `:48-49`, `:56`.
-- Gerekçe kodda/testte/dokümanda yoktur. `serializeCRNG` (`:66-86`) dışlamayı bilmez. Yuvarlama parse→serialize döngüsünü kayıplı yapar.
+- File:line: `src/lib/color/paletteCycling.ts:45`, `:48-49`, `:56`.
+- Rationale is missing from code, tests, and documentation. `serializeCRNG` (`:66-86`) lacks this exclusion. Rounding makes parse→serialize cycles lossy.
 
-### Y-4. Arşiv kopyalar güncel belgelerle çelişiyor — Yüksek [KOD-OKUMA]
+### H-4. Archived Copies Contradict Up-to-Date Documents — High [CODE-INSPECTION]
 
-- `testsprite_tests/tmp/prd_files/ARCHITECTURE.md:447` "Farey Rational Retuning" der; güncel `ARCHITECTURE.md:460` "Harmonic Rational Retuning" der. "Farey" kodda hiç geçmez.
-- `testsprite_tests/tmp/prd_files/PIXIBUN_DEEP_DIVE.md:122` "Rational Bezier Curves" der; güncel belgeler "Quadratic Bézier" der.
-- `testsprite_tests/tmp/prd_files/README.md:34` "Wu's 2:1 Iso Lines" ve "Rational Bézier Splines" der; güncel README içermez.
-- `scripts/verifyDocIntegrity.mjs:1-10` yalnızca 6 kontrol yapar; arşiv kapsam dışındadır.
-
-
-
-## 3. Dokümantasyon Yalanları/Hataları — dosya bazında
-
-1. `README.md:44` — "sprite model switching (Ghost, Shroom, Bun, Lantern)" [KOD-OKUMA] Yanlış. `PhotometricShowcase.tsx:23` yalnızca `STARTER_TEMPLATES` kullanır; bu seçici yoktur. `RotSpriteShowcase.tsx:10` (`sword|ghost|bun`) farklı vitrindir.
-2. `README.md:44` — "material profiles (Matte, Gold, Glass, Fabric)" [KOD-OKUMA] Eksik. Kodda 5 profil vardır (`photometricLighting.ts:50-91`: matte, metal, gold, glass, fabric); UI 5'ini de gösterir (`PhotometricLightingSection.tsx:23-55`).
-3. `README.md:45` — "standard blurry bicubic filtering" [KOD-OKUMA] Yanlış. `RotSpriteShowcase.tsx:48-60` karşılaştırma dalı `imageSmoothingEnabled=false` + canvas rotate kullanır.
-4. `README.md:60-71` — araç listesi [KOD-OKUMA] Kısmen yanlış: "Blue-Noise Dither" bağımsız araç değil, fırça matrisi seçeneğidir (`types/tools.ts:19`). "Normal Chisel (K) & Rivet (Shift+K)" yazılır; `PIXIBUN_DEEP_DIVE.md:419-420` tersini söyler (N/rivet, K/chisel).
-5. `README.md:85` + `ARCHITECTURE.md:59-70` — canvas sayımı [KOD-OKUMA] Tutarsız. `CenterViewport.tsx:644-696` içinde 6 `<canvas>` etiketi vardır; ARCH L0 arka planını da katarak 7 katman etiketi sayar.
-6. `README.md:240` — "minimum target hit sizes (>=24px)" [ŞÜPHELİ/DOĞRULANAMADI] Genel 24px denetimi kodda bulunamadı.
-7. `README.md:250` — "React Compiler memoization" [ŞÜPHELİ/DOĞRULANAMADI] `next.config.ts`, `package.json` ve kaynakta kanıt bulunamadı.
-8. `ARCHITECTURE.md:33` — "50-Step History Ring" [KOD-OKUMA] Yanıltıcı. `historyEngine.ts:24` yalnızca undo içindir; redo ayrıca 50 tutulur (`:39-61`). Gerçek kapasite 100'dür.
-9. `ARCHITECTURE.md:453`, `PIXIBUN_DEEP_DIVE.md:331` — "16384=60Hz / Full parsing" [KOD-OKUMA] Kodla tutarlı, fakat birincil Amiga kaynağıyla doğrulanamadı [ŞÜPHELİ/DOĞRULANAMADI]; Y-3 nedeniyle "Full" abartılıdır.
-10. `MAIN.md:15` — "frontal face cushion plateau (Nz>=0.85)" [KOD-OKUMA] Kodda `0.85` yoktur; bulunanlar `0.88` ve `0.78` alt-sınırlarıdır.
-11. `MAIN.md:21` — "32x for sprites up to 128x128" [KOD-OKUMA] Yalnızca kare kanvas için doğru. Dikdörtgende 16x bile tek-eksen kuralına takılır (`exportCanvasScaleBounds.test.ts:59-73`).
-12. `BENCHMARKS.md:26,79,107` — "comfortably holds / completely preventing / guaranteeing" [KOD-OKUMA] Abartılı; CI yalnızca üst-sınır denetler.
-13. `CHANGELOG.md:15`, `TASKS.md:16`, `LOGS.md:1424` — "Corrected ... across all files" [KOD-OKUMA] Yanlış. `src/lib/ai/smartMathEngine.ts:18` hâlâ "Rational Bézier Curves" yazmaktadır.
-14. `docs/plans/implementation_plan.md:91` — `public/sw.js` anlatımı [KOD-OKUMA] Güncel-değil. Gerçek SW `src/app/sw.js/route.ts` yolundan üretilir.
-15. `SECURITY.md` — röle korumaları (12/dk, 64KB, 100-olay, HTTPS; `route.ts:7-14,44-59`) anlatılmaz [KOD-OKUMA]. Eksik-belge.
-16. `.env.example:5-6` — `ghp_` önekli örnekler [KOD-OKUMA]. Düşük risk.
-17. `FullStackGuide.md:42-46` — kullanılmayan yığın satırları [KOD-OKUMA]. Genel protokol belgesidir.
-
-## 4. Dokümante Edilmemiş Kod Davranışları
-
-1. Paylaşılan `scale` durumu kısıt olarak yazmaz. [KOD-OKUMA]
-2. `MAX_SAFE_*` UI korumasının yalnızca PNG sekmesinde olması belgelenmez. [KOD-OKUMA]
-3. `parseCRNG` 36-dışlama ve hız yuvarlaması belgelenmez. [KOD-OKUMA]
-4. Redo kapasitesi (50) belgelenmez. [KOD-OKUMA]
-5. `WallpaperGroup` yalnızca 6 değer alır (`types/tools.ts:90`); "17 grup" anlatımı yalnızca 5 altgrubun modellendiğini yazmaz. [KOD-OKUMA]
-6. `CrdtPixelBuffer.merge` boyut uyuşmazlığında throw eder (`crdtPixelBuffer.ts:381-384`). [KOD-OKUMA]
-7. `getOpsSince` budama sonrası sessizce eksik döndürür (`crdtPixelBuffer.ts:353-366`). [KOD-OKUMA]
-8. `diffImageDataToOps` boyut değişiminde boş dizi döner (`strokeDiff.ts:27-32`). [KOD-OKUMA]
-9. Misafir yapısal düzenlemelerinin ezildiği yalnızca kod yorumundadır (`coDrawBridge.ts:13-16`). [KOD-OKUMA]
-10. MP4/WebM `loopCount` varsayılanı 2'dir (`mp4Encoder.ts:78`, `webmEncoder.ts:37`); yazmaz. [KOD-OKUMA]
-11. H.264 çift-boyut doldurması yalnızca MP4 yolundadır (`mp4Encoder.ts:81-82`); WebM'de yoktur. [KOD-OKUMA]
+- `testsprite_tests/tmp/prd_files/ARCHITECTURE.md:447` mentions "Farey Rational Retuning"; active `ARCHITECTURE.md:460` states "Harmonic Rational Retuning". "Farey" does not exist in code.
+- `testsprite_tests/tmp/prd_files/PIXIBUN_DEEP_DIVE.md:122` states "Rational Bezier Curves"; active docs state "Quadratic Bézier".
+- `testsprite_tests/tmp/prd_files/README.md:34` states "Wu's 2:1 Iso Lines" and "Rational Bézier Splines"; active README does not contain them.
+- `scripts/verifyDocIntegrity.mjs:1-10` executes only 6 checks; archives are excluded.
 
 
-## 5. Algoritma/Atıf Doğrulama Tablosu
 
-| Teknik | Kod/doküman iddiası | Gerçek kaynak | Hüküm |
+## 3. Documentation Inaccuracies / Errors — File-by-File
+
+1. `README.md:44` — "sprite model switching (Ghost, Shroom, Bun, Lantern)" [CODE-INSPECTION] Inaccurate. `PhotometricShowcase.tsx:23` only uses `STARTER_TEMPLATES`; this selector does not exist. `RotSpriteShowcase.tsx:10` (`sword|ghost|bun`) is a different showcase.
+2. `README.md:44` — "material profiles (Matte, Gold, Glass, Fabric)" [CODE-INSPECTION] Incomplete. Code contains 5 profiles (`photometricLighting.ts:50-91`: matte, metal, gold, glass, fabric); UI displays all 5 (`PhotometricLightingSection.tsx:23-55`).
+3. `README.md:45` — "standard blurry bicubic filtering" [CODE-INSPECTION] Inaccurate. `RotSpriteShowcase.tsx:48-60` comparison branch uses `imageSmoothingEnabled=false` + canvas rotate.
+4. `README.md:60-71` — tool list [CODE-INSPECTION] Partially inaccurate: "Blue-Noise Dither" is not a standalone tool, but a brush matrix option (`types/tools.ts:19`). "Normal Chisel (K) & Rivet (Shift+K)" is stated; `PIXIBUN_DEEP_DIVE.md:419-420` states the inverse (N/rivet, K/chisel).
+5. `README.md:85` + `ARCHITECTURE.md:59-70` — canvas count [CODE-INSPECTION] Inconsistent. `CenterViewport.tsx:644-696` contains 6 `<canvas>` elements; ARCH counts 7 layer tags by including the L0 background.
+6. `README.md:240` — "minimum target hit sizes (>=24px)" [UNVERIFIED] General 24px check not found in codebase.
+7. `README.md:250` — "React Compiler memoization" [UNVERIFIED] No evidence in `next.config.ts`, `package.json`, or source.
+8. `ARCHITECTURE.md:33` — "50-Step History Ring" [CODE-INSPECTION] Misleading. `historyEngine.ts:24` is only for undo; redo also retains 50 (`:39-61`). Total capacity is 100.
+9. `ARCHITECTURE.md:453`, `PIXIBUN_DEEP_DIVE.md:331` — "16384=60Hz / Full parsing" [CODE-INSPECTION] Consistent with code, but unverified against primary Amiga hardware spec [UNVERIFIED]; "Full" is overstated due to Y-3.
+10. `MAIN.md:15` — "frontal face cushion plateau (Nz>=0.85)" [CODE-INSPECTION] `0.85` does not exist in code; actual lower bounds found are `0.88` and `0.78`.
+11. `MAIN.md:21` — "32x for sprites up to 128x128" [CODE-INSPECTION] True only for square canvases. On rectangular canvases, even 16x triggers the single-axis cap (`exportCanvasScaleBounds.test.ts:59-73`).
+12. `BENCHMARKS.md:26,79,107` — "comfortably holds / completely preventing / guaranteeing" [CODE-INSPECTION] Overstated; CI only checks upper bound.
+13. `CHANGELOG.md:15`, `TASKS.md:16`, `LOGS.md:1424` — "Corrected ... across all files" [CODE-INSPECTION] Inaccurate. `src/lib/ai/smartMathEngine.ts:18` still mentions "Rational Bézier Curves".
+14. `docs/plans/implementation_plan.md:91` — `public/sw.js` description [CODE-INSPECTION] Outdated. Actual SW is generated via `src/app/sw.js/route.ts`.
+15. `SECURITY.md` — relay protections (12/min, 64KB, 100-event, HTTPS; `route.ts:7-14,44-59`) omitted [CODE-INSPECTION]. Missing documentation.
+16. `.env.example:5-6` — `ghp_` prefixed examples [CODE-INSPECTION]. Low risk.
+17. `FullStackGuide.md:42-46` — unused stack entries [CODE-INSPECTION]. Generic protocol document.
+
+## 4. Undocumented Code Behaviors
+
+1. Shared `scale` state is not documented as a cross-tab constraint. [CODE-INSPECTION]
+2. `MAX_SAFE_*` UI safeguard existing only on the PNG export tab is undocumented. [CODE-INSPECTION]
+3. `parseCRNG` 36-exclusion and speed rounding are undocumented. [CODE-INSPECTION]
+4. Redo capacity (50) is undocumented. [CODE-INSPECTION]
+5. `WallpaperGroup` only accepts 6 values (`types/tools.ts:90`); "17 groups" text does not mention that only 5 sub-groups are modeled. [CODE-INSPECTION]
+6. `CrdtPixelBuffer.merge` throws on dimension mismatch (`crdtPixelBuffer.ts:381-384`). [CODE-INSPECTION]
+7. `getOpsSince` silently returns incomplete results after pruning (`crdtPixelBuffer.ts:353-366`). [CODE-INSPECTION]
+8. `diffImageDataToOps` returns empty array on dimension change (`strokeDiff.ts:27-32`). [CODE-INSPECTION]
+9. Guest structural edits being overwritten is documented only in code comments (`coDrawBridge.ts:13-16`). [CODE-INSPECTION]
+10. MP4/WebM `loopCount` default is 2 (`mp4Encoder.ts:78`, `webmEncoder.ts:37`); not documented. [CODE-INSPECTION]
+11. H.264 even-dimension padding exists only in the MP4 path (`mp4Encoder.ts:81-82`); absent in WebM. [CODE-INSPECTION]
+
+## 5. Algorithm / Citation Verification Table
+
+| Technique | Code / Doc Claim | Real Source | Verdict |
 |---|---|---|---|
-| Scale2x/EPX (Johnston 1992) | `rotSprite.ts:6`, vitrin "Johnston 1992" | https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms | [WEB-DOĞRULAMA] İsim/yıl eşleşiyor; sınır-dışı `0` seçimi kanonik tanıma dahil değildir (Y-2). |
-| RotSprite (Xenowhirl 2007) | 3-geçiş 8x + ters-eşleme + çoğunluk oylaması | Aynı sayfadaki RotSprite bölümü | [WEB-DOĞRULAMA] Mimari eşleşiyor; "distortion-free" mutlaklığı abartılı. |
-| Felzenszwalb-Huttenlocher EDT | "O(W*H) exact 2D", "2012 Theory of Computing; Cornell TR 2004" (`edtNormalMap.ts:5-7`) | https://en.wikipedia.org/wiki/Distance_transform | [WEB-DOĞRULAMA] Yıl/dergi eşleşiyor. |
-| Kopf-Lischinski (SIGGRAPH 2011, TOG 30(4):99) | `depixelizeVector.ts:4-7` tam künye | Wikipedia Depixelization 404; ACM kaydı açılamadı | [ŞÜPHELİ/DOĞRULANAMADI] Uydurulmadı fakat doğrulanamadı. Implementasyon basitleştirilmiş sezgiseldir. |
-| OKLab/OKLCH (Ottosson 2020) | `colorSpace.ts:4` | https://en.wikipedia.org/wiki/Oklab_color_space | [WEB-DOĞRULAMA] Yıl/yazar eşleşiyor; katsayılar bit-bit karşılaştırılmadı. |
-| Bayer (1973, IEEE ICC) | `dithering.ts:5-6`, matrisler `ditherMatrix.ts:14-35` | https://en.wikipedia.org/wiki/Ordered_dithering | [WEB-DOĞRULAMA] Yıl/mekan/matris eşleşiyor. |
-| Ulichney void-and-cluster (1993) | `ditherMatrix.ts:5-6` | Aynı sayfadaki Ulichney kaynağı | [WEB-DOĞRULAMA] Yıl/yazar eşleşiyor; tam döngü doğrulanmadı. |
-| Atkinson (1984) / Riemersma (1998) / Zhang-Suen (1984) | İlgili dosya başlıkları | Birincil kaynak açılamadı | [ŞÜPHELİ/DOĞRULANAMADI] Kod benziyor; künye doğrulanamadı. |
-| WFC (Gumin 2016) + Merrell (2007/2008/2009) | `waveFunctionCollapse.ts:5-6` | https://en.wikipedia.org/wiki/Wave_function_collapse_(algorithm) | [WEB-DOĞRULAMA] Yıl/yazar eşleşiyor. Garanti yalnızca başarılı dönüş içindir (`:444-452`). |
-| Renk-döngüsü (Ferrari; CRNG/CCRT) | `paletteCycling.ts:3-9`, `16384=60Hz` | https://en.wikipedia.org/wiki/Color_cycling | [WEB-DOĞRULAMA] Ferrari eşleşiyor; CRNG/CCRT düzeni doğrulanamadı. |
-| CRDT (Shapiro vd. SSS 2011) | `crdtPixelBuffer.ts:6-19` | https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type | [WEB-DOĞRULAMA] Yıl/yazar eşleşiyor. HLC künyesi doğrulanamadı. SEC yalnızca piksel-durumu içindir. |
-| Token-bucket (Tanenbaum; RFC 2697) | `tokenBucket.ts:3-6` | Açılamadı | [ŞÜPHELİ/DOĞRULANAMADI] Algoritma standart, testler yeşil; künye doğrulanamadı. |
-| Diger isik-fizigi ve telif atıfları | İlgili başlıklar | Tek-tek açılmadı | [ŞÜPHELİ/DOĞRULANAMADI] Uydurulmadı; kapatılamadı. "Physically accurate" abartılıdır. |
+| Scale2x/EPX (Johnston 1992) | `rotSprite.ts:6`, showcase "Johnston 1992" | https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms | [WEB-VERIFIED] Name/year match; out-of-bounds `0` choice is not part of canonical spec (Y-2). |
+| RotSprite (Xenowhirl 2007) | 3-pass 8x + inverse mapping + majority voting | RotSprite section on same page | [WEB-VERIFIED] Architecture matches; "distortion-free" claim is hyperbolic. |
+| Felzenszwalb-Huttenlocher EDT | "O(W*H) exact 2D", "2012 Theory of Computing; Cornell TR 2004" (`edtNormalMap.ts:5-7`) | https://en.wikipedia.org/wiki/Distance_transform | [WEB-VERIFIED] Year/journal match. |
+| Kopf-Lischinski (SIGGRAPH 2011, TOG 30(4):99) | `depixelizeVector.ts:4-7` citation | Wikipedia Depixelization 404; ACM record unavailable | [UNVERIFIED] Not fabricated, but unconfirmed against primary source. Implementation is a simplified heuristic. |
+| OKLab/OKLCH (Ottosson 2020) | `colorSpace.ts:4` | https://en.wikipedia.org/wiki/Oklab_color_space | [WEB-VERIFIED] Year/author match; coefficients not bit-by-bit checked. |
+| Bayer (1973, IEEE ICC) | `dithering.ts:5-6`, matrices `ditherMatrix.ts:14-35` | https://en.wikipedia.org/wiki/Ordered_dithering | [WEB-VERIFIED] Year/venue/matrix match. |
+| Ulichney void-and-cluster (1993) | `ditherMatrix.ts:5-6` | Ulichney citation on same page | [WEB-VERIFIED] Year/author match; full loop unverified. |
+| Atkinson (1984) / Riemersma (1998) / Zhang-Suen (1984) | Respective file headers | Primary source unavailable | [UNVERIFIED] Code resembles algorithm; bibliographic details unconfirmed. |
+| WFC (Gumin 2016) + Merrell (2007/2008/2009) | `waveFunctionCollapse.ts:5-6` | https://en.wikipedia.org/wiki/Wave_function_collapse_(algorithm) | [WEB-VERIFIED] Year/author match. Guarantee holds only on successful return (`:444-452`). |
+| Color-cycling (Ferrari; CRNG/CCRT) | `paletteCycling.ts:3-9`, `16384=60Hz` | https://en.wikipedia.org/wiki/Color_cycling | [WEB-VERIFIED] Ferrari matches; CRNG/CCRT layout unconfirmed. |
+| CRDT (Shapiro et al. SSS 2011) | `crdtPixelBuffer.ts:6-19` | https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type | [WEB-VERIFIED] Year/author match. HLC citation unverified. SEC applies only to pixel-state. |
+| Token-bucket (Tanenbaum; RFC 2697) | `tokenBucket.ts:3-6` | Unavailable | [UNVERIFIED] Standard algorithm, tests green; citation unverified. |
+| Other lighting physics & copyright citations | Respective headers | Not individually opened | [UNVERIFIED] Not fabricated; unverified. "Physically accurate" is hyperbolic. |
 
-## 6. Test/Build Sağlık Durumu — gerçek komut çıktıları
+## 6. Test / Build Health Status — Actual Command Outputs
 
-- `node scripts/verifyDocIntegrity.mjs` [ÇALIŞTIRMA]: 45 faz benzersiz; 1-23 monoton; 170/170 yol; CenterViewport 759 satır; 80 suite/558 test + 8 suite/20 E2E; sürüm 1.12.1. 6/6 geçti.
-- `npm run typecheck` [ÇALIŞTIRMA]: sıfır hata.
-- `npm run lint` [ÇALIŞTIRMA]: sıfır hata/sıfır uyarı.
-- `npm test` [ÇALIŞTIRMA]: `Test Files 80 passed (80)`, `Tests 558 passed (558)`, `Duration 6.34s`.
-- `npm run build` [ÇALIŞTIRMA]: `Compiled successfully in 763ms`, TypeScript 1829ms, static 8/8.
-- E2E çalıştırılmadı; "E2E geçti" hükmü verilemez.
-- Test-anlamlılığı [KOD-OKUMA]: benchmark gerçek bütçe denetler; RotSprite 0-yeni-renk test eder; p2p/token/export hedeflidir. K-1 boşluğu ve cvdLens döngüsellik riski durur.
+- `node scripts/verifyDocIntegrity.mjs` [EXECUTION]: 45 unique phases; 1-23 monotonic; 170/170 paths; CenterViewport 759 lines; 80 suites/558 tests + 8 suites/20 E2E; version 1.12.1. 6/6 passed.
+- `npm run typecheck` [EXECUTION]: zero errors.
+- `npm run lint` [EXECUTION]: zero errors / zero warnings.
+- `npm test` [EXECUTION]: `Test Files 80 passed (80)`, `Tests 558 passed (558)`, `Duration 6.34s`.
+- `npm run build` [EXECUTION]: `Compiled successfully in 763ms`, TypeScript 1829ms, static 8/8.
+- E2E not executed; "E2E passed" verdict cannot be rendered.
+- Test meaningfulness [CODE-INSPECTION]: benchmarks check real budgets; RotSprite tests 0 new colors; p2p/token/export are targeted. K-1 gap and cvdLens circularity risks remain.
 
-## 7. Doğrulanamayan/Şüpheli Bulgular
+## 7. Unverified / Suspicious Findings
 
-1. E2E/Lighthouse yeşilliği [ŞÜPHELİ/DOĞRULANAMADI] — çalıştırılmadı.
-2. Sahada sub-16ms çizim [ŞÜPHELİ/DOĞRULANAMADI] — ölçülmedi.
-3. Tabloda işaretli atıflar [ŞÜPHELİ/DOĞRULANAMADI] — uydurulmadı, kapatılamadı.
+1. E2E / Lighthouse all-green status [UNVERIFIED] — not executed in automated pipeline.
+2. Real-world sub-16ms drawing in field [UNVERIFIED] — not profiled in deployment.
+3. Citations marked in table [UNVERIFIED] — not fabricated, unconfirmed.
 
-## 8. Önerilen Düzeltmeler — önem sırasına göre
+## 8. Recommended Remediations — Ordered by Priority
 
-1. Kritik — `getIsometric2p1Line` düzeltme veya sözleşme daraltma (`curvesAndLines.ts:51-107`).
-2. Yüksek — Export `scale` izolasyonu veya doküman düzeltme (`ExportModal.tsx:58,103-111,640-720`); diğer sekmelere tavan göstergesi.
-3. Yüksek — `scale2x` sınır koşulu (`rotSprite.ts:49-52`); opak-kenar testi.
-4. Yüksek — `parseCRNG` sihri (`paletteCycling.ts:45,56`); döngü testi.
-5. Yüksek — Arşiv kopyaları silme/denetime alma (`testsprite_tests/tmp/prd_files/`).
-6. Orta — "Rational Bézier" kalıntısı (`smartMathEngine.ts:18`).
-7. Orta — README vitrin cümleleri (modeller, 5 malzeme, bicubic, canvas sayımı).
-8. Orta — Kısayol çelişkisi (`README.md:69` vs `PIXIBUN_DEEP_DIVE.md:419-420`).
-9. Orta — `MAIN.md:15` sayısı (0.85 → 0.88/0.78 veya kaldırma).
-10. Orta — `MAIN.md:21` dikdörtgen uyarısı.
-11. Orta — WFC garanti cümlesi (`waveFunctionCollapse.ts:12`).
-12. Orta — Depikselleme başlığı (`depixelizeVector.ts:1-12`).
-13. Düşük — APNG "W3C" ifadesi (`apngEncoder.ts:4-6`).
-14. Düşük — `.env.example` örnekleri.
-15. Düşük — `SECURITY.md` röle korumaları.
-16. Düşük — `BENCHMARKS.md` mutlaklıkları.
-17. Düşük — `LOGS.md` tarihsel-kayıt notu.
-18. Kozmetik — SW yolu (`implementation_plan.md:91`).
-19. Kozmetik — E2E sayım yöntemi notu.
+1. Critical — `getIsometric2p1Line` fix or contract narrowing (`curvesAndLines.ts:51-107`).
+2. High — Export `scale` isolation or documentation fix (`ExportModal.tsx:58,103-111,640-720`); cap indicator for other tabs.
+3. High — `scale2x` boundary condition (`rotSprite.ts:49-52`); opaque edge test.
+4. High — `parseCRNG` magic numbers (`paletteCycling.ts:45,56`); cycle testing.
+5. High — Delete or add to audit check the archived copies (`testsprite_tests/tmp/prd_files/`).
+6. Medium — "Rational Bézier" remnant (`smartMathEngine.ts:18`).
+7. Medium — README showcase descriptions (models, 5 materials, bicubic, canvas count).
+8. Medium — Shortcut contradiction (`README.md:69` vs `PIXIBUN_DEEP_DIVE.md:419-420`).
+9. Medium — `MAIN.md:15` figure (0.85 → 0.88/0.78 or remove).
+10. Medium — `MAIN.md:21` rectangular warning.
+11. Medium — WFC guarantee phrasing (`waveFunctionCollapse.ts:12`).
+12. Medium — Depixelize header (`depixelizeVector.ts:1-12`).
+13. Low — APNG "W3C" phrasing (`apngEncoder.ts:4-6`).
+14. Low — `.env.example` examples.
+15. Low — `SECURITY.md` relay protections.
+16. Low — `BENCHMARKS.md` hyperbolic statements.
+17. Low — `LOGS.md` historical record note.
+18. Cosmetic — SW route path (`implementation_plan.md:91`).
+19. Cosmetic — E2E counting method note.

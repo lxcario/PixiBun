@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-export function useRadialContextMenu() {
+export function useRadialContextMenu(containerRef?: React.RefObject<HTMLElement | null>) {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -18,16 +18,18 @@ export function useRadialContextMenu() {
   }, []);
 
   useEffect(() => {
+    const target = containerRef?.current ?? document;
     // Also support long-press via touch events
     let timer: number | null = null;
     let isMoving = false;
     
-    const handleTouchStart = (e: TouchEvent) => {
+    const handleTouchStart = (e: Event) => {
+      const te = e as TouchEvent;
       isMoving = false;
-      if (e.touches.length === 1) {
+      if (te.touches.length === 1) {
         timer = window.setTimeout(() => {
           if (!isMoving) {
-            setPosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+            setPosition({ x: te.touches[0].clientX, y: te.touches[0].clientY });
             setIsOpen(true);
           }
         }, 500); // 500ms long press
@@ -49,20 +51,20 @@ export function useRadialContextMenu() {
       }
     };
     
-    // Attach touch events globally or just document
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
-    document.addEventListener('touchend', handleTouchEnd);
-    document.addEventListener('touchcancel', handleTouchEnd);
+    // Attach touch events to container (scoped) or document (fallback)
+    target.addEventListener('touchstart', handleTouchStart, { passive: true });
+    target.addEventListener('touchmove', handleTouchMove, { passive: true } as AddEventListenerOptions);
+    target.addEventListener('touchend', handleTouchEnd);
+    target.addEventListener('touchcancel', handleTouchEnd);
     
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-      document.removeEventListener('touchcancel', handleTouchEnd);
+      target.removeEventListener('touchstart', handleTouchStart);
+      target.removeEventListener('touchmove', handleTouchMove);
+      target.removeEventListener('touchend', handleTouchEnd);
+      target.removeEventListener('touchcancel', handleTouchEnd);
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [containerRef]);
 
   return {
     isOpen,

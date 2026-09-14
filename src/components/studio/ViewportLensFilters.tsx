@@ -60,9 +60,9 @@ export const ViewportLensFilters: React.FC = () => {
           <feColorMatrix
             in="SourceGraphic"
             type="matrix"
-            values={`${inkChannel(SQUINT_SILHOUETTE_RGB[0])} 0 0 0 0  0 ${inkChannel(
+            values={`0 0 0 0 ${inkChannel(SQUINT_SILHOUETTE_RGB[0])}  0 0 0 0 ${inkChannel(
               SQUINT_SILHOUETTE_RGB[1]
-            )} 0 0 0  0 0 ${inkChannel(SQUINT_SILHOUETTE_RGB[2])} 0 0  0 0 0 1 0`}
+            )}  0 0 0 0 ${inkChannel(SQUINT_SILHOUETTE_RGB[2])}  0 0 0 1 0`}
             result="ink"
           />
           <feMerge>

@@ -42,7 +42,7 @@
    - 7.1 [WebNN (DirectML/CoreML) vs. ONNX Runtime Web (`ort-web`)](#71-webnn-directmlcoreml-vs-onnx-runtime-web-ort-web)
    - 7.2 [FSRCNN-Pixel INT8 Quantized Architecture](#72-fsrcnn-pixel-int8-quantized-architecture)
 8. [Phased Implementation Roadmap (Milestones A–E)](#8-phased-implementation-roadmap-milestones-ae)
-9. [Strategic Engineering Assessment: Şu An v2 Yapmaya Gerek Var Mı?](#9-strategic-engineering-assessment-şu-an-v2-yapmaya-gerek-var-mı)
+9. [Strategic Engineering Assessment: Is Developing v2 Necessary Right Now?](#9-strategic-engineering-assessment-is-developing-v2-necessary-right-now)
 
 ---
 
@@ -630,69 +630,69 @@ gantt
 
 ---
 
-## 9. Strategic Engineering Assessment: Şu An v2 Yapmaya Gerek Var Mı?
+## 9. Strategic Engineering Assessment: Is Developing v2 Necessary Right Now?
 
-### 🎯 Doğrudan ve Dürüst Mühendislik Yanıtı:
-> ### **HAYIR. Şu an v2 geliştirmesine başlamaya KESİNLİKLE GEREK YOKTUR.**
+### 🎯 Direct & Candid Engineering Verdict:
+> ### **NO. Starting v2 development right now is ABSOLUTELY UNNECESSARY.**
 
-Aşağıda bu kararın somut matematiksel, performans temelli ve ürün olgunluğu gerekçeleri maddeler halinde açıklanmıştır:
-
----
-
-### 1. Piksel Sanatının Boyut Ölçeği & Matematiksel Performans Zarfı
-
-Piksel sanatı doğası gereği yüksek çözünürlüklü dijital fotoğrafçılık veya 4K/8K illüstrasyon değildir. PixiBun'ın hedeflediği ve dünyadaki piksel sanatçılarının $\%98$'inin çalıştığı standart tuval boyutları şunlardır:
-* **Karakter / İkon Spriteları:** $16\times16$ — $64\times64$ piksel
-* **Büyük Boss / Mekan Spriteları:** $96\times96$ — $128\times128$ piksel
-* **Tileset & Sahne Kompozisyonları:** $256\times256$ (nadir olarak $512\times512$) piksel
-
-Mevcut PixiBun v1 (`v1.13.0`) bu çözünürlüklerdeki CPU performansını ölçümlediğimizde:
-* **Felzenszwalb-Huttenlocher EDT:** $256\times256$ tuvalde Web Worker üzerinde yalnızca **$\approx 1.8\text{ ms}$** sürer.
-* **RotSprite 8x Scale2x:** $128\times128$ bir sprite için **$\approx 2.5\text{ ms}$** sürer.
-* **Bresenham & 2:1 İzometrik Çizgi:** **$< 0.05\text{ ms}$** sürer.
-* **6 Katmanlı Canvas Stack:** 60 FPS ($16.6\text{ ms}$ bütçe) tazeleme hızında **0 dropped frame** ile çalışır.
-
-WebGPU Jump Flooding Algorithm (JFA) veya WASM SIMD'e geçmek, $256\times256$ bir tuvalde hesaplama süresini $1.8\text{ ms}$'den $0.1\text{ ms}$'ye düşürecektir. **İnsan gözü ve sinir sistemi $1.8\text{ ms}$ ile $0.1\text{ ms}$ arasındaki $1.7\text{ ms}$'lik farkı algılayamaz.** Piksel sanatı boyutlarında bu bir optimizasyon değil, gereksiz karmaşıklıktır ("premature optimization").
+Below are the concrete mathematical, performance-based, and product maturity rationales for this decision:
 
 ---
 
-### 2. Sıfır Teknik Borç ve v1'in Tamamlanmış Olgunluğu
+### 1. The Scale of Pixel Art & Mathematical Performance Envelope
 
-PixiBun şu anda olağanüstü bir mühendislik zirvesindedir:
-* **85 test suite, 584 unit & integration testi:** $\%100$ yeşil.
-* **8 E2E Playwright test paketi:** Canlı tarayıcı üzerinde relighting, chisel ve palette döngülerini doğruluyor.
-* **19 Audit Bulgusunun Tamamı Çözüldü:** P2P konuk arayüz kilidi, yapısal undo/redo, File System Access API yerel masaüstü kaydı, 47-blob autotiling, saf TypeScript MP4 muxer ve Worker EDT entegrasyonu eksiksiz kodlandı.
-* **TypeScript & ESLint:** 0 hata, 0 uyarı.
-* **Next.js 16 Turbopack Production Build:** Kusursuz derleniyor.
+Pixel art is, by its nature, not high-resolution digital photography or 4K/8K illustration. The standard canvas dimensions targeted by PixiBun and used by $98\%$ of pixel artists worldwide are:
+* **Character / Icon Sprites:** $16\times16$ — $64\times64$ pixels
+* **Large Boss / Environment Sprites:** $96\times96$ — $128\times128$ pixels
+* **Tilesets & Scene Compositions:** $256\times256$ (rarely $512\times512$) pixels
 
-Projede acil müdahale gerektiren, sistemi kilitleyen veya kullanıcı deneyimini bozan hiçbir teknik borç kalmamıştır.
+Measuring CPU performance in PixiBun v1 (`v1.13.1`) across these resolutions reveals:
+* **Felzenszwalb-Huttenlocher EDT:** Takes only **$\approx 1.8\text{ ms}$** in a Web Worker on a $256\times256$ canvas.
+* **RotSprite 8x Scale2x:** Takes **$\approx 2.5\text{ ms}$** for a $128\times128$ sprite.
+* **Bresenham & 2:1 Isometric Stepper:** Takes **$< 0.05\text{ ms}$**.
+* **6-Layer Canvas Stack:** Runs at a 60 FPS ($16.6\text{ ms}$ frame budget) refresh rate with **0 dropped frames**.
 
----
-
-### 3. Uyumluluk ve Dağıtım Riskleri (WebGPU & WASM Gerçekleri)
-
-Şu an v2'ye geçiş yapmanın getireceği ciddi handikaplar vardır:
-* **WebGPU Donanım Desteği:** WebGPU modern masaüstü Chromium'da harika olsa da, eski dizüstü bilgisayarlarda, Linux Mesa sürücülerinde ve özellikle mobil Safari (iOS) üzerinde hâlâ kararsızlıklar veya bayrak (flag) arkasında çalışma durumları mevcuttur. v1'in saf Canvas 2D + Web Worker yapısı ise dünyadaki **her cihazda ($\%99.9$ uyumlulukla)** sıfır kurulumla çalışır.
-* **Bağımlılık Yükü:** WASM ve WebGPU pipeline'ları, projeye Rust derleme araç zinciri (`cargo`, `wasm-pack`), shader bağlama mantığı ve ek bundle boyutları getirecektir.
+Migrating to WebGPU Jump Flooding Algorithm (JFA) or WASM SIMD would drop calculation time on a $256\times256$ canvas from $1.8\text{ ms}$ to $0.1\text{ ms}$. **The human visual and nervous system cannot perceive the $1.7\text{ ms}$ difference between $1.8\text{ ms}$ and $0.1\text{ ms}$.** At pixel art dimensions, this is not an optimization; it is premature complexity ("premature optimization").
 
 ---
 
-### 4. Peki PixiBun v2 Ne Zaman Yapılmalıdır?
+### 2. Zero Technical Debt & Full Maturity of v1
 
-v2 mimarisine geçiş şu 3 somut eşikten biri veya birkaçı aşıldığında zorunlu hale gelecektir:
+PixiBun is currently at an exceptional engineering peak:
+* **89 test suites, 622 unit & integration tests:** $100\%$ passing.
+* **8 E2E Playwright test suites:** Validating relighting, chisel, and palette cycles in live browser environments.
+* **All Audit Findings Resolved:** P2P guest UI locking, structural undo/redo, File System Access API native desktop saving, 47-blob autotiling, pure TypeScript MP4 muxer, and Worker EDT integration fully implemented.
+* **TypeScript & ESLint:** 0 errors, 0 warnings.
+* **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-1. **Tuval Boyutları $1024\times1024$ ve Üzerine Çıktığında:**  
-   PixiBun salt piksel sanatından çıkıp devasa 4K dijital boyama, büyük izometrik şehir haritaları veya konsept çizim stüdyosuna dönüştürülmek istendiğinde (bu ölçekte CPU Felzenszwalb $50\text{ms}$'yi aşacağı için WebGPU JFA zorunlu olur).
-2. **Eşzamanlı Çok Kullanıcılı Ağaç Manipülasyonu İstendiğinde:**  
-   Onlarca kullanıcının aynı anda canlı oturumda katman klasörlerini iç içe taşıdığı, sildiği ve yeniden adlandırdığı kurumsal ortak çalışma senaryolarında (Kleppmann Replicated Tree CRDT zorunlu olur).
-3. **Steam veya Konsol / Masaüstü Mağazalarında Dağıtım Planlandığında:**  
-   PixiBun Steam, itch.io veya Microsoft Store üzerinde bağımsız bir masaüstü uygulaması olarak satışa çıkarılacağı zaman (Tauri 2.0 native packaging zorunlu olur).
+There is zero critical technical debt remaining that requires urgent intervention, blocks the system, or degrades user experience.
 
 ---
 
-### 💡 Nihai Karar ve Öneri
+### 3. Compatibility and Deployment Risks (WebGPU & WASM Realities)
 
-Bu dokümantasyon (`V2_VISION.md`), projenin gelecekteki **Kutup Yıldızı (North Star)** mimari referansıdır. Her formülü, WGSL shader deseni ve akademik makale referansıyla kusursuz bir yol haritası olarak arşivimizde durmalıdır.
+Transitioning to v2 at this stage introduces significant drawbacks:
+* **WebGPU Hardware Support:** While WebGPU performs exceptionally on modern desktop Chromium, older laptops, Linux Mesa drivers, and mobile Safari (iOS) still exhibit instability or require flags. In contrast, v1's pure Canvas 2D + Web Worker architecture runs on **every device worldwide (with $99.9\%$ compatibility)** with zero installation overhead.
+* **Dependency Burden:** WASM and WebGPU pipelines introduce a Rust compilation toolchain (`cargo`, `wasm-pack`), shader linking infrastructure, and increased bundle footprints.
 
-**Şu an yapılması gereken en doğru mühendislik adımı:**  
-v1'in yakaladığı bu kusursuz stabiliteyi korumak, projeyi gerçek kullanıcıların ve piksel sanatçılarının kullanımına sunmak, geri bildirimleri toplamak ve v2'yi gerektiği zaman bu hazır plandan hayata geçirmektir.
+---
+
+### 4. When Should PixiBun v2 Be Built?
+
+Transitioning to the v2 architecture will become necessary only when one or more of these concrete thresholds are crossed:
+
+1. **Canvas Dimensions Expand to $1024\times1024$ and Above:**  
+   If PixiBun evolves beyond pixel art into massive 4K digital painting, expansive isometric cityscapes, or concept art (at which scale CPU Felzenszwalb exceeds $50\text{ms}$, necessitating WebGPU JFA).
+2. **Concurrent Multi-User Layer Tree Manipulation is Required:**  
+   Enterprise collaborative environments where dozens of users simultaneously reorder, delete, and nest layer folders in a live session (requiring Kleppmann Replicated Tree CRDTs).
+3. **Distribution on Steam, Consoles, or Desktop App Stores is Planned:**  
+   When PixiBun is packaged as a standalone commercial desktop app for Steam, itch.io, or Microsoft Store (requiring Tauri 2.0 native packaging).
+
+---
+
+### 💡 Final Decision & Recommendation
+
+This document (`V2_VISION.md`) serves as the project's **North Star** architectural reference. With every formula, WGSL shader pattern, and academic citation, it stands ready in our archive as a complete roadmap.
+
+**The correct engineering decision right now:**  
+Maintain the rock-solid stability achieved in v1, deliver the studio into the hands of artists and creators, gather real-world usage feedback, and implement v2 from this blueprint when scale demands it.

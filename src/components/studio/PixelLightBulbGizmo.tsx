@@ -159,7 +159,14 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     });
   }, [tools.lightAzimuth, tools.lightElevation, canvasCentroid, scheduleLightChange]);
 
-  // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength
+  const resetFocus = useCallback(() => {
+    const cx = Math.round(canvasWidth / 2);
+    const cy = Math.round(canvasHeight / 2);
+    setCanvasCentroid({ x: cx, y: cy });
+    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, cx, cy, brightness);
+  }, [canvasWidth, canvasHeight, tools.lightAzimuth, tools.lightElevation, brightness, scheduleLightChange]);
+
+  // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength, Alt+R to reset focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -178,6 +185,10 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         e.preventDefault();
         e.stopPropagation();
         adjustStrength(+0.15);
+      } else if ((e.key === 'r' || e.key === 'R') && e.altKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        resetFocus();
       }
     };
 
@@ -185,7 +196,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [onCommit, onCancel, adjustStrength]);
+  }, [onCommit, onCancel, adjustStrength, resetFocus]);
 
   // Listen for wheel events dispatched from viewport background
   useEffect(() => {

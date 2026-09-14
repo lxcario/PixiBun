@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   getBresenhamLine,
+  getDDALine,
+  getClippedLine,
   filterPixelPerfect,
   getRectanglePoints,
   applySymmetry,
 } from '@/lib/canvas/rasterMath';
+import { MathInvariants } from '@/lib/safety/mathInvariants';
 
 describe('getBresenhamLine', () => {
   it('includes both endpoints on a horizontal run', () => {
@@ -72,5 +75,59 @@ describe('applySymmetry', () => {
 
     const center = applySymmetry([{ x: 3, y: 1 }], 7, 8, true, false);
     expect(center).toHaveLength(1);
+  });
+});
+
+describe('getDDALine', () => {
+  it('rasterizes horizontal line identically to integer points', () => {
+    const points = getDDALine(0, 5, 5, 5);
+    expect(points).toHaveLength(6);
+    expect(points[0]).toEqual({ x: 0, y: 5 });
+    expect(points[5]).toEqual({ x: 5, y: 5 });
+  });
+
+  it('handles subpixel floating point start and end coordinates without gap', () => {
+    const points = getDDALine(0.2, 0.4, 4.8, 4.9);
+    expect(points.length).toBeGreaterThanOrEqual(5);
+    expect(points[0]).toEqual({ x: 0, y: 0 });
+    expect(points[points.length - 1]).toEqual({ x: 5, y: 5 });
+  });
+
+  it('returns single point when start and end are identical', () => {
+    const points = getDDALine(3.2, 7.8, 3.2, 7.8);
+    expect(points).toEqual([{ x: 3, y: 8 }]);
+  });
+});
+
+describe('clipLineToCanvasSubpixel & getClippedLine', () => {
+  it('returns exact continuous intersection coordinates without intermediate rounding', () => {
+    // Line starting from (-10, -10) to (20, 20) against a 10x10 canvas [0..9, 0..9]
+    const subpixel = MathInvariants.clipLineToCanvasSubpixel(-10, -10, 20, 20, 10, 10);
+    expect(subpixel).not.toBeNull();
+    expect(subpixel!.x0).toBe(0);
+    expect(subpixel!.y0).toBe(0);
+    expect(subpixel!.x1).toBe(9);
+    expect(subpixel!.y1).toBe(9);
+  });
+
+  it('getClippedLine returns unclipped Bresenham line when inside canvas', () => {
+    const inside = getClippedLine(2, 3, 7, 8, 32, 32);
+    const expected = getBresenhamLine(2, 3, 7, 8);
+    expect(inside).toEqual(expected);
+  });
+
+  it('getClippedLine safely clips lines that extend beyond canvas boundary and stays in bounds', () => {
+    const points = getClippedLine(-20, 5, 40, 5, 16, 16);
+    expect(points.length).toBeGreaterThan(0);
+    for (const p of points) {
+      expect(p.x).toBeGreaterThanOrEqual(0);
+      expect(p.x).toBeLessThan(16);
+      expect(p.y).toBe(5);
+    }
+  });
+
+  it('returns empty array when line is completely outside canvas', () => {
+    const points = getClippedLine(100, 100, 200, 200, 32, 32);
+    expect(points).toEqual([]);
   });
 });

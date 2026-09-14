@@ -598,6 +598,13 @@ export function useViewportSelectionTransform({
         if (rCtx) {
           const outImg = rCtx.createImageData(rotResult.width, rotResult.height);
           outImg.data.set(rotResult.data);
+          // Enforce 1-bit hard alpha boundary to eliminate fringe artifacts on rotated pixel art
+          const outData = outImg.data;
+          for (let i = 3; i < outData.length; i += 4) {
+            if (outData[i] > 0) {
+              outData[i] = outData[i] >= 128 ? 255 : 0;
+            }
+          }
           rCtx.putImageData(outImg, 0, 0);
           finalCanvas = rotatedCanvas;
         }

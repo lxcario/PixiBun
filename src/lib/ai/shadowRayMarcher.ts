@@ -52,8 +52,13 @@ function parseShadowColor(color?: string | [number, number, number]): [number, n
   if (Array.isArray(color)) return color;
   
   let clean = color.replace('#', '');
-  if (clean.length === 3) {
+  if (clean.length === 3 || clean.length === 4) {
+    // Expand shorthand: #RGB → #RRGGBB, #RGBA → #RRGGBBAA
     clean = clean.split('').map((c) => c + c).join('');
+  }
+  // Strip alpha channel from 8-digit hex (RRGGBBAA → RRGGBB)
+  if (clean.length === 8) {
+    clean = clean.slice(0, 6);
   }
   const num = parseInt(clean, 16);
   if (isNaN(num)) return [24, 11, 38];

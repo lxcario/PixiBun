@@ -1,10 +1,10 @@
 # 🐇 PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
 
-`	ext
+```text
   /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
  ( o.o )   P I X I B U N   D E E P   D I V E
   > ^ <    Engineering, Computer Graphics & Architecture Reference
-`
+```
 
 > **This document provides an in-depth technical explanation of PixiBun's raster drawing engine, 2.5D photometric mathematics laboratory, optical color quantization algorithms, Web Audio synthesizer, memory management, and tactile design system.**
 
@@ -14,7 +14,7 @@
 
 PixiBun is built on Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand + Immer, and Dexie.js (IndexedDB) as a modular, desktop-grade raster graphics studio:
 
-`	ext
+```text
 src/
 ├── app/
 │   ├── api/diagnostics/relay/route.ts # SSRF-guarded diagnostics proxy (optional, zero telemetry, token-bucket rate limited)
@@ -66,7 +66,7 @@ src/
 │   └── themeStore.ts                # Dual theme manager and Zero-Lag CSS transition suppressor
 ├── workers/                         # Background Web Workers (heavyCompute.worker.ts offloading RotSprite 8x, WFC & SDF in-between morphing)
 └── types/                           # TypeScript definitions (canvas, tools, animation, project, theme)
-`
+```
 
 ---
 
@@ -74,7 +74,7 @@ src/
 
 React's Virtual DOM is unsuitable for high-frequency pixel-level operations (120+ cursor events per second). PixiBun uses React state strictly for metadata, managing pixel buffers in external memory:
 
-`mermaid
+```mermaid
 sequenceDiagram
     participant Mouse as Stylus / Cursor
     participant Viewport as CenterViewport (Display Canvas)
@@ -90,7 +90,7 @@ sequenceDiagram
     Compositor->>Viewport: Nearest-Neighbor Integer Blit to Viewport
     Viewport->>Signal: bumpBufferVersion()
     Signal-->>LivePop: Refresh Live Preview (Zero React Re-renders)
-`
+```
 
 ### 1. `bufferRegistry.ts` (Layer Buffer Store)
 * Layer pixels are stored in a `Map<string, { canvas: HTMLCanvasElement | OffscreenCanvas, ctx: CanvasRenderingContext2D }>`.
@@ -103,8 +103,8 @@ sequenceDiagram
 * FloatingPreviewWindow listens to this integer counter, updating live previews without triggering React re-renders.
 
 ### 3. Undo/Redo History Engine
-* src/lib/engine/historyEngine.ts maintains a 50-deep HistoryStep FIFO ring (createHistoryEngine(50)).
-* Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for (1)$ pixel restoration.
+* src/lib/engine/historyEngine.ts maintains a 50-deep HistoryStep FIFO ring for undo plus up to 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)`).
+* Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for $O(1)$ pixel restoration.
 
 ---
 
@@ -112,20 +112,20 @@ sequenceDiagram
 
 Mathematical algorithms in src/lib/canvas/ are optimized for retro pixel precision:
 
-### 1. Pixel-Perfect Bresenham (ilterPixelPerfect)
+### 1. Pixel-Perfect Bresenham (`filterPixelPerfect`)
 Standard Bresenham produces duplicate "L" corner pixels on rapid turns. A 3-point state machine prunes redundant intermediary pixels:
 
-\text{If } (x_i = x_{i-1} \lor y_i = y_{i-1}) \land (x_{i+1} \ne x_i \land y_{i+1} \ne y_i) \implies \text{Prune middle pixel}
+$$\text{If } (x_i = x_{i-1} \lor y_i = y_{i-1}) \land (x_{i+1} \ne x_i \land y_{i+1} \ne y_i) \implies \text{Prune middle pixel}$$
 
 ### 2. Quantized 2:1 Isometric Line Stepper (`getIsometric2p1Line`)
 For standard $26.565^\circ$ ($\arctan(0.5)$ dimetric) isometric projections:
 
-y_{\text{iso}} = y_0 + \text{sign}(dy) \cdot \left\lfloor \frac{|x - x_0|}{2} \right\rfloor
+$$y_{\text{iso}} = y_0 + \text{sign}(dy) \cdot \left\lfloor \frac{|x - x_0|}{2} \right\rfloor$$
 
 ### 3. Quadratic Bézier Curves (`getQuadraticBezierPoints`)
 Calculates integer de Casteljau curves across 3 control points ($P_0, P_1, P_2$):
 
-B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]
+$$B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]$$
 
 ### 4. Flood Fill (performFloodFill)
 * Compares colors as 32-bit integers using Uint32Array buffer views ((a << 24) | (b << 16) | (g << 8) | r).
@@ -137,7 +137,7 @@ B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]
 
 src/lib/ai/smartMathEngine.ts generates analytical 3D lighting and normal maps from 2D pixel drawings:
 
-`mermaid
+```mermaid
 graph TD
     Mask["Binary Alpha Mask M(x,y)"] --> EDT["O(N) Separable EDT (Felzenszwalb)"]
     EDT --> Dome["Dome Profile Inflation H = (D/Dmax)^0.5"]
@@ -152,27 +152,27 @@ graph TD
     NormalVec & CavityAO --> BlinnPhong["Blinn-Phong Shading"]
     BlinnPhong --> BayerMod["Bayer Matrix Dither Modulation"]
     BayerMod --> FinalLayer["Shaded Output Layer"]
-`
+```
 
-### 1. (N)$ Linear-Time Euclidean Distance Transform (EDT)
+### 1. $O(N)$ Linear-Time Euclidean Distance Transform (EDT)
 Uses Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes along rows and columns:
 
-D(x, y) = \min_{x'} \left( (x - x')^2 + D_{\text{col}}(x', y) \right)
+$$D(x, y) = \min_{x'} \left( (x - x')^2 + D_{\text{col}}(x', y) \right)$$
 
 ### 2. Dome Profile Inflation & Bilateral Filtering
 Distance values are converted to volumetric dome heights via $\gamma = 0.5$ power curve:
 
-H(x, y) = \left(\frac{D(x, y)}{\max D}\right)^{0.5}
+$$H(x, y) = \left(\frac{D(x, y)}{\max D}\right)^{0.5}$$
 
 ### 3. Analytical Tangent-Space Normals & Sobel Gradients
 Discrete $3\times3$ Sobel kernels derive directional gradients ($G_x, G_y$):
 
-\mathbf{N}(x, y) = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}
+$$\mathbf{N}(x, y) = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}$$
 
 ### 4. Normal Map Baking
 Unit vectors $\mathbf{N} = (N_x, N_y, N_z)$ map directly to RGB $[0, 255]$ for Godot, Unity, and Unreal:
 
-R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad B = \lfloor (N_z \cdot 0.5 + 0.5) \cdot 255 \rfloor
+$$R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad B = \lfloor (N_z \cdot 0.5 + 0.5) \cdot 255 \rfloor$$
 
 ### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation
 For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
@@ -190,9 +190,9 @@ For character sprites, naive hemispherical dome inflation creates extreme slope 
 
 # 5. 3D Minecraft Skin Recognition & Dedicated Shading
 
-Minecraft skins (\times64$ or \times32$) require domain-specific 3D cuboid normal mapping:
+Minecraft skins ($64 \times 64$ or $64 \times 32$) require domain-specific 3D cuboid normal mapping:
 
-`mermaid
+```mermaid
 graph LR
     Texture["Minecraft Skin (64x64 / 64x32)"] --> Detect["UV Void Mask Detection"]
     Detect --> Topo["8-Connected Topological Discriminator"]
@@ -202,14 +202,14 @@ graph LR
     UVMap --> ContactAO["Anatomical Contact AO (Armpits, Chin, Legs)"]
     HalfLambert & ContactAO --> OKLCH["OKLCH Warm Sunlight / Indigo Shift"]
     OKLCH --> LayerOut["Non-Destructive Tagged Output Layer"]
-`
+```
 
 1. **Deep Topological Discriminator (`analyzeMinecraftSkinTopology`):** 8-connected component flood analysis with dominant component ratio ($\ge 68\%$ → centered sprite), bilateral limb verification ($x \in [0, 16)$ Right Leg, $x \in [40, 56)$ Right Arm), canonical void zone integrity ($<20\%$ pollution), and bounding box margin checks. Centered character sprites are decisively routed to standard 2.5D lighting instead of cuboid UV mapping.
 2. **User Sovereignty:** Tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector toggle with `minecraftSkinMode: 'auto' | 'enabled' | 'disabled'`.
 3. **12-Region 3D Normal Mapping:** Assigns analytical 3D normals for Head, Hat, Torso, Jacket, Arms, and Legs.
 4. **Half-Lambert Wrap:**
 
-\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L} + 0.4}{1.4}\right)^{1.2}
+$$\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L} + 0.4}{1.4}\right)^{1.2}$$
 
 5. **Anatomical Contact AO:** Applies contact shadowing under chin ($0.80$), armpits ($0.82$), and inner limbs ($0.85$).
 

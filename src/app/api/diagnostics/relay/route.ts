@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createTokenBucketStore } from '@/lib/server/tokenBucket';
 
 // Hard input ceilings: the relay accepts only small, bounded diagnostic
-// batches. An unbounded request.json() is a memory-exhaustion vector, and an
+// batches. Streaming the body with an early byte ceiling prevents memory exhaustion, and an
 // unbounded events array would let a single client flood the upstream.
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_EVENTS = 100;
@@ -58,16 +58,41 @@ export async function POST(request: Request) {
       );
     }
 
-    // Read as text first so the size ceiling is enforced BEFORE parsing.
+    // Stream the body and enforce the size ceiling BEFORE buffering the full payload.
     let body: Record<string, unknown> | null = null;
     try {
-      const rawBody = await request.text();
-      if (rawBody.length > MAX_BODY_BYTES) {
+      const reader = request.body?.getReader();
+      if (!reader) {
         return NextResponse.json(
-          { error: 'Diagnostic payload exceeds the size limit.' },
-          { status: 413 }
+          { error: 'Missing request body' },
+          { status: 400 }
         );
       }
+      const chunks: Uint8Array[] = [];
+      let totalBytes = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        totalBytes += value.byteLength;
+        if (totalBytes > MAX_BODY_BYTES) {
+          reader.cancel();
+          return NextResponse.json(
+            { error: 'Diagnostic payload exceeds the size limit.' },
+            { status: 413 }
+          );
+        }
+        chunks.push(value);
+      }
+      const rawBody = new TextDecoder().decode(
+        chunks.length === 1
+          ? chunks[0]
+          : chunks.reduce((acc, c) => {
+              const merged = new Uint8Array(acc.byteLength + c.byteLength);
+              merged.set(acc);
+              merged.set(c, acc.byteLength);
+              return merged;
+            }, new Uint8Array(0))
+      );
       body = JSON.parse(rawBody) as Record<string, unknown>;
     } catch (parseErr) {
       console.error('Failed to parse diagnostics relay request JSON:', parseErr);
@@ -80,7 +105,7 @@ export async function POST(request: Request) {
 
     const upstreamPayload = {
       app: app || 'pixibun',
-      version: version || '1.13.0',
+      version: version || process.env.npm_package_version || '1.13.1',
       timestamp: Date.now(),
       events: Array.isArray(events) ? events.slice(0, MAX_EVENTS) : [],
     };

@@ -67,7 +67,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Perceptual 4-Tone OKLCH Stepped Cel-Shading:** Unshaded flat character sprites receive crisp discrete tone steps — **Base**, **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo skylight, bounded strictly below base luminance to safeguard dark crimson and navy palettes), **Deep Crevice** ($L \times 0.60$, $20°$ hue shift, triggers at $AO < 0.60$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ shift toward $65°$ warm sunlight, shiny materials only). Shadow placement is driven purely by directional diffuse signal (`diffSignal < 0.55`), decoupled from ambient fill to ensure crisp anatomical shadow termination. Line-art detection uses boundary-aware contrast to protect dark body colors from unshaded masking.
 * **Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows:** Replaced infinite planar raymarch wedges with professional 2.5D bounded sprite cast shadows. Evaluates exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$) anchored at the sprite contact baseline, strictly preserving leg arches and waist indentations without bounding-box bloat or muddy center blobs. Includes classic RPG ground contact drop shadows (`shadowStyle: 'drop'`) with crisp Bresenham ellipses under feet, defaulting to uniform flat opacity (`ditherMode: 'none'`).
 * **Smart Canvas Art Auto-Analysis:** Dedicated "Analyze & Render" engines for photometric lighting and cast shadows automatically infer optimal light azimuth, elevation, intensity, contact base, bounds, and material presets from canvas pixel data.
-* **Interactive On-Canvas Pixel Light Bulb Gizmo:** Live on-canvas interactive draggable bulb handle with real-time 60fps lighting updates during dragging. Decoupled bulb orbit from middle light point focus reticle so artists can anchor and drag the light source or focal point independently. Dynamically aligns directional light vectors with on-canvas pointer coordinates. Includes hotkey brightness adjustment (`+` / `-` / mouse wheel scroll), quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focus reset (<kbd>R</kbd>).
+* **Interactive On-Canvas Pixel Light Bulb Gizmo:** Live on-canvas interactive draggable bulb handle with real-time 60fps lighting updates during dragging. Decoupled bulb orbit from middle light point focus reticle so artists can anchor and drag the light source or focal point independently. Dynamically aligns directional light vectors with on-canvas pointer coordinates. Includes hotkey brightness adjustment (`+` / `-` / mouse wheel scroll), quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focus reset (<kbd>Alt+R</kbd>).
 * **3D Minecraft Skin Recognition & Dedicated Shading:** Automatically detects $64\times64$ and $64\times32$ Java/Bedrock UV layouts via deep 8-connected topological discriminator (`analyzeMinecraftSkinTopology`: dominant component ratio, bilateral limb verification, canonical void zone integrity, bounding box margins) that protects centered character sprites from false-positive classification. Computes analytical 3D unit normal vectors $\mathbf{N}$ for all 12 cuboid regions, and executes domain skin shading (Half-Lambert wrap, contact ambient occlusion under chin/armpits/limbs, sky hemisphere radiance, and warm sunlight/cool indigo hue-shifting). Includes tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector controls for user sovereignty.
 * **Linear-Time $O(N)$ Euclidean Distance Transform (EDT):** Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes compute distance fields in milliseconds.
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
@@ -231,7 +231,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### 🛡️ Autonomous Quality Gate & Git Pre-Push Protection
 PixiBun includes an automated, zero-dependency local Quality Gate runner that executes before every push:
 ```bash
-# Run the 3-stage validation suite (docs, typecheck, 615 tests) in ~16s
+# Run the 3-stage validation suite (docs, typecheck, 622 tests) in ~16s
 npm run gate
 
 # Run full suite including Next.js production compilation
@@ -248,7 +248,7 @@ PixiBun is engineered as a local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and zero axe-core violations.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 615 unit and integration tests across 89 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 622 unit and integration tests across 89 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -267,7 +267,7 @@ PixiBun is engineered as a local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 615 unit and integration tests across 89 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 622 unit and integration tests across 89 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 
@@ -283,7 +283,7 @@ For an academic deep-dive into the next-generation architecture of PixiBun — e
 * **Offline-First Studio:** Core drawing, animation, lighting, and export pipelines run entirely in-browser without network access via the installable PWA.
 * **Contributing & Governance:** Check [`CONTRIBUTING.md`](./CONTRIBUTING.md) for local Quality Gate workflow and pure-TS invariant guidelines.
 * **Security & Invariants:** Read our defense-in-depth policy in [`SECURITY.md`](./SECURITY.md).
-* **License:** [MIT](./LICENSE) — currently private, planned open source and free forever.
+* **License:** Licensed under the [MIT License](./LICENSE).
  
 *Handcrafted with pixels, coffee, and care.* ✦
 

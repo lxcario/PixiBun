@@ -81,7 +81,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const selectionMask = useStudioStore((s) => s.selectionMask);
 
   const [isDragOver, setIsDragOver] = useState(false);
-  const radialMenu = useRadialContextMenu();
+  const radialMenu = useRadialContextMenu(containerRef);
 
   // Initialize or fetch the offscreen canvas for a layer
   const getOrCreateLayerCanvas = useCallback(
@@ -398,7 +398,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   });
 
   // Hook 6: Pointer event routing and drawing dispatch
-  const { handlePointerDown, handlePointerMove, handlePointerUp } =
+  const { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel } =
     useViewportPointerEvents({
       canvasWidth,
       canvasHeight,
@@ -550,6 +550,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       onPointerLeave={() => {
         cursorCoordsRef.current = null;
         updateCursorHUD(null);

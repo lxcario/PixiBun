@@ -222,7 +222,7 @@ export function downsampleImage(
               rLinSum += rLin * boxWeight;
               gLinSum += gLin * boxWeight;
               bLinSum += bLin * boxWeight;
-              aSum += alpha;
+              aSum += alpha * boxWeight;
               totalWeight += boxWeight;
             }
           }
@@ -231,7 +231,7 @@ export function downsampleImage(
             dstData[dstIdx] = linearToSrgb(rLinSum / totalWeight);
             dstData[dstIdx + 1] = linearToSrgb(gLinSum / totalWeight);
             dstData[dstIdx + 2] = linearToSrgb(bLinSum / totalWeight);
-            dstData[dstIdx + 3] = Math.round(Math.min(255, aSum / (endX - startX + 1) / (endY - startY + 1)));
+            dstData[dstIdx + 3] = Math.round(Math.min(255, aSum / totalWeight));
           } else {
             dstData[dstIdx + 3] = 0;
           }

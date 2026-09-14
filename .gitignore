@@ -43,3 +43,6 @@ testsprite_tests/tmp/config.json
 # reels and scratch video generation
 /public/reels/
 /scripts/reels/
+
+# testsprite local runs and snapshots
+/.testsprite/

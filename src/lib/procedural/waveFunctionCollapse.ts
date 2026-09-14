@@ -3,11 +3,12 @@
  *
  * Academic / Industry References:
  * - Maxim Gumin, "WaveFunctionCollapse," 2016 (constraint-satisfaction procedural texture synthesis).
- * - Paul Merrell, "Example-Based Model Synthesis," ACM SIGGRAPH 2007.
+ * - Paul Merrell, "Example-Based Model Synthesis," I3D 2007 (ACM SIGGRAPH Symposium on
+ *   Interactive 3D Graphics and Games). DOI: 10.1145/1230100.1230118.
  *
  * Extracts N x N local overlapping pixel neighborhood patterns, calculates pattern compatibility
  * across orthogonal directions, and collapses a wave of possibilities using minimum Shannon entropy
- * observation and constraint propagation (AC-3 arc consistency).
+ * observation and constraint propagation (AC-4 arc consistency with pre-allocated support counters).
  *
  * For successfully converged outputs (status === 'complete'), guarantees zero local neighborhood constraint violations across generated regions.
  */
@@ -359,7 +360,7 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
 
       if (contradiction) break;
 
-      // 3c. Propagate constraints (AC-3)
+      // 3c. Propagate constraints (AC-4)
       while (stack.length > 0) {
         const [currCell, removedP] = stack.pop()!;
         const cx = currCell % outputWidth;

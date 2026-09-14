@@ -51,6 +51,9 @@ export interface PixelHistoryStep {
   frameIndex: number;
   layerId: string;
   imageData: ImageData;
+  // Optional dirty bounding box origin for bounded delta snapshotting
+  x?: number;
+  y?: number;
   // If this step created a new layer, its ID is stored here so undo can remove it cleanly
   createdLayerId?: string;
   // Tag of the created layer (photometric, cast-shadow, ...), preserved so

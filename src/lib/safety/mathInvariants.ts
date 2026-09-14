@@ -202,4 +202,95 @@ export class MathInvariants {
       y1: Math.round(pY1),
     };
   }
+
+  /**
+   * Cohen-Sutherland 2D Line Clipping with Continuous Sub-Pixel Intersections.
+   * Returns exact floating-point endpoints to avoid Bresenham initial slope distortion
+   * when rasterizing with DDA.
+   */
+  public static clipLineToCanvasSubpixel(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    canvasW: number,
+    canvasH: number
+  ): { x0: number; y0: number; x1: number; y1: number } | null {
+    if (canvasW <= 0 || canvasH <= 0) return null;
+
+    const INSIDE = 0;
+    const LEFT = 1;
+    const RIGHT = 2;
+    const BOTTOM = 4;
+    const TOP = 8;
+
+    const xMin = 0;
+    const yMin = 0;
+    const xMax = canvasW - 1;
+    const yMax = canvasH - 1;
+
+    function computeOutCode(x: number, y: number): number {
+      let code = INSIDE;
+      if (x < xMin) code |= LEFT;
+      else if (x > xMax) code |= RIGHT;
+      if (y < yMin) code |= BOTTOM;
+      else if (y > yMax) code |= TOP;
+      return code;
+    }
+
+    let pX0 = MathInvariants.isSafeFinite(x0) ? x0 : 0;
+    let pY0 = MathInvariants.isSafeFinite(y0) ? y0 : 0;
+    let pX1 = MathInvariants.isSafeFinite(x1) ? x1 : 0;
+    let pY1 = MathInvariants.isSafeFinite(y1) ? y1 : 0;
+
+    let code0 = computeOutCode(pX0, pY0);
+    let code1 = computeOutCode(pX1, pY1);
+    let accept = false;
+
+    for (let iter = 0; iter < 5; iter++) {
+      if ((code0 | code1) === 0) {
+        accept = true;
+        break;
+      } else if ((code0 & code1) !== 0) {
+        break;
+      } else {
+        const outCode = code0 !== 0 ? code0 : code1;
+        let x = 0;
+        let y = 0;
+
+        if ((outCode & TOP) !== 0) {
+          x = pX0 + ((pX1 - pX0) * (yMax - pY0)) / (pY1 - pY0);
+          y = yMax;
+        } else if ((outCode & BOTTOM) !== 0) {
+          x = pX0 + ((pX1 - pX0) * (yMin - pY0)) / (pY1 - pY0);
+          y = yMin;
+        } else if ((outCode & RIGHT) !== 0) {
+          y = pY0 + ((pY1 - pY0) * (xMax - pX0)) / (pX1 - pX0);
+          x = xMax;
+        } else if ((outCode & LEFT) !== 0) {
+          y = pY0 + ((pY1 - pY0) * (xMin - pX0)) / (pX1 - pX0);
+          x = xMin;
+        }
+
+        if (outCode === code0) {
+          pX0 = x;
+          pY0 = y;
+          code0 = computeOutCode(pX0, pY0);
+        } else {
+          pX1 = x;
+          pY1 = y;
+          code1 = computeOutCode(pX1, pY1);
+        }
+      }
+    }
+
+    if (!accept) return null;
+
+    return {
+      x0: pX0,
+      y0: pY0,
+      x1: pX1,
+      y1: pY1,
+    };
+  }
 }

@@ -1,3 +1,5 @@
+import { MathInvariants } from '@/lib/safety/mathInvariants';
+
 // Mathematical raster algorithms for integer pixel art manipulation
 
 export interface Point {
@@ -32,6 +34,69 @@ export function getBresenhamLine(x0: number, y0: number, x1: number, y1: number)
   }
 
   return points;
+}
+
+/**
+ * Digital Differential Analyzer (DDA) Line Algorithm.
+ * Rasterizes a line segment using floating-point increments, preserving slope continuity
+ * when starting from clipped or sub-pixel intersection coordinates.
+ */
+export function getDDALine(x0: number, y0: number, x1: number, y1: number): Point[] {
+  const points: Point[] = [];
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const steps = Math.round(Math.max(Math.abs(dx), Math.abs(dy)));
+
+  if (steps === 0) {
+    return [{ x: Math.round(x0), y: Math.round(y0) }];
+  }
+
+  const xInc = dx / steps;
+  const yInc = dy / steps;
+  let currX = x0;
+  let currY = y0;
+
+  for (let i = 0; i <= steps; i++) {
+    points.push({ x: Math.round(currX), y: Math.round(currY) });
+    currX += xInc;
+    currY += yInc;
+  }
+
+  return points;
+}
+
+/**
+ * Slope-preserving clipped line rasterizer.
+ * If both endpoints lie within the canvas bounds [0, canvasWidth - 1] x [0, canvasHeight - 1],
+ * standard integer Bresenham algorithm is executed.
+ * If endpoints cross outside canvas boundaries, Cohen-Sutherland sub-pixel clipping
+ * calculates continuous intersection coordinates, and DDA (Digital Differential Analyzer)
+ * rasterizes the clipped segment, preventing Bresenham initial slope distortion.
+ */
+export function getClippedLine(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  canvasWidth?: number,
+  canvasHeight?: number
+): Point[] {
+  if (!canvasWidth || !canvasHeight || canvasWidth <= 0 || canvasHeight <= 0) {
+    return getBresenhamLine(x0, y0, x1, y1);
+  }
+
+  const isOutside =
+    x0 < 0 || y0 < 0 || x0 >= canvasWidth || y0 >= canvasHeight ||
+    x1 < 0 || y1 < 0 || x1 >= canvasWidth || y1 >= canvasHeight;
+
+  if (!isOutside) {
+    return getBresenhamLine(x0, y0, x1, y1);
+  }
+
+  const clipped = MathInvariants.clipLineToCanvasSubpixel(x0, y0, x1, y1, canvasWidth, canvasHeight);
+  if (!clipped) return [];
+
+  return getDDALine(clipped.x0, clipped.y0, clipped.x1, clipped.y1);
 }
 
 // Pixel-perfect line filter: cleans L-shaped double pixels (jaggies)
