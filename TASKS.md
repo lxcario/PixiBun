@@ -9,7 +9,7 @@
 - Canvas Envelope Divergence: Multiple subsystems maintained disparate boundaries (`schema.ts` at 2048px, `p2pSync.ts` at 4096px, export tabs at 4096px / 16.7MP, `imageHeaderProbe.ts` at 8192px / 67.1MP, and `safeCanvas.ts` at 16384x16384). Unifying under tiered canonical constants (`WORKSPACE_ENVELOPE`, `EXPORT_ENVELOPE`, `PROBE_ENVELOPE`, `HARDWARE_LIMITS`) guarantees consistent validation across creation, networking, export, and safety layers.
 - SafeJson UTF-8 Accounting & Plain Object Return: Checking `rawJson.length` evaluated UTF-16 code units instead of UTF-8 bytes, risking bypass with multi-byte characters. Replacing with zero-allocation `TextEncoder.encodeInto` byte counting and returning plain `{}` in `sanitizeObject` preserves `Object.prototype` methods while stripping dangerous keys (`__proto__`, `constructor`, `prototype`).
 - JPEG Probe Multi-Window Segment Paging: JPEGs with large EXIF or ICC profiles exceeding 64KB caused false-negative signature errors. Expanding the initial window to 256KB and implementing multi-window `Blob` segment paging with a distinct `SOF_BEYOND_PROBE_WINDOW` error handles complex files gracefully.
-- SafeCanvas TypedArray Offset Alignment: `extractClampedRect` previously omitted `byteOffset` when instantiating `Uint32Array` on `ImageData.data.buffer`. Supplying `(buffer, byteOffset, length)` guarantees accurate pixel copying on non-zero buffer offsets.
+- SafeCanvas TypedArray Offset Alignment: `SafeCanvas.getImageData()` previously omitted `byteOffset` when instantiating `Uint32Array` on `ImageData.data.buffer`. Supplying `(buffer, byteOffset, length)` guarantees accurate pixel copying on non-zero buffer offsets.
 - Canonical Version Single Source of Truth: Diagnostics capture previously stamped `1.13.0` while the relay route stamped `1.13.1`. Exporting `APP_VERSION = '1.13.1'` from `src/config/version.ts` and synchronizing `package-lock.json` unifies runtime telemetry versioning.
 
 **Deliverables:**
@@ -17,10 +17,11 @@
 - [x] Boundary Enforcement Alignment (`src/lib/project/schema.ts`, `src/lib/sync/p2pSync.ts`, `src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`): Bound schema and P2P payloads to canonical 2048px workspace limits.
 - [x] Subsystem Hardening (`src/lib/safety/safeJson.ts`, `src/lib/safety/safeCanvas.ts`, `src/lib/safety/imageHeaderProbe.ts`): UTF-8 byte counting, plain `{}` sanitization, `byteOffset` passing, and multi-window JPEG paging.
 - [x] Canonical Versioning (`src/config/version.ts`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `package-lock.json`): Single source of truth at `1.13.1`.
-- [x] Cross-Boundary Regression Suite (`tests/crossBoundaryEnvelope.test.ts`): Verified envelope invariants across schema, P2P, export, and safety layers, bringing coverage to 636 unit tests across 90 suites.
+- [x] Photometric Live Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`): Decoupled EDT geometry passes from light azimuth via `applyAppendageStabilization` and explicit commit-time re-rendering.
+- [x] Cross-Boundary Regression Suite (`tests/crossBoundaryEnvelope.test.ts`, `tests/photometricNonDestructive.test.ts`): Verified envelope invariants and zero-drift live light dragging, bringing coverage to 637 unit tests across 90 suites.
 
 **Acceptance criteria:**
-- All 636 unit tests across 90 suites pass (100% green).
+- All 637 unit tests across 90 suites pass (100% green).
 - `node scripts/verifyDocIntegrity.mjs` passes all 6 checks.
 - `npm run gate:full` passes in ~24s with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.
@@ -44,7 +45,7 @@
 - [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
 
 **Acceptance criteria:**
-- All 622 unit tests across 89 suites pass (at the time, now 636 across 90 suites).
+- All 622 unit tests across 89 suites pass (at the time, now 637 across 90 suites).
 - `node scripts/verifyDocIntegrity.mjs` passes all checks.
 - `npm run gate` passes with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.

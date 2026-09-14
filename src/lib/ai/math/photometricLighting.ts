@@ -33,16 +33,20 @@ import {
   computeTangentNormalField,
   computeDiscreteLaplaceCavity,
   computeContentAwareHeightmap,
+  applyAppendageStabilization,
+  type AppendageData,
 } from './edtNormalMap';
 
 export {
   type NormalVectorField,
+  type AppendageData,
   computeSeparableEDT,
   generateInflatedHeightmap,
   applyBilateralFilter,
   computeTangentNormalField,
   computeDiscreteLaplaceCavity,
   computeContentAwareHeightmap,
+  applyAppendageStabilization,
 };
 import { getBayerMatrixThreshold } from './dithering';
 import { detectMinecraftSkin, computeMinecraftSkinNormalField, executeMinecraftSkinShadingPipeline } from './minecraftSkin';
@@ -433,6 +437,8 @@ export function computePhotometricAnalysis(
   }
 
   let normalField: NormalVectorField;
+  let baseNormalField: NormalVectorField | undefined = undefined;
+  let appendageData: AppendageData | null = null;
   let cavityAO: Float32Array;
   let isFeatureMask: Uint8Array | null = null;
   let isInkLineMask: Uint8Array | null = null;
@@ -440,6 +446,8 @@ export function computePhotometricAnalysis(
   if (formType === 'character') {
     const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
     normalField = analysis.normalField;
+    baseNormalField = analysis.baseNormalField;
+    appendageData = analysis.appendageData ?? null;
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeature;
     isInkLineMask = analysis.isInkLine;
@@ -453,6 +461,8 @@ export function computePhotometricAnalysis(
     // Props and general shapes: computeContentAwareHeightmap decomposes artwork into parts, lines, and crevices
     const analysis = computeContentAwareHeightmap(data, width, height, params.cavityStrength ?? 1.0, 2.0, params.lightAzimuth);
     normalField = analysis.normalField;
+    baseNormalField = analysis.baseNormalField;
+    appendageData = analysis.appendageData ?? null;
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeature;
     isInkLineMask = analysis.isInkLine;
@@ -478,6 +488,18 @@ export function computePhotometricAnalysis(
           normalField.nx[idx] = blended[0];
           normalField.ny[idx] = blended[1];
           normalField.nz[idx] = blended[2];
+
+          if (baseNormalField) {
+            const baseOrig: [number, number, number] = [
+              baseNormalField.nx[idx],
+              baseNormalField.ny[idx],
+              baseNormalField.nz[idx],
+            ];
+            const blendedBase = blendNormalsRNM(baseOrig, detail);
+            baseNormalField.nx[idx] = blendedBase[0];
+            baseNormalField.ny[idx] = blendedBase[1];
+            baseNormalField.nz[idx] = blendedBase[2];
+          }
         }
       }
     }
@@ -486,6 +508,8 @@ export function computePhotometricAnalysis(
   return {
     formType,
     normalField,
+    baseNormalField,
+    appendageData,
     cavityAO,
     isFeatureMask,
     isInkLineMask,
@@ -530,6 +554,14 @@ export function executePhotometricPipeline(
   if (params.precomputedAnalysis) {
     formType = params.precomputedAnalysis.formType;
     normalField = params.precomputedAnalysis.normalField;
+    if (params.precomputedAnalysis.baseNormalField && params.precomputedAnalysis.appendageData) {
+      applyAppendageStabilization(
+        normalField,
+        params.precomputedAnalysis.baseNormalField,
+        params.precomputedAnalysis.appendageData,
+        params.lightAzimuth
+      );
+    }
     cavityAO = params.precomputedAnalysis.cavityAO;
     isFeatureMask = params.precomputedAnalysis.isFeatureMask ?? null;
     isInkLineMask = params.precomputedAnalysis.isInkLineMask ?? null;

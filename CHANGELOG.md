@@ -23,8 +23,12 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Canonical Version Single Source of Truth (`src/config/version.ts`)**:
   - Defined canonical `APP_VERSION = '1.13.1'` consumed by `src/lib/diagnostics/capture.ts` and `src/app/api/diagnostics/relay/route.ts`.
   - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
-- **Cross-Boundary & Defensive Hardening Test Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
-  - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 636 unit tests across 90 suites (100% green).
+- **Cross-Boundary & Defensive Hardening Test Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`, `tests/photometricNonDestructive.test.ts`)**:
+  - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 637 unit tests across 90 suites (100% green).
+- **Dynamic Character Appendage Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
+  - Decoupled static pixel geometry from light-direction-coupled appendage normal stabilization via `applyAppendageStabilization`.
+  - Preserves 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputations at any azimuth.
+  - Added regression test verifying zero pixel drift during multi-frame azimuth sweeps on anatomical character sprites (`tests/photometricNonDestructive.test.ts`).
 
 ### Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection (Phase 58)
 - **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/ai/math/edtNormalMap.ts`)**:

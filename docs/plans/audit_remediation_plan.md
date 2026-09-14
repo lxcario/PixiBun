@@ -75,7 +75,7 @@ Currently, 5 subsystems maintain diverging canvas boundaries:
 ### 4. SafeCanvas `byteOffset` Support [High]
 
 #### [MODIFY] [safeCanvas.ts](file:///d:/PixiBun/src/lib/safety/safeCanvas.ts)
-- In `extractClampedRect`, pass `byteOffset` and element counts when creating typed array views:
+- In `SafeCanvas.getImageData()`, pass `byteOffset` and element counts when creating typed array views:
   ```ts
   const srcU32 = new Uint32Array(
     sampleData.data.buffer,

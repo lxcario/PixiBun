@@ -211,6 +211,40 @@ export function usePhotometricEvents({
       const state = useStudioStore.getState();
 
       if (session) {
+        // Ensure the final commit render strictly aligns with the committed azimuth and elevation
+        const shadedCanvas = executePhotometricPipeline(
+          session.srcCtx,
+          canvasWidth,
+          canvasHeight,
+          {
+            lightAzimuth: state.tools.lightAzimuth,
+            lightElevation: state.tools.lightElevation,
+            lightRadius: 64,
+            lightColor: '#FFFFFF',
+            ambientIntensity: 0.48,
+            lightBrightness: session.brightness,
+            material: session.material,
+            cavityStrength: state.tools.cavityStrength,
+            ditherModulation: state.tools.ditherModulation,
+            bayerSize: '4x4',
+            formType: session.formType,
+            minecraftSkinMode: state.tools.minecraftSkinMode,
+            lightCenterX: session.lastCenterX,
+            lightCenterY: session.lastCenterY,
+            normalMapData: session.normalMapData || undefined,
+            precomputedAnalysis: session.analysis,
+          },
+          session.paletteColors
+        );
+
+        const lCanvas = getOrCreateLayerCanvas(session.targetLayerId);
+        const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
+        if (lCtx) {
+          lCtx.imageSmoothingEnabled = false;
+          lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+          lCtx.drawImage(shadedCanvas, 0, 0);
+        }
+
         commitSnapshot();
         state.setLightBrightness(session.brightness);
 

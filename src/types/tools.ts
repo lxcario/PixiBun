@@ -38,6 +38,17 @@ export interface PhotometricAnalysisGeometry {
     width: number;
     height: number;
   };
+  baseNormalField?: {
+    nx: Float32Array;
+    ny: Float32Array;
+    nz: Float32Array;
+    width: number;
+    height: number;
+  };
+  appendageData?: {
+    charCenterX: number;
+    pixels: { idx: number; segLeft: number; segRight: number }[];
+  } | null;
   cavityAO: Float32Array;
   isFeatureMask?: Uint8Array | null;
   isInkLineMask?: Uint8Array | null;

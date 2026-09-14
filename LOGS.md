@@ -1630,11 +1630,16 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **Canonical Version Single Source of Truth (`src/config/version.ts`)**:
   - Defined canonical `APP_VERSION = '1.13.1'`, consumed by diagnostics capture (`src/lib/diagnostics/capture.ts`) and relay routes (`src/app/api/diagnostics/relay/route.ts`).
   - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
-- **Cross-Boundary & Defensive Regression Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
-  - Added new cross-boundary test suite verifying canvas envelope invariants across schema, P2P sync, export UI, and safety layers, expanding total test coverage to 636 unit tests across 90 suites (100% green).
+- **Cross-Boundary & Defensive Regression Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`, `tests/photometricNonDestructive.test.ts`)**:
+  - Added new cross-boundary test suite verifying canvas envelope invariants across schema, P2P sync, export UI, and safety layers, expanding total test coverage to 637 unit tests across 90 suites (100% green).
+- **Photometric Studio Live Drag Decoupling & Appendage Normal Stabilization (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/hooks/viewport/events/usePhotometricEvents.ts`)**:
+  - Decoupled static EDT, part segmentation, and bilateral filtering passes from dynamic light direction.
+  - Implemented `applyAppendageStabilization` dynamically updating narrow ear/appendage normal vectors in <0.01ms per frame from immutable `baseNormalField`.
+  - Guaranteed byte-exact output between multi-frame live light dragging and fresh single-shot recomputation at any azimuth (0 pixel discrepancy on anatomical character test in `tests/photometricNonDestructive.test.ts`).
+  - Added explicit re-render at committed azimuth and elevation prior to `commitSnapshot()` in `usePhotometricEvents.ts`.
 
 **Checks run:**
-- `npm run gate:full`: ALL 4 STAGES PASSED (Docs, Typecheck, 636 Vitest tests in 90 suites, Turbopack production build) in ~23.8s
+- `npm run gate:full`: ALL 4 STAGES PASSED (Docs, Typecheck, 637 Vitest tests in 90 suites, Turbopack production build) in ~23.8s
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 

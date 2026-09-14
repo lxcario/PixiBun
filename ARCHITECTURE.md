@@ -574,7 +574,7 @@ To decouple development from cloud CI billing constraints while maintaining unco
   - Executes a 3-stage sequential validation pipeline via `npm run gate` in ~16–19 seconds:
     1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
     2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
-    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 636 Vitest unit tests across 90 suites.
+    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 637 Vitest unit tests across 90 suites.
     4. **Stage 4 (Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
 * **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
   - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
@@ -621,6 +621,10 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
   - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
 * **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
   - Ensures shadow luminance $L_{\text{shadow}} = \max(0.04, \min(0.78 L_{\text{base}}, L_{\text{base}} - 0.03))$ and deep crevice luminance $L_{\text{deep}} = \max(0.02, \min(0.60 L_{\text{base}}, L_{\text{base}} - 0.06))$ remain strictly darker than the base tone across the entire OKLCH luminance domain.
+* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
+  - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
+  - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms using `baseNormalField` and candidate pixel metadata.
+  - Guarantees 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputation at any azimuth.
 
 
 

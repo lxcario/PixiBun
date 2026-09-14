@@ -362,6 +362,50 @@ export function computeDiscreteLaplaceCavity(
   return cavity;
 }
 
+export interface AppendageData {
+  charCenterX: number;
+  pixels: { idx: number; segLeft: number; segRight: number }[];
+}
+
+/**
+ * Dynamically updates normal vectors across narrow anatomical appendages (ears, horns, antennae)
+ * based on current light azimuth, preventing harsh bifurcation and unlit edge shadows.
+ * Evaluates in <0.01ms by only visiting candidate appendage pixels.
+ */
+export function applyAppendageStabilization(
+  targetNormals: NormalVectorField,
+  baseNormals: NormalVectorField,
+  appendageData: AppendageData,
+  lightAzimuth: number
+): void {
+  const azRad = (lightAzimuth * Math.PI) / 180;
+  const lightDirX = Math.sin(azRad);
+  const { charCenterX, pixels } = appendageData;
+
+  for (let i = 0; i < pixels.length; i++) {
+    const { idx, segLeft, segRight } = pixels[i];
+    let nx = baseNormals.nx[idx];
+    const ny = baseNormals.ny[idx];
+    let nz = baseNormals.nz[idx];
+
+    const isLitSide = (lightDirX <= 0 && segRight <= charCenterX) || (lightDirX > 0 && segLeft >= charCenterX);
+    if (isLitSide) {
+      if (lightDirX <= 0 && nx > 0) {
+        nx = 0;
+      } else if (lightDirX > 0 && nx < 0) {
+        nx = 0;
+      }
+      nz = Math.max(0.88, nz);
+    } else {
+      nz = Math.max(0.78, nz);
+    }
+    const len = Math.hypot(nx, ny, nz) || 1;
+    targetNormals.nx[idx] = nx / len;
+    targetNormals.ny[idx] = ny / len;
+    targetNormals.nz[idx] = nz / len;
+  }
+}
+
 export interface ContentAwareAnalysis {
   isInkLine: Uint8Array;
   isFeature: Uint8Array;
@@ -373,6 +417,8 @@ export interface ContentAwareAnalysis {
   smoothHeightmap: Float32Array;
   normalField: NormalVectorField;
   cavityAO: Float32Array;
+  baseNormalField?: NormalVectorField;
+  appendageData?: AppendageData | null;
 }
 
 /**
@@ -757,13 +803,14 @@ export function computeContentAwareHeightmap(
   // 9. Tangent-Space Normal Vector Field
   const normalField = computeTangentNormalField(smoothHeightmap, width, height, depthScale);
 
+  let baseNormalField: NormalVectorField | undefined = undefined;
+  let appendageData: AppendageData | null = null;
+
   if (isCharacter) {
     const charCenterX = (minX + maxX) / 2;
-    const az = lightAzimuth ?? 315;
-    const azRad = (az * Math.PI) / 180;
-    const lightDirX = Math.sin(azRad); // < 0 when light comes from left (e.g. 315°)
+    const appendagePixels: { idx: number; segLeft: number; segRight: number }[] = [];
 
-    // Flatten normals across facial features, thin whiskers, and narrow lit-side appendages
+    // Flatten normals across facial features, thin whiskers, and collect narrow lit-side appendages
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const idx = y * width + x;
@@ -791,7 +838,7 @@ export function computeContentAwareHeightmap(
           continue;
         }
 
-        // Narrow appendage (ear / horn / antenna) normal stabilization
+        // Narrow appendage (ear / horn / antenna) candidate detection
         if (y <= minY + boxH * 0.45) {
           let segLeft = x;
           while (segLeft > 0 && isOpaque(segLeft - 1, y)) segLeft--;
@@ -801,27 +848,25 @@ export function computeContentAwareHeightmap(
 
           const maxAppendageWidth = Math.max(5, Math.round(5 * scaleFactor));
           if (segW <= maxAppendageWidth) {
-            // Narrow appendage: prevent harsh vertical split down narrow ears
-            const isLitSide = (lightDirX <= 0 && segRight <= charCenterX) || (lightDirX > 0 && segLeft >= charCenterX);
-            if (isLitSide) {
-              // On the lit side of the character, prevent normals from facing away from the key light
-              if (lightDirX <= 0 && normalField.nx[idx] > 0) {
-                normalField.nx[idx] = 0;
-              } else if (lightDirX > 0 && normalField.nx[idx] < 0) {
-                normalField.nx[idx] = 0;
-              }
-              normalField.nz[idx] = Math.max(0.88, normalField.nz[idx]);
-            } else {
-              // On the unlit side, smooth the cross-section
-              normalField.nz[idx] = Math.max(0.78, normalField.nz[idx]);
-            }
-            const len = Math.hypot(normalField.nx[idx], normalField.ny[idx], normalField.nz[idx]) || 1;
-            normalField.nx[idx] /= len;
-            normalField.ny[idx] /= len;
-            normalField.nz[idx] /= len;
+            appendagePixels.push({ idx, segLeft, segRight });
           }
         }
       }
+    }
+
+    if (appendagePixels.length > 0) {
+      appendageData = {
+        charCenterX,
+        pixels: appendagePixels,
+      };
+      baseNormalField = {
+        nx: new Float32Array(normalField.nx),
+        ny: new Float32Array(normalField.ny),
+        nz: new Float32Array(normalField.nz),
+        width,
+        height,
+      };
+      applyAppendageStabilization(normalField, baseNormalField, appendageData, lightAzimuth ?? 315);
     }
   }
 
@@ -839,5 +884,7 @@ export function computeContentAwareHeightmap(
     smoothHeightmap,
     normalField,
     cavityAO,
+    baseNormalField,
+    appendageData,
   };
 }

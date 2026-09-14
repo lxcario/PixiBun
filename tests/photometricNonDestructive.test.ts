@@ -334,6 +334,126 @@ describe('Photometric non-destructiveness', () => {
     }
   });
 
+  it('dynamically updates character appendage normals during live light azimuth drag, matching fresh single-shot recompute 100% byte-for-byte', async () => {
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 32;
+    const height = 32;
+    const catLayerId = 'cat-appendage-drag-test';
+    const catBuffer = getOrCreateBuffer(catLayerId, width, height);
+
+    // Draw the anatomical cat sprite with ears, whiskers, eyes, and body
+    // Left ear (x: 9..12, y: 5..9)
+    catBuffer.ctx.fillStyle = '#FFF5E6';
+    for (let y = 5; y <= 9; y++) {
+      for (let x = 9; x <= 12; x++) {
+        catBuffer.ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // Right ear (x: 19..22, y: 5..9)
+    for (let y = 5; y <= 9; y++) {
+      for (let x = 19; x <= 22; x++) {
+        catBuffer.ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // Face body (x: 7..24, y: 10..22)
+    for (let y = 10; y <= 22; y++) {
+      for (let x = 7; x <= 24; x++) {
+        catBuffer.ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // Eyes (x: 11, 19, y: 14..15)
+    catBuffer.ctx.fillStyle = '#000000';
+    catBuffer.ctx.fillRect(11, 14, 1, 2);
+    catBuffer.ctx.fillRect(19, 14, 1, 2);
+    // Whiskers (y: 15, x: 4..6, 25..27)
+    for (let x = 4; x <= 6; x++) catBuffer.ctx.fillRect(x, 15, 1, 1);
+    for (let x = 25; x <= 27; x++) catBuffer.ctx.fillRect(x, 15, 1, 1);
+
+    const baseParams = {
+      lightElevation: 45,
+      lightRadius: 64,
+      lightColor: '#FFFFFF',
+      ambientIntensity: 0.4,
+      material: 'matte' as const,
+      cavityStrength: 1.0,
+      ditherModulation: 0.0,
+      bayerSize: '4x4' as const,
+      formType: 'character' as const,
+    };
+
+    // 1. Start drag session at lightAzimuth = 45°
+    const sessionAnalysis = computePhotometricAnalysis(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 45,
+    });
+    expect(sessionAnalysis.appendageData).toBeTruthy();
+    expect(sessionAnalysis.baseNormalField).toBeTruthy();
+    expect(sessionAnalysis.appendageData!.pixels.length).toBeGreaterThan(0);
+
+    // 2. Perform live drag to lightAzimuth = 225° using precomputedAnalysis
+    const liveDrag225 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+      precomputedAnalysis: sessionAnalysis,
+    });
+    const live225Ctx = liveDrag225.getContext('2d') as unknown as MockCtx;
+    const live225Data = live225Ctx._imageData.data;
+
+    // 3. Single-shot fresh compute at lightAzimuth = 225° (no precomputedAnalysis)
+    const fresh225 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 225,
+    });
+    const fresh225Ctx = fresh225.getContext('2d') as unknown as MockCtx;
+    const fresh225Data = fresh225Ctx._imageData.data;
+
+    // Assert 100% byte-identity between live drag and fresh compute at 225° (0 pixel difference!)
+    let differingPixels225 = 0;
+    for (let i = 0; i < fresh225Data.length; i += 4) {
+      if (
+        live225Data[i] !== fresh225Data[i] ||
+        live225Data[i + 1] !== fresh225Data[i + 1] ||
+        live225Data[i + 2] !== fresh225Data[i + 2] ||
+        live225Data[i + 3] !== fresh225Data[i + 3]
+      ) {
+        differingPixels225++;
+      }
+    }
+    expect(differingPixels225).toBe(0);
+
+    // 4. Drag back to 45° and verify byte-identity with fresh compute at 45°
+    const liveDrag45 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 45,
+      precomputedAnalysis: sessionAnalysis,
+    });
+    const live45Ctx = liveDrag45.getContext('2d') as unknown as MockCtx;
+    const live45Data = live45Ctx._imageData.data;
+
+    const fresh45 = executePhotometricPipeline(catBuffer.ctx, width, height, {
+      ...baseParams,
+      lightAzimuth: 45,
+    });
+    const fresh45Ctx = fresh45.getContext('2d') as unknown as MockCtx;
+    const fresh45Data = fresh45Ctx._imageData.data;
+
+    let differingPixels45 = 0;
+    for (let i = 0; i < fresh45Data.length; i += 4) {
+      if (
+        live45Data[i] !== fresh45Data[i] ||
+        live45Data[i + 1] !== fresh45Data[i + 1] ||
+        live45Data[i + 2] !== fresh45Data[i + 2] ||
+        live45Data[i + 3] !== fresh45Data[i + 3]
+      ) {
+        differingPixels45++;
+      }
+    }
+    expect(differingPixels45).toBe(0);
+  });
+
   it('overwrites existing photometric layer instead of adding duplicate layers on re-render', async () => {
     const { useStudioStore } = await import('@/stores/studioStore');
     const store = useStudioStore.getState();
