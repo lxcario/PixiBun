@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { MaterialType } from '@/types/tools';
+import { MaterialType, PhotometricAnalysisGeometry } from '@/types/tools';
 import {
   executePhotometricPipeline,
+  computePhotometricAnalysis,
   executeVolumetricOpticalPipeline,
   detectMinecraftSkin,
   renderParametric2p5DLighting,
@@ -36,6 +37,7 @@ export function usePhotometricEvents({
     lastCenterX?: number;
     lastCenterY?: number;
     normalMapData?: ImageData | null;
+    analysis?: PhotometricAnalysisGeometry;
   } | null>(null);
 
   useEffect(() => {
@@ -97,24 +99,31 @@ export function usePhotometricEvents({
 
       const normalMapData = compositeNormalMapSnapshot();
 
+      const params = {
+        lightAzimuth: azimuth,
+        lightElevation: elevation,
+        lightRadius: 64,
+        lightColor: '#FFFFFF',
+        ambientIntensity: 0.48,
+        lightBrightness: brightness,
+        material,
+        cavityStrength: state.tools.cavityStrength,
+        ditherModulation: state.tools.ditherModulation,
+        bayerSize: '4x4' as const,
+        formType,
+        minecraftSkinMode: state.tools.minecraftSkinMode,
+        normalMapData: normalMapData || undefined,
+      };
+
+      const analysis = computePhotometricAnalysis(srcCtx, canvasWidth, canvasHeight, params);
+
       const shadedCanvas = executePhotometricPipeline(
         srcCtx,
         canvasWidth,
         canvasHeight,
         {
-          lightAzimuth: azimuth,
-          lightElevation: elevation,
-          lightRadius: 64,
-          lightColor: '#FFFFFF',
-          ambientIntensity: 0.48,
-          lightBrightness: brightness,
-          material,
-          cavityStrength: state.tools.cavityStrength,
-          ditherModulation: state.tools.ditherModulation,
-          bayerSize: '4x4',
-          formType,
-          minecraftSkinMode: state.tools.minecraftSkinMode,
-          normalMapData: normalMapData || undefined,
+          ...params,
+          precomputedAnalysis: analysis,
         },
         []
       );
@@ -139,6 +148,7 @@ export function usePhotometricEvents({
         formType,
         paletteColors: [],
         normalMapData,
+        analysis,
       };
 
       state.setPhotometricGizmoActive(true);
@@ -179,6 +189,7 @@ export function usePhotometricEvents({
           lightCenterX: session.lastCenterX,
           lightCenterY: session.lastCenterY,
           normalMapData: session.normalMapData || undefined,
+          precomputedAnalysis: session.analysis,
         },
         session.paletteColors
       );

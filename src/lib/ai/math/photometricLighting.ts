@@ -16,6 +16,7 @@ import {
   MaterialType,
   MaterialProperties,
   PhotometricLightingParams,
+  PhotometricAnalysisGeometry,
   VolumetricOpticsParams,
   OpticalPresetType,
   AnisoFlowPreset,
@@ -411,13 +412,12 @@ export function buildCelRamp(r: number, g: number, b: number): CelRamp {
   };
 }
 
-export function executePhotometricPipeline(
+export function computePhotometricAnalysis(
   srcCtx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  params: PhotometricLightingParams,
-  paletteHex: string[] = []
-): HTMLCanvasElement {
+  params: PhotometricLightingParams
+): PhotometricAnalysisGeometry {
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
 
@@ -425,20 +425,6 @@ export function executePhotometricPipeline(
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
     return data[(y * width + x) * 4 + 3] > 30;
   };
-
-  const skinMode = params.minecraftSkinMode ?? 'auto';
-  let isMcSkin = false;
-  if (width === 64 && (height === 64 || height === 32)) {
-    if (skinMode === 'enabled') {
-      isMcSkin = true;
-    } else if (skinMode === 'auto' && params.formType !== 'character' && params.formType !== 'orb' && params.formType !== 'prop') {
-      isMcSkin = detectMinecraftSkin(isOpaque, width, height);
-    }
-  }
-
-  if (isMcSkin) {
-    return executeMinecraftSkinShadingPipeline(srcCtx, width, height, params);
-  }
 
   let formType = params.formType;
   if (!formType || formType === 'auto') {
@@ -472,7 +458,7 @@ export function executePhotometricPipeline(
     isInkLineMask = analysis.isInkLine;
   }
 
-  // Blend custom manual sculpt normals (from dedicated normal layers or chisel strokes) using RNM
+  // Pre-blend custom manual sculpt normals (from dedicated normal layers or chisel strokes) using RNM
   if (params.normalMapData) {
     const nData = params.normalMapData instanceof ImageData
       ? params.normalMapData.data
@@ -495,6 +481,65 @@ export function executePhotometricPipeline(
         }
       }
     }
+  }
+
+  return {
+    formType,
+    normalField,
+    cavityAO,
+    isFeatureMask,
+    isInkLineMask,
+  };
+}
+
+export function executePhotometricPipeline(
+  srcCtx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  params: PhotometricLightingParams,
+  paletteHex: string[] = []
+): HTMLCanvasElement {
+  const imgData = srcCtx.getImageData(0, 0, width, height);
+  const data = imgData.data;
+
+  const isOpaque = (x: number, y: number) => {
+    if (x < 0 || x >= width || y < 0 || y >= height) return false;
+    return data[(y * width + x) * 4 + 3] > 30;
+  };
+
+  const skinMode = params.minecraftSkinMode ?? 'auto';
+  let isMcSkin = false;
+  if (width === 64 && (height === 64 || height === 32)) {
+    if (skinMode === 'enabled') {
+      isMcSkin = true;
+    } else if (skinMode === 'auto' && params.formType !== 'character' && params.formType !== 'orb' && params.formType !== 'prop') {
+      isMcSkin = detectMinecraftSkin(isOpaque, width, height);
+    }
+  }
+
+  if (isMcSkin) {
+    return executeMinecraftSkinShadingPipeline(srcCtx, width, height, params);
+  }
+
+  let formType: 'character' | 'orb' | 'prop';
+  let normalField: NormalVectorField;
+  let cavityAO: Float32Array;
+  let isFeatureMask: Uint8Array | null = null;
+  let isInkLineMask: Uint8Array | null = null;
+
+  if (params.precomputedAnalysis) {
+    formType = params.precomputedAnalysis.formType;
+    normalField = params.precomputedAnalysis.normalField;
+    cavityAO = params.precomputedAnalysis.cavityAO;
+    isFeatureMask = params.precomputedAnalysis.isFeatureMask ?? null;
+    isInkLineMask = params.precomputedAnalysis.isInkLineMask ?? null;
+  } else {
+    const analysis = computePhotometricAnalysis(srcCtx, width, height, params);
+    formType = analysis.formType;
+    normalField = analysis.normalField;
+    cavityAO = analysis.cavityAO;
+    isFeatureMask = analysis.isFeatureMask ?? null;
+    isInkLineMask = analysis.isInkLineMask ?? null;
   }
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;

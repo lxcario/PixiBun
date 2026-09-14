@@ -29,6 +29,20 @@ export interface MaterialProperties {
   hasRim: boolean;
 }
 
+export interface PhotometricAnalysisGeometry {
+  formType: 'character' | 'orb' | 'prop';
+  normalField: {
+    nx: Float32Array;
+    ny: Float32Array;
+    nz: Float32Array;
+    width: number;
+    height: number;
+  };
+  cavityAO: Float32Array;
+  isFeatureMask?: Uint8Array | null;
+  isInkLineMask?: Uint8Array | null;
+}
+
 export interface PhotometricLightingParams {
   lightAzimuth: number; // 0° to 360°
   lightElevation: number; // 0° to 90°
@@ -46,6 +60,7 @@ export interface PhotometricLightingParams {
   lightCenterX?: number; // Center anchor X in canvas coordinates (middle light point)
   lightCenterY?: number; // Center anchor Y in canvas coordinates (middle light point)
   normalMapData?: ImageData | Uint8ClampedArray; // Optional manual normal sculpt layer data
+  precomputedAnalysis?: PhotometricAnalysisGeometry; // Precomputed geometry & normals for 60fps live dragging
 }
 
 export interface ToolSettings {

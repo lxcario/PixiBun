@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   WORKSPACE_ENVELOPE,
+  EXPORT_ENVELOPE,
+  PROBE_ENVELOPE,
+  HARDWARE_LIMITS,
   MAX_CANVAS_DIMENSION,
   MAX_CANVAS_FRAMES,
   MAX_CANVAS_LAYERS,
@@ -8,6 +11,7 @@ import {
   MAX_EXPORT_PIXELS,
   MAX_PROBE_DIMENSION,
   MAX_PROBE_PIXELS,
+  MAX_HARDWARE_DIMENSION,
   MAX_HARDWARE_PIXEL_AREA,
 } from '@/config/canvasLimits';
 import { validateProjectFile } from '@/lib/project/schema';
@@ -24,17 +28,24 @@ describe('Cross-Boundary Workspace Envelope Coordination', () => {
     expect(MAX_SAFE_CANVAS_PIXELS).toBe(MAX_EXPORT_PIXELS);
     expect(MAX_EXPORT_DIMENSION).toBe(4096);
     expect(MAX_EXPORT_PIXELS).toBe(16_777_216);
+    expect(EXPORT_ENVELOPE.MAX_EXPORT_DIMENSION).toBe(4096);
+    expect(EXPORT_ENVELOPE.MAX_EXPORT_PIXELS).toBe(16_777_216);
 
     // 2. ImageHeaderProbe bounds alignment
     expect(ImageHeaderProbe.MAX_ALLOWED_DIMENSION).toBe(MAX_PROBE_DIMENSION);
     expect(ImageHeaderProbe.MAX_ALLOWED_PIXELS).toBe(MAX_PROBE_PIXELS);
     expect(MAX_PROBE_DIMENSION).toBe(8192);
     expect(MAX_PROBE_PIXELS).toBe(67_108_864);
+    expect(PROBE_ENVELOPE.MAX_PROBE_DIMENSION).toBe(8192);
+    expect(PROBE_ENVELOPE.MAX_PROBE_PIXELS).toBe(67_108_864);
 
     // 3. SafeCanvas hardware area bounds alignment
     expect(CanvasHardwareLimits.DEFAULT_SAFE_DIM).toBe(MAX_PROBE_DIMENSION);
     expect(CanvasHardwareLimits.MAX_SAFE_PIXEL_AREA).toBe(MAX_HARDWARE_PIXEL_AREA);
+    expect(MAX_HARDWARE_DIMENSION).toBe(16384);
     expect(MAX_HARDWARE_PIXEL_AREA).toBe(16384 * 16384);
+    expect(HARDWARE_LIMITS.MAX_HARDWARE_DIMENSION).toBe(16384);
+    expect(HARDWARE_LIMITS.MAX_HARDWARE_PIXEL_AREA).toBe(16384 * 16384);
   });
 
   it('validates a max-envelope project schema (2048x2048, 500 frames, 100 layers)', () => {

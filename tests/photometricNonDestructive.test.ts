@@ -267,6 +267,73 @@ describe('Photometric non-destructiveness', () => {
     }
   });
 
+  it('precomputedAnalysis produces byte-identical output while bypassing geometry recomputation for live drags', async () => {
+    const { executePhotometricPipeline, computePhotometricAnalysis } = await import('@/lib/ai/smartMathEngine');
+    const { clearAllBuffers, getOrCreateBuffer } = await import('@/lib/engine/bufferRegistry');
+
+    clearAllBuffers();
+    const width = 16;
+    const height = 16;
+    const baseLayerId = 'base-live-drag';
+    const base = getOrCreateBuffer(baseLayerId, width, height);
+
+    base.ctx.fillStyle = '#3A2E4C';
+    for (let y = 3; y < 13; y++) {
+      for (let x = 3; x < 13; x++) {
+        base.ctx.fillRect(x, y, 1, 1);
+      }
+    }
+
+    const params = {
+      lightAzimuth: 135,
+      lightElevation: 45,
+      lightRadius: 64,
+      lightColor: '#FFFFFF',
+      ambientIntensity: 0.35,
+      material: 'matte' as const,
+      cavityStrength: 1.0,
+      ditherModulation: 0.35,
+      bayerSize: '4x4' as const,
+      formType: 'character' as const,
+    };
+
+    // 1. Standard pipeline (computes geometry inline)
+    const outStandard = executePhotometricPipeline(base.ctx, width, height, params);
+    const standardCtx = outStandard.getContext('2d') as unknown as MockCtx;
+    const standardData = standardCtx._imageData.data;
+
+    // 2. Precomputed analysis pipeline (reused across live mouse drag frames)
+    const analysis = computePhotometricAnalysis(base.ctx, width, height, params);
+    expect(analysis.normalField).toBeTruthy();
+    expect(analysis.cavityAO).toBeTruthy();
+    expect(analysis.formType).toBe('character');
+
+    const outCached = executePhotometricPipeline(base.ctx, width, height, {
+      ...params,
+      precomputedAnalysis: analysis,
+    });
+    const cachedCtx = outCached.getContext('2d') as unknown as MockCtx;
+    const cachedData = cachedCtx._imageData.data;
+
+    // Must be 100% byte-identical
+    expect(cachedData.length).toBe(standardData.length);
+    for (let i = 0; i < standardData.length; i++) {
+      expect(cachedData[i]).toBe(standardData[i]);
+    }
+
+    // 3. Live drag session with varying azimuths runs flawlessly using the same analysis
+    for (const az of [45, 90, 180, 270, 315]) {
+      const liveOut = executePhotometricPipeline(base.ctx, width, height, {
+        ...params,
+        lightAzimuth: az,
+        precomputedAnalysis: analysis,
+      });
+      expect(liveOut).toBeTruthy();
+      expect(liveOut.width).toBe(width);
+      expect(liveOut.height).toBe(height);
+    }
+  });
+
   it('overwrites existing photometric layer instead of adding duplicate layers on re-render', async () => {
     const { useStudioStore } = await import('@/stores/studioStore');
     const store = useStudioStore.getState();

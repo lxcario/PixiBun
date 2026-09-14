@@ -13,7 +13,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Hardened `isValidPixelOp` to strictly reject negative coordinates and values $\ge 2048$, enforcing exact schema parity across network peers.
 - **Safe Canvas Hardware Bounds & TypedArray Offset Fix (`src/lib/safety/safeCanvas.ts`)**:
   - Bound buffer clipping to canonical `HARDWARE_LIMITS`.
-  - Fixed `extractClampedRect` typed array instantiation by explicitly passing `(buffer, byteOffset, length)` to `Uint32Array`, eliminating offset copy bugs on non-zero view windows.
+  - Fixed `SafeCanvas.getImageData()` typed array instantiation by explicitly passing `(buffer, byteOffset, length)` to `Uint32Array`, eliminating offset copy bugs on non-zero view windows.
 - **Zero-Allocation Safe JSON Byte Accounting & Plain Object Sanitizer (`src/lib/safety/safeJson.ts`)**:
   - Replaced wasteful string allocations with zero-heap `TextEncoder.encodeInto` UTF-8 byte counting in `getUtf8ByteLength`.
   - Hardened `sanitizeObject` to return a clean plain object `{}` preserving `Object.prototype` methods while stripping prototype-pollution keys (`__proto__`, `constructor`, `prototype`).
@@ -24,7 +24,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Defined canonical `APP_VERSION = '1.13.1'` consumed by `src/lib/diagnostics/capture.ts` and `src/app/api/diagnostics/relay/route.ts`.
   - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
 - **Cross-Boundary & Defensive Hardening Test Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
-  - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 635 unit tests across 90 suites (100% green).
+  - Added 9 cross-boundary envelope integration tests and updated regression assertions, expanding test coverage to 636 unit tests across 90 suites (100% green).
 
 ### Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection (Phase 58)
 - **Resolution-Aware Bevel Radius & Macro Heightmap Scaling (`src/lib/ai/math/edtNormalMap.ts`)**:

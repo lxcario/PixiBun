@@ -17,10 +17,10 @@
 - [x] Boundary Enforcement Alignment (`src/lib/project/schema.ts`, `src/lib/sync/p2pSync.ts`, `src/components/modals/export/PngExportTab.tsx`, `src/components/modals/ExportModal.tsx`): Bound schema and P2P payloads to canonical 2048px workspace limits.
 - [x] Subsystem Hardening (`src/lib/safety/safeJson.ts`, `src/lib/safety/safeCanvas.ts`, `src/lib/safety/imageHeaderProbe.ts`): UTF-8 byte counting, plain `{}` sanitization, `byteOffset` passing, and multi-window JPEG paging.
 - [x] Canonical Versioning (`src/config/version.ts`, `src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `package-lock.json`): Single source of truth at `1.13.1`.
-- [x] Cross-Boundary Regression Suite (`tests/crossBoundaryEnvelope.test.ts`): Verified envelope invariants across schema, P2P, export, and safety layers, bringing coverage to 635 unit tests across 90 suites.
+- [x] Cross-Boundary Regression Suite (`tests/crossBoundaryEnvelope.test.ts`): Verified envelope invariants across schema, P2P, export, and safety layers, bringing coverage to 636 unit tests across 90 suites.
 
 **Acceptance criteria:**
-- All 635 unit tests across 90 suites pass (100% green).
+- All 636 unit tests across 90 suites pass (100% green).
 - `node scripts/verifyDocIntegrity.mjs` passes all 6 checks.
 - `npm run gate:full` passes in ~24s with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.
@@ -44,7 +44,7 @@
 - [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
 
 **Acceptance criteria:**
-- All 622 unit tests across 89 suites pass (at the time, now 635 across 90 suites).
+- All 622 unit tests across 89 suites pass (at the time, now 636 across 90 suites).
 - `node scripts/verifyDocIntegrity.mjs` passes all checks.
 - `npm run gate` passes with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.

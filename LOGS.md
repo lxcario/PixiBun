@@ -1620,7 +1620,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Hardened `isValidPixelOp` rejecting negative coordinates or coordinates $\ge 2048$, enforcing schema parity across the network boundary.
 - **Safe Canvas Hardware Boundary & TypedArray Offset Alignment (`src/lib/safety/safeCanvas.ts`)**:
   - Clamped selection boundaries against canonical `HARDWARE_LIMITS`.
-  - Fixed `Uint32Array` buffer view instantiation by passing `byteOffset` and `length`, eliminating byte misalignment bugs.
+  - Fixed `SafeCanvas.getImageData()` buffer view instantiation by passing `byteOffset` and `length`, eliminating byte misalignment bugs.
 - **Zero-Allocation Safe JSON Sanitization (`src/lib/safety/safeJson.ts`)**:
   - Replaced wasteful memory stringification allocations in `getUtf8ByteLength` with zero-allocation `TextEncoder.encodeInto` byte counting.
   - Ensured `sanitizeObject` returns a clean, plain object `{}` rather than `null` on prototype manipulation attempts.
@@ -1631,10 +1631,10 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Defined canonical `APP_VERSION = '1.13.1'`, consumed by diagnostics capture (`src/lib/diagnostics/capture.ts`) and relay routes (`src/app/api/diagnostics/relay/route.ts`).
   - Synchronized `package-lock.json` with `package.json` at version `1.13.1`.
 - **Cross-Boundary & Defensive Regression Suites (`tests/crossBoundaryEnvelope.test.ts`, `tests/p2pValidation.test.ts`, `tests/structurePayload.test.ts`, `tests/safetyHardening.test.ts`, `tests/diagnostics.test.ts`)**:
-  - Added new cross-boundary test suite verifying canvas envelope invariants across schema, P2P sync, export UI, and safety layers, expanding total test coverage to 635 unit tests across 90 suites (100% green).
+  - Added new cross-boundary test suite verifying canvas envelope invariants across schema, P2P sync, export UI, and safety layers, expanding total test coverage to 636 unit tests across 90 suites (100% green).
 
 **Checks run:**
-- `npm run gate:full`: ALL 4 STAGES PASSED (Docs, Typecheck, 635 Vitest tests in 90 suites, Turbopack production build) in ~23.8s
+- `npm run gate:full`: ALL 4 STAGES PASSED (Docs, Typecheck, 636 Vitest tests in 90 suites, Turbopack production build) in ~23.8s
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 

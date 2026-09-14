@@ -189,7 +189,7 @@ Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Pri
 * **Proportional Timeline Frame Cards:** Rather than uniform-width cards, timeline frame cards scale their horizontal width proportionally when `durationMs` deviates from the baseline frame duration ($T_{\text{base}} = 1000 / \text{fps}$):
   $$W_{\text{card}} = \text{clamp}\left(48\text{px}, \; 48\text{px} \times \frac{\text{durationMs}}{T_{\text{base}}}, \; 160\text{px}\right)$$
 * **Timing Hold Badge:** Frames with $\text{durationMs} \ge 2 \times T_{\text{base}}$ display an understated amber duration pill (`+125ms`) on the top-right corner of the card.
-* **Ghost Frame Spacing Falloff:** Onion skin ghost opacity scales down during extended holds so stationary poses do not overwhelm adjacent in-betweens.
+* **Ghost Frame Spacing Falloff:** Onion skin ghost opacity scales down progressively with frame distance ($1 - 0.25 \times (\text{dist} - 1)$) so distant poses do not overwhelm adjacent in-betweens.
 
 ---
 
