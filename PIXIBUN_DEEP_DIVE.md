@@ -18,17 +18,22 @@ PixiBun is built on Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand 
 src/
 ├── app/
 │   ├── api/diagnostics/relay/route.ts # SSRF-guarded diagnostics proxy (optional, zero telemetry, token-bucket rate limited)
-│   ├── globals.css                  # Tailwind v4 @theme, OKLCH variables, tactile shadows, dither patterns
+│   ├── globals.css                  # Tailwind v4 @theme, OKLCH variables, tactile shadows, v2 design tokens
 │   ├── layout.tsx                   # Root layout (Silkscreen, Plus Jakarta Sans, JetBrains Mono fonts)
 │   ├── page.tsx                     # Landing Page (Living desk scene, diorama, artisan story)
-│   ├── playground/page.tsx          # Interactive tutorial and sandbox workspace
+│   ├── playground/page.tsx          # Interactive tutorial, sandbox, and Teaching Animation Board
 │   └── studio/page.tsx              # Main studio drawing editor and workspace
 ├── components/
+│   ├── audio/                       # StudioRadioWidget (Web Audio synthesizer boombox & spectrum)
 │   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
-│   ├── layout/                      # Studio shell (TopHeader, LeftToolbar, CenterViewport, CursorStatusBadge, RightInspector + modular inspector subpanels, BottomTimeline, ContextOptionsBar)
-│   ├── modals/                      # Dialog windows (ImportModal, ExportModal, CanvasResizeModal, ColorPickerModal, ShortcutsModal, CoDrawModal, TagManagerModal)
+│   ├── layout/                      # Studio shell (AtelierRail, LeftToolbar, CenterViewport, StatusBar, CursorStatusBadge, RightInspector + PanelSection subpanels, BottomTimeline)
+│   ├── modals/                      # Dialog windows (CommandPaletteModal, ImportModal, ExportModal, CanvasResizeModal, ShortcutsModal, CoDrawModal, ProjectsGalleryModal)
+│   ├── playground/                  # Educational modules (TeachingAnimationBoard, TeachingBoardModal)
 │   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, SelectionTransformGizmo, ViewportLensFilters, RemoteCursorsOverlay)
-│   └── ui/                          # Atomic tactile components (TactileButton, PixelIcon, BunMascot, ThemeToggle, ModalWrapper)
+│   └── ui/                          # Tactile design system (AppearancePopover, IconButton, PanelSection, StudioSlider, StudioSelect, StudioToggle, StudioNumberInput, StudioTooltip, TactileButton, PixelIcon)
+├── hooks/
+│   ├── studio/                      # Lifecycle hooks (useStudioAutosave, useStudioClipboard, useStudioFileSystem, useStudioKeyboard)
+│   └── viewport/                    # Viewport pointer handlers (useBrushPointerHandler, useChiselPointerHandler, useSelectionPointerHandler, useShapePointerHandler)
 ├── lib/
 │   ├── ai/
 │   │   ├── math/                    # Modular graphics math laboratory
@@ -418,5 +423,39 @@ Cycles display-only simulation matrices for color vision deficiencies:
 ### 3. Precision Tool Hotkeys
 * <kbd>N</kbd> (or <kbd>Shift</kbd> + <kbd>K</kbd>): Direct activation of the 2.5D Rivet Dome Stamp tool.
 * <kbd>K</kbd>: Direct activation of the Normal Chisel tool.
+* <kbd>Ctrl</kbd> + <kbd>K</kbd>: Fuzzy-search Command Palette launcher.
+* <kbd>Ctrl</kbd> + <kbd>S</kbd>: Direct project persistence commit to IndexedDB and active native file handle.
+
+---
+
+# 16. Modern Studio Shell & Design System Primitives Architecture
+
+### 1. Workspace Shell Decomposition
+The monolithic `StudioLayout.tsx` has been decomposed into a decoupled shell architecture:
+* **`AtelierRail.tsx`**: Top studio rail unifying project identity, file actions (Save, Save As, Import, Export, Gallery, Co-Draw), Undo/Redo controls, zoom group with responsive fit calculation (`handleFitToScreen`), tool-specific contextual parameter controls, CVD colorblindness lenses, squint mode, symmetry rulers, and `AppearancePopover`.
+* **`StatusBar.tsx`**: 24px bottom chrome bar displaying real-time cursor coordinates via decoupled `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, active layer/frame indicators, and embedded procedural Web Audio lo-fi radio boombox.
+* **`CommandPaletteModal.tsx`**: Accessible fuzzy-search launcher (`Ctrl+K` / `Cmd+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut hint badges.
+
+### 2. Design System Component Library (`src/components/ui/`)
+All studio inspector panels and dialogs are standardized on tactile, accessible primitives conforming to WCAG 2.2 AA:
+* **`StudioSlider`**: Linear gradient fill track with real-time numeric badge, golden accent thumb, and ARIA slider semantics.
+* **`StudioSelect`**: Styled native `<select>` with studio surface elevation tokens and high-visibility focus rings.
+* **`StudioToggle`**: Tactile sliding pill switch with hidden checkbox input and gold indicator thumb.
+* **`StudioNumberInput`**: Numeric input with min/max clamping, step increments, and unit suffix.
+* **`StudioTooltip`**: Delay-activated tooltip (300ms) with keyboard focus support and shortcut badges.
+* **`IconButton`**: 24–32px tactile icon button with ghost/surface/danger variants and translation depression physics.
+* **`PanelSection`**: Collapsible accordion section with persistent `localStorage` open/closed state and header action slot.
+
+---
+
+# 17. Teaching Animation Board & Discrete Jump Physics Engine
+
+### 1. Interactive Teaching Animation Board (`TeachingAnimationBoard.tsx`)
+Built into `/playground` (and openable in the studio via `pixibun:open-teaching-board`), the Teaching Animation Board provides structured visual pixel art education:
+* **Character Curricula**: Interactive profiles for **Bun** (the 16×16 atelier bunny mascot) and **Gel Slime** (translucent bouncing slime).
+* **7-Stage Progressive Construction**: Step-by-step sprite breakdown: Silhouette Base $\to$ Core Volume $\to$ Face Cavities $\to$ Inward Details $\to$ Cel-Shading $\to$ Highlights $\to$ Final Inks.
+* **10-Frame Jump Cycle Anatomy**: Full physics breakdown covering Anticipation / Squash, Takeoff / Stretch, Ascent, Apex Hang, Descent, Ground Contact, Recovery Cushion, and Rest.
+* **8 Alt Palette Colorways**: Interactive colorway swatches (Classic Lavender, Matcha Sage, Sakura Rose, Midnight Obsidian, Solar Gold, Frost Cyan, Rust Copper, Twilight Indigo).
+* **1-Click Inject-to-Timeline**: Instantly loads the constructed multi-frame jump cycle into the studio timeline with authentic frame hold timings.
 
 

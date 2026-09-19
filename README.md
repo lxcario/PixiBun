@@ -128,7 +128,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Frame-by-Frame Timeline & Tag Clips:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.
 * **Floating Live Preview Popout:** Draggable, resizable $1\times/2\times/4\times$ live preview window with custom backdrops (*Checkerboard, Dark Obsidian, Alabaster Paper, Amber Lamp*).
-* **Interactive Beginner Playground (`/playground`):** Guided tutorial sandbox with Bun covering core pixel art animation fundamentals — squash and stretch, anticipation, and onion skinning.
+* **Interactive Beginner Playground (`/playground`):** Guided tutorial sandbox with Bun covering core pixel art animation fundamentals — squash and stretch, anticipation, and onion skinning. Includes the interactive **Teaching Animation Board** with a 10-frame jump anatomy breakdown, 7-stage progressive character construction (Bun and Gel Slime profiles), 8 semantic alt palette colorways, and instant 1-click timeline injection.
 
 ---
 
@@ -144,30 +144,31 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
----
+## 🎨 Dual First-Party Studio Themes
 
-## 🎨 Signature Atelier Palette Tokens
+PixiBun Atelier features two distinct, fully crafted visual identities selectable via the **Appearance Popover** in the top rail, each supporting both Dark and Light color schemes with zero-lag transition suppression:
 
-### Cozy Midnight (Dark Theme)
-| Token | Hex Code | Role & Atmosphere |
-|---|---|---|
-| **Midnight Desk** | `#140c1e` | Deepest room backdrop & outer wood grain |
-| **Desk Surface** | `#201431` | Workspace chassis & raised panel base |
-| **Plum Border** | `#3a2e4c` | Structural tactile bezel dividers |
-| **Wisteria Lavender** | `#c792df` | Primary brand accent & active tool state |
-| **Lilac Blush** | `#dcabdf` | Highlight bloom & secondary tool accents |
-| **Lamp Amber** | `#f0be7c` | Warm incandescent focus rings & key light |
-| **Warm Paper White** | `#ede8f4` | Headings, canvas base & specular glints |
+### 1. Atelier Theme (Modern Midnight Studio Default)
+| Token | Dark (Midnight Atelier) | Light (Warm Alabaster) | Role & Atmosphere |
+|---|---|---|---|
+| **Chassis / Desk** | `#16141a` | `#ece5d8` | Modern workstation background & room depth |
+| **Surface Base** | `#201d26` | `#f7f1e6` | Panels, toolbar docks, and inspector chassis |
+| **Surface Raised** | `#282530` | `#ffffff` | Raised buttons, card surfaces, and modal dialogs |
+| **Bezel Border** | `#35313d` | `#442a5c` | Precision tactile divider outlines |
+| **Creative Accent** | `#e5a962` | `#8a4500` | Warm golden incandescent highlights & active tools |
+| **Navigation Accent**| `#b596d9` | `#9940b5` | Wisteria lavender tool focus & timeline guides |
+| **Text Primary** | `#ede8f4` | `#221233` | Crisp headings, coordinates, and pixel values |
 
-### Morning Atelier (Light Theme)
-| Token | Hex Code | Role & Atmosphere |
-|---|---|---|
-| **Alabaster Desk** | `#fbf8f3` | Bright morning room base & clean desk surface |
-| **Parchment Surface** | `#f3ebe0` | Warm tactile paper chassis & tool panels |
-| **Deep Velvet Border** | `#3c2254` | High-contrast structural framing |
-| **Plum Accent** | `#7e2b96` | Primary tool highlights & active focus states |
-| **Morning Gold** | `#d97818` | Warm sunny highlights & primary buttons |
-| **Ink Heading** | `#221233` | Crisp, legible text and numeric values |
+### 2. Cozy Classic Theme (Original Plum & Wisteria Identity)
+| Token | Dark (Cozy Midnight) | Light (Morning Atelier) | Role & Atmosphere |
+|---|---|---|---|
+| **Chassis / Desk** | `#140c1e` | `#fbf8f3` | Deep plum-wood desk & vintage room atmosphere |
+| **Surface Base** | `#201431` | `#f3ebe0` | Thistle lavender studio chassis & inspector tabs |
+| **Surface Raised** | `#281b3d` | `#fffdf9` | Raised tool blocks and tactile button beds |
+| **Bezel Border** | `#3a2e4c` | `#3c2254` | Rich plum-wood structural bezels |
+| **Brand Accent** | `#c792df` | `#7e2b96` | Signature wisteria lavender focus & active states |
+| **Lamp Amber** | `#f0be7c` | `#d97818` | Incandescent desk lamp pool & primary actions |
+| **Text Primary** | `#ede8f4` | `#221233` | Warm paper white titles and high-contrast labels |
 
 ---
 
@@ -175,11 +176,14 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 | Key | Tool / Action |
 |---|---|
-| <kbd>B</kbd> | **Pen** Tool (Pixel-Perfect) |
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> | **Command Palette** (Fuzzy search all tools, view toggles, commands) |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> | **Save Project** (IndexedDB browser storage & native desktop file) |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> | **Save As** (Native `.pixibun` file export) |
+| <kbd>B</kbd> | **Pen** Tool (Pixel-Perfect Bresenham) |
 | <kbd>C</kbd> | **Quadratic Bézier Curve** Tool |
 | <kbd>E</kbd> | **Eraser** Tool |
 | <kbd>G</kbd> | **Flood Fill / Bucket** |
-| <kbd>D</kbd> | **Dither Brush** |
+| <kbd>D</kbd> | **Dither Brush** (Bayer, Atkinson, Riemersma) |
 | <kbd>I</kbd> | **Eyedropper / Color Picker** |
 | <kbd>M</kbd> | **Marquee Box Select** |
 | <kbd>Q</kbd> | **Lasso Select** |
@@ -198,9 +202,11 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 | <kbd>H</kbd> / <kbd>V</kbd> | **Flip Selection Horizontally / Vertically** |
 | <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd> | **Copy / Cut / Paste** Selection Buffer |
 | <kbd>Esc</kbd> | **Deselect / Commit Floating Selection** |
-| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | **Undo** last stroke |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | **Undo** last stroke (50-step memory ring) |
 | <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | **Redo** stroke |
 | <kbd>Ctrl</kbd> + <kbd>'</kbd> | **Toggle Pixel Grid** |
+| <kbd>Ctrl</kbd> + <kbd>0</kbd> | **Fit Canvas to Viewport** |
+| <kbd>Ctrl</kbd> + <kbd>1</kbd> | **Reset Zoom to 100%** |
 | <kbd>?</kbd> | **Open Keyboard Shortcuts Modal** |
 | <kbd>Space</kbd> | **Play / Pause** animation playback |
 | <kbd>,</kbd> / <kbd>.</kbd> | **Previous / Next** animation frame |
@@ -259,16 +265,20 @@ PixiBun is engineered as a local-first web application:
 | Subsystem | Technology | Architectural Rationale |
 |---|---|---|
 | **Framework** | Next.js 16 (App Router) + React 19 | Turbopack compilation, fine-grained leaf subscriptions, zero client bundle bloat. |
+| **Studio Shell** | AtelierRail, StatusBar, CommandPaletteModal | Modular studio chrome: consolidated top rail, persistent 24px coordinate status bar, fuzzy-search launcher (`Ctrl+K`), and live lo-fi radio widget. |
+| **Design System** | Tactile UI Component Library | Accessible `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, and collapsible `PanelSection` with WCAG AA focus rings. |
+| **Modular Hooks** | Studio Lifecycle & Viewport Handlers | Decoupled `useStudioAutosave`, `useStudioClipboard`, `useStudioFileSystem`, and tool-specific `useBrushPointerHandler`, `useChiselPointerHandler`, `useSelectionPointerHandler`, `useShapePointerHandler`. |
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
 | **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, RNM Normal Sculptor, Aaltonen Ray Marching, Mark Ferrari Cycling | Deterministic on-device computer graphics math for 2.5D shading, micro-relief carving, raymarched soft shadows, 60 FPS palette cycling, and normal baking. |
 | **Image Synthesis** | Forward-Difference Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
-| **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines. |
+| **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines, atomic revision tracking (`saveRevision.ts`). |
 | **Accessibility** | WCAG 2.2 AA + ESLint JSX-A11y + Axe | Keyboard drag alternatives, focus traps, accessible roles, high-visibility focus rings. |
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
-| **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
-| **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
+| **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag dual-axis theme transitions (`AppearancePopover`). |
+| **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs, single-transaction atomic metadata + blob commits, multi-project workspace management. |
+| **Collaboration** | P2P WebRTC + CRDT Sync Bridge | Dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication. |
 | **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 692 unit and integration tests across 97 suites and 9 E2E spec suites (22 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---

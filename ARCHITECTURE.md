@@ -18,6 +18,7 @@ PixiBun is structured as a client-side single-page application built on **Next.j
 graph TD
     subgraph UI_Layer ["🎨 UI & Workspace Shell (React 19 + Tailwind v4)"]
         AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
+        LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
         ViewportShell["CenterViewport (Dual-Canvas Viewport & HUD Overlay)"]
         RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
@@ -27,7 +28,7 @@ graph TD
 
     subgraph State_Layer ["⚡ Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
-        Theme["useThemeStore (Dark / Light Mode, Zero-Lag Style Override)"]
+        Theme["themeStore (Dual-Axis Atelier / Cozy Classic × Dark / Light)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
         UndoRedo["historyEngine (50 Combined Undo/Redo Entries)"]
     end
@@ -354,10 +355,15 @@ graph LR
 
 ## 11. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)
 
-To prevent simultaneous layout recalculations and repaint stutter across thousands of DOM elements during Dark (Cozy Midnight) $\leftrightarrow$ Light (Morning Atelier) switching:
-1. **Transition Suppression:** Injects a high-priority stylesheet (`pixibun-theme-transition-killer`) with `transition: none !important` before mutating `data-theme`.
-2. **Synchronous Reflow:** Reads `getComputedStyle(css).opacity` to force instantaneous layout evaluation while transitions are disabled.
-3. **Clean Teardown:** Removes the temporary stylesheet on the subsequent `requestAnimationFrame` tick, restoring silky micro-interactions without flash or delay.
+The studio theme engine is architected around two orthogonal axes managed by `useThemeStore`:
+* **Studio Theme (`studioTheme`):** `'atelier'` (modern midnight default) or `'cozy-classic'` (original plum/wisteria historical identity).
+* **Color Scheme (`colorScheme`):** `'dark'` or `'light'`.
+
+To prevent simultaneous layout recalculations and repaint stutter across thousands of DOM elements during theme and scheme switching:
+1. **Transition Suppression:** Injects a high-priority stylesheet (`pixibun-theme-transition-killer`) with `transition: none !important` before mutating DOM attributes.
+2. **Synchronous Reflow & Attribute Mutation:** Sets `data-studio-theme` and `data-color-scheme` (with `data-theme` for backward compatibility) on `document.documentElement`, updates `.dark` / `.light` class states, and reads `getComputedStyle(css).opacity` to force instantaneous layout evaluation while transitions are suppressed.
+3. **Clean Teardown:** Removes the temporary override stylesheet on the subsequent `requestAnimationFrame` tick, restoring silky micro-interactions without visual flash or delay.
+4. **Appearance Popover:** Flyout modal (`src/components/ui/AppearancePopover.tsx`) in the top rail exposes direct tactile switching between themes with real-time swatch previews and focus trapping.
 
 ---
 
@@ -584,7 +590,6 @@ To decouple development from cloud CI billing constraints while maintaining unco
   - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
 
 ---
-
 ## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
 
 To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
@@ -626,72 +631,7 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
   - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms using `baseNormalField` and candidate pixel metadata.
   - Guarantees 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputation at any azimuth.
 
-
-
-
-
-
-    4. **Stage 4 (Defensive Invariant Test Suite):** `npm test` runs the current Vitest unit suite.
-    5. **Stage 5 (Optional Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
-* **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
-  - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
-  - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
-* **Open Source Governance & Ready-to-Use GitLab CI:**
-  - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
-  - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
-
 ---
-
-## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
-
-To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
-
-* **Unsaved Dirty Invariants & Native Exit Guards (`src/components/layout/StudioLayout.tsx`, `src/stores/slices/createHistorySlice.ts`):**
-  - Synchronizes active document title with unsaved dirty status (`● Project — PixiBun`), automatically clearing upon save.
-  - Implements `beforeunload` browser event trapping whenever `isDirty === true`, preventing accidental tab closure and loss of in-flight artwork.
-* **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`):**
-  - Triggers transient, non-modal confirmation toasts (`✦ Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
-* **Modal Accessibility & Focus Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`):**
-  - Conforms to WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured).
-  - Enforces programmatic initial focus on modal title or first focusable interactable.
-  - Implements circular Tab / Shift+Tab keyboard focus containment, preventing focus leakage to obscured background layers.
-  - Restores focus to the triggering opener button upon modal dismissal.
-* **Shortcut Collision Prevention & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`):**
-  - Shields viewport keyboard shortcuts (e.g. `s` silhouette squint mode) from firing when focused in text inputs or executing `Ctrl+S`.
-  - Enforces monotonic quantized zoom progression across discrete power-of-two magnification levels.
-
----
-
-## 28. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
-
-To ensure that the 2.5D Photometric Studio delivers mathematically sound volumetric lighting across all canvas sizes ($16\times16$ through $128\times128$) and dark color palettes:
-
-* **Resolution-Aware Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`):**
-  - Introduces a dimensionless scale factor $\text{scaleFactor} = \max\left(1.0, \frac{\min(W, H)}{32}\right)$.
-  - Dynamically scales the anatomical character bevel radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$, dynamic bevel radius $R_{\text{bevel}} \in [2.5, 6.0 \times \text{scaleFactor}]$, and appendage width ceilings.
-  - Prevents interior normal fields on $64\times64$ and $128\times128$ canvases from prematurely flattening to $N = [0, 0, 1]$, while maintaining 100% byte-exact parity with legacy $32\times32$ baseline sprites.
-* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`):**
-  - Replaces naive global luminance thresholds ($L < 0.22$) with contextual spatial heuristics:
-    1. Dark boundary pixels touching transparent void ($L < 0.14$).
-    2. High-contrast interior crevices ($\max_{q \in \mathcal{N}_4} L(q) - L(p) \ge 0.16$).
-    3. Near-black true ink lines ($L < 0.035$).
-  - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
-* **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
-  - Ensures shadow luminance $L_{\text{shadow}} = \max(0.04, \min(0.78 L_{\text{base}}, L_{\text{base}} - 0.03))$ and deep crevice luminance $L_{\text{deep}} = \max(0.02, \min(0.60 L_{\text{base}}, L_{\text{base}} - 0.06))$ remain strictly darker than the base tone across the entire OKLCH luminance domain.
-* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
-  - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
-  - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms using `baseNormalField` and candidate pixel metadata.
-  - Guarantees 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputation at any azimuth.
-
-
-
-
-
-
-
-
-
-
 
 ### Audit clarifications (2026-09-19)
 

@@ -1695,6 +1695,70 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed
 **Status:** Complete
 
+---
+
+## 2026-09-19 / 2026-09-20 — Phase 62: Studio Architecture Overhaul, Dual Themes & Comprehensive Audit Remediation
+
+**Delivered:**
+- **Studio Shell Architecture Overhaul (`src/components/layout/`)**:
+  - `AtelierRail.tsx`: Consolidated top studio rail merging former `TopHeader` and `ContextOptionsBar`. Houses project title editing, project actions (Save, Save As, Import, Export, Projects Gallery, Co-Draw), Undo/Redo controls, zoom control group with fit calculation (`handleFitToScreen`), tool-specific contextual parameter toggles, CVD colorblindness lenses, squint silhouette mode, symmetry rulers, and the `AppearancePopover` theme trigger.
+  - `StatusBar.tsx`: Fixed 24px bottom workspace chrome bar displaying live cursor coordinates via decoupled `CursorStatusBadge`, active tool name, canvas dimensions, zoom factor, active layer/frame indicators, and embedded procedural Web Audio lo-fi radio boombox.
+  - `CommandPaletteModal.tsx`: Accessible fuzzy-search launcher (`Ctrl+K` / `Cmd+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut badge hints.
+- **Design System Component Primitives (`src/components/ui/`)**:
+  - Standardized accessible tactile controls replacing ad-hoc inline controls across all inspector panels:
+    - `StudioSlider.tsx`: Range slider with real-time fill gradient, numeric badge, and golden accent thumb.
+    - `StudioSelect.tsx`: Styled native `<select>` with studio surface tokens and focus-visible rings.
+    - `StudioToggle.tsx`: Tactile pill sliding switch with hidden checkbox and gold indicator thumb.
+    - `StudioNumberInput.tsx`: Numeric input with min/max bounds, step increments, and unit suffix.
+    - `StudioTooltip.tsx`: Delay-activated tooltip with keyboard focus support and shortcut badges.
+    - `IconButton.tsx`: 24–32px tactile icon button with ghost/surface/danger variants.
+    - `PanelSection.tsx`: Collapsible accordion section with persistent localStorage state and action header slot.
+- **Studio Lifecycle Hooks Decomposition (`src/hooks/studio/`)**:
+  - Extracted studio lifecycle concerns out of `StudioLayout.tsx`:
+    - `useStudioAutosave.ts`: Debounced (800ms) background IndexedDB persistence, startup restore synchronization with database readiness, in-flight save coalescing, and persistent quota warning banner auto-recovery.
+    - `useStudioClipboard.ts`: Global `Ctrl+V` paste for image files via bounded admission pipeline.
+    - `useStudioFileSystem.ts`: Native File System Access API for `.pixibun` direct save/save-as with project handle isolation.
+    - `useStudioKeyboard.ts`: Centralized keyboard shortcuts with input-field collision guards.
+- **Viewport Pointer Handler Decomposition (`src/hooks/viewport/`)**:
+  - Decomposed monolithic pointer event logic into per-tool specialized hooks:
+    - `useBrushPointerHandler.ts`: Pen, eraser, dither brush with Bresenham smoothing and pixel-perfect corner elimination.
+    - `useChiselPointerHandler.ts`: Normal chisel micro-relief sculpting sessions.
+    - `useSelectionPointerHandler.ts`: Marquee box, lasso, wand selection, and floating buffer transformations.
+    - `useShapePointerHandler.ts`: Bresenham line, 2:1 isometric line, quadratic Bézier curves, rectangle, and ellipse.
+- **Dual-Axis Theme System & Appearance Popover (`src/stores/themeStore.ts`, `src/components/ui/AppearancePopover.tsx`)**:
+  - Supports `studioTheme` (`'atelier'` | `'cozy-classic'`) × `colorScheme` (`'dark'` | `'light'`).
+  - Synchronous transition suppression (`pixibun-theme-transition-killer`) prevents layout thrashing across thousands of DOM elements during switching.
+  - `AppearancePopover.tsx` provides interactive live preview swatches for instant theme selection.
+- **Teaching Animation Board (`src/components/playground/`, `src/lib/art/teachingBoardData.ts`)**:
+  - `TeachingAnimationBoard.tsx` & `TeachingBoardModal.tsx`: Interactive 7-stage progressive character construction tutorial, 10-frame physics-based jump cycles with hold timings and squash & stretch, Bun and Gel Slime curricula, 8 alt colorways, and 1-click timeline injection.
+  - `teachingBoardData.ts`: 16×16 sprite datasets and discrete jump physics curves.
+- **Comprehensive Audit Remediation (B01–B12, D01–D09, T01–T03)**:
+  - B01: Database readiness awaited before startup project restore.
+  - B02: Save identity captured before serialization; revision comparison (`saveRevision.ts`) before marking workspace clean.
+  - B03: Atomic single-transaction metadata and layer blob commits (`db.transaction('rw', db.projects, db.layerBlobs)`).
+  - B04: Layer tags preserved through all serialization paths.
+  - B05: Nested custom ramps validated and hydrated into temporary buffers before publishing.
+  - B06: Native desktop file handle reset on project transition and bound to project identity.
+  - B07: Reliable co-draw message queue with ACK delivery confirmation, backpressure pause/resume, and retry deduplication.
+  - B08: Bounded import reader (`importFile.ts`) for file picker, drag-and-drop, and clipboard paste (50MB ceiling, JSON depth limits, WebP header dimension verification).
+  - B09: Duplicate frame and layer ID collision enforcement.
+  - B10: Header images read through shared bounded import reader.
+  - B11: Canvas dimension validation before mutations; proportional downscale for oversized image imports.
+  - B12: Autosave returns boolean; confirmation toast displayed only after verified persistence.
+  - D01–D09: Full documentation accuracy corrections (test suite counts, undo budget, export memory constraints, PII disclaimers, rate limiting semantics, algorithm naming).
+  - T01–T03: Synthetic test fixtures replacing machine-specific tests, ESLint integrated into standard quality gate, and E2E panel expansion fixes.
+- **Test Coverage Expansion**:
+  - Added `tests/auditAutosave.test.tsx`, `tests/auditCoDraw.test.ts`, `tests/auditPersistence.test.ts`, `tests/components/TeachingAnimationBoard.test.tsx`, `tests/e2e/auditPersistence.spec.ts`, `tests/studioThemes.test.tsx`, `tests/teachingAnimationBoard.test.ts`.
+  - Reached 692 unit tests across 97 suites and 22 E2E tests across 9 suites (100% green).
+
+**Checks run:**
+- `npm run gate`: ALL 4 STAGES PASSED (verify:docs, typecheck, lint, 692 unit tests in 97 suites).
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed.
+- `npx playwright test`: 22 E2E tests across 9 suites passed.
+- `npm run build`: Next.js Turbopack compilation succeeded with 0 errors.
+
+**Status:** Complete (2026-09-20)
+
 
 
 

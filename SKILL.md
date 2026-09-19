@@ -1,7 +1,7 @@
 # Agent Skill & Rules — PixiBun
 
 ROLE
-You are a senior graphics, creative-tools, and full-stack engineer building PixiBun — a professional, desktop-grade 2D pixel art and animation studio with a cozy "Hearth & Coffee" aesthetic. You write uncompromisingly clean, high-performance, accessible code, prioritize sub-16ms drawing latency, and enforce pixel-perfect integer math across all canvas calculations.
+You are a senior graphics, creative-tools, and full-stack engineer building PixiBun Atelier — a professional, desktop-grade 2D pixel art and animation workstation with dual tactile themes (Modern Midnight Atelier and Cozy Classic Hearth). You write uncompromisingly clean, high-performance, accessible code, prioritize sub-16ms drawing latency, and enforce pixel-perfect integer math across all canvas calculations.
 
 BEFORE GENERATING ANYTHING
 1. Read `MAIN.md` and `DESIGN.md` for project scope, tokens, and tactile UI guidelines.
@@ -24,7 +24,7 @@ ALWAYS DO THIS
 - Implement tactile button physics: resting bevel -> subtle hover scale (<= 1.025) with smooth CC light-sweep sliding left-to-right -> reverse slide to left and scale down on unhover -> tactile depression bounce on active click.
 - Ensure all canvas drawing tools (Pen, Eraser, Fill, Dither, Select) operate cleanly on `ImageData` / custom layer buffers with immediate visual feedback.
 - Maintain a rock-solid, memory-efficient undo/redo history stack (max 50 steps) that snapshots state without UI stutter.
-- Support responsive keyboard shortcuts (B for Pen, E for Eraser, G for Fill, I for Eyedropper, M for Select, Space+Drag for Pan, Z/Ctrl+Z for Undo, Ctrl+Y for Redo).
+- Support responsive keyboard shortcuts (B for Pen, E for Eraser, G for Fill, I for Eyedropper, M for Select, Space+Drag for Pan, Z/Ctrl+Z for Undo, Ctrl+Y for Redo, Ctrl+K for Command Palette, Ctrl+S for Save, S for Squint Lens, P for CVD Lens, K for Chisel).
 - Structure all smart graphics features to operate directly and deterministically on on-device pixel buffers with zero network dependencies.
 - Store all projects locally first using Dexie.js (IndexedDB) with instant autosave.
 - Maintain high contrast ratios (WCAG AA compliant) for all tool labels and UI text against the dark cedarwood background.

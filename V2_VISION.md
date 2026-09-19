@@ -48,7 +48,7 @@
 
 ## 1. Executive Summary & North Star
 
-PixiBun v1 (`v1.13.0`) established a mathematically verified, zero-dependency raster workstation running entirely within modern web browsers. By combining an integer-exact Bresenham rasterizer, separable Felzenszwalb-Huttenlocher Euclidean Distance Transforms, Mark Ferrari palette cycling, 2.5D photometric relighting, and a host-authoritative P2P co-draw engine, v1 proved that high-end digital crafting software can exist without bloatware, native installation barriers, or subscription paywalls.
+PixiBun v1 (`v1.14.0`) established a mathematically verified, zero-dependency raster workstation running entirely within modern web browsers. By combining an integer-exact Bresenham rasterizer, separable Felzenszwalb-Huttenlocher Euclidean Distance Transforms, Mark Ferrari palette cycling, 2.5D photometric relighting, and a host-authoritative P2P co-draw engine, v1 proved that high-end digital crafting software can exist without bloatware, native installation barriers, or subscription paywalls.
 
 **The PixiBun v2 Vision** expands beyond the boundaries of traditional single-threaded browser applications. v2 is designed as a hybrid **WebGPU / WebAssembly SIMD / Rust Native** digital content creation (DCC) system capable of:
 * Scaling from $16\times16$ micro-sprites up to $4096\times4096$ gigapixel isometric scenes with zero frame drops ($<1.5\text{ms}$ total composite latency).

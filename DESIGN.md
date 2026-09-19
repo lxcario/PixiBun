@@ -44,55 +44,83 @@ graph LR
     Base --- Shadow["🌑 Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
 ```
 
-### Cozy Midnight (Dark Theme Tokens)
+### 1. Atelier Theme Tokens (Modern Workstation Baseline)
 
-| Token Variable | Hex Code | OKLCH Equivalent | Role & Context |
-|---|---|---|---|
-| `--desk-bg` | `#140C1E` | `oklch(0.16 0.04 300)` | Master room backdrop, outer layout base |
-| `--desk-surface` | `#201431` | `oklch(0.22 0.05 305)` | Master chassis, toolbar, inspector panels |
-| `--desk-surface-raised` | `#281B3D` | `oklch(0.26 0.06 308)` | Raised tool blocks, active button plates |
-| `--desk-border` | `#3A2E4C` | `oklch(0.32 0.07 310)` | 2px tactile bezel divider, structural outline |
-| `--text-heading` | `#EDE8F4` | `oklch(0.93 0.02 300)` | Crisp white/cream headings, button icons |
-| `--text-body` | `#D0C4DF` | `oklch(0.82 0.05 305)` | Functional labels, coordinates, layer names |
-| `--text-muted` | `#a496b8` | `oklch(0.66 0.05 305)` | Inactive tools, helper hints, unit tags |
-| `--accent-wisteria` | `#C792DF` | `oklch(0.72 0.15 315)` | Primary active states, selection marquee, play button |
-| `--accent-plum` | `#DCABDF` | `oklch(0.79 0.11 320)` | Highlight blooms, secondary guides, curve knots |
-| `--accent-gold` | `#F0BE7C` | `oklch(0.82 0.13 80)` | Focus rings, key lights, primary action buttons |
-| `--btn-hover` | `#603B82` | `oklch(0.42 0.13 312)` | Amethyst Wisteria button hover surface & light-sweep bed |
-| `--color-danger` | `#E06B7D` | `oklch(0.68 0.18 15)` | Destructive actions, delete layer, discard |
+#### Atelier Dark (Default Midnight Studio)
+| Token Variable | Hex Code | Role & Context |
+|---|---|---|
+| `--desk-bg` | `#16141a` | Neutral dark slate room backdrop |
+| `--desk-surface` | `#201d26` | Master chassis, toolbar docks, and inspector panels |
+| `--desk-surface-raised` | `#282530` | Raised tool buttons and panel cards |
+| `--desk-border` | `#35313d` | Fine tactile bezel divider |
+| `--text-heading` | `#ede8f4` | Crisp light headings and active icons |
+| `--text-body` | `#cfc7d8` | Body text, tool parameters, coordinates |
+| `--text-muted` | `#8e8499` | Inactive tools, helper hints, unit tags |
+| `--accent-gold` | `#e5a962` | Warm amber focus rings, key light, primary buttons |
+| `--accent-wisteria` | `#b596d9` | Active tool indicator, navigation accents |
+| `--accent-plum` | `#9d7ec4` | Secondary guides, curve knots |
+| `--accent-sage` | `#7d9d7f` | Positive feedback, success states |
 
-### Morning Atelier (Light Theme Tokens)
-
-| Token Variable | Hex Code | OKLCH Equivalent | Role & Context |
-|---|---|---|---|
-| `--desk-bg` | `#FBF8F3` | `oklch(0.98 0.01 80)` | Bright morning room base & clean desk surface |
-| `--desk-surface` | `#F3EBE0` | `oklch(0.94 0.02 75)` | Warm tactile paper chassis & tool panels |
-| `--desk-surface-raised` | `#FFFDF9` | `oklch(0.99 0.01 80)` | Raised card and inspector surfaces |
-| `--desk-border` | `#3C2254` | `oklch(0.30 0.09 315)` | High-contrast structural bezel framing |
-| `--text-heading` | `#221233` | `oklch(0.20 0.06 315)` | High-contrast dark violet titles & buttons |
-| `--text-body` | `#4A3559` | `oklch(0.35 0.06 315)` | Body text, tool parameters, coordinates |
-| `--text-muted` | `#78608A` | `oklch(0.50 0.06 315)` | Subtle badges, shortcut keys, secondary text |
-| `--accent-gold` | `#8a4500` | `oklch(0.48 0.14 55)` | Warm sunlit highlights & primary button fill |
-| `--accent-plum` | `#7E2B96` | `oklch(0.48 0.19 320)` | Active tool accents and focus outlines |
-| `--accent-wisteria` | `#9940B5` | `oklch(0.55 0.20 315)` | Timeline scrubbers and hover rings |
+#### Atelier Light (Warm Alabaster Morning)
+| Token Variable | Hex Code | Role & Context |
+|---|---|---|
+| `--desk-bg` | `#ece5d8` | Warm alabaster room base |
+| `--desk-surface` | `#f7f1e6` | Tactile parchment panels |
+| `--desk-surface-raised` | `#ffffff` | Elevated cards and inputs |
+| `--desk-border` | `#442a5c` | High-contrast structural framing |
+| `--text-heading` | `#221233` | Deep violet headings |
+| `--text-body` | `#4a3559` | Legible dark body text |
+| `--accent-gold` | `#8a4500` | Golden sunlit accent buttons |
+| `--accent-wisteria` | `#9940b5` | Active tool state and focus rings |
 
 ---
 
-## 3. Dual Theme Switching & Zero-Lag Transition Engine
+### 2. Cozy Classic Theme Tokens (Original Historical Identity)
 
-The studio supports instant switching between **Cozy Midnight** (Dark) and **Morning Atelier** (Light) via the tactile `ThemeToggle` switch:
+#### Cozy Classic Dark (Cozy Midnight)
+| Token Variable | Hex Code | Role & Context |
+|---|---|---|
+| `--desk-bg` | `#140c1e` | Deep plum-wood desk surface |
+| `--desk-surface` | `#201431` | Thistle lavender studio chassis |
+| `--desk-surface-raised` | `#281b3d` | Raised button plates |
+| `--desk-border` | `#3a2e4c` | Rich plum-wood structural bezels |
+| `--text-heading` | `#ede8f4` | Crisp cream headings |
+| `--accent-gold` | `#f0be7c` | Lamp amber focus rings & key light |
+| `--accent-wisteria` | `#c792df` | Signature wisteria lavender brand accent |
+| `--accent-plum` | `#dcabdf` | Highlight blooms & secondary guides |
+
+#### Cozy Classic Light (Morning Atelier)
+| Token Variable | Hex Code | Role & Context |
+|---|---|---|
+| `--desk-bg` | `#fbf8f3` | Clean morning desk base |
+| `--desk-surface` | `#f3ebe0` | Warm tactile paper panels |
+| `--desk-border` | `#3c2254` | High-contrast velvet border |
+| `--text-heading` | `#221233` | Crisp legible ink headings |
+| `--accent-gold` | `#d97818` | Morning sunlight buttons |
+| `--accent-plum` | `#7e2b96` | Deep plum active tool accents |
+
+---
+
+## 3. Dual-Axis Theme Switching & Zero-Lag Transition Engine
+
+The studio supports two independent theme dimensions:
+1. **Studio Theme:** `Atelier` (modern slate workstation) vs. `Cozy Classic` (historical plum & wisteria desk).
+2. **Color Scheme:** `Dark` vs. `Light`.
+
+Both axes are selectable through the **Appearance Popover** (`src/components/ui/AppearancePopover.tsx`) in the top rail, while the quick **ThemeToggle** provides 1-click toggling between Dark and Light color schemes.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> SuppressTransitions: Click Theme Switch
-    SuppressTransitions --> MutateDOM: Inject Temporary Override Sheet
-    MutateDOM --> ForceReflow: Swap data-theme Attribute & Class
+    [*] --> SuppressTransitions: Trigger Appearance Switch
+    SuppressTransitions --> MutateDOM: Inject Temporary Style Sheet (transition: none !important)
+    MutateDOM --> SetAttributes: Apply data-studio-theme & data-color-scheme
+    SetAttributes --> ForceReflow: window.getComputedStyle(css).opacity
     ForceReflow --> RestoreTransitions: Cleanly Remove Override on Next rAF Frame
-    RestoreTransitions --> [*]: Normal Smooth Interaction Restored
+    RestoreTransitions --> [*]: Normal Fluid Interactions Restored
 ```
 
-* **Zero-Lag Transition Suppression:** During theme swaps, a temporary `<style>` block disables all CSS transitions across the DOM (`transition: none !important`), forces a synchronous reflow, and removes itself on the next `requestAnimationFrame` tick. This eliminates layout thrashing and repaint stutter across thousands of UI nodes.
-* **Animated Tactile Knob:** Spring-physics switch (<kbd>stiffness: 550, damping: 32</kbd>) hosting custom hand-pixelled SVG sprites: a radiant morning sun with geometric rays for Light mode and a cozy crescent moon with a twinkling star for Dark mode.
+* **Zero-Lag Transition Suppression:** During theme swaps, a temporary `<style>` block disables all CSS transitions across the DOM (`transition: none !important`), sets `data-studio-theme` and `data-color-scheme`, forces a synchronous reflow, and removes itself on the next `requestAnimationFrame` tick. This eliminates layout thrashing and repaint stutter across thousands of UI nodes.
+* **Appearance Popover Swatches:** Interactive flyout provides real-time swatch palettes representing each theme's core colors before selection, with accessible keyboard navigation and Escape dismissal.
 
 ---
 
