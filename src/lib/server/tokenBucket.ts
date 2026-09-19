@@ -1,8 +1,7 @@
 // Token-bucket rate limiter for server route handlers.
 //
 // Classic token bucket (Tanenbaum & Wetherall, "Computer Networks", §5.3;
-// equivalent to the algorithm standardized for traffic policing in IETF
-// RFC 2697): the bucket holds up to `capacity` tokens, refilled continuously
+// a single request bucket, not the two-bucket three-color marker in RFC 2697): the bucket holds up to `capacity` tokens, refilled continuously
 // at `refillPerMinute`, and each request consumes one token.
 //
 // Limitation (documented honestly): state is per-process memory. On a single

@@ -2,6 +2,8 @@ import { HistorySlice, StudioSliceCreator } from './types';
 import { createId } from '@/lib/engine/id';
 import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectFile } from '@/types/project';
+import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
+import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 
 /**
  * Studio Session & History Metadata Slice
@@ -17,7 +19,7 @@ import { ProjectFile } from '@/types/project';
  * - `aiMessages` / `isAiThinking` (PixiBud assistant chat state)
  * - `loadProjectState` / `resetCanvas` (document lifecycle)
  */
-export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
+export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) => ({
   canUndo: false,
   canRedo: false,
   setCanUndo: can => {
@@ -46,9 +48,11 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
   },
 
   isDirty: false,
+  editRevision: 0,
   setDirty: dirty => {
     set(state => {
       state.isDirty = dirty;
+      if (dirty) state.editRevision += 1;
     });
   },
   markClean: () => {
@@ -101,6 +105,8 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
   },
 
   loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
+    assertWorkspaceDimensions(projectData.width ?? get().canvasWidth, projectData.height ?? get().canvasHeight);
+    DesktopFileSystem.reset();
     set(state => {
       // Cross-project boundary: viewport-local state that cannot be carried
       // meaningfully into the restored document must be reset, or a stale
@@ -109,7 +115,8 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
       state.selectionMask = null;
       state.activeClipId = null;
       state.isPlaying = false;
-      if (projectId) state.currentProjectId = projectId;
+      state.currentProjectId = projectId || createId('proj');
+      state.editRevision += 1;
       if (projectData.name) state.projectName = projectData.name;
       if (projectData.width) state.canvasWidth = projectData.width;
       if (projectData.height) state.canvasHeight = projectData.height;
@@ -153,6 +160,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
   },
 
   resetToNewProject: (newId?: string) => {
+    DesktopFileSystem.reset();
     clearAllBuffers();
     const initialLayerId = createId('layer');
     const initialFrameId = createId('frame');
@@ -200,4 +208,3 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = set => ({
     });
   },
 });
-

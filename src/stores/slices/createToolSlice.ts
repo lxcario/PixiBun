@@ -126,19 +126,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   customRamps: [],
   isPaletteCycling: false,
   paletteCycleSpeedMultiplier: 1.0,
-  recentColors: (() => {
-    // Module-scope JSON.parse of user-controlled localStorage: a corrupted
-    // value here would throw during store creation and crash the entire
-    // studio on load, so it must be defensively guarded.
-    if (typeof window === 'undefined' || !window.localStorage) return [];
-    try {
-      const parsed: unknown = JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]');
-      if (!Array.isArray(parsed)) return [];
-      return parsed.filter((c): c is string => typeof c === 'string');
-    } catch {
-      return [];
-    }
-  })(),
+  recentColors: [],
 
   setActiveTool: tool => {
     set(state => {
@@ -425,6 +413,20 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
         window.localStorage.setItem('pixibun_recent_colors', JSON.stringify(state.recentColors));
       }
     });
+  },
+
+  loadRecentColors: () => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const parsed: unknown = JSON.parse(window.localStorage.getItem('pixibun_recent_colors') || '[]');
+      if (!Array.isArray(parsed)) return;
+      const valid = parsed.filter((c): c is string => typeof c === 'string');
+      set(state => {
+        state.recentColors = valid;
+      });
+    } catch {
+      // ignore corrupted storage
+    }
   },
 
   swapColors: () => {

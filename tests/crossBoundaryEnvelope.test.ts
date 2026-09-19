@@ -73,6 +73,7 @@ describe('Cross-Boundary Workspace Envelope Coordination', () => {
     const frames500 = Array.from({ length: MAX_CANVAS_FRAMES }, (_, i) => ({
       ...frameTemplate,
       id: `frame-${i + 1}`,
+      layers: frameTemplate.layers.map((layer, j) => ({ ...layer, id: `layer-${i}-${j}` })),
     }));
 
     const maxEnvelopeProject = {

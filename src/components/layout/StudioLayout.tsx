@@ -1,28 +1,31 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { SafeJson } from '@/lib/safety/safeJson';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useStudioStore } from '@/stores/studioStore';
-import { useOnboardingStore } from '@/stores/onboardingStore';
-import { TopHeader } from './TopHeader';
-import { ContextOptionsBar } from './ContextOptionsBar';
+import { AtelierRail } from './AtelierRail';
 import { LeftToolbar } from './LeftToolbar';
 import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
+import { StatusBar } from './StatusBar';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { autoSaveWorkspace, loadLatestSavedWorkspace, getProjectById, getLayerBlobsForProject } from '@/lib/storage/db';
-import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail, buildProjectFileAsync } from '@/lib/project/serialize';
+import { getProjectById } from '@/lib/storage/db';
+import { hydrateProject } from '@/lib/project/serialize';
 import { validateProjectFile } from '@/lib/project/schema';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
-import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
-import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
+
+import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
+import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
+import { useStudioFileSystem } from '@/hooks/studio/useStudioFileSystem';
+import { useStudioKeyboard } from '@/hooks/studio/useStudioKeyboard';
 
 // Heavy dialogs are code-split client-side (Phase 33): none of these bundles
 // are part of the /studio first-load JS. They render only while open, so the
@@ -55,23 +58,10 @@ const DiagnosticsModal = dynamic(
   () => import('@/components/modals/DiagnosticsModal').then((m) => m.DiagnosticsModal),
   { ssr: false }
 );
-
-export async function requestPersistentStorage(): Promise<boolean> {
-  if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
-    try {
-      const isPersisted = await navigator.storage.persisted();
-      if (!isPersisted) {
-        return await navigator.storage.persist();
-      }
-      return isPersisted;
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
-const AUTOSAVE_DEBOUNCE_MS = 800;
+const CommandPaletteModal = dynamic(
+  () => import('@/components/modals/CommandPaletteModal').then((m) => m.CommandPaletteModal),
+  { ssr: false }
+);
 
 export const StudioLayout: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -82,116 +72,31 @@ export const StudioLayout: React.FC = () => {
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
-  const [saveToast, setSaveToast] = useState<string | null>(null);
-  const [autosaveError, setAutosaveError] = useState<string | null>(null);
-  const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const autosaveTimerRef = useRef<number | null>(null);
-  const saveToastTimerRef = useRef<number | null>(null);
-  const autosaveInFlightRef = useRef(false);
-  const autosavePendingRef = useRef(false);
-  const inFlightPromiseRef = useRef<Promise<void> | null>(null);
-  const autosaveFailCountRef = useRef(0);
 
   const {
-    setActiveFrame,
-    isPlaying,
-    setIsPlaying,
-    setActiveTool,
-    swapColors,
-    setBrushSize,
-    tools,
+    autosaveTimerRef,
+    runAutosave,
+    handleCommitHistory,
+    autosaveError,
+    setAutosaveError,
+  } = useStudioAutosave();
+
+  const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
+
+  const {
     canUndo,
     canRedo,
     setCanvasSize,
-    frames,
-    activeFrameIndex,
     currentProjectId,
     projectName,
     resetToNewProject,
-    zoom,
-    setZoom,
-    setPan,
-    canvasWidth,
-    canvasHeight,
   } = useStudioStore();
 
-  // Serialize the full studio - pixels included - into IndexedDB. Debounced so
-  // a fast stroke burst writes once at the end instead of per commit.
-  // Uses a coalescing pending-save loop to ensure in-flight saves never drop updates.
-  const runAutosave = useCallback(async () => {
-    if (autosaveInFlightRef.current) {
-      autosavePendingRef.current = true;
-      if (inFlightPromiseRef.current) {
-        await inFlightPromiseRef.current;
-      }
-      return;
-    }
-
-    autosaveInFlightRef.current = true;
-    const savePromise = (async () => {
-      try {
-        do {
-          autosavePendingRef.current = false;
-          const { setSaveStatus } = useStudioStore.getState();
-          setSaveStatus('saving');
-          try {
-            const { project, layerBlobs } = await buildAutosavePayloadAsync();
-            const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
-            const state = useStudioStore.getState();
-            const success = await autoSaveWorkspace(
-              state.currentProjectId,
-              project.name,
-              project.width,
-              project.height,
-              project.fps,
-              project,
-              thumbnailDataUrl,
-              layerBlobs
-            );
-            if (success) {
-              autosaveFailCountRef.current = 0;
-              setAutosaveError(null);
-              setSaveStatus('saved');
-              useStudioStore.getState().markClean();
-              // Reset to idle after a short delay so it doesn't stay 'saved' forever
-              setTimeout(() => {
-                if (useStudioStore.getState().saveStatus === 'saved') {
-                  useStudioStore.getState().setSaveStatus('idle');
-                }
-              }, 2000);
-            } else {
-              autosaveFailCountRef.current += 1;
-              setSaveStatus('error');
-              if (autosaveFailCountRef.current >= 2) {
-                setAutosaveError(
-                  'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
-                );
-              }
-            }
-          } catch (err) {
-            console.error('Autosave failed:', err);
-            autosaveFailCountRef.current += 1;
-            setSaveStatus('error');
-            if (autosaveFailCountRef.current >= 2) {
-              setAutosaveError(
-                'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
-              );
-            }
-          }
-        } while (autosavePendingRef.current);
-      } finally {
-        autosaveInFlightRef.current = false;
-        inFlightPromiseRef.current = null;
-      }
-    })();
-
-    inFlightPromiseRef.current = savePromise;
-    await savePromise;
-  }, []);
-
-  const handleConfirmNewDrawing = useCallback(() => {
+  const handleConfirmNewDrawing = useCallback(async () => {
+    if (!(await runAutosave())) return;
     clearAllBuffers();
     resetToNewProject();
     setIsNewConfirmOpen(false);
@@ -204,47 +109,23 @@ export const StudioLayout: React.FC = () => {
       window.clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
     }
-    await runAutosave();
+    if (!(await runAutosave())) return;
 
     const target = await getProjectById(projectId);
     if (!target) return;
 
     try {
-      const parsed: unknown = JSON.parse(target.dataJson);
+      const parsed: unknown = SafeJson.parse(target.dataJson);
       const result = validateProjectFile(parsed);
       if (!result.ok) {
         setImportError(result.error);
         return;
       }
-      const layerBlobs = await getLayerBlobsForProject(target.id);
-      await hydrateProject(result.value, target.id, layerBlobs);
+      await hydrateProject(result.value, target.id, target.layerBlobs);
     } catch (err) {
       console.error('Failed to open project:', err);
     }
-  }, [runAutosave]);
-
-  const handleCommitHistory = useCallback(() => {
-    useStudioStore.getState().setDirty(true);
-    if (autosaveTimerRef.current !== null) {
-      window.clearTimeout(autosaveTimerRef.current);
-    }
-    autosaveTimerRef.current = window.setTimeout(() => {
-      autosaveTimerRef.current = null;
-      void runAutosave();
-    }, AUTOSAVE_DEBOUNCE_MS);
-  }, [runAutosave]);
-
-  // Native exit guard when changes are unsaved (UX-2)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (useStudioStore.getState().isDirty) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
+  }, [runAutosave, autosaveTimerRef]);
 
   const isDirty = useStudioStore((s) => s.isDirty);
   const saveStatus = useStudioStore((s) => s.saveStatus);
@@ -259,110 +140,6 @@ export const StudioLayout: React.FC = () => {
       document.title = 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine';
     };
   }, [isDirty, projectName]);
-
-  // Affirmative explicit save confirmation toast helper (UX-14)
-  const triggerSaveToast = useCallback(() => {
-    if (saveToastTimerRef.current !== null) {
-      window.clearTimeout(saveToastTimerRef.current);
-    }
-    setSaveToast(`✦ Saved "${projectName || 'project'}" to browser storage`);
-    saveToastTimerRef.current = window.setTimeout(() => {
-      setSaveToast(null);
-      saveToastTimerRef.current = null;
-    }, 2500);
-  }, [projectName]);
-
-  useEffect(() => {
-    return () => {
-      if (saveToastTimerRef.current !== null) {
-        window.clearTimeout(saveToastTimerRef.current);
-      }
-    };
-  }, []);
-
-  // Remote co-draw strokes mutate pixel buffers without a local history
-  // commit, so schedule the same debounced autosave when a peer changes the
-  // canvas — otherwise peer artwork would only persist on the next local edit.
-  useEffect(() => {
-    const unsub = studioEvents.on('pixibun:remote-change', () => handleCommitHistory());
-    return unsub;
-  }, [handleCommitHistory]);
-
-  // Best-effort flush when the tab is hidden or closed mid-debounce.
-  useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        void runAutosave();
-      }
-    };
-    const onPageHide = () => void runAutosave();
-
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('pagehide', onPageHide);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      window.removeEventListener('pagehide', onPageHide);
-    };
-  }, [runAutosave]);
-
-  // Restore the last session on mount and request persistent storage.
-  useEffect(() => {
-    void requestPersistentStorage().then((persisted) => {
-      if (!persisted) {
-        if (typeof navigator !== 'undefined' && navigator.storage) {
-          console.warn(
-            'Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure.'
-          );
-        }
-        let dismissed = false;
-        try {
-          dismissed = typeof window !== 'undefined' && sessionStorage.getItem('pixibun:storage-dismissed') === '1';
-        } catch {
-          // sessionStorage may be blocked in strict privacy modes
-        }
-        if (!dismissed) {
-          setStorageWarning(
-            'Persistent storage not granted: artwork is saved in IndexedDB but may be evicted by the browser under disk pressure (common on iOS / Safari). Please export backups regularly.'
-          );
-        }
-      }
-    });
-
-    // Studio mode must never display playground tracing stencils
-    useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
-
-    const isFromPlayground =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).get('fromPlayground') === 'true';
-
-    if (isFromPlayground) {
-      // Abort workspace rehydration so live buffers from playground are not cleared by clearAllBuffers()!
-      // Trigger an immediate autosave of the active session so it gets stored in IndexedDB.
-      const state = useStudioStore.getState();
-      if (state.projectName === 'Untitled Sprite') {
-        state.setProjectName('Playground Animation');
-      }
-      void runAutosave();
-      return;
-    }
-
-    let cancelled = false;
-    loadLatestSavedWorkspace().then(async (saved) => {
-      if (!saved || cancelled) return;
-      try {
-        const parsed: unknown = JSON.parse(saved.dataJson);
-        const result = validateProjectFile(parsed);
-        if (!result.ok) return;
-        const layerBlobs = await getLayerBlobsForProject(saved.id);
-        await hydrateProject(result.value, saved.id, layerBlobs);
-      } catch (err) {
-        console.error('Project restore failed:', err);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [runAutosave]);
 
   // Undo / Redo handlers dispatching to canvas engine
   const handleUndo = useCallback(() => {
@@ -516,55 +293,11 @@ export const StudioLayout: React.FC = () => {
     setIsImportOpen(false);
   }, []);
 
-  // Global Clipboard Paste (Ctrl+V) for Image Files
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
-
-      const items = e.clipboardData?.items;
-      if (!items) return;
-
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.type.startsWith('image/')) {
-          const file = item.getAsFile();
-          if (file) {
-            e.preventDefault();
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              const dataUrl = event.target?.result as string;
-              const img = new Image();
-              img.onload = () => {
-                handleOpenImport({
-                  type: 'image',
-                  filename: 'Pasted Image',
-                  dataUrl,
-                  imgWidth: img.width,
-                  imgHeight: img.height,
-                });
-              };
-              img.src = dataUrl;
-            };
-            reader.readAsDataURL(file);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, [handleOpenImport]);
+  useStudioClipboard(handleOpenImport);
 
   // Confirm Project Import - validate before touching live state so a
   // malformed file explains itself instead of corrupting the session.
-  const handleConfirmImportProject = useCallback(() => {
+  const handleConfirmImportProject = useCallback(async () => {
     if (!importPayload?.projectJson) return;
 
     const result = validateProjectFile(importPayload.projectJson);
@@ -573,245 +306,36 @@ export const StudioLayout: React.FC = () => {
       return;
     }
 
-    setImportError(null);
-    setIsImportOpen(false);
-    void hydrateProject(result.value);
-  }, [importPayload]);
-
-  // Desktop In-Place Save (File System Access API)
-  const handleSaveDesktopProject = useCallback(
-    async (forceSaveAs = false) => {
-      try {
-        const project = await buildProjectFileAsync();
-        const jsonStr = JSON.stringify(project, null, 2);
-        const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
-        const res = await DesktopFileSystem.saveProject(jsonStr, filename, forceSaveAs);
-        if (res.success) {
-          useStudioStore.getState().setSaveStatus('saved');
-          useStudioStore.getState().markClean();
-        }
-      } catch (err) {
-        console.error('Desktop save error:', err);
+    try {
+      if (!(await runAutosave())) {
+        setImportError('The current project could not be saved. Export a backup before replacing it.');
+        return;
       }
-    },
-    [projectName]
-  );
+      await hydrateProject(result.value);
+      setImportError(null);
+      setIsImportOpen(false);
+      void runAutosave();
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'The project could not be opened.');
+    }
+  }, [importPayload, runAutosave]);
 
   // Global Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore shortcut if typing in an input or textarea
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
-
-      // Desktop / Local Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        if (autosaveTimerRef.current !== null) {
-          window.clearTimeout(autosaveTimerRef.current);
-          autosaveTimerRef.current = null;
-        }
-        // Flush the debounced IndexedDB autosave first, then hand off to the
-        // desktop File System Access save — sequenced so the project is never
-        // serialized twice concurrently (and the OS dialog can't interleave
-        // with the local write).
-        void (async () => {
-          await runAutosave();
-          triggerSaveToast();
-          await handleSaveDesktopProject(e.shiftKey);
-        })();
-        return;
-      }
-
-      // Help / Shortcuts
-      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-        e.preventDefault();
-        setIsShortcutsOpen((prev) => !prev);
-        return;
-      }
-
-      // Undo / Redo
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          handleRedo();
-        } else {
-          handleUndo();
-        }
-        return;
-      }
-
-      // Redo Alternate (Ctrl/Cmd + Y)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-        e.preventDefault();
-        handleRedo();
-        return;
-      }
-
-      // Zoom Shortcuts: Ctrl/Cmd + (+, -, 0, 1)
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === '=' || e.key === '+') {
-          e.preventDefault();
-          setZoom(getNextZoomStep(zoom));
-          return;
-        }
-
-        if (e.key === '-' || e.key === '_') {
-          e.preventDefault();
-          setZoom(getPrevZoomStep(zoom));
-          return;
-        }
-
-        if (e.key === '0') {
-          e.preventDefault();
-          const fitZoom = Math.max(
-            100,
-            Math.min(
-              6400,
-              Math.min(
-                Math.floor(52000 / Math.max(1, canvasWidth)),
-                Math.floor(52000 / Math.max(1, canvasHeight))
-              )
-            )
-          );
-          setZoom(fitZoom);
-          setPan(0, 0);
-          return;
-        }
-
-        if (e.key === '1') {
-          e.preventDefault();
-          setZoom(100);
-          setPan(0, 0);
-          return;
-        }
-      }
-
-      // Single Key Shortcuts
-      const key = e.key.toLowerCase();
-      switch (key) {
-        case 'b':
-          setActiveTool('pen');
-          break;
-        case 'c':
-          setActiveTool('curve');
-          break;
-        case 'e':
-          setActiveTool('eraser');
-          break;
-        case 'g':
-          setActiveTool('bucket');
-          break;
-        case 'd':
-          setActiveTool('dither');
-          break;
-        case 'i':
-          setActiveTool('eyedropper');
-          break;
-        case 'm':
-          setActiveTool('select-box');
-          break;
-        case 'q':
-          setActiveTool('select-lasso');
-          break;
-        case 'w':
-          setActiveTool('select-wand');
-          break;
-        case 'l':
-          setActiveTool('line');
-          break;
-        case 'j':
-          setActiveTool('isometric-line');
-          break;
-        case 'u':
-          setActiveTool('rectangle');
-          break;
-        case 'o':
-          setActiveTool('ellipse');
-          break;
-        case 'r':
-          setActiveTool('color-replace');
-          break;
-        case 'k':
-          if (e.shiftKey) {
-            setActiveTool('rivet-stamp');
-          } else {
-            setActiveTool('normal-chisel');
-          }
-          break;
-        case 'n':
-          setActiveTool('rivet-stamp');
-          break;
-        case 's': {
-          // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens
-          if (!e.ctrlKey && !e.metaKey) {
-            useStudioStore.getState().toggleSquintMode();
-          }
-          break;
-        }
-        case 'p': {
-          // CVD Colorblindness Lens (DESIGN.md §12) — cycle display-only lens
-          const { cvdLens: current, setCvdLens } = useStudioStore.getState();
-          setCvdLens(cycleCvdLens(current));
-          break;
-        }
-        case 'x':
-          swapColors();
-          break;
-        case '[':
-          setBrushSize(Math.max(1, tools.brushSize - 1));
-          break;
-        case ']':
-          setBrushSize(Math.min(32, tools.brushSize + 1));
-          break;
-        case ' ':
-          e.preventDefault();
-          setIsPlaying(!isPlaying);
-          break;
-        case ',':
-          setActiveFrame((activeFrameIndex - 1 + frames.length) % frames.length);
-          break;
-        case '.':
-          setActiveFrame((activeFrameIndex + 1) % frames.length);
-          break;
-        default:
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    setActiveTool,
-    swapColors,
-    setBrushSize,
-    tools.brushSize,
-    frames.length,
-    activeFrameIndex,
-    setActiveFrame,
-    isPlaying,
-    setIsPlaying,
-    handleUndo,
-    handleRedo,
-    handleSaveDesktopProject,
+  useStudioKeyboard({
+    autosaveTimerRef,
     runAutosave,
     triggerSaveToast,
-    zoom,
-    setZoom,
-    setPan,
-    canvasWidth,
-    canvasHeight,
-  ]);
+    handleSaveDesktopProject,
+    setIsShortcutsOpen,
+    setIsCommandPaletteOpen,
+    handleUndo,
+    handleRedo,
+  });
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
-      {/* Top Header */}
-      <TopHeader
+      {/* Unified Atelier Rail (~40px instrument panel) */}
+      <AtelierRail
         onOpenExport={() => setIsExportOpen(true)}
         onOpenImport={handleOpenImport}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
@@ -824,8 +348,7 @@ export const StudioLayout: React.FC = () => {
         canUndo={canUndo}
         canRedo={canRedo}
         onSaveNow={() => {
-          void runAutosave();
-          triggerSaveToast();
+          void runAutosave().then(saved => { if (saved) triggerSaveToast(); });
         }}
       />
 
@@ -840,49 +363,31 @@ export const StudioLayout: React.FC = () => {
           : 'All changes saved'}
       </div>
 
-      {/* Persistent Storage Eviction Warning Banner */}
-      {storageWarning && !autosaveError && (
-        <div className="bg-[#f0be7c]/20 border-b-2 border-[#f0be7c] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#f0be7c] z-30 shadow-md transition-all">
-          <div className="flex items-center gap-2">
-            <PixelIcon name="warning" size={14} />
-            <span>{storageWarning}</span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <TactileButton
-              size="sm"
-              variant="default"
-              onClick={() => setIsExportOpen(true)}
-              title="Open Export Dialog"
-              className="text-xs px-2.5 py-1 bg-[#f0be7c] hover:bg-[#ffd699] text-[#140d1f] font-bold border border-[#8c5120]"
-            >
-              Export Backup
-            </TactileButton>
+
+      {/* Autosave Disk Write Error (Non-Layout-Shifting Toast) */}
+      {autosaveError && (
+        <div
+          role="alert"
+          className="fixed bottom-10 left-16 max-w-sm bg-[#2e111a]/95 border-2 border-[#eb5a66] shadow-2xl p-3 rounded-[3px] flex flex-col gap-1.5 z-40 text-xs font-mono text-[#ffb4b9] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-150"
+        >
+          <div className="flex items-center justify-between gap-2 border-b border-[#6b283d] pb-1">
+            <div className="flex items-center gap-1.5 font-bold text-[#eb5a66]">
+              <PixelIcon name="warning" size={13} className="shrink-0" />
+              <span>Autosave Error</span>
+            </div>
             <button
-              onClick={() => {
-                setStorageWarning(null);
-                try {
-                  sessionStorage.setItem('pixibun:storage-dismissed', '1');
-                } catch {
-                  // sessionStorage may be blocked in strict privacy modes
-                }
-              }}
-              className="px-2 py-1 text-xs text-[#f0be7c] hover:text-[#fff] transition-colors cursor-pointer"
+              onClick={() => setAutosaveError(null)}
+              className="px-1.5 py-0.5 text-xs text-[#ffb4b9] hover:text-white transition-colors cursor-pointer leading-none"
               title="Dismiss warning"
+              aria-label="Dismiss error"
             >
               ✕
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Autosave Disk Write Error Banner */}
-      {autosaveError && (
-        <div className="bg-[#eb5a66]/20 border-b-2 border-[#eb5a66] px-4 py-2 flex items-center justify-between text-xs font-mono text-[#ffb4b9] z-30 shadow-md transition-all">
-          <div className="flex items-center gap-2">
-            <PixelIcon name="warning" size={14} />
-            <span>{autosaveError}</span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <p className="text-[11px] leading-relaxed text-[#ffb4b9]">
+            {autosaveError}
+          </p>
+          <div className="flex justify-end pt-1">
             <TactileButton
               size="sm"
               variant="danger"
@@ -892,22 +397,12 @@ export const StudioLayout: React.FC = () => {
             >
               Export Drawing
             </TactileButton>
-            <button
-              onClick={() => setAutosaveError(null)}
-              className="px-2 py-1 text-xs text-[#ffb4b9] hover:text-[#fff] transition-colors cursor-pointer"
-              title="Dismiss warning"
-            >
-              ✕
-            </button>
           </div>
         </div>
       )}
 
-      {/* Contextual Dynamic Tool Options Strip */}
-      <ContextOptionsBar />
-
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
-      <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none">
+      <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
         <LeftToolbar />
         <CenterViewport 
           onCommitHistory={handleCommitHistory}
@@ -918,6 +413,9 @@ export const StudioLayout: React.FC = () => {
 
       {/* Bottom Timeline */}
       <BottomTimeline />
+
+      {/* Status Bar */}
+      <StatusBar />
 
       {/* New Drawing Confirmation Modal */}
       <ModalWrapper
@@ -1024,6 +522,26 @@ export const StudioLayout: React.FC = () => {
         <CoDrawModal
           isOpen={isCoDrawOpen}
           onClose={() => setIsCoDrawOpen(false)}
+        />
+      )}
+
+      {/* Command Palette (Ctrl+K) */}
+      {isCommandPaletteOpen && (
+        <CommandPaletteModal
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setIsCommandPaletteOpen(false)}
+          onOpenExport={() => setIsExportOpen(true)}
+          onOpenImport={() => setIsImportOpen(true)}
+          onOpenResize={() => setIsResizeOpen(true)}
+          onOpenGallery={() => setIsGalleryOpen(true)}
+          onOpenCoDraw={() => setIsCoDrawOpen(true)}
+          onOpenShortcuts={() => setIsShortcutsOpen(true)}
+          onNewDrawing={() => setIsNewConfirmOpen(true)}
+          onSaveNow={() => {
+            void runAutosave().then(saved => { if (saved) triggerSaveToast(); });
+          }}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
       )}
 

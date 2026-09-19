@@ -63,6 +63,8 @@ test.describe('Volumetric Optics Visual Proof', () => {
     await aiTabBtn.click();
     await page.waitForTimeout(400);
 
+    await page.getByRole('button', { name: /Glow & Translucent Materials/ }).click();
+
     // Ensure "Snap to active palette" checkbox is unchecked by default
     const snapCheckbox = page.locator('input[type="checkbox"]').first();
     await expect(snapCheckbox).not.toBeChecked();

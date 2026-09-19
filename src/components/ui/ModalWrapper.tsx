@@ -140,12 +140,12 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         initial={{ opacity: 0, scale: 0.96, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ duration: 0.18, ease: 'easeOut' }}
-        className={`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] shadow-[0_20px_60px_rgba(10,6,18,0.4)] p-4 rounded-[2px] flex flex-col gap-3 select-none text-[var(--text-heading)] transition-colors duration-300 max-h-[88vh] max-w-[calc(100vw-2rem)] ${maxWidth} ${className}`}
+        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className={`bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] p-4 rounded-[2px] flex flex-col gap-3 select-none text-[var(--text-heading)] transition-colors duration-150 max-h-[88vh] max-w-[calc(100vw-2rem)] ${maxWidth} ${className}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--desk-border)] pb-2 shrink-0">
-          <h2 id="modal-title" tabIndex={-1} className="font-mono font-bold text-sm text-[var(--accent-gold)] uppercase tracking-wider m-0 outline-none">
+          <h2 id="modal-title" tabIndex={-1} className="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none">
             ✦ {title}
           </h2>
           <button

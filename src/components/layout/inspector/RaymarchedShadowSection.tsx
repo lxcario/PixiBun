@@ -5,6 +5,8 @@ import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import PanelSection from '@/components/ui/PanelSection';
+import StudioSlider from '@/components/ui/StudioSlider';
 
 const SHADOW_COLOR_PRESETS = [
   { label: 'Indigo', hex: '#180B26' },
@@ -87,288 +89,259 @@ export const RaymarchedShadowSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
-          <PixelIcon name="sun" size={12} />
-          <span>Raymarched Soft Shadows</span>
-        </span>
-        <span className="text-[9px] font-mono text-[#dcabdf] font-bold">2.5D Ground Projection</span>
-      </div>
-
-      {/* Mode Switch: Auto analysis vs Manual artist control */}
-      <div
-        className="grid grid-cols-2 gap-1 p-1 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]"
-        role="group"
-        aria-label="Raymarched soft shadows mode"
-      >
-        <button
-          type="button"
-          onClick={() => setMode('auto')}
-          aria-pressed={mode === 'auto'}
-          className={`flex items-center justify-center gap-1 py-1.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wide transition-colors cursor-pointer ${
-            mode === 'auto'
-              ? 'bg-[#f0be7c] text-[#140d1f]'
-              : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-          }`}
+    <PanelSection
+      title="Cast & Ground Shadows"
+      ariaLabel="Cast & Ground Shadows (Raymarched Soft Shadows)"
+      storageKey="pixibun:panel:shadows"
+      defaultOpen={false}
+      actions={<span className="text-[9px] font-sans text-[var(--text-muted)]">Floor Shadow</span>}
+    >
+      <div className="flex flex-col gap-2.5">
+        {/* Mode Switch: Auto analysis vs Manual artist control */}
+        <div
+          className="inline-flex w-full bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5"
+          role="group"
+          aria-label="Raymarched soft shadows mode"
         >
-          <PixelIcon name="sun" size={12} />
-          <span>Auto</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('manual')}
-          aria-pressed={mode === 'manual'}
-          className={`flex items-center justify-center gap-1 py-1.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wide transition-colors cursor-pointer ${
-            mode === 'manual'
-              ? 'bg-[#f0be7c] text-[#140d1f]'
-              : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-          }`}
-        >
-          <PixelIcon name="pen" size={12} />
-          <span>Manual</span>
-        </button>
-      </div>
-
-      {/* Shadow Style: Directional Cast vs Ground Drop (Classic RPG Oval) */}
-      <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
-        <span className="text-[10px] text-[var(--text-body)] font-bold">Style:</span>
-        <div className="flex gap-1" role="group" aria-label="Shadow projection style">
           <button
             type="button"
-            onClick={() => setShadowStyle('cast')}
-            aria-pressed={shadowStyle === 'cast'}
-            className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
-              shadowStyle === 'cast'
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-                : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+            onClick={() => setMode('auto')}
+            aria-pressed={mode === 'auto'}
+            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+              mode === 'auto'
+                ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >
-            Directional Cast
+            <PixelIcon name="sun" size={11} />
+            <span>Auto</span>
           </button>
           <button
             type="button"
-            onClick={() => setShadowStyle('drop')}
-            aria-pressed={shadowStyle === 'drop'}
-            className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
-              shadowStyle === 'drop'
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-                : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
+            onClick={() => setMode('manual')}
+            aria-pressed={mode === 'manual'}
+            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+              mode === 'manual'
+                ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >
-            Ground Drop (Oval)
+            <PixelIcon name="pen" size={11} />
+            <span>Manual</span>
           </button>
         </div>
-      </div>
 
-      {mode === 'auto' && (
-        <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2">
-          <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-            Smart Shadow Analysis
-          </span>
-          <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
-            Analyzes the canvas art&apos;s silhouette, ground contact baseline, and scene lighting
-            angle to automatically calculate light position, penumbra scale, and atmospheric tint.
-          </p>
-
-          {/* Inferred Parameters Summary */}
-          <div className="grid grid-cols-2 gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)] text-[9px] font-mono">
-            <div className="flex flex-col">
-              <span className="text-[var(--text-body)] opacity-70">Direction:</span>
-              <span className="text-[#f0be7c] font-bold">{shadowAzimuth}° / {shadowElevation}°</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[var(--text-body)] opacity-70">Penumbra Blur:</span>
-              <span className="text-[#dcabdf] font-bold">{shadowLightRadius}px radius</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[var(--text-body)] opacity-70">Shadow Tint:</span>
-              <div className="flex items-center gap-1">
-                <span
-                  className="w-2.5 h-2.5 rounded-[1px] border border-[#f0be7c]"
-                  style={{ backgroundColor: shadowColor }}
-                />
-                <span className="text-[#f0be7c] font-bold">{shadowColor.toUpperCase()}</span>
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[var(--text-body)] opacity-70">Dither / Opacity:</span>
-              <span className="text-[#dcabdf] font-bold">{shadowDitherMode.toUpperCase()} ({Math.round(shadowOpacity * 100)}%)</span>
-            </div>
-          </div>
-
-          {inferredRationale && (
-            <div className="p-1.5 bg-[#26140b] text-[#f0be7c] text-[9px] font-mono rounded-[2px] border border-[#8c5120] leading-relaxed">
-              {inferredRationale}
-            </div>
-          )}
-
-          <TactileButton
-            size="sm"
-            variant="primary"
-            onClick={handleAutoRenderCastShadow}
-            title="Analyze canvas art and cast physically accurate raymarched soft shadow"
-            className="text-xs py-2 font-bold justify-center"
-          >
-            <PixelIcon name="sun" size={14} />
-            <span>Analyze &amp; Cast Shadow</span>
-          </TactileButton>
-        </div>
-      )}
-
-      {mode === 'manual' && (
-        <>
-          {/* Quick Action: Align with Studio Key Light */}
-          <div className="flex items-center justify-between bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
-            <span className="text-[9px] font-mono text-[var(--text-body)] opacity-80">
-              Sync with {tools.lightAzimuth}° Gizmo:
-            </span>
+        {/* Shadow Style: Directional Cast vs Ground Drop (Classic RPG Oval) */}
+        <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
+          <span className="text-[10px] text-[var(--text-body)] font-bold">Style:</span>
+          <div className="flex gap-1" role="group" aria-label="Shadow projection style">
             <button
               type="button"
-              onClick={handleAlignWithKeyLight}
-              className="px-2 py-0.5 text-[9px] font-mono font-bold text-[#f0be7c] bg-[var(--desk-surface)] hover:bg-[#3a204d] rounded-[1px] border border-[var(--desk-border)] transition-colors cursor-pointer"
+              onClick={() => setShadowStyle('cast')}
+              aria-pressed={shadowStyle === 'cast'}
+              className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                shadowStyle === 'cast'
+                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                  : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
+              }`}
             >
-              Align with Key Light
+              Directional Cast
+            </button>
+            <button
+              type="button"
+              onClick={() => setShadowStyle('drop')}
+              aria-pressed={shadowStyle === 'drop'}
+              className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                shadowStyle === 'drop'
+                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                  : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
+              }`}
+            >
+              Ground Drop (Oval)
             </button>
           </div>
+        </div>
 
-          {/* Light Position Coordinates X & Y */}
-          <div className="grid grid-cols-2 gap-2 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between text-[9px] font-mono">
-                <span className="text-[var(--text-body)]">Light X:</span>
-                <span className="text-[#f0be7c] font-bold">{shadowLightX}px</span>
+        {mode === 'auto' && (
+          <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2">
+            <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
+              Auto Floor Shadow
+            </span>
+            <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
+              Detects character baseline and lighting angle to automatically cast a soft ground shadow.
+            </p>
+
+            {/* Inferred Parameters Summary */}
+            <div className="grid grid-cols-2 gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)] text-[9px] font-mono">
+              <div className="flex flex-col">
+                <span className="text-[var(--text-body)] opacity-70">Direction:</span>
+                <span className="text-[var(--accent-gold)] font-bold">{shadowAzimuth}° / {shadowElevation}°</span>
               </div>
-              <input
-                type="range"
+              <div className="flex flex-col">
+                <span className="text-[var(--text-body)] opacity-70">Softness (Blur):</span>
+                <span className="text-[var(--accent-plum)] font-bold">{shadowLightRadius}px radius</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[var(--text-body)] opacity-70">Shadow Tint:</span>
+                <div className="flex items-center gap-1">
+                  <span
+                    className="w-2.5 h-2.5 rounded-[1px] border border-[var(--accent-gold)]"
+                    style={{ backgroundColor: shadowColor }}
+                  />
+                  <span className="text-[var(--accent-gold)] font-bold">{shadowColor.toUpperCase()}</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[var(--text-body)] opacity-70">Dither / Opacity:</span>
+                <span className="text-[var(--accent-plum)] font-bold">{shadowDitherMode.toUpperCase()} ({Math.round(shadowOpacity * 100)}%)</span>
+              </div>
+            </div>
+
+            {inferredRationale && (
+              <div className="p-1.5 bg-[#26140b] text-[var(--accent-gold)] text-[9px] font-mono rounded-[2px] border border-[#8c5120] leading-relaxed">
+                {inferredRationale}
+              </div>
+            )}
+
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={handleAutoRenderCastShadow}
+              title="Analyze artwork baseline and cast a soft ground shadow"
+              aria-label="Analyze & Cast Shadow"
+              className="text-xs py-2 font-bold justify-center"
+            >
+              <PixelIcon name="sun" size={14} />
+              <span>Add Floor Shadow</span>
+            </TactileButton>
+          </div>
+        )}
+
+        {mode === 'manual' && (
+          <>
+            {/* Quick Action: Align with Studio Key Light */}
+            <div className="flex items-center justify-between bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
+              <span className="text-[9px] font-mono text-[var(--text-body)] opacity-80">
+                Sync with {tools.lightAzimuth}° scene light:
+              </span>
+              <button
+                type="button"
+                onClick={handleAlignWithKeyLight}
+                className="px-2 py-0.5 text-[9px] font-mono font-bold text-[var(--accent-gold)] bg-[var(--desk-surface)] hover:bg-[#3a204d] rounded-[1px] border border-[var(--desk-border)] transition-colors cursor-pointer"
+              >
+                Match Scene Light
+              </button>
+            </div>
+
+            {/* Light Position Coordinates X & Y */}
+            <div className="grid grid-cols-2 gap-4 bg-[var(--desk-surface-raised)] p-3 rounded-[2px] border border-[var(--desk-border)]">
+              <StudioSlider
+                label="Light X"
+                value={shadowLightX}
                 min={-canvasWidth}
                 max={canvasWidth * 2}
-                value={shadowLightX}
-                aria-label="Raymarched light source X coordinate"
-                onChange={(e) => setShadowLightX(parseInt(e.target.value, 10))}
-                className="w-full accent-[#f0be7c] cursor-pointer"
+                unit="px"
+                onChange={(val) => setShadowLightX(val)}
               />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between text-[9px] font-mono">
-                <span className="text-[var(--text-body)]">Light Y:</span>
-                <span className="text-[#f0be7c] font-bold">{shadowLightY}px</span>
-              </div>
-              <input
-                type="range"
+              <StudioSlider
+                label="Light Y"
+                value={shadowLightY}
                 min={-canvasHeight}
                 max={canvasHeight * 2}
-                value={shadowLightY}
-                aria-label="Raymarched light source Y coordinate"
-                onChange={(e) => setShadowLightY(parseInt(e.target.value, 10))}
-                className="w-full accent-[#f0be7c] cursor-pointer"
+                unit="px"
+                onChange={(val) => setShadowLightY(val)}
               />
             </div>
-          </div>
 
-          {/* Light Radius & Opacity */}
-          <div className="grid grid-cols-2 gap-2 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between text-[9px] font-mono">
-                <span className="text-[var(--text-body)]">Light Size:</span>
-                <span className="text-[#dcabdf] font-bold">{shadowLightRadius}px</span>
-              </div>
-              <input
-                type="range"
+            {/* Light Radius & Opacity */}
+            <div className="grid grid-cols-2 gap-4 bg-[var(--desk-surface-raised)] p-3 rounded-[2px] border border-[var(--desk-border)]">
+              <StudioSlider
+                label="Softness Radius"
+                value={shadowLightRadius}
                 min={1}
                 max={64}
-                value={shadowLightRadius}
-                aria-label="Raymarched area light radius (penumbra blur)"
-                onChange={(e) => setShadowLightRadius(parseInt(e.target.value, 10))}
-                className="w-full accent-[#dcabdf] cursor-pointer"
+                unit="px"
+                onChange={(val) => setShadowLightRadius(val)}
               />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between text-[9px] font-mono">
-                <span className="text-[var(--text-body)]">Opacity:</span>
-                <span className="text-[#dcabdf] font-bold">{Math.round(shadowOpacity * 100)}%</span>
-              </div>
-              <input
-                type="range"
+              <StudioSlider
+                label="Opacity"
+                value={Math.round(shadowOpacity * 100)}
                 min={0}
-                max={1}
-                step={0.05}
-                value={shadowOpacity}
-                aria-label="Raymarched shadow layer opacity"
-                onChange={(e) => setShadowOpacity(parseFloat(e.target.value))}
-                className="w-full accent-[#dcabdf] cursor-pointer"
+                max={100}
+                step={5}
+                unit="%"
+                onChange={(val) => setShadowOpacity(val / 100)}
               />
             </div>
-          </div>
 
-          {/* Shadow Color Presets */}
-          <div className="flex flex-col gap-1.5 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-            <div className="flex justify-between items-center text-[9px] font-mono">
-              <span className="text-[var(--text-body)] font-bold">Shadow Tint:</span>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="w-3.5 h-3.5 rounded-[1px] border border-[#f0be7c]"
-                  style={{ backgroundColor: shadowColor }}
-                />
-                <span className="text-[#f0be7c] font-bold">{shadowColor.toUpperCase()}</span>
+            {/* Shadow Color Presets */}
+            <div className="flex flex-col gap-1.5 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
+              <div className="flex justify-between items-center text-[9px] font-mono">
+                <span className="text-[var(--text-body)] font-bold">Shadow Tint:</span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="w-3.5 h-3.5 rounded-[1px] border border-[var(--accent-gold)]"
+                    style={{ backgroundColor: shadowColor }}
+                  />
+                  <span className="text-[var(--accent-gold)] font-bold">{shadowColor.toUpperCase()}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-1">
+                {SHADOW_COLOR_PRESETS.map((preset) => (
+                  <button
+                    key={preset.hex}
+                    type="button"
+                    onClick={() => setShadowColor(preset.hex)}
+                    className={`flex-1 py-1 text-[8px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer text-center ${
+                      shadowColor.toLowerCase() === preset.hex.toLowerCase()
+                        ? 'border-[var(--accent-gold)] bg-[#3a204d] text-[var(--accent-gold)]'
+                        : 'border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
+                    }`}
+                    title={`${preset.label} (${preset.hex})`}
+                  >
+                    {preset.label.split('/')[0]}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="flex gap-1">
-              {SHADOW_COLOR_PRESETS.map((preset) => (
-                <button
-                  key={preset.hex}
-                  type="button"
-                  onClick={() => setShadowColor(preset.hex)}
-                  className={`flex-1 py-1 text-[8px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer text-center ${
-                    shadowColor.toLowerCase() === preset.hex.toLowerCase()
-                      ? 'border-[#f0be7c] bg-[#3a204d] text-[#f0be7c]'
-                      : 'border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[#f0be7c]'
-                  }`}
-                  title={`${preset.label} (${preset.hex})`}
-                >
-                  {preset.label.split('/')[0]}
-                </button>
-              ))}
+            {/* Dither Mode Selector */}
+            <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
+              <span className="text-[10px] text-[var(--text-body)] font-bold">Dither Shading:</span>
+              <div className="flex gap-1">
+                {(['none', '2x2', '4x4', '8x8'] as const).map((dMode) => (
+                  <button
+                    key={dMode}
+                    type="button"
+                    onClick={() => setShadowDitherMode(dMode)}
+                    className={`px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+                      shadowDitherMode === dMode
+                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                        : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
+                    }`}
+                  >
+                    {dMode.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Dither Mode Selector */}
-          <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Dither Filter:</span>
-            <div className="flex gap-1">
-              {(['none', '2x2', '4x4', '8x8'] as const).map((dMode) => (
-                <button
-                  key={dMode}
-                  type="button"
-                  onClick={() => setShadowDitherMode(dMode)}
-                  className={`px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
-                    shadowDitherMode === dMode
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-                      : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]'
-                  }`}
-                >
-                  {dMode.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Render Cast Shadow Button */}
-          <TactileButton
-            size="sm"
-            variant="primary"
-            onClick={handleRenderCastShadow}
-            title="Execute 2D sphere tracing over EDT distance field and composite non-destructive cast shadow layer"
-            className="text-xs py-2 font-bold justify-center"
-          >
-            <PixelIcon name="sun" size={14} />
-            <span>Render Cast Shadow</span>
-          </TactileButton>
-        </>
-      )}
-    </div>
+            {/* Render Cast Shadow Button */}
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={handleRenderCastShadow}
+              title="Generate a soft ground shadow on a new layer"
+              aria-label="Render Cast Shadow"
+              className="text-xs py-2 font-bold justify-center"
+            >
+              <PixelIcon name="sun" size={14} />
+              <span>Cast Ground Shadow</span>
+            </TactileButton>
+          </>
+        )}
+      </div>
+    </PanelSection>
   );
 };

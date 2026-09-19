@@ -13,8 +13,27 @@ interface RadialContextMenuProps {
 
 export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, position, onClose }) => {
   const { tools, setActiveTool, primaryColor, secondaryColor, swapColors } = useStudioStore();
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const openerRef = React.useRef<HTMLElement | null>(null);
 
-  if (!isOpen) return null;
+  React.useEffect(() => {
+    if (isOpen) {
+      if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+        openerRef.current = document.activeElement;
+      }
+      
+      const explicitFocus = menuRef.current?.querySelector<HTMLElement>('[data-autofocus="true"]');
+      if (explicitFocus) {
+        explicitFocus.focus();
+      } else {
+        menuRef.current?.focus();
+      }
+    } else {
+      if (openerRef.current && typeof openerRef.current.focus === 'function') {
+        openerRef.current.focus();
+      }
+    }
+  }, [isOpen]);
 
   const handleTool = (tool: ToolType) => {
     setActiveTool(tool);
@@ -22,7 +41,28 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
+    if (e.key === 'Escape') {
+      onClose();
+      return;
+    }
+
+    if (e.key === 'Tab' && menuRef.current) {
+      const focusable = menuRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   };
 
   const primaryTools: { id: ToolType; label: string; icon: PixelIconName }[] = [
@@ -31,6 +71,8 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
     { id: 'bucket', label: 'Fill', icon: 'bucket' },
     { id: 'eyedropper', label: 'Eyedropper', icon: 'eyedropper' },
   ];
+
+  if (!isOpen) return null;
 
   const menuWidth = 240;
   const menuHeight = 56;
@@ -53,6 +95,7 @@ export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, po
       />
       {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div 
+        ref={menuRef}
         className="fixed z-50 flex flex-col items-center gap-2 outline-none"
         style={{ left: clampedX, top: clampedY }}
         onKeyDown={handleKeyDown}

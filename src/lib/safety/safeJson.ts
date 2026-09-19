@@ -69,13 +69,21 @@ export class SafeJson {
       );
     }
 
-    const parsed = JSON.parse(rawJson, (key, value) => {
-      // Strip prototype pollution vector keys
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        return undefined;
-      }
-      return value;
-    });
+    // Reject nesting before JSON.parse's recursive reviver (or our sanitizer) runs.
+    let depth = 0;
+    let quoted = false;
+    let escaped = false;
+    for (const char of rawJson) {
+      if (quoted) {
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === '"') quoted = false;
+      } else if (char === '"') quoted = true;
+      else if (char === '{' || char === '[') {
+        if (++depth > maxDepth) throw new RangeError('[SafeJson] JSON nesting exceeded max recursion depth');
+      } else if (char === '}' || char === ']') depth--;
+    }
+    const parsed = JSON.parse(rawJson);
 
     // Enforce depth ceiling on parsed structure
     function assertDepth(obj: unknown, currentDepth: number): void {
@@ -96,7 +104,7 @@ export class SafeJson {
     }
 
     assertDepth(parsed, 1);
-    return parsed as T;
+    return this.sanitizeObject(parsed) as T;
   }
 
   /**

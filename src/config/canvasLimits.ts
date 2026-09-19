@@ -51,6 +51,11 @@ export const HARDWARE_LIMITS = {
 } as const;
 
 export const MAX_CANVAS_DIMENSION = WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION;
+export function assertWorkspaceDimensions(width: number, height: number): void {
+  if (![width, height].every(v => Number.isInteger(v) && v >= 1 && v <= MAX_CANVAS_DIMENSION)) {
+    throw new RangeError(`Canvas dimensions must be whole numbers between 1 and ${MAX_CANVAS_DIMENSION}.`);
+  }
+}
 export const MAX_CANVAS_FRAMES = WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES;
 export const MAX_CANVAS_LAYERS = WORKSPACE_ENVELOPE.MAX_CANVAS_LAYERS;
 export const MAX_EXPORT_DIMENSION = WORKSPACE_ENVELOPE.MAX_EXPORT_DIMENSION;

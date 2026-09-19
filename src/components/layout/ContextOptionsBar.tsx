@@ -84,11 +84,11 @@ export const ContextOptionsBar: React.FC = () => {
     <div className="h-8 bg-[var(--desk-surface)] border-b-2 border-[var(--desk-border)] px-3 flex items-center justify-between text-xs font-mono text-[var(--text-heading)] select-none z-10 transition-colors duration-300 shadow-xs">
       {/* 1. Left: Active Tool Identifier & Shortcut */}
       <div className="flex items-center gap-2 pr-3 border-r border-[var(--desk-border)] shrink-0">
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c] font-bold">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--accent-gold)] font-bold">
           <PixelIcon name={currentToolMeta.icon} size={14} />
           <span className="text-[11px]">{currentToolMeta.label}</span>
           {currentToolMeta.shortcut && (
-            <span className="text-[9px] bg-[#140d1f] text-[#dcabdf] px-1 py-0.2 rounded-[1px]">
+            <span className="text-[9px] bg-[var(--desk-bg)] text-[var(--accent-plum)] px-1 py-0.2 rounded-[1px]">
               {currentToolMeta.shortcut}
             </span>
           )}
@@ -126,11 +126,30 @@ export const ContextOptionsBar: React.FC = () => {
                 value={tools.brushSize}
                 onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
                 aria-label="Brush size"
-                className="w-16 h-1.5 accent-[#f0be7c] cursor-pointer"
+                className="w-16 h-1.5 accent-[var(--accent-gold)] cursor-pointer"
               />
-              <span className="text-[#f0be7c] font-bold text-[10px] min-w-[24px] text-right">
+              <span className="text-[var(--accent-gold)] font-bold text-[10px] min-w-[24px] text-right">
                 {tools.brushSize}px
               </span>
+            </div>
+
+            {/* Quick Brush Presets (E4) */}
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4].map((size) => (
+                <button
+                  key={`preset-${size}`}
+                  onClick={() => setBrushSize(size)}
+                  title={`Quick Preset: ${size}px`}
+                  aria-label={`${size}px brush preset`}
+                  className={`w-5 h-5 text-[9px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer flex items-center justify-center ${
+                    tools.brushSize === size
+                      ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] font-bold shadow-xs scale-105'
+                      : 'bg-[var(--desk-surface-raised)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--accent-gold)] hover:bg-[var(--surface-2)]'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -142,8 +161,8 @@ export const ContextOptionsBar: React.FC = () => {
             title="Pixel-Perfect Smoothing: Removes L-corner double pixels"
             className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
               tools.pixelPerfect
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
           >
             PP: {tools.pixelPerfect ? 'ON' : 'OFF'}
@@ -163,9 +182,9 @@ export const ContextOptionsBar: React.FC = () => {
                 value={tools.curveTightness}
                 onChange={(e) => setCurveTightness(parseFloat(e.target.value))}
                 aria-label="Curve tightness"
-                className="w-14 h-1.5 accent-[#f0be7c] cursor-pointer"
+                className="w-14 h-1.5 accent-[var(--accent-gold)] cursor-pointer"
               />
-              <span className="text-[#dcabdf] font-bold text-[10px]">
+              <span className="text-[var(--accent-plum)] font-bold text-[10px]">
                 {Math.round(tools.curveTightness * 100)}%
               </span>
             </div>
@@ -180,8 +199,8 @@ export const ContextOptionsBar: React.FC = () => {
               title={tools.bucketContiguous ? 'Fill Contiguous Island' : 'Replace All Matching Pixels'}
               className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
                 !tools.bucketContiguous
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+                  : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
               }`}
             >
               Mode: {tools.bucketContiguous ? 'Contiguous Area' : 'Global Replace'}
@@ -197,7 +216,7 @@ export const ContextOptionsBar: React.FC = () => {
               value={tools.ditherMatrix}
               aria-label="Dither matrix algorithm"
               onChange={(e) => setDitherMatrix(e.target.value as DitherMatrixType)}
-              className="bg-[var(--desk-surface-raised)] text-[#f0be7c] font-bold text-[10px] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
+              className="bg-[var(--desk-surface-raised)] text-[var(--accent-gold)] font-bold text-[10px] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
             >
               <option value="2x2">Bayer 2x2</option>
               <option value="4x4">Bayer 4x4</option>
@@ -217,9 +236,9 @@ export const ContextOptionsBar: React.FC = () => {
                 value={tools.ditherDensity}
                 onChange={(e) => setDitherDensity(parseFloat(e.target.value))}
                 aria-label="Dither density"
-                className="w-14 h-1.5 accent-[#f0be7c] cursor-pointer"
+                className="w-14 h-1.5 accent-[var(--accent-gold)] cursor-pointer"
               />
-              <span className="text-[#f0be7c] font-bold text-[10px]">
+              <span className="text-[var(--accent-gold)] font-bold text-[10px]">
                 {Math.round(tools.ditherDensity * 100)}%
               </span>
             </div>
@@ -234,8 +253,8 @@ export const ContextOptionsBar: React.FC = () => {
             data-testid="shape-fill-toggle"
             className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
               tools.shapeFilled
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
           >
             Shape: {tools.shapeFilled ? 'Filled Solid' : 'Outline Stroke'}
@@ -248,8 +267,8 @@ export const ContextOptionsBar: React.FC = () => {
             onClick={() => setIsoAngleSnap(!tools.isoAngleSnap)}
             className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
               tools.isoAngleSnap
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
           >
             2:1 Snap: {tools.isoAngleSnap ? 'ON (26.5°)' : 'FREE'}
@@ -281,8 +300,8 @@ export const ContextOptionsBar: React.FC = () => {
           title="Horizontal Symmetry Axis (X)"
           className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
             tools.symmetryHorizontal
-              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+              ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
           }`}
         >
           Sym-H
@@ -293,8 +312,8 @@ export const ContextOptionsBar: React.FC = () => {
           title="Vertical Symmetry Axis (Y)"
           className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[2px] border transition-colors cursor-pointer ${
             tools.symmetryVertical
-              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+              ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120]'
+              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
           }`}
         >
           Sym-V
@@ -305,7 +324,7 @@ export const ContextOptionsBar: React.FC = () => {
           value={tools.symmetryGroup || 'none'}
           aria-label="Wallpaper group symmetry brush mode"
           onChange={(e) => setSymmetryGroup(e.target.value as WallpaperGroup)}
-          className="bg-[var(--desk-surface-raised)] text-[#f0be7c] font-bold text-[10px] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
+          className="bg-[var(--desk-surface-raised)] text-[var(--accent-gold)] font-bold text-[10px] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer"
           title="Crystallographic Wallpaper Group Symmetry Brush (Schattschneider 1978): p2, pm, p4, p4m, p6m"
         >
           <option value="none">Group: None</option>
@@ -405,7 +424,7 @@ export const ContextOptionsBar: React.FC = () => {
           }`}
         >
           <PixelIcon name="select-box" size={12} />
-          <span>SIL</span>
+          <span>Sil</span>
         </button>
       </div>
     </div>

@@ -84,6 +84,8 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'Ctrl + + / -', description: 'Zoom In / Out Step', category: 'Canvas & Viewport' },
   { key: 'Ctrl + 0', description: 'Fit Canvas to Screen', category: 'Canvas & Viewport' },
   { key: 'Ctrl + 1', description: 'Reset Zoom to 100%', category: 'Canvas & Viewport' },
+  { key: 'Shift + H', description: 'Toggle Horizontal Symmetry Mirror', category: 'Canvas & Viewport' },
+  { key: 'Shift + V', description: 'Toggle Vertical Symmetry Mirror', category: 'Canvas & Viewport' },
   { key: 'P', description: 'Cycle CVD Colorblindness Lens', category: 'Canvas & Viewport' },
   { key: 'S', description: 'Silhouette / Squint Mode', category: 'Canvas & Viewport' },
 

@@ -1123,195 +1123,21 @@ describe('Bake Normals layer index', () => {
     expect(imgData.data[headTopIdx]).toBeGreaterThan(100); // Vibrant, not dark crushed
   });
 
-  it('renders mxnrry and penguin skins with material-aware pipeline and exports PNG', async () => {
-    const fs = await import('fs');
-    const path = await import('path');
-    const zlib = await import('zlib');
+  it('shades a portable synthetic Minecraft skin with opaque output and preserved transparency', async () => {
     const { executeMinecraftSkinShadingPipeline } = await import('@/lib/ai/smartMathEngine');
-
-    function decodePNG(buffer: Buffer) {
-      let offset = 8;
-      let width = 0, height = 0;
-      const idatChunks: Buffer[] = [];
-
-      while (offset < buffer.length) {
-        const length = buffer.readUInt32BE(offset);
-        const type = buffer.toString('ascii', offset + 4, offset + 8);
-        if (type === 'IHDR') {
-          width = buffer.readUInt32BE(offset + 8);
-          height = buffer.readUInt32BE(offset + 12);
-        } else if (type === 'IDAT') {
-          idatChunks.push(buffer.subarray(offset + 8, offset + 8 + length));
-        } else if (type === 'IEND') {
-          break;
-        }
-        offset += 12 + length;
-      }
-
-      const compressed = Buffer.concat(idatChunks);
-      const decompressed = zlib.inflateSync(compressed);
-
-      const bytesPerPixel = 4;
-      const stride = width * bytesPerPixel;
-      const data = new Uint8ClampedArray(width * height * 4);
-
-      let srcPos = 0;
-      for (let y = 0; y < height; y++) {
-        const filterType = decompressed[srcPos++];
-        const lineStart = y * stride;
-
-        for (let x = 0; x < stride; x++) {
-          const raw = decompressed[srcPos++];
-          let val = raw;
-          const left = x >= bytesPerPixel ? data[lineStart + x - bytesPerPixel] : 0;
-          const up = y > 0 ? data[(y - 1) * stride + x] : 0;
-          const upLeft = (y > 0 && x >= bytesPerPixel) ? data[(y - 1) * stride + x - bytesPerPixel] : 0;
-
-          if (filterType === 0) {
-            val = raw;
-          } else if (filterType === 1) {
-            val = (raw + left) & 0xff;
-          } else if (filterType === 2) {
-            val = (raw + up) & 0xff;
-          } else if (filterType === 3) {
-            val = (raw + Math.floor((left + up) / 2)) & 0xff;
-          } else if (filterType === 4) {
-            const p = left + up - upLeft;
-            const pa = Math.abs(p - left);
-            const pb = Math.abs(p - up);
-            const pc = Math.abs(p - upLeft);
-            let pr: number;
-            if (pa <= pb && pa <= pc) pr = left;
-            else if (pb <= pc) pr = up;
-            else pr = upLeft;
-            val = (raw + pr) & 0xff;
-          }
-          data[lineStart + x] = val;
-        }
-      }
-
-      return { width, height, data };
+    const input = new Uint8ClampedArray(64 * 64 * 4);
+    for (let y = 8; y < 16; y++) for (let x = 8; x < 16; x++) {
+      input.set([240, 160, 100, 255], (y * 64 + x) * 4);
     }
-
-    function encodePNG(width: number, height: number, data: Uint8ClampedArray | Uint8Array) {
-      const bytesPerPixel = 4;
-      const stride = width * bytesPerPixel;
-      const rawScanlines = Buffer.alloc(height * (stride + 1));
-
-      let dstPos = 0;
-      for (let y = 0; y < height; y++) {
-        rawScanlines[dstPos++] = 0;
-        for (let x = 0; x < stride; x++) {
-          rawScanlines[dstPos++] = data[y * stride + x];
-        }
-      }
-
-      const compressed = zlib.deflateSync(rawScanlines);
-      const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-
-      const ihdr = Buffer.alloc(13);
-      ihdr.writeUInt32BE(width, 0);
-      ihdr.writeUInt32BE(height, 4);
-      ihdr[8] = 8;
-      ihdr[9] = 6;
-      ihdr[10] = 0;
-      ihdr[11] = 0;
-      ihdr[12] = 0;
-
-      function makeChunk(type: string, chunkData: Buffer) {
-        const len = chunkData.length;
-        const buf = Buffer.alloc(12 + len);
-        buf.writeUInt32BE(len, 0);
-        buf.write(type, 4, 4, 'ascii');
-        chunkData.copy(buf, 8);
-
-        let c = 0xffffffff;
-        const table = new Uint32Array(256);
-        for (let n = 0; n < 256; n++) {
-          let v = n;
-          for (let k = 0; k < 8; k++) {
-            v = (v & 1) ? (0xedb88320 ^ (v >>> 1)) : (v >>> 1);
-          }
-          table[n] = v;
-        }
-
-        for (let i = 4; i < 8 + len; i++) {
-          c = table[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
-        }
-        buf.writeUInt32BE((c ^ 0xffffffff) >>> 0, 8 + len);
-        return buf;
-      }
-
-      return Buffer.concat([signature, makeChunk('IHDR', ihdr), makeChunk('IDAT', compressed), makeChunk('IEND', Buffer.alloc(0))]);
-    }
-
-    const mxnrryPath = 'C:/Users/Resque/.gemini/antigravity/brain/f87d30d0-506d-44da-8bd4-66b5901b0ba5/.user_uploaded/media_1788075654751.png';
-    const penguinPath = 'C:/Users/Resque/.gemini/antigravity/brain/f87d30d0-506d-44da-8bd4-66b5901b0ba5/.user_uploaded/media_1788075432855.png';
-    const outDir = 'C:/Users/Resque/.gemini/antigravity/brain/f87d30d0-506d-44da-8bd4-66b5901b0ba5';
-
-    function renderAndSave(inPath: string, outFileName: string) {
-      if (!fs.existsSync(inPath)) return;
-      const buf = fs.readFileSync(inPath);
-      const { width, height, data } = decodePNG(buf);
-
-      const fakeCtx = {
-        getImageData: (_x: number, _y: number, w: number, h: number) => ({
-          data: new Uint8ClampedArray(data),
-          width: w,
-          height: h,
-        }),
-      } as unknown as CanvasRenderingContext2D;
-
-      const shadedCanvas = executeMinecraftSkinShadingPipeline(
-        fakeCtx,
-        width,
-        height,
-        {
-          material: 'matte',
-          lightAzimuth: 45,
-          lightElevation: 45,
-          lightRadius: 64,
-          lightColor: '#FFFFFF',
-          ambientIntensity: 0.2,
-          lightBrightness: 1.15,
-          cavityStrength: 1.0,
-          ditherModulation: 0.5,
-          bayerSize: '4x4',
-        }
-      );
-
-      const sCtx = shadedCanvas.getContext('2d')!;
-      const outImgData = sCtx.getImageData(0, 0, width, height);
-
-      const outPng = encodePNG(width, height, outImgData.data);
-      fs.writeFileSync(path.join(outDir, outFileName), outPng);
-      return outImgData;
-    }
-
-    const mxnrryOut = renderAndSave(mxnrryPath, 'shaded_mxnrry.png');
-    if (mxnrryOut) {
-      // 1. Verify White T-Shirt on Torso (x=24, y=22) remains bright and crisp (R, G, B >= 220)
-      const shirtIdx = (22 * 64 + 24) * 4;
-      if (mxnrryOut.data[shirtIdx + 3] > 0) {
-        expect(mxnrryOut.data[shirtIdx]).toBeGreaterThan(210);
-        expect(mxnrryOut.data[shirtIdx + 1]).toBeGreaterThan(210);
-        expect(mxnrryOut.data[shirtIdx + 2]).toBeGreaterThan(210);
-      }
-
-      // 2. Verify Red Floral Pants (x=6, y=22) remains saturated red (R > 180, R > G*2)
-      const pantsIdx = (22 * 64 + 6) * 4;
-      if (mxnrryOut.data[pantsIdx + 3] > 0) {
-        expect(mxnrryOut.data[pantsIdx]).toBeGreaterThan(160);
-      }
-
-      // 3. Verify Eye sclera (x=9, y=14) remains crisp white without being crushed
-      const eyeIdx = (14 * 64 + 9) * 4;
-      if (mxnrryOut.data[eyeIdx + 3] > 0) {
-        expect(mxnrryOut.data[eyeIdx]).toBeGreaterThan(220);
-      }
-    }
-
-    renderAndSave(penguinPath, 'shaded_penguin.png');
+    const ctx = { getImageData: () => ({ data: input, width: 64, height: 64 }) } as unknown as CanvasRenderingContext2D;
+    const output = executeMinecraftSkinShadingPipeline(ctx, 64, 64, {
+      material: 'matte', lightAzimuth: 45, lightElevation: 45, lightRadius: 64,
+      lightColor: '#FFFFFF', ambientIntensity: 0.2, lightBrightness: 1.15,
+      cavityStrength: 1, ditherModulation: 0.5, bayerSize: '4x4',
+    }).getContext('2d')!.getImageData(0, 0, 64, 64).data;
+    expect(output[(10 * 64 + 10) * 4 + 3]).toBe(255);
+    expect(output[(10 * 64 + 10) * 4]).toBeGreaterThan(100);
+    expect(output[3]).toBe(0);
+    expect(Array.from(output)).not.toEqual(Array.from(input));
   });
 });
-

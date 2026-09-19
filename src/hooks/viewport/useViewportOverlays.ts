@@ -59,6 +59,7 @@ export function useViewportOverlays({
   brushSize,
 }: UseViewportOverlaysProps) {
   const onionGhostCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const referenceOverlay = useStudioStore((state) => state.referenceOverlay);
 
   // Matrix-only lens: safe for translucent stacked surfaces (preserves alpha)
   const cvdFilterCss = cvdLens !== 'none' ? `url(#${CVD_FILTER_IDS[cvdLens]})` : undefined;
@@ -232,6 +233,45 @@ export function useViewportOverlays({
       }
     }
 
+    // 1.05 Reference Overlays (Rule of Thirds, Golden Ratio, Center Cross)
+    if (referenceOverlay !== 'none') {
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      const drawHLine = (yVal: number) => {
+        ctx.beginPath();
+        ctx.moveTo(0, yVal);
+        ctx.lineTo(width, yVal);
+        ctx.stroke();
+      };
+      const drawVLine = (xVal: number) => {
+        ctx.beginPath();
+        ctx.moveTo(xVal, 0);
+        ctx.lineTo(xVal, height);
+        ctx.stroke();
+      };
+
+      if (referenceOverlay === 'thirds') {
+        ctx.strokeStyle = 'rgba(199, 146, 223, 0.7)'; // Wisteria
+        drawVLine(width / 3);
+        drawVLine((2 * width) / 3);
+        drawHLine(height / 3);
+        drawHLine((2 * height) / 3);
+      } else if (referenceOverlay === 'golden') {
+        ctx.strokeStyle = 'rgba(240, 190, 124, 0.75)'; // Amber gold
+        drawVLine(width * 0.382);
+        drawVLine(width * 0.618);
+        drawHLine(height * 0.382);
+        drawHLine(height * 0.618);
+      } else if (referenceOverlay === 'center') {
+        ctx.strokeStyle = 'rgba(220, 171, 223, 0.7)'; // Plum
+        drawVLine(width / 2);
+        drawHLine(height / 2);
+      }
+
+      ctx.setLineDash([]);
+    }
+
     // 1.1 Ground Baseline Guide (Playground physics mode)
     if (
       isPlaygroundActive &&
@@ -372,6 +412,7 @@ export function useViewportOverlays({
     selectionMask,
     showGrid,
     showIsoGuides,
+    referenceOverlay,
     symmetryHorizontal,
     symmetryVertical,
     zoom,

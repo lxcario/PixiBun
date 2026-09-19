@@ -5,7 +5,7 @@ import { motion, HTMLMotionProps, useReducedMotion } from 'motion/react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export type TactileVariant = 'default' | 'primary' | 'accent' | 'danger' | 'ghost' | 'active' | 'inset' | 'image';
+export type TactileVariant = 'default' | 'primary' | 'accent' | 'danger' | 'ghost' | 'active' | 'inset' | 'image' | 'tactile' | 'toggle';
 export type TactileSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
 
 export interface TactileButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
@@ -31,34 +31,38 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
     const sizeClasses = {
       'icon-sm': 'w-7 h-7 p-1 flex items-center justify-center text-xs',
       'icon': 'w-9 h-9 p-1 flex items-center justify-center text-sm',
-      'sm': 'px-2.5 py-1 text-xs font-medium min-h-7',
-      'md': 'px-3.5 py-1.5 text-sm font-medium min-h-9',
-      'lg': 'px-5 py-2.5 text-base font-semibold min-h-11',
+      'sm': 'px-2.5 py-0.5 text-xs font-medium h-7',
+      'md': 'px-3.5 py-1.5 text-sm font-medium h-9',
+      'lg': 'px-5 py-2.5 text-base font-semibold h-11',
     }[size];
 
     // Alabaster, Thistle, Plum, and Wisteria theme styling
     const variantClasses = isImageButton
       ? isSelected
-        ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
+        ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[var(--accent-gold)] shadow-[0_0_8px_rgba(240,190,124,0.55)]'
         : 'bg-transparent border-0 p-0 shadow-none'
       : {
           default: isSelected
-            ? 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-surface-raised text-text-primary border-border-dark hover:bg-[#603B82] hover:border-[var(--accent-wisteria)] hover:shadow-[0_0_10px_rgba(199,146,223,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(58,46,76,0.2)]',
+            ? 'pixel-tactile-btn bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.2),0_1px_0px_var(--btn-shadow)]'
+            : 'pixel-tactile-btn tactile-motion-btn text-[var(--text-heading)] border-[var(--desk-border)]',
+          tactile: isSelected
+            ? 'pixel-tactile-btn bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.2),0_1px_0px_var(--btn-shadow)]'
+            : 'pixel-tactile-btn tactile-motion-btn text-[var(--btn-text)] border-[var(--btn-border)]',
           primary: isSelected
-            ? 'bg-[#b673d3] text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-accent-primary text-[#140c1e] font-bold border-border-dark hover:bg-[#d4a5ea] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
+            ? 'pixel-primary-btn tactile-motion-btn font-bold shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]'
+            : 'pixel-primary-btn tactile-motion-btn',
           accent: isSelected
-            ? 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-accent-secondary text-text-primary font-bold border-border-dark hover:bg-[#b673d3] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),inset_0_-1px_0_rgba(58,46,76,0.3)]',
-          danger: isSelected
-            ? 'bg-[#c24e61] text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]'
-            : 'bg-danger text-[#ffffff] font-bold border-border-dark hover:bg-[#c24e61] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(58,46,76,0.3)]',
-          ghost: 'bg-transparent text-text-secondary border-transparent hover:bg-[#603B82]/40 hover:text-[var(--text-heading)]',
-          active: 'bg-accent-primary text-[#ffffff] border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.3)]',
-          inset: 'bg-surface-inset texture-dither text-text-primary border-border-dark shadow-[inset_0_2px_4px_rgba(58,46,76,0.25)]',
+            ? 'pixel-tactile-btn bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.2),0_1px_0px_var(--btn-shadow)]'
+            : 'pixel-tactile-btn tactile-motion-btn text-[var(--text-heading)] border-[var(--desk-border)] hover:bg-[var(--surface-2)]',
+          danger: 'pixel-tactile-btn tactile-motion-btn bg-[var(--surface-0)] text-[var(--state-danger)] border-[var(--state-danger)]/40 shadow-[0_2px_0_var(--btn-shadow)] hover:bg-[var(--state-danger)] hover:text-[#ffffff] hover:border-[var(--state-danger)] active:shadow-[inset_1px_1px_0px_rgba(0,0,0,0.4)]',
+          ghost: 'bg-transparent text-[var(--text-body)] border-transparent shadow-none hover:bg-[var(--state-hover)] hover:text-[var(--text-heading)]',
+          toggle: isSelected
+            ? 'pixel-tactile-btn bg-[var(--surface-2)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.15),0_1px_0px_var(--btn-shadow)] font-bold'
+            : 'pixel-tactile-btn tactile-motion-btn text-[var(--text-body)] border-[var(--btn-border)]',
+          active: 'pixel-tactile-btn bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.2),0_1px_0px_var(--btn-shadow)]',
+          inset: 'bg-[var(--surface-0)] text-[var(--text-body)] border-[var(--desk-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]',
           image: isSelected
-            ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[#c792df] shadow-[0_0_8px_rgba(199,146,223,0.55)]'
+            ? 'bg-transparent border-0 p-0 rounded-[2px] ring-2 ring-[var(--accent-gold)] shadow-[0_0_8px_rgba(240,190,124,0.55)]'
             : 'bg-transparent border-0 p-0 shadow-none',
         }[variant];
 
@@ -73,26 +77,27 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
         variants={{
           rest: { scale: 1, y: 0 },
           active: { 
-            scale: shouldReduceMotion ? 1 : 0.97, 
-            y: shouldReduceMotion ? 0 : 1, 
-            transition: { type: 'spring', stiffness: 420, damping: 28 } 
+            scale: 1, 
+            y: 0, 
+            transition: { duration: 0.08, ease: 'easeOut' } 
           },
           hover: { 
-            scale: shouldReduceMotion ? 1 : (isSelected ? 0.98 : 1.025), 
-            transition: { type: 'spring', stiffness: 420, damping: 28 } 
+            scale: 1,
+            y: shouldReduceMotion ? 0 : -1,
+            transition: { duration: 0.1, ease: 'easeOut' } 
           },
           tap: { 
-            scale: shouldReduceMotion ? 1 : 0.97, 
+            scale: 1, 
             y: shouldReduceMotion ? 0 : 1, 
-            transition: { type: 'spring', stiffness: 550, damping: 22 } 
+            transition: { duration: 0.05, ease: 'easeOut' } 
           }
         }}
         className={twMerge(
           clsx(
-            'group relative select-none rounded-[2px] font-mono',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lamp focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-            !isImageButton && 'border-2',
-            'transition-colors duration-150',
+            'group relative select-none rounded-[2px] font-sans',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)]',
+            !isImageButton && 'border',
+            'transition-colors duration-100',
             'disabled:opacity-40 disabled:pointer-events-none',
             'overflow-hidden',
             sizeClasses,
@@ -108,18 +113,16 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
             <img
               src={imageSrc}
               alt={imageAlt ?? ((props['aria-label'] as string) || '')}
-              className="w-full h-full object-contain pixelated pointer-events-none select-none transition-all duration-200"
+              className="w-full h-full object-contain pixelated pointer-events-none select-none transition-all duration-150"
               style={{
                 imageRendering: 'pixelated',
                 filter: isSelected
-                  ? 'brightness(0.90) saturate(1.35) contrast(1.05)'
+                  ? 'brightness(0.95) contrast(1.05)'
                   : 'none',
               }}
             />
-
-            {/* Soft, rich lavender/plum glow tint when active/selected */}
             {isSelected && (
-              <div className="absolute inset-0 bg-accent-primary/20 rounded-[2px] pointer-events-none shadow-[inset_0_1px_3px_rgba(58,46,76,0.3)]" />
+              <div className="absolute inset-0 bg-[var(--accent-gold)]/10 rounded-[2px] pointer-events-none" />
             )}
           </div>
         ) : (
@@ -128,7 +131,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
           </span>
         )}
 
-        {/* Specular CC Light Sweep Gleam Animation across the entire button / PNG asset */}
+        {/* Specular CC Light Sweep Gleam Animation across enabled non-ghost buttons */}
         {!disabled && variant !== 'ghost' && !shouldReduceMotion && (
           <motion.div
             variants={{

@@ -135,7 +135,7 @@ if (fs.existsSync(changelogPath)) {
     const cvPath = path.join(rootDir, 'src/components/layout/CenterViewport.tsx');
     if (fs.existsSync(cvPath)) {
       const cvLines = fs.readFileSync(cvPath, 'utf8').split('\n').length;
-      reportPass(`CenterViewport.tsx line count verified truthful (measured ${cvLines} lines)`);
+      reportPass(`CenterViewport.tsx obsolete-phrase check passed (current measured count: ${cvLines} lines)`);
     }
   }
 } else {

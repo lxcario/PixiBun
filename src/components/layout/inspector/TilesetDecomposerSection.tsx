@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import PanelSection from '@/components/ui/PanelSection';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { decomposeIntoTileset } from '@/lib/canvas/tileStamp';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
@@ -77,131 +78,142 @@ export const TilesetDecomposerSection: React.FC = () => {
   };
 
   return (
-    <>
-      {/* Module 2.5: Procedural WaveFunctionCollapse (WFC) Texture Synthesis */}
-      <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+    <PanelSection
+      title="Seamless Patterns & Tilesets"
+      ariaLabel="Seamless Patterns & Tilesets (WFC & Tileset Tools)"
+      storageKey="pixibun:panel:tileset"
+      defaultOpen={false}
+    >
+      <div className="flex flex-col gap-4">
+        {/* Module 2.5: Procedural WaveFunctionCollapse (WFC) Texture Synthesis */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-sans font-medium text-[var(--text-heading)] flex items-center gap-1.5">
+              <PixelIcon name="grid" size={12} />
+              <span>Seamless Pattern Generator</span>
+            </span>
+            <span className="text-[9px] font-sans text-[var(--text-muted)]">Tile Extender</span>
+          </div>
+
+          <p className="text-[10px] text-[var(--text-muted)] font-sans leading-tight">
+            Sample selection edges to synthesize an extended repeating pattern.
+          </p>
+
+          <div className="flex items-center justify-between text-[10px] font-sans">
+            <span className="text-[var(--text-body)] font-medium">Sample Window:</span>
+            <div className="inline-flex bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] p-0.5">
+              {([2, 3] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setWfcN(size)}
+                  className={`px-2 py-0.5 text-[10px] font-mono font-medium rounded-[1px] transition-colors cursor-pointer ${
+                    wfcN === size
+                      ? 'bg-[var(--surface-3)] text-[var(--text-heading)] shadow-xs'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  {size}×{size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <TactileButton
+            size="sm"
+            variant="primary"
+            onClick={handleWfcExtend}
+            title="Generate an extended seamless texture based on your canvas artwork"
+            aria-label="Generate Seamless Pattern (WFC)"
+            className="text-xs py-1.5 font-bold justify-center"
+          >
             <PixelIcon name="grid" size={12} />
-            <span>WFC Pattern Synthesis</span>
-          </span>
-          <span className="text-[9px] font-mono text-[#a89ab8]">Gumin 2016</span>
+            <span>Generate Seamless Pattern</span>
+          </TactileButton>
         </div>
 
-        <p className="text-[10px] text-[var(--text-body)] font-mono leading-tight">
-          Select or draw a sample tile (8×8–16×16), then extend into an arbitrary tileable region obeying local neighborhood constraints.
-        </p>
+        <div className="h-px w-full bg-[var(--desk-border)]" />
 
-        <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-[var(--text-body)] font-bold">Neighborhood (N):</span>
-          <div className="flex gap-1">
-            {([2, 3] as const).map((size) => (
-              <button
-                key={size}
-                onClick={() => setWfcN(size)}
-                className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border cursor-pointer ${
-                  wfcN === size
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
-                }`}
-              >
-                {size}×{size}
-              </button>
-            ))}
+        {/* Module 2.6: Tileset & Tilemap Decomposer */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-sans font-medium text-[var(--text-heading)] flex items-center gap-1.5">
+              <PixelIcon name="grid-iso" size={12} />
+              <span>Tile Slicer & Map Exporter</span>
+            </span>
+            <span className="text-[9px] font-sans text-[var(--text-muted)]">Game Export</span>
           </div>
-        </div>
 
-        <TactileButton
-          size="sm"
-          variant="primary"
-          onClick={handleWfcExtend}
-          title="Run WaveFunctionCollapse synthesis using canvas pixels as sample distribution"
-          className="text-xs py-1.5 font-bold justify-center"
-        >
-          <PixelIcon name="sparkles" size={12} />
-          <span>Extend Pattern (WFC)</span>
-        </TactileButton>
-      </div>
+          <p className="text-[10px] text-[var(--text-muted)] font-sans leading-tight">
+            Slice artwork into unique tiles and export a 2D tilemap.
+          </p>
 
-      {/* Module 2.6: Tileset & Tilemap Decomposer */}
-      <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1">
+          <div className="flex items-center justify-between text-[10px] font-sans">
+            <span className="text-[var(--text-body)] font-medium">Tile Size:</span>
+            <div className="inline-flex bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] p-0.5">
+              {([8, 16, 32] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setTilesetSize(size)}
+                  className={`px-2 py-0.5 text-[10px] font-mono font-medium rounded-[1px] transition-colors cursor-pointer ${
+                    tilesetSize === size
+                      ? 'bg-[var(--surface-3)] text-[var(--text-heading)] shadow-xs'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+                  }`}
+                >
+                  {size}px
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={handleDecomposeTileset}
+            title="Break sprite into unique tiles and generate a 2D tilemap"
+            className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] justify-center"
+          >
+            <PixelIcon name="layers" size={12} />
+            <span>Slice Into Unique Tiles</span>
+          </TactileButton>
+
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={handle47Blob}
+            title="Generate standard 47-blob corner and edge transitions for terrain tilesets"
+            aria-label="47-Blob Autotile Edges"
+            className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] justify-center flex items-center gap-1"
+          >
             <PixelIcon name="grid-iso" size={12} />
-            <span>Tileset Decomposer</span>
-          </span>
-          <span className="text-[9px] font-mono text-[#a89ab8]">Phase 37.1</span>
-        </div>
+            <span>Autotile Edges (47-Blob)</span>
+          </TactileButton>
 
-        <p className="text-[10px] text-[var(--text-body)] font-mono leading-tight">
-          Decompose layer into unique tile atlas &amp; 2D tilemap matrix (Tiled / Godot format).
-        </p>
-
-        <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-[var(--text-body)] font-bold">Tile Size:</span>
-          <div className="flex gap-1">
-            {([8, 16, 32] as const).map((size) => (
-              <button
-                key={size}
-                onClick={() => setTilesetSize(size)}
-                className={`px-2 py-0.5 text-[10px] font-bold rounded-[2px] border cursor-pointer ${
-                  tilesetSize === size
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
-                }`}
+          {tilesetResult && (
+            <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)] text-[10px] font-mono">
+              <div className="flex justify-between text-[var(--text-body)]">
+                <span>Unique Tiles:</span>
+                <span className="text-[var(--accent-gold)] font-bold">{tilesetResult.uniqueCount}</span>
+              </div>
+              <div className="flex justify-between text-[var(--text-body)]">
+                <span>Grid Dimensions:</span>
+                <span className="text-[var(--accent-plum)] font-bold">
+                  {tilesetResult.cols} × {tilesetResult.rows}
+                </span>
+              </div>
+              <TactileButton
+                size="sm"
+                variant={copiedTilemap ? 'primary' : 'default'}
+                onClick={handleCopyTilemap}
+                className="text-[10px] py-1 font-bold justify-center"
               >
-                {size}px
-              </button>
-            ))}
-          </div>
+                <PixelIcon name="copy" size={10} />
+                <span>{copiedTilemap ? 'Copied to Clipboard!' : 'Copy Tilemap JSON'}</span>
+              </TactileButton>
+            </div>
+          )}
         </div>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={handleDecomposeTileset}
-          title="Analyze canvas, extract deduplicated tiles, and build 2D index matrix"
-          className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] justify-center"
-        >
-          <PixelIcon name="layers" size={12} />
-          <span>Decompose Layer</span>
-        </TactileButton>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={handle47Blob}
-          title="Calculate 47-tile bitmask connectivity and generate autotile edge contours"
-          className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] justify-center flex items-center gap-1"
-        >
-          <PixelIcon name="grid-iso" size={12} />
-          <span>47-Blob Autotile Edges</span>
-        </TactileButton>
-
-        {tilesetResult && (
-          <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)] text-[10px] font-mono">
-            <div className="flex justify-between text-[var(--text-body)]">
-              <span>Unique Tiles:</span>
-              <span className="text-[#f0be7c] font-bold">{tilesetResult.uniqueCount}</span>
-            </div>
-            <div className="flex justify-between text-[var(--text-body)]">
-              <span>Grid Dimensions:</span>
-              <span className="text-[#dcabdf] font-bold">
-                {tilesetResult.cols} × {tilesetResult.rows}
-              </span>
-            </div>
-            <TactileButton
-              size="sm"
-              variant={copiedTilemap ? 'primary' : 'default'}
-              onClick={handleCopyTilemap}
-              className="text-[10px] py-1 font-bold justify-center"
-            >
-              <PixelIcon name="copy" size={10} />
-              <span>{copiedTilemap ? 'Copied to Clipboard!' : 'Copy Tilemap JSON'}</span>
-            </TactileButton>
-          </div>
-        )}
       </div>
-    </>
+    </PanelSection>
   );
 };

@@ -1,16 +1,19 @@
 'use client';
 
+import { readImportFile, reportImportError } from '@/lib/project/importFile';
+
 import React, { useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BunMascot } from '@/components/ui/BunMascot';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { AppearancePopover } from '@/components/ui/AppearancePopover';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import { AutosaveIndicator } from '@/components/ui/AutosaveIndicator';
 import { StudioRadioWidget } from '@/components/audio/StudioRadioWidget';
 import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
+import StudioTooltip from '@/components/ui/StudioTooltip';
 
 interface TopHeaderProps {
   onOpenExport?: () => void;
@@ -65,45 +68,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const filename = file.name;
-    const isProject = filename.endsWith('.pixibun') || filename.endsWith('.json');
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result;
-      if (isProject) {
-        try {
-          const parsed = JSON.parse(result as string);
-          onOpenImport?.({
-            type: 'project',
-            filename,
-            projectJson: parsed,
-          });
-        } catch {
-          // ignore malformed JSON
-        }
-      } else {
-        const dataUrl = result as string;
-        const img = new Image();
-        img.onload = () => {
-          onOpenImport?.({
-            type: 'image',
-            filename,
-            dataUrl,
-            imgWidth: img.width,
-            imgHeight: img.height,
-          });
-        };
-        img.src = dataUrl;
-      }
-    };
-
-    if (isProject) {
-      reader.readAsText(file);
-    } else {
-      reader.readAsDataURL(file);
-    }
-
+    void readImportFile(file).then(payload => onOpenImport?.(payload)).catch(reportImportError);
     e.target.value = '';
   };
 
@@ -136,7 +101,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         <a
           href="/"
           title="Back to the front porch"
-          className="flex items-center gap-2 bg-[var(--desk-surface-raised)] hover:bg-[var(--desk-surface)] text-[var(--accent-plum)] hover:text-[var(--accent-gold)] px-2.5 py-1 rounded-[2px] border-2 border-[var(--desk-border)] shadow-[0_2px_0_var(--btn-shadow)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+          className="flex items-center gap-2 bg-[var(--desk-surface-raised)] hover:bg-[var(--desk-surface)] text-[var(--accent-plum)] hover:text-[var(--accent-gold)] px-2.5 py-1 rounded-[2px] border-2 border-[var(--desk-border)] shadow-[0_2px_0_var(--btn-shadow)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
         >
           <BunMascot size={20} />
           <span className="font-display text-xs tracking-wider uppercase">
@@ -195,71 +160,83 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       <div className="flex items-center gap-2 shrink-0">
         {/* Undo / Redo */}
         <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            disabled={!isUndoEnabled}
-            onClick={onUndo}
-            title="Undo (Ctrl+Z)"
-            aria-label="Undo"
-            data-testid="undo-button"
-            className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name="undo" size={16} />
-          </TactileButton>
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            disabled={!isRedoEnabled}
-            onClick={onRedo}
-            title="Redo (Ctrl+Y)"
-            aria-label="Redo"
-            data-testid="redo-button"
-            className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name="redo" size={16} />
-          </TactileButton>
+          <StudioTooltip content="Undo" shortcut="Ctrl+Z" position="bottom">
+            <TactileButton
+              size="icon-sm"
+              variant="default"
+              disabled={!isUndoEnabled}
+              onClick={onUndo}
+              title="Undo (Ctrl+Z)"
+              aria-label="Undo"
+              data-testid="undo-button"
+              className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+            >
+              <PixelIcon name="undo" size={16} />
+            </TactileButton>
+          </StudioTooltip>
+          <StudioTooltip content="Redo" shortcut="Ctrl+Y" position="bottom">
+            <TactileButton
+              size="icon-sm"
+              variant="default"
+              disabled={!isRedoEnabled}
+              onClick={onRedo}
+              title="Redo (Ctrl+Y)"
+              aria-label="Redo"
+              data-testid="redo-button"
+              className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+            >
+              <PixelIcon name="redo" size={16} />
+            </TactileButton>
+          </StudioTooltip>
         </div>
 
-        <div className="h-5 w-px bg-[#3a2e4c]" />
+        <div className="h-5 w-px bg-[var(--desk-border)]" />
 
         {/* Zoom Controls */}
         <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]">
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            onClick={handleZoomOut}
-            title="Zoom Out (-)"
-            className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name="zoom-out" size={16} />
-          </TactileButton>
-          <button
-            onClick={handleResetZoom}
-            className="px-2 text-xs font-mono font-bold text-[#f0be7c] hover:text-[#fff8db] min-w-[52px] text-center cursor-pointer"
-            title="Fit to Screen (Ctrl+0)"
-          >
-            {zoom}%
-          </button>
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            onClick={handleZoomIn}
-            title="Zoom In (+)"
-            className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            <PixelIcon name="zoom-in" size={16} />
-          </TactileButton>
+          <StudioTooltip content="Zoom Out" shortcut="-" position="bottom">
+            <TactileButton
+              size="icon-sm"
+              variant="default"
+              onClick={handleZoomOut}
+              title="Zoom Out (-)"
+              className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+            >
+              <PixelIcon name="zoom-out" size={16} />
+            </TactileButton>
+          </StudioTooltip>
+          <StudioTooltip content="Fit to Screen" shortcut="Ctrl+0" position="bottom">
+            <button
+              onClick={handleResetZoom}
+              className="px-2 text-xs font-mono font-bold text-[var(--accent-gold)] hover:text-[#fff8db] min-w-[52px] text-center cursor-pointer"
+              title="Fit to Screen (Ctrl+0)"
+            >
+              {zoom}%
+            </button>
+          </StudioTooltip>
+          <StudioTooltip content="Zoom In" shortcut="+" position="bottom">
+            <TactileButton
+              size="icon-sm"
+              variant="default"
+              onClick={handleZoomIn}
+              title="Zoom In (+)"
+              className="w-8 h-8 bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+            >
+              <PixelIcon name="zoom-in" size={16} />
+            </TactileButton>
+          </StudioTooltip>
 
-          <TactileButton
-            size="icon-sm"
-            variant="default"
-            onClick={handleFitToScreen}
-            title="Fit to Screen"
-            className="w-8 h-8 text-[10px] font-mono font-bold bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
-          >
-            FIT
-          </TactileButton>
+          <StudioTooltip content="Fit Canvas in Viewport" position="bottom">
+            <TactileButton
+              size="icon-sm"
+              variant="default"
+              onClick={handleFitToScreen}
+              title="Fit to Screen"
+              className="w-8 h-8 text-[10px] font-mono font-bold bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
+            >
+              FIT
+            </TactileButton>
+          </StudioTooltip>
         </div>
       </div>
 
@@ -275,94 +252,110 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
         <StudioRadioWidget />
 
-        <ThemeToggle />
+        <AppearancePopover className="w-7 h-7 rounded-[2px] border-2 border-[var(--desk-border)] bg-[var(--desk-surface-raised)] hover:text-[var(--accent-gold)] shrink-0" />
 
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={onOpenGallery}
-          title="Open Projects & Artworks Gallery"
-          aria-label="Projects Gallery"
-          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
-        >
-          <PixelIcon name="layers" size={14} />
-          <span>Projects</span>
-        </TactileButton>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={onOpenCoDraw}
-          title="Peer-to-Peer Co-Draw Collaboration"
-          aria-label="Co-Draw P2P Collaboration"
-          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
-        >
-          <PixelIcon name="select-wand" size={14} />
-          <span>Co-Draw</span>
-        </TactileButton>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={onNewDrawing}
-          title="Start a New Blank Drawing"
-          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
-        >
-          <PixelIcon name="pen" size={14} />
-          <span>New</span>
-        </TactileButton>
-
-        {onSaveNow && (
+        <StudioTooltip content="Projects & Artworks Gallery" position="bottom">
           <TactileButton
             size="sm"
             variant="default"
-            onClick={onSaveNow}
-            title="Save Now (Ctrl+S)"
-            aria-label="Save Project Now"
-            data-testid="save-now-button"
-            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5 font-bold"
+            onClick={onOpenGallery}
+            title="Open Projects & Artworks Gallery"
+            aria-label="Projects Gallery"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5"
           >
-            <PixelIcon name="save" size={14} />
-            <span>Save</span>
+            <PixelIcon name="layers" size={14} />
+            <span>Projects</span>
           </TactileButton>
+        </StudioTooltip>
+
+        <StudioTooltip content="Peer-to-Peer Co-Draw Collaboration" position="bottom">
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={onOpenCoDraw}
+            title="Peer-to-Peer Co-Draw Collaboration"
+            aria-label="Co-Draw P2P Collaboration"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5"
+          >
+            <PixelIcon name="select-wand" size={14} />
+            <span>Co-Draw</span>
+          </TactileButton>
+        </StudioTooltip>
+
+        <StudioTooltip content="Start a New Blank Drawing" position="bottom">
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={onNewDrawing}
+            title="Start a New Blank Drawing"
+            aria-label="New Drawing"
+            data-testid="new-drawing-button"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5"
+          >
+            <PixelIcon name="pen" size={14} />
+            <span>New</span>
+          </TactileButton>
+        </StudioTooltip>
+
+        {onSaveNow && (
+          <StudioTooltip content="Save Project Now" shortcut="Ctrl+S" position="bottom">
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={onSaveNow}
+              title="Save Now (Ctrl+S)"
+              aria-label="Save Project Now"
+              data-testid="save-now-button"
+              className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5 font-bold"
+            >
+              <PixelIcon name="save" size={14} />
+              <span>Save</span>
+            </TactileButton>
+          </StudioTooltip>
         )}
 
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={onOpenShortcuts}
-          title="Atelier Guide, Diagnostics & Shortcuts (?)"
-          aria-label="Atelier Guide, Diagnostics and Shortcuts"
-          data-testid="shortcuts-guide-button"
-          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
-        >
-          <PixelIcon name="help" size={14} />
-          <span>Guide</span>
-        </TactileButton>
+        <StudioTooltip content="Atelier Guide, Diagnostics & Shortcuts" shortcut="?" position="bottom">
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={onOpenShortcuts}
+            title="Atelier Guide, Diagnostics & Shortcuts (?)"
+            aria-label="Atelier Guide, Diagnostics and Shortcuts"
+            data-testid="shortcuts-guide-button"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5"
+          >
+            <PixelIcon name="help" size={14} />
+            <span>Guide</span>
+          </TactileButton>
+        </StudioTooltip>
 
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={() => fileInputRef.current?.click()}
-          title="Import and Convert Image to Pixel Art"
-          className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1.5"
-        >
-          <PixelIcon name="export" size={14} className="rotate-180" />
-          <span>Import</span>
-        </TactileButton>
+        <StudioTooltip content="Import and Convert Image to Pixel Art" position="bottom">
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={() => fileInputRef.current?.click()}
+            title="Import and Convert Image to Pixel Art"
+            className="text-xs px-2.5 py-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] flex items-center gap-1.5"
+          >
+            <PixelIcon name="export" size={14} className="rotate-180" />
+            <span>Import</span>
+          </TactileButton>
+        </StudioTooltip>
 
-        <TactileButton
-          size="sm"
-          variant="primary"
-          onClick={onOpenExport}
-          title="Export PNG, GIF, or Spritesheet"
-          aria-label="Export Studio Assets"
-          data-testid="export-button"
-          className="text-xs px-3 py-1.5 bg-[#f0be7c] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] text-[#140d1f] border-2 border-[#8c5120] font-mono font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5"
-        >
-          <PixelIcon name="export" size={14} />
-          <span>Export</span>
-        </TactileButton>
+        <StudioTooltip content="Export PNG, GIF, or Spritesheet" position="bottom">
+          <TactileButton
+            size="sm"
+            variant="primary"
+            onClick={onOpenExport}
+            title="Export PNG, GIF, or Spritesheet"
+            aria-label="Export Studio Assets"
+            data-testid="export-button"
+            className="text-xs px-3 py-1.5 bg-[var(--accent-gold)] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] text-[var(--desk-bg)] border-2 border-[#8c5120] font-mono font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5"
+          >
+            <PixelIcon name="export" size={14} />
+            <span>Export</span>
+          </TactileButton>
+        </StudioTooltip>
       </div>
     </header>
   );

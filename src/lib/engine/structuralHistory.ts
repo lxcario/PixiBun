@@ -52,7 +52,7 @@ export function pushStructuralHistoryStep(description: string): void {
     type: 'structural',
     description,
     frameIndex: state.activeFrameIndex,
-    frames: JSON.parse(JSON.stringify(state.frames)),
+    frames: structuredClone(state.frames),
     activeFrameIndex: state.activeFrameIndex,
     activeLayerId: state.activeLayerId,
     layerBuffers: captureProjectBuffers(),

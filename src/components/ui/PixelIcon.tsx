@@ -49,12 +49,20 @@ export type PixelIconName =
   | 'sparkles'
   | 'sun'
   | 'symmetry'
+  | 'symmetry-h'
+  | 'symmetry-v'
   | 'preview'
   | 'lamp'
   | 'tag'
   | 'chisel'
   | 'rivet'
-  | 'save';
+  | 'save'
+  | 'lamp-pixel'
+  | 'radio-pixel'
+  | 'pen-pixel'
+  | 'plant-pixel'
+  | 'clock-pixel'
+  | 'mug-pixel';
 
 interface PixelIconProps {
   name: PixelIconName;
@@ -451,11 +459,21 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
         );
 
       case 'symmetry':
+      case 'symmetry-h':
         return (
           <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 3" />
             <path d="M4 6h4l3 6-3 6H4Z" />
             <path d="M20 6h-4l-3 6 3 6h4Z" />
+          </svg>
+        );
+
+      case 'symmetry-v':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="2" y1="12" x2="22" y2="12" strokeDasharray="3 3" />
+            <path d="M6 4v4l6 3 6-3V4Z" />
+            <path d="M6 20v-4l6-3 6 3v4Z" />
           </svg>
         );
 
@@ -539,6 +557,72 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
             <polyline points="17 21 17 13 7 13 7 21" />
             <polyline points="7 3 7 8 15 8" />
+          </svg>
+        );
+
+      case 'lamp-pixel':
+        return (
+          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="4" y="1" width="4" height="2" fill="#f0be7c" />
+            <rect x="3" y="3" width="6" height="3" fill="#f0be7c" />
+            <rect x="5" y="6" width="2" height="3" fill="#78608a" />
+            <rect x="3" y="9" width="6" height="2" fill="#140c1e" />
+          </svg>
+        );
+
+      case 'radio-pixel':
+        return (
+          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="9" y="1" width="1" height="3" fill="#f4f1fa" />
+            <rect x="2" y="4" width="8" height="6" fill="#4a3d68" />
+            <rect x="3" y="5" width="4" height="2" fill="#140c1e" />
+            <rect x="8" y="5" width="1" height="1" fill="#f0be7c" />
+            <rect x="3" y="8" width="2" height="1" fill="#b8aecf" />
+          </svg>
+        );
+
+      case 'pen-pixel':
+        return (
+          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="8" y="1" width="3" height="3" fill="#dcabdf" />
+            <rect x="5" y="4" width="4" height="4" fill="#f0be7c" />
+            <rect x="3" y="7" width="3" height="3" fill="#67558d" />
+            <rect x="1" y="10" width="2" height="2" fill="#140c1e" />
+          </svg>
+        );
+
+      case 'plant-pixel':
+        return (
+          <svg viewBox="0 0 16 16" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="5" y="9" width="6" height="1" fill="#140c1e" />
+            <rect x="6" y="10" width="4" height="4" fill="#b87428" />
+            <rect x="7" y="11" width="2" height="3" fill="#8c5120" />
+            <rect x="7" y="4" width="2" height="5" fill="#6bc27a" />
+            <rect x="5" y="5" width="2" height="2" fill="#44aa55" />
+            <rect x="9" y="6" width="2" height="2" fill="#44aa55" />
+          </svg>
+        );
+
+      case 'clock-pixel':
+        return (
+          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="2" y="2" width="8" height="8" fill="#201431" />
+            <rect x="3" y="1" width="6" height="1" fill="#f0be7c" />
+            <rect x="3" y="10" width="6" height="1" fill="#f0be7c" />
+            <rect x="1" y="3" width="1" height="6" fill="#f0be7c" />
+            <rect x="10" y="3" width="1" height="6" fill="#f0be7c" />
+            <rect x="5" y="4" width="1" height="3" fill="#ffffff" />
+            <rect x="6" y="6" width="2" height="1" fill="#ffffff" />
+          </svg>
+        );
+
+      case 'mug-pixel':
+        return (
+          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
+            <rect x="2" y="3" width="6" height="7" fill="#dcabdf" />
+            <rect x="8" y="5" width="2" height="3" fill="#dcabdf" />
+            <rect x="9" y="6" width="1" height="1" fill="transparent" />
+            <rect x="3" y="4" width="4" height="1" fill="#ffffff" />
           </svg>
         );
 

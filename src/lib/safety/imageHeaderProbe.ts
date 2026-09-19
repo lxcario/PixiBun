@@ -21,7 +21,7 @@ import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 export interface ProbedImageDimensions {
   width: number;
   height: number;
-  format: 'PNG' | 'GIF' | 'BMP' | 'JPEG';
+  format: 'PNG' | 'GIF' | 'BMP' | 'JPEG' | 'WebP';
 }
 
 export class ImageHeaderProbe {
@@ -63,6 +63,20 @@ export class ImageHeaderProbe {
     }
 
     const view = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
+
+    if (headerBytes.length >= 20 && view.getUint32(0, false) === 0x52494646 && view.getUint32(8, false) === 0x57454250) {
+      const chunk = view.getUint32(12, false);
+      const uint24 = (at: number) => headerBytes[at] | (headerBytes[at + 1] << 8) | (headerBytes[at + 2] << 16);
+      if (chunk === 0x56503858 && headerBytes.length >= 30) return this.validate(uint24(24) + 1, uint24(27) + 1, 'WebP');
+      if (chunk === 0x5650384c && headerBytes.length >= 25 && headerBytes[20] === 0x2f) {
+        const bits = view.getUint32(21, true);
+        return this.validate((bits & 0x3fff) + 1, ((bits >>> 14) & 0x3fff) + 1, 'WebP');
+      }
+      if (chunk === 0x56503820 && headerBytes.length >= 30 && headerBytes[23] === 0x9d && headerBytes[24] === 0x01 && headerBytes[25] === 0x2a) {
+        return this.validate(view.getUint16(26, true) & 0x3fff, view.getUint16(28, true) & 0x3fff, 'WebP');
+      }
+      throw new Error('[ImageHeaderProbe] Unsupported or malformed WebP header');
+    }
 
     // 1. Check PNG (Magic: 0x89 50 4E 47 0D 0A 1A 0A)
     if (
@@ -206,7 +220,7 @@ export class ImageHeaderProbe {
   private static validate(
     width: number,
     height: number,
-    format: 'PNG' | 'GIF' | 'BMP' | 'JPEG'
+    format: ProbedImageDimensions['format']
   ): ProbedImageDimensions {
     if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0) {
       throw new RangeError(

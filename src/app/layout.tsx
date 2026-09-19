@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import localFont from 'next/font/local';
-import Script from 'next/script';
 import './globals.css';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
@@ -75,7 +74,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
       <head>
-        <Script src="/theme.js" strategy="beforeInteractive" nonce={nonce} />
+        <script src="/theme.js" nonce={nonce} />
       </head>
       <body className="bg-desk text-text-primary antialiased font-sans">
         <a

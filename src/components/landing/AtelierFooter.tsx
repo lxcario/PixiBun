@@ -134,7 +134,7 @@ export const AtelierFooter: React.FC = () => {
       {/* Bottom Copyright Strip */}
       <div className="border-t border-[var(--desk-border)] py-6 bg-[var(--desk-surface-raised)]">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-          <p className="text-[var(--text-muted)] text-center sm:text-left">
+          <p className="text-[var(--text-body)] text-center sm:text-left">
             © 2026 PixiBun Atelier. Made with pixels &amp; late nights.
           </p>
           <p className="text-[var(--accent-gold)] flex items-center gap-1">

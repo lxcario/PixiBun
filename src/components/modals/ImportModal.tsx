@@ -535,7 +535,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         filename: payload.filename,
                         resizeCanvasToMatch:
                           sizeMode === 'match-image' && isDifferentSize
-                            ? { width: srcW, height: srcH }
+                            ? { width: previewResult.width, height: previewResult.height }
                             : undefined,
                       });
                     }

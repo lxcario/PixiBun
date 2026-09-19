@@ -124,7 +124,7 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
   it('tracks synced layer IDs so newly created layers added after initial sync send their initial canvas snapshot', () => {
     installDocumentCanvasMock();
     const bridge = new CoDrawBridge();
-    const broadcastInitialSync = vi.fn();
+    const broadcastInitialSync = vi.fn().mockReturnValue(true);
     const broadcastStructure = vi.fn(() => true);
 
     const mockSession = {
@@ -398,14 +398,17 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
 
     // broadcastPixelOps should yield and return false due to backpressure
     const opsResult = session.broadcastPixelOps(ops, 'l1');
-    expect(opsResult).toBe(false);
+    expect(opsResult).toBe(true);
     expect(congestedSyncChannel.send).not.toHaveBeenCalled();
 
     // broadcastInitialSync should yield under backpressure
     const initResult = session.broadcastInitialSync(ops, 'l1');
-    expect(initResult).toBe(false);
+    expect(initResult).toBe(true);
     expect(congestedSyncChannel.send).not.toHaveBeenCalled();
 
+    Object.defineProperty(congestedSyncChannel, 'bufferedAmount', { value: 0 });
+    (session as unknown as { flushReliable: () => void }).flushReliable();
+    expect(congestedSyncChannel.send).toHaveBeenCalledTimes(2);
     // broadcastCursor succeeds on uncongested presence channel
     const cursorResult = session.broadcastCursor(10, 20);
     expect(cursorResult).toBe(true);
@@ -425,5 +428,6 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
     const congestedCursorResult = session.broadcastCursor(15, 25);
     expect(congestedCursorResult).toBe(false);
     expect(congestedPresenceChannel.send).not.toHaveBeenCalled();
+    session.disconnect();
   });
 });

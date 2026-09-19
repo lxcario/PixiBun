@@ -7,6 +7,8 @@
  * with zero external dependencies and graceful, robust fallbacks for Firefox, Safari, and headless contexts.
  */
 
+import { SafeJson } from '@/lib/safety/safeJson';
+
 export const PIXIBUN_FILE_TYPES = [
   {
     description: 'PixiBun Project File (*.pixibun)',
@@ -39,6 +41,7 @@ export async function verifyHandlePermission(
 
 export class DesktopFileSystem {
   private static activeHandle: FileSystemFileHandle | null = null;
+  private static activeProjectId: string | undefined;
   private static activeFilename: string | null = null;
 
   public static isSupported(): boolean {
@@ -63,6 +66,7 @@ export class DesktopFileSystem {
   }
 
   public static reset(): void {
+    this.activeProjectId = undefined;
     this.activeHandle = null;
     this.activeFilename = null;
   }
@@ -95,7 +99,9 @@ export class DesktopFileSystem {
         if (!hasPermission) return null;
 
         const file = await handle.getFile();
+        if (file.size > SafeJson.MAX_PAYLOAD_BYTES) throw new Error('Project exceeds the 50 MB import limit.');
         const content = await file.text();
+        SafeJson.parse(content);
 
         this.setActiveHandle(handle, file.name);
         return { filename: file.name, content, handle };
@@ -121,7 +127,9 @@ export class DesktopFileSystem {
           return;
         }
         try {
+          if (file.size > SafeJson.MAX_PAYLOAD_BYTES) throw new Error('Project exceeds the 50 MB import limit.');
           const content = await file.text();
+          SafeJson.parse(content);
           DesktopFileSystem.setActiveHandle(null, file.name);
           resolve({ filename: file.name, content });
         } catch (e) {
@@ -144,11 +152,12 @@ export class DesktopFileSystem {
   public static async saveProject(
     data: string | Blob,
     suggestedName: string = 'project.pixibun',
-    forceSaveAs: boolean = false
+    forceSaveAs: boolean = false,
+    projectId?: string
   ): Promise<{ success: boolean; filename: string; fallbackUsed: boolean; error?: string }> {
     if (this.isSupported()) {
       try {
-        let handle = this.activeHandle;
+        let handle = this.activeProjectId === projectId ? this.activeHandle : null;
 
         if (!handle || forceSaveAs) {
           const savePicker = (window as unknown as {
@@ -160,6 +169,7 @@ export class DesktopFileSystem {
             types: PIXIBUN_FILE_TYPES,
           });
           this.setActiveHandle(handle, handle.name);
+          this.activeProjectId = projectId;
         }
 
         const hasPermission = await verifyHandlePermission(handle, 'readwrite');

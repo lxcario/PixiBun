@@ -200,9 +200,11 @@ export class CoDrawBridge {
       for (const layer of frame.layers) {
         activeLayerIds.add(layer.id);
         if (!this.syncedLayerIds.has(layer.id)) {
+          const existing = this.crdtBuffers.get(layer.id);
           const crdt = this.getBuffer(layer.id, state.canvasWidth, state.canvasHeight);
-          const ops = this.seedCrdtFromCanvas(crdt, layer.id, state.canvasWidth, state.canvasHeight);
-          this.session.broadcastInitialSync(ops, layer.id);
+          const ops = existing === crdt ? crdt.getStateSnapshotOps()
+            : this.seedCrdtFromCanvas(crdt, layer.id, state.canvasWidth, state.canvasHeight);
+          if (!this.session.broadcastInitialSync(ops, layer.id)) return false;
           this.syncedLayerIds.add(layer.id);
         }
       }
@@ -240,7 +242,7 @@ export class CoDrawBridge {
           this.syncedLayerIds.clear();
           this.crdtBuffers.clear();
         }
-        this.sendStructureAndSnapshots();
+        this.sendInitialStateWithRetry(0);
       }
     });
   }

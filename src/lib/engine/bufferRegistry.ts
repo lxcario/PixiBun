@@ -15,7 +15,7 @@ export interface BufferEntry {
 
 const buffers = new Map<string, BufferEntry>();
 
-function createEntry(width: number, height: number): BufferEntry {
+export function createEntry(width: number, height: number): BufferEntry {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -80,6 +80,12 @@ export function deleteBuffers(layerIds: string[]): void {
 
 export function clearAllBuffers(): void {
   buffers.clear();
+}
+
+/** Publish a fully decoded project without exposing partially loaded layers. */
+export function replaceAllBuffers(entries: Map<string, BufferEntry>): void {
+  buffers.clear();
+  for (const [id, entry] of entries) buffers.set(id, entry);
 }
 
 function anchorOffsets(

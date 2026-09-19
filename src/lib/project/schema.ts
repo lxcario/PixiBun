@@ -65,6 +65,9 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
     if (rawLayer.pngBase64 !== undefined && typeof rawLayer.pngBase64 !== 'string') {
       return `Frame ${frameIndex + 1}, layer ${i + 1} carries unreadable pixel data.`;
     }
+    if (rawLayer.tag !== undefined && (typeof rawLayer.tag !== 'string' || rawLayer.tag.length > 128)) {
+      return `Frame ${frameIndex + 1}, layer ${i + 1} has an invalid tag.`;
+    }
     layers.push({
       id: rawLayer.id,
       name: rawLayer.name,
@@ -73,6 +76,7 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
       opacity: rawLayer.opacity,
       blendMode: rawLayer.blendMode as SerializedFrame['layers'][number]['blendMode'],
       pngBase64: rawLayer.pngBase64,
+      tag: rawLayer.tag as string | undefined,
     });
   }
 
@@ -219,6 +223,10 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     return { ok: false, error: 'The file does not say which palette is active.' };
   }
   if (!Array.isArray(normalized.customRamps)) return { ok: false, error: 'The custom ramp list is malformed.' };
+  if (normalized.customRamps.length > 100 || !normalized.customRamps.every(r =>
+    isPlainObject(r) && isHexColor(r.baseColor) && Array.isArray(r.shades) &&
+    r.shades.length <= 256 && r.shades.every(isHexColor)
+  )) return { ok: false, error: 'The custom ramp entries are malformed or too large.' };
 
   if (!Array.isArray(normalized.clips)) return { ok: false, error: 'The animation clip list is malformed.' };
   if (normalized.clips.length > 100) {
@@ -244,9 +252,17 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     return { ok: false, error: `The project exceeds the ${WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES} animation frame limit.` };
   }
   const frames: SerializedFrame[] = [];
+  const frameIds = new Set<string>();
+  const layerIds = new Set<string>();
   for (let i = 0; i < normalized.frames.length; i++) {
     const result = validateFrame(normalized.frames[i], i);
     if (typeof result === 'string') return { ok: false, error: result };
+    if (frameIds.has(result.id)) return { ok: false, error: 'Duplicate frame identifier.' };
+    frameIds.add(result.id);
+    for (const layer of result.layers) {
+      if (layerIds.has(layer.id)) return { ok: false, error: 'Duplicate layer identifier.' };
+      layerIds.add(layer.id);
+    }
     frames.push(result);
   }
 

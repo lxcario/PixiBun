@@ -1,5 +1,7 @@
 'use client';
 
+import { readImportFile, reportImportError } from '@/lib/project/importFile';
+
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
@@ -32,7 +34,7 @@ import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvent
 import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { RemoteCursorsOverlay } from '@/components/studio/RemoteCursorsOverlay';
-import { CursorStatusBadge, updateCursorHUD } from '@/components/layout/CursorStatusBadge';
+import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -486,41 +488,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      const filename = file.name;
-
-      if (filename.endsWith('.pixibun') || filename.endsWith('.json')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const projectJson = JSON.parse(event.target?.result as string);
-            onOpenImport?.({
-              type: 'project',
-              filename,
-              projectJson,
-            });
-          } catch (err) {
-            console.error('Failed to parse project file:', err);
-          }
-        };
-        reader.readAsText(file);
-      } else if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const dataUrl = event.target?.result as string;
-          const img = new Image();
-          img.onload = () => {
-            onOpenImport?.({
-              type: 'image',
-              filename,
-              dataUrl,
-              imgWidth: img.width,
-              imgHeight: img.height,
-            });
-          };
-          img.src = dataUrl;
-        };
-        reader.readAsDataURL(file);
-      }
+      void readImportFile(file).then(payload => onOpenImport?.(payload)).catch(reportImportError);
     }
   };
 
@@ -546,7 +514,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       id="main-content"
       tabIndex={-1}
       aria-label="Pixel art canvas workspace"
-      className="relative flex-1 h-full w-full overflow-hidden bg-dot-grid flex items-center justify-center select-none outline-none"
+      className="relative flex-1 h-full w-full overflow-hidden flex items-center justify-center select-none outline-none"
+      style={{
+        backgroundColor: 'var(--canvas-well)',
+        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4), inset 0 0 0 1px var(--canvas-border)'
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -561,6 +533,28 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onDrop={handleDrop}
       onContextMenu={radialMenu.handleContextMenu}
     >
+      {/* Mode Indicators */}
+      <div 
+        className="absolute z-50 flex flex-col gap-2 items-end pointer-events-none"
+        style={{ top: 'var(--space-3)', right: 'var(--space-3)' }}
+      >
+        {showNormalMapPreview && (
+          <div className="bg-[var(--surface-3)] text-[var(--accent-gold)] font-mono text-[10px] px-2 py-0.5 rounded-full shadow-md">
+            Normal Map
+          </div>
+        )}
+        {isPaletteCycling && (
+          <div className="bg-[var(--surface-3)] text-[var(--accent-gold)] font-mono text-[10px] px-2 py-0.5 rounded-full shadow-md">
+            Cycling
+          </div>
+        )}
+        {showTilePreview && (
+          <div className="bg-[var(--surface-3)] text-[var(--accent-gold)] font-mono text-[10px] px-2 py-0.5 rounded-full shadow-md">
+            Tiling
+          </div>
+        )}
+      </div>
+
       {/* SVG Filters for CVD Colorblindness Simulation */}
       <ViewportLensFilters />
 
@@ -579,9 +573,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         <div
           role="status"
           aria-live="polite"
-          className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 bg-[#3A2E4C] text-[#DDDFDF] text-xs font-mono rounded border border-[#C792DF]/40 shadow-pixel-glow pointer-events-none animate-fade-in"
+          className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 bg-[var(--desk-border)] text-[#DDDFDF] text-xs font-mono rounded border border-[var(--accent-wisteria)]/40 shadow-pixel-glow pointer-events-none animate-fade-in"
         >
-          <PixelIcon name="lock" size={14} className="text-[#DCABDF]" />
+          <PixelIcon name="lock" size={14} className="text-[var(--accent-plum)]" />
           <span>Active layer is locked! Unlock it in the inspector to paint.</span>
         </div>
       )}
@@ -593,7 +587,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         role="application"
         tabIndex={0}
         aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
-        className="relative shrink-0 border-2 border-[#3a2e4c] shadow-[0_20px_50px_rgba(10,6,18,0.85),0_0_0_1px_rgba(240,190,124,0.2)] focus:outline-none focus:ring-2 focus:ring-[#f0be7c]"
+        className="relative shrink-0 border border-[var(--desk-border)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-gold)]"
         style={{
           width: `${stageWidth}px`,
           height: `${stageHeight}px`,
@@ -602,8 +596,15 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           flexShrink: 0,
           transform: `translate(${panX}px, ${panY}px)`,
           transition: 'none',
+          boxShadow: 'var(--canvas-shadow)',
         }}
       >
+        {/* Atelier / Cozy Classic Platen Mat Collar & Attached Corner Registration Marks */}
+        <div aria-hidden="true" className="absolute -inset-3 bg-[var(--platen-bg)] border border-[var(--platen-border)]/60 rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.3),0_0_0_1px_var(--desk-border)] pointer-events-none -z-10" />
+        <div className="absolute -top-3 -left-3 w-2 h-2 border-t border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="absolute -top-3 -right-3 w-2 h-2 border-t border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="absolute -bottom-3 -left-3 w-2 h-2 border-b border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="absolute -bottom-3 -right-3 w-2 h-2 border-b border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
         {/* 3x3 Seamless Tile Matrix Preview Surroundings */}
         {showTilePreview && (
           <div className="absolute inset-0 pointer-events-none z-0 opacity-60">
@@ -613,7 +614,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
                 return (
                   <div
                     key={`tile-${ox}-${oy}`}
-                    className="absolute border border-dashed border-[#f0be7c]/40 overflow-hidden"
+                    className="absolute border border-dashed border-[var(--accent-gold)]/40 overflow-hidden"
                     style={{
                       left: `${ox * stageWidth}px`,
                       top: `${oy * stageHeight}px`,
@@ -679,7 +680,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           data-testid="main-composite-canvas"
           width={canvasWidth}
           height={canvasHeight}
-          className="absolute inset-0 w-full h-full pixelated shadow-pixel-frame border border-[#3A2E4C]/20 cursor-crosshair"
+          className="absolute inset-0 w-full h-full pixelated shadow-pixel-frame border border-[var(--desk-border)]/20 cursor-crosshair"
           style={{ filter: mainFilterCss, imageRendering: 'pixelated' }}
         />
 
@@ -756,16 +757,16 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
         {/* Drag Over Overlay */}
         {isDragOver && (
-          <div className="absolute inset-0 border-4 border-dashed border-[#DCABDF] bg-[#C792DF]/20 flex items-center justify-center pointer-events-none z-30">
-            <span className="text-[#3A2E4C] font-mono text-sm font-bold bg-[#DDDFDF] px-3 py-1.5 rounded shadow">
+          <div className="absolute inset-0 border-4 border-dashed border-[var(--accent-plum)] bg-[var(--accent-wisteria)]/20 flex items-center justify-center pointer-events-none z-30">
+            <span className="text-[var(--desk-border)] font-mono text-sm font-bold bg-[#DDDFDF] px-3 py-1.5 rounded shadow">
               Drop file to import
             </span>
           </div>
         )}
-      </div>
 
-      {/* Coordinate & Tool Status Indicator (Decoupled leaf subscriber) */}
-      <CursorStatusBadge />
+        {/* Floating Preview Window (Picture-in-Picture) */}
+        <FloatingPreviewWindow />
+      </div>
     </main>
   );
 };

@@ -11,6 +11,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const ArtisanHandbookPanel: React.FC = () => {
   const router = useRouter();
@@ -168,6 +169,22 @@ export const ArtisanHandbookPanel: React.FC = () => {
               ▼
             </div>
           </div>
+
+          {/* Quick Launch Teaching Animation Board */}
+          <button
+            type="button"
+            onClick={() => studioEvents.emit('pixibun:open-teaching-board')}
+            className="mt-1 flex items-center justify-between px-2.5 py-1.5 rounded-[2px] bg-[#241a34] hover:bg-[#2e2040] border border-[#8c5120] text-xs font-mono text-[#f0be7c] hover:text-[#fff] transition-all cursor-pointer shadow-xs group"
+            title="Open 10-Frame Jump Anatomy Teaching Board"
+          >
+            <span className="flex items-center gap-1.5 font-bold">
+              <span className="text-sm">✦</span>
+              <span>10-Frame Jump Anatomy</span>
+            </span>
+            <span className="text-[10px] text-[#c792df] group-hover:translate-x-0.5 transition-transform">
+              Teaching Board ➔
+            </span>
+          </button>
         </div>
       </div>
 

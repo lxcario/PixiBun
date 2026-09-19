@@ -39,6 +39,23 @@ describe('DesktopFileSystem API & Fallbacks', () => {
     expect(DesktopFileSystem.isSupported()).toBe(true);
   });
 
+  it('never reuses another project identity\'s native file handle', async () => {
+    const writeA = vi.fn();
+    const writeB = vi.fn();
+    const handle = (name: string, write: typeof writeA) => ({ name,
+      queryPermission: vi.fn().mockResolvedValue('granted'),
+      createWritable: vi.fn().mockResolvedValue({ write, close: vi.fn() }),
+    });
+    const fileA = handle('A.pixibun', writeA);
+    const fileB = handle('B.pixibun', writeB);
+    g.window.showOpenFilePicker = vi.fn();
+    g.window.showSaveFilePicker = vi.fn().mockResolvedValueOnce(fileA).mockResolvedValueOnce(fileB);
+    await DesktopFileSystem.saveProject('A artwork', 'A.pixibun', false, 'A');
+    await DesktopFileSystem.saveProject('B artwork', 'B.pixibun', false, 'B');
+    expect(writeA.mock.calls).toEqual([['A artwork']]);
+    expect(writeB.mock.calls).toEqual([['B artwork']]);
+  });
+
   it('saves file via native File System Access API when supported', async () => {
     const mockWritable = {
       write: vi.fn().mockResolvedValue(undefined),

@@ -7,11 +7,12 @@
  * Executes sequential release-grade quality verification stages with fail-fast semantics:
  *   Stage 1: Documentation Integrity & Invariant Audit (verify:docs)
  *   Stage 2: Strict Static Typecheck (tsc --noEmit)
- *   Stage 3: Comprehensive Unit & Invariant Test Suite (vitest run)
- *   Stage 4: [Optional / --with-build] Production Bundle Verification (next build)
+ *   Stage 3: Lint and accessibility rules (eslint)
+ *   Stage 4: Comprehensive Unit & Invariant Test Suite (vitest run)
+ *   Stage 5: [Optional / --with-build] Production Bundle Verification (next build)
  * 
- * Designed to execute in ~8-12 seconds on standard developer hardware,
- * guaranteeing 0 broken commits leave the local workstation.
+ * Runtime depends on hardware and suite size. Passing these checks is not
+ * proof that every feature, browser or deployment works.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -58,8 +59,9 @@ const stages = [
     args: ['run', 'typecheck'],
     description: 'Enforces strict TypeScript compilation without type-stripping.',
   },
+  { name: 'Stage 3: Lint and accessibility rules', command: 'npm', args: ['run', 'lint'], description: 'Checks source and test lint rules.' },
   {
-    name: 'Stage 3: Unit & Defensive Invariant Test Suite',
+    name: 'Stage 4: Unit & Defensive Invariant Test Suite',
     command: 'npm',
     args: ['test'],
     description: 'Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).',
@@ -68,7 +70,7 @@ const stages = [
 
 if (withBuild) {
   stages.push({
-    name: 'Stage 4: Next.js Production Compilation & Bundling',
+    name: 'Stage 5: Next.js Production Compilation & Bundling',
     command: 'npm',
     args: ['run', 'build'],
     description: 'Validates complete Next.js static generation, route trees, and bundle chunks.',
@@ -110,7 +112,7 @@ async function runGate() {
   const totalDuration = ((performance.now() - overallStart) / 1000).toFixed(2);
   log(`${COLOR.bold}${COLOR.green}═════════════════════════════════════════════════════════════════════════${COLOR.reset}`);
   log(`${COLOR.bold}${COLOR.green}🎉 ALL ${passedStages} QUALITY GATES PASSED SUCCESSFULLY (${totalDuration}s)${COLOR.reset}`);
-  log(`${COLOR.dim}Workstation integrity verified. Codebase is clean and release-ready.${COLOR.reset}`);
+  log(`${COLOR.dim}Configured checks passed. Browser, accessibility and performance evidence are separate.${COLOR.reset}`);
   log(`${COLOR.bold}${COLOR.green}═════════════════════════════════════════════════════════════════════════${COLOR.reset}`);
   log('');
   process.exit(0);

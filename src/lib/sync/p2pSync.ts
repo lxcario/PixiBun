@@ -1,3 +1,4 @@
+import { SafeJson, getUtf8ByteLength } from '@/lib/safety/safeJson';
 /**
  * Local-First Peer-to-Peer WebRTC Synchronization Engine for PixiBun Atelier.
  *
@@ -144,10 +145,13 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
   if (!Array.isArray(p.frames) || p.frames.length === 0 || p.frames.length > WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES) return null;
 
   const frames: StructureFrame[] = [];
+  const frameIds = new Set<string>();
+  const layerIds = new Set<string>();
   for (const rawFrame of p.frames) {
     if (typeof rawFrame !== 'object' || rawFrame === null) return null;
     const f = rawFrame as Record<string, unknown>;
-    if (typeof f.id !== 'string' || f.id.length === 0 || f.id.length > 128) return null;
+    if (typeof f.id !== 'string' || f.id.length === 0 || f.id.length > 128 || frameIds.has(f.id)) return null;
+    frameIds.add(f.id);
     if (
       typeof f.durationMs !== 'number' || !Number.isInteger(f.durationMs) ||
       f.durationMs < 1 || f.durationMs > 60_000
@@ -160,7 +164,8 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
     for (const rawLayer of f.layers) {
       if (typeof rawLayer !== 'object' || rawLayer === null) return null;
       const l = rawLayer as Record<string, unknown>;
-      if (typeof l.id !== 'string' || l.id.length === 0 || l.id.length > 128) return null;
+      if (typeof l.id !== 'string' || l.id.length === 0 || l.id.length > 128 || layerIds.has(l.id)) return null;
+      layerIds.add(l.id);
       if (typeof l.name !== 'string' || l.name.length > 256) return null;
       if (typeof l.visible !== 'boolean' || typeof l.locked !== 'boolean') return null;
       if (typeof l.opacity !== 'number' || !Number.isFinite(l.opacity) || l.opacity < 0 || l.opacity > 1) return null;
@@ -409,11 +414,12 @@ export function decodeSignalingToken(token: string): SignalingPayload {
     if (typeof token !== 'string' || token.trim().length === 0) {
       throw new Error('Token string cannot be empty.');
     }
+    if (token.length > 1024 * 1024) throw new Error('Signaling token exceeds the size limit.');
     const clean = token.trim();
     const bytes = base64ToBytes(clean);
     const json = new TextDecoder('utf-8').decode(bytes);
 
-    const parsed = JSON.parse(json);
+    const parsed = SafeJson.parse<SignalingPayload>(json);
     if (!parsed || parsed.version !== 1 || !parsed.sdp || !Array.isArray(parsed.candidates)) {
       throw new Error('Invalid PixiBun signaling token format.');
     }
@@ -441,7 +447,41 @@ export class P2PSyncSession {
   private options: P2PSyncSessionOptions;
 
   // Defensive Token Bucket Rate Limiters (Turner 1986 / Tanenbaum §5.3)
-  private syncRateLimiter: TokenBucketStore = createTokenBucketStore({ capacity: 100, refillPerMinute: 6000 });
+  private pendingMessages = new Map<number, { json: string; sentAt: number }>();
+  private receivedMessages = new Set<number>();
+  private deliveryId = 0;
+  private retryTimer: ReturnType<typeof setInterval> | null = null;
+
+  private queueReliable(msg: CrdtSyncMessage): boolean {
+    const id = ++this.deliveryId;
+    const json = JSON.stringify({ ...msg, deliveryId: id });
+    const bytes = new TextEncoder().encode(json).length;
+    const queuedBytes = Array.from(this.pendingMessages.values()).reduce((n, item) => n + item.json.length * 2, 0);
+    if (bytes > MAX_P2P_PAYLOAD_SIZE || queuedBytes + json.length * 2 > 32 * 1024 * 1024) {
+      this.options.onError?.(new Error('Co-draw queue is full. Reconnect to resynchronize artwork.'));
+      this.setState('failed');
+      return false;
+    }
+    this.pendingMessages.set(id, { json, sentAt: 0 });
+    if (!this.retryTimer) this.retryTimer = setInterval(() => this.flushReliable(), 250);
+    this.flushReliable();
+    return true;
+  }
+
+  private flushReliable(): void {
+    const channel = this.syncChannel;
+    if (!channel || channel.readyState !== 'open') return;
+    for (const item of this.pendingMessages.values()) {
+      if ((channel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) return;
+      if (item.sentAt && Date.now() - item.sentAt < 1500) continue;
+      try { channel.send(item.json); item.sentAt = Date.now(); }
+      catch { return; }
+    }
+    if (!this.pendingMessages.size && this.retryTimer) {
+      clearInterval(this.retryTimer);
+      this.retryTimer = null;
+    }
+  }
   private presenceRateLimiter: TokenBucketStore = createTokenBucketStore({ capacity: 150, refillPerMinute: 7200 });
 
   constructor(options: P2PSyncSessionOptions) {
@@ -509,22 +549,33 @@ export class P2PSyncSession {
   private setupChannel(channel: RTCDataChannel): void {
     if (channel.label === 'pixibun-crdt-sync') {
       this.syncChannel = channel;
+      channel.bufferedAmountLowThreshold = MAX_DATA_CHANNEL_BUFFERED_AMOUNT / 2;
+      channel.onbufferedamountlow = () => this.flushReliable();
       channel.onopen = () => {
+        this.flushReliable();
         if (this.pc?.connectionState === 'connected' || channel.readyState === 'open') {
           this.setState('connected');
         }
       };
       channel.onmessage = (e) => {
         try {
-          if (!this.syncRateLimiter.take('crdt-sync')) {
-            console.warn('P2P sync rate limit exceeded, throttling incoming message.');
-            return;
-          }
-          if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
+          if (typeof e.data === 'string' && getUtf8ByteLength(e.data) > MAX_P2P_PAYLOAD_SIZE) {
             console.warn('P2P payload exceeded 256KB limit. Discarding message.');
             return;
           }
-          const raw = JSON.parse(e.data);
+          const raw = SafeJson.parse<Record<string, unknown>>(e.data);
+          if (raw?.type === 'ACK' && Number.isSafeInteger(raw.deliveryId)) {
+            this.pendingMessages.delete(raw.deliveryId as number);
+            this.flushReliable();
+            return;
+          }
+          const deliveryId = Number.isSafeInteger(raw?.deliveryId) ? raw.deliveryId as number : undefined;
+          const acknowledge = () => {
+            if (deliveryId !== undefined && channel.readyState === 'open') {
+              channel.send(JSON.stringify({ type: 'ACK', deliveryId }));
+            }
+          };
+          if (deliveryId !== undefined && this.receivedMessages.has(deliveryId)) { acknowledge(); return; }
           const msg = validateCrdtSyncMessage(raw);
           if (!msg) {
             console.warn('P2P CRDT sync message failed validation.');
@@ -537,6 +588,8 @@ export class P2PSyncSession {
           } else if (msg.type === 'STRUCTURE_SYNC' && msg.frames) {
             this.options.onStructureSync?.(msg.frames);
           }
+          if (deliveryId !== undefined) this.receivedMessages.add(deliveryId);
+          acknowledge();
         } catch (err) {
           console.error('Failed to parse CRDT sync message:', err);
         }
@@ -549,11 +602,11 @@ export class P2PSyncSession {
             // Drop excessive presence frame silently
             return;
           }
-          if (typeof e.data === 'string' && e.data.length > MAX_P2P_PAYLOAD_SIZE) {
+          if (typeof e.data === 'string' && getUtf8ByteLength(e.data) > MAX_P2P_PAYLOAD_SIZE) {
             console.warn('P2P presence payload exceeded 256KB limit. Discarding message.');
             return;
           }
-          const raw = JSON.parse(e.data);
+          const raw = SafeJson.parse<Record<string, unknown>>(e.data);
           const msg = validatePresenceMessage(raw);
           if (!msg) {
             console.warn('P2P presence message failed validation.');
@@ -728,12 +781,8 @@ export class P2PSyncSession {
       return false;
     }
 
-    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
-      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit, yielding.');
-      return false;
-    }
 
-    const CHUNK_SIZE = 1000;
+    const CHUNK_SIZE = 256;
     for (let i = 0; i < ops.length; i += CHUNK_SIZE) {
       const chunk = ops.slice(i, i + CHUNK_SIZE);
       const msg: CrdtSyncMessage = {
@@ -743,24 +792,20 @@ export class P2PSyncSession {
         ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
-      this.syncChannel.send(JSON.stringify(msg));
+      if (!this.queueReliable(msg)) return false;
     }
     return true;
   }
 
   /**
    * Broadcasts initial full state over the reliable ordered channel.
-   * Chunks large snapshots into batches of 1,000 ops to stay safely within the 256KB frame limit.
+   * Chunks large snapshots into batches of 256 ops to stay safely within the 256KB frame limit.
    */
   public broadcastInitialSync(allOps: PixelOp[], layerId?: string): boolean {
     if (!this.syncChannel || this.syncChannel.readyState !== 'open') {
       return false;
     }
 
-    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
-      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit during initial sync.');
-      return false;
-    }
 
     if (allOps.length === 0) {
       const msg: CrdtSyncMessage = {
@@ -770,11 +815,11 @@ export class P2PSyncSession {
         ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
-      this.syncChannel.send(JSON.stringify(msg));
+      if (!this.queueReliable(msg)) return false;
       return true;
     }
 
-    const CHUNK_SIZE = 1000;
+    const CHUNK_SIZE = 256;
     for (let i = 0; i < allOps.length; i += CHUNK_SIZE) {
       const chunk = allOps.slice(i, i + CHUNK_SIZE);
       const msg: CrdtSyncMessage = {
@@ -784,7 +829,7 @@ export class P2PSyncSession {
         ...(layerId !== undefined ? { layerId } : {}),
         timestamp: Date.now(),
       };
-      this.syncChannel.send(JSON.stringify(msg));
+      if (!this.queueReliable(msg)) return false;
     }
     return true;
   }
@@ -800,10 +845,6 @@ export class P2PSyncSession {
       return false;
     }
 
-    if ((this.syncChannel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) {
-      console.warn('P2P sync channel backpressure: bufferedAmount exceeded limit during structure sync.');
-      return false;
-    }
 
     const msg: CrdtSyncMessage = {
       type: 'STRUCTURE_SYNC',
@@ -816,7 +857,7 @@ export class P2PSyncSession {
       console.warn('P2P structure payload exceeded 256KB limit. Discarding message.');
       return false;
     }
-    this.syncChannel.send(json);
+    if (!this.queueReliable(msg)) return false;
     return true;
   }
 
@@ -850,6 +891,10 @@ export class P2PSyncSession {
    * Closes data channels and peer connection.
    */
   public disconnect(): void {
+    if (this.retryTimer) clearInterval(this.retryTimer);
+    this.retryTimer = null;
+    this.pendingMessages.clear();
+    this.receivedMessages.clear();
     if (this.syncChannel) {
       this.syncChannel.close();
       this.syncChannel = null;

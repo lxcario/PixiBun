@@ -2,20 +2,27 @@
 
 import { create } from 'zustand';
 
-export type ThemeMode = 'dark' | 'light';
+export type StudioTheme = 'atelier' | 'cozy-classic';
+export type ColorScheme = 'dark' | 'light';
+export type ThemeMode = ColorScheme; // backward compatibility
 
-interface ThemeStore {
-  theme: ThemeMode;
-  setTheme: (theme: ThemeMode) => void;
-  toggleTheme: () => void;
+export interface ThemeStore {
+  studioTheme: StudioTheme;
+  colorScheme: ColorScheme;
+  theme: ColorScheme; // backward compatibility alias for colorScheme
+  setStudioTheme: (theme: StudioTheme) => void;
+  setColorScheme: (scheme: ColorScheme) => void;
+  toggleColorScheme: () => void;
+  setTheme: (theme: ThemeMode) => void; // backward compatibility alias for setColorScheme
+  toggleTheme: () => void; // backward compatibility alias for toggleColorScheme
 }
 
 /**
- * Apply theme to document with zero-lag transition suppression.
- * Temporarily disables all CSS transitions across the entire DOM during class mutation
+ * Apply studio theme and color scheme to document with zero-lag transition suppression.
+ * Temporarily disables all CSS transitions across the entire DOM during class and attribute mutation
  * to prevent thousands of simultaneous style recalculations and repaints.
  */
-export function applyThemeToDOM(theme: ThemeMode) {
+export function applyThemeToDOM(studioTheme: StudioTheme, colorScheme: ColorScheme) {
   if (typeof window === 'undefined') return;
 
   const root = document.documentElement;
@@ -37,14 +44,21 @@ export function applyThemeToDOM(theme: ThemeMode) {
   document.head.appendChild(css);
 
   // 2. Mutate theme attributes
-  if (theme === 'light') {
+  const validTheme: StudioTheme = studioTheme === 'cozy-classic' ? 'cozy-classic' : 'atelier';
+  const validScheme: ColorScheme = colorScheme === 'light' ? 'light' : 'dark';
+
+  root.setAttribute('data-studio-theme', validTheme);
+  root.setAttribute('data-color-scheme', validScheme);
+  root.setAttribute('data-theme', validScheme); // backward compatibility
+
+  if (validScheme === 'light') {
     root.classList.add('light');
     root.classList.remove('dark');
-    root.setAttribute('data-theme', 'light');
+    root.style.colorScheme = 'light';
   } else {
     root.classList.add('dark');
     root.classList.remove('light');
-    root.setAttribute('data-theme', 'dark');
+    root.style.colorScheme = 'dark';
   }
 
   // 3. Force synchronous style recalculation while transitions are disabled
@@ -58,42 +72,79 @@ export function applyThemeToDOM(theme: ThemeMode) {
   });
 }
 
-function getInitialTheme(): ThemeMode {
+export function getInitialStudioTheme(): StudioTheme {
+  if (typeof window === 'undefined' || !window.localStorage) return 'atelier';
+  try {
+    const saved = window.localStorage.getItem('pixibun-studio-theme');
+    if (saved === 'cozy-classic') return 'cozy-classic';
+    if (saved === 'atelier') return 'atelier';
+  } catch {
+    // ignore storage errors
+  }
+  return 'atelier';
+}
+
+export function getInitialColorScheme(): ColorScheme {
   if (typeof window === 'undefined' || !window.localStorage) return 'dark';
   try {
-    const saved = window.localStorage.getItem('pixibun-theme') as ThemeMode | null;
-    if (saved === 'light') return 'light';
-    if (saved === 'dark') return 'dark';
+    const savedScheme = window.localStorage.getItem('pixibun-color-scheme') || window.localStorage.getItem('pixibun-theme');
+    if (savedScheme === 'light') return 'light';
+    if (savedScheme === 'dark') return 'dark';
   } catch {
     // ignore storage errors
   }
   return 'dark';
 }
 
-const initialTheme = getInitialTheme();
+const initialStudioTheme = getInitialStudioTheme();
+const initialColorScheme = getInitialColorScheme();
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  theme: initialTheme,
+  studioTheme: initialStudioTheme,
+  colorScheme: initialColorScheme,
+  theme: initialColorScheme,
 
-  setTheme: (theme: ThemeMode) => {
-    set({ theme });
+  setStudioTheme: (studioTheme: StudioTheme) => {
+    const validTheme: StudioTheme = studioTheme === 'cozy-classic' ? 'cozy-classic' : 'atelier';
+    set({ studioTheme: validTheme });
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        window.localStorage.setItem('pixibun-theme', theme);
+        window.localStorage.setItem('pixibun-studio-theme', validTheme);
       } catch {
         // ignore storage errors
       }
-      applyThemeToDOM(theme);
+      applyThemeToDOM(validTheme, get().colorScheme);
     }
   },
 
+  setColorScheme: (colorScheme: ColorScheme) => {
+    const validScheme: ColorScheme = colorScheme === 'light' ? 'light' : 'dark';
+    set({ colorScheme: validScheme, theme: validScheme });
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem('pixibun-color-scheme', validScheme);
+        window.localStorage.setItem('pixibun-theme', validScheme);
+      } catch {
+        // ignore storage errors
+      }
+      applyThemeToDOM(get().studioTheme, validScheme);
+    }
+  },
+
+  toggleColorScheme: () => {
+    const next = get().colorScheme === 'dark' ? 'light' : 'dark';
+    get().setColorScheme(next);
+  },
+
+  setTheme: (theme: ThemeMode) => {
+    get().setColorScheme(theme);
+  },
+
   toggleTheme: () => {
-    const next = get().theme === 'dark' ? 'light' : 'dark';
-    get().setTheme(next);
+    get().toggleColorScheme();
   },
 }));
 
 if (typeof window !== 'undefined') {
-  applyThemeToDOM(initialTheme);
+  applyThemeToDOM(initialStudioTheme, initialColorScheme);
 }
-

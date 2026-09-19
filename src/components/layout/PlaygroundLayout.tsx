@@ -17,9 +17,11 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';
 
 export const PlaygroundLayout: React.FC = () => {
   const router = useRouter();
+  const [showTeachingBoard, setShowTeachingBoard] = React.useState(false);
   const {
     getCurrentStep,
     getCurrentFrameTemplate,
@@ -48,6 +50,10 @@ export const PlaygroundLayout: React.FC = () => {
   useEffect(() => {
     useOnboardingStore.getState().startPlayground();
     setBrushSize(2);
+    const unsub = studioEvents.on('pixibun:open-teaching-board', () => {
+      setShowTeachingBoard(true);
+    });
+    return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -197,7 +203,7 @@ export const PlaygroundLayout: React.FC = () => {
 
           {/* Current Step Pill */}
           <div className="flex items-center gap-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] px-2.5 py-1 rounded-[2px] text-xs font-mono">
-            <span className="text-[#f0be7c] font-bold">Step {stepConfig.stepIndex + 1}:</span>
+            <span className="text-[var(--accent-gold)] font-bold">Step {stepConfig.stepIndex + 1}:</span>
             <span className="text-[var(--text-body)]">{stepConfig.title}</span>
           </div>
         </div>
@@ -213,8 +219,8 @@ export const PlaygroundLayout: React.FC = () => {
                 onClick={() => setBrushSize(sz)}
                 className={`px-1.5 py-0.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
                   tools.brushSize === sz
-                    ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
-                    : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                    ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border border-[#8c5120]'
+                    : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                 }`}
                 title={`Set Brush Size to ${sz}px`}
               >
@@ -230,7 +236,7 @@ export const PlaygroundLayout: React.FC = () => {
               disabled={!canUndo}
               onClick={handleUndo}
               title="Undo (Ctrl+Z)"
-              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] disabled:opacity-40"
+              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] disabled:opacity-40"
             >
               <PixelIcon name="undo" size={13} />
             </TactileButton>
@@ -241,25 +247,35 @@ export const PlaygroundLayout: React.FC = () => {
               disabled={!canRedo}
               onClick={handleRedo}
               title="Redo (Ctrl+Y)"
-              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] disabled:opacity-40"
+              className="w-8 h-8 bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] disabled:opacity-40"
             >
               <PixelIcon name="redo" size={13} />
             </TactileButton>
           </div>
         </div>
 
-        {/* Right: Theme Toggle & Skip to Studio */}
+        {/* Right: Teaching Board, Theme Toggle & Skip to Studio */}
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowTeachingBoard(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[#8c5120] text-xs font-mono font-bold text-[var(--accent-gold)] hover:text-[#fff] transition-all cursor-pointer shadow-sm active:translate-y-px"
+            title="Open 10-Frame Jump Anatomy Teaching Board"
+          >
+            <span className="text-[var(--accent-gold)]">✦</span>
+            <span>Teaching Board</span>
+          </button>
+
           <ThemeToggle />
 
           <button
             type="button"
             onClick={() => router.push('/studio?fromPlayground=true')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] border-2 border-[var(--desk-border)] text-xs font-mono font-bold text-[var(--text-body)] hover:text-[#f0be7c] transition-all cursor-pointer shadow-sm active:translate-y-px"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[var(--desk-border)] text-xs font-mono font-bold text-[var(--text-body)] hover:text-[var(--accent-gold)] transition-all cursor-pointer shadow-sm active:translate-y-px"
             title="Skip onboarding and enter the full studio"
           >
             <span>Skip to Studio</span>
-            <span className="text-[#f0be7c]">➔</span>
+            <span className="text-[var(--accent-gold)]">➔</span>
           </button>
         </div>
       </header>
@@ -276,6 +292,12 @@ export const PlaygroundLayout: React.FC = () => {
 
       {/* Onboarding Interactive Spotlight Overlay */}
       <OnboardingOverlay />
+
+      {/* 10-Frame Animation Anatomy Teaching Board Modal */}
+      <TeachingBoardModal
+        isOpen={showTeachingBoard}
+        onClose={() => setShowTeachingBoard(false)}
+      />
     </div>
   );
 };

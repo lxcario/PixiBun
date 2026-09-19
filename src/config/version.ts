@@ -5,4 +5,4 @@
  * Single source of truth across client telemetry, API diagnostics relay, and reporting.
  */
 
-export const APP_VERSION = '1.13.1';
+export const APP_VERSION = '1.14.0';

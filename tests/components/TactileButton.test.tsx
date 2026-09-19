@@ -46,22 +46,22 @@ describe('TactileButton component', () => {
     const { unmount } = render(<TactileButton variant="default">Default</TactileButton>);
     const defaultBtn = screen.getByRole('button', { name: 'Default' });
     expect(defaultBtn.className).toContain('rounded-[2px]');
-    expect(defaultBtn.className).toContain('hover:bg-[#603B82]');
+    expect(defaultBtn.className).toContain('pixel-tactile-btn');
     unmount();
 
     const { unmount: unmountGhost } = render(<TactileButton variant="ghost">Ghost</TactileButton>);
     const ghostBtn = screen.getByRole('button', { name: 'Ghost' });
-    expect(ghostBtn.className).toContain('hover:bg-[#603B82]/40');
+    expect(ghostBtn.className).toContain('hover:bg-[var(--state-hover)]');
     unmountGhost();
 
     const { unmount: unmountAccent } = render(<TactileButton variant="accent">Accent</TactileButton>);
     const accentBtn = screen.getByRole('button', { name: 'Accent' });
-    expect(accentBtn.className).toContain('hover:bg-[#b673d3]');
+    expect(accentBtn.className).toContain('hover:bg-[var(--surface-2)]');
     unmountAccent();
 
     const { unmount: unmountDanger } = render(<TactileButton variant="danger">Danger</TactileButton>);
     const dangerBtn = screen.getByRole('button', { name: 'Danger' });
-    expect(dangerBtn.className).toContain('hover:bg-[#c24e61]');
+    expect(dangerBtn.className).toContain('hover:bg-[var(--state-danger)]');
     unmountDanger();
   });
 

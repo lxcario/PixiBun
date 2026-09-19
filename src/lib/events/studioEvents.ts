@@ -97,6 +97,7 @@ export type StudioEventMap = {
   'pixibun:remote-cursors': RemoteCursor[];
   'pixibun:request-composite': void;
   'pixibun:remote-change': void;
+  'pixibun:open-teaching-board': void;
 };
 
 type EventHandler<T> = (data: T) => void;

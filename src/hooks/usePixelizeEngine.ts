@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { MAX_CANVAS_DIMENSION } from '@/config/canvasLimits';
 import {
   processImageToPixelArt,
   type PixelizeOptions,
@@ -33,8 +34,9 @@ export function usePixelizeEngine({
     const img = loadedImg || imgElementRef.current;
     if (!img) return;
 
-    const targetW = sizeMode === 'match-image' ? img.width : canvasWidth;
-    const targetH = sizeMode === 'match-image' ? img.height : canvasHeight;
+    const scale = Math.min(1, MAX_CANVAS_DIMENSION / img.width, MAX_CANVAS_DIMENSION / img.height);
+    const targetW = sizeMode === 'match-image' ? Math.max(1, Math.round(img.width * scale)) : canvasWidth;
+    const targetH = sizeMode === 'match-image' ? Math.max(1, Math.round(img.height * scale)) : canvasHeight;
 
     if (processingMode === 'exact') {
       const exactCanvas = document.createElement('canvas');
@@ -44,7 +46,7 @@ export function usePixelizeEngine({
       ctx.imageSmoothingEnabled = false;
 
       if (sizeMode === 'match-image') {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, targetW, targetH);
       } else {
         const aspect = img.width / img.height;
         const canvasAspect = targetW / targetH;

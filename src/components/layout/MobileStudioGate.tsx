@@ -25,7 +25,7 @@ export const MobileStudioGate: React.FC = () => {
         </Link>
         <Link
           href="/playground"
-          className="px-4 py-2 bg-[#f0be7c] text-[#140d1f] font-bold border border-[#8c5120] rounded text-xs hover:bg-[#ffd699] transition-colors"
+          className="px-4 py-2 bg-[var(--accent-gold)] text-[var(--desk-bg)] font-bold border border-[#8c5120] rounded text-xs hover:bg-[#ffd699] transition-colors"
         >
           Try Pocket Doodle Pad
         </Link>

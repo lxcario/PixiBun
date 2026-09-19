@@ -3,6 +3,9 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import PanelSection from '@/components/ui/PanelSection';
+import StudioSlider from '@/components/ui/StudioSlider';
+import StudioToggle from '@/components/ui/StudioToggle';
 import {
   computeDirectionalBevelNormal,
   encodeNormalRGB,
@@ -168,262 +171,241 @@ export const NormalSculptorSection: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2.5 p-2 bg-[var(--desk-surface)] rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-1 border-b border-[var(--desk-border)]">
-        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#f0be7c]">
-          <PixelIcon name="chisel" size={14} />
-          <span>2.5D Normal Sculptor</span>
-        </div>
+    <PanelSection
+      title="Surface Depth & Bevels"
+      ariaLabel="Surface Depth & Bevels (2.5D Normal Sculptor)"
+      storageKey="pixibun:panel:normals"
+      defaultOpen={false}
+      actions={
         <button
           onClick={toggleNormalMapPreview}
-          className={`text-[9px] font-mono px-1.5 py-0.5 rounded-[2px] border transition-colors cursor-pointer ${
+          className={`text-[9px] font-sans font-medium px-1.5 py-0.5 rounded-[2px] border transition-colors cursor-pointer ${
             showNormalMapPreview
-              ? 'bg-[#7ce0be] text-[#140d1f] border-[#4da88c] font-bold'
-              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#7ce0be]'
+              ? 'bg-[#7ce0be] text-[var(--desk-bg)] border-[#4da88c] font-semibold'
+              : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)]'
           }`}
           title="Toggle viewport normal map preview mode"
         >
-          {showNormalMapPreview ? 'Preview: ON' : 'Preview: OFF'}
+          {showNormalMapPreview ? '3D Map: ON' : '3D Map: OFF'}
         </button>
-      </div>
+      }
+    >
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-center justify-between text-[9px] font-sans text-[var(--text-muted)]">
+          <span>Bevel angles and normal maps</span>
+          <span className="opacity-60">2.5D Normal Sculptor</span>
+        </div>
+        {/* Tool Selector Buttons */}
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            onClick={() => setActiveTool('normal-chisel')}
+            aria-label="Normal Chisel - Chisel Bevel"
+            className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
+              isChiselActive
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
+            }`}
+          >
+            <PixelIcon name="chisel" size={13} />
+            <span>Chisel Bevel</span>
+          </button>
 
-      {/* Tool Selector Buttons */}
-      <div className="grid grid-cols-2 gap-1.5">
-        <button
-          onClick={() => setActiveTool('normal-chisel')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
-            isChiselActive
-              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
-          }`}
-        >
-          <PixelIcon name="chisel" size={13} />
-          <span>Normal Chisel</span>
-        </button>
+          <button
+            onClick={() => setActiveTool('rivet-stamp')}
+            aria-label="Rivet Stamp - Rivet & Stud"
+            className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
+              isRivetActive
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
+            }`}
+          >
+            <PixelIcon name="rivet" size={13} />
+            <span>Rivet &amp; Stud</span>
+          </button>
+        </div>
 
-        <button
-          onClick={() => setActiveTool('rivet-stamp')}
-          className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
-            isRivetActive
-              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-              : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
-          }`}
-        >
-          <PixelIcon name="rivet" size={13} />
-          <span>Rivet Stamp</span>
-        </button>
-      </div>
+        {/* Normal Chisel Settings */}
+        {isChiselActive && (
+          <div className="flex flex-col gap-3 pt-1">
+            {/* 3D Sphere Gizmo & Readout */}
+            <div className="flex items-center gap-3 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
+              <canvas
+                ref={gizmoCanvasRef}
+                width={80}
+                height={80}
+                onPointerDown={(e) => {
+                  isDraggingGizmoRef.current = true;
+                  handleGizmoPointer(e);
+                }}
+                onPointerMove={(e) => {
+                  if (isDraggingGizmoRef.current) handleGizmoPointer(e);
+                }}
+                onPointerUp={() => {
+                  isDraggingGizmoRef.current = false;
+                }}
+                className="w-20 h-20 rounded-full cursor-crosshair shadow-inner"
+                title="Drag on 3D sphere to adjust chisel slope angle & direction"
+              />
 
-      {/* Normal Chisel Settings */}
-      {isChiselActive && (
-        <div className="flex flex-col gap-2 pt-1">
-          {/* 3D Sphere Gizmo & Readout */}
-          <div className="flex items-center gap-3 bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-            <canvas
-              ref={gizmoCanvasRef}
-              width={80}
-              height={80}
-              onPointerDown={(e) => {
-                isDraggingGizmoRef.current = true;
-                handleGizmoPointer(e);
-              }}
-              onPointerMove={(e) => {
-                if (isDraggingGizmoRef.current) handleGizmoPointer(e);
-              }}
-              onPointerUp={() => {
-                isDraggingGizmoRef.current = false;
-              }}
-              className="w-20 h-20 rounded-full cursor-crosshair shadow-inner"
-              title="Drag on 3D sphere to adjust chisel slope angle & direction"
+              <div className="flex-1 flex flex-col gap-1 text-[10px] font-mono">
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-muted)]">Azimuth:</span>
+                  <span className="font-bold text-[var(--accent-gold)]">{tools.chiselAzimuth}°</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-muted)]">Incline:</span>
+                  <span className="font-bold text-[var(--accent-gold)]">{tools.chiselIncline}°</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-muted)]">RGB:</span>
+                  <span
+                    className="font-bold px-1 rounded-[1px] text-[var(--desk-bg)]"
+                    style={{ backgroundColor: `rgb(${bevelRGB.join(',')})` }}
+                  >
+                    {bevelRGB.join(', ')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Compass Azimuth Presets */}
+            <div className="flex items-center justify-between text-[9px] font-mono text-[var(--text-muted)] px-0.5">
+              <span>PRESETS:</span>
+              <div className="flex gap-1">
+                {[
+                  { label: 'NW', az: 315 },
+                  { label: 'N', az: 0 },
+                  { label: 'NE', az: 45 },
+                  { label: 'E', az: 90 },
+                  { label: 'SE', az: 135 },
+                  { label: 'S', az: 180 },
+                  { label: 'W', az: 270 },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => setChiselAzimuth(preset.az)}
+                    className={`px-1 py-0.5 rounded-[1px] border cursor-pointer ${
+                      tools.chiselAzimuth === preset.az
+                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] font-bold'
+                        : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chisel Width Slider */}
+            <StudioSlider
+              label="Bevel Width"
+              value={tools.chiselWidth}
+              min={1}
+              max={32}
+              unit="px"
+              onChange={(val) => setChiselWidth(val)}
             />
 
-            <div className="flex-1 flex flex-col gap-1 text-[10px] font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--text-muted)]">Azimuth:</span>
-                <span className="font-bold text-[#f0be7c]">{tools.chiselAzimuth}°</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--text-muted)]">Incline:</span>
-                <span className="font-bold text-[#f0be7c]">{tools.chiselIncline}°</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--text-muted)]">RGB:</span>
-                <span
-                  className="font-bold px-1 rounded-[1px] text-[#140d1f]"
-                  style={{ backgroundColor: `rgb(${bevelRGB.join(',')})` }}
-                >
-                  {bevelRGB.join(', ')}
-                </span>
+            {/* V-Groove Ridge Mode */}
+            <StudioToggle
+              label="Dual-Sided V-Groove"
+              checked={tools.chiselRidgeMode}
+              onChange={(val) => setChiselRidgeMode(val)}
+            />
+
+            {/* Blending Mode Selector */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-mono text-[var(--text-muted)]">Blend Mode</span>
+              <div className="grid grid-cols-3 gap-1 text-[10px] font-mono">
+                {(['rnm', 'udn', 'overwrite'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setNormalBlendMode(mode)}
+                    className={`py-1 text-center rounded-[2px] border cursor-pointer transition-colors ${
+                      tools.normalBlendMode === mode
+                        ? 'bg-[var(--accent-plum)] text-[var(--desk-bg)] border-[#8e6093] font-bold shadow-xs'
+                        : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-plum)]'
+                    }`}
+                    title={
+                      mode === 'rnm'
+                        ? 'Curved surface blend (RNM)'
+                        : mode === 'udn'
+                        ? 'Flat surface blend (UDN)'
+                        : 'Replace surface angles directly'
+                    }
+                  >
+                    {mode === 'overwrite' ? 'REPLACE' : mode.toUpperCase()}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
+        )}
 
-          {/* Quick Compass Azimuth Presets */}
-          <div className="flex items-center justify-between text-[9px] font-mono text-[var(--text-muted)] px-0.5">
-            <span>PRESETS:</span>
-            <div className="flex gap-1">
+        {/* Rivet Stamp Settings */}
+        {isRivetActive && (
+          <div className="flex flex-col gap-3 pt-1">
+            {/* Rivet Radius Slider */}
+            <StudioSlider
+              label="Rivet Radius"
+              value={tools.rivetRadius}
+              min={1}
+              max={32}
+              unit="px"
+              onChange={(val) => setRivetRadius(val)}
+            />
+
+            {/* Dome Height Slider */}
+            <StudioSlider
+              label="Dome Height"
+              value={Math.round(tools.rivetFlatten * 100)}
+              min={10}
+              max={100}
+              unit="%"
+              onChange={(val) => setRivetFlatten(val / 100)}
+            />
+
+            {/* Invert Toggle */}
+            <StudioToggle
+              label="Invert (Dimple / Hole)"
+              checked={tools.rivetInvert}
+              onChange={(val) => setRivetInvert(val)}
+            />
+
+            {/* Rivet Presets */}
+            <div className="grid grid-cols-2 gap-1 text-[10px] font-mono">
               {[
-                { label: 'NW', az: 315 },
-                { label: 'N', az: 0 },
-                { label: 'NE', az: 45 },
-                { label: 'E', az: 90 },
-                { label: 'SE', az: 135 },
-                { label: 'S', az: 180 },
-                { label: 'W', az: 270 },
+                { label: 'Hemisphere Dome', r: 8, flat: 1.0, inv: false },
+                { label: 'Shallow Stud', r: 6, flat: 0.35, inv: false },
+                { label: 'Countersunk Screw', r: 5, flat: 0.7, inv: true },
+                { label: 'Dimple Crevice', r: 4, flat: 0.25, inv: true },
               ].map((preset) => (
                 <button
                   key={preset.label}
-                  onClick={() => setChiselAzimuth(preset.az)}
-                  className={`px-1 py-0.5 rounded-[1px] border cursor-pointer ${
-                    tools.chiselAzimuth === preset.az
-                      ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] font-bold'
-                      : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:text-[#f0be7c]'
-                  }`}
+                  onClick={() => {
+                    setRivetRadius(preset.r);
+                    setRivetFlatten(preset.flat);
+                    setRivetInvert(preset.inv);
+                  }}
+                  className="py-1 px-1.5 text-center rounded-[2px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-gold)] text-[var(--text-body)] transition-colors cursor-pointer"
                 >
                   {preset.label}
                 </button>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Chisel Width Slider */}
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-[10px] font-mono">
-              <span className="text-[var(--text-muted)]">Chisel Width</span>
-              <span className="font-bold text-[var(--text-heading)]">{tools.chiselWidth}px</span>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={32}
-              value={tools.chiselWidth}
-              onChange={(e) => setChiselWidth(parseInt(e.target.value, 10))}
-              className="w-full accent-[#f0be7c] cursor-pointer h-1.5"
-            />
-          </div>
-
-          {/* V-Groove Ridge Mode */}
-          <label className="flex items-center justify-between text-[10px] font-mono cursor-pointer py-1 px-1 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
-            <span className="text-[var(--text-body)]">Dual-Flank V-Groove</span>
-            <input
-              type="checkbox"
-              checked={tools.chiselRidgeMode}
-              onChange={(e) => setChiselRidgeMode(e.target.checked)}
-              className="accent-[#f0be7c] cursor-pointer"
-            />
-          </label>
-
-          {/* Blending Mode Selector */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-mono text-[var(--text-muted)]">Normal Composition</span>
-            <div className="grid grid-cols-3 gap-1 text-[10px] font-mono">
-              {(['rnm', 'udn', 'overwrite'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setNormalBlendMode(mode)}
-                  className={`py-1 text-center rounded-[2px] border cursor-pointer transition-colors ${
-                    tools.normalBlendMode === mode
-                      ? 'bg-[#dcabdf] text-[#140d1f] border-[#8e6093] font-bold shadow-xs'
-                      : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#dcabdf]'
-                  }`}
-                  title={
-                    mode === 'rnm'
-                      ? 'Reoriented Normal Mapping (Barré-Brisebois & Hill 2012)'
-                      : mode === 'udn'
-                      ? 'Unreal Engine UDN Blend'
-                      : 'Direct Overwrite'
-                  }
-                >
-                  {mode.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Rivet Stamp Settings */}
-      {isRivetActive && (
-        <div className="flex flex-col gap-2 pt-1">
-          {/* Rivet Radius Slider */}
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-[10px] font-mono">
-              <span className="text-[var(--text-muted)]">Rivet Radius</span>
-              <span className="font-bold text-[var(--text-heading)]">{tools.rivetRadius}px</span>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={32}
-              value={tools.rivetRadius}
-              onChange={(e) => setRivetRadius(parseInt(e.target.value, 10))}
-              className="w-full accent-[#f0be7c] cursor-pointer h-1.5"
-            />
-          </div>
-
-          {/* Flattening Factor Slider */}
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-[10px] font-mono">
-              <span className="text-[var(--text-muted)]">Flatten Factor (h)</span>
-              <span className="font-bold text-[var(--text-heading)]">
-                {Math.round(tools.rivetFlatten * 100)}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min={10}
-              max={100}
-              value={Math.round(tools.rivetFlatten * 100)}
-              onChange={(e) => setRivetFlatten(parseInt(e.target.value, 10) / 100)}
-              className="w-full accent-[#f0be7c] cursor-pointer h-1.5"
-            />
-          </div>
-
-          {/* Invert Toggle */}
-          <label className="flex items-center justify-between text-[10px] font-mono cursor-pointer py-1 px-1 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
-            <span className="text-[var(--text-body)]">Invert to Dimple / Screw</span>
-            <input
-              type="checkbox"
-              checked={tools.rivetInvert}
-              onChange={(e) => setRivetInvert(e.target.checked)}
-              className="accent-[#f0be7c] cursor-pointer"
-            />
-          </label>
-
-          {/* Rivet Presets */}
-          <div className="grid grid-cols-2 gap-1 text-[10px] font-mono">
-            {[
-              { label: 'Hemisphere Dome', r: 8, flat: 1.0, inv: false },
-              { label: 'Shallow Stud', r: 6, flat: 0.35, inv: false },
-              { label: 'Countersunk Screw', r: 5, flat: 0.7, inv: true },
-              { label: 'Dimple Crevice', r: 4, flat: 0.25, inv: true },
-            ].map((preset) => (
-              <button
-                key={preset.label}
-                onClick={() => {
-                  setRivetRadius(preset.r);
-                  setRivetFlatten(preset.flat);
-                  setRivetInvert(preset.inv);
-                }}
-                className="py-1 px-1.5 text-center rounded-[2px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] hover:text-[#f0be7c] text-[var(--text-body)] transition-colors cursor-pointer"
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Quick Action: New Normal Map Layer */}
-      <button
-        onClick={handleCreateNormalLayer}
-        className="w-full mt-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#f0be7c] font-bold text-[10px] font-mono py-1.5 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
-        title="Create a new layer tagged for tangent normal maps"
-      >
-        <PixelIcon name="plus" size={12} />
-        <span>+ Add Dedicated Normal Layer</span>
-      </button>
-    </div>
+        {/* Quick Action: New Normal Map Layer */}
+        <button
+          onClick={handleCreateNormalLayer}
+          className="w-full mt-1 bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] text-[var(--accent-gold)] font-bold text-[10px] font-mono py-1.5 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
+          title="Create a new layer dedicated to 3D surface normal maps"
+        >
+          <PixelIcon name="plus" size={12} />
+          <span>+ New 3D Normal Layer</span>
+        </button>
+      </div>
+    </PanelSection>
   );
 };

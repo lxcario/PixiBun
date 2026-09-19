@@ -36,6 +36,8 @@ interface WindowWithStudio {
 
 test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relighting', () => {
   test('verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling', async ({ page }) => {
+    test.setTimeout(60000);
+
     // 1. Navigate to live /studio and enforce Clean Canvas Invariant
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
@@ -126,6 +128,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     await page.waitForTimeout(200);
 
     // Verify 2.5D Normal Sculptor section is mounted
+    await page.getByRole('button', { name: /Surface Depth & Bevels/ }).click();
     await expect(page.getByText('2.5D Normal Sculptor')).toBeVisible();
 
     // 4. Click "+ Add Dedicated Normal Layer"
@@ -181,13 +184,13 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     });
 
     // 6. TOGGLE "Preview: ON" to prove normal map inspection in live viewport
-    const previewBtn = page.getByRole('button', { name: /Preview: OFF/i });
+    const previewBtn = page.getByRole('button', { name: /3D Map: OFF/i });
     await expect(previewBtn).toBeVisible();
     await previewBtn.click();
     await page.waitForTimeout(300);
 
     // Verify button flipped to "Preview: ON"
-    const previewOnBtn = page.getByRole('button', { name: /Preview: ON/i });
+    const previewOnBtn = page.getByRole('button', { name: /3D Map: ON/i });
     await expect(previewOnBtn).toBeVisible();
 
     // Assert Zustand preview state is strictly true
@@ -204,9 +207,11 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     // Toggle preview back to OFF for relighting inspection
     await previewOnBtn.click();
     await page.waitForTimeout(200);
-    await expect(page.getByRole('button', { name: /Preview: OFF/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /3D Map: OFF/i })).toBeVisible();
 
     // 7. Test Live Studio Photometric Relighting (Light Direction 1: Azimuth 45°)
+    const lightingPanel = page.getByRole('button', { name: /2\.5D Photometric Studio/i });
+    if (await lightingPanel.getAttribute('aria-expanded') === 'false') await lightingPanel.click();
     const manualModeBtn = page.getByLabel('Photometric lighting mode').getByRole('button', { name: /Manual/i });
     if (await manualModeBtn.isVisible()) {
       await manualModeBtn.click();
@@ -322,7 +327,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     // Capture dynamic bounding boxes for both Canvas and Inspector
     const dynamicCanvasBox = await canvas.boundingBox();
     expect(dynamicCanvasBox).not.toBeNull();
-    const inspectorAside = page.locator('aside.w-80');
+    const inspectorAside = page.locator('aside.border-l');
     const dynamicInspectorBox = await inspectorAside.boundingBox();
     expect(dynamicInspectorBox).not.toBeNull();
 

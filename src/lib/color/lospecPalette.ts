@@ -1,3 +1,4 @@
+import { SafeJson } from '@/lib/safety/safeJson';
 /**
  * Lospec Palette Ecosystem Integration (.hex, GIMP .gpl, Lospec JSON).
  *
@@ -123,7 +124,7 @@ export function parseGimpGpl(rawText: string, fallbackName: string = 'GIMP Palet
 export function parseLospecJson(jsonText: string): ColorPalette {
   let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonText);
+    parsed = SafeJson.parse(jsonText);
   } catch {
     throw new Error('Invalid JSON format.');
   }

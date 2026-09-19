@@ -1,6 +1,7 @@
 import { ViewportSlice, StudioSliceCreator } from './types';
 import { createId } from '@/lib/engine/id';
 import { resizeAllBuffers } from '@/lib/engine/bufferRegistry';
+import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 
 export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get) => ({
   currentProjectId: createId('proj'),
@@ -14,13 +15,28 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   showGrid: true,
   showTilePreview: false,
   showIsoGuides: false,
-  showFloatingPreview: true,
+  showFloatingPreview: false,
   showNormalMapPreview: false,
   previewScale: 2,
   previewBackdrop: 'checker',
   cvdLens: 'none',
   squintMode: false,
   photometricGizmoActive: false,
+  referenceOverlay: 'none',
+
+  setReferenceOverlay: mode => {
+    set(state => {
+      state.referenceOverlay = mode;
+    });
+  },
+
+  cycleReferenceOverlay: () => {
+    set(state => {
+      const modes: ('none' | 'thirds' | 'golden' | 'center')[] = ['none', 'thirds', 'golden', 'center'];
+      const nextIdx = (modes.indexOf(state.referenceOverlay) + 1) % modes.length;
+      state.referenceOverlay = modes[nextIdx];
+    });
+  },
 
   setPhotometricGizmoActive: (active: boolean) => {
     set(state => {
@@ -35,6 +51,7 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   },
 
   setCanvasSize: (width, height, anchor = 'center', resample = true) => {
+    assertWorkspaceDimensions(width, height);
     const previousWidth = get().canvasWidth;
     const previousHeight = get().canvasHeight;
     if (previousWidth === width && previousHeight === height) return;

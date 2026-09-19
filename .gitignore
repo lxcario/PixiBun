@@ -46,3 +46,17 @@ testsprite_tests/tmp/config.json
 
 # testsprite local runs and snapshots
 /.testsprite/
+
+# development screenshots and artifacts
+/screenshots/
+/artifacts/
+
+# audit reports (kept locally, not committed)
+AUDIT_REMEDIATION_*.md
+PIXIBUN_AUDIT_RESULTS.md
+
+# one-off debug and capture scripts
+scripts/capture_*.mjs
+scripts/debug_*.mjs
+scripts/test_*.mjs
+scripts/verify_responsive_and_invariants.mjs

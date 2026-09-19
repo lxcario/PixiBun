@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { compositeFrame } from '@/lib/render/compositor';
 
 export const FloatingPreviewWindow: React.FC = () => {
   const {
@@ -24,21 +24,26 @@ export const FloatingPreviewWindow: React.FC = () => {
   } = useStudioStore();
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 16, y: 56 });
+
+  useEffect(() => {
+    setPosition({ x: Math.max(16, window.innerWidth - 640), y: 16 });
+  }, []);
   const [isDragging, setIsDragging] = useState(false);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Custom resizable viewport size (minimum 260px width to accommodate controls bar)
+  // Custom resizable viewport size (minimum 140px width)
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
-    width: 260,
-    height: 160,
+    width: 180,
+    height: 120,
   });
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef<{ startX: number; startY: number; startW: number; startH: number }>({
     startX: 0,
     startY: 0,
-    startW: 260,
-    startH: 160,
+    startW: 180,
+    startH: 120,
   });
 
   // Render active composite frame to preview canvas whenever frames, activeFrameIndex, or canvas size changes
@@ -46,25 +51,8 @@ export const FloatingPreviewWindow: React.FC = () => {
     if (!showFloatingPreview) return;
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    ctx.imageSmoothingEnabled = false;
-
-    const currentFrame = frames[activeFrameIndex];
-    if (currentFrame) {
-      currentFrame.layers.slice().reverse().forEach((layer) => {
-        if (!layer.visible) return;
-        const lBuffer = getOrCreateBuffer(layer.id, canvasWidth, canvasHeight);
-        ctx.globalAlpha = layer.opacity;
-        ctx.globalCompositeOperation = layer.blendMode;
-        ctx.drawImage(lBuffer.canvas, 0, 0);
-      });
-    }
-
-    ctx.globalAlpha = 1.0;
-    ctx.globalCompositeOperation = 'source-over';
+    compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, {}, canvas);
   }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, showFloatingPreview]);
 
   // Robust window-level dragging listener (prevents mouse stickiness bug)
@@ -78,8 +66,8 @@ export const FloatingPreviewWindow: React.FC = () => {
         return;
       }
       setPosition({
-        x: Math.max(10, Math.min(window.innerWidth - 270, e.clientX - dragOffsetRef.current.x)),
-        y: Math.max(10, Math.min(window.innerHeight - 100, e.clientY - dragOffsetRef.current.y)),
+        x: Math.max(10, Math.min(window.innerWidth - 150, e.clientX - dragOffsetRef.current.x)),
+        y: Math.max(10, Math.min(window.innerHeight - 80, e.clientY - dragOffsetRef.current.y)),
       });
     };
 
@@ -110,8 +98,8 @@ export const FloatingPreviewWindow: React.FC = () => {
       const deltaX = e.clientX - resizeStartRef.current.startX;
       const deltaY = e.clientY - resizeStartRef.current.startY;
       setViewportSize({
-        width: Math.max(260, Math.min(640, resizeStartRef.current.startW + deltaX)),
-        height: Math.max(120, Math.min(640, resizeStartRef.current.startH + deltaY)),
+        width: Math.max(140, Math.min(640, resizeStartRef.current.startW + deltaX)),
+        height: Math.max(80, Math.min(640, resizeStartRef.current.startH + deltaY)),
       });
     };
 
@@ -172,40 +160,63 @@ export const FloatingPreviewWindow: React.FC = () => {
 
   return (
     <div
+      role="dialog"
+      aria-label="Live Preview Window"
+      data-testid="floating-preview-window"
       style={{
         position: 'absolute',
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
-      className="z-30 min-w-[280px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[3px] shadow-[0_12px_32px_rgba(0,0,0,0.6)] flex flex-col select-none overflow-hidden transition-colors duration-300 relative"
+      className={`z-30 ${
+        isMinimized ? 'w-44' : 'min-w-[140px]'
+      } bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-[0_12px_32px_rgba(0,0,0,0.6)] flex flex-col select-none overflow-hidden ${
+        isDragging || isResizing ? '' : 'transition-opacity duration-150'
+      } opacity-95 hover:opacity-100 relative`}
     >
       {/* 1. Window Titlebar / Drag Handle */}
       <div
         onPointerDown={handleTitlePointerDown}
-        className="h-6 bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)] px-2 flex items-center justify-between cursor-move text-[10px] font-mono font-bold text-[#f0be7c]"
+        className="h-6 bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)] px-2 flex items-center justify-between cursor-move text-[11px] font-sans font-medium text-[var(--accent-gold)]"
       >
         <div className="flex items-center gap-1.5 pointer-events-none">
           <PixelIcon name="preview" size={12} />
-          <span>Live Preview ({previewScale}x)</span>
+          <span>Live Preview{isMinimized ? '' : ` (${previewScale}x)`}</span>
         </div>
 
-        <button
-          onPointerDown={(e) => {
-            e.stopPropagation();
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFloatingPreview();
-          }}
-          className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5 cursor-pointer"
-          title="Close Preview Window"
-          aria-label="Close Preview Window"
-        >
-          ×
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMinimized(!isMinimized);
+            }}
+            className="text-[var(--text-muted)] hover:text-[var(--accent-gold)] font-mono text-xs px-1 cursor-pointer leading-none"
+            title={isMinimized ? 'Expand Preview Window' : 'Minimize Preview Window'}
+            aria-label={isMinimized ? 'Expand Preview Window' : 'Minimize Preview Window'}
+          >
+            {isMinimized ? '+' : '–'}
+          </button>
+          <button
+            onPointerDown={(e) => {
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFloatingPreview();
+            }}
+            className="text-[var(--text-body)] hover:text-[#ff99aa] font-bold text-xs p-0.5 cursor-pointer leading-none"
+            title="Close Preview Window"
+            aria-label="Close Preview Window"
+          >
+            ×
+          </button>
+        </div>
       </div>
 
-      {/* 2. Live Canvas Viewport (Dynamic Resizable Size) */}
+      {!isMinimized && (
+        <>
+          {/* 2. Live Canvas Viewport (Dynamic Resizable Size) */}
       <div className="p-2.5 flex items-center justify-center bg-[var(--desk-bg)]">
         <div
           className={`relative border border-[var(--desk-border)] rounded-[2px] overflow-hidden flex items-center justify-center ${getBackdropClass()}`}
@@ -230,25 +241,25 @@ export const FloatingPreviewWindow: React.FC = () => {
       </div>
 
       {/* 3. Controls Bar: Play/Pause, Scale (1x/2x/4x), Backdrop Switcher */}
-      <div className="px-2 py-1.5 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex flex-wrap items-center justify-between gap-1.5 text-xs font-mono pr-5">
+      <div className="px-2 py-1 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono pr-5">
         {/* Play / Pause Toggle */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             className={`p-1 rounded-[2px] border transition-colors cursor-pointer ${
               isPlaying
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                ? 'bg-[var(--accent-gold)] text-[#16141a] border-[#995e1e]'
+                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
             title={isPlaying ? 'Pause Animation' : 'Play Animation'}
             aria-label={isPlaying ? 'Pause Animation' : 'Play Animation'}
           >
             <PixelIcon name={isPlaying ? 'pause' : 'play'} size={12} />
           </button>
-          <span className="text-[10px] text-[#f0be7c] font-bold">
+          <span className="text-[10px] text-[var(--accent-gold)] font-bold font-mono">
             #{activeFrameIndex + 1}/{frames.length}
           </span>
-          <span className="text-[9px] text-[var(--text-body)]">({fps} FPS)</span>
+          <span className="text-[9px] text-[var(--text-body)] font-mono">({fps} FPS)</span>
         </div>
 
         {/* Scale Selector (1x, 2x, 4x) */}
@@ -257,10 +268,10 @@ export const FloatingPreviewWindow: React.FC = () => {
             <button
               key={sc}
               onClick={() => setPreviewScale(sc)}
-              className={`px-1.5 py-0.5 text-[9px] font-bold rounded-[1px] cursor-pointer transition-colors ${
+              className={`px-1 py-0.5 text-[9px] font-bold rounded-[1px] cursor-pointer transition-colors font-mono ${
                 previewScale === sc
-                  ? 'bg-[#f0be7c] text-[#140d1f]'
-                  : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                  ? 'bg-[var(--accent-gold)] text-[#16141a]'
+                  : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
               }`}
             >
               {sc}x
@@ -275,12 +286,12 @@ export const FloatingPreviewWindow: React.FC = () => {
               key={bg}
               type="button"
               onClick={() => setPreviewBackdrop(bg)}
-              className="min-w-[24px] min-h-[24px] w-6 h-6 flex items-center justify-center cursor-pointer bg-transparent border-0 p-0"
+              className="w-5 h-5 flex items-center justify-center cursor-pointer bg-transparent border-0 p-0"
               title={`Backdrop: ${bg}`}
               aria-label={`Backdrop: ${bg}`}
             >
               <span
-                className={`w-3.5 h-3.5 rounded-[1px] border block ${
+                className={`w-3 h-3 rounded-[1px] border block ${
                   previewBackdrop === bg ? 'border-[#f0be7c] scale-110' : 'border-[#140d1f]'
                 } ${
                   bg === 'obsidian'
@@ -297,21 +308,23 @@ export const FloatingPreviewWindow: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Bottom-Right Window Resize Handle */}
-      <div
-        onPointerDown={handleResizePointerDown}
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 select-none text-[var(--text-body)] hover:text-[#f0be7c]"
-        title="Drag to resize Live Preview window"
-      >
-        <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="pointer-events-none">
-          <rect x="4" y="0" width="2" height="2" />
-          <rect x="2" y="2" width="2" height="2" />
-          <rect x="4" y="2" width="2" height="2" />
-          <rect x="0" y="4" width="2" height="2" />
-          <rect x="2" y="4" width="2" height="2" />
-          <rect x="4" y="4" width="2" height="2" />
-        </svg>
-      </div>
+          {/* 4. Bottom-Right Window Resize Handle */}
+          <div
+            onPointerDown={handleResizePointerDown}
+            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 select-none text-[var(--text-body)] hover:text-[#f0be7c]"
+            title="Drag to resize Live Preview window"
+          >
+            <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="pointer-events-none">
+              <rect x="4" y="0" width="2" height="2" />
+              <rect x="2" y="2" width="2" height="2" />
+              <rect x="4" y="2" width="2" height="2" />
+              <rect x="0" y="4" width="2" height="2" />
+              <rect x="2" y="4" width="2" height="2" />
+              <rect x="4" y="4" width="2" height="2" />
+            </svg>
+          </div>
+        </>
+      )}
     </div>
   );
 };

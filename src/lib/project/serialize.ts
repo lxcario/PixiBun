@@ -3,7 +3,7 @@
 // artwork passes through here for autosave, project export, and restore.
 
 import { useStudioStore } from '@/stores/studioStore';
-import { clearAllBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { createEntry, replaceAllBuffers, getOrCreateBuffer, type BufferEntry } from '@/lib/engine/bufferRegistry';
 import {
   PROJECT_FORMAT_ID,
   PROJECT_FORMAT_VERSION,
@@ -11,6 +11,8 @@ import {
   type SerializedLayer,
 } from '@/types/project';
 import type { StoredLayerBlob } from '@/lib/storage/db';
+import { validateProjectFile } from '@/lib/project/schema';
+import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
 
 function requireBrowser(): void {
@@ -35,14 +37,13 @@ export async function rasterizeLayerPngAsync(layerId: string, width: number, hei
   const hasContent = getOrCreateBuffer(layerId, width, height);
   if (!hasContent || !hasContent.canvas) return undefined;
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (typeof hasContent.canvas.toBlob !== 'function') {
       return resolve(rasterizeLayerPng(layerId, width, height));
     }
     hasContent.canvas.toBlob((blob) => {
       if (!blob) {
-        // Fallback to sync if blob fails
-        return resolve(rasterizeLayerPng(layerId, width, height));
+        return reject(new Error('Layer encoding failed.'));
       }
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -51,7 +52,7 @@ export async function rasterizeLayerPngAsync(layerId: string, width: number, hei
         resolve(base64);
       };
       reader.onerror = () => {
-        resolve(rasterizeLayerPng(layerId, width, height));
+        reject(new Error('Encoded layer could not be read.'));
       };
       reader.readAsDataURL(blob);
     }, 'image/png');
@@ -105,6 +106,7 @@ export async function buildAutosavePayloadAsync(): Promise<AutosavePayload> {
       const layers = await Promise.all(
         frame.layers.map(async (layer): Promise<SerializedLayer> => {
           const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
+          if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
           if (blob) {
             layerBlobs.push({
               layerId: layer.id,
@@ -119,6 +121,7 @@ export async function buildAutosavePayloadAsync(): Promise<AutosavePayload> {
             locked: layer.locked,
             opacity: layer.opacity,
             blendMode: layer.blendMode,
+            tag: layer.tag,
             // Omit pngBase64 in metadata payload when storing binary blobs to prevent double-storage
             pngBase64: undefined,
           };
@@ -181,6 +184,7 @@ export function buildProjectFile(): ProjectFile {
         locked: layer.locked,
         opacity: layer.opacity,
         blendMode: layer.blendMode,
+        tag: layer.tag,
         pngBase64: rasterizeLayerPng(layer.id, state.canvasWidth, state.canvasHeight),
       })),
     })),
@@ -206,6 +210,7 @@ export async function buildProjectFileAsync(): Promise<ProjectFile> {
             locked: layer.locked,
             opacity: layer.opacity,
             blendMode: layer.blendMode,
+            tag: layer.tag,
             pngBase64,
           };
         })
@@ -283,78 +288,41 @@ function base64ToBlob(base64: string): Blob {
   return new Blob([bytes], { type: 'image/png' });
 }
 
-async function paintLayerFromPng(layerId: string, pngBase64: string, width: number, height: number): Promise<void> {
-  const entry = getOrCreateBuffer(layerId, width, height);
-  const bitmap = await createImageBitmap(base64ToBlob(pngBase64));
-  try {
-    entry.ctx.imageSmoothingEnabled = false;
-    entry.ctx.clearRect(0, 0, width, height);
-    entry.ctx.drawImage(bitmap, 0, 0);
-  } finally {
-    bitmap.close();
-  }
-}
-
-async function paintLayerFromBlob(layerId: string, blob: Blob, width: number, height: number): Promise<void> {
-  const entry = getOrCreateBuffer(layerId, width, height);
-  const bitmap = await createImageBitmap(blob);
-  try {
-    entry.ctx.imageSmoothingEnabled = false;
-    entry.ctx.clearRect(0, 0, width, height);
-    entry.ctx.drawImage(bitmap, 0, 0);
-  } finally {
-    bitmap.close();
-  }
-}
-
-/**
- * Rebuilds the whole studio from a validated ProjectFile: decodes every layer
- * from binary Blobs (or legacy PNG base64 fallback) back into fresh buffers,
- * then rehydrates store metadata. Assumes the file already passed `validateProjectFile`.
- */
+/** Decode and validate off to the side; publish only a complete project. */
 export async function hydrateProject(
   file: ProjectFile,
   projectId?: string,
-  layerBlobs?: StoredLayerBlob[]
+  layerBlobs?: StoredLayerBlob[],
+  canPublish: () => boolean = () => true
 ): Promise<void> {
   requireBrowser();
-  clearAllBuffers();
-
-  const blobMap = new Map<string, Blob>();
-  if (layerBlobs && layerBlobs.length > 0) {
-    for (const lb of layerBlobs) {
-      blobMap.set(`${lb.layerId}_${lb.frameIndex}`, lb.blob);
-      blobMap.set(lb.layerId, lb.blob);
-    }
-  }
-
-  for (let frameIndex = 0; frameIndex < file.frames.length; frameIndex++) {
-    const frame = file.frames[frameIndex];
+  const result = validateProjectFile(file);
+  if (!result.ok) throw new Error(result.error);
+  file = result.value;
+  const staged = new Map<string, BufferEntry>();
+  const blobMap = new Map((layerBlobs ?? []).map(b => [b.layerId + ':' + b.frameIndex, b.blob]));
+  for (const [frameIndex, frame] of file.frames.entries()) {
     for (const layer of frame.layers) {
-      const blob = blobMap.get(`${layer.id}_${frameIndex}`) || blobMap.get(layer.id);
+      const blob = blobMap.get(layer.id + ':' + frameIndex) ??
+        (layer.pngBase64 ? base64ToBlob(layer.pngBase64) : undefined);
+      const entry = createEntry(file.width, file.height);
       if (blob) {
-        try {
-          await paintLayerFromBlob(layer.id, blob, file.width, file.height);
-          continue;
-        } catch (err) {
-          console.error(`Layer "${layer.name}" could not be painted from Blob. Falling back to base64.`, err);
+        const dimensions = await ImageHeaderProbe.probe(blob);
+        if (dimensions.width !== file.width || dimensions.height !== file.height) {
+          throw new Error('Layer dimensions do not match the project canvas.');
         }
+        const bitmap = await createImageBitmap(blob);
+        try { entry.ctx.drawImage(bitmap, 0, 0); } finally { bitmap.close(); }
       }
-
-      if (layer.pngBase64) {
-        try {
-          await paintLayerFromPng(layer.id, layer.pngBase64, file.width, file.height);
-        } catch (err) {
-          // One unreadable layer should not sink the whole restore.
-          console.error(`Layer "${layer.name}" could not be decoded during restore.`, err);
-        }
-      }
+      staged.set(layer.id, entry);
     }
   }
-
-  const { loadProjectState } = useStudioStore.getState();
-  loadProjectState(file, projectId);
-
-  // Invalidate history stack across project boundary to prevent cross-project undo corruption
+  if (!canPublish()) throw new Error('The workspace changed while the project was loading.');
+  // Hydration is synchronous from here; validation and every decode already succeeded.
+  // Publish pixels before notifying store subscribers (including co-draw),
+  // so observers of the new metadata always see the matching decoded artwork.
+  replaceAllBuffers(staged);
+  useStudioStore.getState().loadProjectState(file, projectId);
+  useStudioStore.getState().bumpBufferVersion();
   studioEvents.emit('pixibun:history-clear');
 }

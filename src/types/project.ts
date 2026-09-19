@@ -12,6 +12,7 @@ export interface SerializedLayer {
   locked: boolean;
   opacity: number; // 0..1
   blendMode: BlendMode;
+  tag?: string;
   /** Lossless PNG encoding of this layer's pixel buffer, base64-encoded. */
   pngBase64?: string;
 }

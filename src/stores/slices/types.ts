@@ -39,7 +39,10 @@ export interface ViewportSlice {
   cvdLens: CvdLensMode;
   squintMode: boolean;
   photometricGizmoActive: boolean;
+  referenceOverlay: 'none' | 'thirds' | 'golden' | 'center';
 
+  setReferenceOverlay: (mode: 'none' | 'thirds' | 'golden' | 'center') => void;
+  cycleReferenceOverlay: () => void;
   setZoom: (zoom: number) => void;
   setPan: (x: number, y: number) => void;
   setZoomAndPan: (zoom: number, panX: number, panY: number) => void;
@@ -111,6 +114,7 @@ export interface ToolSlice {
   setPrimaryColor: (color: string) => void;
   setSecondaryColor: (color: string) => void;
   addRecentColor: (color: string) => void;
+  loadRecentColors: () => void;
   swapColors: () => void;
   selectPalette: (id: string) => void;
   addCustomColorToPalette: (paletteId: string, color: string) => void;
@@ -180,6 +184,7 @@ export interface HistorySlice {
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;
   isDirty: boolean;
+  editRevision: number;
   setDirty: (dirty: boolean) => void;
   markClean: () => void;
 

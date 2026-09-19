@@ -66,12 +66,14 @@ describe('validateStructurePayload: STRUCTURE_SYNC payload validation', () => {
     const frames500 = Array.from({ length: 500 }, (_, i) => ({
       ...frameTemplate,
       id: `frame-${i + 1}`,
+      layers: frameTemplate.layers.map((layer, j) => ({ ...layer, id: `layer-${i}-${j}` })),
     }));
     expect(validateStructurePayload({ ...validPayload, frames: frames500 })).not.toBeNull();
 
     const frames501 = Array.from({ length: 501 }, (_, i) => ({
       ...frameTemplate,
       id: `frame-${i + 1}`,
+      layers: frameTemplate.layers.map((layer, j) => ({ ...layer, id: `layer-${i}-${j}` })),
     }));
     expect(validateStructurePayload({ ...validPayload, frames: frames501 })).toBeNull();
   });

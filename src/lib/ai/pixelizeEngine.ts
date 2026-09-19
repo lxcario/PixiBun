@@ -2,8 +2,8 @@
  * PixiBun Intelligent Image-to-Pixel-Art Synthesis Engine
  * Grounded in computer graphics literature & perceptual color science:
  * - Linear Optical Gamma-Corrected Area Box Downsampling
- * - Sobel Gradient Salience Edge-Preservation
- * - Oklab Perceptual Space Color Quantization (Median-Cut + K-Means++)
+ * - Forward-Difference Gradient Salience Edge-Preservation
+ * - Oklab Perceptual Space Color Quantization (Median-Cut + Lloyd K-Means)
  * - Serpentine Floyd-Steinberg & Atkinson 75% Error Diffusion Dithering
  * - Bayer 4x4 Ordered Matrix Dithering
  * - 1-Bit Binary Alpha Thresholding & Auto Background Keying
@@ -246,7 +246,7 @@ export function downsampleImage(
 }
 
 // -----------------------------------------------------------------------------
-// 3. Oklab Median-Cut & K-Means++ Palette Quantizer
+// 3. Oklab Median-Cut & Lloyd K-Means Palette Quantizer
 // -----------------------------------------------------------------------------
 
 interface ColorBox {

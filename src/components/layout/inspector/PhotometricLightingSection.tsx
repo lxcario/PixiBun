@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import PanelSection from '@/components/ui/PanelSection';
+import StudioSlider from '@/components/ui/StudioSlider';
 import { LightGizmoOverlay } from '@/components/studio/LightGizmoOverlay';
 import { MaterialType } from '@/types/tools';
 import { MATERIAL_PROFILES } from '@/lib/ai/math/photometricLighting';
@@ -125,390 +127,334 @@ export const PhotometricLightingSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)] flex flex-col gap-2.5 shadow-xs">
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          className="text-[10px] font-mono font-bold text-[#f0be7c] uppercase tracking-wider flex items-center gap-1 cursor-pointer select-none bg-transparent border-none p-0 focus:outline-none"
-        >
-          <PixelIcon name="sun" size={12} />
-          <span>2.5D Photometric Studio</span>
-        </button>
-        <span className="text-[10px] font-mono text-[#f0be7c] font-bold">
-          {tools.lightAzimuth}° / {tools.lightElevation}°
-        </span>
-      </div>
-
-      {canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32) && (
-        <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
-          <div className="flex items-center justify-between text-[10px] font-mono">
-            <span className="flex items-center gap-1 font-bold text-[#f0be7c] uppercase">
-              <PixelIcon name="layers" size={11} />
-              <span>Skin 3D Shading ({canvasWidth}x{canvasHeight})</span>
-            </span>
-            <div className="flex items-center gap-0.5 bg-[var(--desk-bg)] p-0.5 rounded-[2px] border border-[var(--desk-border)]">
-              {(['auto', 'enabled', 'disabled'] as const).map((m) => {
-                const active = (tools.minecraftSkinMode ?? 'auto') === m;
-                const label = m === 'auto' ? 'Auto' : m === 'enabled' ? 'On' : 'Off';
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMinecraftSkinMode(m)}
-                    className={`px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase rounded-[1px] transition-colors cursor-pointer ${
-                      active
-                        ? 'bg-[#f0be7c] text-[#140d1f]'
-                        : 'text-[var(--text-muted)] hover:text-[var(--text-body)]'
-                    }`}
-                    title={
-                      m === 'auto'
-                        ? 'Auto-detect: Only applies if canvas is a disjoint Minecraft UV atlas'
-                        : m === 'enabled'
-                        ? 'Force Minecraft 3D cuboid shading'
-                        : 'Disable: Always use standard 2.5D character lighting'
-                    }
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="text-[9px] font-mono text-[var(--text-muted)] leading-tight">
-            {(tools.minecraftSkinMode ?? 'auto') === 'disabled' ? (
-              <span className="text-[#a8e092]">✦ Standard 2.5D character lighting active (skin mode off)</span>
-            ) : (tools.minecraftSkinMode ?? 'auto') === 'enabled' ? (
-              <span className="text-[#f0be7c]">✦ Minecraft 3D cuboid shading forced on</span>
-            ) : (
-              <span>✦ Auto-discriminator active: Character silhouettes use 2.5D lighting; UV atlases use 3D skin shading.</span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Mode Switch: Auto analysis vs Manual artist control */}
-      <div
-        className="grid grid-cols-2 gap-1 p-1 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]"
-        role="group"
-        aria-label="Photometric lighting mode"
-      >
-        <button
-          type="button"
-          onClick={() => setMode('auto')}
-          aria-pressed={mode === 'auto'}
-          className={`flex items-center justify-center gap-1 py-1.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wide transition-colors cursor-pointer ${
-            mode === 'auto'
-              ? 'bg-[#f0be7c] text-[#140d1f]'
-              : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-          }`}
-        >
-          <PixelIcon name="sun" size={12} />
-          <span>Auto</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('manual')}
-          aria-pressed={mode === 'manual'}
-          className={`flex items-center justify-center gap-1 py-1.5 rounded-[2px] text-[10px] font-mono font-bold uppercase tracking-wide transition-colors cursor-pointer ${
-            mode === 'manual'
-              ? 'bg-[#f0be7c] text-[#140d1f]'
-              : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-          }`}
-        >
-          <PixelIcon name="pen" size={12} />
-          <span>Manual</span>
-        </button>
-      </div>
-
-      {mode === 'auto' && (
-        <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
-          <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-            Smart Art Analysis
-          </span>
-          <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
-            Analyzes the canvas art and mounts a live-time pixel light bulb directly on the canvas.
-            Drag the bulb to adjust lighting live-time, then press Enter to apply.
-          </p>
-          <TactileButton
-            size="sm"
-            variant="primary"
-            onClick={handleAutoRenderPhotometric}
-            title="Analyze the canvas art, mount live pixel light bulb on canvas, and adjust live-time"
-            aria-label="Analyze & Light Bulb"
-            data-testid="analyze-light-bulb"
-            className="text-xs py-2 font-bold justify-center"
-          >
-            <PixelIcon name="lamp" size={14} />
-            <span>Analyze &amp; Light Bulb</span>
-          </TactileButton>
-        </div>
-      )}
-
-      {mode === 'manual' && (
-        <>
-      {/* 1) Light Direction — single source of truth: drag the sun, or fine-tune below */}
-      <div className="bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
-        <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-          Light Direction
-        </span>
-        <LightGizmoOverlay
-          size={104}
-          showLabels={false}
-          className="self-center my-0.5"
-        />
-        <span className="text-[9px] font-mono text-[var(--text-body)] opacity-70 text-center">
-          Drag the sun around the dome — center = overhead light
-        </span>
-
-        {/* Fine-tune sliders, always visible and synced with the gizmo */}
-        <div className="flex flex-col gap-1 pt-0.5">
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Direction:</span>
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={tools.lightAzimuth}
-              aria-label="Light direction around the sprite (azimuth)"
-              onChange={(e) => setLightAzimuth(parseInt(e.target.value, 10))}
-              className="w-24 accent-[#f0be7c] cursor-pointer"
-            />
-            <div className="flex items-center gap-1 min-w-[42px] justify-end">
-              <svg
-                className="w-3 h-3 text-[#f0be7c] transition-transform duration-75"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                style={{ transform: `rotate(${tools.lightAzimuth}deg)` }}
-                aria-hidden="true"
-              >
-                <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
-              </svg>
-              <span className="text-[#f0be7c] font-bold text-[10px] text-right">
-                {tools.lightAzimuth}°
+    <PanelSection
+      title="3D Lighting & Shading"
+      ariaLabel="3D Lighting & Shading (2.5D Photometric Studio)"
+      storageKey="pixibun:panel:lighting"
+      defaultOpen={true}
+      actions={<span className="text-[9px] font-mono text-[var(--text-muted)] font-normal">{tools.lightAzimuth}° / {tools.lightElevation}°</span>}
+    >
+      <div className="flex flex-col gap-2.5">
+        {canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32) && (
+          <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
+            <div className="flex items-center justify-between text-[10px] font-sans">
+              <span className="flex items-center gap-1 font-medium text-[var(--text-heading)]">
+                <PixelIcon name="layers" size={11} className="text-[var(--accent-gold)]" />
+                <span>Skin 3D Shading ({canvasWidth}x{canvasHeight})</span>
               </span>
+              <div className="flex items-center gap-0.5 bg-[var(--surface-0)] p-0.5 rounded-[2px] border border-[var(--desk-border)]">
+                {(['auto', 'enabled', 'disabled'] as const).map((m) => {
+                  const active = (tools.minecraftSkinMode ?? 'auto') === m;
+                  const label = m === 'auto' ? 'Auto' : m === 'enabled' ? 'On' : 'Off';
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMinecraftSkinMode(m)}
+                      className={`px-1.5 py-0.5 text-[9px] font-sans font-medium uppercase rounded-[1px] transition-colors cursor-pointer ${
+                        active
+                          ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-body)]'
+                      }`}
+                      title={
+                        m === 'auto'
+                          ? 'Auto-detect: Only applies if canvas is a disjoint Minecraft UV atlas'
+                          : m === 'enabled'
+                          ? 'Force Minecraft 3D cuboid shading'
+                          : 'Disable: Always use standard 2.5D character lighting'
+                      }
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="text-[9px] font-sans text-[var(--text-muted)] leading-tight">
+              {(tools.minecraftSkinMode ?? 'auto') === 'disabled' ? (
+                <span className="text-[#a8e092]">✦ Standard character sprite lighting active</span>
+              ) : (tools.minecraftSkinMode ?? 'auto') === 'enabled' ? (
+                <span className="text-[var(--accent-gold)]">✦ Minecraft 3D block shading enabled</span>
+              ) : (
+                <span>✦ Automatic: Character sprites use curved lighting; Minecraft UV atlases use 3D block shading.</span>
+              )}
             </div>
           </div>
+        )}
 
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Height:</span>
-            <input
-              type="range"
-              min="0"
-              max="90"
-              value={tools.lightElevation}
-              aria-label="Light height above the sprite (elevation)"
-              onChange={(e) => setLightElevation(parseInt(e.target.value, 10))}
-              className="w-24 accent-[#f0be7c] cursor-pointer"
-            />
-            <span className="text-[#dcabdf] font-bold text-[10px] min-w-[42px] text-right">
-              {tools.lightElevation}°
-            </span>
-          </div>
+        {/* Compact Segmented Mode Switcher: Auto analysis vs Manual artist control */}
+        <div
+          className="inline-flex w-full bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5"
+          role="group"
+          aria-label="Photometric lighting mode"
+        >
+          <button
+            type="button"
+            onClick={() => setMode('auto')}
+            aria-pressed={mode === 'auto'}
+            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+              mode === 'auto'
+                ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+            }`}
+          >
+            <PixelIcon name="sun" size={11} />
+            <span>Auto</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('manual')}
+            aria-pressed={mode === 'manual'}
+            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+              mode === 'manual'
+                ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+            }`}
+          >
+            <PixelIcon name="pen" size={11} />
+            <span>Manual</span>
+          </button>
         </div>
-      </div>
 
-      {/* 2) Material — visual chips instead of a jargon dropdown */}
-      <div className="bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
-        <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-          Material
-        </span>
-        <div className="grid grid-cols-2 gap-1" role="group" aria-label="Material shading preset">
-          {MATERIAL_CHIPS.map((chip) => {
-            const selected = tools.materialPreset === chip.value;
-            const profile = MATERIAL_PROFILES[chip.value];
-            return (
-              <button
-                key={chip.value}
-                type="button"
-                onClick={() => setMaterialPreset(chip.value)}
-                aria-pressed={selected}
-                title={`${chip.label} — Kd ${profile.kd}, Ks ${profile.ks}, Shininess ${profile.shininess}`}
-                className={`flex items-center gap-1.5 px-1.5 py-1 rounded-[2px] border text-left transition-colors cursor-pointer ${
-                  chip.wide ? 'col-span-2' : 'col-span-1'
-                } ${
-                  selected
-                    ? 'border-[#f0be7c] bg-[#f0be7c]/10 text-[#f0be7c]'
-                    : 'border-[var(--desk-border)] bg-[#181124] text-[var(--text-body)] hover:border-[#f0be7c]/50'
-                }`}
-              >
-                <span
-                  className="w-5 h-5 rounded-full shrink-0 shadow-xs ring-1 ring-black/30"
-                  style={{ background: chip.swatch }}
-                  aria-hidden="true"
-                />
-                <span className="flex flex-col min-w-0">
-                  <span className="text-[10px] font-mono font-bold leading-tight truncate">
-                    {chip.label}
-                  </span>
-                  <span
-                    className={`text-[8px] font-mono leading-tight truncate ${
-                      selected ? 'text-[#f0be7c]/80' : 'text-[var(--text-body)] opacity-70'
-                    }`}
-                  >
-                    {chip.blurb}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3) Advanced Shading — exposure & surface response only */}
-      <button
-        onClick={() => setAdvancedLightingExpanded(!advancedLightingExpanded)}
-        className="w-full flex items-center justify-between bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)] hover:bg-[#2e2040] transition-colors cursor-pointer mt-1"
-        aria-expanded={advancedLightingExpanded}
-      >
-        <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-          {advancedLightingExpanded ? '▼ Advanced Shading' : '▶ Advanced Shading'}
-        </span>
-        <span className="text-[9px] font-mono text-[#dcabdf]">
-          {Math.round(tools.lightBrightness * 100)}% · AO {Math.round(tools.cavityStrength * 100)}%
-        </span>
-      </button>
-
-      {advancedLightingExpanded && (
-        <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-1.5">
-          {/* Brightness / Exposure */}
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Brightness:</span>
-            <input
-              type="range"
-              min="0.5"
-              max="2.0"
-              step="0.05"
-              value={tools.lightBrightness}
-              aria-label="Light brightness and exposure"
-              onChange={(e) => setLightBrightness(parseFloat(e.target.value))}
-              className="w-32 accent-[#f0be7c] cursor-pointer"
-            />
-            <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
-              {Math.round(tools.lightBrightness * 100)}%
-            </span>
-          </div>
-
-          {/* Cavity AO Strength */}
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Cavity AO:</span>
-            <input
-              type="range"
-              min="0"
-              max="2.0"
-              step="0.05"
-              value={tools.cavityStrength}
-              aria-label="Surface cavity map and ambient occlusion intensity"
-              onChange={(e) => setCavityStrength(parseFloat(e.target.value))}
-              className="w-32 accent-[#f0be7c] cursor-pointer"
-            />
-            <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
-              {Math.round(tools.cavityStrength * 100)}%
-            </span>
-          </div>
-
-          {/* Bayer Dither Modulation */}
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[10px] text-[var(--text-body)] font-bold">Dither Mod:</span>
-            <input
-              type="range"
-              min="0"
-              max="1.0"
-              step="0.05"
-              value={tools.ditherModulation}
-              aria-label="Bayer ordered dithering modulation strength"
-              onChange={(e) => setDitherModulation(parseFloat(e.target.value))}
-              className="w-32 accent-[#f0be7c] cursor-pointer"
-            />
-            <span className="text-[#dcabdf] font-bold text-[10px] min-w-[28px] text-right">
-              {Math.round(tools.ditherModulation * 100)}%
-            </span>
-          </div>
-        </div>
-      )}
-        </>
-      )}
-
-      {/* Main Lighting Action Buttons */}
-      <div className="flex flex-col gap-1.5 mt-1">
-        {mode === 'manual' && (
-          <div className="grid grid-cols-2 gap-1.5">
+        {mode === 'auto' && (
+          <div className="flex flex-col gap-1">
             <TactileButton
               size="sm"
               variant="primary"
-              onClick={handleRenderPhotometricLighting}
-              title="Compute 2.5D analytical normal field and bake photometric lighting"
-              aria-label="Bake Light"
-              data-testid="bake-light-button"
-              className="text-xs py-2 font-bold justify-center"
+              onClick={handleAutoRenderPhotometric}
+              title="Places an interactive light bulb on the canvas to preview shading live. Drag to adjust angle in real time, Enter to apply."
+              aria-label="Analyze & Light Bulb"
+              data-testid="analyze-light-bulb"
+              className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
             >
-              <PixelIcon name="sun" size={14} />
-              <span>Bake Light</span>
+              <PixelIcon name="lamp" size={13} />
+              <span>Place Light Bulb</span>
+            </TactileButton>
+            <span className="text-[9px] text-[var(--text-muted)] text-center">
+              Canvas light gizmo • Drag to steer • Enter to apply
+            </span>
+          </div>
+        )}
+
+        {mode === 'manual' && (
+          <>
+            {/* 1) Light Direction — single source of truth: drag the sun, or fine-tune below */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-sans font-medium text-[var(--text-muted)] uppercase tracking-wider">
+                Light Direction
+              </span>
+              <LightGizmoOverlay
+                size={96}
+                showLabels={false}
+                className="self-center my-0.5"
+              />
+              <span className="text-[9px] font-sans text-[var(--text-muted)] text-center">
+                Drag the sun around the dome — center = overhead light
+              </span>
+
+              {/* Fine-tune sliders */}
+              <div className="flex flex-col gap-2.5 pt-1">
+                <StudioSlider
+                  label="Direction"
+                  value={tools.lightAzimuth}
+                  min={0}
+                  max={360}
+                  unit="°"
+                  onChange={(val) => setLightAzimuth(val)}
+                />
+                <StudioSlider
+                  label="Height"
+                  value={tools.lightElevation}
+                  min={0}
+                  max={90}
+                  unit="°"
+                  onChange={(val) => setLightElevation(val)}
+                />
+              </div>
+            </div>
+
+            {/* 2) Material — visual chips */}
+            <div className="flex flex-col gap-1.5 pt-1">
+              <span className="text-[10px] font-sans font-medium text-[var(--text-muted)] uppercase tracking-wider">
+                Material
+              </span>
+              <div className="grid grid-cols-2 gap-1" role="group" aria-label="Material shading preset">
+                {MATERIAL_CHIPS.map((chip) => {
+                  const selected = tools.materialPreset === chip.value;
+                  const profile = MATERIAL_PROFILES[chip.value];
+                  return (
+                    <button
+                      key={chip.value}
+                      type="button"
+                      onClick={() => setMaterialPreset(chip.value)}
+                      aria-pressed={selected}
+                      title={`${chip.label} — Kd ${profile.kd}, Ks ${profile.ks}, Shininess ${profile.shininess}`}
+                      className={`flex items-center gap-1.5 px-1.5 py-1 rounded-[2px] border text-left transition-colors cursor-pointer ${
+                        chip.wide ? 'col-span-2' : 'col-span-1'
+                      } ${
+                        selected
+                          ? 'border-[var(--accent-gold)] bg-[var(--surface-3)] text-[var(--accent-gold)]'
+                          : 'border-[var(--desk-border)] bg-[var(--surface-0)] text-[var(--text-body)] hover:border-[var(--desk-border-highlight)] hover:bg-[var(--surface-1)]'
+                      }`}
+                    >
+                      <span
+                        className="w-4 h-4 rounded-full shrink-0 shadow-xs ring-1 ring-black/30"
+                        style={{ background: chip.swatch }}
+                        aria-hidden="true"
+                      />
+                      <span className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-sans font-medium leading-tight truncate">
+                          {chip.label}
+                        </span>
+                        <span
+                          className={`text-[8px] font-sans leading-tight truncate ${
+                            selected ? 'text-[var(--accent-gold)]/80' : 'text-[var(--text-muted)]'
+                          }`}
+                        >
+                          {chip.blurb}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3) Advanced Shading — exposure & surface response only */}
+            <button
+              onClick={() => setAdvancedLightingExpanded(!advancedLightingExpanded)}
+              className="w-full flex items-center justify-between p-1 rounded-[2px] border border-[var(--desk-border)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer mt-1"
+              aria-expanded={advancedLightingExpanded}
+            >
+              <span className="text-[10px] font-sans font-medium text-[var(--text-muted)] uppercase tracking-wide">
+                {advancedLightingExpanded ? '▼ Advanced Shading' : '▶ Advanced Shading'}
+              </span>
+              <span className="text-[9px] font-mono text-[var(--text-muted)]">
+                {Math.round(tools.lightBrightness * 100)}% · AO {Math.round(tools.cavityStrength * 100)}%
+              </span>
+            </button>
+
+            {advancedLightingExpanded && (
+              <div className="p-2.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2.5 bg-[var(--surface-0)]">
+                {/* Brightness / Exposure */}
+                <StudioSlider
+                  label="Brightness"
+                  value={Math.round(tools.lightBrightness * 100)}
+                  min={50}
+                  max={200}
+                  step={5}
+                  unit="%"
+                  onChange={(val) => setLightBrightness(val / 100)}
+                />
+
+                {/* Cavity / Crevice Ambient Occlusion */}
+                <StudioSlider
+                  label="Crevice AO"
+                  value={Math.round(tools.cavityStrength * 100)}
+                  min={0}
+                  max={100}
+                  step={5}
+                  unit="%"
+                  onChange={(val) => setCavityStrength(val / 100)}
+                />
+
+                {/* Dither Modulation */}
+                <StudioSlider
+                  label="Dither Strength"
+                  value={Math.round(tools.ditherModulation * 100)}
+                  min={0}
+                  max={100}
+                  step={5}
+                  unit="%"
+                  onChange={(val) => setDitherModulation(val / 100)}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Main Lighting Action Buttons */}
+        <div className="flex flex-col gap-1.5 mt-1">
+          {mode === 'manual' && (
+            <div className="grid grid-cols-2 gap-1.5">
+              <TactileButton
+                size="sm"
+                variant="primary"
+                onClick={handleRenderPhotometricLighting}
+                title="Bake directional light and shadow onto the canvas"
+                aria-label="Bake Light"
+                data-testid="bake-light-button"
+                className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
+              >
+                <PixelIcon name="sun" size={13} />
+                <span>Bake Light</span>
+              </TactileButton>
+
+              <TactileButton
+                size="sm"
+                variant="default"
+                onClick={handleStartLightGizmo}
+                title="Place an interactive light bulb on the canvas (Enter to apply, Esc to cancel)"
+                aria-label="Light Bulb"
+                data-testid="light-bulb-button"
+                className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
+              >
+                <PixelIcon name="lamp" size={13} />
+                <span>Light Bulb</span>
+              </TactileButton>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={handleBakeNormalMap}
+              title="Save 3D surface depth angles into a new normal map layer"
+              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+            >
+              <PixelIcon name="export" size={11} />
+              <span>Bake Normal Map</span>
+            </TactileButton>
+
+            <TactileButton
+              size="sm"
+              variant={showNormalMapPreview ? 'primary' : 'default'}
+              onClick={toggleNormalMapPreview}
+              title="Preview 3D surface depth angles on the canvas"
+              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+            >
+              <PixelIcon name={showNormalMapPreview ? 'eye-off' : 'eye'} size={11} />
+              <span>{showNormalMapPreview ? 'Hide Normals' : 'View Normals'}</span>
+            </TactileButton>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <TactileButton
+              size="sm"
+              variant="default"
+              onClick={handleSpecularHighlight}
+              title="Add sharp light reflections to illuminated surfaces"
+              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+            >
+              <PixelIcon name="sun" size={11} />
+              <span>Specular Glint</span>
             </TactileButton>
 
             <TactileButton
               size="sm"
               variant="default"
-              onClick={handleStartLightGizmo}
-              title="Mount live-time pixel light bulb on canvas (Enter to apply, Esc to cancel)"
-              aria-label="Light Bulb"
-              data-testid="light-bulb-button"
-              className="text-xs py-2 font-bold justify-center bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center gap-1"
+              onClick={handleSelOut}
+              title="Selective outline lighting (Sel-Out): soften highlights and deepen shadows along borders"
+              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
             >
-              <PixelIcon name="lamp" size={14} />
-              <span>Light Bulb</span>
+              <PixelIcon name="pen" size={11} />
+              <span>Sel-Out</span>
             </TactileButton>
           </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-1.5">
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={handleBakeNormalMap}
-            title="Bake 2.5D surface normal vectors into standard RGB normal map layer"
-            className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
-          >
-            <PixelIcon name="export" size={12} />
-            <span>Bake Normal Map</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant={showNormalMapPreview ? 'primary' : 'default'}
-            onClick={toggleNormalMapPreview}
-            title="Toggle live viewport inspection of 2.5D surface normal vector field"
-            className="text-[10px] py-1.5 font-bold flex items-center justify-center gap-1"
-          >
-            <PixelIcon name={showNormalMapPreview ? 'eye-off' : 'eye'} size={12} />
-            <span>{showNormalMapPreview ? 'Hide Normals' : 'View Normals'}</span>
-          </TactileButton>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5">
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={handleSpecularHighlight}
-            title="Cast Blinn-Phong specular glints on the lit surface (never on the outline)"
-            className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
-          >
-            <PixelIcon name="sparkles" size={12} />
-            <span>Specular Glint</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={handleSelOut}
-            title="Selective outlining based on light angle alignment"
-            className="text-[10px] py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c] flex items-center justify-center gap-1"
-          >
-            <PixelIcon name="pen" size={12} />
-            <span>Sel-Out</span>
-          </TactileButton>
         </div>
       </div>
-    </div>
+    </PanelSection>
   );
 };

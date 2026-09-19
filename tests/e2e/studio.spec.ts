@@ -307,6 +307,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await aiTabBtn.click();
     await page.waitForTimeout(150);
 
+    await page.getByRole('button', { name: /Glow & Translucent Materials/ }).click();
     // 3. Select Gemstone preset
     const gemBtn = page.getByRole('button', { name: /^Gem$/i });
     await expect(gemBtn).toBeVisible();

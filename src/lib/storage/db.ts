@@ -3,6 +3,7 @@ import type { DiagnosticEntry } from '@/types/diagnostics';
 import { createId } from '@/lib/engine/id';
 import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
+import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 
 export interface StoredProject {
   id: string;
@@ -23,6 +24,10 @@ export interface StoredLayerBlob {
   frameIndex: number;
   blob: Blob;
   updatedAt: number;
+}
+
+export interface StoredWorkspace extends StoredProject {
+  layerBlobs: StoredLayerBlob[];
 }
 
 export class PixiBunDatabase extends Dexie {
@@ -179,12 +184,7 @@ export async function saveLayerBlobs(
 
 // Retrieve layer binary blobs for a project
 export async function getLayerBlobsForProject(projectId: string): Promise<StoredLayerBlob[]> {
-  try {
-    return await db.layerBlobs.where('projectId').equals(projectId).toArray();
-  } catch (err) {
-    console.error(`Failed to get layer blobs for project ${projectId}:`, err);
-    return [];
-  }
+  return await db.layerBlobs.where('projectId').equals(projectId).toArray();
 }
 
 // Delete layer binary blobs for a project
@@ -223,24 +223,27 @@ export async function autoSaveWorkspace(
   layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>
 ): Promise<boolean> {
   try {
-    if (!db.isOpen()) return false;
-    const existing = await db.projects.get(projectId);
-    const createdAt = existing?.createdAt || Date.now();
-    const dataJson = JSON.stringify(stateSnapshot);
-    await db.projects.put({
-      id: projectId,
-      name,
-      width,
-      height,
-      fps,
-      createdAt,
-      updatedAt: Date.now(),
-      thumbnailDataUrl: thumbnailDataUrl || existing?.thumbnailDataUrl,
-      dataJson,
+    if (!db.isOpen()) await db.open();
+    await db.transaction('rw', db.projects, db.layerBlobs, async () => {
+      const existing = await db.projects.get(projectId);
+      const createdAt = existing?.createdAt || Date.now();
+      const dataJson = JSON.stringify(stateSnapshot);
+      await db.projects.put({
+        id: projectId,
+        name,
+        width,
+        height,
+        fps,
+        createdAt,
+        updatedAt: Date.now(),
+        thumbnailDataUrl: thumbnailDataUrl || existing?.thumbnailDataUrl,
+        dataJson,
+      });
+      if (layerBlobs) {
+        await db.layerBlobs.where('projectId').equals(projectId).delete();
+        await db.layerBlobs.bulkAdd(layerBlobs.map(b => ({ ...b, projectId, updatedAt: Date.now() })));
+      }
     });
-    if (layerBlobs && layerBlobs.length > 0) {
-      await saveLayerBlobs(projectId, layerBlobs);
-    }
     return true;
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) {
@@ -258,20 +261,16 @@ export async function autoSaveWorkspace(
 }
 
 // Load the most recently saved project from IndexedDB
-export async function loadLatestSavedWorkspace(): Promise<StoredProject | null> {
+export async function loadLatestSavedWorkspace(): Promise<StoredWorkspace | null> {
   try {
-    if (!db.isOpen()) {
-      return null;
-    }
-    const projects = await db.projects.orderBy('updatedAt').reverse().limit(1).toArray();
-    return projects[0] || null;
+    if (!db.isOpen()) await db.open();
+    return await db.transaction('r', db.projects, db.layerBlobs, async () => {
+      const projects = await db.projects.orderBy('updatedAt').reverse().limit(1).toArray();
+      const project = projects[0];
+      return project ? { ...project, layerBlobs: await db.layerBlobs.where('projectId').equals(project.id).toArray() } : null;
+    });
   } catch (err: unknown) {
-    if (isIgnorableDbClosure(err)) {
-      console.warn('Load autosave aborted (database closed or reset in progress)');
-      return null;
-    }
-    console.error('Load autosave error:', err);
-    return null;
+    throw new Error('Saved workspace could not be read.', { cause: err });
   }
 }
 
@@ -288,11 +287,13 @@ export async function listAllProjects(): Promise<StoredProject[]> {
 }
 
 // Get project by ID
-export async function getProjectById(id: string): Promise<StoredProject | null> {
+export async function getProjectById(id: string): Promise<StoredWorkspace | null> {
   try {
-    if (!db.isOpen()) return null;
-    const project = await db.projects.get(id);
-    return project || null;
+    if (!db.isOpen()) await db.open();
+    return await db.transaction('r', db.projects, db.layerBlobs, async () => {
+      const project = await db.projects.get(id);
+      return project ? { ...project, layerBlobs: await db.layerBlobs.where('projectId').equals(id).toArray() } : null;
+    });
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) return null;
     console.error(`Get project ${id} error:`, err);
@@ -317,48 +318,45 @@ export async function deleteProject(id: string): Promise<boolean> {
 // Duplicate an existing project
 export async function duplicateProject(id: string, newName?: string): Promise<StoredProject | null> {
   try {
-    const source = await db.projects.get(id);
-    if (!source) return null;
+    return await db.transaction('rw', db.projects, db.layerBlobs, async () => {
+      const source = await db.projects.get(id);
+      if (!source) return null;
 
-    const newId = createId('proj');
-    const now = Date.now();
-    const clonedName = newName || `Copy of ${source.name}`;
+      const newId = createId('proj');
+      const now = Date.now();
+      const clonedName = newName || `Copy of ${source.name}`;
 
-    let updatedDataJson = source.dataJson;
-    try {
-      const parsed = JSON.parse(source.dataJson) as ProjectFile;
-      parsed.name = clonedName;
-      parsed.createdAt = now;
-      parsed.updatedAt = now;
-      updatedDataJson = JSON.stringify(parsed);
-    } catch {
-      // If parsing fails, preserve original payload
-    }
+      let updatedDataJson = source.dataJson;
+      try {
+        const parsed = JSON.parse(source.dataJson) as ProjectFile;
+        parsed.name = clonedName;
+        parsed.createdAt = now;
+        parsed.updatedAt = now;
+        updatedDataJson = JSON.stringify(parsed);
+      } catch {
+        // If parsing fails, preserve original payload
+      }
 
-    const duplicate: StoredProject = {
-      ...source,
-      id: newId,
-      name: clonedName,
-      createdAt: now,
-      updatedAt: now,
-      dataJson: updatedDataJson,
-    };
+      const duplicate: StoredProject = {
+        ...source,
+        id: newId,
+        name: clonedName,
+        createdAt: now,
+        updatedAt: now,
+        dataJson: updatedDataJson,
+      };
 
-    await db.projects.put(duplicate);
-
-    const sourceBlobs = await getLayerBlobsForProject(id);
-    if (sourceBlobs.length > 0) {
-      await saveLayerBlobs(
-        newId,
-        sourceBlobs.map((b) => ({
-          layerId: b.layerId,
-          frameIndex: b.frameIndex,
-          blob: b.blob,
-        }))
-      );
-    }
-
-    return duplicate;
+      const sourceBlobs = await db.layerBlobs.where('projectId').equals(id).toArray();
+      await db.projects.put(duplicate);
+      await db.layerBlobs.bulkAdd(sourceBlobs.map((b) => ({
+        projectId: newId,
+        updatedAt: now,
+        layerId: b.layerId,
+        frameIndex: b.frameIndex,
+        blob: b.blob,
+      })));
+      return duplicate;
+    });
   } catch (err) {
     console.error(`Duplicate project ${id} error:`, err);
     return null;
@@ -399,6 +397,7 @@ export async function createBlankProject(
   width: number = 32,
   height: number = 32
 ): Promise<StoredProject> {
+  assertWorkspaceDimensions(width, height);
   const newId = createId('proj');
   const initialLayerId = createId('layer');
   const initialFrameId = createId('frame');

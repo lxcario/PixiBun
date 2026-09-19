@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import { SafeJson } from '@/lib/safety/safeJson';
+import { reportImportError } from '@/lib/project/importFile';
+import React, { useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { parsePaletteFile } from '@/lib/color/lospecPalette';
@@ -12,6 +14,12 @@ import {
 } from '@/lib/color/paletteCycling';
 import { createId } from '@/lib/engine/id';
 import { studioEvents } from '@/lib/events/studioEvents';
+import PanelSection from '@/components/ui/PanelSection';
+import StudioSelect from '@/components/ui/StudioSelect';
+import StudioNumberInput from '@/components/ui/StudioNumberInput';
+import StudioToggle from '@/components/ui/StudioToggle';
+import IconButton from '@/components/ui/IconButton';
+import { TactileButton } from '@/components/ui/TactileButton';
 
 export const PalettePanel: React.FC = () => {
   const {
@@ -36,11 +44,11 @@ export const PalettePanel: React.FC = () => {
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
   const paletteFileInputRef = useRef<HTMLInputElement | null>(null);
   const crngFileInputRef = useRef<HTMLInputElement | null>(null);
-  const [activeSubTab, setActiveSubTab] = useState<'swatches' | 'cycling'>('swatches');
 
   const tracks = currentPalette.cycleTracks || [];
 
   const handlePaletteImportFile = (file: File) => {
+    if (file.size > SafeJson.MAX_PAYLOAD_BYTES) { reportImportError(new Error('Palette file exceeds the 50 MB limit.')); return; }
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
@@ -49,7 +57,7 @@ export const PalettePanel: React.FC = () => {
         const pal = parsePaletteFile(content, file.name);
         addExtractedPalette(pal.name, pal.colors);
       } catch (err) {
-        console.error('Failed to parse palette file:', err);
+        reportImportError(err);
       }
     };
     reader.readAsText(file);
@@ -69,7 +77,6 @@ export const PalettePanel: React.FC = () => {
         }
         const track = parseCRNG(payload, createId('track'));
         addPaletteCycleTrack(currentPalette.id, track);
-        setActiveSubTab('cycling');
       } catch (err) {
         console.error('Failed to parse CRNG chunk:', err);
       }
@@ -106,6 +113,7 @@ export const PalettePanel: React.FC = () => {
     addPaletteCycleTrack(currentPalette.id, newTrack);
   };
 
+
   return (
     <div
       onDragOver={(e) => {
@@ -118,352 +126,296 @@ export const PalettePanel: React.FC = () => {
         const file = e.dataTransfer.files?.[0];
         if (file) handlePaletteImportFile(file);
       }}
-      className="flex-1 flex flex-col p-3 gap-2.5 overflow-hidden"
+      className="flex flex-col bg-[var(--desk-surface)]"
     >
-      {/* Palette Selector */}
-      <div className="flex flex-col gap-2 pb-1.5 border-b border-[var(--desk-border)]">
-        <select
-          value={currentPaletteId}
-          aria-label="Color palette preset"
-          onChange={(e) => selectPalette(e.target.value)}
-          className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] outline-none w-full cursor-pointer shadow-xs"
-        >
-          {palettes.map((pal) => (
-            <option key={pal.id} value={pal.id}>
-              {pal.name} ({pal.colors.length})
-            </option>
-          ))}
-        </select>
+      {/* 1. Flush Partition Header: Title, Preset Dropdown & Swatch Indicators */}
+      <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          <span className="text-[11px] font-sans font-medium text-[var(--text-muted)] shrink-0">
+            Preset
+          </span>
+          <select
+            value={currentPaletteId}
+            onChange={(e) => selectPalette(e.target.value)}
+            aria-label="Color palette preset"
+            className="w-full max-w-[150px] truncate bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)]/40 transition-colors"
+          >
+            {palettes.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.colors.length})
+              </option>
+            ))}
+          </select>
+        </div>
 
-        {/* Sub-tab switcher: Swatches vs Palette Cycling */}
-        <div className="flex bg-[var(--desk-surface)] p-0.5 rounded-[2px] border border-[var(--desk-border)] gap-1">
-          <button
-            onClick={() => setActiveSubTab('swatches')}
-            className={`flex-1 py-1 text-[10px] font-mono font-bold rounded-[1px] transition-colors cursor-pointer ${
-              activeSubTab === 'swatches'
-                ? 'bg-[#f0be7c] text-[#140d1f]'
-                : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-            }`}
-          >
-            Swatches ({currentPalette.colors.length})
-          </button>
-          <button
-            onClick={() => setActiveSubTab('cycling')}
-            className={`flex-1 py-1 text-[10px] font-mono font-bold rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-              activeSubTab === 'cycling'
-                ? 'bg-[#f0be7c] text-[#140d1f]'
-                : 'text-[var(--text-body)] hover:text-[#f0be7c]'
-            }`}
-          >
-            <span>Cycle Engine</span>
-            {isPaletteCycling && <span className="w-1.5 h-1.5 rounded-full bg-[#7ce0be] animate-ping" />}
-          </button>
+        {/* Primary (1) & Secondary (2) Color Indicators */}
+        <div className="flex items-center gap-2 font-mono text-[10px] shrink-0">
+          <span className="flex items-center gap-1 text-[var(--text-body)] font-medium" title={`Primary Color: ${primaryColor}`}>
+            <span
+              className="w-3.5 h-3.5 rounded-[2px] border border-white shadow-xs inline-block ring-1 ring-[var(--accent-gold)]"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <span>1</span>
+          </span>
+          <span className="text-[var(--text-muted)]">|</span>
+          <span className="flex items-center gap-1 text-[var(--text-body)] font-medium" title={`Secondary Color: ${secondaryColor}`}>
+            <span
+              className="w-3.5 h-3.5 rounded-[2px] border border-white shadow-xs inline-block ring-1 ring-[var(--accent-plum)]"
+              style={{ backgroundColor: secondaryColor }}
+            />
+            <span>2</span>
+          </span>
         </div>
       </div>
 
-      {/* View 1: Swatches */}
-      {activeSubTab === 'swatches' && (
-        <>
-          <div className="flex gap-1.5">
-            <button
-              onClick={() => studioEvents.emit('pixibun:extract-palette')}
-              className="flex-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#f0be7c] font-bold text-[10px] font-mono py-1 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center"
-              title="Scan canvas for unique colors and create new palette"
-            >
-              Scan Canvas
-            </button>
+      {/* 2. Direct Swatch Slab */}
+      <div className="p-3 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] shrink-0">
+        <div className="grid grid-cols-8 gap-1.5 bg-[var(--desk-surface-raised)]/60 p-2 rounded-[var(--radius-sm)] border border-[var(--desk-border)] shadow-xs min-h-[90px] max-h-[220px] overflow-y-auto">
+          {currentPalette.colors.map((color, idx) => {
+            const isPrimary = color.toLowerCase() === primaryColor.toLowerCase();
+            const isSecondary = color.toLowerCase() === secondaryColor.toLowerCase();
 
-            <button
-              onClick={() => generateAndAddRamp(primaryColor)}
-              className="flex-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#dcabdf] font-bold text-[10px] font-mono py-1 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center"
-              title="Generate 5-step highlight & shadow ramp in OKLCH"
-              aria-label="+ OKLCH Ramp"
-              data-testid="oklch-ramp-button"
-            >
-              + OKLCH Ramp
-            </button>
-
-            <button
-              onClick={() => paletteFileInputRef.current?.click()}
-              className="flex-1 bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#7ce0be] font-bold text-[10px] font-mono py-1 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center"
-              title="Import Lospec .hex or GIMP .gpl palette file (or drag and drop)"
-            >
-              + Lospec (.hex)
-            </button>
-
-            <input
-              ref={paletteFileInputRef}
-              type="file"
-              accept=".hex,.gpl,.txt,.json"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handlePaletteImportFile(file);
-                e.target.value = '';
-              }}
-            />
-          </div>
-
-          {/* Color Swatch Grid */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-4 gap-2 bg-[var(--desk-surface)] p-2 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs">
-              {currentPalette.colors.map((color, idx) => {
-                const isPrimary = color.toLowerCase() === primaryColor.toLowerCase();
-                const isSecondary = color.toLowerCase() === secondaryColor.toLowerCase();
-
-                return (
-                  <button
-                    key={`${color}-${idx}`}
-                    onClick={() => setPrimaryColor(color)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setSecondaryColor(color);
-                    }}
-                    style={{ backgroundColor: color }}
-                    className={`h-8 w-full rounded-[2px] border-2 transition-transform hover:scale-110 active:scale-95 cursor-pointer relative ${
-                      isPrimary
-                        ? 'border-[#ffffff] ring-2 ring-[#f0be7c] shadow-sm'
-                        : isSecondary
-                        ? 'border-[#ffffff] ring-2 ring-[#dcabdf]'
-                        : 'border-[#1a1126] hover:border-[#ffffff]'
-                    }`}
-                    title={`${color} [#${idx}] (L: Primary | R: Secondary)`}
-                    aria-label={`Select color ${color}`}
-                  >
-                    <span className="absolute bottom-0.5 right-1 text-[8px] font-mono font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-                      {idx}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* View 2: Mark Ferrari Dynamic Palette Cycling Engine */}
-      {activeSubTab === 'cycling' && (
-        <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-0.5">
-          {/* Main Cycling Playback Header */}
-          <div className="flex items-center justify-between p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)]">
-            <div className="flex items-center gap-2">
+            return (
               <button
-                onClick={togglePaletteCycling}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold cursor-pointer transition-all ${
-                  isPaletteCycling
-                    ? 'bg-[#7ce0be] text-[#140d1f] shadow-[0_2px_0_#3fa382]'
-                    : 'bg-[#f0be7c] text-[#140d1f] shadow-[0_2px_0_#8c5120]'
+                key={`${color}-${idx}`}
+                onClick={() => setPrimaryColor(color)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setSecondaryColor(color);
+                }}
+                style={{ backgroundColor: color }}
+                className={`aspect-square w-full rounded-[2px] border transition-all hover:brightness-110 active:translate-y-[1px] cursor-pointer relative flex items-center justify-center ${
+                  isPrimary
+                    ? 'border-white ring-2 ring-[var(--accent-gold)] shadow-xs z-10 scale-[1.04]'
+                    : isSecondary
+                    ? 'border-white ring-2 ring-[var(--accent-plum)] z-10 scale-[1.04]'
+                    : 'border-[var(--desk-border)] hover:border-white/60'
                 }`}
+                title={`${color} [#${idx}] (Left-click: Primary | Right-click: Secondary)`}
+                aria-label={`Select color ${color}`}
               >
-                <PixelIcon name={isPaletteCycling ? 'pause' : 'play'} size={13} />
-                <span>{isPaletteCycling ? 'Pause Cycle' : 'Play Cycle'}</span>
+                {isPrimary && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-gold)] border border-white text-[7px] text-[#16141a] font-black flex items-center justify-center select-none shadow-xs">
+                    1
+                  </span>
+                )}
+                {isSecondary && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-plum)] border border-white text-[7px] text-white font-black flex items-center justify-center select-none shadow-xs">
+                    2
+                  </span>
+                )}
               </button>
-            </div>
+            );
+          })}
+        </div>
+      </div>
 
-            {/* Speed Multiplier */}
-            <div className="flex items-center gap-1.5 text-[10px] font-mono">
-              <span className="text-[var(--text-muted)]">Speed:</span>
-              <select
-                value={paletteCycleSpeedMultiplier}
-                onChange={(e) => setPaletteCycleSpeedMultiplier(parseFloat(e.target.value))}
-                className="bg-[var(--desk-surface)] text-[#f0be7c] font-bold border border-[var(--desk-border)] rounded-[2px] px-1 py-0.5"
+      {/* 3. Palette Quick Utilities Strip */}
+      <div className="p-2.5 border-b border-[var(--desk-border)] flex gap-2 bg-[var(--desk-surface)]">
+        <TactileButton
+          variant="tactile"
+          size="sm"
+          onClick={() => studioEvents.emit('pixibun:extract-palette')}
+          title="Scan canvas for unique colors and create new palette"
+          className="flex-1 text-[11px] font-sans"
+        >
+          Scan Canvas
+        </TactileButton>
+
+        <TactileButton
+          variant="tactile"
+          size="sm"
+          onClick={() => generateAndAddRamp(primaryColor)}
+          title="Generate 5-step highlight & shadow ramp in OKLCH"
+          aria-label="+ OKLCH Ramp"
+          data-testid="oklch-ramp-button"
+          className="flex-1 text-[11px] font-sans"
+        >
+          + OKLCH
+        </TactileButton>
+
+        <TactileButton
+          variant="tactile"
+          size="sm"
+          onClick={() => paletteFileInputRef.current?.click()}
+          title="Import Lospec .hex or GIMP .gpl palette file (or drag and drop)"
+          className="flex-1 text-[11px] font-sans"
+        >
+          + Lospec
+        </TactileButton>
+
+        <input
+          ref={paletteFileInputRef}
+          type="file"
+          accept=".hex,.gpl,.txt,.json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handlePaletteImportFile(file);
+            e.target.value = '';
+          }}
+        />
+      </div>
+
+      {/* 4. Cycle Engine Section */}
+      <PanelSection 
+        title="Cycle Engine" 
+        defaultOpen={isPaletteCycling}
+        storageKey="palette-panel-cycling"
+        actions={
+          <IconButton 
+            icon={isPaletteCycling ? 'pause' : 'play'} 
+            onClick={togglePaletteCycling} 
+            label={isPaletteCycling ? 'Pause Cycle' : 'Play Cycle'}
+            size="sm"
+            active={isPaletteCycling}
+          />
+        }
+      >
+        <div className="flex flex-col gap-3">
+          <StudioSelect
+            label="Playback Speed"
+            value={paletteCycleSpeedMultiplier.toString()}
+            options={[
+              { value: "0.25", label: "0.25x" },
+              { value: "0.5", label: "0.5x" },
+              { value: "1.0", label: "1.0x" },
+              { value: "2.0", label: "2.0x" },
+              { value: "4.0", label: "4.0x" },
+            ]}
+            onChange={(val) => setPaletteCycleSpeedMultiplier(parseFloat(val))}
+          />
+
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] font-bold">CYCLE TRACKS ({tracks.length})</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => crngFileInputRef.current?.click()}
+                className="text-[var(--accent-gold)] hover:underline cursor-pointer text-[10px] font-mono"
+                title="Import Deluxe Paint CRNG binary chunk"
               >
-                <option value="0.25">0.25x</option>
-                <option value="0.5">0.5x</option>
-                <option value="1.0">1.0x</option>
-                <option value="2.0">2.0x</option>
-                <option value="4.0">4.0x</option>
-              </select>
+                + Import CRNG
+              </button>
+              <input
+                ref={crngFileInputRef}
+                type="file"
+                accept=".crng,.bin"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleCRNGImport(f);
+                  e.target.value = '';
+                }}
+              />
             </div>
           </div>
 
-          {/* Track List */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between text-[10px] font-mono text-[var(--text-muted)]">
-              <span>ACTIVE CYCLE TRACKS ({tracks.length})</span>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => crngFileInputRef.current?.click()}
-                  className="text-[#7ce0be] hover:underline cursor-pointer"
-                  title="Import Deluxe Paint CRNG binary chunk"
-                >
-                  + Import CRNG
-                </button>
-                <input
-                  ref={crngFileInputRef}
-                  type="file"
-                  accept=".crng,.bin"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleCRNGImport(f);
-                    e.target.value = '';
-                  }}
-                />
-              </div>
+          {tracks.length === 0 ? (
+            <div className="text-[11px] font-mono text-[var(--text-muted)] p-3 text-center bg-[var(--surface-1)] rounded-[var(--radius-sm)] border border-dashed border-[var(--desk-border)]">
+              No cycle tracks configured. Click below to create one!
             </div>
-
-            {tracks.length === 0 ? (
-              <div className="text-[11px] font-mono text-[var(--text-muted)] p-3 text-center bg-[var(--desk-surface)] rounded-[2px] border border-dashed border-[var(--desk-border)]">
-                No cycle tracks configured. Click below to create one!
-              </div>
-            ) : (
-              tracks.map((track) => (
-                <div
-                  key={track.id}
-                  className={`flex flex-col gap-1.5 p-2 rounded-[2px] border text-[10px] font-mono transition-colors ${
-                    track.enabled
-                      ? 'bg-[var(--desk-surface-raised)] border-[#f0be7c]/60'
-                      : 'bg-[var(--desk-surface)] border-[var(--desk-border)] opacity-60'
-                  }`}
-                >
-                  {/* Track Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="checkbox"
+          ) : (
+            <div className="flex flex-col gap-2">
+              {tracks.map((track) => (
+                <PanelSection 
+                  key={track.id} 
+                  title={track.name || `Track [${track.low}..${track.high}]`}
+                  defaultOpen={false}
+                  className={`border border-[var(--desk-border)] rounded-[var(--radius-sm)] overflow-hidden ${track.enabled ? 'border-[var(--accent-gold)]/60' : 'opacity-80'}`}
+                  actions={
+                    <div className="flex items-center gap-2">
+                      <StudioToggle
+                        label=""
                         checked={track.enabled}
-                        onChange={(e) =>
-                          updatePaletteCycleTrack(currentPalette.id, track.id, {
-                            enabled: e.target.checked,
-                          })
-                        }
-                        className="accent-[#f0be7c] cursor-pointer"
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { enabled: val })}
                       />
-                      <span className="font-bold text-[var(--text-heading)]">
-                        {track.name || `Track [${track.low}..${track.high}]`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleExportCRNG(track)}
-                        className="text-[9px] text-[#7ce0be] hover:underline cursor-pointer"
+                      <TactileButton 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleExportCRNG(track)} 
                         title="Export as Deluxe Paint CRNG binary file"
                       >
                         CRNG
-                      </button>
-                      <button
-                        onClick={() => deletePaletteCycleTrack(currentPalette.id, track.id)}
-                        className="text-red-400 hover:text-red-300 px-1 cursor-pointer font-bold"
-                        title="Delete track"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Range Swatch Bar */}
-                  <div className="flex h-3 w-full rounded-[1px] overflow-hidden border border-[var(--desk-border)]">
-                    {currentPalette.colors.slice(track.low, track.high + 1).map((c, i) => (
-                      <div
-                        key={`${track.id}-c-${i}`}
-                        style={{ backgroundColor: c }}
-                        className="flex-1 h-full"
-                        title={`Register ${track.low + i}: ${c}`}
+                      </TactileButton>
+                      <IconButton 
+                        icon="trash" 
+                        variant="danger" 
+                        size="sm" 
+                        onClick={() => deletePaletteCycleTrack(currentPalette.id, track.id)} 
+                        label="Delete track"
                       />
-                    ))}
-                  </div>
-
-                  {/* Range Inputs & Frequency */}
-                  <div className="grid grid-cols-3 gap-1.5 items-center">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] text-[var(--text-muted)]">Low / High:</span>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min={0}
-                          max={currentPalette.colors.length - 1}
-                          value={track.low}
-                          onChange={(e) =>
-                            updatePaletteCycleTrack(currentPalette.id, track.id, {
-                              low: Math.max(0, parseInt(e.target.value, 10) || 0),
-                            })
-                          }
-                          className="w-10 bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] px-1 py-0.5 text-center text-[10px]"
+                    </div>
+                  }
+                >
+                  <div className="flex flex-col gap-3">
+                    {/* Range Swatch Bar */}
+                    <div className="flex h-3 w-full rounded-[var(--radius-sm)] overflow-hidden border border-[var(--desk-border)]">
+                      {currentPalette.colors.slice(track.low, track.high + 1).map((c, i) => (
+                        <div
+                          key={`${track.id}-c-${i}`}
+                          style={{ backgroundColor: c }}
+                          className="flex-1 h-full"
+                          title={`Register ${track.low + i}: ${c}`}
                         />
-                        <span>-</span>
-                        <input
-                          type="number"
-                          min={0}
-                          max={currentPalette.colors.length - 1}
-                          value={track.high}
-                          onChange={(e) =>
-                            updatePaletteCycleTrack(currentPalette.id, track.id, {
-                              high: Math.max(0, parseInt(e.target.value, 10) || 0),
-                            })
-                          }
-                          className="w-10 bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] px-1 py-0.5 text-center text-[10px]"
-                        />
-                      </div>
+                      ))}
                     </div>
 
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] text-[var(--text-muted)]">Rate (Hz):</span>
-                      <input
-                        type="number"
+                    <div className="flex flex-col gap-2">
+                      <StudioNumberInput
+                        label="Low Index"
+                        value={track.low}
+                        min={0}
+                        max={currentPalette.colors.length - 1}
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { low: val })}
+                      />
+                      <StudioNumberInput
+                        label="High Index"
+                        value={track.high}
+                        min={0}
+                        max={currentPalette.colors.length - 1}
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { high: val })}
+                      />
+                      <StudioNumberInput
+                        label="Rate (Hz)"
+                        value={track.rate}
                         min={0.1}
                         max={60}
                         step={0.5}
-                        value={track.rate}
-                        onChange={(e) =>
-                          updatePaletteCycleTrack(currentPalette.id, track.id, {
-                            rate: Math.max(0.1, parseFloat(e.target.value) || 1),
-                          })
-                        }
-                        className="w-full bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] px-1 py-0.5 text-center text-[10px]"
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { rate: val })}
+                      />
+                      <StudioSelect
+                        label="Direction"
+                        value={track.direction}
+                        options={[
+                          { value: 'forward', label: 'Forward' },
+                          { value: 'reverse', label: 'Reverse' },
+                          { value: 'ping-pong', label: 'Ping-Pong' },
+                        ]}
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { direction: val as 'forward' | 'reverse' | 'ping-pong' })}
+                      />
+                      <StudioToggle
+                        label="BlendShift (Smooth)"
+                        checked={track.blendShift}
+                        onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { blendShift: val })}
                       />
                     </div>
-
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] text-[var(--text-muted)]">Direction:</span>
-                      <select
-                        value={track.direction}
-                        onChange={(e) =>
-                          updatePaletteCycleTrack(currentPalette.id, track.id, {
-                            direction: e.target.value as 'forward' | 'reverse' | 'ping-pong',
-                          })
-                        }
-                        className="bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] px-1 py-0.5 text-[9px]"
-                      >
-                        <option value="forward">Forward</option>
-                        <option value="reverse">Reverse</option>
-                        <option value="ping-pong">Ping-Pong</option>
-                      </select>
-                    </div>
                   </div>
+                </PanelSection>
+              ))}
+            </div>
+          )}
 
-                  {/* BlendShift Sub-step Interpolation */}
-                  <label className="flex items-center justify-between pt-0.5 cursor-pointer">
-                    <span className="text-[9px] text-[var(--text-muted)]">
-                      BlendShift (Smooth Sub-step Color Blend)
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={track.blendShift}
-                      onChange={(e) =>
-                        updatePaletteCycleTrack(currentPalette.id, track.id, {
-                          blendShift: e.target.checked,
-                        })
-                      }
-                      className="accent-[#7ce0be] cursor-pointer"
-                    />
-                  </label>
-                </div>
-              ))
-            )}
-
-            {/* Add Track Button */}
-            <button
-              onClick={handleAddTrack}
-              className="w-full bg-[var(--desk-surface-raised)] hover:bg-[#2e2040] text-[#f0be7c] font-bold text-[10px] font-mono py-1.5 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center flex items-center justify-center gap-1 mt-1"
-            >
-              <PixelIcon name="plus" size={12} />
-              <span>+ Add Color Range Track</span>
-            </button>
-          </div>
+          <TactileButton
+            variant="tactile"
+            size="md"
+            onClick={handleAddTrack}
+            className="w-full mt-2"
+          >
+            <PixelIcon name="plus" size={12} />
+            <span>Add Color Range Track</span>
+          </TactileButton>
         </div>
-      )}
+      </PanelSection>
     </div>
   );
 };

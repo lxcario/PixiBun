@@ -12,6 +12,16 @@ export function updateCursorHUD(coords: Point | null) {
   listeners.forEach((fn) => fn(coords));
 }
 
+/**
+ * Subscribe to cursor HUD updates. Returns an unsubscribe function.
+ */
+export function subscribeCursorHUD(handler: CursorListener): () => void {
+  listeners.add(handler);
+  return () => {
+    listeners.delete(handler);
+  };
+}
+
 export const CursorStatusBadge: React.FC = React.memo(() => {
   const [coords, setCoords] = useState<Point | null>(null);
   const activeTool = useStudioStore((s) => s.tools.activeTool);
@@ -34,7 +44,7 @@ export const CursorStatusBadge: React.FC = React.memo(() => {
       <span>
         X: {coords.x} Y: {coords.y}
       </span>
-      <span className="w-1 h-1 rounded-full bg-[#C792DF]" />
+      <span className="w-1 h-1 rounded-full bg-[var(--accent-wisteria)]" />
       <span className="capitalize">{activeTool}</span>
     </div>
   );
