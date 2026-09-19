@@ -17,20 +17,19 @@ PixiBun is structured as a client-side single-page application built on **Next.j
 ```mermaid
 graph TD
     subgraph UI_Layer ["🎨 UI & Workspace Shell (React 19 + Tailwind v4)"]
-        TopNav["TopHeader (File / Edit / View / Export / Resize / Theme)"]
-        OptionStrip["ContextOptionsBar (Tool Parameters, Size, Dither Density)"]
-        LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
+        AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
         ViewportShell["CenterViewport (Dual-Canvas Viewport & HUD Overlay)"]
         RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
-        TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Clips)"]
-        Modals["Modals (Import, Export, Resize, Palette, Shortcuts)"]
+        TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
+        StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]
+        Modals["Modals (Import, Export, Resize, Palette, Shortcuts, CommandPalette)"]
     end
 
     subgraph State_Layer ["⚡ Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["useThemeStore (Dark / Light Mode, Zero-Lag Style Override)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
-        UndoRedo["historyEngine (50 Undo + 50 Redo DOM-Free History Ring, 100 States Max)"]
+        UndoRedo["historyEngine (50 Combined Undo/Redo Entries)"]
     end
 
     subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
@@ -95,7 +94,7 @@ Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects i
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
 The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
-- Maintains a 50-step FIFO history ring (50 undo steps + up to 50 redo steps, 100 steps total max capacity) with automatic pruning of oldest steps when capacity is reached.
+- Maintains a 50-step FIFO history ring (50 steps shared between undo and redo; a new edit clears redo) with automatic pruning of oldest steps when capacity is reached.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
@@ -193,7 +192,7 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **50-Step Circular Ring Buffer Undo History (100 States Max):** Maintains a memory-efficient circular ring buffer of up to 50 undo steps and 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **50-Step Undo History:** Maintains at most 50 combined undo/redo entries ( `createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Decoupled completely from `CenterViewport` to eliminate React reconciliation cascades during pen/eraser strokes (0 re-renders during pointer moves).
@@ -303,7 +302,7 @@ graph TD
     InputImg --> GradSalience["2x2 Forward-Difference Gradient Salience (Edge Preservation)"]
     BoxDown & GradSalience --> SalientDown["Salient Downsampled ImageData"]
     SalientDown --> BGKey["4-Corner Background Keying & 1-Bit Alpha"]
-    BGKey --> Quantize["OKLab Median-Cut Partitioning + K-Means++ Refinement"]
+    BGKey --> Quantize["OKLab Median-Cut Partitioning + Lloyd Refinement"]
     Quantize --> DitherBranch{"Dither Mode"}
     DitherBranch -->|Floyd-Steinberg| SerpentineFS["Serpentine Error Diffusion"]
     DitherBranch -->|Atkinson| AtkDiff["Atkinson 75% Retention"]
@@ -560,7 +559,7 @@ To immunize the client-side graphics workstation against browser anomalies, memo
 * **CWE-1321 Prototype Pollution Defense & Safe JSON Parsing (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`):**
   - Recursive JSON sanitizer stripping `__proto__`, `constructor`, and `prototype` keys based on Arteau (2018), enforcing a maximum nesting recursion depth of 32. Hardened project schema asserts explicit ceilings (256 char names, 50 palettes, 100 clips, 500 frames, 100 layers).
 * **Storage Resilience & Quota Exhaustion Recovery (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`):**
-  - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs and orphaned layer blobs during disk pressure, safeguarding active user project data.
+  - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs during disk pressure, safeguarding active user project data.
 * **WebRTC Token Bucket Traffic Shaping (`src/lib/sync/p2pSync.ts`):**
   - Implements RFC 2212 Token Bucket rate limiting on peer data and presence channels, shielding client threads against packet floods and CPU starvation.
 
@@ -571,11 +570,69 @@ To immunize the client-side graphics workstation against browser anomalies, memo
 To decouple development from cloud CI billing constraints while maintaining uncompromising release standards:
 
 * **Zero-Dependency Local Quality Gate Runner (`scripts/runQualityGate.mjs`):**
-  - Executes a 3-stage sequential validation pipeline via `npm run gate` in ~16–19 seconds:
+  - Executes a four-stage sequential validation pipeline via `npm run gate` (runtime depends on hardware and suite size):
     1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
     2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
-    3. **Stage 3 (Defensive Invariant Test Suite):** `npm test` runs all 639 Vitest unit tests across 90 suites.
-    4. **Stage 4 (Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
+    3. **Stage 3 (Lint):** `npm run lint` checks source and tests, including accessibility rules.
+    4. **Stage 4 (Defensive Invariant Test Suite):** `npm test` runs the current Vitest unit suite.
+    5. **Stage 5 (Optional Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
+* **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
+  - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
+  - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
+* **Open Source Governance & Ready-to-Use GitLab CI:**
+  - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
+  - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
+
+---
+
+## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
+
+To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
+
+* **Unsaved Dirty Invariants & Native Exit Guards (`src/components/layout/StudioLayout.tsx`, `src/stores/slices/createHistorySlice.ts`):**
+  - Synchronizes active document title with unsaved dirty status (`● Project — PixiBun`), automatically clearing upon save.
+  - Implements `beforeunload` browser event trapping whenever `isDirty === true`, preventing accidental tab closure and loss of in-flight artwork.
+* **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`):**
+  - Triggers transient, non-modal confirmation toasts (`✦ Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
+* **Modal Accessibility & Focus Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`):**
+  - Conforms to WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured).
+  - Enforces programmatic initial focus on modal title or first focusable interactable.
+  - Implements circular Tab / Shift+Tab keyboard focus containment, preventing focus leakage to obscured background layers.
+  - Restores focus to the triggering opener button upon modal dismissal.
+* **Shortcut Collision Prevention & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`):**
+  - Shields viewport keyboard shortcuts (e.g. `s` silhouette squint mode) from firing when focused in text inputs or executing `Ctrl+S`.
+  - Enforces monotonic quantized zoom progression across discrete power-of-two magnification levels.
+
+---
+
+## 28. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
+
+To ensure that the 2.5D Photometric Studio delivers mathematically sound volumetric lighting across all canvas sizes ($16\times16$ through $128\times128$) and dark color palettes:
+
+* **Resolution-Aware Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`):**
+  - Introduces a dimensionless scale factor $\text{scaleFactor} = \max\left(1.0, \frac{\min(W, H)}{32}\right)$.
+  - Dynamically scales the anatomical character bevel radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$, dynamic bevel radius $R_{\text{bevel}} \in [2.5, 6.0 \times \text{scaleFactor}]$, and appendage width ceilings.
+  - Prevents interior normal fields on $64\times64$ and $128\times128$ canvases from prematurely flattening to $N = [0, 0, 1]$, while maintaining 100% byte-exact parity with legacy $32\times32$ baseline sprites.
+* **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`):**
+  - Replaces naive global luminance thresholds ($L < 0.22$) with contextual spatial heuristics:
+    1. Dark boundary pixels touching transparent void ($L < 0.14$).
+    2. High-contrast interior crevices ($\max_{q \in \mathcal{N}_4} L(q) - L(p) \ge 0.16$).
+    3. Near-black true ink lines ($L < 0.035$).
+  - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
+* **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
+  - Ensures shadow luminance $L_{\text{shadow}} = \max(0.04, \min(0.78 L_{\text{base}}, L_{\text{base}} - 0.03))$ and deep crevice luminance $L_{\text{deep}} = \max(0.02, \min(0.60 L_{\text{base}}, L_{\text{base}} - 0.06))$ remain strictly darker than the base tone across the entire OKLCH luminance domain.
+* **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
+  - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
+  - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms using `baseNormalField` and candidate pixel metadata.
+  - Guarantees 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputation at any azimuth.
+
+
+
+
+
+
+    4. **Stage 4 (Defensive Invariant Test Suite):** `npm test` runs the current Vitest unit suite.
+    5. **Stage 5 (Optional Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
 * **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
   - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
   - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
@@ -635,3 +692,82 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
 
 
 
+
+### Audit clarifications (2026-09-19)
+
+Undo and redo share one 50-entry budget and are not serialized. Export scale selection is automatically reduced when canvas dimensions make a previous choice unsafe. Squint preview takes precedence over a selected CVD lens. CRDT merge uses per-pixel clock comparison and deterministic peer-ID tie-breaking; mixed legacy timestamp/HLC inputs follow the normalization in `crdtPixelBuffer.ts`. This is not a certification of convergence for every full-app workflow. Reliable co-draw messages now remain in a bounded queue until acknowledged and are retried after congestion; explicit disconnect discards that session queue, and a new session starts from the host snapshot. Both peers must run the acknowledgment-capable protocol.
+
+---
+
+## 29. Studio UI Architecture & Design System Primitives
+
+### Workspace Shell Decomposition
+Phase 62 restructures the studio workspace from a monolithic `StudioLayout.tsx` into a modular shell architecture:
+
+```mermaid
+graph TD
+    subgraph Shell ["Studio Workspace Shell"]
+        Rail["AtelierRail (Project, Zoom, Tool Params, CVD, Appearance)"]
+        Viewport["CenterViewport (6-Canvas Stack + SVG Gizmo)"]
+        Inspector["RightInspector (Layers / Palette / PixiBud)"]
+        Timeline["BottomTimeline (Frames, Onion Skin, Scrub Preview)"]
+        Status["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]
+        CmdPalette["CommandPaletteModal (Ctrl+K Fuzzy Search)"]
+    end
+
+    subgraph Hooks ["Studio Lifecycle Hooks"]
+        Autosave["useStudioAutosave (Debounced IndexedDB, Restore, Coalesce)"]
+        Clipboard["useStudioClipboard (Ctrl+V Image Paste)"]
+        FileSystem["useStudioFileSystem (Native .pixibun Save/Open)"]
+        Keyboard["useStudioKeyboard (Shortcut Manager)"]
+    end
+
+    Shell --> Hooks
+```
+
+* **AtelierRail (`src/components/layout/AtelierRail.tsx`):** Unified top header rail merging the former `TopHeader` and `ContextOptionsBar`. Houses project title editing, save/export/import/gallery/co-draw actions, undo/redo, zoom control group with fit calculation, tool-specific contextual parameter toggles, CVD colorblindness lenses, squint mode, symmetry axes, and the `AppearancePopover` theme trigger.
+* **StatusBar (`src/components/layout/StatusBar.tsx`):** Fixed 24px bottom chrome bar displaying live canvas cursor coordinates via `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, active layer/frame info, and the embedded procedural lo-fi radio widget.
+* **CommandPaletteModal (`src/components/modals/CommandPaletteModal.tsx`):** Accessible keyboard-driven fuzzy-search modal (`Ctrl+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut hint badges.
+
+### Design System Component Library
+All inspector panels and studio controls are standardized on a tactile, accessible component library:
+
+| Component | Path | Purpose |
+|---|---|---|
+| `StudioSlider` | `src/components/ui/StudioSlider.tsx` | Range slider with real-time fill gradient, numeric badge, and golden accent |
+| `StudioSelect` | `src/components/ui/StudioSelect.tsx` | Styled native `<select>` with studio surface tokens and focus-visible highlights |
+| `StudioToggle` | `src/components/ui/StudioToggle.tsx` | Sliding pill toggle switch with hidden checkbox and gold indicator thumb |
+| `StudioNumberInput` | `src/components/ui/StudioNumberInput.tsx` | Numeric input with min/max bounds, step increments, and unit suffix |
+| `StudioTooltip` | `src/components/ui/StudioTooltip.tsx` | Delay-activated tooltip with keyboard focus support and shortcut badges |
+| `IconButton` | `src/components/ui/IconButton.tsx` | 24–32px tactile icon button with ghost/surface/danger variants |
+| `PanelSection` | `src/components/ui/PanelSection.tsx` | Collapsible accordion section with persistent localStorage state and action header slot |
+
+### Viewport Pointer Handler Decomposition
+The monolithic `useViewportPointerEvents.ts` has been decomposed into per-tool handlers while retaining core coordination for canvas coordinate mapping, panning, history snapshots, and cursor HUD broadcasting:
+
+| Handler | Tools | Path |
+|---|---|---|
+| `useBrushPointerHandler` | Pen, Eraser, Dither | `src/hooks/viewport/useBrushPointerHandler.ts` |
+| `useChiselPointerHandler` | Normal Chisel | `src/hooks/viewport/useChiselPointerHandler.ts` |
+| `useSelectionPointerHandler` | Box, Lasso, Wand, Drag | `src/hooks/viewport/useSelectionPointerHandler.ts` |
+| `useShapePointerHandler` | Line, Iso Line, Bézier, Rect, Ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
+
+### Dual-Axis Theme Architecture
+The theme system (`src/stores/themeStore.ts`) supports two orthogonal axes:
+1. **Studio Theme** (`studioTheme`): `'atelier'` (modern midnight default) or `'cozy-classic'` (original plum/wisteria identity)
+2. **Color Scheme** (`colorScheme`): `'dark'` or `'light'`
+
+Theme mutations apply synchronously via `applyThemeToDOM()`, which injects a temporary `transition: none !important` stylesheet to suppress reflow/repaint flicker, sets `data-studio-theme` and `data-color-scheme` attributes on `<html>`, and removes the suppression after one animation frame.
+
+The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) provides a flyout UI for switching both axes with live preview swatches, focus trapping, and `Escape` dismiss handling.
+
+---
+
+## 30. Teaching Animation Board & Playground Education System
+
+The Playground (`/playground`) includes an interactive teaching animation board for beginner-to-advanced pixel art animation education.
+
+* **TeachingAnimationBoard (`src/components/playground/TeachingAnimationBoard.tsx`):** Interactive visual drafting board with 2 character curricula (Bun and Slime), 10-frame jump cycles demonstrating squash & stretch and anticipation, frame duration pacing, onion-skin ghosting, step-by-step 7-stage sprite construction, and a direct inject-to-timeline action.
+* **TeachingBoardModal (`src/components/playground/TeachingBoardModal.tsx`):** Accessible modal container with backdrop blur, focus trapping, and `Escape` dismiss.
+* **teachingBoardData (`src/lib/art/teachingBoardData.ts`):** Comprehensive 16×16 pixel grid datasets for characters, 7 progressive construction stages, 10-frame physics-based jump curves with hold timings, and 8 semantic alt colorways.
+* **Studio Event:** Triggered via the `pixibun:open-teaching-board` studio event.

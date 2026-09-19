@@ -31,24 +31,24 @@ The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32A
 
 **Class:** `HistoryEngine`  
 **File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
-**Ring Buffer Size:** 50 undo steps + up to 50 redo steps (100 steps total max capacity)
+**Ring Buffer Size:** 50 combined undo/redo steps; new edits clear redo
 
 Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$).
 
 ### Memory Scaling Analysis
 
-| Canvas Size | Bytes per Pixel | Size per Step | 50 Undo Steps | 100 Steps (Max Undo + Redo) |
-|---|---|---|---|---|
-| **16 × 16** | 4 bytes | $1.0\text{ KB}$ | **$51.2\text{ KB}$** | **$102.4\text{ KB}$** |
-| **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$** | **$409.6\text{ KB}$** |
-| **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$** | **$1.64\text{ MB}$** |
-| **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$** | **$6.55\text{ MB}$** |
-| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$** | **$26.21\text{ MB}$** |
-| **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$** | **$104.86\text{ MB}$** |
-| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$** | **$419.43\text{ MB}$** |
-| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$** | **$1.68\text{ GB}$** |
+| Canvas Size | Bytes per Pixel | Size per Step | 50 Combined Undo/Redo Steps  |
+|---|---|---|--- |
+| **16 × 16** | 4 bytes | $1.0\text{ KB}$ | **$51.2\text{ KB}$**  |
+| **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$**  |
+| **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$**  |
+| **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$**  |
+| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$**  |
+| **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$**  |
+| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$**  |
+| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$**  |
 
-> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$), well within browser tab memory quotas ($>1\text{ GB}$). At the canonical envelope limit of $2048 \times 2048$, a 50-step history requires $\approx 839\text{ MB}$, explaining why $2048\text{px}$ serves as the hard creation ceiling to keep allocations within standard 32-bit browser tab memory ceilings.
+> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$). These are arithmetic buffer sizes, not measured peak heap usage or a guarantee that every browser can support that history. Structural snapshots and transient copies add overhead.
 
 ---
 
@@ -106,7 +106,7 @@ $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \time
 | **512 × 512** | 16× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
 | **512 × 512** | 32× | 16,384 × 16,384 | 268,435,456 | **$1.07\text{ GB}$** | **Blocked** | Severe memory risk; iOS Safari tab crash |
 
-> **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, peak transient export allocations are constrained to $\le 67.11\text{ MB}$, mitigating 1 GB allocation spikes and significantly improving export reliability across mobile and desktop browsers.
+> **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, one RGBA output buffer is constrained to $\le 67.11\text{ MB}$. Source canvases, multiple animation frames, encoder workspaces and browser copies can coexist, so this is not a peak-memory bound. No export heap peak was measured for this audit.
 
 ---
 
@@ -136,7 +136,7 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 |---|---|---|---|---|
 | **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 51 unique phases, 28 monotonic sections, 196 filepaths, line counts, test claims. |
 | **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
-| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | 639 unit tests across 90 suites (100% pass). |
+| **Stage 3** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Historical recorded run: 639 unit tests across 90 suites; not the current suite count. |
 | **Total** | **`npm run gate`** | **$16.30\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
 
 

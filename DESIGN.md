@@ -36,7 +36,7 @@ graph TD
 
 ## 2. Semantic Color Tokens
 
-Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, verified WCAG AA contrast compliance (4.5:1 for body copy, 3:1 for large controls), and natural directional hue-shifting.
+Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, target WCAG AA contrast ratios (4.5:1 for body copy, 3:1 for large controls); actual compliance requires testing rendered states, and natural directional hue-shifting.
 
 ```mermaid
 graph LR
@@ -231,3 +231,37 @@ Grounded in Machado, Oliveira & Fernandes (2009, IEEE TVCG):
 * **Utility:** Allows character animators and game artists to immediately evaluate readability, weight distribution, and negative space without color distractions.
 
 
+
+When squint preview and a CVD lens are both selected, squint takes precedence.
+
+---
+
+## 14. Studio Design System Primitives
+
+Phase 62 introduces a standardized component library for all studio controls, replacing ad-hoc inline HTML with tactile, accessible primitives that inherit from the Lamplit Desk design language.
+
+### Control Inventory
+
+| Primitive | Visual Behavior | Accessibility |
+|---|---|---|
+| **StudioSlider** | Real-time percentage fill gradient track with numeric badge and golden accent thumb | `role="slider"`, `aria-valuemin/max/now`, keyboard arrow control |
+| **StudioSelect** | Native `<select>` wrapper matching studio surface and border tokens | `role="listbox"` via native element, `focus-visible` highlight |
+| **StudioToggle** | Sliding pill switch with hidden checkbox input and gold indicator thumb | `role="switch"`, `aria-checked`, keyboard `Space` toggle |
+| **StudioNumberInput** | Labeled numeric input with min/max bounds, step increments, and unit suffix | `role="spinbutton"`, `aria-valuemin/max`, blur/Enter commit |
+| **StudioTooltip** | Delay-activated (300ms) tooltip with position anchors (top/bottom/left/right) | Keyboard focus trigger, shortcut badge display |
+| **IconButton** | 24–32px square tactile button with ghost/surface/danger variants and translation depression | `focus-visible:ring-2`, `aria-label` required, disabled state |
+| **PanelSection** | Collapsible accordion with chevron indicator and action header slot | `aria-expanded`, persistent `localStorage` open/closed state |
+
+### Token Integration
+All primitives consume the v2 design token scale defined in `globals.css`:
+* **Spacing:** `--space-0` (0px) through `--space-8` (32px) in 4px increments.
+* **Radii:** `--radius-sm` (2px) through `--radius-pill` (9999px).
+* **Motion:** `--motion-press` (40ms) to `--motion-timeline` (180ms) for mechanical interactions.
+* **Surfaces:** `--surface-0` through `--surface-3` for layered elevation.
+
+### Appearance Popover
+The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates theme management into a single flyout, superseding the standalone `ThemeToggle` as the primary entry point. It exposes two orthogonal axes:
+1. **Studio Theme:** Atelier (modern midnight) or Cozy Classic (historical plum/wisteria).
+2. **Color Scheme:** Dark or Light.
+
+Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, ensuring zero-lag visual switching.

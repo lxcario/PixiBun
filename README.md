@@ -1,4 +1,4 @@
-# 🐇 PixiBun Atelier
+# 🐇 PixiBun Atelier — v1.14.0
 
 ```text
   /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
@@ -18,11 +18,13 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 **PixiBun is designed to feel like a wooden drafting desk late at night.**
 
 * **No Accounts or Logins** — Open the studio and begin placing pixels immediately.
-* **Local-First & Private Core** — Zero tracking, zero telemetry, zero cloud data scraping. Frames and project history persist on-device in local IndexedDB storage. Co-draw defaults to zero-egress LAN mode; public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
+* **Local-First & Private Core** — Artwork and frame metadata persist on-device in IndexedDB. Undo/redo history is session-only. Local diagnostics are enabled by default; transmission requires opt-in. Co-draw defaults to zero-egress LAN mode; public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
 * **Purpose-Built for Indie & Game Jam Sprites** — Optimized for $16\times16$ to $128\times128$ character sprites, tilesets, and animation loops. Rather than competing with heavy native desktop software (e.g., Aseprite) for 500+ frame 4K cinematic timelines, PixiBun is engineered for instant zero-install browser crafting, 2.5D photometric lighting, and frictionless game engine exports.
 * **Tactile Mechanical Feedback** — Integer-aligned strokes, physical button depression physics, specular light-sweeps, and homestyle palettes.
 * **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite 8x distortion-free rotation, OKLab perceptual color science, and intelligent image pixelization.
 * **Procedural Lo-Fi Radio** — Real-time Web Audio synthesizer with vinyl noise, gentle rain, and warm Rhodes chord progressions playing from a vintage desktop boombox.
+* **Command Palette** — Press <kbd>Ctrl+K</kbd> to fuzzy-search and launch any tool, toggle, or project action instantly.
+* **Dual Studio Themes** — Switch between **Atelier** (modern midnight) and **Cozy Classic** (plum & wisteria) via the Appearance Popover, each available in dark and light color schemes.
 
 ---
 
@@ -34,7 +36,7 @@ graph LR
         Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
         Math["☀️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
         Anim["🎬 Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
-        Import["🖼️ Smart Import & Pixelize<br/>• Sobel Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
+        Import["🖼️ Smart Import & Pixelize<br/>• Forward-Difference Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
         Export["📦 Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
     end
 ```
@@ -43,7 +45,7 @@ graph LR
 Before stepping into the full studio, visitors can interact directly with PixiBun's computer graphics algorithms right on the home desk (`#engine-showcase`):
 * **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading on the Hearth Ghost sprite, 5 Blinn-Phong material profiles (*Matte, Metal, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
 * **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard nearest-neighbor affine rotation (`imageSmoothingEnabled = false`), maintaining crisp single-pixel contours at 45°.
-* **Intelligent Image Synthesis:** Real-time downsampling interactive demo showcasing Sobel gradient salience edge-preservation and OKLab color quantization.
+* **Intelligent Image Synthesis:** Real-time downsampling interactive demo showcasing Forward-difference gradient salience edge-preservation and OKLab color quantization.
 * **Game Engine Exports:** Live sprite sheet packing viewer with instant Godot 4 `.tres`, Unity, and Phaser 3 JSON metadata inspection.
 
 ---
@@ -95,8 +97,8 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ### 🖼️ Intelligent Image-to-Pixel-Art Synthesis & Import Suite
 * **Linear Optical Gamma-Corrected Area Box Downsampling:** Accurately integrates light flux during downscaling without dark-halo fringe artifacts.
-* **Sobel Gradient Salience Edge-Preservation:** Boosts high-contrast edge weights to preserve delicate line-art, facial features, and character silhouettes when converting photos or high-res art.
-* **OKLab Perceptual Color Quantization:** Median-Cut partitioning with K-Means++ Lloyd cluster refinement in OKLab perceptual color space.
+* **Forward-Difference Gradient Salience Edge-Preservation:** Boosts high-contrast edge weights to preserve delicate line-art, facial features, and character silhouettes when converting photos or high-res art.
+* **OKLab Perceptual Color Quantization:** Median-Cut partitioning with four Lloyd iterations initialized by median-cut centroids in OKLab perceptual color space.
 * **Advanced Error Diffusion & Ordered Dithering:** Choice of Serpentine Floyd-Steinberg, Atkinson 75% error retention, or Bayer 4x4 matrix dither during image conversion.
 * **Auto-Background Transparency Keying:** Automatically identifies and removes solid background colors by sampling canvas corners with adjustable tolerance.
 * **Exact 1:1 Pixel Import:** Option to preserve imported sprites byte-for-byte with automatic canvas dimension matching.
@@ -231,7 +233,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### 🛡️ Autonomous Quality Gate & Git Pre-Push Protection
 PixiBun includes an automated, zero-dependency local Quality Gate runner that executes before every push:
 ```bash
-# Run the 3-stage validation suite (docs, typecheck, 642 tests) in ~16s
+# Run documentation checks, typecheck, lint, and the unit test suite
 npm run gate
 
 # Run full suite including Next.js production compilation
@@ -246,9 +248,9 @@ The Git pre-push hook (`.git/hooks/pre-push`) is automatically configured on `np
 PixiBun is engineered as a local-first web application:
 
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
-* **WCAG 2.2 AA Conformance:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and zero axe-core violations.
+* **Accessibility support and testing:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and automated axe-core scans. Passing scans are scoped to the pages and states exercised; they are not a conformance certification.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 642 unit and integration tests across 91 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 8 E2E spec suites (20 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 692 unit and integration tests across 97 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 9 E2E spec suites (22 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -260,14 +262,14 @@ PixiBun is engineered as a local-first web application:
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
 | **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
 | **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, RNM Normal Sculptor, Aaltonen Ray Marching, Mark Ferrari Cycling | Deterministic on-device computer graphics math for 2.5D shading, micro-relief carving, raymarched soft shadows, 60 FPS palette cycling, and normal baking. |
-| **Image Synthesis** | Sobel Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
+| **Image Synthesis** | Forward-Difference Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
 | **State Management** | Zustand + Immer | Decoupled layer buffers, sub-16ms zero-re-render stroke pipelines. |
 | **Accessibility** | WCAG 2.2 AA + ESLint JSX-A11y + Axe | Keyboard drag alternatives, focus traps, accessible roles, high-visibility focus rings. |
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag theme transitions. |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs without base64 JSON stringify overhead, multi-project workspace management. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 642 unit and integration tests across 91 suites and 8 E2E spec suites (20 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 692 unit and integration tests across 97 suites and 9 E2E spec suites (22 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

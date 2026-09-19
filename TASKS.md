@@ -2,6 +2,46 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
 
+## Phase 62 — Studio Architecture Overhaul, Dual Themes & Comprehensive Audit Remediation
+**Goal:** Modernize the PixiBun studio shell from a monolithic layout into a modular, professional digital art workstation with unified AtelierRail, bottom StatusBar, keyboard-driven CommandPalette, standardized design system primitives, decomposed viewport pointer handlers, extracted studio lifecycle hooks, interactive teaching animation board, dual-axis theme engine, and comprehensive audit remediation of 24 independently identified findings.
+
+**Evidence & Rationale:**
+- StudioLayout.tsx had grown to ~1400 lines with interleaved autosave, clipboard, keyboard, and filesystem logic. Viewport pointer handling was a single monolithic hook mixing brush, chisel, selection, and shape tool logic.
+- Inspector panels used ad-hoc inline controls with inconsistent styling, accessibility, and state persistence.
+- An independent partial audit (2026-09-19) identified 12 behavior bugs (B01–B12), 9 documentation errors (D01–D09), and 3 test issues (T01–T03) requiring remediation.
+- The playground lacked structured animation education content beyond the basic tracing stencil.
+
+**Deliverables:**
+- [x] AtelierRail (src/components/layout/AtelierRail.tsx): Unified top header rail merging project actions, zoom, tool parameters, CVD lens, symmetry, and appearance switching.
+- [x] StatusBar (src/components/layout/StatusBar.tsx): Fixed bottom info bar with live cursor coordinates, active tool, canvas dimensions, zoom, frame/layer info, and radio widget.
+- [x] CommandPaletteModal (src/components/modals/CommandPaletteModal.tsx): Fuzzy-search command launcher (Ctrl+K).
+- [x] Design System Primitives: StudioSlider, StudioSelect, StudioToggle, StudioNumberInput, StudioTooltip, IconButton, PanelSection.
+- [x] AppearancePopover (src/components/ui/AppearancePopover.tsx): Dual-axis theme switching (Atelier/Cozy Classic × Dark/Light).
+- [x] Viewport Pointer Decomposition: useBrushPointerHandler, useChiselPointerHandler, useSelectionPointerHandler, useShapePointerHandler extracted from useViewportPointerEvents.
+- [x] Studio Hook Decomposition: useStudioAutosave, useStudioClipboard, useStudioFileSystem, useStudioKeyboard extracted from StudioLayout.
+- [x] Teaching Animation Board: TeachingAnimationBoard, TeachingBoardModal, teachingBoardData with 7-stage character construction and 8 alt colorways.
+- [x] Audit Remediation B01–B12: Atomic storage transactions, save identity/revision races, co-draw reliable ACK queue, bounded import reader, duplicate ID enforcement, native handle binding, staged hydration, dimension validation, confirmation gating.
+- [x] Audit Remediation D01–D09: Test count corrections, undo budget documentation, export memory disclaimer, PII disclaimer, rate limit semantics, algorithm label corrections, quota recovery description.
+- [x] Audit Remediation T01–T03: Synthetic test fixtures, lint in quality gate, E2E panel expansion fixes.
+- [x] All inspector panels migrated to PanelSection + Studio* primitives.
+- [x] LeftToolbar flyout color dock with recent colors.
+- [x] BottomTimeline frame scrub preview tooltip.
+- [x] Enhanced TactileButton variants and PixelIcon set.
+- [x] globals.css v2 design tokens: spacing scale, border radius, motion tokens, surface elevations, full Atelier + Cozy Classic semantic color tokens.
+
+**Acceptance criteria:**
+- Full local Quality Gate passes (verify:docs, typecheck, lint, test, build).
+- 692 unit tests across 97 suites pass (100% green).
+- 22 E2E Chromium tests across 9 suites pass.
+- All audit findings B01–B12, D01–D09, T01–T03 remediated with regression tests.
+- Dual-theme switching works without flash or layout shift.
+- Command Palette launches and filters correctly.
+- Teaching board renders all characters and colorways.
+
+**Status:** Complete (2026-09-19)
+
+---
+
 ## Phase 61 — Anatomical Part Decomposition & Volumetric Character Photometric Shading
 **Goal:** Transform the 2.5D photometric engine from single-silhouette boundary beveling into true anatomical 3D volumetric shading for character artwork: synthesize independent 3D cranial dome, recessed neck crevice with chin depth step, cylindrical torso chest barrel, and separated arm cylinders driven by internal ink lines.
 
@@ -128,7 +168,7 @@
 - [x] Photometric Regression Test (`tests/photometricAutoAnalysis.test.ts`): Added automated test validating $128\times128$ dark palette shading and normal variance.
 
 **Acceptance criteria:**
-- All 622 unit tests across 89 suites pass (at the time, now 639 across 90 suites).
+- All 622 unit tests across 89 suites pass (historical run at that phase; not the current suite count).
 - `node scripts/verifyDocIntegrity.mjs` passes all checks.
 - `npm run gate` passes with zero errors.
 - 0 TypeScript compiler errors and 0 ESLint warnings.

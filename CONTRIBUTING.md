@@ -38,14 +38,15 @@ To run the full suite including Next.js production compilation:
 npm run gate:full
 ```
 
-### The 4 Verification Stages
+### Four standard stages and an optional build
 
 | Stage | Command | Purpose |
 | :--- | :--- | :--- |
 | **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, truthfulness of test counts in `README.md`, and version synchronization in `package.json`. |
 | **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
-| **Stage 3** | `npm test` | Runs all 639 unit and invariant tests across 90 test suites via Vitest. |
-| **Stage 4** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
+| **Stage 3** | `npm run lint` | Checks source, tests and accessibility rules. |
+| **Stage 4** | `npm test` | Runs the current unit and invariant test suite via Vitest. |
+| **Stage 5** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
 
 ---
 
@@ -70,7 +71,7 @@ node scripts/installGitHooks.mjs
 
 - **Unit & Logic Tests:** Located in `tests/`. Every new algorithm, safety guard, or utility function must include comprehensive unit tests testing nominal, boundary, and pathological inputs.
 - **E2E & Accessibility Tests:** Located in `tests/e2e/`. Critical workstation workflows and accessibility benchmarks (via `@axe-core/playwright`) are tested end-to-end.
-- **Test Metrics Integrity:** Never hardcode or inflate test counters in documentation. All numbers are verified against live Vitest runs via `verifyDocIntegrity.mjs`.
+- **Test Metrics Integrity:** Never hardcode or inflate test counters in documentation. `verifyDocIntegrity.mjs` checks the specific README test-count patterns against runner enumeration, plus phase/section/path/version invariants. It does not verify every number, narrative claim, performance result, or test outcome.
 
 ---
 

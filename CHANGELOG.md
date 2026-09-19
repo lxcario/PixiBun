@@ -2,6 +2,58 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.14.0] - 2026-09-19
+### Studio Architecture Overhaul, Dual Themes & Audit Remediation (Phase 62)
+- **Studio UI Architecture**:
+  - AtelierRail (`src/components/layout/AtelierRail.tsx`): Unified top header rail replacing the former TopHeader + ContextOptionsBar. Houses project actions, zoom, tool params, CVD lens, symmetry, and AppearancePopover.
+  - StatusBar (`src/components/layout/StatusBar.tsx`): Fixed bottom bar with live cursor coords, active tool, canvas dimensions, zoom %, frame/layer info, and embedded lo-fi radio.
+  - CommandPaletteModal (`src/components/modals/CommandPaletteModal.tsx`): Fuzzy-search command launcher (`Ctrl+K`) for tools, view toggles, animation controls, project actions.
+- **Design System Primitives (`src/components/ui/`)**:
+  - `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection` — accessible, tactile controls standardizing all inspector panels.
+- **Dual Studio Theme System**:
+  - `themeStore` now supports dual-axis theming: `studioTheme` (`'atelier'` | `'cozy-classic'`) × `colorScheme` (`'dark'` | `'light'`).
+  - AppearancePopover (`src/components/ui/AppearancePopover.tsx`): Consolidated theme/scheme switching with live preview.
+  - Zero-lag transition suppression via synchronous DOM attribute + style injection.
+- **Viewport Pointer Handler Decomposition**:
+  - Extracted from monolithic `useViewportPointerEvents.ts` into 4 per-tool handlers:
+    - `useBrushPointerHandler.ts` (pen, eraser, dither with Bresenham + pixel-perfect)
+    - `useChiselPointerHandler.ts` (normal chisel sculpting sessions)
+    - `useSelectionPointerHandler.ts` (box, lasso, floating selection)
+    - `useShapePointerHandler.ts` (line, iso line, bezier, rect, ellipse)
+- **Studio Hook Decomposition**:
+  - `useStudioAutosave.ts`: Debounced IndexedDB persistence, startup restore, in-flight coalescing, quota handling.
+  - `useStudioClipboard.ts`: Global `Ctrl+V` paste for image files via safe admission pipeline.
+  - `useStudioFileSystem.ts`: Native File System Access API for `.pixibun` save/save-as.
+  - `useStudioKeyboard.ts`: Centralized shortcut manager with input-field collision guards.
+- **Teaching Animation Board**:
+  - `TeachingAnimationBoard.tsx` + `TeachingBoardModal.tsx`: Interactive 7-stage character construction tutorial with Bun & Slime profiles, 10-frame jump cycles, squash & stretch physics, 8 alt colorways.
+  - `teachingBoardData.ts`: Comprehensive $16\times16$ sprite datasets and physics explanations.
+- **Audit Remediation (B01–B12, D01–D09, T01–T03)**:
+  - B01: Database readiness awaited before startup restore.
+  - B02: Save identity captured before encoding; revision comparison before marking clean.
+  - B03: Atomic single-transaction metadata + layer blob commits.
+  - B04: Layer tags preserved through all serialization paths.
+  - B05: Validated nested custom ramps; staged hydration into temporary buffers.
+  - B06: Native file handle reset on project replacement; bound to project identity.
+  - B07: Reliable co-draw message queue with ACK, backpressure resume, retry, deduplication.
+  - B08: Bounded import reader for picker/drop/clipboard; JSON depth check; WebP header validation.
+  - B09: Globally unique layer/frame ID enforcement.
+  - B10: Header images read as data URLs through shared import reader.
+  - B11: Canvas dimension validation before mutations; proportional scale-down for oversized imports.
+  - B12: Autosave returns boolean; confirmation shown only after successful persistence.
+  - D01–D09: Documentation corrections (test counts, undo budget, export memory, PII disclaimer, rate limit semantics, algorithm labels, quota recovery).
+  - T01: Synthetic Minecraft skin fixture replacing machine-specific test.
+  - T02: ESLint added to standard quality gate.
+  - T03: E2E tests updated to expand collapsed panels and use current labels.
+- **Test Coverage**:
+  - 692 unit tests across 97 suites; 22 E2E Chromium tests across 9 suites (100% green).
+- **Enhanced Components**:
+  - LeftToolbar: Interactive flyout color palette dock with quick swatches and recent colors.
+  - BottomTimeline: FrameScrubPreview tooltip with $96\times96$ live composite on hover.
+  - All inspector panels: Migrated to `PanelSection` collapsible containers with persistent state.
+  - TactileButton: New variants (toggle, inset, primary, accent, danger, ghost) with reduced-motion support.
+  - PixelIcon: Added icons (chisel, rivet, save, lamp-pixel, merge-down, lock, unlock, sun, sparkles, lamp, tag).
+
 ## [v1.13.1] - 2026-09-14
 ### Anatomical Part Decomposition & Volumetric Character Photometric Shading (Phase 61)
 - **Anatomical Part Decomposition Engine (`src/lib/ai/math/edtNormalMap.ts`)**:
