@@ -190,6 +190,7 @@ export class CoDrawBridge {
           opacity: l.opacity,
           blendMode: l.blendMode,
           ...(l.tag !== undefined ? { tag: l.tag } : {}),
+          ...(l.effect !== undefined ? { effect: structuredClone(l.effect) } : {}),
         })),
       })),
     };

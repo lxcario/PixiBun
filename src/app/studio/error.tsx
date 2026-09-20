@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { captureDiagnostic, exportDiagnosticsFile } from '@/lib/diagnostics/capture';
 
 export default function StudioErrorBoundary({
@@ -23,8 +23,8 @@ export default function StudioErrorBoundary({
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--desk-bg)] text-[var(--text-heading)] p-6 font-mono">
       <div className="max-w-lg w-full bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[4px] p-6 shadow-[0_4px_0_var(--desk-bg)] flex flex-col gap-4 text-center">
-        <div className="w-12 h-12 mx-auto rounded-full bg-[var(--desk-surface-raised)] border border-[var(--accent-gold)] flex items-center justify-center">
-          <BunMascot size={28} />
+        <div className="flex justify-center mb-1">
+          <PixiBunLogo size="lg" className="drop-shadow-sm" />
         </div>
         <h2 className="text-lg font-bold text-[var(--accent-gold)] font-display">
           Studio Canvas Hitch

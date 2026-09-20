@@ -1,3 +1,5 @@
+import type { LayerEffectDescriptor } from '@/types/canvas';
+
 export interface ViewportEventContext {
   canvasWidth: number;
   canvasHeight: number;
@@ -8,7 +10,9 @@ export interface ViewportEventContext {
     description: string,
     overrideLayerId?: string,
     createdLayerId?: string,
-    createdLayerTag?: string
+    createdLayerTag?: string,
+    preserveLayerEffect?: boolean,
+    createdLayerIndex?: number
   ) => void;
   commitSnapshot: () => void;
   bumpBufferVersion: () => void;
@@ -16,11 +20,12 @@ export interface ViewportEventContext {
   updateTaggedLayer: (
     displayName: string,
     tag: string,
-    drawFn: (ctx: CanvasRenderingContext2D) => void
+    drawFn: (ctx: CanvasRenderingContext2D) => void,
+    effect?: LayerEffectDescriptor
   ) => void;
 }
 
 export interface ViewportPhotometricContext extends ViewportEventContext {
   compositeNormalMapSnapshot: () => ImageData | null;
-  performUndo: () => void;
+  discardSnapshot: () => void;
 }

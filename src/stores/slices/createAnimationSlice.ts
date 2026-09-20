@@ -62,6 +62,9 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
         .map(l => ({
           ...l,
           id: createId('layer'),
+          effect: l.effect
+            ? { ...structuredClone(l.effect), id: createId('effect'), updatedAt: Date.now() }
+            : undefined,
         }));
 
       if (clonedLayers.length === 0) {
@@ -85,10 +88,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.activeFrameIndex = state.frames.length - 1;
       state.activeLayerId = clonedLayers[0].id;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   duplicateFrame: frameIndex => {
+    if (!get().frames[frameIndex]) return;
     pushStructuralHistoryStep('Duplicate Frame');
     set(state => {
       const srcFrame = state.frames[frameIndex];
@@ -98,6 +103,9 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       const duplicatedLayers = srcFrame.layers.map(l => ({
         ...l,
         id: createId('layer'),
+        effect: l.effect
+          ? { ...structuredClone(l.effect), id: createId('effect'), updatedAt: Date.now() }
+          : undefined,
       }));
 
       const duplicate: AnimationFrame = {
@@ -117,10 +125,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.activeFrameIndex = frameIndex + 1;
       state.activeLayerId = duplicatedLayers[0].id;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   deleteFrame: frameIndex => {
+    if (get().frames.length <= 1 || frameIndex < 0 || frameIndex >= get().frames.length) return;
     pushStructuralHistoryStep('Delete Frame');
     set(state => {
       if (state.frames.length <= 1) return;
@@ -132,6 +142,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.activeFrameIndex = Math.min(state.activeFrameIndex, state.frames.length - 1);
       state.activeLayerId = state.frames[state.activeFrameIndex].layers[0].id;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -141,11 +152,20 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       if (frame) {
         frame.durationMs = Math.max(10, Math.min(10000, Math.round(durationMs)));
         state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
 
   reorderFrames: (startIndex, endIndex) => {
+    const frameCount = get().frames.length;
+    if (
+      startIndex < 0 ||
+      startIndex >= frameCount ||
+      endIndex < 0 ||
+      endIndex >= frameCount ||
+      startIndex === endIndex
+    ) return;
     pushStructuralHistoryStep('Reorder Frames');
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
@@ -161,6 +181,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       state.frames.splice(endIndex, 0, removed);
       state.activeFrameIndex = endIndex;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -182,6 +203,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   setFps: fps => {
     set(state => {
       state.fps = Math.max(1, Math.min(60, fps));
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -194,12 +217,16 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   setLoopMode: mode => {
     set(state => {
       state.loopMode = mode;
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   setOnionSkin: settings => {
     set(state => {
       state.onionSkin = { ...state.onionSkin, ...settings };
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -219,6 +246,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       };
       state.clips.push(newClip);
       state.activeClipId = newClip.id;
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -246,6 +275,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
           nextUpdates.endFrame = nextUpdates.toFrame;
         }
         Object.assign(clip, nextUpdates);
+        state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -256,6 +287,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       if (state.activeClipId === id) {
         state.activeClipId = null;
       }
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -271,6 +304,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       }
       const [moved] = state.clips.splice(sourceIndex, 1);
       state.clips.splice(targetIndex, 0, moved);
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 

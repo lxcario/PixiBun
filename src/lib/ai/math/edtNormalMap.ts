@@ -422,351 +422,12 @@ export interface ContentAwareAnalysis {
 }
 
 /**
- * Synthesizes a true anatomical 3D height field for character sprites.
- * Decomposes character morphology into:
- * 1. Cranial Head Dome with chin boundary and facial cushion.
- * 2. Recessed Neck Crevice producing downward chin normals and deep throat AO.
- * 3. Cylindrical Torso Barrel with left-to-right horizontal curvature.
- * 4. Longitudinal Arm Cylinders partitioned by internal arm ink strokes.
- * 5. Volumetric Lateral Ear/Tuft Lobes.
- */
-function computeAnatomicalCharacterHeightmap(
-  width: number,
-  height: number,
-  macroDist: Float32Array,
-  maxMacroD: number,
-  macroHeightmap: Float32Array,
-  microHeightmap: Float32Array,
-  bevelRadius: number,
-  isOpaque: (x: number, y: number) => boolean,
-  isInkLine: Uint8Array,
-  isFeature: Uint8Array,
-  minX: number,
-  maxX: number,
-  minY: number,
-  maxY: number,
-  scaleFactor: number
-): Float32Array {
-  const totalPixels = width * height;
-  const heightmap = new Float32Array(totalPixels);
-  const boxW = Math.max(1, maxX - minX + 1);
-  const boxH = Math.max(1, maxY - minY + 1);
-  const centerX = (minX + maxX) / 2;
-
-  // 1. Scan row profiles
-  const rowLeft = new Int32Array(height).fill(-1);
-  const rowRight = new Int32Array(height).fill(-1);
-  const rowWidth = new Int32Array(height);
-  for (let y = minY; y <= maxY; y++) {
-    let minRowX = width;
-    let maxRowX = -1;
-    for (let x = minX; x <= maxX; x++) {
-      if (isOpaque(x, y)) {
-        if (x < minRowX) minRowX = x;
-        if (x > maxRowX) maxRowX = x;
-      }
-    }
-    if (maxRowX >= minRowX) {
-      rowLeft[y] = minRowX;
-      rowRight[y] = maxRowX;
-      rowWidth[y] = maxRowX - minRowX + 1;
-    }
-  }
-
-  // Find bottom-most facial feature (mouth, nose, eyes)
-  let maxFeatureY = -1;
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      if (isFeature[y * width + x] === 1) {
-        if (y > maxFeatureY) maxFeatureY = y;
-      }
-    }
-  }
-
-  // 2. Identify Chin & Neck Boundary
-  // A chin/neck boundary must lie strictly below the facial features (eyes, nose, mouth)
-  // and must have substantial torso depth remaining below it (at least 20% of sprite height)
-  const ySearchMin = maxFeatureY !== -1
-    ? Math.max(Math.floor(minY + boxH * 0.35), maxFeatureY + 1)
-    : Math.floor(minY + boxH * 0.35);
-  const ySearchMax = Math.min(
-    Math.floor(maxY - Math.max(3, boxH * 0.18)),
-    Math.floor(minY + boxH * 0.65)
-  );
-
-  // Search for internal chin/jawline ink stroke
-  let chinYFromInk = -1;
-  let maxChinInkCount = 0;
-  if (ySearchMin <= ySearchMax) {
-    for (let y = ySearchMin; y <= ySearchMax; y++) {
-      let inkCount = 0;
-      for (let x = minX + 1; x < maxX; x++) {
-        const idx = y * width + x;
-        if (isInkLine[idx] === 1 && isFeature[idx] === 0) {
-          if (isOpaque(x, y - 1) && isOpaque(x, y + 1)) {
-            if (Math.abs(x - centerX) <= boxW * 0.35) {
-              inkCount++;
-            }
-          }
-        }
-      }
-      // An actual chin line must span across at least 15% of the head width
-      if (inkCount >= Math.max(3, Math.floor(boxW * 0.15)) && inkCount >= maxChinInkCount) {
-        maxChinInkCount = inkCount;
-        chinYFromInk = y;
-      }
-    }
-  }
-
-  // Search for morphological neck constriction (local minimum in width)
-  let neckYFromWidth = -1;
-  let minNeckW = 1e9;
-  if (ySearchMin <= ySearchMax) {
-    for (let y = ySearchMin; y <= ySearchMax; y++) {
-      const w = rowWidth[y];
-      if (w > 0 && w < minNeckW) {
-        const prevW = y > ySearchMin ? rowWidth[y - 2] : w;
-        const nextW = y < ySearchMax - 2 ? rowWidth[y + 2] : w;
-        if (prevW > w * 1.15 && nextW > w * 1.15) {
-          minNeckW = w;
-          neckYFromWidth = y;
-        }
-      }
-    }
-  }
-
-  // 3. Arm seam detection in torso region
-  const leftArmSeamX = new Int32Array(height).fill(-1);
-  const rightArmSeamX = new Int32Array(height).fill(-1);
-  let leftArmRowCount = 0;
-  let rightArmRowCount = 0;
-
-  const candidateChinY = chinYFromInk !== -1 ? chinYFromInk : (neckYFromWidth !== -1 ? neckYFromWidth : Math.floor(minY + boxH * 0.42));
-  const minArmFlankDist = Math.max(2, Math.floor(scaleFactor));
-  const leftArmSearchMaxX = Math.floor(centerX - Math.max(3, boxW * 0.08));
-  const rightArmSearchMinX = Math.ceil(centerX + Math.max(3, boxW * 0.08));
-
-  // Only scan rows between candidate chin and above the bottom boundary outline
-  for (let y = candidateChinY + 1; y < maxY - 1; y++) {
-    if (rowLeft[y] === -1 || rowWidth[y] < 6) continue;
-    // Left arm seam: must have arm flesh to its left and chest to its right
-    const leftMinX = rowLeft[y] + minArmFlankDist;
-    for (let x = leftMinX; x <= leftArmSearchMaxX; x++) {
-      const idx = y * width + x;
-      if (isInkLine[idx] === 1 && isFeature[idx] === 0) {
-        if (isOpaque(x - 1, y) && isOpaque(x + 1, y)) {
-          leftArmSeamX[y] = x;
-          leftArmRowCount++;
-          break;
-        }
-      }
-    }
-    // Right arm seam: must have arm flesh to its right and chest to its left
-    const rightMaxX = rowRight[y] - minArmFlankDist;
-    for (let x = rightMaxX; x >= rightArmSearchMinX; x--) {
-      const idx = y * width + x;
-      if (isInkLine[idx] === 1 && isFeature[idx] === 0) {
-        if (isOpaque(x - 1, y) && isOpaque(x + 1, y)) {
-          rightArmSeamX[y] = x;
-          rightArmRowCount++;
-          break;
-        }
-      }
-    }
-  }
-
-  const minArmRows = Math.max(3, Math.floor(boxH * 0.12));
-  const hasLeftArm = leftArmRowCount >= minArmRows;
-  const hasRightArm = rightArmRowCount >= minArmRows;
-
-  // Determine if character has distinct head + torso/limbs, or is a head-only creature / bust
-  const hasTorsoBelow = chinYFromInk !== -1 || neckYFromWidth !== -1 || (hasLeftArm && hasRightArm);
-  if (!hasTorsoBelow) {
-    for (let i = 0; i < totalPixels; i++) {
-      if (macroDist[i] <= 0) continue;
-      if (isFeature[i] === 1) {
-        heightmap[i] = macroHeightmap[i];
-      } else if (isInkLine[i] === 1) {
-        heightmap[i] = macroHeightmap[i] * 0.70;
-      } else {
-        const microScaled = (microHeightmap[i] / bevelRadius) * maxMacroD;
-        heightmap[i] = macroHeightmap[i] * 0.70 + microScaled * 0.30;
-      }
-    }
-    return heightmap;
-  }
-
-  let chinY: number;
-  if (chinYFromInk !== -1) {
-    chinY = chinYFromInk;
-  } else if (neckYFromWidth !== -1) {
-    chinY = neckYFromWidth;
-  } else {
-    chinY = Math.floor(minY + boxH * 0.42);
-  }
-
-  const neckY = Math.min(maxY, chinY + Math.max(1, Math.floor(boxH * 0.06)));
-
-  // Head center and radii
-  let featSumX = 0;
-  let featSumY = 0;
-  let featCount = 0;
-  for (let y = minY; y <= chinY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      const idx = y * width + x;
-      if (isFeature[idx] === 1) {
-        featSumX += x;
-        featSumY += y;
-        featCount++;
-      }
-    }
-  }
-  const headCenterX = featCount > 0 ? featSumX / featCount : centerX;
-  const headCenterY = featCount > 0 ? featSumY / featCount : (minY + chinY) / 2;
-  const headRadiusX = Math.max(3.0, (rowWidth[Math.floor((minY + chinY) / 2)] || boxW * 0.6) * 0.5);
-  const headRadiusY = Math.max(3.0, (chinY - minY) * 0.55);
-
-  // 4. Side Ear detection in head region
-  let hasSideEars = false;
-  const earScanRows = Math.max(4, Math.floor(boxH * 0.40));
-  for (let y = minY; y < minY + earScanRows; y++) {
-    let segments = 0;
-    let inSeg = false;
-    for (let x = minX; x <= maxX; x++) {
-      const op = isOpaque(x, y);
-      if (op && !inSeg) {
-        segments++;
-        inSeg = true;
-      } else if (!op && inSeg) {
-        inSeg = false;
-      }
-    }
-    if (segments >= 2) {
-      hasSideEars = true;
-      break;
-    }
-  }
-  const earLeftX = headCenterX - headRadiusX * 0.95;
-  const earRightX = headCenterX + headRadiusX * 0.95;
-
-  // 5. Synthesize 3D Volumetric Heightmap
-  const zBaseHead = maxMacroD * 0.38;
-  const zBaseTorso = maxMacroD * 0.18;
-  const zBaseNeck = maxMacroD * 0.05;
-
-  // Pre-calculate proximity to facial features for smooth frontal cushion
-  const nearFeature = new Uint8Array(totalPixels);
-  if (featCount > 0) {
-    const rFeat = Math.max(2, Math.round(2 * scaleFactor));
-    for (let y = minY; y <= chinY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        const idx = y * width + x;
-        if (isFeature[idx] === 1) {
-          for (let dy = -rFeat; dy <= rFeat; dy++) {
-            for (let dx = -rFeat; dx <= rFeat; dx++) {
-              const ny = y + dy;
-              const nx = x + dx;
-              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                nearFeature[ny * width + nx] = 1;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  for (let y = minY; y <= maxY; y++) {
-    if (rowLeft[y] === -1) continue;
-
-    const leftArmX = leftArmSeamX[y];
-    const rightArmX = rightArmSeamX[y];
-    const torsoL = (hasLeftArm && leftArmX !== -1) ? leftArmX : rowLeft[y];
-    const torsoR = (hasRightArm && rightArmX !== -1) ? rightArmX : rowRight[y];
-    const torsoW = Math.max(2, torsoR - torsoL);
-    const torsoMidX = (torsoL + torsoR) / 2;
-
-    for (let x = minX; x <= maxX; x++) {
-      const idx = y * width + x;
-      if (!isOpaque(x, y) || macroDist[idx] <= 0) continue;
-
-      const isInk = isInkLine[idx] === 1 && isFeature[idx] === 0;
-
-      // Outer silhouette cushion: ensures perimeter bevels smoothly down to 0 without false crevices on outer cheeks
-      const rimRatio = Math.min(1.0, macroDist[idx] / Math.max(1.0, 2.8 * scaleFactor));
-      const outerBevel = Math.pow(rimRatio, 0.5);
-
-      if (y <= chinY) {
-        // --- ZONE: HEAD & EARS ---
-        const isEar = hasSideEars && (x < earLeftX || x > earRightX);
-        if (isEar) {
-          const dx = (x - (x < earLeftX ? earLeftX - 3 : earRightX + 3)) / Math.max(1, headRadiusX * 0.45);
-          const dy = (y - (minY + earScanRows / 2)) / Math.max(1, earScanRows * 0.5);
-          const rSq = dx * dx + dy * dy;
-          const earDome = Math.sqrt(Math.max(0, 1 - Math.min(1.0, rSq)));
-          heightmap[idx] = zBaseTorso + (maxMacroD * 0.35) * outerBevel * (0.60 + 0.40 * earDome);
-        } else {
-          const dx = (x - headCenterX) / Math.max(1, headRadiusX);
-          const dy = (y - headCenterY) / Math.max(1, headRadiusY);
-          const rSq = dx * dx + dy * dy;
-          const domeProfile = Math.sqrt(Math.max(0, 1 - Math.min(1.0, rSq)));
-
-          if (isFeature[idx] === 1 || nearFeature[idx] === 1) {
-            heightmap[idx] = zBaseHead + (maxMacroD * 0.40) * outerBevel;
-          } else {
-            heightmap[idx] = zBaseHead + (maxMacroD * 0.40) * outerBevel * (0.65 + 0.35 * domeProfile);
-          }
-        }
-      } else if (y <= neckY) {
-        // --- ZONE: NECK & THROAT ---
-        heightmap[idx] = zBaseNeck + (maxMacroD * 0.20) * outerBevel;
-      } else {
-        // --- ZONE: TORSO & ARMS ---
-        if (hasLeftArm && leftArmX !== -1 && x < leftArmX) {
-          const wArm = Math.max(2, leftArmX - rowLeft[y]);
-          const midArm = (rowLeft[y] + leftArmX) / 2;
-          const uArm = Math.max(-1, Math.min(1, (x - midArm) / (wArm / 2)));
-          const armCylinder = Math.sqrt(Math.max(0, 1 - uArm * uArm));
-          heightmap[idx] = zBaseTorso + (wArm * 0.35) * outerBevel * armCylinder;
-        } else if (hasRightArm && rightArmX !== -1 && x > rightArmX) {
-          const wArm = Math.max(2, rowRight[y] - rightArmX);
-          const midArm = (rightArmX + rowRight[y]) / 2;
-          const uArm = Math.max(-1, Math.min(1, (x - midArm) / (wArm / 2)));
-          const armCylinder = Math.sqrt(Math.max(0, 1 - uArm * uArm));
-          heightmap[idx] = zBaseTorso + (wArm * 0.35) * outerBevel * armCylinder;
-        } else {
-          const uTorso = Math.max(-1, Math.min(1, (x - torsoMidX) / (torsoW / 2)));
-          const chestBarrel = Math.sqrt(Math.max(0, 1 - uTorso * uTorso));
-          const yTaper = 1.0 - 0.18 * ((y - neckY) / Math.max(1, maxY - neckY));
-          const rChest = Math.max(2.0, (torsoW / 2) * 0.45);
-          heightmap[idx] = zBaseTorso + rChest * outerBevel * chestBarrel * yTaper;
-        }
-      }
-
-      // Only carve internal ink strokes (crevices/seams), not outer silhouette outlines
-      const isInternalInk =
-        isInk &&
-        x > 0 && x < width - 1 &&
-        y > 0 && y < height - 1 &&
-        isOpaque(x - 1, y) && isOpaque(x + 1, y) &&
-        isOpaque(x, y - 1) && isOpaque(x, y + 1);
-
-      if (isInternalInk) {
-        heightmap[idx] *= 0.65;
-      }
-    }
-  }
-
-  return heightmap;
-}
-
-/**
  * Analyzes the canvas pixel buffer and computes a content-aware, part-segmented
  * 2.5D height field, normal vectors, and ambient occlusion.
  *
  * Decomposes artwork into:
  * 1. Line art & dark facial contours (eyes, mouth, seams) - preserved as crevice barriers.
- * 2. Connected color components (anatomical parts: ears, head, body, limbs).
+ * 2. Connected material/color regions without assuming anatomical parts.
  * 3. Multi-scale depth synthesis (Macro form + Micro local part volume).
  */
 export function computeContentAwareHeightmap(
@@ -781,6 +442,8 @@ export function computeContentAwareHeightmap(
   const isInkLine = new Uint8Array(totalPixels);
   const isFeature = new Uint8Array(totalPixels);
   const componentMap = new Int32Array(totalPixels);
+  const colorHue = new Float32Array(totalPixels);
+  const colorChroma = new Float32Array(totalPixels);
 
   const isOpaque = (x: number, y: number): boolean => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
@@ -802,6 +465,22 @@ export function computeContentAwareHeightmap(
       const g = data[p + 1];
       const b = data[p + 2];
       lum[idx] = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+      const maxChannel = Math.max(r, g, b);
+      const minChannel = Math.min(r, g, b);
+      const chroma = maxChannel - minChannel;
+      colorChroma[idx] = chroma / 255;
+      if (chroma > 0) {
+        let hueSector: number;
+        if (maxChannel === r) {
+          hueSector = ((g - b) / chroma) % 6;
+        } else if (maxChannel === g) {
+          hueSector = (b - r) / chroma + 2;
+        } else {
+          hueSector = (r - g) / chroma + 4;
+        }
+        colorHue[idx] = (hueSector * 60 + 360) % 360;
+      }
     }
   }
 
@@ -838,29 +517,41 @@ export function computeContentAwareHeightmap(
 
       let touchesTransparent = false;
       let maxNeighborLum = 0;
-      const neighbors = [
-        [x + 1, y],
-        [x - 1, y],
-        [x, y + 1],
-        [x, y - 1],
+      type NeighborDirection = 'right' | 'left' | 'down' | 'up';
+      const neighborLum: Partial<Record<NeighborDirection, number>> = {};
+      const neighbors: Array<[number, number, NeighborDirection]> = [
+        [x + 1, y, 'right'],
+        [x - 1, y, 'left'],
+        [x, y + 1, 'down'],
+        [x, y - 1, 'up'],
       ];
-      for (const [nx, ny] of neighbors) {
+      for (const [nx, ny, direction] of neighbors) {
         if (!isOpaque(nx, ny)) {
           touchesTransparent = true;
         } else {
           const nLum = lum[ny * width + nx];
+          neighborLum[direction] = nLum;
           if (nLum > maxNeighborLum) maxNeighborLum = nLum;
         }
       }
 
       // Outer dark contour: touches transparent background AND is very dark (black/dark border)
-      if (touchesTransparent && myLum < 0.14) {
+      if (touchesTransparent && myLum < 0.30) {
         isInkLine[idx] = 1;
         continue;
       }
 
-      // Interior ink crevice / contour: significantly darker than neighboring interior fill
-      if (maxNeighborLum - myLum >= 0.16) {
+      // Interior ink is a thin stroke with brighter artwork on both opposing
+      // sides. A one-sided luminance step is usually the boundary of a painted
+      // shadow, not permanent line art; treating it as ink bakes that old
+      // lighting direction into every subsequent relight.
+      const horizontalStroke =
+        (neighborLum.left ?? myLum) - myLum >= 0.12 &&
+        (neighborLum.right ?? myLum) - myLum >= 0.12;
+      const verticalStroke =
+        (neighborLum.up ?? myLum) - myLum >= 0.12 &&
+        (neighborLum.down ?? myLum) - myLum >= 0.12;
+      if (horizontalStroke || verticalStroke) {
         isInkLine[idx] = 1;
         continue;
       }
@@ -950,6 +641,8 @@ export function computeContentAwareHeightmap(
       const baseR = data[p0];
       const baseG = data[p0 + 1];
       const baseB = data[p0 + 2];
+      const baseHue = colorHue[idx];
+      const baseChroma = colorChroma[idx];
 
       let qHead = 0;
       while (qHead < queue.length) {
@@ -973,8 +666,15 @@ export function computeContentAwareHeightmap(
           const dr = Math.abs(data[np] - baseR);
           const dg = Math.abs(data[np + 1] - baseG);
           const db = Math.abs(data[np + 2] - baseB);
+          const rawHueDistance = Math.abs(colorHue[nIdx] - baseHue);
+          const hueDistance = Math.min(rawHueDistance, 360 - rawHueDistance);
+          const sameAuthoredRamp =
+            baseChroma >= 0.05 &&
+            colorChroma[nIdx] >= 0.05 &&
+            hueDistance <= 35 &&
+            Math.abs(colorChroma[nIdx] - baseChroma) <= 0.25;
 
-          if (dr < 48 && dg < 48 && db < 48) {
+          if ((dr < 48 && dg < 48 && db < 48) || sameAuthoredRamp) {
             visitedComp[nIdx] = 1;
             componentMap[nIdx] = compId;
             queue.push(nIdx);
@@ -1130,40 +830,26 @@ export function computeContentAwareHeightmap(
     }
   }
 
-  // 7. Composite Heightmap: Anatomical Part Decomposition for Characters / Multi-Scale Part Domes for Props
-  const compositeHeightmap = isCharacter
-    ? computeAnatomicalCharacterHeightmap(
-        width,
-        height,
-        macroDist,
-        maxMacroD,
-        macroHeightmap,
-        microHeightmap,
-        bevelRadius,
-        isOpaque,
-        isInkLine,
-        isFeature,
-        minX,
-        maxX,
-        minY,
-        maxY,
-        scaleFactor
-      )
-    : (() => {
-        const h = new Float32Array(totalPixels);
-        for (let i = 0; i < totalPixels; i++) {
-          if (macroDist[i] <= 0) continue;
-          if (isFeature[i] === 1) {
-            h[i] = macroHeightmap[i];
-          } else if (isInkLine[i] === 1) {
-            h[i] = macroHeightmap[i] * 0.28;
-          } else {
-            const microScaled = (microHeightmap[i] / bevelRadius) * maxMacroD;
-            h[i] = macroHeightmap[i] * 0.58 + microScaled * 0.42;
-          }
-        }
-        return h;
-      })();
+  // 7. Composite Heightmap: neutral macro form plus local material detail.
+  // Keep geometry independent of light direction. The renderer moves light and
+  // shadow over this surface instead of baking guessed head/neck/limb zones into it.
+  const compositeHeightmap = new Float32Array(totalPixels);
+  for (let i = 0; i < totalPixels; i++) {
+    if (macroDist[i] <= 0) continue;
+
+    if (isFeature[i] === 1) {
+      compositeHeightmap[i] = macroHeightmap[i];
+    } else if (isInkLine[i] === 1) {
+      compositeHeightmap[i] = macroHeightmap[i] * (isCharacter ? 0.70 : 0.28);
+    } else {
+      const microScaled = (microHeightmap[i] / bevelRadius) * maxMacroD;
+      if (isCharacter) {
+        compositeHeightmap[i] = macroHeightmap[i] * 0.70 + microScaled * 0.30;
+      } else {
+        compositeHeightmap[i] = macroHeightmap[i] * 0.58 + microScaled * 0.42;
+      }
+    }
+  }
 
   // 8. Bilateral Filtering
   const smoothHeightmap = applyBilateralFilter(compositeHeightmap, width, height, 1.2, 1.6);

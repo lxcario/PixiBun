@@ -5,6 +5,8 @@ import { rgbaToHex } from '@/lib/canvas/floodFill';
 import { usePhotometricEvents } from './events/usePhotometricEvents';
 import { useGeometricEvents } from './events/useGeometricEvents';
 import { useArtisanEvents } from './events/useArtisanEvents';
+import { createId } from '@/lib/engine/id';
+import type { LayerEffectDescriptor } from '@/types/canvas';
 
 interface UseViewportStudioEventsProps {
   mainCanvasRef: RefObject<HTMLCanvasElement | null>;
@@ -17,9 +19,12 @@ interface UseViewportStudioEventsProps {
     description: string,
     overrideLayerId?: string,
     createdLayerId?: string,
-    createdLayerTag?: string
+    createdLayerTag?: string,
+    preserveLayerEffect?: boolean,
+    createdLayerIndex?: number
   ) => void;
   commitSnapshot: () => void;
+  discardSnapshot: () => void;
   performUndo: () => void;
   performRedo: () => void;
 }
@@ -33,6 +38,7 @@ export function useViewportStudioEvents({
   renderComposite,
   captureSnapshot,
   commitSnapshot,
+  discardSnapshot,
   performUndo,
   performRedo,
 }: UseViewportStudioEventsProps) {
@@ -59,13 +65,20 @@ export function useViewportStudioEvents({
         .reverse()
         .forEach((layer) => {
           if (!layer.visible) return;
+          const photometricAuxiliaryLayer =
+            excludeTag === 'photometric' &&
+            (layer.tag === 'auto-shade' ||
+              layer.tag === 'specular' ||
+              layer.tag === 'normal' ||
+              layer.tag === 'normal-map' ||
+              layer.tag === 'cast-shadow' ||
+              layer.tag === 'ground-shadow' ||
+              layer.tag === 'optical-output' ||
+              layer.tag === 'sel-out' ||
+              layer.tag === 'auto-outline');
           if (
             excludeTag &&
-            (layer.tag === excludeTag ||
-              (excludeTag === 'photometric' &&
-                (layer.tag === 'specular' ||
-                  layer.tag === 'normal' ||
-                  layer.tag === 'normal-map')))
+            (layer.tag === excludeTag || photometricAuxiliaryLayer)
           ) {
             return;
           }
@@ -82,14 +95,16 @@ export function useViewportStudioEvents({
         if (nonTaggedData[i] > 20) nonTaggedPixels++;
       }
 
-      // If the base artwork (excluding the target tag) has content, ALWAYS use it
-      if (nonTaggedPixels > 0) {
+      // A generator must never analyze its own cached output. If an explicit
+      // target tag was excluded and no authored source remains, return the
+      // empty source rather than recursively baking the old effect into itself.
+      if (nonTaggedPixels > 0 || excludeTag) {
         sCtx.globalAlpha = 1.0;
         sCtx.globalCompositeOperation = 'source-over';
         return sCtx;
       }
 
-      // 3. Fallback only if base artwork is completely empty: composite all visible layers
+      // 3. Untargeted tools may still fall back to the complete visible composite.
       const fullScratch = document.createElement('canvas');
       fullScratch.width = canvasWidth;
       fullScratch.height = canvasHeight;
@@ -148,54 +163,50 @@ export function useViewportStudioEvents({
 
   // Helper: write AI generated content to a dedicated tagged layer
   const updateTaggedLayer = useCallback(
-    (displayName: string, tag: string, drawFn: (ctx: CanvasRenderingContext2D) => void) => {
+    (
+      displayName: string,
+      tag: string,
+      drawFn: (ctx: CanvasRenderingContext2D) => void,
+      effect?: LayerEffectDescriptor
+    ) => {
       const state = useStudioStore.getState();
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
 
       const previousActiveLayerId = state.activeLayerId;
       let targetLayerId: string;
-      let isNewLayer = false;
+      let targetLayerIndex: number;
 
       // Find existing tagged layer strictly by explicit tag
       const existing = currentFrame.layers.find((l) => l.tag === tag);
 
       if (existing) {
         targetLayerId = existing.id;
-        if (existing.tag !== tag) {
-          state.setLayerTag(targetLayerId, tag);
-        }
-        if (existing.name !== displayName) {
-          state.renameLayer(targetLayerId, displayName);
-        }
+        targetLayerIndex = currentFrame.layers.findIndex((layer) => layer.id === targetLayerId);
+        // Capture raster and metadata before changing the generated layer so a
+        // single undo restores the complete pre-command state.
+        captureSnapshot(displayName, targetLayerId, undefined, tag, true, targetLayerIndex);
       } else {
-        isNewLayer = true;
-        state.addLayer(displayName, tag);
-        const freshState = useStudioStore.getState();
-        const freshFrame = freshState.frames[freshState.activeFrameIndex];
-        const newLayer = freshFrame?.layers[0];
-        if (!newLayer) return;
-        targetLayerId = newLayer.id;
-
-        if (tag === 'cast-shadow' || tag === 'ground-shadow') {
-          const layerCount = freshFrame.layers.length;
-          if (layerCount > 1) {
-            freshState.reorderLayers(0, layerCount - 1);
-          }
-        }
-      }
-
-      // Prune any extraneous duplicate layers with the same tag
-      const duplicateLayers = currentFrame.layers.filter(
-        (l) => l.tag === tag && l.id !== targetLayerId
-      );
-      if (duplicateLayers.length > 0) {
-        duplicateLayers.forEach((dup) => {
-          state.deleteLayer(dup.id);
+        targetLayerId = createId('layer');
+        targetLayerIndex = tag === 'cast-shadow' || tag === 'ground-shadow'
+          ? currentFrame.layers.length
+          : 0;
+        useStudioStore.setState((draft) => {
+          const frame = draft.frames[draft.activeFrameIndex];
+          if (!frame) return;
+          frame.layers.splice(targetLayerIndex, 0, {
+            id: targetLayerId,
+            name: displayName,
+            visible: true,
+            locked: false,
+            opacity: 1,
+            blendMode: 'source-over',
+            tag,
+          });
+          draft.activeLayerId = targetLayerId;
         });
+        captureSnapshot(displayName, targetLayerId, targetLayerId, tag, true, targetLayerIndex);
       }
-
-      captureSnapshot(displayName, targetLayerId, isNewLayer ? targetLayerId : undefined, tag);
 
       const lCanvas = getOrCreateLayerCanvas(targetLayerId);
       const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
@@ -204,6 +215,22 @@ export function useViewportStudioEvents({
         lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
         drawFn(lCtx);
       }
+
+      useStudioStore.setState((draft) => {
+        const layer = draft.frames[draft.activeFrameIndex]?.layers.find(
+          (candidate) => candidate.id === targetLayerId
+        );
+        if (!layer) return;
+        layer.name = displayName;
+        layer.tag = tag;
+        layer.effect = effect
+          ? {
+              ...structuredClone(effect),
+              id: existing?.effect?.id ?? effect.id ?? createId('effect'),
+              updatedAt: effect.updatedAt ?? Date.now(),
+            }
+          : undefined;
+      });
 
       commitSnapshot();
       renderComposite();
@@ -237,7 +264,7 @@ export function useViewportStudioEvents({
     compositeSourceSnapshot,
     updateTaggedLayer,
     compositeNormalMapSnapshot,
-    performUndo,
+    discardSnapshot,
   });
 
   useGeometricEvents({

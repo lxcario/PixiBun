@@ -9,11 +9,26 @@ import {
   type ProjectValidationResult,
   type SerializedFrame,
 } from '@/types/project';
+import type { LayerEffectRecipe, SmartEffectKind, SmartEffectParameter } from '@/types/canvas';
 import { SafeJson } from '@/lib/safety/safeJson';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 
 const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
+const SMART_EFFECT_KINDS = new Set<SmartEffectKind>([
+  'photometric',
+  'auto-shade',
+  'cast-shadow',
+  'ground-shadow',
+  'volumetric-optics',
+  'normal-map',
+  'specular',
+  'sel-out',
+  'outline',
+  'autotile',
+  'wfc',
+]);
+const EFFECT_SOURCE_MODES = new Set(['composite-excluding-self', 'active-layer', 'selection']);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -29,6 +44,73 @@ function isUnitInterval(value: unknown): value is number {
 
 function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
+}
+
+export function validateLayerEffect(input: unknown): LayerEffectRecipe | string | undefined {
+  if (input === undefined) return undefined;
+  if (!isPlainObject(input)) return 'has malformed effect metadata.';
+  if (typeof input.id !== 'string' || input.id.length === 0 || input.id.length > 128) {
+    return 'has an invalid effect identifier.';
+  }
+  if (typeof input.kind !== 'string' || !SMART_EFFECT_KINDS.has(input.kind as SmartEffectKind)) {
+    return 'uses an unknown smart effect.';
+  }
+  if (input.version !== 1 || typeof input.sourceMode !== 'string' || !EFFECT_SOURCE_MODES.has(input.sourceMode)) {
+    return 'uses an unsupported effect recipe.';
+  }
+  if (!isPlainObject(input.params) || Object.keys(input.params).length > 64) {
+    return 'has malformed effect parameters.';
+  }
+  const params: Record<string, SmartEffectParameter> = {};
+  for (const [key, value] of Object.entries(input.params)) {
+    if (key.length > 64 || !/^[a-zA-Z][a-zA-Z0-9]*$/.test(key)) return 'has an invalid effect parameter name.';
+    if (Array.isArray(value)) {
+      if (value.length > 256 || !value.every((item) => typeof item === 'string' && item.length <= 64)) {
+        return 'has an invalid list effect parameter.';
+      }
+      params[key] = value.slice();
+      continue;
+    }
+    if (value !== null && typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+      return 'has an invalid effect parameter.';
+    }
+    if (typeof value === 'number' && !Number.isFinite(value)) return 'has a non-finite effect parameter.';
+    params[key] = value as SmartEffectParameter;
+  }
+
+  let analysis: LayerEffectRecipe['analysis'];
+  if (input.analysis !== undefined) {
+    if (!isPlainObject(input.analysis)) return 'has malformed effect analysis.';
+    analysis = {
+      formType:
+        input.analysis.formType === 'character' || input.analysis.formType === 'orb' || input.analysis.formType === 'prop'
+          ? input.analysis.formType
+          : undefined,
+      sourceLightAzimuth: typeof input.analysis.sourceLightAzimuth === 'number' && Number.isFinite(input.analysis.sourceLightAzimuth)
+        ? input.analysis.sourceLightAzimuth
+        : undefined,
+      sourceLightElevation: typeof input.analysis.sourceLightElevation === 'number' && Number.isFinite(input.analysis.sourceLightElevation)
+        ? input.analysis.sourceLightElevation
+        : undefined,
+      cueStrength: typeof input.analysis.cueStrength === 'number' && Number.isFinite(input.analysis.cueStrength)
+        ? Math.max(0, Math.min(1, input.analysis.cueStrength))
+        : typeof input.analysis.confidence === 'number' && Number.isFinite(input.analysis.confidence)
+          ? Math.max(0, Math.min(1, input.analysis.confidence))
+        : undefined,
+      rationale: typeof input.analysis.rationale === 'string' ? input.analysis.rationale.slice(0, 1000) : undefined,
+    };
+  }
+
+  if (!isIntegerInRange(input.updatedAt, 0, Number.MAX_SAFE_INTEGER)) return 'has an invalid effect timestamp.';
+  return {
+    id: input.id,
+    kind: input.kind as SmartEffectKind,
+    version: 1,
+    sourceMode: input.sourceMode as LayerEffectRecipe['sourceMode'],
+    params,
+    analysis,
+    updatedAt: input.updatedAt,
+  };
 }
 
 function validateFrame(input: unknown, frameIndex: number): SerializedFrame | string {
@@ -68,6 +150,8 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
     if (rawLayer.tag !== undefined && (typeof rawLayer.tag !== 'string' || rawLayer.tag.length > 128)) {
       return `Frame ${frameIndex + 1}, layer ${i + 1} has an invalid tag.`;
     }
+    const effect = validateLayerEffect(rawLayer.effect);
+    if (typeof effect === 'string') return `Frame ${frameIndex + 1}, layer ${i + 1} ${effect}`;
     layers.push({
       id: rawLayer.id,
       name: rawLayer.name,
@@ -77,6 +161,7 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
       blendMode: rawLayer.blendMode as SerializedFrame['layers'][number]['blendMode'],
       pngBase64: rawLayer.pngBase64,
       tag: rawLayer.tag as string | undefined,
+      effect,
     });
   }
 
@@ -86,7 +171,7 @@ function validateFrame(input: unknown, frameIndex: number): SerializedFrame | st
 /**
  * Upgrades legacy project payloads (such as v1 files) to the current format specification
  * by backfilling safe default values for newly introduced fields (clips, customRamps,
- * onionSkin settings, layer blendMode, opacity, lock flags).
+ * onionSkin settings, layer blendMode, opacity, lock flags, and effect recipes).
  */
 export function migrateProjectPayload(raw: Record<string, unknown>): Record<string, unknown> {
   const migrated: Record<string, unknown> = { ...raw };
@@ -158,11 +243,22 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     return { ok: false, error: 'This file was not saved by PixiBun, so it cannot be opened here.' };
   }
 
-  // 1. Forward-compatibility guard: reject files saved with a newer PixiBun format
-  if (typeof cleanInput.version === 'number' && cleanInput.version > PROJECT_FORMAT_VERSION) {
+  // Validate the original tag before migration. Only a missing tag is treated
+  // as legacy; strings, fractions, negatives, and zero must not be normalized
+  // into a valid current project.
+  if (
+    cleanInput.version !== undefined &&
+    !isIntegerInRange(cleanInput.version, 1, PROJECT_FORMAT_VERSION)
+  ) {
+    if (typeof cleanInput.version === 'number' && cleanInput.version > PROJECT_FORMAT_VERSION) {
+      return {
+        ok: false,
+        error: `This project was saved in format v${cleanInput.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file.`,
+      };
+    }
     return {
       ok: false,
-      error: `This project was saved in format v${cleanInput.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file.`,
+      error: `This project uses an invalid format version (${String(cleanInput.version)}).`,
     };
   }
 

@@ -60,12 +60,16 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
     set(state => {
       state.canvasWidth = width;
       state.canvasHeight = height;
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   setProjectName: name => {
     set(state => {
       state.projectName = name;
+      state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 

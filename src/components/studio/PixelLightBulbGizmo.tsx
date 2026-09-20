@@ -41,6 +41,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   const setLightAzimuth = useStudioStore((s) => s.setLightAzimuth);
   const setLightElevation = useStudioStore((s) => s.setLightElevation);
   const setLightBrightness = useStudioStore((s) => s.setLightBrightness);
+  const setShadingBands = useStudioStore((s) => s.setShadingBands);
 
   const [dragTarget, setDragTarget] = useState<'none' | 'bulb' | 'center'>('none');
   const [brightness, setBrightness] = useState<number>(() => tools.lightBrightness ?? 1.15);
@@ -166,17 +167,35 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     scheduleLightChange(tools.lightAzimuth, tools.lightElevation, cx, cy, brightness);
   }, [canvasWidth, canvasHeight, tools.lightAzimuth, tools.lightElevation, brightness, scheduleLightChange]);
 
+  const handleApply = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    flushLightChange();
+    onCommit();
+  }, [flushLightChange, onCommit]);
+
+  const handleCancel = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    pendingChangeRef.current = null;
+    onCancel();
+  }, [onCancel]);
+
   // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength, Alt+R to reset focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
-        onCommit();
+        handleApply();
       } else if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        onCancel();
+        handleCancel();
       } else if (e.key === '[' || e.key === '-') {
         e.preventDefault();
         e.stopPropagation();
@@ -196,7 +215,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [onCommit, onCancel, adjustStrength, resetFocus]);
+  }, [handleApply, handleCancel, adjustStrength, resetFocus]);
 
   // Listen for wheel events dispatched from viewport background
   useEffect(() => {
@@ -475,9 +494,50 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
 
         <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
 
+        {/* Shading Bands Mode: 1 Single | 2 Dual | 3 Trio */}
+        <div
+          title="Shading Color Tones: 1 = Single (1 shadow), 2 = Dual (2 shadows), 3 = Trio (3 shadows)"
+          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
+        >
+          <span className="text-[10px] text-[#dcabdf] uppercase">Shade</span>
+          <div className="flex items-center gap-0.5" role="group" aria-label="Shading tones">
+            {([1, 2, 3] as const).map((count) => {
+              const active = tools.shadingBands === count;
+              const label = count === 1 ? '1' : count === 2 ? '2' : '3';
+              const title = count === 1
+                ? 'Single: 1 shadow tone (classic 2-tone cel-shading)'
+                : count === 2
+                ? 'Dual: 2 shadow tones (mid + core shadow)'
+                : 'Trio: 3 shadow tones (soft penumbra + mid + deep core)';
+              return (
+                <button
+                  key={count}
+                  type="button"
+                  data-testid={`pixel-light-shade-${count}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShadingBands(count);
+                    scheduleLightChange(tools.lightAzimuth, tools.lightElevation, canvasCentroid.x, canvasCentroid.y, brightness);
+                  }}
+                  title={title}
+                  className={`px-1.5 py-0.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
+                    active
+                      ? 'bg-[#f0be7c] text-[#181124] shadow-xs'
+                      : 'text-[#dcabdf] hover:text-[#ffe082] hover:bg-[#382352]'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
+
         <button
           type="button"
-          onClick={onCommit}
+          onClick={handleApply}
           title="Commit and bake lighting into layer (Enter)"
           aria-label="Apply"
           data-testid="pixel-light-apply"
@@ -489,7 +549,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
 
         <button
           type="button"
-          onClick={onCancel}
+          onClick={handleCancel}
           title="Discard preview and restore layer (Esc)"
           aria-label="Cancel"
           data-testid="pixel-light-cancel"

@@ -8,8 +8,8 @@
  * 4. Normal Map Texture Baker (Standard Tangent Space RGB 128, 128, 255)
  * 5. Discrete Laplace Cavity Map / Ambient Occlusion (AO)
  * 6. Photometric Lighting Pipeline (Blinn-Phong 1977, SIGGRAPH)
- * 7. 2D Volumetric Optics & Subsurface Scattering (Henyey & Greenstein 1941, ApJ)
- * 8. Anisotropic Specular Highlights (Kajiya & Kay 1989, SIGGRAPH)
+ * 7. 2D Volumetric Optics & Subsurface Scattering (Henyey & Greenstein 1941, ApJ; Poisson kernel on S¹)
+ * 8. Anisotropic Specular Highlights & Dual Cuticle Shifts (Kajiya & Kay 1989, SIGGRAPH; Marschner et al. 2003; Scheuermann 2004)
  * 9. Dielectric Fresnel Reflection with Cauchy Chromatic Dispersion
  * 10. OKLab / OKLCH Perceptual Color Spaces (Ottosson 2020)
  * 11. Dithering: Bayer Matrix (1973), Atkinson (1984), Riemersma Hilbert Space-Filling Curve (1998)

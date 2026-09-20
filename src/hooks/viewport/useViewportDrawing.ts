@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
-import { HistoryStep } from '@/types/canvas';
+import { HistoryStep, Layer } from '@/types/canvas';
 import { deleteBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { captureProjectBuffers } from '@/lib/engine/structuralHistory';
 import { useStudioStore } from '@/stores/studioStore';
@@ -77,7 +77,9 @@ export function useViewportDrawing({
       description: string = 'Stroke',
       overrideLayerId?: string,
       createdLayerId?: string,
-      createdLayerTag?: string
+      createdLayerTag?: string,
+      preserveLayerEffect: boolean = false,
+      createdLayerIndex?: number
     ) => {
       const targetLayerId = overrideLayerId || activeLayerId;
       const currentLayerCanvas = getOrCreateLayerCanvas(targetLayerId);
@@ -85,6 +87,9 @@ export function useViewportDrawing({
       if (!ctx) return;
 
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const targetLayer = useStudioStore.getState().frames[activeFrameIndex]?.layers.find(
+        (layer) => layer.id === targetLayerId
+      );
       currentStrokeSnapshotRef.current = {
         type: 'pixel',
         layerId: targetLayerId,
@@ -93,6 +98,11 @@ export function useViewportDrawing({
         description,
         createdLayerId,
         createdLayerTag,
+        createdLayerIndex,
+        layerName: targetLayer?.name,
+        layerTag: targetLayer?.tag,
+        preserveLayerEffect,
+        layerEffect: targetLayer?.effect ? structuredClone(targetLayer.effect) : undefined,
       };
     },
     [activeFrameIndex, activeLayerId, canvasWidth, canvasHeight, getOrCreateLayerCanvas]
@@ -102,6 +112,18 @@ export function useViewportDrawing({
   const commitSnapshot = useCallback(() => {
     if (currentStrokeSnapshotRef.current) {
       const snapshot = currentStrokeSnapshotRef.current;
+      if (
+        snapshot.type !== 'structural' &&
+        !snapshot.preserveLayerEffect &&
+        snapshot.layerId
+      ) {
+        useStudioStore.setState((state) => {
+          const layer = state.frames[snapshot.frameIndex]?.layers.find(
+            (candidate) => candidate.id === snapshot.layerId
+          );
+          if (layer) layer.effect = undefined;
+        });
+      }
       historyEngineRef.current.push(snapshot);
       currentStrokeSnapshotRef.current = null;
       setCanUndo(historyEngineRef.current.canUndo);
@@ -115,6 +137,13 @@ export function useViewportDrawing({
       }
     }
   }, [onCommitHistory, setCanRedo, setCanUndo]);
+
+  // Abandon an in-progress preview without touching the committed undo stack.
+  // Long-lived interactive tools restore their own preview buffer, then use
+  // this to ensure the captured pre-preview pixels cannot be committed later.
+  const discardSnapshot = useCallback(() => {
+    currentStrokeSnapshotRef.current = null;
+  }, []);
 
   // Undo Action (Supports both Pixel and Structural steps)
   const performUndo = useCallback(() => {
@@ -148,6 +177,20 @@ export function useViewportDrawing({
         description: previousStep.description,
         createdLayerId: previousStep.createdLayerId,
         createdLayerTag: previousStep.createdLayerTag,
+        createdLayerIndex: previousStep.createdLayerIndex,
+        layerName: useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
+          (layer) => layer.id === previousStep.layerId
+        )?.name,
+        layerTag: useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
+          (layer) => layer.id === previousStep.layerId
+        )?.tag,
+        preserveLayerEffect: previousStep.preserveLayerEffect,
+        layerEffect: (() => {
+          const effect = useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
+            (layer) => layer.id === previousStep.layerId
+          )?.effect;
+          return effect ? structuredClone(effect) : undefined;
+        })(),
       };
     }
 
@@ -177,6 +220,18 @@ export function useViewportDrawing({
         if (targetCtx) {
           targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
         }
+        useStudioStore.setState((state) => {
+          const layer = state.frames[stepToRestore.frameIndex]?.layers.find(
+            (candidate) => candidate.id === stepToRestore.layerId
+          );
+          if (layer) {
+            layer.name = stepToRestore.layerName ?? layer.name;
+            layer.tag = stepToRestore.layerTag;
+            layer.effect = stepToRestore.layerEffect
+              ? structuredClone(stepToRestore.layerEffect)
+              : undefined;
+          }
+        });
       }
     }
 
@@ -184,6 +239,7 @@ export function useViewportDrawing({
     setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
+    useStudioStore.getState().setDirty(true);
   }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Redo Action (Supports both Pixel and Structural steps)
@@ -218,6 +274,20 @@ export function useViewportDrawing({
         description: nextStep.description,
         createdLayerId: nextStep.createdLayerId,
         createdLayerTag: nextStep.createdLayerTag,
+        createdLayerIndex: nextStep.createdLayerIndex,
+        layerName: useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+          (layer) => layer.id === nextStep.layerId
+        )?.name,
+        layerTag: useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+          (layer) => layer.id === nextStep.layerId
+        )?.tag,
+        preserveLayerEffect: nextStep.preserveLayerEffect,
+        layerEffect: (() => {
+          const effect = useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+            (layer) => layer.id === nextStep.layerId
+          )?.effect;
+          return effect ? structuredClone(effect) : undefined;
+        })(),
       };
     }
 
@@ -244,15 +314,23 @@ export function useViewportDrawing({
           useStudioStore.setState((state) => {
             const frame = state.frames[stepToRestore.frameIndex];
             if (!frame) return;
-            frame.layers.unshift({
+            const recreatedLayer: Layer = {
               id: stepToRestore.createdLayerId!,
-              name: stepToRestore.description,
+              name: stepToRestore.layerName ?? stepToRestore.description,
               visible: true,
               locked: false,
               opacity: 1,
               blendMode: 'source-over',
               ...(stepToRestore.createdLayerTag ? { tag: stepToRestore.createdLayerTag } : {}),
-            });
+              ...(stepToRestore.layerEffect
+                ? { effect: structuredClone(stepToRestore.layerEffect) }
+                : {}),
+            };
+            const insertionIndex = Math.max(
+              0,
+              Math.min(stepToRestore.createdLayerIndex ?? 0, frame.layers.length)
+            );
+            frame.layers.splice(insertionIndex, 0, recreatedLayer);
             if (state.activeFrameIndex === stepToRestore.frameIndex) {
               state.activeLayerId = stepToRestore.createdLayerId!;
             }
@@ -266,6 +344,18 @@ export function useViewportDrawing({
         if (targetCtx) {
           targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
         }
+        useStudioStore.setState((state) => {
+          const layer = state.frames[stepToRestore.frameIndex]?.layers.find(
+            (candidate) => candidate.id === stepToRestore.layerId
+          );
+          if (layer) {
+            layer.name = stepToRestore.layerName ?? layer.name;
+            layer.tag = stepToRestore.layerTag;
+            layer.effect = stepToRestore.layerEffect
+              ? structuredClone(stepToRestore.layerEffect)
+              : undefined;
+          }
+        });
       }
     }
 
@@ -273,6 +363,7 @@ export function useViewportDrawing({
     setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
+    useStudioStore.getState().setDirty(true);
   }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Draw points on active layer
@@ -361,6 +452,7 @@ export function useViewportDrawing({
     rafBufferBumpRef,
     captureSnapshot,
     commitSnapshot,
+    discardSnapshot,
     performUndo,
     performRedo,
     drawPointsOnActiveLayer,

@@ -14,6 +14,7 @@ import {
 } from '@/lib/ai/smartMathEngine';
 import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
 import type { ViewportEventContext } from './types';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 export function useGeometricEvents({
   canvasWidth,
@@ -51,6 +52,11 @@ export function useGeometricEvents({
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
+      }, {
+        kind: 'auto-shade',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: { lightAzimuth: lightAz, lightElevation: lightEl, shadowIntensity: 0.8 },
       });
     };
 
@@ -78,6 +84,11 @@ export function useGeometricEvents({
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
+      }, {
+        kind: 'specular',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: { lightAzimuth: lightAz, lightElevation: lightEl, material: tools.materialPreset },
       });
     };
 
@@ -96,35 +107,41 @@ export function useGeometricEvents({
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
+      }, {
+        kind: 'sel-out',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: { lightAzimuth: lightAz },
       });
     };
 
     const handleAutoOutlineEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       const strokeColor = customEvent.detail?.color || '#2B2038';
+      const thickness = Math.max(1, Math.min(8, Math.round(customEvent.detail?.thickness ?? 1)));
 
-      captureSnapshot('AI Auto Outline');
-      const srcCtx = compositeSourceSnapshot();
+      const srcCtx = compositeSourceSnapshot('auto-outline');
       if (!srcCtx) return;
 
       const { strokePixels } = generateOuterStrokeData(
         srcCtx,
         canvasWidth,
         canvasHeight,
-        strokeColor
+        strokeColor,
+        thickness
       );
 
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d');
-      if (tCtx) {
+      updateTaggedLayer(`Outline ${thickness}px`, 'auto-outline', (outCtx) => {
         strokePixels.forEach((p) => {
-          tCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          tCtx.fillRect(p.x, p.y, 1, 1);
+          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
+          outCtx.fillRect(p.x, p.y, 1, 1);
         });
-        commitSnapshot();
-        renderComposite();
-        bumpBufferVersion();
-      }
+      }, {
+        kind: 'outline',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: { color: strokeColor, thickness },
+      });
     };
 
     const handleGroundShadowEvent = () => {
@@ -137,6 +154,11 @@ export function useGeometricEvents({
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
+      }, {
+        kind: 'ground-shadow',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: {},
       });
     };
 
@@ -172,6 +194,22 @@ export function useGeometricEvents({
 
       updateTaggedLayer('Cast Shadow', 'cast-shadow', (outCtx) => {
         outCtx.putImageData(shadowImgData, 0, 0);
+      }, {
+        kind: 'cast-shadow',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: {
+          lightX: detail.lightX ?? Math.round(canvasWidth / 2),
+          lightY: detail.lightY ?? Math.round(canvasHeight / 4),
+          lightAzimuth: detail.lightAzimuth ?? null,
+          lightElevation: detail.lightElevation ?? null,
+          lightRadius: detail.lightRadius ?? 16,
+          shadowOpacity: detail.shadowOpacity ?? 0.65,
+          shadowColor: detail.shadowColor ?? '#180B26',
+          ditherMode: detail.ditherMode ?? 'none',
+          shadowStyle: detail.shadowStyle ?? 'cast',
+          mode: detail.mode ?? 'bounded-2.5d',
+        },
       });
     };
 
@@ -218,6 +256,23 @@ export function useGeometricEvents({
 
       updateTaggedLayer('Cast Shadow', 'cast-shadow', (outCtx) => {
         outCtx.putImageData(shadowImgData, 0, 0);
+      }, {
+        kind: 'cast-shadow',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: {
+          lightX: inferred.lightX,
+          lightY: inferred.lightY,
+          lightAzimuth: inferred.lightAzimuth ?? null,
+          lightElevation: inferred.lightElevation ?? null,
+          lightRadius: inferred.lightRadius,
+          shadowOpacity: inferred.shadowOpacity,
+          shadowColor: inferred.shadowColor,
+          ditherMode: detail.ditherMode ?? inferred.ditherMode ?? 'none',
+          shadowStyle: detail.shadowStyle ?? 'cast',
+          mode: 'bounded-2.5d',
+        },
+        analysis: { rationale: inferred.rationale },
       });
     };
 
@@ -227,7 +282,7 @@ export function useGeometricEvents({
         customEvent.detail?.angle ??
         (typeof customEvent.detail === 'number' ? customEvent.detail : 45);
 
-      captureSnapshot(`RotSprite ${angle}°`);
+      pushStructuralHistoryStep(`RotSprite ${angle}°`);
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
       if (tCtx) {
@@ -255,7 +310,15 @@ export function useGeometricEvents({
           });
         }
 
-        commitSnapshot();
+        useStudioStore.setState((draft) => {
+          const frame = draft.frames[draft.activeFrameIndex];
+          if (!frame) return;
+          frame.layers.forEach((layer) => {
+            if (layer.id === activeLayerId || layer.tag) layer.effect = undefined;
+          });
+          draft.isDirty = true;
+          draft.editRevision += 1;
+        });
         renderComposite();
         bumpBufferVersion();
       }

@@ -2,13 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 
 export const MobileStudioGate: React.FC = () => {
   return (
     <div className="lg:hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[var(--desk-bg)] text-[var(--text-heading)] p-6 text-center font-mono">
-      <div className="w-20 h-20 bg-[var(--desk-surface-raised)] border-2 border-[var(--accent-gold)] rounded-full flex items-center justify-center mb-6 shadow-[0_4px_0_var(--desk-border)]">
-        <BunMascot size={48} pose="idle" />
+      <div className="mb-6 flex justify-center">
+        <PixiBunLogo size="lg" className="drop-shadow-md" />
       </div>
       <h1 className="text-xl font-bold font-display text-[var(--accent-gold)] mb-3">
         Desk Too Small

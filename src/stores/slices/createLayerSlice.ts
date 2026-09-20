@@ -4,7 +4,7 @@ import { createId } from '@/lib/engine/id';
 import { getOrCreateBuffer, cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
-export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
+export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   activeLayerId: 'layer-1',
 
   setActiveLayer: layerId => {
@@ -33,10 +33,13 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       currentFrame.layers.unshift(newLayer);
       state.activeLayerId = newLayerId;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   deleteLayer: (layerId, skipHistory) => {
+    const frame = get().frames[get().activeFrameIndex];
+    if (!frame || frame.layers.length <= 1 || !frame.layers.some((layer) => layer.id === layerId)) return;
     if (!skipHistory) pushStructuralHistoryStep('Delete Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -48,10 +51,13 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
         state.activeLayerId = currentFrame.layers[0].id;
       }
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   duplicateLayer: layerId => {
+    const frame = get().frames[get().activeFrameIndex];
+    if (!frame?.layers.some((layer) => layer.id === layerId)) return;
     pushStructuralHistoryStep('Duplicate Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -66,16 +72,29 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
         ...src,
         id: newLayerId,
         name: `${src.name} (Copy)`,
+        effect: src.effect
+          ? { ...structuredClone(src.effect), id: createId('effect'), updatedAt: Date.now() }
+          : undefined,
       };
 
       currentFrame.layers.splice(idx, 0, duplicate);
       cloneBuffers([layerId], [newLayerId], state.canvasWidth, state.canvasHeight);
       state.activeLayerId = newLayerId;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
   reorderLayers: (startIndex, endIndex) => {
+    const frame = get().frames[get().activeFrameIndex];
+    if (
+      !frame ||
+      startIndex < 0 ||
+      startIndex >= frame.layers.length ||
+      endIndex < 0 ||
+      endIndex >= frame.layers.length ||
+      startIndex === endIndex
+    ) return;
     pushStructuralHistoryStep('Reorder Layers');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -84,6 +103,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const [removed] = currentFrame.layers.splice(startIndex, 1);
       currentFrame.layers.splice(endIndex, 0, removed);
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 
@@ -95,6 +115,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (layer) {
         layer.visible = !layer.visible;
         state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -106,6 +127,8 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
         layer.locked = !layer.locked;
+        state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -118,6 +141,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (layer) {
         layer.opacity = Math.max(0, Math.min(1, opacity));
         state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -130,6 +154,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (layer) {
         layer.blendMode = blendMode;
         state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -142,6 +167,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (layer) {
         layer.name = name;
         state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
@@ -157,11 +183,28 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       if (layer) {
         layer.tag = tag;
         state.isDirty = true;
+        state.editRevision += 1;
+      }
+    });
+  },
+
+  setLayerEffect: (layerId, effect) => {
+    set(state => {
+      const currentFrame = state.frames[state.activeFrameIndex];
+      if (!currentFrame) return;
+      const layer = currentFrame.layers.find(l => l.id === layerId);
+      if (layer) {
+        layer.effect = effect ? structuredClone(effect) : undefined;
+        state.isDirty = true;
+        state.editRevision += 1;
       }
     });
   },
 
   mergeLayerDown: layerId => {
+    const frame = get().frames[get().activeFrameIndex];
+    const layerIndex = frame?.layers.findIndex((layer) => layer.id === layerId) ?? -1;
+    if (!frame || frame.layers.length <= 1 || layerIndex < 0 || layerIndex >= frame.layers.length - 1) return;
     pushStructuralHistoryStep('Merge Down Layer');
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -191,8 +234,10 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = set => ({
       deleteBuffers([upper.id]);
 
       state.activeLayerId = lower.id;
+      lower.effect = undefined;
       state.bufferVersion += 1;
       state.isDirty = true;
+      state.editRevision += 1;
     });
   },
 });

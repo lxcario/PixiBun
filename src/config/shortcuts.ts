@@ -112,7 +112,7 @@ export const TOOL_GROUPS = [
   })),
 }));
 
-/** Tool metadata dictionary derived for ContextOptionsBar */
+/** Tool metadata dictionary shared by toolbar and shortcut surfaces. */
 export const TOOL_METADATA_MAP: Record<string, { label: string; shortcut: string; icon: PixelIconName }> =
   CANONICAL_TOOLS.reduce(
     (acc, tool) => {

@@ -12,7 +12,7 @@ import { CenterViewport } from './CenterViewport';
 import { BottomTimeline } from './BottomTimeline';
 import { ArtisanHandbookPanel } from '@/components/onboarding/ArtisanHandbookPanel';
 import { OnboardingOverlay } from '@/components/onboarding/OnboardingOverlay';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -183,20 +183,16 @@ export const PlaygroundLayout: React.FC = () => {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2 hover:opacity-90 transition-opacity focus-visible:outline-none"
+            className="flex items-center gap-2 hover:opacity-95 transition-all group focus-visible:outline-none"
             title="Return to PixiBun Home"
           >
-            <div className="w-7 h-7 flex items-center justify-center bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] p-0.5 shadow-sm">
-              <BunMascot size={18} animate />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-display font-bold text-xs tracking-wider text-[var(--text-heading)]">
-                PIXIBUN
-              </span>
-              <span className="text-[9px] font-mono font-bold text-[var(--accent-gold)]">
-                PLAYGROUND
-              </span>
-            </div>
+            <PixiBunLogo
+              showSubtitle={false}
+              className="group-hover:scale-105 transition-transform drop-shadow-sm"
+            />
+            <span className="text-[9px] font-mono font-bold text-[var(--accent-gold)] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] px-1.5 py-0.5 rounded-[2px] shadow-sm select-none">
+              PLAYGROUND
+            </span>
           </Link>
 
           <div className="h-4 w-px bg-[var(--desk-border)] mx-1" />

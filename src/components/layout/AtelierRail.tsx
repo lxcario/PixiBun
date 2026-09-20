@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
 import StudioTooltip from '@/components/ui/StudioTooltip';
 import { TactileButton } from '@/components/ui/TactileButton';
@@ -204,17 +204,18 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="h-10 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center justify-between px-3 gap-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="h-11 sm:h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center justify-between px-3 gap-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Atelier Logo Mark */}
-        <div className="flex items-center gap-1.5 pr-1 border-r border-[var(--desk-border)]">
-          <BunMascot size={18} pose="idle" />
-          <span className="font-bold text-xs tracking-wider text-[var(--accent-gold)] uppercase select-none">
-            PixiBun
-          </span>
-        </div>
+        <a
+          href="/"
+          title="Return to PixiBun Home"
+          className="flex items-center gap-1.5 pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 hover:scale-[1.02] transition-all"
+        >
+          <PixiBunLogo className="drop-shadow-sm" />
+        </a>
 
         {/* Project Name (Click to edit) */}
         {isEditingName ? (

@@ -1,8 +1,8 @@
-import type { BlendMode } from './canvas';
+import type { BlendMode, LayerEffectRecipe } from './canvas';
 import type { ColorPalette, ColorRamp } from './palette';
 import type { AnimationClip, LoopMode, OnionSkinSettings } from './animation';
 
-export const PROJECT_FORMAT_VERSION = 2;
+export const PROJECT_FORMAT_VERSION = 3;
 export const PROJECT_FORMAT_ID = 'pixibun-project' as const;
 
 export interface SerializedLayer {
@@ -13,6 +13,7 @@ export interface SerializedLayer {
   opacity: number; // 0..1
   blendMode: BlendMode;
   tag?: string;
+  effect?: LayerEffectRecipe;
   /** Lossless PNG encoding of this layer's pixel buffer, base64-encoded. */
   pngBase64?: string;
 }

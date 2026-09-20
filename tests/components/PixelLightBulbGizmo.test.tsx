@@ -66,6 +66,32 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it('flushes the latest queued strength change before applying', () => {
+    const callOrder: string[] = [];
+    const onCommit = vi.fn(() => callOrder.push('commit'));
+    const onCancel = vi.fn();
+    const onLightChange = vi.fn(() => callOrder.push('render'));
+
+    render(
+      <PixelLightBulbGizmo
+        canvasWidth={32}
+        canvasHeight={32}
+        zoom={1600}
+        mainCanvasRef={dummyCanvasRef}
+        onCommit={onCommit}
+        onCancel={onCancel}
+        onLightChange={onLightChange}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId('pixel-light-strength-inc'));
+    fireEvent.click(screen.getByTestId('pixel-light-apply'));
+
+    expect(onLightChange).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(callOrder).toEqual(['render', 'commit']);
+  });
+
   it('triggers onCommit when Enter key is pressed', () => {
     const onCommit = vi.fn();
     const onCancel = vi.fn();

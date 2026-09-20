@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { AnimationFrame, BlendMode, FrameTag, TagLoopMode } from '@/types/canvas';
+import { AnimationFrame, BlendMode, FrameTag, LayerEffectRecipe, TagLoopMode } from '@/types/canvas';
 import {
   ToolType,
   ToolSettings,
@@ -9,6 +9,7 @@ import {
   AnisoFlowPreset,
   CelToneCount,
   WallpaperGroup,
+  ShadingBandMode,
 } from '@/types/tools';
 import { ColorPalette, ColorRamp, PaletteCycleTrack } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
@@ -82,8 +83,11 @@ export interface ToolSlice {
   setLightElevation: (elevation: number) => void;
   setLightRadius: (radius: number) => void;
   setLightBrightness: (brightness: number) => void;
+  setSourceShadingRemoval: (amount: number) => void;
   setMaterialPreset: (preset: MaterialType) => void;
+  setFormType: (formType: 'auto' | 'character' | 'orb' | 'prop') => void;
   setMinecraftSkinMode: (mode: 'auto' | 'enabled' | 'disabled') => void;
+  setShadingBands: (bands: ShadingBandMode) => void;
   setCavityStrength: (strength: number) => void;
   setDitherModulation: (mod: number) => void;
   setCurveTightness: (tightness: number) => void;
@@ -136,6 +140,7 @@ export interface LayerSlice {
   setLayerBlendMode: (layerId: string, blendMode: BlendMode) => void;
   renameLayer: (layerId: string, name: string) => void;
   setLayerTag: (layerId: string, tag: string) => void;
+  setLayerEffect: (layerId: string, effect: LayerEffectRecipe | undefined) => void;
   mergeLayerDown: (layerId: string) => void;
 }
 

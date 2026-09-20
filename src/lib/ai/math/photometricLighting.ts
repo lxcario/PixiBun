@@ -5,10 +5,14 @@
  * 1. J. F. Blinn, "Models of light reflection for computer synthesized pictures",
  *    ACM SIGGRAPH Computer Graphics, 11(2): 192–198, 1977 (Blinn-Phong half-vector specular model).
  * 2. L. G. Henyey & J. L. Greenstein, "Diffuse radiation in the galaxy",
- *    The Astrophysical Journal, 93: 70–83, 1941 (Henyey-Greenstein 2D phase function for forward subsurface scattering).
+ *    The Astrophysical Journal, 93: 70–83, 1941 (Henyey-Greenstein 3D phase function, adapted with 2D circumference prefactor for empirical sprite subsurface scattering).
  * 3. J. T. Kajiya & T. L. Kay, "Rendering fur with three dimensional textures",
  *    ACM SIGGRAPH Computer Graphics, 23(3): 271–280, 1989 (Kajiya-Kay anisotropic specular reflection).
- * 4. Augustin-Jean Fresnel, "Mémoire sur la loi des modifications que la réflexion imprime à la lumière polarisée",
+ * 4. S. R. Marschner, H. W. Jensen, M. Cammarano, S. Worley, and P. Hanrahan, "Light scattering from human hair fibers",
+ *    ACM Transactions on Graphics (SIGGRAPH 2003), 22(3): 780–791 (Hair cuticle scale angle shift).
+ * 5. T. Scheuermann, "Practical real-time hair rendering and shading",
+ *    ACM SIGGRAPH 2004 Sketches (Tangent offset dual-specular approximation for Kajiya-Kay).
+ * 6. Augustin-Jean Fresnel, "Mémoire sur la loi des modifications que la réflexion imprime à la lumière polarisée",
  *    Mémoires de l'Académie des Sciences, 1827 (Dielectric Fresnel reflectance with Cauchy chromatic dispersion delta).
  */
 
@@ -20,10 +24,12 @@ import {
   VolumetricOpticsParams,
   OpticalPresetType,
   AnisoFlowPreset,
+  ShadingBandMode,
+  CharacterRampBounds,
 } from '@/types/tools';
 import { hexToRgba } from '@/lib/canvas/floodFill';
 import { decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
-import { rgbToOKLab, deltaEOKLab, okLabToOKLCH, oklchToOKLab, okLabToRGB, shiftHue } from './colorSpace';
+import { rgbToOKLab, deltaEOKLab, okLabToOKLCH, oklchToOKLab, okLabToRGB } from './colorSpace';
 import { inferPhotometricSettings } from './photometricAuto';
 import {
   type NormalVectorField,
@@ -194,7 +200,7 @@ export const OPTICAL_PROFILES: Record<OpticalPresetType, OpticalMaterialProfile>
  * Note: Evaluates the canonical 3D Henyey-Greenstein (1941) kernel (exponent 1.5) with a 2D circumference
  * prefactor (1 / 2π). While non-normalized as a pure 2D angular density on S¹ (where the 2D Poisson
  * kernel uses exponent 1.0), it serves as a bounded, artistic forward-scattering highlight curve, clamped
- * to [0, 1.0] at line 1059 in the relighting pipeline.
+ * to [0, 1.0] at line 1385 in the relighting pipeline.
  */
 export function phaseHG2D(cosTheta: number, g: number): number {
   const gClamped = Math.max(-0.95, Math.min(0.95, g));
@@ -364,6 +370,9 @@ export interface CelRamp {
   baseR: number;
   baseG: number;
   baseB: number;
+  softR: number;
+  softG: number;
+  softB: number;
   shadowR: number;
   shadowG: number;
   shadowB: number;
@@ -379,24 +388,32 @@ export function buildCelRamp(r: number, g: number, b: number): CelRamp {
   const lab = rgbToOKLab(r, g, b);
   const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
 
-  // 1. Unified Shadow Tone: cool ambient hue shift towards blue-violet (260°), crisp luminance drop
-  const shadowL = Math.max(0.04, Math.min(lch.L * 0.78, lch.L - 0.03));
-  const shadowH = shiftHue(lch.h, 260, 14);
-  const shadowC = Math.min(0.35, lch.C * 1.05);
+  // Preserve the authored hue/chroma family. Earlier blue-violet hue shifts
+  // visibly repainted sprites and made the lighting look like corruption.
+
+  // 1. Soft / Half-Tone Transition Shadow (penumbra step between base and core shadow)
+  const softL = Math.max(0.05, Math.min(lch.L * 0.93, lch.L - 0.015));
+  const softLab = oklchToOKLab(softL, lch.C, lch.h);
+  const softRgb = okLabToRGB(softLab.L, softLab.a, softLab.b);
+
+  // 2. Directional Mid-Shadow (core shadow)
+  const shadowL = Math.max(0.04, Math.min(lch.L * 0.86, lch.L - 0.025));
+  const shadowH = lch.h;
+  const shadowC = lch.C;
   const shadowLab = oklchToOKLab(shadowL, shadowC, shadowH);
   const shadowRgb = okLabToRGB(shadowLab.L, shadowLab.a, shadowLab.b);
 
-  // 2. Deep Crevice Tone (occluded seams, under-chin, inner folds)
-  const deepL = Math.max(0.02, Math.min(lch.L * 0.60, lch.L - 0.06));
-  const deepH = shiftHue(lch.h, 260, 20);
-  const deepC = Math.min(0.35, lch.C * 1.08);
+  // 3. Deep Crevice / Umbra Tone (occluded seams, under-chin, inner folds)
+  const deepL = Math.max(0.02, Math.min(lch.L * 0.72, lch.L - 0.05));
+  const deepH = lch.h;
+  const deepC = lch.C;
   const deepLab = oklchToOKLab(deepL, deepC, deepH);
   const deepRgb = okLabToRGB(deepLab.L, deepLab.a, deepLab.b);
 
-  // 3. Highlight Tone: warm shift towards sunlight (65°)
-  const hiL = Math.min(0.98, lch.L + (0.98 - lch.L) * 0.28);
-  const hiH = shiftHue(lch.h, 65, 10);
-  const hiC = Math.min(0.35, lch.C * 0.95);
+  // 4. Highlight raises lightness without changing the artwork's hue identity.
+  const hiL = Math.min(0.98, lch.L + (0.98 - lch.L) * 0.22);
+  const hiH = lch.h;
+  const hiC = lch.C;
   const hiLab = oklchToOKLab(hiL, hiC, hiH);
   const hiRgb = okLabToRGB(hiLab.L, hiLab.a, hiLab.b);
 
@@ -404,6 +421,9 @@ export function buildCelRamp(r: number, g: number, b: number): CelRamp {
     baseR: r,
     baseG: g,
     baseB: b,
+    softR: softRgb.r,
+    softG: softRgb.g,
+    softB: softRgb.b,
     shadowR: shadowRgb.r,
     shadowG: shadowRgb.g,
     shadowB: shadowRgb.b,
@@ -416,14 +436,127 @@ export function buildCelRamp(r: number, g: number, b: number): CelRamp {
   };
 }
 
+interface CharacterRampSample {
+  key: number;
+  count: number;
+  L: number;
+  a: number;
+  b: number;
+  C: number;
+  h: number;
+}
+
+
+function hueDistance(a: number, b: number): number {
+  const distance = Math.abs(a - b) % 360;
+  return Math.min(distance, 360 - distance);
+}
+
+/**
+ * Finds likely authored palette ramps without flattening them. The returned
+ * lightness bounds are only a guardrail for ratio-image relighting: they let us
+ * lift a painted shadow toward an existing light tone, while preserving every
+ * pixel's hue, chroma, texture, and local value differences.
+ */
+function buildArtworkRampBounds(
+  data: Uint8ClampedArray,
+  isFeatureMask: Uint8Array | null
+): Map<number, CharacterRampBounds> {
+  const stats = new Map<number, { r: number; g: number; b: number; count: number }>();
+
+  for (let pIdx = 0, idx = 0; pIdx < data.length; pIdx += 4, idx++) {
+    if (data[pIdx + 3] <= 30 || isFeatureMask?.[idx] === 1) continue;
+
+    const r = data[pIdx];
+    const g = data[pIdx + 1];
+    const b = data[pIdx + 2];
+    const key = (r << 16) | (g << 8) | b;
+    const existing = stats.get(key);
+    if (existing) {
+      existing.count++;
+    } else {
+      stats.set(key, { r, g, b, count: 1 });
+    }
+  }
+
+  const samples: CharacterRampSample[] = Array.from(stats.entries()).map(([key, color]) => {
+    const lab = rgbToOKLab(color.r, color.g, color.b);
+    const lch = okLabToOKLCH(lab.L, lab.a, lab.b);
+    return {
+      key,
+      count: color.count,
+      L: lch.L,
+      a: lab.a,
+      b: lab.b,
+      C: lch.C,
+      h: lch.h,
+    };
+  });
+
+  const clusters: CharacterRampSample[][] = [];
+  for (const sample of samples.sort((a, b) => b.count - a.count)) {
+    // Near-neutral ramps cannot be separated reliably by hue. Leaving them
+    // untouched prevents white, grey, and black costume regions from merging.
+    if (sample.C < 0.025) continue;
+
+    let bestCluster: CharacterRampSample[] | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (const cluster of clusters) {
+      const anchor = cluster[0];
+      const hDistance = hueDistance(sample.h, anchor.h);
+      const cDistance = Math.abs(sample.C - anchor.C);
+      const distance = hDistance / 24 + cDistance / 0.10;
+      if (hDistance <= 24 && cDistance <= 0.10 && distance < bestDistance) {
+        bestCluster = cluster;
+        bestDistance = distance;
+      }
+    }
+
+    if (bestCluster) {
+      bestCluster.push(sample);
+    } else {
+      clusters.push([sample]);
+    }
+  }
+
+  const rampBounds = new Map<number, CharacterRampBounds>();
+  for (const cluster of clusters) {
+    if (cluster.length < 2) continue;
+
+    const minL = Math.min(...cluster.map((sample) => sample.L));
+    const maxL = Math.max(...cluster.map((sample) => sample.L));
+    if (maxL - minL < 0.08) continue;
+
+    const candidates = cluster.filter((sample) => sample.L >= maxL - 0.12);
+    const reference = candidates.reduce((best, sample) => {
+      if (sample.count !== best.count) return sample.count > best.count ? sample : best;
+      return sample.L > best.L ? sample : best;
+    });
+
+    for (const sample of cluster) {
+      rampBounds.set(sample.key, {
+        minL,
+        maxL,
+        referenceL: reference.L,
+        referenceA: reference.a,
+        referenceB: reference.b,
+      });
+    }
+  }
+
+  return rampBounds;
+}
+
 export function computePhotometricAnalysis(
   srcCtx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  params: PhotometricLightingParams
+  params: PhotometricLightingParams,
+  precomputedInference?: ReturnType<typeof inferPhotometricSettings>
 ): PhotometricAnalysisGeometry {
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
+  const sourceLighting = precomputedInference ?? inferPhotometricSettings(data, width, height);
 
   const isOpaque = (x: number, y: number) => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
@@ -433,7 +566,7 @@ export function computePhotometricAnalysis(
   let formType = params.formType;
   let inferredCavity = 1.0;
   if (!formType || formType === 'auto' || params.cavityStrength === undefined) {
-    const inferred = inferPhotometricSettings(data, width, height);
+    const inferred = sourceLighting;
     if (!formType || formType === 'auto') formType = inferred.formType;
     inferredCavity = inferred.cavityStrength;
   }
@@ -517,6 +650,10 @@ export function computePhotometricAnalysis(
     cavityAO,
     isFeatureMask,
     isInkLineMask,
+    sourceLightAzimuth: sourceLighting.lightAzimuth,
+    sourceLightElevation: sourceLighting.lightElevation,
+    directionalShadingCue: sourceLighting.directionalShadingCue,
+    artworkRampBounds: buildArtworkRampBounds(data, isFeatureMask),
   };
 }
 
@@ -554,6 +691,7 @@ export function executePhotometricPipeline(
   let cavityAO: Float32Array;
   let isFeatureMask: Uint8Array | null = null;
   let isInkLineMask: Uint8Array | null = null;
+  let artworkRampBounds: Map<number, CharacterRampBounds> | undefined;
 
   if (params.precomputedAnalysis) {
     formType = params.precomputedAnalysis.formType;
@@ -569,6 +707,7 @@ export function executePhotometricPipeline(
     cavityAO = params.precomputedAnalysis.cavityAO;
     isFeatureMask = params.precomputedAnalysis.isFeatureMask ?? null;
     isInkLineMask = params.precomputedAnalysis.isInkLineMask ?? null;
+    artworkRampBounds = params.precomputedAnalysis.artworkRampBounds;
   } else {
     const analysis = computePhotometricAnalysis(srcCtx, width, height, params);
     formType = analysis.formType;
@@ -576,6 +715,7 @@ export function executePhotometricPipeline(
     cavityAO = analysis.cavityAO;
     isFeatureMask = analysis.isFeatureMask ?? null;
     isInkLineMask = analysis.isInkLineMask ?? null;
+    artworkRampBounds = analysis.artworkRampBounds;
   }
 
   const mat = MATERIAL_PROFILES[params.material] || MATERIAL_PROFILES.matte;
@@ -618,6 +758,9 @@ export function executePhotometricPipeline(
     }
     return ramp;
   };
+  artworkRampBounds = paletteOKLab.length === 0
+    ? artworkRampBounds ?? buildArtworkRampBounds(data, isFeatureMask)
+    : undefined;
 
   const outputCanvas = typeof document !== 'undefined'
     ? document.createElement('canvas')
@@ -631,7 +774,13 @@ export function executePhotometricPipeline(
   const hasCustomCenter = params.lightCenterX !== undefined && params.lightCenterY !== undefined;
   const lCenterX = hasCustomCenter ? params.lightCenterX! : width / 2;
   const lCenterY = hasCustomCenter ? params.lightCenterY! : height / 2;
-  const attRadius = Math.max(params.lightRadius ?? 64, Math.max(width, height) * 1.6);
+  const sceneScale = Math.max(width, height);
+  const lightOrbitDistance = Math.max(8, sceneScale * 1.25);
+  const pointLightX = lCenterX + Lx * lightOrbitDistance;
+  const pointLightY = lCenterY + Ly * lightOrbitDistance;
+  const pointLightZ = Lz * lightOrbitDistance;
+  const radiusScale = Math.max(0.35, Math.min(2, (params.lightRadius ?? 64) / 64));
+  const focusRadius = Math.max(4, sceneScale * 0.65 * radiusScale);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -664,62 +813,131 @@ export function executePhotometricPipeline(
         }
       }
 
-      const origR = data[pIdx] / 255;
-      const origG = data[pIdx + 1] / 255;
-      const origB = data[pIdx + 2] / 255;
-
       const Nx = normalField.nx[idx];
       const Ny = normalField.ny[idx];
       const Nz = normalField.nz[idx];
 
       const ao = cavityAO[idx];
 
-      const pixLx = Lx;
-      const pixLy = Ly;
-      const pixLz = Lz;
-      const pixNormHx = normHx;
-      const pixNormHy = normHy;
-      const pixNormHz = normHz;
+      let pixLx = Lx;
+      let pixLy = Ly;
+      let pixLz = Lz;
+      let pixNormHx = normHx;
+      let pixNormHy = normHy;
+      let pixNormHz = normHz;
       let effectiveFalloff = 1.0;
 
       if (hasCustomCenter) {
-        const dx = lCenterX - x;
-        const dy = lCenterY - y;
-        const dist2D = Math.sqrt(dx * dx + dy * dy);
-        const normDist = Math.min(1.0, dist2D / attRadius);
-        const falloff = (1 - normDist * normDist) * (1 - normDist * normDist);
-        effectiveFalloff = falloff * 0.25 + 0.75;
+        // Treat the dragged center as the point light's target position. The
+        // bulb's azimuth/elevation offsets a virtual light from that target;
+        // translating the center therefore changes both local direction and
+        // spatial intensity instead of merely nudging a global multiplier.
+        const toLightX = pointLightX - x;
+        const toLightY = pointLightY - y;
+        const toLightZ = pointLightZ;
+        const toLightLength = Math.sqrt(
+          toLightX * toLightX + toLightY * toLightY + toLightZ * toLightZ
+        ) || 1;
+        pixLx = toLightX / toLightLength;
+        pixLy = toLightY / toLightLength;
+        pixLz = toLightZ / toLightLength;
+
+        const localHx = pixLx + Vx;
+        const localHy = pixLy + Vy;
+        const localHz = pixLz + Vz;
+        const localHLength = Math.sqrt(
+          localHx * localHx + localHy * localHy + localHz * localHz
+        ) || 1;
+        pixNormHx = localHx / localHLength;
+        pixNormHy = localHy / localHLength;
+        pixNormHz = localHz / localHLength;
+
+        const focusDx = lCenterX - x;
+        const focusDy = lCenterY - y;
+        const focusDistance = Math.sqrt(focusDx * focusDx + focusDy * focusDy);
+        const normalizedFocusDistance = focusDistance / focusRadius;
+        const inverseQuadratic = 1 / (
+          1 + 1.8 * normalizedFocusDistance * normalizedFocusDistance
+        );
+        // Retain a small fill contribution outside the focus so moving the
+        // handle never punches a hard circular hole into pixel art.
+        effectiveFalloff = 0.18 + inverseQuadratic * 0.82;
       }
 
       // Half-Lambert Wrap Lighting (Valve Mitchell/McTaggart/Green 2006 formulation)
       // w = 0.55 softens the shadow terminator so light wraps gently around rounded volumes.
       const rawNdotL = Nx * pixLx + Ny * pixLy + Nz * pixLz;
       const wrapNdotL = Math.pow(Math.max(0, (rawNdotL + 0.55) / 1.55), 1.25);
-      const effectiveAmbient = Math.max(0.48, params.ambientIntensity ?? 0.48) * brightness;
+      // Light strength controls the lamp, not the room. Multiplying ambient by
+      // strength (and then multiplying the final result again) previously
+      // clipped most pixels at 250%, erasing the bulb direction.
+      const effectiveAmbient = Math.max(0.08, Math.min(0.65, params.ambientIntensity ?? 0.42));
 
-      if (formType === 'character' && paletteOKLab.length === 0) {
-        // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for character anatomy.
+      const sourceKey = (data[pIdx] << 16) | (data[pIdx + 1] << 8) | data[pIdx + 2];
+      const rampBounds = artworkRampBounds?.get(sourceKey);
+      let byteR = data[pIdx];
+      let byteG = data[pIdx + 1];
+      let byteB = data[pIdx + 2];
+
+      if (rampBounds && (params.sourceShadingRemoval ?? 0) > 0) {
+        const sourceLab = rgbToOKLab(byteR, byteG, byteB);
+        const sourceLch = okLabToOKLCH(sourceLab.L, sourceLab.a, sourceLab.b);
+        const rampSpan = Math.max(0.08, rampBounds.maxL - rampBounds.minL);
+        const authoredDarkness = Math.max(0, Math.min(1, (rampBounds.maxL - sourceLch.L) / rampSpan));
+        // At 100%, every non-feature color in a detected hue ramp converges on
+        // one albedo representative. The current N┬╖L then creates all visible
+        // cel tones, so an old purple shadow cannot remain fixed in place.
+        const removalAmount = authoredDarkness > 0.02
+          ? Math.max(0, Math.min(1, params.sourceShadingRemoval ?? 0))
+          : 0;
+
+        if (removalAmount > 0.01) {
+          // Bounded intrinsic-style normalization: only colors belonging to a
+          // detected chromatic ramp are lifted toward that ramp's representative
+          // albedo. Protected features, ink, neutral colors, hue and chroma
+          // families remain separate.
+          const recoveredLab = {
+            L: sourceLab.L + (rampBounds.referenceL - sourceLab.L) * removalAmount,
+            a: sourceLab.a + (rampBounds.referenceA - sourceLab.a) * removalAmount,
+            b: sourceLab.b + (rampBounds.referenceB - sourceLab.b) * removalAmount,
+          };
+          const recoveredRgb = okLabToRGB(recoveredLab.L, recoveredLab.a, recoveredLab.b);
+          byteR = recoveredRgb.r;
+          byteG = recoveredRgb.g;
+          byteB = recoveredRgb.b;
+        }
+      }
+
+      const origR = byteR / 255;
+      const origG = byteG / 255;
+      const origB = byteB / 255;
+
+      const useCelShading = (params.shadingBands !== undefined || formType === 'character') && paletteOKLab.length === 0;
+      if (useCelShading) {
+        // Discrete OKLCH cel-shading mode: discrete OKLCH tone stepping with cached ramps for character anatomy & pixel art forms.
         // Preserves hand-drawn pixel art palette purity instead of generating muddy 24-bit float gradients.
         //
         // Shadow placement is driven PURELY by the directional diffuse signal (wrapNdotL).
-        // The ambient contribution must NOT factor into shadow threshold decisions — it fills all
-        // surfaces equally and would overwhelm the directional terminator (ambSignal ≈ 1.27 makes
+        // The ambient contribution must NOT factor into shadow threshold decisions ΓÇö it fills all
+        // surfaces equally and would overwhelm the directional terminator (ambSignal Γëê 1.27 makes
         // lightLevel > shadowThresh everywhere, producing a visually flat result with zero shadow).
         const diffSignal = wrapNdotL * effectiveFalloff;
 
-        const byteR = data[pIdx];
-        const byteG = data[pIdx + 1];
-        const byteB = data[pIdx + 2];
         const ramp = getCelRamp(byteR, byteG, byteB);
 
         // Directional cel shadow terminator threshold:
         // diffSignal ranges from 0 (surface facing away from light) to ~1 (surface facing light).
-        // Modulated inversely by brightness relative to default (1.15) so increasing light strength
-        // pushes the shadow boundary back, while dimmer light expands shadow coverage across anatomy.
-        let shadowThresh =
-          Math.abs(brightness - 1.15) < 1e-6
-            ? 0.55
-            : Math.max(0.15, Math.min(0.85, (0.55 * 1.15) / Math.max(0.2, brightness)));
+        // Modulated inversely by lamp strength (brightness): higher strength pushes the shadow boundary back
+        // (fewer shadow pixels, illuminating more of the character anatomy), while dimmer strength
+        // causes shadows to encroach forward across the surface (more shadow pixels).
+        let shadowThresh: number;
+        if (brightness <= 1.15) {
+          const t = Math.max(0, Math.min(1, (1.15 - brightness) / 0.85));
+          shadowThresh = 0.52 + t * 0.30;
+        } else {
+          const t = Math.max(0, Math.min(1, (brightness - 1.15) / 1.35));
+          shadowThresh = 0.52 - t * 0.32;
+        }
         if (params.ditherModulation > 0) {
           const ditherVal = getBayerMatrixThreshold(x, y, params.bayerSize);
           shadowThresh += (ditherVal - 0.5) * 0.16 * params.ditherModulation;
@@ -728,7 +946,7 @@ export function executePhotometricPipeline(
         // Cavity AO crevice threshold: deep concave seams trigger the darkest tone.
         // Dynamically scales with cavityStrength to prevent dense thin-appendage geometry from being engulfed.
         const cavStrength = params.cavityStrength ?? 1.0;
-        const creviceAOThresh = Math.min(0.60, Math.max(0.20, 0.60 * cavStrength));
+        const creviceAOThresh = Math.min(0.30, Math.max(0.12, 0.12 + 0.16 * cavStrength));
 
         // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
         const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
@@ -736,45 +954,85 @@ export function executePhotometricPipeline(
         // Highlight uses the full directional signal amplified by brightness
         const highlightLevel = diffSignal * brightness;
 
-        if (ao < creviceAOThresh) {
-          // DEEP CREVICE TONE (ambient occlusion in concave seams, under-chin, inner folds)
-          outData[pIdx] = ramp.deepR;
-          outData[pIdx + 1] = ramp.deepG;
-          outData[pIdx + 2] = ramp.deepB;
-          outData[pIdx + 3] = data[pIdx + 3];
+        // Shading bands mode: 1 = Single (1 shadow color), 2 = Dual (2 shadow colors), 3 = Trio (3 shadow colors)
+        const bands = params.shadingBands ?? 2;
+
+        let toneR: number;
+        let toneG: number;
+        let toneB: number;
+
+        if (ao < creviceAOThresh && diffSignal < shadowThresh + 0.10) {
+          // Deep crevice tone (ambient cavity occlusion)
+          toneR = ramp.deepR;
+          toneG = ramp.deepG;
+          toneB = ramp.deepB;
         } else if (diffSignal < shadowThresh) {
-          // UNIFIED SHADOW TONE (single crisp shadow value across entire unlit side)
-          outData[pIdx] = ramp.shadowR;
-          outData[pIdx + 1] = ramp.shadowG;
-          outData[pIdx + 2] = ramp.shadowB;
-          outData[pIdx + 3] = data[pIdx + 3];
+          // Directional shadow tones partitioned by shading band count
+          if (bands === 1) {
+            // Single shading mode: 1 shadow tone across entire shadow side
+            toneR = ramp.shadowR;
+            toneG = ramp.shadowG;
+            toneB = ramp.shadowB;
+          } else if (bands === 3) {
+            // Trio shading mode: 3 shadow tones (soft penumbra -> core mid-shadow -> deep umbra)
+            const splitUmbra = shadowThresh * 0.32;
+            const splitCore = shadowThresh * 0.65;
+            if (diffSignal < splitUmbra) {
+              toneR = ramp.deepR;
+              toneG = ramp.deepG;
+              toneB = ramp.deepB;
+            } else if (diffSignal < splitCore) {
+              toneR = ramp.shadowR;
+              toneG = ramp.shadowG;
+              toneB = ramp.shadowB;
+            } else {
+              toneR = ramp.softR;
+              toneG = ramp.softG;
+              toneB = ramp.softB;
+            }
+          } else {
+            // Dual shading mode (default): 2 shadow tones (core mid-shadow + deep shadow)
+            const splitCore = shadowThresh * 0.48;
+            if (diffSignal < splitCore) {
+              toneR = ramp.deepR;
+              toneG = ramp.deepG;
+              toneB = ramp.deepB;
+            } else {
+              toneR = ramp.shadowR;
+              toneG = ramp.shadowG;
+              toneB = ramp.shadowB;
+            }
+          }
         } else if (highlightLevel > 1.10 && isShinyMaterial) {
-          // HIGHLIGHT TONE (only for non-matte / shiny surfaces)
-          outData[pIdx] = ramp.hiR;
-          outData[pIdx + 1] = ramp.hiG;
-          outData[pIdx + 2] = ramp.hiB;
-          outData[pIdx + 3] = data[pIdx + 3];
+          // Specular highlight tone (only for shiny/metallic materials, suppressed on fabric/matte)
+          toneR = ramp.hiR;
+          toneG = ramp.hiG;
+          toneB = ramp.hiB;
         } else {
-          // BASE TONE (hand-drawn artist color preserved across 55%-60% of the surface)
-          outData[pIdx] = ramp.baseR;
-          outData[pIdx + 1] = ramp.baseG;
-          outData[pIdx + 2] = ramp.baseB;
-          outData[pIdx + 3] = data[pIdx + 3];
+          // Base authored artist color
+          toneR = ramp.baseR;
+          toneG = ramp.baseG;
+          toneB = ramp.baseB;
         }
+        outData[pIdx] = toneR;
+        outData[pIdx + 1] = toneG;
+        outData[pIdx + 2] = toneB;
+        outData[pIdx + 3] = data[pIdx + 3];
         continue;
       }
 
       // Standard diffuse + specular shading (for orbs, props, or when palette snapping)
-      const diffR = mat.kd * wrapNdotL * (origR * lightR) * effectiveFalloff;
-      const diffG = mat.kd * wrapNdotL * (origG * lightG) * effectiveFalloff;
-      const diffB = mat.kd * wrapNdotL * (origB * lightB) * effectiveFalloff;
+      const lightIntensity = Math.max(0.3, Math.min(2.5, brightness));
+      const diffR = mat.kd * wrapNdotL * (origR * lightR) * effectiveFalloff * lightIntensity;
+      const diffG = mat.kd * wrapNdotL * (origG * lightG) * effectiveFalloff * lightIntensity;
+      const diffB = mat.kd * wrapNdotL * (origB * lightB) * effectiveFalloff * lightIntensity;
 
       const NdotH = Math.max(0, Nx * pixNormHx + Ny * pixNormHy + Nz * pixNormHz);
       const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);
 
-      let specR = Ispec * lightR;
-      let specG = Ispec * lightG;
-      let specB = Ispec * lightB;
+      let specR = Ispec * lightR * lightIntensity;
+      let specG = Ispec * lightG * lightIntensity;
+      let specB = Ispec * lightB * lightIntensity;
 
       if (mat.isMetallic) {
         specR *= origR;
@@ -787,9 +1045,9 @@ export function executePhotometricPipeline(
       const ambG = origG * effectiveAmbient * effectiveAO;
       const ambB = origB * effectiveAmbient * effectiveAO;
 
-      let totalR = Math.max(0, Math.min(1.0, (ambR + diffR + specR) * (brightness * 0.9)));
-      let totalG = Math.max(0, Math.min(1.0, (ambG + diffG + specG) * (brightness * 0.9)));
-      let totalB = Math.max(0, Math.min(1.0, (ambB + diffB + specB) * (brightness * 0.9)));
+      let totalR = Math.max(0, Math.min(1.0, ambR + diffR + specR));
+      let totalG = Math.max(0, Math.min(1.0, ambG + diffG + specG));
+      let totalB = Math.max(0, Math.min(1.0, ambB + diffB + specB));
 
       if (params.ditherModulation > 0) {
         const threshold = getBayerMatrixThreshold(x, y, params.bayerSize);
@@ -842,6 +1100,7 @@ export interface LightParameters {
   rimLight: boolean;
   selOut: boolean;
   material?: string;
+  shadingBands?: ShadingBandMode;
   minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
 }
 
@@ -875,31 +1134,31 @@ export function renderParametric2p5DLighting(
   const inferred = inferPhotometricSettings(data, width, height);
   const isCharacter = inferred.formType === 'character';
 
-  let normalField: NormalVectorField;
   let charFeatureMask: Uint8Array | null = null;
   let charInkMask: Uint8Array | null = null;
 
-  if (isMcSkin) {
-    normalField = computeMinecraftSkinNormalField(width, height);
-  } else if (isCharacter) {
+  if (isCharacter) {
     const analysis = computeContentAwareHeightmap(data, width, height, inferred.cavityStrength ?? 1.0, 2.0, params.azimuthDeg);
-    normalField = analysis.normalField;
     charFeatureMask = analysis.isFeature;
     charInkMask = analysis.isInkLine;
-  } else {
-    normalField = computeTangentNormalField(
-      applyBilateralFilter(
-        generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
+  }
+
+  // Smooth macro silhouette normal field for specular reflections:
+  // Continuous 3D cushion without eye-socket cliffs or color-boundary cuts.
+  const specularNormalField = isMcSkin
+    ? computeMinecraftSkinNormalField(width, height)
+    : computeTangentNormalField(
+        applyBilateralFilter(
+          generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5),
+          width,
+          height,
+          1.5,
+          2.0
+        ),
         width,
         height,
-        1.5,
         2.0
-      ),
-      width,
-      height,
-      2.0
-    );
-  }
+      );
 
   const azRad = (params.azimuthDeg * Math.PI) / 180;
   const elRad = (Math.max(15, params.elevationDeg) * Math.PI) / 180;
@@ -932,6 +1191,7 @@ export function renderParametric2p5DLighting(
       ambientIntensity: 0.45,
       lightBrightness: 1.2,
       material: (params.material as MaterialType) || 'matte',
+      shadingBands: params.shadingBands,
       cavityStrength: 1.0,
       ditherModulation: 0,
       bayerSize: '4x4',
@@ -969,9 +1229,20 @@ export function renderParametric2p5DLighting(
         const isBlackOutline = data[pIdx] < 30 && data[pIdx + 1] < 30 && data[pIdx + 2] < 30;
         if (isBlackOutline) continue;
 
-        const Nx = normalField.nx[idx];
-        const Ny = normalField.ny[idx];
-        const Nz = normalField.nz[idx];
+        // When illuminated from above (Ly < 0) on characters, exclude bottom limbs from stealing
+        // key specular reflections from the head/face/torso.
+        if (isCharacter && Ly < 0 && y > height * 0.70) continue;
+
+        const Nx = specularNormalField.nx[idx];
+        const Ny = specularNormalField.ny[idx];
+        const Nz = specularNormalField.nz[idx];
+
+        // 1. Physical 2.5D Line-of-Sight Visibility Gate:
+        // A surface must be oriented towards the light in both 3D space and on the 2D illuminated slope:
+        const NdotL3D = Nx * Lx + Ny * Ly + Nz * Lz;
+        const NdotL2D = Nx * Lx + Ny * Ly;
+        const isZenith = elRad > (75 * Math.PI) / 180;
+        if (NdotL3D <= 0 || (!isZenith && NdotL2D <= 0)) continue;
 
         const NdotH = Math.max(0, Nx * normHx + Ny * normHy + Nz * normHz);
         const Ispec = Math.pow(NdotH, shininess);

@@ -7,6 +7,29 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BlendMode } from '@/types/canvas';
 import IconButton from '@/components/ui/IconButton';
+import { studioEvents } from '@/lib/events/studioEvents';
+
+const EFFECT_LABELS: Record<string, string> = {
+  photometric: '2.5D lighting',
+  'auto-shade': 'auto shade',
+  'cast-shadow': 'cast shadow',
+  'ground-shadow': 'ground shadow',
+  'volumetric-optics': 'material optics',
+  'normal-map': 'normal map',
+  specular: 'specular light',
+  'sel-out': 'selective outline',
+  outline: 'outer outline',
+  autotile: 'autotile contours',
+  wfc: 'tile synthesis',
+};
+
+function formatRecipeValue(value: string | number | boolean | null | string[]): string {
+  if (Array.isArray(value)) return `${value.length} colors`;
+  if (value === null) return 'auto';
+  if (typeof value === 'boolean') return value ? 'on' : 'off';
+  if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  return value;
+}
 
 export const LayersPanel: React.FC = () => {
   const { isGuest } = useCoDrawStatus();
@@ -162,6 +185,39 @@ export const LayersPanel: React.FC = () => {
         </div>
       )}
 
+      {activeLayer?.effect && (
+        <div className="px-2.5 py-1.5 border-b border-[var(--desk-border)] bg-[var(--accent-wisteria)]/[0.06] shrink-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] font-mono uppercase tracking-wide text-[var(--accent-wisteria)]">
+              Generated layer · {EFFECT_LABELS[activeLayer.effect.kind] ?? activeLayer.effect.kind}
+            </span>
+            <span
+              className="text-[8px] font-mono text-[var(--text-muted)]"
+              title={new Date(activeLayer.effect.updatedAt).toLocaleString()}
+            >
+              provenance v{activeLayer.effect.version}
+            </span>
+          </div>
+          <div className="text-[8px] font-mono text-[var(--text-muted)]">
+            Source: {activeLayer.effect.sourceMode.replaceAll('-', ' ')}
+          </div>
+          <div className="mt-1 text-[9px] font-sans text-[var(--text-muted)] truncate">
+            {Object.entries(activeLayer.effect.params)
+              .slice(0, 4)
+              .map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1').toLowerCase()}: ${formatRecipeValue(value)}`)
+              .join(' · ') || 'No adjustable parameters'}
+          </div>
+          {activeLayer.effect.analysis?.rationale && (
+            <div
+              className="mt-0.5 text-[9px] font-sans text-[var(--text-body)] truncate"
+              title={activeLayer.effect.analysis.rationale}
+            >
+              Auto analysis: {activeLayer.effect.analysis.rationale}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 3. Direct Layer Stack */}
       <div className="overflow-y-auto flex-1 min-h-[60px] divide-y divide-[var(--desk-border)]/40 bg-[var(--desk-surface)]">
         {currentFrame?.layers.map((layer, index) => {
@@ -222,6 +278,14 @@ export const LayersPanel: React.FC = () => {
                     >
                       {layer.name}
                     </button>
+                    {layer.effect && (
+                      <span
+                        className="px-1 py-px rounded-[2px] border border-[var(--accent-wisteria)]/50 bg-[var(--accent-wisteria)]/10 text-[8px] font-mono font-bold text-[var(--accent-wisteria)] shrink-0"
+                        title={`Generated from a saved ${layer.effect.kind} recipe`}
+                      >
+                        FX
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -240,6 +304,21 @@ export const LayersPanel: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1">
+                {layer.effect?.kind === 'photometric' && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveLayer(layer.id);
+                      studioEvents.emit('pixibun:photometric-gizmo-start', { auto: false, layerId: layer.id });
+                    }}
+                    className="h-5 px-1 rounded-[2px] border border-[var(--desk-border)] text-[8px] font-mono text-[var(--accent-gold)] hover:bg-[var(--surface-2)] cursor-pointer"
+                    title="Reopen this lighting recipe and move the bulb"
+                    aria-label={`Edit lighting effect on ${layer.name}`}
+                  >
+                    Edit FX
+                  </button>
+                )}
                 {canMergeDown && (
                   <IconButton
                     icon="merge-down"

@@ -96,9 +96,11 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     lightElevation: 45,
     lightRadius: 64,
     lightBrightness: 1.15,
+    sourceShadingRemoval: 0,
     materialPreset: 'matte',
     formType: 'auto',
     minecraftSkinMode: 'auto',
+    shadingBands: 2,
     cavityStrength: 1.0,
     ditherModulation: 0.0,
     curveTightness: 0.5,
@@ -218,15 +220,33 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     });
   },
 
+  setSourceShadingRemoval: amount => {
+    set(state => {
+      state.tools.sourceShadingRemoval = Math.max(0, Math.min(1, amount));
+    });
+  },
+
   setMaterialPreset: preset => {
     set(state => {
       state.tools.materialPreset = preset;
     });
   },
 
+  setFormType: formType => {
+    set(state => {
+      state.tools.formType = formType;
+    });
+  },
+
   setMinecraftSkinMode: mode => {
     set(state => {
       state.tools.minecraftSkinMode = mode;
+    });
+  },
+
+  setShadingBands: bands => {
+    set(state => {
+      state.tools.shadingBands = bands;
     });
   },
 

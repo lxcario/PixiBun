@@ -388,7 +388,7 @@ export const CozyAtelierShelvesBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="absolute inset-y-0 inset-x-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden"
+      className="absolute inset-y-0 inset-x-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden hidden 2xl:block"
     >
       {/* ========================================================================= */}
       {/* LEFT GUTTER: Cozy Atelier Wall Shelves with Cute Pixel Companions */}

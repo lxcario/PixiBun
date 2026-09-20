@@ -683,7 +683,8 @@ export function generateOuterStrokeData(
   srcCtx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  strokeColorHex: string = '#2B2038'
+  strokeColorHex: string = '#2B2038',
+  thickness: number = 1
 ): { strokePixels: ShadedPixel[] } {
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
@@ -695,16 +696,22 @@ export function generateOuterStrokeData(
 
   const strokeRgb = hexToRgba(strokeColorHex);
   const strokePixels: ShadedPixel[] = [];
+  const radius = Math.max(1, Math.min(8, Math.round(thickness)));
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (isOpaque(x, y)) continue;
 
-      const hasOpaqueNeighbor =
-        isOpaque(x + 1, y) ||
-        isOpaque(x - 1, y) ||
-        isOpaque(x, y + 1) ||
-        isOpaque(x, y - 1);
+      let hasOpaqueNeighbor = false;
+      for (let dy = -radius; dy <= radius && !hasOpaqueNeighbor; dy++) {
+        const maxDx = radius - Math.abs(dy);
+        for (let dx = -maxDx; dx <= maxDx; dx++) {
+          if ((dx !== 0 || dy !== 0) && isOpaque(x + dx, y + dy)) {
+            hasOpaqueNeighbor = true;
+            break;
+          }
+        }
+      }
 
       if (hasOpaqueNeighbor) {
         strokePixels.push({

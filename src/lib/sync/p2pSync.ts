@@ -25,6 +25,8 @@ import { SafeJson, getUtf8ByteLength } from '@/lib/safety/safeJson';
 import { PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBucket';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
+import { validateLayerEffect } from '@/lib/project/schema';
+import type { LayerEffectRecipe } from '@/types/canvas';
 
 export interface RemoteCursor {
   peerId: string;
@@ -108,6 +110,7 @@ export interface StructureLayer {
   opacity: number;
   blendMode: (typeof STRUCTURE_BLEND_MODES)[number];
   tag?: string;
+  effect?: LayerEffectRecipe;
 }
 
 export interface StructureFrame {
@@ -171,6 +174,8 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
       if (typeof l.opacity !== 'number' || !Number.isFinite(l.opacity) || l.opacity < 0 || l.opacity > 1) return null;
       if (!isStructureBlendMode(l.blendMode)) return null;
       if (l.tag !== undefined && (typeof l.tag !== 'string' || l.tag.length > 64)) return null;
+      const effect = validateLayerEffect(l.effect);
+      if (typeof effect === 'string') return null;
       layers.push({
         id: l.id,
         name: l.name,
@@ -179,6 +184,7 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
         opacity: l.opacity,
         blendMode: l.blendMode,
         ...(l.tag !== undefined ? { tag: l.tag } : {}),
+        ...(effect !== undefined ? { effect } : {}),
       });
     }
     frames.push({ id: f.id, durationMs: f.durationMs, layers });

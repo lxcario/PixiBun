@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useSpring } from 'motion/react';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { PixelVines } from './PixelVines';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -69,7 +69,7 @@ export const LandingNav: React.FC = () => {
           : 'header-trim-bar'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 h-14 flex items-center justify-between relative">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 h-14 sm:h-16 flex items-center justify-between relative">
         {/* Brand / Logo */}
         <Link
           href="/"
@@ -78,21 +78,11 @@ export const LandingNav: React.FC = () => {
               window.dispatchEvent(new CustomEvent('pixibun:replay-intro'));
             }
           }}
-          className="flex items-center gap-2.5 text-[var(--text-heading)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px]"
+          className="flex items-center text-[var(--text-heading)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px]"
           aria-label="PixiBun Home"
           title="Click to replay opening intro"
         >
-          <div className="w-8 h-8 flex items-center justify-center bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] p-0.5 shadow-sm">
-            <BunMascot size={22} animate />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="font-display font-bold text-sm tracking-wider text-[var(--text-heading)]">
-              PIXIBUN
-            </span>
-            <span className="text-[10px] font-mono tracking-tight text-[var(--accent-gold)]">
-              ATELIER
-            </span>
-          </div>
+          <PixiBunLogo />
         </Link>
 
         {/* Center Nav Links */}

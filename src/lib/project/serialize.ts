@@ -122,6 +122,7 @@ export async function buildAutosavePayloadAsync(): Promise<AutosavePayload> {
             opacity: layer.opacity,
             blendMode: layer.blendMode,
             tag: layer.tag,
+            effect: layer.effect ? structuredClone(layer.effect) : undefined,
             // Omit pngBase64 in metadata payload when storing binary blobs to prevent double-storage
             pngBase64: undefined,
           };
@@ -185,6 +186,7 @@ export function buildProjectFile(): ProjectFile {
         opacity: layer.opacity,
         blendMode: layer.blendMode,
         tag: layer.tag,
+        effect: layer.effect ? structuredClone(layer.effect) : undefined,
         pngBase64: rasterizeLayerPng(layer.id, state.canvasWidth, state.canvasHeight),
       })),
     })),
@@ -211,6 +213,7 @@ export async function buildProjectFileAsync(): Promise<ProjectFile> {
             opacity: layer.opacity,
             blendMode: layer.blendMode,
             tag: layer.tag,
+            effect: layer.effect ? structuredClone(layer.effect) : undefined,
             pngBase64,
           };
         })

@@ -120,8 +120,7 @@ export function useStudioAutosave() {
     return await savePromise;
   }, []);
 
-  const handleCommitHistory = useCallback(() => {
-    useStudioStore.getState().setDirty(true);
+  const scheduleAutosave = useCallback(() => {
     if (autosaveTimerRef.current !== null) {
       window.clearTimeout(autosaveTimerRef.current);
     }
@@ -130,6 +129,21 @@ export function useStudioAutosave() {
       void runAutosave();
     }, AUTOSAVE_DEBOUNCE_MS);
   }, [runAutosave]);
+
+  const handleCommitHistory = useCallback(() => {
+    useStudioStore.getState().setDirty(true);
+  }, []);
+
+  // Persist every document mutation, including layer metadata and animation
+  // changes that do not create a pixel-history entry.
+  useEffect(() => useStudioStore.subscribe((state, previousState) => {
+    if (
+      state.editRevision !== previousState.editRevision &&
+      state.isDirty
+    ) {
+      scheduleAutosave();
+    }
+  }), [scheduleAutosave]);
 
   // Native exit guard when changes are unsaved (UX-2)
   useEffect(() => {

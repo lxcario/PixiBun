@@ -29,6 +29,14 @@ export interface MaterialProperties {
   hasRim: boolean;
 }
 
+export interface CharacterRampBounds {
+  minL: number;
+  maxL: number;
+  referenceL: number;
+  referenceA: number;
+  referenceB: number;
+}
+
 export interface PhotometricAnalysisGeometry {
   formType: 'character' | 'orb' | 'prop';
   normalField: {
@@ -52,6 +60,10 @@ export interface PhotometricAnalysisGeometry {
   cavityAO: Float32Array;
   isFeatureMask?: Uint8Array | null;
   isInkLineMask?: Uint8Array | null;
+  sourceLightAzimuth?: number;
+  sourceLightElevation?: number;
+  directionalShadingCue?: number;
+  artworkRampBounds?: Map<number, CharacterRampBounds>;
 }
 
 export interface PhotometricLightingParams {
@@ -61,6 +73,7 @@ export interface PhotometricLightingParams {
   lightColor: string; // Hex color for light source
   ambientIntensity: number; // 0.0 to 1.0
   lightBrightness?: number; // 0.5 to 2.0 (overall exposure/brightness multiplier)
+  sourceShadingRemoval?: number; // 0.0 to 1.0 (baked shading removal)
   material: MaterialType;
   cavityStrength: number; // 0.0 to 2.0 (Laplace AO)
   ditherModulation: number; // 0.0 to 1.0 (Bayer threshold offset strength)
@@ -68,11 +81,14 @@ export interface PhotometricLightingParams {
   formType?: 'character' | 'orb' | 'prop' | 'auto';
   minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
   celShading?: boolean;
+  shadingBands?: ShadingBandMode; // 1 = Single (1 shadow), 2 = Dual (2 shadows), 3 = Trio (3 shadows)
   lightCenterX?: number; // Center anchor X in canvas coordinates (middle light point)
   lightCenterY?: number; // Center anchor Y in canvas coordinates (middle light point)
   normalMapData?: ImageData | Uint8ClampedArray; // Optional manual normal sculpt layer data
   precomputedAnalysis?: PhotometricAnalysisGeometry; // Precomputed geometry & normals for 60fps live dragging
 }
+
+export type ShadingBandMode = 1 | 2 | 3;
 
 export interface ToolSettings {
   activeTool: ToolType;
@@ -90,9 +106,11 @@ export interface ToolSettings {
   lightElevation: number; // 0 to 90 deg
   lightRadius: number; // Distance attenuation radius (16 to 256)
   lightBrightness: number; // 0.5 to 2.0 (exposure / brightness)
+  sourceShadingRemoval: number; // 0 to 1
   materialPreset: MaterialType;
   formType?: 'character' | 'orb' | 'prop' | 'auto';
   minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
+  shadingBands: ShadingBandMode; // 1 = Single, 2 = Dual, 3 = Trio
   cavityStrength: number; // 0 to 1
   ditherModulation: number; // 0 to 1
   curveTightness: number; // 0 to 1

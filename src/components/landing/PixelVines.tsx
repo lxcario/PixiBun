@@ -311,7 +311,7 @@ export const PixelVines: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="absolute top-full left-0 right-0 w-full h-[185px] pointer-events-none z-0 select-none overflow-hidden"
+      className="absolute top-full left-0 right-0 w-full h-[185px] pointer-events-none z-0 select-none overflow-hidden hidden sm:block"
     >
       {/* Dark Mode Layer */}
       <div

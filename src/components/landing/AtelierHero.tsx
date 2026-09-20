@@ -17,7 +17,7 @@ export const AtelierHero: React.FC = () => {
   const scrollCueOpacity = useTransform(scrollY, [0, 120], [1, 0]);
 
   return (
-    <section className="relative min-h-[calc(100vh-56px)] mt-14 py-6 bg-transparent text-[var(--text-heading)] overflow-hidden flex flex-col justify-center items-center">
+    <section className="relative min-h-screen pt-24 pb-16 bg-transparent text-[var(--text-heading)] overflow-hidden flex flex-col justify-start lg:justify-center items-center">
       {/* 1. Ambient Floating Golden Fireflies */}
       <CozyParticles count={24} />
 
@@ -34,7 +34,7 @@ export const AtelierHero: React.FC = () => {
       {/* 3. Main Hero Container with Smooth Scroll-Driven Parallax Response */}
       <motion.div
         style={{ opacity: heroOpacity, y: heroY }}
-        className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 w-full my-auto pt-3 sm:pt-5 pb-2"
+        className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 w-full"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           {/* Left Column: Hero Text & Actions */}
@@ -161,7 +161,7 @@ export const AtelierHero: React.FC = () => {
       {/* 4. Cozy Scroll-Down Cue */}
       <motion.div
         style={{ opacity: scrollCueOpacity }}
-        className="mt-10 flex flex-col items-center justify-center pointer-events-auto z-20"
+        className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1.5 pointer-events-auto z-10 select-none"
       >
         <a
           href="#engine-showcase"

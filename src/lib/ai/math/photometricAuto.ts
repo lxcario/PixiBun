@@ -28,6 +28,7 @@ export interface InferredPhotometricSettings {
   brightness: number; // 0.5-2.0
   formType: RecognizedFormType;
   cavityStrength: number; // 0.1-1.0 auto-inferred default
+  directionalShadingCue: number; // 0-1 heuristic cue strength; not a calibrated probability
   rationale: string; // Human-readable explanation of the inference
 }
 
@@ -45,6 +46,7 @@ export function inferPhotometricSettings(
     brightness: 1.15,
     formType: 'prop',
     cavityStrength: 1.0,
+    directionalShadingCue: 0,
     rationale: 'Canvas is empty — default top-left studio light.',
   };
 
@@ -273,8 +275,14 @@ export function inferPhotometricSettings(
   const dy = ly - cy;
   const spriteRadius = Math.sqrt(count / Math.PI) || 1;
   const offsetMag = Math.sqrt(dx * dx + dy * dy);
-  const minShadingCueThreshold = Math.max(1.1, spriteRadius * 0.12);
-  const hasPaintedShadingCues = offsetMag >= minShadingCueThreshold;
+  // A smooth heuristic avoids the former 0 -> 65% jump. This is deliberately
+  // described as a cue, not confidence: single-image intrinsic decomposition
+  // is underconstrained and this value is not statistically calibrated.
+  const cueStart = Math.max(0.6, spriteRadius * 0.06);
+  const cueFull = Math.max(cueStart + 1, spriteRadius * 0.30);
+  const cueT = Math.max(0, Math.min(1, (offsetMag - cueStart) / (cueFull - cueStart)));
+  const directionalShadingCue = cueT * cueT * (3 - 2 * cueT);
+  const hasPaintedShadingCues = directionalShadingCue > 0.08;
 
   let azimuthDeg: number;
   if (!hasPaintedShadingCues) {
@@ -372,5 +380,14 @@ export function inferPhotometricSettings(
     `Recognized ${formDesc} (highlight mass ${azimuthDeg}° / ${elevationDeg}°, ` +
     `spec share ${specPct}%, contrast ${contrast.toFixed(2)}${cavityDesc}) → ${material} shading.`;
 
-  return { lightAzimuth: azimuthDeg, lightElevation: elevationDeg, material, brightness, formType, cavityStrength, rationale };
+  return {
+    lightAzimuth: azimuthDeg,
+    lightElevation: elevationDeg,
+    material,
+    brightness,
+    formType,
+    cavityStrength,
+    directionalShadingCue,
+    rationale,
+  };
 }

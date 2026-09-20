@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -64,18 +64,32 @@ export const PhotometricLightingSection: React.FC = () => {
     setLightAzimuth,
     setLightElevation,
     setLightBrightness,
+    setSourceShadingRemoval,
     setMaterialPreset,
+    setFormType,
     setMinecraftSkinMode,
     setCavityStrength,
     setDitherModulation,
+    setShadingBands,
     showNormalMapPreview,
     toggleNormalMapPreview,
   } = useStudioStore();
 
   const [advancedLightingExpanded, setAdvancedLightingExpanded] = useState(false);
+  const [analysisSummary, setAnalysisSummary] = useState<{
+    formType: 'character' | 'orb' | 'prop';
+    material: string;
+    sourceLightAzimuth: number;
+    sourceLightElevation: number;
+    cueStrength: number;
+    cavityStrength: number;
+    rationale: string;
+  } | null>(null);
   // 'auto' = analyze the artwork and infer lighting (legacy smart shading);
   // 'manual' = full artist control over direction, material and exposure.
   const [mode, setMode] = useState<'auto' | 'manual'>('auto');
+
+  useEffect(() => studioEvents.on('pixibun:photometric-analysis', setAnalysisSummary), []);
 
   const handleAutoRenderPhotometric = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
@@ -94,6 +108,7 @@ export const PhotometricLightingSection: React.FC = () => {
       lightElevation: tools.lightElevation,
       lightRadius: tools.lightRadius,
       lightBrightness: tools.lightBrightness,
+      sourceShadingRemoval: tools.sourceShadingRemoval,
       lightColor: '#FFFFFF',
       ambientIntensity: 0.35,
       material: tools.materialPreset,
@@ -217,6 +232,39 @@ export const PhotometricLightingSection: React.FC = () => {
           </button>
         </div>
 
+        {/* Shading Tones Mode: 1 Single | 2 Dual | 3 Trio */}
+        <div className="flex flex-col gap-1 p-1.5 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
+          <div className="flex items-center justify-between text-[9px] font-sans">
+            <span className="font-medium text-[var(--text-heading)]">Shading Tones</span>
+            <span className="text-[var(--accent-gold)] font-mono text-[9px]">
+              {tools.shadingBands === 1 ? '1 Tone (Single)' : tools.shadingBands === 3 ? '3 Tones (Trio)' : '2 Tones (Dual)'}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-0.5" role="group" aria-label="Shading tones count">
+            {([
+              { count: 1 as const, label: '1 Single', title: '1 shadow tone (classic flat 2-tone cel-shading)' },
+              { count: 2 as const, label: '2 Dual', title: '2 shadow tones (core + deep shadow)' },
+              { count: 3 as const, label: '3 Trio', title: '3 shadow tones (soft penumbra + mid + deep core)' },
+            ] as const).map(({ count, label, title }) => (
+              <button
+                key={count}
+                type="button"
+                data-testid={`photometric-shade-${count}`}
+                onClick={() => setShadingBands(count)}
+                aria-pressed={tools.shadingBands === count}
+                title={title}
+                className={`py-1 text-[9px] font-sans font-medium text-center rounded-[1px] cursor-pointer transition-colors ${
+                  tools.shadingBands === count
+                    ? 'border border-[var(--accent-gold)] bg-[var(--surface-3)] text-[var(--accent-gold)] font-semibold shadow-xs'
+                    : 'border border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)]'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {mode === 'auto' && (
           <div className="flex flex-col gap-1">
             <TactileButton
@@ -234,6 +282,33 @@ export const PhotometricLightingSection: React.FC = () => {
             <span className="text-[9px] text-[var(--text-muted)] text-center">
               Canvas light gizmo • Drag to steer • Enter to apply
             </span>
+            {analysisSummary && (
+              <div className="mt-1.5 p-2 rounded-[2px] border border-[var(--desk-border)] bg-[var(--surface-0)] flex flex-col gap-1" aria-live="polite">
+                <div className="flex items-center justify-between gap-2 text-[9px] font-mono">
+                  <span className="text-[var(--text-heading)] uppercase">Detected {analysisSummary.formType}</span>
+                  <span className="text-[var(--accent-gold)]">{analysisSummary.material}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 text-[8px] font-mono text-[var(--text-muted)]">
+                  <span>Source light</span>
+                  <span className="text-right text-[var(--text-body)]">
+                    {analysisSummary.cueStrength > 0.08
+                      ? `${analysisSummary.sourceLightAzimuth}° / ${analysisSummary.sourceLightElevation}°`
+                      : 'none detected'}
+                  </span>
+                  <span>Directional shading cue</span>
+                  <span className="text-right text-[var(--text-body)]">
+                    {analysisSummary.cueStrength < 0.25
+                      ? 'Weak'
+                      : analysisSummary.cueStrength < 0.65
+                        ? 'Medium'
+                        : 'Strong'}
+                  </span>
+                  <span>Crevice strength</span>
+                  <span className="text-right text-[var(--text-body)]">{Math.round(analysisSummary.cavityStrength * 100)}%</span>
+                </div>
+                <p className="text-[8px] leading-snug text-[var(--text-muted)]">{analysisSummary.rationale}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -337,6 +412,27 @@ export const PhotometricLightingSection: React.FC = () => {
 
             {advancedLightingExpanded && (
               <div className="p-2.5 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2.5 bg-[var(--surface-0)]">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-sans text-[var(--text-muted)]">Surface interpretation</span>
+                  <div className="grid grid-cols-4 gap-0.5" role="group" aria-label="Surface interpretation override">
+                    {(['auto', 'character', 'prop', 'orb'] as const).map((formType) => (
+                      <button
+                        key={formType}
+                        type="button"
+                        onClick={() => setFormType(formType)}
+                        aria-pressed={tools.formType === formType}
+                        className={`px-1 py-1 rounded-[1px] border text-[8px] font-sans capitalize cursor-pointer ${
+                          tools.formType === formType
+                            ? 'border-[var(--accent-gold)] bg-[var(--surface-3)] text-[var(--accent-gold)]'
+                            : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+                        }`}
+                      >
+                        {formType}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Brightness / Exposure */}
                 <StudioSlider
                   label="Brightness"
@@ -347,6 +443,19 @@ export const PhotometricLightingSection: React.FC = () => {
                   unit="%"
                   onChange={(val) => setLightBrightness(val / 100)}
                 />
+
+                <StudioSlider
+                  label="Remove Painted Shading"
+                  value={Math.round(tools.sourceShadingRemoval * 100)}
+                  min={0}
+                  max={100}
+                  step={5}
+                  unit="%"
+                  onChange={(val) => setSourceShadingRemoval(val / 100)}
+                />
+                <p className="text-[8px] leading-snug text-[var(--text-muted)]">
+                  Conservatively reduces directional shading already painted into a color ramp. Set to 0% to preserve every authored shade.
+                </p>
 
                 {/* Cavity / Crevice Ambient Occlusion */}
                 <StudioSlider

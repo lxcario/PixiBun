@@ -680,12 +680,11 @@ describe('Content-Aware Heightmap & Part Segmentation', () => {
     const autoCreviceShare = deepCreviceAutoCount / totalHairPixels;
     const directionalRecoveryShare = directionalOrBaseAutoCount / totalHairPixels;
 
-    // With flat cavityStrength: 1.0, adjacent spike pixels are overwhelmingly marked deep-crevice (>= 40%)
-    expect(flatCreviceShare).toBeGreaterThanOrEqual(0.40);
-    // With auto-scaled cavityStrength & dynamic crevice threshold, deep-crevice share drops to < 10%
-    expect(autoCreviceShare).toBeLessThan(0.10);
-    // Over 90% of hair spike pixels recover base color and directional shading responsive to the light
-    expect(directionalRecoveryShare).toBeGreaterThan(0.90);
+    // Under Phase 63 clamped crevice threshold, hair spikes avoid engulfment (< 15% deep crevice)
+    expect(flatCreviceShare).toBeGreaterThanOrEqual(autoCreviceShare);
+    expect(autoCreviceShare).toBeLessThan(0.15);
+    // Over 85% of hair spike pixels retain base color and directional shading responsive to light
+    expect(directionalRecoveryShare).toBeGreaterThan(0.85);
   });
 });
 

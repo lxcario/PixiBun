@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BunMascot } from '@/components/ui/BunMascot';
+import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { CozyScrollReveal } from './CozyScrollReveal';
 
 export const AtelierFooter: React.FC = () => {
@@ -15,12 +15,9 @@ export const AtelierFooter: React.FC = () => {
           <CozyScrollReveal variant="fade-up" delayMs={50}>
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-1.5 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm">
-                  <BunMascot size={28} />
-                </div>
-                <span className="font-display font-bold text-base text-[var(--accent-plum)] tracking-wide">
-                  PIXIBUN ATELIER
-                </span>
+                <PixiBunLogo
+                  className="drop-shadow-md"
+                />
               </div>
 
               <p className="font-sans text-xs leading-relaxed text-[var(--text-body)] max-w-xs mb-4">

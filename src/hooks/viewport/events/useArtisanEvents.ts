@@ -53,6 +53,11 @@ export function useArtisanEvents({
           outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
           outCtx.fillRect(p.x, p.y, 1, 1);
         });
+      }, {
+        kind: 'autotile',
+        version: 1,
+        sourceMode: 'composite-excluding-self',
+        params: { mode: '47-blob-contours' },
       });
     };
 
@@ -85,6 +90,11 @@ export function useArtisanEvents({
       }
 
       const sampleImg = srcCtx.getImageData(sampleX, sampleY, sampleW, sampleH);
+      const origin = {
+        projectId: state.currentProjectId,
+        frameId: state.frames[state.activeFrameIndex]?.id,
+        revision: state.editRevision,
+      };
 
       const result = await runWfcInWorker(
         {
@@ -103,6 +113,19 @@ export function useArtisanEvents({
         }
       );
 
+      const latest = useStudioStore.getState();
+      if (
+        latest.currentProjectId !== origin.projectId ||
+        latest.frames[latest.activeFrameIndex]?.id !== origin.frameId ||
+        latest.editRevision !== origin.revision
+      ) {
+        latest.addAiMessage({
+          sender: 'assistant',
+          text: 'Pattern result was discarded because the source frame changed while it was processing.',
+        });
+        return;
+      }
+
       if (!result.success) {
         state.addAiMessage({
           sender: 'assistant',
@@ -115,6 +138,21 @@ export function useArtisanEvents({
         const outImgData = outCtx.createImageData(canvasWidth, canvasHeight);
         outImgData.data.set(result.data);
         outCtx.putImageData(outImgData, 0, 0);
+      }, {
+        kind: 'wfc',
+        version: 1,
+        sourceMode: selection ? 'selection' : 'composite-excluding-self',
+        params: {
+          n,
+          symmetries,
+          seed,
+          sampleX,
+          sampleY,
+          sampleWidth: sampleW,
+          sampleHeight: sampleH,
+          periodicInput: true,
+          periodicOutput: true,
+        },
       });
 
       state.addAiMessage({
@@ -217,8 +255,7 @@ export function useArtisanEvents({
 
       let nextIdx = (currentIdx + 1) % totalFrames;
       if (totalFrames === 1) {
-        state.duplicateFrame(0);
-        nextIdx = 1;
+        nextIdx = 0;
       }
       const frameB = state.frames[nextIdx];
 
@@ -246,6 +283,12 @@ export function useArtisanEvents({
 
       const dataA = ctxA.getImageData(0, 0, canvasWidth, canvasHeight).data;
       const dataB = ctxB.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      const preparedState = useStudioStore.getState();
+      const origin = {
+        projectId: preparedState.currentProjectId,
+        activeFrameId: preparedState.frames[preparedState.activeFrameIndex]?.id,
+        revision: preparedState.editRevision,
+      };
 
       const [morphed] = await runMorphInWorker(
         { width: canvasWidth, height: canvasHeight, data: dataA },
@@ -253,7 +296,20 @@ export function useArtisanEvents({
         1
       );
 
-      state.duplicateFrame(currentIdx);
+      const latest = useStudioStore.getState();
+      if (
+        latest.currentProjectId !== origin.projectId ||
+        latest.frames[latest.activeFrameIndex]?.id !== origin.activeFrameId ||
+        latest.editRevision !== origin.revision
+      ) {
+        latest.addAiMessage({
+          sender: 'assistant',
+          text: 'In-between result was discarded because the animation changed while it was processing.',
+        });
+        return;
+      }
+
+      latest.duplicateFrame(currentIdx);
       const updatedState = useStudioStore.getState();
       const newFrame = updatedState.frames[updatedState.activeFrameIndex];
 

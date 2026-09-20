@@ -25,7 +25,7 @@ describe('diagnostics capture & settings', () => {
   });
 
   it('enforces version equality across APP_VERSION, package.json, and package-lock.json', () => {
-    expect(APP_VERSION).toBe('1.13.1');
+    expect(APP_VERSION).toBe('1.14.0');
     expect(APP_VERSION).toBe(packageJson.version);
     expect(APP_VERSION).toBe(packageLockJson.version);
   });

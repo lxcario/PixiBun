@@ -4,7 +4,7 @@
  * Eliminates loose window.dispatchEvent(new CustomEvent(...)) strings and provides
  * type safety, lifecycle cleanup, and predictable event dispatch across studio panels.
  */
-import type { AnisoFlowPreset, CelToneCount, OpticalPresetType } from '@/types/tools';
+import type { AnisoFlowPreset, CelToneCount, OpticalPresetType, ShadingBandMode } from '@/types/tools';
 import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
 
 export type StudioEventMap = {
@@ -59,15 +59,26 @@ export type StudioEventMap = {
     lightElevation?: number;
     lightRadius?: number;
     lightBrightness?: number;
+    sourceShadingRemoval?: number;
     lightColor?: string;
     ambientIntensity?: number;
     cavityStrength?: number;
     ditherModulation?: number;
     bayerSize?: string;
+    shadingBands?: ShadingBandMode;
     paletteColors?: string[];
   };
   'pixibun:photometric-auto': void;
-  'pixibun:photometric-gizmo-start': { auto?: boolean } | void;
+  'pixibun:photometric-gizmo-start': { auto?: boolean; layerId?: string } | void;
+  'pixibun:photometric-analysis': {
+    formType: 'character' | 'orb' | 'prop';
+    material: string;
+    sourceLightAzimuth: number;
+    sourceLightElevation: number;
+    cueStrength: number;
+    cavityStrength: number;
+    rationale: string;
+  };
   'pixibun:photometric-gizmo-commit': void;
   'pixibun:photometric-gizmo-cancel': void;
   'pixibun:photometric-strength-delta': number;
@@ -166,4 +177,3 @@ class StudioEventBus {
 }
 
 export const studioEvents = new StudioEventBus();
-

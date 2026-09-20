@@ -128,6 +128,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     lockedWarningTimerRef,
     captureSnapshot,
     commitSnapshot,
+    discardSnapshot,
     performUndo,
     performRedo,
     drawPointsOnActiveLayer,
@@ -395,6 +396,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     renderComposite,
     captureSnapshot,
     commitSnapshot,
+    discardSnapshot,
     performUndo,
     performRedo,
   });
