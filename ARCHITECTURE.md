@@ -1,7 +1,7 @@
-# 🏛️ Architecture & System Design — PixiBun Atelier
+# ️ Architecture & System Design — PixiBun Atelier
 
 ```text
-  /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
+  /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   A R C H I T E C T U R E
   > ^ <    Technical Blueprint & Engineering Reference
 ```
@@ -16,7 +16,7 @@ PixiBun is structured as a client-side single-page application built on **Next.j
 
 ```mermaid
 graph TD
-    subgraph UI_Layer ["🎨 UI & Workspace Shell (React 19 + Tailwind v4)"]
+    subgraph UI_Layer [" UI & Workspace Shell (React 19 + Tailwind v4)"]
         AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
         LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
         ViewportShell["CenterViewport (Dual-Canvas Viewport & HUD Overlay)"]
@@ -26,14 +26,14 @@ graph TD
         Modals["Modals (Import, Export, Resize, Palette, Shortcuts, CommandPalette)"]
     end
 
-    subgraph State_Layer ["⚡ Reactive State & Memory Pipeline (Zustand + Immer)"]
+    subgraph State_Layer [" Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["themeStore (Dual-Axis Atelier / Cozy Classic × Dark / Light)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
         UndoRedo["historyEngine (50 Combined Undo/Redo Entries)"]
     end
 
-    subgraph Core_Engines ["⚙️ Computational & Raster Engines"]
+    subgraph Core_Engines ["️ Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, 2:1 Iso Stepper, Bézier)"]
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
         PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
@@ -41,7 +41,7 @@ graph TD
         AudioCore["Web Audio Lo-Fi Synthesizer (Vinyl Rain Noise, Rhodes Chords, FFT Analyser)"]
     end
 
-    subgraph Storage_Layer ["💾 Local Storage & Export Pipeline"]
+    subgraph Storage_Layer [" Local Storage & Export Pipeline"]
         DexieDB["Dexie.js IndexedDB (Auto-Save, Frame Blobs)"]
         Exporter["Export Engines (Lossless PNG, GIF, Godot, Unity & Phaser 3 JSON)"]
     end
@@ -60,7 +60,7 @@ To avoid browser layout recalculations, eliminate visual ghost contamination dur
 
 ```mermaid
 graph TD
-    subgraph Viewport_Stack ["🖥️ CenterViewport Canvas Stack (Bottom to Top)"]
+    subgraph Viewport_Stack ["️ CenterViewport Canvas Stack (Bottom to Top)"]
         L0["0. Solid Background (White #ffffff)"]
         L1["1. Onion Skin Underlay (onionCanvasRef: Tinted Ghosts & Falloff)"]
         L2["2. Playground Tracing Stencil (stencilCanvasRef: Lessons & Guides)"]
@@ -149,9 +149,10 @@ graph TD
     Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH via `buildCelRamp()` (4 tones):
     * **Base Tone:** Original artist color preserved (55%–60% of lit surface)
     * **Unified Shadow:** $L_{\text{shadow}} = \max(0.18, L_{\text{base}} \times 0.78)$, $H_{\text{shadow}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 14^\circ)$, $C_{\text{shadow}} = \min(0.35, C_{\text{base}} \times 1.05)$ (cool indigo skylight)
-    * **Deep Crevice:** $L_{\text{deep}} = \max(0.12, L_{\text{base}} \times 0.60)$, $H_{\text{deep}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 20^\circ)$, $C_{\text{deep}} = \min(0.35, C_{\text{base}} \times 1.08)$ (concave seams where $AO < 0.60$)
+    * **Deep Crevice:** $L_{\text{deep}} = \max(0.12, L_{\text{base}} \times 0.60)$, $H_{\text{deep}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 20^\circ)$, $C_{\text{deep}} = \min(0.35, C_{\text{base}} \times 1.08)$ (concave seams where $AO < \text{creviceAOThresh}$, dynamically bounded to $[0.12, 0.30]$ scaling with cavity strength)
     * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.28)$, $H_{\text{hi}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 10^\circ)$, $C_{\text{hi}} = \min(0.35, C_{\text{base}} \times 0.95)$ (warm sunlight, shiny materials only: $k_s > 0.1$ and not matte/fabric)
-    * **Shadow Terminator (v1.10.2):** Shadow placement is driven purely by the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$, thresholded at $0.55$. The ambient contribution is excluded from shadow placement to prevent it from overwhelming the directional terminator ($\text{ambSignal} \approx 1.27$ would otherwise push all pixels above threshold). Optional Bayer matrix dither modulation perturbs the threshold for organic shadow edges.
+    * **Exposure-Compensated Directional Terminator (Phase 63):** Cel shadow placement is evaluated purely over the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$. To prevent high lamp brightness from flattening unlit geometry, the terminator threshold is exposure-compensated without shifting the geometric boundary: $\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$. Optional Bayer matrix dither modulation perturbs the threshold for organic pixel art stippling.
+    * **Neutral Macro-Form & Material-Scale Synthesis (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D normal field $\mathbf{N}$ remains independent of light direction and allowing tones to dynamically track the light bulb across $360^\circ$ azimuth. Interior ink detection requires opposing two-sided luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted shadow boundaries from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
 5. **Blinn-Phong Specular Half-Vector:**
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
    In discrete pixel-art ramps, sparse specular highlights are isolated when $I_s > 0.35$.
@@ -215,11 +216,12 @@ The application state is managed by Zustand with Immer middleware:
   * When switching projects, loading an artwork, or creating a new blank project, `hydrateProject` and `resetToNewProject` dispatch `pixibun:history-clear`.
   * `CenterViewport` clears the 50-step `HistoryEngine` and resets `canUndo`/`canRedo` flags, eliminating cross-project undo state corruption.
 * **Persistent Storage Failure & Auto-Recovery Banner:** `autoSaveWorkspace` returns a boolean status. If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds, the banner auto-dismisses and resets error counts.
-* **Full-Fidelity v1 $\to$ v2 Migration Engine (`migrateProjectPayload`):**
-  * Auto-detects legacy or unversioned (`version: undefined`) files.
-  * Backfills default `customRamps: []`, `clips: []`, `onionSkin`, and per-layer `blendMode: 'source-over'`, `opacity: 1.0`, `visible: true`, `locked: false`.
-  * Upgrades `version` to `PROJECT_FORMAT_VERSION = 2`.
-* **Forward Compatibility Guard:** Rejects files saved with a newer format (`input.version > PROJECT_FORMAT_VERSION`) with an explicit update prompt: `"This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file."`.
+* **Document Revision Autosave Trigger (`state.editRevision`):** In addition to pixel history commits, `useStudioAutosave` subscribes directly to store revision increments (`state.editRevision`). Structural changes (layer renames, reordering, locks, deletions, canvas resizing) and effect recipe parameter updates trigger debounced IndexedDB autosaves automatically, guaranteeing zero unpersisted metadata state.
+* **Full-Fidelity v1 $\to$ v2 $\to$ v3 Migration Engine (`migrateProjectPayload`):**
+  * Auto-detects legacy v1 (`version: undefined`) and v2 files.
+  * Backfills default `customRamps: []`, `clips: []`, `onionSkin`, per-layer `blendMode: 'source-over'`, `opacity: 1.0`, `visible: true`, `locked: false`, and validates optional `LayerEffectRecipe` payloads.
+  * Upgrades `version` to `PROJECT_FORMAT_VERSION = 3`.
+* **Forward Compatibility Guard:** Rejects files saved with a newer format (`input.version > PROJECT_FORMAT_VERSION`) with an explicit update prompt: `"This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file."`. Non-integer, negative, or zero versions are rejected as invalid.
 
 ---
 
@@ -427,7 +429,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 
 * **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. Unlike native desktop applications (e.g. Aseprite) optimized for 500+ frame 4K cinematic timelines using native C++ file I/O, PixiBun targets instant zero-install browser crafting with IndexedDB binary blob persistence (`layerBlobs`), zero-copy Web Worker export codecs, and real-time 2.5D photometric cel-shading.
 * **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Implements an overlapping pattern synthesis model with periodic boundary conditions optimized specifically for small pixel art tiles and terrain textures ($16\times16$ to $64\times64$ output dimensions, $N=2$ or $N=3$ neighborhood kernels). Adjacency constraint graphs are bounded to input sample entropy, with deterministic pseudorandom seed stepping.
-* **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-tailored planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
+* **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-designed planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
 * **Zero-Egress LAN Default & Network Boundaries:** Core creative features (raster engine, layers, animation timeline, photometric studio, color science, export encoders, and IndexedDB persistence) operate 100% on-device without network access. P2P co-draw defaults to `LAN_ICE_SERVERS = []` for true zero-egress local network collaboration. Public Internet WebRTC STUN NAT traversal and the optional diagnostics relay are the only subsystems that require network access, both requiring explicit user activation.
 
 ---
@@ -463,7 +465,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
   Guarantees registers visit endpoints once per period without double-dwell glitches.
 * **Sub-Step BlendShift:** Linear interpolation of RGB color components at fractional phase offsets:
   $$\mathbf{C}(t) = (1 - \text{frac}) \cdot \mathbf{C}_{\lfloor p \rfloor} + \text{frac} \cdot \mathbf{C}_{\lfloor p \rfloor + 1}$$
-* **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM period explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly seamless loop cycles with zero boundary seam pop.
+* **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM period explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly loop cycles with zero boundary seam pop.
 * **Hardware Shader Generation (`src/lib/export/shaderExporter.ts`):** Produces standalone Godot 4 CanvasItem shaders (`.gdshader`) and Unity URP 2D HLSL shaders with nearest-neighbor point filtering and half-texel LUT sampling.
 
 <p align="center">
@@ -518,7 +520,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 * **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`):**
   - Dedicated background Web Worker executing CPU-intensive algorithms: RotSprite $8\times$ transformations, WaveFunctionCollapse (WFC) constraint synthesis, and In-Between frame SDF morphing.
   - Zero-copy data passing via Transferable `ArrayBuffer` objects for input and output pixel buffers.
-  - Fault-tolerant graceful degradation: `workerDispatcher` automatically detects Worker and OffscreenCanvas support; in environments where Workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks seamlessly fall back to synchronous execution on the main thread.
+  - Fault-tolerant graceful degradation: `workerDispatcher` automatically detects Worker and OffscreenCanvas support; in environments where Workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks fall back to synchronous execution on the main thread.
 
 ---
 
@@ -539,7 +541,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 * **Native Desktop File System Access API (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`):**
   - Integrates W3C File System Access API (`window.showSaveFilePicker`, `window.showOpenFilePicker`, `FileSystemFileHandle`).
   - Binds `Ctrl+S` to instantaneous in-place disk overwriting without file picker prompts once a file handle is active, and `Ctrl+Shift+S` to explicit Save As dialogs.
-  - Provides seamless fallback to browser anchor downloads (`<a download>`) and file inputs in unsupported browsers.
+  - Provides fallback to browser anchor downloads (`<a download>`) and file inputs in unsupported browsers.
 * **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`):**
   - Implements canonical 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into 47 Wang/Blob equivalence classes.
   - Utilizes a precomputed $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX: Uint8Array`) and a reactive $3\times3$ Chebyshev dirty neighborhood updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
@@ -598,7 +600,7 @@ To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 
   - Synchronizes active document title with unsaved dirty status (`● Project — PixiBun`), automatically clearing upon save.
   - Implements `beforeunload` browser event trapping whenever `isDirty === true`, preventing accidental tab closure and loss of in-flight artwork.
 * **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`):**
-  - Triggers transient, non-modal confirmation toasts (`✦ Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
+  - Triggers transient, non-modal confirmation toasts (`* Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
 * **Modal Accessibility & Focus Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`):**
   - Conforms to WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured).
   - Enforces programmatic initial focus on modal title or first focusable interactable.
@@ -682,15 +684,21 @@ All inspector panels and studio controls are standardized on a tactile, accessib
 | `IconButton` | `src/components/ui/IconButton.tsx` | 24–32px tactile icon button with ghost/surface/danger variants |
 | `PanelSection` | `src/components/ui/PanelSection.tsx` | Collapsible accordion section with persistent localStorage state and action header slot |
 
-### Viewport Pointer Handler Decomposition
-The monolithic `useViewportPointerEvents.ts` has been decomposed into per-tool handlers while retaining core coordination for canvas coordinate mapping, panning, history snapshots, and cursor HUD broadcasting:
+### Viewport Pointer & Studio Event Handler Decomposition
+The monolithic pointer event architecture has been decomposed into dedicated per-tool handlers and modular studio event hooks while retaining unified coordination for canvas coordinate mapping, panning, history snapshots, and cursor HUD broadcasting:
 
-| Handler | Tools | Path |
+| Handler / Event Hook | Purpose & Tools | Path |
 |---|---|---|
-| `useBrushPointerHandler` | Pen, Eraser, Dither | `src/hooks/viewport/useBrushPointerHandler.ts` |
-| `useChiselPointerHandler` | Normal Chisel | `src/hooks/viewport/useChiselPointerHandler.ts` |
-| `useSelectionPointerHandler` | Box, Lasso, Wand, Drag | `src/hooks/viewport/useSelectionPointerHandler.ts` |
-| `useShapePointerHandler` | Line, Iso Line, Bézier, Rect, Ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
+| `useBrushPointerHandler` | Pen, Eraser, Dither stroke rasterization | `src/hooks/viewport/useBrushPointerHandler.ts` |
+| `useChiselPointerHandler` | Normal Chisel sculpting sessions | `src/hooks/viewport/useChiselPointerHandler.ts` |
+| `useSelectionPointerHandler` | Marquee box, lasso, wand, floating buffer drag | `src/hooks/viewport/useSelectionPointerHandler.ts` |
+| `useShapePointerHandler` | Line, 2:1 iso line, quadratic Bézier, rect, ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
+| `usePhotometricEvents` | On-canvas light gizmo drag, preview sessions, cancel tokens | `src/hooks/viewport/events/usePhotometricEvents.ts` |
+| `useArtisanEvents` | Freehand drawing event dispatch and Bresenham raster loops | `src/hooks/viewport/events/useArtisanEvents.ts` |
+| `useGeometricEvents` | Interactive vector shape preview and anchor point commits | `src/hooks/viewport/events/useGeometricEvents.ts` |
+| `useViewportStudioEvents` | Central event coordinator orchestrating pointer capture and tools | `src/hooks/viewport/useViewportStudioEvents.ts` |
+| `useViewportDrawing` | Hardware-accelerated canvas redraw loop and dirty rect blits | `src/hooks/viewport/useViewportDrawing.ts` |
+
 
 ### Dual-Axis Theme Architecture
 The theme system (`src/stores/themeStore.ts`) supports two orthogonal axes:
@@ -711,3 +719,72 @@ The Playground (`/playground`) includes an interactive teaching animation board 
 * **TeachingBoardModal (`src/components/playground/TeachingBoardModal.tsx`):** Accessible modal container with backdrop blur, focus trapping, and `Escape` dismiss.
 * **teachingBoardData (`src/lib/art/teachingBoardData.ts`):** Comprehensive 16×16 pixel grid datasets for characters, 7 progressive construction stages, 10-frame physics-based jump curves with hold timings, and 8 semantic alt colorways.
 * **Studio Event:** Triggered via the `pixibun:open-teaching-board` studio event.
+
+---
+
+## 31. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)
+
+Phase 63 eliminates directional bias from base 2.5D heightmaps, normalizes pre-authored shading, and establishes a unified non-destructive recipe model for all generated graphics features.
+
+### 1. Neutral 2.5D Silhouette & Macro-Detail Reconstruction
+To ensure that relighting an artwork allows shadows and highlights to follow virtual light azimuth across $360^\circ$ without distortion:
+* **Decoupled Geometric Normals:** The fixed anatomical height prior (head/neck/torso height steps) from Phase 61 has been replaced by neutral macro-form and multi-scale material detail:
+  $$H_{\text{composite}}(p) = 0.70 \cdot H_{\text{macro}}(p) + 0.30 \cdot \left(\frac{H_{\text{micro}}(p)}{R_{\text{bevel}}}\right) \cdot \max(D)$$
+  The normal vector field $\mathbf{N}$ is derived purely from the silhouette contour, crevice boundaries, and surface curvature, remaining 100% independent of the virtual light source $\mathbf{L}$.
+* **Two-Sided Interior Ink Crevice Detection:** Single-sided luminance steps commonly represent authored cast shadows rather than anatomical crevices. The ink detector requires opposing luminance dips:
+  $$\min(L_{\text{left}} - L_{\text{pixel}}, L_{\text{right}} - L_{\text{pixel}}) \ge 0.12 \quad \lor \quad \min(L_{\text{up}} - L_{\text{pixel}}, L_{\text{down}} - L_{\text{pixel}}) \ge 0.12$$
+  This prevents painted shadow borders from being carved as permanent crevice valleys.
+* **Authored Ramp Hue/Chroma Clustering:** Connected-component flood fill clusters pixels along the same authored color ramp ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$), ensuring shaded zones form unified geometric surfaces rather than fracturing.
+
+### 2. Source Shading Normalization
+When artists import or relight pre-shaded pixel art, the engine provides a controllable `sourceShadingRemoval` parameter ($0\% - 100\%$):
+* Evaluates luminance and chroma ratios relative to inferred light direction.
+* Conservatively normalizes directional value bands back toward the base palette tone prior to evaluating Blinn-Phong diffuse, specular, and OKLCH tone quantization.
+* Preserves hand-drawn pixel palette families with zero hue contamination.
+
+### 3. Non-Destructive Smart-Effect Recipe Architecture
+Every procedural or AI-assisted feature generates a structured `LayerEffectRecipe` attached to the output layer:
+
+```typescript
+export interface LayerEffectRecipe {
+  id: string;
+  kind: SmartEffectKind; // 'photometric' | 'auto-shade' | 'cast-shadow' | 'ground-shadow' | ...
+  version: 1;
+  sourceMode: 'composite-excluding-self' | 'active-layer' | 'selection';
+  params: Record<string, SmartEffectParameter>;
+  analysis?: {
+    formType?: 'character' | 'orb' | 'prop';
+    sourceLightAzimuth?: number;
+    sourceLightElevation?: number;
+    cueStrength?: number;
+    rationale?: string;
+  };
+  updatedAt: number;
+}
+```
+
+* **Zero-Latency Raster Caching:** The layer's raster bitmap is stored in `bufferRegistry` and IndexedDB `layerBlobs` for instant 60fps compositing without runtime recomputation.
+* **Atomic History Integration:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe`, ensuring undo/redo restores both pixel buffers and recipe metadata.
+* **Layers Panel Reopening (`Edit FX`):** Photometric layers display an `Edit FX` button in `LayersPanel.tsx`, reopening the interactive `PixelLightBulbGizmo` populated with the exact saved azimuth, elevation, brightness, and material parameters.
+* **P2P Collaboration Parity:** Collaborative structure payloads (`StructureLayer`) include `effect?: LayerEffectRecipe`, verified by `validateLayerEffect` during network ingestion.
+
+### 4. Discrete OKLCH Cel-Shading Ramps & Continuous 3D Specular Highlight Pill
+* **Discrete Shading Tones (1 Single / 2 Dual / 3 Trio):**
+  To maintain pixel art palette purity across all subjects (orbs, characters, props), the photometric engine evaluates non-linear diffuse signal thresholds partitioned by `shadingBands`:
+  - **Single (`1`):** 1 shadow tone ($S < T \rightarrow \text{ramp.shadow}, S \ge T \rightarrow \text{ramp.base}$).
+  - **Dual (`2`):** 2 shadow tones ($S < 0.48 \cdot T \rightarrow \text{ramp.deep}, S < T \rightarrow \text{ramp.shadow}, S \ge T \rightarrow \text{ramp.base}$).
+  - **Trio (`3`):** 3 shadow tones ($S < 0.32 \cdot T \rightarrow \text{ramp.deep}, S < 0.65 \cdot T \rightarrow \text{ramp.shadow}, S < T \rightarrow \text{ramp.soft}, S \ge T \rightarrow \text{ramp.base}$).
+  The soft penumbra tone (`ramp.soft`) is computed in perceptual OKLCH color space ($L_{\text{soft}} \approx 0.93 \cdot L_{\text{base}}$), ensuring natural luminance stepping without hue corruption.
+* **Continuous 3D Specular Highlight Pill:**
+  - **Macro-Silhouette Normal Field:** Specular reflections are derived from the smooth inflated EDT dome (`specularNormalField`) with bilateral filtering ($r=1.5, \sigma=2.0$), preventing interior facial feature cliffs from producing reflective razor scars.
+  - **Physical Line-of-Sight Visibility Gate:** Enforces $\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$, guaranteeing specular glints never appear on unlit shadow surfaces.
+  - **Continuous Alpha Falloff:** Glints render as a cohesive 3D highlight pill with continuous alpha modulation ($\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$ for $I_{\text{spec}} > 0.35$).
+  - **Feature and Outline Shielding:** Facial features (`charFeatureMask`), ink lines (`charInkMask`), and dark outlines are strictly excluded from specular paint.
+
+### 5. Live Photometric Preview Session & Atomic Cancellation
+* **Session Encapsulation (`src/hooks/viewport/events/usePhotometricEvents.ts`):** When interacting with the on-canvas `PixelLightBulbGizmo`, an active session captures an immutable snapshot of the active layer's pre-rendered `ImageData` and existing `LayerEffectRecipe` metadata.
+* **Non-Blocking Asynchronous Preview:** Continuous pointer dragging triggers throttled photometric recalculations, blitting real-time lighting previews onto an ephemeral preview layer without freezing the main UI thread.
+* **Atomic Cancellation & Reversion:** Pressing `Escape` or clicking cancel invokes `cancelSession()`, instantly restoring pristine original pixel data and recipe metadata from the session snapshot. Committing (`Enter` or click outside) writes the finalized raster and recipe to the layer and pushes a unified undo/redo entry to `historyEngine`.
+
+
+

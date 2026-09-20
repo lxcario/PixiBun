@@ -2,7 +2,52 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## [v1.14.0] - 2026-09-19
+## [v1.14.0] - 2026-09-20
+### Neutral Relighting & Smart-Effect Provenance (Phase 63)
+- **Neutral 2.5D Silhouette & Macro-Detail Shading (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Superseded Phase 61's fixed anatomical height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters). The 2.5D surface normal field $\mathbf{N}$ is now geometrically neutral, allowing directional tones, cel terminator boundaries, and highlights to dynamically track the virtual light source $\mathbf{L}$ across $360^\circ$ azimuth and $0^\circ-90^\circ$ elevation without baked-in distortion.
+- **Source Shading Normalization & Painted Shading Removal (`src/lib/ai/math/photometricLighting.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+  - Added tactile `sourceShadingRemoval` slider ($0\% - 100\%$, default $0\%$) in `PhotometricLightingSection`, conservatively reducing directional value bands already painted into color ramps before relighting while strictly preserving authored palette families.
+  - Upgraded interior ink line detection in `edtNormalMap.ts` to require two-sided opposing luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing one-sided painted shadow edges from being carved as permanent ink crevices.
+  - Upgraded connected-component flood-fill to recognize authored color ramps via hue and chroma distance ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$), uniting shaded regions into smooth geometric surfaces.
+  - Stabilized directional cel shadow terminator calculation across brightness levels ($\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$), preventing high exposure from flattening unlit sides.
+- **Real-Time Analysis Readout & Form Overrides (`src/lib/ai/math/photometricAuto.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`)**:
+  - Upgraded `inferPhotometricSettings()` with smooth, continuous heuristic `directionalShadingCue` ($0-1$) and detailed human-readable rationale.
+  - Built an interactive inspector analysis card listening to `pixibun:photometric-analysis` displaying detected form type, material, source light azimuth/elevation, directional shading cue strength (Weak / Medium / Strong), crevice AO percentage, and explanation.
+  - Added tactile surface interpretation override button group: `[ Auto | Character | Prop | Orb ]` allowing artists to explicitly steer geometry reconstruction.
+- **Non-Destructive Smart-Effect Recipe Model (`src/types/canvas.ts`, `src/types/project.ts`, `src/lib/project/schema.ts`, `src/lib/project/serialize.ts`)**:
+  - Introduced `LayerEffectRecipe` across 11 smart-effect kinds (`photometric`, `auto-shade`, `cast-shadow`, `ground-shadow`, `volumetric-optics`, `normal-map`, `specular`, `sel-out`, `outline`, `autotile`, `wfc`).
+  - Stores non-destructive recipe metadata (`id`, `kind`, `version: 1`, `sourceMode`, `params`, `analysis`, `updatedAt`) directly on `Layer.effect`.
+  - Bumped project file schema to `PROJECT_FORMAT_VERSION = 3` with full forward and backward migration in `migrateProjectPayload` and `validateProjectFile`.
+  - Atomically preserved and restored recipe metadata across pixel history snapshots (`PixelHistoryStep`), structural undo/redo, and layer duplication.
+- **Layers Panel FX Provenance & Reopening (`src/components/layout/inspector/LayersPanel.tsx`)**:
+  - Added amber `FX` provenance badge on generated output layers.
+  - Added tactile `Edit FX` button on photometric layers, reopening the on-canvas pixel light bulb gizmo with the layer's saved recipe parameters for instant non-destructive tweaking.
+- **Document Revision Autosave (`src/hooks/studio/useStudioAutosave.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createViewportSlice.ts`)**:
+  - Subscribed autosave engine to `state.editRevision` in addition to pixel history commits, guaranteeing that layer effect mutations, renames, reorders, and canvas dimension updates are automatically persisted to IndexedDB.
+- **Unified Brand Geometry (`src/components/ui/PixiBunLogo.tsx`)**:
+  - Built standalone responsive `PixiBunLogo` component (`sm`, `md`, `lg`) with Bun mascot tile and typography.
+  - Standardized branding across `AtelierRail`, `PlaygroundLayout`, `LandingNav`, `AtelierHero`, `AtelierFooter`, `MobileStudioGate`, and error boundaries (`error.tsx`, `global-error.tsx`, `studio/error.tsx`).
+- **Discrete 1/2/3 Shading Tones (Single / Dual / Trio Cel-Shading) (`src/lib/ai/math/photometricLighting.ts`, `src/types/tools.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Implemented 1 Single (1 shadow tone), 2 Dual (2 shadow tones: mid + deep), and 3 Trio (3 shadow tones: soft penumbra + mid + deep umbra) cel-shading band modes in perceptual OKLCH color space.
+  - Enabled discrete cel-shading across all pixel art forms (orbs, characters, props) when shading bands mode is selected in the UI (`SHADE: 1 | 2 | 3` or `Shading Tones`), eliminating muddy 24-bit floating point gradients on pixel art while preserving smooth 3D shading when unbanded.
+  - Added bottom HUD controls (`SHADE 1 | 2 | 3`) to the on-canvas `PixelLightBulbGizmo` and inspector segmented button group with accessible tooltips and test IDs.
+- **Continuous 3D Specular Highlight Pill & Line-of-Sight Gating (`src/lib/ai/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/pixiBudMath.test.ts`)**:
+  - Restored continuous 3D Blinn-Phong specular highlight pill with smooth alpha falloff ($I_{\text{spec}} > 0.35, \alpha = \min(255, \text{round}(I_{\text{spec}} \times 255))$).
+  - Derived specular normals from macro-silhouette dome (`specularNormalField`) using inflated EDT and bilateral filtering, eliminating vertical razor scars down cheeks and across ears caused by internal feature depth depressions.
+  - Added physical line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) preventing specular highlights from appearing on unlit shadow hemispheres.
+  - Shielded facial features (eyes, mouth) and line art/outlines (`charFeatureMask`, `charInkMask`, `isBlackOutline`) from receiving specular highlights.
+  - Metallic materials (gold, metal) receive warm champagne/albedo-tinted highlights; dielectric materials receive pure white highlights.
+- **Photometric Preview Session & Atomic Cancellation (`src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/photometricPreviewSession.test.ts`)**:
+  - Encapsulated live photometric preview in an atomic session lifecycle with non-blocking async rendering, drag throttling, and cancellation tokens (`cancelSession`), restoring original layer pixel buffers and metadata on `Escape` or gizmo dismissal.
+- **Decomposed Viewport Studio Events (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `src/hooks/viewport/events/useGeometricEvents.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`, `src/hooks/viewport/useViewportDrawing.ts`)**:
+  - Modularized viewport pointer event dispatch into dedicated event hooks for photometric manipulation, artisan painting, and geometric vector primitives, completely decoupling viewport interaction from legacy header components.
+- **Test Coverage Expansion**:
+  - Added dedicated unit tests in `tests/photometricPreviewSession.test.ts` (preview cancellation and restoration) and expanded `tests/orbPhotometricCelShading.test.ts` (discrete 1, 2, and 3 cel-shading band modes and continuous 3D specular highlight validation).
+  - Total test suite expanded to **699 unit and integration tests across 98 suites** and **22 E2E tests across 9 suites** (100% green).
+- **Research-Grounded Product Roadmap**:
+  - Published comprehensive roadmap in `docs/plans/research_grounded_product_roadmap.md` covering computer vision, intrinsic decomposition, rendering, animation, and local-first architecture.
+
 ### Studio Architecture Overhaul, Dual Themes & Audit Remediation (Phase 62)
 - **Studio UI Architecture**:
   - AtelierRail (`src/components/layout/AtelierRail.tsx`): Unified top header rail replacing the former TopHeader + ContextOptionsBar. Houses project actions, zoom, tool params, CVD lens, symmetry, and AppearancePopover.
@@ -129,7 +174,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Dynamically synchronizes document title with unsaved workspace state (`● Project — PixiBun`), clearing upon successful save.
   - Implements native `beforeunload` window event guard whenever changes are unsaved (`isDirty === true`), shielding users against accidental tab closure.
 - **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`)**:
-  - Emits transient affirmative confirmation toast (`✦ Saved "project" to browser storage`) upon manual `Ctrl+S` keystrokes and toolbar save actions.
+  - Emits transient affirmative confirmation toast (`* Saved "project" to browser storage`) upon manual `Ctrl+S` keystrokes and toolbar save actions.
 - **Modal Accessibility Focus Containment & Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`)**:
   - Implemented WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured) compliance with programmatic initial focus, circular Tab keyboard containment, and return-to-opener focus restoration upon dialog dismissal.
 - **Shortcut Collision Isolation & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`)**:
@@ -185,7 +230,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Native Desktop File System Access API & Save As (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`, `src/components/modals/ExportModal.tsx`, `tests/desktopFileSystem.test.ts`)**:
   - Built zero-dependency native desktop ergonomics with `window.showSaveFilePicker` and `window.showOpenFilePicker`.
   - Bound `Ctrl+S` to instantaneous in-place disk overwriting via retained `FileSystemFileHandle`s, and `Ctrl+Shift+S` to "Save As" picker dialogs.
-  - Implemented robust browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
+  - Implemented reliable browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
 - **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
   - Implemented complete 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into the canonical 47 Wang/Blob equivalence classes.
   - Precomputed an $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX`) and built a Chebyshev $3\times3$ dirty neighborhood reactive updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
@@ -237,7 +282,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 ### Documentation Truthfulness, Academic Rigor & Tone De-Escalation (Phase 51)
 - **Marketing Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`)**: Softened marketing puffery, absolute guarantees, and hyperbolic adjectives across all documentation, replacing them with modest, academically precise technical descriptions.
 - **RotSprite Claims Calibration (`README.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`, `LOGS.md`)**: Replaced over-reaching phrases ("completely eliminated 45° distortion", "micro-details never vanish", "100% leak-proof") with accurate descriptions of Xenowhirl's 8x Scale2x cascade, subpixel continuous inverse sampling, and parabolic majority voting reducing distortion and outline erosion while preserving palette purity.
-- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations tailored for pixel art rather than claiming full 3D volumetric simulations.
+- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations designed for pixel art rather than claiming full 3D volumetric simulations.
 - **Felzenszwalb-Huttenlocher EDT Citation Synchronization (`CHANGELOG.md`, `LOGS.md`)**: Corrected references that erroneously attributed the EDT algorithm to Meijster, standardizing across all documentation on the actual implemented algorithm by Pedro F. Felzenszwalb & Daniel P. Huttenlocher (2012 / 2004).
 - **Benchmark Hardware Context & Budget Ceilings (`BENCHMARKS.md`)**: Added reference hardware environment notice and clarified that automated CI gates assert upper-bound budget ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting machine-specific timings as universal guarantees.
 - **Character Encoding & Markdown Polish (`LOGS.md`, `CHANGELOG.md`)**: Fixed Unicode replacement character corruptions in `LOGS.md` and purged decorative emoji clutter from `CHANGELOG.md` subheaders to maintain clean, technical documentation standards.
@@ -285,11 +330,11 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Unified test suite in `tests/floodFillHex.test.ts` to 14 tests preserving all 5 `hexToRgba` tests (including CSS Color 4 4/8-digit `#RGBA` expansion), 4 `performFloodFill` algorithm tests, and 5 `rgbaToHex` contract tests.
 - **Diagnostics Relay Fallback Version Synchronization (`src/lib/diagnostics/capture.ts`, `src/app/api/diagnostics/relay/route.ts`, `tests/diagnostics.test.ts`)**:
   - Synchronized `APP_VERSION = '1.12.0'` in `capture.ts` and default route fallback in `src/app/api/diagnostics/relay/route.ts`.
-- **E2E Spec Test Reliability & Teardown Race Elimination (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/landing.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`, `src/components/layout/TopHeader.tsx`, `src/lib/storage/db.ts`)**:
+- **E2E Spec Test Reliability & Teardown Race Elimination (`tests/e2e/chiselAndPaletteLiveProof.spec.ts`, `tests/e2e/landing.spec.ts`, `tests/e2e/volumetricVisualProof.spec.ts`, `tests/e2e/selectionGizmoLiveProof.spec.ts`, `src/components/layout/AtelierRail.tsx`, `src/lib/storage/db.ts`)**:
   - Root-caused intermittent E2E failure to `DatabaseClosedError` thrown when in-flight `loadLatestSavedWorkspace()` collided with explicit test database teardown (`win.__pixibunDb.close()`).
   - Added `isIgnorableDbClosure` in `db.ts` to recognize expected database closures during teardown/navigation and downgrade them to `console.warn`.
   - Cleared `consoleErrors` buffer post-reload in `selectionGizmoLiveProof.spec.ts` so pre-reload teardown noise does not pollute the active test run.
-  - Disambiguated `Rivet Stamp` role queries between LeftToolbar and RightInspector, added accessible `aria-label` to Guide button in `TopHeader.tsx`, and handled intro curtain detachment timeouts in `landing.spec.ts`.
+  - Disambiguated `Rivet Stamp` role queries between LeftToolbar and RightInspector, added accessible `aria-label` to Guide button in the top rail (`AtelierRail.tsx`), and handled intro curtain detachment timeouts in `landing.spec.ts`.
   - Replaced hardcoded machine-specific brain directory paths with dynamic `path.join(process.cwd(), 'test-results', 'e2e-artifacts')` and recursive folder creation.
   - All 8 Playwright E2E suites (20 tests) pass 100% green deterministically across repeated parallel runs.
 - **Automated Semantic Verifier, Musical Attribution & Algorithmic Rigor (`scripts/verifyDocIntegrity.mjs`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`, `SKILL.md`, `src/lib/audio/tracks.ts`, `tests/benchmark.test.ts`)**:
@@ -375,7 +420,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Palette Inspector Controls & Exporters (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`)**:
   - In-studio palette cycling preview with speed, direction, ping-pong, and BlendShift controls.
   - Standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator with point filtering.
-  - Seamless APNG and animated GIF cycle loop unroller.
+  - APNG and animated GIF cycle loop unroller.
 - **Zero Name-Sniffing & Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
   - Purged all legacy display-name heuristic checks (`startsWith('photometric')`, `startsWith('specular')`, `startsWith('normal')`) across `compositeSourceSnapshot`, `updateTaggedLayer`, `duplicateLayers`, and `bakePhotometricLighting`.
   - Excluded `tag === 'normal'` and `tag === 'normal-map'` from diffuse albedo composites to protect base sprite textures from vector byte corruption.
@@ -412,7 +457,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Added programmatic `aria-label` attributes to the three auxiliary range inputs ("Rotation angle", "Color hue", "Lightbox opacity").
   - Regression tested in `tests/components/ArtisanHandbookPanel.test.tsx`.
 - **Anti-Slop Emoji Purge (`SKILL.md` Rule 12)**:
-  - Eliminated all 12 residual Unicode emojis (`🎉`, `🌐`, `🔒`, `📥`, `🧹`, `💡`, `📍`, `☀️`, `✔`, `✖`) across `CoDrawModal.tsx`, `ShortcutsModal.tsx`, `PixelLightBulbGizmo.tsx`, and `PhotometricLightingSection.tsx`.
+  - Eliminated all 12 residual Unicode emojis (``, ``, ``, ``, ``, ``, ``, `️`, ``, ``) across `CoDrawModal.tsx`, `ShortcutsModal.tsx`, `PixelLightBulbGizmo.tsx`, and `PhotometricLightingSection.tsx`.
   - Added native pixel-art `'lamp'` icon in `PixelIcon.tsx` on a 16x16 grid.
   - Regression tested in `tests/components/PixelLightBulbGizmo.test.tsx` verifying zero emoji characters in HUD toolbar.
 - **Documentation Truthfulness & Metric Alignment (`README.md`, `ARCHITECTURE.md`)**:
@@ -525,7 +570,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Guarantees WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
   - Upgraded specular CC light sweep animation to a dual-band gradient with wisteria flanking wings (`linear-gradient(115deg, transparent 0%, rgba(220,171,223,0.15) 20%, rgba(255,255,255,0.75) 50%, rgba(220,171,223,0.15) 80%, transparent 100%)`).
   - Standardized microinteraction spring physics across all studio buttons (`scale: 1.025` on hover, `scale: 0.97` on tap, `rounded-[2px]`).
-  - Harmonized modal action buttons across `src/components/layout/TopHeader.tsx`, `src/components/modals/ExportModal.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/modals/CanvasResizeModal.tsx`, and `src/components/system/PwaUpdateToast.tsx`.
+  - Harmonized modal action buttons across `src/components/layout/AtelierRail.tsx`, `src/components/modals/ExportModal.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/modals/CanvasResizeModal.tsx`, and `src/components/system/PwaUpdateToast.tsx`.
 - **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
   - Eliminated redundant bottom-left viewport zoom HUD (`[-] {zoom}% [+] [Fit] [16x] [32x32]`) that conflicted with the primary TopHeader zoom controls.
   - Redesigned bottom-right cursor coordinate indicator from generic gray pill to dark atelier aesthetic (`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] text-[var(--accent-gold)] font-mono text-[10px]`).
@@ -636,7 +681,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ### Academic Research-Backed Graphics Intelligence (Phase 34)
 - **Blue-Noise Void-and-Cluster Dithering (`src/lib/canvas/ditherMatrix.ts`)**: Implemented Robert Ulichney's 1993 SPIE void-and-cluster matrix generation algorithm (`generateVoidAndClusterMatrix(16, 16, 1.9)`), producing high-frequency, isotropic dither masks without low-frequency periodic spikes characteristic of Bayer matrices. Verified in `tests/blueNoiseDither.test.ts`.
-- **WaveFunctionCollapse (WFC) Pattern Synthesis (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented Maxim Gumin's 2016 Overlapping Model constraint solver with Shannon entropy heuristics and deterministic backtracking. Extracts sample tiles and synthesizes seamless textures obeying local $N \times N$ neighborhood constraints with 0 violations. Verified in `tests/waveFunctionCollapse.test.ts`. Integrated into `RightInspector.tsx` and `useViewportStudioEvents.ts`.
+- **WaveFunctionCollapse (WFC) Pattern Synthesis (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented Maxim Gumin's 2016 Overlapping Model constraint solver with Shannon entropy heuristics and deterministic backtracking. Extracts sample tiles and synthesizes textures obeying local $N \times N$ neighborhood constraints with 0 violations. Verified in `tests/waveFunctionCollapse.test.ts`. Integrated into `RightInspector.tsx` and `useViewportStudioEvents.ts`.
 - **Kopf–Lischinski Inspired Vector SVG Export (`src/lib/export/depixelizeVector.ts`)**: Implemented pixel art vectorization inspired by Johannes Kopf & Dani Lischinski (SIGGRAPH 2011): 8-connected pixel similarity graphs, diagonal crossing ambiguity resolution via 1-hop parity connectivity heuristics, cell corner offsets ($\pm 0.05$), and smooth cubic Bézier SVG path generation. Verified in `tests/depixelizeVectorExport.test.ts`. Integrated as "Vector SVG" in `ExportModal.tsx`.
 - **Crystallographic Wallpaper Group Symmetry Brushes (`src/lib/canvas/wallpaperSymmetry.ts`)**: Implemented Doris Schattschneider's 1978 AMM crystallographic symmetry groups (`p2` 180° rotation, `pm` reflection, `p4` 4-fold rotation, `p4m` 4-fold rotation with reflection, and `p6m` 6-fold rotation with reflection). Multiplies canvas strokes deterministically across crystallographic group orbits. Verified in `tests/wallpaperSymmetry.test.ts`.
 
@@ -719,7 +764,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 ## [v1.3.0] - 2026-09-01
 
 ### UX & Onboarding Overhaul
-- **Progressive Playground & Onboarding**: Implemented a seamless onboarding flow with a progressive playground, allowing users to transition smoothly into the full studio experience.
+- **Progressive Playground & Onboarding**: Implemented a onboarding flow with a progressive playground, allowing users to transition smoothly into the full studio experience.
 - **Radial Menu & Recent Colors**: Added a contextual radial menu for rapid tool access, an autosave activity indicator, progressive disclosure of advanced tools, and a tracked "Recent Colors" palette.
 - **Hydration & SSR**: Fixed hydration mismatch and console warnings in the `recentColors` component logic.
 

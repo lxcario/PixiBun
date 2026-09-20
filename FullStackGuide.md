@@ -229,14 +229,14 @@ A production spec for an AI agent must contain:
 - **Bento Grid Spreading:** Forcing 3-column card layouts onto data that has no multi-dimensional relationship.
 - **Uniform Radii:** Applying `rounded-xl` to every container, badge, and button without scale hierarchy.
 - **Fake Terminals:** Displaying terminal mockups on non-developer product pages.
-- **Sparkle Tropes:** Using sparkle icons (✨) as an automatic marker for AI features.
+- **Sparkle Tropes:** Using sparkle icons () as an automatic marker for AI features.
 
 ### 2.2 Motion & Interaction Tells
 - **Ambient Floating:** Continuous floating or bobbing keyframes without user interaction.
 - **Indiscriminate Hover Glows:** Applying glows, lifts, or scales to non-interactive elements.
 
 ### 2.3 Copywriting Tells
-- **Generic Marketing Buzzwords:** Phrases like *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"Seamlessly manage"*, *"Supercharge your productivity"*.
+- **Generic Marketing Buzzwords:** Phrases like *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"manage"*, *"Supercharge your productivity"*.
 - **Robotic Boilerplate:** Cold strings like *"Processing payload..."*, *"Canvas dimensions 32x32 verified"*.
 - **Rhetorical Crutches:** Overuse of em dashes (—) and contrastive reframing (*"It's not X, it's Y"*).
 
@@ -263,7 +263,7 @@ $$\text{OKLCH: } L \in [0, 1], \ C \in [0, 0.4], \ H \in [0, 360^\circ]$$
 <a id="ref-33-layout--spatial-composition"></a>
 ### 3.3 Layout & Spatial Composition
 - Use CSS container queries (`@container`) so components respond to parent container dimensions rather than viewport width.
-- Leverage Tailwind v4 cascade layers (`@layer theme, base, components, utilities`) to eliminate CSS specificity conflicts.
+- use Tailwind v4 cascade layers (`@layer theme, base, components, utilities`) to eliminate CSS specificity conflicts.
 
 <a id="ref-34-motion-with-intent"></a>
 ### 3.4 Motion with Intent
@@ -313,7 +313,7 @@ shadcn source files must be customized away from defaults: change color tokens, 
 <a id="ref-46-icons"></a>
 ### 4.6 Icons
 - **Phosphor:** 7,000+ icons across 6 weights (thin, light, regular, bold, fill, duotone).
-- **Heroicons:** Tailored for Tailwind UI interfaces.
+- **Heroicons:** designed for Tailwind UI interfaces.
 - **Tabler Icons:** Comprehensive free MIT set on a consistent 24px grid.
 - **Untitled UI:** Figma-native component properties.
 
@@ -325,7 +325,7 @@ shadcn source files must be customized away from defaults: change color tokens, 
 - Server Components for direct backend data-fetching.
 - Server Actions for mutations.
 - React Compiler for automatic fine-grained memoization.
-- View Transitions API for seamless route morphing.
+- View Transitions API for route morphing.
 
 <a id="ref-54-api-design-and-validation"></a>
 ### 5.4 API Design and Validation
@@ -429,8 +429,8 @@ Check every UI screen against these failure modes:
 - [ ] No uniform `rounded-xl` radii across all hierarchy levels.
 - [ ] No unexamined default icon sets without project-level curation.
 - [ ] No fake terminal windows on non-developer products.
-- [ ] No sparkle icons (✨) used as automatic AI feature markers.
-- [ ] No generic AI slop copy (*"Transform your workflow"*, *"Seamlessly manage"*).
+- [ ] No sparkle icons () used as automatic AI feature markers.
+- [ ] No generic AI slop copy (*"Transform your workflow"*, *"manage"*).
 - [ ] No random emoji clutter in UI headers or documentation.
 - [ ] No unprompted ambient floating text or continuous bobbing animations.
 

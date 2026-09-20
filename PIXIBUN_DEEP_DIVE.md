@@ -1,7 +1,7 @@
-# 🐇 PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
+#  PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
 
 ```text
-  /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
+  /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   P I X I B U N   D E E P   D I V E
   > ^ <    Engineering, Computer Graphics & Architecture Reference
 ```
@@ -30,7 +30,7 @@ src/
 │   ├── modals/                      # Dialog windows (CommandPaletteModal, ImportModal, ExportModal, CanvasResizeModal, ShortcutsModal, CoDrawModal, ProjectsGalleryModal)
 │   ├── playground/                  # Educational modules (TeachingAnimationBoard, TeachingBoardModal)
 │   ├── studio/                      # Floating windows & gizmos (FloatingPreviewWindow, PixelLightBulbGizmo, SelectionTransformGizmo, ViewportLensFilters, RemoteCursorsOverlay)
-│   └── ui/                          # Tactile design system (AppearancePopover, IconButton, PanelSection, StudioSlider, StudioSelect, StudioToggle, StudioNumberInput, StudioTooltip, TactileButton, PixelIcon)
+│   └── ui/                          # Tactile design system (PixiBunLogo, AppearancePopover, IconButton, PanelSection, StudioSlider, StudioSelect, StudioToggle, StudioNumberInput, StudioTooltip, TactileButton, PixelIcon)
 ├── hooks/
 │   ├── studio/                      # Lifecycle hooks (useStudioAutosave, useStudioClipboard, useStudioFileSystem, useStudioKeyboard)
 │   └── viewport/                    # Viewport pointer handlers (useBrushPointerHandler, useChiselPointerHandler, useSelectionPointerHandler, useShapePointerHandler)
@@ -183,8 +183,9 @@ $$R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \c
 For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
 * **Frontal Cushion Plateau:** Within the rim band $D(x, y) < D_{\text{plateau}} = \max(D) \cdot \sqrt{\text{rimRatio}}$ (where default $\text{rimRatio} = 0.35$, yielding $D_{\text{plateau}} \approx 0.59 \cdot \max(D)$), height bevels smoothly down via $\sqrt{D / D_{\text{plateau}}}$. The face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$), ensuring form shadows naturally hug only the unlit silhouette rim.
 * **Independent Ear Cones:** Distinct convex lobes in the silhouette retain independent 3D height peaks without arbitrary pixel caps.
-* **Feature Preservation:** Connected components corresponding to eyes, mouth, snout, and lateral whiskers are tagged as `isFeature` and `isInkLine`. They bypass diffuse and ambient multipliers completely, preserving original artist RGB values across up to 32 clusters.
-* **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo), **Deep Crevice** ($L \times 0.60$, $20°$ shift, triggers at $AO < \text{creviceAOThresh}$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ toward $65°$ warm sunlight, shiny materials only). In Phase 60b, `creviceAOThresh` dynamically scales with silhouette-inferred `cavityStrength` ($\min(0.60, \max(0.20, 0.60 \times \text{cavStrength}))$) to prevent hair spikes and thin fur tufts from being engulfed in non-directional shadow tone. Shadow placement is driven purely by directional diffuse signal (`diffSignal = wrapNdotL × effectiveFalloff < 0.55`), decoupled from ambient fill.
+* **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo), **Deep Crevice** ($L \times 0.60$, $20°$ shift, triggers at $AO < \text{creviceAOThresh}$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ toward $65°$ warm sunlight, shiny materials only). In Phase 63, `creviceAOThresh` is dynamically bounded to $[0.12, 0.30]$ scaling with `cavityStrength` ($\min(0.30, \max(0.12, 0.12 + 0.16 \times \text{cavStrength}))$), requiring $\text{diffSignal} < \text{shadowThresh} + 0.10$ to prevent dark bands from engulfing unlit sides.
+* **Neutral Macro-Form & Exposure-Compensated Terminator (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D surface normal field $\mathbf{N}$ is 100% decoupled from light direction. Directional cel shadow placement uses an exposure-compensated terminator ($\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$), preventing high lamp brightness from shifting geometric boundaries.
+* **Source Shading Normalization (Phase 63):** Added `sourceShadingRemoval` ($0\% - 100\%$) to reduce pre-authored directional value bands before relighting. Two-sided interior ink detection requires opposing luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted drop shadows from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
 
 ### 6. Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Architecture
 * **Decoupled Orbit and Focus Reticle:** A draggable bulb token orbits smoothly around a draggable middle focus reticle (`stageCentroid`). Dragging the bulb rotates light azimuth ($\theta = \text{atan2}(dx, -dy)$) and elevation without mutating the center anchor position.
@@ -261,9 +262,10 @@ $$\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L}
 
 # 9. Storage, Serialization & Game Engine Exports
 
-### 1. IndexedDB Workspace (db.ts, Schema v4)
+### 1. IndexedDB Workspace & Format v3 (db.ts, schema.ts)
 * Dexie-backed multi-project workspace with dedicated binary `layerBlobs` table storing raw PNG blobs directly (eliminating base64 serialization overhead).
-* Asynchronous autosave snapshots layers, palettes, and thumbnails without main-thread stalls.
+* Asynchronous autosave snapshots layers, palettes, and thumbnails without main-thread stalls, triggered on both pixel history commits and document `editRevision` updates.
+* **Project Format Specification v3:** Native `.pixibun` v3 saves structured `LayerEffectRecipe` provenance on generated layers while maintaining raster cache and backwards compatibility with v1/v2 files.
 
 ### 2. Game Engine Export Pipeline (spriteSheetPacker.ts)
 * **Godot 4:** Generates valid .tres SpriteFrames text resources with AtlasTexture sub-resources.
@@ -351,7 +353,7 @@ Registers ping-pong smoothly across boundaries without double-frame dwell pauses
 ### 4. Harmonic Rational Retuning
 Snaps each track's rate to harmonic periods over target duration $T$:
 $$k = \operatorname{round}\left(\frac{T \cdot \text{rate}}{M}\right), \quad \text{rate}_{\text{retuned}} = \frac{k \cdot M}{T}$$
-Guarantees seamless loop unrolling into loopable APNG, GIF, and standalone Godot 4 (`.gdshader`) / Unity URP 2D HLSL shaders.
+Guarantees loop unrolling into loopable APNG, GIF, and standalone Godot 4 (`.gdshader`) / Unity URP 2D HLSL shaders.
 
 <p align="center">
   <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Live Palette Cycling Engine in Studio" width="680" />
@@ -457,5 +459,62 @@ Built into `/playground` (and openable in the studio via `pixibun:open-teaching-
 * **10-Frame Jump Cycle Anatomy**: Full physics breakdown covering Anticipation / Squash, Takeoff / Stretch, Ascent, Apex Hang, Descent, Ground Contact, Recovery Cushion, and Rest.
 * **8 Alt Palette Colorways**: Interactive colorway swatches (Classic Lavender, Matcha Sage, Sakura Rose, Midnight Obsidian, Solar Gold, Frost Cyan, Rust Copper, Twilight Indigo).
 * **1-Click Inject-to-Timeline**: Instantly loads the constructed multi-frame jump cycle into the studio timeline with authentic frame hold timings.
+
+---
+
+# 18. Smart-Effect Recipe Architecture & Non-Destructive Workflow
+
+Phase 63 introduces a portable, non-destructive effect recipe model (`LayerEffectRecipe`) across all generated layer types:
+
+### 1. Unified Recipe Model (`src/types/canvas.ts`)
+```typescript
+export type SmartEffectKind =
+  | 'photometric'
+  | 'auto-shade'
+  | 'cast-shadow'
+  | 'ground-shadow'
+  | 'volumetric-optics'
+  | 'normal-map'
+  | 'specular'
+  | 'sel-out'
+  | 'outline'
+  | 'autotile'
+  | 'wfc';
+
+export interface LayerEffectRecipe {
+  id: string;
+  kind: SmartEffectKind;
+  version: 1;
+  sourceMode: 'composite-excluding-self' | 'active-layer' | 'selection';
+  params: Record<string, SmartEffectParameter>;
+  analysis?: {
+    formType?: 'character' | 'orb' | 'prop';
+    sourceLightAzimuth?: number;
+    sourceLightElevation?: number;
+    cueStrength?: number;
+    rationale?: string;
+  };
+  updatedAt: number;
+}
+```
+
+### 2. Non-Destructive Layer Provenance & Runtime Invariants
+* **Instant 60fps Blitting:** The raster result of the effect remains pre-rendered in the layer's `OffscreenCanvas` buffer. Viewport zooming, panning, and timeline playback do not incur re-generation overhead.
+* **Atomic Undo/Redo Snapshots:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe`, ensuring that undoing or redoing an effect operation atomically synchronizes both the raster bitmap and its parameter metadata.
+* **Interactive Light Gizmo Reopening:** Photometric layers render an `Edit FX` button in `LayersPanel.tsx`. Reopening reads `recipe.params`, mounts the `PixelLightBulbGizmo`, and binds real-time updates directly to the target layer.
+* **P2P Structural Sync Guard:** P2P collaboration validates incoming remote recipes through `validateLayerEffect()`, strictly rejecting unrecognized keys, uncalibrated parameters, and excessive string lengths.
+
+### 3. Discrete Cel-Shading Ramps & 3D Specular Highlight System
+* **Discrete Shading Tones:** When generating photometric shading layers, the engine quantizes directional lighting into discrete OKLCH palette ramps driven by `shadingBands`:
+  - **1 Single (2 Tones):** Base color + 1 directional shadow tone ($S < T \rightarrow \text{ramp.shadow}$).
+  - **2 Dual (3 Tones):** Base color + core shadow + deep boundary umbra ($S < 0.48 \cdot T \rightarrow \text{ramp.deep}, S < T \rightarrow \text{ramp.shadow}$).
+  - **3 Trio (4 Tones):** Base color + soft penumbra + core mid-shadow + deep umbra ($S < 0.32 \cdot T \rightarrow \text{ramp.deep}, S < 0.65 \cdot T \rightarrow \text{ramp.shadow}, S < T \rightarrow \text{ramp.soft}$).
+  Operates across all pixel art forms (orbs, characters, props), keeping artwork clean without muddy 24-bit floating point gradients.
+* **Continuous 3D Specular Highlight Pill:**
+  - Evaluates Blinn-Phong half-vector specular reflection over a smooth macro-silhouette normal field (`specularNormalField`), preventing internal feature depressions (such as eye sockets) from carving reflective cliff scars.
+  - Enforces a physical line-of-sight visibility gate ($\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$), strictly preventing specular glints from leaking onto unlit shadow hemispheres.
+  - Features smooth continuous alpha falloff ($\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$ for $I_{\text{spec}} > 0.35$), producing natural volumetric highlight pills with feature masking protection over eyes and ink lines.
+
+
 
 

@@ -1,7 +1,7 @@
-# 🌌 PixiBun Atelier — v2 Architecture & Strategic Vision
+#  PixiBun Atelier — v2 Architecture & Strategic Vision
 
 ```text
-  /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
+  /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   P I X I B U N   v 2   V I S I O N
   > ^ <    Next-Generation Graphics & Workstation Blueprint
 ```
@@ -11,7 +11,7 @@
 
 ---
 
-## 📑 Table of Contents
+##  Table of Contents
 
 1. [Executive Summary & North Star](#1-executive-summary--north-star)
 2. [Pillar 1: WebGPU Compute Shaders (WGSL) for 2D Grid Algorithms](#2-pillar-1-webgpu-compute-shaders-wgsl-for-2d-grid-algorithms)
@@ -632,7 +632,7 @@ gantt
 
 ## 9. Strategic Engineering Assessment: Is Developing v2 Necessary Right Now?
 
-### 🎯 Direct & Candid Engineering Verdict:
+###  Direct & Candid Engineering Verdict:
 > ### **NO. Starting v2 development right now is ABSOLUTELY UNNECESSARY.**
 
 Below are the concrete mathematical, performance-based, and product maturity rationales for this decision:
@@ -690,7 +690,7 @@ Transitioning to the v2 architecture will become necessary only when one or more
 
 ---
 
-### 💡 Final Decision & Recommendation
+###  Final Decision & Recommendation
 
 This document (`V2_VISION.md`) serves as the project's **North Star** architectural reference. With every formula, WGSL shader pattern, and academic citation, it stands ready in our archive as a complete roadmap.
 

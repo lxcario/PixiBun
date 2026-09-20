@@ -98,7 +98,7 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 #### [NEW] [LandingNav.tsx](../../src/components/landing/LandingNav.tsx)
 - Unchanged from v1.
 
-### 4. Tactile Feature Cards ("✦ Everything you need to create ✦")
+### 4. Tactile Feature Cards ("* Everything you need to create *")
 #### [NEW] [CozyFeatureGrid.tsx](../../src/components/landing/CozyFeatureGrid.tsx)
 - 4 cards using the **actual sampled per-card backgrounds** (`--surface-card-white/pink/lavender/gray`), each with a generated pixel icon and an arrow link:
   1. **Pixel Canvas** — drawing tools, onion skinning, frame-by-frame animation.

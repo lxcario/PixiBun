@@ -1,10 +1,10 @@
-# Contributing to PixiBun Atelier 🎨🐇
+# Contributing to PixiBun Atelier 
 
 Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a high-performance, in-browser pixel art and animation workstation built with a strict **zero-dependency, local-first, mathematically rigorous** engineering philosophy.
 
 ---
 
-## 🏛️ Core Engineering Principles
+## ️ Core Engineering Principles
 
 1. **Zero External Runtime Dependencies:**
    All core pixel art algorithms—including the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), photometric normal map generation, 47-blob Wang autotiling, APNG/GIF decoders, and ISOBMFF Fast-Start MP4 muxing—are authored from scratch in pure TypeScript using TypedArrays and Web Platform standards. We do not accept PRs introducing third-party algorithmic bloat or unnecessary npm dependencies.
@@ -22,7 +22,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ---
 
-## 🛡️ The Local Quality Gate
+## ️ The Local Quality Gate
 
 We enforce an autonomous, zero-cost Quality Gate that runs in ~16-19 seconds on standard developer hardware.
 
@@ -50,7 +50,7 @@ npm run gate:full
 
 ---
 
-## 🪝 Automated Pre-Push Git Hook
+##  Automated Pre-Push Git Hook
 
 PixiBun includes an automatic Git hook that intercepts `git push` on your local machine and executes `npm run gate`. If any type error, failing test, or doc inconsistency is detected, the push is blocked before it leaves your workstation.
 
@@ -67,7 +67,7 @@ node scripts/installGitHooks.mjs
 
 ---
 
-## 🧪 Testing Standards
+##  Testing Standards
 
 - **Unit & Logic Tests:** Located in `tests/`. Every new algorithm, safety guard, or utility function must include comprehensive unit tests testing nominal, boundary, and pathological inputs.
 - **E2E & Accessibility Tests:** Located in `tests/e2e/`. Critical workstation workflows and accessibility benchmarks (via `@axe-core/playwright`) are tested end-to-end.
@@ -75,10 +75,10 @@ node scripts/installGitHooks.mjs
 
 ---
 
-## 📝 Pull Request Checklist
+##  Pull Request Checklist
 
 Before submitting a Pull Request:
-1. Run `npm run gate` and verify that all stages pass green (✓).
+1. Run `npm run gate` and verify that all stages pass green ([x]).
 2. Ensure no untyped `any` or `@ts-ignore` flags are introduced.
 3. If new features or phases are added, document them cleanly in `ARCHITECTURE.md` and `CHANGELOG.md`.
 4. Run `npm run verify:docs` to ensure zero documentation drift.

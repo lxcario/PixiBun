@@ -1,7 +1,7 @@
-# 🎨 Design System & Spatial Architecture — PixiBun Atelier
+#  Design System & Spatial Architecture — PixiBun Atelier
 
 ```text
-  /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
+  /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   D E S I G N   S Y S T E M
   > ^ <    The Lamplit Drafting Desk Specification
 ```
@@ -17,9 +17,9 @@ PixiBun is structured around the physical sensation of sitting at a solid wooden
 
 ```mermaid
 graph TD
-    Desk["🪵 Deep Plum-Wood Desk (`--desk-surface`)<br/>#140C1E to #201431"] --> Chassis["💼 Thistle Lavender Studio Chassis (`--desk-surface-raised`)<br/>#281B3D"]
-    Chassis --> Viewport["📄 Recessed Paper Canvas Surround<br/>#120A1C"]
-    Viewport --> Lamp["💡 Incandescent Lamp Glow Overlay (`.lamp-pool`)<br/>#F0BE7C (Single radial overlay)"]
+    Desk[" Deep Plum-Wood Desk (`--desk-surface`)<br/>#140C1E to #201431"] --> Chassis[" Thistle Lavender Studio Chassis (`--desk-surface-raised`)<br/>#281B3D"]
+    Chassis --> Viewport[" Recessed Paper Canvas Surround<br/>#120A1C"]
+    Viewport --> Lamp[" Incandescent Lamp Glow Overlay (`.lamp-pool`)<br/>#F0BE7C (Single radial overlay)"]
 ```
 
 ### Material Invariants
@@ -29,7 +29,7 @@ graph TD
   * `.texture-wood-grain`: Static linear gradient streaks representing brushed timber grain.
 * **Anti-Slop Discipline:**
   * **Zero ambient floating or bobbing animations.** Elements stay anchored to their physical surfaces.
-  * **Zero generic AI sparkles (✨) as feature markers.**
+  * **Zero generic AI sparkles () as feature markers.**
   * **Zero template purple/cyan gradients.** All tones are derived strictly from our semantic OKLCH palette tokens.
 
 ---
@@ -40,8 +40,8 @@ Our color system is authored in **OKLCH** color space to maintain perceptual uni
 
 ```mermaid
 graph LR
-    Highlight["☀️ Warm Sunlight Highlight<br/>(H ≈ 80° - 105° Lamp Amber #F0BE7C)"] --- Base["🌸 Core Wisteria Lavender<br/>(H ≈ 305° - 315° #C792DF)"]
-    Base --- Shadow["🌑 Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
+    Highlight["️ Warm Sunlight Highlight<br/>(H ≈ 80° - 105° Lamp Amber #F0BE7C)"] --- Base[" Core Wisteria Lavender<br/>(H ≈ 305° - 315° #C792DF)"]
+    Base --- Shadow[" Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
 ```
 
 ### 1. Atelier Theme Tokens (Modern Workstation Baseline)
@@ -186,7 +186,7 @@ graph TD
 ## 7. Anti-Slop Voice & Copywriting Guidelines
 
 * **Voice:** Written from one craftsperson to another — humble, warm, precise, and practical.
-* **Banned Buzzwords:** Never use *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"Seamlessly supercharge"*, *"Unlock next-gen capabilities"*, or fake robotic status codes (*"Payload initialized"*).
+* **Banned Buzzwords:** Never use *"Transform your workflow"*, *"The ultimate all-in-one platform"*, *"supercharge"*, *"Unlock next-gen capabilities"*, or fake robotic status codes (*"Payload initialized"*).
 * **Positive Framing:** Explain the tangible physical utility clearly: *"Bakes a 3D tangent normal map into a new layer for Godot/Unity"* instead of *"AI-powered magic normal generator"*.
 
 ---
@@ -293,3 +293,66 @@ The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates
 2. **Color Scheme:** Dark or Light.
 
 Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, ensuring zero-lag visual switching.
+
+---
+
+## 15. PixiBunLogo Brand Geometry & Scale System (`PixiBunLogo.tsx`)
+
+Phase 63 standardizes brand mark geometry into a single responsive component (`src/components/ui/PixiBunLogo.tsx`) unifying identity across the studio header rail, playground, landing navigation, hero showcase, mobile gates, and error boundaries:
+
+### Scale Hierarchy
+
+| Scale | Mascot Tile Size | Mascot Graphic | Title Typography | Subtitle Typography | Container Gap |
+|---|---|---|---|---|---|
+| `'sm'` | `w-7 h-7` (28px) | 18px | `text-xs font-display` | `text-[9px] font-mono` | `gap-2` (8px) |
+| `'md'` | `w-8 h-8` (32px) | 22px | `text-sm font-display` | `text-[10px] font-mono` | `gap-2.5` (10px) |
+| `'lg'` | `w-10 h-10` (40px) | 28px | `text-base font-display` | `text-xs font-mono` | `gap-3` (12px) |
+
+### Design Invariants
+* **Tactile Mascot Tile:** Housed in a raised bezel (`bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm`) with Bun mascot micro-animation.
+* **Dual Typography Lockup:** Crisp uppercase heading (`font-display font-bold tracking-wider text-[var(--text-heading)]`) stacked over a tracked amber sub-brand (`font-mono text-[var(--accent-gold)] tracking-tight ATELIER`).
+* **Subtle Elevation:** Renders with `drop-shadow-sm` on studio bars and `drop-shadow-md` on hero and footer surfaces.
+
+---
+
+## 16. Smart-Effect Recipe Provenance & FX Inspector Semantics
+
+Grounded in non-destructive digital art workflows (such as Blender geometry nodes and Photoshop smart filters):
+
+### 1. Layers Panel FX Provenance
+Layers generated by PixiBud smart features (photometric lighting, raymarched shadows, volumetric optics, normal maps, autotile contours, WFC synthesis) display a distinct golden `FX` indicator badge in `LayersPanel.tsx`:
+* Visual tag signaling that the layer was generated parametrically rather than painted by hand.
+* Hover tooltip displays the recipe generation kind (`Generated from a saved photometric recipe`).
+
+### 2. Live Recipe Reopening (`Edit FX`)
+Photometric lighting layers include a tactile `Edit FX` button:
+* Clicking `Edit FX` loads the saved `LayerEffectRecipe.params` into the studio store.
+* Mounts the `PixelLightBulbGizmo` directly in place on the canvas with the exact azimuth, elevation, brightness, and material previously applied.
+* Artists can adjust the light angle or intensity in real-time and commit changes non-destructively, preserving the underlying hand-drawn artwork untouched.
+
+### 3. Real-Time Analysis Readout Card
+`PhotometricLightingSection.tsx` mounts a live heuristic analysis readout card listening to `pixibun:photometric-analysis`:
+* **Detected Form:** Upper-case badge indicating detected geometry (`CHARACTER`, `PROP`, `ORB`).
+* **Material & Source Light:** Reports inferred material preset and existing light coordinates ($\theta^\circ / \phi^\circ$).
+* **Directional Shading Cue:** Continuous heuristic strength rating (`Weak` $< 0.25$, `Medium` $< 0.65$, `Strong` $\ge 0.65$) describing the confidence of directional shading already present in the artwork.
+* **Surface Interpretation Overrides:** Tactical segmented buttons (`[ Auto | Character | Prop | Orb ]`) allowing the artist to override morphology heuristics when working on stylized or ambiguous subjects.
+
+---
+
+## 17. Discrete Shading Tones & 3D Specular Highlight System
+
+In retro arcade and pixel art styles, surfaces are shaded using controlled, discrete tonal ramps rather than continuous 24-bit gradients. Phase 63 formalizes pixel-art cel-shading band modes and specular highlights:
+
+### 1. Shading Tones Modes
+* **1 Single (2 Total Colors):** Classic 2-tone arcade shading (base color + single directional shadow tone). Ideal for clean game sprites and low-color retro palettes (e.g. Capcom CPS2).
+* **2 Dual (3 Total Colors):** Core shadow + deep boundary shadow. The studio default, providing depth and form definition without visual clutter.
+* **3 Trio (4 Total Colors):** Soft penumbra ($L \approx 0.93 \cdot L_{\text{base}}$) + core mid-shadow + deep umbra crescent. Emulates rich hand-drawn anime and 16-bit RPG boss sprites.
+* **Studio Controls:** Available via the `Shading Tones` button group in the inspector and on the on-canvas `PixelLightBulbGizmo` bottom HUD (`SHADE: 1 | 2 | 3`).
+
+### 2. Continuous 3D Specular Highlight Pill
+* **Natural Volumetric Pill:** Instead of artificial 1-pixel speck clusters or broad flat washes, highlights render as a continuous 3D Blinn-Phong highlight pill with smooth alpha falloff.
+* **Macro-Silhouette Normal Field:** Normals are sampled from the smooth inflated dome (`specularNormalField`), guaranteeing that interior eye depressions and color boundaries never produce reflective scars or cliff cuts.
+* **Physical Visibility Gating:** Strict line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) ensures specular highlights only appear on lit surfaces facing the light source.
+* **Feature Shielding:** Facial features (eyes, mouth) and dark outlines are masked out, ensuring highlights land only on organic surface curves.
+
+

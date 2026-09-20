@@ -259,7 +259,7 @@ confidently-wrong `passed` (bare visibility assertions) or a thrashing
 - **One verb per step.** `and` / `then` between two verbs → split — e.g.
   "Search for stays and open the first result" becomes two steps.
 - **Describe outcomes, not selectors.** The testing agent locates targets
-  semantically — describe the intent and the match stays robust across copy
+  semantically — describe the intent and the match stays reliable across copy
   changes; a guessed literal label defeats that. E.g. write `"Submit the form"`,
   not `"Click the blue 'Submit' button"`.
 - **`Navigate to` only on step 1** (or a login page). Use clicks for every later

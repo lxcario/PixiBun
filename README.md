@@ -1,7 +1,7 @@
-# 🐇 PixiBun Atelier — v1.14.0
+#  PixiBun Atelier — v1.14.0
 
 ```text
-  /\_/\   ✦  .  *  .  ✦  *  .  ✦  *  .  ✦  *
+  /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   P I X I B U N   A T E L I E R
   > ^ <    A quiet, cozy desk for pixel art & animation
 ```
@@ -11,7 +11,7 @@
 
 ---
 
-## ☕ Why PixiBun?
+##  Why PixiBun?
 
 Modern creative software has grown noisy — cluttered with account walls, mandatory cloud syncs, subscription banners, and confusing menus.
 
@@ -32,16 +32,16 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 
 ```mermaid
 graph LR
-    subgraph Atelier ["🐇 PixiBun Studio"]
-        Raster["🖌️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
-        Math["☀️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
-        Anim["🎬 Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
-        Import["🖼️ Smart Import & Pixelize<br/>• Forward-Difference Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
-        Export["📦 Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
+    subgraph Atelier [" PixiBun Studio"]
+        Raster["️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
+        Math["️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
+        Anim[" Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
+        Import["️ Smart Import & Pixelize<br/>• Forward-Difference Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
+        Export[" Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
     end
 ```
 
-### 🎮 Live Interactive Engine Showcase (Landing Page)
+###  Live Interactive Engine Showcase (Landing Page)
 Before stepping into the full studio, visitors can interact directly with PixiBun's computer graphics algorithms right on the home desk (`#engine-showcase`):
 * **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading on the Hearth Ghost sprite, 5 Blinn-Phong material profiles (*Matte, Metal, Gold, Glass, Fabric*), and Aaltonen raymarched ground cast shadows vs. contact drop AO.
 * **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard nearest-neighbor affine rotation (`imageSmoothingEnabled = false`), maintaining crisp single-pixel contours at 45°.
@@ -50,10 +50,10 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### 🖌️ Artisan Raster & Drawing Engine
+### ️ Artisan Raster & Drawing Engine
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
 * **Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° ($\arctan 0.5$ dimetric) isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
-* **3x3 Seamless Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
+* **3x3 Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Quadratic Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
 * **Flood Fill & Global Color Replacement:** Contiguous island fill and canvas-wide color swapping with unsigned 32-bit bitwise normalization and adjustable tolerance.
 * **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
@@ -63,13 +63,14 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### ☀️ PixiBud 2.5D Photometric Studio & Smart Math Engine
+### ️ PixiBud 2.5D Photometric Studio & Smart Math Engine
 * **Deep Canvas Art Understanding & Anatomical Classification:** Analyzes artwork morphology to classify forms into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`), preserving original artist RGB values from diffuse darkening or ambient crush.
 * **Frontal Face Cushion Plateau & Independent Ear Geometry:** For character forms, the interior face height forms a flat camera-facing plateau ($N_z \ge 0.88$), ensuring light illuminates faces without splitting them in half with shadow, while form shadows hug only the 1–2px unlit silhouette bevel. Distinct convex lobes preserve independent 3D cone geometry for ears and horns. Dynamic scale factor $\text{scaleFactor} = \max(1.0, \min(W, H) / 32)$ scales bevel radii proportionally for $64\times64$ and $128\times128$ canvases to prevent premature normal collapse while maintaining byte-exact output on $32\times32$ sprites.
-* **Perceptual 4-Tone OKLCH Stepped Cel-Shading:** Unshaded flat character sprites receive crisp discrete tone steps — **Base**, **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo skylight, bounded strictly below base luminance to safeguard dark crimson and navy palettes), **Deep Crevice** ($L \times 0.60$, $20°$ hue shift, triggers at $AO < \text{creviceAOThresh}$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ shift toward $65°$ warm sunlight, shiny materials only). Dynamic cavity AO auto-scaling adapts `cavityStrength` and scales `creviceAOThresh` with silhouette complexity, preventing hair spikes and thin fur tufts from being engulfed in non-directional shadow tone. Shadow placement is driven purely by directional diffuse signal (`diffSignal < 0.55`), decoupled from ambient fill to ensure crisp anatomical shadow termination. Line-art detection uses boundary-aware contrast to protect dark body colors from unshaded masking.
+* **Perceptual OKLCH Stepped Cel-Shading & Shading Band Modes (Single / Dual / Trio):** Unshaded and pre-shaded pixel art sprites receive crisp discrete tone steps across all forms (orbs, characters, props). Supports **1 Single** (1 shadow tone for classic 2-tone arcade sprites), **2 Dual** (core + deep shadow, default), and **3 Trio** (soft penumbra $L \times 0.93$ + core mid-shadow + deep umbra crescent along outer boundaries). Dynamic cavity AO auto-scaling adapts `cavityStrength` and scales `creviceAOThresh` with silhouette complexity, preventing hair spikes and thin fur tufts from being engulfed in non-directional shadow tone. Shadow placement is driven purely by directional diffuse signal (`diffSignal < shadowThresh`), decoupled from ambient fill to ensure crisp anatomical shadow termination.
+* **Continuous 3D Blinn-Phong Specular Highlight Pill:** Specular reflections render as smooth, continuous 3D highlight pills with natural alpha falloff ($I_{\text{spec}} > 0.35, \alpha = \min(255, \text{round}(I_{\text{spec}} \times 255))$). Normals are sampled from the smooth macro-silhouette dome (`specularNormalField`), eliminating facial cliff cuts and ear scars, with a strict line-of-sight visibility gate ($N_{3D} \cdot L_{3D} > 0$) shielding the unlit shadow side, and feature masking protecting eyes, mouth, and line art.
 * **Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows:** Replaced infinite planar raymarch wedges with professional 2.5D bounded sprite cast shadows. Evaluates exact 1-to-1 sheared silhouette projection ($h = y_{\text{base}} - y_s \ge 0$) anchored at the sprite contact baseline, strictly preserving leg arches and waist indentations without bounding-box bloat or muddy center blobs. Includes classic RPG ground contact drop shadows (`shadowStyle: 'drop'`) with crisp Bresenham ellipses under feet, defaulting to uniform flat opacity (`ditherMode: 'none'`).
-* **Smart Canvas Art Auto-Analysis:** Dedicated "Analyze & Render" engines for photometric lighting and cast shadows automatically infer optimal light azimuth, elevation, intensity, contact base, bounds, and material presets from canvas pixel data.
-* **Interactive On-Canvas Pixel Light Bulb Gizmo:** Live on-canvas interactive draggable bulb handle with real-time 60fps lighting updates during dragging. Decoupled bulb orbit from middle light point focus reticle so artists can anchor and drag the light source or focal point independently. Dynamically aligns directional light vectors with on-canvas pointer coordinates, invalidating analysis caching on $\ge 20^\circ$ angular drift and executing a fresh single-shot pass on drag commit to guarantee zero azimuth staleness on saved artwork. Includes hotkey brightness adjustment (<kbd>+</kbd> / <kbd>-</kbd> / mouse wheel scroll), quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focus reset (<kbd>Alt+R</kbd>).
+* **Smart Canvas Art Auto-Analysis:** Dedicated "Analyze & Render" engines for photometric lighting and cast shadows infer light azimuth, elevation, intensity, contact base, bounds, and material presets from canvas pixel data. Pre-existing painted shading is separated from the base color estimate so old dark bands do not remain pinned in place when the bulb moves; the inspector reports the detected form, source light, confidence, and rationale.
+* **Interactive On-Canvas Pixel Light Bulb Gizmo:** Live on-canvas interactive draggable bulb handle with real-time 60fps lighting updates during dragging. Decoupled bulb orbit from middle light point focus reticle so artists can anchor and drag the light source or focal point independently. Dynamically aligns directional light vectors with on-canvas pointer coordinates, invalidating analysis caching on $\ge 20^\circ$ angular drift and executing a fresh single-shot pass on drag commit to guarantee zero azimuth staleness on saved artwork. Includes hotkey brightness adjustment (<kbd>+</kbd> / <kbd>-</kbd> / mouse wheel scroll), quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), focus reset (<kbd>Alt+R</kbd>), and on-canvas tone band toggles (`SHADE: 1 | 2 | 3`).
 * **3D Minecraft Skin Recognition & Dedicated Shading:** Automatically detects $64\times64$ and $64\times32$ Java/Bedrock UV layouts via deep 8-connected topological discriminator (`analyzeMinecraftSkinTopology`: dominant component ratio, bilateral limb verification, canonical void zone integrity, bounding box margins) that protects centered character sprites from false-positive classification. Computes analytical 3D unit normal vectors $\mathbf{N}$ for all 12 cuboid regions, and executes domain skin shading (Half-Lambert wrap, contact ambient occlusion under chin/armpits/limbs, sky hemisphere radiance, and warm sunlight/cool indigo hue-shifting). Includes tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector controls for user sovereignty.
 * **Linear-Time $O(N)$ Euclidean Distance Transform (EDT):** Felzenszwalb-Huttenlocher separable squared parabolic lower envelopes compute distance fields in milliseconds.
 * **Non-Linear Dome Profile Inflation & Bilateral Filtering:** Curves linear distance cones into spherical 2.5D volumetric domes ($\gamma = 0.5$) while preserving sharp segment outlines.
@@ -95,7 +96,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### 🖼️ Intelligent Image-to-Pixel-Art Synthesis & Import Suite
+### ️ Intelligent Image-to-Pixel-Art Synthesis & Import Suite
 * **Linear Optical Gamma-Corrected Area Box Downsampling:** Accurately integrates light flux during downscaling without dark-halo fringe artifacts.
 * **Forward-Difference Gradient Salience Edge-Preservation:** Boosts high-contrast edge weights to preserve delicate line-art, facial features, and character silhouettes when converting photos or high-res art.
 * **OKLab Perceptual Color Quantization:** Median-Cut partitioning with four Lloyd iterations initialized by median-cut centroids in OKLab perceptual color space.
@@ -106,7 +107,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### 🎨 Color Science & Advanced Dithering Suite
+###  Color Science & Advanced Dithering Suite
 * **OKLab Perceptual Matching:** Color differences computed via $\Delta E_{\text{OKLab}} = \sqrt{\Delta L^2 + \Delta a^2 + \Delta b^2}$ to respect human ocular sensitivity.
 * **Bayer Matrix Ordered Dithering:** Recursive $2\times2$, $4\times4$, and $8\times8$ threshold offset modulation before quantization to prevent dirty color pollution.
 * **Atkinson 75% Error Retention Dither:** Classic vintage Macintosh error-diffusion for high-contrast, atmospheric shading.
@@ -114,7 +115,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Harmonic Ramp Generator:** Generates 5-step highlight and shadow ramps in OKLCH space with natural warm sun / cool shadow hue-shifting.
 * **Atmospheric Photographic Color Grading:** Physical Kelvin temperature shifts (+2800K Golden Sunset, -3500K Cool Moonlight, Neon Dusk, DMG Game Boy).
 * **Scan & Snap Palette Tools:** Scan entire canvas to create instant palettes or snap layer pixels to the active palette colors.
-* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS, triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, harmonic rational retuning for seamless loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
+* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS, triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, harmonic rational retuning for loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
 
 <p align="center">
   <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Mark Ferrari Palette Cycling Live in Studio" width="680" />
@@ -122,9 +123,9 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### 🎬 Animation Suite & Layer Stack
+###  Animation Suite & Layer Stack
 * **Signed Distance Field (SDF) In-Between Morphing:** Euclidean distance field tweening with multi-source nearest-color sampling and linear cross-fading, producing smooth intermediate in-between frames at arbitrary fractional time $t \in [0, 1]$ without background ghosting.
-* **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (`🔒 Active layer is locked`), visibility, and 5 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge*).
+* **Multi-Layer Compositor & Layer Security:** Individual layer opacity, lock toggle with live HUD feedback (` Active layer is locked`), visibility, and 5 blend modes (*Normal, Multiply, Screen, Overlay, Color Dodge*).
 * **Frame-by-Frame Timeline & Tag Clips:** Duplicate, reorder, delete, and tag animation clips (e.g. *Idle, Walk, Attack, Cast*).
 * **Warm Onion Skinning:** Configurable past frame (Wisteria Lavender) and future frame (Plum Lilac) ghosting.
 * **Floating Live Preview Popout:** Draggable, resizable $1\times/2\times/4\times$ live preview window with custom backdrops (*Checkerboard, Dark Obsidian, Alabaster Paper, Amber Lamp*).
@@ -132,7 +133,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### 📦 Game-Ready Export Pipeline
+###  Game-Ready Export Pipeline
 * **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
 * **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag, featuring cancellation via `AbortController` and a live progress bar.
 * **Lossless PNG:** Integer scaling from $1\times$ up to $32\times$ with crisp nearest-neighbor sampling (available up to the universal $4096\text{px}$ / $16.7\text{ MP}$ browser safety ceiling; up to $32\times$ for sprites $\le 128\times128$, with higher scales dynamically disabled on larger canvases to prevent browser allocation crashes).
@@ -140,11 +141,11 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **MP4 & WebM Video:** Hardware-accelerated canvas video encoding with automated even-dimension macroblock padding (WebM with VP8/VP9; MP4 recording via H.264 MediaRecorder where supported by the browser platform, with WebM fallback).
 * **Timelapse Speedpaint Recorder:** Step-by-step canvas history replay exported to animated GIF or video.
 * **Packed Sprite Sheets:** Horizontal, vertical, or matrix packed layouts with ready-to-use JSON metadata for **Godot 4**, **Unity**, and **Phaser 3**.
-* **Native `.pixibun` Files:** Single-click project file export and restore with schema v2 migration and forward-compatibility guards.
+* **Native `.pixibun` Files:** Single-click project file export and restore with schema v3 smart-effect recipes, legacy migration, and forward-compatibility guards.
 
 ---
 
-## 🎨 Dual First-Party Studio Themes
+##  Dual First-Party Studio Themes
 
 PixiBun Atelier features two distinct, fully crafted visual identities selectable via the **Appearance Popover** in the top rail, each supporting both Dark and Light color schemes with zero-lag transition suppression:
 
@@ -172,7 +173,7 @@ PixiBun Atelier features two distinct, fully crafted visual identities selectabl
 
 ---
 
-## ⌨️ Keyboard Shortcuts Reference
+## ️ Keyboard Shortcuts Reference
 
 | Key | Tool / Action |
 |---|---|
@@ -215,7 +216,7 @@ PixiBun Atelier features two distinct, fully crafted visual identities selectabl
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 * **Node.js:** v20.x or later
@@ -236,7 +237,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 🛡️ Autonomous Quality Gate & Git Pre-Push Protection
+### ️ Autonomous Quality Gate & Git Pre-Push Protection
 PixiBun includes an automated, zero-dependency local Quality Gate runner that executes before every push:
 ```bash
 # Run documentation checks, typecheck, lint, and the unit test suite
@@ -249,18 +250,18 @@ The Git pre-push hook (`.git/hooks/pre-push`) is automatically configured on `np
 
 ---
 
-## 📱 Offline PWA, Accessibility & Privacy Observability
+##  Offline PWA, Accessibility & Privacy Observability
 
 PixiBun is engineered as a local-first web application:
 
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **Accessibility support and testing:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and automated axe-core scans. Passing scans are scoped to the pages and states exercised; they are not a conformance certification.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 692 unit and integration tests across 97 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 9 E2E spec suites (22 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 699 unit and integration tests across 98 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 9 E2E spec suites (22 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
-## 🛠️ Technical Architecture
+## ️ Technical Architecture
 
 | Subsystem | Technology | Architectural Rationale |
 |---|---|---|
@@ -279,17 +280,17 @@ PixiBun is engineered as a local-first web application:
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag dual-axis theme transitions (`AppearancePopover`). |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs, single-transaction atomic metadata + blob commits, multi-project workspace management. |
 | **Collaboration** | P2P WebRTC + CRDT Sync Bridge | Dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 692 unit and integration tests across 97 suites and 9 E2E spec suites (22 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 699 unit and integration tests across 98 suites and 9 E2E spec suites (22 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 
-## 🌌 Future Roadmap & v2 Architecture
+##  Future Roadmap & v2 Architecture
 
 For an academic deep-dive into the next-generation architecture of PixiBun — exploring WebGPU Compute Shaders (WGSL), WASM 128-bit SIMD, Kleppmann-Beresford Move-Tree CRDTs, Display-P3 wide color gamuts, and Tauri 2.0 desktop packaging — see the comprehensive blueprint in [`V2_VISION.md`](./V2_VISION.md).
 
 ---
 
-## 📜 Craft Values & Open Source
+##  Craft Values & Open Source
  
 * **Local-First & Zero Telemetry:** No user accounts, no telemetry, no tracking, no subscriptions.
 * **Offline-First Studio:** Core drawing, animation, lighting, and export pipelines run entirely in-browser without network access via the installable PWA.
@@ -297,5 +298,5 @@ For an academic deep-dive into the next-generation architecture of PixiBun — e
 * **Security & Invariants:** Read our defense-in-depth policy in [`SECURITY.md`](./SECURITY.md).
 * **License:** Licensed under the [MIT License](./LICENSE).
  
-*Handcrafted with pixels, coffee, and care.* ✦
+*Handcrafted with pixels, coffee, and care.* *
 

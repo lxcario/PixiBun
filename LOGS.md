@@ -1,6 +1,6 @@
 # Build Log — PixiBun
 
-> **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
+> **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## Phase 0 — Intake, Architecture & Foundation Docs (2026-08-18)
 **Delivered:**
@@ -152,7 +152,7 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
 - **iPad Pro & Apple Pencil Drawing Canvas (`AtelierDeskScene.tsx`)**:
   - Redesigned the center canvas into an Apple iPad Pro tablet with space gray rounded aluminum chassis, slim black display bezel, front camera, bottom Home indicator bar, and magnetic Apple Pencil with silver charging ring on the side.
 - **Enlarged Prominent Desk Lamp (`AtelierDeskScene.tsx`)**:
-  - Scaled up the architect gooseneck lamp with a larger weighted base, taller dual-strut armature, robust circular brass knuckle joint, and wide bell hood.
+  - Scaled up the architect gooseneck lamp with a larger weighted base, taller dual-strut armature, reliable circular brass knuckle joint, and wide bell hood.
 - **Cute Organic Rounded Windowsill Cat (`AtelierDeskScene.tsx`)**:
   - Replaced the square box body with an organically curved sleeping cat loaf with soft rounded head, tucked front paws, curved swishing tail, pink ears, and eyelids.
 - **Compact Cozy Boombox Radio (`AtelierDeskScene.tsx`)**:
@@ -161,7 +161,7 @@ Owner feedback: first landing read as empty and generic against the cozy brief.
   - Shifted desk perspective down (`deskY = 225`) to display 28% more wall room, expanded window (`winH = 175`), and taller vertical space.
 - **Warm, Human Craftsperson Copy Across Entire Landing**:
   - Replaced all generic AI/marketing text across `AtelierHero`, `CozyFeatureGrid`, `AtelierGallery`, `ArtisanStory`, `AtelierCtaBanner`, `AtelierFooter`, and `LandingNav` with warm, thoughtful, honest craftsperson writing.
-  - Removed the glitchy `animate-ping` disappearing square on the hero badge in favor of a clean, steady amber star accent `✦`.
+  - Removed the glitchy `animate-ping` disappearing square on the hero badge in favor of a clean, steady amber star accent `*`.
   - Replaced tech buzzwords with plain-spoken, cozy clarity: local-first privacy, tactile brushes, frame-by-frame animation, homestyle palettes, and quiet drawing vibes.
 
 - **Cute Starter Sprites & Gallery Shelf Redesign (`starterTemplates.ts`, `AtelierGallery.tsx`)**:
@@ -222,7 +222,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 16 — Minecraft 3D Skin Photometric Engine, Optical Flow Tweening, Sub-Pixel Anti-Aliasing & 3x3 Seamless Tiling (2026-08-30)
+## Phase 16 — Minecraft 3D Skin Photometric Engine, Optical Flow Tweening, Sub-Pixel Anti-Aliasing & 3x3 Tiling (2026-08-30)
 **Delivered:**
 - **3D Minecraft Skin Recognition & Dedicated Photometric Pipeline**:
   - `detectMinecraftSkin(isOpaque, width, height)`: Accurately identifies Minecraft Java & Bedrock skin layouts ($64\times64$ and $64\times32$) by analyzing void transparency zones and head/torso density.
@@ -244,8 +244,8 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - **Directional Selective Outlining (Sel-Out)**:
   - Evaluates outer silhouette normal vectors against the 3D light azimuth $\theta$.
   - Borders facing the light receive an illuminated rim tone ($+30\%$ lightness, increased saturation of interior albedo), while borders facing away receive deep saturated shadow tones (never pure flat black).
-- **3x3 Seamless Pattern Matrix Viewport (`showTilePreview`)**:
-  - Live wraps the canvas with 8 adjacent repeating ghost tiles in real time so artists can verify seamless texture repeats during drawing.
+- **3x3 Pattern Matrix Viewport (`showTilePreview`)**:
+  - Live wraps the canvas with 8 adjacent repeating ghost tiles in real time so artists can verify texture repeats during drawing.
 - **Isometric 2:1 Projection Diamond Grid (`showIsoGuides`)**:
   - Renders crisp 2:1 slope guide lines across the canvas for game tiles and isometric art.
 - **Floating Preview Close Fix**:
@@ -290,7 +290,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 - **"New Drawing" Workflow & Confirmation Modal**:
   - Added `resetToNewProject()` store action and `"New"` button in `TopHeader.tsx` with modal confirmation preventing accidental canvas clearing.
 - **Locked Layer Protection & HUD Toast**:
-  - Drawing attempts on locked layers are rejected and display an animated HUD toast (`🔒 Active layer is locked`).
+  - Drawing attempts on locked layers are rejected and display an animated HUD toast (` Active layer is locked`).
 - **OS Theme Auto-Detection**:
   - `themeStore.ts` checks `window.matchMedia('(prefers-color-scheme: light)').matches` before defaulting to dark theme.
 
@@ -517,7 +517,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
   - **Kajiya-Kay Anisotropic Highlight**: Implemented `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)` generating curvature and directional tangent fields with dual-cuticle shifts ($s_1 = +0.10, s_2 = -0.15$) for hair, fur, and brushed metal.
   - **Full Optical Pipeline**: Implemented `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` blending SSS, Fresnel, and Anisotropic specular passes with perceptual OKLab palette snapping and Bayer matrix dither modulation.
 - **PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`)**:
-  - Built **Volumetric Optics & SSS** module in PixiBud AI tab with tactile preset buttons (💎 Gem, 🧪 Slime, 💇 Hair, 🍃 Leaf, ⚔️ Metal).
+  - Built **Volumetric Optics & SSS** module in PixiBud AI tab with tactile preset buttons ( Gem,  Slime,  Hair,  Leaf, ️ Metal).
   - Added interactive parameter sliders for SSS Depth ($1 - 32\text{px}$), Fresnel Rim Power ($1.0 - 8.0\times$), Flow Preset selector (Vertical, Horizontal, Radial, Curvature), and Anisotropy Angle ($0^\circ - 180^\circ$).
 - **Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`)**:
   - Wired `pixibun:volumetric-optics` custom event to non-destructive tagged output layer (`Layer.tag = 'optical-output'`).
@@ -599,7 +599,7 @@ otateWithRotSprite\).
 
 ## Phase 29 — Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
 **Delivered:**
-- **Progressive Onboarding (feat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact seamlessly before transitioning fully into the studio workspace.
+- **Progressive Onboarding (feat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact before transitioning fully into the studio workspace.
 - **Advanced Selection Utilities (feat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
 - **Workflow UX Enhancements (feat(ux))**: Shipped a new contextual Radial Menu, live Autosave indicator, tracked Recent Colors palette, and progressive disclosure toggles for advanced tools.
 - **Hydration Fixes (fix(hydration))**: Resolved React SSR hydration mismatch console warnings related to the `recentColors` store mapping.
@@ -646,7 +646,7 @@ otateWithRotSprite\).
 ## Precision Polish & Critical UX Bug Fixes (2026-09-03)
 **Delivered:**
 - **Onboarding Stencil Isolation (src/components/layout/CenterViewport.tsx, src/components/layout/StudioLayout.tsx)**: Added strict isPlaygroundActive check in CenterViewport stencil effect and reset state on StudioLayout mount, preventing playground tracing stencils from leaking onto the studio canvas.
-- **Playground Animation Transfer (src/components/layout/PlaygroundLayout.tsx, src/components/layout/StudioLayout.tsx)**: Added ?fromPlayground=true query param so animation frame sequences created in the onboarding playground are seamlessly preserved in studio and saved to IndexedDB under Playground Animation.
+- **Playground Animation Transfer (src/components/layout/PlaygroundLayout.tsx, src/components/layout/StudioLayout.tsx)**: Added ?fromPlayground=true query param so animation frame sequences created in the onboarding playground are preserved in studio and saved to IndexedDB under Playground Animation.
 - **Viewport Zoom Aspect Ratio Fix (src/components/layout/CenterViewport.tsx)**: Added shrink-0 and explicit flexShrink: 0, minWidth, and minHeight to #center-canvas-area, stopping flexbox from horizontally squashing the canvas at high zooms (e.g. 2625%) and maintaining a 1:1 square aspect ratio up to 6400% zoom.
 - **Dynamic Canvas Resizing (src/components/modals/CanvasResizeModal.tsx, src/stores/studioStore.ts)**: Defaulted resample to true in CanvasResizeModal and setCanvasSize, scaling artwork dynamically with nearest-neighbor interpolation without clipping edges or corrupting drawings when resizing 32x32 to 16x16.
 - **Photometric Dither Modulation Default (src/stores/studioStore.ts)**: Reset initial tools.ditherModulation from 0.35 (35%) to 0.0 (0%).
@@ -842,7 +842,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 **Engineering Remediation:**
 - **Amethyst Wisteria Tactile Hover & Specular Sweep (`src/components/ui/TactileButton.tsx`, `src/app/globals.css`)**:
   - Replaced blinding white hover backgrounds with calibrated Amethyst Wisteria (`#603B82`, OKLCH $L \approx 0.42, C \approx 0.13, H \approx 312^\circ$), guaranteeing WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
-  - Enhanced specular CC light sweep to a dual-band gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, vibrant shimmer.
+  - Enhanced specular CC light sweep to a dual-band gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, colorful shimmer.
   - Standardized microinteraction physics (`scale: 1.025` hover, `scale: 0.97` tap, `rounded-[2px]`) across default, ghost, accent, and danger variants.
   - Harmonized modal action buttons across `src/components/layout/TopHeader.tsx`, `src/components/modals/ExportModal.tsx`, `src/components/modals/ShortcutsModal.tsx`, `src/components/modals/ImportModal.tsx`, `src/components/modals/ColorPickerModal.tsx`, `src/components/modals/CanvasResizeModal.tsx`, and `src/components/system/PwaUpdateToast.tsx`.
 - **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
@@ -1046,7 +1046,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Engineering Execution:**
 - **Shadow Terminator Fix (`src/lib/ai/math/photometricLighting.ts` lines 586–642)**: Removed `ambSignal` and `lightLevel` from shadow placement. Shadow termination now driven purely by directional diffuse signal: `diffSignal = wrapNdotL × effectiveFalloff` with `shadowThresh = 0.55`. Highlight uses `highlightLevel = diffSignal * brightness > 1.10 && isShinyMaterial`. Deep crevice threshold remains `creviceAOThresh = 0.60`.
-- **Verified fix**: Unlit cheek `diffSignal = 0.44 < 0.55` → SHADOW tone ✓. Body bottom `diffSignal = 0.43 < 0.55` → SHADOW tone ✓. Lit cheek `diffSignal = 0.89 > 0.55` → BASE tone ✓.
+- **Verified fix**: Unlit cheek `diffSignal = 0.44 < 0.55` → SHADOW tone [x]. Body bottom `diffSignal = 0.43 < 0.55` → SHADOW tone [x]. Lit cheek `diffSignal = 0.89 > 0.55` → BASE tone [x].
 
 **Checks run:**
 - `npx tsc --noEmit`: 0 errors
@@ -1087,8 +1087,8 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Problem Statement:**
 1. Tab switching flash: `AtelierEngineShowcase.tsx` previously used `next/dynamic` with `ShowcaseSkeleton`. When clicking a tab, the active panel unmounted, showed a dark screen with a spinning loader, and recompiled the chunk.
-2. Navigation jitter: `LandingNav.tsx` prepended an inline `<motion.span layoutId="activeNavSpark">✦</motion.span>` directly inside the link flex container, shifting link text horizontally by ~14px on focus. The scroll progress bar was unanchored at the base.
-3. Emojis and awkward copy: `WHAT WE HAS: DEEP GRAPHICS ENGINE` was grammatically broken. Residual emojis (`💡`, `✔ ✦`, `🐾`, `🐰`, `🎨`) persisted on showcase tabs, desk scene, and error boundaries.
+2. Navigation jitter: `LandingNav.tsx` prepended an inline `<motion.span layoutId="activeNavSpark">*</motion.span>` directly inside the link flex container, shifting link text horizontally by ~14px on focus. The scroll progress bar was unanchored at the base.
+3. Emojis and awkward copy: `WHAT WE HAS: DEEP GRAPHICS ENGINE` was grammatically broken. Residual emojis (``, ` *`, ``, ``, ``) persisted on showcase tabs, desk scene, and error boundaries.
 
 **Engineering Execution:**
 - **Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`)**: Replaced all dynamic lazy imports with direct static imports (`PhotometricShowcase`, `RotSpriteShowcase`, `PixelizeShowcase`, `EngineExportShowcase`), making tab switching immediate with zero dynamic bundle chunk load delays.
@@ -1134,7 +1134,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **Palette Inspector Controls & Exporters (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`)**:
   - Added live palette cycling controls to palette inspector.
   - Added standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shader generator.
-  - Added seamless APNG and animated GIF cycle loop unroller.
+  - Added APNG and animated GIF cycle loop unroller.
 - **Unit Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`)**:
   - Created 31 unit tests validating normal math, RNM quaternion blending, IFF chunk codecs, ping-pong fenceposts, and shader syntax.
 - **Pure Machine-Tag Architecture (`src/hooks/viewport/useViewportStudioEvents.ts`)**:
@@ -1293,7 +1293,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Eliminated artificial white `F` highlights across all 4 senior animation physics lessons, returning dynamic lighting responsibility to PixiBun Studio's Photometric engine.
   - Re-authored senior animation frames with 100% closed outline boundaries, zero leaks to background dots, and bilateral symmetry.
   - Fixed stale store snapshot in `onboardingStore.ts:syncStudioWithLesson`, ensuring fresh state queries, bidirectional frame count pruning, and duration assignments across all frames.
-  - Resolved all ESLint errors/warnings (unused vars, missing hook deps) and replaced raw `⚡` emoji in `ArtisanHandbookPanel.tsx` with `<PixelIcon name="sparkles" />`.
+  - Resolved all ESLint errors/warnings (unused vars, missing hook deps) and replaced raw `` emoji in `ArtisanHandbookPanel.tsx` with `<PixelIcon name="sparkles" />`.
   - Reconciled metric documentation across `README.md` and `LOGS.md` (533 unit/integration tests across 77 suites, 8 E2E spec suites with 20 tests).
 
 **Checks run:**
@@ -1396,7 +1396,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 **Changes:**
 - **Marketing Tone De-Escalation (`README.md`, `DESIGN.md`, `MAIN.md`, `SECURITY.md`, `ARCHITECTURE.md`, `PIXIBUN_DEEP_DIVE.md`)**: Softened marketing puffery, absolute guarantees, and hyperbolic adjectives across all documentation, replacing them with modest, academically precise technical descriptions.
 - **RotSprite Claims Calibration (`README.md`, `ARCHITECTURE.md`, `TASKS.md`, `CHANGELOG.md`, `LOGS.md`)**: Replaced over-reaching phrases ("completely eliminated 45° distortion", "micro-details never vanish", "100% leak-proof") with accurate descriptions of Xenowhirl's 8x Scale2x cascade, subpixel continuous inverse sampling, and parabolic majority voting reducing distortion and outline erosion while preserving palette purity.
-- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations tailored for pixel art rather than claiming full 3D volumetric simulations.
+- **Stylized 2D Optics Clarification (`README.md`)**: Explicitly documented Beer-Lambert chord extinction, Henyey-Greenstein phase scattering, Cauchy dispersion, and Kajiya-Kay highlights as stylized 2D screen-space approximations designed for pixel art rather than claiming full 3D volumetric simulations.
 - **Felzenszwalb-Huttenlocher EDT Citation Synchronization (`CHANGELOG.md`, `LOGS.md`)**: Corrected references that erroneously attributed the EDT algorithm to Meijster, standardizing across all documentation on the actual implemented algorithm by Pedro F. Felzenszwalb & Daniel P. Huttenlocher (2012 / 2004).
 - **Benchmark Hardware Context & Budget Ceilings (`BENCHMARKS.md`)**: Added reference hardware environment notice and clarified that automated CI gates assert upper-bound budget ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting machine-specific timings as universal guarantees.
 - **Character Encoding & Markdown Polish (`LOGS.md`, `CHANGELOG.md`)**: Fixed Unicode replacement character corruptions in `LOGS.md` and purged decorative emoji clutter from `CHANGELOG.md` subheaders to maintain clean, technical documentation standards.
@@ -1489,7 +1489,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **Native Desktop File System Access API & Save As (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`, `src/components/modals/ExportModal.tsx`, `tests/desktopFileSystem.test.ts`)**:
   - Built zero-dependency native desktop ergonomics with `window.showSaveFilePicker` and `window.showOpenFilePicker`.
   - Bound `Ctrl+S` to instantaneous in-place disk overwriting via retained `FileSystemFileHandle`s, and `Ctrl+Shift+S` to "Save As" picker dialogs.
-  - Implemented robust browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
+  - Implemented reliable browser anchor download and hidden file input fallbacks for Firefox, Safari, and headless test runners, verified in `tests/desktopFileSystem.test.ts`.
 - **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
   - Implemented complete 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into the canonical 47 Wang/Blob equivalence classes.
   - Precomputed an $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX`) and built a Chebyshev $3\times3$ dirty neighborhood reactive updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
@@ -1567,7 +1567,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
   - Dynamically synchronizes document title with unsaved workspace state (`● Project — PixiBun`), clearing upon successful save.
   - Implements native `beforeunload` window event guard whenever changes are unsaved (`isDirty === true`), shielding users against accidental tab closure.
 - **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`)**:
-  - Emits transient affirmative confirmation toast (`✦ Saved "project" to browser storage`) upon manual `Ctrl+S` keystrokes and toolbar save actions.
+  - Emits transient affirmative confirmation toast (`* Saved "project" to browser storage`) upon manual `Ctrl+S` keystrokes and toolbar save actions.
 - **Modal Accessibility Focus Containment & Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`)**:
   - Implemented WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured) compliance with programmatic initial focus, circular Tab keyboard containment, and return-to-opener focus restoration upon dialog dismissal.
 - **Shortcut Collision Isolation & Quantized Zoom Stepping (`src/components/layout/StudioLayout.tsx`)**:
@@ -1758,6 +1758,66 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - `npm run build`: Next.js Turbopack compilation succeeded with 0 errors.
 
 **Status:** Complete (2026-09-20)
+
+---
+
+## 2026-09-20 — Phase 63: Neutral Relighting & Smart-Effect Provenance
+
+**Problem Statement:**
+1. In Phase 61, the 2.5D heightmap synthesis engine introduced a fixed anatomical height prior (`computeAnatomicalCharacterHeightmap`) that carved discrete head, neck, and torso height zones into character artwork. These fixed height steps baked stationary shadow bands into the surface normal field $\mathbf{N}$ that remained pinned in place on the sprite even when the user moved the light bulb to the opposite side.
+2. Pixel artists frequently import or relight artwork that already contains authored directional shading bands. Layering new 2.5D shading directly over baked-in dark bands muddy the unlit side and prevent true dynamic relighting.
+3. Procedurally generated layers (photometric lighting, raymarched cast shadows, volumetric optics, normal maps, autotiling, WFC synthesis) were saved purely as destructive pixel bitmaps without tracking their generation recipes, parameter configurations, or allowing non-destructive reopening.
+4. Project format specification lacked schema versioning for smart-effect provenance, and autosave was keyed strictly to pixel history commits, omitting document metadata mutations such as layer effect edits and renames.
+
+**Delivered:**
+- **Neutral 2.5D Silhouette & Macro-Detail Reconstruction (`src/lib/ai/math/edtNormalMap.ts`)**:
+  - Replaced the Phase 61 fixed anatomical height prior with neutral macro-form and multi-scale material detail: $H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for character silhouettes. The resulting normal vector field $\mathbf{N}$ is purely geometric and 100% independent of light direction, allowing cel shading and highlights to follow virtual light azimuth smoothly across $360^\circ$.
+  - Upgraded interior ink line detection to require two-sided opposing luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing single-sided cast shadow edges from being falsely carved as permanent ink crevices.
+  - Upgraded connected-component flood fill to cluster authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$), uniting shaded regions into smooth geometric surfaces.
+- **Source Shading Normalization & Painted Shading Removal (`src/lib/ai/math/photometricLighting.ts`, `src/lib/ai/math/edtNormalMap.ts`)**:
+  - Added `sourceShadingRemoval` slider ($0\% - 100\%$, default $0\%$) in `PhotometricLightingSection`, conservatively reducing directional value bands already painted into color ramps before relighting while strictly preserving authored palette families.
+  - Exposure-compensated directional cel shadow terminator calculation ($\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$), preventing high exposure from shifting the geometric terminator or flattening unlit sides.
+- **Visible Auto-Analysis Readout & Form Overrides (`src/lib/ai/math/photometricAuto.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`)**:
+  - Upgraded `inferPhotometricSettings()` with smooth, continuous heuristic `directionalShadingCue` ($0-1$) and human-readable inference rationale.
+  - Built interactive inspector summary card listening to `pixibun:photometric-analysis` displaying detected form type, material, source light azimuth/elevation, directional shading cue strength (Weak / Medium / Strong), crevice AO percentage, and explanation.
+  - Added tactile surface interpretation override button group: `[ Auto | Character | Prop | Orb ]` allowing artists to explicitly steer geometry reconstruction.
+- **Non-Destructive Smart-Effect Recipe Model (`src/types/canvas.ts`, `src/types/project.ts`, `src/lib/project/schema.ts`, `src/lib/project/serialize.ts`)**:
+  - Introduced `LayerEffectRecipe` across 11 smart-effect kinds (`photometric`, `auto-shade`, `cast-shadow`, `ground-shadow`, `volumetric-optics`, `normal-map`, `specular`, `sel-out`, `outline`, `autotile`, `wfc`).
+  - Stores non-destructive recipe metadata (`id`, `kind`, `version: 1`, `sourceMode`, `params`, `analysis`, `updatedAt`) directly on `Layer.effect`.
+  - Bumped project file schema to `PROJECT_FORMAT_VERSION = 3` with full forward and backward migration in `migrateProjectPayload` and `validateProjectFile`.
+  - Atomically preserved and restored recipe metadata across pixel history snapshots (`PixelHistoryStep`), structural undo/redo, and layer duplication.
+- **Layers Panel FX Provenance & Reopening (`src/components/layout/inspector/LayersPanel.tsx`)**:
+  - Added amber `FX` provenance badge on generated output layers.
+  - Added tactile `Edit FX` button on photometric layers, reopening the on-canvas pixel light bulb gizmo with the layer's saved recipe parameters for instant non-destructive tweaking.
+- **Document Revision Autosave (`src/hooks/studio/useStudioAutosave.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createViewportSlice.ts`)**:
+  - Subscribed autosave engine to `state.editRevision` in addition to pixel history commits, guaranteeing that layer effect mutations, renames, reorders, and canvas dimension updates are automatically persisted to IndexedDB.
+- **Unified Brand Geometry (`src/components/ui/PixiBunLogo.tsx`)**:
+  - Built standalone responsive `PixiBunLogo` component (`sm`, `md`, `lg`) with Bun mascot tile and typography.
+  - Standardized branding across `AtelierRail`, `PlaygroundLayout`, `LandingNav`, `AtelierHero`, `AtelierFooter`, `MobileStudioGate`, and error boundaries (`error.tsx`, `global-error.tsx`, `studio/error.tsx`).
+- **Discrete 1/2/3 Shading Tones (Single / Dual / Trio Cel-Shading) (`src/lib/ai/math/photometricLighting.ts`, `src/types/tools.ts`, `src/components/layout/inspector/PhotometricLightingSection.tsx`, `src/components/studio/PixelLightBulbGizmo.tsx`)**:
+  - Implemented 1 Single (1 shadow tone), 2 Dual (2 shadow tones: mid + deep), and 3 Trio (3 shadow tones: soft penumbra + mid + deep umbra) cel-shading band modes in perceptual OKLCH color space.
+  - Enabled discrete cel-shading across all pixel art forms (orbs, characters, props) when shading bands mode is selected in the UI (`SHADE: 1 | 2 | 3` or `Shading Tones`), eliminating muddy 24-bit floating point gradients on pixel art while preserving smooth 3D shading when unbanded.
+  - Added bottom HUD controls (`SHADE 1 | 2 | 3`) to the on-canvas `PixelLightBulbGizmo` and inspector segmented button group with accessible tooltips and test IDs.
+- **Continuous 3D Specular Highlight Pill & Line-of-Sight Gating (`src/lib/ai/math/photometricLighting.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/pixiBudMath.test.ts`)**:
+  - Restored continuous 3D Blinn-Phong specular highlight pill with smooth alpha falloff ($I_{\text{spec}} > 0.35, \alpha = \min(255, \text{round}(I_{\text{spec}} \times 255))$).
+  - Derived specular normals from macro-silhouette dome (`specularNormalField`) using inflated EDT and bilateral filtering, eliminating vertical razor scars down cheeks and across ears caused by internal feature depth depressions.
+  - Added physical line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) preventing specular highlights from appearing on unlit shadow hemispheres.
+  - Shielded facial features (eyes, mouth) and line art/outlines (`charFeatureMask`, `charInkMask`, `isBlackOutline`) from receiving specular highlights.
+  - Metallic materials (gold, metal) receive warm champagne/albedo-tinted highlights; dielectric materials receive pure white highlights.
+- **Photometric Preview Session & Atomic Cancellation (`src/hooks/viewport/events/usePhotometricEvents.ts`, `tests/photometricPreviewSession.test.ts`)**:
+  - Encapsulated live photometric preview in an atomic session lifecycle with non-blocking async rendering, drag throttling, and cancellation tokens (`cancelSession`), restoring original layer pixel buffers and metadata on `Escape` or gizmo dismissal.
+- **Decomposed Viewport Studio Events (`src/hooks/viewport/events/usePhotometricEvents.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `src/hooks/viewport/events/useGeometricEvents.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`, `src/hooks/viewport/useViewportDrawing.ts`)**:
+  - Modularized viewport pointer event dispatch into dedicated event hooks for photometric manipulation, artisan painting, and geometric vector primitives, completely decoupling viewport interaction from legacy header components.
+- **Research-Grounded Product Roadmap**:
+  - Published comprehensive roadmap in `docs/plans/research_grounded_product_roadmap.md` covering computer vision, intrinsic decomposition, rendering, animation, and local-first architecture.
+
+**Checks run:**
+- `node scripts/verifyDocIntegrity.mjs`: all 6 checks passed (phase headers, section monotonicity, changelog filepaths, CenterViewport line checks, test count claims, package.json version sync).
+- `npm test` (`vitest run`): 699 unit and integration tests across 98 suites passed (including `tests/photometricPreviewSession.test.ts`, `tests/orbPhotometricCelShading.test.ts`, and `tests/components/PixelLightBulbGizmo.test.tsx`).
+- Development-route Turbopack compilation: 0 errors.
+
+**Status:** Complete (2026-09-20)
+
 
 
 

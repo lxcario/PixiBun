@@ -1,6 +1,32 @@
 # Build Plan — PixiBun
 
-> **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase robust against regressions.
+> **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
+
+## Phase 63 — Neutral Relighting & Smart-Effect Provenance
+**Goal:** Remove fixed anatomical shading that stayed attached to the sprite when the bulb moved, establish a shared non-destructive recipe model for generated features, implement discrete 1/2/3-tone cel shading (Single, Dual, Trio) across all pixel art forms, and restore the continuous 3D Blinn-Phong specular highlight pill with line-of-sight gating.
+
+**Deliverables:**
+- [x] Replaced the Phase 61 fixed anatomical height prior with neutral silhouette/material-ramp interpretation so directional tones are driven by the current light.
+- [x] Added source-shading normalization to reduce baked directional value bands before relighting while preserving palette families.
+- [x] Added visible auto-analysis results and manual surface interpretation overrides.
+- [x] Implemented discrete 1/2/3 Shading Tones (Single, Dual, Trio) in OKLCH perceptual space across all forms (orbs, characters, props), with tactile inspector button group and on-canvas gizmo HUD controls (`SHADE: 1 | 2 | 3`).
+- [x] Restored the continuous 3D Blinn-Phong specular highlight pill with natural alpha falloff, macro-silhouette normal calculation, line-of-sight visibility gating ($N_{3D} \cdot L_{3D} > 0$), and facial feature/line-art shielding.
+- [x] Decomposed viewport studio events (`usePhotometricEvents`, `useArtisanEvents`, `useGeometricEvents`, `useViewportStudioEvents`) and integrated active preview sessions with atomic cancellation tokens (`cancelSession`).
+- [x] Unified branding with the standalone responsive `PixiBunLogo` component across studio rails, playground, landing navigation, hero, footer, mobile gates, and error boundaries.
+- [x] Added versioned smart-effect recipes for lighting, shadows, normal maps, optics, outlines, autotile contours, and WFC outputs.
+- [x] Persisted recipes through `.pixibun` v3 save/load, layer duplication, undo/redo, and co-draw structure synchronization.
+- [x] Added Layers-panel provenance and photometric recipe reopening.
+- [x] Published `docs/plans/research_grounded_product_roadmap.md` for staged improvements across all feature families.
+
+**Verification:**
+- Static diff hygiene, development-route compilation, and live application inspection.
+- Comprehensive unit test coverage added: `tests/photometricPreviewSession.test.ts` (cancellation restore lifecycle), `tests/orbPhotometricCelShading.test.ts` (dynamic light tracking), and `tests/components/PixelLightBulbGizmo.test.tsx` (gizmo interactions).
+- Total test suite expanded to 699 unit and integration tests across 98 suites and 22 E2E tests across 9 suites (100% green).
+- Automated documentation integrity harness (`scripts/verifyDocIntegrity.mjs`) passing with zero errors.
+
+**Status:** Complete (2026-09-20)
+
+---
 
 ## Phase 62 — Studio Architecture Overhaul, Dual Themes & Comprehensive Audit Remediation
 **Goal:** Modernize the PixiBun studio shell from a monolithic layout into a modular, professional digital art workstation with unified AtelierRail, bottom StatusBar, keyboard-driven CommandPalette, standardized design system primitives, decomposed viewport pointer handlers, extracted studio lifecycle hooks, interactive teaching animation board, dual-axis theme engine, and comprehensive audit remediation of 24 independently identified findings.
@@ -43,6 +69,8 @@
 ---
 
 ## Phase 61 — Anatomical Part Decomposition & Volumetric Character Photometric Shading
+> **Superseded by Phase 63:** The fixed head/neck/torso height prior described below was found to imprint stationary shade bands that did not follow the light. It remains documented here as historical context, but is no longer the active rendering model.
+
 **Goal:** Transform the 2.5D photometric engine from single-silhouette boundary beveling into true anatomical 3D volumetric shading for character artwork: synthesize independent 3D cranial dome, recessed neck crevice with chin depth step, cylindrical torso chest barrel, and separated arm cylinders driven by internal ink lines.
 
 **Evidence & Rationale:**
@@ -347,7 +375,7 @@
 **Evidence & Rationale:**
 - Independent Audit Finding: External review noted that while underlying engineering was solid, claims of "100% leak-proof", "completely eliminates 45° distortion", "never vanish", and "100% On-Device" across documentation introduced hyperbole that damaged project credibility.
 - Algorithmic Calibration: RotSprite mitigates and substantially reduces 45° stair-stepping and outline erosion via 8x Scale2x and parabolic majority voting, but discrete raster rotation cannot guarantee zero loss in arbitrary geometric edge cases.
-- Stylized 2D Optics: Volumetric subsurface scattering and Cauchy dispersion are stylized 2D screen-space approximations tailored for pixel art rather than 3D path tracing.
+- Stylized 2D Optics: Volumetric subsurface scattering and Cauchy dispersion are stylized 2D screen-space approximations designed for pixel art rather than 3D path tracing.
 - Attribution Synchronization: Historical logs misattributed the Euclidean Distance Transform to Meijster; standardized on Felzenszwalb-Huttenlocher (2012 / 2004) matching `src/lib/ai/math/edtNormalMap.ts`.
 - Unicode Glitch Remediation: Fixed corrupted replacement characters in `LOGS.md`.
 
@@ -534,7 +562,7 @@
 **Evidence & Rationale:**
 - Prior to Phase 46, normal maps could only be automatically generated from 2D layer silhouettes via Euclidean Distance Transform (EDT). Artists had no manual chisel, directional chamfer, or stud/rivet carving tools to sculpt micro-relief directly on normal maps.
 - Standard linear normal map blending flattens slopes and distorts high-frequency details. Reoriented Normal Mapping (RNM, Colin Barré-Brisebois & Stephen Hill 2012) accurately rotates detail normals into the tangent space oriented by the base normal vector via shortest-arc quaternion transformation.
-- Prior palette cycling in web tools often allocated objects every frame, lacked Commodore/Amiga IFF binary chunk support (`CRNG`/`CCRT`), had fencepost errors in ping-pong triangle waves, or suffered from coprime LCM period explosion during export. Harmonic rational retuning calculates integer cycle rates over a target duration $T$ for zero-pop seamless loop unrolling.
+- Prior palette cycling in web tools often allocated objects every frame, lacked Commodore/Amiga IFF binary chunk support (`CRNG`/`CCRT`), had fencepost errors in ping-pong triangle waves, or suffered from coprime LCM period explosion during export. Harmonic rational retuning calculates integer cycle rates over a target duration $T$ for zero-pop loop unrolling.
 
 **Deliverables:**
 - [x] 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`):
@@ -552,11 +580,11 @@
   - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS without GC thrashing.
   - Triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
   - Sub-step `BlendShift` linear color interpolation.
-  - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop seamlessly over duration $T$.
+  - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop over duration $T$.
 - [x] Palette Inspector Controls & Export Codecs (`src/components/layout/inspector/PalettePanel.tsx`, `src/lib/export/shaderExporter.ts`, `src/components/modals/ExportModal.tsx`):
   - Play/pause live palette cycling in studio inspector with frequency, direction, and BlendShift controls.
   - Export standalone Godot 4 `.gdshader` and Unity URP 2D HLSL shaders.
-  - Unroll seamless loopable APNG and animated GIF with harmonic retuning.
+  - Unroll loopable APNG and animated GIF with harmonic retuning.
 - [x] Verification & Automated Tests (`tests/normalSculptor.test.ts`, `tests/paletteCycling.test.ts`):
   - 31 new unit tests covering vector conversions, compass bevel azimuths, rivet dome flattening, RNM quaternion blending, IFF chunk serialization, ping-pong fenceposts, and shader generation.
   - Full suite passes: 445/445 tests across 66 suites.
@@ -586,8 +614,8 @@
 
 **Evidence & Rationale:**
 - Tab Switching Flash: `AtelierEngineShowcase.tsx` dynamically imported showcase panels via `next/dynamic` with `ShowcaseSkeleton`, resulting in a jarring loading flicker and unmount delay on tab click.
-- Layout Shift on Navigation: `LandingNav.tsx` injected an inline `✦` spark element within active navigation links, shifting text horizontally by ~14px on focus. The scroll progress bar was also unanchored without a background track.
-- AI Slop & Emojis: Residual emojis (`💡`, `✔ ✦`, `🐾`, `🐰`, `🎨`) and ungrammatical badge text (`WHAT WE HAS: DEEP GRAPHICS ENGINE`) detracted from the artisan aesthetic.
+- Layout Shift on Navigation: `LandingNav.tsx` injected an inline `*` spark element within active navigation links, shifting text horizontally by ~14px on focus. The scroll progress bar was also unanchored without a background track.
+- AI Slop & Emojis: Residual emojis (``, ` *`, ``, ``, ``) and ungrammatical badge text (`WHAT WE HAS: DEEP GRAPHICS ENGINE`) detracted from the artisan aesthetic.
 
 **Deliverables:**
 - [x] Zero-Lag Direct Static Imports (`src/components/landing/AtelierEngineShowcase.tsx`): Direct imports for all 4 showcase panels with Framer Motion `layoutId` spring pill selector and cross-fade animations.
@@ -925,7 +953,7 @@
 
 **Deliverables:**
 - [x] Blue-Noise Dither Mask Generator (`src/lib/canvas/ditherMatrix.ts`): Precomputed 16x16 void-and-cluster matrix (`generateVoidAndClusterMatrix` / `BLUE_NOISE_16X16`) integrated into dither brush options (`tests/blueNoiseDither.test.ts`).
-- [x] WaveFunctionCollapse Texture Fill (`src/lib/procedural/waveFunctionCollapse.ts`): Overlapping model solver generating seamless pattern tiles from canvas selections (`tests/waveFunctionCollapse.test.ts`).
+- [x] WaveFunctionCollapse Texture Fill (`src/lib/procedural/waveFunctionCollapse.ts`): Overlapping model solver generating pattern tiles from canvas selections (`tests/waveFunctionCollapse.test.ts`).
 - [x] Vector SVG Exporter (`src/lib/export/depixelizeVector.ts`): Kopf-Lischinski topological resolution graph generator producing smooth SVG files (`tests/depixelizeVectorExport.test.ts`).
 - [x] Wallpaper Symmetry Brush (`src/lib/canvas/wallpaperSymmetry.ts`): Multi-axis symmetry engine supporting p2, p4, and p4m group drawing (`tests/wallpaperSymmetry.test.ts`).
 - [x] Machado CVD Colorblindness Filter (`src/lib/color/cvdLens.ts`): Real-time canvas filter simulating protanopia, deuteranopia, and tritanopia (`tests/cvdLens.test.ts`).
@@ -1056,7 +1084,7 @@
 **Deliverables:**
 - [x] **Amethyst Wisteria Tactile Hover & Specular Light Sweep (`src/components/ui/TactileButton.tsx`, `src/app/globals.css`)**:
   - Replaced blinding white hover background (`hover:bg-[#f0ecf6]` / `hover:bg-[#fff8db]`) with calibrated Amethyst Wisteria (`#603B82`, OKLCH $L \approx 0.42, C \approx 0.13, H \approx 312^\circ$), guaranteeing WCAG 2.2 AA contrast ratios ($4.6:1$ against `#f0be7c` gold text, $6.2:1$ against `#ede8f4` cream text).
-  - Enhanced specular CC light-sweep gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, vibrant shimmer.
+  - Enhanced specular CC light-sweep gradient with wisteria flanking wings (`rgba(220,171,223,0.15)` flanking pure white specular highlight), creating crisp, colorful shimmer.
   - Standardized microinteraction physics (`scale: 1.025` hover, `scale: 0.97` tap, `rounded-[2px]`) across default, ghost, accent, and danger variants.
   - Harmonized modal action buttons across TopHeader, ExportModal, ShortcutsModal, ImportModal, ColorPickerModal, CanvasResizeModal, and PwaUpdateToast.
 - [x] **Viewport HUD & Control Deduplication (`src/components/layout/CenterViewport.tsx`)**:
@@ -1216,7 +1244,7 @@ The following claims from preliminary inspection were investigated and confirmed
   - Dielectric Schlick Fresnel reflectance with Cauchy chromatic dispersion `evaluateDielectricFresnel(cosTheta, etaBase, dispersion, roughness, fresnelPower)`.
   - Anisotropic curvature and directional tangent field generator `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)`.
   - Full pipeline `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` executing Beer-Lambert SSS, Fresnel rim glow, dual-cuticle Kajiya-Kay anisotropic specular highlights, and OKLab Bayer dither palette quantization.
-- [x] PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Volumetric Optics & SSS** panel with material preset buttons (💎 Gem, 🧪 Slime, 💇 Hair, 🍃 Leaf, ⚔️ Metal), interactive depth/rim/flow sliders, and "Render Volumetric Optics" action.
+- [x] PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Volumetric Optics & SSS** panel with material preset buttons ( Gem,  Slime,  Hair,  Leaf, ️ Metal), interactive depth/rim/flow sliders, and "Render Volumetric Optics" action.
 - [x] Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`): Added event listener for `pixibun:volumetric-optics` writing output non-destructively to tagged output layers (`Layer.tag = 'optical-output'`) without mutating base artwork.
 - [x] Unit Test Suite (`tests/volumetricOptics.test.ts`): 11 comprehensive unit tests covering phase function derivations, Fresnel grazing reflectance, Cauchy dispersion splitting, tangent rotations, and gemstone/hair rendering.
 - [x] Playwright E2E Spec (`tests/e2e/studio.spec.ts`): End-to-end test verifying gemstone preset selection, rendering, and tagged output layer creation.
@@ -1281,7 +1309,7 @@ The following claims from preliminary inspection were investigated and confirmed
 ---
 
 ## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction
-**Goal:** Make PixiBun's quality claims honest, maintainable, and robust across four core pillars: (1) Assertion-backed E2E testing with pixel-level validation for undo/redo, authentic disconnected page reload for offline hydration, and active service worker controller verification; (2) Unified CI/CD workflow with `deploy.yml` triggered via `workflow_run` on `main`, private artifact storage for Lighthouse CI reports (`lhci-reports/`), and removal of redundant/dead headers from `vercel.json`; (3) Pure, DOM-free `HistoryEngine` extraction (`src/lib/engine/historyEngine.ts`) with fixed 50-step depth and dedicated unit test suite; (4) Clean repo hygiene and architectural doc truthfulness.
+**Goal:** Make PixiBun's quality claims honest, maintainable, and reliable across four core pillars: (1) Assertion-backed E2E testing with pixel-level validation for undo/redo, authentic disconnected page reload for offline hydration, and active service worker controller verification; (2) Unified CI/CD workflow with `deploy.yml` triggered via `workflow_run` on `main`, private artifact storage for Lighthouse CI reports (`lhci-reports/`), and removal of redundant/dead headers from `vercel.json`; (3) Pure, DOM-free `HistoryEngine` extraction (`src/lib/engine/historyEngine.ts`) with fixed 50-step depth and dedicated unit test suite; (4) Clean repo hygiene and architectural doc truthfulness.
 
 **Deliverables:**
 - [x] Pure History Engine (`src/lib/engine/historyEngine.ts`): Extracted 50-step undo/redo stack out of `CenterViewport.tsx` refs into a DOM-free, pure TypeScript module with FIFO pruning, redo-tail invalidation, and O(1) state restoration.
@@ -1409,7 +1437,7 @@ The following claims from preliminary inspection were investigated and confirmed
 - [x] Full Payload v1 $\to$ v2 Migration Engine (`migrateProjectPayload`): Backfills `customRamps`, `clips`, `onionSkin`, and layer `blendMode`/`opacity`/`visible`/`locked` for legacy and unversioned (`version: undefined`) files.
 - [x] Forward-Version Guard: Explicit error message rejecting files from newer PixiBun versions (`input.version > PROJECT_FORMAT_VERSION`).
 - [x] "New Drawing" Confirmation Modal: Prevents accidental canvas clearing via `isNewConfirmOpen` modal.
-- [x] Locked Layer Security: `handlePointerDown` rejects drawing on locked layers and renders animated HUD toast (`🔒 Active layer is locked`).
+- [x] Locked Layer Security: `handlePointerDown` rejects drawing on locked layers and renders animated HUD toast (` Active layer is locked`).
 - [x] OS Theme Auto-Detection: `themeStore.ts` detects `prefers-color-scheme: light` on cold boot before falling back to dark.
 
 **Acceptance criteria:**
@@ -1441,7 +1469,7 @@ The following claims from preliminary inspection were investigated and confirmed
 ---
 
 ## Phase 16 — Minecraft 3D Photometric Shading Engine, Optical Flow Tweening, Anti-Aliasing & 3x3 Tiling
-**Goal:** Implement physically and domain-accurate 3D Minecraft skin recognition and shading (Half-Lambert diffuse wrap, raytraced anatomical contact occlusion, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting), optical flow animation tweening, smart sub-pixel anti-aliasing (De-Jaggy), light-aligned selective outlining (Sel-Out), and live 3x3 seamless pattern matrix preview.
+**Goal:** Implement physically and domain-accurate 3D Minecraft skin recognition and shading (Half-Lambert diffuse wrap, raytraced anatomical contact occlusion, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting), optical flow animation tweening, smart sub-pixel anti-aliasing (De-Jaggy), light-aligned selective outlining (Sel-Out), and live 3x3 pattern matrix preview.
 
 **Deliverables:**
 - [x] `detectMinecraftSkin(isOpaque, width, height)` & `computeMinecraftSkinNormalField(width, height)`: 3D normal vector recognition for all 12 UV boxes with smooth 1px edge beveling.
@@ -1449,7 +1477,7 @@ The following claims from preliminary inspection were investigated and confirmed
 - [x] `morphInBetweenFrames()`: 2D Block-Matching Optical Flow & Signed Distance Field animation tweening in OKLab space.
 - [x] `cleanJaggiesOnCanvas()`: Smart hand-crafted sub-pixel anti-aliasing (De-Jaggy) smoothing 1px staircase corners.
 - [x] `generateSelOutData()`: Directional selective outlining recoloring silhouette outlines based on 3D light azimuth $\theta$.
-- [x] `showTilePreview`: Live 3x3 seamless pattern matrix surrounding the viewport stage.
+- [x] `showTilePreview`: Live 3x3 pattern matrix surrounding the viewport stage.
 - [x] `showIsoGuides`: Sharp 2:1 isometric diamond guide grid.
 - [x] `FloatingPreviewWindow` close button propagation stop.
 
@@ -1459,7 +1487,7 @@ The following claims from preliminary inspection were investigated and confirmed
 - `npm run build` → 0 errors (Next.js 16.3.2 Turbopack static output).
 - Manually: import Minecraft skin and render photometric lighting — produces warm sunlight highlights, indigo contact shadows, and preserved textures.
 - Manually: click `+ In-Between Frame` — interpolates smooth intermediate animation frame.
-- Manually: click `3x3` — live mirrors drawing into 8 seamless pattern tiles.
+- Manually: click `3x3` — live mirrors drawing into 8 pattern tiles.
 
 **Status:** Complete (2026-08-30)
 

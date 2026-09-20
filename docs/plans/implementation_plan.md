@@ -68,7 +68,7 @@ Modified files:
 | `src/components/layout/StudioLayout.tsx` | Mount `OfflineIndicator`; call `navigator.storage.persist()` once on first user gesture (storage-persistence guard against eviction — Dexie data is the user's artwork). |
 | `src/components/ui/ModalWrapper.tsx` | Add focus trap hardening (Tab cycle, focus return to opener) — verified against WCAG 2.4.11/2.4.3. |
 | `src/components/layout/CenterViewport.tsx` | WCAG 2.5.7 (Dragging Movements): keyboard alternatives for drag-only actions — arrow keys nudge floating selection (already exists), add pan via arrow keys when no selection, and single-click fallbacks where sensible; canvas gets `role="application"` + `aria-label` describing the drawing surface. |
-| `src/components/layout/TopHeader.tsx` | Persistent Help button (opens ShortcutsModal) satisfying WCAG 3.2.6 Consistent Help; add "Export diagnostics" entry into ShortcutsModal footer. |
+| `src/components/layout/AtelierRail.tsx` | Persistent Help button (opens ShortcutsModal) satisfying WCAG 3.2.6 Consistent Help; add "Export diagnostics" entry into ShortcutsModal footer. |
 | `src/components/modals/ShortcutsModal.tsx` | Add diagnostics disclosure: local capture status, relay opt-in toggle (off by default, honest copy about what is sent), Export/Clear buttons. |
 | `src/app/globals.css` | Focus ring token unified (`--focus-ring`), min target sizes utility for icon buttons (≥24px hit area via padding, WCAG 2.5.8). |
 | `eslint.config.mjs` | Add `eslint-plugin-jsx-a11y` recommended rules (errors) for `src/`. |
