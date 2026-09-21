@@ -55,7 +55,7 @@ graph LR
 | `--desk-border` | `#35313d` | Fine tactile bezel divider |
 | `--text-heading` | `#ede8f4` | Crisp light headings and active icons |
 | `--text-body` | `#cfc7d8` | Body text, tool parameters, coordinates |
-| `--text-muted` | `#8e8499` | Inactive tools, helper hints, unit tags |
+| `--text-muted` | `#968ca2` | Inactive tools, helper hints, unit tags |
 | `--accent-gold` | `#e5a962` | Warm amber focus rings, key light, primary buttons |
 | `--accent-wisteria` | `#b596d9` | Active tool indicator, navigation accents |
 | `--accent-plum` | `#9d7ec4` | Secondary guides, curve knots |
@@ -70,6 +70,7 @@ graph LR
 | `--desk-border` | `#442a5c` | High-contrast structural framing |
 | `--text-heading` | `#221233` | Deep violet headings |
 | `--text-body` | `#4a3559` | Legible dark body text |
+| `--text-muted` | `#685179` | High-contrast muted metadata |
 | `--accent-gold` | `#8a4500` | Golden sunlit accent buttons |
 | `--accent-wisteria` | `#9940b5` | Active tool state and focus rings |
 
@@ -85,6 +86,8 @@ graph LR
 | `--desk-surface-raised` | `#281b3d` | Raised button plates |
 | `--desk-border` | `#3a2e4c` | Rich plum-wood structural bezels |
 | `--text-heading` | `#ede8f4` | Crisp cream headings |
+| `--text-body` | `#d0c4df` | Legible dark-mode body text |
+| `--text-muted` | `#a496b8` | Subdued metadata & secondary text |
 | `--accent-gold` | `#f0be7c` | Lamp amber focus rings & key light |
 | `--accent-wisteria` | `#c792df` | Signature wisteria lavender brand accent |
 | `--accent-plum` | `#dcabdf` | Highlight blooms & secondary guides |
@@ -96,6 +99,8 @@ graph LR
 | `--desk-surface` | `#f3ebe0` | Warm tactile paper panels |
 | `--desk-border` | `#3c2254` | High-contrast velvet border |
 | `--text-heading` | `#221233` | Crisp legible ink headings |
+| `--text-body` | `#4a3559` | Legible morning body text |
+| `--text-muted` | `#685179` | High-contrast muted metadata |
 | `--accent-gold` | `#d97818` | Morning sunlight buttons |
 | `--accent-plum` | `#7e2b96` | Deep plum active tool accents |
 

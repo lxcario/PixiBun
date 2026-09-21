@@ -2,7 +2,7 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-> **Environment Note:** Empirical micro-benchmarks were captured on a modern reference development workstation (x86-64 / Apple Silicon equivalent, Node v20 / V8 engine). Automated CI tests in `tests/benchmark.test.ts` verify that operations remain within generous upper-bound latency ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting identical machine-specific timings.
+> **Environment Note:** Empirical micro-benchmarks were captured on a modern reference development workstation (x86-64 / Apple Silicon equivalent, Node v22 / V8 engine). Automated CI tests in `tests/benchmark.test.ts` verify that operations remain within generous upper-bound latency ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting identical machine-specific timings.
 
 ---
 
