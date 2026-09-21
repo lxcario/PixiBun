@@ -2,6 +2,28 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 66 — PixiBun v1.14.1 Phase C: System Hardening & Production Polish
+**Goal:** Final production hardening pass addressing Milestones C1 through C5: Service Worker lifecycle and real deployment invalidation, WCAG 2.2 AA visual contrast and focus hardening across all 4 themes, Smart Effect recipe validation and clamping bounds, pointer and stylus precision ergonomics (palm contact rejection, pen eraser inversion, and pressure normalization), and final v1.14.1 release sealing.
+
+**Deliverables:**
+- [x] **C1 Service Worker Update Lifecycle & Real Deployment Invalidation**: Verified service worker update discovery across build versions via byte-distinct script generation, `SKIP_WAITING` propagation, and cache purging of non-matching `pixibun-*` buckets. Tested `PwaUpdateToast` banner notification, accessible dismiss, and `controllerchange` reload orchestration without losing in-flight offline workspace state (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`).
+- [x] **C2 WCAG 2.2 AA Visual Contrast & Focus Hardening**: Programmatically audited relative luminance and contrast ratios across all 4 themes (Atelier Dark, Atelier Light, Cozy Classic Dark, Cozy Classic Light) ensuring $\ge 4.5:1$ for heading/body text and $\ge 3.0:1$ for secondary/muted UI elements and interactive focus rings (`src/app/globals.css`, `src/stores/themeStore.ts`, `tests/themeContrast.test.ts`).
+- [x] **C3 Smart Effect Recipe Validation & Clamping Bounds**: Hardened `validateLayerEffect` and added `sanitizeEffectParameter` in `src/lib/project/schema.ts` to clamp angles ($[0, 360]^\circ$), elevations ($[0, 90]^\circ$), normalized modulations ($[0, 1]$), discrete bands/steps ($[1, 32]$), and radius/scale envelopes during file intake and deserialization, preventing infinite loops and NaN canvas corruption (`tests/layerEffectsValidation.test.ts`).
+- [x] **C4 Pointer & Stylus Precision Hardening**: Implemented capacitive touch palm rejection filtering (`width > 32px` contact guard) in `src/lib/canvas/pointerErgonomics.ts` and `src/hooks/viewport/useViewportPointerEvents.ts`. Added W3C Pointer Events Level 3 pen eraser tip and barrel button detection (`button === 5` or bitmask `buttons & 32`) in `src/hooks/viewport/useBrushPointerHandler.ts` enabling seamless pen-to-eraser switching during drawing gestures. Added pressure normalization $[0, 1]$ and brush modulation support (`tests/pointerErgonomics.test.ts`).
+- [x] **C5 Final Production Verification & v1.14.1 Release Gate**: Ran full clean quality gate across all 4 stages (typecheck, lint, test, docs). Turbopack production build verified clean.
+
+**Verification:**
+- Vitest unit & integration test suite: 807 tests across 109 suites (100% green).
+- Playwright E2E test suite: 23 tests across 9 suites (100% green).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Production Hardening Sealed (Phases A, B & C Complete).
+
+---
+
 ## Phase 65 — PixiBun v1.14.1 Phase B: Runtime Performance, Offline Reliability, Persistence & History
 **Goal:** Production hardening pass addressing items B1 through B22: bidirectional structural history inversion with strict memory budgeting and eviction accounting, project-scoped revision tracking, atomic incremental autosave with two-phase commit, Zustand leaf selector isolation, keyboard listener stability, gesture interruption safety, rAF composite coalescing, photometric 60 FPS performance benchmark, and deterministic build-versioned service worker with real browser-network offline E2E verification.
 

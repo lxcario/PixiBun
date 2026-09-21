@@ -2,7 +2,23 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## [v1.14.1] - 2026-09-21 (Hardening In Progress — Phase A & B Complete)
+## [v1.14.1] - 2026-09-21 (Production Hardening Sealed — Phases A, B & C Complete)
+### System Hardening & Production Polish (Phase 66 / Phase C)
+- **Service Worker Lifecycle & Update Invalidation (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`)**:
+  - Closed the Phase B deferred verification item: verified service worker update discovery across build versions via byte-distinct script generation, `SKIP_WAITING` propagation, and cache purging of non-matching `pixibun-*` buckets.
+  - Verified non-intrusive `PwaUpdateToast` banner notification, accessible dismiss, and `controllerchange` reload orchestration without losing in-flight offline workspace state.
+- **WCAG 2.2 AA Visual Contrast & Focus Hardening (`src/app/globals.css`, `src/stores/themeStore.ts`, `tests/themeContrast.test.ts`)**:
+  - Programmatically audited contrast ratios across all 4 theme configurations (Atelier Dark, Atelier Light, Cozy Classic Dark, Cozy Classic Light).
+  - Verified $\ge 4.5:1$ for heading and body text, $\ge 3.0:1$ for secondary/muted UI elements, and $\ge 3.0:1$ for interactive outline/focus rings.
+  - Verified global `:focus-visible` styling (`2px solid var(--accent-gold)`, `outline-offset: 2px`) for keyboard accessibility.
+- **Smart Effect Recipe Bounds Clamping & Schema Sanitization (`src/lib/project/schema.ts`, `tests/layerEffectsValidation.test.ts`)**:
+  - Hardened `validateLayerEffect` against extreme numeric inputs, preventing infinite shading loops or NaN canvas corruption.
+  - Implemented `sanitizeEffectParameter` clamping angles ($[0, 360]^\circ$), elevations ($[0, 90]^\circ$), normalized modulations ($[0, 1]$), discrete bands/steps ($[1, 32]$), and radius/scale envelopes during file intake and deserialization.
+- **Pointer & Stylus Precision Hardening (`src/lib/canvas/pointerErgonomics.ts`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useBrushPointerHandler.ts`, `tests/pointerErgonomics.test.ts`)**:
+  - Implemented capacitive touch palm rejection filtering (`width > 32px` contact guard) to reject accidental palm resting while drawing.
+  - Added W3C Pointer Events Level 3 pen eraser tip and barrel button detection (`button === 5` or bitmask `buttons & 32`), enabling seamless pen-to-eraser switching during drawing gestures.
+  - Added pressure normalization $[0, 1]$ and brush modulation support.
+
 ### Runtime Performance, Offline Reliability, Persistence & History (Phase 65 / Phase B)
 - **Bidirectional Structural History Inversion & Hard Byte Budget (`src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`, `src/types/canvas.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createAnimationSlice.ts`, `src/components/modals/export/ReplayExportTab.tsx`, `tests/historyEngineStructural.test.ts`, `tests/processReplayExport.test.ts`)**:
   - Replaced whole-project structural history snapshotting with minimal, bidirectional structural inversion deltas (`StructuralHistoryDelta`). Layer renames, visibility toggles, opacity changes, blend mode updates, layer reorders, additions, and deletions store only the inverse operation rather than cloning the entire project tree, scaling at $O(\text{affected state})$, rather than $O(\text{total project state})$.
@@ -30,7 +46,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Added `'/theme.js'` to `PRECACHE_ASSETS` in `src/app/sw.js/route.ts` and protected it from LRU cache eviction.
   - Constrained cache deletion on service worker `activate` strictly to `key.startsWith('pixibun-') && key !== CACHE_NAME`.
   - Implemented real browser-network offline E2E test in `tests/e2e/offline.spec.ts` using Playwright's `context.setOffline(true)`. Verified warm navigation, offline hard refresh, canvas drawing, undo/redo, autosave persistence to IndexedDB, and subsequent offline reload restoration.
-  - Service-worker update discovery across two deployed build identities: NOT TESTED / deferred.
+  - Service-worker update discovery across two deployed build identities: verified in Phase C via byte-distinct route generation and registrar tests (`tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`).
 
 ### Integrity, Recovery & Resource Safety (Phase 64 / Phase A)
 - **Neutral Import Domain Contracts (`src/types/import.ts`, `src/components/modals/ImportModal.tsx`, `src/lib/project/importFile.ts`, `src/components/layout/StudioLayout.tsx`, `tests/components/ImportModal.test.tsx`)**:

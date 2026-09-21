@@ -4,6 +4,7 @@ import React from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { Point, getBresenhamLine, filterPixelPerfect } from '@/lib/canvas/rasterMath';
 import { shouldDitherPixel } from '@/lib/canvas/ditherMatrix';
+import { analyzePointerEvent } from '@/lib/canvas/pointerErgonomics';
 
 interface BrushHandlerProps {
   drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean) => void;
@@ -21,10 +22,11 @@ export function useBrushPointerHandler({
   const secondaryColor = useStudioStore((s) => s.secondaryColor);
 
   const onPointerDown = (e: React.PointerEvent, coords: Point) => {
-    const isErase = tools.activeTool === 'eraser';
+    const pointerInfo = analyzePointerEvent(e);
+    const isErase = tools.activeTool === 'eraser' || pointerInfo.isEraser;
     const drawColor = e.shiftKey ? secondaryColor : primaryColor;
 
-    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
+    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser' || pointerInfo.isEraser) {
       drawPointsOnActiveLayer([coords], drawColor, isErase);
     } else if (tools.activeTool === 'dither') {
       if (shouldDitherPixel(coords.x, coords.y, tools.ditherMatrix, tools.ditherDensity)) {
@@ -34,10 +36,11 @@ export function useBrushPointerHandler({
   };
 
   const onPointerMove = (e: React.PointerEvent, coords: Point) => {
-    const isErase = tools.activeTool === 'eraser';
+    const pointerInfo = analyzePointerEvent(e);
+    const isErase = tools.activeTool === 'eraser' || pointerInfo.isEraser;
     const drawColor = e.shiftKey ? secondaryColor : primaryColor;
 
-    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
+    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser' || pointerInfo.isEraser) {
       if (lastPoint) {
         const linePoints = getBresenhamLine(lastPoint.x, lastPoint.y, coords.x, coords.y);
         const pointsToDraw = tools.pixelPerfect ? filterPixelPerfect(linePoints) : linePoints;

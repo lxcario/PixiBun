@@ -43,6 +43,52 @@ function isUnitInterval(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function clampInteger(value: number, min: number, max: number): number {
+  return Math.round(Math.max(min, Math.min(max, value)));
+}
+
+export function sanitizeEffectParameter(key: string, value: SmartEffectParameter): SmartEffectParameter {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  switch (key) {
+    case 'lightAzimuth':
+    case 'anisoAngle':
+    case 'shadowAngle':
+      return clampNumber(value, 0, 360);
+    case 'lightElevation':
+      return clampNumber(value, 0, 90);
+    case 'ditherModulation':
+    case 'sourceShadingRemoval':
+    case 'shadowOpacity':
+    case 'anisoFlow':
+    case 'opacity':
+      return clampNumber(value, 0, 1);
+    case 'cavityStrength':
+      return clampNumber(value, 0, 2);
+    case 'lightBrightness':
+      return clampNumber(value, 0, 10);
+    case 'fresnelPower':
+      return clampNumber(value, 0, 20);
+    case 'translucencyDepth':
+      return clampNumber(value, 0, 50);
+    case 'lightRadius':
+      return clampNumber(value, 1, 256);
+    case 'bumpScale':
+    case 'heightmapScale':
+      return clampNumber(value, 0.01, 20);
+    case 'shadingBands':
+    case 'celTones':
+      return clampInteger(value, 1, 32);
+    case 'thickness':
+      return clampInteger(value, 1, 64);
+    default:
+      return value;
+  }
+}
+
 function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
 }
@@ -76,7 +122,7 @@ export function validateLayerEffect(input: unknown): LayerEffectRecipe | string 
       return 'has an invalid effect parameter.';
     }
     if (typeof value === 'number' && !Number.isFinite(value)) return 'has a non-finite effect parameter.';
-    params[key] = value as SmartEffectParameter;
+    params[key] = sanitizeEffectParameter(key, value as SmartEffectParameter);
   }
 
   let analysis: LayerEffectRecipe['analysis'];
@@ -88,15 +134,15 @@ export function validateLayerEffect(input: unknown): LayerEffectRecipe | string 
           ? input.analysis.formType
           : undefined,
       sourceLightAzimuth: typeof input.analysis.sourceLightAzimuth === 'number' && Number.isFinite(input.analysis.sourceLightAzimuth)
-        ? input.analysis.sourceLightAzimuth
+        ? clampNumber(input.analysis.sourceLightAzimuth, 0, 360)
         : undefined,
       sourceLightElevation: typeof input.analysis.sourceLightElevation === 'number' && Number.isFinite(input.analysis.sourceLightElevation)
-        ? input.analysis.sourceLightElevation
+        ? clampNumber(input.analysis.sourceLightElevation, 0, 90)
         : undefined,
       cueStrength: typeof input.analysis.cueStrength === 'number' && Number.isFinite(input.analysis.cueStrength)
-        ? Math.max(0, Math.min(1, input.analysis.cueStrength))
+        ? clampNumber(input.analysis.cueStrength, 0, 1)
         : typeof input.analysis.confidence === 'number' && Number.isFinite(input.analysis.confidence)
-          ? Math.max(0, Math.min(1, input.analysis.confidence))
+          ? clampNumber(input.analysis.confidence, 0, 1)
         : undefined,
       rationale: typeof input.analysis.rationale === 'string' ? input.analysis.rationale.slice(0, 1000) : undefined,
     };
