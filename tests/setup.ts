@@ -43,6 +43,21 @@ if (typeof window !== 'undefined') {
   }
 }
 
+if (typeof (globalThis as unknown as { ErrorEvent?: unknown }).ErrorEvent === 'undefined') {
+  class MockErrorEvent extends Event {
+    message: string;
+    constructor(type: string, init?: { message?: string }) {
+      super(type);
+      this.message = init?.message ?? '';
+    }
+  }
+  Object.defineProperty(globalThis, 'ErrorEvent', {
+    value: MockErrorEvent,
+    configurable: true,
+    writable: true,
+  });
+}
+
 afterEach(() => {
   storage.clear();
 });

@@ -3,24 +3,27 @@
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## Phase 66 — PixiBun v1.14.1 Phase C: System Hardening & Production Polish
-**Goal:** Final production hardening pass addressing Milestones C1 through C5: Service Worker lifecycle and real deployment invalidation, WCAG 2.2 AA visual contrast and focus hardening across all 4 themes, Smart Effect recipe validation and clamping bounds, pointer and stylus precision ergonomics (palm contact rejection, pen eraser inversion, and pressure normalization), and final v1.14.1 release sealing.
+**Goal:** Production hardening pass addressing Phase C release certification: Service Worker lifecycle, WCAG 2.2 AA visual contrast and full-theme browser accessibility, modal background isolation and accessibility, Node/CI standardization, and production hardening audits. Out-of-scope feature work (pointer ergonomics, dynamic brush pressure, Smart Effect schema expansion) is reverted and deferred to v1.15.
 
 **Deliverables:**
-- [x] **C1 Service Worker Update Lifecycle & Real Deployment Invalidation**: Verified service worker update discovery across build versions via byte-distinct script generation, `SKIP_WAITING` propagation, and cache purging of non-matching `pixibun-*` buckets. Tested `PwaUpdateToast` banner notification, accessible dismiss, and `controllerchange` reload orchestration without losing in-flight offline workspace state (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`).
-- [x] **C2 WCAG 2.2 AA Visual Contrast & Focus Hardening**: Programmatically audited relative luminance and contrast ratios across all 4 themes (Atelier Dark, Atelier Light, Cozy Classic Dark, Cozy Classic Light) ensuring $\ge 4.5:1$ for heading/body text and $\ge 3.0:1$ for secondary/muted UI elements and interactive focus rings (`src/app/globals.css`, `src/stores/themeStore.ts`, `tests/themeContrast.test.ts`).
-- [x] **C3 Smart Effect Recipe Validation & Clamping Bounds**: Hardened `validateLayerEffect` and added `sanitizeEffectParameter` in `src/lib/project/schema.ts` to clamp angles ($[0, 360]^\circ$), elevations ($[0, 90]^\circ$), normalized modulations ($[0, 1]$), discrete bands/steps ($[1, 32]$), and radius/scale envelopes during file intake and deserialization, preventing infinite loops and NaN canvas corruption (`tests/layerEffectsValidation.test.ts`).
-- [x] **C4 Pointer & Stylus Precision Hardening**: Implemented capacitive touch palm rejection filtering (`width > 32px` contact guard) in `src/lib/canvas/pointerErgonomics.ts` and `src/hooks/viewport/useViewportPointerEvents.ts`. Added W3C Pointer Events Level 3 pen eraser tip and barrel button detection (`button === 5` or bitmask `buttons & 32`) in `src/hooks/viewport/useBrushPointerHandler.ts` enabling seamless pen-to-eraser switching during drawing gestures. Added pressure normalization $[0, 1]$ and brush modulation support (`tests/pointerErgonomics.test.ts`).
-- [x] **C5 Final Production Verification & v1.14.1 Release Gate**: Ran full clean quality gate across all 4 stages (typecheck, lint, test, docs). Turbopack production build verified clean.
+- [x] **Service Worker Route & Lifecycle Scripts**: Tested ServiceWorkerRegistrar component rendering, dismiss, and controllerchange handling, and verified byte-distinct script generation across build cache identities (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`). Real two-build browser service-worker update discovery: NOT TESTED / deferred.
+- [x] **WCAG 2.2 AA Visual Contrast & Focus Hardening**: Audit contrast ratios across all 4 themes distinguishing normal text (>= 4.5:1), large text (>= 3.0:1), and non-text UI components (>= 3.0:1) (`tests/themeContrast.test.ts`, `src/app/globals.css`).
+- [x] **Full Application Rendered Accessibility in All Themes**: Run Playwright + Axe accessibility scans across Studio, Blank Workspace, Right Inspector, Export Modal, Projects Gallery, and toast notification across all 4 themes (Atelier Dark/Light, Cozy Classic Dark/Light) (`tests/e2e/themeAccessibility.spec.ts`).
+- [x] **Modal Accessibility & Background Isolation**: Unique title/body IDs via `React.useId()`, stacked modal ID collision proof in `tests/components/ModalWrapper.test.tsx`, and native `<dialog showModal()>` inert background isolation.
+- [x] **Production Hardening & CI Standardization**: Standardize Node engines in `package.json` (`>=22.0.0 <23.0.0`), create `.nvmrc` (`22.14.0`), configure canonical pipeline `npm run gate:full` in `.github/workflows/ci.yml`, pin privileged release tooling (`vercel@50.34.0`, `@lhci/cli@0.15.1`), remove unused `sharp` dependency, gate `window.__pixibunDb` and `window.__studioStore`, audit `.env.example`, validate diagnostics relay SSRF and streaming limits, document threat model in `SECURITY.md`, establish regression coverage floor (60/50/55/60) in `vitest.config.mjs`, and run 0-vulnerability `npm audit`.
 
 **Verification:**
-- Vitest unit & integration test suite: 807 tests across 109 suites (100% green).
-- Playwright E2E test suite: 23 tests across 9 suites (100% green).
+- Vitest unit & integration test suite: 795 tests across 107 suites (100% green).
+- Playwright E2E test suite: 43 tests across 10 suites (100% green).
+- Lighthouse CI (`@lhci/cli@0.15.1`): 100% passing across `/` and `/studio` (Performance: 97–99, Accessibility: 96–100, Best Practices: 100, SEO: 100).
+- Coverage: 63.24% statements, 52.34% branches, 59.25% functions, 63.88% lines (all exceeding calibrated floor).
 - TypeScript typecheck (`tsc --noEmit`): 0 errors.
 - ESLint (`eslint src tests`): 0 errors.
 - Next.js Turbopack production build (`next build`): successful clean build.
+- npm audit: 0 vulnerabilities.
 - Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
 
-**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Production Hardening Sealed (Phases A, B & C Complete).
+**Status:** Complete (2026-09-21) — v1.14.1 hardening complete (Phases A, B, and C verified)
 
 ---
 
@@ -44,7 +47,7 @@
 - Next.js Turbopack production build (`next build`): successful clean build.
 - Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
 
-**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Hardening in progress (Phases A & B Complete; Phase C pending)
+**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Hardening Complete (Phases A, B & C Complete)
 
 ---
 
@@ -71,7 +74,7 @@
 - Next.js Turbopack production build (`next build`): successful clean build.
 - Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
 
-**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Hardening in progress (Phase A Complete; Phases B & C pending)
+**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Hardening Complete (Phases A, B & C Complete)
 
 ---
 
@@ -318,7 +321,7 @@
 - [x] Pre-Push Git Hook (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`): Automated git push interceptor installed via `npm run prepare`.
 - [x] Open Source Guide (`CONTRIBUTING.md`): Contributor guidelines, testing expectations, and Quality Gate manual.
 - [x] Security Policy Hardening (`SECURITY.md`): Section 4 defense-in-depth invariants specification.
-- [x] Drop-in GitLab CI (`.gitlab-ci.yml`): Ready-to-use pipeline configuration for GitLab mirroring.
+- [x] Canonical GitHub Actions CI (`.github/workflows/ci.yml`): Automated quality gate validation and deployment workflows.
 
 **Acceptance criteria:**
 - `npm run gate` passes all 3 stages in <20s.

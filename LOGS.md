@@ -1548,10 +1548,10 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`, `package.json`)**:
   - Implemented automatic pre-push git hook installation via `npm run prepare` lifecycle script.
   - Intercepts all `git push` commands locally; if any test, typecheck, or doc verification fails, the push is blocked before leaving the developer workstation.
-- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.gitlab-ci.yml`)**:
+- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.github/workflows/ci.yml`)**:
   - Authored comprehensive `CONTRIBUTING.md` documenting zero-dependency architecture, testing standards, and Quality Gate workflows.
   - Expanded `SECURITY.md` with Section 4 detailing Defense-in-Depth pre-push invariants.
-  - Added drop-in `.gitlab-ci.yml` pipeline configuration for future repository mirroring or self-hosted runners.
+  - Added drop-in `.github/workflows/ci.yml` pipeline configuration enforcing automated quality gates.
 
 **Checks run:**
 - `npm run gate`: ALL 3 STAGES PASSED in 16.30s

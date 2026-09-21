@@ -762,7 +762,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <span className={isActive ? 'text-[var(--accent-gold)] font-bold' : 'text-[var(--text-heading)] font-bold'}>
                     #{index + 1}
                   </span>
-                  <span className={isActive ? 'text-[var(--accent-gold)]/80' : 'text-[var(--text-body)]/60'}>
+                  <span className={isActive ? 'text-[var(--accent-gold)] font-medium' : 'text-[var(--text-body)] font-medium'}>
                     {duration}ms
                   </span>
                 </div>

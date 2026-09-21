@@ -98,4 +98,40 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     const json = await res.json();
     expect(json.error).toContain('must use HTTPS');
   });
+
+  it('rejects cross-origin request from untrusted origin with 403', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://relay.example.com/api/errors';
+
+    const req = new Request('http://localhost:3000/api/diagnostics/relay', {
+      method: 'POST',
+      headers: {
+        origin: 'https://malicious-site.attacker.com',
+        host: 'pixibun.example.com',
+      },
+      body: JSON.stringify({ events: [] }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toContain('Forbidden cross-origin diagnostics request');
+  });
+
+  it('accepts request with matching origin', async () => {
+    process.env.DIAGNOSTICS_RELAY_URL = 'https://relay.example.com/api/errors';
+    const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    globalThis.fetch = mockFetch;
+
+    const req = new Request('http://localhost:3000/api/diagnostics/relay', {
+      method: 'POST',
+      headers: {
+        origin: 'https://pixibun.example.com',
+        host: 'pixibun.example.com',
+      },
+      body: JSON.stringify({ events: [] }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+  });
 });

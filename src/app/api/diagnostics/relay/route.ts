@@ -2,16 +2,44 @@ import { NextResponse } from 'next/server';
 import { createTokenBucketStore } from '@/lib/server/tokenBucket';
 import { APP_VERSION } from '@/config/version';
 
+/**
+ * Diagnostics Relay Endpoint Threat Model & Security Boundaries:
+ *
+ * 1. Origin Validation & Cross-Site Request Forgery (CSRF):
+ *    - Diagnostic events are transmitted via POST. The handler validates the incoming `Origin`
+ *      header against the request `Host` / `X-Forwarded-Host` header. Requests from untrusted
+ *      foreign origins are rejected with HTTP 403 to prevent cross-site quota exhaustion.
+ *
+ * 2. Trusted Reverse Proxy Assumptions & Client IP Identity:
+ *    - Client identity is determined by `clientKey()` inspecting `X-Forwarded-For` and `X-Real-IP`.
+ *    - In production deployments (e.g. Vercel, Cloudflare, AWS ALB), an operator-trusted edge
+ *      reverse proxy must sanitize or prepend the client IP. In raw, direct Internet-facing Node.js
+ *      deployments without an edge proxy, an adversary could spoof `X-Forwarded-For` headers to
+ *      circumvent per-IP limits or cause denial-of-service against third-party IP addresses.
+ *
+ * 3. In-Memory Token Bucket Limits & Multi-Instance Serverless Scaling:
+ *    - Rate limiting (`capacity: 12, refillPerMinute: 12`) uses an in-memory token bucket store.
+ *    - State is local to the active Node.js / serverless worker process. In distributed or multi-instance
+ *      deployments, each container enforces its own rate limit independently; aggregate cluster
+ *      throughput scales to (N_instances * 12 req/min) rather than a single global ceiling. Global
+ *      rate limiting would require an external distributed store (e.g. Redis/Upstash).
+ *
+ * 4. Payload Streaming Ceilings & DoS Mitigation:
+ *    - Streaming chunk reader enforces `MAX_BODY_BYTES = 64 KB` before buffering the entire payload,
+ *      preventing out-of-memory crashes from decompression or allocation bombs (CWE-400 / CWE-770).
+ *    - Events array is bounded to `MAX_EVENTS = 100`.
+ *    - Upstream URL is read exclusively from server environment (`DIAGNOSTICS_RELAY_URL`), strictly
+ *      enforcing HTTPS and ignoring any client-supplied endpoints to prevent SSRF.
+ *    - Server-side fetch enforces a 5-second timeout (`AbortSignal.timeout(5000)`) preventing resource leaks.
+ */
+
 // Hard input ceilings: the relay accepts only small, bounded diagnostic
 // batches. Streaming the body with an early byte ceiling prevents memory exhaustion, and an
 // unbounded events array would let a single client flood the upstream.
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_EVENTS = 100;
 
-// Token-bucket rate limiting, keyed by client IP (OWASP REST Cheat Sheet:
-// rate limiting as baseline protection for public API endpoints). Per-process
-// memory: correct for a single Node instance; a per-instance limit on
-// multi-instance deployments.
+// Token-bucket rate limiting, keyed by client IP.
 const relayLimiter = createTokenBucketStore({ capacity: 12, refillPerMinute: 12 });
 
 function clientKey(request: Request): string {
@@ -22,7 +50,34 @@ function clientKey(request: Request): string {
   return request.headers.get('x-real-ip') ?? 'unknown';
 }
 
+function isValidOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  if (!origin) return true; // Same-origin or non-browser client without Origin header
+
+  const host = request.headers.get('host') || request.headers.get('x-forwarded-host');
+  if (!host) return true;
+
+  try {
+    const originUrl = new URL(origin);
+    const hostName = host.split(':')[0];
+    return (
+      originUrl.hostname === hostName ||
+      originUrl.hostname === 'localhost' ||
+      originUrl.hostname === '127.0.0.1'
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json(
+      { error: 'Forbidden cross-origin diagnostics request.' },
+      { status: 403 }
+    );
+  }
+
   if (!relayLimiter.take(clientKey(request))) {
     relayLimiter.prune();
     return NextResponse.json(

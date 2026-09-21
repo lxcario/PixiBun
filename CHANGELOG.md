@@ -2,22 +2,36 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## [v1.14.1] - 2026-09-21 (Production Hardening Sealed — Phases A, B & C Complete)
+## [v1.14.1] - 2026-09-21 (Hardening Complete)
 ### System Hardening & Production Polish (Phase 66 / Phase C)
-- **Service Worker Lifecycle & Update Invalidation (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`)**:
-  - Closed the Phase B deferred verification item: verified service worker update discovery across build versions via byte-distinct script generation, `SKIP_WAITING` propagation, and cache purging of non-matching `pixibun-*` buckets.
-  - Verified non-intrusive `PwaUpdateToast` banner notification, accessible dismiss, and `controllerchange` reload orchestration without losing in-flight offline workspace state.
-- **WCAG 2.2 AA Visual Contrast & Focus Hardening (`src/app/globals.css`, `src/stores/themeStore.ts`, `tests/themeContrast.test.ts`)**:
-  - Programmatically audited contrast ratios across all 4 theme configurations (Atelier Dark, Atelier Light, Cozy Classic Dark, Cozy Classic Light).
-  - Verified $\ge 4.5:1$ for heading and body text, $\ge 3.0:1$ for secondary/muted UI elements, and $\ge 3.0:1$ for interactive outline/focus rings.
-  - Verified global `:focus-visible` styling (`2px solid var(--accent-gold)`, `outline-offset: 2px`) for keyboard accessibility.
-- **Smart Effect Recipe Bounds Clamping & Schema Sanitization (`src/lib/project/schema.ts`, `tests/layerEffectsValidation.test.ts`)**:
-  - Hardened `validateLayerEffect` against extreme numeric inputs, preventing infinite shading loops or NaN canvas corruption.
-  - Implemented `sanitizeEffectParameter` clamping angles ($[0, 360]^\circ$), elevations ($[0, 90]^\circ$), normalized modulations ($[0, 1]$), discrete bands/steps ($[1, 32]$), and radius/scale envelopes during file intake and deserialization.
-- **Pointer & Stylus Precision Hardening (`src/lib/canvas/pointerErgonomics.ts`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useBrushPointerHandler.ts`, `tests/pointerErgonomics.test.ts`)**:
-  - Implemented capacitive touch palm rejection filtering (`width > 32px` contact guard) to reject accidental palm resting while drawing.
-  - Added W3C Pointer Events Level 3 pen eraser tip and barrel button detection (`button === 5` or bitmask `buttons & 32`), enabling seamless pen-to-eraser switching during drawing gestures.
-  - Added pressure normalization $[0, 1]$ and brush modulation support.
+- **Service Worker Lifecycle & Precache Scripts (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`)**:
+  - Validated ServiceWorkerRegistrar component rendering, accessible dismiss, SKIP_WAITING propagation, and controllerchange reload orchestration.
+  - Verified byte-distinct script generation and distinct cache versioning across release identifiers (`tests/swLifecycle.test.ts`).
+  - Real two-build browser service-worker update discovery: NOT TESTED / deferred.
+- **Out-of-Scope Feature Segregation (Deferred to v1.15)**:
+  - Reverted and deferred to v1.15: capacitive palm rejection, pen eraser inversion, stylus pressure modulation (reverted pointerErgonomics helper, `src/hooks/viewport/useBrushPointerHandler.ts`, `src/hooks/viewport/useViewportPointerEvents.ts`), and Smart Effect schema parameter clamping (`src/lib/project/schema.ts`).
+- **WCAG 2.2 AA Theme Contrast Hardening (`src/app/globals.css`, `src/components/layout/BottomTimeline.tsx`, `src/components/modals/export/ExportScopeSelector.tsx`, `tests/themeContrast.test.ts`)**:
+  - Programmatic token contrast audit across all 4 themes distinguishing normal text ($\ge 4.5:1$), large text ($\ge 3.0:1$), and non-text UI components ($\ge 3.0:1$).
+  - Adjusted Atelier Dark `--text-muted` from `#8e8499` to `#968ca2` ($\ge 4.70:1$ on raised surface).
+  - Adjusted Atelier Light and Cozy Classic Light `--text-muted` to `#685179` ($\ge 4.71:1$ on recessed `--surface-0` containers, $\ge 5.47:1$ across all light surfaces).
+  - Replaced hardcoded `#181124` select dropdown background in `ExportScopeSelector.tsx` with semantic token `bg-[var(--surface-0)]`.
+  - Removed artificial `/80` opacity reduction on timeline frame duration text in `BottomTimeline.tsx`.
+- **Four-Theme Rendered Browser Accessibility (`tests/e2e/themeAccessibility.spec.ts`)**:
+  - Implemented 20 automated Axe-core Playwright scans covering Studio shell, blank canvas, Right Inspector tabs, Export modal, Projects Gallery modal, and toast alerts across Atelier Dark, Atelier Light, Cozy Classic Dark, and Cozy Classic Light.
+  - Verified 0 critical and 0 serious accessibility violations across all 20 theme scenarios.
+- **Modal Accessibility & Background Isolation (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`)**:
+  - Migrated static modal title and body IDs to dynamic `React.useId()` instances (`modal-title-${safeId}`, `modal-body-${safeId}`).
+  - Added stacked modal unit test proving independent, non-colliding DOM IDs when multiple dialogs mount concurrently.
+  - Ensured native `<dialog showModal()>` enforces top-layer inert document background isolation.
+- **Runtime Standardization, Security Gating & CI Verification (`package.json`, `.nvmrc`, `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`, `lighthouserc.json`, `vitest.config.mjs`, `src/app/api/diagnostics/relay/route.ts`, `src/lib/storage/db.ts`, `src/stores/studioStore.ts`, `SECURITY.md`)**:
+  - Standardized runtime on Node 22 (`22.14.0`) in `.nvmrc` and `package.json` engines (`node >=22.0.0 <23.0.0`).
+  - Adopted canonical GitHub Actions CI/CD (`.github/workflows/ci.yml`), pinning release tools (`vercel@50.34.0`, `@lhci/cli@0.15.1`) without floating `@latest` in credentialed steps.
+  - Executed automated Lighthouse CI against production server mode (`npm run start`): 100% passing across `/` and `/studio` (Performance: 97–99, Accessibility: 96–100, Best Practices: 100, SEO: 100).
+  - Measured live Vitest code coverage (63.24% statements, 52.34% branches, 59.25% functions, 63.88% lines) and configured calibrated regression floor (60/50/55/60) in `vitest.config.mjs`.
+  - Hardened diagnostics relay with origin validation (`isValidOrigin()`) and documented the complete reverse proxy / rate-limit threat model in `SECURITY.md`.
+  - Gated `window.__pixibunDb` and `window.__studioStore` attachments to development and localhost test environments only.
+  - Audited legacy PixiBud state (`aiMessages` confirmed write-only, `isAiThinking` confirmed dead state).
+  - Removed unused dependency `sharp` and unpinned transitive CLI packages; verified 0 security vulnerabilities in `npm audit`.
 
 ### Runtime Performance, Offline Reliability, Persistence & History (Phase 65 / Phase B)
 - **Bidirectional Structural History Inversion & Hard Byte Budget (`src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`, `src/types/canvas.ts`, `src/stores/slices/createLayerSlice.ts`, `src/stores/slices/createAnimationSlice.ts`, `src/components/modals/export/ReplayExportTab.tsx`, `tests/historyEngineStructural.test.ts`, `tests/processReplayExport.test.ts`)**:
@@ -46,7 +60,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Added `'/theme.js'` to `PRECACHE_ASSETS` in `src/app/sw.js/route.ts` and protected it from LRU cache eviction.
   - Constrained cache deletion on service worker `activate` strictly to `key.startsWith('pixibun-') && key !== CACHE_NAME`.
   - Implemented real browser-network offline E2E test in `tests/e2e/offline.spec.ts` using Playwright's `context.setOffline(true)`. Verified warm navigation, offline hard refresh, canvas drawing, undo/redo, autosave persistence to IndexedDB, and subsequent offline reload restoration.
-  - Service-worker update discovery across two deployed build identities: verified in Phase C via byte-distinct route generation and registrar tests (`tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`).
+  - Real two-build browser service-worker update discovery: NOT TESTED / deferred.
 
 ### Integrity, Recovery & Resource Safety (Phase 64 / Phase A)
 - **Neutral Import Domain Contracts (`src/types/import.ts`, `src/components/modals/ImportModal.tsx`, `src/lib/project/importFile.ts`, `src/components/layout/StudioLayout.tsx`, `tests/components/ImportModal.test.tsx`)**:
@@ -274,10 +288,10 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`, `package.json`)**:
   - Implemented automatic pre-push git hook installation via `npm run prepare` lifecycle script.
   - Intercepts all `git push` commands locally; if any test, typecheck, or doc verification fails, the push is blocked before leaving the developer workstation.
-- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.gitlab-ci.yml`)**:
+- **Open Source Contribution & Security Documentation (`CONTRIBUTING.md`, `SECURITY.md`, `.github/workflows/ci.yml`)**:
   - Authored comprehensive `CONTRIBUTING.md` documenting zero-dependency architecture, testing standards, and Quality Gate workflows.
   - Expanded `SECURITY.md` with Section 4 detailing Defense-in-Depth pre-push invariants (CWE-409, CWE-1321, IEEE 754 float invariants, Token Bucket rate limiting).
-  - Added drop-in `.gitlab-ci.yml` pipeline configuration for future repository mirroring or self-hosted runners.
+  - Added drop-in `.github/workflows/ci.yml` pipeline configuration enforcing automated quality gates.
 
 ### Comprehensive Defensive Hardening & Mathematical Invariants (Phase 55)
 - **Mathematical Viewport Invariants & Line Clipping (`src/lib/safety/mathInvariants.ts`, `src/hooks/viewport/useViewportTransform.ts`)**:

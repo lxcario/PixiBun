@@ -44,7 +44,7 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
       btnBg: '#282530',
       textHeading: '#ede8f4',
       textBody: '#cfc7d8',
-      textMuted: '#8e8499',
+      textMuted: '#968ca2',
       toolActiveBg: '#e5a962',
       toolActiveFg: '#16141a',
       borderDefault: '#35313d',
@@ -57,7 +57,7 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
       btnBg: '#ffffff',
       textHeading: '#221233',
       textBody: '#4a3559',
-      textMuted: '#78608a',
+      textMuted: '#685179',
       toolActiveBg: '#8a4500',
       toolActiveFg: '#ffffff',
       borderDefault: '#442a5c',
@@ -83,7 +83,7 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
       btnBg: '#f8f3eb',
       textHeading: '#221233',
       textBody: '#4a3559',
-      textMuted: '#78608a',
+      textMuted: '#685179',
       toolActiveBg: '#8a4500',
       toolActiveFg: '#ffffff',
       borderDefault: '#3c2254',
@@ -93,7 +93,7 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
 
   for (const [themeName, t] of Object.entries(themes)) {
     describe(themeName, () => {
-      it('satisfies WCAG AA text contrast (>= 4.5:1) for headings against primary surfaces', () => {
+      it('satisfies WCAG 1.4.3 AA normal text contrast (>= 4.5:1) for headings against primary surfaces', () => {
         const surfaces = [t.bg, t.surface, t.surfaceRaised, t.btnBg];
         for (const surface of surfaces) {
           const ratio = getContrastRatio(t.textHeading, surface);
@@ -101,7 +101,7 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
         }
       });
 
-      it('satisfies WCAG AA text contrast (>= 4.5:1) for body text against primary surfaces', () => {
+      it('satisfies WCAG 1.4.3 AA normal text contrast (>= 4.5:1) for body text against primary surfaces', () => {
         const surfaces = [t.bg, t.surface, t.surfaceRaised];
         for (const surface of surfaces) {
           const ratio = getContrastRatio(t.textBody, surface);
@@ -109,17 +109,20 @@ describe('Theme Contrast & WCAG 2.2 AA Conformance (Milestone C2)', () => {
         }
       });
 
-      it('satisfies WCAG AA text contrast (>= 3.0:1 for secondary/muted text or UI icons)', () => {
-        const ratio = getContrastRatio(t.textMuted, t.surface);
-        expect(ratio, `Muted on surface ${t.surface}`).toBeGreaterThanOrEqual(3.0);
+      it('satisfies WCAG 1.4.3 AA normal text contrast (>= 4.5:1) for muted text across surfaces', () => {
+        const surfaces = [t.bg, t.surface, t.surfaceRaised];
+        for (const surface of surfaces) {
+          const ratio = getContrastRatio(t.textMuted, surface);
+          expect(ratio, `Muted text on ${surface}`).toBeGreaterThanOrEqual(4.5);
+        }
       });
 
-      it('satisfies WCAG AA (>= 4.5:1) for active tool state foreground against tool background', () => {
+      it('satisfies WCAG 1.4.3 AA (>= 4.5:1) for active tool state text against tool background', () => {
         const ratio = getContrastRatio(t.toolActiveFg, t.toolActiveBg);
         expect(ratio, `Tool active fg on bg`).toBeGreaterThanOrEqual(4.5);
       });
 
-      it('satisfies WCAG AA (>= 3.0:1) for focus indicator against base background', () => {
+      it('satisfies WCAG 1.4.11 AA non-text contrast (>= 3.0:1) for focus indicator against base background', () => {
         const ratio = getContrastRatio(t.focusRing, t.bg);
         expect(ratio, `Focus ring on bg`).toBeGreaterThanOrEqual(3.0);
       });

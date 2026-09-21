@@ -24,6 +24,10 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
+  const rawId = React.useId();
+  const safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const titleId = `modal-title-${safeId}`;
+  const bodyId = `modal-body-${safeId}`;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -44,18 +48,18 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         }
       }
 
-      // Auto-focus priority: [data-autofocus] -> first interactive in #modal-body -> #modal-title (WCAG 2.4.3)
+      // Auto-focus priority: [data-autofocus] -> first interactive in modal body -> modal title (WCAG 2.4.3)
       const explicitFocus = dialog.querySelector<HTMLElement>('[data-autofocus]');
       if (explicitFocus) {
         explicitFocus.focus();
       } else {
         const bodyFocusable = dialog.querySelector<HTMLElement>(
-          '#modal-body input:not([disabled]), #modal-body textarea:not([disabled]), #modal-body select:not([disabled]), #modal-body button:not([disabled]), #modal-body [href], #modal-body [tabindex]:not([tabindex="-1"])'
+          `#${bodyId} input:not([disabled]), #${bodyId} textarea:not([disabled]), #${bodyId} select:not([disabled]), #${bodyId} button:not([disabled]), #${bodyId} [href], #${bodyId} [tabindex]:not([tabindex="-1"])`
         );
         if (bodyFocusable) {
           bodyFocusable.focus();
         } else {
-          const titleHeading = dialog.querySelector<HTMLElement>('#modal-title');
+          const titleHeading = dialog.querySelector<HTMLElement>(`#${titleId}`);
           if (titleHeading) {
             titleHeading.focus();
           } else {
@@ -122,7 +126,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       dialog.removeEventListener('keydown', handleDialogKeyDown);
       dialog.removeEventListener('click', handleDialogClick);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, bodyId, titleId]);
 
   if (!isOpen) {
     return null;
@@ -133,8 +137,8 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       ref={dialogRef}
       className="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
       onClose={onClose}
-      aria-labelledby="modal-title"
-      aria-describedby="modal-body"
+      aria-labelledby={titleId}
+      aria-describedby={bodyId}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -145,7 +149,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--desk-border)] pb-2 shrink-0">
-          <h2 id="modal-title" tabIndex={-1} className="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none">
+          <h2 id={titleId} tabIndex={-1} className="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none">
             ✦ {title}
           </h2>
           <button
@@ -158,7 +162,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
           </button>
         </div>
 
-        <div id="modal-body" data-modal-body className={bodyClassName ?? 'flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto'}>
+        <div id={bodyId} data-modal-body className={bodyClassName ?? 'flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto'}>
           {children}
         </div>
       </motion.div>

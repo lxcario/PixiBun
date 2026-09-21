@@ -16,23 +16,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint (including JSX-A11y)
-        run: npm run lint
-
-      - name: Unit & Component Tests
-        run: npm test
-
-      - name: Production Build
-        run: npm run build
+      - name: Canonical Quality Gate (Docs, Typecheck, Lint, Tests, Production Build)
+        run: npm run gate:full
 
   e2e:
     needs: validate
@@ -44,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
@@ -77,7 +68,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
@@ -87,7 +78,7 @@ jobs:
         run: npm run build
 
       - name: Run Lighthouse CI Audit
-        run: npx @lhci/cli autorun
+        run: npx @lhci/cli@0.15.1 autorun
 
       - name: Upload Lighthouse CI Reports
         uses: actions/upload-artifact@v4

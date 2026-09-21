@@ -69,7 +69,7 @@
   --desk-border-highlight: #464052;
   --text-heading: #ede8f4;
   --text-body: #cfc7d8;
-  --text-muted: #8e8499;
+  --text-muted: #968ca2;
   --accent-gold: #e5a962;
   --accent-plum: #9d7ec4;
   --accent-wisteria: #b596d9;
@@ -164,7 +164,7 @@ html.light, html[data-theme="light"], html[data-color-scheme="light"] {
   --desk-border-highlight: #6e3d94;
   --text-heading: #221233;
   --text-body: #4a3559;
-  --text-muted: #78608a;
+  --text-muted: #685179;
   --accent-gold: #8a4500;
   --accent-plum: #7e2b96;
   --accent-wisteria: #9940b5;
@@ -340,7 +340,7 @@ html[data-studio-theme="cozy-classic"][data-color-scheme="light"] {
   --desk-border-highlight: #683d8a;
   --text-heading: #221233;
   --text-body: #4a3559;
-  --text-muted: #78608a;
+  --text-muted: #685179;
   --accent-gold: #8a4500;
   --accent-plum: #7e2b96;
   --accent-wisteria: #9940b5;

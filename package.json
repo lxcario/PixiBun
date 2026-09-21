@@ -9,11 +9,16 @@
     "lint": "eslint src tests",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "verify:docs": "node scripts/verifyDocIntegrity.mjs",
     "gate": "node scripts/runQualityGate.mjs",
     "gate:full": "node scripts/runQualityGate.mjs --with-build",
     "prepare": "node scripts/installGitHooks.mjs"
+  },
+  "engines": {
+    "node": ">=22.0.0 <23.0.0",
+    "npm": ">=10.0.0"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -23,7 +28,6 @@
     "next": "^16.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sharp": "^0.35.4",
     "tailwind-merge": "^3.0.2",
     "web-vitals": "^6.2.1",
     "zustand": "^5.0.3"
@@ -38,6 +42,7 @@
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "^9.20.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",

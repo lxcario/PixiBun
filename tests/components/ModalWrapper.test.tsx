@@ -55,7 +55,7 @@ describe('ModalWrapper component accessibility & focus management', () => {
     expect(document.activeElement).toBe(input);
   });
 
-  it('includes aria-describedby pointing to modal-body on dialog and default viewport constraints', () => {
+  it('includes aria-describedby and aria-labelledby pointing to unique ids on dialog and default viewport constraints', () => {
     const handleClose = vi.fn();
     const { container } = render(
       <ModalWrapper isOpen={true} onClose={handleClose} title="Aria Modal">
@@ -64,8 +64,58 @@ describe('ModalWrapper component accessibility & focus management', () => {
     );
 
     const dialog = container.querySelector('dialog');
-    expect(dialog?.getAttribute('aria-describedby')).toBe('modal-body');
-    const modalBody = container.querySelector('#modal-body');
+    const modalBody = container.querySelector('[data-modal-body]');
+    const heading = container.querySelector('h2');
+
+    expect(dialog).not.toBeNull();
+    expect(modalBody).not.toBeNull();
+    expect(heading).not.toBeNull();
+
+    const describedBy = dialog?.getAttribute('aria-describedby');
+    const labelledBy = dialog?.getAttribute('aria-labelledby');
+
+    expect(describedBy).toBe(modalBody?.id);
+    expect(labelledBy).toBe(heading?.id);
     expect(modalBody?.className).toContain('overflow-y-auto');
+  });
+
+  it('renders stacked modals without id collisions between instances', () => {
+    const handleClose1 = vi.fn();
+    const handleClose2 = vi.fn();
+
+    const { container } = render(
+      <div>
+        <ModalWrapper isOpen={true} onClose={handleClose1} title="Modal A">
+          <div>Content A</div>
+        </ModalWrapper>
+        <ModalWrapper isOpen={true} onClose={handleClose2} title="Modal B">
+          <div>Content B</div>
+        </ModalWrapper>
+      </div>
+    );
+
+    const dialogs = container.querySelectorAll('dialog');
+    expect(dialogs.length).toBe(2);
+
+    const dialogA = dialogs[0];
+    const dialogB = dialogs[1];
+
+    const titleA = dialogA.querySelector('h2');
+    const titleB = dialogB.querySelector('h2');
+    const bodyA = dialogA.querySelector('[data-modal-body]');
+    const bodyB = dialogB.querySelector('[data-modal-body]');
+
+    expect(titleA?.id).toBeDefined();
+    expect(titleB?.id).toBeDefined();
+    expect(titleA?.id).not.toBe(titleB?.id);
+
+    expect(bodyA?.id).toBeDefined();
+    expect(bodyB?.id).toBeDefined();
+    expect(bodyA?.id).not.toBe(bodyB?.id);
+
+    expect(dialogA.getAttribute('aria-labelledby')).toBe(titleA?.id);
+    expect(dialogA.getAttribute('aria-describedby')).toBe(bodyA?.id);
+    expect(dialogB.getAttribute('aria-labelledby')).toBe(titleB?.id);
+    expect(dialogB.getAttribute('aria-describedby')).toBe(bodyB?.id);
   });
 });

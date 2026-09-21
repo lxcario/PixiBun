@@ -12,7 +12,6 @@ import { useBrushPointerHandler } from './useBrushPointerHandler';
 import { useSelectionPointerHandler } from './useSelectionPointerHandler';
 import { useShapePointerHandler } from './useShapePointerHandler';
 import { useChiselPointerHandler } from './useChiselPointerHandler';
-import { analyzePointerEvent } from '@/lib/canvas/pointerErgonomics';
 
 export interface UseViewportPointerEventsProps {
   canvasWidth: number;
@@ -139,12 +138,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
-    const pointerInfo = analyzePointerEvent(e);
-    if (pointerInfo.isPalmContact) {
-      // Ignore accidental broad capacitive touch contacts
-      return;
-    }
-
     // Middle Click or Alt+Click = Pan Viewport
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       props.setIsPanning(true);
@@ -152,7 +145,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
-    if (e.button !== 0 && !pointerInfo.isEraser) return;
+    if (e.button !== 0) return;
 
     const coords = props.clientToCanvasCoords(e.clientX, e.clientY);
     if (!coords) return;
@@ -293,11 +286,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    const pointerInfo = analyzePointerEvent(e);
-    if (pointerInfo.isPalmContact && !props.isDrawing) {
-      return;
-    }
-
     if (props.isPanning) {
       props.setPan(e.clientX - props.panStart.x, e.clientY - props.panStart.y);
       return;

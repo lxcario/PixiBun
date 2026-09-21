@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
 
       - name: Check Vercel Credentials
         id: check_creds
@@ -40,7 +40,7 @@ jobs:
 
       - name: Install Vercel CLI
         if: steps.check_creds.outputs.has_creds == 'true'
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@50.34.0
 
       - name: Pull Vercel Environment Information
         if: steps.check_creds.outputs.has_creds == 'true'

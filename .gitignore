@@ -10,6 +10,7 @@
 /test-results/
 /blob-report/
 /lhci-reports/
+/.lighthouseci/
 
 # next.js
 /.next/

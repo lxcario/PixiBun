@@ -28,7 +28,7 @@ export const ExportScopeSelector: React.FC<ExportScopeSelectorProps> = ({
         aria-label="Export frame scope"
         disabled={isExporting}
         onChange={(e) => onSelectClipId(e.target.value)}
-        className="bg-[#181124] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer focus:border-[#f0be7c]"
+        className="bg-[var(--surface-0)] text-[var(--text-heading)] font-bold text-xs font-mono px-2.5 py-1 rounded-[2px] border border-[var(--desk-border)] outline-none cursor-pointer focus:border-[#f0be7c]"
       >
         <option value="all">All Frames (1–{totalFrames})</option>
         {clips.map((clip) => (

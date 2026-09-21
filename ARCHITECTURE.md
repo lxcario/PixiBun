@@ -587,9 +587,9 @@ To decouple development from cloud CI billing constraints while maintaining unco
 * **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
   - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
   - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
-* **Open Source Governance & Ready-to-Use GitLab CI:**
+* **Open Source Governance & Canonical GitHub Actions CI:**
   - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
-  - Drop-in `.gitlab-ci.yml` pipeline configuration ready for instant repository mirroring or self-hosted runners.
+  - Drop-in `.github/workflows/ci.yml` pipeline configuration enforcing automated quality gates.
 
 ---
 ## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants

@@ -143,7 +143,7 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     expect(_getPendingCallbacksCountForTesting()).toBe(2);
 
     // Simulate fatal error on worker
-    mockWorker.onerror?.(new ErrorEvent('error', { message: 'Out of memory in worker' }));
+    mockWorker.onerror?.(new (globalThis.ErrorEvent || Event)('error', { message: 'Out of memory in worker' } as EventInit));
 
     await expect(promiseA).rejects.toThrow(/Worker fatal error/i);
     await expect(promiseB).rejects.toThrow(/Worker fatal error/i);

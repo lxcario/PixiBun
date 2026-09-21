@@ -18,6 +18,7 @@ export const RightInspector: React.FC = () => {
 
   return (
     <aside
+      data-testid="right-inspector"
       className="w-[292px] border-l shrink-0 bg-[var(--desk-surface)] border-[var(--desk-border)] flex flex-col justify-between select-none z-10 text-[var(--text-heading)] transition-all duration-150"
     >
       {/* Top Tab Switcher (Tactile Artist Caddy Compartment Tabs) */}
