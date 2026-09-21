@@ -426,6 +426,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       drawPointsOnActiveLayer,
       captureSnapshot,
       commitSnapshot,
+      discardSnapshot,
       setPrimaryColor,
       renderBrushGhost,
       renderComposite,
@@ -469,10 +470,42 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // Remote co-draw peers paint layer buffers directly (outside React state),
   // so the bridge requests an explicit composite re-render per applied batch.
+  // Coalesce rapid bursts using requestAnimationFrame (B20).
   useEffect(() => {
-    const unsub = studioEvents.on('pixibun:request-composite', () => renderComposite());
-    return unsub;
+    let rafId: number | null = null;
+    const unsub = studioEvents.on('pixibun:request-composite', () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        renderComposite();
+      });
+    });
+    return () => {
+      unsub();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
   }, [renderComposite]);
+
+  // Interruption safety: window blur (Alt-tab), tab visibility hidden, or lost pointer capture (B19)
+  useEffect(() => {
+    const onWindowBlur = () => {
+      handlePointerCancel();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handlePointerCancel();
+      }
+    };
+    window.addEventListener('blur', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('blur', onWindowBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [handlePointerCancel]);
 
   // Drag and drop imports
   const handleDragOver = (e: React.DragEvent) => {
@@ -525,6 +558,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={handlePointerCancel}
       onPointerLeave={() => {
         cursorCoordsRef.current = null;
         updateCursorHUD(null);

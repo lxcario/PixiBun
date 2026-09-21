@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
@@ -18,34 +18,9 @@ export interface UseStudioKeyboardOptions {
   handleRedo: () => void;
 }
 
-export function useStudioKeyboard({
-  autosaveTimerRef,
-  runAutosave,
-  triggerSaveToast,
-  handleSaveDesktopProject,
-  setIsShortcutsOpen,
-  setIsCommandPaletteOpen,
-  handleUndo,
-  handleRedo,
-}: UseStudioKeyboardOptions): void {
-  const {
-    setActiveFrame,
-    isPlaying,
-    setIsPlaying,
-    setActiveTool,
-    swapColors,
-    setBrushSize,
-    tools,
-    frames,
-    activeFrameIndex,
-    zoom,
-    setZoom,
-    setPan,
-    canvasWidth,
-    canvasHeight,
-    toggleSymmetryH,
-    toggleSymmetryV,
-  } = useStudioStore();
+export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,21 +33,23 @@ export function useStudioKeyboard({
         return;
       }
 
+      const state = useStudioStore.getState();
+
       // Desktop / Local Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        if (autosaveTimerRef.current !== null) {
-          window.clearTimeout(autosaveTimerRef.current);
-          autosaveTimerRef.current = null;
+        if (optionsRef.current.autosaveTimerRef.current !== null) {
+          window.clearTimeout(optionsRef.current.autosaveTimerRef.current);
+          optionsRef.current.autosaveTimerRef.current = null;
         }
         // Flush the debounced IndexedDB autosave first, then hand off to the
         // desktop File System Access save — sequenced so the project is never
         // serialized twice concurrently (and the OS dialog can't interleave
         // with the local write).
         void (async () => {
-          const res = await runAutosave();
-          if (typeof res === 'boolean' ? res : res.ok) triggerSaveToast();
-          await handleSaveDesktopProject(e.shiftKey);
+          const res = await optionsRef.current.runAutosave();
+          if (typeof res === 'boolean' ? res : res.ok) optionsRef.current.triggerSaveToast();
+          await optionsRef.current.handleSaveDesktopProject(e.shiftKey);
         })();
         return;
       }
@@ -80,14 +57,14 @@ export function useStudioKeyboard({
       // Help / Shortcuts
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
         e.preventDefault();
-        setIsShortcutsOpen((prev) => !prev);
+        optionsRef.current.setIsShortcutsOpen((prev) => !prev);
         return;
       }
 
       // Command Palette: Ctrl/Cmd + K
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setIsCommandPaletteOpen?.((prev) => !prev);
+        optionsRef.current.setIsCommandPaletteOpen?.((prev) => !prev);
         return;
       }
 
@@ -95,9 +72,9 @@ export function useStudioKeyboard({
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
-          handleRedo();
+          optionsRef.current.handleRedo();
         } else {
-          handleUndo();
+          optionsRef.current.handleUndo();
         }
         return;
       }
@@ -105,7 +82,7 @@ export function useStudioKeyboard({
       // Redo Alternate (Ctrl/Cmd + Y)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
-        handleRedo();
+        optionsRef.current.handleRedo();
         return;
       }
 
@@ -113,28 +90,28 @@ export function useStudioKeyboard({
       if (e.ctrlKey || e.metaKey) {
         if (e.key === '=' || e.key === '+') {
           e.preventDefault();
-          setZoom(getNextZoomStep(zoom));
+          state.setZoom(getNextZoomStep(state.zoom));
           return;
         }
 
         if (e.key === '-' || e.key === '_') {
           e.preventDefault();
-          setZoom(getPrevZoomStep(zoom));
+          state.setZoom(getPrevZoomStep(state.zoom));
           return;
         }
 
         if (e.key === '0') {
           e.preventDefault();
-          const fitZoom = calculateFitZoom(canvasWidth, canvasHeight);
-          setZoom(fitZoom);
-          setPan(0, 0);
+          const fitZoom = calculateFitZoom(state.canvasWidth, state.canvasHeight);
+          state.setZoom(fitZoom);
+          state.setPan(0, 0);
           return;
         }
 
         if (e.key === '1') {
           e.preventDefault();
-          setZoom(100);
-          setPan(0, 0);
+          state.setZoom(100);
+          state.setPan(0, 0);
           return;
         }
       }
@@ -144,113 +121,111 @@ export function useStudioKeyboard({
       switch (key) {
         case 'h': {
           if (!e.ctrlKey && !e.metaKey) {
-            const hasSelection = !!useStudioStore.getState().selection;
+            const hasSelection = !!state.selection;
             if (e.shiftKey || !hasSelection) {
               e.preventDefault();
-              toggleSymmetryH();
+              state.toggleSymmetryH();
             }
           }
           break;
         }
         case 'v': {
           if (!e.ctrlKey && !e.metaKey) {
-            const hasSelection = !!useStudioStore.getState().selection;
+            const hasSelection = !!state.selection;
             if (e.shiftKey || !hasSelection) {
               e.preventDefault();
-              toggleSymmetryV();
+              state.toggleSymmetryV();
             }
           }
           break;
         }
         case 'b':
-          setActiveTool('pen');
+          state.setActiveTool('pen');
           break;
         case 'c':
-          setActiveTool('curve');
+          state.setActiveTool('curve');
           break;
         case 'e':
-          setActiveTool('eraser');
+          state.setActiveTool('eraser');
           break;
         case 'g':
-          setActiveTool('bucket');
+          state.setActiveTool('bucket');
           break;
         case 'd':
           if (e.shiftKey) {
-            const { setPrimaryColor, setSecondaryColor } = useStudioStore.getState();
-            setPrimaryColor('#000000');
-            setSecondaryColor('#ffffff');
+            state.setPrimaryColor('#000000');
+            state.setSecondaryColor('#ffffff');
           } else {
-            setActiveTool('dither');
+            state.setActiveTool('dither');
           }
           break;
         case 'i':
-          setActiveTool('eyedropper');
+          state.setActiveTool('eyedropper');
           break;
         case 'm':
-          setActiveTool('select-box');
+          state.setActiveTool('select-box');
           break;
         case 'q':
-          setActiveTool('select-lasso');
+          state.setActiveTool('select-lasso');
           break;
         case 'w':
-          setActiveTool('select-wand');
+          state.setActiveTool('select-wand');
           break;
         case 'l':
-          setActiveTool('line');
+          state.setActiveTool('line');
           break;
         case 'j':
-          setActiveTool('isometric-line');
+          state.setActiveTool('isometric-line');
           break;
         case 'u':
-          setActiveTool('rectangle');
+          state.setActiveTool('rectangle');
           break;
         case 'o':
-          setActiveTool('ellipse');
+          state.setActiveTool('ellipse');
           break;
         case 'r':
-          setActiveTool('color-replace');
+          state.setActiveTool('color-replace');
           break;
         case 'k':
           if (e.shiftKey) {
-            setActiveTool('rivet-stamp');
+            state.setActiveTool('rivet-stamp');
           } else {
-            setActiveTool('normal-chisel');
+            state.setActiveTool('normal-chisel');
           }
           break;
         case 'n':
-          setActiveTool('rivet-stamp');
+          state.setActiveTool('rivet-stamp');
           break;
         case 's': {
           // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens
           if (!e.ctrlKey && !e.metaKey) {
-            useStudioStore.getState().toggleSquintMode();
+            state.toggleSquintMode();
           }
           break;
         }
         case 'p': {
           // CVD Colorblindness Lens (DESIGN.md §12) — cycle display-only lens
-          const { cvdLens: current, setCvdLens } = useStudioStore.getState();
-          setCvdLens(cycleCvdLens(current));
+          state.setCvdLens(cycleCvdLens(state.cvdLens));
           break;
         }
         case 'x':
-          swapColors();
+          state.swapColors();
           break;
         case '[':
-          setBrushSize(Math.max(1, tools.brushSize - 1));
+          state.setBrushSize(Math.max(1, state.tools.brushSize - 1));
           break;
         case ']':
-          setBrushSize(Math.min(32, tools.brushSize + 1));
+          state.setBrushSize(Math.min(32, state.tools.brushSize + 1));
           break;
         case ' ':
           e.preventDefault();
-          setIsPlaying(!isPlaying);
+          state.setIsPlaying(!state.isPlaying);
           break;
         case ',':
-          setActiveFrame((activeFrameIndex - 1 + frames.length) % frames.length);
+          state.setActiveFrame((state.activeFrameIndex - 1 + state.frames.length) % state.frames.length);
           break;
         case '.':
-          setActiveFrame((activeFrameIndex + 1) % frames.length);
+          state.setActiveFrame((state.activeFrameIndex + 1) % state.frames.length);
           break;
         default:
           break;
@@ -259,30 +234,5 @@ export function useStudioKeyboard({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    setActiveTool,
-    swapColors,
-    setBrushSize,
-    tools.brushSize,
-    frames.length,
-    activeFrameIndex,
-    setActiveFrame,
-    isPlaying,
-    setIsPlaying,
-    handleUndo,
-    handleRedo,
-    handleSaveDesktopProject,
-    runAutosave,
-    setIsCommandPaletteOpen,
-    triggerSaveToast,
-    zoom,
-    setZoom,
-    setPan,
-    canvasWidth,
-    canvasHeight,
-    toggleSymmetryH,
-    toggleSymmetryV,
-    autosaveTimerRef,
-    setIsShortcutsOpen,
-  ]);
+  }, []);
 }

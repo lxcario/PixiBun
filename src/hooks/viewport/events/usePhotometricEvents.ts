@@ -692,6 +692,10 @@ export function usePhotometricEvents({
         latest.frames[latest.activeFrameIndex]?.id !== origin.frameId ||
         latest.editRevision !== origin.revision
       ) {
+        studioEvents.emit('pixibun:toast', {
+          message: 'Normal-map result was discarded because the source frame changed while it was processing.',
+          type: 'error',
+        });
         latest.addAiMessage({
           sender: 'assistant',
           text: 'Normal-map result was discarded because the source frame changed while it was processing.',

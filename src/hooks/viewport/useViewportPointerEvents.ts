@@ -36,6 +36,7 @@ export interface UseViewportPointerEventsProps {
   drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean) => void;
   captureSnapshot: (desc: string) => void;
   commitSnapshot: () => void;
+  discardSnapshot?: () => void;
   setPrimaryColor: (color: string) => void;
   renderBrushGhost: (coords: Point | null) => void;
   renderComposite: () => void;
@@ -74,6 +75,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
 
   const chiselSessionRef = useRef<ChiselStrokeSession | null>(null);
+  const capturedPointerRef = useRef<{ target: HTMLElement; pointerId: number } | null>(null);
 
   const brushHandler = useBrushPointerHandler({
     drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
@@ -207,7 +209,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     props.captureSnapshot(`Tool: ${tools.activeTool}`);
 
     try {
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      const el = e.currentTarget as HTMLElement;
+      el.setPointerCapture(e.pointerId);
+      capturedPointerRef.current = { target: el, pointerId: e.pointerId };
     } catch {
       // fallback
     }
@@ -329,6 +333,14 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         // fallback
       }
     }
+    if (capturedPointerRef.current) {
+      try {
+        capturedPointerRef.current.target.releasePointerCapture(capturedPointerRef.current.pointerId);
+      } catch {
+        // fallback
+      }
+      capturedPointerRef.current = null;
+    }
 
     if (props.isPanning) {
       props.setIsPanning(false);
@@ -339,7 +351,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
-    if (props.isDrawing) {
+    const isDrawingActive = props.isDrawing || props.isDrawingRef.current;
+    if (isDrawingActive) {
       props.isDrawingRef.current = false;
       props.setIsDrawing(false);
 
@@ -385,8 +398,74 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     chiselSessionRef.current = null;
   };
 
-  const handlePointerCancel = (e?: React.PointerEvent) => {
-    handlePointerUp(e);
+  const handlePointerCancel = (e?: React.PointerEvent | PointerEvent | Event) => {
+    if (e && 'pointerId' in e && 'currentTarget' in e && e.currentTarget) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {
+        // fallback
+      }
+    }
+    if (capturedPointerRef.current) {
+      try {
+        capturedPointerRef.current.target.releasePointerCapture(capturedPointerRef.current.pointerId);
+      } catch {
+        // fallback
+      }
+      capturedPointerRef.current = null;
+    }
+
+    if (props.isPanning) {
+      props.setIsPanning(false);
+    }
+
+    if (props.isDraggingSelection) {
+      props.setIsDraggingSelection(false);
+    }
+
+    const isDrawingActive = props.isDrawing || props.isDrawingRef.current;
+    if (isDrawingActive) {
+      props.isDrawingRef.current = false;
+      props.setIsDrawing(false);
+
+      const isShapeTool =
+        tools.activeTool === 'line' ||
+        tools.activeTool === 'curve' ||
+        tools.activeTool === 'isometric-line' ||
+        tools.activeTool === 'rectangle' ||
+        tools.activeTool === 'ellipse';
+
+      if (isShapeTool) {
+        if (props.discardSnapshot) {
+          props.discardSnapshot();
+        } else {
+          props.currentStrokeSnapshotRef.current = null;
+        }
+      } else if (
+        tools.activeTool === 'select-box' ||
+        tools.activeTool === 'select-lasso' ||
+        tools.activeTool === 'select-wand'
+      ) {
+        props.setLassoPoints([]);
+      } else {
+        props.commitSnapshot();
+        bumpBufferVersion();
+      }
+
+      const previewCanvas = props.previewCanvasRef.current;
+      if (previewCanvas) {
+        const pCtx = previewCanvas.getContext('2d');
+        pCtx?.clearRect(0, 0, props.canvasWidth, props.canvasHeight);
+      }
+    }
+
+    props.setStrokeStart(null);
+    props.setLastPoint(null);
+    props.cursorCoordsRef.current = null;
+    updateCursorHUD(null);
+    props.renderBrushGhost(null);
+    chiselSessionRef.current = null;
+    props.renderComposite();
   };
 
   return {

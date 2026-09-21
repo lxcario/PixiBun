@@ -119,6 +119,10 @@ export function useArtisanEvents({
         latest.frames[latest.activeFrameIndex]?.id !== origin.frameId ||
         latest.editRevision !== origin.revision
       ) {
+        studioEvents.emit('pixibun:toast', {
+          message: 'Pattern result was discarded because the source frame changed while it was processing.',
+          type: 'error',
+        });
         latest.addAiMessage({
           sender: 'assistant',
           text: 'Pattern result was discarded because the source frame changed while it was processing.',
@@ -127,6 +131,10 @@ export function useArtisanEvents({
       }
 
       if (!result.success) {
+        studioEvents.emit('pixibun:toast', {
+          message: 'WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.',
+          type: 'error',
+        });
         state.addAiMessage({
           sender: 'assistant',
           text: `WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.`,
@@ -302,6 +310,10 @@ export function useArtisanEvents({
         latest.frames[latest.activeFrameIndex]?.id !== origin.activeFrameId ||
         latest.editRevision !== origin.revision
       ) {
+        studioEvents.emit('pixibun:toast', {
+          message: 'In-between result was discarded because the animation changed while it was processing.',
+          type: 'error',
+        });
         latest.addAiMessage({
           sender: 'assistant',
           text: 'In-between result was discarded because the animation changed while it was processing.',

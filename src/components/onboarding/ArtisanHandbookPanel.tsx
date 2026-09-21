@@ -34,17 +34,15 @@ export const ArtisanHandbookPanel: React.FC = () => {
     getCurrentFrameTemplate,
   } = useOnboardingStore();
 
-  const {
-    frames,
-    activeLayerId,
-    canvasWidth,
-    canvasHeight,
-    addFrame,
-    setActiveFrame,
-    bumpBufferVersion,
-    isPlaying,
-    setIsPlaying,
-  } = useStudioStore();
+  const frames = useStudioStore((s) => s.frames);
+  const activeLayerId = useStudioStore((s) => s.activeLayerId);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const addFrame = useStudioStore((s) => s.addFrame);
+  const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
+  const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
 
   const lesson = getCurrentLesson();
   const stepConfig = getCurrentStep();

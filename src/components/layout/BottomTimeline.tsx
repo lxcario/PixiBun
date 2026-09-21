@@ -115,29 +115,27 @@ export interface BottomTimelineProps {
 }
 
 export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode = false }) => {
-  const {
-    frames,
-    activeFrameIndex,
-    setActiveFrame,
-    reorderFrames,
-    addFrame,
-    duplicateFrame,
-    deleteFrame,
-    setFrameDuration,
-    isPlaying,
-    setIsPlaying,
-    fps,
-    setFps,
-    loopMode,
-    setLoopMode,
-    onionSkin,
-    setOnionSkin,
-    clips,
-    activeClipId,
-    setActiveClipId,
-    addClip,
-    deleteClip,
-  } = useStudioStore();
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
+  const reorderFrames = useStudioStore((s) => s.reorderFrames);
+  const addFrame = useStudioStore((s) => s.addFrame);
+  const duplicateFrame = useStudioStore((s) => s.duplicateFrame);
+  const deleteFrame = useStudioStore((s) => s.deleteFrame);
+  const setFrameDuration = useStudioStore((s) => s.setFrameDuration);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
+  const fps = useStudioStore((s) => s.fps);
+  const setFps = useStudioStore((s) => s.setFps);
+  const loopMode = useStudioStore((s) => s.loopMode);
+  const setLoopMode = useStudioStore((s) => s.setLoopMode);
+  const onionSkin = useStudioStore((s) => s.onionSkin);
+  const setOnionSkin = useStudioStore((s) => s.setOnionSkin);
+  const clips = useStudioStore((s) => s.clips);
+  const activeClipId = useStudioStore((s) => s.activeClipId);
+  const setActiveClipId = useStudioStore((s) => s.setActiveClipId);
+  const addClip = useStudioStore((s) => s.addClip);
+  const deleteClip = useStudioStore((s) => s.deleteClip);
   const { isGuest } = useCoDrawStatus();
   const guestFrameLockTitle = 'Frame structure is managed by the session host.';
 

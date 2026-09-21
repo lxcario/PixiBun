@@ -12,7 +12,11 @@ interface RadialContextMenuProps {
 }
 
 export const RadialContextMenu: React.FC<RadialContextMenuProps> = ({ isOpen, position, onClose }) => {
-  const { tools, setActiveTool, primaryColor, secondaryColor, swapColors } = useStudioStore();
+  const tools = useStudioStore((s) => s.tools);
+  const setActiveTool = useStudioStore((s) => s.setActiveTool);
+  const primaryColor = useStudioStore((s) => s.primaryColor);
+  const secondaryColor = useStudioStore((s) => s.secondaryColor);
+  const swapColors = useStudioStore((s) => s.swapColors);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const openerRef = React.useRef<HTMLElement | null>(null);
 

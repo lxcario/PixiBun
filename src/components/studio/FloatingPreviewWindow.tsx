@@ -6,22 +6,20 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { compositeFrame } from '@/lib/render/compositor';
 
 export const FloatingPreviewWindow: React.FC = () => {
-  const {
-    frames,
-    activeFrameIndex,
-    canvasWidth,
-    canvasHeight,
-    isPlaying,
-    setIsPlaying,
-    fps,
-    previewScale,
-    setPreviewScale,
-    previewBackdrop,
-    setPreviewBackdrop,
-    showFloatingPreview,
-    toggleFloatingPreview,
-    bufferVersion,
-  } = useStudioStore();
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
+  const fps = useStudioStore((s) => s.fps);
+  const previewScale = useStudioStore((s) => s.previewScale);
+  const setPreviewScale = useStudioStore((s) => s.setPreviewScale);
+  const previewBackdrop = useStudioStore((s) => s.previewBackdrop);
+  const setPreviewBackdrop = useStudioStore((s) => s.setPreviewBackdrop);
+  const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
+  const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
+  const bufferVersion = useStudioStore((s) => s.bufferVersion);
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isMinimized, setIsMinimized] = useState(false);

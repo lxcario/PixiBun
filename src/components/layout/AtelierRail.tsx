@@ -61,45 +61,43 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   canUndo: propCanUndo,
   canRedo: propCanRedo,
 }) => {
-  const {
-    projectName,
-    setProjectName,
-    canvasWidth,
-    canvasHeight,
-    isDirty,
-    saveStatus,
-    zoom,
-    setZoom,
-    setPan,
-    tools,
-    setBrushSize,
-    setPixelPerfect,
-    setDitherMatrix,
-    setDitherDensity,
-    setBucketContiguous,
-    setShapeFilled,
-    setCurveTightness,
-    setIsoAngleSnap,
-    toggleSymmetryH,
-    toggleSymmetryV,
-    setSymmetryGroup,
-    showGrid,
-    toggleGrid,
-    showIsoGuides,
-    toggleIsoGuides,
-    showTilePreview,
-    toggleTilePreview,
-    showFloatingPreview,
-    toggleFloatingPreview,
-    cvdLens,
-    squintMode,
-    setCvdLens,
-    toggleSquintMode,
-    referenceOverlay,
-    cycleReferenceOverlay,
-    canUndo: storeCanUndo,
-    canRedo: storeCanRedo,
-  } = useStudioStore();
+  const projectName = useStudioStore((s) => s.projectName);
+  const setProjectName = useStudioStore((s) => s.setProjectName);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const saveStatus = useStudioStore((s) => s.saveStatus);
+  const zoom = useStudioStore((s) => s.zoom);
+  const setZoom = useStudioStore((s) => s.setZoom);
+  const setPan = useStudioStore((s) => s.setPan);
+  const tools = useStudioStore((s) => s.tools);
+  const setBrushSize = useStudioStore((s) => s.setBrushSize);
+  const setPixelPerfect = useStudioStore((s) => s.setPixelPerfect);
+  const setDitherMatrix = useStudioStore((s) => s.setDitherMatrix);
+  const setDitherDensity = useStudioStore((s) => s.setDitherDensity);
+  const setBucketContiguous = useStudioStore((s) => s.setBucketContiguous);
+  const setShapeFilled = useStudioStore((s) => s.setShapeFilled);
+  const setCurveTightness = useStudioStore((s) => s.setCurveTightness);
+  const setIsoAngleSnap = useStudioStore((s) => s.setIsoAngleSnap);
+  const toggleSymmetryH = useStudioStore((s) => s.toggleSymmetryH);
+  const toggleSymmetryV = useStudioStore((s) => s.toggleSymmetryV);
+  const setSymmetryGroup = useStudioStore((s) => s.setSymmetryGroup);
+  const showGrid = useStudioStore((s) => s.showGrid);
+  const toggleGrid = useStudioStore((s) => s.toggleGrid);
+  const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
+  const toggleIsoGuides = useStudioStore((s) => s.toggleIsoGuides);
+  const showTilePreview = useStudioStore((s) => s.showTilePreview);
+  const toggleTilePreview = useStudioStore((s) => s.toggleTilePreview);
+  const showFloatingPreview = useStudioStore((s) => s.showFloatingPreview);
+  const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
+  const cvdLens = useStudioStore((s) => s.cvdLens);
+  const squintMode = useStudioStore((s) => s.squintMode);
+  const setCvdLens = useStudioStore((s) => s.setCvdLens);
+  const toggleSquintMode = useStudioStore((s) => s.toggleSquintMode);
+  const referenceOverlay = useStudioStore((s) => s.referenceOverlay);
+  const cycleReferenceOverlay = useStudioStore((s) => s.cycleReferenceOverlay);
+  const storeCanUndo = useStudioStore((s) => s.canUndo);
+  const storeCanRedo = useStudioStore((s) => s.canRedo);
 
   const isUndoEnabled = propCanUndo !== undefined ? propCanUndo : storeCanUndo;
   const isRedoEnabled = propCanRedo !== undefined ? propCanRedo : storeCanRedo;

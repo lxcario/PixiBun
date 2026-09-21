@@ -106,14 +106,12 @@ export const StudioLayout: React.FC = () => {
 
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
-  const {
-    canUndo,
-    canRedo,
-    setCanvasSize,
-    currentProjectId,
-    projectName,
-    resetToNewProject,
-  } = useStudioStore();
+  const canUndo = useStudioStore((s) => s.canUndo);
+  const canRedo = useStudioStore((s) => s.canRedo);
+  const setCanvasSize = useStudioStore((s) => s.setCanvasSize);
+  const currentProjectId = useStudioStore((s) => s.currentProjectId);
+  const projectName = useStudioStore((s) => s.projectName);
+  const resetToNewProject = useStudioStore((s) => s.resetToNewProject);
 
   const handleConfirmNewDrawing = useCallback(async () => {
     // Attempt best-effort autosave, but never block user from starting new drawing if autosave failed
