@@ -2,6 +2,29 @@ import type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferB
 import { studioEvents } from '@/lib/events/studioEvents';
 export type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup };
 
+export interface ReplayBaselineLayer {
+  layerId: string;
+  frameIndex: number;
+  imageData: ImageData;
+  opacity?: number;
+  blendMode?: string;
+  visible?: boolean;
+  name?: string;
+}
+
+export interface ReplayBaselineFrame {
+  frameIndex: number;
+  layers: ReplayBaselineLayer[];
+}
+
+export interface ReplayBaselineCheckpoint {
+  width: number;
+  height: number;
+  frames: ReplayBaselineFrame[];
+  activeFrameIndex?: number;
+  totalBytes: number;
+}
+
 export interface HistoryEngineOptions {
   maxDepth?: number;
   maxBytes?: number;
@@ -22,6 +45,10 @@ export interface HistoryEngine {
   clear(): void;
   /** Get an immutable array copy of all history steps in the undo stack (for process replay speedpaint export). */
   getHistory(): readonly HistoryStep[];
+  /** Get the retained baseline checkpoint across layers/frames prior to earliest retained step (for process replay after eviction). */
+  getBaseline(): ReplayBaselineCheckpoint | null;
+  /** Set or replace the retained baseline checkpoint explicitly. */
+  setBaseline(checkpoint: ReplayBaselineCheckpoint | null): void;
   readonly canUndo: boolean;
   readonly canRedo: boolean;
   readonly depth: number;
@@ -80,6 +107,135 @@ export function createHistoryEngine(
   let totalBytes = 0;
   let isTruncated = false;
   let evictionCount = 0;
+  let baselineCheckpoint: ReplayBaselineCheckpoint | null = null;
+
+  function cloneImageData(src: ImageData): ImageData {
+    const copy = new Uint8ClampedArray(src.data);
+    return {
+      width: src.width,
+      height: src.height,
+      data: copy,
+      colorSpace: src.colorSpace ?? 'srgb',
+    } as ImageData;
+  }
+
+  function updateBaselineFromEvicted(evicted: HistoryStep): void {
+    if (evicted.type === 'pixel' && evicted.imageData) {
+      const fIdx = evicted.frameIndex ?? 0;
+      const w = evicted.imageData.width;
+      const h = evicted.imageData.height;
+      if (!baselineCheckpoint) {
+        baselineCheckpoint = {
+          width: w,
+          height: h,
+          frames: [
+            {
+              frameIndex: fIdx,
+              layers: [
+                {
+                  layerId: evicted.layerId,
+                  frameIndex: fIdx,
+                  imageData: cloneImageData(evicted.imageData),
+                  name: evicted.layerName,
+                  opacity: 1,
+                  blendMode: 'source-over',
+                  visible: true,
+                },
+              ],
+            },
+          ],
+          activeFrameIndex: fIdx,
+          totalBytes: evicted.imageData.data.byteLength + 1024,
+        };
+      } else {
+        let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
+        if (!frame) {
+          frame = { frameIndex: fIdx, layers: [] };
+          baselineCheckpoint.frames.push(frame);
+          baselineCheckpoint.totalBytes += 512;
+        }
+        const existingLayer = frame.layers.find((l) => l.layerId === evicted.layerId);
+        if (existingLayer) {
+          baselineCheckpoint.totalBytes -= existingLayer.imageData.data.byteLength;
+          existingLayer.imageData = cloneImageData(evicted.imageData);
+          baselineCheckpoint.totalBytes += existingLayer.imageData.data.byteLength;
+        } else {
+          frame.layers.push({
+            layerId: evicted.layerId,
+            frameIndex: fIdx,
+            imageData: cloneImageData(evicted.imageData),
+            name: evicted.layerName,
+            opacity: 1,
+            blendMode: 'source-over',
+            visible: true,
+          });
+          baselineCheckpoint.totalBytes += evicted.imageData.data.byteLength + 512;
+        }
+      }
+    } else if (evicted.type === 'structural') {
+      if (!baselineCheckpoint && evicted.canvasWidth && evicted.canvasHeight) {
+        baselineCheckpoint = {
+          width: evicted.canvasWidth,
+          height: evicted.canvasHeight,
+          frames: [],
+          activeFrameIndex: evicted.activeFrameIndex ?? 0,
+          totalBytes: 1024,
+        };
+      }
+      if (baselineCheckpoint) {
+        if (evicted.canvasWidth && evicted.canvasHeight) {
+          baselineCheckpoint.width = evicted.canvasWidth;
+          baselineCheckpoint.height = evicted.canvasHeight;
+        }
+        if (evicted.layerBuffers && evicted.layerBuffers.length > 0) {
+          const fIdx = evicted.frameIndex ?? 0;
+          let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
+          if (!frame) {
+            frame = { frameIndex: fIdx, layers: [] };
+            baselineCheckpoint.frames.push(frame);
+            baselineCheckpoint.totalBytes += 512;
+          }
+          for (const buf of evicted.layerBuffers) {
+            const existingLayer = frame.layers.find((l) => l.layerId === buf.layerId);
+            if (existingLayer) {
+              baselineCheckpoint.totalBytes -= existingLayer.imageData.data.byteLength;
+              existingLayer.imageData = cloneImageData(buf.imageData);
+              baselineCheckpoint.totalBytes += existingLayer.imageData.data.byteLength;
+            } else {
+              frame.layers.push({
+                layerId: buf.layerId,
+                frameIndex: fIdx,
+                imageData: cloneImageData(buf.imageData),
+                opacity: 1,
+                blendMode: 'source-over',
+                visible: true,
+              });
+              baselineCheckpoint.totalBytes += buf.imageData.data.byteLength + 512;
+            }
+          }
+        }
+        if (evicted.frames) {
+          for (let fIdx = 0; fIdx < evicted.frames.length; fIdx++) {
+            const af = evicted.frames[fIdx];
+            let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
+            if (!frame) {
+              frame = { frameIndex: fIdx, layers: [] };
+              baselineCheckpoint.frames.push(frame);
+            }
+            for (const al of af.layers) {
+              const existing = frame.layers.find((l) => l.layerId === al.id);
+              if (existing) {
+                existing.opacity = al.opacity;
+                existing.blendMode = al.blendMode;
+                existing.visible = al.visible;
+                existing.name = al.name;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   return {
     push(step: HistoryStep): number {
@@ -111,6 +267,7 @@ export function createHistoryEngine(
         totalBytes -= calculateStepBytes(evicted);
         isTruncated = true;
         evictionCount++;
+        updateBaselineFromEvicted(evicted);
       }
 
       undoStack.push(step);
@@ -171,10 +328,19 @@ export function createHistoryEngine(
       totalBytes = 0;
       isTruncated = false;
       evictionCount = 0;
+      baselineCheckpoint = null;
     },
 
     getHistory(): readonly HistoryStep[] {
       return [...undoStack];
+    },
+
+    getBaseline(): ReplayBaselineCheckpoint | null {
+      return baselineCheckpoint;
+    },
+
+    setBaseline(checkpoint: ReplayBaselineCheckpoint | null): void {
+      baselineCheckpoint = checkpoint;
     },
 
     get canUndo(): boolean {
@@ -223,6 +389,10 @@ export function getGlobalHistoryEngine(): HistoryEngine | null {
 
 export function getGlobalHistory(): readonly HistoryStep[] {
   return activeGlobalHistoryEngine ? activeGlobalHistoryEngine.getHistory() : [];
+}
+
+export function getGlobalBaselineCheckpoint(): ReplayBaselineCheckpoint | null {
+  return activeGlobalHistoryEngine ? activeGlobalHistoryEngine.getBaseline() : null;
 }
 
 export function isGlobalHistoryTruncated(): boolean {

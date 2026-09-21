@@ -12,21 +12,19 @@ import {
 } from '@/lib/art/normalSculptor';
 
 export const NormalSculptorSection: React.FC = () => {
-  const {
-    tools,
-    setActiveTool,
-    setChiselAzimuth,
-    setChiselIncline,
-    setChiselWidth,
-    setChiselRidgeMode,
-    setRivetRadius,
-    setRivetFlatten,
-    setRivetInvert,
-    setNormalBlendMode,
-    addLayer,
-    toggleNormalMapPreview,
-    showNormalMapPreview,
-  } = useStudioStore();
+  const tools = useStudioStore((s) => s.tools);
+  const setActiveTool = useStudioStore((s) => s.setActiveTool);
+  const setChiselAzimuth = useStudioStore((s) => s.setChiselAzimuth);
+  const setChiselIncline = useStudioStore((s) => s.setChiselIncline);
+  const setChiselWidth = useStudioStore((s) => s.setChiselWidth);
+  const setChiselRidgeMode = useStudioStore((s) => s.setChiselRidgeMode);
+  const setRivetRadius = useStudioStore((s) => s.setRivetRadius);
+  const setRivetFlatten = useStudioStore((s) => s.setRivetFlatten);
+  const setRivetInvert = useStudioStore((s) => s.setRivetInvert);
+  const setNormalBlendMode = useStudioStore((s) => s.setNormalBlendMode);
+  const addLayer = useStudioStore((s) => s.addLayer);
+  const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
 
   const gizmoCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDraggingGizmoRef = useRef<boolean>(false);

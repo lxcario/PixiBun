@@ -10,11 +10,9 @@ import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
 import { studioEvents } from '@/lib/events/studioEvents';
 
 export const PixiBudAssistanceSection: React.FC = () => {
-  const {
-    palettes,
-    currentPaletteId,
-    addCustomColorToPalette,
-  } = useStudioStore();
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
+  const addCustomColorToPalette = useStudioStore((s) => s.addCustomColorToPalette);
 
   const [rotationAngle, setRotationAngle] = useState<number>(45);
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];

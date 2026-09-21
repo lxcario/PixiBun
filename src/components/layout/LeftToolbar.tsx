@@ -23,20 +23,18 @@ export interface LeftToolbarProps {
 }
 
 export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = false }) => {
-  const {
-    tools,
-    setActiveTool,
-    primaryColor,
-    secondaryColor,
-    setPrimaryColor,
-    setSecondaryColor,
-    swapColors,
-    palettes,
-    currentPaletteId,
-    recentColors,
-    loadRecentColors,
-    setActiveInspectorTab,
-  } = useStudioStore();
+  const tools = useStudioStore((s) => s.tools);
+  const setActiveTool = useStudioStore((s) => s.setActiveTool);
+  const primaryColor = useStudioStore((s) => s.primaryColor);
+  const secondaryColor = useStudioStore((s) => s.secondaryColor);
+  const setPrimaryColor = useStudioStore((s) => s.setPrimaryColor);
+  const setSecondaryColor = useStudioStore((s) => s.setSecondaryColor);
+  const swapColors = useStudioStore((s) => s.swapColors);
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
+  const recentColors = useStudioStore((s) => s.recentColors);
+  const loadRecentColors = useStudioStore((s) => s.loadRecentColors);
+  const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
 
   const [colorPickerTarget, setColorPickerTarget] = useState<'primary' | 'secondary' | null>(null);
   const [isMounted, setIsMounted] = useState(false);

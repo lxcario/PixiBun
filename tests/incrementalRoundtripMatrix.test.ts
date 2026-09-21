@@ -405,6 +405,13 @@ describe('Incremental-Autosave Round-Trip Matrix (B3–B7, B17–B22)', () => {
     expect(reloadedStore.frames[0].layers[0].name).toBe('Foreground');
     expect(reloadedStore.frames[0].layers[0].blendMode).toBe('multiply');
     expect(reloadedStore.frames[0].layers[0].opacity).toBe(0.9);
+
+    const reloadedBuf = getOrCreateBuffer('imported-layer-1', 32, 32);
+    const pixel = reloadedBuf.ctx.getImageData(1, 1, 1, 1).data;
+    expect(pixel[0]).toBe(0xaa);
+    expect(pixel[1]).toBe(0xbb);
+    expect(pixel[2]).toBe(0xcc);
+    expect(pixel[3]).toBe(255);
   });
 
   // 10. Photometric commit

@@ -11,19 +11,17 @@ import { OpticalPresetType, CelToneCount, AnisoFlowPreset } from '@/types/tools'
 import { studioEvents } from '@/lib/events/studioEvents';
 
 export const VolumetricOpticsSection: React.FC = () => {
-  const {
-    tools,
-    setOpticalPreset,
-    setTranslucencyDepth,
-    setFresnelPower,
-    setAnisoAngle,
-    setAnisoFlow,
-    setOpticalCelTones,
-    palettes,
-    currentPaletteId,
-    showNormalMapPreview,
-    toggleNormalMapPreview,
-  } = useStudioStore();
+  const tools = useStudioStore((s) => s.tools);
+  const setOpticalPreset = useStudioStore((s) => s.setOpticalPreset);
+  const setTranslucencyDepth = useStudioStore((s) => s.setTranslucencyDepth);
+  const setFresnelPower = useStudioStore((s) => s.setFresnelPower);
+  const setAnisoAngle = useStudioStore((s) => s.setAnisoAngle);
+  const setAnisoFlow = useStudioStore((s) => s.setAnisoFlow);
+  const setOpticalCelTones = useStudioStore((s) => s.setOpticalCelTones);
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
 
   const [opticsExpanded, setOpticsExpanded] = useState(false);
   const [snapToPalette, setSnapToPalette] = useState(false);

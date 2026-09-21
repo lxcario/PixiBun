@@ -57,23 +57,21 @@ const MATERIAL_CHIPS: MaterialChip[] = [
 ];
 
 export const PhotometricLightingSection: React.FC = () => {
-  const {
-    canvasWidth,
-    canvasHeight,
-    tools,
-    setLightAzimuth,
-    setLightElevation,
-    setLightBrightness,
-    setSourceShadingRemoval,
-    setMaterialPreset,
-    setFormType,
-    setMinecraftSkinMode,
-    setCavityStrength,
-    setDitherModulation,
-    setShadingBands,
-    showNormalMapPreview,
-    toggleNormalMapPreview,
-  } = useStudioStore();
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const tools = useStudioStore((s) => s.tools);
+  const setLightAzimuth = useStudioStore((s) => s.setLightAzimuth);
+  const setLightElevation = useStudioStore((s) => s.setLightElevation);
+  const setLightBrightness = useStudioStore((s) => s.setLightBrightness);
+  const setSourceShadingRemoval = useStudioStore((s) => s.setSourceShadingRemoval);
+  const setMaterialPreset = useStudioStore((s) => s.setMaterialPreset);
+  const setFormType = useStudioStore((s) => s.setFormType);
+  const setMinecraftSkinMode = useStudioStore((s) => s.setMinecraftSkinMode);
+  const setCavityStrength = useStudioStore((s) => s.setCavityStrength);
+  const setDitherModulation = useStudioStore((s) => s.setDitherModulation);
+  const setShadingBands = useStudioStore((s) => s.setShadingBands);
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
 
   const [advancedLightingExpanded, setAdvancedLightingExpanded] = useState(false);
   const [analysisSummary, setAnalysisSummary] = useState<{

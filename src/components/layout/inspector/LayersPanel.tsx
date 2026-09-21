@@ -34,21 +34,19 @@ function formatRecipeValue(value: string | number | boolean | null | string[]): 
 export const LayersPanel: React.FC = () => {
   const { isGuest } = useCoDrawStatus();
   const guestLockTitle = 'Layer structure is managed by the session host.';
-  const {
-    frames,
-    activeFrameIndex,
-    activeLayerId,
-    setActiveLayer,
-    addLayer,
-    duplicateLayer,
-    deleteLayer,
-    mergeLayerDown,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    setLayerOpacity,
-    setLayerBlendMode,
-    renameLayer,
-  } = useStudioStore();
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const activeLayerId = useStudioStore((s) => s.activeLayerId);
+  const setActiveLayer = useStudioStore((s) => s.setActiveLayer);
+  const addLayer = useStudioStore((s) => s.addLayer);
+  const duplicateLayer = useStudioStore((s) => s.duplicateLayer);
+  const deleteLayer = useStudioStore((s) => s.deleteLayer);
+  const mergeLayerDown = useStudioStore((s) => s.mergeLayerDown);
+  const toggleLayerVisibility = useStudioStore((s) => s.toggleLayerVisibility);
+  const toggleLayerLock = useStudioStore((s) => s.toggleLayerLock);
+  const setLayerOpacity = useStudioStore((s) => s.setLayerOpacity);
+  const setLayerBlendMode = useStudioStore((s) => s.setLayerBlendMode);
+  const renameLayer = useStudioStore((s) => s.renameLayer);
 
   const currentFrame = frames[activeFrameIndex];
   const activeLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);

@@ -5,9 +5,12 @@
  * into an animated MP4 timelapse video of the artwork's creation process.
  */
 
-import { HistoryStep, PixelHistoryStep } from '@/lib/engine/historyEngine';
+import {
+  HistoryStep,
+  ReplayBaselineCheckpoint,
+} from '@/lib/engine/historyEngine';
 import { exportAnimationToMp4Async, Mp4ExportOptions } from './mp4Encoder';
-import { convertHistoryToCanvases } from './processReplay';
+import { convertHistoryToCanvases, convertHistoryToRawFrames } from './processReplay';
 
 export interface SpeedpaintMp4Options {
   fps?: number; // Playback speed in frames per second (default: 12)
@@ -15,6 +18,7 @@ export interface SpeedpaintMp4Options {
   holdLastFrameMs?: number; // Hold duration on the finished artwork in ms (default: 1000)
   signal?: AbortSignal;
   onProgress?: (current: number, total: number) => void;
+  baseline?: ReplayBaselineCheckpoint | null;
 }
 
 /**
@@ -41,24 +45,33 @@ export async function exportProcessReplayMp4Async(
   const holdLastFrameMs = options.holdLastFrameMs ?? 1000;
 
   // Convert history steps to frame canvases
-  let canvases = convertHistoryToCanvases(steps);
+  let canvases = convertHistoryToCanvases(steps, {
+    baseline: options.baseline,
+    scale,
+  });
 
-  // Fallback if headless / no DOM: create mock canvases from step imageData
+  // Fallback if headless / no DOM: create mock canvases from step imageData or raw frames
   if (canvases.length === 0) {
-    canvases = steps
-      .filter((s): s is PixelHistoryStep => s.type !== 'structural' && !!s.imageData)
-      .map((step) => {
-        const c = {
-          width: step.imageData.width,
-          height: step.imageData.height,
-          getContext: () => ({
-            getImageData: () => step.imageData,
-            drawImage: () => {},
-            clearRect: () => {},
-          }),
-        } as unknown as HTMLCanvasElement;
-        return c;
-      });
+    const rawFrames = convertHistoryToRawFrames(steps, scale, {
+      baseline: options.baseline,
+    });
+    canvases = rawFrames.map((frame) => {
+      const imgData = {
+        width: frame.width,
+        height: frame.height,
+        data: frame.data,
+      } as unknown as ImageData;
+      const c = {
+        width: frame.width,
+        height: frame.height,
+        getContext: () => ({
+          getImageData: () => imgData,
+          drawImage: () => {},
+          clearRect: () => {},
+        }),
+      } as unknown as HTMLCanvasElement;
+      return c;
+    });
   }
 
   if (canvases.length === 0) {

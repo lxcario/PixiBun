@@ -15,7 +15,7 @@
 - [x] **B1, B15, B16 Deterministic Build-Versioned Service Worker & Real Offline E2E**: Derived deterministic `SW_CACHE_VERSION` in `next.config.ts` from `package.json` version and git commit hash (e.g. `v1.14.1-1d4c3b8`). Added `'/theme.js'` to `PRECACHE_ASSETS` in `src/app/sw.js/route.ts` and exempted from LRU eviction. Constrained cache deletion on `activate` strictly to `key.startsWith('pixibun-') && key !== CACHE_NAME`. Implemented real browser-network offline E2E test in `tests/e2e/offline.spec.ts` (`context.setOffline(true)`) verifying warm navigation, offline reload, drawing, undo/redo, autosave to IndexedDB, and second offline reload/restore. Verified via `tests/e2e/offline.spec.ts`, `tests/e2e/pwa.spec.ts`, and `tests/serviceWorkerRoute.test.ts`. Service-worker update discovery across two deployed build identities is documented as NOT TESTED / deferred.
 
 **Verification:**
-- Vitest unit & integration test suite: 759 tests across 103 suites (100% green).
+- Vitest unit & integration test suite: 761 tests across 104 suites (100% green).
 - Playwright E2E test suite: 23 tests across 9 suites (100% green).
 - TypeScript typecheck (`tsc --noEmit`): 0 errors.
 - ESLint (`eslint src tests`): 0 errors.

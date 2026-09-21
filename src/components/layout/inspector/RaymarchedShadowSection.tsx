@@ -17,13 +17,11 @@ const SHADOW_COLOR_PRESETS = [
 ];
 
 export const RaymarchedShadowSection: React.FC = () => {
-  const {
-    canvasWidth,
-    canvasHeight,
-    tools,
-    showNormalMapPreview,
-    toggleNormalMapPreview,
-  } = useStudioStore();
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const tools = useStudioStore((s) => s.tools);
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
 
   const [mode, setMode] = useState<'auto' | 'manual'>('auto');
   const [shadowLightX, setShadowLightX] = useState<number>(Math.round(canvasWidth / 2));

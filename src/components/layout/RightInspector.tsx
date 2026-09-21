@@ -13,7 +13,8 @@ const AiToolsPanel = dynamic(
 );
 
 export const RightInspector: React.FC = () => {
-  const { activeInspectorTab, setActiveInspectorTab } = useStudioStore();
+  const activeInspectorTab = useStudioStore((s) => s.activeInspectorTab);
+  const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
 
   return (
     <aside

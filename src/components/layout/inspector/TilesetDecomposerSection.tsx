@@ -10,7 +10,8 @@ import { decomposeIntoTileset } from '@/lib/canvas/tileStamp';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 
 export const TilesetDecomposerSection: React.FC = () => {
-  const { showNormalMapPreview, toggleNormalMapPreview } = useStudioStore();
+  const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
 
   const [wfcN, setWfcN] = useState<2 | 3>(2);
   const [tilesetSize, setTilesetSize] = useState<8 | 16 | 32>(16);

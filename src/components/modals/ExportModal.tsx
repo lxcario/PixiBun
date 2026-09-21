@@ -13,7 +13,11 @@ import { exportAnimationToWebmAsync } from '@/lib/export/webmEncoder';
 import { exportAnimationToApngAsync } from '@/lib/export/apngEncoder';
 import { exportAnimationToMp4Async, isMp4ExportSupported } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
-import { getGlobalHistory, isGlobalHistoryTruncated } from '@/lib/engine/historyEngine';
+import {
+  getGlobalHistory,
+  isGlobalHistoryTruncated,
+  getGlobalBaselineCheckpoint,
+} from '@/lib/engine/historyEngine';
 import { compositeFrame } from '@/lib/render/compositor';
 import { buildProjectFileAsync } from '@/lib/project/serialize';
 import {
@@ -300,12 +304,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
     const isMp4 = replayFormat === 'mp4';
     const effectiveScale = Math.min(scale, 8);
+    const baseline = getGlobalBaselineCheckpoint();
     try {
       const blob = isMp4
         ? await exportProcessReplayMp4Async(history, {
             fps: replayFps,
             scale: effectiveScale,
             holdLastFrameMs,
+            baseline,
             onProgress: (current, total) => {
               setExportProgress({ current, total });
             },
@@ -315,6 +321,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             fps: replayFps,
             scale: effectiveScale,
             holdLastFrameMs,
+            baseline,
             onProgress: (current, total) => {
               setExportProgress({ current, total });
             },

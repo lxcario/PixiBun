@@ -22,24 +22,22 @@ import IconButton from '@/components/ui/IconButton';
 import { TactileButton } from '@/components/ui/TactileButton';
 
 export const PalettePanel: React.FC = () => {
-  const {
-    palettes,
-    currentPaletteId,
-    selectPalette,
-    primaryColor,
-    secondaryColor,
-    setPrimaryColor,
-    setSecondaryColor,
-    generateAndAddRamp,
-    addExtractedPalette,
-    isPaletteCycling,
-    togglePaletteCycling,
-    paletteCycleSpeedMultiplier,
-    setPaletteCycleSpeedMultiplier,
-    addPaletteCycleTrack,
-    updatePaletteCycleTrack,
-    deletePaletteCycleTrack,
-  } = useStudioStore();
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
+  const selectPalette = useStudioStore((s) => s.selectPalette);
+  const primaryColor = useStudioStore((s) => s.primaryColor);
+  const secondaryColor = useStudioStore((s) => s.secondaryColor);
+  const setPrimaryColor = useStudioStore((s) => s.setPrimaryColor);
+  const setSecondaryColor = useStudioStore((s) => s.setSecondaryColor);
+  const generateAndAddRamp = useStudioStore((s) => s.generateAndAddRamp);
+  const addExtractedPalette = useStudioStore((s) => s.addExtractedPalette);
+  const isPaletteCycling = useStudioStore((s) => s.isPaletteCycling);
+  const togglePaletteCycling = useStudioStore((s) => s.togglePaletteCycling);
+  const paletteCycleSpeedMultiplier = useStudioStore((s) => s.paletteCycleSpeedMultiplier);
+  const setPaletteCycleSpeedMultiplier = useStudioStore((s) => s.setPaletteCycleSpeedMultiplier);
+  const addPaletteCycleTrack = useStudioStore((s) => s.addPaletteCycleTrack);
+  const updatePaletteCycleTrack = useStudioStore((s) => s.updatePaletteCycleTrack);
+  const deletePaletteCycleTrack = useStudioStore((s) => s.deletePaletteCycleTrack);
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
   const paletteFileInputRef = useRef<HTMLInputElement | null>(null);

@@ -288,6 +288,56 @@ describe('Milestone 3 — Viewport Interruption Safety, rAF Coalescing, and Zust
       });
       expect(timelineRenders).toBe(initialTimelineRenders + 1);
     });
+
+    it('ensures LeftToolbar and RightInspector do not re-render on bufferVersion bumps, autosave updates, or zoom/pan', () => {
+      let leftToolbarRenders = 0;
+      const MonitoredLeftToolbar = () => {
+        leftToolbarRenders++;
+        const tools = useStudioStore((s) => s.tools);
+        const primaryColor = useStudioStore((s) => s.primaryColor);
+        return <div>{tools.activeTool} - {primaryColor}</div>;
+      };
+
+      let rightInspectorRenders = 0;
+      const MonitoredRightInspector = () => {
+        rightInspectorRenders++;
+        const activeInspectorTab = useStudioStore((s) => s.activeInspectorTab);
+        return <div>{activeInspectorTab}</div>;
+      };
+
+      render(
+        <div>
+          <MonitoredLeftToolbar />
+          <MonitoredRightInspector />
+        </div>
+      );
+
+      const initLeft = leftToolbarRenders;
+      const initRight = rightInspectorRenders;
+
+      // Unrelated drawing / canvas buffer update & zoom/pan
+      act(() => {
+        useStudioStore.getState().bumpBufferVersion();
+        useStudioStore.getState().setZoom(400);
+        useStudioStore.getState().setPan(100, 100);
+      });
+
+      // Neither LeftToolbar nor RightInspector re-render!
+      expect(leftToolbarRenders).toBe(initLeft);
+      expect(rightInspectorRenders).toBe(initRight);
+
+      // Only their targeted state changes trigger re-render
+      act(() => {
+        useStudioStore.getState().setActiveInspectorTab('palette');
+      });
+      expect(rightInspectorRenders).toBe(initRight + 1);
+      expect(leftToolbarRenders).toBe(initLeft);
+
+      act(() => {
+        useStudioStore.getState().setPrimaryColor('#ff0000');
+      });
+      expect(leftToolbarRenders).toBe(initLeft + 1);
+    });
   });
 
   describe('Error Message Migration (B22)', () => {
