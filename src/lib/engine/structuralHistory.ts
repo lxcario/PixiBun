@@ -43,30 +43,6 @@ export function captureLayerBuffers(layerIds: string[]): LayerBufferBackup[] {
   return buffers;
 }
 
-/**
- * Legacy utility retained for compatibility; prefer captureLayerBuffers() to prevent
- * whole-project raster memory multiplication.
- */
-export function captureProjectBuffers(): LayerBufferBackup[] {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return [];
-  }
-
-  const state = useStudioStore.getState();
-  const seen = new Set<string>();
-  const layerIds: string[] = [];
-
-  for (const frame of state.frames) {
-    for (const layer of frame.layers) {
-      if (!seen.has(layer.id) && hasBuffer(layer.id)) {
-        seen.add(layer.id);
-        layerIds.push(layer.id);
-      }
-    }
-  }
-
-  return captureLayerBuffers(layerIds);
-}
 
 export interface PushStructuralOptions {
   opKind?: StructuralOpKind;
