@@ -130,7 +130,7 @@ export interface ToolSlice {
 export interface LayerSlice {
   activeLayerId: string;
   setActiveLayer: (layerId: string) => void;
-  addLayer: (name?: string, tag?: string, idOverride?: string) => void;
+  addLayer: (name?: string, tag?: string, idOverride?: string, skipHistory?: boolean) => void;
   deleteLayer: (layerId: string, skipHistory?: boolean) => void;
   duplicateLayer: (layerId: string) => void;
   reorderLayers: (startIndex: number, endIndex: number) => void;

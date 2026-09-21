@@ -113,15 +113,31 @@ export interface PixelHistoryStep {
   layerEffect?: LayerEffectRecipe;
 }
 
+export type StructuralOpKind =
+  | 'reorder-layers'
+  | 'reorder-frames'
+  | 'add-layer'
+  | 'delete-layer'
+  | 'duplicate-layer'
+  | 'merge-layer'
+  | 'add-frame'
+  | 'delete-frame'
+  | 'duplicate-frame'
+  | 'rotsprite'
+  | 'generic-structural';
+
 export interface StructuralHistoryStep {
   type: 'structural';
+  opKind?: StructuralOpKind;
   description: string;
   frameIndex: number;
   frames: AnimationFrame[];
   activeFrameIndex: number;
   activeLayerId: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
   layerBuffers?: LayerBufferBackup[];
+  affectedLayerIds?: string[];
 }
 
 export type HistoryStep = PixelHistoryStep | StructuralHistoryStep;
-

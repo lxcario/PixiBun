@@ -13,7 +13,7 @@ import { exportAnimationToWebmAsync } from '@/lib/export/webmEncoder';
 import { exportAnimationToApngAsync } from '@/lib/export/apngEncoder';
 import { exportAnimationToMp4Async, isMp4ExportSupported } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
-import { getGlobalHistory } from '@/lib/engine/historyEngine';
+import { getGlobalHistory, isGlobalHistoryTruncated } from '@/lib/engine/historyEngine';
 import { compositeFrame } from '@/lib/render/compositor';
 import { buildProjectFileAsync } from '@/lib/project/serialize';
 import {
@@ -697,6 +697,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           setHoldLastFrameMs={setHoldLastFrameMs}
           historyLength={historyLength}
           isMp4Supported={isMp4Supported}
+          isTruncated={isGlobalHistoryTruncated()}
         />
       )}
 

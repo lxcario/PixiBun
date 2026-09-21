@@ -14,6 +14,7 @@ interface ReplayExportTabProps {
   setHoldLastFrameMs: (ms: number) => void;
   historyLength: number;
   isMp4Supported: boolean;
+  isTruncated?: boolean;
 }
 
 export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
@@ -27,6 +28,7 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
   setHoldLastFrameMs,
   historyLength,
   isMp4Supported,
+  isTruncated = false,
 }) => {
   return (
     <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
@@ -121,6 +123,18 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
           ))}
         </div>
       </div>
+
+      {isTruncated && (
+        <div className="flex flex-col gap-1 p-2 rounded-[2px] bg-[#3a2e1d] border border-[#d19a66] text-[11px] font-mono text-[#e5c07b]">
+          <div className="flex items-center gap-1.5 font-bold">
+            <PixelIcon name="warning" size={13} />
+            <span>Earlier Steps Evicted (Memory Budget)</span>
+          </div>
+          <p className="leading-tight text-[#dcdfe4]">
+            Earlier creative steps were pruned to enforce history memory bounds. The exported timelapse begins at the earliest retained step.
+          </p>
+        </div>
+      )}
 
       <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
         <span className="font-bold">History Steps:</span>

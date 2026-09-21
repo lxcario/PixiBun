@@ -282,7 +282,19 @@ export function useGeometricEvents({
         customEvent.detail?.angle ??
         (typeof customEvent.detail === 'number' ? customEvent.detail : 45);
 
-      pushStructuralHistoryStep(`RotSprite ${angle}°`);
+      const state = useStudioStore.getState();
+      const currentFrame = state.frames[state.activeFrameIndex];
+      const taggedIds = currentFrame
+        ? currentFrame.layers.filter((layer) => layer.id !== activeLayerId && layer.tag).map((layer) => layer.id)
+        : [];
+      const affectedLayerIds = [activeLayerId, ...taggedIds];
+
+      pushStructuralHistoryStep(`RotSprite ${angle}°`, {
+        opKind: 'rotsprite',
+        affectedLayerIds,
+        canvasWidth,
+        canvasHeight,
+      });
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
       if (tCtx) {

@@ -52,7 +52,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   activeClipId: null,
 
   addFrame: () => {
-    pushStructuralHistoryStep('Add Frame');
+    pushStructuralHistoryStep('Add Frame', { opKind: 'add-frame', affectedLayerIds: [] });
     set(state => {
       const newFrameId = createId('frame');
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -94,7 +94,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   duplicateFrame: frameIndex => {
     if (!get().frames[frameIndex]) return;
-    pushStructuralHistoryStep('Duplicate Frame');
+    pushStructuralHistoryStep('Duplicate Frame', { opKind: 'duplicate-frame', affectedLayerIds: [] });
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
@@ -131,7 +131,11 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   deleteFrame: frameIndex => {
     if (get().frames.length <= 1 || frameIndex < 0 || frameIndex >= get().frames.length) return;
-    pushStructuralHistoryStep('Delete Frame');
+    const frameToDelete = get().frames[frameIndex];
+    pushStructuralHistoryStep('Delete Frame', {
+      opKind: 'delete-frame',
+      affectedLayerIds: frameToDelete.layers.map(l => l.id),
+    });
     set(state => {
       if (state.frames.length <= 1) return;
       // Bounds guard: an out-of-range index would crash on removedFrame.layers
@@ -166,7 +170,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       endIndex >= frameCount ||
       startIndex === endIndex
     ) return;
-    pushStructuralHistoryStep('Reorder Frames');
+    pushStructuralHistoryStep('Reorder Frames', { opKind: 'reorder-frames', affectedLayerIds: [] });
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
       if (

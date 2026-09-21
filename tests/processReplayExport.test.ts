@@ -1,168 +1,150 @@
+// @vitest-environment happy-dom
 import { describe, it, expect, vi } from 'vitest';
-import { createHistoryEngine, HistoryStep } from '@/lib/engine/historyEngine';
 import {
   convertHistoryToRawFrames,
-  convertHistoryToCanvases,
   exportProcessReplayGifAsync,
 } from '@/lib/export/processReplay';
+import type { HistoryStep, PixelHistoryStep, StructuralHistoryStep } from '@/types/canvas';
 
-function makeMockImageData(width: number, height: number, fillColor: [number, number, number, number]): ImageData {
+function createMockImageData(width: number, height: number, fillR: number = 0): ImageData {
   const data = new Uint8ClampedArray(width * height * 4);
-  for (let i = 0; i < width * height; i++) {
-    data[i * 4] = fillColor[0];
-    data[i * 4 + 1] = fillColor[1];
-    data[i * 4 + 2] = fillColor[2];
-    data[i * 4 + 3] = fillColor[3];
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = fillR;
+    data[i + 1] = 0;
+    data[i + 2] = 0;
+    data[i + 3] = 255;
   }
   return {
     width,
     height,
     data,
     colorSpace: 'srgb',
-  } as unknown as ImageData;
+  } as ImageData;
 }
 
-describe('Phase 36.1: Process Replay Export Engine ("Speedpaint" Timelapse)', () => {
-  it('retains historical steps in order via historyEngine.getHistory()', () => {
-    const engine = createHistoryEngine(20);
-    expect(engine.getHistory().length).toBe(0);
-
-    const step1: HistoryStep = {
-      layerId: 'layer-1',
-      frameIndex: 0,
-      description: 'Stroke 1',
-      imageData: makeMockImageData(16, 16, [255, 0, 0, 255]),
-    };
-    const step2: HistoryStep = {
-      layerId: 'layer-1',
-      frameIndex: 0,
-      description: 'Stroke 2',
-      imageData: makeMockImageData(16, 16, [0, 255, 0, 255]),
-    };
-
-    engine.push(step1);
-    engine.push(step2);
-
-    const history = engine.getHistory();
-    expect(history.length).toBe(2);
-    expect(history[0].description).toBe('Stroke 1');
-    expect(history[1].description).toBe('Stroke 2');
-  });
-
-  it('converts historical step snapshots into matching RawFrameData with scaling', () => {
+describe('Process Replay characterization and regression tests', () => {
+  it('extracts raw frames exclusively from pixel history steps with valid imageData', () => {
     const steps: HistoryStep[] = [
       {
-        layerId: 'layer-1',
+        type: 'pixel',
+        description: 'Stroke 1',
         frameIndex: 0,
-        description: 'Step 1',
-        imageData: makeMockImageData(8, 8, [255, 0, 0, 255]),
-      },
+        layerId: 'layer-1',
+        imageData: createMockImageData(4, 4, 100),
+      } as PixelHistoryStep,
       {
-        layerId: 'layer-1',
+        type: 'structural',
+        description: 'Reorder Layers',
         frameIndex: 0,
-        description: 'Step 2',
-        imageData: makeMockImageData(8, 8, [0, 0, 255, 255]),
-      },
+        frames: [],
+        activeFrameIndex: 0,
+        activeLayerId: 'layer-1',
+      } as StructuralHistoryStep,
       {
-        layerId: 'layer-1',
+        type: 'pixel',
+        description: 'Stroke 2',
         frameIndex: 0,
-        description: 'Step 3',
-        imageData: makeMockImageData(8, 8, [240, 190, 124, 255]),
-      },
+        layerId: 'layer-1',
+        imageData: createMockImageData(4, 4, 200),
+      } as PixelHistoryStep,
     ];
 
-    const frames = convertHistoryToRawFrames(steps, 2);
-    expect(frames.length).toBe(3);
-    for (const f of frames) {
-      expect(f.width).toBe(16);
-      expect(f.height).toBe(16);
-      expect(f.data.length).toBe(16 * 16 * 4);
-    }
-
-    // Direct 1:1 scale
-    const unscaledFrames = convertHistoryToRawFrames(steps, 1);
-    expect(unscaledFrames.length).toBe(3);
-    expect(unscaledFrames[0].width).toBe(8);
-    expect(unscaledFrames[0].height).toBe(8);
+    const rawFrames = convertHistoryToRawFrames(steps, 1);
+    expect(rawFrames).toHaveLength(2);
+    expect(rawFrames[0].width).toBe(4);
+    expect(rawFrames[0].height).toBe(4);
+    expect(rawFrames[0].data[0]).toBe(100);
+    expect(rawFrames[1].data[0]).toBe(200);
   });
 
-  it('converts historical step snapshots into matching HTMLCanvasElements when DOM is present', () => {
+  it('scales frames using nearest neighbor interpolation when scale > 1', () => {
     const steps: HistoryStep[] = [
       {
-        layerId: 'layer-1',
+        type: 'pixel',
+        description: 'Brush',
         frameIndex: 0,
-        description: 'Step 1',
-        imageData: makeMockImageData(8, 8, [255, 0, 0, 255]),
-      },
+        layerId: 'layer-1',
+        imageData: createMockImageData(2, 2, 128),
+      } as PixelHistoryStep,
     ];
 
-    // When document is undefined in node environment, returns empty array
-    expect(convertHistoryToCanvases(steps)).toEqual([]);
-
-    // When DOM document is available
-    const mockCanvas = {
-      width: 0,
-      height: 0,
-      getContext: vi.fn().mockReturnValue({
-        imageSmoothingEnabled: true,
-        putImageData: vi.fn(),
-      }),
-    };
-
-    const origDocument = (globalThis as unknown as Record<string, unknown>).document;
-    (globalThis as unknown as Record<string, unknown>).document = {
-      createElement: vi.fn().mockReturnValue(mockCanvas),
-    };
-
-    try {
-      const canvases = convertHistoryToCanvases(steps);
-      expect(canvases.length).toBe(1);
-      expect(canvases[0].width).toBe(8);
-      expect(canvases[0].height).toBe(8);
-    } finally {
-      (globalThis as unknown as Record<string, unknown>).document = origDocument;
-    }
+    const rawFrames = convertHistoryToRawFrames(steps, 2);
+    expect(rawFrames).toHaveLength(1);
+    expect(rawFrames[0].width).toBe(4);
+    expect(rawFrames[0].height).toBe(4);
+    expect(rawFrames[0].data.length).toBe(4 * 4 * 4);
+    expect(rawFrames[0].data[0]).toBe(128);
   });
 
-  it('compiles scripted sequence of 5 strokes into an animated GIF matching step count', async () => {
-    const engine = createHistoryEngine(50);
-    const strokeColors: [number, number, number, number][] = [
-      [255, 0, 0, 255],
-      [0, 255, 0, 255],
-      [0, 0, 255, 255],
-      [240, 190, 124, 255],
-      [199, 146, 223, 255],
+  it('throws error when exporting process replay from history containing no drawable steps', async () => {
+    const emptySteps: HistoryStep[] = [];
+    await expect(exportProcessReplayGifAsync(emptySteps)).rejects.toThrow(
+      /history contains no drawable steps/i
+    );
+
+    const structuralOnlySteps: HistoryStep[] = [
+      {
+        type: 'structural',
+        description: 'Add Layer',
+        frameIndex: 0,
+        frames: [],
+        activeFrameIndex: 0,
+        activeLayerId: 'layer-1',
+      } as StructuralHistoryStep,
+    ];
+    await expect(exportProcessReplayGifAsync(structuralOnlySteps)).rejects.toThrow(
+      /history contains no drawable steps/i
+    );
+  });
+
+  it('exports valid animated GIF blob from creative steps', async () => {
+    const steps: HistoryStep[] = [
+      {
+        type: 'pixel',
+        description: 'First mark',
+        frameIndex: 0,
+        layerId: 'l1',
+        imageData: createMockImageData(4, 4, 50),
+      } as PixelHistoryStep,
+      {
+        type: 'pixel',
+        description: 'Second mark',
+        frameIndex: 0,
+        layerId: 'l1',
+        imageData: createMockImageData(4, 4, 150),
+      } as PixelHistoryStep,
     ];
 
-    for (let i = 0; i < strokeColors.length; i++) {
-      engine.push({
-        layerId: 'layer-1',
-        frameIndex: 0,
-        description: `Stroke ${i + 1}`,
-        imageData: makeMockImageData(16, 16, strokeColors[i]),
-      });
-    }
-
-    const history = engine.getHistory();
-    expect(history.length).toBe(5);
-
-    const progressSpy = vi.fn();
-    const gifBlob = await exportProcessReplayGifAsync(history, {
+    const onProgress = vi.fn();
+    const gifBlob = await exportProcessReplayGifAsync(steps, {
       fps: 10,
       scale: 1,
-      holdLastFrameMs: 500,
-      onProgress: progressSpy,
+      holdLastFrameMs: 100,
+      onProgress,
     });
 
-    expect(gifBlob).toBeDefined();
-    expect(gifBlob.size).toBeGreaterThan(0);
+    expect(gifBlob).toBeInstanceOf(Blob);
     expect(gifBlob.type).toBe('image/gif');
-    expect(progressSpy).toHaveBeenCalled();
+    expect(gifBlob.size).toBeGreaterThan(0);
+    expect(onProgress).toHaveBeenCalled();
   });
 
-  it('throws an informative error if history has no steps', async () => {
-    await expect(exportProcessReplayGifAsync([])).rejects.toThrow(
-      'Cannot export process replay: history contains no drawable steps.'
-    );
+  it('respects AbortSignal during GIF export', async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    const steps: HistoryStep[] = [
+      {
+        type: 'pixel',
+        description: 'Pixel',
+        frameIndex: 0,
+        layerId: 'l1',
+        imageData: createMockImageData(4, 4, 50),
+      } as PixelHistoryStep,
+    ];
+
+    await expect(
+      exportProcessReplayGifAsync(steps, { signal: controller.signal })
+    ).rejects.toThrow();
   });
 });

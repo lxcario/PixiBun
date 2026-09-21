@@ -3,7 +3,7 @@ import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
 import { deleteBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
-import { captureProjectBuffers } from '@/lib/engine/structuralHistory';
+import { captureLayerBuffers } from '@/lib/engine/structuralHistory';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -145,6 +145,44 @@ export function useViewportDrawing({
     currentStrokeSnapshotRef.current = null;
   }, []);
 
+  // Helper to determine which layer buffers must be captured on undo so redo can restore them
+  const getRedoCaptureLayerIds = useCallback((
+    step: import('@/types/canvas').StructuralHistoryStep,
+    currentState: { frames: { id: string; layers: { id: string }[] }[]; activeLayerId: string }
+  ): string[] => {
+    switch (step.opKind) {
+      case 'reorder-layers':
+      case 'reorder-frames':
+      case 'delete-layer':
+      case 'delete-frame':
+        return [];
+      case 'add-layer':
+      case 'duplicate-layer':
+      case 'add-frame':
+      case 'duplicate-frame': {
+        const prevIds = new Set<string>();
+        for (const f of step.frames) {
+          for (const l of f.layers) prevIds.add(l.id);
+        }
+        const newIds: string[] = [];
+        for (const f of currentState.frames) {
+          for (const l of f.layers) {
+            if (!prevIds.has(l.id)) newIds.push(l.id);
+          }
+        }
+        return newIds;
+      }
+      case 'merge-layer':
+        return step.affectedLayerIds && step.affectedLayerIds.length > 1
+          ? [step.affectedLayerIds[1]]
+          : [currentState.activeLayerId];
+      case 'rotsprite':
+        return step.affectedLayerIds ?? [currentState.activeLayerId];
+      default:
+        return step.affectedLayerIds ?? [];
+    }
+  }, []);
+
   // Undo Action (Supports both Pixel and Structural steps)
   const performUndo = useCallback(() => {
     const previousStep = historyEngineRef.current.peekUndo();
@@ -154,14 +192,19 @@ export function useViewportDrawing({
 
     if (previousStep.type === 'structural') {
       const state = useStudioStore.getState();
+      const redoCaptureIds = getRedoCaptureLayerIds(previousStep, state);
       currentStep = {
         type: 'structural',
+        opKind: previousStep.opKind,
         description: previousStep.description,
         frameIndex: state.activeFrameIndex,
-        frames: JSON.parse(JSON.stringify(state.frames)),
+        frames: structuredClone(state.frames),
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
-        layerBuffers: captureProjectBuffers(),
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight,
+        layerBuffers: captureLayerBuffers(redoCaptureIds),
+        affectedLayerIds: previousStep.affectedLayerIds,
       };
     } else {
       const currentLayerCanvas = getOrCreateLayerCanvas(previousStep.layerId);
@@ -198,6 +241,14 @@ export function useViewportDrawing({
     if (!stepToRestore) return;
 
     if (stepToRestore.type === 'structural') {
+      const state = useStudioStore.getState();
+      if (
+        stepToRestore.canvasWidth !== undefined &&
+        stepToRestore.canvasHeight !== undefined &&
+        (stepToRestore.canvasWidth !== state.canvasWidth || stepToRestore.canvasHeight !== state.canvasHeight)
+      ) {
+        state.setCanvasSize(stepToRestore.canvasWidth, stepToRestore.canvasHeight);
+      }
       useStudioStore.setState({
         frames: stepToRestore.frames,
         activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),
@@ -240,7 +291,7 @@ export function useViewportDrawing({
     renderComposite();
     bumpBufferVersion();
     useStudioStore.getState().setDirty(true);
-  }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+  }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, getRedoCaptureLayerIds, renderComposite, setCanRedo, setCanUndo]);
 
   // Redo Action (Supports both Pixel and Structural steps)
   const performRedo = useCallback(() => {
@@ -253,12 +304,16 @@ export function useViewportDrawing({
       const state = useStudioStore.getState();
       currentStep = {
         type: 'structural',
+        opKind: nextStep.opKind,
         description: nextStep.description,
         frameIndex: state.activeFrameIndex,
-        frames: JSON.parse(JSON.stringify(state.frames)),
+        frames: structuredClone(state.frames),
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
-        layerBuffers: captureProjectBuffers(),
+        canvasWidth: state.canvasWidth,
+        canvasHeight: state.canvasHeight,
+        layerBuffers: captureLayerBuffers(nextStep.affectedLayerIds ?? []),
+        affectedLayerIds: nextStep.affectedLayerIds,
       };
     } else {
       const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
@@ -295,6 +350,14 @@ export function useViewportDrawing({
     if (!stepToRestore) return;
 
     if (stepToRestore.type === 'structural') {
+      const state = useStudioStore.getState();
+      if (
+        stepToRestore.canvasWidth !== undefined &&
+        stepToRestore.canvasHeight !== undefined &&
+        (stepToRestore.canvasWidth !== state.canvasWidth || stepToRestore.canvasHeight !== state.canvasHeight)
+      ) {
+        state.setCanvasSize(stepToRestore.canvasWidth, stepToRestore.canvasHeight);
+      }
       useStudioStore.setState({
         frames: stepToRestore.frames,
         activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),

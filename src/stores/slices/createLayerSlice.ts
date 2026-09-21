@@ -13,7 +13,10 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     });
   },
 
-  addLayer: (name, tag, idOverride) => {
+  addLayer: (name, tag, idOverride, skipHistory) => {
+    if (!skipHistory) {
+      pushStructuralHistoryStep('Add Layer', { opKind: 'add-layer', affectedLayerIds: [] });
+    }
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -40,7 +43,9 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   deleteLayer: (layerId, skipHistory) => {
     const frame = get().frames[get().activeFrameIndex];
     if (!frame || frame.layers.length <= 1 || !frame.layers.some((layer) => layer.id === layerId)) return;
-    if (!skipHistory) pushStructuralHistoryStep('Delete Layer');
+    if (!skipHistory) {
+      pushStructuralHistoryStep('Delete Layer', { opKind: 'delete-layer', affectedLayerIds: [layerId] });
+    }
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;
@@ -58,7 +63,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   duplicateLayer: layerId => {
     const frame = get().frames[get().activeFrameIndex];
     if (!frame?.layers.some((layer) => layer.id === layerId)) return;
-    pushStructuralHistoryStep('Duplicate Layer');
+    pushStructuralHistoryStep('Duplicate Layer', { opKind: 'duplicate-layer', affectedLayerIds: [] });
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -95,7 +100,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       endIndex >= frame.layers.length ||
       startIndex === endIndex
     ) return;
-    pushStructuralHistoryStep('Reorder Layers');
+    pushStructuralHistoryStep('Reorder Layers', { opKind: 'reorder-layers', affectedLayerIds: [] });
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -205,7 +210,12 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     const frame = get().frames[get().activeFrameIndex];
     const layerIndex = frame?.layers.findIndex((layer) => layer.id === layerId) ?? -1;
     if (!frame || frame.layers.length <= 1 || layerIndex < 0 || layerIndex >= frame.layers.length - 1) return;
-    pushStructuralHistoryStep('Merge Down Layer');
+    const upper = frame.layers[layerIndex];
+    const lower = frame.layers[layerIndex + 1];
+    pushStructuralHistoryStep('Merge Down Layer', {
+      opKind: 'merge-layer',
+      affectedLayerIds: [upper.id, lower.id],
+    });
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;
