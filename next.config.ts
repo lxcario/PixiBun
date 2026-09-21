@@ -7,13 +7,39 @@ import type { NextConfig } from "next";
 // the CSP must NOT be duplicated here or the two policies intersect and block
 // nonce'd hydration scripts.
 
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+
+function getBuildVersion(): string {
+  if (process.env.SW_CACHE_VERSION) {
+    return process.env.SW_CACHE_VERSION;
+  }
+  let gitHash = '';
+  try {
+    gitHash = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    gitHash = 'local';
+  }
+  let pkgVersion = '1.14.1';
+  try {
+    const pkgRaw = fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8');
+    const pkg = JSON.parse(pkgRaw);
+    if (pkg.version) pkgVersion = pkg.version;
+  } catch {
+    // fallback
+  }
+  return `v${pkgVersion}-${gitHash}`;
+}
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   env: {
     // Service worker cache bucket version — build-time injected into
-    // src/app/sw.js/route.ts. Bump per release (or when precached shell
-    // assets change) so new deploys cannot serve stale precached assets.
-    SW_CACHE_VERSION: 'v2',
+    // src/app/sw.js/route.ts. Dynamically derived from package version and git hash.
+    SW_CACHE_VERSION: getBuildVersion(),
   },
   async headers() {
     return [

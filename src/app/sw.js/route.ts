@@ -16,14 +16,14 @@
  * SKIP_WAITING flow is unchanged (see the message listener below).
  */
 
-const swCacheVersion: string = process.env.SW_CACHE_VERSION ?? 'v1';
-
-const SW_SOURCE = `const CACHE_NAME = 'pixibun-${swCacheVersion}';
+export function buildServiceWorkerScript(version: string = process.env.SW_CACHE_VERSION ?? 'v1'): string {
+  return `const CACHE_NAME = 'pixibun-${version}';
 const PRECACHE_ASSETS = [
   '/',
   '/studio',
   '/manifest.webmanifest',
   '/offline.html',
+  '/theme.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/maskable-512.png',
@@ -69,7 +69,7 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME)
+            .filter((key) => key.startsWith('pixibun-') && key !== CACHE_NAME)
             .map((key) => caches.delete(key))
         )
       )
@@ -125,11 +125,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Next.js static bundles, fonts, and images: Stale-While-Revalidate
+  // 3. Next.js static bundles, fonts, theme and images: Stale-While-Revalidate
   if (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/assets/')
+    url.pathname.startsWith('/assets/') ||
+    url.pathname === '/theme.js'
   ) {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
@@ -181,9 +182,11 @@ self.addEventListener('fetch', (event) => {
   );
 });
 `;
+}
 
 export async function GET() {
   // Content-Type / Cache-Control / Service-Worker-Allowed are appended by the
   // '/sw.js' headers entry in next.config.ts — do not duplicate them here.
-  return new Response(SW_SOURCE, { status: 200 });
+  const script = buildServiceWorkerScript();
+  return new Response(script, { status: 200 });
 }

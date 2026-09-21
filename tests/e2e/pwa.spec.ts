@@ -19,6 +19,14 @@ test.describe('PWA Manifest & Service Worker Assets', () => {
     expect(res.headers()['service-worker-allowed']).toBe('/');
     const text = await res.text();
     expect(text).toContain('CACHE_NAME');
+    expect(text).toContain('/theme.js');
+  });
+
+  test('serves theme initialization script for offline hydration', async ({ request }) => {
+    const res = await request.get('/theme.js');
+    expect(res.status()).toBe(200);
+    const text = await res.text();
+    expect(text).toContain('pixibun-theme');
   });
 
   test('serves offline static fallback page', async ({ request }) => {
