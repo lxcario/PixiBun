@@ -109,6 +109,10 @@ export type StudioEventMap = {
   'pixibun:request-composite': void;
   'pixibun:remote-change': void;
   'pixibun:open-teaching-board': void;
+  'pixibun:toast': {
+    message: string;
+    type?: 'default' | 'error' | 'success';
+  };
 };
 
 type EventHandler<T> = (data: T) => void;

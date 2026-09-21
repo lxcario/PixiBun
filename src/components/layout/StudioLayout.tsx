@@ -1,8 +1,6 @@
 'use client';
 
-import { SafeJson } from '@/lib/safety/safeJson';
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useStudioStore } from '@/stores/studioStore';
 import { AtelierRail } from './AtelierRail';
@@ -12,13 +10,13 @@ import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
-import type { ImportPayload, ImageImportConfirmPayload } from '@/components/modals/ImportModal';
+import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getProjectById } from '@/lib/storage/db';
 import { hydrateProject } from '@/lib/project/serialize';
-import { validateProjectFile } from '@/lib/project/schema';
+import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 
@@ -76,6 +74,28 @@ export const StudioLayout: React.FC = () => {
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
+  const [activeToast, setActiveToast] = useState<{ message: string; type: 'default' | 'error' | 'success' } | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const unsub = studioEvents.on('pixibun:toast', (payload) => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+      setActiveToast({ message: payload.message, type: payload.type || 'default' });
+      toastTimerRef.current = window.setTimeout(() => {
+        setActiveToast(null);
+        toastTimerRef.current = null;
+      }, 3500);
+    });
+    return () => {
+      unsub();
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
   const {
     autosaveTimerRef,
     runAutosave,
@@ -96,7 +116,8 @@ export const StudioLayout: React.FC = () => {
   } = useStudioStore();
 
   const handleConfirmNewDrawing = useCallback(async () => {
-    if (!(await runAutosave())) return;
+    // Attempt best-effort autosave, but never block user from starting new drawing if autosave failed
+    await runAutosave();
     clearAllBuffers();
     resetToNewProject();
     setIsNewConfirmOpen(false);
@@ -109,14 +130,13 @@ export const StudioLayout: React.FC = () => {
       window.clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
     }
-    if (!(await runAutosave())) return;
+    await runAutosave();
 
     const target = await getProjectById(projectId);
     if (!target) return;
 
     try {
-      const parsed: unknown = SafeJson.parse(target.dataJson);
-      const result = validateProjectFile(parsed);
+      const result = decodeAndValidateProject(target.dataJson);
       if (!result.ok) {
         setImportError(result.error);
         return;
@@ -133,9 +153,6 @@ export const StudioLayout: React.FC = () => {
   // Synchronize document title with unsaved dirty indicator
   useEffect(() => {
     document.title = `${isDirty ? '● ' : ''}${projectName} — PixiBun`;
-    // Restore the landing metadata title when leaving /studio so a stale
-    // dirty indicator never survives in-app navigation. Keep in sync with
-    // the `title` in src/app/page.tsx metadata.
     return () => {
       document.title = 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine';
     };
@@ -259,34 +276,30 @@ export const StudioLayout: React.FC = () => {
     } else {
       let targetLayerId = currentStore.activeLayerId;
 
-      if (target === 'new-frame') {
-        currentStore.addFrame();
-        const updatedState = useStudioStore.getState();
-        const newFrame = updatedState.frames[updatedState.activeFrameIndex];
-        targetLayerId = newFrame?.layers[0]?.id || updatedState.activeLayerId;
-      } else if (target === 'new-layer') {
-        const layerName = filename ? `Import: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Layer';
+      if (target === 'new-layer') {
+        const layerName = filename ? filename.replace(/\.[^/.]+$/, '') : 'Imported';
         currentStore.addLayer(layerName);
-        const updatedState = useStudioStore.getState();
-        targetLayerId = updatedState.activeLayerId;
+        targetLayerId = useStudioStore.getState().activeLayerId;
+      } else if (target === 'new-frame') {
+        currentStore.addFrame();
+        const frame = useStudioStore.getState().frames[useStudioStore.getState().activeFrameIndex];
+        targetLayerId = frame?.layers[0]?.id || currentStore.activeLayerId;
       }
 
       if (targetLayerId) {
         const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
         const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
         if (ctx) {
-          if (target === 'replace-layer') {
-            ctx.clearRect(0, 0, width, height);
-          }
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(canvas, 0, 0);
         }
       }
     }
 
-    if (addToPalette && extractedPalette.length > 0) {
+    // Palette integration
+    if (addToPalette && extractedPalette && extractedPalette.length > 0) {
       const paletteName = filename ? `Palette: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Palette';
-      currentStore.addExtractedPalette(paletteName, extractedPalette);
+      store.addExtractedPalette(paletteName, extractedPalette);
     }
 
     currentStore.bumpBufferVersion();
@@ -300,14 +313,15 @@ export const StudioLayout: React.FC = () => {
   const handleConfirmImportProject = useCallback(async () => {
     if (!importPayload?.projectJson) return;
 
-    const result = validateProjectFile(importPayload.projectJson);
+    const result = decodeAndValidateProject(importPayload.projectJson);
     if (!result.ok) {
       setImportError(result.error);
       return;
     }
 
     try {
-      if (!(await runAutosave())) {
+      const saveRes = await runAutosave();
+      if (!saveRes.ok && saveRes.reason !== 'restore-invalid') {
         setImportError('The current project could not be saved. Export a backup before replacing it.');
         return;
       }
@@ -348,7 +362,7 @@ export const StudioLayout: React.FC = () => {
         canUndo={canUndo}
         canRedo={canRedo}
         onSaveNow={() => {
-          void runAutosave().then(saved => { if (saved) triggerSaveToast(); });
+          void runAutosave().then((res) => { if (res.ok) triggerSaveToast(); });
         }}
       />
 
@@ -362,7 +376,6 @@ export const StudioLayout: React.FC = () => {
           ? 'Unsaved changes'
           : 'All changes saved'}
       </div>
-
 
       {/* Autosave Disk Write Error (Non-Layout-Shifting Toast) */}
       {autosaveError && (
@@ -538,23 +551,31 @@ export const StudioLayout: React.FC = () => {
           onOpenShortcuts={() => setIsShortcutsOpen(true)}
           onNewDrawing={() => setIsNewConfirmOpen(true)}
           onSaveNow={() => {
-            void runAutosave().then(saved => { if (saved) triggerSaveToast(); });
+            void runAutosave().then((res) => { if (res.ok) triggerSaveToast(); });
           }}
           onUndo={handleUndo}
           onRedo={handleRedo}
         />
       )}
 
-      {/* Affirmative Explicit Save Confirmation Toast (UX-14) */}
-      {saveToast && (
+      {/* Unified Toast & Affirmative Explicit Save Confirmation Toast (UX-14, Phase A) */}
+      {(activeToast || saveToast) && (
         <div
-          role="status"
-          aria-live="polite"
-          data-testid="save-affirmation-toast"
-          className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)] font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all"
+          role={activeToast?.type === 'error' ? 'alert' : 'status'}
+          aria-live={activeToast?.type === 'error' ? 'assertive' : 'polite'}
+          data-testid={activeToast ? 'studio-toast' : 'save-affirmation-toast'}
+          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all ${
+            activeToast?.type === 'error'
+              ? 'bg-[#2e111a]/95 border border-[#eb5a66] text-[#ffb4b9]'
+              : 'bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)]'
+          }`}
         >
-          <PixelIcon name="save" size={14} className="text-[var(--accent-gold,#f0be7c)] shrink-0" />
-          <span>{saveToast}</span>
+          <PixelIcon
+            name={activeToast?.type === 'error' ? 'warning' : 'save'}
+            size={14}
+            className={activeToast?.type === 'error' ? 'text-[#eb5a66] shrink-0' : 'text-[var(--accent-gold,#f0be7c)] shrink-0'}
+          />
+          <span>{activeToast?.message || saveToast}</span>
         </div>
       )}
     </div>

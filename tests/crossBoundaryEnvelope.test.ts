@@ -48,7 +48,7 @@ describe('Cross-Boundary Workspace Envelope Coordination', () => {
     expect(HARDWARE_LIMITS.MAX_HARDWARE_PIXEL_AREA).toBe(16384 * 16384);
   });
 
-  it('validates a max-envelope project schema (2048x2048, 500 frames, 100 layers)', () => {
+  it('differentiates individual scalar envelope limits from aggregate project complexity limits', () => {
     const layerTemplate = {
       id: 'layer-1',
       name: 'Layer 1',
@@ -58,31 +58,58 @@ describe('Cross-Boundary Workspace Envelope Coordination', () => {
       blendMode: 'source-over',
     };
 
-    const layers100 = Array.from({ length: MAX_CANVAS_LAYERS }, (_, i) => ({
+    // 1. Max canvas dimension (2048x2048) within aggregate resource budget (16 layers = 67,108,864 px)
+    const layers16 = Array.from({ length: 16 }, (_, i) => ({
       ...layerTemplate,
       id: `layer-${i + 1}`,
       name: `Layer ${i + 1}`,
     }));
 
-    const frameTemplate = {
-      id: 'frame-1',
-      durationMs: 100,
-      layers: layers100,
-    };
-
-    const frames500 = Array.from({ length: MAX_CANVAS_FRAMES }, (_, i) => ({
-      ...frameTemplate,
-      id: `frame-${i + 1}`,
-      layers: frameTemplate.layers.map((layer, j) => ({ ...layer, id: `layer-${i}-${j}` })),
-    }));
-
-    const maxEnvelopeProject = {
+    const maxCanvasProject = {
       format: PROJECT_FORMAT_ID,
       version: PROJECT_FORMAT_VERSION,
-      id: 'max-envelope-proj',
-      name: 'Max Envelope Project',
+      id: 'max-canvas-proj',
+      name: 'Max Canvas Project',
       width: MAX_CANVAS_DIMENSION,
       height: MAX_CANVAS_DIMENSION,
+      fps: 12,
+      createdAt: 1700000000000,
+      updatedAt: 1700000000000,
+      palettes: [
+        {
+          id: 'p1',
+          name: 'Default',
+          colors: ['#000000', '#ffffff'],
+        },
+      ],
+      currentPaletteId: 'p1',
+      frames: [{ id: 'f1', durationMs: 100, layers: layers16 }],
+    };
+
+    const maxCanvasValidation = validateProjectFile(maxCanvasProject);
+    expect(maxCanvasValidation.ok).toBe(true);
+
+    // Exceeding canvas dimension rejects
+    const oversizedProject = {
+      ...maxCanvasProject,
+      width: MAX_CANVAS_DIMENSION + 1,
+    };
+    expect(validateProjectFile(oversizedProject).ok).toBe(false);
+
+    // 2. Max frame count (500 frames) within aggregate resource budget (1 layer each at 32x32 = 512,000 px)
+    const frames500 = Array.from({ length: MAX_CANVAS_FRAMES }, (_, i) => ({
+      id: `frame-${i + 1}`,
+      durationMs: 100,
+      layers: [{ ...layerTemplate, id: `layer-${i}-0` }],
+    }));
+
+    const maxFramesProject = {
+      format: PROJECT_FORMAT_ID,
+      version: PROJECT_FORMAT_VERSION,
+      id: 'max-frames-proj',
+      name: 'Max Frames Project',
+      width: 32,
+      height: 32,
       fps: 12,
       createdAt: 1700000000000,
       updatedAt: 1700000000000,
@@ -97,15 +124,31 @@ describe('Cross-Boundary Workspace Envelope Coordination', () => {
       frames: frames500,
     };
 
-    const validation = validateProjectFile(maxEnvelopeProject);
-    expect(validation.ok).toBe(true);
+    const maxFramesValidation = validateProjectFile(maxFramesProject);
+    expect(maxFramesValidation.ok).toBe(true);
 
-    // Exceeding canvas dimension rejects
-    const oversizedProject = {
-      ...maxEnvelopeProject,
-      width: MAX_CANVAS_DIMENSION + 1,
+    // 3. Pathological case: maximizing ALL scalar envelope limits simultaneously
+    // (2048x2048, 500 frames, 100 layers per frame = 50,000 layers = 209 Gpx / 838 GB raw RGBA)
+    // MUST be rejected by aggregate resource validation!
+    const layers100 = Array.from({ length: MAX_CANVAS_LAYERS }, (_, i) => ({
+      ...layerTemplate,
+      id: `layer-${i + 1}`,
+      name: `Layer ${i + 1}`,
+    }));
+    const frames500With100Layers = Array.from({ length: MAX_CANVAS_FRAMES }, (_, i) => ({
+      id: `frame-${i + 1}`,
+      durationMs: 100,
+      layers: layers100.map((layer, j) => ({ ...layer, id: `layer-${i}-${j}` })),
+    }));
+    const pathologicalProject = {
+      ...maxCanvasProject,
+      frames: frames500With100Layers,
     };
-    expect(validateProjectFile(oversizedProject).ok).toBe(false);
+    const pathologicalValidation = validateProjectFile(pathologicalProject);
+    expect(pathologicalValidation.ok).toBe(false);
+    if (!pathologicalValidation.ok) {
+      expect(pathologicalValidation.error).toBeDefined();
+    }
   });
 
   it('ensures P2P collaboration bounds match project schema bounds exactly', () => {

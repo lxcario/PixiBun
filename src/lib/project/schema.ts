@@ -12,6 +12,7 @@ import {
 import type { LayerEffectRecipe, SmartEffectKind, SmartEffectParameter } from '@/types/canvas';
 import { SafeJson } from '@/lib/safety/safeJson';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
+import { validateProjectResourceBudget } from './resourceBudget';
 
 const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
@@ -362,13 +363,21 @@ export function validateProjectFile(input: unknown): ProjectValidationResult {
     frames.push(result);
   }
 
+  const budgetResult = validateProjectResourceBudget(
+    normalized.width as number,
+    normalized.height as number,
+    frames
+  );
+  if (!budgetResult.ok) {
+    return { ok: false, error: budgetResult.error };
+  }
+
   if (
     !isIntegerInRange(normalized.createdAt, 0, Number.MAX_SAFE_INTEGER) ||
     !isIntegerInRange(normalized.updatedAt, 0, Number.MAX_SAFE_INTEGER)
   ) {
     return { ok: false, error: 'The project timestamps are missing or corrupted.' };
   }
-
   return {
     ok: true,
     value: {

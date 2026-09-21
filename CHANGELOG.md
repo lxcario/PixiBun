@@ -2,6 +2,41 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## [v1.14.1] - 2026-09-21 (Hardening In Progress — Phase A Complete)
+### Integrity, Recovery & Resource Safety (Phase 64 / Phase A)
+- **Neutral Import Domain Contracts (`src/types/import.ts`, `src/components/modals/ImportModal.tsx`, `src/lib/project/importFile.ts`, `src/components/layout/StudioLayout.tsx`, `tests/components/ImportModal.test.tsx`)**:
+  - Decoupled the domain file-import pipeline from UI modal components. Previously, `src/lib/project/importFile.ts` imported its admission type `ImportPayload` directly from the React component `src/components/modals/ImportModal.tsx`. Extracted neutral domain contracts `ImportPayload` and `ImageImportConfirmPayload` into `src/types/import.ts`, eliminating the inverted domain-to-presentation dependency.
+- **Initial Conservative Resource Envelope (`src/config/canvasLimits.ts`, `src/lib/project/resourceBudget.ts`, `src/types/project.ts`, `src/lib/project/schema.ts`, `src/lib/sync/p2pSync.ts`, `tests/resourceBudget.test.ts`, `tests/crossBoundaryEnvelope.test.ts`)**:
+  - Established an initial project-complexity validation envelope capped at `MAX_PROJECT_AGGREGATE_PIXELS = 67_108_864` ($64\text{ Mpx} = 256\text{ MiB}$ base raw RGBA raster representation: $\text{materializableRasterPixels} = \text{totalLayers} \times \text{width} \times \text{height}$, $\text{baseRawRgbaBytes} = \text{materializableRasterPixels} \times 4$) and `MAX_PROJECT_TOTAL_LAYERS = 2000`.
+  - Treated this envelope explicitly as an initial validation ceiling to reject abusive, corrupt, or runaway payloads upon intake and sync, rather than a proven runtime memory-safe or OOM-safe ceiling (noting that whole-project history snapshotting is slated for delta redesign in Phase B).
+  - Enforced resource envelope validation across schema parsing, project import decoding, and P2P co-draw structure sync.
+- **Canonical Project Domain Decoder (`src/lib/project/decodeProject.ts`, `src/hooks/studio/useStudioAutosave.ts`, `src/lib/project/importFile.ts`, `tests/historicalFixtures.test.ts`)**:
+  - Centralized project file intake through `decodeAndValidateProject`, executing safe prototype-poisoning-free parsing, schema validation, schema migration, and resource envelope budgeting.
+  - Polymorphically supports both raw JSON strings (IndexedDB storage) and pre-parsed JSON objects (file import payload).
+- **Atomic Dexie Storage Operations (`src/lib/storage/db.ts`, `tests/auditPersistence.test.ts`)**:
+  - Re-architected `deleteProject`, `renameProject`, and `duplicateProject` to execute within atomic Dexie `readwrite` transactions across `projects` and `layerBlobs` tables.
+  - Eliminated orphaned layer blob residue and metadata-only mutations.
+- **Storage Unavailability Distinction in Gallery (`src/lib/storage/db.ts`, `src/components/modals/ProjectsGalleryModal.tsx`)**:
+  - Upgraded `listAllProjects()` to ensure the database connection opens and surfaces underlying storage failures rather than silently returning an empty array (`[]`).
+  - Added visual error alert banner in `ProjectsGalleryModal` distinguishing storage access failures from legitimate empty project workspaces.
+- **Lazy Canvas Buffer Allocation (`src/lib/project/serialize.ts`, `src/lib/render/compositor.ts`, `tests/auditPersistence.test.ts`)**:
+  - Hardened `hydrateProject` to allocate 2D canvas backing store buffers only for layers backed by stored pixel blobs, plus the active drawing layer of the initial frame.
+  - Updated `compositeFrame` (`src/lib/render/compositor.ts`) to treat unallocated layers as transparent without triggering eager allocation, preserving lazy buffers until explicit user edits occur.
+  - Reduced memory footprint during multi-frame and multi-layer project restores.
+- **Safe Boot Restore & Corrupt Document Preservation (`src/hooks/studio/useStudioAutosave.ts`, `tests/auditAutosave.test.tsx`, `tests/auditPersistence.test.ts`)**:
+  - Hardened boot-time restore sequence: when a stored project fails JSON parsing, schema validation, or resource envelope checks, the corrupt record in IndexedDB and its layer blobs are preserved unmodified for manual recovery.
+  - Replaced corrupted state by instantiating a fresh workspace under a newly generated project ID (`resetToNewProject()`), recording failure markers to prevent autosave overwrites, and alerting the user via toast notifications.
+  - Upgraded `runAutosave()` to return a typed `Promise<SaveResult>`.
+- **Worker Dispatcher Resiliency & Timeout Lifecycle (`src/lib/engine/workerDispatcher.ts`, `tests/workerDispatcher.test.ts`)**:
+  - Added configurable 10-second request timeout (`timeoutMs: 10_000`) and individual request abort cancellation via `AbortSignal`. Late-arriving responses for aborted requests are safely discarded without resolving promises or crashing the worker.
+  - Implemented fatal crash and timeout recovery (`terminateWorkerAndRejectAll`), cleanly terminating unresponsive web workers, rejecting pending callbacks, and permitting fresh re-instantiation on subsequent tasks.
+- **Unified Alert & Import Toast Presentation (`src/lib/events/studioEvents.ts`, `src/lib/project/importFile.ts`, `src/components/layout/StudioLayout.tsx`, `tests/components/ImportModal.test.tsx`)**:
+  - Replaced native blocking `window.alert()` in import handlers with custom `'pixibun:toast'` events.
+  - Unified toast delivery in `StudioLayout` using accessible bottom banner toasts with `role="alert"` for errors and `role="status"` for operational confirmations.
+- **Historical Fixture Suite & Backward Compatibility (`tests/fixtures/project-v1.13.json`, `tests/fixtures/project-v1.14.0.json`, `tests/historicalFixtures.test.ts`)**:
+  - Added verified historical fixtures for schema v2 (`v1.13`) and schema v3 (`v1.14.0` with layer effect recipes).
+  - Built regression suite validating schema migrations, layer recipe preservation, round-trip serialization, and resource envelope limits.
+
 ## [v1.14.0] - 2026-09-20
 ### Neutral Relighting & Smart-Effect Provenance (Phase 63)
 - **Neutral 2.5D Silhouette & Macro-Detail Shading (`src/lib/ai/math/edtNormalMap.ts`)**:

@@ -4,9 +4,13 @@
  * - RotSprite 8x upscale & majority-voting
  * - WaveFunctionCollapse constraint-satisfaction texture synthesis
  * - Optical Flow & SDF In-Between frame morphing
+ * - Euclidean Distance Transform & normal map baking
  *
  * Automatically falls back to synchronous main-thread execution when running
  * in environments without Web Worker support (Node.js, Vitest, SSR, or restrictive CSP).
+ *
+ * Includes bounded execution timeout (default 10s), AbortSignal cancellation,
+ * and deterministic crash recovery that invalidates and terminates corrupt worker instances.
  */
 
 import { rotSprite, PixelBuffer } from '@/lib/canvas/rotSprite';
@@ -22,52 +26,107 @@ import {
 import { computeMinecraftSkinNormalField } from '@/lib/ai/math/minecraftSkin';
 import type { HeavyWorkerRequest, HeavyWorkerResponse } from '@/workers/heavyCompute.worker';
 
+export const DEFAULT_WORKER_TIMEOUT_MS = 10_000;
+
+export interface WorkerDispatcherOptions {
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}
+
+interface PendingRequest {
+  resolve: (val: unknown) => void;
+  reject: (err: Error) => void;
+  timerId: ReturnType<typeof setTimeout> | null;
+  cleanupAbortListener?: () => void;
+}
+
 let sharedWorker: Worker | null = null;
-let pendingCallbacks = new Map<
-  string,
-  {
-    resolve: (val: unknown) => void;
-    reject: (err: Error) => void;
+let workerFactory: (() => Worker) | null = null;
+let pendingCallbacks = new Map<string, PendingRequest>();
+
+/**
+ * Terminates the current worker, rejects all active in-flight requests,
+ * and resets internal dispatcher state so subsequent requests can re-instantiate cleanly.
+ */
+function terminateWorkerAndRejectAll(error: Error): void {
+  if (sharedWorker) {
+    try {
+      sharedWorker.terminate();
+    } catch {
+      // Ignore termination failure
+    }
+    sharedWorker = null;
   }
->();
+
+  const callbacksToReject = pendingCallbacks;
+  pendingCallbacks = new Map();
+
+  callbacksToReject.forEach(({ reject, timerId, cleanupAbortListener }) => {
+    if (timerId !== null) clearTimeout(timerId);
+    if (cleanupAbortListener) cleanupAbortListener();
+    reject(error);
+  });
+}
+
+function attachWorkerListeners(worker: Worker): void {
+  worker.onmessage = (e: MessageEvent<HeavyWorkerResponse>) => {
+    const data = e.data;
+    if (!data || !data.id) return;
+    const cb = pendingCallbacks.get(data.id);
+    if (!cb) return;
+
+    if (cb.timerId !== null) clearTimeout(cb.timerId);
+    if (cb.cleanupAbortListener) cb.cleanupAbortListener();
+    pendingCallbacks.delete(data.id);
+
+    if (data.type === 'error') {
+      cb.reject(new Error(data.message));
+    } else {
+      cb.resolve(data.result);
+    }
+  };
+
+  worker.onerror = (err: Event | ErrorEvent) => {
+    const message = 'message' in err && err.message ? err.message : 'Worker encountered fatal error';
+    terminateWorkerAndRejectAll(new Error(`Worker fatal error: ${message}`));
+  };
+}
 
 function getOrCreateWorker(): Worker | null {
-  if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+  if (sharedWorker) {
+    return sharedWorker;
+  }
+
+  if (workerFactory) {
+    try {
+      sharedWorker = workerFactory();
+      attachWorkerListeners(sharedWorker);
+      return sharedWorker;
+    } catch {
+      sharedWorker = null;
+      return null;
+    }
+  }
+
+  const WorkerCtor =
+    typeof Worker !== 'undefined'
+      ? Worker
+      : typeof globalThis !== 'undefined'
+      ? (globalThis as unknown as { Worker?: typeof Worker }).Worker
+      : undefined;
+
+  if (!WorkerCtor) {
     return null;
   }
 
-  if (!sharedWorker) {
-    try {
-      sharedWorker = new Worker(
-        new URL('../../workers/heavyCompute.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-
-      sharedWorker.onmessage = (e: MessageEvent<HeavyWorkerResponse>) => {
-        const data = e.data;
-        if (!data || !data.id) return;
-        const cb = pendingCallbacks.get(data.id);
-        if (!cb) return;
-        pendingCallbacks.delete(data.id);
-
-        if (data.type === 'error') {
-          cb.reject(new Error(data.message));
-        } else {
-          cb.resolve(data.result);
-        }
-      };
-
-      sharedWorker.onerror = (_err) => {
-        // Reject all pending and terminate
-        const oldCallbacks = pendingCallbacks;
-        pendingCallbacks = new Map();
-        oldCallbacks.forEach((cb) => cb.reject(new Error('Worker encountered fatal error')));
-        sharedWorker?.terminate();
-        sharedWorker = null;
-      };
-    } catch {
-      sharedWorker = null;
-    }
+  try {
+    sharedWorker = new WorkerCtor(
+      new URL('../../workers/heavyCompute.worker.ts', import.meta.url),
+      { type: 'module' }
+    );
+    attachWorkerListeners(sharedWorker);
+  } catch {
+    sharedWorker = null;
   }
 
   return sharedWorker;
@@ -76,6 +135,78 @@ function getOrCreateWorker(): Worker | null {
 let nextReqId = 1;
 function getNextId(): string {
   return `req_${Date.now()}_${nextReqId++}`;
+}
+
+/**
+ * Dispatches a typed request to the active shared worker with timeout and abort guarantees.
+ */
+function dispatchToWorker<T>(
+  req: HeavyWorkerRequest,
+  transferables: Transferable[],
+  options?: WorkerDispatcherOptions
+): Promise<T> {
+  const worker = getOrCreateWorker();
+  if (!worker) {
+    throw new Error('No worker available');
+  }
+
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_WORKER_TIMEOUT_MS;
+  const signal = options?.signal;
+
+  if (signal?.aborted) {
+    const abortErr = new Error('This operation was aborted');
+    abortErr.name = 'AbortError';
+    return Promise.reject(abortErr);
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let cleanupAbortListener: (() => void) | undefined;
+
+    if (timeoutMs > 0 && Number.isFinite(timeoutMs)) {
+      timerId = setTimeout(() => {
+        terminateWorkerAndRejectAll(
+          new Error(`Worker terminated due to timeout on request ${req.id} after ${timeoutMs}ms`)
+        );
+      }, timeoutMs);
+    }
+
+    if (signal) {
+      const onAbort = () => {
+        const pending = pendingCallbacks.get(req.id);
+        if (pending) {
+          if (pending.timerId !== null) clearTimeout(pending.timerId);
+          pendingCallbacks.delete(req.id);
+          const abortErr = new Error('This operation was aborted');
+          abortErr.name = 'AbortError';
+          pending.reject(abortErr);
+        }
+      };
+      signal.addEventListener('abort', onAbort, { once: true });
+      cleanupAbortListener = () => signal.removeEventListener('abort', onAbort);
+    }
+
+    pendingCallbacks.set(req.id, {
+      resolve: (val: unknown) => resolve(val as T),
+      reject,
+      timerId,
+      cleanupAbortListener,
+    });
+
+    try {
+      worker.postMessage(req, transferables);
+    } catch (postErr) {
+      if (timerId !== null) clearTimeout(timerId);
+      if (cleanupAbortListener) cleanupAbortListener();
+      pendingCallbacks.delete(req.id);
+      reject(postErr instanceof Error ? postErr : new Error(String(postErr)));
+    }
+  });
+}
+
+export interface RotSpriteWorkerOptions extends WorkerDispatcherOptions {
+  outPivotX?: number;
+  outPivotY?: number;
 }
 
 /**
@@ -88,98 +219,99 @@ export async function runRotSpriteInWorker(
   pivotY?: number,
   targetW?: number,
   targetH?: number,
-  outPivotX?: number,
+  outPivotXOrOptions?: number | RotSpriteWorkerOptions,
   outPivotY?: number
 ): Promise<PixelBuffer> {
-  const worker = getOrCreateWorker();
+  let outPivotX: number | undefined;
+  let options: RotSpriteWorkerOptions | undefined;
 
+  if (typeof outPivotXOrOptions === 'object' && outPivotXOrOptions !== null) {
+    options = outPivotXOrOptions;
+    outPivotX = options.outPivotX;
+    outPivotY = options.outPivotY;
+  } else {
+    outPivotX = outPivotXOrOptions;
+  }
+
+  const worker = getOrCreateWorker();
   if (!worker) {
     return rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY);
   }
 
   const id = getNextId();
-  // Clone data buffer so the source isn't detached if caller needs it
   const dataCopy = new Uint8ClampedArray(src.data);
+  const req: HeavyWorkerRequest = {
+    id,
+    type: 'rotSprite',
+    data: dataCopy,
+    width: src.width,
+    height: src.height,
+    angleRad,
+    pivotX,
+    pivotY,
+    targetW,
+    targetH,
+    outPivotX,
+    outPivotY,
+  };
 
-  return new Promise<PixelBuffer>((resolve, reject) => {
-    pendingCallbacks.set(id, {
-      resolve: (val: unknown) => resolve(val as PixelBuffer),
-      reject,
-    });
-
-    const req: HeavyWorkerRequest = {
-      id,
-      type: 'rotSprite',
-      data: dataCopy,
-      width: src.width,
-      height: src.height,
-      angleRad,
-      pivotX,
-      pivotY,
-      targetW,
-      targetH,
-      outPivotX,
-      outPivotY,
-    };
-
-    try {
-      worker.postMessage(req, [dataCopy.buffer]);
-    } catch {
-      pendingCallbacks.delete(id);
-      // Fallback to sync
-      try {
-        resolve(rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY));
-      } catch (syncErr) {
-        reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
-      }
+  try {
+    return await dispatchToWorker<PixelBuffer>(req, [dataCopy.buffer], options);
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === 'AbortError' ||
+        err.message.includes('Worker terminated') ||
+        err.message.includes('Worker fatal error'))
+    ) {
+      throw err;
     }
-  });
+    return rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY);
+  }
 }
+
+export interface WfcWorkerOptions extends WfcOptions, WorkerDispatcherOptions {}
 
 /**
  * Offload WaveFunctionCollapse synthesis to Web Worker, with fallback to synchronous execution.
  */
 export async function runWfcInWorker(
   input: WfcInput,
-  options?: WfcOptions
+  options?: WfcWorkerOptions
 ): Promise<WfcResult> {
   const worker = getOrCreateWorker();
-
   if (!worker) {
     return synthesizeWfc(input, options);
   }
 
   const id = getNextId();
   const sampleCopy = new Uint8ClampedArray(input.sampleData);
+  const req: HeavyWorkerRequest = {
+    id,
+    type: 'wfc',
+    input: {
+      ...input,
+      sampleData: sampleCopy,
+    },
+    options,
+  };
 
-  return new Promise<WfcResult>((resolve, reject) => {
-    pendingCallbacks.set(id, {
-      resolve: (val: unknown) => resolve(val as WfcResult),
-      reject,
-    });
-
-    const req: HeavyWorkerRequest = {
-      id,
-      type: 'wfc',
-      input: {
-        ...input,
-        sampleData: sampleCopy,
-      },
-      options,
-    };
-
-    try {
-      worker.postMessage(req, [sampleCopy.buffer]);
-    } catch {
-      pendingCallbacks.delete(id);
-      try {
-        resolve(synthesizeWfc(input, options));
-      } catch (syncErr) {
-        reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
-      }
+  try {
+    return await dispatchToWorker<WfcResult>(req, [sampleCopy.buffer], options);
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === 'AbortError' ||
+        err.message.includes('Worker terminated') ||
+        err.message.includes('Worker fatal error'))
+    ) {
+      throw err;
     }
-  });
+    return synthesizeWfc(input, options);
+  }
 }
+
+export type MorphWorkerOptions = WorkerDispatcherOptions;
 
 /**
  * Offload In-Between Frame Morphing to Web Worker, with fallback to synchronous execution.
@@ -188,10 +320,10 @@ export async function runMorphInWorker(
   frameA: { width: number; height: number; data: Uint8ClampedArray },
   frameB: { width: number; height: number; data: Uint8ClampedArray },
   steps: number = 1,
-  fraction?: number
+  fraction?: number,
+  options?: MorphWorkerOptions
 ): Promise<{ width: number; height: number; data: Uint8ClampedArray }[]> {
   const worker = getOrCreateWorker();
-
   if (!worker) {
     if (fraction !== undefined) {
       return [morphInBetweenFrameAtFraction(frameA, frameB, fraction)];
@@ -202,43 +334,38 @@ export async function runMorphInWorker(
   const id = getNextId();
   const dataACopy = new Uint8ClampedArray(frameA.data);
   const dataBCopy = new Uint8ClampedArray(frameB.data);
+  const req: HeavyWorkerRequest = {
+    id,
+    type: 'morph',
+    frameA: { width: frameA.width, height: frameA.height, data: dataACopy },
+    frameB: { width: frameB.width, height: frameB.height, data: dataBCopy },
+    steps,
+    fraction,
+  };
 
-  return new Promise<{ width: number; height: number; data: Uint8ClampedArray }[]>(
-    (resolve, reject) => {
-      pendingCallbacks.set(id, {
-        resolve: (val: unknown) =>
-          resolve(val as { width: number; height: number; data: Uint8ClampedArray }[]),
-        reject,
-      });
-
-      const req: HeavyWorkerRequest = {
-        id,
-        type: 'morph',
-        frameA: { width: frameA.width, height: frameA.height, data: dataACopy },
-        frameB: { width: frameB.width, height: frameB.height, data: dataBCopy },
-        steps,
-        fraction,
-      };
-
-      try {
-        worker.postMessage(req, [dataACopy.buffer, dataBCopy.buffer]);
-      } catch {
-        pendingCallbacks.delete(id);
-        try {
-          if (fraction !== undefined) {
-            resolve([morphInBetweenFrameAtFraction(frameA, frameB, fraction)]);
-          } else {
-            resolve(morphInBetweenFramesSync(frameA, frameB, steps));
-          }
-        } catch (syncErr) {
-          reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
-        }
-      }
+  try {
+    return await dispatchToWorker<{ width: number; height: number; data: Uint8ClampedArray }[]>(
+      req,
+      [dataACopy.buffer, dataBCopy.buffer],
+      options
+    );
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === 'AbortError' ||
+        err.message.includes('Worker terminated') ||
+        err.message.includes('Worker fatal error'))
+    ) {
+      throw err;
     }
-  );
+    if (fraction !== undefined) {
+      return [morphInBetweenFrameAtFraction(frameA, frameB, fraction)];
+    }
+    return morphInBetweenFramesSync(frameA, frameB, steps);
+  }
 }
 
-export interface EdtNormalMapOptions {
+export interface EdtNormalMapOptions extends WorkerDispatcherOptions {
   isMinecraftSkin?: boolean;
   depthScale?: number;
 }
@@ -288,38 +415,61 @@ export async function runEdtNormalMapInWorker(
   }
 
   const id = getNextId();
-  // Clone buffer to avoid detaching caller's live buffer on main thread
   const bufferCopy = (rgba.buffer as ArrayBuffer).slice(0);
 
-  return new Promise<{ width: number; height: number; data: Uint8ClampedArray }>(
-    (resolve, reject) => {
-      pendingCallbacks.set(id, {
-        resolve: (val: unknown) =>
-          resolve(val as { width: number; height: number; data: Uint8ClampedArray }),
-        reject,
-      });
+  const req: HeavyWorkerRequest = {
+    id,
+    type: 'edtNormalMap',
+    buffer: bufferCopy,
+    width,
+    height,
+    isMinecraftSkin: options.isMinecraftSkin,
+    depthScale: options.depthScale,
+  };
 
-      const req: HeavyWorkerRequest = {
-        id,
-        type: 'edtNormalMap',
-        buffer: bufferCopy,
-        width,
-        height,
-        isMinecraftSkin: options.isMinecraftSkin,
-        depthScale: options.depthScale,
-      };
-
-      try {
-        worker.postMessage(req, [bufferCopy]);
-      } catch {
-        pendingCallbacks.delete(id);
-        try {
-          resolve(runSync());
-        } catch (syncErr) {
-          reject(syncErr instanceof Error ? syncErr : new Error(String(syncErr)));
-        }
-      }
+  try {
+    return await dispatchToWorker<{ width: number; height: number; data: Uint8ClampedArray }>(
+      req,
+      [bufferCopy],
+      options
+    );
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === 'AbortError' ||
+        err.message.includes('Worker terminated') ||
+        err.message.includes('Worker fatal error'))
+    ) {
+      throw err;
     }
-  );
+    return runSync();
+  }
 }
 
+// Test / Diagnostic helpers
+export function _resetSharedWorkerForTesting(): void {
+  terminateWorkerAndRejectAll(new Error('Reset for testing'));
+  workerFactory = null;
+}
+
+export function _setSharedWorkerForTesting(worker: Worker | null): void {
+  if (sharedWorker && sharedWorker !== worker) {
+    try {
+      sharedWorker.terminate();
+    } catch {
+      // Ignore
+    }
+  }
+  sharedWorker = worker;
+  if (worker) {
+    attachWorkerListeners(worker);
+  }
+}
+
+export function _setWorkerFactoryForTesting(factory: (() => Worker) | null): void {
+  workerFactory = factory;
+}
+
+export function _getPendingCallbacksCountForTesting(): number {
+  return pendingCallbacks.size;
+}

@@ -1,0 +1,83 @@
+{
+  "format": "pixibun-project",
+  "version": 2,
+  "name": "Historical v1.13 Artwork",
+  "width": 16,
+  "height": 16,
+  "fps": 8,
+  "loopMode": "repeat",
+  "onionSkin": {
+    "enabled": true,
+    "prevFrames": 1,
+    "nextFrames": 1,
+    "opacity": 0.4,
+    "prevColor": "#7fae6b",
+    "nextColor": "#c792df"
+  },
+  "palettes": [
+    {
+      "id": "palette-retro",
+      "name": "Retro 4",
+      "colors": ["#1a1025", "#43285c", "#a85db5", "#f7ebf8"]
+    }
+  ],
+  "currentPaletteId": "palette-retro",
+  "customRamps": [],
+  "clips": [
+    {
+      "id": "clip-idle",
+      "name": "Idle",
+      "startFrame": 0,
+      "endFrame": 1,
+      "color": "#a85db5"
+    }
+  ],
+  "frames": [
+    {
+      "id": "frame-1",
+      "durationMs": 125,
+      "layers": [
+        {
+          "id": "layer-bg",
+          "name": "Background",
+          "visible": true,
+          "locked": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        {
+          "id": "layer-sprite",
+          "name": "Character",
+          "visible": true,
+          "locked": false,
+          "opacity": 0.9,
+          "blendMode": "source-over"
+        }
+      ]
+    },
+    {
+      "id": "frame-2",
+      "durationMs": 125,
+      "layers": [
+        {
+          "id": "layer-bg-2",
+          "name": "Background",
+          "visible": true,
+          "locked": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        {
+          "id": "layer-sprite-2",
+          "name": "Character",
+          "visible": true,
+          "locked": false,
+          "opacity": 0.9,
+          "blendMode": "source-over"
+        }
+      ]
+    }
+  ],
+  "createdAt": 1726140000000,
+  "updatedAt": 1726140000000
+}

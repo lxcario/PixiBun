@@ -36,16 +36,20 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   const [editingName, setEditingName] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [storageError, setStorageError] = useState<string | null>(null);
 
   const { setProjectName } = useStudioStore();
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
+    setStorageError(null);
     try {
       const all = await listAllProjects();
       setProjects(all);
     } catch (err) {
       console.error('Failed to list projects:', err);
+      setStorageError('Browser storage is unavailable. Your saved projects could not be loaded.');
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -195,6 +199,11 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
         {loading ? (
           <div className="py-16 text-center text-sm font-mono text-[var(--text-muted)]">
             Loading saved artworks from IndexedDB...
+          </div>
+        ) : storageError ? (
+          <div role="alert" className="py-12 px-4 text-center text-xs font-mono text-[#ffb4b9] bg-[#2e111a]/80 border border-[#eb5a66]/50 rounded-[3px] flex flex-col items-center gap-2">
+            <PixelIcon name="warning" size={16} className="text-[#eb5a66]" />
+            <p>{storageError}</p>
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="py-16 text-center text-sm font-mono text-[var(--text-muted)] border border-dashed border-[#3a2e4c] rounded-[3px]">

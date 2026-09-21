@@ -4,6 +4,7 @@ import { createId } from '@/lib/engine/id';
 import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
+import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 
 export interface StoredProject {
   id: string;
@@ -277,12 +278,12 @@ export async function loadLatestSavedWorkspace(): Promise<StoredWorkspace | null
 // List all projects sorted by updatedAt descending
 export async function listAllProjects(): Promise<StoredProject[]> {
   try {
-    if (!db.isOpen()) return [];
+    if (!db.isOpen()) await db.open();
     return await db.projects.orderBy('updatedAt').reverse().toArray();
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) return [];
     console.error('List projects error:', err);
-    return [];
+    throw new Error('Database storage is unavailable; could not read project list.', { cause: err });
   }
 }
 
@@ -301,12 +302,14 @@ export async function getProjectById(id: string): Promise<StoredWorkspace | null
   }
 }
 
-// Delete project by ID
+// Delete project by ID atomically across metadata and layer blobs
 export async function deleteProject(id: string): Promise<boolean> {
   try {
-    if (!db.isOpen()) return false;
-    await db.projects.delete(id);
-    await deleteLayerBlobsForProject(id);
+    if (!db.isOpen()) await db.open();
+    await db.transaction('rw', db.projects, db.layerBlobs, async () => {
+      await db.projects.delete(id);
+      await db.layerBlobs.where('projectId').equals(id).delete();
+    });
     return true;
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) return false;
@@ -318,6 +321,7 @@ export async function deleteProject(id: string): Promise<boolean> {
 // Duplicate an existing project
 export async function duplicateProject(id: string, newName?: string): Promise<StoredProject | null> {
   try {
+    if (!db.isOpen()) await db.open();
     return await db.transaction('rw', db.projects, db.layerBlobs, async () => {
       const source = await db.projects.get(id);
       if (!source) return null;
@@ -327,14 +331,15 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
       const clonedName = newName || `Copy of ${source.name}`;
 
       let updatedDataJson = source.dataJson;
-      try {
-        const parsed = JSON.parse(source.dataJson) as ProjectFile;
-        parsed.name = clonedName;
-        parsed.createdAt = now;
-        parsed.updatedAt = now;
-        updatedDataJson = JSON.stringify(parsed);
-      } catch {
-        // If parsing fails, preserve original payload
+      const decoded = decodeAndValidateProject(source.dataJson);
+      if (decoded.ok) {
+        const validated = decoded.value;
+        validated.name = clonedName;
+        validated.createdAt = now;
+        validated.updatedAt = now;
+        updatedDataJson = JSON.stringify(validated);
+      } else {
+        console.warn(`Duplicate project ${id}: source data failed validation (${decoded.error}), preserving data structure.`);
       }
 
       const duplicate: StoredProject = {
@@ -366,26 +371,32 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
 // Rename an existing project
 export async function renameProject(id: string, newName: string): Promise<boolean> {
   try {
-    const project = await db.projects.get(id);
-    if (!project) return false;
+    if (!db.isOpen()) await db.open();
+    return await db.transaction('rw', db.projects, async () => {
+      const project = await db.projects.get(id);
+      if (!project) return false;
 
-    let updatedDataJson = project.dataJson;
-    try {
-      const parsed = JSON.parse(project.dataJson) as ProjectFile;
-      parsed.name = newName;
-      parsed.updatedAt = Date.now();
-      updatedDataJson = JSON.stringify(parsed);
-    } catch {
-      // fallback
-    }
+      const now = Date.now();
+      let updatedDataJson = project.dataJson;
+      const decoded = decodeAndValidateProject(project.dataJson);
+      if (decoded.ok) {
+        const validated = decoded.value;
+        validated.name = newName;
+        validated.updatedAt = now;
+        updatedDataJson = JSON.stringify(validated);
+      } else {
+        console.warn(`Rename project ${id}: source data failed validation (${decoded.error}), preserving data structure.`);
+      }
 
-    await db.projects.update(id, {
-      name: newName,
-      updatedAt: Date.now(),
-      dataJson: updatedDataJson,
+      await db.projects.update(id, {
+        name: newName,
+        updatedAt: now,
+        dataJson: updatedDataJson,
+      });
+      return true;
     });
-    return true;
   } catch (err) {
+    if (isIgnorableDbClosure(err)) return false;
     console.error(`Rename project ${id} error:`, err);
     return false;
   }

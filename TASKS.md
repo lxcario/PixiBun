@@ -2,6 +2,33 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 64 — PixiBun v1.14.1 Phase A: Integrity, Recovery & Resource Safety
+**Goal:** Production hardening pass addressing items A1 through A13: restore failure preservation and clean workspace reset, initial conservative resource envelope (64 Mpx / 2,000 layers), canonical project decoding with prototype safety, atomic multi-table Dexie operations, storage error distinction in project gallery, lazy canvas buffer hydration, worker timeout/abort lifecycle, unified toast notifications, and historical fixture regression testing.
+
+**Deliverables:**
+- [x] **A13 Modal Domain Coupling**: Decoupled the domain file-import pipeline from UI components (`src/lib/project/importFile.ts` previously imported admission type `ImportPayload` directly from `src/components/modals/ImportModal.tsx`). Extracted neutral domain contracts `ImportPayload` and `ImageImportConfirmPayload` into `src/types/import.ts`.
+- [x] **A3, A4, A5 Resource Safety Envelope**: Defined `MAX_PROJECT_AGGREGATE_PIXELS = 67_108_864` (64 Mpx = 256 MiB base raw RGBA raster representation: $\text{materializableRasterPixels} = \text{totalLayers} \times \text{width} \times \text{height}$, $\text{baseRawRgbaBytes} = \text{materializableRasterPixels} \times 4$) and `MAX_PROJECT_TOTAL_LAYERS = 2000` in `src/config/canvasLimits.ts`. Implemented `calculateProjectResourceUsage` and `validateProjectResourceBudget` in `src/lib/project/resourceBudget.ts`. Recorded that this envelope is an initial project-complexity validation ceiling to reject runaway/malicious payloads upon intake and sync (not a proven runtime memory-safe or OOM-safe ceiling, with whole-project undo history snapshotting deferred to Phase B delta redesign). Integrated envelope validation into `src/lib/project/schema.ts` and `src/lib/sync/p2pSync.ts`.
+- [x] **A7 Canonical Project Decoder**: Built `src/lib/project/decodeProject.ts` (`decodeAndValidateProject`) executing safe prototype-poisoning-free parsing, schema validation, schema migration, and resource envelope budgeting, supporting both raw strings and pre-parsed objects.
+- [x] **A8 Storage Transaction Atomicity**: Updated `deleteProject`, `renameProject`, and `duplicateProject` in `src/lib/storage/db.ts` to execute inside atomic Dexie `readwrite` transactions across `projects` and `layerBlobs` tables.
+- [x] **A9 Storage Unavailability Distinction**: Hardened `listAllProjects()` in `src/lib/storage/db.ts` to ensure DB opens and propagates errors. Added storage error state and alert banner in `src/components/modals/ProjectsGalleryModal.tsx` distinguishing unavailable storage from an empty project list.
+- [x] **A6 Lazy Canvas Buffer Allocation**: Optimized `hydrateProject` in `src/lib/project/serialize.ts` to instantiate canvas backing store buffers only for layers with stored pixel blobs, plus the active layer of the initial frame. Updated `compositeFrame` in `src/lib/render/compositor.ts` to skip unallocated layers as transparent without eager allocation.
+- [x] **A1, A2 Boot Restore Recovery**: Refactored `useStudioAutosave.ts` so `runAutosave()` returns `Promise<SaveResult>`. On boot restore failure, preserved corrupt project records and layer blobs in IndexedDB untouched, instantiated a fresh workspace under a newly generated project ID (`resetToNewProject()`), recorded failure markers preventing overwrite, and alerted user via toast.
+- [x] **A10 Worker Dispatcher Lifecycle**: Hardened `src/lib/engine/workerDispatcher.ts` with 10s default timeout (`timeoutMs: 10_000`), individual request `AbortSignal` cancellation (discarding late worker messages without resolving or crashing), and fatal crash/timeout recovery (`terminateWorkerAndRejectAll`) terminating unresponsive workers and rejecting pending callbacks.
+- [x] **A11 Unified Toast Presentation**: Added `'pixibun:toast'` event to `src/lib/events/studioEvents.ts`. Replaced `window.alert()` in `src/lib/project/importFile.ts`. Unified toast presentation in `StudioLayout.tsx` with accessible alerts (`role="alert"` for errors, `role="status"` for non-errors) and non-blocking autosave confirmation checks.
+- [x] **A12 Historical Fixtures & Migration Verification**: Added historical fixtures `tests/fixtures/project-v1.13.json` (v2) and `tests/fixtures/project-v1.14.0.json` (v3 with layer recipes). Built `tests/historicalFixtures.test.ts` validating migration, round-trip serialization, and resource envelope enforcement.
+
+**Verification:**
+- Vitest unit & integration test suite: 725 tests across 100 suites (100% green).
+- Playwright E2E test suite: 22 tests across 9 suites (100% green).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (2026-09-21) — PixiBun v1.14.1 Hardening in progress (Phase A Complete; Phases B & C pending)
+
+---
+
 ## Phase 63 — Neutral Relighting & Smart-Effect Provenance
 **Goal:** Remove fixed anatomical shading that stayed attached to the sprite when the bulb moved, establish a shared non-destructive recipe model for generated features, implement discrete 1/2/3-tone cel shading (Single, Dual, Trio) across all pixel art forms, and restore the continuous 3D Blinn-Phong specular highlight pill with line-of-sight gating.
 

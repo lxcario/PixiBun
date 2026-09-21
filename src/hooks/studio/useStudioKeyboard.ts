@@ -5,9 +5,11 @@ import { useStudioStore } from '@/stores/studioStore';
 import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 
+import type { SaveResult } from '@/types/project';
+
 export interface UseStudioKeyboardOptions {
   autosaveTimerRef: React.MutableRefObject<number | null>;
-  runAutosave: () => Promise<boolean>;
+  runAutosave: () => Promise<SaveResult | boolean>;
   triggerSaveToast: () => void;
   handleSaveDesktopProject: (forceSaveAs?: boolean) => Promise<void>;
   setIsShortcutsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -68,7 +70,8 @@ export function useStudioKeyboard({
         // serialized twice concurrently (and the OS dialog can't interleave
         // with the local write).
         void (async () => {
-          if (await runAutosave()) triggerSaveToast();
+          const res = await runAutosave();
+          if (typeof res === 'boolean' ? res : res.ok) triggerSaveToast();
           await handleSaveDesktopProject(e.shiftKey);
         })();
         return;

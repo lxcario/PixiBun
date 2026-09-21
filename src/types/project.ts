@@ -49,3 +49,35 @@ export interface ProjectFile {
 export type ProjectValidationResult =
   | { ok: true; value: ProjectFile }
   | { ok: false; error: string };
+
+/**
+ * Resource complexity metrics based on materializable raster footprint.
+ * Validation envelope check against pathological allocations.
+ */
+export interface ProjectResourceUsage {
+  frameCount: number;
+  layerCount: number;
+  rasterLayerCount: number;
+  materializableRasterPixels: number;
+  baseRawRgbaBytes: number;
+}
+
+/**
+ * Expressive outcome for studio autosave operations.
+ */
+export type SaveResult =
+  | {
+      ok: true;
+      status: 'saved' | 'clean';
+    }
+  | {
+      ok: false;
+      reason:
+        | 'restore-invalid'
+        | 'storage-unavailable'
+        | 'quota'
+        | 'serialization'
+        | 'transaction'
+        | 'unknown';
+      error?: string;
+    };

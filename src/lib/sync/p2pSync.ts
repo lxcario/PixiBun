@@ -26,6 +26,7 @@ import { PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBucket';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 import { validateLayerEffect } from '@/lib/project/schema';
+import { validateProjectResourceBudget } from '@/lib/project/resourceBudget';
 import type { LayerEffectRecipe } from '@/types/canvas';
 
 export interface RemoteCursor {
@@ -189,6 +190,9 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
     }
     frames.push({ id: f.id, durationMs: f.durationMs, layers });
   }
+
+  const budget = validateProjectResourceBudget(p.width, p.height, frames);
+  if (!budget.ok) return null;
 
   return { width: p.width, height: p.height, frames };
 }

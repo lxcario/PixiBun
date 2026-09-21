@@ -5,10 +5,12 @@ import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
-import { validateProjectFile } from '@/lib/project/schema';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
-import { SafeJson } from '@/lib/safety/safeJson';
 import { studioEvents } from '@/lib/events/studioEvents';
+
+import type { SaveResult } from '@/types/project';
+import { StorageResilience } from '@/lib/safety/storageResilience';
+import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -34,35 +36,51 @@ export function useStudioAutosave() {
   const autosaveTimerRef = useRef<number | null>(null);
   const autosaveInFlightRef = useRef(false);
   const autosavePendingRef = useRef(false);
-  const inFlightPromiseRef = useRef<Promise<boolean> | null>(null);
+  const inFlightPromiseRef = useRef<Promise<SaveResult> | null>(null);
   const autosaveFailCountRef = useRef(0);
   const restorePromiseRef = useRef<Promise<void> | null>(null);
   const restoreFailedRef = useRef<string | null>(null);
 
-  const runAutosave = useCallback(async () => {
+  const runAutosave = useCallback(async (): Promise<SaveResult> => {
     if (restorePromiseRef.current) await restorePromiseRef.current;
-    if (restoreFailedRef.current === useStudioStore.getState().currentProjectId) return false;
+    const currentProjId = useStudioStore.getState().currentProjectId;
+    if (restoreFailedRef.current === currentProjId) {
+      return { ok: false, reason: 'restore-invalid', error: 'Active project restore failed and is preserved read-only.' };
+    }
     if (autosaveInFlightRef.current) {
       autosavePendingRef.current = true;
       if (inFlightPromiseRef.current) {
         return await inFlightPromiseRef.current;
       }
-      return false;
+      return { ok: false, reason: 'unknown', error: 'Save already in-flight' };
     }
 
     autosaveInFlightRef.current = true;
-    const savePromise = (async () => {
-      let savedCurrent = false;
+    const savePromise = (async (): Promise<SaveResult> => {
+      let finalResult: SaveResult = { ok: false, reason: 'unknown' };
       try {
         do {
-          savedCurrent = false;
           autosavePendingRef.current = false;
+          const state = useStudioStore.getState();
+
           const { setSaveStatus } = useStudioStore.getState();
           setSaveStatus('saving');
           try {
-            const state = useStudioStore.getState();
             const thumbnailDataUrl = generateCompositeThumbnail(128, 128);
-            const { project, layerBlobs } = await buildAutosavePayloadAsync();
+            let payload;
+            try {
+              payload = await buildAutosavePayloadAsync();
+            } catch (serErr) {
+              setSaveStatus('error');
+              finalResult = {
+                ok: false,
+                reason: 'serialization',
+                error: serErr instanceof Error ? serErr.message : 'Serialization failed',
+              };
+              continue;
+            }
+
+            const { project, layerBlobs } = payload;
             const success = await autoSaveWorkspace(
               state.currentProjectId,
               project.name,
@@ -76,10 +94,11 @@ export function useStudioAutosave() {
             if (success) {
               autosaveFailCountRef.current = 0;
               setAutosaveError(null);
-              savedCurrent = isCurrentSaveRevision(state);
+              const savedCurrent = isCurrentSaveRevision(state);
               if (savedCurrent) {
                 setSaveStatus('saved');
                 useStudioStore.getState().markClean();
+                finalResult = { ok: true, status: 'saved' };
               } else {
                 autosavePendingRef.current = true;
               }
@@ -97,8 +116,9 @@ export function useStudioAutosave() {
                   'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
                 );
               }
+              finalResult = { ok: false, reason: 'storage-unavailable', error: 'Storage write returned false' };
             }
-          } catch (err) {
+          } catch (err: unknown) {
             console.error('Autosave failed:', err);
             autosaveFailCountRef.current += 1;
             setSaveStatus('error');
@@ -107,9 +127,15 @@ export function useStudioAutosave() {
                 'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
               );
             }
+            const isQuota = StorageResilience.isQuotaExceeded(err);
+            finalResult = {
+              ok: false,
+              reason: isQuota ? 'quota' : 'transaction',
+              error: err instanceof Error ? err.message : String(err),
+            };
           }
         } while (autosavePendingRef.current);
-        return savedCurrent;
+        return finalResult;
       } finally {
         autosaveInFlightRef.current = false;
         inFlightPromiseRef.current = null;
@@ -228,19 +254,21 @@ export function useStudioAutosave() {
     restorePromiseRef.current = loadLatestSavedWorkspace().then(async (saved) => {
       if (!saved || cancelled) return;
       try {
-        const parsed: unknown = SafeJson.parse(saved.dataJson);
-        const result = validateProjectFile(parsed);
-        if (!result.ok) throw new Error(result.error);
-        await hydrateProject(result.value, saved.id, saved.layerBlobs, () => !cancelled && isCurrentSaveRevision(initialState));
+        const decoded = decodeAndValidateProject(saved.dataJson);
+        if (!decoded.ok) throw new Error(decoded.error);
+        await hydrateProject(decoded.value, saved.id, saved.layerBlobs, () => !cancelled && isCurrentSaveRevision(initialState));
         restoreFailedRef.current = null;
       } catch (err) {
         if (cancelled || !isCurrentSaveRevision(initialState)) return;
         console.error('Project restore failed:', err);
-        restoreFailedRef.current = initialState.currentProjectId;
-        setAutosaveError('Saved workspace could not be restored. Your stored project has been preserved.');
+        // Track the corrupt stored project ID so we NEVER overwrite it
+        restoreFailedRef.current = saved.id;
+        // Recover active workspace into a fresh, valid project state with a fresh project ID
+        useStudioStore.getState().resetToNewProject();
+        setAutosaveError('Saved workspace could not be restored and has been preserved in storage. A fresh workspace has been prepared.');
       }
     }).catch(() => {
-      restoreFailedRef.current = initialState.currentProjectId;
+      restoreFailedRef.current = null;
       setAutosaveError('Browser storage is unavailable; your workspace could not be restored.');
     });
     return () => {

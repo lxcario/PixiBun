@@ -304,20 +304,25 @@ export async function hydrateProject(
   file = result.value;
   const staged = new Map<string, BufferEntry>();
   const blobMap = new Map((layerBlobs ?? []).map(b => [b.layerId + ':' + b.frameIndex, b.blob]));
+  const activeInitialLayerId = file.frames[0]?.layers[0]?.id;
+
   for (const [frameIndex, frame] of file.frames.entries()) {
     for (const layer of frame.layers) {
       const blob = blobMap.get(layer.id + ':' + frameIndex) ??
         (layer.pngBase64 ? base64ToBlob(layer.pngBase64) : undefined);
-      const entry = createEntry(file.width, file.height);
       if (blob) {
+        const entry = createEntry(file.width, file.height);
         const dimensions = await ImageHeaderProbe.probe(blob);
         if (dimensions.width !== file.width || dimensions.height !== file.height) {
           throw new Error('Layer dimensions do not match the project canvas.');
         }
         const bitmap = await createImageBitmap(blob);
         try { entry.ctx.drawImage(bitmap, 0, 0); } finally { bitmap.close(); }
+        staged.set(layer.id, entry);
+      } else if (layer.id === activeInitialLayerId) {
+        // Guarantee active initial layer always has an allocated buffer ready
+        staged.set(layer.id, createEntry(file.width, file.height));
       }
-      staged.set(layer.id, entry);
     }
   }
   if (!canPublish()) throw new Error('The workspace changed while the project was loading.');

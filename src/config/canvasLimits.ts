@@ -18,6 +18,10 @@ export const WORKSPACE_ENVELOPE = {
   MAX_CANVAS_FRAMES: 500,
   /** Maximum layers per frame allowed in a project or synced structure (100 layers). */
   MAX_CANVAS_LAYERS: 100,
+  /** Initial conservative project-complexity validation ceiling (67,108,864 px = 64 MP = 256 MiB base/raw RGBA). */
+  MAX_PROJECT_AGGREGATE_PIXELS: 67_108_864,
+  /** Maximum total layers across all frames in a project structure (2,000 layers). */
+  MAX_PROJECT_TOTAL_LAYERS: 2000,
 
   /** Maximum export dimension when upscaling or downscaling (4096px). */
   MAX_EXPORT_DIMENSION: 4096,
@@ -58,6 +62,8 @@ export function assertWorkspaceDimensions(width: number, height: number): void {
 }
 export const MAX_CANVAS_FRAMES = WORKSPACE_ENVELOPE.MAX_CANVAS_FRAMES;
 export const MAX_CANVAS_LAYERS = WORKSPACE_ENVELOPE.MAX_CANVAS_LAYERS;
+export const MAX_PROJECT_AGGREGATE_PIXELS = WORKSPACE_ENVELOPE.MAX_PROJECT_AGGREGATE_PIXELS;
+export const MAX_PROJECT_TOTAL_LAYERS = WORKSPACE_ENVELOPE.MAX_PROJECT_TOTAL_LAYERS;
 export const MAX_EXPORT_DIMENSION = WORKSPACE_ENVELOPE.MAX_EXPORT_DIMENSION;
 export const MAX_EXPORT_PIXELS = WORKSPACE_ENVELOPE.MAX_EXPORT_PIXELS;
 export const MAX_PROBE_DIMENSION = WORKSPACE_ENVELOPE.MAX_PROBE_DIMENSION;

@@ -8,7 +8,7 @@
 // editor chrome.
 
 import type { AnimationFrame } from '@/types/canvas';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, hasBuffer } from '@/lib/engine/bufferRegistry';
 
 export interface CompositeOptions {
   /** Include hidden layers (used by flatten-style exports). Default false. */
@@ -46,6 +46,7 @@ export function compositeFrame(
 
   for (const layer of frame.layers.slice().reverse()) {
     if (!layer.visible && !options.includeInvisible) continue;
+    if (!hasBuffer(layer.id)) continue;
     const buffer = getOrCreateBuffer(layer.id, width, height);
     ctx.globalAlpha = layer.opacity;
     ctx.globalCompositeOperation = layer.blendMode;

@@ -1,0 +1,80 @@
+{
+  "format": "pixibun-project",
+  "version": 3,
+  "name": "Historical v1.14.0 Artwork",
+  "width": 32,
+  "height": 32,
+  "fps": 12,
+  "loopMode": "repeat",
+  "onionSkin": {
+    "enabled": false,
+    "prevFrames": 1,
+    "nextFrames": 1,
+    "opacity": 0.35,
+    "prevColor": "#7fae6b",
+    "nextColor": "#c792df"
+  },
+  "palettes": [
+    {
+      "id": "palette-bubblegum",
+      "name": "Bubblegum",
+      "colors": ["#2b1836", "#683363", "#ba4c76", "#ff8a8a", "#ffd1b3"]
+    }
+  ],
+  "currentPaletteId": "palette-bubblegum",
+  "customRamps": [
+    {
+      "baseColor": "#ba4c76",
+      "shades": ["#2b1836", "#683363", "#ba4c76", "#ff8a8a", "#ffd1b3"]
+    }
+  ],
+  "clips": [
+    {
+      "id": "clip-walk",
+      "name": "Walk Cycle",
+      "startFrame": 0,
+      "endFrame": 0,
+      "color": "#ba4c76"
+    }
+  ],
+  "frames": [
+    {
+      "id": "frame-0",
+      "durationMs": 83,
+      "layers": [
+        {
+          "id": "layer-base",
+          "name": "Albedo Base",
+          "visible": true,
+          "locked": false,
+          "opacity": 1,
+          "blendMode": "source-over",
+          "tag": "albedo"
+        },
+        {
+          "id": "layer-fx",
+          "name": "Photometric Shading",
+          "visible": true,
+          "locked": false,
+          "opacity": 0.85,
+          "blendMode": "multiply",
+          "tag": "fx",
+          "effect": {
+            "id": "fx-recipe-1",
+            "kind": "photometric",
+            "version": 1,
+            "sourceMode": "active-layer",
+            "params": {
+              "lightAzimuth": 45,
+              "lightElevation": 60,
+              "material": "skin"
+            },
+            "updatedAt": 1726800000000
+          }
+        }
+      ]
+    }
+  ],
+  "createdAt": 1726800000000,
+  "updatedAt": 1726800000000
+}

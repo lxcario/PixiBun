@@ -1,6 +1,7 @@
-import type { ImportPayload } from '@/components/modals/ImportModal';
+import type { ImportPayload } from '@/types/import';
 import { SafeJson } from '@/lib/safety/safeJson';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 /** Shared admission path for picker, drop and clipboard, before decoding. */
 export async function readImportFile(file: File): Promise<ImportPayload> {
@@ -25,5 +26,7 @@ export async function readImportFile(file: File): Promise<ImportPayload> {
 }
 
 export function reportImportError(error: unknown): void {
-  window.alert(error instanceof Error ? error.message : 'The file could not be imported.');
+  const message = error instanceof Error ? error.message : 'The file could not be imported.';
+  studioEvents.emit('pixibun:toast', { message, type: 'error' });
 }
+
