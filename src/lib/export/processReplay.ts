@@ -97,6 +97,25 @@ export function compositeLayers(
   return composite;
 }
 
+interface ReplayLayerState {
+  layerId: string;
+  name?: string;
+  imageData: ImageData;
+  opacity: number;
+  blendMode: string;
+  visible: boolean;
+  order: number;
+}
+
+function createBlankImageData(width: number, height: number): ImageData {
+  return {
+    width,
+    height,
+    data: new Uint8ClampedArray(width * height * 4),
+    colorSpace: 'srgb',
+  } as ImageData;
+}
+
 /**
  * Reconstructs the full composite progression of a project starting from an optional
  * baseline checkpoint (e.g. state prior to history eviction) and layering subsequent retained steps.
@@ -122,19 +141,8 @@ export function reconstructProcessReplayFrames(
   }
   if (!width || !height) return [];
 
-  // Map: frameIndex -> Map: layerId -> layer object
-  const frameLayerMap = new Map<
-    number,
-    Map<
-      string,
-      {
-        imageData: ImageData;
-        opacity: number;
-        blendMode: string;
-        visible: boolean;
-      }
-    >
-  >();
+  // Map: frameIndex -> Map: layerId -> ReplayLayerState
+  const frameLayerMap = new Map<number, Map<string, ReplayLayerState>>();
 
   if (baseline) {
     for (const bf of baseline.frames) {
@@ -143,12 +151,16 @@ export function reconstructProcessReplayFrames(
         lMap = new Map();
         frameLayerMap.set(bf.frameIndex, lMap);
       }
-      for (const bl of bf.layers) {
+      for (let i = 0; i < bf.layers.length; i++) {
+        const bl = bf.layers[i];
         lMap.set(bl.layerId, {
+          layerId: bl.layerId,
+          name: bl.name,
           imageData: bl.imageData,
           opacity: bl.opacity ?? 1,
           blendMode: bl.blendMode ?? 'source-over',
           visible: bl.visible ?? true,
+          order: bl.order !== undefined ? bl.order : i,
         });
       }
     }
@@ -158,7 +170,9 @@ export function reconstructProcessReplayFrames(
 
   const emitComposite = (fIdx: number) => {
     const lMap = frameLayerMap.get(fIdx);
-    const layers = lMap ? Array.from(lMap.values()) : [];
+    const layers = lMap
+      ? Array.from(lMap.values()).sort((a, b) => a.order - b.order)
+      : [];
     const compData = compositeLayers(width, height, layers);
     const scaledData = scaleRgba(compData, width, height, s);
     rawFrames.push({
@@ -184,27 +198,75 @@ export function reconstructProcessReplayFrames(
       }
       const existing = lMap.get(step.layerId);
       lMap.set(step.layerId, {
+        layerId: step.layerId,
+        name: step.layerName ?? existing?.name,
         imageData: step.imageData,
         opacity: existing?.opacity ?? 1,
         blendMode: existing?.blendMode ?? 'source-over',
         visible: existing?.visible ?? true,
+        order: existing?.order ?? lMap.size,
       });
       emitComposite(fIdx);
     } else if (step.type === 'structural') {
       const fIdx = step.frameIndex ?? 0;
-      let lMap = frameLayerMap.get(fIdx);
-      if (!lMap) {
-        lMap = new Map();
-        frameLayerMap.set(fIdx, lMap);
-      }
-      if (step.layerBuffers) {
+      if (step.frames && step.frames.length > 0) {
+        for (let frameIdx = 0; frameIdx < step.frames.length; frameIdx++) {
+          const af = step.frames[frameIdx];
+          let lMap = frameLayerMap.get(frameIdx);
+          if (!lMap) {
+            lMap = new Map();
+            frameLayerMap.set(frameIdx, lMap);
+          }
+
+          const bufMap = new Map<string, ImageData>();
+          if (step.layerBuffers) {
+            for (const b of step.layerBuffers) {
+              if (b.imageData) bufMap.set(b.layerId, b.imageData);
+            }
+          }
+
+          const currentIds = new Set(af.layers.map((l) => l.id));
+          for (const key of Array.from(lMap.keys())) {
+            if (!currentIds.has(key)) {
+              lMap.delete(key);
+            }
+          }
+
+          for (let lIdx = 0; lIdx < af.layers.length; lIdx++) {
+            const al = af.layers[lIdx];
+            const existing = lMap.get(al.id);
+            const imgData =
+              bufMap.get(al.id) ??
+              existing?.imageData ??
+              createBlankImageData(width, height);
+
+            lMap.set(al.id, {
+              layerId: al.id,
+              name: al.name,
+              imageData: imgData,
+              opacity: al.opacity ?? 1,
+              blendMode: al.blendMode ?? 'source-over',
+              visible: al.visible ?? true,
+              order: af.layers.length - 1 - lIdx,
+            });
+          }
+        }
+      } else if (step.layerBuffers) {
+        let lMap = frameLayerMap.get(fIdx);
+        if (!lMap) {
+          lMap = new Map();
+          frameLayerMap.set(fIdx, lMap);
+        }
         for (const buf of step.layerBuffers) {
           const existing = lMap.get(buf.layerId);
           lMap.set(buf.layerId, {
+            layerId: buf.layerId,
+            name: existing?.name,
             imageData: buf.imageData,
             opacity: existing?.opacity ?? 1,
             blendMode: existing?.blendMode ?? 'source-over',
             visible: existing?.visible ?? true,
+            order: existing?.order ?? 0,
           });
         }
       }

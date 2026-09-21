@@ -20,7 +20,7 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 **PixiBun is designed to feel like a wooden drafting desk late at night.**
 
 * **No Accounts or Logins** — Open the studio and begin placing pixels immediately.
-* **Local-First & Private Core** — Artwork and frame metadata persist on-device in IndexedDB. Undo/redo history is session-only. Local diagnostics are enabled by default; transmission requires opt-in. Co-draw defaults to zero-egress LAN mode; public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
+* **Local-First & Private Core** — Artwork and frame metadata persist on-device in IndexedDB. Undo history is strictly bounded to 64 MiB / 50 entries. The replay baseline is separately bounded by current project raster complexity and does not grow with session duration. Local diagnostics are enabled by default; transmission requires opt-in. Co-draw defaults to zero-egress LAN mode; public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
 * **Purpose-Built for Indie & Game Jam Sprites** — Optimized for $16\times16$ to $128\times128$ character sprites, tilesets, and animation loops. Rather than competing with heavy native desktop software (e.g., Aseprite) for 500+ frame 4K cinematic timelines, PixiBun is engineered for instant zero-install browser crafting, 2.5D photometric lighting, and frictionless game engine exports.
 * **Tactile Mechanical Feedback** — Integer-aligned strokes, physical button depression physics, specular light-sweeps, and homestyle palettes.
 * **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite 8x distortion-free rotation, OKLab perceptual color science, and intelligent image pixelization.
@@ -259,7 +259,7 @@ PixiBun is engineered as a local-first web application:
 * **Installable Offline PWA:** Hand-rolled zero-dependency Service Worker precaches the app shell, fonts, and assets with Stale-While-Revalidate caching, an offline fallback, and `navigator.storage.persist()` protecting user artwork from eviction. The core creation and export suite runs entirely offline without network connectivity. P2P co-draw defaults to zero-egress LAN mode (`iceServers: []`), while public Internet WebRTC STUN signaling and the optional diagnostics relay require network access.
 * **Accessibility support and testing:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and automated axe-core scans. Passing scans are scoped to the pages and states exercised; they are not a conformance certification.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
-* **Continuous Quality & Performance Gates:** 761 unit and integration tests across 104 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 9 E2E spec suites (23 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 762 unit and integration tests across 104 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 10s budget in `tests/benchmark.test.ts`), 9 E2E spec suites (23 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -282,7 +282,7 @@ PixiBun is engineered as a local-first web application:
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag dual-axis theme transitions (`AppearancePopover`). |
 | **Local Persistence** | Dexie.js (IndexedDB Schema v4) | Dedicated `layerBlobs` table storing raw PNG blobs, single-transaction atomic metadata + blob commits, multi-project workspace management. |
 | **Collaboration** | P2P WebRTC + CRDT Sync Bridge | Dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication. |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 761 unit and integration tests across 104 suites and 9 E2E spec suites (23 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 762 unit and integration tests across 104 suites and 9 E2E spec suites (23 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

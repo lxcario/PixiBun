@@ -10,6 +10,7 @@ export interface ReplayBaselineLayer {
   blendMode?: string;
   visible?: boolean;
   name?: string;
+  order?: number;
 }
 
 export interface ReplayBaselineFrame {
@@ -59,6 +60,11 @@ export interface HistoryEngine {
   readonly maxDepth: number;
 }
 
+/**
+ * Undo history is strictly bounded to 64 MiB / 50 entries.
+ * The replay baseline is separately bounded by current project raster complexity
+ * and does not grow with session duration.
+ */
 export const DEFAULT_HISTORY_MAX_DEPTH = 50;
 export const DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB
 
@@ -119,6 +125,15 @@ export function createHistoryEngine(
     } as ImageData;
   }
 
+  function createBlankImageData(w: number, h: number): ImageData {
+    return {
+      width: w,
+      height: h,
+      data: new Uint8ClampedArray(w * h * 4),
+      colorSpace: 'srgb',
+    } as ImageData;
+  }
+
   function updateBaselineFromEvicted(evicted: HistoryStep): void {
     if (evicted.type === 'pixel' && evicted.imageData) {
       const fIdx = evicted.frameIndex ?? 0;
@@ -140,25 +155,24 @@ export function createHistoryEngine(
                   opacity: 1,
                   blendMode: 'source-over',
                   visible: true,
+                  order: 0,
                 },
               ],
             },
           ],
           activeFrameIndex: fIdx,
-          totalBytes: evicted.imageData.data.byteLength + 1024,
+          totalBytes: evicted.imageData.data.byteLength + 1024 + 512 + 512,
         };
       } else {
         let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
         if (!frame) {
           frame = { frameIndex: fIdx, layers: [] };
           baselineCheckpoint.frames.push(frame);
-          baselineCheckpoint.totalBytes += 512;
         }
         const existingLayer = frame.layers.find((l) => l.layerId === evicted.layerId);
         if (existingLayer) {
-          baselineCheckpoint.totalBytes -= existingLayer.imageData.data.byteLength;
           existingLayer.imageData = cloneImageData(evicted.imageData);
-          baselineCheckpoint.totalBytes += existingLayer.imageData.data.byteLength;
+          if (evicted.layerName) existingLayer.name = evicted.layerName;
         } else {
           frame.layers.push({
             layerId: evicted.layerId,
@@ -168,9 +182,18 @@ export function createHistoryEngine(
             opacity: 1,
             blendMode: 'source-over',
             visible: true,
+            order: frame.layers.length,
           });
-          baselineCheckpoint.totalBytes += evicted.imageData.data.byteLength + 512;
         }
+        // Recalculate bounded totalBytes from active baseline buffers
+        let total = 1024;
+        for (const f of baselineCheckpoint.frames) {
+          total += 512;
+          for (const l of f.layers) {
+            total += l.imageData.data.byteLength + 512;
+          }
+        }
+        baselineCheckpoint.totalBytes = total;
       }
     } else if (evicted.type === 'structural') {
       if (!baselineCheckpoint && evicted.canvasWidth && evicted.canvasHeight) {
@@ -187,34 +210,26 @@ export function createHistoryEngine(
           baselineCheckpoint.width = evicted.canvasWidth;
           baselineCheckpoint.height = evicted.canvasHeight;
         }
+
+        const width = baselineCheckpoint.width;
+        const height = baselineCheckpoint.height;
+
+        // Collect new/updated buffers from layerBuffers
+        const bufMap = new Map<string, ImageData>();
         if (evicted.layerBuffers && evicted.layerBuffers.length > 0) {
-          const fIdx = evicted.frameIndex ?? 0;
-          let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
-          if (!frame) {
-            frame = { frameIndex: fIdx, layers: [] };
-            baselineCheckpoint.frames.push(frame);
-            baselineCheckpoint.totalBytes += 512;
-          }
           for (const buf of evicted.layerBuffers) {
-            const existingLayer = frame.layers.find((l) => l.layerId === buf.layerId);
-            if (existingLayer) {
-              baselineCheckpoint.totalBytes -= existingLayer.imageData.data.byteLength;
-              existingLayer.imageData = cloneImageData(buf.imageData);
-              baselineCheckpoint.totalBytes += existingLayer.imageData.data.byteLength;
-            } else {
-              frame.layers.push({
-                layerId: buf.layerId,
-                frameIndex: fIdx,
-                imageData: cloneImageData(buf.imageData),
-                opacity: 1,
-                blendMode: 'source-over',
-                visible: true,
-              });
-              baselineCheckpoint.totalBytes += buf.imageData.data.byteLength + 512;
+            if (buf.imageData) {
+              bufMap.set(buf.layerId, cloneImageData(buf.imageData));
             }
           }
         }
-        if (evicted.frames) {
+
+        if (evicted.frames && evicted.frames.length > 0) {
+          // Synchronize frames list: remove frames that no longer exist
+          baselineCheckpoint.frames = baselineCheckpoint.frames.filter(
+            (f) => f.frameIndex < evicted.frames.length
+          );
+
           for (let fIdx = 0; fIdx < evicted.frames.length; fIdx++) {
             const af = evicted.frames[fIdx];
             let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
@@ -222,17 +237,73 @@ export function createHistoryEngine(
               frame = { frameIndex: fIdx, layers: [] };
               baselineCheckpoint.frames.push(frame);
             }
-            for (const al of af.layers) {
-              const existing = frame.layers.find((l) => l.layerId === al.id);
-              if (existing) {
-                existing.opacity = al.opacity;
-                existing.blendMode = al.blendMode;
-                existing.visible = al.visible;
-                existing.name = al.name;
+
+            const existingLayersMap = new Map<string, ReplayBaselineLayer>(
+              frame.layers.map((l) => [l.layerId, l])
+            );
+
+            // Rebuild frame.layers to match af.layers structure and order
+            const nextLayers: ReplayBaselineLayer[] = [];
+            for (let lIdx = 0; lIdx < af.layers.length; lIdx++) {
+              const al = af.layers[lIdx];
+              const existing = existingLayersMap.get(al.id);
+
+              let imgData: ImageData;
+              if (bufMap.has(al.id)) {
+                imgData = bufMap.get(al.id)!;
+              } else if (existing?.imageData) {
+                imgData = existing.imageData;
+              } else {
+                imgData = createBlankImageData(width, height);
               }
+
+              nextLayers.push({
+                layerId: al.id,
+                frameIndex: fIdx,
+                name: al.name,
+                imageData: imgData,
+                opacity: al.opacity ?? 1,
+                blendMode: al.blendMode ?? 'source-over',
+                visible: al.visible ?? true,
+                order: af.layers.length - 1 - lIdx,
+              });
+            }
+            frame.layers = nextLayers;
+          }
+        } else if (evicted.layerBuffers && evicted.layerBuffers.length > 0) {
+          const fIdx = evicted.frameIndex ?? 0;
+          let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
+          if (!frame) {
+            frame = { frameIndex: fIdx, layers: [] };
+            baselineCheckpoint.frames.push(frame);
+          }
+          for (const [layerId, imgData] of bufMap.entries()) {
+            const existingLayer = frame.layers.find((l) => l.layerId === layerId);
+            if (existingLayer) {
+              existingLayer.imageData = imgData;
+            } else {
+              frame.layers.push({
+                layerId,
+                frameIndex: fIdx,
+                imageData: imgData,
+                opacity: 1,
+                blendMode: 'source-over',
+                visible: true,
+                order: frame.layers.length,
+              });
             }
           }
         }
+
+        // Recalculate bounded totalBytes from active baseline buffers
+        let total = 1024;
+        for (const f of baselineCheckpoint.frames) {
+          total += 512;
+          for (const l of f.layers) {
+            total += l.imageData.data.byteLength + 512;
+          }
+        }
+        baselineCheckpoint.totalBytes = total;
       }
     }
   }
