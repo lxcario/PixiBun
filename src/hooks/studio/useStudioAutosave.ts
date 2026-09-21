@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
+import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { studioEvents } from '@/lib/events/studioEvents';
 
@@ -80,7 +81,7 @@ export function useStudioAutosave() {
               continue;
             }
 
-            const { project, layerBlobs } = payload;
+            const { project, layerBlobs, capturedRevisions } = payload;
             const success = await autoSaveWorkspace(
               state.currentProjectId,
               project.name,
@@ -92,6 +93,9 @@ export function useStudioAutosave() {
               layerBlobs
             );
             if (success) {
+              if (typeof commitPersistedRevisions === 'function') {
+                commitPersistedRevisions(state.currentProjectId, capturedRevisions);
+              }
               autosaveFailCountRef.current = 0;
               setAutosaveError(null);
               const savedCurrent = isCurrentSaveRevision(state);

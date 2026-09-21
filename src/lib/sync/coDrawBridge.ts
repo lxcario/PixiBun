@@ -22,7 +22,7 @@
 // for pixel state; canvas buffers are views that converge on op application.
 
 import { useStudioStore } from '@/stores/studioStore';
-import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
 import type { PixelOp } from '@/lib/collab/crdtPixelBuffer';
@@ -332,6 +332,7 @@ export class CoDrawBridge {
     }
     if (mutated > 0) {
       entry.ctx.putImageData(img, 0, 0);
+      touchBuffer(layerId);
       useStudioStore.getState().bumpBufferVersion();
       studioEvents.emit('pixibun:request-composite');
       studioEvents.emit('pixibun:remote-change');
@@ -387,6 +388,7 @@ export class CoDrawBridge {
       const img = entry.ctx.createImageData(payload.width, payload.height);
       img.data.set(crdt.toRgbaArray());
       entry.ctx.putImageData(img, 0, 0);
+      touchBuffer(layerId);
     }
 
     studioEvents.emit('pixibun:request-composite');

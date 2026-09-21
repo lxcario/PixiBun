@@ -8,7 +8,7 @@ import { PLAYGROUND_LESSONS, getTemplateRows, getTemplateGridSize } from '@/lib/
 import { BunMascot } from '@/components/ui/BunMascot';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -82,6 +82,7 @@ export const ArtisanHandbookPanel: React.FC = () => {
       }
     });
 
+    touchBuffer(activeLayerId);
     bumpBufferVersion();
     const analysis = evaluateStencilCoverage(ctx, canvasWidth, canvasHeight, currentTemplate);
     recordAnalysis(analysis);
@@ -92,6 +93,7 @@ export const ArtisanHandbookPanel: React.FC = () => {
     if (!activeLayerId) return;
     const buf = getOrCreateBuffer(activeLayerId, canvasWidth, canvasHeight);
     buf.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    touchBuffer(activeLayerId);
     bumpBufferVersion();
     if (currentTemplate) {
       const analysis = evaluateStencilCoverage(buf.ctx, canvasWidth, canvasHeight, currentTemplate);

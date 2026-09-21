@@ -3,13 +3,21 @@ import 'fake-indexeddb/auto';
 import { Blob as NodeBlob } from 'node:buffer';
 import { makeCanvas } from './helpers/mockCanvas';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { db, createBlankProject, autoSaveWorkspace, loadLatestSavedWorkspace, getLayerBlobsForProject, duplicateProject } from '@/lib/storage/db';
+import { db, createBlankProject, autoSaveWorkspace, loadLatestSavedWorkspace, getLayerBlobsForProject, duplicateProject, getProjectById } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
-import { hydrateProject, buildProjectFile, buildAutosavePayloadAsync } from '@/lib/project/serialize';
+import {
+  hydrateProject,
+  buildProjectFile,
+  buildAutosavePayloadAsync,
+  commitPersistedRevisions,
+  isLayerDirty,
+  clearPersistedRevisions,
+  rasterizeLayerBlobAsync,
+} from '@/lib/project/serialize';
 import { compositeFrame } from '@/lib/render/compositor';
-import type { ProjectFile } from '@/types/project';
+import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/types/project';
 import { useStudioStore } from '@/stores/studioStore';
-import { getOrCreateBuffer, hasBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, hasBuffer, clearAllBuffers, touchBuffer, getBufferRevision } from '@/lib/engine/bufferRegistry';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { SafeJson } from '@/lib/safety/safeJson';
@@ -25,9 +33,10 @@ beforeEach(async () => {
   await db.open();
   await db.projects.clear();
   await db.layerBlobs.clear();
+  clearPersistedRevisions();
   useStudioStore.getState().resetToNewProject();
 });
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); clearAllBuffers(); });
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); clearAllBuffers(); clearPersistedRevisions(); });
 
 describe('audit persistence regressions', () => {
   it('probes compact lossless WebP headers and rejects oversized extended WebP before decoding', async () => {
@@ -53,7 +62,7 @@ describe('audit persistence regressions', () => {
     const saved = await createBlankProject('Original');
     const blobs = [{ layerId: 'layer', frameIndex: 0, blob: new Blob(['old']) }];
     expect(await autoSaveWorkspace(saved.id, 'Original', 32, 32, 8, { old: true }, undefined, blobs)).toBe(true);
-    vi.spyOn(db.layerBlobs, 'bulkAdd').mockRejectedValueOnce(new DOMException('Full', 'QuotaExceededError'));
+    vi.spyOn(db.layerBlobs, 'bulkPut').mockRejectedValueOnce(new DOMException('Full', 'QuotaExceededError'));
     expect(await autoSaveWorkspace(saved.id, 'Changed', 32, 32, 8, { old: false }, undefined,
       [{ ...blobs[0], blob: new Blob(['new']) }])).toBe(false);
     expect((await db.projects.get(saved.id))?.name).toBe('Original');
@@ -303,6 +312,303 @@ describe('audit persistence regressions', () => {
     expect(hasBuffer('layer-lazy')).toBe(true);
     const rehydratedEntry = getOrCreateBuffer('layer-lazy', 32, 32);
     expect(rehydratedEntry.canvas).toBeDefined();
+  });
+
+  it('proves incremental autosave round-trip invariant against canonical save across stroke, add, delete, duplicate, frame reorder, and metadata-only edits', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 32,
+      height: 32,
+      close: vi.fn(),
+    }));
+    vi.spyOn(ImageHeaderProbe, 'probe').mockResolvedValue({ width: 32, height: 32, format: 'PNG' });
+
+    // Canonical save oracle: extracts all layer blobs and project file without dirty-diffing
+    const canonicalOracle = async (_projId: string) => {
+      const state = useStudioStore.getState();
+      const allBlobs: Array<{ layerId: string; frameIndex: number; blob: Blob }> = [];
+      const frames = await Promise.all(
+        state.frames.map(async (frame, frameIndex) => {
+          const layers = await Promise.all(
+            frame.layers.map(async (layer) => {
+              const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
+              if (blob) {
+                allBlobs.push({ layerId: layer.id, frameIndex, blob });
+              }
+              return {
+                id: layer.id,
+                name: layer.name,
+                visible: layer.visible,
+                locked: layer.locked,
+                opacity: layer.opacity,
+                blendMode: layer.blendMode,
+                tag: layer.tag,
+                effect: layer.effect ? structuredClone(layer.effect) : undefined,
+                pngBase64: undefined,
+              };
+            })
+          );
+          return { id: frame.id, durationMs: frame.durationMs, layers };
+        })
+      );
+      const project: ProjectFile = {
+        format: PROJECT_FORMAT_ID,
+        version: PROJECT_FORMAT_VERSION,
+        name: state.projectName,
+        width: state.canvasWidth,
+        height: state.canvasHeight,
+        fps: state.fps,
+        loopMode: state.loopMode,
+        onionSkin: { ...state.onionSkin },
+        palettes: state.palettes.map((p) => ({ ...p, colors: [...p.colors] })),
+        currentPaletteId: state.currentPaletteId,
+        customRamps: state.customRamps.map((r) => ({ ...r, shades: [...r.shades] })),
+        clips: state.clips.map((c) => ({ ...c })),
+        frames,
+        createdAt: 1000,
+        updatedAt: 1000,
+      };
+      return { project, allBlobs };
+    };
+
+    // Helper to perform an incremental save step
+    const performIncrementalSave = async (projId: string) => {
+      const payload = await buildAutosavePayloadAsync(projId);
+      const ok = await autoSaveWorkspace(
+        projId,
+        payload.project.name,
+        payload.project.width,
+        payload.project.height,
+        payload.project.fps,
+        payload.project,
+        undefined,
+        payload.layerBlobs
+      );
+      expect(ok).toBe(true);
+      commitPersistedRevisions(projId, payload.capturedRevisions);
+      return payload;
+    };
+
+    // 1. Setup multi-frame, multi-layer workspace: Frame 0 (Layer A, Layer B), Frame 1 (Layer C)
+    const store = useStudioStore.getState();
+    const layerAId = store.activeLayerId;
+    const bufA = getOrCreateBuffer(layerAId, 32, 32);
+    bufA.ctx.fillStyle = '#ff0000';
+    bufA.ctx.fillRect(0, 0, 10, 10);
+    touchBuffer(layerAId);
+
+    store.addLayer('Layer B');
+    const layerBId = useStudioStore.getState().activeLayerId;
+    const bufB = getOrCreateBuffer(layerBId, 32, 32);
+    bufB.ctx.fillStyle = '#00ff00';
+    bufB.ctx.fillRect(5, 5, 10, 10);
+    touchBuffer(layerBId);
+
+    store.addFrame();
+    const frame1 = useStudioStore.getState().frames[1];
+    const layerCId = frame1.layers[0].id;
+    const bufC = getOrCreateBuffer(layerCId, 32, 32);
+    bufC.ctx.fillStyle = '#0000ff';
+    bufC.ctx.fillRect(10, 10, 10, 10);
+    touchBuffer(layerCId);
+
+    const projId = useStudioStore.getState().currentProjectId;
+
+    // Initial incremental save: All 4 layers across 2 frames are dirty
+    const initialPayload = await performIncrementalSave(projId);
+    expect(initialPayload.dirtyLayerCount).toBe(4);
+    expect(initialPayload.layerBlobs).toHaveLength(4);
+
+    // Verify stored blobs match canonical oracle
+    const oracleInitial = await canonicalOracle(projId);
+    const dbBlobsInitial = await getLayerBlobsForProject(projId);
+    expect(dbBlobsInitial).toHaveLength(oracleInitial.allBlobs.length);
+
+    // 2. Mutation A: Stroke edit on Layer A ONLY
+    bufA.ctx.fillRect(1, 1, 2, 2);
+    touchBuffer(layerAId);
+
+    const payloadA = await performIncrementalSave(projId);
+    // Exactly 1 layer dirty, exactly 1 PNG blob encoded!
+    expect(payloadA.dirtyLayerCount).toBe(1);
+    expect(payloadA.layerBlobs).toHaveLength(1);
+    expect(payloadA.layerBlobs[0].layerId).toBe(layerAId);
+
+    // Verify DB layer blobs still has all 4 layers, and Layer A is updated
+    const dbBlobsAfterA = await getLayerBlobsForProject(projId);
+    expect(dbBlobsAfterA).toHaveLength(4);
+
+    // 3. Mutation B: Metadata-only edit (Project rename + Palette change)
+    useStudioStore.getState().setProjectName('Canonical Test Sprite');
+    const payloadB = await performIncrementalSave(projId);
+    // Exactly 0 layers dirty! Zero PNG encodes!
+    expect(payloadB.dirtyLayerCount).toBe(0);
+    expect(payloadB.layerBlobs).toHaveLength(0);
+
+    const storedProjB = await getProjectById(projId);
+    expect(storedProjB?.name).toBe('Canonical Test Sprite');
+    expect(await getLayerBlobsForProject(projId)).toHaveLength(4);
+
+    // 4. Mutation C: Layer add
+    useStudioStore.getState().setActiveFrame(0);
+    useStudioStore.getState().addLayer('Layer D');
+    const layerDId = useStudioStore.getState().activeLayerId;
+    getOrCreateBuffer(layerDId, 32, 32);
+    touchBuffer(layerDId);
+
+    const payloadC = await performIncrementalSave(projId);
+    // Only the new Layer D is dirty
+    expect(payloadC.dirtyLayerCount).toBe(1);
+    expect(payloadC.layerBlobs[0].layerId).toBe(layerDId);
+
+    const dbBlobsAfterC = await getLayerBlobsForProject(projId);
+    expect(dbBlobsAfterC).toHaveLength(5);
+
+    // 5. Mutation D: Layer delete (delete Layer B)
+    useStudioStore.getState().deleteLayer(layerBId);
+    const payloadD = await performIncrementalSave(projId);
+    expect(payloadD.dirtyLayerCount).toBe(0); // Remaining layers had no pixel edits
+
+    // Pruning invariant: Layer B blob is cleanly deleted from DB
+    const dbBlobsAfterD = await getLayerBlobsForProject(projId);
+    expect(dbBlobsAfterD).toHaveLength(4);
+    expect(dbBlobsAfterD.some((b) => b.layerId === layerBId)).toBe(false);
+
+    // 6. Mutation E: Frame reorder (swap Frame 0 and Frame 1)
+    useStudioStore.getState().reorderFrames(0, 1);
+    const payloadE = await performIncrementalSave(projId);
+    // Layers whose frameIndex changed are detected as dirty
+    expect(payloadE.dirtyLayerCount).toBeGreaterThan(0);
+
+    const oracleFinal = await canonicalOracle(projId);
+    const dbBlobsFinal = await getLayerBlobsForProject(projId);
+    expect(dbBlobsFinal).toHaveLength(oracleFinal.allBlobs.length);
+
+    // 7. Full round-trip rehydration from DB
+    clearAllBuffers();
+    const finalWorkspace = await getProjectById(projId);
+    expect(finalWorkspace).not.toBeNull();
+    const decodedFinal = JSON.parse(finalWorkspace!.dataJson);
+    await hydrateProject(decodedFinal, projId, finalWorkspace!.layerBlobs);
+
+    // Check all active layers hydrated correctly
+    for (const frame of decodedFinal.frames) {
+      for (const layer of frame.layers) {
+        expect(hasBuffer(layer.id)).toBe(true);
+      }
+    }
+  });
+
+  it('guarantees in-flight edit safety (R -> R+1): layer edited during save remains dirty and is saved on next pass', async () => {
+    const projId = 'proj-in-flight-safety';
+    const store = useStudioStore.getState();
+    const layerId = store.activeLayerId;
+    const buf = getOrCreateBuffer(layerId, 32, 32);
+
+    // Edit 1: User paints stroke 1
+    buf.ctx.fillRect(0, 0, 4, 4);
+    touchBuffer(layerId); // contentRevision = 2
+    expect(getBufferRevision(layerId)).toBe(2);
+
+    // Start Save 1: captures revision 2
+    const payload1 = await buildAutosavePayloadAsync(projId);
+    expect(payload1.dirtyLayerCount).toBe(1);
+    expect(payload1.capturedRevisions.get(layerId)?.revision).toBe(2);
+
+    // Mid-flight: User paints stroke 2 while Save 1 is in-flight!
+    buf.ctx.fillRect(4, 4, 4, 4);
+    touchBuffer(layerId); // contentRevision = 3 (R -> R+1)
+    expect(getBufferRevision(layerId)).toBe(3);
+
+    // Save 1 completes write to IndexedDB
+    const ok1 = await autoSaveWorkspace(
+      projId,
+      payload1.project.name,
+      payload1.project.width,
+      payload1.project.height,
+      payload1.project.fps,
+      payload1.project,
+      undefined,
+      payload1.layerBlobs
+    );
+    expect(ok1).toBe(true);
+    commitPersistedRevisions(projId, payload1.capturedRevisions);
+
+    // Invariant check: layer must REMAIN dirty because current revision 3 > persisted revision 2!
+    expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(true);
+
+    // Next save pass: captures stroke 2 at revision 3
+    const payload2 = await buildAutosavePayloadAsync(projId);
+    expect(payload2.dirtyLayerCount).toBe(1);
+    expect(payload2.capturedRevisions.get(layerId)?.revision).toBe(3);
+
+    const ok2 = await autoSaveWorkspace(
+      projId,
+      payload2.project.name,
+      payload2.project.width,
+      payload2.project.height,
+      payload2.project.fps,
+      payload2.project,
+      undefined,
+      payload2.layerBlobs
+    );
+    expect(ok2).toBe(true);
+    commitPersistedRevisions(projId, payload2.capturedRevisions);
+
+    // Now clean!
+    expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(false);
+  });
+
+  it('handles save failure retry without marking clean: layers remain dirty on error and retry succeeds', async () => {
+    const projId = 'proj-save-failure-retry';
+    const store = useStudioStore.getState();
+    const layerId = store.activeLayerId;
+    const buf = getOrCreateBuffer(layerId, 32, 32);
+
+    buf.ctx.fillRect(0, 0, 5, 5);
+    touchBuffer(layerId);
+    expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(true);
+
+    const payload = await buildAutosavePayloadAsync(projId);
+    expect(payload.dirtyLayerCount).toBe(1);
+
+    // Simulate DB write error (e.g. QuotaExceededError on initial insert)
+    vi.spyOn(db.layerBlobs, 'bulkAdd').mockRejectedValueOnce(new DOMException('Disk full', 'QuotaExceededError'));
+
+    const saveFailed = await autoSaveWorkspace(
+      projId,
+      payload.project.name,
+      payload.project.width,
+      payload.project.height,
+      payload.project.fps,
+      payload.project,
+      undefined,
+      payload.layerBlobs
+    );
+    expect(saveFailed).toBe(false);
+
+    // Because save failed, commitPersistedRevisions is NOT called!
+    // Layer must REMAIN dirty!
+    expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(true);
+
+    // Retry save without error
+    const retryPayload = await buildAutosavePayloadAsync(projId);
+    expect(retryPayload.dirtyLayerCount).toBe(1);
+
+    const retryOk = await autoSaveWorkspace(
+      projId,
+      retryPayload.project.name,
+      retryPayload.project.width,
+      retryPayload.project.height,
+      retryPayload.project.fps,
+      retryPayload.project,
+      undefined,
+      retryPayload.layerBlobs
+    );
+    expect(retryOk).toBe(true);
+    commitPersistedRevisions(projId, retryPayload.capturedRevisions);
+
+    // Now marked clean
+    expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(false);
   });
 });
 

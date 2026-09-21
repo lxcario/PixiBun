@@ -3,7 +3,7 @@
 // artwork passes through here for autosave, project export, and restore.
 
 import { useStudioStore } from '@/stores/studioStore';
-import { createEntry, replaceAllBuffers, getOrCreateBuffer, type BufferEntry } from '@/lib/engine/bufferRegistry';
+import { createEntry, replaceAllBuffers, getOrCreateBuffer, getBufferRevision, type BufferEntry } from '@/lib/engine/bufferRegistry';
 import {
   PROJECT_FORMAT_ID,
   PROJECT_FORMAT_VERSION,
@@ -14,6 +14,25 @@ import type { StoredLayerBlob } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
+import {
+  isLayerDirty,
+  getPersistedRevision,
+  setPersistedRevision,
+  commitPersistedRevisions,
+  initProjectPersistedRevisions,
+  clearPersistedRevisions,
+  type PersistedLayerRevision,
+} from './persistenceRevisions';
+
+export {
+  isLayerDirty,
+  getPersistedRevision,
+  setPersistedRevision,
+  commitPersistedRevisions,
+  initProjectPersistedRevisions,
+  clearPersistedRevisions,
+  type PersistedLayerRevision,
+};
 
 function requireBrowser(): void {
   if (typeof document === 'undefined') {
@@ -90,30 +109,53 @@ export async function rasterizeLayerBlobAsync(layerId: string, width: number, he
 export interface AutosavePayload {
   project: ProjectFile;
   layerBlobs: Array<{ layerId: string; frameIndex: number; blob: Blob }>;
+  dirtyLayerCount: number;
+  totalLayerCount: number;
+  capturedRevisions: Map<string, PersistedLayerRevision>;
 }
 
 /**
  * Asynchronously snapshots studio metadata without base64 layer duplication,
  * extracting raw binary Blobs for direct IndexedDB layerBlobs storage.
+ * Encodes Blobs only for dirty layers whose buffer revisions exceed persisted state.
  */
-export async function buildAutosavePayloadAsync(): Promise<AutosavePayload> {
+export async function buildAutosavePayloadAsync(projectId?: string): Promise<AutosavePayload> {
   const state = useStudioStore.getState();
+  const projId = projectId || state.currentProjectId;
   const now = Date.now();
   const layerBlobs: Array<{ layerId: string; frameIndex: number; blob: Blob }> = [];
+  const capturedRevisions = new Map<string, PersistedLayerRevision>();
+  let dirtyLayerCount = 0;
+  let totalLayerCount = 0;
 
   const frames = await Promise.all(
     state.frames.map(async (frame, frameIndex) => {
       const layers = await Promise.all(
         frame.layers.map(async (layer): Promise<SerializedLayer> => {
-          const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
-          if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
-          if (blob) {
+          totalLayerCount++;
+          const currentRev = getBufferRevision(layer.id);
+          const dirty = isLayerDirty(projId, layer.id, currentRev, frameIndex);
+
+          if (dirty) {
+            dirtyLayerCount++;
+            const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
+            if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
             layerBlobs.push({
               layerId: layer.id,
               frameIndex,
               blob,
             });
+            capturedRevisions.set(layer.id, {
+              revision: getBufferRevision(layer.id) || 1,
+              frameIndex,
+            });
+          } else {
+            const persisted = getPersistedRevision(projId, layer.id);
+            if (persisted) {
+              capturedRevisions.set(layer.id, { ...persisted });
+            }
           }
+
           return {
             id: layer.id,
             name: layer.name,
@@ -154,7 +196,7 @@ export async function buildAutosavePayloadAsync(): Promise<AutosavePayload> {
     updatedAt: now,
   };
 
-  return { project, layerBlobs };
+  return { project, layerBlobs, dirtyLayerCount, totalLayerCount, capturedRevisions };
 }
 
 /** Snapshots the entire studio - metadata plus every layer's pixels - into a portable ProjectFile. */
@@ -333,4 +375,17 @@ export async function hydrateProject(
   useStudioStore.getState().loadProjectState(file, projectId);
   useStudioStore.getState().bumpBufferVersion();
   studioEvents.emit('pixibun:history-clear');
+
+  if (projectId) {
+    const persisted = new Map<string, PersistedLayerRevision>();
+    for (const [frameIndex, frame] of file.frames.entries()) {
+      for (const layer of frame.layers) {
+        const hasStoredData = blobMap.has(layer.id + ':' + frameIndex) || !!layer.pngBase64;
+        if (hasStoredData) {
+          persisted.set(layer.id, { revision: 1, frameIndex });
+        }
+      }
+    }
+    initProjectPersistedRevisions(projectId, persisted);
+  }
 }

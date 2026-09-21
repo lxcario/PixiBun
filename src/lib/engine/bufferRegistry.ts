@@ -11,11 +11,12 @@ import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 export interface BufferEntry {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+  contentRevision: number;
 }
 
 const buffers = new Map<string, BufferEntry>();
 
-export function createEntry(width: number, height: number): BufferEntry {
+export function createEntry(width: number, height: number, initialRevision = 1): BufferEntry {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -24,14 +25,14 @@ export function createEntry(width: number, height: number): BufferEntry {
     throw new Error('Could not acquire a 2D context for a layer buffer.');
   }
   ctx.imageSmoothingEnabled = false;
-  return { canvas, ctx };
+  return { canvas, ctx, contentRevision: initialRevision };
 }
 
 /** Returns the buffer for a layer, creating a blank one (or resizing in place, content preserved top-left) on demand. */
 export function getOrCreateBuffer(layerId: string, width: number, height: number): BufferEntry {
   const existing = buffers.get(layerId);
   if (!existing) {
-    const entry = createEntry(width, height);
+    const entry = createEntry(width, height, 1);
     buffers.set(layerId, entry);
     return entry;
   }
@@ -46,8 +47,29 @@ export function getOrCreateBuffer(layerId: string, width: number, height: number
     canvas.height = height;
     existing.ctx.imageSmoothingEnabled = false;
     existing.ctx.drawImage(previous, 0, 0);
+    existing.contentRevision += 1;
   }
   return existing;
+}
+
+export function touchBuffer(layerId: string): number {
+  const entry = buffers.get(layerId);
+  if (entry) {
+    entry.contentRevision += 1;
+    return entry.contentRevision;
+  }
+  return 0;
+}
+
+export function getBufferRevision(layerId: string): number {
+  return buffers.get(layerId)?.contentRevision ?? 0;
+}
+
+export function setBufferRevision(layerId: string, revision: number): void {
+  const entry = buffers.get(layerId);
+  if (entry) {
+    entry.contentRevision = revision;
+  }
 }
 
 export function hasBuffer(layerId: string): boolean {
@@ -69,6 +91,7 @@ export function cloneBuffers(srcLayerIds: string[], dstLayerIds: string[], width
     if (src) {
       dst.ctx.drawImage(src.canvas, 0, 0);
     }
+    dst.contentRevision += 1;
   }
 }
 
@@ -211,7 +234,7 @@ export function resizeAllBuffers(
     const oldHeight = entry.canvas.height;
     if (oldWidth === newWidth && oldHeight === newHeight) continue;
 
-    const next = createEntry(newWidth, newHeight);
+    const next = createEntry(newWidth, newHeight, entry.contentRevision + 1);
     next.ctx.imageSmoothingEnabled = false;
 
     if (resample) {

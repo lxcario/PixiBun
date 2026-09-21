@@ -1,5 +1,5 @@
 import { useStudioStore } from '@/stores/studioStore';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
 
 export interface AltPalette {
   id: string;
@@ -1100,6 +1100,7 @@ export function loadTeachingAnimationIntoPlayground(char: TeachingCharacter, pal
         }
       }
     });
+    touchBuffer(layerId);
   });
 
   state.bumpBufferVersion();

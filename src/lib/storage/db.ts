@@ -5,6 +5,7 @@ import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/t
 import { StorageResilience } from '@/lib/safety/storageResilience';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
+import { clearPersistedRevisions } from '@/lib/project/persistenceRevisions';
 
 export interface StoredProject {
   id: string;
@@ -221,13 +222,15 @@ export async function autoSaveWorkspace(
   fps: number,
   stateSnapshot: object,
   thumbnailDataUrl?: string,
-  layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>
+  layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>,
+  activeLayerKeys?: Array<{ layerId: string; frameIndex: number }>
 ): Promise<boolean> {
   try {
     if (!db.isOpen()) await db.open();
     await db.transaction('rw', db.projects, db.layerBlobs, async () => {
       const existing = await db.projects.get(projectId);
       const createdAt = existing?.createdAt || Date.now();
+      const now = Date.now();
       const dataJson = JSON.stringify(stateSnapshot);
       await db.projects.put({
         id: projectId,
@@ -236,13 +239,89 @@ export async function autoSaveWorkspace(
         height,
         fps,
         createdAt,
-        updatedAt: Date.now(),
+        updatedAt: now,
         thumbnailDataUrl: thumbnailDataUrl || existing?.thumbnailDataUrl,
         dataJson,
       });
-      if (layerBlobs) {
-        await db.layerBlobs.where('projectId').equals(projectId).delete();
-        await db.layerBlobs.bulkAdd(layerBlobs.map(b => ({ ...b, projectId, updatedAt: Date.now() })));
+
+      if (layerBlobs !== undefined || activeLayerKeys !== undefined) {
+        // Collect all active layer keys for this project
+        const activeKeySet = new Set<string>();
+        if (activeLayerKeys) {
+          for (const k of activeLayerKeys) {
+            activeKeySet.add(`${k.layerId}::${k.frameIndex}`);
+          }
+        } else if (Array.isArray((stateSnapshot as { frames?: Array<{ layers?: Array<{ id?: string }> }> }).frames)) {
+          const frames = (stateSnapshot as { frames: Array<{ layers: Array<{ id: string }> }> }).frames;
+          for (let fIdx = 0; fIdx < frames.length; fIdx++) {
+            const frame = frames[fIdx];
+            if (Array.isArray(frame?.layers)) {
+              for (const layer of frame.layers) {
+                if (layer?.id) activeKeySet.add(`${layer.id}::${fIdx}`);
+              }
+            }
+          }
+        } else if (layerBlobs) {
+          // Fallback: tests passing stateSnapshot without frames
+          for (const b of layerBlobs) {
+            activeKeySet.add(`${b.layerId}::${b.frameIndex}`);
+          }
+        }
+
+        const existingRecords = await db.layerBlobs.where('projectId').equals(projectId).toArray();
+        const existingMap = new Map<string, StoredLayerBlob>();
+        const idsToDelete: number[] = [];
+
+        for (const rec of existingRecords) {
+          const k = `${rec.layerId}::${rec.frameIndex}`;
+          if (!activeKeySet.has(k)) {
+            if (rec.id !== undefined) idsToDelete.push(rec.id);
+          } else {
+            if (existingMap.has(k)) {
+              if (rec.id !== undefined) idsToDelete.push(rec.id);
+            } else {
+              existingMap.set(k, rec);
+            }
+          }
+        }
+
+        const recordsToPut: StoredLayerBlob[] = [];
+        const recordsToAdd: StoredLayerBlob[] = [];
+
+        if (layerBlobs && layerBlobs.length > 0) {
+          for (const b of layerBlobs) {
+            const k = `${b.layerId}::${b.frameIndex}`;
+            const existingRec = existingMap.get(k);
+            if (existingRec && existingRec.id !== undefined) {
+              recordsToPut.push({
+                id: existingRec.id,
+                projectId,
+                layerId: b.layerId,
+                frameIndex: b.frameIndex,
+                blob: b.blob,
+                updatedAt: now,
+              });
+            } else {
+              recordsToAdd.push({
+                projectId,
+                layerId: b.layerId,
+                frameIndex: b.frameIndex,
+                blob: b.blob,
+                updatedAt: now,
+              });
+            }
+          }
+        }
+
+        if (idsToDelete.length > 0) {
+          await db.layerBlobs.bulkDelete(idsToDelete);
+        }
+        if (recordsToPut.length > 0) {
+          await db.layerBlobs.bulkPut(recordsToPut);
+        }
+        if (recordsToAdd.length > 0) {
+          await db.layerBlobs.bulkAdd(recordsToAdd);
+        }
       }
     });
     return true;
@@ -310,6 +389,7 @@ export async function deleteProject(id: string): Promise<boolean> {
       await db.projects.delete(id);
       await db.layerBlobs.where('projectId').equals(id).delete();
     });
+    clearPersistedRevisions(id);
     return true;
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) return false;

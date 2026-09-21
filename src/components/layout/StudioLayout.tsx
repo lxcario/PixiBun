@@ -17,7 +17,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getProjectById } from '@/lib/storage/db';
 import { hydrateProject } from '@/lib/project/serialize';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
-import { getOrCreateBuffer, clearAllBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
@@ -217,6 +217,7 @@ export const StudioLayout: React.FC = () => {
             ctx.clearRect(0, 0, width, height);
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(slicedFrames[0], 0, 0, width, height);
+            touchBuffer(targetLayerId);
           }
         }
 
@@ -232,6 +233,7 @@ export const StudioLayout: React.FC = () => {
               fCtx.clearRect(0, 0, width, height);
               fCtx.imageSmoothingEnabled = false;
               fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+              touchBuffer(lId);
             }
           }
         }
@@ -248,6 +250,7 @@ export const StudioLayout: React.FC = () => {
             fCtx.clearRect(0, 0, width, height);
             fCtx.imageSmoothingEnabled = false;
             fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+            touchBuffer(lId);
           }
         }
 
@@ -270,6 +273,7 @@ export const StudioLayout: React.FC = () => {
             fCtx.clearRect(0, 0, width, height);
             fCtx.imageSmoothingEnabled = false;
             fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+            touchBuffer(lId);
           }
         }
       }
@@ -292,6 +296,7 @@ export const StudioLayout: React.FC = () => {
         if (ctx) {
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(canvas, 0, 0);
+          touchBuffer(targetLayerId);
         }
       }
     }

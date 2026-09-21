@@ -1,7 +1,7 @@
 import { LayerSlice, StudioSliceCreator } from './types';
 import { Layer } from '@/types/canvas';
 import { createId } from '@/lib/engine/id';
-import { getOrCreateBuffer, cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, cloneBuffers, deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
@@ -238,6 +238,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
         lowerBuffer.ctx.globalCompositeOperation = upper.blendMode;
         lowerBuffer.ctx.drawImage(upperBuffer.canvas, 0, 0);
         lowerBuffer.ctx.restore();
+        touchBuffer(lower.id);
       }
 
       currentFrame.layers.splice(upperIndex, 1);

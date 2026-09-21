@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
-import { deleteBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { deleteBuffers, getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { captureLayerBuffers } from '@/lib/engine/structuralHistory';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
@@ -123,6 +123,9 @@ export function useViewportDrawing({
           );
           if (layer) layer.effect = undefined;
         });
+      }
+      if (snapshot.type !== 'structural' && snapshot.layerId) {
+        touchBuffer(snapshot.layerId);
       }
       historyEngineRef.current.push(snapshot);
       currentStrokeSnapshotRef.current = null;
@@ -258,6 +261,7 @@ export function useViewportDrawing({
         for (const buf of stepToRestore.layerBuffers) {
           const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
           entry.ctx.putImageData(buf.imageData, 0, 0);
+          touchBuffer(buf.layerId);
         }
       }
     } else {
@@ -270,6 +274,7 @@ export function useViewportDrawing({
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
           targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {
           const layer = state.frames[stepToRestore.frameIndex]?.layers.find(
@@ -367,6 +372,7 @@ export function useViewportDrawing({
         for (const buf of stepToRestore.layerBuffers) {
           const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
           entry.ctx.putImageData(buf.imageData, 0, 0);
+          touchBuffer(buf.layerId);
         }
       }
     } else {
@@ -406,6 +412,7 @@ export function useViewportDrawing({
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
           targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {
           const layer = state.frames[stepToRestore.frameIndex]?.layers.find(
