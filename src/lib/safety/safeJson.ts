@@ -41,6 +41,91 @@ export function getUtf8ByteLength(str: string): number {
   return bytes;
 }
 
+export class SafeJsonPayloadLimitError extends RangeError {
+  public readonly code = 'SAFE_JSON_PAYLOAD_LIMIT' as const;
+  public readonly byteLength: number;
+  public readonly maxBytes: number;
+
+  constructor(byteLength: number, maxBytes: number) {
+    super(`[SafeJson] JSON payload size (${byteLength} bytes) exceeds maximum limit (${maxBytes} bytes)`);
+    this.name = 'SafeJsonPayloadLimitError';
+    this.byteLength = byteLength;
+    this.maxBytes = maxBytes;
+    Object.setPrototypeOf(this, SafeJsonPayloadLimitError.prototype);
+  }
+}
+
+export class SafeJsonNestingDepthError extends RangeError {
+  public readonly code = 'SAFE_JSON_NESTING_DEPTH' as const;
+  public readonly depth: number;
+  public readonly maxDepth: number;
+
+  constructor(depth: number, maxDepth: number, detail?: string) {
+    const msg = detail
+      ? `[SafeJson] JSON nesting exceeded max recursion depth of ${maxDepth}`
+      : `[SafeJson] JSON nesting exceeded max recursion depth`;
+    super(msg);
+    this.name = 'SafeJsonNestingDepthError';
+    this.depth = depth;
+    this.maxDepth = maxDepth;
+    Object.setPrototypeOf(this, SafeJsonNestingDepthError.prototype);
+  }
+}
+
+export class SafeJsonTraversalLimitError extends RangeError {
+  public readonly code = 'SAFE_JSON_TRAVERSAL_LIMIT' as const;
+  public readonly limit: number;
+  public readonly observed: number;
+
+  constructor(observed: number, limit: number) {
+    super(`[SafeJson] JSON metadata traversal exceeded ceiling (${observed} nodes visited; limit is ${limit})`);
+    this.name = 'SafeJsonTraversalLimitError';
+    this.limit = limit;
+    this.observed = observed;
+    Object.setPrototypeOf(this, SafeJsonTraversalLimitError.prototype);
+  }
+}
+
+export class SafeJsonOptionError extends RangeError {
+  public readonly code = 'SAFE_JSON_OPTION_ERROR' as const;
+
+  constructor(message: string) {
+    super(`[SafeJson] ${message}`);
+    this.name = 'SafeJsonOptionError';
+    Object.setPrototypeOf(this, SafeJsonOptionError.prototype);
+  }
+}
+
+function validatePositiveSafeInteger(name: string, value: unknown): number {
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > Number.MAX_SAFE_INTEGER
+  ) {
+    throw new SafeJsonOptionError(
+      `Option "${name}" must be a positive safe integer (received: ${String(value)})`
+    );
+  }
+  return value;
+}
+
+export class SafeJsonSyntaxError extends SyntaxError {
+  public readonly code = 'SAFE_JSON_SYNTAX_ERROR' as const;
+
+  constructor(message = '[SafeJson] Invalid JSON syntax') {
+    super(message);
+    this.name = 'SafeJsonSyntaxError';
+    Object.setPrototypeOf(this, SafeJsonSyntaxError.prototype);
+  }
+}
+
+export interface SafeJsonParseOptions {
+  maxDepth?: number;
+  maxTraversedNodes?: number;
+}
+
 export class SafeJson {
   /**
    * Maximum allowed JSON payload size (50 MB).
@@ -55,18 +140,41 @@ export class SafeJson {
 
   /**
    * Parses untrusted JSON while stripping prototype-pollution keys (__proto__, constructor, prototype)
-   * and enforcing a recursion depth ceiling.
+   * and enforcing recursion depth and optional traversal node limits.
+   *
+   * Note on Allocation:
+   * JSON.parse necessarily performs initial memory allocation of the parsed AST in the JavaScript
+   * engine heap. The optional maxTraversedNodes limit bounds the subsequent sanitization/copy pass,
+   * guaranteeing that processing terminates immediately if the node count exceeds the ceiling.
    */
-  public static parse<T>(rawJson: string, maxDepth = SafeJson.MAX_RECURSION_DEPTH): T {
+  public static parse<T>(
+    rawJson: string,
+    optionsOrMaxDepth?: number | SafeJsonParseOptions
+  ): T {
     if (typeof rawJson !== 'string') {
       throw new TypeError('[SafeJson] Input must be a string');
     }
 
+    let maxDepth = SafeJson.MAX_RECURSION_DEPTH;
+    let maxTraversedNodes: number | undefined;
+
+    if (typeof optionsOrMaxDepth === 'number') {
+      maxDepth = validatePositiveSafeInteger('maxDepth', optionsOrMaxDepth);
+    } else if (optionsOrMaxDepth !== undefined) {
+      if (typeof optionsOrMaxDepth !== 'object' || optionsOrMaxDepth === null || Array.isArray(optionsOrMaxDepth)) {
+        throw new SafeJsonOptionError('Parse options must be a plain object or number');
+      }
+      if (optionsOrMaxDepth.maxDepth !== undefined) {
+        maxDepth = validatePositiveSafeInteger('maxDepth', optionsOrMaxDepth.maxDepth);
+      }
+      if (optionsOrMaxDepth.maxTraversedNodes !== undefined) {
+        maxTraversedNodes = validatePositiveSafeInteger('maxTraversedNodes', optionsOrMaxDepth.maxTraversedNodes);
+      }
+    }
+
     const byteLength = getUtf8ByteLength(rawJson);
     if (byteLength > this.MAX_PAYLOAD_BYTES) {
-      throw new RangeError(
-        `[SafeJson] JSON payload size (${byteLength} bytes) exceeds maximum limit (${this.MAX_PAYLOAD_BYTES} bytes)`
-      );
+      throw new SafeJsonPayloadLimitError(byteLength, this.MAX_PAYLOAD_BYTES);
     }
 
     // Reject nesting before JSON.parse's recursive reviver (or our sanitizer) runs.
@@ -80,44 +188,81 @@ export class SafeJson {
         else if (char === '"') quoted = false;
       } else if (char === '"') quoted = true;
       else if (char === '{' || char === '[') {
-        if (++depth > maxDepth) throw new RangeError('[SafeJson] JSON nesting exceeded max recursion depth');
+        if (++depth > maxDepth) throw new SafeJsonNestingDepthError(depth, maxDepth);
       } else if (char === '}' || char === ']') depth--;
     }
-    const parsed = JSON.parse(rawJson);
 
-    // Enforce depth ceiling on parsed structure
-    function assertDepth(obj: unknown, currentDepth: number): void {
-      if (currentDepth > maxDepth) {
-        throw new RangeError(`[SafeJson] JSON nesting exceeded max recursion depth of ${maxDepth}`);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawJson);
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        throw new SafeJsonSyntaxError('[SafeJson] Invalid JSON syntax');
       }
-      if (obj !== null && typeof obj === 'object') {
-        if (Array.isArray(obj)) {
-          for (let i = 0; i < obj.length; i++) {
-            assertDepth(obj[i], currentDepth + 1);
-          }
-        } else {
-          for (const k of Object.keys(obj)) {
-            assertDepth((obj as Record<string, unknown>)[k], currentDepth + 1);
-          }
-        }
-      }
+      throw err;
     }
 
-    assertDepth(parsed, 1);
-    return this.sanitizeObject(parsed) as T;
+    const traversalBudget =
+      maxTraversedNodes !== undefined ? { count: 0, max: maxTraversedNodes } : undefined;
+
+    return this.sanitizeObject(parsed, traversalBudget, 1, maxDepth) as T;
   }
 
   /**
    * Recursively sanitizes an existing in-memory object by removing any prototype pollution keys.
    * Returns a standard plain object preserving Object.prototype methods.
+   *
+   * Node Traversal Counting Definition:
+   * A node is defined as any value (object, array, or primitive) visited during traversal:
+   * - The root value counts as node 1.
+   * - Each array element counts as 1 node.
+   * - Each object property value counts as 1 node.
+   * If a traversalBudget is provided and budget.count exceeds budget.max, traversal aborts
+   * immediately by throwing SafeJsonTraversalLimitError.
    */
-  public static sanitizeObject<T>(obj: T): T {
+  public static sanitizeObject<T>(
+    obj: T,
+    traversalBudget?: { count: number; max: number },
+    currentDepth = 1,
+    maxDepth = SafeJson.MAX_RECURSION_DEPTH
+  ): T {
+    if (traversalBudget !== undefined) {
+      traversalBudget.count += 1;
+      if (traversalBudget.count > traversalBudget.max) {
+        throw new SafeJsonTraversalLimitError(traversalBudget.count, traversalBudget.max);
+      }
+    }
+
+    if (currentDepth > maxDepth) {
+      throw new SafeJsonNestingDepthError(currentDepth, maxDepth, 'with-detail');
+    }
+
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.sanitizeObject(item)) as unknown as T;
+      if (traversalBudget !== undefined) {
+        // Check whether the minimum required element visits already exceed remaining budget
+        const remaining = traversalBudget.max - traversalBudget.count;
+        if (obj.length > remaining) {
+          traversalBudget.count = traversalBudget.max + 1;
+          throw new SafeJsonTraversalLimitError(traversalBudget.max + 1, traversalBudget.max);
+        }
+
+        // Bounded incremental growing array - avoid preallocating destination array
+        const arr: unknown[] = [];
+        for (let i = 0; i < obj.length; i++) {
+          arr.push(this.sanitizeObject(obj[i], traversalBudget, currentDepth + 1, maxDepth));
+        }
+        return arr as unknown as T;
+      }
+
+      const arr = new Array(obj.length);
+      for (let i = 0; i < obj.length; i++) {
+        arr[i] = this.sanitizeObject(obj[i], undefined, currentDepth + 1, maxDepth);
+      }
+      return arr as unknown as T;
     }
 
     const clean: Record<string, unknown> = {};
@@ -125,7 +270,12 @@ export class SafeJson {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         continue;
       }
-      clean[key] = this.sanitizeObject((obj as Record<string, unknown>)[key]);
+      clean[key] = this.sanitizeObject(
+        (obj as Record<string, unknown>)[key],
+        traversalBudget,
+        currentDepth + 1,
+        maxDepth
+      );
     }
 
     return clean as unknown as T;

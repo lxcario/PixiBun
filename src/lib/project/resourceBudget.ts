@@ -21,6 +21,21 @@ export interface FrameWithLayers {
 }
 
 /**
+ * Multiplies two non-negative safe integers, returning null if the result would exceed Number.MAX_SAFE_INTEGER.
+ */
+export function safeMultiply(a: number, b: number): number | null {
+  if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 0 || b < 0) {
+    return null;
+  }
+  if (a === 0 || b === 0) return 0;
+  if (a > Math.floor(Number.MAX_SAFE_INTEGER / b)) {
+    return null;
+  }
+  const result = a * b;
+  return Number.isSafeInteger(result) ? result : null;
+}
+
+/**
  * Calculates aggregate worst-case materializable resource usage across all layers and frames.
  */
 export function calculateProjectResourceUsage(
@@ -44,8 +59,13 @@ export function calculateProjectResourceUsage(
     }
   }
 
-  const materializableRasterPixels = layerCount * width * height;
-  const baseRawRgbaBytes = materializableRasterPixels * 4;
+  const pxPerFrame = safeMultiply(width, height);
+  const materializableRasterPixels =
+    pxPerFrame !== null
+      ? (safeMultiply(layerCount, pxPerFrame) ?? Number.MAX_SAFE_INTEGER)
+      : Number.MAX_SAFE_INTEGER;
+  const baseRawRgbaBytes =
+    safeMultiply(materializableRasterPixels, 4) ?? Number.MAX_SAFE_INTEGER;
 
   return {
     frameCount,

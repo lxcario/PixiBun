@@ -3,6 +3,8 @@ import { Layer } from '@/types/canvas';
 import { createId } from '@/lib/engine/id';
 import { getOrCreateBuffer, cloneBuffers, deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   activeLayerId: 'layer-1',
@@ -14,6 +16,25 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   addLayer: (name, tag, idOverride, skipHistory) => {
+    const currentStore = get();
+    const frame = currentStore.frames[currentStore.activeFrameIndex];
+    if (!frame) return;
+
+    const capacity = canAddLayersToFrame(
+      currentStore.frames,
+      currentStore.activeFrameIndex,
+      currentStore.canvasWidth,
+      currentStore.canvasHeight,
+      1
+    );
+    if (!capacity.ok) {
+      studioEvents.emit('pixibun:toast', {
+        message: capacity.reason || 'Cannot add layer: workspace capacity ceiling reached.',
+        type: 'error',
+      });
+      return;
+    }
+
     if (!skipHistory) {
       pushStructuralHistoryStep('Add Layer', { opKind: 'add-layer', affectedLayerIds: [] });
     }
@@ -61,8 +82,25 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   duplicateLayer: layerId => {
-    const frame = get().frames[get().activeFrameIndex];
+    const currentStore = get();
+    const frame = currentStore.frames[currentStore.activeFrameIndex];
     if (!frame?.layers.some((layer) => layer.id === layerId)) return;
+
+    const capacity = canAddLayersToFrame(
+      currentStore.frames,
+      currentStore.activeFrameIndex,
+      currentStore.canvasWidth,
+      currentStore.canvasHeight,
+      1
+    );
+    if (!capacity.ok) {
+      studioEvents.emit('pixibun:toast', {
+        message: capacity.reason || 'Cannot duplicate layer: workspace capacity ceiling reached.',
+        type: 'error',
+      });
+      return;
+    }
+
     pushStructuralHistoryStep('Duplicate Layer', { opKind: 'duplicate-layer', affectedLayerIds: [] });
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];

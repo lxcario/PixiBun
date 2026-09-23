@@ -7,6 +7,7 @@ import { useGeometricEvents } from './events/useGeometricEvents';
 import { useArtisanEvents } from './events/useArtisanEvents';
 import { createId } from '@/lib/engine/id';
 import type { LayerEffectDescriptor } from '@/types/canvas';
+import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
 
 interface UseViewportStudioEventsProps {
   mainCanvasRef: RefObject<HTMLCanvasElement | null>;
@@ -187,6 +188,21 @@ export function useViewportStudioEvents({
         // single undo restores the complete pre-command state.
         captureSnapshot(displayName, targetLayerId, undefined, tag, true, targetLayerIndex);
       } else {
+        const capacity = canAddLayersToFrame(
+          state.frames,
+          state.activeFrameIndex,
+          canvasWidth,
+          canvasHeight,
+          1
+        );
+        if (!capacity.ok) {
+          studioEvents.emit('pixibun:toast', {
+            message: capacity.reason || 'Cannot create shadow layer: workspace capacity ceiling reached.',
+            type: 'error',
+          });
+          return;
+        }
+
         targetLayerId = createId('layer');
         targetLayerIndex = tag === 'cast-shadow' || tag === 'ground-shadow'
           ? currentFrame.layers.length

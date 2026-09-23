@@ -2,6 +2,7 @@ import { ViewportSlice, StudioSliceCreator } from './types';
 import { createId } from '@/lib/engine/id';
 import { resizeAllBuffers } from '@/lib/engine/bufferRegistry';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
+import { validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
 
 export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get) => ({
   currentProjectId: createId('proj'),
@@ -55,6 +56,11 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
     const previousWidth = get().canvasWidth;
     const previousHeight = get().canvasHeight;
     if (previousWidth === width && previousHeight === height) return;
+
+    const validity = validateWorkspaceStructure(width, height, get().frames);
+    if (!validity.ok) {
+      throw new RangeError(validity.reason);
+    }
 
     resizeAllBuffers(width, height, anchor, resample);
     set(state => {

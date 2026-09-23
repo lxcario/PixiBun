@@ -1818,12 +1818,128 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Status:** Complete (2026-09-20)
 
+---
 
+## 2026-09-21 — Phase 64: Integrity, Recovery & Resource Safety (Phase A)
 
+**Problem Statement:**
+1. Studio restore failure on malformed IndexedDB documents was vulnerable to overwriting the user's workspace with blank projects, losing historical data.
+2. In-memory project representations lacked an initial conservative envelope ceiling, risking tab crashes when processing runaway dimensions or layer counts.
+3. Import modals were tightly coupled to presentation layers, and storage failures were not distinguished from empty workspaces in the gallery.
 
+**Delivered:**
+- **Initial Conservative Resource Envelope**: Defined `MAX_PROJECT_AGGREGATE_PIXELS = 67,108,864` (64 Mpx = 256 MiB base raw RGBA) and `MAX_PROJECT_TOTAL_LAYERS = 2,000` in `src/config/canvasLimits.ts`. Implemented `validateProjectResourceBudget` in `src/lib/project/resourceBudget.ts`.
+- **Neutral Import Domain Contracts**: Decoupled domain file-import pipeline from UI modal components (`src/types/import.ts`, `src/lib/project/importFile.ts`).
+- **Canonical Project Domain Decoder**: Centralized project intake through `decodeAndValidateProject` (`src/lib/project/decodeProject.ts`) executing prototype-safe parsing, schema validation, migration, and envelope checks.
+- **Safe Boot Restore & Corrupt Document Preservation**: Preserved corrupt project records and layer blobs in IndexedDB untouched on boot restore failure, instantiating fresh workspace identity and alerting user via toast (`src/hooks/studio/useStudioAutosave.ts`).
+- **Atomic Dexie Storage Operations**: Re-architected `deleteProject`, `renameProject`, and `duplicateProject` within atomic Dexie `readwrite` transactions across `projects` and `layerBlobs`.
+- **Lazy Canvas Buffer Allocation**: Optimized `hydrateProject` to allocate 2D backing stores only for layers backed by stored pixel blobs, plus the active layer.
+- **Worker Dispatcher Lifecycle**: Added 10-second timeout, `AbortSignal` cancellation, and fatal crash recovery in `src/lib/engine/workerDispatcher.ts`.
 
+**Checks run:**
+- Vitest unit test suite: 725 tests across 100 suites passed.
+- Playwright E2E suite: 22 tests across 9 suites passed.
 
+**Status:** Complete (2026-09-21)
 
+---
 
+## 2026-09-21 — Phase 65: Runtime Performance, Offline Reliability, Persistence & History (Phase B)
 
+**Problem Statement:**
+1. Whole-project history snapshots scaled at $O(\text{total project state})$ per undo step, quickly consuming browser heap memory.
+2. Autosave lacked monotonic revision tracking, risking partial saves and race conditions during rapid editing.
+3. Monolithic store subscriptions caused excessive re-renders across studio chrome during continuous drawing strokes.
+
+**Delivered:**
+- **Bidirectional Structural History Inversion & Hard Byte Budget**: Replaced whole-project snapshots with minimal structural inversion deltas (`StructuralHistoryDelta` in `src/lib/engine/structuralHistory.ts`), scaling at $O(\text{affected state})$. Bounded undo history to 64 MiB / 50 entries with explicit oversized-entry rejection and eviction accounting.
+- **Project-Scoped Revision Tracking & Incremental Autosave**: Replaced ad-hoc dirty flags with monotonic per-layer revision counters (`ProjectRevisionTracker` in `src/lib/project/persistenceRevisions.ts`). Atomic two-phase commit inside Dexie `readwrite` transaction (`useStudioAutosave.ts`, `db.ts`).
+- **Zustand Selector Isolation & Stable Listeners**: Decoupled studio chrome subscriptions with fine-grained selectors. Stabilized `useStudioKeyboard.ts` using `getState()` with a stable `optionsRef`.
+- **Gesture Interruption Safety**: Handled `pointercancel`, `lostpointercapture`, window `blur`, and `visibilitychange` to cleanly finalize strokes without dangling captures.
+- **Deterministic Build-Versioned Service Worker & Real Offline E2E**: Derived deterministic `SW_CACHE_VERSION` in `next.config.ts`. Verified offline navigation, reload, drawing, undo/redo, and IndexedDB restore via Playwright (`tests/e2e/offline.spec.ts`).
+
+**Checks run:**
+- Vitest unit test suite: 762 tests across 104 suites passed.
+- Playwright E2E suite: 23 tests across 9 suites passed.
+
+**Status:** Complete (2026-09-21)
+
+---
+
+## 2026-09-21 — Phase 66: System Hardening & Production Polish (Phase C)
+
+**Problem Statement:**
+1. Four-theme WCAG AA visual contrast and full-application rendered accessibility required formal automated verification.
+2. Dialog focus isolation needed robust handling for multi-modal stacking and native inert background support.
+3. Node/CI environments required standardization and production vulnerability auditing.
+
+**Delivered:**
+- **Service Worker Lifecycle & Precache Scripts**: Verified ServiceWorkerRegistrar component rendering, dismiss, controllerchange reload orchestration, and byte-distinct cache script generation (`src/app/sw.js/route.ts`).
+- **WCAG 2.2 AA Theme Contrast Hardening**: Audited token contrast across Atelier Dark/Light and Cozy Classic Dark/Light ($\ge 4.5:1$ normal text, $\ge 3.0:1$ large/UI text) in `src/app/globals.css`.
+- **Four-Theme Rendered Browser Accessibility**: Implemented 20 automated Axe-core Playwright scans with 0 critical and 0 serious violations (`tests/e2e/themeAccessibility.spec.ts`).
+- **Modal Accessibility & Background Isolation**: Replaced static IDs with `React.useId()` in `src/components/ui/ModalWrapper.tsx`; enforced native `<dialog showModal()>` inert background isolation.
+- **Production Hardening & CI Standardization**: Standardized Node 22 (`22.14.0`) in `.nvmrc` and `package.json`. Configured canonical pipeline `npm run gate:full` in `.github/workflows/ci.yml`. Gated debug window properties to dev environments. Verified 0 vulnerabilities in `npm audit`.
+
+**Checks run:**
+- Vitest unit test suite: 795 tests across 107 suites passed.
+- Playwright E2E suite: 43 tests across 10 suites passed.
+- Lighthouse CI: 100% passing across `/` and `/studio` (97-99 Performance, 96-100 Accessibility, 100 Best Practices, 100 SEO).
+
+**Status:** Complete (2026-09-21)
+
+---
+
+## 2026-09-22 — Phase 67: Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger, Streaming ZIP32 Core & Untouched Backup Assembly (Phase 1A & Phase 1B)
+
+**Problem Statement:**
+1. Workspace mutations (canvas resize, layer insertion, frame duplication) lacked runtime pre-allocation checks, leaving the editor vulnerable to tab crashes when exceeding complexity boundaries.
+2. Deserialization of external project files needed defense against prototype poisoning, deep recursion stack overflows, and node count bombs.
+3. Corrupt projects in IndexedDB could not be diagnosed without risking further state loss or loading corrupt bitmaps into memory.
+4. Exporting data recovery archives required a zero-dependency, constant-memory streaming archiver that could run reliably in browser and headless environments.
+5. Assembling untouched recovery archives and exporting them directly to disk required read-only immutable snapshotting, full-keyspace blob enumeration, private trust boundaries, streaming file-handle transport, and bounded memory fallback without database mutations or UI invocation.
+
+**Delivered:**
+- **Phase 1A Workspace Envelope Enforcement & Decoupled Import (`src/lib/project/workspaceEnvelopeGuard.ts`, `src/lib/project/imageImportExecution.ts`)**:
+  - Implemented `WorkspaceEnvelopeGuard` pre-evaluating complexity ceilings (64 Mpx / 2,000 layers) before allocating canvas surfaces.
+  - Decoupled external raster image import execution from presentation controllers.
+  - Added 36 focused unit tests (`tests/phase1AEnvelopeEnforcement.test.ts`).
+- **Phase 1B.1 Policy-Driven Project Validation & Metadata Classifier (`src/lib/project/schema.ts`, `src/lib/safety/safeJson.ts`, `src/lib/recovery/recoveryClassifier.ts`)**:
+  - Unified schema validation engine with entry points `validateProjectWithPolicy`, `validateProjectJsonWithPolicy`, and `validateProjectFile` supporting envelope modes `'strict'` and `'collect-recoverable'` preserving 100% strict caller backward compatibility.
+  - Hardened `SafeJson.parse` against prototype pollution, 50 MB total payload ceiling, recursion depth ceiling ($\le 32$), and typed errors (`SafeJsonPayloadLimitError`, `SafeJsonNestingDepthError`, `SafeJsonTraversalLimitError`, `SafeJsonOptionError`, `SafeJsonSyntaxError`). The recovery classifier passes `RECOVERY_INSPECTION_CEILINGS.MAX_METADATA_NODES` (50,000 nodes) to `validateProjectJsonWithPolicy`.
+  - Built typed project metadata classifier categorizing documents into `valid`, `recoverable-envelope-exceeded`, `malformed`, `unsupported-version`, and `unsafe-content`. Added 32 unit tests (`tests/recoveryClassifier.test.ts`).
+- **Phase 1B.2 Recovery Ledger & Bounded Stored-Blob Diagnosis (`src/lib/storage/db.ts`, `src/lib/recovery/recoveryLedger.ts`, `src/lib/recovery/recoveryDiagnosis.ts`)**:
+  - Migrated Dexie schema to v5 with dedicated `recoveryRecords` table (`projectId, classificationState, lastConfirmedAt`) with `projectId` primary key.
+  - Added multi-table atomic rollback across `projects`, `layerBlobs`, and `recoveryRecords` in `deleteProject`.
+  - Built non-destructive stored-project assessment engine (`assessStoredProject`) scanning the full `layerBlobs` compound-index keyspace `[projectId+id]` via keyset batch pagination. Probed 24-byte Blob slices with `ImageHeaderProbe` without allocating canvas bitmaps. Diagnosed corrupted PNG headers, dimension mismatches, duplicate blob mappings, orphan blob records, embedded raster fields, and storage-record corruption, treating ordinary zero-blob layers as valid transparent layers. Added 24 unit tests (`tests/recoveryDiagnosisAndLedger.test.ts`).
+- **Phase 1B.3 Streaming Store-Only ZIP32 Archive Core (`src/lib/recovery/zipWriter.ts`)**:
+  - Built zero-dependency streaming PKZIP 2.0 / ZIP32 archive writer in pure TypeScript (`writeStoreOnlyZip`) serving as a low-level archive foundation.
+  - Store-only uncompressed chunks streamed directly to consumer sink in bounded 64 KiB chunks with $O(1)$ payload memory relative to payload size, and $O(\text{entry count})$ bookkeeping capped at 65,535 entries.
+  - Bit 3 + Bit 11 data descriptor framing (`0x0808` flags, 16-byte signed descriptor) for single-pass CRC-32 and size calculation.
+  - Preflight immutable snapshotting and array stabilization: shallow-copies `entrySources` before evaluating entry getters, evaluates and binds `sink.write` exactly once, and validates paths against traversal, leading slashes, drive letters, backslashes, NUL bytes, and lone UTF-16 surrogates.
+  - Responsive cancellation via `AbortSignal` with genuine `DOMException('AbortError')`.
+  - Added 40 unit tests (`tests/recoveryZipWriter.test.ts`) with independent bitwise CRC-32 and ZIP structure parser (zero external or Python dependencies).
+- **Phase 1B.4 Untouched Archive Assembly & Safe Export Adapters (`src/lib/recovery/recoveryBackup.ts`, `src/lib/recovery/recoveryBackupTransport.ts`)**:
+  - Built read-only immutable archive snapshotting executing a single read-only IndexedDB transaction across `projects`, `layerBlobs`, and `recoveryRecords` without mutating IndexedDB.
+  - Bounded full-compound-keyspace blob enumeration querying `[projectId, Dexie.minKey]` through `[projectId, Dexie.maxKey]` with `.limit(MAX_INSPECTABLE_STORED_BLOBS + 1)` via `.toArray()` to fail closed on oversized storage.
+  - Preserves untouched `dataJson` as exact WHATWG UTF-8 bytes without JSON parsing or modification.
+  - Generates closed-schema recovery manifest (`recovery-manifest.json`) and precomputes exact ZIP32 size before streaming.
+  - Sealed non-forgeable trust boundary via module-private `WeakSet` (`trustedPreparedArchives`) and `WeakMap` (`preparedArchiveInternals`), exposing strictly scalar descriptors (`PreparedBlobDescriptor`) without public Blob or buffer handles.
+  - Supports multi-pass manifest reusability via fresh byte copies on each stream open.
+  - Protected post-open file-handle lifecycle (`writeRecoveryArchiveToFileHandle`) with immediate `abort()` capture, best-effort abort on failure without masking primary errors, and strict avoidance of post-abort `close()`.
+  - Bounded in-memory Blob fallback (`createRecoveryArchiveBlob`) with preflight 250 MiB ceiling, defensive chunk copying (`chunk.slice()`), and release of retained chunk references on error or cancellation.
+  - Responsive cooperative cancellation via `AbortSignal` throwing genuine `DOMException('AbortError')`.
+  - Added 42 unit tests (`tests/recoveryBackup.test.ts`).
+- **Scope & Deferred Work**: Restricted Recovery Mode foundation is implemented through Phase 1B.4 only. Phase 1B.5 and later capabilities (recovery plan builder, safe candidate reconstruction, recovery UI modal, clip-consent UI, pruning, recovered-copy transaction, startup integration, and controlled hydration) are deferred and not yet started.
+
+**Checks run:**
+- Vitest unit & integration test suite: 969 tests across 112 suites passed (100% green).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Quality Gate: All 5 stages passed cleanly (`npm run gate:full`).
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass (structure, counters, referenced filepaths on disk, version sync).
+- E2E Spec Suite: Configured repository contains 43 E2E tests across 10 suites; not executed as part of this pass or `gate:full`.
+- TestSprite: Not applicable / unverified because Phase 1B.4 has no deployed user-facing recovery surface.
+
+**Status:** Complete through Phase 1B.4 (2026-09-22) — Phase 1A, Phase 1B.1, Phase 1B.2, Phase 1B.3, and Phase 1B.4 verified; Phase 1B.5+ deferred
 

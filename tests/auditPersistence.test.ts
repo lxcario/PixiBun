@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { Blob as NodeBlob } from 'node:buffer';
 import { makeCanvas } from './helpers/mockCanvas';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { db, createBlankProject, autoSaveWorkspace, loadLatestSavedWorkspace, getLayerBlobsForProject, duplicateProject, getProjectById } from '@/lib/storage/db';
+import { db, createBlankProject, createBlankProjectFile, autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, getLayerBlobsForProject, duplicateProject, getProjectById } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import {
   hydrateProject,
@@ -60,19 +60,24 @@ describe('audit persistence regressions', () => {
 
   it('rolls metadata and pixels back together when a blob write fails', async () => {
     const saved = await createBlankProject('Original');
-    const blobs = [{ layerId: 'layer', frameIndex: 0, blob: new Blob(['old']) }];
-    expect(await autoSaveWorkspace(saved.id, 'Original', 32, 32, 8, { old: true }, undefined, blobs)).toBe(true);
+    const originalFile = JSON.parse(saved.dataJson);
+    const layerId = originalFile.frames[0].layers[0].id;
+    const blobs = [{ layerId, frameIndex: 0, blob: new Blob(['old']) }];
+    expect((await autoSaveWorkspaceDetailed(saved.id, originalFile, undefined, blobs)).ok).toBe(true);
     vi.spyOn(db.layerBlobs, 'bulkPut').mockRejectedValueOnce(new DOMException('Full', 'QuotaExceededError'));
-    expect(await autoSaveWorkspace(saved.id, 'Changed', 32, 32, 8, { old: false }, undefined,
-      [{ ...blobs[0], blob: new Blob(['new']) }])).toBe(false);
+    const changedFile = { ...originalFile, name: 'Changed' };
+    expect((await autoSaveWorkspaceDetailed(saved.id, changedFile, undefined,
+      [{ ...blobs[0], blob: new Blob(['new']) }])).ok).toBe(false);
     expect((await db.projects.get(saved.id))?.name).toBe('Original');
     expect(await (await getLayerBlobsForProject(saved.id))[0].blob.text()).toBe('old');
   });
 
   it('does not leave a partial duplicate after a blob write fails', async () => {
     const saved = await createBlankProject();
-    await autoSaveWorkspace(saved.id, saved.name, 32, 32, 8, {}, undefined,
-      [{ layerId: 'layer', frameIndex: 0, blob: new Blob(['old']) }]);
+    const blankFile = JSON.parse(saved.dataJson);
+    const layerId = blankFile.frames[0].layers[0].id;
+    await autoSaveWorkspaceDetailed(saved.id, blankFile, undefined,
+      [{ layerId, frameIndex: 0, blob: new Blob(['old']) }]);
     vi.spyOn(db.layerBlobs, 'bulkAdd').mockRejectedValueOnce(new Error('Disk failure'));
     expect(await duplicateProject(saved.id)).toBeNull();
     expect(await db.projects.count()).toBe(1);
@@ -80,9 +85,11 @@ describe('audit persistence regressions', () => {
 
   it('replaces the complete layer set even when it is empty', async () => {
     const saved = await createBlankProject();
-    await autoSaveWorkspace(saved.id, saved.name, 32, 32, 8, {}, undefined,
-      [{ layerId: 'layer', frameIndex: 0, blob: new Blob(['old']) }]);
-    await autoSaveWorkspace(saved.id, saved.name, 32, 32, 8, {}, undefined, []);
+    const blankFile = JSON.parse(saved.dataJson);
+    const layerId = blankFile.frames[0].layers[0].id;
+    await autoSaveWorkspaceDetailed(saved.id, blankFile, undefined,
+      [{ layerId, frameIndex: 0, blob: new Blob(['old']) }]);
+    await autoSaveWorkspaceDetailed(saved.id, blankFile, undefined, [], []);
     expect(await getLayerBlobsForProject(saved.id)).toEqual([]);
   });
 
@@ -178,17 +185,15 @@ describe('audit persistence regressions', () => {
     expect(freshId).not.toBe(corruptId);
 
     // 4. Autosave writes to fresh project
-    const success = await autoSaveWorkspace(
+    const freshProject = createBlankProjectFile('Fresh Project', 32, 32, 8);
+    const freshLayerId = freshProject.frames[0].layers[0].id;
+    const success = await autoSaveWorkspaceDetailed(
       freshId,
-      'Fresh Project',
-      32,
-      32,
-      8,
-      { format: 'pixibun-project', version: 3, name: 'Fresh Project' },
+      freshProject,
       undefined,
-      [{ layerId: 'fresh-layer', frameIndex: 0, blob: new Blob(['fresh-pixel-data']) }]
+      [{ layerId: freshLayerId, frameIndex: 0, blob: new Blob(['fresh-pixel-data']) }]
     );
-    expect(success).toBe(true);
+    expect(success.ok).toBe(true);
 
     // 5. Corrupt project in DB remains completely unchanged and NOT overwritten or deleted
     const preservedProject = await db.projects.get(corruptId);
@@ -286,17 +291,13 @@ describe('audit persistence regressions', () => {
     //    Autosave / serialization captures layer-lazy's raster data into layerBlobs
     const autosavePayload = await buildAutosavePayloadAsync();
     expect(autosavePayload.layerBlobs.some((b) => b.layerId === 'layer-lazy')).toBe(true);
-    const saved = await autoSaveWorkspace(
+    const saved = await autoSaveWorkspaceDetailed(
       'proj-lazy-lifecycle',
-      state.projectName,
-      state.canvasWidth,
-      state.canvasHeight,
-      state.fps,
       autosavePayload.project,
       undefined,
       autosavePayload.layerBlobs
     );
-    expect(saved).toBe(true);
+    expect(saved.ok).toBe(true);
 
     // 7. Hydrate again with the edited raster preserved:
     clearAllBuffers();
@@ -373,17 +374,13 @@ describe('audit persistence regressions', () => {
     // Helper to perform an incremental save step
     const performIncrementalSave = async (projId: string) => {
       const payload = await buildAutosavePayloadAsync(projId);
-      const ok = await autoSaveWorkspace(
+      const ok = await autoSaveWorkspaceDetailed(
         projId,
-        payload.project.name,
-        payload.project.width,
-        payload.project.height,
-        payload.project.fps,
         payload.project,
         undefined,
         payload.layerBlobs
       );
-      expect(ok).toBe(true);
+      expect(ok.ok).toBe(true);
       commitPersistedRevisions(projId, payload.capturedRevisions);
       return payload;
     };
@@ -520,17 +517,13 @@ describe('audit persistence regressions', () => {
     expect(getBufferRevision(layerId)).toBe(3);
 
     // Save 1 completes write to IndexedDB
-    const ok1 = await autoSaveWorkspace(
+    const ok1 = await autoSaveWorkspaceDetailed(
       projId,
-      payload1.project.name,
-      payload1.project.width,
-      payload1.project.height,
-      payload1.project.fps,
       payload1.project,
       undefined,
       payload1.layerBlobs
     );
-    expect(ok1).toBe(true);
+    expect(ok1.ok).toBe(true);
     commitPersistedRevisions(projId, payload1.capturedRevisions);
 
     // Invariant check: layer must REMAIN dirty because current revision 3 > persisted revision 2!
@@ -541,17 +534,13 @@ describe('audit persistence regressions', () => {
     expect(payload2.dirtyLayerCount).toBe(1);
     expect(payload2.capturedRevisions.get(layerId)?.revision).toBe(3);
 
-    const ok2 = await autoSaveWorkspace(
+    const ok2 = await autoSaveWorkspaceDetailed(
       projId,
-      payload2.project.name,
-      payload2.project.width,
-      payload2.project.height,
-      payload2.project.fps,
       payload2.project,
       undefined,
       payload2.layerBlobs
     );
-    expect(ok2).toBe(true);
+    expect(ok2.ok).toBe(true);
     commitPersistedRevisions(projId, payload2.capturedRevisions);
 
     // Now clean!
@@ -574,17 +563,13 @@ describe('audit persistence regressions', () => {
     // Simulate DB write error (e.g. QuotaExceededError on initial insert)
     vi.spyOn(db.layerBlobs, 'bulkAdd').mockRejectedValueOnce(new DOMException('Disk full', 'QuotaExceededError'));
 
-    const saveFailed = await autoSaveWorkspace(
+    const saveFailed = await autoSaveWorkspaceDetailed(
       projId,
-      payload.project.name,
-      payload.project.width,
-      payload.project.height,
-      payload.project.fps,
       payload.project,
       undefined,
       payload.layerBlobs
     );
-    expect(saveFailed).toBe(false);
+    expect(saveFailed.ok).toBe(false);
 
     // Because save failed, commitPersistedRevisions is NOT called!
     // Layer must REMAIN dirty!
@@ -594,17 +579,13 @@ describe('audit persistence regressions', () => {
     const retryPayload = await buildAutosavePayloadAsync(projId);
     expect(retryPayload.dirtyLayerCount).toBe(1);
 
-    const retryOk = await autoSaveWorkspace(
+    const retryOk = await autoSaveWorkspaceDetailed(
       projId,
-      retryPayload.project.name,
-      retryPayload.project.width,
-      retryPayload.project.height,
-      retryPayload.project.fps,
       retryPayload.project,
       undefined,
       retryPayload.layerBlobs
     );
-    expect(retryOk).toBe(true);
+    expect(retryOk.ok).toBe(true);
     commitPersistedRevisions(projId, retryPayload.capturedRevisions);
 
     // Now marked clean

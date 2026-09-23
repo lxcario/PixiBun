@@ -4,6 +4,8 @@ import { AnimationClip } from '@/types/animation';
 import { createId } from '@/lib/engine/id';
 import { cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 const initialLayerId = 'layer-1';
 const initialFrameId = 'frame-1';
@@ -52,6 +54,27 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   activeClipId: null,
 
   addFrame: () => {
+    const currentStore = get();
+    const currentFrame = currentStore.frames[currentStore.activeFrameIndex];
+    if (!currentFrame) return;
+
+    const untaggedLayerCount = currentFrame.layers.filter(l => !l.tag).length;
+    const incomingLayerCount = Math.max(1, untaggedLayerCount);
+
+    const capacity = canAddFramesToProject(
+      currentStore.frames,
+      currentStore.canvasWidth,
+      currentStore.canvasHeight,
+      [{ layerCount: incomingLayerCount }]
+    );
+    if (!capacity.ok) {
+      studioEvents.emit('pixibun:toast', {
+        message: capacity.reason || 'Cannot add frame: workspace capacity ceiling reached.',
+        type: 'error',
+      });
+      return;
+    }
+
     pushStructuralHistoryStep('Add Frame', { opKind: 'add-frame', affectedLayerIds: [] });
     set(state => {
       const newFrameId = createId('frame');
@@ -93,7 +116,25 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   duplicateFrame: frameIndex => {
-    if (!get().frames[frameIndex]) return;
+    const currentStore = get();
+    const srcFrame = currentStore.frames[frameIndex];
+    if (!srcFrame) return;
+
+    const incomingLayerCount = srcFrame.layers.length;
+    const capacity = canAddFramesToProject(
+      currentStore.frames,
+      currentStore.canvasWidth,
+      currentStore.canvasHeight,
+      [{ layerCount: incomingLayerCount }]
+    );
+    if (!capacity.ok) {
+      studioEvents.emit('pixibun:toast', {
+        message: capacity.reason || 'Cannot duplicate frame: workspace capacity ceiling reached.',
+        type: 'error',
+      });
+      return;
+    }
+
     pushStructuralHistoryStep('Duplicate Frame', { opKind: 'duplicate-frame', affectedLayerIds: [] });
     set(state => {
       const srcFrame = state.frames[frameIndex];

@@ -17,8 +17,9 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { getProjectById } from '@/lib/storage/db';
 import { hydrateProject } from '@/lib/project/serialize';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
-import { getOrCreateBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { executeImageImport } from '@/lib/project/imageImportExecution';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
@@ -95,6 +96,7 @@ export const StudioLayout: React.FC = () => {
       }
     };
   }, []);
+
 
   const {
     autosaveTimerRef,
@@ -173,8 +175,13 @@ export const StudioLayout: React.FC = () => {
   // the artwork.
   const handleResize = useCallback(
     (newWidth: number, newHeight: number, anchor: AnchorPosition, resample: boolean) => {
-      setCanvasSize(newWidth, newHeight, anchor, resample);
-      studioEvents.emit('pixibun:history-clear');
+      try {
+        setCanvasSize(newWidth, newHeight, anchor, resample);
+        studioEvents.emit('pixibun:history-clear');
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Failed to resize canvas';
+        studioEvents.emit('pixibun:toast', { message, type: 'error' });
+      }
     },
     [setCanvasSize]
   );
@@ -187,126 +194,10 @@ export const StudioLayout: React.FC = () => {
 
   // Confirm Image Import & Inject Pixel Art to Target Buffer
   const handleConfirmImportImage = useCallback((confirmData: ImageImportConfirmPayload) => {
-    const { canvas, target, extractedPalette, addToPalette, filename, resizeCanvasToMatch, slicedFrames } = confirmData;
-    const store = useStudioStore.getState();
-
-    // 1. If user chose to match image dimensions, resize canvas first!
-    //    History is invalidated because undo snapshots hold old-dimension ImageData.
-    if (resizeCanvasToMatch) {
-      store.setCanvasSize(resizeCanvasToMatch.width, resizeCanvasToMatch.height, 'top-left', false);
-      studioEvents.emit('pixibun:history-clear');
+    const result = executeImageImport(confirmData);
+    if (result.ok) {
+      setIsImportOpen(false);
     }
-
-    const currentStore = useStudioStore.getState();
-    const width = currentStore.canvasWidth;
-    const height = currentStore.canvasHeight;
-
-    if (slicedFrames && slicedFrames.length > 0) {
-      if (target === 'sprite-sheet-replace') {
-        const existingCount = currentStore.frames.length;
-        const newCount = slicedFrames.length;
-
-        // 1. Draw frame 0 onto the first frame's active layer
-        const targetLayerId = currentStore.activeLayerId;
-        if (targetLayerId) {
-          const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
-          const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
-          if (ctx) {
-            ctx.clearRect(0, 0, width, height);
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(slicedFrames[0], 0, 0, width, height);
-            touchBuffer(targetLayerId);
-          }
-        }
-
-        // 2. Overwrite existing frames 1..min(existingCount, newCount) - 1
-        const overwriteCount = Math.min(existingCount, newCount);
-        for (let i = 1; i < overwriteCount; i++) {
-          const frame = currentStore.frames[i];
-          const lId = frame?.layers[0]?.id;
-          if (lId) {
-            const buf = getOrCreateBuffer(lId, width, height);
-            const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-            if (fCtx) {
-              fCtx.clearRect(0, 0, width, height);
-              fCtx.imageSmoothingEnabled = false;
-              fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
-              touchBuffer(lId);
-            }
-          }
-        }
-
-        // 3. If new frames > existing frames, add new frames for the remainder
-        for (let i = existingCount; i < newCount; i++) {
-          currentStore.addFrame();
-          const st = useStudioStore.getState();
-          const frame = st.frames[st.activeFrameIndex];
-          const lId = frame?.layers[0]?.id || st.activeLayerId;
-          const buf = getOrCreateBuffer(lId, width, height);
-          const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-          if (fCtx) {
-            fCtx.clearRect(0, 0, width, height);
-            fCtx.imageSmoothingEnabled = false;
-            fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
-            touchBuffer(lId);
-          }
-        }
-
-        // 4. If existing frames > new frames, delete excess frames from the end
-        for (let i = existingCount - 1; i >= newCount; i--) {
-          currentStore.deleteFrame(i);
-        }
-
-        currentStore.setActiveFrame(0);
-      } else {
-        // sprite-sheet-append (or default)
-        for (let i = 0; i < slicedFrames.length; i++) {
-          currentStore.addFrame();
-          const st = useStudioStore.getState();
-          const frame = st.frames[st.activeFrameIndex];
-          const lId = frame?.layers[0]?.id || st.activeLayerId;
-          const buf = getOrCreateBuffer(lId, width, height);
-          const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-          if (fCtx) {
-            fCtx.clearRect(0, 0, width, height);
-            fCtx.imageSmoothingEnabled = false;
-            fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
-            touchBuffer(lId);
-          }
-        }
-      }
-    } else {
-      let targetLayerId = currentStore.activeLayerId;
-
-      if (target === 'new-layer') {
-        const layerName = filename ? filename.replace(/\.[^/.]+$/, '') : 'Imported';
-        currentStore.addLayer(layerName);
-        targetLayerId = useStudioStore.getState().activeLayerId;
-      } else if (target === 'new-frame') {
-        currentStore.addFrame();
-        const frame = useStudioStore.getState().frames[useStudioStore.getState().activeFrameIndex];
-        targetLayerId = frame?.layers[0]?.id || currentStore.activeLayerId;
-      }
-
-      if (targetLayerId) {
-        const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
-        const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
-        if (ctx) {
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(canvas, 0, 0);
-          touchBuffer(targetLayerId);
-        }
-      }
-    }
-
-    // Palette integration
-    if (addToPalette && extractedPalette && extractedPalette.length > 0) {
-      const paletteName = filename ? `Palette: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Palette';
-      store.addExtractedPalette(paletteName, extractedPalette);
-    }
-
-    currentStore.bumpBufferVersion();
-    setIsImportOpen(false);
   }, []);
 
   useStudioClipboard(handleOpenImport);

@@ -10,7 +10,7 @@ vi.mock('@/lib/storage/db', async (importOriginal) => {
   const actual = await importOriginal<typeof db>();
   return {
     ...actual,
-    autoSaveWorkspace: vi.fn(),
+    autoSaveWorkspaceDetailed: vi.fn(),
     loadLatestSavedWorkspace: vi.fn().mockResolvedValue(null),
   };
 });
@@ -47,8 +47,8 @@ describe('Autosave status propagation', () => {
     vi.clearAllMocks();
   });
 
-  it('sets saveStatus to error when autoSaveWorkspace returns false', async () => {
-    vi.mocked(db.autoSaveWorkspace).mockResolvedValue(false);
+  it('sets saveStatus to error when autoSaveWorkspaceDetailed returns failure', async () => {
+    vi.mocked(db.autoSaveWorkspaceDetailed).mockResolvedValue({ ok: false, reason: 'error', error: 'Storage failed' });
 
     render(<StudioLayout />);
 
@@ -64,7 +64,7 @@ describe('Autosave status propagation', () => {
   });
 
   it('triggers autosave flush on visibilitychange when document becomes hidden', async () => {
-    vi.mocked(db.autoSaveWorkspace).mockResolvedValue(true);
+    vi.mocked(db.autoSaveWorkspaceDetailed).mockResolvedValue({ ok: true, status: 'saved' });
 
     render(<StudioLayout />);
 
@@ -74,12 +74,12 @@ describe('Autosave status propagation', () => {
     });
 
     await waitFor(() => {
-      expect(db.autoSaveWorkspace).toHaveBeenCalled();
+      expect(db.autoSaveWorkspaceDetailed).toHaveBeenCalled();
     });
   });
 
   it('does not silently drop saves when multiple flush triggers fire in quick succession', async () => {
-    vi.mocked(db.autoSaveWorkspace).mockResolvedValue(true);
+    vi.mocked(db.autoSaveWorkspaceDetailed).mockResolvedValue({ ok: true, status: 'saved' });
 
     render(<StudioLayout />);
 
@@ -89,8 +89,8 @@ describe('Autosave status propagation', () => {
     });
 
     // Clear and count from this point
-    vi.mocked(db.autoSaveWorkspace).mockClear();
-    vi.mocked(db.autoSaveWorkspace).mockResolvedValue(true);
+    vi.mocked(db.autoSaveWorkspaceDetailed).mockClear();
+    vi.mocked(db.autoSaveWorkspaceDetailed).mockResolvedValue({ ok: true, status: 'saved' });
 
     // Fire 3 rapid pagehide events — the pending coalescing loop should
     // ensure that at least the final state is captured even if saves overlap.
@@ -106,8 +106,8 @@ describe('Autosave status propagation', () => {
 
     await waitFor(() => {
       // With instant-resolving mocks, the do-while pending loop should
-      // have run autoSaveWorkspace at least twice (initial + coalesced pending).
-      expect(vi.mocked(db.autoSaveWorkspace).mock.calls.length).toBeGreaterThanOrEqual(2);
+      // have run autoSaveWorkspaceDetailed at least twice (initial + coalesced pending).
+      expect(vi.mocked(db.autoSaveWorkspaceDetailed).mock.calls.length).toBeGreaterThanOrEqual(2);
     });
   });
 });

@@ -8,12 +8,13 @@ import {
   duplicateProject,
   renameProject,
   createBlankProject,
-  autoSaveWorkspace,
+  autoSaveWorkspaceDetailed,
   loadLatestSavedWorkspace,
   saveLayerBlobs,
   getLayerBlobsForProject,
   deleteLayerBlobsForProject,
 } from '@/lib/storage/db';
+import type { ProjectFile } from '@/types/project';
 
 describe('Projects Database (Dexie IndexedDB CRUD)', () => {
   beforeEach(async () => {
@@ -53,19 +54,18 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
   it('updates project through autoSaveWorkspace with thumbnail and preserves createdAt', async () => {
     const created = await createBlankProject('Pixel Bunny', 32, 32);
     const initialCreatedAt = created.createdAt;
+    const projectFile: ProjectFile = JSON.parse(created.dataJson);
+    projectFile.name = 'Pixel Bunny Updated';
+    projectFile.fps = 12;
 
     await new Promise((r) => setTimeout(r, 15));
-    const updatedSuccess = await autoSaveWorkspace(
+    const updatedSuccess = await autoSaveWorkspaceDetailed(
       created.id,
-      'Pixel Bunny Updated',
-      32,
-      32,
-      12,
-      { testState: true },
+      projectFile,
       'data:image/png;base64,mockthumb'
     );
 
-    expect(updatedSuccess).toBe(true);
+    expect(updatedSuccess.ok).toBe(true);
 
     const fetched = await getProjectById(created.id);
     expect(fetched).not.toBeNull();
@@ -128,13 +128,25 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
     const mockBlob1 = new Blob(['png-pixels-layer1'], { type: 'image/png' });
     const mockBlob2 = new Blob(['png-pixels-layer2'], { type: 'image/png' });
 
-    const success = await autoSaveWorkspace(
+    const projectFile: ProjectFile = JSON.parse(proj.dataJson);
+    projectFile.name = 'Binary Project Saved';
+    projectFile.width = 16;
+    projectFile.height = 16;
+    projectFile.fps = 8;
+    projectFile.frames = [
+      {
+        id: 'frame-1',
+        durationMs: 100,
+        layers: [
+          { id: 'layer-1', name: 'Layer 1', visible: true, locked: false, opacity: 1, blendMode: 'source-over' },
+          { id: 'layer-2', name: 'Layer 2', visible: true, locked: false, opacity: 1, blendMode: 'source-over' },
+        ],
+      },
+    ];
+
+    const success = await autoSaveWorkspaceDetailed(
       proj.id,
-      'Binary Project Saved',
-      16,
-      16,
-      8,
-      { metadataOnly: true },
+      projectFile,
       undefined,
       [
         { layerId: 'layer-1', frameIndex: 0, blob: mockBlob1 },
@@ -142,13 +154,16 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
       ]
     );
 
-    expect(success).toBe(true);
+    expect(success.ok).toBe(true);
     const storedBlobs = await getLayerBlobsForProject(proj.id);
     expect(storedBlobs).toHaveLength(2);
     expect(storedBlobs.map((b) => b.layerId)).toEqual(['layer-1', 'layer-2']);
 
     const loadedProject = await getProjectById(proj.id);
-    expect(loadedProject?.dataJson).toBe(JSON.stringify({ metadataOnly: true }));
+    expect(loadedProject?.name).toBe('Binary Project Saved');
+    const parsed = JSON.parse(loadedProject?.dataJson ?? '{}');
+    expect(parsed.name).toBe('Binary Project Saved');
+    expect(parsed.frames[0].layers).toHaveLength(2);
 
     await deleteLayerBlobsForProject(proj.id);
     const clearedBlobs = await getLayerBlobsForProject(proj.id);

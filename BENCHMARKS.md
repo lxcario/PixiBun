@@ -161,7 +161,23 @@ Phase 63 introduced source-shading normalization, two-sided ink edge classificat
 | **Recipe Serialization (v3)** | Non-destructive `LayerEffectRecipe` | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $O(1)$ JSON payload ($< 1\text{ KB}$ per layer) |
 | **Total Interactive Preview** | Single-frame gizmo drag | **$1.07\text{ ms}$** | **$3.25\text{ ms}$** | **$10.86\text{ ms}$** | Consistently $< 16.66\text{ ms}$ (60 FPS solid) |
 
+---
 
+## 9. Streaming Store-Only ZIP32 & Stored-Blob Assessment Resource Bounds (Phase 1B Design Invariants)
 
+**Subsystems:** `zipWriter.ts`, `recoveryDiagnosis.ts`, `recoveryClassifier.ts`
+**Design Invariant:** $O(1)$ payload-processing memory relative to payload size, $\le 64\text{ KiB}$ maximum chunk write size, and bounded keyset batch pagination in IndexedDB.
 
+> **Benchmark Status Note:** This section specifies structural and algorithmic resource bounds and streaming architectural invariants. No live runtime throughput benchmark, empirical latency profiling, or hardware-specific timing measurements have been conducted for these Phase 1B subsystems.
+
+### Memory & Execution Architecture
+
+1. **Streaming Store-Only ZIP32 Core (`src/lib/recovery/zipWriter.ts`):**
+   - **Method 0 (Store-Only):** Streams uncompressed byte chunks directly from source streams (`ReadableStream<Uint8Array>`) into consumer sinks (`RecoveryZipSink`).
+   - **Payload Memory Bounds:** Enforces $O(1)$ payload-processing memory relative to payload size. Payload chunks larger than 64 KiB are split prior to sink writes, capping each sink write at 64 KiB.
+   - **Archive Bookkeeping Ceilings:** Entry metadata is bounded by $O(\text{entry count})$ with a maximum ceiling of 65,535 entries (`ZIP32_CONSTANTS.MAX_ENTRIES`) and 4 GiB maximum total archive size. Filenames are validated during preflight and re-encoded dynamically per entry during header emission rather than held as redundant buffers.
+
+2. **Keyset-Paginated Stored-Blob Assessment (`src/lib/recovery/recoveryDiagnosis.ts`):**
+   - **Compound Index Scans:** Bounded batch reads (batches of 25) against `[projectId+id]` on `layerBlobs` ensure that inspection of stored project blobs avoids instantiating unbounded arrays in memory.
+   - **Bounded Blob Header Probing:** Probes a bounded 24-byte Blob slice (`record.blob.slice(0, 24)`) via `ImageHeaderProbe` to validate PNG format and dimensions without instantiating canvas backing stores or decoding raster bitmaps, keeping memory negligible.
 

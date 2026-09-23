@@ -3,6 +3,56 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.14.1] - 2026-09-21 (Hardening Complete)
+### Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger & Streaming ZIP32 Core (Phase 67 / Phase 1A & Phase 1B)
+- **Workspace Envelope Enforcement & Decoupled Import (`src/lib/project/workspaceEnvelopeGuard.ts`, `src/lib/project/imageImportExecution.ts`, `src/lib/project/schema.ts`, `src/lib/project/resourceBudget.ts`, `src/lib/engine/structuralHistory.ts`, `src/hooks/studio/useStudioAutosave.ts`, `src/components/layout/StudioLayout.tsx`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `src/hooks/viewport/useViewportDrawing.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`, `tests/phase1AEnvelopeEnforcement.test.ts`)**:
+  - Implemented `WorkspaceEnvelopeGuard` pre-evaluating canvas resize dimensions, layer creation, and frame duplication against 64 Mpx / 2,000 layer ceilings.
+  - Decoupled external raster image import execution from domain controllers.
+  - Verified non-fatal envelope rejection and rollback preservation across 36 focused unit tests (`tests/phase1AEnvelopeEnforcement.test.ts`).
+- **Policy-Driven Project Validation & Metadata Classifier (`src/lib/project/schema.ts`, `src/lib/safety/safeJson.ts`, `src/lib/recovery/recoveryClassifier.ts`, `src/lib/recovery/recoveryLimits.ts`, `src/lib/recovery/recoveryTypes.ts`, `tests/recoveryClassifier.test.ts`)**:
+  - Unified schema validation engine with entry points `validateProjectWithPolicy`, `validateProjectJsonWithPolicy`, and `validateProjectFile` supporting envelope modes `'strict'` and `'collect-recoverable'` with 100% backward compatibility.
+  - Hardened `SafeJson.parse` in `src/lib/safety/safeJson.ts` enforcing a 50 MB payload ceiling (`50 * 1024 * 1024` bytes), recursion depth ceiling ($\le 32$), prototype-pollution key stripping, and typed errors (`SafeJsonPayloadLimitError`, `SafeJsonNestingDepthError`, `SafeJsonTraversalLimitError`, `SafeJsonOptionError`, `SafeJsonSyntaxError`). The recovery classifier passes `RECOVERY_INSPECTION_CEILINGS.MAX_METADATA_NODES` (50,000 nodes) to `validateProjectJsonWithPolicy`.
+  - Built typed project metadata classifier categorizing documents into `valid`, `recoverable-envelope-exceeded`, `malformed`, `unsupported-version`, and `unsafe-content`.
+  - Verified across 32 unit tests (`tests/recoveryClassifier.test.ts`).
+- **Recovery Ledger & Bounded Stored-Blob Diagnosis (`src/lib/storage/db.ts`, `src/lib/recovery/recoveryLedger.ts`, `src/lib/recovery/recoveryDiagnosis.ts`, `tests/recoveryDiagnosisAndLedger.test.ts`)**:
+  - Migrated Dexie schema to v5 with dedicated `recoveryRecords` table (`projectId, classificationState, lastConfirmedAt`) with `projectId` primary key.
+  - Implemented multi-table atomic rollback across `projects`, `layerBlobs`, and `recoveryRecords` in `deleteProject`.
+  - Built non-destructive stored-project assessment engine (`assessStoredProject` in `src/lib/recovery/recoveryDiagnosis.ts`) scanning the complete compound-index keyspace `[projectId+id]` on `layerBlobs` via keyset batch pagination.
+  - Probed 24-byte Blob slices with `ImageHeaderProbe` without allocating canvas bitmaps; ordinary zero-blob layers are valid transparent layers; diagnoses corrupted PNG headers, dimension mismatches, duplicate blob mappings, orphan blob records, embedded raster fields, and storage-record corruption.
+  - Verified across 24 unit tests (`tests/recoveryDiagnosisAndLedger.test.ts`).
+- **Streaming Store-Only ZIP32 Archive Core (`src/lib/recovery/zipWriter.ts`, `tests/recoveryZipWriter.test.ts`)**:
+  - Built zero-dependency streaming PKZIP 2.0 / ZIP32 archive writer in pure TypeScript (`writeStoreOnlyZip`) serving as a low-level archive foundation.
+  - Store-only uncompressed chunks streamed directly to consumer sink in bounded 64 KiB chunks with $O(1)$ payload memory relative to payload size, and $O(\text{entry count})$ bookkeeping capped at 65,535 entries.
+  - Bit 3 + Bit 11 data descriptor framing (`0x0808` flags, 16-byte signed descriptor) for single-pass CRC-32 and size calculation.
+  - Preflight immutable snapshotting and array stabilization: shallow-copies `entrySources` before evaluating entry getters, evaluates and binds `sink.write` exactly once, and validates paths against traversal, leading slashes, drive letters, backslashes, NUL bytes, and lone UTF-16 surrogates.
+  - Responsive cancellation via `AbortSignal` with genuine `DOMException('AbortError')`.
+  - Verified across 40 unit tests (`tests/recoveryZipWriter.test.ts`) with independent bitwise CRC-32 and ZIP structure parser (zero external or Python dependencies).
+- **Untouched Recovery Archive Assembly & Safe Export Adapters (`src/lib/recovery/recoveryBackup.ts`, `src/lib/recovery/recoveryBackupTransport.ts`, `src/lib/recovery/recoveryTypes.ts`, `src/lib/recovery/recoveryLimits.ts`, `tests/recoveryBackup.test.ts`)**:
+  - Built read-only immutable archive snapshotting executing a single read-only IndexedDB transaction across `projects`, `layerBlobs`, and `recoveryRecords` without database mutations or raster decodes.
+  - Bounded full-compound-keyspace blob enumeration querying `[projectId, Dexie.minKey]` through `[projectId, Dexie.maxKey]` with `.limit(MAX_INSPECTABLE_STORED_BLOBS + 1)` via `.toArray()` to fail closed on oversized storage.
+  - Preserves untouched `dataJson` as exact WHATWG UTF-8 bytes without JSON parsing or modification.
+  - Generates closed-schema recovery manifest (`recovery-manifest.json`) and precomputes exact ZIP32 size before streaming.
+  - Sealed non-forgeable trust boundary via module-private `WeakSet` (`trustedPreparedArchives`) and `WeakMap` (`preparedArchiveInternals`), exposing strictly scalar descriptors (`PreparedBlobDescriptor`) without public Blob or buffer handles.
+  - Supports multi-pass manifest reusability via fresh byte copies on each stream open.
+  - Protected post-open file-handle lifecycle (`writeRecoveryArchiveToFileHandle`) with immediate `abort()` capture, best-effort abort on failure without masking primary errors, and strict avoidance of post-abort `close()`.
+  - Bounded in-memory Blob fallback (`createRecoveryArchiveBlob`) with preflight 250 MiB ceiling, defensive chunk copying (`chunk.slice()`), and release of retained chunk references on error or cancellation.
+  - Responsive cooperative cancellation via `AbortSignal` throwing genuine `DOMException('AbortError')`.
+  - Verified across 42 unit tests (`tests/recoveryBackup.test.ts`).
+- **Deterministic Recovery Plan Builder & Safe Candidate Reconstruction (`src/lib/recovery/recoveryPlanBuilder.ts`, `src/lib/recovery/recoveryTypes.ts`, `src/lib/recovery/recoveryLimits.ts`, `tests/recoveryPlanBuilder.test.ts`)**:
+  - Implemented pure domain plan builder (`buildRecoveryPlan`) synthesizing diagnostic assessments and authoritative source records into deterministic candidate reconstruction plans without IndexedDB mutations or UI dependencies.
+  - Defined typed recovery plan result states: `ready`, `additional-deletion-required`, `clip-consent-required`, `unrecoverable-blocked`, and `cancelled`.
+  - Supported explicit decisions (`deleteFrameIndices`, `deleteLayerIds`, `clipConsentGranted`) with bounded indexed array snapshots, rejecting out-of-bounds, duplicate, or non-existent layer/frame deletions.
+  - Enforced preflight snapshot isolation: synchronous structural validation of source projects via `validateProjectWithPolicy({ envelopeMode: 'collect-recoverable' })` before asynchronous work, capturing internal record snapshots (`InternalRecoverySourceBlob`) decoupled from caller references.
+  - Enforced single-evaluation runtime boundaries: assessment scalar and project fields, decision properties, source record fields, and `blob.size`/`blob.type` are evaluated exactly once into local variables, preventing accessor/Proxy mutation attacks.
+  - Implemented bounded indexed snapshots for all caller-controlled arrays (`sourceBlobs`, `deleteFrameIndices`, `deleteLayerIds`) capturing `.length` once, validating bounds, comparing `sourceBlobs.length === safeScannedBlobsCount` prior to element indexing, and reading numeric indices `[i]` directly without ever accessing or invoking `Symbol.iterator`, `values()`, `Array.from()`, or spread syntax.
+  - Probed 24-byte Blob slices (`Blob.prototype.slice.call(blob, 0, 24)`) with `ImageHeaderProbe` validating PNG format and dimensions matching project bounds without canvas bitmap allocation, `createImageBitmap`, or raster decoding.
+  - Preserved exact `Blob.type` string identities (including empty string and custom MIME types) and byte sizes in `CandidateBlobRemapEntry`.
+  - Remapped blobs deterministically by ascending record ID and exclusions by ascending ID; excluded deleted-layer and orphan blobs; preserved transparent layers with zero Blobs.
+  - Enforced clip remapping invariants: detected clips intersecting deleted frames, blocked for explicit consent (`clip-consent-required`) when consent is false, and locked surviving clips to surviving frame offsets when consent is granted.
+  - Blocked all-frame deletions fail-closed with `ALL_FRAMES_DELETED` before probing or clip evaluation.
+  - Provided responsive cancellation: pre-aborted signal checks at immediate function entry; pending probe race priority returns `cancelled` even if probe fails concurrently.
+  - Guaranteed runtime immutability by deep-freezing all candidate result trees, project structures, and remap entries via `deepFreeze()`.
+  - Verified across 43 unit tests (`tests/recoveryPlanBuilder.test.ts`).
+
 ### System Hardening & Production Polish (Phase 66 / Phase C)
 - **Service Worker Lifecycle & Precache Scripts (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`)**:
   - Validated ServiceWorkerRegistrar component rendering, accessible dismiss, SKIP_WAITING propagation, and controllerchange reload orchestration.

@@ -74,6 +74,7 @@ export type SaveResult =
       ok: false;
       reason:
         | 'restore-invalid'
+        | 'invariant-invalid'
         | 'storage-unavailable'
         | 'quota'
         | 'serialization'

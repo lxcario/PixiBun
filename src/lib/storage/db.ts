@@ -1,11 +1,13 @@
 import Dexie, { Table } from 'dexie';
 import type { DiagnosticEntry } from '@/types/diagnostics';
+import type { RecoveryReasonCode } from '@/lib/recovery/recoveryTypes';
 import { createId } from '@/lib/engine/id';
 import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION, type ProjectFile } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { clearPersistedRevisions } from '@/lib/project/persistenceRevisions';
+import { validateProjectFile } from '@/lib/project/schema';
 
 export interface StoredProject {
   id: string;
@@ -32,10 +34,27 @@ export interface StoredWorkspace extends StoredProject {
   layerBlobs: StoredLayerBlob[];
 }
 
+export interface RecoveryRecord {
+  projectId: string;
+  classificationState:
+    | 'recoverable-envelope-exceeded'
+    | 'recoverable-blob-invalid'
+    | 'malformed'
+    | 'unsupported-version'
+    | 'unsafe-content';
+  firstDetectedAt: number;
+  lastConfirmedAt: number;
+  reasonCodes: RecoveryReasonCode[];
+  resolvedAt?: number;
+  recoveredProjectId?: string;
+  resolvedSourceFingerprint?: string;
+}
+
 export class PixiBunDatabase extends Dexie {
   projects!: Table<StoredProject, string>;
   diagnostics!: Table<DiagnosticEntry, string>;
   layerBlobs!: Table<StoredLayerBlob, number>;
+  recoveryRecords!: Table<RecoveryRecord, string>;
 
   constructor() {
     super('PixiBunDB');
@@ -60,6 +79,12 @@ export class PixiBunDatabase extends Dexie {
       projects: 'id, name, updatedAt, createdAt',
       diagnostics: 'id, kind, timestamp',
       layerBlobs: '++id, [projectId+layerId+frameIndex], projectId, layerId',
+    });
+    this.version(5).stores({
+      projects: 'id, name, updatedAt, createdAt',
+      diagnostics: 'id, kind, timestamp',
+      layerBlobs: '++id, [projectId+layerId+frameIndex], projectId, layerId, [projectId+id]',
+      recoveryRecords: 'projectId, classificationState, lastConfirmedAt',
     });
   }
 }
@@ -219,25 +244,44 @@ function isIgnorableDbClosure(err: unknown): boolean {
   );
 }
 
-// Autosave current workspace to IndexedDB
-export async function autoSaveWorkspace(
+export type AutoSaveOutcome =
+  | { ok: true; status: 'saved' }
+  | { ok: false; reason: 'invariant-invalid'; error: string }
+  | { ok: false; reason: 'aborted'; error?: string }
+  | { ok: false; reason: 'quota-exceeded'; error?: string }
+  | { ok: false; reason: 'error'; error: string };
+
+// Autosave current workspace to IndexedDB with strict pre-transaction validation
+export async function autoSaveWorkspaceDetailed(
   projectId: string,
-  name: string,
-  width: number,
-  height: number,
-  fps: number,
-  stateSnapshot: object,
+  project: ProjectFile,
   thumbnailDataUrl?: string,
   layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>,
   activeLayerKeys?: Array<{ layerId: string; frameIndex: number }>
-): Promise<boolean> {
+): Promise<AutoSaveOutcome> {
+  // Pre-transaction validation: abort immediately before opening transaction or mutating DB
+  const validation = validateProjectFile(project);
+  if (!validation.ok) {
+    return {
+      ok: false,
+      reason: 'invariant-invalid',
+      error: validation.error,
+    };
+  }
+
+  const validProject = validation.value;
+  const name = validProject.name;
+  const width = validProject.width;
+  const height = validProject.height;
+  const fps = validProject.fps;
+
   try {
     if (!db.isOpen()) await db.open();
     await db.transaction('rw', db.projects, db.layerBlobs, async () => {
       const existing = await db.projects.get(projectId);
-      const createdAt = existing?.createdAt || Date.now();
+      const createdAt = existing?.createdAt || validProject.createdAt || Date.now();
       const now = Date.now();
-      const dataJson = JSON.stringify(stateSnapshot);
+      const dataJson = JSON.stringify(validProject);
       await db.projects.put({
         id: projectId,
         name,
@@ -251,26 +295,18 @@ export async function autoSaveWorkspace(
       });
 
       if (layerBlobs !== undefined || activeLayerKeys !== undefined) {
-        // Collect all active layer keys for this project
+        // Collect all active layer keys from valid project frames
         const activeKeySet = new Set<string>();
         if (activeLayerKeys) {
           for (const k of activeLayerKeys) {
             activeKeySet.add(`${k.layerId}::${k.frameIndex}`);
           }
-        } else if (Array.isArray((stateSnapshot as { frames?: Array<{ layers?: Array<{ id?: string }> }> }).frames)) {
-          const frames = (stateSnapshot as { frames: Array<{ layers: Array<{ id: string }> }> }).frames;
-          for (let fIdx = 0; fIdx < frames.length; fIdx++) {
-            const frame = frames[fIdx];
-            if (Array.isArray(frame?.layers)) {
-              for (const layer of frame.layers) {
-                if (layer?.id) activeKeySet.add(`${layer.id}::${fIdx}`);
-              }
+        } else {
+          for (let fIdx = 0; fIdx < validProject.frames.length; fIdx++) {
+            const frame = validProject.frames[fIdx];
+            for (const layer of frame.layers) {
+              if (layer?.id) activeKeySet.add(`${layer.id}::${fIdx}`);
             }
-          }
-        } else if (layerBlobs) {
-          // Fallback: tests passing stateSnapshot without frames
-          for (const b of layerBlobs) {
-            activeKeySet.add(`${b.layerId}::${b.frameIndex}`);
           }
         }
 
@@ -330,19 +366,19 @@ export async function autoSaveWorkspace(
         }
       }
     });
-    return true;
+    return { ok: true, status: 'saved' };
   } catch (err: unknown) {
     if (isIgnorableDbClosure(err)) {
       console.warn('Autosave aborted (database closed or reset in progress)');
-      return false;
+      return { ok: false, reason: 'aborted', error: err instanceof Error ? err.message : String(err) };
     }
     if (StorageResilience.isQuotaExceeded(err)) {
-      console.warn('[autoSaveWorkspace] Storage quota exceeded. Pruning volatile caches.');
+      console.warn('[autoSaveWorkspaceDetailed] Storage quota exceeded. Pruning volatile caches.');
       await StorageResilience.pruneVolatileCaches(db);
-      return false;
+      return { ok: false, reason: 'quota-exceeded', error: err instanceof Error ? err.message : String(err) };
     }
     console.error('Autosave error:', err);
-    return false;
+    return { ok: false, reason: 'error', error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -387,13 +423,14 @@ export async function getProjectById(id: string): Promise<StoredWorkspace | null
   }
 }
 
-// Delete project by ID atomically across metadata and layer blobs
+// Delete project by ID atomically across metadata, layer blobs, and recovery records
 export async function deleteProject(id: string): Promise<boolean> {
   try {
     if (!db.isOpen()) await db.open();
-    await db.transaction('rw', db.projects, db.layerBlobs, async () => {
+    await db.transaction('rw', db.projects, db.layerBlobs, db.recoveryRecords, async () => {
       await db.projects.delete(id);
       await db.layerBlobs.where('projectId').equals(id).delete();
+      await db.recoveryRecords.delete(id);
     });
     clearPersistedRevisions(id);
     return true;
@@ -488,25 +525,25 @@ export async function renameProject(id: string, newName: string): Promise<boolea
   }
 }
 
-// Create a blank project record matching resetToNewProject defaults
-export async function createBlankProject(
+// Create a blank ProjectFile matching resetToNewProject defaults
+export function createBlankProjectFile(
   name: string = 'Untitled Sprite',
   width: number = 32,
-  height: number = 32
-): Promise<StoredProject> {
+  height: number = 32,
+  fps: number = 8
+): ProjectFile {
   assertWorkspaceDimensions(width, height);
-  const newId = createId('proj');
   const initialLayerId = createId('layer');
   const initialFrameId = createId('frame');
   const now = Date.now();
 
-  const initialProjectFile: ProjectFile = {
+  return {
     format: PROJECT_FORMAT_ID,
     version: PROJECT_FORMAT_VERSION,
     name,
     width,
     height,
-    fps: 8,
+    fps,
     loopMode: 'repeat',
     onionSkin: {
       enabled: false,
@@ -549,13 +586,24 @@ export async function createBlankProject(
     createdAt: now,
     updatedAt: now,
   };
+}
+
+// Create a blank project record matching resetToNewProject defaults
+export async function createBlankProject(
+  name: string = 'Untitled Sprite',
+  width: number = 32,
+  height: number = 32
+): Promise<StoredProject> {
+  const initialProjectFile = createBlankProjectFile(name, width, height);
+  const newId = createId('proj');
+  const now = initialProjectFile.createdAt;
 
   const stored: StoredProject = {
     id: newId,
     name,
     width,
     height,
-    fps: 8,
+    fps: initialProjectFile.fps,
     createdAt: now,
     updatedAt: now,
     dataJson: JSON.stringify(initialProjectFile),

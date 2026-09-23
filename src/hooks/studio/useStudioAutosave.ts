@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { autoSaveWorkspace, loadLatestSavedWorkspace } from '@/lib/storage/db';
+import { autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, type AutoSaveOutcome } from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
@@ -82,17 +82,14 @@ export function useStudioAutosave() {
             }
 
             const { project, layerBlobs, capturedRevisions } = payload;
-            const success = await autoSaveWorkspace(
+            const saveOutcome: AutoSaveOutcome = await autoSaveWorkspaceDetailed(
               state.currentProjectId,
-              project.name,
-              project.width,
-              project.height,
-              project.fps,
               project,
               thumbnailDataUrl,
               layerBlobs
             );
-            if (success) {
+
+            if (saveOutcome.ok) {
               if (typeof commitPersistedRevisions === 'function') {
                 commitPersistedRevisions(state.currentProjectId, capturedRevisions);
               }
@@ -113,14 +110,34 @@ export function useStudioAutosave() {
                 }
               }, 2000);
             } else {
-              autosaveFailCountRef.current += 1;
               setSaveStatus('error');
-              if (autosaveFailCountRef.current >= 2) {
-                setAutosaveError(
-                  'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
-                );
+              if (saveOutcome.reason === 'invariant-invalid') {
+                const errorMsg =
+                  saveOutcome.error ||
+                  'Autosave halted: workspace exceeds safety limits. Last valid save preserved.';
+                setAutosaveError(errorMsg);
+                studioEvents.emit('pixibun:toast', {
+                  type: 'error',
+                  message: errorMsg,
+                });
+                finalResult = {
+                  ok: false,
+                  reason: 'invariant-invalid',
+                  error: errorMsg,
+                };
+              } else {
+                autosaveFailCountRef.current += 1;
+                if (autosaveFailCountRef.current >= 2) {
+                  setAutosaveError(
+                    'Autosave warning: Browser local storage write failed (disk quota or privacy restriction). Please export your drawing as PNG or .pixibun to avoid data loss.'
+                  );
+                }
+                finalResult = {
+                  ok: false,
+                  reason: saveOutcome.reason === 'quota-exceeded' ? 'quota' : 'storage-unavailable',
+                  error: saveOutcome.error || 'Storage write returned false',
+                };
               }
-              finalResult = { ok: false, reason: 'storage-unavailable', error: 'Storage write returned false' };
             }
           } catch (err: unknown) {
             console.error('Autosave failed:', err);
@@ -269,7 +286,7 @@ export function useStudioAutosave() {
         restoreFailedRef.current = saved.id;
         // Recover active workspace into a fresh, valid project state with a fresh project ID
         useStudioStore.getState().resetToNewProject();
-        setAutosaveError('Saved workspace could not be restored and has been preserved in storage. A fresh workspace has been prepared.');
+        setAutosaveError('Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.');
       }
     }).catch(() => {
       restoreFailedRef.current = null;

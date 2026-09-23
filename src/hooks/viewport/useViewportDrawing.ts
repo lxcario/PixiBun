@@ -2,8 +2,9 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
-import { deleteBuffers, getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
-import { captureLayerBuffers } from '@/lib/engine/structuralHistory';
+import { deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { captureLayerBuffers, restoreStructuralWorkspace } from '@/lib/engine/structuralHistory';
+import { canAddLayersToFrame, validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -195,6 +196,20 @@ export function useViewportDrawing({
 
     if (previousStep.type === 'structural') {
       const state = useStudioStore.getState();
+      const targetWidth = previousStep.canvasWidth ?? state.canvasWidth;
+      const targetHeight = previousStep.canvasHeight ?? state.canvasHeight;
+      const targetFrames = previousStep.frames;
+
+      // Prevalidate structural target BEFORE mutating history stacks or workspace
+      const validity = validateWorkspaceStructure(targetWidth, targetHeight, targetFrames);
+      if (!validity.ok) {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: validity.reason || 'Structural undo target workspace exceeds envelope bounds.',
+        });
+        return;
+      }
+
       const redoCaptureIds = getRedoCaptureLayerIds(previousStep, state);
       currentStep = {
         type: 'structural',
@@ -245,25 +260,18 @@ export function useViewportDrawing({
 
     if (stepToRestore.type === 'structural') {
       const state = useStudioStore.getState();
-      if (
-        stepToRestore.canvasWidth !== undefined &&
-        stepToRestore.canvasHeight !== undefined &&
-        (stepToRestore.canvasWidth !== state.canvasWidth || stepToRestore.canvasHeight !== state.canvasHeight)
-      ) {
-        state.setCanvasSize(stepToRestore.canvasWidth, stepToRestore.canvasHeight);
-      }
-      useStudioStore.setState({
-        frames: stepToRestore.frames,
-        activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),
+      const targetWidth = stepToRestore.canvasWidth ?? state.canvasWidth;
+      const targetHeight = stepToRestore.canvasHeight ?? state.canvasHeight;
+      const targetFrames = stepToRestore.frames;
+
+      restoreStructuralWorkspace({
+        canvasWidth: targetWidth,
+        canvasHeight: targetHeight,
+        frames: targetFrames,
+        activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
+        layerBuffers: stepToRestore.layerBuffers,
       });
-      if (stepToRestore.layerBuffers) {
-        for (const buf of stepToRestore.layerBuffers) {
-          const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
-          entry.ctx.putImageData(buf.imageData, 0, 0);
-          touchBuffer(buf.layerId);
-        }
-      }
     } else {
       if (previousStep.type !== 'structural' && previousStep.createdLayerId) {
         const state = useStudioStore.getState();
@@ -307,6 +315,20 @@ export function useViewportDrawing({
 
     if (nextStep.type === 'structural') {
       const state = useStudioStore.getState();
+      const targetWidth = nextStep.canvasWidth ?? state.canvasWidth;
+      const targetHeight = nextStep.canvasHeight ?? state.canvasHeight;
+      const targetFrames = nextStep.frames;
+
+      // Prevalidate structural target BEFORE mutating history stacks or workspace
+      const validity = validateWorkspaceStructure(targetWidth, targetHeight, targetFrames);
+      if (!validity.ok) {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: validity.reason || 'Structural redo target workspace exceeds envelope bounds.',
+        });
+        return;
+      }
+
       currentStep = {
         type: 'structural',
         opKind: nextStep.opKind,
@@ -321,6 +343,31 @@ export function useViewportDrawing({
         affectedLayerIds: nextStep.affectedLayerIds,
       };
     } else {
+      const state = useStudioStore.getState();
+
+      // When redoing a pixel-history step that would recreate a missing createdLayerId,
+      // prospective-guard adding one layer to nextStep.frameIndex before mutating stacks, buffers, or state
+      if (nextStep.createdLayerId) {
+        const targetFrame = state.frames[nextStep.frameIndex];
+        const layerExists = targetFrame?.layers.some((l) => l.id === nextStep.createdLayerId);
+        if (!layerExists) {
+          const capacity = canAddLayersToFrame(
+            state.frames,
+            nextStep.frameIndex,
+            state.canvasWidth,
+            state.canvasHeight,
+            1
+          );
+          if (!capacity.ok) {
+            studioEvents.emit('pixibun:toast', {
+              type: 'error',
+              message: capacity.reason || 'Redoing layer creation exceeds workspace envelope.',
+            });
+            return;
+          }
+        }
+      }
+
       const currentLayerCanvas = getOrCreateLayerCanvas(nextStep.layerId);
       const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
@@ -335,15 +382,15 @@ export function useViewportDrawing({
         createdLayerId: nextStep.createdLayerId,
         createdLayerTag: nextStep.createdLayerTag,
         createdLayerIndex: nextStep.createdLayerIndex,
-        layerName: useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+        layerName: state.frames[nextStep.frameIndex]?.layers.find(
           (layer) => layer.id === nextStep.layerId
         )?.name,
-        layerTag: useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+        layerTag: state.frames[nextStep.frameIndex]?.layers.find(
           (layer) => layer.id === nextStep.layerId
         )?.tag,
         preserveLayerEffect: nextStep.preserveLayerEffect,
         layerEffect: (() => {
-          const effect = useStudioStore.getState().frames[nextStep.frameIndex]?.layers.find(
+          const effect = state.frames[nextStep.frameIndex]?.layers.find(
             (layer) => layer.id === nextStep.layerId
           )?.effect;
           return effect ? structuredClone(effect) : undefined;
@@ -356,25 +403,18 @@ export function useViewportDrawing({
 
     if (stepToRestore.type === 'structural') {
       const state = useStudioStore.getState();
-      if (
-        stepToRestore.canvasWidth !== undefined &&
-        stepToRestore.canvasHeight !== undefined &&
-        (stepToRestore.canvasWidth !== state.canvasWidth || stepToRestore.canvasHeight !== state.canvasHeight)
-      ) {
-        state.setCanvasSize(stepToRestore.canvasWidth, stepToRestore.canvasHeight);
-      }
-      useStudioStore.setState({
-        frames: stepToRestore.frames,
-        activeFrameIndex: Math.min(stepToRestore.activeFrameIndex, Math.max(0, stepToRestore.frames.length - 1)),
+      const targetWidth = stepToRestore.canvasWidth ?? state.canvasWidth;
+      const targetHeight = stepToRestore.canvasHeight ?? state.canvasHeight;
+      const targetFrames = stepToRestore.frames;
+
+      restoreStructuralWorkspace({
+        canvasWidth: targetWidth,
+        canvasHeight: targetHeight,
+        frames: targetFrames,
+        activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
+        layerBuffers: stepToRestore.layerBuffers,
       });
-      if (stepToRestore.layerBuffers) {
-        for (const buf of stepToRestore.layerBuffers) {
-          const entry = getOrCreateBuffer(buf.layerId, canvasWidth, canvasHeight);
-          entry.ctx.putImageData(buf.imageData, 0, 0);
-          touchBuffer(buf.layerId);
-        }
-      }
     } else {
       if (stepToRestore.createdLayerId) {
         const currentFrame = useStudioStore.getState().frames[stepToRestore.frameIndex];

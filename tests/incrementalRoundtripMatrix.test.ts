@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { Blob as NodeBlob } from 'node:buffer';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { makeCanvas, type ImageDataShim } from './helpers/mockCanvas';
-import { db, autoSaveWorkspace, loadLatestSavedWorkspace, getLayerBlobsForProject } from '@/lib/storage/db';
+import { db, autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, getLayerBlobsForProject } from '@/lib/storage/db';
 import {
   hydrateProject,
   buildAutosavePayloadAsync,
@@ -91,17 +91,13 @@ describe('Incremental-Autosave Round-Trip Matrix (B3–B7, B17–B22)', () => {
 
   async function performIncrementalSaveAndHydrate(projectId: string) {
     const payload = await buildAutosavePayloadAsync(projectId);
-    const success = await autoSaveWorkspace(
+    const success = await autoSaveWorkspaceDetailed(
       projectId,
-      payload.project.name,
-      payload.project.width,
-      payload.project.height,
-      payload.project.fps,
       payload.project,
       undefined,
       payload.layerBlobs
     );
-    expect(success).toBe(true);
+    expect(success.ok).toBe(true);
     commitPersistedRevisions(projectId, payload.capturedRevisions);
 
     // Save state is in DB. Now wipe the in-memory store and buffer registry completely.
@@ -524,19 +520,15 @@ describe('Incremental-Autosave Round-Trip Matrix (B3–B7, B17–B22)', () => {
     // Force error inside Dexie transaction during layerBlobs write
     vi.spyOn(db.layerBlobs, 'bulkAdd').mockRejectedValueOnce(new Error('Simulated IO Failure'));
 
-    const success = await autoSaveWorkspace(
+    const success = await autoSaveWorkspaceDetailed(
       projectId,
-      payload.project.name,
-      payload.project.width,
-      payload.project.height,
-      payload.project.fps,
       payload.project,
       undefined,
       payload.layerBlobs
     );
 
-    // Autosave returned false
-    expect(success).toBe(false);
+    // Autosave returned failure
+    expect(success.ok).toBe(false);
 
     // Transaction was rolled back: project record was NOT created in DB!
     const projectInDb = await db.projects.get(projectId);

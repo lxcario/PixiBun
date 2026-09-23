@@ -15,6 +15,7 @@ import { createId } from '@/lib/engine/id';
 import type { ViewportPhotometricContext } from './types';
 import type { LayerEffectRecipe } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
 
 export function usePhotometricEvents({
   canvasWidth,
@@ -156,6 +157,22 @@ export function usePhotometricEvents({
         const existingIndex = currentFrame.layers.findIndex((layer) => layer.id === targetLayerId);
         captureSnapshot(displayName, targetLayerId, undefined, tag, true, existingIndex);
       } else {
+        const state = useStudioStore.getState();
+        const capacity = canAddLayersToFrame(
+          state.frames,
+          state.activeFrameIndex,
+          state.canvasWidth,
+          state.canvasHeight,
+          1
+        );
+        if (!capacity.ok) {
+          studioEvents.emit('pixibun:toast', {
+            message: capacity.reason || 'Cannot create photometric layer: workspace capacity ceiling reached.',
+            type: 'error',
+          });
+          return;
+        }
+
         isNewLayer = true;
         targetLayerId = createId('layer');
         useStudioStore.setState((draft) => {

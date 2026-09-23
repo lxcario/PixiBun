@@ -59,6 +59,10 @@ export function makeCanvas(width: number, height: number): MockCanvas {
     globalCompositeOperation: 'source-over',
     fillStyle: '#000000',
     clearRect: (x: number, y: number, w: number, h: number) => {
+      if (x === 0 && y === 0 && w === width && h === height) {
+        _imageData.data.fill(0);
+        return;
+      }
       for (let py = y; py < y + h; py++) {
         for (let px = x; px < x + w; px++) {
           if (px < 0 || py < 0 || px >= width || py >= height) continue;
@@ -87,9 +91,13 @@ export function makeCanvas(width: number, height: number): MockCanvas {
         }
       }
     },
-    drawImage: (src: MockCanvas | HTMLCanvasElement, dx: number, dy: number) => {
+    drawImage: (src: MockCanvas | HTMLCanvasElement, dx: number, dy: number, dw?: number, dh?: number) => {
       const srcData: ImageDataShim | undefined = (src as MockCanvas)?._imageData;
       if (!srcData) return;
+      if (dx === 0 && dy === 0 && (dw === undefined || dw === width) && (dh === undefined || dh === height) && width === srcData.width && height === srcData.height) {
+        _imageData.data.set(srcData.data);
+        return;
+      }
       for (let py = 0; py < srcData.height; py++) {
         for (let px = 0; px < srcData.width; px++) {
           const sx = px + dx;
@@ -106,6 +114,10 @@ export function makeCanvas(width: number, height: number): MockCanvas {
     },
     getImageData: (x: number, y: number, w: number, h: number) => {
       const out = new FakeImageData(w, h);
+      if (x === 0 && y === 0 && w === width && h === height) {
+        out.data.set(_imageData.data);
+        return out as unknown as ImageData;
+      }
       for (let py = 0; py < h; py++) {
         for (let px = 0; px < w; px++) {
           const sx = px + x;
@@ -122,6 +134,10 @@ export function makeCanvas(width: number, height: number): MockCanvas {
       return out as unknown as ImageData;
     },
     putImageData: (data: ImageData, x: number, y: number) => {
+      if (x === 0 && y === 0 && data.width === width && data.height === height) {
+        _imageData.data.set(data.data);
+        return;
+      }
       for (let py = 0; py < data.height; py++) {
         for (let px = 0; px < data.width; px++) {
           const sx = px + x;
