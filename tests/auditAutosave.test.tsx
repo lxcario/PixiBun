@@ -3,14 +3,21 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { act, renderHook, cleanup } from '@testing-library/react';
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioStore } from '@/stores/studioStore';
-import { autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, type StoredWorkspace, type AutoSaveOutcome } from '@/lib/storage/db';
+import { autoSaveWorkspaceDetailed, getLatestStoredProjectId, type AutoSaveOutcome } from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, type AutosavePayload } from '@/lib/project/serialize';
 import type { SaveResult, ProjectFile } from '@/types/project';
+import { inspectAndAdmitStoredProject } from '@/lib/recovery/projectAdmission';
+import type { SafeProjectMetadata } from '@/lib/recovery/recoveryTypes';
 
 vi.mock('@/lib/storage/db', () => ({
   autoSaveWorkspaceDetailed: vi.fn().mockResolvedValue({ ok: true, status: 'saved' }),
+  getLatestStoredProjectId: vi.fn().mockResolvedValue(null),
   loadLatestSavedWorkspace: vi.fn().mockResolvedValue(null),
   getLayerBlobsForProject: vi.fn().mockResolvedValue([]),
+}));
+vi.mock('@/lib/recovery/projectAdmission', () => ({
+  inspectAndAdmitStoredProject: vi.fn().mockResolvedValue({ status: 'not-found' }),
+  isAutosavePermitted: vi.fn((phase: string) => phase === 'active'),
 }));
 vi.mock('@/lib/project/serialize', () => ({
   buildAutosavePayloadAsync: vi.fn(), generateCompositeThumbnail: vi.fn(), hydrateProject: vi.fn(),
@@ -62,17 +69,21 @@ it('returns false for a failed save so callers cannot show success', async () =>
 it('preserves corrupt stored project on restore failure and recovers under fresh project identity', async () => {
   const corruptProjectId = 'corrupt-project-123';
   vi.mocked(autoSaveWorkspaceDetailed).mockResolvedValue({ ok: true, status: 'saved' });
-  vi.mocked(loadLatestSavedWorkspace).mockResolvedValueOnce({
-    id: corruptProjectId,
-    name: 'Corrupt Saved',
-    width: 32,
-    height: 32,
-    fps: 8,
-    dataJson: '{"format": "pixibun-project", "version": 3, "width": -99}',
-    createdAt: 1000,
-    updatedAt: 1000,
-    layerBlobs: [],
-  } as unknown as StoredWorkspace);
+  vi.mocked(getLatestStoredProjectId).mockResolvedValueOnce(corruptProjectId);
+  vi.mocked(inspectAndAdmitStoredProject).mockResolvedValueOnce({
+    status: 'recovery-required',
+    projectId: corruptProjectId,
+    assessment: {
+      status: 'recoverable-envelope-exceeded',
+      projectId: corruptProjectId,
+      project: {} as unknown as ProjectFile,
+      metadata: {} as unknown as SafeProjectMetadata,
+      violations: [],
+      reasonCodes: [],
+      orphanSummary: { totalCount: 0, duplicateCount: 0, detailsTruncated: false, details: [] },
+      scannedBlobsCount: 0,
+    },
+  });
   vi.mocked(buildAutosavePayloadAsync).mockResolvedValue(payload('Recovered'));
 
   const { result } = renderHook(useStudioAutosave);

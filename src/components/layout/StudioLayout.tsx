@@ -14,7 +14,6 @@ import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { getProjectById } from '@/lib/storage/db';
 import { hydrateProject } from '@/lib/project/serialize';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
@@ -104,6 +103,7 @@ export const StudioLayout: React.FC = () => {
     handleCommitHistory,
     autosaveError,
     setAutosaveError,
+    openStoredProject,
   } = useStudioAutosave();
 
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
@@ -126,26 +126,28 @@ export const StudioLayout: React.FC = () => {
   }, [resetToNewProject, runAutosave]);
 
   const handleOpenProject = useCallback(async (projectId: string) => {
-    if (autosaveTimerRef.current !== null) {
-      window.clearTimeout(autosaveTimerRef.current);
-      autosaveTimerRef.current = null;
-    }
-    await runAutosave();
-
-    const target = await getProjectById(projectId);
-    if (!target) return;
-
-    try {
-      const result = decodeAndValidateProject(target.dataJson);
-      if (!result.ok) {
-        setImportError(result.error);
-        return;
+    const result = await openStoredProject(projectId);
+    if (!result.success) {
+      if (result.reason === 'recovery-required') {
+        throw new Error('This project requires recovery and cannot be opened directly.');
       }
-      await hydrateProject(result.value, target.id, target.layerBlobs);
-    } catch (err) {
-      console.error('Failed to open project:', err);
+      if (result.reason === 'unsupported-version') {
+        throw new Error(result.message);
+      }
+      if (result.reason === 'blocked') {
+        throw new Error(result.message);
+      }
+      if (result.reason === 'transient-failure') {
+        throw new Error(result.message);
+      }
+      if (result.reason === 'hydration-failure') {
+        throw new Error(`Project could not be loaded into the workspace: ${result.message}`);
+      }
+      if (result.reason === 'not-found') {
+        throw new Error('Project not found in storage.');
+      }
     }
-  }, [runAutosave, autosaveTimerRef]);
+  }, [openStoredProject]);
 
   const isDirty = useStudioStore((s) => s.isDirty);
   const saveStatus = useStudioStore((s) => s.saveStatus);

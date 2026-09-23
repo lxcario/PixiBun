@@ -3,15 +3,85 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, type AutoSaveOutcome } from '@/lib/storage/db';
+import {
+  autoSaveWorkspaceDetailed,
+  getLatestStoredProjectId,
+  loadLatestSavedWorkspace,
+  type AutoSaveOutcome,
+} from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
 import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { studioEvents } from '@/lib/events/studioEvents';
 
-import type { SaveResult } from '@/types/project';
+import type { SaveResult, ProjectFile } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
-import { decodeAndValidateProject } from '@/lib/project/decodeProject';
+import { createId } from '@/lib/engine/id';
+import {
+  inspectAndAdmitStoredProject,
+  isAutosavePermitted,
+  type RestoreLifecycleState,
+  type PendingRecoveryContext,
+  type StartupIssueContext,
+} from '@/lib/recovery/projectAdmission';
+import type { StoredRecoveryAssessment } from '@/lib/recovery/recoveryTypes';
+
+export type {
+  RestoreLifecycleState,
+  PendingRecoveryContext,
+  StartupIssueContext,
+};
+
+export type OpenProjectResult =
+  | { success: true; projectId: string }
+  | {
+      success: false;
+      reason: 'recovery-required';
+      projectId: string;
+      assessment: StoredRecoveryAssessment;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'unsupported-version';
+      projectId: string;
+      foundVersion: number;
+      supportedVersion: number;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'blocked';
+      projectId: string;
+      reasonCode: string;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'transient-failure';
+      projectId: string;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'hydration-failure';
+      projectId: string;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'not-found';
+      projectId: string;
+      message: string;
+    }
+  | {
+      success: false;
+      reason: 'superseded';
+    }
+  | {
+      success: false;
+      reason: 'cancelled';
+    };
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -39,14 +109,70 @@ export function useStudioAutosave() {
   const autosavePendingRef = useRef(false);
   const inFlightPromiseRef = useRef<Promise<SaveResult> | null>(null);
   const autosaveFailCountRef = useRef(0);
+
+  // Single authoritative reactive lifecycle state & synchronous ref mirror
+  const lifecycleRef = useRef<RestoreLifecycleState>({ phase: 'idle' });
+  const [lifecycleState, setLifecycleState] = useState<RestoreLifecycleState>({ phase: 'idle' });
   const restorePromiseRef = useRef<Promise<void> | null>(null);
-  const restoreFailedRef = useRef<string | null>(null);
+
+  const updateLifecycle = useCallback((next: RestoreLifecycleState) => {
+    lifecycleRef.current = next;
+    setLifecycleState(next);
+  }, []);
+
+  // Hook-local request epoch and AbortController coordinator
+  const isMountedRef = useRef(true);
+  const openEpochRef = useRef(0);
+  const openAbortRef = useRef<AbortController | null>(null);
+
+  const beginOpen = useCallback(() => {
+    openEpochRef.current += 1;
+    if (openAbortRef.current) {
+      openAbortRef.current.abort();
+    }
+    openAbortRef.current = new AbortController();
+    if (!isMountedRef.current) {
+      openAbortRef.current.abort();
+    }
+    return {
+      epoch: openEpochRef.current,
+      signal: openAbortRef.current.signal,
+    };
+  }, []);
+
+  const isOpenStale = useCallback((epoch: number) => {
+    return epoch !== openEpochRef.current;
+  }, []);
 
   const runAutosave = useCallback(async (): Promise<SaveResult> => {
-    if (restorePromiseRef.current) await restorePromiseRef.current;
+    if (restorePromiseRef.current) {
+      try {
+        await restorePromiseRef.current;
+      } catch {
+        // Handled in restore promise
+      }
+    }
+
+    const currentPhase = lifecycleRef.current.phase;
+    if (!isAutosavePermitted(currentPhase)) {
+      return {
+        ok: false,
+        reason: 'lifecycle-suspended',
+        error: `Autosave suspended: workspace is in '${currentPhase}' phase.`,
+      };
+    }
+
     const currentProjId = useStudioStore.getState().currentProjectId;
-    if (restoreFailedRef.current === currentProjId) {
-      return { ok: false, reason: 'restore-invalid', error: 'Active project restore failed and is preserved read-only.' };
+    if (
+      lifecycleRef.current.phase === 'active' &&
+      lifecycleRef.current.pendingRecovery?.sourceProjectId &&
+      currentProjId === lifecycleRef.current.pendingRecovery.sourceProjectId
+    ) {
+      return {
+        ok: false,
+        reason: 'restore-invalid',
+        error: 'Active project restore failed and is preserved read-only.',
+      };
     }
     if (autosaveInFlightRef.current) {
       autosavePendingRef.current = true;
@@ -229,6 +355,161 @@ export function useStudioAutosave() {
     };
   }, [runAutosave]);
 
+  // Abort any in-flight open operation when the hook unmounts
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (openAbortRef.current) {
+        openAbortRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Coordinated project opener for Gallery, startup, and recovery opening
+  const openStoredProject = useCallback(
+    async (targetProjectId: string, isRecoveredCopy = false): Promise<OpenProjectResult> => {
+      if (!isMountedRef.current) return { success: false, reason: 'cancelled' };
+      const previousActiveState = lifecycleRef.current;
+
+      // Suspend debounced autosave timer
+      if (autosaveTimerRef.current !== null) {
+        window.clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+
+      // Best effort save of current workspace if active
+      if (previousActiveState.phase === 'active') {
+        try {
+          await runAutosave();
+        } catch {
+          // best-effort
+        }
+      }
+
+      if (!isMountedRef.current) return { success: false, reason: 'cancelled' };
+      const { epoch, signal } = beginOpen();
+      updateLifecycle({ phase: 'loading', projectId: targetProjectId });
+      if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
+
+      updateLifecycle({ phase: 'assessing', projectId: targetProjectId });
+      if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
+
+      const admission = await inspectAndAdmitStoredProject(targetProjectId, { signal });
+      if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
+      if (signal.aborted) return { success: false, reason: 'cancelled' };
+
+      if (admission.status === 'admitted') {
+        updateLifecycle({ phase: 'hydrating', projectId: targetProjectId });
+        try {
+          await hydrateProject(
+            admission.project as ProjectFile,
+            admission.projectId,
+            admission.sourceBlobs,
+            () => !isOpenStale(epoch) && !signal.aborted
+          );
+        } catch (err: unknown) {
+          if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
+          if (signal.aborted) return { success: false, reason: 'cancelled' };
+
+          console.error('Hydration failed after admission:', err);
+          const message = err instanceof Error ? err.message : 'Hydration failed';
+
+          if (previousActiveState.phase === 'active') {
+            // Restore previous active workspace (Correction #6)
+            updateLifecycle(previousActiveState);
+            return {
+              success: false,
+              reason: 'hydration-failure',
+              projectId: targetProjectId,
+              message: `Project could not be loaded into the workspace: ${message}`,
+            };
+          }
+
+          const newId = createId('proj');
+          useStudioStore.getState().resetToNewProject(newId);
+          setAutosaveError(`Project could not be loaded into the workspace: ${message}`);
+          updateLifecycle({
+            phase: 'active',
+            projectId: newId,
+            startupIssue: {
+              kind: 'hydration-failure',
+              sourceProjectId: targetProjectId,
+              message,
+            },
+          });
+          return {
+            success: false,
+            reason: 'hydration-failure',
+            projectId: targetProjectId,
+            message,
+          };
+        }
+
+        if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
+        if (signal.aborted) return { success: false, reason: 'cancelled' };
+        updateLifecycle({
+          phase: 'active',
+          projectId: targetProjectId,
+          pendingRecovery: isRecoveredCopy
+            ? undefined
+            : (previousActiveState.phase === 'active' ? previousActiveState.pendingRecovery : undefined),
+        });
+        return { success: true, projectId: targetProjectId };
+      }
+
+      // Not admitted: restore previous workspace if active (Gallery flow)
+      if (previousActiveState.phase === 'active') {
+        updateLifecycle(previousActiveState);
+      }
+
+      switch (admission.status) {
+        case 'recovery-required':
+          return {
+            success: false,
+            reason: 'recovery-required',
+            projectId: targetProjectId,
+            assessment: admission.assessment,
+            message: 'This project requires recovery and cannot be opened directly.',
+          };
+        case 'unsupported-version':
+          return {
+            success: false,
+            reason: 'unsupported-version',
+            projectId: targetProjectId,
+            foundVersion: admission.foundVersion,
+            supportedVersion: admission.supportedVersion,
+            message: admission.message,
+          };
+        case 'blocked':
+          return {
+            success: false,
+            reason: 'blocked',
+            projectId: targetProjectId,
+            reasonCode: admission.reasonCode,
+            message: admission.message,
+          };
+        case 'transient-failure':
+          return {
+            success: false,
+            reason: 'transient-failure',
+            projectId: targetProjectId,
+            message: admission.message,
+          };
+        case 'not-found':
+          return {
+            success: false,
+            reason: 'not-found',
+            projectId: targetProjectId,
+            message: 'Project not found in storage.',
+          };
+        case 'cancelled':
+          return { success: false, reason: 'cancelled' };
+      }
+    },
+    [beginOpen, isOpenStale, runAutosave, updateLifecycle]
+  );
+
   // Restore the last session on mount and request persistent storage.
   useEffect(() => {
     void requestPersistentStorage().then((persisted) => {
@@ -266,36 +547,160 @@ export function useStudioAutosave() {
       if (state.projectName === 'Untitled Sprite') {
         state.setProjectName('Playground Animation');
       }
+      updateLifecycle({ phase: 'active', projectId: state.currentProjectId });
       void runAutosave();
       return;
     }
 
-    let cancelled = false;
-    const initialState = useStudioStore.getState();
-    restorePromiseRef.current = loadLatestSavedWorkspace().then(async (saved) => {
-      if (!saved || cancelled) return;
+    let unmounted = false;
+
+    restorePromiseRef.current = (async () => {
+      // 1. Identify latest project ID via bounded metadata query (Correction #1)
+      let targetId: string | null = null;
       try {
-        const decoded = decodeAndValidateProject(saved.dataJson);
-        if (!decoded.ok) throw new Error(decoded.error);
-        await hydrateProject(decoded.value, saved.id, saved.layerBlobs, () => !cancelled && isCurrentSaveRevision(initialState));
-        restoreFailedRef.current = null;
-      } catch (err) {
-        if (cancelled || !isCurrentSaveRevision(initialState)) return;
-        console.error('Project restore failed:', err);
-        // Track the corrupt stored project ID so we NEVER overwrite it
-        restoreFailedRef.current = saved.id;
-        // Recover active workspace into a fresh, valid project state with a fresh project ID
-        useStudioStore.getState().resetToNewProject();
-        setAutosaveError('Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.');
+        targetId = typeof getLatestStoredProjectId === 'function'
+          ? await getLatestStoredProjectId()
+          : (await loadLatestSavedWorkspace?.())?.id ?? null;
+      } catch (err: unknown) {
+        if (unmounted) return;
+        console.error('Storage read error on startup:', err);
+        const newId = createId('proj');
+        useStudioStore.getState().resetToNewProject(newId);
+        setAutosaveError('Browser storage is unavailable; your workspace could not be restored.');
+        updateLifecycle({
+          phase: 'active',
+          projectId: newId,
+          startupIssue: {
+            kind: 'transient-failure',
+            message: err instanceof Error ? err.message : 'Database error',
+          },
+        });
+        return;
       }
-    }).catch(() => {
-      restoreFailedRef.current = null;
-      setAutosaveError('Browser storage is unavailable; your workspace could not be restored.');
-    });
+
+      if (unmounted) return;
+
+      if (!targetId) {
+        // No saved project in database
+        updateLifecycle({ phase: 'active', projectId: useStudioStore.getState().currentProjectId });
+        return;
+      }
+
+      // 2. Begin open request with epoch & abort controller
+      const { epoch, signal } = beginOpen();
+      updateLifecycle({ phase: 'loading', projectId: targetId });
+      if (unmounted || isOpenStale(epoch)) return;
+
+      updateLifecycle({ phase: 'assessing', projectId: targetId });
+      if (unmounted || isOpenStale(epoch)) return;
+
+      const admission = await inspectAndAdmitStoredProject(targetId, { signal });
+      if (unmounted || isOpenStale(epoch) || signal.aborted) return;
+
+      if (admission.status === 'admitted') {
+        updateLifecycle({ phase: 'hydrating', projectId: targetId });
+        try {
+          await hydrateProject(
+            admission.project as ProjectFile,
+            admission.projectId,
+            admission.sourceBlobs,
+            () => !unmounted && !isOpenStale(epoch) && !signal.aborted
+          );
+          if (!unmounted && !isOpenStale(epoch)) {
+            updateLifecycle({ phase: 'active', projectId: targetId });
+          }
+        } catch (hydErr: unknown) {
+          if (unmounted || isOpenStale(epoch) || signal.aborted) return;
+          console.error('Startup project restore failed during hydration:', hydErr);
+          const newId = createId('proj');
+          useStudioStore.getState().resetToNewProject(newId);
+          setAutosaveError(
+            'Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.'
+          );
+          updateLifecycle({
+            phase: 'active',
+            projectId: newId,
+            startupIssue: {
+              kind: 'hydration-failure',
+              sourceProjectId: targetId,
+              message: hydErr instanceof Error ? hydErr.message : 'Hydration failed',
+            },
+          });
+        }
+      } else if (admission.status === 'recovery-required') {
+        if (unmounted || isOpenStale(epoch)) return;
+        const newId = createId('proj');
+        useStudioStore.getState().resetToNewProject(newId);
+        setAutosaveError(
+          'Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.'
+        );
+        updateLifecycle({
+          phase: 'active',
+          projectId: newId,
+          pendingRecovery: {
+            sourceProjectId: targetId,
+            assessment: admission.assessment,
+          },
+        });
+      } else if (admission.status === 'unsupported-version') {
+        if (unmounted || isOpenStale(epoch)) return;
+        const newId = createId('proj');
+        useStudioStore.getState().resetToNewProject(newId);
+        setAutosaveError(admission.message);
+        updateLifecycle({
+          phase: 'active',
+          projectId: newId,
+          startupIssue: {
+            kind: 'unsupported-version',
+            sourceProjectId: targetId,
+            reasonCode: 'UNSUPPORTED_FUTURE_VERSION',
+            message: admission.message,
+          },
+        });
+      } else if (admission.status === 'blocked') {
+        if (unmounted || isOpenStale(epoch)) return;
+        const newId = createId('proj');
+        useStudioStore.getState().resetToNewProject(newId);
+        setAutosaveError(
+          'Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.'
+        );
+        updateLifecycle({
+          phase: 'active',
+          projectId: newId,
+          startupIssue: {
+            kind: 'blocked',
+            sourceProjectId: targetId,
+            reasonCode: admission.reasonCode,
+            message: admission.message,
+          },
+        });
+      } else if (admission.status === 'transient-failure') {
+        if (unmounted || isOpenStale(epoch)) return;
+        const newId = createId('proj');
+        useStudioStore.getState().resetToNewProject(newId);
+        setAutosaveError('Browser storage is unavailable; your workspace could not be restored.');
+        updateLifecycle({
+          phase: 'active',
+          projectId: newId,
+          startupIssue: {
+            kind: 'transient-failure',
+            sourceProjectId: targetId,
+            message: admission.message,
+          },
+        });
+      } else if (admission.status === 'not-found') {
+        if (unmounted || isOpenStale(epoch)) return;
+        updateLifecycle({ phase: 'active', projectId: useStudioStore.getState().currentProjectId });
+      }
+    })();
+
     return () => {
-      cancelled = true;
+      unmounted = true;
+      if (openAbortRef.current) {
+        openAbortRef.current.abort();
+      }
     };
-  }, [runAutosave]);
+  }, [beginOpen, isOpenStale, runAutosave, updateLifecycle]);
 
   return {
     autosaveTimerRef,
@@ -305,5 +710,7 @@ export function useStudioAutosave() {
     setAutosaveError,
     storageWarning,
     setStorageWarning,
+    lifecycleState,
+    openStoredProject,
   };
 }

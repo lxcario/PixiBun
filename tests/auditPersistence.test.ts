@@ -24,6 +24,7 @@ import { SafeJson } from '@/lib/safety/safeJson';
 import { readImportFile } from '@/lib/project/importFile';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { validateStructurePayload } from '@/lib/sync/p2pSync';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 beforeEach(async () => {
   vi.stubGlobal('Blob', NodeBlob);
@@ -120,6 +121,43 @@ describe('audit persistence regressions', () => {
     expect(useStudioStore.getState().currentProjectId).toBe(initial.currentProjectId);
     expect(hasBuffer(initial.activeLayerId)).toBe(true);
     expect(getOrCreateBuffer(initial.activeLayerId, 32, 32)).toBe(buffer);
+  });
+
+  it('rolls back buffer registry to previous buffers if loadProjectState throws during publish', async () => {
+    const initial = useStudioStore.getState();
+    const initialBuffer = getOrCreateBuffer(initial.activeLayerId, 32, 32);
+    const file = buildProjectFile();
+    const validPng =
+      'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAzCQNq/9CoWfocGBpIknb53BwAAAAAAAAAAAAAAAADgYwGzVwEB8fXh+AAAAABJRU5ErkJggg==';
+    file.frames[0].layers[0].id = 'incoming-layer-id';
+    file.frames[0].layers[0].pngBase64 = validPng;
+
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 32,
+      height: 32,
+      close: vi.fn(),
+    }));
+    const probeSpy = vi.spyOn(ImageHeaderProbe, 'probe').mockResolvedValue({ width: 32, height: 32, format: 'PNG' });
+
+    const originalLoad = useStudioStore.getState().loadProjectState;
+    const loadSpy = vi.spyOn(useStudioStore.getState(), 'loadProjectState').mockImplementationOnce(() => {
+      throw new Error('Simulated subscriber/state error during loadProjectState');
+    });
+
+    try {
+      await expect(hydrateProject(file, 'proj-rollback-test')).rejects.toThrow(
+        'Simulated subscriber/state error during loadProjectState'
+      );
+
+      // Live buffers must be restored to previous buffers rather than left with incoming-layer-id
+      expect(hasBuffer('incoming-layer-id')).toBe(false);
+      expect(hasBuffer(initial.activeLayerId)).toBe(true);
+      expect(getOrCreateBuffer(initial.activeLayerId, 32, 32)).toBe(initialBuffer);
+    } finally {
+      loadSpy.mockRestore();
+      probeSpy.mockRestore();
+      useStudioStore.setState({ loadProjectState: originalLoad });
+    }
   });
 
   it('detects edits even when the dirty flag was already true', () => {
@@ -590,6 +628,219 @@ describe('audit persistence regressions', () => {
 
     // Now marked clean
     expect(isLayerDirty(projId, layerId, getBufferRevision(layerId), 0)).toBe(false);
+  });
+
+  // ==========================================================================
+  // Phase 1B.7 — Publish Boundary Atomicity & Adversarial Listener Tests
+  // ==========================================================================
+
+  function createTestPngBlob(width = 32, height = 32): Blob {
+    const bytes = new Uint8Array(28);
+    bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+    bytes.set([0x00, 0x00, 0x00, 0x0d], 8);
+    bytes.set([0x49, 0x48, 0x44, 0x52], 12);
+    const view = new DataView(bytes.buffer);
+    view.setUint32(16, width, false);
+    view.setUint32(20, height, false);
+    return new Blob([bytes], { type: 'image/png' });
+  }
+
+  function createProjectFileFixture(id: string, name: string, layerId: string, width = 32, height = 32): ProjectFile {
+    return {
+      format: PROJECT_FORMAT_ID,
+      version: PROJECT_FORMAT_VERSION,
+      name,
+      width,
+      height,
+      fps: 12,
+      loopMode: 'repeat',
+      onionSkin: {
+        enabled: false,
+        prevFrames: 1,
+        nextFrames: 1,
+        opacity: 0.35,
+        prevColor: '#7fae6b',
+        nextColor: '#c792df',
+      },
+      customRamps: [],
+      palettes: [
+        {
+          id: 'palette-default',
+          name: 'Default Palette',
+          colors: ['#000000', '#ffffff', '#ff0000'],
+        },
+      ],
+      currentPaletteId: 'palette-default',
+      clips: [],
+      frames: [
+        {
+          id: `frame-${id}`,
+          durationMs: 83,
+          layers: [
+            {
+              id: layerId,
+              name: `Layer of ${name}`,
+              visible: true,
+              locked: false,
+              opacity: 1,
+              blendMode: 'source-over',
+            },
+          ],
+        },
+      ],
+      createdAt: 1000,
+      updatedAt: 1000,
+    };
+  }
+
+  it('prevents split-brain desynchronization when a store subscriber throws during hydration publication', async () => {
+    // 1. Establish active Project A with allocated buffer and metadata
+    const projA = createProjectFileFixture('proj-alpha', 'Project Alpha', 'layer-a-1');
+    useStudioStore.getState().loadProjectState(projA, 'proj-alpha');
+    const bufA = getOrCreateBuffer('layer-a-1', 32, 32);
+    bufA.ctx.fillStyle = '#ff0000';
+    bufA.ctx.fillRect(0, 0, 10, 10);
+    touchBuffer('layer-a-1');
+
+    expect(useStudioStore.getState().currentProjectId).toBe('proj-alpha');
+    expect(useStudioStore.getState().projectName).toBe('Project Alpha');
+    expect(hasBuffer('layer-a-1')).toBe(true);
+
+    // 2. Prepare Project B with its own blob and layer
+    const projB = createProjectFileFixture('proj-beta', 'Project Beta', 'layer-b-1');
+    const blobsB = [
+      {
+        id: 101,
+        projectId: 'proj-beta',
+        layerId: 'layer-b-1',
+        frameIndex: 0,
+        blob: createTestPngBlob(32, 32),
+        updatedAt: 2000,
+      },
+    ];
+
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 32,
+      height: 32,
+      close: vi.fn(),
+    }));
+
+    // 3. Register real store subscriber that throws when Project B state is loaded
+    const unsubscribe = useStudioStore.subscribe((state) => {
+      if (state.currentProjectId === 'proj-beta') {
+        throw new Error('Adversarial subscriber crashed during Project B publication');
+      }
+    });
+
+    // 4. Attempt to hydrate Project B: must fail and catch
+    await expect(hydrateProject(projB, 'proj-beta', blobsB)).rejects.toThrow(
+      'Adversarial subscriber crashed during Project B publication'
+    );
+    unsubscribe();
+
+    // 5. Invariant: The workspace must NOT be in a split-brain state!
+    // Store must be rolled back to Project A
+    const state = useStudioStore.getState();
+    expect(state.currentProjectId).toBe('proj-alpha');
+    expect(state.projectName).toBe('Project Alpha');
+    expect(state.frames[0].layers[0].id).toBe('layer-a-1');
+
+    // BufferRegistry must have Project A's buffer and NOT Project B's buffer
+    expect(hasBuffer('layer-a-1')).toBe(true);
+    expect(hasBuffer('layer-b-1')).toBe(false);
+
+    // Pixels of Project A buffer must be intact
+    const bufCheck = getOrCreateBuffer('layer-a-1', 32, 32);
+    const pixel = bufCheck.ctx.getImageData(0, 0, 1, 1).data;
+    expect(pixel[0]).toBe(255); // Red preserved
+  });
+
+  it('rolls back both store and buffer registry when studioEvents.emit throws after state publication', async () => {
+    // 1. Establish active Project A
+    const projA = createProjectFileFixture('proj-alpha-event', 'Project Alpha Events', 'layer-a-ev');
+    useStudioStore.getState().loadProjectState(projA, 'proj-alpha-event');
+    const bufA = getOrCreateBuffer('layer-a-ev', 32, 32);
+    bufA.ctx.fillStyle = '#00ff00';
+    bufA.ctx.fillRect(0, 0, 8, 8);
+    touchBuffer('layer-a-ev');
+
+    expect(useStudioStore.getState().currentProjectId).toBe('proj-alpha-event');
+    expect(hasBuffer('layer-a-ev')).toBe(true);
+
+    // 2. Prepare Project B
+    const projB = createProjectFileFixture('proj-beta-event', 'Project Beta Events', 'layer-b-ev');
+    const blobsB = [
+      {
+        id: 201,
+        projectId: 'proj-beta-event',
+        layerId: 'layer-b-ev',
+        frameIndex: 0,
+        blob: createTestPngBlob(32, 32),
+        updatedAt: 2000,
+      },
+    ];
+
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 32,
+      height: 32,
+      close: vi.fn(),
+    }));
+
+    // 3. Spy on studioEvents.emit to throw on pixibun:history-clear
+    const emitSpy = vi.spyOn(studioEvents, 'emit').mockImplementation((event) => {
+      if (event === 'pixibun:history-clear') {
+        throw new Error('Event bus dispatch failure during history-clear');
+      }
+    });
+
+    // 4. Attempt hydration of Project B
+    await expect(hydrateProject(projB, 'proj-beta-event', blobsB)).rejects.toThrow(
+      'Event bus dispatch failure during history-clear'
+    );
+    emitSpy.mockRestore();
+
+    // 5. Invariant: workspace must not be split-brain (Project B store + Project A buffers)
+    const state = useStudioStore.getState();
+    expect(state.currentProjectId).toBe('proj-alpha-event');
+    expect(state.projectName).toBe('Project Alpha Events');
+    expect(state.frames[0].layers[0].id).toBe('layer-a-ev');
+    expect(hasBuffer('layer-a-ev')).toBe(true);
+    expect(hasBuffer('layer-b-ev')).toBe(false);
+  });
+
+  it('falls back to safe reset when rollback to previous project also encounters an error', async () => {
+    // 1. Establish active Project A
+    const projA = createProjectFileFixture('proj-alpha-double', 'Project Alpha Double', 'layer-a-dbl');
+    useStudioStore.getState().loadProjectState(projA, 'proj-alpha-double');
+    getOrCreateBuffer('layer-a-dbl', 32, 32);
+
+    const projB = createProjectFileFixture('proj-beta-double', 'Project Beta Double', 'layer-b-dbl');
+
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
+      width: 32,
+      height: 32,
+      close: vi.fn(),
+    }));
+
+    // 2. Subscriber that throws when Project B is loaded AND throws when Project A is reloaded,
+    // but permits clean resetToNewProject
+    const unsubscribe = useStudioStore.subscribe((state) => {
+      if (state.currentProjectId === 'proj-beta-double') {
+        throw new Error('Subscriber throws on Project B');
+      }
+      if (state.currentProjectId === 'proj-alpha-double' && state.projectName === 'Project Alpha Double') {
+        throw new Error('Subscriber throws on Project A rollback');
+      }
+    });
+
+    await expect(hydrateProject(projB, 'proj-beta-double', [])).rejects.toThrow();
+    unsubscribe();
+
+    // 3. Workspace must be in safe reset state (resetToNewProject), NOT split brain
+    const state = useStudioStore.getState();
+    expect(state.currentProjectId).not.toBe('proj-beta-double');
+    expect(state.projectName).toBe('Untitled Sprite');
+    expect(hasBuffer('layer-b-dbl')).toBe(false);
   });
 });
 

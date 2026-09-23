@@ -382,6 +382,20 @@ export async function autoSaveWorkspaceDetailed(
   }
 }
 
+// Query only the primary key identifier of the most recently saved project
+// without loading layer blobs, dataJson, or materializing project record payloads.
+export async function getLatestStoredProjectId(): Promise<string | null> {
+  try {
+    if (!db.isOpen()) await db.open();
+    const keys = await db.projects.orderBy('updatedAt').reverse().limit(1).primaryKeys();
+    const id = keys[0];
+    return typeof id === 'string' ? id : null;
+  } catch (err: unknown) {
+    if (isIgnorableDbClosure(err)) return null;
+    throw new Error('Latest project identity could not be read.', { cause: err });
+  }
+}
+
 // Load the most recently saved project from IndexedDB
 export async function loadLatestSavedWorkspace(): Promise<StoredWorkspace | null> {
   try {

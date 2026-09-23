@@ -110,8 +110,12 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
       onClose();
       return;
     }
-    await onOpenProject(project.id);
-    onClose();
+    try {
+      await onOpenProject(project.id);
+      onClose();
+    } catch (err) {
+      setStorageError(err instanceof Error ? err.message : 'The project could not be opened.');
+    }
   };
 
   const formatTime = (timestamp: number) => {

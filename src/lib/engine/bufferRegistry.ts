@@ -111,6 +111,14 @@ export function replaceAllBuffers(entries: Map<string, BufferEntry>): void {
   for (const [id, entry] of entries) buffers.set(id, entry);
 }
 
+/**
+ * Takes an in-memory snapshot of all active buffer entries.
+ * Used by hydration rollback to restore buffer state if store publication fails.
+ */
+export function snapshotBuffers(): Map<string, BufferEntry> {
+  return new Map(buffers);
+}
+
 function anchorOffsets(
   anchor: AnchorPosition,
   oldWidth: number,
