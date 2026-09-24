@@ -1,10 +1,137 @@
 // Game-ready Sprite Sheet Packer for Godot, Unity, and Phaser
 
+import {
+  MAX_SAFE_CANVAS_DIMENSION,
+  MAX_SAFE_CANVAS_PIXELS,
+} from '@/config/canvasLimits';
+
 export interface SpriteSheetConfig {
   layout: 'horizontal' | 'vertical' | 'grid';
   scale: number;
   padding: number;
   columns?: number;
+  maxDimension?: number;
+  maxPixels?: number;
+}
+
+export interface SpriteSheetGeometry {
+  sheetWidth: number;
+  sheetHeight: number;
+  cols: number;
+  rows: number;
+  totalPixels: number;
+  scaledWidth: number;
+  scaledHeight: number;
+}
+
+export interface ExportGeometryValidation {
+  valid: boolean;
+  width: number;
+  height: number;
+  totalPixels: number;
+  error?: string;
+  reason?: 'exceeds-dimension' | 'exceeds-pixels' | 'invalid-dimensions';
+}
+
+/**
+ * Validates requested export dimensions and total pixel area against the authoritative
+ * PixiBun safety envelope (MAX_SAFE_CANVAS_DIMENSION = 4096, MAX_SAFE_CANVAS_PIXELS = 16,777,216).
+ */
+export function validateExportGeometry(
+  width: number,
+  height: number,
+  limits: { maxDimension?: number; maxPixels?: number } = {}
+): ExportGeometryValidation {
+  const maxDim = limits.maxDimension ?? MAX_SAFE_CANVAS_DIMENSION;
+  const maxPix = limits.maxPixels ?? MAX_SAFE_CANVAS_PIXELS;
+
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0
+  ) {
+    return {
+      valid: false,
+      width,
+      height,
+      totalPixels: 0,
+      reason: 'invalid-dimensions',
+      error: `Export dimensions must be positive finite numbers (${width}x${height}).`,
+    };
+  }
+
+  const totalPixels = width * height;
+  if (width > maxDim || height > maxDim) {
+    return {
+      valid: false,
+      width,
+      height,
+      totalPixels,
+      reason: 'exceeds-dimension',
+      error: `Export dimensions ${width}x${height} exceed maximum dimension limit of ${maxDim}px.`,
+    };
+  }
+
+  if (totalPixels > maxPix) {
+    return {
+      valid: false,
+      width,
+      height,
+      totalPixels,
+      reason: 'exceeds-pixels',
+      error: `Export area of ${totalPixels} pixels exceeds maximum safety limit of ${maxPix} pixels (${(maxPix / 1_000_000).toFixed(1)} MP).`,
+    };
+  }
+
+  return {
+    valid: true,
+    width,
+    height,
+    totalPixels,
+  };
+}
+
+/**
+ * Computes exact sprite sheet geometry, column/row layout, and total pixel area
+ * without allocating any canvas or image bitmaps.
+ */
+export function calculateSpriteSheetGeometry(
+  frameCount: number,
+  frameWidth: number,
+  frameHeight: number,
+  config: SpriteSheetConfig = { layout: 'horizontal', scale: 1, padding: 0 }
+): SpriteSheetGeometry {
+  const count = Math.max(0, frameCount);
+  const scale = Number.isFinite(config.scale) && config.scale > 0 ? config.scale : 1;
+  const pad = Number.isFinite(config.padding) && config.padding >= 0 ? config.padding : 0;
+  const scaledWidth = frameWidth * scale;
+  const scaledHeight = frameHeight * scale;
+
+  let cols = count;
+  let rows = count > 0 ? 1 : 0;
+
+  if (config.layout === 'vertical') {
+    cols = count > 0 ? 1 : 0;
+    rows = count;
+  } else if (config.layout === 'grid') {
+    cols = count > 0 ? (config.columns && config.columns > 0 ? config.columns : Math.ceil(Math.sqrt(count))) : 0;
+    rows = cols > 0 ? Math.ceil(count / cols) : 0;
+  }
+
+  const sheetWidth = cols > 0 ? cols * scaledWidth + (cols + 1) * pad : 0;
+  const sheetHeight = rows > 0 ? rows * scaledHeight + (rows + 1) * pad : 0;
+  const totalPixels = sheetWidth * sheetHeight;
+
+  return {
+    sheetWidth,
+    sheetHeight,
+    cols,
+    rows,
+    totalPixels,
+    scaledWidth,
+    scaledHeight,
+  };
 }
 
 export interface PackedSpriteSheet {
@@ -32,23 +159,22 @@ export function packSpriteSheet(
   config: SpriteSheetConfig = { layout: 'horizontal', scale: 1, padding: 0 }
 ): PackedSpriteSheet {
   const count = frameCanvases.length;
-  const scaledWidth = frameWidth * config.scale;
-  const scaledHeight = frameHeight * config.scale;
-  const pad = config.padding;
-
-  let cols = count;
-  let rows = 1;
-
-  if (config.layout === 'vertical') {
-    cols = 1;
-    rows = count;
-  } else if (config.layout === 'grid') {
-    cols = config.columns || Math.ceil(Math.sqrt(count));
-    rows = Math.ceil(count / cols);
+  if (count === 0) {
+    throw new RangeError('Cannot pack sprite sheet: no frames provided.');
   }
 
-  const sheetWidth = cols * scaledWidth + (cols + 1) * pad;
-  const sheetHeight = rows * scaledHeight + (rows + 1) * pad;
+  const geometry = calculateSpriteSheetGeometry(count, frameWidth, frameHeight, config);
+  const validation = validateExportGeometry(geometry.sheetWidth, geometry.sheetHeight, {
+    maxDimension: config.maxDimension,
+    maxPixels: config.maxPixels,
+  });
+
+  if (!validation.valid) {
+    throw new RangeError(`Sprite sheet export aborted: ${validation.error}`);
+  }
+
+  const { sheetWidth, sheetHeight, cols, scaledWidth, scaledHeight } = geometry;
+  const pad = Number.isFinite(config.padding) && config.padding >= 0 ? config.padding : 0;
 
   const sheetCanvas = document.createElement('canvas');
   sheetCanvas.width = sheetWidth;

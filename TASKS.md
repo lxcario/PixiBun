@@ -2,6 +2,29 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 68 — PixiBun v1.14.1 H2 Hardening: Sprite-Sheet Export Output Ceilings
+**Goal:** Implement canonical HIGH finding H2: Sprite-sheet export output ceilings. Enforce authoritative canvas limit ceilings (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`) as early preflight checks prior to multi-frame canvas allocation and compositing in `src/components/modals/ExportModal.tsx`, and enforce low-level defense-in-depth geometry bounds validation in `src/lib/export/spriteSheetPacker.ts`.
+
+**Deliverables:**
+- [x] **Authoritative Envelope & Preflight Geometry Calculation (`src/lib/export/spriteSheetPacker.ts`)**: Exported `calculateSpriteSheetGeometry` and `validateExportGeometry` enforcing `MAX_SAFE_CANVAS_DIMENSION` (4096 px) and `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px) from `@/config/canvasLimits`.
+- [x] **Defense-in-Depth Sheet Allocation Guard (`src/lib/export/spriteSheetPacker.ts`)**: In `packSpriteSheet`, pre-evaluates sheet geometry and throws a `RangeError` with explicit dimensions before calling `document.createElement('canvas')`.
+- [x] **Early Export Preflight & Safe Error Handling (`src/components/modals/ExportModal.tsx`)**: Preflights sheet geometry in `handleExportSpriteSheet` before entering the frame compositing loop (`compositeFrame`), emits an error toast via `studioEvents.emit('pixibun:toast', ...)` on ceiling breach, logs `console.error`, and catches any packing errors without unhandled exceptions or zero-byte downloads.
+- [x] **Comprehensive Test Verification (`tests/spriteSheetSafety.test.ts`)**: 11 dedicated unit and boundary tests covering horizontal, vertical, and grid layouts, dimension limit exceedance, pixel area exceedance, padding overflow, high frame count preflight rejection, direct `packSpriteSheet` RangeError, and exact 4096px / 4097px boundaries.
+- [ ] **Canonical Audit Findings H1, H3, H4, H5, H6 (Open)**: Deferred to subsequent targeted passes.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,115 tests across 118 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — H2 resolved; H1, H3, H4, H5, H6 remain OPEN; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 67 — PixiBun v1.14.1 Phase 1A & Phase 1B: Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger, Streaming ZIP32 Core, Untouched Backup Assembly, Deterministic Plan Builder & Trusted Recovery Orchestrator
 **Goal:** Production hardening and recovery pass addressing workspace envelope enforcement (Phase 1A) and Restricted Recovery Mode foundation through Phase 1B.6: workspace envelope guards, decoupled image import execution, policy-driven schema validation with typed SafeJson limits, IndexedDB recovery ledger with keyset-paginated blob assessment, zero-dependency streaming Store-only ZIP32 archive writer core, untouched recovery archive assembly with safe export adapters, deterministic recovery plan builder with safe candidate reconstruction, and trusted recovery orchestration with atomic recovered-copy persistence.
 

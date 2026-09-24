@@ -3,6 +3,13 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.14.1] - 2026-09-21 (Hardening Complete)
+### Sprite-Sheet Export Output Ceilings (Phase 68 / H2 Hardening)
+- **Sprite-Sheet Geometry Preflight & Dimension Ceilings (`src/lib/export/spriteSheetPacker.ts`, `src/components/modals/ExportModal.tsx`, `src/config/canvasLimits.ts`, `tests/spriteSheetSafety.test.ts`)**:
+  - Implemented `calculateSpriteSheetGeometry` and `validateExportGeometry` enforcing authoritative `MAX_SAFE_CANVAS_DIMENSION` (4096 px) and `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px) from `src/config/canvasLimits.ts`.
+  - Enforced pre-compositing envelope validation in `src/components/modals/ExportModal.tsx`: pre-calculates sheet geometry and aborts with user-facing error toast before compositing frames or allocating canvas resources.
+  - Enforced defense-in-depth runtime ceiling checks in `packSpriteSheet`, throwing descriptive `RangeError` before calling `document.createElement('canvas')`.
+  - Verified across 11 unit tests in `tests/spriteSheetSafety.test.ts` covering horizontal, vertical, grid layouts, area ceilings, padding thresholds, boundary conditions (4096 px vs 4097 px), and preflight early-rejection.
+
 ### Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger & Streaming ZIP32 Core (Phase 67 / Phase 1A & Phase 1B)
 - **Workspace Envelope Enforcement & Decoupled Import (`src/lib/project/workspaceEnvelopeGuard.ts`, `src/lib/project/imageImportExecution.ts`, `src/lib/project/schema.ts`, `src/lib/project/resourceBudget.ts`, `src/lib/engine/structuralHistory.ts`, `src/hooks/studio/useStudioAutosave.ts`, `src/components/layout/StudioLayout.tsx`, `src/hooks/viewport/events/usePhotometricEvents.ts`, `src/hooks/viewport/useViewportDrawing.ts`, `src/hooks/viewport/useViewportStudioEvents.ts`, `tests/phase1AEnvelopeEnforcement.test.ts`)**:
   - Implemented `WorkspaceEnvelopeGuard` pre-evaluating canvas resize dimensions, layer creation, and frame duplication against 64 Mpx / 2,000 layer ceilings.

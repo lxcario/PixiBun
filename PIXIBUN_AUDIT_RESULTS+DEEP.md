@@ -151,6 +151,8 @@ Pixel count grows 4× per step in the second table; time grows 7.3× then 13.4×
 
 ### [HIGH] H2 — Sprite-sheet export has no dimension ceiling and never validates its own output
 
+> **Resolution Note (H2 Resolved):** Resolved in Phase 68. Enforced `MAX_SAFE_CANVAS_DIMENSION` (4096 px) and `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px) bounds preflight in `ExportModal.tsx` before frame compositing or canvas allocation, and added low-level defense-in-depth geometry verification in `spriteSheetPacker.ts` raising `RangeError` before canvas instantiation. Verified across 11 safety unit tests in `tests/spriteSheetSafety.test.ts`. Note: H1, H3, H4, H5, and H6 remain OPEN.
+
 **Evidence:** `[CODE-READ]`
 **Files:** `src/lib/export/spriteSheetPacker.ts:46-57`; `src/components/modals/ExportModal.tsx:175-199`
 

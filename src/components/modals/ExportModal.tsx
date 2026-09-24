@@ -5,7 +5,12 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
-import { packSpriteSheet } from '@/lib/export/spriteSheetPacker';
+import {
+  packSpriteSheet,
+  calculateSpriteSheetGeometry,
+  validateExportGeometry,
+} from '@/lib/export/spriteSheetPacker';
+import { studioEvents } from '@/lib/events/studioEvents';
 import { createAnimatedGifBlobAsync } from '@/lib/export/gifEncoder';
 import { exportProcessReplayGifAsync } from '@/lib/export/processReplay';
 import { depixelizeToSvg } from '@/lib/export/depixelizeVector';
@@ -178,6 +183,24 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const handleExportSpriteSheet = () => {
     if (targetFrames.length === 0) return;
+
+    const effectiveScale = Math.min(scale, 4);
+    const geometry = calculateSpriteSheetGeometry(targetFrames.length, canvasWidth, canvasHeight, {
+      layout: layoutMode,
+      scale: effectiveScale,
+      padding,
+    });
+
+    const validation = validateExportGeometry(geometry.sheetWidth, geometry.sheetHeight);
+    if (!validation.valid) {
+      console.error(`Sprite sheet export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'The sprite sheet would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
+
     const frameCanvases: HTMLCanvasElement[] = [];
 
     for (let i = 0; i < targetFrames.length; i++) {
@@ -193,46 +216,57 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       }
     }
 
-    const effectiveScale = Math.min(scale, 4);
-    const packed = packSpriteSheet(frameCanvases, canvasWidth, canvasHeight, fps, projectName, {
-      layout: layoutMode,
-      scale: effectiveScale,
-      padding,
-    });
+    try {
+      const packed = packSpriteSheet(frameCanvases, canvasWidth, canvasHeight, fps, projectName, {
+        layout: layoutMode,
+        scale: effectiveScale,
+        padding,
+      });
 
-    const dataUrl = packed.canvas.toDataURL('image/png');
-    const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${effectiveScale}x`;
-    const link = document.createElement('a');
-    link.download = `${baseFilename}.png`;
-    link.href = dataUrl;
-    link.click();
-
-    if (includeMetadata && packed.metadata) {
-      // Export Godot 4 SpriteFrames .tres resource
-      if (packed.metadata.godotTres) {
-        const tresBlob = new Blob([packed.metadata.godotTres], { type: 'text/plain' });
-        const tresUrl = URL.createObjectURL(tresBlob);
-        const tresLink = document.createElement('a');
-        tresLink.download = `${baseFilename}.tres`;
-        tresLink.href = tresUrl;
-        tresLink.click();
-        setTimeout(() => URL.revokeObjectURL(tresUrl), 1000);
+      const dataUrl = packed.canvas.toDataURL('image/png');
+      if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 64) {
+        throw new Error('toDataURL returned empty or corrupted data.');
       }
 
-      // Export standard TexturePacker & Unity JSON metadata
-      const jsonContent = packed.metadata.texturePackerJson || packed.metadata.unityJson;
-      if (jsonContent) {
-        const metaBlob = new Blob([jsonContent], { type: 'application/json' });
-        const metaUrl = URL.createObjectURL(metaBlob);
-        const metaLink = document.createElement('a');
-        metaLink.download = `${baseFilename}.json`;
-        metaLink.href = metaUrl;
-        metaLink.click();
-        setTimeout(() => URL.revokeObjectURL(metaUrl), 1000);
+      const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${effectiveScale}x`;
+      const link = document.createElement('a');
+      link.download = `${baseFilename}.png`;
+      link.href = dataUrl;
+      link.click();
+
+      if (includeMetadata && packed.metadata) {
+        // Export Godot 4 SpriteFrames .tres resource
+        if (packed.metadata.godotTres) {
+          const tresBlob = new Blob([packed.metadata.godotTres], { type: 'text/plain' });
+          const tresUrl = URL.createObjectURL(tresBlob);
+          const tresLink = document.createElement('a');
+          tresLink.download = `${baseFilename}.tres`;
+          tresLink.href = tresUrl;
+          tresLink.click();
+          setTimeout(() => URL.revokeObjectURL(tresUrl), 1000);
+        }
+
+        // Export standard TexturePacker & Unity JSON metadata
+        const jsonContent = packed.metadata.texturePackerJson || packed.metadata.unityJson;
+        if (jsonContent) {
+          const metaBlob = new Blob([jsonContent], { type: 'application/json' });
+          const metaUrl = URL.createObjectURL(metaBlob);
+          const metaLink = document.createElement('a');
+          metaLink.download = `${baseFilename}.json`;
+          metaLink.href = metaUrl;
+          metaLink.click();
+          setTimeout(() => URL.revokeObjectURL(metaUrl), 1000);
+        }
       }
+
+      onClose();
+    } catch (err) {
+      console.error('Sprite sheet export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'The sprite sheet would be too large to export safely.',
+        type: 'error',
+      });
     }
-
-    onClose();
   };
 
   const handleExportGIF = async () => {
