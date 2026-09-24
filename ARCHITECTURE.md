@@ -793,7 +793,7 @@ export interface LayerEffectRecipe {
 
 Phase 1A and Phase 1B establish defensive boundaries against runaway workspace complexity, prototype pollution, malformed stored records, and storage corruption, providing non-destructive forensic diagnosis and a low-level streaming archive-writer foundation.
 
-> **Implementation Boundary Note:** Restricted Recovery Mode is implemented and accepted through Phase 1B.7 (including envelope guards, policy validator, metadata classifier, recovery ledger, stored-project blob assessment, low-level ZIP32 writer, untouched archive assembly, safe export adapters, deterministic recovery plan builder, trusted recovery orchestrator with atomic recovered-copy persistence, and startup recovery routing / admission hydration). Phase 1B.8 interactive UI (recovery modal, repair wizard, clip-consent UI) is deferred and not started.
+> **Implementation Boundary Note:** Restricted Recovery Mode is implemented and accepted through Phase 1B.8 (including envelope guards, policy validator, metadata classifier, recovery ledger, stored-project blob assessment, low-level ZIP32 writer, untouched archive assembly, safe export adapters, deterministic recovery plan builder, trusted recovery orchestrator with atomic recovered-copy persistence, startup recovery routing / admission hydration, interactive recovery modal, repair wizard, and bounded safe-mode lifecycle integration). Phase 2+ capabilities remain deferred and not started.
 
 ### 1. Workspace Envelope Guard & Decoupled Import Execution (Phase 1A)
 * **Workspace Envelope Enforcement (`src/lib/project/workspaceEnvelopeGuard.ts`):** Guards runtime mutations against breaching configured complexity limits (`MAX_PROJECT_AGGREGATE_PIXELS = 67,108,864`, `MAX_PROJECT_TOTAL_LAYERS = 2,000`). Pre-evaluates canvas resize dimensions, layer insertions, and frame duplications prior to buffer allocation, preventing browser tab crashes from unbounded resource consumption.
@@ -854,6 +854,39 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Authoritative Admission Boundary (`src/lib/recovery/projectAdmission.ts`):** Single entry point (`inspectAndAdmitStoredProject`) combining bounded snapshot acquisition, Phase 1B.2 blob diagnosis (`assessStoredSnapshot`), and strict schema validation (`validateProjectFile`) before normal hydration. Bounded index-only latest project query in `src/lib/storage/db.ts` (`getLatestStoredProjectId`).
 * **Controlled Hydration & Rollback (`src/hooks/studio/useStudioAutosave.ts`, `src/lib/project/serialize.ts`):** Single reactive lifecycle state machine (`RestoreLifecycleState`) with synchronous ref mirror, request epoch tracking, and hook-local `AbortController` cancellation. Suspends autosave in non-active phases; establishes fresh workspace with new ID and enables autosave for newly created workspace while protecting damaged source record read-only. Guarded stale opens via `canPublish` guard, and implemented two-phase consistent store/buffer rollback in `hydrateProject` (`src/lib/project/serialize.ts`) ensuring store state and buffer registry roll back together upon publication or notification errors.
 
-### 9. Deferred Recovery Capabilities (Phase 1B.8+ — Not Started)
-* **Phase 1B.8 Recovery UI:** Interactive recovery modal, repair wizard, and clip-consent UI are deferred and not yet started.
-* **Phase 2+ Capabilities:** Long-term enhancements remain not started.
+### 9. Recovery UI, Safe Modes & Repair Wizard (Phase 1B.8)
+* **Authoritative Recovery Workflow (`src/components/modals/RecoveryModal.tsx`, `src/components/layout/StudioLayout.tsx`, `src/hooks/studio/useStudioAutosave.ts`):**
+  Coordinates non-destructive recovery presentation, plan consent, and safe-mode routing:
+  ```text
+  damaged source ID
+  → bounded assessment/admission (inspectAndAdmitStoredProject)
+  → pendingRecovery context
+  → safe active workspace (fresh blank on startup, preserved existing on gallery open)
+  → RecoveryModal UI
+  → deterministic recovery plan presentation
+  → explicit user consent (clip adjustments, corrupted layer omissions, copy confirmation)
+  → commitRecoveredProject (atomic multi-table persistence to new destination ID)
+  → separate recovered destination
+  → inspectAndAdmitStoredProject(destination)
+  → hydrateProject(destination)
+  → publish destination as active workspace
+  → clear pendingRecovery
+  ```
+* **Failure Preservation Invariants:**
+  If post-commit destination admission or canvas hydration fails:
+  - The previous safe active workspace remains active and undisturbed;
+  - `pendingRecovery` remains attached for the original damaged source project;
+  - `sessionStorage` recovery routing token (`pixibun:pending-recovery-source`) remains preserved;
+  - The recovered destination copy is never published;
+  - The original damaged source records in `db.projects` and `db.layerBlobs` remain 100% untouched.
+* **Bounded Reload Durability:**
+  `sessionStorage` stores strictly the bounded source project ID (`pixibun:pending-recovery-source`). No binary blobs, image data, or candidate plans are cached in session storage. On browser reload, diagnostic assessment and recovery plans are reconstructed deterministically from authoritative IndexedDB records. Stale, purged, or malformed session storage identifiers are automatically sanitized and pruned upon startup inspection.
+* **Modal & Banner Lifecycle Semantics:**
+  - *Close Recovery Modal:* Dismissing the wizard modal dialog retains `pendingRecovery` in memory and session storage, surfacing the persistent top safe-mode banner (`pending-recovery-banner`) so recovery can be reviewed or re-opened at any time.
+  - *Dismiss Recovery Banner:* Explicitly clicking `✕` on the recovery banner invokes `clearPendingRecovery()`, removing the session storage token and clearing in-memory pending recovery state.
+  - *Successful Activation:* `clearPendingRecovery()` executes strictly after the recovered copy has passed admission, completed hydration, and published as the active workspace.
+* **Custody & Safe Backup:**
+  Source project records are never repaired in place. At all diagnostic and error stages, users can invoke *"Export Untouched Backup"* to stream a raw ZIP archive via `prepareUntouchedRecoveryArchive` and `writeRecoveryArchiveToFileHandle` / `createRecoveryArchiveBlob`. Where structural corruption exceeds repair ceilings, reconstruction is safely blocked while preserving backup export.
+
+### 10. Deferred Capabilities (Phase 2+ — Not Started)
+* **Phase 2+ Capabilities:** Long-term enhancements, WebGPU acceleration, and subsequent roadmap items remain strictly not started.

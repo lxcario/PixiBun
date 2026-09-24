@@ -24,6 +24,7 @@ import {
   type PendingRecoveryContext,
   type StartupIssueContext,
 } from '@/lib/recovery/projectAdmission';
+import { recordRecoveryAssessment } from '@/lib/recovery/recoveryLedger';
 import type { StoredRecoveryAssessment } from '@/lib/recovery/recoveryTypes';
 
 export type {
@@ -366,6 +367,23 @@ export function useStudioAutosave() {
     };
   }, []);
 
+  const clearPendingRecovery = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('pixibun:pending-recovery-source');
+      }
+    } catch {
+      // ignore sessionStorage restrictions
+    }
+    if (lifecycleRef.current.phase === 'active' && lifecycleRef.current.pendingRecovery) {
+      updateLifecycle({
+        phase: 'active',
+        projectId: lifecycleRef.current.projectId,
+        pendingRecovery: undefined,
+      });
+    }
+  }, [updateLifecycle]);
+
   // Coordinated project opener for Gallery, startup, and recovery opening
   const openStoredProject = useCallback(
     async (targetProjectId: string, isRecoveredCopy = false): Promise<OpenProjectResult> => {
@@ -448,6 +466,15 @@ export function useStudioAutosave() {
 
         if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
         if (signal.aborted) return { success: false, reason: 'cancelled' };
+        if (isRecoveredCopy) {
+          try {
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('pixibun:pending-recovery-source');
+            }
+          } catch {
+            // ignore
+          }
+        }
         updateLifecycle({
           phase: 'active',
           projectId: targetProjectId,
@@ -465,6 +492,30 @@ export function useStudioAutosave() {
 
       switch (admission.status) {
         case 'recovery-required':
+          if (
+            Array.isArray(admission.assessment.reasonCodes) &&
+            admission.assessment.reasonCodes.length > 0
+          ) {
+            void recordRecoveryAssessment(admission.assessment).catch((e) => {
+              console.warn('Failed to record recovery assessment in ledger:', e);
+            });
+          }
+          try {
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('pixibun:pending-recovery-source', targetProjectId);
+            }
+          } catch {
+            // ignore
+          }
+          if (previousActiveState.phase === 'active') {
+            updateLifecycle({
+              ...previousActiveState,
+              pendingRecovery: {
+                sourceProjectId: targetProjectId,
+                assessment: admission.assessment,
+              },
+            });
+          }
           return {
             success: false,
             reason: 'recovery-required',
@@ -582,7 +633,35 @@ export function useStudioAutosave() {
 
       if (!targetId) {
         // No saved project in database
-        updateLifecycle({ phase: 'active', projectId: useStudioStore.getState().currentProjectId });
+        let pendingRecovery: PendingRecoveryContext | undefined;
+        try {
+          const pendingSourceId =
+            typeof window !== 'undefined'
+              ? sessionStorage.getItem('pixibun:pending-recovery-source')
+              : null;
+          if (pendingSourceId !== null) {
+            if (pendingSourceId.trim().length > 0) {
+              const pendingAdmission = await inspectAndAdmitStoredProject(pendingSourceId);
+              if (pendingAdmission.status === 'recovery-required') {
+                pendingRecovery = {
+                  sourceProjectId: pendingSourceId,
+                  assessment: pendingAdmission.assessment,
+                };
+              } else {
+                sessionStorage.removeItem('pixibun:pending-recovery-source');
+              }
+            } else {
+              sessionStorage.removeItem('pixibun:pending-recovery-source');
+            }
+          }
+        } catch {
+          // ignore
+        }
+        updateLifecycle({
+          phase: 'active',
+          projectId: useStudioStore.getState().currentProjectId,
+          pendingRecovery,
+        });
         return;
       }
 
@@ -607,7 +686,32 @@ export function useStudioAutosave() {
             () => !unmounted && !isOpenStale(epoch) && !signal.aborted
           );
           if (!unmounted && !isOpenStale(epoch)) {
-            updateLifecycle({ phase: 'active', projectId: targetId });
+            let pendingRecovery: PendingRecoveryContext | undefined;
+            try {
+              const pendingSourceId =
+                typeof window !== 'undefined'
+                  ? sessionStorage.getItem('pixibun:pending-recovery-source')
+                  : null;
+              if (pendingSourceId !== null && pendingSourceId !== targetId) {
+                if (pendingSourceId.trim().length > 0) {
+                  const pendingAdmission = await inspectAndAdmitStoredProject(pendingSourceId, { signal });
+                  if (pendingAdmission.status === 'recovery-required') {
+                    pendingRecovery = {
+                      sourceProjectId: pendingSourceId,
+                      assessment: pendingAdmission.assessment,
+                    };
+                  } else {
+                    sessionStorage.removeItem('pixibun:pending-recovery-source');
+                  }
+                } else {
+                  sessionStorage.removeItem('pixibun:pending-recovery-source');
+                }
+              }
+            } catch {
+              // ignore
+            }
+            if (unmounted || isOpenStale(epoch)) return;
+            updateLifecycle({ phase: 'active', projectId: targetId, pendingRecovery });
           }
         } catch (hydErr: unknown) {
           if (unmounted || isOpenStale(epoch) || signal.aborted) return;
@@ -629,6 +733,21 @@ export function useStudioAutosave() {
         }
       } else if (admission.status === 'recovery-required') {
         if (unmounted || isOpenStale(epoch)) return;
+        if (
+          Array.isArray(admission.assessment.reasonCodes) &&
+          admission.assessment.reasonCodes.length > 0
+        ) {
+          void recordRecoveryAssessment(admission.assessment).catch((e) => {
+            console.warn('Failed to record recovery assessment in ledger:', e);
+          });
+        }
+        try {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('pixibun:pending-recovery-source', targetId);
+          }
+        } catch {
+          // ignore
+        }
         const newId = createId('proj');
         useStudioStore.getState().resetToNewProject(newId);
         setAutosaveError(
@@ -712,5 +831,6 @@ export function useStudioAutosave() {
     setStorageWarning,
     lifecycleState,
     openStoredProject,
+    clearPendingRecovery,
   };
 }

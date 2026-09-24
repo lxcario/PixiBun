@@ -134,14 +134,14 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 **Harness:** `scripts/runQualityGate.mjs` (`npm run gate`)  
 **Target Invariant:** Fast local feedback loop on reference development hardware with zero cloud dependency.
 
-> **Historical Context Note:** The table below records the historical v1.13.1 / Phase C benchmark snapshot captured when the test suite stood at 699 unit tests across 98 suites. Observed reference execution on this environment for `npm run gate` on the expanded test suite (1,085 unit tests across 116 suites) measured ~37s, while `npm run gate:full` (including Next.js production build) measured ~45s.
+> **Historical Context Note:** The table below records the historical v1.13.1 / Phase C benchmark snapshot captured when the test suite stood at 699 unit tests across 98 suites. Observed reference execution on this environment for `npm run gate` on the expanded test suite (1,104 unit tests across 117 suites) measured ~37s, while `npm run gate:full` (including Next.js production build) measured ~45s.
 
 | Stage | Subsystem | Historical Measured Duration (v1.13.1) | Status | Checked Invariants |
 |---|---|---|---|---|
 | **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 57 unique phases, 31 monotonic sections, 208 filepaths, line counts, test claims. |
 | **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
 | **Stage 3** | `eslint` | **$3.15\text{ s}$** | **PASSED** | 0 lint or accessibility rule violations across source and tests. |
-| **Stage 4** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Unit and integration suite (699 tests across 98 suites at capture; 1,085 tests across 116 suites currently). |
+| **Stage 4** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Unit and integration suite (699 tests across 98 suites at capture; 1,104 tests across 117 suites currently). |
 | **Total** | **`npm run gate`** | **$19.44\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
 
 ---

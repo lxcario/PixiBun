@@ -19,6 +19,7 @@ import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { executeImageImport } from '@/lib/project/imageImportExecution';
+import type { PendingRecoveryContext } from '@/lib/recovery/projectAdmission';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
@@ -60,6 +61,10 @@ const CommandPaletteModal = dynamic(
   () => import('@/components/modals/CommandPaletteModal').then((m) => m.CommandPaletteModal),
   { ssr: false }
 );
+const RecoveryModal = dynamic(
+  () => import('@/components/modals/RecoveryModal').then((m) => m.RecoveryModal),
+  { ssr: false }
+);
 
 export const StudioLayout: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -73,6 +78,10 @@ export const StudioLayout: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+
+  const [recoveryTarget, setRecoveryTarget] = useState<PendingRecoveryContext | null>(null);
+  const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
+  const startupRecoveryPromptedRef = useRef<string | null>(null);
 
   const [activeToast, setActiveToast] = useState<{ message: string; type: 'default' | 'error' | 'success' } | null>(null);
   const toastTimerRef = useRef<number | null>(null);
@@ -96,7 +105,6 @@ export const StudioLayout: React.FC = () => {
     };
   }, []);
 
-
   const {
     autosaveTimerRef,
     runAutosave,
@@ -104,7 +112,23 @@ export const StudioLayout: React.FC = () => {
     autosaveError,
     setAutosaveError,
     openStoredProject,
+    lifecycleState,
+    clearPendingRecovery,
   } = useStudioAutosave();
+
+  const pendingRecovery =
+    lifecycleState.phase === 'active' ? lifecycleState.pendingRecovery : undefined;
+
+  // Auto-prompt Recovery Modal on startup when pending recovery is detected
+  useEffect(() => {
+    if (pendingRecovery) {
+      if (startupRecoveryPromptedRef.current !== pendingRecovery.sourceProjectId) {
+        startupRecoveryPromptedRef.current = pendingRecovery.sourceProjectId;
+        setRecoveryTarget(pendingRecovery);
+        setIsRecoveryOpen(true);
+      }
+    }
+  }, [pendingRecovery]);
 
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
@@ -148,6 +172,24 @@ export const StudioLayout: React.FC = () => {
       }
     }
   }, [openStoredProject]);
+
+  const handleRecoveryComplete = useCallback(
+    async (recoveredProjectId: string): Promise<boolean> => {
+      const openRes = await openStoredProject(recoveredProjectId, true);
+      if (openRes.success) {
+        clearPendingRecovery();
+        setRecoveryTarget(null);
+        setIsRecoveryOpen(false);
+        return true;
+      }
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: 'Failed to admit recovered project workspace. Previous workspace preserved.',
+      });
+      return false;
+    },
+    [clearPendingRecovery, openStoredProject]
+  );
 
   const isDirty = useStudioStore((s) => s.isDirty);
   const saveStatus = useStudioStore((s) => s.saveStatus);
@@ -452,6 +494,59 @@ export const StudioLayout: React.FC = () => {
           onUndo={handleUndo}
           onRedo={handleRedo}
         />
+      )}
+
+      {/* Recovery & Safe Mode Repair Wizard Modal (lazy-loaded) */}
+      {isRecoveryOpen && recoveryTarget && (
+        <RecoveryModal
+          isOpen={isRecoveryOpen}
+          sourceProjectId={recoveryTarget.sourceProjectId}
+          initialAssessment={recoveryTarget.assessment}
+          onClose={() => {
+            setIsRecoveryOpen(false);
+          }}
+          onRecoveryComplete={handleRecoveryComplete}
+        />
+      )}
+
+      {/* Pending Recovery Safe Mode Banner */}
+      {pendingRecovery && !isRecoveryOpen && (
+        <div
+          role="region"
+          aria-label="Pending Project Recovery"
+          data-testid="pending-recovery-banner"
+          className="fixed top-12 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] bg-[var(--surface-1)] border border-[var(--accent-gold)] shadow-2xl p-2.5 rounded-[4px] flex items-center justify-between gap-3 text-xs font-mono text-[var(--text-heading)] backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-150"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <PixelIcon name="lock" size={14} className="text-[var(--accent-gold)] shrink-0" />
+            <span className="truncate">
+              A previous project requires safe recovery. Original data is preserved untouched.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <TactileButton
+              size="sm"
+              variant="primary"
+              onClick={() => {
+                setRecoveryTarget(pendingRecovery);
+                setIsRecoveryOpen(true);
+              }}
+              className="text-xs font-bold"
+              data-testid="review-recovery-button"
+            >
+              Review Recovery Plan
+            </TactileButton>
+            <button
+              onClick={() => clearPendingRecovery()}
+              className="p-1 text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors cursor-pointer text-xs leading-none"
+              title="Dismiss banner"
+              aria-label="Dismiss recovery banner"
+              data-testid="dismiss-recovery-button"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Unified Toast & Affirmative Explicit Save Confirmation Toast (UX-14, Phase A) */}

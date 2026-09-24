@@ -52,6 +52,22 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Provided responsive cancellation: pre-aborted signal checks at immediate function entry; pending probe race priority returns `cancelled` even if probe fails concurrently.
   - Guaranteed runtime immutability by deep-freezing all candidate result trees, project structures, and remap entries via `deepFreeze()`.
   - Verified across 43 unit tests (`tests/recoveryPlanBuilder.test.ts`).
+- **Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (`src/lib/recovery/recoveryOrchestrator.ts`, `tests/recoveryOrchestrator.test.ts`, `tests/e2e/recoveryTransactionLiveness.spec.ts`)**:
+  - Implemented trusted plan execution in `recoveryOrchestrator.ts` computing dual SHA-256 binary fingerprints (`sourceContentFingerprint` and `commitPreimageFingerprint`) to protect against TOCTOU mutation races.
+  - Enforced single-use token branding via module-private `WeakMap` (`TOKEN_ALREADY_CONSUMED`) and atomic IndexedDB multi-table commit persisting recovered copy under a fresh project ID while preserving damaged source records untouched.
+  - Verified across 37 unit tests (`tests/recoveryOrchestrator.test.ts`) and 5 Chromium transaction liveness tests (`tests/e2e/recoveryTransactionLiveness.spec.ts`).
+- **Startup Recovery Routing & Controlled Hydration (`src/lib/recovery/projectAdmission.ts`, `src/lib/project/serialize.ts`, `src/hooks/studio/useStudioAutosave.ts`, `tests/projectAdmission.test.ts`, `tests/startupRecoveryRouting.test.tsx`, `tests/e2e/startupRecoveryRouting.spec.ts`)**:
+  - Implemented authoritative admission boundary (`inspectAndAdmitStoredProject`) combining snapshot acquisition, blob diagnosis, and schema validation before hydration.
+  - Established single reactive lifecycle state machine (`RestoreLifecycleState`) with synchronous ref mirror and request epoch tracking, suspending autosave during non-active phases and guarding against stale opens.
+  - Built two-phase consistent rollback in `hydrateProject` preventing split-brain workspace states upon store or buffer publication failures.
+  - Verified across 20 admission tests (`tests/projectAdmission.test.ts`), 12 routing tests (`tests/startupRecoveryRouting.test.tsx`), and 4 Chromium E2E tests (`tests/e2e/startupRecoveryRouting.spec.ts`).
+- **Recovery UI, Safe Modes & Repair Wizard (`src/components/modals/RecoveryModal.tsx`, `src/components/layout/StudioLayout.tsx`, `src/hooks/studio/useStudioAutosave.ts`, `tests/recoveryUIAndRouting.test.tsx`, `tests/e2e/recoveryUIFlow.spec.ts`)**:
+  - Implemented accessible `RecoveryModal` dialog and non-destructive Repair Wizard with live diagnostic inspector, interactive frame/layer omission, and clip-consent resolution.
+  - Integrated safe-mode routing in `StudioLayout.tsx` and `useStudioAutosave.ts`: damaged source records are never opened writable, and autosave is suspended against damaged source IDs via synchronous custody ref locking.
+  - Built strict post-commit validation ordering: `clearPendingRecovery()` executes strictly after the recovered copy has passed admission, completed hydration, and published as the active workspace. If admission or hydration fails, the safe active workspace is preserved, the pending recovery token is retained, and the modal displays the failure.
+  - Preserved pending recovery routing across page reloads via bounded session storage key (`pixibun:pending-recovery-source`).
+  - Supported one-click untouched backup archive export (`downloadArchiveBlob` / `exportArchiveToFileHandle`) at all recovery stages.
+  - Verified across 19 unit/component tests (`tests/recoveryUIAndRouting.test.tsx`) and 3 real Chromium Playwright E2E tests (`tests/e2e/recoveryUIFlow.spec.ts`).
 
 ### System Hardening & Production Polish (Phase 66 / Phase C)
 - **Service Worker Lifecycle & Precache Scripts (`src/app/sw.js/route.ts`, `src/components/system/ServiceWorkerRegistrar.tsx`, `src/components/system/PwaUpdateToast.tsx`, `tests/components/ServiceWorkerRegistrar.test.tsx`, `tests/swLifecycle.test.ts`)**:
