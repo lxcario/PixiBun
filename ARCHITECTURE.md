@@ -30,7 +30,7 @@ graph TD
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["themeStore (Dual-Axis Atelier / Cozy Classic × Dark / Light)"]
         BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
-        UndoRedo["historyEngine (50 Combined Undo/Redo Entries)"]
+        UndoRedo["historyEngine (50-Step Undo Stack / 50-Step Redo Stack)"]
     end
 
     subgraph Core_Engines ["️ Computational & Raster Engines"]
@@ -95,7 +95,7 @@ Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects i
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
 The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
-- Maintains a 50-step FIFO history ring (50 steps shared between undo and redo; a new edit clears redo) with automatic pruning of oldest steps when capacity is reached.
+- Maintains a 50-step undo stack (bounded to 64 MiB and 50 entries) and an independent 50-step redo stack (cleared upon new edits). Oldest undo steps are evicted when capacity or byte limits are reached.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
@@ -105,7 +105,7 @@ The undo/redo pipeline is fully decoupled from the React rendering tree into a p
 ## 3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)
 
 The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
-- `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau ($N_z \ge 0.85$), independent ear cone ridges, and Sobel tangent normal vector fields.
+- `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
 - `photometricLighting.ts`: Parametric 2.5D Blinn-Phong lighting, feature preservation (eyes/mouth/outlines), stepped OKLCH cel-shading with perceptual hue shifts, and in-place tagged relighting (`Photometric <material>`).
 - `photometricAuto.ts`: Canvas art morphology analysis, anatomical classification (`character`, `orb`, `prop`), connected-component feature clustering (eyes, mouth, whiskers), convex lobe ear/horn scanning, and automated lighting parameter inference.
 - `shadowAuto.ts`: Canvas sprite geometry analysis, contact baseline detection, and directional shadow parameter inference.
@@ -118,7 +118,7 @@ graph TD
     Mask --> Classify["Anatomical Classification (Character / Orb / Prop)"]
     Mask --> EDT["Linear-Time O(N) EDT (Felzenszwalb-Huttenlocher)"]
     
-    Classify -->|Character| Cushion["Frontal Face Cushion Plateau (Nz >= 0.85) & Ear Cones"]
+    Classify -->|Character| Cushion["Frontal Face Cushion Plateau & Ear Cones"]
     Classify -->|Orb / Prop| Dome["Power-Law Dome Inflation H(p) = (D/max)^γ"]
     
     Cushion & Dome --> Bilateral["Edge-Preserving Bilateral Smoothing"]
@@ -142,16 +142,16 @@ graph TD
    $$\mathbf{N} = \frac{1}{\sqrt{s_x^2 G_x^2 + s_y^2 G_y^2 + 1}} \begin{pmatrix} -s_x G_x \\ -s_y G_y \\ 1 \end{pmatrix}, \quad \mathbf{L}(\theta, \phi) = \begin{pmatrix} \sin\theta \cos\phi \\ -\cos\theta \cos\phi \\ \sin\phi \end{pmatrix}$$
    *Standard navigation/Photoshop azimuth convention: $0^\circ = \text{North (Top)}, 45^\circ = \text{North-East}, 135^\circ = \text{South-East}, 225^\circ = \text{South-West}, 315^\circ = \text{North-West (Top-Left)}$.*
 3. **Frontal Face Cushion Plateau & Feature Normal Stabilization:**
-   For character forms, to avoid "bowling-ball" inflation where half the face is plunged into darkness ($N \cdot L < 0$), height within 2.8px of the boundary contour bevels smoothly while the interior reaches a flat plateau:
-   $$\text{rimRatio} = \min\left(1.0, \frac{D(p)}{2.8}\right), \quad H_{\text{face}}(p) = \max(D) \cdot \sqrt{\text{rimRatio}}$$
-   Normals across the face interior satisfy $N_z \ge 0.85$, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
+   For character forms, to avoid "bowling-ball" inflation where half the face is plunged into darkness ($N \cdot L < 0$), height within the outer silhouette bevel of radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$ (where $\text{scaleFactor} = \max(1.0, \min(W, H) / 32)$) bevels smoothly while the interior reaches a flat plateau:
+   $$\text{rimRatio} = \min\left(1.0, \frac{D_{\text{macro}}(p)}{R_{\text{char}}}\right), \quad H_{\text{macro}}(p) = \max(D_{\text{macro}}) \cdot \sqrt{\text{rimRatio}}$$
+   Normals across the face interior level off to a camera-facing plateau, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
 4. **Feature Segmentation & 4-Tone Discrete OKLCH Cel-Shading:**
     Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH via `buildCelRamp()` (4 tones):
     * **Base Tone:** Original artist color preserved (55%–60% of lit surface)
-    * **Unified Shadow:** $L_{\text{shadow}} = \max(0.18, L_{\text{base}} \times 0.78)$, $H_{\text{shadow}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 14^\circ)$, $C_{\text{shadow}} = \min(0.35, C_{\text{base}} \times 1.05)$ (cool indigo skylight)
-    * **Deep Crevice:** $L_{\text{deep}} = \max(0.12, L_{\text{base}} \times 0.60)$, $H_{\text{deep}} = \text{shiftHue}(H_{\text{base}}, 260^\circ, 20^\circ)$, $C_{\text{deep}} = \min(0.35, C_{\text{base}} \times 1.08)$ (concave seams where $AO < \text{creviceAOThresh}$, dynamically bounded to $[0.12, 0.30]$ scaling with cavity strength)
-    * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.28)$, $H_{\text{hi}} = \text{shiftHue}(H_{\text{base}}, 65^\circ, 10^\circ)$, $C_{\text{hi}} = \min(0.35, C_{\text{base}} \times 0.95)$ (warm sunlight, shiny materials only: $k_s > 0.1$ and not matte/fabric)
-    * **Exposure-Compensated Directional Terminator (Phase 63):** Cel shadow placement is evaluated purely over the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$. To prevent high lamp brightness from flattening unlit geometry, the terminator threshold is exposure-compensated without shifting the geometric boundary: $\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$. Optional Bayer matrix dither modulation perturbs the threshold for organic pixel art stippling.
+    * **Directional Mid-Shadow:** $L_{\text{shadow}} = \max(0.04, \min(L_{\text{base}} \times 0.86, L_{\text{base}} - 0.025))$, with authored hue and chroma strictly preserved (preserving original artwork color identity without blue-violet shifts).
+    * **Deep Crevice:** $L_{\text{deep}} = \max(0.02, \min(L_{\text{base}} \times 0.72, L_{\text{base}} - 0.05))$ with authored hue and chroma preserved (concave seams where $AO < \text{creviceAOThresh}$, dynamically bounded to $[0.12, 0.30]$ scaling with cavity strength).
+    * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.22)$ with authored hue and chroma preserved (shiny materials only: $k_s > 0.1$ and not matte/fabric; penumbra uses $L_{\text{soft}} = \max(0.05, \min(L_{\text{base}} \times 0.93, L_{\text{base}} - 0.015))$).
+    * **Exposure-Compensated Directional Terminator (Phase 63):** Cel shadow placement is evaluated purely over the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$. To prevent high lamp brightness from flattening unlit geometry, the terminator threshold is exposure-compensated without shifting the geometric boundary via a piecewise linear mapping around baseline 1.15 ($\text{shadowThresh} = 0.52 + t \times 0.30$ for $\text{brightness} \le 1.15$, or $0.52 - t \times 0.32$ for $\text{brightness} > 1.15$). Optional Bayer matrix dither modulation perturbs the threshold for organic pixel art stippling.
     * **Neutral Macro-Form & Material-Scale Synthesis (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D normal field $\mathbf{N}$ remains independent of light direction and allowing tones to dynamically track the light bulb across $360^\circ$ azimuth. Interior ink detection requires opposing two-sided luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted shadow boundaries from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
 5. **Blinn-Phong Specular Half-Vector:**
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
@@ -183,8 +183,8 @@ graph TD
     * Decoupled focal point reticle handle ($x_{\text{center}}, y_{\text{center}}$) allowing artists to reposition the lighting anchor without altering the light direction angle.
     * 60fps `requestAnimationFrame` throttled preview updates.
 12. **Spherical Convex Dome Inflation & Slope AO Decoupling:**
-    * Spherical dome height inflation with exact zero derivative at the apex peak:
-      $$H(p) = R \sqrt{\max\left(0, 1 - \left(1 - \frac{D(p)}{R}\right)^2\right)}$$
+    * Heightmap blends spherical dome inflation ($0.75$) with a gamma curve ($0.25$, default $\gamma = 0.5$):
+      $$H(p) = \max(D) \cdot \left(0.75 \sqrt{\max\left(0, 1 - \left(1 - \frac{D(p)}{\max(D)}\right)^2\right)} + 0.25 \left(\frac{D(p)}{\max(D)}\right)^\gamma\right)$$
     * Eliminates conical pinch creases on convex primitives while providing true vertical silhouette tangents.
     * Decouples direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
@@ -194,7 +194,7 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **50-Step Undo History:** Maintains at most 50 combined undo/redo entries ( `createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **50-Step Undo History:** Maintains up to 50 undo steps (capped at 64 MiB and 50 entries) alongside an independent 50-step redo stack (`createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Decoupled completely from `CenterViewport` to eliminate React reconciliation cascades during pen/eraser strokes (0 re-renders during pointer moves).
@@ -204,19 +204,20 @@ The application state is managed by Zustand with Immer middleware:
 
 ## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`, Schema v4).
+* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`, Schema v5).
 * **Tables:**
   * `projects`: Indexed by `id, name, updatedAt, createdAt`. Stores serialized `.pixibun` payload (`dataJson`), canvas bounds (`width, height`), `fps`, `createdAt`, `updatedAt`, and a downscaled composite preview (`thumbnailDataUrl`) for instant gallery card rendering.
-  * `layerBlobs`: Indexed by `++id, [projectId+layerId+frameIndex], projectId, layerId`. Stores raw binary PNG image `Blob` instances directly, eliminating JSON base64 stringification CPU overhead and reducing autosave storage footprints by ~33%.
+  * `layerBlobs`: Indexed by `++id, [projectId+layerId+frameIndex], projectId, layerId, [projectId+id]`. Stores raw binary PNG image `Blob` instances directly, eliminating JSON base64 stringification CPU overhead and reducing autosave storage footprints by ~33%.
   * `diagnostics`: Indexed by `id, kind, timestamp`. Stores local telemetry and crash events in an on-device ring buffer (200 entries max).
+  * `recoveryRecords`: Indexed by `projectId, classificationState, lastConfirmedAt`. Stores disaster recovery lifecycle ledger records, tracking quarantine states and repair history keyed by projectId.
 * **Multi-Project Workspace Management (`ProjectsGalleryModal.tsx`):**
   * Artists can maintain an unlimited on-device portfolio of sprites and animations.
   * Supports full lifecycle management: instant switching, project duplication (`duplicateProject`), inline renaming (`renameProject`), and safe deletion (`deleteProject`).
 * **P0 History Stack Invalidation (`pixibun:history-clear`):**
   * When switching projects, loading an artwork, or creating a new blank project, `hydrateProject` and `resetToNewProject` dispatch `pixibun:history-clear`.
   * `CenterViewport` clears the 50-step `HistoryEngine` and resets `canUndo`/`canRedo` flags, eliminating cross-project undo state corruption.
-* **Persistent Storage Failure & Auto-Recovery Banner:** `autoSaveWorkspace` returns a boolean status. If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds, the banner auto-dismisses and resets error counts.
-* **Document Revision Autosave Trigger (`state.editRevision`):** In addition to pixel history commits, `useStudioAutosave` subscribes directly to store revision increments (`state.editRevision`). Structural changes (layer renames, reordering, locks, deletions, canvas resizing) and effect recipe parameter updates trigger debounced IndexedDB autosaves automatically, guaranteeing zero unpersisted metadata state.
+* **Persistent Storage Failure & Auto-Recovery Banner:** Continuous autosave invokes `autoSaveWorkspaceDetailed(...)`, returning a `Promise<AutoSaveOutcome>` (a discriminated union: `{ ok: true, status: 'saved' }` or failure `{ ok: false, reason: 'invariant-invalid' | 'aborted' | 'quota-exceeded' | 'error' }`). If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds (`outcome.ok === true`), the banner auto-dismisses and resets error counts.
+* **Document Revision Autosave Trigger (`state.editRevision`):** In addition to pixel history commits, `useStudioAutosave` subscribes directly to store revision increments (`state.editRevision`). Structural changes (layer renames, reordering, locks, deletions, canvas resizing) and effect recipe parameter updates trigger debounced IndexedDB autosaves automatically, persisting metadata state within the debounce window.
 * **Full-Fidelity v1 $\to$ v2 $\to$ v3 Migration Engine (`migrateProjectPayload`):**
   * Auto-detects legacy v1 (`version: undefined`) and v2 files.
   * Backfills default `customRamps: []`, `clips: []`, `onionSkin`, per-layer `blendMode: 'source-over'`, `opacity: 1.0`, `visible: true`, `locked: false`, and validates optional `LayerEffectRecipe` payloads.
@@ -383,7 +384,7 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, content-aware heightmaps, and bounded sprite cast shadows run synchronously with zero latency using pre-allocated `bufferPool.ts` scratch buffers.
+- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and bounded sprite cast shadows run synchronously on the main thread using pre-allocated `bufferPool.ts` scratch buffers. Note: `computeContentAwareHeightmap` executes unpooled on the main thread with an $O(K \times \text{pixels})$ per-component scan, remaining an open tracking item (audit finding H1).
 
 ---
 
@@ -411,7 +412,7 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 * **Delta Propagation:** On every stroke commit, the pre-stroke history snapshot is diffed against the live buffer (`src/lib/sync/strokeDiff.ts`) and each changed pixel becomes an LWW op broadcast per layer. Receivers apply ops through the HLC clock (bounded drift, deterministic peerId tie-break) and repaint layer buffers in one `getImageData`/`putImageData` pass.
 * **Rendering & Persistence Integration:** Applied remote ops dispatch `pixibun:request-composite` (consumed by `CenterViewport.tsx`) and `pixibun:remote-change` (consumed by `StudioLayout.tsx` to schedule the same debounced autosave as local edits).
 * **Presence:** Cursor moves broadcast at ~30fps over the unreliable PR-SCTP channel and render through `src/components/studio/RemoteCursorsOverlay.tsx` with staleness pruning.
-* **P2P Admission Envelopes & Backpressure (`src/lib/sync/p2pSync.ts`):** Enforces canonical workspace envelope boundaries (`WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION = 2048px`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`, and pixel operation coordinate boundaries $0 \le x, y < 2048$), aligning untrusted WebRTC payloads with `.pixibun` schema guarantees. Enforces a 256KB maximum payload size per message (`MAX_P2P_PAYLOAD_SIZE`) and backpressure thresholds (1MB data channel ceiling / 64KB presence ceiling) via token-bucket traffic shaping.
+* **P2P Admission Envelopes & Backpressure (`src/lib/sync/p2pSync.ts`):** Enforces canonical workspace envelope boundaries (`WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION = 2048px`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`, and pixel operation coordinate boundaries $0 \le x, y < 2048$), aligning untrusted WebRTC payloads with `.pixibun` schema guarantees. Enforces a 256KB maximum payload size per message (`MAX_P2P_PAYLOAD_SIZE`) and backpressure thresholds (1MB data channel ceiling / 64KB presence ceiling), using token-bucket traffic shaping on the presence channel and RTCDataChannel.bufferedAmount thresholding on the reliable channel.
 
 ---
 
@@ -459,7 +460,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 ## 20. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)
 
 * **Amiga IFF ILBM `CRNG` & Commodore Graphicraft `CCRT` Codecs:** Full binary parsing and serialization for legacy 8-byte `CRNG` and 14-byte `CCRT` chunks, including big-endian 16-bit rates ($16384 = 60\text{Hz}$), direction flags, and microsecond intervals.
-* **Zero-Allocation 60 FPS LUT Renderer (`updateLivePaletteLUT32`):** Direct update of a preallocated `Uint32Array` LUT packed in little-endian `0xAABBGGRR` format. Applied directly to canvas `ImageData` 32-bit views, eliminating object allocation and garbage collection pauses during active animation.
+* **Allocation-Free Per-Pixel LUT Blit (`updateLivePaletteLUT32`):** Direct update of a preallocated `Uint32Array` LUT packed in little-endian `0xAABBGGRR` format. Per-pixel blitting operates without memory allocation on `ImageData` 32-bit views, while per-frame LUT recomputations incur small, bounded scratch allocations.
 * **Ping-Pong Fencepost Safety:** Correct triangle-wave folding period $M = 2(S - 1)$ where $S = \text{high} - \text{low} + 1$:
   $$p = \lfloor\text{phase}\rfloor \pmod M; \quad \text{offset} = \begin{cases} p & \text{if } p < S \\ M - p & \text{otherwise} \end{cases}$$
   Guarantees registers visit endpoints once per period without double-dwell glitches.
@@ -532,8 +533,8 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Guarantees predictable UX by preventing guest structural edits from being silently overwritten on the next host `STRUCTURE_SYNC` push.
 * **Undo / Redo Structural Command Pattern (`src/types/canvas.ts`, `src/lib/engine/historyEngine.ts`, `src/lib/engine/structuralHistory.ts`):**
   - Upgrades `HistoryEngine` to a hybrid Command Pattern (`HistoryStep = PixelHistoryStep | StructuralHistoryStep`).
-  - Destructive structural operations (layer additions, deletions, reorderings, merge-downs, frame insertions, frame deletions) record a `StructuralHistoryStep` containing full multi-frame layer hierarchies and byte-accurate raster pixel backups (`LayerBufferBackup`).
-  - Restores both layer/frame structures and layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
+  - Destructive structural operations (layer additions, deletions, reorderings, merge-downs, frame insertions, frame deletions) record a `StructuralHistoryStep` using a hybrid capture architecture: an authoritative full frame/layer metadata tree snapshot cloned via `structuredClone(state.frames)`, paired with targeted raster pixel buffer backups (`captureLayerBuffers`) strictly limited to affected layer IDs (rather than capturing the entire project's raster buffers).
+  - Restores both layer/frame structures and targeted layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
 * **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/ai/math/edtNormalMap.ts`):**
   - Offloads CPU-intensive 2D Euclidean Distance Transform, bilateral Gaussian smoothing, and Sobel normal field baking to `heavyCompute.worker.ts`.
   - Uses zero-copy Transferable ArrayBuffers with defensive buffer slicing (`.slice(0)`) on the outgoing main-thread snapshot to prevent live canvas detachment.
@@ -568,8 +569,8 @@ To immunize the client-side graphics workstation against browser anomalies, memo
   - Recursive JSON sanitizer stripping `__proto__`, `constructor`, and `prototype` keys based on Arteau (2018), enforcing a maximum nesting recursion depth of 32. Hardened project schema asserts explicit ceilings (256 char names, 50 palettes, 100 clips, 500 frames, 100 layers).
 * **Storage Resilience & Quota Exhaustion Recovery (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`):**
   - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs during disk pressure, safeguarding active user project data.
-* **WebRTC Token Bucket Traffic Shaping (`src/lib/sync/p2pSync.ts`):**
-  - Implements RFC 2212 Token Bucket rate limiting on peer data and presence channels, shielding client threads against packet floods and CPU starvation.
+* **WebRTC Backpressure & Traffic Shaping (`src/lib/sync/p2pSync.ts`):**
+  - Implements token-bucket rate limiting on the presence channel and `bufferedAmount` backpressure on the reliable data channel, shielding client threads against packet floods and CPU starvation.
 
 ---
 
@@ -792,7 +793,7 @@ export interface LayerEffectRecipe {
 
 Phase 1A and Phase 1B establish defensive boundaries against runaway workspace complexity, prototype pollution, malformed stored records, and storage corruption, providing non-destructive forensic diagnosis and a low-level streaming archive-writer foundation.
 
-> **Implementation Boundary Note:** Restricted Recovery Mode is implemented through Phase 1B.5 (envelope guards, policy validator, metadata classifier, recovery ledger, stored-project blob assessment, low-level ZIP32 writer, untouched archive assembly, safe export adapters, and deterministic recovery plan builder with safe candidate reconstruction). Phase 1B.6 and later capabilities (trusted recovery orchestration, atomic recovered-copy persistence, recovery-ledger transition/pruning, controlled startup hydration, recovery modal, and clip-consent UI) are deferred and not yet implemented.
+> **Implementation Boundary Note:** Restricted Recovery Mode is implemented and accepted through Phase 1B.7 (including envelope guards, policy validator, metadata classifier, recovery ledger, stored-project blob assessment, low-level ZIP32 writer, untouched archive assembly, safe export adapters, deterministic recovery plan builder, trusted recovery orchestrator with atomic recovered-copy persistence, and startup recovery routing / admission hydration). Phase 1B.8 interactive UI (recovery modal, repair wizard, clip-consent UI) is deferred and not started.
 
 ### 1. Workspace Envelope Guard & Decoupled Import Execution (Phase 1A)
 * **Workspace Envelope Enforcement (`src/lib/project/workspaceEnvelopeGuard.ts`):** Guards runtime mutations against breaching configured complexity limits (`MAX_PROJECT_AGGREGATE_PIXELS = 67,108,864`, `MAX_PROJECT_TOTAL_LAYERS = 2,000`). Pre-evaluates canvas resize dimensions, layer insertions, and frame duplications prior to buffer allocation, preventing browser tab crashes from unbounded resource consumption.
@@ -844,5 +845,15 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Fail-Closed All-Frame Deletion Defense:** Immediately blocks recovery with `ALL_FRAMES_DELETED` if all frames are marked for deletion, failing closed prior to probing or clip evaluation.
 * **Responsive Cancellation:** Checks `signal?.aborted` immediately at function entry before preflight allocations; gives cancellation absolute priority over simultaneous probe failures during pending operations.
 * **Runtime Immutability:** Deep-freezes all candidate result trees, projects, and remap entries via `deepFreeze()`.
-* **Deferred Capabilities:** Complete recovery orchestration, snapshot acquisition, recovered-copy persistence, recovery-ledger transition/pruning, controlled startup hydration, recovery modal, and clip-consent UI are deferred to Phase 1B.6+.
+### 7. Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (Phase 1B.6)
+* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `sourceContentFingerprint` (covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to guarantee zero TOCTOU).
+* **Token Branding & One-Use Semantics:** Protects candidate plans via module-private `WeakMap` token branding, enforcing one-use semantics (`TOKEN_ALREADY_CONSUMED`) and concurrent commit locking (`TOKEN_ALREADY_COMMITTING`).
+* **Atomic Persistence:** Re-evaluates exact source snapshot in-transaction with `Dexie.waitFor()` keepalive on asynchronous Web Crypto digests. Executes atomic persistence across `projects`, `layerBlobs`, and `recoveryRecords` in a single readwrite transaction, preserving the damaged source project untouched, persisting reconstructed data under a fresh collision-checked project ID (bounded retries $N=3$), remapping survivor blobs byte-for-byte, and appending resolution audit metadata. Rollback on mid-flight failure leaves zero partial destination state. Supports cooperative cancellation before, during, and after commit (`cancellationIgnoredPostCommit`).
 
+### 8. Startup Recovery Routing & Controlled Hydration (Phase 1B.7)
+* **Authoritative Admission Boundary (`src/lib/recovery/projectAdmission.ts`):** Single entry point (`inspectAndAdmitStoredProject`) combining bounded snapshot acquisition, Phase 1B.2 blob diagnosis (`assessStoredSnapshot`), and strict schema validation (`validateProjectFile`) before normal hydration. Bounded index-only latest project query in `src/lib/storage/db.ts` (`getLatestStoredProjectId`).
+* **Controlled Hydration & Rollback (`src/hooks/studio/useStudioAutosave.ts`, `src/lib/project/serialize.ts`):** Single reactive lifecycle state machine (`RestoreLifecycleState`) with synchronous ref mirror, request epoch tracking, and hook-local `AbortController` cancellation. Suspends autosave in non-active phases; establishes fresh workspace with new ID and enables autosave for newly created workspace while protecting damaged source record read-only. Guarded stale opens via `canPublish` guard, and implemented two-phase consistent store/buffer rollback in `hydrateProject` (`src/lib/project/serialize.ts`) ensuring store state and buffer registry roll back together upon publication or notification errors.
+
+### 9. Deferred Recovery Capabilities (Phase 1B.8+ — Not Started)
+* **Phase 1B.8 Recovery UI:** Interactive recovery modal, repair wizard, and clip-consent UI are deferred and not yet started.
+* **Phase 2+ Capabilities:** Long-term enhancements remain not started.

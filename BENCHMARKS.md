@@ -12,7 +12,7 @@ This document records empirical benchmarks, algorithmic execution budgets, and h
 **File:** [`src/lib/color/paletteCycling.ts`](src/lib/color/paletteCycling.ts)  
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous animation)
 
-The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32Array` lookup table. In each animation frame, cycle tracks rotate color indices into `outLUT32`, which is then mapped directly across the canvas pixel buffer.
+The palette cycling engine operates via an allocation-free per-pixel 32-bit packed `Uint32Array` lookup table blit. In each animation frame, cycle tracks rotate color indices into `outLUT32`, which is then mapped directly across the canvas pixel buffer (per-pixel blits allocate zero heap memory; per-frame LUT recomputations incur small, bounded scratch allocations).
 
 ### Empirical Frame Timings
 
@@ -31,24 +31,24 @@ The palette cycling engine operates via a zero-allocation 32-bit packed `Uint32A
 
 **Class:** `HistoryEngine`  
 **File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
-**Ring Buffer Size:** 50 combined undo/redo steps; new edits clear redo
+**Stack Ceilings:** 50 undo steps (subject to 64 MiB hard memory ceiling) with independent 50-step redo stack; new edits clear redo
 
-Each history step stores uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$).
+Each pixel history step in this modeled analysis represents a full-canvas single-layer modification storing uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$) plus a 512-byte object overhead (`calculateStepBytes` in `src/lib/engine/historyEngine.ts`).
 
 ### Memory Scaling Analysis
 
-| Canvas Size | Bytes per Pixel | Size per Step | 50 Combined Undo/Redo Steps  |
-|---|---|---|--- |
-| **16 × 16** | 4 bytes | $1.0\text{ KB}$ | **$51.2\text{ KB}$**  |
-| **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$**  |
-| **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$**  |
-| **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$**  |
-| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$**  |
-| **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$**  |
-| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$**  |
-| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$**  |
+| Canvas Size | Bytes per Pixel | Size per Step | Theoretical 50 Steps (Uncapped) | Actual Max Steps under 64 MiB Cap |
+|---|---|---|---|---|
+| **16 × 16** | 4 bytes | $1.0\text{ KB}$ | **$51.2\text{ KB}$** | 50 steps |
+| **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$** | 50 steps |
+| **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$** | 50 steps |
+| **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$** | 50 steps |
+| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$** | 50 steps |
+| **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$** | ~50 steps |
+| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$** | 15 steps (16 raw RGBA frames exceed 64 MiB by 8 KB with +512B overhead) |
+| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$** | 3 steps (4 raw RGBA frames exceed 64 MiB by 2 KB with +512B overhead) |
 
-> **Mathematical Note:** A 50-step history at $256 \times 256$ RGBA is **$13.11\text{ MB}$** ($256 \times 256 \times 4 \times 50 = 13,107,200\text{ bytes}$). These are arithmetic buffer sizes, not measured peak heap usage or a guarantee that every browser can support that history. Structural snapshots and transient copies add overhead.
+> **Mathematical Note on 64 MiB Cap & Eviction Accounting:** Production code in `src/lib/engine/historyEngine.ts` enforces `DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024` (64 MiB = 67,108,864 bytes). For resolutions $512 \times 512$ and below, 50 steps fit within 64 MiB. For $1024 \times 1024$ and $2048 \times 2048$, a naive division of raw pixel bytes ($64\text{ MiB} / 4\text{ MiB} = 16$ and $64\text{ MiB} / 16\text{ MiB} = 4$) does not account for the +512-byte per-step metadata overhead (`calculateStepBytes`). In actual execution, 16 steps at $1024\times1024$ total $67,117,056\text{ bytes}$ (8,192 bytes over the 64 MiB cap), and 4 steps at $2048\times2048$ total $67,110,912\text{ bytes}$ (2,048 bytes over the cap). The eviction check `(totalBytes + stepBytes > limitBytes)` triggers before insertion, yielding exactly 15 and 3 steps respectively in the active undo stack for single-layer full-canvas modifications. For multi-layer or structural history steps (which snapshot frame metadata and back up all affected layer buffers), step byte footprints vary dynamically by operation, and steps are evicted strictly according to aggregate byte size rather than a fixed step count. Redo steps are stored on an independent 50-step stack without an explicit byte budget check.
 
 ---
 
@@ -71,14 +71,14 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 
 ### Empirical Frame Timings (100 Iterations per Resolution)
 
-| Selection Resolution | Total Pixels | Average Frame Time | $p_{95}$ Latency | 60 FPS Budget Consumed | Theoretical Peak Throughput |
+| Selection Resolution | Total Pixels | Average Frame Time | $p_{95}$ Latency | 60 FPS Budget Consumed | Theoretical Operations/sec (Modeled) |
 |---|---|---|---|---|---|
-| **32 × 32** | 1,024 | **$0.012\text{ ms}$** | $0.014\text{ ms}$ | **0.07%** | $> 80,000\text{ FPS}$ |
-| **64 × 64** | 4,096 | **$0.027\text{ ms}$** | $0.046\text{ ms}$ | **0.16%** | $> 36,000\text{ FPS}$ |
-| **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** | $> 11,000\text{ FPS}$ |
-| **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** | $> 3,000\text{ FPS}$ |
+| **32 × 32** | 1,024 | **$0.012\text{ ms}$** | $0.014\text{ ms}$ | **0.07%** | $> 80,000\text{ ops/sec}$ |
+| **64 × 64** | 4,096 | **$0.027\text{ ms}$** | $0.046\text{ ms}$ | **0.16%** | $> 36,000\text{ ops/sec}$ |
+| **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** | $> 11,000\text{ ops/sec}$ |
+| **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** | $> 3,000\text{ ops/sec}$ |
 
-> **Conclusion:** Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$ ($\approx 2.0\%$ of the 16.66ms 60 FPS frame budget), remaining within upper-bound latency ceilings enforced by automated CI regression tests.
+> **Throughput & Budget Note:** Peak throughput values are arithmetic extrapolations ($1000\text{ ms} / \text{latency}$) modeling theoretical operations per second in isolation, not physical browser display frame rates (which are clamped by the display refresh rate and composition pipeline). Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$ ($\approx 2.0\%$ of the 16.66ms 60 FPS frame budget), remaining within upper-bound latency ceilings enforced by automated CI regression tests.
 
 ---
 
@@ -114,30 +114,34 @@ $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \time
 
 **Worker Module:** `src/workers/heavyCompute.worker.ts`  
 **Dispatcher:** `src/lib/engine/workerDispatcher.ts`  
-**Target Invariant:** Zero UI jank on the main thread ($0\text{ ms}$ main-thread blocking latency during normal baking).
+**Target Invariant:** Non-blocking asynchronous calculation during worker-offloaded normal baking (offloading heavy EDT calculation from the main thread).
 
 By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), bilateral Gaussian smoothing, and Sobel gradient convolution to a Web Worker with zero-copy Transferable ArrayBuffers:
 
-| Canvas Size | Total Pixels | Main Thread Blocking (Before) | Main Thread Blocking (Worker Offload) | Worker Execution Time | UI Responsiveness |
+| Canvas Size | Total Pixels | Synchronous Main Thread Compute (Without Worker) | Main Thread Compute (Worker Offloaded) | Worker Execution Time | UI Responsiveness |
 |---|---|---|---|---|---|
-| **64 × 64** | 4,096 | $\approx 2.4\text{ ms}$ | **$0.00\text{ ms}$** | $\approx 2.1\text{ ms}$ | Instant (60 FPS solid) |
-| **128 × 128** | 16,384 | $\approx 8.8\text{ ms}$ | **$0.00\text{ ms}$** | $\approx 7.9\text{ ms}$ | Instant (60 FPS solid) |
-| **256 × 256** | 65,536 | $\approx 34.2\text{ ms}$ | **$0.00\text{ ms}$** | $\approx 31.0\text{ ms}$ | Instant (60 FPS solid) |
-| **512 × 512** | 262,144 | $\approx 141.5\text{ ms}$ | **$0.00\text{ ms}$** | $\approx 128.0\text{ ms}$ | Instant (60 FPS solid) |
+| **64 × 64** | 4,096 | $\approx 2.4\text{ ms}$ | Lightweight dispatch overhead | $\approx 2.1\text{ ms}$ | Smooth (60 FPS interaction) |
+| **128 × 128** | 16,384 | $\approx 8.8\text{ ms}$ | Lightweight dispatch overhead | $\approx 7.9\text{ ms}$ | Smooth (60 FPS interaction) |
+| **256 × 256** | 65,536 | $\approx 34.2\text{ ms}$ | Lightweight dispatch overhead | $\approx 31.0\text{ ms}$ | Smooth (60 FPS interaction) |
+| **512 × 512** | 262,144 | $\approx 141.5\text{ ms}$ | Lightweight dispatch overhead | $\approx 128.0\text{ ms}$ | Smooth (60 FPS interaction) |
+
+> **Main-Thread Latency Breakdown Note:** The heavy EDT, bilateral Gaussian filtering, and Sobel convolution passes execute asynchronously inside `heavyCompute.worker.ts`, removing heavy compute pauses from the main thread. However, absolute zero main-thread overhead is not claimed: lightweight main-thread message dispatch/transfer overhead still occurs, and the optional content-aware anatomical heightmap pass (connected-component BFS and anatomical prior evaluation in `src/lib/ai/math/edtNormalMap.ts`) runs synchronously on the main thread when invoked.
 
 ---
 
 ## 7. Autonomous Local Quality Gate Pipeline Benchmark
 
 **Harness:** `scripts/runQualityGate.mjs` (`npm run gate`)  
-**Target Invariant:** $\le 20\text{ seconds}$ total gate execution time on reference development hardware.
+**Target Invariant:** Fast local feedback loop on reference development hardware with zero cloud dependency.
 
-| Stage | Subsystem | Measured Duration | Status | Checked Invariants |
+> **Historical Context Note:** The table below records the historical v1.13.1 / Phase C benchmark snapshot captured when the test suite stood at 699 unit tests across 98 suites. Observed reference execution on this environment for `npm run gate` on the expanded test suite (1,085 unit tests across 116 suites) measured ~37s, while `npm run gate:full` (including Next.js production build) measured ~45s.
+
+| Stage | Subsystem | Historical Measured Duration (v1.13.1) | Status | Checked Invariants |
 |---|---|---|---|---|
 | **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 57 unique phases, 31 monotonic sections, 208 filepaths, line counts, test claims. |
 | **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
 | **Stage 3** | `eslint` | **$3.15\text{ s}$** | **PASSED** | 0 lint or accessibility rule violations across source and tests. |
-| **Stage 4** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Live test suite: 699 unit and integration tests across 98 suites (100% green). |
+| **Stage 4** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Unit and integration suite (699 tests across 98 suites at capture; 1,085 tests across 116 suites currently). |
 | **Total** | **`npm run gate`** | **$19.44\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
 
 ---

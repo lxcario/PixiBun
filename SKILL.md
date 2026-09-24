@@ -17,7 +17,7 @@ NEVER DO THIS
 - Never introduce random floating text, ambient wobbles, or generic AI slop animations.
 - Never write empty catch blocks (`catch (e) {}`) or generic unhandled promise rejections.
 - Never introduce an external dependency when a clean, testable algorithm (e.g. Bresenham line algorithm, Flood fill BFS, Bayer matrix dithering) achieves the goal with zero bloat.
-- Never allow smart features to produce non-integer coordinates or anti-aliased pixels into the user's project buffer.
+- Never allow smart features to produce non-integer coordinates or anti-aliased pixels into the user's project buffer (except for the user-initiated opt-in De-Jaggy tool, which calculates intentional intermediate OKLab blend pixels for artisanal smoothing).
 
 ALWAYS DO THIS
 - Write meaningful, human-like, authentic, warm copy across all headlines, descriptions, button tooltips, and feedback toasts that reads like a skilled craftsperson speaking directly to another human.

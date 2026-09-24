@@ -51,7 +51,7 @@
 PixiBun v1 (`v1.14.1`) established a mathematically verified, zero-dependency raster workstation running entirely within modern web browsers. By combining an integer-exact Bresenham rasterizer, separable Felzenszwalb-Huttenlocher Euclidean Distance Transforms, Mark Ferrari palette cycling, 2.5D photometric relighting, and a host-authoritative P2P co-draw engine, v1 proved that high-end digital crafting software can exist without bloatware, native installation barriers, or subscription paywalls.
 
 **The PixiBun v2 Vision** expands beyond the boundaries of traditional single-threaded browser applications. v2 is designed as a hybrid **WebGPU / WebAssembly SIMD / Rust Native** digital content creation (DCC) system capable of:
-* Scaling from $16\times16$ micro-sprites up to $4096\times4096$ gigapixel isometric scenes with zero frame drops ($<1.5\text{ms}$ total composite latency).
+* Scaling from $16\times16$ micro-sprites up to $4096\times4096$ multi-megapixel (16.7 MP) isometric scenes with zero frame drops ($<1.5\text{ms}$ total composite latency).
 * Executing full 2D Euclidean distance fields and analytical normal baking in $O(\log N)$ passes directly on GPU compute pipelines.
 * Supporting completely peer-to-peer, decentralized multi-user collaborative editing where arbitrary layer re-parenting, folder nesting, and timeline manipulations converge deterministically without centralized coordination.
 * Providing wide-gamut Display-P3 mastering with ISO-compliant ICC profile embedding.
@@ -100,16 +100,16 @@ $$q \in \{(x + \Delta x \cdot k, y + \Delta y \cdot k) \mid \Delta x, \Delta y \
 Update the closest seed pointer stored at $p$:
 $$\text{Seed}(p) \leftarrow \arg\min_{s \in \{\text{Seed}(q)\}} \|p - s\|_2$$
 
-To eliminate the theoretical $0.08\%$ topological error rate of standard JFA on acute concavities (documented by Rong & Tan in ISVD 2007), v2 specifies **JFA+1** or **1+JFA**, appending an additional $k=1$ pass at the conclusion of the schedule.
+To eliminate the theoretical $0.08\%$ topological error rate of standard JFA on acute concavities (documented by Rong & Tan in ISVD 2007; externally cited, unverified in repository), v2 specifies **JFA+1** or **1+JFA**, appending an additional $k=1$ pass at the conclusion of the schedule.
 
 ```
-Grid Dimension (N)   JFA Passes (log2 N)   JFA+1 Passes   Total Execution Time (RTX 4060)
------------------------------------------------------------------------------------------
-256 x 256            8 passes              9 passes       0.08 ms
-512 x 512            9 passes              10 passes      0.14 ms
-1024 x 1024          10 passes             11 passes      0.26 ms
-2048 x 2048          11 passes             12 passes      0.58 ms
-4096 x 4096          12 passes             13 passes      1.42 ms
+Grid Dimension (N)   JFA Passes (log2 N)   JFA+1 Passes   Total Execution Time (RTX 4060, Modeled / Design Target)
+-----------------------------------------------------------------------------------------------------------------
+256 x 256            8 passes              9 passes       0.08 ms (modeled)
+512 x 512            9 passes              10 passes      0.14 ms (modeled)
+1024 x 1024          10 passes             11 passes      0.26 ms (modeled)
+2048 x 2048          11 passes             12 passes      0.58 ms (modeled)
+4096 x 4096          12 passes             13 passes      1.42 ms (modeled)
 ```
 
 ### 2.2 WGSL Compute Pipeline & Workgroup Shared Memory Tiling
@@ -239,7 +239,7 @@ This achieves **true zero-copy compositing**: textures remain entirely inside GP
 
 The W3C WebAssembly 128-bit Fixed-Width SIMD specification exposes hardware vector registers (`v128`) mapping directly to **x86-64 AVX/SSE** and **ARM Neon** instructions.
 
-Supported in 100% of modern browser engines (Chromium $\ge 91$, Firefox $\ge 89$, Safari $\ge 16.4$), WASM SIMD executes 4 32-bit floating point, 4 32-bit integer, 8 16-bit integer, or 16 8-bit integer operations per single CPU clock cycle.
+Supported across modern browser engines (Chromium $\ge 91$, Firefox $\ge 89$, Safari $\ge 16.4$), WASM SIMD executes 4 32-bit floating point, 4 32-bit integer, 8 16-bit integer, or 16 8-bit integer operations per vector instruction.
 
 ### 3.2 4-Way Parallel Scanline Flood Fill Bitmask Evaluation
 
@@ -267,7 +267,7 @@ By traversing scanlines with `i32x4_bitmask`, the flood-fill engine identifies c
 
 Amiga IFF / Deluxe Paint Mark Ferrari style color cycling dynamically re-indexes 8-bit color indices across a 256-color palette table. In v1, this is performed via a scalar `Uint8ClampedArray` loop.
 
-In v2, color cycling uses the native WASM SIMD `i8x16_swizzle` instruction. Given a 16-element vector of 8-bit pixel palette indices, `i8x16_swizzle` replaces all 16 indices according to the cycle lookup table in **1 clock cycle**:
+In v2, color cycling uses the native WASM SIMD `i8x16_swizzle` instruction. Given a 16-element vector of 8-bit pixel palette indices, `i8x16_swizzle` replaces all 16 indices according to the cycle lookup table with single-instruction vector throughput (modeled as 1 cycle instruction latency on modern x86/ARM SIMD pipelines, excluding memory/cache stalls):
 
 ```rust
 #[inline(always)]
@@ -279,7 +279,7 @@ pub unsafe fn cycle_16_indices_simd(indices_ptr: *mut u8, lut_16_ptr: *const u8)
 }
 ```
 
-This yields a throughput of **16 bytes per cycle**, cycling a $1024\times1024$ indexed canvas at over **400 FPS** on a single CPU core.
+This yields an idealized theoretical throughput of **16 bytes per cycle**, modeling a projected calculation rate for a $1024\times1024$ indexed canvas at over **400 operations/sec** on a single CPU core (modeled arithmetic projection for future WASM SIMD, not a measured display frame rate).
 
 ### 3.4 Vectorized Alpha Compositing (Porter-Duff Over)
 
@@ -571,7 +571,7 @@ In v2, the architecture defines an abstraction layer: `NeuralInferenceProvider`,
 The reference neural model for v2 is **FSRCNN-Pixel**, a lightweight Fast Super-Resolution Convolutional Neural Network trained specifically on discrete integer pixel art datasets:
 * **Quantization:** INT8 post-training quantization.
 * **Weight Size:** $< 650\text{ KB}$ total model size.
-* **Inference Latency:** $< 3.5\text{ms}$ on modern integrated GPUs or NPUs.
+* **Inference Latency:** $< 3.5\text{ms}$ (Design target / aspirational goal for future WebNN pipeline on modern integrated GPUs or NPUs; not implemented in repository).
 * **Result:** $2\times$ and $4\times$ crisp sprite enlargement preserving sharp single-pixel corners, clean color boundaries, and zero perceptual ringing artifacts.
 
 ---
@@ -641,7 +641,7 @@ Below are the concrete mathematical, performance-based, and product maturity rat
 
 ### 1. The Scale of Pixel Art & Mathematical Performance Envelope
 
-Pixel art is, by its nature, not high-resolution digital photography or 4K/8K illustration. The standard canvas dimensions targeted by PixiBun and used by $98\%$ of pixel artists worldwide are:
+Pixel art is, by its nature, not high-resolution digital photography or 4K/8K illustration. The standard canvas dimensions targeted by PixiBun and common across indie game pixel art workflows are:
 * **Character / Icon Sprites:** $16\times16$ — $64\times64$ pixels
 * **Large Boss / Environment Sprites:** $96\times96$ — $128\times128$ pixels
 * **Tilesets & Scene Compositions:** $256\times256$ (rarely $512\times512$) pixels
@@ -656,23 +656,23 @@ Migrating to WebGPU Jump Flooding Algorithm (JFA) or WASM SIMD would drop calcul
 
 ---
 
-### 2. Zero Technical Debt & Full Maturity of v1
+### 2. High Stability & Historical Audit Resolution of v1
 
 PixiBun is currently at an exceptional engineering peak:
-* **90 test suites, 639 unit & integration tests:** $100\%$ passing.
-* **8 E2E Playwright test suites:** Validating relighting, chisel, and palette cycles in live browser environments.
-* **All Audit Findings Resolved:** P2P guest UI locking, structural undo/redo, File System Access API native desktop saving, 47-blob autotiling, pure TypeScript MP4 muxer, and Worker EDT integration fully implemented.
+* **Automated Test Gates:** 1085 unit and integration tests across 116 suites, and 52 E2E tests across 12 suites ($100\%$ passing).
+* **Browser E2E Proofs:** Live browser proofs for relighting, chisel, and palette cycles in live browser environments.
+* **Historical Phase 1A Audit Findings Resolved:** The specific findings identified in the earlier v1.13.1 Phase 1A remediation pass (P2P guest UI locking, structural undo/redo, File System Access API native desktop saving, 47-blob autotiling, pure TypeScript MP4 muxer, and Worker EDT integration) were fully resolved and certified.
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-There is zero critical technical debt remaining that requires urgent intervention, blocks the system, or degrades user experience.
+The codebase enforces automated quality gates (100% passing tests across 116 suites, 0 TypeScript errors, 0 linter warnings), while deferred capabilities (such as Phase 1B.8 recovery UI) and known open audit findings remain cataloged for future remediation passes.
 
 ---
 
 ### 3. Compatibility and Deployment Risks (WebGPU & WASM Realities)
 
 Transitioning to v2 at this stage introduces significant drawbacks:
-* **WebGPU Hardware Support:** While WebGPU performs exceptionally on modern desktop Chromium, older laptops, Linux Mesa drivers, and mobile Safari (iOS) still exhibit instability or require flags. In contrast, v1's pure Canvas 2D + Web Worker architecture runs on **every device worldwide (with $99.9\%$ compatibility)** with zero installation overhead.
+* **WebGPU Hardware Support:** While WebGPU performs exceptionally on modern desktop Chromium, older laptops, Linux Mesa drivers, and mobile Safari (iOS) still exhibit instability or require flags. In contrast, v1's pure Canvas 2D + Web Worker architecture runs across modern standard browser environments with near-universal web baseline compatibility and zero installation overhead.
 * **Dependency Burden:** WASM and WebGPU pipelines introduce a Rust compilation toolchain (`cargo`, `wasm-pack`), shader linking infrastructure, and increased bundle footprints.
 
 ---

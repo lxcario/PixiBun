@@ -1,5 +1,7 @@
 # Audit Remediation Walkthrough: PIXIBUN_AUDIT_RESULTS.md
 
+> **Historical Artifact Notice:** This walkthrough documents the historical Phase 1A remediation pass completed at version `v1.13.1` (637 unit tests / 90 suites, 20 E2E tests). It does not reflect later developments (Phases 1B.1–1B.7, v1.14.1, 1085 unit tests / 116 suites, 52 E2E tests) or the full scope of `PIXIBUN_AUDIT_RESULTS+DEEP.md`. It is preserved here unaltered as an immutable engineering milestone record.
+
 All Critical, High, and Medium audit findings, user-reviewed amendments, and post-audit invariant reconciliations have been fully resolved, verified, and certified across the codebase and pushed to `main`.
 
 ---

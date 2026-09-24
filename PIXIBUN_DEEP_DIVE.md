@@ -65,7 +65,7 @@ src/
 │   ├── server/                      # Pure server modules: tokenBucket.ts (token-bucket rate limiter for route handlers)
 │   ├── sync/                        # P2P co-draw: coDrawBridge (studio integration), p2pSync (WebRTC transport + validation), strokeDiff (stroke delta extraction)
 │   └── storage/
-│       └── db.ts                    # Dexie.js (IndexedDB Schema v4) local database and continuous autosave
+│       └── db.ts                    # Dexie.js (IndexedDB Schema v5) local database and continuous autosave
 ├── stores/
 │   ├── studioStore.ts               # Zustand + Immer studio state manager (composed from 5 modular slices)
 │   └── themeStore.ts                # Dual theme manager and Zero-Lag CSS transition suppressor
@@ -108,7 +108,7 @@ sequenceDiagram
 * FloatingPreviewWindow listens to this integer counter, updating live previews without triggering React re-renders.
 
 ### 3. Undo/Redo History Engine
-* src/lib/engine/historyEngine.ts maintains a 50-deep HistoryStep FIFO ring for undo plus up to 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)`).
+* src/lib/engine/historyEngine.ts maintains a bounded 50-step undo stack plus up to 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)`).
 * Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for $O(1)$ pixel restoration.
 
 ---
@@ -181,16 +181,16 @@ $$R = \lfloor (N_x \cdot 0.5 + 0.5) \cdot 255 \rfloor, \quad G = \lfloor (N_y \c
 
 ### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation
 For character sprites, naive hemispherical dome inflation creates extreme slope gradients across the face ($N_x > 0.8$), causing directional light to plunge half the character's face into shadow.
-* **Frontal Cushion Plateau:** Within the rim band $D(x, y) < D_{\text{plateau}} = \max(D) \cdot \sqrt{\text{rimRatio}}$ (where default $\text{rimRatio} = 0.35$, yielding $D_{\text{plateau}} \approx 0.59 \cdot \max(D)$), height bevels smoothly down via $\sqrt{D / D_{\text{plateau}}}$. The face interior reaches a flat plateau facing the camera ($N_z \ge 0.85$), ensuring form shadows naturally hug only the unlit silhouette rim.
+* **Frontal Cushion Plateau:** Within the outer silhouette bevel of radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$ (where $\text{scaleFactor} = \max(1.0, \min(W, H) / 32)$), height bevels smoothly via $\text{rimRatio} = \min(1.0, D_{\text{macro}}(x, y) / R_{\text{char}})$ and $H_{\text{macro}}(x, y) = \max(D_{\text{macro}}) \cdot \sqrt{\text{rimRatio}}$. The face interior reaches a flat plateau facing the camera, ensuring form shadows naturally hug only the unlit silhouette rim.
 * **Independent Ear Cones:** Distinct convex lobes in the silhouette retain independent 3D height peaks without arbitrary pixel caps.
-* **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Unified Shadow** ($L \times 0.78$, hue-shifted $14°$ toward $260°$ cool indigo), **Deep Crevice** ($L \times 0.60$, $20°$ shift, triggers at $AO < \text{creviceAOThresh}$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.28$, $10°$ toward $65°$ warm sunlight, shiny materials only). In Phase 63, `creviceAOThresh` is dynamically bounded to $[0.12, 0.30]$ scaling with `cavityStrength` ($\min(0.30, \max(0.12, 0.12 + 0.16 \times \text{cavStrength}))$), requiring $\text{diffSignal} < \text{shadowThresh} + 0.10$ to prevent dark bands from engulfing unlit sides.
-* **Neutral Macro-Form & Exposure-Compensated Terminator (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D surface normal field $\mathbf{N}$ is 100% decoupled from light direction. Directional cel shadow placement uses an exposure-compensated terminator ($\text{shadowThresh} = \text{clamp}(0.46, 0.58, 0.52 - (\text{brightness} - 1.15) \times 0.04)$), preventing high lamp brightness from shifting geometric boundaries.
+* **4-Tone Discrete OKLCH Cel-Shading:** Unshaded flat base colors receive discrete stepped tone quantization via `buildCelRamp()` — **Base** (artist color), **Directional Mid-Shadow** ($L \times 0.86$, preserving authored hue/chroma), **Deep Crevice** ($L \times 0.72$, triggers at $AO < \text{creviceAOThresh}$ in concave seams), and **Highlight** ($L + (0.98 - L) \times 0.22$, shiny materials only; soft penumbra uses $L \times 0.93$). In Phase 63, `creviceAOThresh` is dynamically bounded to $[0.12, 0.30]$ scaling with `cavityStrength` ($\min(0.30, \max(0.12, 0.12 + 0.16 \times \text{cavStrength}))$), requiring $\text{diffSignal} < \text{shadowThresh} + 0.10$ to prevent dark bands from engulfing unlit sides.
+* **Neutral Macro-Form & Exposure-Compensated Terminator (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D surface normal field $\mathbf{N}$ is 100% decoupled from light direction. Directional cel shadow placement uses an exposure-compensated terminator evaluated via a piecewise linear mapping around baseline 1.15 ($\text{shadowThresh} = 0.52 + t \times 0.30$ for $\text{brightness} \le 1.15$, or $0.52 - t \times 0.32$ for $\text{brightness} > 1.15$), preventing high lamp brightness from shifting geometric boundaries.
 * **Source Shading Normalization (Phase 63):** Added `sourceShadingRemoval` ($0\% - 100\%$) to reduce pre-authored directional value bands before relighting. Two-sided interior ink detection requires opposing luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted drop shadows from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
 
 ### 6. Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Architecture
 * **Decoupled Orbit and Focus Reticle:** A draggable bulb token orbits smoothly around a draggable middle focus reticle (`stageCentroid`). Dragging the bulb rotates light azimuth ($\theta = \text{atan2}(dx, -dy)$) and elevation without mutating the center anchor position.
 * **60fps Throttled Direct Pipeline:** Renders in-place preview frames during pointer movement using `requestAnimationFrame` with zero UI latency, invalidating the analysis cache on $\ge 20^\circ$ angular drift and executing a fresh single-shot pass on drag commit to guarantee zero azimuth staleness (Phase 60a).
-* **Spherical Dome Normal Math Calibration:** Calibrated dome inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) provides an exact zero derivative at the apex peak to prevent conical creases and center-locked highlights on spherical primitives.
+* **Spherical Dome Normal Math Calibration:** Calibrated dome inflation blends spherical dome profile ($0.75\sqrt{1 - (1 - d/\max(D))^2}$) with a gamma power curve ($0.25(d/\max(D))^\gamma$, $\gamma = 0.5$), providing a softened profile at the apex peak to eliminate conical pinch creases and center-locked highlights on spherical primitives.
 
 ---
 

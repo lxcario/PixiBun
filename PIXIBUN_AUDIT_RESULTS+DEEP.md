@@ -51,6 +51,8 @@
 | **Cosmetic** | **6** |
 | **Total** | **60** |
 
+> **Factual Count Reconciliation Note:** The summary table above reflects an internal undercount in the original audit draft (which reported 17 Medium and 30 Low). The authoritative audit universe defined by actual finding headers and Section 8 recommendations contains exactly **66 findings**: **1 Critical** (`C1`), **6 High** (`H1`–`H6`), **18 Medium** (`M1`–`M18`), **35 Low** (`L1`–`L12`, `L14`–`L36`; `L13` omitted), and **6 Cosmetic** (`C2`–`C7`).
+
 ---
 
 # 2. Critical and High Priority Bugs

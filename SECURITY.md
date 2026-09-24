@@ -3,8 +3,9 @@
 ## 1. Zero-Cloud & Local-First Philosophy
 PixiBun Atelier is architected as an offline-first, client-side application:
 - All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
-- Artwork and project data persist on-device in browser IndexedDB storage.
+- Artwork and project data persist on-device in browser IndexedDB storage (note: `window.__pixibunDb` is attached to `window` in development, test, and when production builds are served from `localhost` or `127.0.0.1` for local inspection; it is omitted on remote production hostnames).
 - No user accounts, credentials, or tracking telemetry are collected.
+- WebRTC P2P co-draw defaults to zero-egress local network collaboration (`LAN_ICE_SERVERS = []`) in the studio UI, while programmatic invocation without `lanOnly: true` falls back to public Google STUN for NAT traversal.
 
 ## 2. Secrets & Secret Hygiene
 - PixiBun requires zero API keys or external authentication tokens for local or production use.
