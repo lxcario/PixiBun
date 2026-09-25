@@ -2,6 +2,27 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 72 — PixiBun v1.14.1 H1 Hardening: Content-Aware Heightmap Algorithmic Work & Allocation Bounding
+**Goal:** Implement canonical HIGH finding H1: `computeContentAwareHeightmap` has repeated component × canvas-area work and per-component full-canvas temporary allocations. Bound per-component analysis in `computeContentAwareHeightmap` (`src/lib/ai/math/edtNormalMap.ts`) by recording component bounding boxes `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This removes unconditional $K \times N$ full-canvas per-component scanning and allocation, reducing cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$ (over 4000× element reduction on a 64×64 1024-component fragmented fixture; note that $\sum \text{bboxArea}$ is not bounded by $N$ in general and may still be super-linear for pathological overlapping bounds, while $cDist$ peak temporary allocation is bounded by the maximum component bounding-box area), eliminating full-canvas temporary buffer allocations during Stage 6 while maintaining bitwise identical component maps, height fields, normal vectors, cavity AO, and final photometric render outputs across all fixtures.
+
+**Deliverables:**
+- [x] **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/ai/math/edtNormalMap.ts`)**: In `computeContentAwareHeightmap`, recorded component bounds `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This eliminates redundant full-canvas scanning across all components and drops cumulative temporary Float32Array allocations from $K \times N$ to $\sum \text{localArea}$.
+- [x] **Comprehensive Test Verification (`tests/h1ContentAwarePerformance.test.ts`)**: Added 17 unit tests covering exact bit-for-bit equivalence across 12 representative fixtures (transparent, single pixel, large solid block, checkerboard, 2 distant blobs, narrow 1xN/Nx1 lines, edge-touching shapes, asymmetric character, appendage character, noisy fragmented sprite, donut ring with interior hole, and nested concentric square rings with overlapping bounding boxes), deterministic allocation and work reduction on adversarial fragmented fixtures (over 4000× element reduction on 64×64 1024-component canvas), adversarial overlapping bounding box complexity truth proof ($\sum \text{bboxArea} > N$), large component non-regression, and final photometric render equivalence across character and prop artwork compared against independent pre-H1 legacy baseline executions.
+- [ ] **Canonical Audit Finding H5 (Open)**: Deferred to subsequent targeted passes. H5 remains OPEN and concerns unbounded WFC pattern/compatibility resource growth. M1 remains OPEN and unchanged.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,171 tests across 121 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — H1 resolved; H2, H3, H4, H6 resolved; H5 remains OPEN; M1 remains OPEN and unchanged; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 71 — PixiBun v1.14.1 H6 Hardening: Photometric Pipeline Deduplication & Hoisted Analysis
 **Goal:** Implement canonical HIGH finding H6: The affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion. Hoist geometric analysis in `renderParametric2p5DLighting` (`src/lib/ai/math/photometricLighting.ts`) to execute `computePhotometricAnalysis` once per invocation (threading precomputed inference and pixel data buffer) and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces. This eliminates redundant duplicate invocation of the expensive `computeContentAwareHeightmap` pipeline on character and prop artwork, while preserving bit-exact diffuse, specular, and rim pixel output across all materials.
 

@@ -107,6 +107,8 @@ setAutosaveError('Saved workspace could not be restored and has been preserved i
 
 ### [HIGH] H1 — `computeContentAwareHeightmap` is super-linear in canvas area and is the default path for both `character` and `prop` artwork
 
+> **Resolution Note (H1 Resolved):** Resolved in Phase 72. Removed unconditional $K \times N$ full-canvas per-component scan/allocation in `computeContentAwareHeightmap` (`src/lib/ai/math/edtNormalMap.ts`). Recorded component bounding boxes `[minX, minY, maxX, maxY]` during the linear connected-component labeling pass in Stage 4, bounding Stage 6 micro-distance BFS loops and per-component temporary array allocations strictly to component-local bounding-box area (`compW * compH = localArea`) rather than full canvas pixel count (`width * height = N`). This reduces per-component scan work and cumulative temporary Float32Array allocation traffic from $K \times N$ to $\sum \text{localArea}$ (over 4000× reduction on a 64×64 1024-component fragmented fixture; note that $\sum \text{bboxArea}$ is not bounded by $N$ in general and may still be super-linear for pathological overlapping bounds, while $cDist$ peak temporary allocation is bounded by the maximum component bounding-box area), eliminating full-canvas temporary buffer allocations during Stage 6 while maintaining bitwise identical component maps, height fields, normal vectors, cavity AO, and final photometric render outputs across all fixtures. Verified across 17 unit tests in `tests/h1ContentAwarePerformance.test.ts`. Note: H5 remains OPEN; M1 remains OPEN and unchanged; H1, H2, H3, H4, and H6 are RESOLVED.
+
 **Evidence:** `[CODE-READ]` + `[EXECUTION]`
 **File:** `src/lib/ai/math/edtNormalMap.ts:743-812` (step 6, "Micro Local Part Distance & Beveling Field")
 

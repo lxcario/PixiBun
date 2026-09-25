@@ -625,6 +625,10 @@ export function computeContentAwareHeightmap(
   // 4. Connected Components for Non-Ink Interior Parts
   let currentComponent = 0;
   const visitedComp = new Uint8Array(totalPixels);
+  const compMinX: number[] = [0];
+  const compMinY: number[] = [0];
+  const compMaxX: number[] = [0];
+  const compMaxY: number[] = [0];
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -636,6 +640,10 @@ export function computeContentAwareHeightmap(
       const queue: number[] = [idx];
       visitedComp[idx] = 1;
       componentMap[idx] = compId;
+      let cMinX = x;
+      let cMaxX = x;
+      let cMinY = y;
+      let cMaxY = y;
 
       const p0 = idx * 4;
       const baseR = data[p0];
@@ -678,9 +686,17 @@ export function computeContentAwareHeightmap(
             visitedComp[nIdx] = 1;
             componentMap[nIdx] = compId;
             queue.push(nIdx);
+            if (nx < cMinX) cMinX = nx;
+            if (nx > cMaxX) cMaxX = nx;
+            if (ny < cMinY) cMinY = ny;
+            if (ny > cMaxY) cMaxY = ny;
           }
         }
       }
+      compMinX.push(cMinX);
+      compMinY.push(cMinY);
+      compMaxX.push(cMaxX);
+      compMaxY.push(cMaxY);
     }
   }
 
@@ -759,10 +775,17 @@ export function computeContentAwareHeightmap(
     for (let c = 1; c <= currentComponent; c++) {
       const compPixels: number[] = [];
       const borderQueue: number[] = [];
-      const cDist = new Float32Array(totalPixels);
+      const minX = compMinX[c];
+      const maxX = compMaxX[c];
+      const minY = compMinY[c];
+      const maxY = compMaxY[c];
+      const compW = maxX - minX + 1;
+      const compH = maxY - minY + 1;
+      const localArea = compW * compH;
+      const cDist = new Float32Array(localArea);
 
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
           const idx = y * width + x;
           if (componentMap[idx] !== c) continue;
           compPixels.push(idx);
@@ -782,8 +805,9 @@ export function computeContentAwareHeightmap(
           }
 
           if (isBorder) {
-            cDist[idx] = 1.0;
-            borderQueue.push(idx);
+            const localIdx = (y - minY) * compW + (x - minX);
+            cDist[localIdx] = 1.0;
+            borderQueue.push(localIdx);
           }
         }
       }
@@ -795,8 +819,10 @@ export function computeContentAwareHeightmap(
         const curD = cDist[cur];
         if (curD > maxPartD) maxPartD = curD;
 
-        const cx = cur % width;
-        const cy = Math.floor(cur / width);
+        const clx = cur % compW;
+        const cly = Math.floor(cur / compW);
+        const cx = minX + clx;
+        const cy = minY + cly;
         const neighbors = [
           [cx + 1, cy],
           [cx - 1, cy],
@@ -807,15 +833,21 @@ export function computeContentAwareHeightmap(
         for (const [nx, ny] of neighbors) {
           if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
           const nIdx = ny * width + nx;
-          if (componentMap[nIdx] === c && cDist[nIdx] === 0) {
-            cDist[nIdx] = curD + 1.0;
-            borderQueue.push(nIdx);
+          if (componentMap[nIdx] === c) {
+            const nLocalIdx = (ny - minY) * compW + (nx - minX);
+            if (cDist[nLocalIdx] === 0) {
+              cDist[nLocalIdx] = curD + 1.0;
+              borderQueue.push(nLocalIdx);
+            }
           }
         }
       }
 
       for (const idx of compPixels) {
-        const norm = Math.min(1.0, cDist[idx] / Math.max(1.0, maxPartD));
+        const cx = idx % width;
+        const cy = Math.floor(idx / width);
+        const localIdx = (cy - minY) * compW + (cx - minX);
+        const norm = Math.min(1.0, cDist[localIdx] / Math.max(1.0, maxPartD));
         microDist[idx] = Math.pow(norm, 0.55) * Math.min(maxPartD, bevelRadius);
       }
     }
