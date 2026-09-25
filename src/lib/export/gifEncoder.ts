@@ -12,6 +12,8 @@ export { quantizePixels, lzwEncode, encodeGifRawFrames };
 export type { RawFrameData };
 
 import { extractScaledCanvasRgba } from '@/lib/canvas/scaleCanvas';
+import { validateExportGeometry } from './exportGeometryValidation';
+import { MAX_EXPORT_AGGREGATE_PIXELS } from '@/config/canvasLimits';
 
 /**
  * Extracts scaled RawFrameData array from a list of HTMLCanvasElements.
@@ -22,6 +24,15 @@ export function extractScaledRawFrames(
 ): RawFrameData[] {
   if (frameCanvases.length === 0) return [];
   const s = Math.max(1, Math.floor(scale));
+  const outW = frameCanvases[0].width * s;
+  const outH = frameCanvases[0].height * s;
+  const validation = validateExportGeometry(outW, outH, {
+    frameCount: frameCanvases.length,
+    maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
+  });
+  if (!validation.valid) {
+    throw new RangeError(`GIF export aborted: ${validation.error}`);
+  }
   return frameCanvases.map((canvas) => extractScaledCanvasRgba(canvas, s));
 }
 
@@ -44,6 +55,17 @@ export async function createAnimatedGifBlobAsync(
 
   if (signal?.aborted) {
     throw new DOMException('GIF encoding aborted', 'AbortError');
+  }
+
+  const s = Math.max(1, Math.floor(scale));
+  const outW = frameCanvases[0].width * s;
+  const outH = frameCanvases[0].height * s;
+  const validation = validateExportGeometry(outW, outH, {
+    frameCount: frameCanvases.length,
+    maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
+  });
+  if (!validation.valid) {
+    throw new RangeError(`GIF export aborted: ${validation.error}`);
   }
 
   const rawFrames = extractScaledRawFrames(frameCanvases, scale);

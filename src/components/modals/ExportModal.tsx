@@ -32,7 +32,11 @@ import {
 } from '@/lib/export/shaderExporter';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { ExportTabsNav, type ExportType } from './export/ExportTabsNav';
-import { MAX_SAFE_CANVAS_DIMENSION, MAX_SAFE_CANVAS_PIXELS } from '@/config/canvasLimits';
+import {
+  MAX_SAFE_CANVAS_DIMENSION,
+  MAX_SAFE_CANVAS_PIXELS,
+  MAX_EXPORT_AGGREGATE_PIXELS,
+} from '@/config/canvasLimits';
 import { ExportScopeSelector } from './export/ExportScopeSelector';
 import { ExportProgressBar } from './export/ExportProgressBar';
 import { PngExportTab } from './export/PngExportTab';
@@ -149,7 +153,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       exportWidth * exportHeight > MAX_SAFE_CANVAS_PIXELS
     ) {
       console.error(
-        `PNG export aborted: requested dimensions ${exportWidth}x${exportHeight} exceed browser safety limit (${MAX_SAFE_CANVAS_DIMENSION}px / 16.7MP).`
+        `PNG export aborted: requested dimensions ${exportWidth}x${exportHeight} exceed configured safety ceiling (${MAX_SAFE_CANVAS_DIMENSION}px / 16.7MP).`
       );
       return;
     }
@@ -272,6 +276,22 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const handleExportGIF = async () => {
     if (isExporting || targetFrames.length === 0) return;
 
+    const effectiveScale = Math.min(scale, 8);
+    const outW = canvasWidth * effectiveScale;
+    const outH = canvasHeight * effectiveScale;
+    const validation = validateExportGeometry(outW, outH, {
+      frameCount: targetFrames.length,
+      maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
+    });
+    if (!validation.valid) {
+      console.error(`GIF export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
+
     const frameCanvases: HTMLCanvasElement[] = [];
 
     for (let i = 0; i < targetFrames.length; i++) {
@@ -294,7 +314,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       return Math.max(2, Math.round(ms / 10));
     });
 
-    const effectiveScale = Math.min(scale, 8);
     try {
       const blob = await createAnimatedGifBlobAsync(
         frameCanvases,
@@ -320,6 +339,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         return;
       }
       console.error('GIF export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+    } finally {
       setIsExporting(false);
       setExportProgress(null);
       abortControllerRef.current = null;
@@ -385,6 +409,22 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const handleExportApng = async () => {
     if (isExporting || targetFrames.length === 0) return;
 
+    const effectiveScale = Math.min(scale, 16);
+    const outW = canvasWidth * effectiveScale;
+    const outH = canvasHeight * effectiveScale;
+    const validation = validateExportGeometry(outW, outH, {
+      frameCount: targetFrames.length,
+      maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
+    });
+    if (!validation.valid) {
+      console.error(`APNG export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
+
     const frameCanvases: HTMLCanvasElement[] = [];
     for (let i = 0; i < targetFrames.length; i++) {
       const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
@@ -403,7 +443,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
-    const effectiveScale = Math.min(scale, 16);
     try {
       const blob = await exportAnimationToApngAsync(frameCanvases, {
         fps,
@@ -428,6 +467,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         return;
       }
       console.error('APNG export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -437,6 +480,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const handleExportMp4 = async () => {
     if (isExporting || targetFrames.length === 0) return;
+
+    const effectiveScale = Math.min(scale, 16);
+    const outW = (canvasWidth * effectiveScale + 1) & ~1;
+    const outH = (canvasHeight * effectiveScale + 1) & ~1;
+    const validation = validateExportGeometry(outW, outH);
+    if (!validation.valid) {
+      console.error(`MP4 export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
 
     const frameCanvases: HTMLCanvasElement[] = [];
     for (let i = 0; i < targetFrames.length; i++) {
@@ -455,7 +511,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
-    const effectiveScale = Math.min(scale, 16);
 
     try {
       const blob = await exportAnimationToMp4Async(frameCanvases, {
@@ -481,6 +536,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         return;
       }
       console.error('MP4 export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -512,6 +571,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const handleExportWebm = async () => {
     if (isExporting || targetFrames.length === 0) return;
 
+    const effectiveScale = Math.min(scale, 16);
+    const outW = canvasWidth * effectiveScale;
+    const outH = canvasHeight * effectiveScale;
+    const validation = validateExportGeometry(outW, outH);
+    if (!validation.valid) {
+      console.error(`WebM export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
+
     const frameCanvases: HTMLCanvasElement[] = [];
     for (let i = 0; i < targetFrames.length; i++) {
       const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
@@ -529,7 +601,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
     const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
-    const effectiveScale = Math.min(scale, 16);
 
     try {
       const blob = await exportAnimationToWebmAsync(frameCanvases, {
@@ -555,6 +626,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         return;
       }
       console.error('WebM export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -597,6 +672,24 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   };
 
   const handleExportCycleLoop = async () => {
+    const effectiveScale = cycleLoopFormat === 'apng' ? Math.min(scale, 16) : Math.min(scale, 8);
+    const outW = canvasWidth * effectiveScale;
+    const outH = canvasHeight * effectiveScale;
+    const estimatedFrames = Math.max(1, Math.round(cycleLoopDuration * 30));
+    const isAggregateFormat = cycleLoopFormat === 'apng' || cycleLoopFormat === 'gif';
+    const validation = validateExportGeometry(outW, outH, {
+      frameCount: isAggregateFormat ? estimatedFrames : undefined,
+      maxAggregatePixels: isAggregateFormat ? MAX_EXPORT_AGGREGATE_PIXELS : undefined,
+    });
+    if (!validation.valid) {
+      console.error(`Palette cycle loop export aborted: ${validation.error}`);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
+      return;
+    }
+
     const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
     if (!source) return;
 
@@ -651,6 +744,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       }
     } catch (err) {
       console.error('Palette cycle loop export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        message: 'This animation would be too large to export safely.',
+        type: 'error',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress(null);

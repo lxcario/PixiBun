@@ -1,10 +1,5 @@
 // Game-ready Sprite Sheet Packer for Godot, Unity, and Phaser
 
-import {
-  MAX_SAFE_CANVAS_DIMENSION,
-  MAX_SAFE_CANVAS_PIXELS,
-} from '@/config/canvasLimits';
-
 export interface SpriteSheetConfig {
   layout: 'horizontal' | 'vertical' | 'grid';
   scale: number;
@@ -24,73 +19,17 @@ export interface SpriteSheetGeometry {
   scaledHeight: number;
 }
 
-export interface ExportGeometryValidation {
-  valid: boolean;
-  width: number;
-  height: number;
-  totalPixels: number;
-  error?: string;
-  reason?: 'exceeds-dimension' | 'exceeds-pixels' | 'invalid-dimensions';
-}
+import {
+  validateExportGeometry,
+  type ExportGeometryValidation,
+  type ExportGeometryLimits,
+} from './exportGeometryValidation';
 
-/**
- * Validates requested export dimensions and total pixel area against the authoritative
- * PixiBun safety envelope (MAX_SAFE_CANVAS_DIMENSION = 4096, MAX_SAFE_CANVAS_PIXELS = 16,777,216).
- */
-export function validateExportGeometry(
-  width: number,
-  height: number,
-  limits: { maxDimension?: number; maxPixels?: number } = {}
-): ExportGeometryValidation {
-  const maxDim = limits.maxDimension ?? MAX_SAFE_CANVAS_DIMENSION;
-  const maxPix = limits.maxPixels ?? MAX_SAFE_CANVAS_PIXELS;
-
-  if (
-    !Number.isFinite(width) ||
-    !Number.isFinite(height) ||
-    width <= 0 ||
-    height <= 0
-  ) {
-    return {
-      valid: false,
-      width,
-      height,
-      totalPixels: 0,
-      reason: 'invalid-dimensions',
-      error: `Export dimensions must be positive finite numbers (${width}x${height}).`,
-    };
-  }
-
-  const totalPixels = width * height;
-  if (width > maxDim || height > maxDim) {
-    return {
-      valid: false,
-      width,
-      height,
-      totalPixels,
-      reason: 'exceeds-dimension',
-      error: `Export dimensions ${width}x${height} exceed maximum dimension limit of ${maxDim}px.`,
-    };
-  }
-
-  if (totalPixels > maxPix) {
-    return {
-      valid: false,
-      width,
-      height,
-      totalPixels,
-      reason: 'exceeds-pixels',
-      error: `Export area of ${totalPixels} pixels exceeds maximum safety limit of ${maxPix} pixels (${(maxPix / 1_000_000).toFixed(1)} MP).`,
-    };
-  }
-
-  return {
-    valid: true,
-    width,
-    height,
-    totalPixels,
-  };
-}
+export {
+  validateExportGeometry,
+  type ExportGeometryValidation,
+  type ExportGeometryLimits,
+};
 
 /**
  * Computes exact sprite sheet geometry, column/row layout, and total pixel area

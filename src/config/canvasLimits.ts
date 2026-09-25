@@ -23,9 +23,9 @@ export const WORKSPACE_ENVELOPE = {
   /** Maximum total layers across all frames in a project structure (2,000 layers). */
   MAX_PROJECT_TOTAL_LAYERS: 2000,
 
-  /** Maximum export dimension when upscaling or downscaling (4096px). */
+  /** Maximum export dimension when upscaling or downscaling (4096px, PixiBun configured safety boundary). */
   MAX_EXPORT_DIMENSION: 4096,
-  /** Maximum export pixel count ceiling (16,777,216 px = 16.7 MP, WebKit/iOS Safari limit). */
+  /** Maximum export pixel count ceiling (16,777,216 px = 16.7 MP, PixiBun configured safety boundary). */
   MAX_EXPORT_PIXELS: 16_777_216,
 
   /** Maximum probe dimension for external reference images (8192px). */
@@ -42,6 +42,8 @@ export const WORKSPACE_ENVELOPE = {
 export const EXPORT_ENVELOPE = {
   MAX_EXPORT_DIMENSION: WORKSPACE_ENVELOPE.MAX_EXPORT_DIMENSION,
   MAX_EXPORT_PIXELS: WORKSPACE_ENVELOPE.MAX_EXPORT_PIXELS,
+  /** Configured animated-image export budget for multi-frame exports retaining uncompressed frames (67,108,864 aggregate pixels = 64 MP = 256 MiB of raw RGBA at 4 bytes/pixel). Bounds aggregate source pixels to reduce OOM risk, not total process memory. */
+  MAX_EXPORT_AGGREGATE_PIXELS: WORKSPACE_ENVELOPE.MAX_PROJECT_AGGREGATE_PIXELS,
 } as const;
 
 export const PROBE_ENVELOPE = {
@@ -74,3 +76,4 @@ export const MAX_HARDWARE_PIXEL_AREA = WORKSPACE_ENVELOPE.MAX_HARDWARE_PIXEL_ARE
 // Compatibility aliases for existing export modules and tests
 export const MAX_SAFE_CANVAS_DIMENSION = MAX_EXPORT_DIMENSION;
 export const MAX_SAFE_CANVAS_PIXELS = MAX_EXPORT_PIXELS;
+export const MAX_EXPORT_AGGREGATE_PIXELS = EXPORT_ENVELOPE.MAX_EXPORT_AGGREGATE_PIXELS;

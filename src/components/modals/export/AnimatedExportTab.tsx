@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import { validateExportGeometry } from '@/lib/export/exportGeometryValidation';
+import { MAX_EXPORT_AGGREGATE_PIXELS } from '@/config/canvasLimits';
 
 interface AnimatedExportTabProps {
   exportType: 'gif' | 'apng' | 'webm' | 'mp4';
@@ -29,7 +31,36 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
   isMp4Supported,
 }) => {
   const isVideo = exportType === 'webm' || exportType === 'mp4';
-  const scaleOptions = exportType === 'gif' ? [1, 2, 4, 8] : [1, 2, 4, 8, 16];
+  const scaleOptions = React.useMemo(
+    () => (exportType === 'gif' ? [1, 2, 4, 8] : [1, 2, 4, 8, 16]),
+    [exportType]
+  );
+
+  const getOutputDimensions = React.useCallback(
+    (s: number) => {
+      let outW = canvasWidth * s;
+      let outH = canvasHeight * s;
+      if (exportType === 'mp4') {
+        outW = (outW + 1) & ~1;
+        outH = (outH + 1) & ~1;
+      }
+      return { outW, outH };
+    },
+    [canvasWidth, canvasHeight, exportType]
+  );
+
+  const getValidation = React.useCallback(
+    (s: number) => {
+      const { outW, outH } = getOutputDimensions(s);
+      return validateExportGeometry(outW, outH, {
+        frameCount: exportType === 'gif' || exportType === 'apng' ? totalFrames : undefined,
+        maxAggregatePixels: exportType === 'gif' || exportType === 'apng' ? MAX_EXPORT_AGGREGATE_PIXELS : undefined,
+      });
+    },
+    [getOutputDimensions, exportType, totalFrames]
+  );
+
+  const activeValidation = getValidation(scale);
 
   return (
     <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
@@ -45,24 +76,51 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
         </div>
       )}
 
+      {!activeValidation.valid && (
+        <div className="flex flex-col gap-1 p-2 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-[11px] font-mono text-[#ffb3c1]" data-testid="unsafe-scale-warning">
+          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+            <PixelIcon name="warning" size={13} />
+            <span>Selected Scale Exceeds Safety Ceilings</span>
+          </div>
+          <p className="leading-tight text-[#fcd2d7]">
+            {activeValidation.error || `${scale}x scale exceeds the configured safety ceiling (${getOutputDimensions(scale).outW}×${getOutputDimensions(scale).outH}px). Please select a safe scale before exporting.`}
+          </p>
+        </div>
+      )}
+
       {/* Scale Resolution */}
       <div className="flex items-center justify-between">
         <span className="text-[var(--text-body)] font-bold">Scale Resolution:</span>
         <div className="flex gap-1">
-          {scaleOptions.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setScale(s)}
-              className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
-                scale === s
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
-              }`}
-            >
-              {s}x
-            </button>
-          ))}
+          {scaleOptions.map((s) => {
+            const validation = getValidation(s);
+            const safe = validation.valid;
+            const { outW, outH } = getOutputDimensions(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                disabled={!safe}
+                onClick={() => setScale(s)}
+                title={
+                  !safe
+                    ? validation.error || `Exceeds safety limit. Result would be ${outW}×${outH}px.`
+                    : `${s}x scale (${outW}×${outH}px)`
+                }
+                className={`px-2 py-0.5 rounded-[2px] border font-bold transition-colors ${
+                  !safe
+                    ? scale === s
+                      ? 'bg-[#5a1e28] text-[#ff8099] border-[#b84a62] cursor-not-allowed'
+                      : 'opacity-30 cursor-not-allowed bg-[var(--desk-surface)] text-[var(--text-muted)] border-[var(--desk-border)]'
+                    : scale === s
+                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] cursor-pointer'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer'
+                }`}
+              >
+                {s}x
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -93,7 +151,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       <div className="flex items-center justify-between text-[var(--text-body)]">
         <span className="font-bold">Output Info:</span>
         <span className="text-[#f0be7c] font-bold">
-          {canvasWidth * scale} × {canvasHeight * scale} px
+          {getOutputDimensions(scale).outW} × {getOutputDimensions(scale).outH} px
           {exportType === 'gif' && `, ${totalFrames} frames at ${fps} FPS`}
           {exportType === 'apng' && `, ${totalFrames} frames (24-bit Truecolor)`}
           {exportType === 'webm' && ` WebM (VP9/VP8)`}

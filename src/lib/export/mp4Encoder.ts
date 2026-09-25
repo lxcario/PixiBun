@@ -15,6 +15,7 @@
  */
 
 import { muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
+import { validateExportGeometry } from './exportGeometryValidation';
 
 export interface Mp4ExportOptions {
   fps?: number; // Target video frame rate (default: 30)
@@ -206,6 +207,11 @@ export async function exportAnimationToMp4Async(
   // H.264 macroblock encoding and YUV 4:2:0 subsampling require even dimensions
   const width = (frameCanvases[0].width * scale + 1) & ~1;
   const height = (frameCanvases[0].height * scale + 1) & ~1;
+
+  const validation = validateExportGeometry(width, height);
+  if (!validation.valid) {
+    throw new RangeError(`MP4 export aborted: ${validation.error}`);
+  }
 
   // Calculate millisecond durations per frame
   const frameDelaysMs: number[] = frameCanvases.map((_, idx) => {

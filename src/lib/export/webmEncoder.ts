@@ -7,6 +7,8 @@
  * Fully supports AbortSignal cancellation and test environments.
  */
 
+import { validateExportGeometry } from './exportGeometryValidation';
+
 export interface WebmExportOptions {
   fps?: number; // Target video frame rate (default: 30)
   scale?: number; // Integer scaling factor (default: 4)
@@ -38,6 +40,11 @@ export async function exportAnimationToWebmAsync(
 
   const width = frameCanvases[0].width * scale;
   const height = frameCanvases[0].height * scale;
+
+  const validation = validateExportGeometry(width, height);
+  if (!validation.valid) {
+    throw new RangeError(`WebM export aborted: ${validation.error}`);
+  }
 
   // Calculate millisecond delays per frame
   const frameDelaysMs: number[] = frameCanvases.map((_, idx) => {

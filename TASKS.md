@@ -2,6 +2,34 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 69 — PixiBun v1.14.1 H3 Hardening: Animated Exporters Output Safety Ceilings
+**Goal:** Implement canonical HIGH finding H3: Animated exporters bypass shared output safety ceilings. Enforce PixiBun configured safety ceilings (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`, and configured animated-image export budget `MAX_EXPORT_AGGREGATE_PIXELS = 67_108_864` aggregate pixels = 64 MP = 256 MiB of raw RGBA at 4 bytes/pixel for uncompressed frame retention formats, bounding raw source pixel workload to reduce OOM risk) as early preflight checks prior to multi-frame canvas allocation and compositing in `src/components/modals/ExportModal.tsx`, provide proactive format-specific UI scaling bounds in `src/components/modals/export/AnimatedExportTab.tsx`, and enforce low-level defense-in-depth geometry bounds validation in `src/lib/export/exportGeometryValidation.ts`, `src/lib/canvas/scaleCanvas.ts`, `src/lib/export/gifEncoder.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/export/mp4Encoder.ts`, and `src/lib/export/webmEncoder.ts`.
+
+**Deliverables:**
+- [x] **Canonical Export Geometry & Aggregate Memory Validator (`src/lib/export/exportGeometryValidation.ts`)**: Pure neutral validator `validateExportGeometry` enforcing PixiBun configured safety boundaries `MAX_SAFE_CANVAS_DIMENSION` (4096 px), `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px), and optional format-specific `maxAggregatePixels` + `frameCount`. Re-exported via `src/lib/export/spriteSheetPacker.ts` for backward compatibility.
+- [x] **Defense-in-Depth Scaled Canvas Allocation Guard (`src/lib/canvas/scaleCanvas.ts`)**: In `extractScaledCanvasRgba`, validates destination dimensions via `validateExportGeometry` and throws a `RangeError` before allocating offscreen canvas or typed array buffers.
+- [x] **Animated GIF Envelope & Aggregate Ceiling (`src/lib/export/gifEncoder.ts`)**: In `extractScaledRawFrames` and `createAnimatedGifBlobAsync`, validates output geometry and enforces `MAX_EXPORT_AGGREGATE_PIXELS` (67,108,864 aggregate pixels = 64 MP = 256 MiB of raw RGBA at 4 bytes/pixel, bounding raw source pixel workload) before heavy frame extraction or worker instantiation.
+- [x] **Animated PNG Envelope & Aggregate Ceiling (`src/lib/export/apngEncoder.ts`)**: In `exportAnimationToApngAsync`, validates output geometry and aggregate memory ceiling before frame extraction or allocating uncompressed DEFLATE store blocks.
+- [x] **MP4 Video Output Geometry Guard (`src/lib/export/mp4Encoder.ts`)**: In `exportAnimationToMp4Async`, validates macroblock-even dimensions (`(frameWidth * scale + 1) & ~1`) before allocating `exportCanvas` or initializing WebCodecs / MediaRecorder.
+- [x] **WebM Video Output Geometry Guard (`src/lib/export/webmEncoder.ts`)**: In `exportAnimationToWebmAsync`, validates output dimensions before allocating `exportCanvas` or initializing MediaRecorder.
+- [x] **Early UI Preflight & Safe Feedback (`src/components/modals/ExportModal.tsx`)**: Preflights output geometry and aggregate memory across GIF, APNG, MP4, WebM, and cycle loop exports before entering the `compositeFrame` loop, emitting user-facing toast notifications (`pixibun:toast`) on ceiling breach, and catching encoder errors with clean state reset.
+- [x] **Proactive UI Scale Guard & Safety Warnings (`src/components/modals/export/AnimatedExportTab.tsx`)**: Dynamically disables scale buttons exceeding safety limits with descriptive tooltip explanations, displays an explicit warning banner when an active scale exceeds safety ceilings without silent downgrading, and marks invalid selections clearly following format-specific resource models.
+- [x] **Comprehensive Test Verification (`tests/animatedExportSafety.test.ts`)**: 18 dedicated unit and boundary tests covering safe/unsafe GIF, safe/unsafe APNG, safe/unsafe MP4, safe/unsafe WebM, exact 4096px / 4097px boundaries, non-positive / non-finite inputs, scale multiplier bounds, aggregate memory bounds, format-specific scale UI semantics, low-level scale canvas defense-in-depth, explicit scale warning without auto-clamp, and UI preflight halt before compositing.
+- [ ] **Canonical Audit Findings H1, H4, H5, H6 (Open)**: Deferred to subsequent targeted passes.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,133 tests across 119 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — H3 resolved; H2 resolved; H1, H4, H5, H6 remain OPEN; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 68 — PixiBun v1.14.1 H2 Hardening: Sprite-Sheet Export Output Ceilings
 **Goal:** Implement canonical HIGH finding H2: Sprite-sheet export output ceilings. Enforce authoritative canvas limit ceilings (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`) as early preflight checks prior to multi-frame canvas allocation and compositing in `src/components/modals/ExportModal.tsx`, and enforce low-level defense-in-depth geometry bounds validation in `src/lib/export/spriteSheetPacker.ts`.
 

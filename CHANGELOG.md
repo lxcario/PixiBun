@@ -3,6 +3,14 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.14.1] - 2026-09-21 (Hardening Complete)
+### Animated Exporters Output Safety Ceilings (Phase 69 / H3 Hardening)
+- **Universal Animated Export Geometry Preflight & Ceilings (`src/lib/export/exportGeometryValidation.ts`, `src/lib/canvas/scaleCanvas.ts`, `src/lib/export/gifEncoder.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/export/mp4Encoder.ts`, `src/lib/export/webmEncoder.ts`, `src/components/modals/ExportModal.tsx`, `src/components/modals/export/AnimatedExportTab.tsx`, `src/config/canvasLimits.ts`, `tests/animatedExportSafety.test.ts`)**:
+  - Implemented centralized `validateExportGeometry` enforcing PixiBun configured safety boundaries `MAX_SAFE_CANVAS_DIMENSION` (4096 px), `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px), and format-specific aggregate source pixel budget (`MAX_EXPORT_AGGREGATE_PIXELS` = 67,108,864 aggregate pixels = 256 MiB of raw RGBA at 4 bytes/pixel) for animated image exports retaining uncompressed frames (GIF, APNG), bounding raw-frame export workloads to reduce OOM risk.
+  - Enforced pre-compositing envelope validation in `src/components/modals/ExportModal.tsx` across GIF, APNG, MP4, WebM, and cycle loop workflows: pre-evaluates output dimensions and aggregate memory, aborts before frame extraction/compositing with user-facing error toasts (`pixibun:toast`), and logs errors without uncaught rejections.
+  - Hardened `src/components/modals/export/AnimatedExportTab.tsx` with dynamic format-specific scale button disabling, safety tooltips, and explicit safety warning banners preventing silent resolution downgrades.
+  - Added low-level defense-in-depth safety checks in `src/lib/canvas/scaleCanvas.ts`, `src/lib/export/gifEncoder.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/export/mp4Encoder.ts`, and `src/lib/export/webmEncoder.ts`, throwing descriptive `RangeError` before allocating canvases, workers, or encoders.
+  - Verified across 18 unit tests in `tests/animatedExportSafety.test.ts` covering individual dimensions, total area, boundary conditions (4096 px vs 4097 px), aggregate memory ceilings, format-specific scale UI semantics, scale factor multiplication, explicit UI warning banner, and encoder aborts.
+
 ### Sprite-Sheet Export Output Ceilings (Phase 68 / H2 Hardening)
 - **Sprite-Sheet Geometry Preflight & Dimension Ceilings (`src/lib/export/spriteSheetPacker.ts`, `src/components/modals/ExportModal.tsx`, `src/config/canvasLimits.ts`, `tests/spriteSheetSafety.test.ts`)**:
   - Implemented `calculateSpriteSheetGeometry` and `validateExportGeometry` enforcing authoritative `MAX_SAFE_CANVAS_DIMENSION` (4096 px) and `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px) from `src/config/canvasLimits.ts`.

@@ -175,6 +175,8 @@ sheetCanvas.width  = sheetWidth;                              // :52 — unbound
 
 ### [HIGH] H3 — GIF, APNG, WebM and MP4 exports bypass the ceiling the documentation calls universal
 
+> **Resolution Note (H3 Resolved):** Resolved in Phase 69. Enforced universal export geometry preflight across all animated formats (GIF, APNG, WebM, MP4) using centralized `validateExportGeometry` enforcing PixiBun configured safety boundaries `MAX_SAFE_CANVAS_DIMENSION` (4096 px) and `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px). GIF and APNG additionally enforce configured animated-image export budget `MAX_EXPORT_AGGREGATE_PIXELS` (67,108,864 aggregate pixels = 256 MiB of raw RGBA at 4 bytes/pixel) to bound raw source pixel workload and reduce OOM risk during uncompressed frame retention. UI preflight in `ExportModal.tsx` aborts before frame compositing with error toast notification; `AnimatedExportTab.tsx` disables unsafe scale multipliers with tooltip and displays explicit safety warning banner without silent resolution downgrades; and encoder engines (`scaleCanvas.ts`, `gifEncoder.ts`, `apngEncoder.ts`, `mp4Encoder.ts`, `webmEncoder.ts`) independently enforce `RangeError` safety ceilings before allocating canvases, workers, or encoders. Verified across 18 unit tests in `tests/animatedExportSafety.test.ts`. Note: H1, H4, H5, and H6 remain OPEN.
+
 **Evidence:** `[CODE-READ]`
 **Files:** `src/components/modals/export/AnimatedExportTab.tsx:32`; `src/lib/export/apngEncoder.ts:196`; `src/lib/export/mp4Encoder.ts:186`; `src/lib/canvas/scaleCanvas.ts:34-48`
 

@@ -1,9 +1,11 @@
 /**
  * High-performance scaled pixel extraction helper for PixiBun canvas exports.
  * Provides fast-path for 1x extraction without offscreen allocation,
- * hardware-accelerated nearest-neighbor scaling for integer multiples,
+ * nearest-neighbor scaling for integer multiples,
  * and pixel replication fallback for headless/test environments.
  */
+
+import { validateExportGeometry } from '@/lib/export/exportGeometryValidation';
 
 export interface ScaledRgbaFrame {
   width: number;
@@ -22,6 +24,15 @@ export function extractScaledCanvasRgba(
   const srcW = canvas.width;
   const srcH = canvas.height;
 
+  // Handle scaling via offscreen buffer or nearest-neighbor replication
+  const dstW = srcW * s;
+  const dstH = srcH * s;
+
+  const validation = validateExportGeometry(dstW, dstH);
+  if (!validation.valid) {
+    throw new RangeError(`Canvas scale aborted: ${validation.error}`);
+  }
+
   if (s === 1 && typeof canvas.getContext === 'function') {
     const ctx = canvas.getContext('2d');
     if (ctx) {
@@ -29,10 +40,6 @@ export function extractScaledCanvasRgba(
       return { width: srcW, height: srcH, data: imgData.data };
     }
   }
-
-  // Handle scaling via offscreen buffer or nearest-neighbor replication
-  const dstW = srcW * s;
-  const dstH = srcH * s;
 
   if (typeof document !== 'undefined') {
     const scaledCanvas = document.createElement('canvas');

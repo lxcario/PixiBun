@@ -176,6 +176,8 @@ export function createPngChunk(typeStr: string, data: Uint8Array): Uint8Array {
 }
 
 import { extractScaledCanvasRgba, ScaledRgbaFrame } from '@/lib/canvas/scaleCanvas';
+import { validateExportGeometry } from './exportGeometryValidation';
+import { MAX_EXPORT_AGGREGATE_PIXELS } from '@/config/canvasLimits';
 
 export { extractScaledCanvasRgba };
 export type { ScaledRgbaFrame };
@@ -202,6 +204,16 @@ export async function exportAnimationToApngAsync(
   const fps = Math.max(1, Math.min(60, options.fps ?? 12));
   const scale = Math.max(1, Math.min(16, options.scale ?? 1));
   const loopCount = Math.max(0, options.loopCount ?? 0); // 0 = infinite loop
+
+  const outW = frameCanvases[0].width * scale;
+  const outH = frameCanvases[0].height * scale;
+  const validation = validateExportGeometry(outW, outH, {
+    frameCount: frameCanvases.length,
+    maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
+  });
+  if (!validation.valid) {
+    throw new RangeError(`APNG export aborted: ${validation.error}`);
+  }
 
   // Standard 8-byte PNG signature
   const PNG_SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
