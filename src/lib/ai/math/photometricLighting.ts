@@ -552,10 +552,12 @@ export function computePhotometricAnalysis(
   width: number,
   height: number,
   params: PhotometricLightingParams,
-  precomputedInference?: ReturnType<typeof inferPhotometricSettings>
+  precomputedInference?: ReturnType<typeof inferPhotometricSettings>,
+  precomputedData?: Uint8ClampedArray
 ): PhotometricAnalysisGeometry {
-  const imgData = srcCtx.getImageData(0, 0, width, height);
-  const data = imgData.data;
+  const data = (precomputedData && precomputedData.length === width * height * 4)
+    ? precomputedData
+    : srcCtx.getImageData(0, 0, width, height).data;
   const sourceLighting = precomputedInference ?? inferPhotometricSettings(data, width, height);
 
   const isOpaque = (x: number, y: number) => {
@@ -662,10 +664,12 @@ export function executePhotometricPipeline(
   width: number,
   height: number,
   params: PhotometricLightingParams,
-  paletteHex: string[] = []
+  paletteHex: string[] = [],
+  precomputedData?: Uint8ClampedArray
 ): HTMLCanvasElement {
-  const imgData = srcCtx.getImageData(0, 0, width, height);
-  const data = imgData.data;
+  const data = (precomputedData && precomputedData.length === width * height * 4)
+    ? precomputedData
+    : srcCtx.getImageData(0, 0, width, height).data;
 
   const isOpaque = (x: number, y: number) => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
@@ -1134,14 +1138,30 @@ export function renderParametric2p5DLighting(
   const inferred = inferPhotometricSettings(data, width, height);
   const isCharacter = inferred.formType === 'character';
 
-  let charFeatureMask: Uint8Array | null = null;
-  let charInkMask: Uint8Array | null = null;
+  const photometricParams: PhotometricLightingParams = {
+    lightAzimuth: params.azimuthDeg,
+    lightElevation: params.elevationDeg,
+    lightRadius: 64,
+    lightColor: '#FFFFFF',
+    ambientIntensity: 0.45,
+    lightBrightness: 1.2,
+    material: (params.material as MaterialType) || 'matte',
+    shadingBands: params.shadingBands,
+    cavityStrength: 1.0,
+    ditherModulation: 0,
+    bayerSize: '4x4',
+    formType: inferred.formType,
+    minecraftSkinMode: params.minecraftSkinMode,
+  };
 
-  if (isCharacter) {
-    const analysis = computeContentAwareHeightmap(data, width, height, inferred.cavityStrength ?? 1.0, 2.0, params.azimuthDeg);
-    charFeatureMask = analysis.isFeature;
-    charInkMask = analysis.isInkLine;
-  }
+  // Hoist analysis: execute computePhotometricAnalysis once locally
+  // (which runs computeContentAwareHeightmap once for characters/props) and feed into executePhotometricPipeline.
+  const analysis: PhotometricAnalysisGeometry | undefined = !isMcSkin
+    ? computePhotometricAnalysis(srcCtx, width, height, photometricParams, inferred, data)
+    : undefined;
+
+  const charFeatureMask = isCharacter && analysis ? (analysis.isFeatureMask ?? null) : null;
+  const charInkMask = isCharacter && analysis ? (analysis.isInkLineMask ?? null) : null;
 
   // Smooth macro silhouette normal field for specular reflections:
   // Continuous 3D cushion without eye-socket cliffs or color-boundary cuts.
@@ -1184,20 +1204,11 @@ export function renderParametric2p5DLighting(
     width,
     height,
     {
-      lightAzimuth: params.azimuthDeg,
-      lightElevation: params.elevationDeg,
-      lightRadius: 64,
-      lightColor: '#FFFFFF',
-      ambientIntensity: 0.45,
-      lightBrightness: 1.2,
-      material: (params.material as MaterialType) || 'matte',
-      shadingBands: params.shadingBands,
-      cavityStrength: 1.0,
-      ditherModulation: 0,
-      bayerSize: '4x4',
-      formType: inferred.formType,
+      ...photometricParams,
+      precomputedAnalysis: analysis,
     },
-    []
+    [],
+    data
   );
 
   const pData = photometricCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;

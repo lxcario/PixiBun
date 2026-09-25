@@ -260,6 +260,8 @@ sample=24x24  patterns=4608  time=1442 ms  compatible[]=18.0 MiB
 
 ### [HIGH] H6 — `renderParametric2p5DLighting` runs the expensive content-aware analysis twice, plus a third full EDT pipeline, per invocation
 
+> **Resolution Note (H6 Resolved):** Resolved in Phase 71. The affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion. Hoisted geometric analysis in `renderParametric2p5DLighting` (`src/lib/ai/math/photometricLighting.ts`) to execute `computePhotometricAnalysis` once (threading precomputed inference and pixel data buffer) and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local to `renderParametric2p5DLighting` without exposing external injection surfaces. This eliminates the redundant invocation of the expensive `computeContentAwareHeightmap` pipeline on character and prop artwork while preserving bit-exact diffuse, specular, and rim pixel output across all materials. Non-character orb execution and live-drag session caching remain fully preserved. Verified across 13 regression tests in `tests/photometricPipelineDeduplication.test.ts`. Note: H1 remains OPEN and concerns intrinsic `computeContentAwareHeightmap` repeated component × canvas-area work and per-component full-sized Float32Array allocation complexity; H5 remains OPEN and concerns unbounded WFC pattern/compatibility resource growth; M1 remains OPEN and unchanged; H2, H3, and H4 remain RESOLVED.
+
 **Evidence:** `[CODE-READ]`
 **File:** `src/lib/ai/math/photometricLighting.ts:1119-1201`
 

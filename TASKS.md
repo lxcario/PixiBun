@@ -2,6 +2,27 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 71 — PixiBun v1.14.1 H6 Hardening: Photometric Pipeline Deduplication & Hoisted Analysis
+**Goal:** Implement canonical HIGH finding H6: The affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion. Hoist geometric analysis in `renderParametric2p5DLighting` (`src/lib/ai/math/photometricLighting.ts`) to execute `computePhotometricAnalysis` once per invocation (threading precomputed inference and pixel data buffer) and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces. This eliminates redundant duplicate invocation of the expensive `computeContentAwareHeightmap` pipeline on character and prop artwork, while preserving bit-exact diffuse, specular, and rim pixel output across all materials.
+
+**Deliverables:**
+- [x] **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/ai/math/photometricLighting.ts`)**: Hoisted analysis execution in `renderParametric2p5DLighting` so `computePhotometricAnalysis` runs once locally, threads `inferred` and `data` buffers to bypass redundant `inferPhotometricSettings` and `getImageData` calls, extracts facial feature and ink line masks for specular exclusion, and supplies `precomputedAnalysis` directly to `executePhotometricPipeline` without external injection surfaces.
+- [x] **Comprehensive Test Verification (`tests/photometricPipelineDeduplication.test.ts`)**: Added 13 unit tests proving call-count reduction from 2 to 1 on character branch, exact 100% byte-identical pixel equivalence with legacy output across matte and metallic materials, non-character orb/prop behavior preservation, empty/small input durability, specular mask feature exclusion, bit-for-bit mask equivalence across fixtures and azimuths, cavity parameter invariance, and buffer length safety.
+- [ ] **Canonical Audit Findings H1, H5 (Open)**: Deferred to subsequent targeted passes. H1 remains OPEN and concerns intrinsic `computeContentAwareHeightmap` repeated component × canvas-area work and per-component full-sized Float32Array allocation complexity. H5 remains OPEN and concerns unbounded WFC pattern/compatibility resource growth. M1 remains OPEN and unchanged.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,154 tests across 120 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — H6 resolved; H2, H3, H4 resolved; H1, H5 remain OPEN; M1 remains OPEN and unchanged; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 70 — PixiBun v1.14.1 H4 Hardening: Redo Eviction Process-Replay Baseline Synchronization
 **Goal:** Implement canonical HIGH finding H4: `redo()` evicts undo entries without updating the replay baseline. Unify the history engine eviction loop by extracting `evictUntilWithinBudget(incomingBytes)` shared between `push()` and `redo()` in `src/lib/engine/historyEngine.ts`. Redo-triggered byte-budget eviction now folds every permanently evicted oldest undo entry into the Process Replay baseline via `updateBaselineFromEvicted(evicted)`. The shared eviction helper also preserves the existing depth-cap behavior used by `push()`; normal undo→redo flow has a free depth slot and does not trigger depth eviction.
 

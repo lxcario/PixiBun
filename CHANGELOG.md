@@ -3,6 +3,13 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
 ## [v1.14.1] - 2026-09-21 (Hardening Complete)
+### Photometric Pipeline Deduplication & Hoisted Analysis (Phase 71 / H6 Hardening)
+- **Hoisted Photometric Analysis & Zero-Allocation Buffer Threading (`src/lib/ai/math/photometricLighting.ts`, `tests/photometricPipelineDeduplication.test.ts`)**:
+  - Hoisted geometric analysis in `renderParametric2p5DLighting` to execute `computePhotometricAnalysis` once per invocation and feed the result into `executePhotometricPipeline` via `precomputedAnalysis`; the optimization remains entirely local without exposing unnecessary external injection surfaces.
+  - Resolved canonical HIGH finding H6: the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion.
+  - Added optional `precomputedData` buffer threading to `computePhotometricAnalysis` and `executePhotometricPipeline`, reducing `getImageData` canvas read allocations from 3 to 1 per parametric lighting pass.
+  - Verified across 13 regression tests in `tests/photometricPipelineDeduplication.test.ts` proving call-count reduction from 2 to 1 on character branch, exact 100% byte-identical pixel equivalence with legacy output across matte and metallic materials, non-character orb/prop behavior preservation, empty/small input durability, specular mask feature exclusion, bit-for-bit mask equivalence across fixtures and azimuths, cavity parameter invariance, and buffer length safety.
+
 ### Redo Eviction Process-Replay Baseline Synchronization (Phase 70 / H4 Hardening)
 - **Unified Eviction Loop & Replay Baseline Synchronization (`src/lib/engine/historyEngine.ts`, `tests/processReplayEviction.test.ts`)**:
   - Unified the history engine eviction loop by extracting private `evictUntilWithinBudget(incomingBytes)` shared between `push()` and `redo()`. Redo-triggered byte-budget eviction now folds every permanently evicted oldest undo entry into the Process Replay baseline via `updateBaselineFromEvicted(evicted)`. The shared eviction helper also preserves the existing depth-cap behavior used by `push()`; normal undo→redo flow has a free depth slot and does not trigger depth eviction.
