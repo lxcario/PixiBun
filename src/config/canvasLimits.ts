@@ -3,12 +3,13 @@
  *
  * Canonical Workspace & Canvas Boundaries for PixiBun Atelier.
  *
- * Provides a single source of truth across all 5 subsystems:
+ * Provides a single source of truth across all 6 subsystems:
  * 1. Project Schema (.pixibun file import/validation)
  * 2. P2P Collaboration (STRUCTURE_SYNC and pixel operation validation)
  * 3. Export Modal & PngExportTab (canvas rendering and dimension/pixel scale clamping)
  * 4. ImageHeaderProbe (external asset probing and decompression bomb defense)
  * 5. SafeCanvas (hardware limits, WebGL probe contexts, and clamped rect extraction)
+ * 6. Procedural Generation & WaveFunctionCollapse (WFC working-set resource bounds)
  */
 
 export const WORKSPACE_ENVELOPE = {
@@ -56,6 +57,15 @@ export const HARDWARE_LIMITS = {
   MAX_HARDWARE_PIXEL_AREA: WORKSPACE_ENVELOPE.MAX_HARDWARE_PIXEL_AREA,
 } as const;
 
+export const WFC_ENVELOPE = {
+  /**
+   * Configured admission-policy working set ceiling for WaveFunctionCollapse constraint synthesis (64 MiB).
+   * Bounds modeled typed-array solver structures and structural compatibility work before dominant solver allocations.
+   * Derived to align with PixiBun single-subsystem working memory budgets (e.g. DEFAULT_HISTORY_MAX_BYTES = 64 MiB).
+   */
+  MAX_WFC_WORKING_SET_BYTES: 64 * 1024 * 1024,
+} as const;
+
 export const MAX_CANVAS_DIMENSION = WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION;
 export function assertWorkspaceDimensions(width: number, height: number): void {
   if (![width, height].every(v => Number.isInteger(v) && v >= 1 && v <= MAX_CANVAS_DIMENSION)) {
@@ -77,3 +87,4 @@ export const MAX_HARDWARE_PIXEL_AREA = WORKSPACE_ENVELOPE.MAX_HARDWARE_PIXEL_ARE
 export const MAX_SAFE_CANVAS_DIMENSION = MAX_EXPORT_DIMENSION;
 export const MAX_SAFE_CANVAS_PIXELS = MAX_EXPORT_PIXELS;
 export const MAX_EXPORT_AGGREGATE_PIXELS = EXPORT_ENVELOPE.MAX_EXPORT_AGGREGATE_PIXELS;
+export const MAX_WFC_WORKING_SET_BYTES = WFC_ENVELOPE.MAX_WFC_WORKING_SET_BYTES;

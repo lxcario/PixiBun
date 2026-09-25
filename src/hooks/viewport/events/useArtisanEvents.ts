@@ -131,13 +131,16 @@ export function useArtisanEvents({
       }
 
       if (!result.success) {
+        const defaultContradictionMsg =
+          'WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.';
+        const failureMessage = result.error || defaultContradictionMsg;
         studioEvents.emit('pixibun:toast', {
-          message: 'WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.',
+          message: failureMessage,
           type: 'error',
         });
         state.addAiMessage({
           sender: 'assistant',
-          text: `WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.`,
+          text: failureMessage,
         });
         return;
       }
