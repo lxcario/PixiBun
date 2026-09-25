@@ -199,6 +199,8 @@ src/config/canvasLimits.ts                                 (definitions only)
 
 ### [HIGH] H4 — `redo()` evicts undo entries without updating the replay baseline
 
+> **Resolution Note (H4 Resolved):** Resolved in Phase 70. Unified the history engine eviction loop by extracting private `evictUntilWithinBudget(incomingBytes)` shared between `push()` and `redo()` in `src/lib/engine/historyEngine.ts`. Redo-triggered byte-budget eviction now folds every permanently evicted oldest undo entry into the Process Replay baseline via `updateBaselineFromEvicted(evicted)`. The shared eviction helper also preserves the existing depth-cap behavior used by `push()`; normal undo→redo flow has a free depth slot and does not trigger depth eviction. Verified across 10 comprehensive tests in `tests/processReplayEviction.test.ts`. Note: H1, H5, and H6 remain OPEN; M1 remains OPEN and unchanged.
+
 **Evidence:** `[CODE-READ]`
 **File:** `src/lib/engine/historyEngine.ts:367-386` (compare `:332-342`)
 

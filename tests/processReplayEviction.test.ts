@@ -599,3 +599,585 @@ describe('Process Replay Adversarial Structural History Eviction Suite', () => {
   });
 });
 
+describe('Finding H4: Redo-triggered eviction advances process replay baseline', () => {
+  it('updates baseline checkpoint and reconstructs replay correctly when pixel step eviction occurs during redo()', () => {
+    const W = 4;
+    const H = 4;
+    // Step bytes for 4x4 image: 4*4*4 + 512 = 576 bytes.
+    // maxBytes = 1500 allows up to 2 steps (1152 bytes) in undoStack.
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 1500 });
+
+    const step1: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 1 (Red)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      layerName: 'Layer 1',
+      imageData: createSolidImageData(W, H, 255, 0, 0),
+    };
+    engine.push(step1);
+
+    const step2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 2 (Green)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      layerName: 'Layer 1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    };
+    engine.push(step2);
+
+    expect(engine.depth).toBe(2);
+    expect(engine.evictionCount).toBe(0);
+    expect(engine.getBaseline()).toBeNull();
+
+    // Undo step2. The caller passes currentState.
+    const currentAtStep2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Current at step 2 (Blue)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      layerName: 'Layer 1',
+      imageData: createSolidImageData(W, H, 0, 0, 255),
+    };
+    const undone = engine.undo(currentAtStep2);
+    expect(undone?.description).toBe('Step 2 (Green)');
+    expect(engine.depth).toBe(1);
+    expect(engine.canRedo).toBe(true);
+    expect(engine.getBaseline()).toBeNull();
+
+    // Now call redo with currentState whose size pushes totalBytes over maxBytes (1500).
+    // A 12x12 image has 12*12*4 + 512 = 1088 bytes.
+    // 576 (step1 in undoStack) + 1088 = 1664 > 1500 -> Triggers eviction of step1 in redo()!
+    const largeCurrentState: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Large Current State',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      layerName: 'Layer 1',
+      imageData: createSolidImageData(12, 12, 100, 100, 100),
+    };
+
+    const redone = engine.redo(largeCurrentState);
+    expect(redone).toBeDefined();
+    expect(engine.evictionCount).toBe(1);
+    expect(engine.isTruncated).toBe(true);
+
+    // CRITICAL H4 ASSERTION:
+    // Because step1 was evicted during redo, step1 MUST be folded into baselineCheckpoint!
+    const baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    expect(baseline!.frames.length).toBeGreaterThan(0);
+    const f0 = baseline!.frames.find((f) => f.frameIndex === 0);
+    expect(f0).toBeDefined();
+    const l1 = f0!.layers.find((l) => l.layerId === 'layer-1');
+    expect(l1).toBeDefined();
+    // Step 1 was solid Red (255, 0, 0, 255)
+    expect(l1!.imageData.data[0]).toBe(255);
+    expect(l1!.imageData.data[1]).toBe(0);
+    expect(l1!.imageData.data[2]).toBe(0);
+
+    // Process Replay frames reconstructed from the retained history + baseline:
+    const retainedHistory = engine.getHistory();
+    expect(retainedHistory).toHaveLength(1); // largeCurrentState is the only retained step
+    const replayFrames = reconstructProcessReplayFrames(retainedHistory, baseline, 0);
+    expect(replayFrames.length).toBeGreaterThanOrEqual(1);
+    // Baseline boundary frame (frame 0) must display the red pixel from evicted step 1
+    expect(replayFrames[0].data[0]).toBe(255);
+    expect(replayFrames[0].data[1]).toBe(0);
+    expect(replayFrames[0].data[2]).toBe(0);
+    expect(replayFrames[0].data[3]).toBe(255);
+  });
+
+  it('advances existing baseline checkpoint when subsequent eviction occurs during redo()', () => {
+    const W = 4;
+    const H = 4;
+    // 576 bytes per 4x4 step. Budget = 1500 bytes (fits 2 steps max).
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 1500 });
+
+    const step1: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 1 (Red)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 255, 0, 0),
+    };
+    engine.push(step1);
+
+    const step2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 2 (Green)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    };
+    engine.push(step2);
+
+    // Step 3 forces push-eviction of Step 1:
+    const step3: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 3 (Blue)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 0, 255),
+    };
+    engine.push(step3);
+
+    expect(engine.evictionCount).toBe(1);
+    let baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    // Baseline holds Step 1 (Red)
+    expect(baseline!.frames[0].layers[0].imageData.data[0]).toBe(255);
+    expect(baseline!.frames[0].layers[0].imageData.data[1]).toBe(0);
+
+    // Undo Step 3:
+    const currentAt3: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Current at 3',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 200, 200, 200),
+    };
+    engine.undo(currentAt3);
+    expect(engine.depth).toBe(1); // undoStack has Step 2 (Green)
+
+    // Redo Step 3 with large currentState (1088 bytes).
+    // totalBytes (576) + 1088 = 1664 > 1500 -> Triggers redo-eviction of Step 2 (Green)!
+    const largeCurrent: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Large Current at Redo',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(12, 12, 50, 50, 50),
+    };
+    engine.redo(largeCurrent);
+    expect(engine.evictionCount).toBe(2);
+
+    // Baseline MUST now be updated to Step 2 (Green, 0, 255, 0)!
+    baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    const l1 = baseline!.frames[0].layers.find((l) => l.layerId === 'layer-1')!;
+    expect(l1.imageData.data[0]).toBe(0);
+    expect(l1.imageData.data[1]).toBe(255); // Green!
+    expect(l1.imageData.data[2]).toBe(0);
+  });
+
+  it('updates baseline checkpoint when structural step is evicted during redo()', () => {
+    const W = 4;
+    const H = 4;
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 2500 });
+
+    const structuralStep: StructuralHistoryStep = {
+      type: 'structural',
+      opKind: 'add-layer',
+      description: 'Add Layer',
+      frameIndex: 0,
+      activeFrameIndex: 0,
+      activeLayerId: 'layer-new',
+      canvasWidth: W,
+      canvasHeight: H,
+      frames: [
+        {
+          id: 'frame-0',
+          durationMs: 100,
+          layers: [
+            {
+              id: 'layer-new',
+              name: 'New Custom Layer',
+              visible: true,
+              locked: false,
+              opacity: 0.8,
+              blendMode: 'multiply',
+            },
+          ],
+        },
+      ],
+      layerBuffers: [
+        {
+          layerId: 'layer-new',
+          imageData: createSolidImageData(W, H, 120, 130, 140),
+        },
+      ],
+      affectedLayerIds: ['layer-new'],
+    };
+    engine.push(structuralStep);
+
+    const pixelStep: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Draw on layer-new',
+      frameIndex: 0,
+      layerId: 'layer-new',
+      imageData: createSolidImageData(W, H, 200, 200, 200),
+    };
+    engine.push(pixelStep);
+
+    // Undo pixel step:
+    const currentAtPixel: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Current before undo',
+      frameIndex: 0,
+      layerId: 'layer-new',
+      imageData: createSolidImageData(W, H, 10, 20, 30),
+    };
+    engine.undo(currentAtPixel);
+
+    // Redo pixel step with huge currentState that evicts structuralStep from undoStack:
+    const hugeCurrent: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Huge current',
+      frameIndex: 0,
+      layerId: 'layer-new',
+      imageData: createSolidImageData(24, 24, 99, 99, 99), // 24*24*4 + 512 = 2816 bytes > 2500
+    };
+    engine.redo(hugeCurrent);
+    expect(engine.evictionCount).toBe(1);
+
+    // Baseline MUST have absorbed the structural step!
+    const baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    expect(baseline!.width).toBe(W);
+    expect(baseline!.height).toBe(H);
+    expect(baseline!.frames.length).toBe(1);
+    const layer = baseline!.frames[0].layers.find((l) => l.layerId === 'layer-new');
+    expect(layer).toBeDefined();
+    expect(layer!.name).toBe('New Custom Layer');
+    expect(layer!.opacity).toBe(0.8);
+    expect(layer!.blendMode).toBe('multiply');
+    expect(layer!.imageData.data[0]).toBe(120);
+    expect(layer!.imageData.data[1]).toBe(130);
+    expect(layer!.imageData.data[2]).toBe(140);
+  });
+
+  it('evicts multiple undo entries and folds all of them into baseline during a single oversized redo()', () => {
+    const W = 4;
+    const H = 4;
+    // 576 bytes per step. Budget = 2000 bytes (fits up to 3 steps: 1728 bytes).
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 2000 });
+
+    const step1: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 1 (Red on layer-1)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 255, 0, 0),
+    };
+    const step2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 2 (Green on layer-2)',
+      frameIndex: 0,
+      layerId: 'layer-2',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    };
+    const step3: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 3 (Blue on layer-1)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 0, 255),
+    };
+
+    engine.push(step1);
+    engine.push(step2);
+    engine.push(step3);
+    expect(engine.depth).toBe(3);
+    expect(engine.evictionCount).toBe(0);
+
+    // Undo step3, leaving step1 and step2 in undoStack (totalBytes = 1152)
+    engine.undo({
+      type: 'pixel',
+      description: 'Current at step 3',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 1, 1, 1),
+    });
+
+    // Now call redo with a currentState that requires 1600 bytes.
+    // 1152 + 1600 = 2752 > 2000.
+    // Evicting step1 drops 576 -> 576 + 1600 = 2176 > 2000. Still exceeds budget!
+    // Evicting step2 drops 576 -> 0 + 1600 = 1600 <= 2000. Fits!
+    // BOTH step1 AND step2 MUST be evicted in this single redo call and both folded into baseline!
+    const current1600: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Large Current State (1600 bytes)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(16, 17, 44, 44, 44), // 16*17*4 + 512 = 1088 + 512 = 1600 bytes
+    };
+    engine.redo(current1600);
+
+    expect(engine.evictionCount).toBe(2);
+    expect(engine.isTruncated).toBe(true);
+
+    const baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    // Both layer-1 and layer-2 must be preserved in baseline
+    const f0 = baseline!.frames.find((f) => f.frameIndex === 0)!;
+    expect(f0.layers.length).toBe(2);
+    const l1 = f0.layers.find((l) => l.layerId === 'layer-1')!;
+    const l2 = f0.layers.find((l) => l.layerId === 'layer-2')!;
+    // l1 has step 1 Red:
+    expect(l1.imageData.data[0]).toBe(255);
+    expect(l1.imageData.data[1]).toBe(0);
+    // l2 has step 2 Green:
+    expect(l2.imageData.data[0]).toBe(0);
+    expect(l2.imageData.data[1]).toBe(255);
+  });
+
+  it('does not mutate or corrupt baseline when redo() occurs within budget (no eviction)', () => {
+    const W = 4;
+    const H = 4;
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 50000 });
+
+    engine.push({
+      type: 'pixel',
+      description: 'Step 1',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 255, 0, 0),
+    });
+    engine.push({
+      type: 'pixel',
+      description: 'Step 2',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    });
+
+    expect(engine.getBaseline()).toBeNull();
+
+    engine.undo({
+      type: 'pixel',
+      description: 'Current at undo',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 0, 255),
+    });
+    expect(engine.getBaseline()).toBeNull();
+
+    engine.redo({
+      type: 'pixel',
+      description: 'Current at redo',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    });
+
+    expect(engine.getBaseline()).toBeNull();
+    expect(engine.evictionCount).toBe(0);
+    expect(engine.isTruncated).toBe(false);
+  });
+
+  it('guarantees convertHistoryToRawFrames matches ground truth after redo eviction', () => {
+    const W = 4;
+    const H = 4;
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 1500 });
+
+    // Step 1: solid Magenta background on layer-bg
+    engine.push({
+      type: 'pixel',
+      description: 'Background Magenta',
+      frameIndex: 0,
+      layerId: 'layer-bg',
+      imageData: createSolidImageData(W, H, 255, 0, 255),
+    });
+
+    // Step 2: foreground Cyan dot at (1, 1) on layer-fg
+    engine.push({
+      type: 'pixel',
+      description: 'Foreground Cyan dot',
+      frameIndex: 0,
+      layerId: 'layer-fg',
+      imageData: createPatternImageData(W, H, 1, 1, 0, 255, 255),
+    });
+
+    // Undo step 2
+    engine.undo({
+      type: 'pixel',
+      description: 'Current state before undoing step 2',
+      frameIndex: 0,
+      layerId: 'layer-fg',
+      imageData: createPatternImageData(W, H, 1, 1, 0, 255, 255),
+    });
+
+    // Redo step 2 with a larger state that forces eviction of Step 1 (layer-bg)
+    engine.redo({
+      type: 'pixel',
+      description: 'Large current state for redo',
+      frameIndex: 0,
+      layerId: 'layer-fg',
+      imageData: createSolidImageData(12, 12, 50, 50, 50),
+    });
+
+    expect(engine.evictionCount).toBe(1);
+    const baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+
+    // Reconstruct raw frames via convertHistoryToRawFrames
+    const rawFrames = convertHistoryToRawFrames(engine.getHistory(), 0, { baseline });
+    expect(rawFrames.length).toBeGreaterThanOrEqual(1);
+
+    // Pixel (0, 0) should have Magenta from the evicted layer-bg in the baseline:
+    const p00 = 0;
+    expect(rawFrames[0].data[p00]).toBe(255); // Red
+    expect(rawFrames[0].data[p00 + 1]).toBe(0); // Green
+    expect(rawFrames[0].data[p00 + 2]).toBe(255); // Blue
+    expect(rawFrames[0].data[p00 + 3]).toBe(255); // Alpha
+  });
+
+  it('proves depth capacity invariant across undo -> redo under zero byte pressure without spurious eviction', () => {
+    const W = 4;
+    const H = 4;
+    // Bounded depth of 2, with 1 GiB byte budget — byte pressure cannot trigger eviction.
+    const engine = createHistoryEngine({ maxDepth: 2, maxBytes: 1024 * 1024 * 1024 });
+
+    const step1: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 1 (Red)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 255, 0, 0),
+    };
+    const step2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step 2 (Green)',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    };
+
+    // 1. Fill history to exact depth limit (maxDepth = 2)
+    engine.push(step1);
+    engine.push(step2);
+    expect(engine.depth).toBe(2);
+    expect(engine.evictionCount).toBe(0);
+    expect(engine.isTruncated).toBe(false);
+    expect(engine.getBaseline()).toBeNull();
+
+    // 2. Undo pops step 2, necessarily creating at least one free depth slot (undoStack.length = 1 < limitDepth)
+    const currentAtStep2: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Current at step 2',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 0, 255),
+    };
+    const undone = engine.undo(currentAtStep2);
+    expect(undone?.description).toBe('Step 2 (Green)');
+    expect(engine.depth).toBe(1);
+    expect(engine.canRedo).toBe(true);
+    expect(engine.evictionCount).toBe(0);
+    expect(engine.getBaseline()).toBeNull();
+
+    // 3. Redo restores step 2 with currentState:
+    // Because undoStack.length is 1 (< 2) and byte budget is 1 GiB, redo succeeds without depth eviction.
+    // Proves that under normal public API usage, undo->redo does not trigger depth-cap eviction.
+    const currentAtStep1: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Current at step 1',
+      frameIndex: 0,
+      layerId: 'layer-1',
+      imageData: createSolidImageData(W, H, 0, 255, 0),
+    };
+    const redone = engine.redo(currentAtStep1);
+    expect(redone?.description).toBe('Current at step 2');
+    expect(engine.depth).toBe(2); // undoStack cleanly returns to exactly limitDepth
+    expect(engine.evictionCount).toBe(0); // no spurious eviction!
+    expect(engine.isTruncated).toBe(false); // not truncated!
+    expect(engine.getBaseline()).toBeNull(); // baseline does not spuriously advance!
+  });
+
+  it('does not double-fold baseline across push-eviction -> undo -> redo-eviction sequence', () => {
+    const W = 4;
+    const H = 4;
+    // Step bytes = 576 bytes each. maxBytes = 1500 allows up to 2 steps (1152 bytes) in undoStack.
+    const engine = createHistoryEngine({ maxDepth: 10, maxBytes: 1500 });
+
+    // Step A: Paint on layer-A (Red at (0, 0))
+    const stepA: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step A (Red on layer-A)',
+      frameIndex: 0,
+      layerId: 'layer-A',
+      imageData: createPatternImageData(W, H, 0, 0, 255, 0, 0),
+    };
+    engine.push(stepA);
+
+    // Step B: Paint on layer-B (Green at (1, 1))
+    const stepB: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step B (Green on layer-B)',
+      frameIndex: 0,
+      layerId: 'layer-B',
+      imageData: createPatternImageData(W, H, 1, 1, 0, 255, 0),
+    };
+    engine.push(stepB);
+
+    // Step C: Paint on layer-C (Blue at (2, 2)) -> forces push-eviction of Step A
+    const stepC: PixelHistoryStep = {
+      type: 'pixel',
+      description: 'Step C (Blue on layer-C)',
+      frameIndex: 0,
+      layerId: 'layer-C',
+      imageData: createPatternImageData(W, H, 2, 2, 0, 0, 255),
+    };
+    engine.push(stepC);
+
+    expect(engine.evictionCount).toBe(1);
+    let baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    // Baseline only contains Step A (layer-A Red at (0, 0))
+    expect(baseline!.frames[0].layers).toHaveLength(1);
+    expect(baseline!.frames[0].layers[0].layerId).toBe('layer-A');
+    expect(baseline!.frames[0].layers[0].imageData.data[0]).toBe(255); // Red
+
+    // Undo Step C:
+    engine.undo({
+      type: 'pixel',
+      description: 'Current at C',
+      frameIndex: 0,
+      layerId: 'layer-C',
+      imageData: createPatternImageData(W, H, 2, 2, 0, 0, 255),
+    });
+    expect(engine.depth).toBe(1); // undoStack has Step B
+
+    // Redo Step C with a large currentState (1088 bytes) that exceeds remaining budget:
+    // totalBytes (576 for Step B) + 1088 = 1664 > 1500.
+    // Redo eviction drops the next chronological entry (Step B) and folds it into baseline!
+    engine.redo({
+      type: 'pixel',
+      description: 'Large current at redo',
+      frameIndex: 0,
+      layerId: 'layer-C',
+      imageData: createSolidImageData(12, 12, 10, 10, 10),
+    });
+
+    expect(engine.evictionCount).toBe(2);
+
+    // Baseline MUST now contain BOTH Step A and Step B exactly once:
+    baseline = engine.getBaseline();
+    expect(baseline).not.toBeNull();
+    const f0 = baseline!.frames.find((f) => f.frameIndex === 0)!;
+    expect(f0.layers).toHaveLength(2);
+
+    const layerA = f0.layers.find((l) => l.layerId === 'layer-A')!;
+    const layerB = f0.layers.find((l) => l.layerId === 'layer-B')!;
+    expect(layerA).toBeDefined();
+    expect(layerB).toBeDefined();
+
+    // Layer A retains Red at (0, 0)
+    expect(layerA.imageData.data[0]).toBe(255);
+    expect(layerA.imageData.data[1]).toBe(0);
+
+    // Layer B retains Green at (1, 1)
+    const p11 = (1 * W + 1) * 4;
+    expect(layerB.imageData.data[p11]).toBe(0);
+    expect(layerB.imageData.data[p11 + 1]).toBe(255);
+
+    // Process replay composite at the baseline boundary composites Layer A + Layer B:
+    const replayFrames = reconstructProcessReplayFrames(engine.getHistory(), baseline, 0);
+    expect(replayFrames.length).toBeGreaterThanOrEqual(1);
+    // Boundary frame has Red at (0, 0) and Green at (1, 1)
+    expect(replayFrames[0].data[0]).toBe(255); // Red from layer-A
+    expect(replayFrames[0].data[p11 + 1]).toBe(255); // Green from layer-B
+  });
+});

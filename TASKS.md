@@ -2,6 +2,27 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 70 — PixiBun v1.14.1 H4 Hardening: Redo Eviction Process-Replay Baseline Synchronization
+**Goal:** Implement canonical HIGH finding H4: `redo()` evicts undo entries without updating the replay baseline. Unify the history engine eviction loop by extracting `evictUntilWithinBudget(incomingBytes)` shared between `push()` and `redo()` in `src/lib/engine/historyEngine.ts`. Redo-triggered byte-budget eviction now folds every permanently evicted oldest undo entry into the Process Replay baseline via `updateBaselineFromEvicted(evicted)`. The shared eviction helper also preserves the existing depth-cap behavior used by `push()`; normal undo→redo flow has a free depth slot and does not trigger depth eviction.
+
+**Deliverables:**
+- [x] **Unified Eviction Loop & Replay Baseline Synchronization (`src/lib/engine/historyEngine.ts`)**: Extracted `evictUntilWithinBudget(incomingBytes)` consolidating eviction logic for both `push()` and `redo()`, ensuring that any evicted oldest step systematically calls `updateBaselineFromEvicted(evicted)` to advance the Process Replay baseline checkpoint before pushing the new/restored step.
+- [x] **Comprehensive Test Verification (`tests/processReplayEviction.test.ts`)**: Added 8 new unit tests (bringing the suite to 10 tests) covering pixel-step redo eviction baseline initialization, sequential push-then-redo baseline advancement, structural step redo eviction with multi-frame/layer geometry preservation, multi-entry batch eviction during a single oversized redo, within-budget non-mutation, full `convertHistoryToRawFrames` ground truth reconstruction, depth capacity invariance across undo $\rightarrow$ redo under zero byte pressure, and no-double-folding across push-eviction $\rightarrow$ undo $\rightarrow$ redo-eviction sequences.
+- [ ] **Canonical Audit Findings H1, H5, H6 (Open)**: Deferred to subsequent targeted passes.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,141 tests across 119 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — H4 resolved; H2, H3 resolved; H1, H5, H6 remain OPEN; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 69 — PixiBun v1.14.1 H3 Hardening: Animated Exporters Output Safety Ceilings
 **Goal:** Implement canonical HIGH finding H3: Animated exporters bypass shared output safety ceilings. Enforce PixiBun configured safety ceilings (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`, and configured animated-image export budget `MAX_EXPORT_AGGREGATE_PIXELS = 67_108_864` aggregate pixels = 64 MP = 256 MiB of raw RGBA at 4 bytes/pixel for uncompressed frame retention formats, bounding raw source pixel workload to reduce OOM risk) as early preflight checks prior to multi-frame canvas allocation and compositing in `src/components/modals/ExportModal.tsx`, provide proactive format-specific UI scaling bounds in `src/components/modals/export/AnimatedExportTab.tsx`, and enforce low-level defense-in-depth geometry bounds validation in `src/lib/export/exportGeometryValidation.ts`, `src/lib/canvas/scaleCanvas.ts`, `src/lib/export/gifEncoder.ts`, `src/lib/export/apngEncoder.ts`, `src/lib/export/mp4Encoder.ts`, and `src/lib/export/webmEncoder.ts`.
 

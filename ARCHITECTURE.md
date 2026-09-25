@@ -95,7 +95,7 @@ Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects i
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
 The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
-- Maintains a 50-step undo stack (bounded to 64 MiB and 50 entries) and an independent 50-step redo stack (cleared upon new edits). Oldest undo steps are evicted when capacity or byte limits are reached.
+- Maintains a 50-step undo stack (bounded to 64 MiB and 50 entries) and an independent 50-step redo stack (cleared upon new edits). Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.

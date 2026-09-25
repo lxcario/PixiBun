@@ -308,6 +308,19 @@ export function createHistoryEngine(
     }
   }
 
+  function evictUntilWithinBudget(incomingBytes: number): void {
+    while (
+      undoStack.length > 0 &&
+      (totalBytes + incomingBytes > limitBytes || undoStack.length >= limitDepth)
+    ) {
+      const evicted = undoStack.shift()!;
+      totalBytes -= calculateStepBytes(evicted);
+      isTruncated = true;
+      evictionCount++;
+      updateBaselineFromEvicted(evicted);
+    }
+  }
+
   return {
     push(step: HistoryStep): number {
       const stepBytes = calculateStepBytes(step);
@@ -330,16 +343,7 @@ export function createHistoryEngine(
       }
 
       // Evict oldest entries until within both depth and byte budget
-      while (
-        undoStack.length > 0 &&
-        (totalBytes + stepBytes > limitBytes || undoStack.length >= limitDepth)
-      ) {
-        const evicted = undoStack.shift()!;
-        totalBytes -= calculateStepBytes(evicted);
-        isTruncated = true;
-        evictionCount++;
-        updateBaselineFromEvicted(evicted);
-      }
+      evictUntilWithinBudget(stepBytes);
 
       undoStack.push(step);
       totalBytes += stepBytes;
@@ -370,15 +374,7 @@ export function createHistoryEngine(
 
       if (currentState) {
         const currentBytes = calculateStepBytes(currentState);
-        while (
-          undoStack.length > 0 &&
-          (totalBytes + currentBytes > limitBytes || undoStack.length >= limitDepth)
-        ) {
-          const evicted = undoStack.shift()!;
-          totalBytes -= calculateStepBytes(evicted);
-          isTruncated = true;
-          evictionCount++;
-        }
+        evictUntilWithinBudget(currentBytes);
         undoStack.push(currentState);
         totalBytes += currentBytes;
       }
