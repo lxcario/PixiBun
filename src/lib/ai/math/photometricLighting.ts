@@ -766,6 +766,7 @@ export function executePhotometricPipeline(
     ? artworkRampBounds ?? buildArtworkRampBounds(data, isFeatureMask)
     : undefined;
 
+  // Headless fallback uses only canvas/context methods shared with HTMLCanvasElement.
   const outputCanvas = typeof document !== 'undefined'
     ? document.createElement('canvas')
     : (new OffscreenCanvas(width, height) as unknown as HTMLCanvasElement);
@@ -1101,8 +1102,6 @@ export interface LightParameters {
   elevationDeg: number;
   shadowIntensity: number;
   specularShininess: number;
-  rimLight: boolean;
-  selOut: boolean;
   material?: string;
   shadingBands?: ShadingBandMode;
   minecraftSkinMode?: 'auto' | 'enabled' | 'disabled';
@@ -1116,7 +1115,6 @@ export function renderParametric2p5DLighting(
 ): {
   shadedPixels: ShadedPixel[];
   specularPixels: ShadedPixel[];
-  rimPixels: ShadedPixel[];
 } {
   const imgData = srcCtx.getImageData(0, 0, width, height);
   const data = imgData.data;
@@ -1214,7 +1212,6 @@ export function renderParametric2p5DLighting(
   const pData = photometricCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
   const shadedPixels: ShadedPixel[] = [];
   const specularPixels: ShadedPixel[] = [];
-  const rimPixels: ShadedPixel[] = [];
 
   const isMetallic = params.material === 'gold' || params.material === 'metal';
   const shininess = params.specularShininess || 16;
@@ -1283,7 +1280,7 @@ export function renderParametric2p5DLighting(
     }
   }
 
-  return { shadedPixels, specularPixels, rimPixels };
+  return { shadedPixels, specularPixels };
 }
 
 export function executeVolumetricOpticalPipeline(
@@ -1355,6 +1352,7 @@ export function executeVolumetricOpticalPipeline(
   const paletteRgba = (params.paletteColors || []).map(hexToRgba);
   const paletteOKLab = paletteRgba.map(c => rgbToOKLab(c.r, c.g, c.b));
 
+  // Headless fallback uses only canvas/context methods shared with HTMLCanvasElement.
   const outputCanvas = typeof document !== 'undefined'
     ? document.createElement('canvas')
     : (new OffscreenCanvas(width, height) as unknown as HTMLCanvasElement);

@@ -43,8 +43,6 @@ export function useGeometricEvents({
         elevationDeg: lightEl,
         shadowIntensity: 0.8,
         specularShininess: 16,
-        rimLight: false,
-        selOut: false,
       });
 
       updateTaggedLayer(`Auto Shade ${lightAz}°`, 'auto-shade', (outCtx) => {
@@ -74,8 +72,6 @@ export function useGeometricEvents({
         elevationDeg: lightEl,
         shadowIntensity: 0.8,
         specularShininess: 16,
-        rimLight: false,
-        selOut: false,
         material: tools.materialPreset,
       });
 

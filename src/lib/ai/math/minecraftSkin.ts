@@ -1,7 +1,7 @@
 /**
  * Minecraft Player Skin UV Texture Detection, Normal Fields & Photometric Shading Engine.
  *
- * Citation: Mojang Minecraft Player Skin UV Texture Layout specification (64x64 and 64x32 cuboids).
+ * Based on the 64x64 and 64x32 Minecraft player-skin UV layouts.
  * Implements 3D cuboid normal projection, anatomical contact ambient occlusion,
  * sky hemisphere gradients, and OKLCH non-destructive warm/cool hue modulation.
  */
@@ -31,8 +31,6 @@ export interface MinecraftTopologyAnalysis {
  * Deep topological discriminator distinguishing a 3D Minecraft Skin texture atlas
  * from a contiguous 2.5D single-character or object sprite on 64x64 / 64x32 canvases.
  *
- * Citation: Mojang Minecraft Player Skin UV Texture Layout specification (Java & Bedrock).
- *
  * Topological principles:
  * 1. Texture Atlas vs Contiguous Silhouette:
  *    A Minecraft skin is an unwrap of 6 disconnected geometric cuboid islands separated by void channels.
@@ -42,8 +40,8 @@ export interface MinecraftTopologyAnalysis {
  * 2. Lateral Margin Presence:
  *    Minecraft skins place limbs (Right Arm, Right Leg) at the extreme lateral margins (x: 0..16, x: 40..56).
  *    Centered character illustrations leave lateral flanks (x: 0..14 and x: 48..64) transparent.
- * 3. Canonical Void Island Integrity:
- *    Corner void zones in Mojang's specification must remain strictly unpainted.
+ * 3. Void-region heuristic:
+ *    Selected corners and joints are expected to be mostly transparent by this detector.
  */
 export function analyzeMinecraftSkinTopology(
   isOpaque: (x: number, y: number) => boolean,

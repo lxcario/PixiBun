@@ -70,7 +70,7 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 - CTA banner assets (potted plants, easel with canvas)
 
 #### New file
-#### [NEW] [PixelSprite.tsx](../../src/components/ui/PixelSprite.tsx)
+#### [NEW] `PixelSprite.tsx` (proposed component; never added to the current codebase)
 - Shared component for rendering a generated PNG layer with `image-rendering: pixelated`, consistent integer scaling, and a fixed aspect-ratio box to prevent layout shift while assets load.
 
 ---

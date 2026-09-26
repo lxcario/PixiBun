@@ -29,7 +29,7 @@ graph TD
     subgraph State_Layer [" Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
         Theme["themeStore (Dual-Axis Atelier / Cozy Classic × Dark / Light)"]
-        BufferReg["bufferRegistry (OffscreenCanvas Layer Storage)"]
+        BufferReg["bufferRegistry (detached HTMLCanvasElement layers)"]
         UndoRedo["historyEngine (50-Step Undo Stack / 50-Step Redo Stack)"]
     end
 
@@ -89,13 +89,13 @@ The `compositeFrame()` module serves as the single visual source of truth for pu
 - Tinting is executed offscreen via `source-atop` before blitting to the underlay canvas.
 
 ### Direct Buffer Memory Management (`src/lib/engine/bufferRegistry.ts`)
-Layers are maintained as raw `HTMLCanvasElement` and `OffscreenCanvas` objects indexed by layer UUID in memory. When the user resizes the canvas:
+Layers are maintained as detached `HTMLCanvasElement` objects indexed by layer UUID in memory. When the user resizes the canvas:
 1. `resizeAllBuffers(newWidth, newHeight, anchor, resample)` shifts and re-allocates existing canvas buffers with 9-point anchor alignment and optional nearest-neighbor resampling.
 2. Memory leaks are eliminated by explicitly clearing and discarding dereferenced buffers via `deleteBuffers(layerId)`.
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
 The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
-- Maintains a 50-step undo stack (bounded to 64 MiB and 50 entries) and an independent 50-step redo stack (cleared upon new edits). Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations.
+- Undo and redo stacks are independently depth-bounded (up to 50 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations. Oldest redo entries are evicted under combined byte pressure without mutating the baseline.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
@@ -194,7 +194,7 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **50-Step Undo History:** Maintains up to 50 undo steps (capped at 64 MiB and 50 entries) alongside an independent 50-step redo stack (`createHistoryEngine(50)` matching `SKILL.md:26` and `src/hooks/viewport/useViewportDrawing.ts:33`). Undo/Redo restores the exact layer pixels in $O(1)$ time without re-rendering unrelated layers.
+* **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts:36`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
 * **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Decoupled completely from `CenterViewport` to eliminate React reconciliation cascades during pen/eraser strokes (0 re-renders during pointer moves).
@@ -268,7 +268,7 @@ graph TD
    * **Minecraft Skin Texture Atlas:** Disconnected planar unwrap of geometric cuboid islands separated by empty void channels. Bilateral limbs occupy the extreme lateral flanks ($x \in [0, 16)$ for Right Leg, $x \in [40, 56)$ for Right Arm). Both extremities must be populated for valid skin detection.
    * **Centered 2D Character / Object Sprite:** Single contiguous silhouette centered horizontally with empty lateral flanks ($x < 10$ and $x > 48$). The dominant connected component contains $\ge 68\%$ of all opaque pixels, and lacks bilateral limb islands. Even if an ear or accessory touches the head coordinate quadrant, it is classified as a 2.5D character sprite and shaded with true continuous tangent normals, eliminating flat $(0, 0, 1.0)$ fallback vectors.
 2. **Canonical Void Zone Preservation:**
-   * Mojang's specification mandates empty rectangular corners at $(0, 0, 8, 8)$, $(24, 0, 8, 8)$, $(32, 0, 8, 8)$, $(56, 0, 8, 8)$, and joint voids at $y = 16$. Void pollution $> 25\%$ immediately rejects the atlas.
+   * PixiBun's topology heuristic checks rectangular corner regions at $(0, 0, 8, 8)$, $(24, 0, 8, 8)$, $(32, 0, 8, 8)$, $(56, 0, 8, 8)$, and joint regions at $y = 16$. Void pollution $\ge 25\%$ rejects the skin classification; these regions are detector choices, not a stated Mojang validity rule.
 3. **User Sovereignty (`PhotometricLightingSection.tsx`):**
    * On $64\times64$ and $64\times32$ canvases, the inspector provides a tactile `Skin 3D Shading: [ Auto | On | Off ]` toggle (`setMinecraftSkinMode`), giving creators manual override over the auto-discriminator.
 
@@ -386,13 +386,13 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and bounded sprite cast shadows run synchronously on the main thread using pre-allocated `bufferPool.ts` scratch buffers. For audit finding H1 (resolved), per-component work and temporary buffer allocation in `computeContentAwareHeightmap` are strictly bounded to component-local bounding-box area $\sum \text{localArea}$ rather than full-canvas $K \times N$ scans (with cDist peak temporary allocation bounded by the maximum component bounding-box area; note that $\sum \text{bboxArea}$ is not bounded by N in general and may still be super-linear for pathological overlapping bounds). For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
+- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and bounded sprite cast shadows run synchronously on the main thread using pre-allocated `bufferPool.ts` scratch buffers. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
 
 ---
 
 ## 14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
-Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, raymarched shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
+Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, 2.5D cast shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
 - **Discriminated Event Map:** All 32 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
 - **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
 
@@ -406,6 +406,8 @@ Cross-component triggers (normal map baking, palette quantization, volumetric li
 ---
 
 ## 16. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)
+
+The current bridge holds one `P2PSyncSession`, so a session supports one host and one guest. General multi-peer convergence is outside the verified v1 scope.
 
 The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src/lib/sync/p2pSync.ts`) are pure, DOM-free modules; the bridge is the single integration point that connects them to the live studio. It is a module-scoped singleton so sessions survive modal unmount and drawing code can reach it without prop drilling.
 
@@ -430,8 +432,8 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 
 To maintain sub-16ms interactive drawing latency and prevent runaway complexity, PixiBun's algorithms operate within explicit, mathematically defined envelopes:
 
-* **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. Unlike native desktop applications (e.g. Aseprite) optimized for 500+ frame 4K cinematic timelines using native C++ file I/O, PixiBun targets instant zero-install browser crafting with IndexedDB binary blob persistence (`layerBlobs`), zero-copy Web Worker export codecs, and real-time 2.5D photometric cel-shading.
-* **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Implements an overlapping pattern synthesis model with periodic boundary conditions optimized specifically for small pixel art tiles and terrain textures ($16\times16$ to $64\times64$ output dimensions, $N=2$ or $N=3$ neighborhood kernels). Adjacency constraint graphs are bounded to input sample entropy, with deterministic pseudorandom seed stepping. For audit finding H5 (resolved), WFC resource demand is modeled before dominant solver allocations ($17 \cdot C \cdot P + 24 \cdot C + 16 \cdot P^2 + (4n^2 + 16) \cdot P$ bytes, with exact typed-array solver allocations and a conservative dense $16 P^2$ upper allowance for typed CSR neighbor capacity) and admitted against PixiBun's configured WFC subsystem admission-policy ceiling `MAX_WFC_WORKING_SET_BYTES` (64 MiB), rejecting unsafe configurations before candidate extraction (via a lower-bound structural policy gate) or before propagator construction and solver-state allocation (via final-P admission).
+* **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. PixiBun targets browser-based crafting with IndexedDB binary blob persistence (`layerBlobs`), transferable buffers for worker export, and 2.5D photometric cel-shading.
+* **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Implements an overlapping pattern synthesis model with periodic boundary conditions optimized specifically for small pixel art tiles and terrain textures ($16\times16$ to $64\times64$ output dimensions, $N=2$ or $N=3$ neighborhood kernels). Adjacency constraint graphs are bounded to input sample entropy, with deterministic pseudorandom seed stepping. For audit finding H5 (resolved), WFC resource demand is modeled before dominant solver allocations ($25 \cdot C \cdot P + 24 \cdot C + 16 \cdot P^2 + (4n^2 + 64) \cdot P$ bytes, with exact typed-array solver allocations and a conservative dense $16 P^2$ upper allowance for typed CSR neighbor capacity) and admitted against PixiBun's configured WFC subsystem admission-policy ceiling `MAX_WFC_WORKING_SET_BYTES` (64 MiB), rejecting unsafe configurations before candidate extraction (via a lower-bound structural policy gate) or before propagator construction and solver-state allocation (via final-P admission).
 * **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-designed planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
 * **Zero-Egress LAN Default & Network Boundaries:** Core creative features (raster engine, layers, animation timeline, photometric studio, color science, export encoders, and IndexedDB persistence) operate 100% on-device without network access. P2P co-draw defaults to `LAN_ICE_SERVERS = []` for true zero-egress local network collaboration. Public Internet WebRTC STUN NAT traversal and the optional diagnostics relay are the only subsystems that require network access, both requiring explicit user activation.
 
@@ -505,9 +507,9 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ## 23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
 
-* **RotSprite Rotation Algorithm (`src/lib/canvas/rotSprite.ts`):** Implements the landmark rotation algorithm for pixel art by Xenowhirl (2007, as popularized in Aseprite). Standard affine rotation on small sprites produces severe stair-stepping, disconnected diagonals, and color blurring when interpolated. RotSprite resolves this through a three-stage pipeline:
+* **RotSprite-Inspired Rotation (`src/lib/canvas/rotSprite.ts`):** Uses ideas from Xenowhirl's 2007 pixel-art rotation algorithm, with a PixiBun-specific voting downscaler. It does not implement the canonical rotation-offset search or single-pixel detail-restoration pass. The implementation has three stages:
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
-     $$E_0 = (C == A \land C \neq D \land A \neq B) ? A : P$$
+     Neighbor similarity is decided by a Manhattan RGBA distance threshold rather than exact color equality.
   2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
   3. **Parabolic Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a radially symmetric parabolic center-weighted kernel $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$ for $(u, v) \in \{-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5\}^2$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Feature conservation thresholds preserve 1px thin lines when the center core touches solid pixels, otherwise requiring a solid majority (38%) to prevent outline dilation while preserving palette purity without interpolating artificial intermediate colors.
 * **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
@@ -522,8 +524,8 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Direct integration into `StudioLayout.tsx` supporting batch frame ingestion for timeline append and timeline replacement workflows.
 * **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`):**
   - Dedicated background Web Worker executing CPU-intensive algorithms: RotSprite $8\times$ transformations, WaveFunctionCollapse (WFC) constraint synthesis, and In-Between frame SDF morphing.
-  - Zero-copy data passing via Transferable `ArrayBuffer` objects for input and output pixel buffers.
-  - Fault-tolerant graceful degradation: `workerDispatcher` automatically detects Worker and OffscreenCanvas support; in environments where Workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks fall back to synchronous execution on the main thread.
+  - Copies live input pixel buffers before transferring those copies to the worker, so the caller's buffers stay usable. Transferable `ArrayBuffer` messages avoid an additional structured-clone copy during dispatch.
+  - Fault-tolerant graceful degradation: `workerDispatcher` checks Web Worker availability; when workers are unavailable (e.g. Node.js/Vitest or restricted browser sandboxes), tasks fall back to synchronous execution on the main thread.
 
 ---
 
@@ -539,7 +541,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Restores both layer/frame structures and targeted layer canvas pixel buffers into the live `bufferRegistry` upon undo and redo.
 * **Worker EDT Distance Transform & Normal Map Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`, `src/lib/ai/math/edtNormalMap.ts`):**
   - Offloads CPU-intensive 2D Euclidean Distance Transform, bilateral Gaussian smoothing, and Sobel normal field baking to `heavyCompute.worker.ts`.
-  - Uses zero-copy Transferable ArrayBuffers with defensive buffer slicing (`.slice(0)`) on the outgoing main-thread snapshot to prevent live canvas detachment.
+  - Copies the outgoing main-thread pixel buffer with `.slice(0)` to prevent live canvas detachment, then transfers the copy to the worker without another structured-clone copy.
   - Retains synchronous fallback in `runEdtNormalMapInWorker` for headless environments.
 * **Native Desktop File System Access API (`src/lib/storage/desktopFileSystem.ts`, `src/components/layout/StudioLayout.tsx`):**
   - Integrates W3C File System Access API (`window.showSaveFilePicker`, `window.showOpenFilePicker`, `FileSystemFileHandle`).
@@ -778,10 +780,10 @@ export interface LayerEffectRecipe {
   - **Dual (`2`):** 2 shadow tones ($S < 0.48 \cdot T \rightarrow \text{ramp.deep}, S < T \rightarrow \text{ramp.shadow}, S \ge T \rightarrow \text{ramp.base}$).
   - **Trio (`3`):** 3 shadow tones ($S < 0.32 \cdot T \rightarrow \text{ramp.deep}, S < 0.65 \cdot T \rightarrow \text{ramp.shadow}, S < T \rightarrow \text{ramp.soft}, S \ge T \rightarrow \text{ramp.base}$).
   The soft penumbra tone (`ramp.soft`) is computed in perceptual OKLCH color space ($L_{\text{soft}} \approx 0.93 \cdot L_{\text{base}}$), ensuring natural luminance stepping without hue corruption.
-* **Continuous 3D Specular Highlight Pill:**
+* **3D Specular Highlight Pill:**
   - **Macro-Silhouette Normal Field:** Specular reflections are derived from the smooth inflated EDT dome (`specularNormalField`) with bilateral filtering ($r=1.5, \sigma=2.0$), preventing interior facial feature cliffs from producing reflective razor scars.
   - **Physical Line-of-Sight Visibility Gate:** Enforces $\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$, guaranteeing specular glints never appear on unlit shadow surfaces.
-  - **Continuous Alpha Falloff:** Glints render as a cohesive 3D highlight pill with continuous alpha modulation ($\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$ for $I_{\text{spec}} > 0.35$).
+  - **Threshold-Gated Alpha:** Glints appear only where $I_{\text{spec}} > 0.35$; those pixels use $\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$. The threshold creates a hard entry edge.
   - **Feature and Outline Shielding:** Facial features (`charFeatureMask`), ink lines (`charInkMask`), and dark outlines are strictly excluded from specular paint.
 
 ### 5. Live Photometric Preview Session & Atomic Cancellation

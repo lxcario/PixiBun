@@ -103,6 +103,17 @@ describe('Projects Database (Dexie IndexedDB CRUD)', () => {
     expect(updated?.dataJson).toContain('Final Polished Artwork');
   });
 
+  it('does not persist an invalid name through rename or duplication', async () => {
+    const project = await createBlankProject('A'.repeat(256));
+    expect(await renameProject(project.id, 'B'.repeat(257))).toBe(false);
+    expect((await getProjectById(project.id))?.name).toBe('A'.repeat(256));
+
+    const copy = await duplicateProject(project.id);
+    expect(copy?.name.length).toBe(256);
+    expect(copy?.dataJson).toContain(copy?.name);
+    expect(await duplicateProject(project.id, 'C'.repeat(257))).toBeNull();
+  });
+
   it('deletes a project by ID and cascades deletion of its layerBlobs', async () => {
     const proj = await createBlankProject('To Be Deleted');
     expect(await getProjectById(proj.id)).not.toBeNull();

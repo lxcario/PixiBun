@@ -30,6 +30,11 @@ describe('getBresenhamLine', () => {
     const ys = new Set(points.map(p => p.y));
     for (let y = 0; y <= 3; y++) expect(ys.has(y)).toBe(true);
   });
+
+  it('rejects fractional endpoints and leaves subpixel work to DDA', () => {
+    expect(() => getBresenhamLine(0.5, 0, 3, 3)).toThrow(RangeError);
+    expect(getClippedLine(0.5, 0.5, 3.5, 3.5, 8, 8)).toHaveLength(4);
+  });
 });
 
 describe('filterPixelPerfect', () => {

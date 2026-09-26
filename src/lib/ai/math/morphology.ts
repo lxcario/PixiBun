@@ -7,6 +7,8 @@
  *
  * Reduces thick raster strokes to 1-pixel-wide medial axis skeletons while preserving
  * 8-connected topology and line endpoints across two alternating sub-iterations.
+ * The outermost one-pixel canvas border is left unchanged because each update
+ * requires all eight neighbors; artwork touching that border may remain thicker.
  */
 
 export function applyZhangSuenThinning(

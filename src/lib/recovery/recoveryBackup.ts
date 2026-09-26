@@ -23,7 +23,6 @@ import {
   type PreparedRecoveryArchive,
   type RecoveryBackupWriteResult,
   type RecoveryReasonCode,
-  type RecoveryLedgerClassificationState,
   KNOWN_RECOVERY_LEDGER_STATES,
   sortReasonCodes,
 } from './recoveryTypes';
@@ -611,7 +610,7 @@ export async function prepareUntouchedRecoveryArchive(
 
     validatedRecoveryManifest = Object.freeze({
       projectId,
-      classificationState: ledgerRecord.classificationState as RecoveryLedgerClassificationState,
+      classificationState: ledgerRecord.classificationState,
       firstDetectedAt: ledgerRecord.firstDetectedAt,
       lastConfirmedAt: ledgerRecord.lastConfirmedAt,
       reasonCodes: Object.freeze([...sortedCodes]),

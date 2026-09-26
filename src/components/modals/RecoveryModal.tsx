@@ -229,12 +229,13 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
       // Modern File System Access API streaming if supported
       if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
         try {
-          const pickerFn = (window as unknown as {
-            showSaveFilePicker: (options: {
+          const pickerFn = (window as Window & {
+            showSaveFilePicker?: (options: {
               suggestedName: string;
               types: Array<{ description: string; accept: Record<string, string[]> }>;
             }) => Promise<FileSystemFileHandle>;
           }).showSaveFilePicker;
+          if (!pickerFn) throw new Error('Save picker is unavailable');
 
           const handle = await pickerFn({
             suggestedName: filename,

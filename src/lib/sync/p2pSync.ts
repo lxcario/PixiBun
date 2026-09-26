@@ -434,7 +434,7 @@ export function decodeSignalingToken(token: string): SignalingPayload {
       throw new Error('Invalid PixiBun signaling token format.');
     }
 
-    return parsed as SignalingPayload;
+    return parsed;
   } catch (err) {
     throw new Error(`Invalid signaling token format: ${(err as Error).message}`);
   }
@@ -458,7 +458,9 @@ export class P2PSyncSession {
 
   // Defensive Token Bucket Rate Limiters (Turner 1986 / Tanenbaum §5.3)
   private pendingMessages = new Map<number, { json: string; sentAt: number }>();
-  private receivedMessages = new Set<number>();
+  // The reliable channel is ordered. A high-water mark suppresses retries without
+  // retaining one ID for every message in a long co-draw session.
+  private lastReceivedDeliveryId = 0;
   private deliveryId = 0;
   private retryTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -558,6 +560,7 @@ export class P2PSyncSession {
    */
   private setupChannel(channel: RTCDataChannel): void {
     if (channel.label === 'pixibun-crdt-sync') {
+      this.lastReceivedDeliveryId = 0;
       this.syncChannel = channel;
       channel.bufferedAmountLowThreshold = MAX_DATA_CHANNEL_BUFFERED_AMOUNT / 2;
       channel.onbufferedamountlow = () => this.flushReliable();
@@ -579,13 +582,18 @@ export class P2PSyncSession {
             this.flushReliable();
             return;
           }
-          const deliveryId = Number.isSafeInteger(raw?.deliveryId) ? raw.deliveryId as number : undefined;
+          const deliveryId = Number.isSafeInteger(raw?.deliveryId) && (raw.deliveryId as number) > 0
+            ? raw.deliveryId as number
+            : undefined;
           const acknowledge = () => {
             if (deliveryId !== undefined && channel.readyState === 'open') {
               channel.send(JSON.stringify({ type: 'ACK', deliveryId }));
             }
           };
-          if (deliveryId !== undefined && this.receivedMessages.has(deliveryId)) { acknowledge(); return; }
+          if (deliveryId !== undefined && deliveryId <= this.lastReceivedDeliveryId) {
+            acknowledge();
+            return;
+          }
           const msg = validateCrdtSyncMessage(raw);
           if (!msg) {
             console.warn('P2P CRDT sync message failed validation.');
@@ -598,7 +606,7 @@ export class P2PSyncSession {
           } else if (msg.type === 'STRUCTURE_SYNC' && msg.frames) {
             this.options.onStructureSync?.(msg.frames);
           }
-          if (deliveryId !== undefined) this.receivedMessages.add(deliveryId);
+          if (deliveryId !== undefined) this.lastReceivedDeliveryId = deliveryId;
           acknowledge();
         } catch (err) {
           console.error('Failed to parse CRDT sync message:', err);
@@ -904,7 +912,7 @@ export class P2PSyncSession {
     if (this.retryTimer) clearInterval(this.retryTimer);
     this.retryTimer = null;
     this.pendingMessages.clear();
-    this.receivedMessages.clear();
+    this.lastReceivedDeliveryId = 0;
     if (this.syncChannel) {
       this.syncChannel.close();
       this.syncChannel = null;

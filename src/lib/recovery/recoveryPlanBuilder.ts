@@ -70,10 +70,10 @@ function deepFreeze<T>(obj: T, seen = new WeakSet<object>()): Readonly<T> {
   if (obj === null || typeof obj !== 'object' || Object.isFrozen(obj)) {
     return obj;
   }
-  if (seen.has(obj as object)) {
+  if (seen.has(obj)) {
     return obj;
   }
-  seen.add(obj as object);
+  seen.add(obj);
   for (const key of Object.getOwnPropertyNames(obj)) {
     const value = (obj as Record<string, unknown>)[key];
     if (value !== null && typeof value === 'object') {

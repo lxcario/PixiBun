@@ -103,8 +103,10 @@ describe('History Engine Byte Budgeting & Structural Inversion', () => {
 
       // Push should be rejected
       const newDepth = engine.push(oversizedStep);
-      expect(newDepth).toBe(1); // Still 1, oversized was NOT added
-      expect(engine.totalBytes).toBe(calculateStepBytes(normalStep)); // Total bytes untouched
+      expect(newDepth).toBe(0); // The already-applied edit breaks the older undo path.
+      expect(engine.totalBytes).toBe(0);
+      expect(engine.canUndo).toBe(false);
+      expect(engine.canRedo).toBe(false);
       expect(engine.isTruncated).toBe(true); // Marked truncated/warning
     });
 

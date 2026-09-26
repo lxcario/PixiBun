@@ -2,6 +2,19 @@ import { ToolSlice, StudioSliceCreator } from './types';
 import { ColorPalette } from '@/types/palette';
 import { createId } from '@/lib/engine/id';
 import { generateOklchRamp } from '@/lib/color/rampGenerator';
+import {
+  MAX_PALETTE_COLORS,
+  MAX_PALETTE_CYCLE_TRACKS,
+  MAX_PROJECT_PALETTES,
+  customRampsError,
+  paletteCycleTrackError,
+  paletteEntryError,
+} from '@/lib/color/paletteAdmission';
+import { studioEvents } from '@/lib/events/studioEvents';
+
+function rejectPaletteEdit(message: string): void {
+  studioEvents.emit('pixibun:toast', { type: 'error', message });
+}
 
 // Built-in Curated Palettes
 export const PRESET_PALETTES: ColorPalette[] = [
@@ -377,6 +390,14 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   },
 
   addPaletteCycleTrack: (paletteId, track) => {
+    const palette = get().palettes.find((p) => p.id === paletteId);
+    if (!palette) return;
+    const error = paletteCycleTrackError(track, palette.colors.length);
+    if (error || (palette.cycleTracks?.length ?? 0) >= MAX_PALETTE_CYCLE_TRACKS ||
+        palette.cycleTracks?.some((existing) => existing.id === track.id)) {
+      rejectPaletteEdit(error ?? `A palette can have at most ${MAX_PALETTE_CYCLE_TRACKS} unique cycle tracks.`);
+      return;
+    }
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal) {
@@ -384,9 +405,20 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
         pal.cycleTracks.push(track);
       }
     });
+    get().setDirty(true);
   },
 
   updatePaletteCycleTrack: (paletteId, trackId, updates) => {
+    const palette = get().palettes.find((p) => p.id === paletteId);
+    const current = palette?.cycleTracks?.find((track) => track.id === trackId);
+    if (!palette || !current) return;
+    const candidate = { ...current, ...updates };
+    const error = paletteCycleTrackError(candidate, palette.colors.length);
+    if (error || palette.cycleTracks?.some((track) => track !== current && track.id === candidate.id)) {
+      rejectPaletteEdit(error ?? 'Cycle track identifiers must be unique.');
+      return;
+    }
+    if (Object.entries(updates).every(([key, value]) => current[key as keyof typeof current] === value)) return;
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal?.cycleTracks) {
@@ -396,15 +428,18 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
         }
       }
     });
+    get().setDirty(true);
   },
 
   deletePaletteCycleTrack: (paletteId, trackId) => {
+    if (!get().palettes.find((p) => p.id === paletteId)?.cycleTracks?.some((track) => track.id === trackId)) return;
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal?.cycleTracks) {
         pal.cycleTracks = pal.cycleTracks.filter(t => t.id !== trackId);
       }
     });
+    get().setDirty(true);
   },
 
   setPrimaryColor: color => {
@@ -458,41 +493,80 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   },
 
   selectPalette: id => {
+    if (id === get().currentPaletteId) return;
+    if (!get().palettes.some((palette) => palette.id === id)) {
+      rejectPaletteEdit('That palette is unavailable.');
+      return;
+    }
     set(state => {
       state.currentPaletteId = id;
     });
+    get().setDirty(true);
   },
 
   addCustomColorToPalette: (paletteId, color) => {
+    const palette = get().palettes.find((p) => p.id === paletteId);
+    if (!palette || palette.colors.includes(color)) return;
+    const error = paletteEntryError(palette.name, [...palette.colors, color]);
+    if (error) {
+      rejectPaletteEdit(error);
+      return;
+    }
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal && !pal.colors.includes(color)) {
         pal.colors.push(color);
       }
     });
+    get().setDirty(true);
   },
 
   setCustomRamps: ramps => {
+    const error = customRampsError(ramps);
+    if (error) {
+      rejectPaletteEdit(error);
+      return;
+    }
     set(state => {
-      state.customRamps = ramps;
+      state.customRamps = ramps.map((ramp) => ({ baseColor: ramp.baseColor, shades: [...ramp.shades] }));
     });
+    get().setDirty(true);
   },
 
   addExtractedPalette: (name, colors) => {
+    if (get().palettes.length >= MAX_PROJECT_PALETTES) {
+      rejectPaletteEdit(`A project can have at most ${MAX_PROJECT_PALETTES} palettes.`);
+      return;
+    }
+    const nextColors = colors.length > 0 ? colors : ['#3A2E4C', '#C792DF', '#DCABDF', '#DDDFDF'];
+    const error = paletteEntryError(name, nextColors);
+    if (error) {
+      rejectPaletteEdit(error);
+      return;
+    }
     set(state => {
       const newPalette: ColorPalette = {
         id: createId('palette'),
         name,
-        colors: colors.length > 0 ? colors : ['#3A2E4C', '#C792DF', '#DCABDF', '#DDDFDF'],
+        colors: [...nextColors],
       };
       state.palettes.push(newPalette);
       state.currentPaletteId = newPalette.id;
     });
+    get().setDirty(true);
   },
 
   generateAndAddRamp: baseColor => {
+    const palette = get().palettes.find((p) => p.id === get().currentPaletteId);
+    if (!palette) return;
+    const rampColors = generateOklchRamp(baseColor);
+    const newColors = rampColors.filter((color) => !palette.colors.includes(color));
+    if (newColors.length === 0) return;
+    if (palette.colors.length + newColors.length > MAX_PALETTE_COLORS) {
+      rejectPaletteEdit(`A palette can have at most ${MAX_PALETTE_COLORS} colors.`);
+      return;
+    }
     set(state => {
-      const rampColors = generateOklchRamp(baseColor);
       const activePal = state.palettes.find(p => p.id === state.currentPaletteId);
       if (activePal) {
         for (const color of rampColors) {
@@ -502,5 +576,6 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
         }
       }
     });
+    get().setDirty(true);
   },
 });

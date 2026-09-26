@@ -3,7 +3,7 @@
  * Mark Ferrari 8-Bit Dynamic Palette Cycling Engine
  * 
  * Deluxe Paint IFF ILBM CRNG & CCRT chunk parsing and serialization,
- * zero-allocation 32-bit LUT renderer, ping-pong fencepost oscillation,
+ * 32-bit LUT renderer, ping-pong fencepost oscillation,
  * sub-step BlendShift linear color interpolation, and harmonic rational retuning
  * for seamless loop unrolling.
  */
@@ -109,6 +109,7 @@ export function parseCCRT(chunkBytes: Uint8Array, id: string = 'ccrt-0'): Palett
 
   let direction: 'forward' | 'reverse' | 'ping-pong' = 'forward';
   if (directionRaw === -1) direction = 'reverse';
+  // Direction 2 is a PixiBun extension, not a standard CCRT direction.
   else if (directionRaw === 2) direction = 'ping-pong';
 
   return {
@@ -133,6 +134,8 @@ export function serializeCCRT(track: PaletteCycleTrack): Uint8Array {
   let dirVal = 0;
   if (track.enabled) {
     if (track.direction === 'reverse') dirVal = -1;
+    // Direction 2 round-trips PixiBun ping-pong tracks but may not be
+    // understood by other IFF CCRT readers (standard values: -1, 0, 1).
     else if (track.direction === 'ping-pong') dirVal = 2;
     else dirVal = 1;
   }
@@ -256,9 +259,9 @@ export function blendColorsRgb(
 }
 
 /**
- * Zero-allocation 32-bit LUT renderer.
+ * 32-bit LUT renderer. Palette parsing and blending allocate small RGB tuples.
  * Updates an output Uint32Array (size >= palette.length) with the dynamic colors for all palette indices.
- * Executes at 60 FPS without triggering garbage collection.
+ * The per-pixel remapping pass can use the resulting LUT without allocating per pixel.
  */
 export function updateLivePaletteLUT32(
   basePaletteHex: string[],

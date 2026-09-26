@@ -14,6 +14,12 @@ import {
 } from '@/lib/art/normalSculptor';
 
 describe('2.5D Normal Chisel & Bas-Relief Sculptor', () => {
+  it('keeps RNM output unit length after a negative Z result is clamped', () => {
+    const result = blendNormalsRNM([0.8, 0, 0.6], [0.8, 0, 0.6]);
+    expect(result[2]).toBe(0);
+    expect(Math.hypot(...result)).toBeCloseTo(1, 6);
+  });
+
   describe('encodeNormalRGB & decodeNormalRGB', () => {
     it('encodes flat perpendicular normal (0, 0, 1) to standard normal map (128, 128, 255)', () => {
       const [r, g, b] = encodeNormalRGB(0, 0, 1, true);

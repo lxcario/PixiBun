@@ -2,15 +2,39 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
+## Unreleased — 2026-09-26
+
+- Normal-map worker dispatch now copies only the selected `Uint8ClampedArray` view, so subarray offsets cannot change the pixels sent for baking.
+- Browser project round-trip proof now covers two frames, two layers per frame, clip metadata, and a nondefault frame duration; current collaboration docs state the v1 two-peer scope.
+- Rechecked current Markdown against source: corrected export-limit status, canvas buffer type, worker-copy semantics, RotSprite scope, undo cost, historical v2 metrics, and an outdated plan index entry.
+- Project, layer, and clip edits now reject metadata that project validation cannot reopen. Deleting a frame remaps affected clip ranges; invalid gallery renames are not saved, and duplicated names stay within the project-name limit.
+- Oversized Redo snapshots now clear the disconnected history chain with a visible warning. A completed edit larger than the 64 MiB snapshot limit remains on canvas but cannot be undone.
+- Odd-size MP4 exports pad to encoder-compatible even dimensions without stretching the artwork. Content-aware heightmap traversal no longer allocates neighbor arrays for each visited pixel.
+- Corrected palette LUT allocation, shadow mode, spherical-dome slope, and specular-alpha descriptions to match the implementation.
+- Palette and cycle-track edits now obey project validation limits, report rejected input, and mark accepted changes for autosave.
+- Startup completion retries autosave for an edit made before the workspace became active.
+- Updated current architecture and audit documentation. The Phase 72 bounding-box strategy recorded below was later replaced by component-member traversal with a shared distance buffer; M12 was resolved in the later audit remediation.
+
 ## [v1.14.1] - 2026-09-21 (Hardening Complete)
+### Redo Stack Byte Budget & Combined History Retention Envelope (Phase 74 / M1 Hardening)
+- **Combined History Byte Envelope & Exact Redo Accounting (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**:
+  - Implemented exact redo byte accounting (`redoBytes`) and enforced a unified combined retained-history byte envelope (`undoBytes + redoBytes <= limitBytes`). Undo and redo stacks remain independently depth-bounded by `limitDepth` (default 50), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope (`limitBytes`).
+  - Resolved canonical MEDIUM finding M1: the redo stack previously had no byte budget (bounded by depth alone), which allowed retained undo + redo history to substantially exceed the documented 64 MiB history envelope.
+  - On `undo()`, if combined retained bytes or redo depth cap are exceeded, oldest/farthest-future redo entries are evicted (`redoStack.shift()`) until the combined invariant holds, strictly preserving the active undo chain without corrupting the process replay baseline.
+  - On `redo()`, the undo admission helper accounts for remaining `redoBytes` and uses H4's baseline-aware eviction path (`evictUntilWithinBudget`) if undo steps must be compacted to admit `currentState`.
+  - If an undo snapshot cannot be retained, the now-unreachable older redo tail is cleared. An individually oversized redo snapshot is rejected before any undo entry or replay baseline is evicted.
+  - When a new stroke is pushed (`push()`), the redo branch is cleared and `redoBytes` resets to 0. `clear()` resets all history byte counters to 0.
+  - Verified across 16 dedicated regression tests in `tests/historyEngine.test.ts` covering redo depth eviction, redo byte eviction before depth cap, combined byte budget invariance, push/clear resets, redo pop decrements, variable-size entries, baseline invariance under redo eviction, redo-triggered undo eviction updating baseline, and continuous accounting invariants.
+
 ### WaveFunctionCollapse Working-Set Modeling & Resource Admission Bounding (Phase 73 / H5 Hardening)
 - **WFC Working-Set Modeling & Defensible Resource Envelope (`src/lib/procedural/waveFunctionCollapse.ts`, `src/config/canvasLimits.ts`, `src/hooks/viewport/events/useArtisanEvents.ts`, `tests/wfcResourceSafety.test.ts`)**:
   - Defined canonical procedural working memory envelope `MAX_WFC_WORKING_SET_BYTES = 64 * 1024 * 1024` (64 MiB) in `src/config/canvasLimits.ts` as PixiBun's configured WFC subsystem admission-policy ceiling, aligning with PixiBun single-subsystem working memory budgets.
   - Implemented pure deterministic `estimateWfcWorkingSet` and `validateWfcResourceBudget` modeling exact typed array allocations across pattern storage ($P \cdot (4n^2 + 16)$), dense propagator compatibility allowance ($16 \cdot P^2$), wave state ($C \cdot P$), AC-4 support counters ($16 \cdot C \cdot P$), entropy tracking ($20 \cdot C$), and output raster ($4 \cdot C$), guarded by overflow-checked arithmetic within JavaScript's safe-integer range (`safeMultiply`, `safeAdd`).
+  - Admission also charges the retained input and packed sample buffers. Propagation now uses a bounded typed stack ($8 \cdot C \cdot P$ bytes) included in the solver estimate.
   - Resolved canonical HIGH finding H5: WaveFunctionCollapse pattern and compatibility resource growth previously scaled without a defensible bound (a 64×64 selection producing 32,768 patterns required >19 GiB of working memory, causing allocation failure and worker aborts).
   - Enforced input-derived resource admission in `synthesizeWfc`: early pre-extraction structural checks reject oversized output dimensions and candidate extraction footprints before pattern extraction, incremental unique-pattern admission during the extraction loop aborts before adding over-budget patterns to Map/retained structures, and post-extraction validation rejects oversized $P/C$ combinations before constructing the $D \times P^2$ compatibility table, allocating the $C \times P$ wave buffer, or creating the $16 \cdot C \cdot P$ byte AC-4 support counter array. Decoupled propagator build via `_wfcInternal.buildPropagatorTable` and solver state allocation via `_wfcInternal.allocateSolverState` to guarantee and empirically verify zero propagator / dominant solver-state allocations occur after resource rejection.
   - Hardened artisan UI event handling in `useArtisanEvents.ts` to propagate typed `result.error` notifications to toast alerts and assistant messages without mutating canvas layers, active artwork, or undo history.
-  - Verified across 24 unit tests in `tests/wfcResourceSafety.test.ts` covering exact estimator formulas across tiny, large P small C, small P large C, and large P large C dimensions; safe arithmetic boundary and overflow protection; budget boundary tests (<= B admitted, > B rejected); budget ceiling clamping (cannot raise above 64 MiB); pre-allocation rejection proof (spying on propagator and state allocators to prove 0 calls); candidate footprint early structural rejection; incremental unique-P early abort on high-entropy sources before candidate enumeration finishes; duplicate-heavy source non-rejection; output-grid C-growth verification; logical contradiction vs resource limit distinction; determinism non-regression across multiple seeds and sample patterns; and high-entropy source measurement.
+  - Verified across 26 unit tests in `tests/wfcResourceSafety.test.ts` covering exact estimator formulas across tiny, large P small C, small P large C, and large P large C dimensions; safe arithmetic boundary and overflow protection; budget boundary tests (<= B admitted, > B rejected); budget ceiling clamping (cannot raise above 64 MiB); pre-allocation rejection proof (spying on propagator and state allocators to prove 0 calls); candidate footprint early structural rejection; incremental unique-P early abort on high-entropy sources before candidate enumeration finishes; duplicate-heavy source non-rejection; output-grid C-growth verification; logical contradiction vs resource limit distinction; determinism non-regression across multiple seeds and sample patterns; and high-entropy source measurement.
 
 ### Content-Aware Heightmap Algorithmic Work & Allocation Bounding (Phase 72 / H1 Hardening)
 - **Component-Local Bounding Box Tracking & Bounded Distance Work (`src/lib/ai/math/edtNormalMap.ts`, `tests/h1ContentAwarePerformance.test.ts`)**:
@@ -507,7 +531,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Enforced backpressure guards in `broadcastPixelOps`, `broadcastInitialSync`, `broadcastStructure`, and `broadcastCursor` to eliminate channel buffer congestion and memory bloat.
   - Added unit test in `tests/p2pSync.test.ts` verifying graceful yielding and cursor frame dropping when data channel `bufferedAmount` exceeds thresholds.
 - **Palette Cycling & History Engine Runtime Memory Benchmarks (`tests/benchmark.test.ts`, `BENCHMARKS.md`)**:
-  - Added automated empirical benchmarks for zero-allocation 32-bit `updateLivePaletteLUT32` and raster pixel remapping across 64x64, 128x128, 256x256, and 512x512 sprite dimensions, verifying execution within 16.66ms (60 FPS budget).
+  - Added automated empirical benchmarks for 32-bit `updateLivePaletteLUT32` and raster pixel remapping across 64x64, 128x128, 256x256, and 512x512 sprite dimensions, verifying execution within 16.66ms (60 FPS budget). The LUT update itself allocates small RGB tuples.
   - Added formal memory footprint and ring buffer pruning capacity assertions for `HistoryEngine` across 16x16 through 512x512 resolutions, confirming exact agreement with `BENCHMARKS.md` ceilings (e.g. 13.1 MB for 50 steps at 256x256).
 - **Photometric Light Bulb Gizmo UX & Cel Shading Remediation (`src/components/studio/PixelLightBulbGizmo.tsx`, `src/hooks/viewport/useViewportPointerEvents.ts`, `src/hooks/viewport/useViewportTransform.ts`, `src/lib/ai/math/photometricLighting.ts`, `src/lib/events/studioEvents.ts`, `src/stores/slices/createToolSlice.ts`, `tests/orbPhotometricCelShading.test.ts`, `tests/components/PixelLightBulbGizmo.test.tsx`)**:
   - Modulated directional cel shadow terminator threshold inversely by brightness (`(0.55 * 1.15) / max(0.2, brightness)` clamped to `[0.15, 0.85]`), ensuring bulb strength changes physically drive the shadow boundary back on character sprites while preserving exact palette purity and leaving default 1.15 output bit-identical.
@@ -617,7 +641,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
 - **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)**:
   - Binary parsing and serialization for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks.
-  - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) updating canvas ImageData buffers at 60 FPS without garbage collection thrashing.
+  - 32-bit LUT renderer (`updateLivePaletteLUT32`) updating canvas ImageData buffers at 60 FPS; the LUT update allocates RGB tuples while per-pixel remapping does not.
   - Mathematically sound triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
   - Sub-step `BlendShift` linear color interpolation between adjacent palette registers.
   - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) preventing coprime LCM period explosion during loop baking.
@@ -809,7 +833,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
   - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
   - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` for both Auto and Manual studio modes, ensuring hand-drawn characters receive anatomical part segmentation and discrete OKLCH cel-shading even when setting light direction manually.
 - **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
-  - Calibrated spherical dome heightmap inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) with zero derivative at the apex to eliminate conical pinch creases on spherical primitives (`tests/orbPhotometricCelShading.test.ts`).
+  - Calibrated spherical dome heightmap inflation blends 75% spherical profile with 25% gamma profile; the spherical term flattens at the apex, while the blend retains a nonzero apex slope (`tests/orbPhotometricCelShading.test.ts`).
   - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
 ### Test Suite & Verification Expansion
@@ -993,7 +1017,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - **Branchless $C^0$ Bilinear Field Interpolation (`sampleEDTBilinear`)**: Eliminates grid-stepping quantization and ray-stepping acne across fractional query coordinates.
 - **Zero-Allocation TypedArray Memory Safety**: Reused Float32Array visibility buffers from `bufferPool.ts` (`acquireFloat32Buffer` / `releaseFloat32Buffer`) with structured `try...finally` deallocation blocks.
 - **Bayer Matrix Ordered Penumbra Dithering**: Converts continuous float visibility gradients into authentic retro pixel art stippling patterns (`2x2`, `4x4`, `8x8`).
-- **Studio Inspector UI (`src/components/layout/RightInspector.tsx`)**: Built a dedicated **Raymarched Soft Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector.
+- **Studio Inspector UI (`src/components/layout/RightInspector.tsx`)**: Built a dedicated **Cast & Ground Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector. The current UI dispatches the bounded 2.5D shadow mode.
 - **Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`)**: Added `pixibun:render-cast-shadow` handler routing output non-destructively to a tagged `'cast-shadow'` layer without mutating hand-drawn base artwork.
 - **Comprehensive Vitest Suite (`tests/shadowRayMarcher.test.ts`)**: 9 unit and integration tests covering bilinear sampling precision, boundary clamping, contact hardening, memory pool recycling, color composition, Bayer stippling, and non-destructive layer replacement (123 total unit tests passing across 20 suites).
 

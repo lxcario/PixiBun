@@ -30,6 +30,7 @@ import {
   P2PSyncSession,
   PUBLIC_STUN_ICE_SERVERS,
   LAN_ICE_SERVERS,
+  DEFAULT_ICE_SERVERS,
 } from '@/lib/sync/p2pSync';
 import type {
   P2PConnectionState,
@@ -108,7 +109,11 @@ export class CoDrawBridge {
     return new P2PSyncSession({
       peerId: this.peerId,
       peerName: this.role === 'host' ? 'Atelier Host' : 'Atelier Guest',
-      iceServers: options.lanOnly ? LAN_ICE_SERVERS : PUBLIC_STUN_ICE_SERVERS,
+      iceServers: options.lanOnly === true
+        ? LAN_ICE_SERVERS
+        : options.lanOnly === false
+          ? PUBLIC_STUN_ICE_SERVERS
+          : DEFAULT_ICE_SERVERS,
       lanOnly: options.lanOnly,
       onConnectionStateChange: (state) => this.handleConnectionState(state),
       onRemotePixelOps: (ops, layerId) => this.applyRemoteOps(ops, layerId),

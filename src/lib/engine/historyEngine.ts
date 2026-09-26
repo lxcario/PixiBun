@@ -53,6 +53,9 @@ export interface HistoryEngine {
   readonly canUndo: boolean;
   readonly canRedo: boolean;
   readonly depth: number;
+  readonly redoDepth: number;
+  readonly undoBytes: number;
+  readonly redoBytes: number;
   readonly totalBytes: number;
   readonly isTruncated: boolean;
   readonly evictionCount: number;
@@ -61,7 +64,9 @@ export interface HistoryEngine {
 }
 
 /**
- * Undo history is strictly bounded to 64 MiB / 50 entries.
+ * Undo and redo stacks are independently depth-bounded, while their combined
+ * retained HistoryStep payload is constrained by the configured 64 MiB history
+ * byte envelope.
  * The replay baseline is separately bounded by current project raster complexity
  * and does not grow with session duration.
  */
@@ -110,7 +115,8 @@ export function createHistoryEngine(
 
   let undoStack: HistoryStep[] = [];
   let redoStack: HistoryStep[] = [];
-  let totalBytes = 0;
+  let undoBytes = 0;
+  let redoBytes = 0;
   let isTruncated = false;
   let evictionCount = 0;
   let baselineCheckpoint: ReplayBaselineCheckpoint | null = null;
@@ -122,7 +128,7 @@ export function createHistoryEngine(
       height: src.height,
       data: copy,
       colorSpace: src.colorSpace ?? 'srgb',
-    } as ImageData;
+    };
   }
 
   function createBlankImageData(w: number, h: number): ImageData {
@@ -131,7 +137,7 @@ export function createHistoryEngine(
       height: h,
       data: new Uint8ClampedArray(w * h * 4),
       colorSpace: 'srgb',
-    } as ImageData;
+    };
   }
 
   function updateBaselineFromEvicted(evicted: HistoryStep): void {
@@ -311,10 +317,10 @@ export function createHistoryEngine(
   function evictUntilWithinBudget(incomingBytes: number): void {
     while (
       undoStack.length > 0 &&
-      (totalBytes + incomingBytes > limitBytes || undoStack.length >= limitDepth)
+      (undoBytes + redoBytes + incomingBytes > limitBytes || undoStack.length >= limitDepth)
     ) {
       const evicted = undoStack.shift()!;
-      totalBytes -= calculateStepBytes(evicted);
+      undoBytes = Math.max(0, undoBytes - calculateStepBytes(evicted));
       isTruncated = true;
       evictionCount++;
       updateBaselineFromEvicted(evicted);
@@ -326,44 +332,68 @@ export function createHistoryEngine(
       const stepBytes = calculateStepBytes(step);
 
       // Oversized entry safety:
-      // An individual step that exceeds maxBytes cannot be safely retained without
-      // violating the memory budget. Reject it, clear redo, and notify the user.
+      // This snapshot is the state before an edit that has already happened.
+      // Without it, older undo steps and the redo branch no longer form a
+      // continuous path through the current canvas state.
       if (stepBytes > limitBytes) {
+        undoStack = [];
         redoStack = [];
+        undoBytes = 0;
+        redoBytes = 0;
+        baselineCheckpoint = null;
         isTruncated = true;
         try {
           studioEvents.emit('pixibun:toast', {
-            message: `History entry exceeds undo memory budget (${(stepBytes / (1024 * 1024)).toFixed(1)} MiB > ${(limitBytes / (1024 * 1024)).toFixed(0)} MiB) and cannot be undone.`,
+            message: `This edit exceeds the undo memory limit (${(stepBytes / (1024 * 1024)).toFixed(1)} MiB > ${(limitBytes / (1024 * 1024)).toFixed(0)} MiB). Earlier Undo and Redo history was cleared to keep restoration safe.`,
             type: 'error',
           });
         } catch {
           // In headless tests or non-DOM environments, ignore event dispatch error
         }
-        return undoStack.length;
+        return 0;
       }
+
+      // In push, a new edit invalidates redo!
+      // Clearing redo resets redo retained bytes to exactly 0.
+      redoStack = [];
+      redoBytes = 0;
 
       // Evict oldest entries until within both depth and byte budget
       evictUntilWithinBudget(stepBytes);
 
       undoStack.push(step);
-      totalBytes += stepBytes;
-      redoStack = [];
+      undoBytes += stepBytes;
       return undoStack.length;
     },
 
     undo(currentState?: HistoryStep): HistoryStep | null {
       if (undoStack.length === 0) return null;
       const step = undoStack.pop()!;
-      totalBytes -= calculateStepBytes(step);
+      undoBytes = Math.max(0, undoBytes - calculateStepBytes(step));
 
+      let retainedCurrentState = false;
       if (currentState) {
         const currentBytes = calculateStepBytes(currentState);
         if (currentBytes <= limitBytes) {
-          while (redoStack.length >= limitDepth) {
-            redoStack.shift();
+          while (
+            redoStack.length > 0 &&
+            (undoBytes + redoBytes + currentBytes > limitBytes || redoStack.length >= limitDepth)
+          ) {
+            const evicted = redoStack.shift()!;
+            redoBytes = Math.max(0, redoBytes - calculateStepBytes(evicted));
           }
-          redoStack.push(currentState);
+          if (undoBytes + redoBytes + currentBytes <= limitBytes && redoStack.length < limitDepth) {
+            redoStack.push(currentState);
+            redoBytes += currentBytes;
+            retainedCurrentState = true;
+          }
         }
+      }
+      if (!retainedCurrentState) {
+        // A missing intermediate state makes every older redo entry unreachable.
+        redoStack = [];
+        redoBytes = 0;
+        if (currentState) isTruncated = true;
       }
       return step;
     },
@@ -371,12 +401,44 @@ export function createHistoryEngine(
     redo(currentState?: HistoryStep): HistoryStep | null {
       if (redoStack.length === 0) return null;
       const step = redoStack.pop()!;
+      redoBytes = Math.max(0, redoBytes - calculateStepBytes(step));
 
       if (currentState) {
         const currentBytes = calculateStepBytes(currentState);
-        evictUntilWithinBudget(currentBytes);
-        undoStack.push(currentState);
-        totalBytes += currentBytes;
+        if (currentBytes > limitBytes) {
+          // The redo target can be restored, but without this intermediate
+          // snapshot no older undo or later redo step is safely reachable.
+          undoStack = [];
+          redoStack = [];
+          undoBytes = 0;
+          redoBytes = 0;
+          baselineCheckpoint = null;
+          isTruncated = true;
+          studioEvents.emit('pixibun:toast', {
+            message: 'Redo restored the edit, but its prior state exceeds the undo memory limit. Undo and Redo history was cleared to avoid skipping artwork states.',
+            type: 'error',
+          });
+        } else {
+          evictUntilWithinBudget(currentBytes);
+          while (
+            redoStack.length > 0 &&
+            undoBytes + redoBytes + currentBytes > limitBytes
+          ) {
+            const evicted = redoStack.shift()!;
+            redoBytes = Math.max(0, redoBytes - calculateStepBytes(evicted));
+          }
+          if (undoBytes + redoBytes + currentBytes <= limitBytes && undoStack.length < limitDepth) {
+            undoStack.push(currentState);
+            undoBytes += currentBytes;
+          } else {
+            undoStack = [];
+            redoStack = [];
+            undoBytes = 0;
+            redoBytes = 0;
+            baselineCheckpoint = null;
+            isTruncated = true;
+          }
+        }
       }
       return step;
     },
@@ -392,7 +454,8 @@ export function createHistoryEngine(
     clear(): void {
       undoStack = [];
       redoStack = [];
-      totalBytes = 0;
+      undoBytes = 0;
+      redoBytes = 0;
       isTruncated = false;
       evictionCount = 0;
       baselineCheckpoint = null;
@@ -422,8 +485,20 @@ export function createHistoryEngine(
       return undoStack.length;
     },
 
+    get redoDepth(): number {
+      return redoStack.length;
+    },
+
+    get undoBytes(): number {
+      return Math.max(0, undoBytes);
+    },
+
+    get redoBytes(): number {
+      return Math.max(0, redoBytes);
+    },
+
     get totalBytes(): number {
-      return Math.max(0, totalBytes);
+      return Math.max(0, undoBytes + redoBytes);
     },
 
     get isTruncated(): boolean {

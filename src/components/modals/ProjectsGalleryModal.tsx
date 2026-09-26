@@ -12,6 +12,8 @@ import {
   type StoredProject,
 } from '@/lib/storage/db';
 import { useStudioStore } from '@/stores/studioStore';
+import { MAX_PROJECT_NAME_LENGTH, projectNameError } from '@/lib/project/metadataAdmission';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 interface ProjectsGalleryModalProps {
   isOpen: boolean;
@@ -70,17 +72,20 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
 
   const handleSaveRename = async (id: string) => {
     const trimmed = editingName.trim();
-    if (!trimmed) {
-      setEditingId(null);
+    const error = projectNameError(trimmed);
+    if (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error });
       return;
     }
 
-    // If renaming active project, synchronize in-memory store name
+    const renamed = await renameProject(id, trimmed);
+    if (!renamed) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Project could not be renamed. Its saved data was left unchanged.' });
+      return;
+    }
     if (id === currentProjectId) {
       setProjectName(trimmed);
     }
-
-    await renameProject(id, trimmed);
     setEditingId(null);
     void fetchProjects();
   };
@@ -271,6 +276,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                       >
                         <input
                           type="text"
+                          maxLength={MAX_PROJECT_NAME_LENGTH}
                           value={editingName}
                           ref={(input) => input?.focus()}
                           onChange={(e) => setEditingName(e.target.value)}

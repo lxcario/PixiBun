@@ -22,12 +22,16 @@
 - **Theme System:** Dual-axis first-party theme system (`studioTheme`: 'atelier' vs 'cozy-classic' × `colorScheme`: 'dark' vs 'light') with zero-lag transition suppression and `AppearancePopover`.
 - **Modular Studio Architecture:** Decomposed lifecycle hooks (`useStudioAutosave`, `useStudioClipboard`, `useStudioFileSystem`, `useStudioKeyboard`) and viewport pointer handlers (`useBrushPointerHandler`, `useChiselPointerHandler`, `useSelectionPointerHandler`, `useShapePointerHandler`).
 - **Export & Storage Pipeline:** Local-first IndexedDB autosave via Dexie.js (Schema v5 binary `layerBlobs` and `recoveryRecords` tables), single-transaction atomic metadata + blob commits, document revision tracking (`state.editRevision`) ensuring metadata persistence, native `.pixibun` format v3 with non-destructive `LayerEffectRecipe` provenance, save revision race prevention (`saveRevision.ts`), bounded admission import pipeline (`importFile.ts`), lossless PNG export (1x–32x, subject to 4096px single-axis and 16.7MP total pixel ceilings in PNG tab), animated GIF export with per-frame centisecond delays, packed sprite sheet export + Godot 4, Unity, and Phaser 3 JSON metadata, **Pure-TS ISOBMFF Fast-Start MP4 Container Muxer** (`isobmffWriter.ts` / `mp4Encoder.ts` for WebCodecs, with MediaRecorder fallback), and **Lossless Animated PNG (APNG) Stream Export** (`apngEncoder.ts`).
-- **P2P Collaboration:** Collaborative canvas editing supported via local peer-to-peer WebRTC (RFC 8831 dual data channels) and per-pixel LWW-CRDT synchronization with Hybrid Logical Clocks, delivery acknowledgments, backpressure queueing, and retry deduplication.
+- **P2P Collaboration:** Two-peer (one host, one guest) canvas editing supported via WebRTC (RFC 8831 dual data channels) and per-pixel LWW-CRDT synchronization with Hybrid Logical Clocks, delivery acknowledgments, backpressure queueing, and retry deduplication.
 
 ### Explicitly out of scope for v1:
 - Centralized server-hosted WebSockets collaboration (reserved for v2; collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and per-pixel LWW-CRDT synchronization, with the host owning the layer structure while connected).
 - Native 3D mesh voxel conversions.
 - Full multi-track digital audio workstation (DAW) or custom sound effect synthesizer (the built-in lo-fi ambient background radio is included for atmosphere; external audio creation tools are out of scope).
+
+## Practical Limits
+
+The studio canvas is limited to 2,048 pixels on either axis. Projects allow up to 500 frames, 100 layers per frame, 2,000 layers total, and 67,108,864 aggregate layer pixels (64 Mi pixels). They allow up to 50 palettes, 100 clips, 100 custom ramps, a 256-character project name, and 1–60,000 ms per frame. Imports are limited to 50 MiB per file, including images. Every stored layer PNG must match the canvas dimensions exactly for normal opening.
 
 ## Stack (with rationale)
 | Layer | Choice | Why |
@@ -36,7 +40,7 @@
 | Studio Shell | **AtelierRail + StatusBar + CommandPalette** | Modular workspace chrome: consolidated top rail, 24px bottom coordinate bar, fuzzy launcher, and live lo-fi radio boombox. |
 | Design System | **Studio* Accessible Primitives Library** | Standardized `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`. |
 | Viewport & Hooks | **Decomposed Pointer Handlers & Studio Hooks** | Clean separation of concerns: tool-specific pointer handlers and dedicated hooks for autosave, clipboard, filesystem, and keyboard shortcuts. |
-| Canvas & Raster Engine | **Custom HTML5 2D Canvas + OffscreenCanvas Compositor** | Direct pixel buffer access (`ImageData`), zero-overhead nearest-neighbor integer scaling, custom Bresenham/DDA line interpolation. |
+| Canvas & Raster Engine | **Custom HTML5 2D Canvas Compositor** | Detached `HTMLCanvasElement` layer buffers, direct `ImageData` access, nearest-neighbor integer scaling, and custom Bresenham/DDA line interpolation. |
 | State & History | **Zustand + Immer** | Zero-re-render canvas stroke pipeline, fast undo/redo history snapshotting, and predictable decoupled state for layers and timeline. |
 | Image Synthesis | **Custom OKLab & Sobel Pipeline (`pixelizeEngine.ts`)** | Gamma-corrected downsampling, salience preservation, OKLab median-cut, Floyd-Steinberg/Atkinson dithering. |
 | Procedural Audio | **Web Audio API Engine (`lofiRadio.ts`)** | Zero-network ambient vinyl rain noise, warm chord progressions, and real-time spectrum analysis with 0 external audio files. |

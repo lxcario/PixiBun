@@ -26,7 +26,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run start',
+    // E2E setup uses development-only database and store inspection handles.
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

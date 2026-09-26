@@ -11,6 +11,7 @@ import {
   ReplayBaselineCheckpoint,
 } from '@/lib/engine/historyEngine';
 import { RawFrameData, encodeGifRawFrames } from './gifEncoderCore';
+import { toBlobPart } from './blobBytes';
 
 export interface ProcessReplayOptions {
   fps?: number; // Frames per second (default: 12)
@@ -113,7 +114,7 @@ function createBlankImageData(width: number, height: number): ImageData {
     height,
     data: new Uint8ClampedArray(width * height * 4),
     colorSpace: 'srgb',
-  } as ImageData;
+  };
 }
 
 /**
@@ -404,5 +405,5 @@ export async function exportProcessReplayGifAsync(
   });
 
   const gifBytes = encodeGifRawFrames(rawFrames, fps, options.onProgress, delays);
-  return new Blob([gifBytes as unknown as BlobPart], { type: 'image/gif' });
+  return new Blob([toBlobPart(gifBytes)], { type: 'image/gif' });
 }

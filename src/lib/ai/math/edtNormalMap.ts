@@ -125,7 +125,7 @@ export function generateInflatedHeightmap(
     if (distanceMap[i] > 0) {
       const normalizedD = Math.min(1.0, distanceMap[i] / maxD);
       // Spherical dome inflation: z = sqrt(1 - (1 - d)^2).
-      // Zero derivative at apex eliminates conical pinch artifacts; vertical slope at perimeter matches 3D sphere.
+      // The spherical term flattens at the apex; the 25% gamma blend retains a nonzero slope.
       const u = 1.0 - normalizedD;
       const sphereDome = Math.sqrt(Math.max(0, 1.0 - u * u));
       const gammaDome = Math.pow(normalizedD, gamma);
@@ -499,9 +499,9 @@ export function computeContentAwareHeightmap(
       componentMap,
       numComponents: 0,
       macroHeightmap: emptyH,
-      microHeightmap: emptyH,
-      compositeHeightmap: emptyH,
-      smoothHeightmap: emptyH,
+      microHeightmap: new Float32Array(totalPixels),
+      compositeHeightmap: new Float32Array(totalPixels),
+      smoothHeightmap: new Float32Array(totalPixels),
       normalField: emptyNorm,
       cavityAO: new Float32Array(totalPixels).fill(1.0),
     };
@@ -625,10 +625,9 @@ export function computeContentAwareHeightmap(
   // 4. Connected Components for Non-Ink Interior Parts
   let currentComponent = 0;
   const visitedComp = new Uint8Array(totalPixels);
-  const compMinX: number[] = [0];
-  const compMinY: number[] = [0];
-  const compMaxX: number[] = [0];
-  const compMaxY: number[] = [0];
+  const compMembers: number[][] = [[]];
+  const neighborDx = [1, -1, 0, 0];
+  const neighborDy = [0, 0, 1, -1];
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -640,10 +639,6 @@ export function computeContentAwareHeightmap(
       const queue: number[] = [idx];
       visitedComp[idx] = 1;
       componentMap[idx] = compId;
-      let cMinX = x;
-      let cMaxX = x;
-      let cMinY = y;
-      let cMaxY = y;
 
       const p0 = idx * 4;
       const baseR = data[p0];
@@ -658,14 +653,9 @@ export function computeContentAwareHeightmap(
         const cx = cur % width;
         const cy = Math.floor(cur / width);
 
-        const neighbors = [
-          [cx + 1, cy],
-          [cx - 1, cy],
-          [cx, cy + 1],
-          [cx, cy - 1],
-        ];
-
-        for (const [nx, ny] of neighbors) {
+        for (let direction = 0; direction < 4; direction++) {
+          const nx = cx + neighborDx[direction];
+          const ny = cy + neighborDy[direction];
           if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
           const nIdx = ny * width + nx;
           if (!isOpaque(nx, ny) || isInkLine[nIdx] === 1 || visitedComp[nIdx]) continue;
@@ -686,17 +676,10 @@ export function computeContentAwareHeightmap(
             visitedComp[nIdx] = 1;
             componentMap[nIdx] = compId;
             queue.push(nIdx);
-            if (nx < cMinX) cMinX = nx;
-            if (nx > cMaxX) cMaxX = nx;
-            if (ny < cMinY) cMinY = ny;
-            if (ny > cMaxY) cMaxY = ny;
           }
         }
       }
-      compMinX.push(cMinX);
-      compMinY.push(cMinY);
-      compMaxX.push(cMaxX);
-      compMaxY.push(cMaxY);
+      compMembers.push(queue);
     }
   }
 
@@ -772,43 +755,23 @@ export function computeContentAwareHeightmap(
   const bevelRadius = Math.max(2.5, Math.min(6.0 * scaleFactor, maxMacroD * 0.45));
 
   if (currentComponent > 0) {
+    // Components are disjoint, so each cell in this shared buffer is written
+    // only by its owning component. No per-component canvas or bbox clear is needed.
+    const cDist = new Float32Array(totalPixels);
     for (let c = 1; c <= currentComponent; c++) {
-      const compPixels: number[] = [];
+      const compPixels = compMembers[c];
       const borderQueue: number[] = [];
-      const minX = compMinX[c];
-      const maxX = compMaxX[c];
-      const minY = compMinY[c];
-      const maxY = compMaxY[c];
-      const compW = maxX - minX + 1;
-      const compH = maxY - minY + 1;
-      const localArea = compW * compH;
-      const cDist = new Float32Array(localArea);
+      for (const idx of compPixels) {
+        const x = idx % width;
+        const y = Math.floor(idx / width);
 
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          const idx = y * width + x;
-          if (componentMap[idx] !== c) continue;
-          compPixels.push(idx);
+        const isBorder = x === 0 || x === width - 1 || y === 0 || y === height - 1 ||
+          componentMap[idx + 1] !== c || componentMap[idx - 1] !== c ||
+          componentMap[idx + width] !== c || componentMap[idx - width] !== c;
 
-          const neighbors = [
-            [x + 1, y],
-            [x - 1, y],
-            [x, y + 1],
-            [x, y - 1],
-          ];
-          let isBorder = false;
-          for (const [nx, ny] of neighbors) {
-            if (nx < 0 || nx >= width || ny < 0 || ny >= height || componentMap[ny * width + nx] !== c) {
-              isBorder = true;
-              break;
-            }
-          }
-
-          if (isBorder) {
-            const localIdx = (y - minY) * compW + (x - minX);
-            cDist[localIdx] = 1.0;
-            borderQueue.push(localIdx);
-          }
+        if (isBorder) {
+          cDist[idx] = 1.0;
+          borderQueue.push(idx);
         }
       }
 
@@ -819,35 +782,24 @@ export function computeContentAwareHeightmap(
         const curD = cDist[cur];
         if (curD > maxPartD) maxPartD = curD;
 
-        const clx = cur % compW;
-        const cly = Math.floor(cur / compW);
-        const cx = minX + clx;
-        const cy = minY + cly;
-        const neighbors = [
-          [cx + 1, cy],
-          [cx - 1, cy],
-          [cx, cy + 1],
-          [cx, cy - 1],
-        ];
-
-        for (const [nx, ny] of neighbors) {
+        const cx = cur % width;
+        const cy = Math.floor(cur / width);
+        for (let direction = 0; direction < 4; direction++) {
+          const nx = cx + neighborDx[direction];
+          const ny = cy + neighborDy[direction];
           if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
           const nIdx = ny * width + nx;
           if (componentMap[nIdx] === c) {
-            const nLocalIdx = (ny - minY) * compW + (nx - minX);
-            if (cDist[nLocalIdx] === 0) {
-              cDist[nLocalIdx] = curD + 1.0;
-              borderQueue.push(nLocalIdx);
+            if (cDist[nIdx] === 0) {
+              cDist[nIdx] = curD + 1.0;
+              borderQueue.push(nIdx);
             }
           }
         }
       }
 
       for (const idx of compPixels) {
-        const cx = idx % width;
-        const cy = Math.floor(idx / width);
-        const localIdx = (cy - minY) * compW + (cx - minX);
-        const norm = Math.min(1.0, cDist[localIdx] / Math.max(1.0, maxPartD));
+        const norm = Math.min(1.0, cDist[idx] / Math.max(1.0, maxPartD));
         microDist[idx] = Math.pow(norm, 0.55) * Math.min(maxPartD, bevelRadius);
       }
     }

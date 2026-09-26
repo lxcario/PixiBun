@@ -105,8 +105,8 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
 
       // Pattern storage: P * (n^2 * 4 + 16) = 2 * (16 + 16) = 64
       expect(res.patternStorageBytes).toBe(64);
-      // Propagator: D * P^2 * 4 = 4 * 4 * 4 = 64
-      expect(res.propagatorBytes).toBe(64);
+      // Propagator: 64 dense-neighbor bytes + 96 slot-array bytes
+      expect(res.propagatorBytes).toBe(160);
       // Wave: C * P * 1 = 4 * 2 * 1 = 8
       expect(res.waveBytes).toBe(8);
       // Compatibility: C * P * D * 4 = 4 * 2 * 4 * 4 = 128
@@ -115,8 +115,10 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(res.entropyBytes).toBe(80);
       // Output: C * 4 = 4 * 4 = 16
       expect(res.outputBytes).toBe(16);
+      // Bounded typed propagation stack: C * P * 8 = 64
+      expect(res.propagationStackBytes).toBe(64);
 
-      const expectedTotal = 64 + 64 + 8 + 128 + 80 + 16;
+      const expectedTotal = 64 + 160 + 8 + 128 + 80 + 64 + 16;
       expect(res.totalWorkingSetBytes).toBe(expectedTotal);
     });
 
@@ -131,8 +133,8 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(res.waveBytes).toBe(32_000);
       // compatibilityBytes = 16 * 2000 * 16 = 512,000
       expect(res.compatibilityBytes).toBe(512_000);
-      // propagatorBytes = 4 * 2000^2 * 4 = 64,000,000
-      expect(res.propagatorBytes).toBe(64_000_000);
+      // Dense neighbor capacity plus offsets, counts, and write positions.
+      expect(res.propagatorBytes).toBe(64_096_000);
       expect(res.totalWorkingSetBytes).toBeGreaterThan(64_000_000);
     });
 
@@ -151,8 +153,8 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(res.entropyBytes).toBe(1_310_720);
       // outputBytes = 65536 * 4 = 262,144
       expect(res.outputBytes).toBe(262_144);
-      // propagatorBytes = 4 * 16 * 4 = 256
-      expect(res.propagatorBytes).toBe(256);
+      // 256 dense-neighbor bytes plus 192 slot-array bytes.
+      expect(res.propagatorBytes).toBe(448);
     });
 
     it('evaluates large P with large C (H5 unbounded scenario)', () => {
@@ -166,11 +168,11 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(res.compatibilityBytes).toBe(2_147_483_648);
       // wave = 4096 * 32768 = 134,217,728 bytes (128 MiB)
       expect(res.waveBytes).toBe(134_217_728);
-      // propagator = 4 * 32768^2 * 4 = 17,179,869,184 bytes (16 GiB)
-      expect(res.propagatorBytes).toBe(17_179_869_184);
-      // Total exceeds 18 GiB (19.46 GB)
+      // Dense 16 GiB neighbor bound plus slot arrays.
+      expect(res.propagatorBytes).toBe(17_181_442_048);
+      // Total exceeds 18 GiB, including the typed propagation stack.
       expect(res.totalWorkingSetBytes).toBeGreaterThan(18 * 1024 * 1024 * 1024);
-      expect(res.totalWorkingSetBytes).toBe(19_462_717_440);
+      expect(res.totalWorkingSetBytes).toBe(20_538_032_128);
     });
 
     it('returns null on invalid or out-of-range inputs', () => {
@@ -272,6 +274,27 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(res.admitted).toBe(false);
       expect(res.maxWorkingSetBytes).toBe(MAX_WFC_WORKING_SET_BYTES);
     });
+
+    it('charges retained input and packed sample bytes alongside solver allocations', () => {
+      const solverBytes = estimateWfcWorkingSet(1, 1000)!.totalWorkingSetBytes;
+      const retainedSampleBytes = 2000;
+      const admitted = validateWfcResourceBudget({
+        numPatterns: 1,
+        numCells: 1000,
+        retainedSampleBytes,
+        maxWorkingSetBytes: solverBytes + retainedSampleBytes,
+      });
+      expect(admitted.admitted).toBe(true);
+      expect(admitted.totalWorkingSetBytes).toBe(solverBytes + retainedSampleBytes);
+
+      const rejected = validateWfcResourceBudget({
+        numPatterns: 1,
+        numCells: 1000,
+        retainedSampleBytes,
+        maxWorkingSetBytes: solverBytes + retainedSampleBytes - 1,
+      });
+      expect(rejected.admitted).toBe(false);
+    });
   });
 
   describe('4. Pre-Allocation Rejection Proof (Section 14 & 15)', () => {
@@ -317,7 +340,7 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       const propagatorSpy = vi.spyOn(_wfcInternal, 'buildPropagatorTable');
 
       // 2048x2048 canvas output cells: C = 4,194,304.
-      // Minimum solver memory even at P=1 is 41 * 4,194,304 = 171.9 MiB > 64 MiB.
+      // Minimum solver memory even at P=1 is 49 * 4,194,304 = 196 MiB > 64 MiB.
       const sampleW = 2;
       const sampleH = 2;
       const sampleData = createUniformSample(sampleW, sampleH);
@@ -382,6 +405,29 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       propagatorSpy.mockRestore();
       allocateSpy.mockRestore();
     });
+
+    it('rejects a large uniform sample whose retained buffers exceed the ceiling with the solver', () => {
+      const sampleWidth = 1810;
+      const sampleHeight = 1810;
+      const sampleData = new Uint8ClampedArray(sampleWidth * sampleHeight * 4);
+      const allocateSpy = vi.spyOn(_wfcInternal, 'allocateSolverState');
+      const propagatorSpy = vi.spyOn(_wfcInternal, 'buildPropagatorTable');
+
+      const result = synthesizeWfc({
+        sampleData,
+        sampleWidth,
+        sampleHeight,
+        outputWidth: 1000,
+        outputHeight: 1000,
+      }, { N: 2, symmetries: 1 });
+
+      expect(result.status).toBe('resource_limit_exceeded');
+      expect(result.resourceUsage?.estimatedWorkingSetBytes).toBeGreaterThan(MAX_WFC_WORKING_SET_BYTES);
+      expect(propagatorSpy).not.toHaveBeenCalled();
+      expect(allocateSpy).not.toHaveBeenCalled();
+      propagatorSpy.mockRestore();
+      allocateSpy.mockRestore();
+    });
   });
 
   describe('5. High-P Growth & High-Entropy Adversarial Fixtures (Section 16)', () => {
@@ -410,7 +456,7 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       expect(uniformResult.patternsCount).toBe(1);
 
       // Case B: 16x16 high-entropy sample would produce up to 2048 unique patterns,
-      // but incremental unique-pattern admission stops retention at the derived threshold P=20
+      // but incremental unique-pattern admission stops retention at the derived threshold P=14
       const entropySample = createHighEntropySample(sampleW, sampleH);
       const entropyResult = synthesizeWfc(
         {
@@ -423,13 +469,13 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
         {
           N: 2,
           symmetries: 8,
-          // Same 100 KiB budget: derived admissible threshold is P=20 (100,224 bytes <= 102,400 bytes)
+          // Same 100 KiB budget: P=14 costs 102,048 bytes including retained sample buffers.
           maxWorkingSetBytes: 100 * 1024,
         }
       );
       expect(entropyResult.success).toBe(false);
       expect(entropyResult.status).toBe('resource_limit_exceeded');
-      expect(entropyResult.patternsCount).toBe(20);
+      expect(entropyResult.patternsCount).toBe(14);
       expect(entropyResult.patternsCount).toBeLessThan(2048);
     });
 
@@ -443,9 +489,9 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       const candidateCapacity = 16 * 16 * 8; // 2048 candidate transforms
 
       // Test budget: 100 KiB (102,400 bytes) for C = 256 (16x16 output)
-      // For P = 20: 17*256*20 + 24*256 + 16*20^2 + 32*20 = 100,224 bytes (admitted)
-      // For P = 21: 17*256*21 + 24*256 + 16*21^2 + 32*21 = 105,264 bytes (rejected)
-      // Derived admissible threshold is exactly P = 20.
+      // For P = 14: 25*256*14 + 24*256 + 16*14^2 + 80*14 + 2048 = 102,048 bytes.
+      // For P = 15: the same model reaches 108,992 bytes, above the 100 KiB budget.
+      // Derived admissible threshold is exactly P = 14.
       const budget100K = 100 * 1024;
 
       const result = synthesizeWfc(
@@ -465,7 +511,7 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe('resource_limit_exceeded');
-      expect(result.patternsCount).toBe(20);
+      expect(result.patternsCount).toBe(14);
       expect(result.patternsCount).toBeLessThan(candidateCapacity);
 
       // Proven: 0 calls to propagator construction and solver state allocation
@@ -716,11 +762,11 @@ describe('Phase 73 / High Finding H5: WFC Resource Growth Hardening', () => {
       );
 
       // With 2048 potential unique patterns, incremental unique-pattern admission stops
-      // retention at the derived threshold P=1915 (67,077,104 bytes <= 67,108,864 bytes).
-      // At P=1916, demand would be 67,142,784 bytes (> 64 MiB), so extraction aborts early.
+      // retention at the derived threshold P=1855 (67,084,992 bytes <= 67,108,864 bytes).
+      // At P=1856, demand reaches 67,150,848 bytes (> 64 MiB), so extraction aborts early.
       expect(result.success).toBe(false);
       expect(result.status).toBe('resource_limit_exceeded');
-      expect(result.patternsCount).toBe(1915);
+      expect(result.patternsCount).toBe(1855);
       expect(result.patternsCount).toBeLessThan(2048);
       expect(result.resourceUsage?.estimatedWorkingSetBytes).toBeGreaterThan(64 * 1024 * 1024);
 

@@ -112,7 +112,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
           <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={imageSrc}
-              alt={imageAlt ?? ((props['aria-label'] as string) || '')}
+              alt={imageAlt ?? ((props['aria-label']) || '')}
               className="w-full h-full object-contain pixelated pointer-events-none select-none transition-all duration-150"
               style={{
                 imageRendering: 'pixelated',

@@ -47,6 +47,37 @@ function validBaseFixture() {
 }
 
 describe('Project Schema Defensive Hardening Suite', () => {
+  it('applies palette identity, string, and color bounds to normal project loads', () => {
+    const duplicate = validBaseFixture();
+    duplicate.palettes.push({ id: 'pal-1', name: 'Other', colors: ['#000000'] });
+    expect(validateProjectFile(duplicate)).toMatchObject({ ok: false, error: expect.stringMatching(/duplicate identifier/) });
+
+    const oversized = validBaseFixture();
+    oversized.palettes[0].name = 'P'.repeat(129);
+    expect(validateProjectFile(oversized)).toMatchObject({ ok: false, error: expect.stringMatching(/Palette 1 is malformed/) });
+
+    const tooManyColors = validBaseFixture();
+    tooManyColors.palettes[0].colors = Array(513).fill('#000000');
+    expect(validateProjectFile(tooManyColors)).toMatchObject({ ok: false, error: expect.stringMatching(/512 color limit/) });
+  });
+
+  it('rejects oversized and out-of-range clips in normal project loads', () => {
+    const fixture = {
+      ...validBaseFixture(),
+      clips: [{ id: 'clip-1', name: 'C'.repeat(129), startFrame: 0, endFrame: 0 }],
+    };
+    expect(validateProjectFile(fixture)).toMatchObject({ ok: false, error: expect.stringMatching(/oversized identifier\/name/) });
+
+    fixture.clips[0].name = 'Idle';
+    fixture.clips[0].startFrame = 1;
+    fixture.clips[0].endFrame = 0;
+    expect(validateProjectFile(fixture)).toMatchObject({ ok: false, error: expect.stringMatching(/inverted frame range/) });
+
+    fixture.clips[0].startFrame = 0;
+    fixture.clips[0].endFrame = 1;
+    expect(validateProjectFile(fixture)).toMatchObject({ ok: false, error: expect.stringMatching(/outside project frame count/) });
+  });
+
   it('strips prototype pollution payloads from untrusted project JSON', () => {
     const maliciousPayload = {
       ...validBaseFixture(),

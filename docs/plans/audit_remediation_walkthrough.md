@@ -38,35 +38,35 @@ All Critical, High, and Medium audit findings, user-reviewed amendments, and pos
 ---
 
 ### 2. SafeJson UTF-8 Byte Counter & Prototype Retention [High]
-- **File:** [safeJson.ts](file:///d:/PixiBun/src/lib/safety/safeJson.ts)
+- **File:** [safeJson.ts](../../src/lib/safety/safeJson.ts)
 - **Zero-Heap Allocation UTF-8 Counter:** Replaced UTF-16 `.length` with zero-allocation `TextEncoder.encodeInto` byte counting, guarding the 50MB ceiling against multibyte evasion.
 - **Prototype Retention:** In `sanitizeObject()`, return standard plain `{}` rather than `Object.create(null)` while stripping `__proto__`, `constructor`, and `prototype` keys. This preserves standard `Object.prototype` methods (`hasOwnProperty`, `toString`, etc.).
 
 ---
 
 ### 3. ImageHeaderProbe Window Paging & Distinct Error [High]
-- **File:** [imageHeaderProbe.ts](file:///d:/PixiBun/src/lib/safety/imageHeaderProbe.ts)
+- **File:** [imageHeaderProbe.ts](../../src/lib/safety/imageHeaderProbe.ts)
 - **Blob / File Paging:** Increased initial window to 256KB and added `ensureBytes` streaming slice paging for massive pre-SOF metadata.
 - **Distinct Error:** When headers finish without finding SOF, throws distinct `SOF_BEYOND_PROBE_WINDOW`.
 
 ---
 
 ### 4. SafeCanvas `byteOffset` Support & Accurate Method References [High]
-- **File:** [safeCanvas.ts](file:///d:/PixiBun/src/lib/safety/safeCanvas.ts)
+- **File:** [safeCanvas.ts](../../src/lib/safety/safeCanvas.ts)
 - Updated `SafeCanvas.getImageData()` to pass source and destination `byteOffset` and `length` to `new Uint32Array(...)`.
 - Replaced non-existent `extractClampedRect` doc references with `SafeCanvas.getImageData()`.
 
 ---
 
 ### 5. Canonical Version Single Source of Truth [High]
-- **File:** [version.ts](file:///d:/PixiBun/src/config/version.ts)
+- **File:** [version.ts](../../src/config/version.ts)
 - Exported canonical `APP_VERSION = '1.13.1'`, consumed by diagnostics capture and relay.
 - Synchronized `package-lock.json` with `package.json` at `1.13.1`.
 
 ---
 
 ### 6. Photometric Studio Drag Caching & Dynamic Appendage Stabilization [Perf & Precision]
-- **Files:** [edtNormalMap.ts](file:///d:/PixiBun/src/lib/ai/math/edtNormalMap.ts), [photometricLighting.ts](file:///d:/PixiBun/src/lib/ai/math/photometricLighting.ts), [usePhotometricEvents.ts](file:///d:/PixiBun/src/hooks/viewport/events/usePhotometricEvents.ts)
+- **Files:** [edtNormalMap.ts](../../src/lib/ai/math/edtNormalMap.ts), [photometricLighting.ts](../../src/lib/ai/math/photometricLighting.ts), [usePhotometricEvents.ts](../../src/hooks/viewport/events/usePhotometricEvents.ts)
 - Decoupled static pixel geometry (heavy separable EDT, connected components, composite heightmaps, bilateral filtering, Laplace AO) from light-direction-coupled appendage normal stabilization.
 - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms per frame using `baseNormalField` and candidate pixel metadata.
 - Preserves 60 FPS silky-smooth live light dragging while achieving **100.000% byte-for-byte identity** with fresh single-shot recomputation at any azimuth (0 pixel difference, 0 channel drift).

@@ -829,6 +829,14 @@ function assertAnalysisBitwiseIdentical(
 // -----------------------------------------------------------------------------
 
 describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
+  it('returns independent heightmap buffers for a blank canvas', () => {
+    const analysis = computeContentAwareHeightmap(new Uint8ClampedArray(4 * 4 * 4), 4, 4);
+    analysis.macroHeightmap[0] = 7;
+    expect(analysis.microHeightmap[0]).toBe(0);
+    expect(analysis.compositeHeightmap[0]).toBe(0);
+    expect(analysis.smoothHeightmap[0]).toBe(0);
+  });
+
   describe('Representative Correctness Fixtures (Exact Bitwise Output Equivalence)', () => {
     const fixtures: Array<{ name: string; get: () => { data: Uint8ClampedArray; w: number; h: number } }> = [
       { name: '1. Fully transparent canvas', get: () => ({ data: createTransparentFixture(32, 32), w: 32, h: 32 }) },
@@ -856,7 +864,7 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
   });
 
   describe('Adversarial Fragmentation Fixture: Structural Work & Allocation Reduction', () => {
-    it('proves pre-fix K x N allocation is eliminated and replaced with bounded local component work', () => {
+    it('uses one shared distance buffer regardless of component count', () => {
       const width = 64;
       const height = 64;
       const totalPixels = width * height; // 4096
@@ -897,26 +905,19 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
 
       expect(actualAnalysis.numComponents).toBe(1024);
 
-      // In the optimized implementation:
-      // Stage 6 allocates Float32Array(localArea) = Float32Array(1) for each 1x1 component.
-      // There are ZERO full-size (4096) allocations attributable to Stage 6!
+      // Stage 6 now adds one shared full-size distance buffer and no
+      // per-component Float32Array allocations.
       const fullSizeAllocs = actualAllocations.filter((len) => len === totalPixels);
-      // Base non-stage-6 allocations are <= 14
-      expect(fullSizeAllocs.length).toBeLessThanOrEqual(14);
+      expect(fullSizeAllocs.length).toBeLessThanOrEqual(15);
 
-      // Number of 1x1 local allocations across all 1024 components
       const localComponentAllocs = actualAllocations.filter((len) => len === 1);
-      expect(localComponentAllocs.length).toBe(1024);
+      expect(localComponentAllocs.length).toBe(0);
 
-      // Structural comparison:
-      // OLD: 1024 components * 4096 pixels = 4,194,304 elements (16,777,216 bytes)
-      // NEW: 1024 components * 1 pixel = 1,024 elements (4,096 bytes)
       const oldCumulativeElements = expectedK * totalPixels;
-      const newCumulativeElements = localComponentAllocs.reduce((a, b) => a + b, 0);
+      const newCumulativeElements = actualAllocations.reduce((a, b) => a + b, 0);
 
       expect(oldCumulativeElements).toBe(4194304);
-      expect(newCumulativeElements).toBe(1024);
-      expect(newCumulativeElements).toBeLessThan(oldCumulativeElements / 1000); // > 4000x reduction!
+      expect(newCumulativeElements).toBeLessThan(oldCumulativeElements / 50);
     });
   });
 
@@ -954,7 +955,7 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
   });
 
   describe('Adversarial Overlapping Bounding Boxes: Complexity Truth', () => {
-    it('proves bounding boxes can overlap with sum(bboxArea) > N while maintaining bit-exactness', () => {
+    it('handles overlapping component bounds in linear member work while maintaining bit-exactness', () => {
       const width = 32;
       const height = 32;
       const totalPixels = width * height; // 1024
@@ -975,15 +976,15 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
       const unoptimizedWork = K * totalPixels; // 4096
       const sumBboxArea = 900 + 484 + 196 + 36; // 1616
 
-      // Complexity truth assertion: sum(bboxArea) CAN exceed N when bounding boxes overlap!
+      // The old local-bbox loop could revisit cells despite disjoint members.
       expect(sumBboxArea).toBeGreaterThan(totalPixels); // 1616 > 1024
-      // Bounded local allocation still saves substantial work compared to unconditional K x N
+      // The new pass visits each component member once, independent of bbox overlap.
       expect(sumBboxArea).toBeLessThan(unoptimizedWork); // 1616 < 4096
     });
   });
 
   describe('Final Photometric Render Equivalence', () => {
-    it('produces identical diffuse, specular, and rim pixel output for character sprite compared to pre-H1 legacy baseline', () => {
+    it('produces identical diffuse and specular pixels for a character sprite compared to the pre-H1 baseline', () => {
       const width = 32;
       const height = 32;
       const charData = createAppendageCharacterFixture(width, height);
@@ -994,8 +995,6 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
         elevationDeg: 45,
         shadowIntensity: 0.5,
         specularShininess: 16,
-        rimLight: false,
-        selOut: false,
         material: 'matte',
       };
 
@@ -1012,19 +1011,17 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
       // Verify that rendered pixel arrays are well-formed and non-empty
       expect(actualResult.shadedPixels.length).toBeGreaterThan(0);
       expect(actualResult.specularPixels.length).toBeGreaterThan(0);
-      expect(actualResult.rimPixels).toEqual([]);
 
       // Non-circular, independent bit-for-bit equivalence against pre-H1 legacy oracle
       expect(actualResult.shadedPixels).toEqual(legacyResult.shadedPixels);
       expect(actualResult.specularPixels).toEqual(legacyResult.specularPixels);
-      expect(actualResult.rimPixels).toEqual(legacyResult.rimPixels);
 
       // Fixed baseline golden invariants
       expect(actualResult.shadedPixels.length).toBe(legacyResult.shadedPixels.length);
       expect(actualResult.specularPixels.length).toBe(legacyResult.specularPixels.length);
     });
 
-    it('produces identical diffuse, specular, and rim pixel output for prop sprite compared to pre-H1 legacy baseline', () => {
+    it('produces identical diffuse and specular pixels for a prop sprite compared to the pre-H1 baseline', () => {
       const width = 32;
       const height = 32;
       const propData = createDonutWithHoleFixture(width, height);
@@ -1035,8 +1032,6 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
         elevationDeg: 55,
         shadowIntensity: 0.5,
         specularShininess: 24,
-        rimLight: false,
-        selOut: false,
         material: 'matte',
       };
 
@@ -1052,12 +1047,10 @@ describe('H1 Content-Aware Heightmap Algorithmic Hardening', () => {
 
       expect(actualResult.shadedPixels.length).toBeGreaterThan(0);
       expect(actualResult.specularPixels.length).toBeGreaterThan(0);
-      expect(actualResult.rimPixels).toEqual([]);
 
       // Non-circular, independent bit-for-bit equivalence against pre-H1 legacy oracle
       expect(actualResult.shadedPixels).toEqual(legacyResult.shadedPixels);
       expect(actualResult.specularPixels).toEqual(legacyResult.specularPixels);
-      expect(actualResult.rimPixels).toEqual(legacyResult.rimPixels);
 
       // Fixed baseline golden invariants
       expect(actualResult.shadedPixels.length).toBe(legacyResult.shadedPixels.length);

@@ -24,7 +24,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ## ️ The Local Quality Gate
 
-We enforce an autonomous, zero-cost Quality Gate that runs in ~37 seconds (`npm run gate`) or ~45 seconds (`npm run gate:full`) observed on reference development hardware (timing scales with hardware and suite size).
+The local Quality Gate took 64.18 seconds (`npm run gate`) and 77.95 seconds (`npm run gate:full`) in the 2026-09-26 reference runs. Hardware, commands, cache state, and per-stage timings are recorded in `BENCHMARKS.md` §7; timing varies by machine and suite size.
 
 ### Running the Quality Gate
 
@@ -42,9 +42,9 @@ npm run gate:full
 
 | Stage | Command | Purpose |
 | :--- | :--- | :--- |
-| **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, truthfulness of test counts in `README.md`, and version synchronization in `package.json`. |
+| **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, current test counts in `README.md` and `BENCHMARKS.md`, and version synchronization in `package.json`. |
 | **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
-| **Stage 3** | `npm run lint` | Checks source, tests and accessibility rules. |
+| **Stage 3** | `npm run lint` | Checks source, tests, scripts, configs, and accessibility rules. |
 | **Stage 4** | `npm test` | Runs the current unit and invariant test suite via Vitest. |
 | **Stage 5** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
 

@@ -72,7 +72,7 @@ class ProceduralSoundEngine implements SynthVoiceController {
     if (this.ctx) return;
     const AudioCtx =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
 
     this.ctx = new AudioCtx();

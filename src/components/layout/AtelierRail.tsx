@@ -15,6 +15,7 @@ import type { ImportPayload } from '@/components/modals/ImportModal';
 import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
+import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -219,6 +220,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         {isEditingName ? (
           <input
             type="text"
+            maxLength={MAX_PROJECT_NAME_LENGTH}
             value={tempName}
             onChange={(e) => setTempName(e.target.value)}
             onBlur={() => {

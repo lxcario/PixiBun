@@ -9,9 +9,16 @@ export interface Point {
 
 // Bresenham's line algorithm: yields all integer points between (x0, y0) and (x1, y1)
 export function getBresenhamLine(x0: number, y0: number, x1: number, y1: number): Point[] {
+  if (![x0, y0, x1, y1].every(Number.isSafeInteger)) {
+    throw new RangeError('Bresenham line endpoints must be safe integers.');
+  }
   const points: Point[] = [];
   const dx = Math.abs(x1 - x0);
   const dy = Math.abs(y1 - y0);
+  const maxSteps = Math.max(dx, dy) + 1;
+  if (!Number.isSafeInteger(maxSteps) || maxSteps > 1_000_000) {
+    throw new RangeError('Bresenham line exceeds the supported point count.');
+  }
   const sx = x0 < x1 ? 1 : -1;
   const sy = y0 < y1 ? 1 : -1;
   let err = dx - dy;
@@ -19,7 +26,7 @@ export function getBresenhamLine(x0: number, y0: number, x1: number, y1: number)
   let currX = x0;
   let currY = y0;
 
-  while (true) {
+  for (let step = 0; step < maxSteps; step++) {
     points.push({ x: currX, y: currY });
     if (currX === x1 && currY === y1) break;
     const e2 = 2 * err;
@@ -33,6 +40,9 @@ export function getBresenhamLine(x0: number, y0: number, x1: number, y1: number)
     }
   }
 
+  if (currX !== x1 || currY !== y1) {
+    throw new Error('Bresenham line did not reach its endpoint within the step bound.');
+  }
   return points;
 }
 
@@ -82,7 +92,9 @@ export function getClippedLine(
   canvasHeight?: number
 ): Point[] {
   if (!canvasWidth || !canvasHeight || canvasWidth <= 0 || canvasHeight <= 0) {
-    return getBresenhamLine(x0, y0, x1, y1);
+    return [x0, y0, x1, y1].every(Number.isSafeInteger)
+      ? getBresenhamLine(x0, y0, x1, y1)
+      : getDDALine(x0, y0, x1, y1);
   }
 
   const isOutside =
@@ -90,7 +102,9 @@ export function getClippedLine(
     x1 < 0 || y1 < 0 || x1 >= canvasWidth || y1 >= canvasHeight;
 
   if (!isOutside) {
-    return getBresenhamLine(x0, y0, x1, y1);
+    return [x0, y0, x1, y1].every(Number.isSafeInteger)
+      ? getBresenhamLine(x0, y0, x1, y1)
+      : getDDALine(x0, y0, x1, y1);
   }
 
   const clipped = MathInvariants.clipLineToCanvasSubpixel(x0, y0, x1, y1, canvasWidth, canvasHeight);

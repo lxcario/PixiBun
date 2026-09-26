@@ -83,7 +83,7 @@ graph TD
 
 ### 2.1 Jump Flooding Algorithm (JFA) vs. CPU Felzenszwalb EDT
 
-In PixiBun v1, the 2.5D normal map and heightfield are generated using the Felzenszwalb-Huttenlocher (2012) separable 1D parabolic lower envelope algorithm. While $O(N)$ linear on the CPU ($1.8\text{ms}$ on a $256\times256$ canvas in a Web Worker), it requires two sequential passes (horizontal then vertical) and must read from and write to main memory TypedArrays.
+In PixiBun v1, the 2.5D normal map and heightfield use a separable 1D parabolic lower-envelope distance transform. Its CPU work is linear in canvas area; the $1.8\text{ms}$ figure once used for a $256\times256$ canvas is a historical estimate, not a current measured gate. The transform requires sequential horizontal and vertical passes over TypedArrays.
 
 For v2 canvas scaling up to $2048\times2048$ or $4096\times4096$, GPU compute parallelism becomes necessary. The canonical algorithm for GPU Euclidean Distance Transforms is the **Jump Flooding Algorithm (JFA)**:
 
@@ -319,7 +319,7 @@ Benchmarked throughput exceeds **$4.8\text{ GB/s}$**, enabling real-time scrubbi
 
 ### 4.1 The Concurrent Tree Move Anomaly in Layer Stacks
 
-In PixiBun v1, multi-user co-drawing synchronizes per-pixel edits via an LWW-CRDT with Hybrid Logical Clocks (HLC), while the layer stack structure (adding, deleting, reordering layers) is strictly owned by the Host peer.
+In PixiBun v1, two-peer co-drawing synchronizes per-pixel edits via an LWW-CRDT with Hybrid Logical Clocks (HLC), while the layer stack structure (adding, deleting, reordering layers) is strictly owned by the host peer. General multi-peer sessions are a v2 goal, not a verified v1 capability.
 
 To achieve decentralized, serverless collaboration where any peer can organize layers, group layers into folders, or reorder frames without a centralized coordinator, an ordinary LWW register fails:
 * **The Cycle Anomaly:** Peer 1 moves Folder $A$ inside Folder $B$ ($A \rightarrow \text{child}(B)$). Concurrently, Peer 2 moves Folder $B$ inside Folder $A$ ($B \rightarrow \text{child}(A)$). Under naive CRDT merging, both operations succeed, creating an isolated cycle $A \leftrightarrow B$ disconnected from the root canvas. Both folders vanish from the user interface.
@@ -440,7 +440,7 @@ When reading and writing pixels, values in `imgData.data` represent non-linear D
 
 ### 5.3 Color Gamut Transformation Mathematics in OKLCH
 
-In PixiBun v1, all perceptual math (median cut, palette ramp generation, cel shading) operates in the **OKLab / OKLCH** color space (Ottosson, 2020).
+In PixiBun v1, palette matching during image conversion and several color-ramp and cel-shading calculations use **OKLab / OKLCH**. Other color paths, including canvas dither palette selection, use RGB distance; the v1 pipeline is not uniformly perceptual.
 
 In v2, the OKLCH conversion pipeline is updated to accept wide-gamut Display-P3 primaries:
 
@@ -647,25 +647,25 @@ Pixel art is, by its nature, not high-resolution digital photography or 4K/8K il
 * **Tilesets & Scene Compositions:** $256\times256$ (rarely $512\times512$) pixels
 
 Measuring CPU performance in PixiBun v1 (`v1.13.1`) across these resolutions reveals:
-* **Felzenszwalb-Huttenlocher EDT:** Takes only **$\approx 1.8\text{ ms}$** in a Web Worker on a $256\times256$ canvas.
+* **Felzenszwalb-Huttenlocher EDT:** The historical $\approx 1.8\text{ ms}$ estimate for a $256\times256$ canvas has not been remeasured for this revision.
 * **RotSprite 8x Scale2x:** Takes **$\approx 2.5\text{ ms}$** for a $128\times128$ sprite.
 * **Bresenham & 2:1 Isometric Stepper:** Takes **$< 0.05\text{ ms}$**.
-* **6-Layer Canvas Stack:** Runs at a 60 FPS ($16.6\text{ ms}$ frame budget) refresh rate with **0 dropped frames**.
+* **6-Layer Canvas Stack:** Targets a 60 FPS ($16.6\text{ ms}$ frame budget) refresh rate; a zero-dropped-frame claim has not been measured for this revision.
 
-Migrating to WebGPU Jump Flooding Algorithm (JFA) or WASM SIMD would drop calculation time on a $256\times256$ canvas from $1.8\text{ ms}$ to $0.1\text{ ms}$. **The human visual and nervous system cannot perceive the $1.7\text{ ms}$ difference between $1.8\text{ ms}$ and $0.1\text{ ms}$.** At pixel art dimensions, this is not an optimization; it is premature complexity ("premature optimization").
+The proposed $0.1\text{ ms}$ WebGPU or WASM figure is a design estimate, not a measured speedup. Whether a GPU or SIMD path improves the current editor depends on end-to-end profiling, including transfer and composition costs.
 
 ---
 
 ### 2. High Stability & Historical Audit Resolution of v1
 
-PixiBun is currently at an exceptional engineering peak:
-* **Automated Test Gates:** 1104 unit and integration tests across 117 suites, and 55 E2E tests across 13 suites ($100\%$ passing).
+At the 2026-09-26 verification point:
+* **Automated Test Gates:** 1,237 unit and integration tests across 123 suites, and 59 E2E tests across 13 suites passed locally.
 * **Browser E2E Proofs:** Live browser proofs for relighting, chisel, and palette cycles in live browser environments.
 * **Historical Phase 1A Audit Findings Resolved:** The specific findings identified in the earlier v1.13.1 Phase 1A remediation pass (P2P guest UI locking, structural undo/redo, File System Access API native desktop saving, 47-blob autotiling, pure TypeScript MP4 muxer, and Worker EDT integration) were fully resolved and certified.
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-The codebase enforces automated quality gates (100% passing tests across 117 suites, 0 TypeScript errors, 0 linter warnings), while deferred capabilities (such as Phase 2+ features) and known open audit findings remain cataloged for future remediation passes.
+The codebase enforces automated quality gates (123 Vitest suites, TypeScript and ESLint), while deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
 
 ---
 

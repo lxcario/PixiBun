@@ -1,11 +1,12 @@
 /**
- * RotSprite Distortion-Free Pixel Art Rotation Adapter.
+ * RotSprite-inspired pixel-art rotation adapter.
  *
  * Citations:
  * 1. Xenowhirl, "RotSprite: An algorithm for scaling and rotating pixel art", 2007.
- * 2. Eric Johnston, "Scale2x / EPX (Eric's Pixel Expansion) algorithm", LucasArts, 1992.
+ * 2. Eric Johnston, EPX (Eric's Pixel Expansion), LucasArts, 1992.
+ * 3. Andrea Mazzoleni, Scale2x for AdvanceMAME, 2001 (equivalent output to EPX).
  *
- * Thin DOM adapter delegating to the canonical rotSprite engine in '@/lib/canvas/rotSprite'.
+ * Thin DOM adapter delegating to PixiBun's RotSprite-inspired engine in '@/lib/canvas/rotSprite'.
  */
 
 import { rotSprite, type PixelBuffer } from '@/lib/canvas/rotSprite';
@@ -13,7 +14,7 @@ import { rotSprite, type PixelBuffer } from '@/lib/canvas/rotSprite';
 export { rotSprite, type PixelBuffer };
 
 /**
- * Convenience Canvas context adapter executing the RotSprite rotation algorithm.
+ * Convenience Canvas context adapter executing PixiBun's rotation algorithm.
  * Converts angles from degrees to radians, samples the source context, and returns
  * an HTMLCanvasElement populated with the rotated pixel buffer.
  */

@@ -45,7 +45,7 @@ src/
 │   │   │   ├── shadowAuto.ts        # Sprite bounds, ground contact detection, shadow parameter inference
 │   │   │   ├── colorSpace.ts        # sRGB/OKLab/OKLCH conversions and perceptual hue-shifting
 │   │   │   ├── dithering.ts         # Atkinson and Riemersma error-diffusion dithering
-│   │   │   ├── rotSprite.ts         # Xenowhirl 8x Scale2X RotSprite rotation engine and thinning
+│   │   │   ├── rotSprite.ts         # RotSprite-inspired 8x Scale2x rotation adapter
 │   │   │   └── minecraftSkin.ts     # Minecraft player skin UV detection and normal mapping
 │   │   ├── pixelAiEngine.ts         # SDF morphing, jaggy cleanup, ground shadow, outline
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
@@ -56,7 +56,7 @@ src/
 │   ├── canvas/                      # Raster fundamentals: Bresenham, 2:1 iso stepper, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, harmonic rational retuning)
-│   ├── engine/                      # Memory management: bufferRegistry (OffscreenCanvas store), ID generator, bufferPool, workerDispatcher.ts
+│   ├── engine/                      # Memory management: bufferRegistry (HTML canvas buffers), ID generator, bufferPool, workerDispatcher.ts
 │   ├── events/                      # Typed event bus (studioEvents.ts)
 │   ├── export/                      # Export pipeline: spriteSheetPacker, gifEncoder, webmEncoder, mp4Encoder, apngEncoder, processReplayExport, depixelizeVector, shaderExporter.ts
 │   ├── project/                     # Project serialization: schema.ts (validator), serialize.ts (.pixibun IO)
@@ -83,7 +83,7 @@ React's Virtual DOM is unsuitable for high-frequency pixel-level operations (120
 sequenceDiagram
     participant Mouse as Stylus / Cursor
     participant Viewport as CenterViewport (Display Canvas)
-    participant Registry as bufferRegistry (OffscreenCanvas Layer Store)
+    participant Registry as bufferRegistry (HTML Canvas Layer Store)
     participant Compositor as Master Compositor (Blending Engine)
     participant Signal as bufferVersion (Atomic Signal)
     participant LivePop as FloatingPreviewWindow (1x/2x/4x Live Preview)
@@ -98,14 +98,14 @@ sequenceDiagram
 ```
 
 ### 1. `bufferRegistry.ts` (Layer Buffer Store)
-* Layer pixels are stored in a `Map<string, { canvas: HTMLCanvasElement | OffscreenCanvas, ctx: CanvasRenderingContext2D }>`.
-* When a layer is created (`getOrCreateBuffer`), an independent OffscreenCanvas is allocated at canvas dimensions.
+* Layer pixels are stored in a `Map<string, BufferEntry>`; each entry holds a detached `HTMLCanvasElement` and its `CanvasRenderingContext2D`.
+* When a layer is created (`getOrCreateBuffer`), an independent HTML canvas is allocated at canvas dimensions.
 * **Memory Safety:** When a layer is deleted, `deleteBuffers(layerId)` cleans up references immediately.
 * **9-Point Anchor Resizing (`resizeAllBuffers`):** Canvas dimensions resize relative to 9 anchor points (`top-left`, center, `bottom-right`, etc.) with nearest-neighbor resampling options.
 
 ### 2. `bufferVersion` Reactive Signal
 * On stroke completion, fill, or smart shading pass, `bumpBufferVersion()` notifies subscribers.
-* FloatingPreviewWindow listens to this integer counter, updating live previews without triggering React re-renders.
+* FloatingPreviewWindow subscribes to this integer counter and redraws its preview when the buffer changes.
 
 ### 3. Undo/Redo History Engine
 * src/lib/engine/historyEngine.ts maintains a bounded 50-step undo stack plus up to 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)`).
@@ -231,8 +231,8 @@ $$\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L}
 2. **Linear SDF Interpolation:** For any in-between time fraction $t \in [0, 1]$:
    $$\text{sdf}_t(x, y) = (1 - t) \cdot \text{sdf}_A(x, y) + t \cdot \text{sdf}_B(x, y)$$
    A coordinate $(x, y)$ belongs to the morphed sprite if $\text{sdf}_t(x, y) \le 0$.
-3. **Multi-Source BFS Color Sampling:** Precomputes the nearest opaque pixel index across the grid in $O(W \times H)$ time via 8-connected queue propagation (eliminating $O(W \times H \times R^2)$ spiral searches).
-4. **Perceptual OKLab Blending:** Colors from source pixels $C_A$ and $C_B$ are blended at fraction $t$ in OKLab color space:
+3. **Multi-Source BFS Color Sampling:** Precomputes a nearby opaque pixel index across the grid in $O(W \times H)$ time via 8-connected queue propagation (eliminating $O(W \times H \times R^2)$ spiral searches). Queue distance follows 8-connected steps, so this is not Euclidean nearest-color sampling.
+4. **Channelwise Color Blending:** Source RGBA channel values $C_A$ and $C_B$ are blended at fraction $t$ in their stored sRGB representation:
    $$C_t(x, y) = \operatorname{round}\left((1 - t) \cdot C_A + t \cdot C_B\right)$$
 
 ---
@@ -338,12 +338,12 @@ Binary parser and serializer supporting classic Deluxe Paint II/III/IV animation
 * 8-byte `CRNG`: 16-bit big-endian cycle rate ($16384 = 60\text{Hz}$), flags (active, reverse), and range bounds `[low..high]`.
 * 14-byte `CCRT`: Microsecond timing precision with custom color register offsets.
 
-### 2. Zero-Allocation 60 FPS 32-Bit LUT Renderer
+### 2. 60 FPS 32-Bit LUT Renderer
 Preallocated `Uint32Array` LUT packed in little-endian `0xAABBGGRR` blits directly into canvas `ImageData` 32-bit buffers:
 ```typescript
 lut32[idx] = (a << 24) | (b << 16) | (g << 8) | r;
 ```
-Eliminates intermediate garbage collection allocations and provides buttery 60 FPS animation.
+The per-pixel remap uses packed integers without allocating per pixel. Recomputing the LUT still allocates small RGB tuples during palette parsing and blending; the measured animation path stays within the documented 60 FPS budget.
 
 ### 3. Ping-Pong Triangle Wave Fencepost Safety
 Period $M = 2(S - 1)$ where $S = \text{high} - \text{low} + 1$:
@@ -387,15 +387,15 @@ Hardware video encoders require even integer dimensions for $16 \times 16$ macro
 
 ---
 
-# 14. Xenowhirl RotSprite Algorithm & Vector Depixelization
+# 14. RotSprite-Inspired Rotation & Vector Depixelization
 
-### 1. Xenowhirl RotSprite Rotation (`rotSprite.ts`)
-Standard bilinear or nearest-neighbor rotation of low-resolution pixel art causes severe distortion, jagged edges, and destroyed thin lines. PixiBun implements Xenowhirl's RotSprite algorithm (2007):
+### 1. RotSprite-Inspired Rotation (`rotSprite.ts`)
+PixiBun combines an 8x Scale2x expansion, inverse sampling, and its own majority-vote downscaler. It does not implement Xenowhirl's canonical rotation-offset search or single-pixel detail-restoration pass:
 * **Scale2x (EPX) Cascade:** 3 sequential passes of the Scale2x expansion kernel scale the input buffer by $8\times$ ($800\%$) along both axes, reconstructing diagonal edges without introducing blurred intermediate colors.
 * **Inverse Coordinate Mapping:** Destination subpixel coordinates $(x', y')$ are rotated by $-\theta$ around the transformed bounding box center to map back into source space:
   $$\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} \cos\theta & \sin\theta \\ -\sin\theta & \cos\theta \end{pmatrix} \begin{pmatrix} x' - cx' \\ y' - cy' \end{pmatrix} + \begin{pmatrix} cx \\ cy \end{pmatrix}$$
 * **Parabolic Majority Voting Downsampling:** An $8\times8$ subpixel window reconstructs each destination pixel. Candidate colors are evaluated by radial distance from the cell center using a parabolic kernel:
-  $$w(u, v) = 1.0 + 0.01 \cdot \left(25 - (u^2 + v^2)\right), \quad u, v \in [-4, 3]$$
+  $$w(u, v) = 1.0 + 0.01 \cdot \left(25 - (u^2 + v^2)\right), \quad u, v \in \{-3.5, -2.5, \ldots, 3.5\}$$
   The color with the highest cumulative weight wins the pixel cell.
 * **Fast Orthogonal Transformations:** For exact $90^\circ$ and $270^\circ$ rotations on arbitrary rectangular canvases ($W \ne H$), the algorithm transposes dimensions ($W' = H, H' = W$) and directly permutes pixel coordinates:
   $$90^\circ: (x', y') = (H - 1 - y, x), \quad 270^\circ: (x', y') = (y, W - 1 - x)$$
@@ -499,7 +499,7 @@ export interface LayerEffectRecipe {
 ```
 
 ### 2. Non-Destructive Layer Provenance & Runtime Invariants
-* **Instant 60fps Blitting:** The raster result of the effect remains pre-rendered in the layer's `OffscreenCanvas` buffer. Viewport zooming, panning, and timeline playback do not incur re-generation overhead.
+* **Pre-rendered Blitting:** The raster result of the effect remains in the layer's detached HTML canvas buffer. Viewport zooming, panning, and timeline playback do not re-run the effect calculation.
 * **Atomic Undo/Redo Snapshots:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe`, ensuring that undoing or redoing an effect operation atomically synchronizes both the raster bitmap and its parameter metadata.
 * **Interactive Light Gizmo Reopening:** Photometric layers render an `Edit FX` button in `LayersPanel.tsx`. Reopening reads `recipe.params`, mounts the `PixelLightBulbGizmo`, and binds real-time updates directly to the target layer.
 * **P2P Structural Sync Guard:** P2P collaboration validates incoming remote recipes through `validateLayerEffect()`, strictly rejecting unrecognized keys, uncalibrated parameters, and excessive string lengths.
@@ -513,7 +513,7 @@ export interface LayerEffectRecipe {
 * **Continuous 3D Specular Highlight Pill:**
   - Evaluates Blinn-Phong half-vector specular reflection over a smooth macro-silhouette normal field (`specularNormalField`), preventing internal feature depressions (such as eye sockets) from carving reflective cliff scars.
   - Enforces a physical line-of-sight visibility gate ($\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$), strictly preventing specular glints from leaking onto unlit shadow hemispheres.
-  - Features smooth continuous alpha falloff ($\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$ for $I_{\text{spec}} > 0.35$), producing natural volumetric highlight pills with feature masking protection over eyes and ink lines.
+  - Uses a hard $I_{\text{spec}} > 0.35$ gate followed by $\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$, producing masked highlight pills over the lit pixels while protecting eyes and ink lines.
 
 
 

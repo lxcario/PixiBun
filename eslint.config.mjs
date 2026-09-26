@@ -9,8 +9,13 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ['scripts/**/*.{js,mjs}', '*.config.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
+      parserOptions: { projectService: true },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -47,5 +52,9 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
     },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: { '@typescript-eslint/no-unnecessary-type-assertion': 'error' },
   }
 );

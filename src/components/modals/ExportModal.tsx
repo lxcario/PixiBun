@@ -142,7 +142,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const handleExportPNG = () => {
     const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
-    if (!source) return;
+    if (!source) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'PNG export failed: the active frame could not be rendered.' });
+      return;
+    }
 
     const exportWidth = canvasWidth * scale;
     const exportHeight = canvasHeight * scale;
@@ -152,9 +155,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       exportHeight > MAX_SAFE_CANVAS_DIMENSION ||
       exportWidth * exportHeight > MAX_SAFE_CANVAS_PIXELS
     ) {
-      console.error(
-        `PNG export aborted: requested dimensions ${exportWidth}x${exportHeight} exceed configured safety ceiling (${MAX_SAFE_CANVAS_DIMENSION}px / 16.7MP).`
-      );
+      const message = `PNG export aborted: requested dimensions ${exportWidth}x${exportHeight} exceed the ${MAX_SAFE_CANVAS_DIMENSION}px / 16.7MP safety limit.`;
+      console.error(message);
+      studioEvents.emit('pixibun:toast', { type: 'error', message });
       return;
     }
 
@@ -182,6 +185,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
       onClose();
     } catch (err) {
       console.error('PNG export failed:', err);
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: `PNG export failed: ${err instanceof Error ? err.message : 'Unable to create the image.'}`,
+      });
     }
   };
 

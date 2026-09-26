@@ -27,6 +27,16 @@ export interface Mp4ExportOptions {
   signal?: AbortSignal;
 }
 
+interface WebCodecsWindow extends Window {
+  VideoEncoder?: new (init: { output: (chunk: unknown, metadata?: unknown) => void; error: (e: unknown) => void }) => {
+    configure: (config: unknown) => void;
+    encode: (frame: unknown, options?: { keyFrame?: boolean }) => void;
+    flush: () => Promise<void>;
+    close: () => void;
+  };
+  VideoFrame?: new (source: CanvasImageSource, init: { timestamp: number; duration: number }) => { close: () => void };
+}
+
 /**
  * Checks if in-browser MP4 (H.264) video encoding is supported via WebCodecs VideoEncoder
  * or fallback MediaRecorder with Canvas captureStream.
@@ -37,22 +47,21 @@ export function isMp4ExportSupported(): boolean {
   }
   // 1. Hardware accelerated pure-TS WebCodecs pipeline
   if (
-    typeof (window as unknown as { VideoEncoder?: unknown }).VideoEncoder === 'function' &&
-    typeof (window as unknown as { VideoFrame?: unknown }).VideoFrame === 'function'
+    typeof (window as WebCodecsWindow).VideoEncoder === 'function' &&
+    typeof (window as WebCodecsWindow).VideoFrame === 'function'
   ) {
     return true;
   }
 
   // 2. Fallback to MediaRecorder check
-  const hasMediaRecorder =
-    typeof (window as unknown as { MediaRecorder?: typeof MediaRecorder }).MediaRecorder !== 'undefined';
+  const hasMediaRecorder = typeof window.MediaRecorder !== 'undefined';
   if (!hasMediaRecorder) {
     return false;
   }
   const hasCaptureStream =
     typeof HTMLCanvasElement !== 'undefined' &&
     (typeof HTMLCanvasElement.prototype.captureStream === 'function' ||
-      typeof (HTMLCanvasElement.prototype as unknown as { mozCaptureStream?: unknown }).mozCaptureStream ===
+      typeof (HTMLCanvasElement.prototype as HTMLCanvasElement & { mozCaptureStream?: unknown }).mozCaptureStream ===
         'function');
   if (!hasCaptureStream) {
     return false;
@@ -71,23 +80,16 @@ async function exportAnimationWithWebCodecsAsync(
   frameCanvases: HTMLCanvasElement[],
   width: number,
   height: number,
+  drawWidth: number,
+  drawHeight: number,
   fps: number,
   loopCount: number,
   frameDelaysMs: number[],
   options: Mp4ExportOptions
 ): Promise<Blob> {
-  const VideoEncoderClass = (window as unknown as { VideoEncoder?: unknown }).VideoEncoder as {
-    new (init: { output: (chunk: unknown, metadata?: unknown) => void; error: (e: unknown) => void }): {
-      configure: (config: unknown) => void;
-      encode: (frame: unknown, options?: { keyFrame?: boolean }) => void;
-      flush: () => Promise<void>;
-      close: () => void;
-    };
-  };
-
-  const VideoFrameClass = (window as unknown as { VideoFrame?: unknown }).VideoFrame as {
-    new (source: CanvasImageSource, init: { timestamp: number; duration: number }): { close: () => void };
-  };
+  const VideoEncoderClass = (window as WebCodecsWindow).VideoEncoder;
+  const VideoFrameClass = (window as WebCodecsWindow).VideoFrame;
+  if (!VideoEncoderClass || !VideoFrameClass) throw new Error('WebCodecs is unavailable');
 
   const exportCanvas = document.createElement('canvas');
   exportCanvas.width = width;
@@ -121,64 +123,69 @@ async function exportAnimationWithWebCodecsAsync(
     },
   });
 
-  const codec = 'avc1.42001f';
-  encoder.configure({
-    codec,
-    width,
-    height,
-    bitrate: 2_000_000,
-    framerate: fps,
-    avc: { format: 'avc' },
-  });
+  try {
+    const codec = 'avc1.42001f';
+    encoder.configure({
+      codec,
+      width,
+      height,
+      bitrate: 2_000_000,
+      framerate: fps,
+      avc: { format: 'avc' },
+    });
 
-  let currentTimestampUs = 0;
-  let framesProcessed = 0;
-  const totalFrames = frameCanvases.length * loopCount;
+    let currentTimestampUs = 0;
+    let framesProcessed = 0;
+    const totalFrames = frameCanvases.length * loopCount;
 
-  for (let loop = 0; loop < loopCount; loop++) {
-    for (let f = 0; f < frameCanvases.length; f++) {
-      if (options.signal?.aborted) {
-        encoder.close();
-        throw new DOMException('MP4 export aborted', 'AbortError');
+    for (let loop = 0; loop < loopCount; loop++) {
+      for (let f = 0; f < frameCanvases.length; f++) {
+        if (options.signal?.aborted) {
+          throw new DOMException('MP4 export aborted', 'AbortError');
+        }
+        if (encoderError) throw encoderError;
+
+        const durationMs = frameDelaysMs[f];
+        const durationUs = durationMs * 1000;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(frameCanvases[f], 0, 0, drawWidth, drawHeight);
+
+        const videoFrame = new VideoFrameClass(exportCanvas, {
+          timestamp: currentTimestampUs,
+          duration: durationUs,
+        });
+
+        const isKey = loop === 0 && f === 0;
+        try {
+          encoder.encode(videoFrame, { keyFrame: isKey });
+        } finally {
+          videoFrame.close();
+        }
+
+        currentTimestampUs += durationUs;
+        framesProcessed++;
+        options.onProgress?.(framesProcessed, totalFrames);
       }
-      if (encoderError) throw encoderError;
-
-      const durationMs = frameDelaysMs[f];
-      const durationUs = durationMs * 1000;
-
-      ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(frameCanvases[f], 0, 0, width, height);
-
-      const videoFrame = new VideoFrameClass(exportCanvas, {
-        timestamp: currentTimestampUs,
-        duration: durationUs,
-      });
-
-      const isKey = loop === 0 && f === 0;
-      encoder.encode(videoFrame, { keyFrame: isKey });
-      videoFrame.close();
-
-      currentTimestampUs += durationUs;
-      framesProcessed++;
-      options.onProgress?.(framesProcessed, totalFrames);
     }
+
+    await encoder.flush();
+
+    if (encoderError) throw encoderError;
+    if (!avcCData) {
+      throw new Error('WebCodecs encoder did not emit AVCDecoderConfigurationRecord');
+    }
+
+    return muxToMp4Blob({
+      width,
+      height,
+      timescale: 1000,
+      avcCData,
+      samples,
+    });
+  } finally {
+    encoder.close();
   }
-
-  await encoder.flush();
-  encoder.close();
-
-  if (encoderError) throw encoderError;
-  if (!avcCData) {
-    throw new Error('WebCodecs encoder did not emit AVCDecoderConfigurationRecord');
-  }
-
-  return muxToMp4Blob({
-    width,
-    height,
-    timescale: 1000,
-    avcCData,
-    samples,
-  });
 }
 
 /**
@@ -205,8 +212,10 @@ export async function exportAnimationToMp4Async(
   const loopCount = Math.max(1, Math.min(10, options.loopCount ?? 2));
 
   // H.264 macroblock encoding and YUV 4:2:0 subsampling require even dimensions
-  const width = (frameCanvases[0].width * scale + 1) & ~1;
-  const height = (frameCanvases[0].height * scale + 1) & ~1;
+  const drawWidth = frameCanvases[0].width * scale;
+  const drawHeight = frameCanvases[0].height * scale;
+  const width = (drawWidth + 1) & ~1;
+  const height = (drawHeight + 1) & ~1;
 
   const validation = validateExportGeometry(width, height);
   if (!validation.valid) {
@@ -227,14 +236,16 @@ export async function exportAnimationToMp4Async(
   // 1. First-class Pure-TS WebCodecs Fast-Start Path
   if (
     typeof window !== 'undefined' &&
-    typeof (window as unknown as { VideoEncoder?: unknown }).VideoEncoder === 'function' &&
-    typeof (window as unknown as { VideoFrame?: unknown }).VideoFrame === 'function'
+    typeof (window as WebCodecsWindow).VideoEncoder === 'function' &&
+    typeof (window as WebCodecsWindow).VideoFrame === 'function'
   ) {
     try {
       return await exportAnimationWithWebCodecsAsync(
         frameCanvases,
         width,
         height,
+        drawWidth,
+        drawHeight,
         fps,
         loopCount,
         frameDelaysMs,
@@ -353,7 +364,7 @@ export async function exportAnimationToMp4Async(
 
       const sourceCanvas = frameCanvases[currentFrame];
       ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(sourceCanvas, 0, 0, width, height);
+      ctx.drawImage(sourceCanvas, 0, 0, drawWidth, drawHeight);
 
       framesRendered++;
       options.onProgress?.(framesRendered, totalFramesToRender);

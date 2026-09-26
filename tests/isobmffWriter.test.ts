@@ -5,8 +5,15 @@ import {
   muxToMp4Blob,
   Mp4MuxerTrack,
 } from '@/lib/export/isobmffWriter';
+import { toBlobPart } from '@/lib/export/blobBytes';
 
 describe('Pure-TypeScript ISOBMFF Binary Writer', () => {
+  it('converts shared-backed byte views to portable Blob parts without extra bytes', async () => {
+    const shared = new SharedArrayBuffer(4);
+    new Uint8Array(shared).set([1, 2, 3, 4]);
+    const part = toBlobPart(new Uint8Array(shared, 1, 2));
+    expect(Array.from(new Uint8Array(await new Blob([part]).arrayBuffer()))).toEqual([2, 3]);
+  });
   it('writes basic integer types and strings in Big-Endian order', () => {
     const writer = new IsobmffWriter(16);
     writer.u8(0x12);
@@ -123,5 +130,30 @@ describe('Pure-TypeScript ISOBMFF Binary Writer', () => {
       }
     }
     expect(foundStco).toBe(true);
+  });
+
+  it('patches the actual stco box when AVC configuration bytes contain the same four letters', async () => {
+    const marker = new Uint8Array([0x73, 0x74, 0x63, 0x6f]);
+    const avcCData = new Uint8Array([1, 0x42, 0, 0x1f, ...marker, ...new Uint8Array(20)]);
+    const blob = muxToMp4Blob({
+      width: 64,
+      height: 64,
+      avcCData,
+      samples: [{ data: new Uint8Array([0, 0, 0, 1, 0x65]), durationMs: 100, isKey: true }],
+    });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const view = new DataView(bytes.buffer);
+    const ftypSize = view.getUint32(0, false);
+    const mdatOffset = ftypSize + view.getUint32(ftypSize, false);
+    const markerPositions: number[] = [];
+    for (let i = ftypSize; i < mdatOffset - marker.length; i++) {
+      if (marker.every((value, j) => bytes[i + j] === value)) markerPositions.push(i);
+    }
+
+    expect(markerPositions).toHaveLength(2);
+    expect(bytes.slice(markerPositions[0], markerPositions[0] + avcCData.length - 4)).toEqual(
+      avcCData.slice(4)
+    );
+    expect(view.getUint32(markerPositions[1] + 12, false)).toBe(mdatOffset + 8);
   });
 });

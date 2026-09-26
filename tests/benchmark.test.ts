@@ -246,16 +246,6 @@ describe('Performance Benchmarking Suite', () => {
       const theoretical50StepsBytes = sizePerStep * maxDepth;
       const theoretical100StepsBytes = sizePerStep * (maxDepth * 2);
 
-      // Verify mathematical scaling formulas
-      expect(sizePerStep).toBe(res * res * 4);
-      expect(theoretical50StepsBytes).toBe(res * res * 4 * 50);
-      expect(theoretical100StepsBytes).toBe(res * res * 4 * 100);
-
-      // Verify 256x256 matches exact BENCHMARKS.md specification (13,107,200 bytes ≈ 13.11 MB)
-      if (res === 256) {
-        expect(theoretical50StepsBytes).toBe(13107200);
-      }
-
       const engine = createHistoryEngine(maxDepth);
       expect(engine.depth).toBe(0);
 
@@ -278,6 +268,10 @@ describe('Performance Benchmarking Suite', () => {
       // Assert strictly capped at maxDepth (50 steps)
       expect(engine.depth).toBe(maxDepth);
       expect(engine.canUndo).toBe(true);
+      expect(engine.maxBytes).toBe(64 * 1024 * 1024);
+      expect(engine.evictionCount).toBe(10);
+      expect(engine.totalBytes).toBe(maxDepth * (sizePerStep + 512));
+      expect(engine.totalBytes).toBeLessThanOrEqual(engine.maxBytes);
 
       // Calculate empirical heap memory retained in undo stack
       const history = engine.getHistory();
@@ -291,6 +285,7 @@ describe('Performance Benchmarking Suite', () => {
       }
 
       expect(totalRetainedBytes).toBe(theoretical50StepsBytes);
+      expect(totalRetainedBytes).toBeLessThan(theoretical100StepsBytes);
 
       // Verify undo populates redo stack without exceeding capacity
       const currentSnapshot: HistoryStep = {

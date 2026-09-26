@@ -6,6 +6,14 @@ import { cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { clipRangeError, MAX_PROJECT_CLIPS, metadataNameError } from '@/lib/project/metadataAdmission';
+
+function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number): AnimationClip | null {
+  const startFrame = clip.startFrame - (removedIndex < clip.startFrame ? 1 : 0);
+  const endFrame = clip.endFrame - (removedIndex <= clip.endFrame ? 1 : 0);
+  if (startFrame > endFrame) return null;
+  return { ...clip, startFrame, endFrame, fromFrame: startFrame, toFrame: endFrame };
+}
 
 const initialLayerId = 'layer-1';
 const initialFrameId = 'frame-1';
@@ -184,6 +192,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       const removedFrame = state.frames[frameIndex];
       deleteBuffers(removedFrame.layers.map(l => l.id));
       state.frames.splice(frameIndex, 1);
+      state.clips = state.clips
+        .map((clip) => remapClipAfterFrameDeletion(clip, frameIndex))
+        .filter((clip): clip is AnimationClip => clip !== null);
+      if (state.activeClipId && !state.clips.some((clip) => clip.id === state.activeClipId)) {
+        state.activeClipId = null;
+      }
       state.activeFrameIndex = Math.min(state.activeFrameIndex, state.frames.length - 1);
       state.activeLayerId = state.frames[state.activeFrameIndex].layers[0].id;
       state.isDirty = true;
@@ -276,6 +290,19 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   addClip: (name, startFrame, endFrame, color, loopMode = 'forward') => {
+    const current = get();
+    const nameError = metadataNameError(name, 'clip');
+    const error = nameError ?? (
+      current.clips.length >= MAX_PROJECT_CLIPS
+        ? `A project can have at most ${MAX_PROJECT_CLIPS} clips.`
+        : !Number.isInteger(startFrame) || !Number.isInteger(endFrame)
+          ? 'Clip frame positions must be whole numbers.'
+          : null
+    );
+    if (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error });
+      return;
+    }
     set(state => {
       const minF = Math.max(0, Math.min(state.frames.length - 1, Math.min(startFrame, endFrame)));
       const maxF = Math.max(0, Math.min(state.frames.length - 1, Math.max(startFrame, endFrame)));
@@ -297,29 +324,21 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   updateClip: (id, updates) => {
+    const current = get();
+    const existing = current.clips.find((clip) => clip.id === id);
+    if (!existing) return;
+    const startFrame = updates.startFrame ?? updates.fromFrame ?? existing.startFrame;
+    const endFrame = updates.endFrame ?? updates.toFrame ?? existing.endFrame;
+    const error = metadataNameError(updates.name ?? existing.name, 'clip') ??
+      clipRangeError(startFrame, endFrame, current.frames.length);
+    if (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error });
+      return;
+    }
     set(state => {
       const clip = state.clips.find(c => c.id === id);
       if (clip) {
-        const nextUpdates = { ...updates };
-        if (nextUpdates.fromFrame !== undefined && nextUpdates.startFrame === undefined) {
-          nextUpdates.startFrame = nextUpdates.fromFrame;
-        } else if (nextUpdates.startFrame !== undefined && nextUpdates.fromFrame === undefined) {
-          nextUpdates.fromFrame = nextUpdates.startFrame;
-        }
-        if (nextUpdates.toFrame !== undefined && nextUpdates.endFrame === undefined) {
-          nextUpdates.endFrame = nextUpdates.toFrame;
-        } else if (nextUpdates.endFrame !== undefined && nextUpdates.toFrame === undefined) {
-          nextUpdates.toFrame = nextUpdates.endFrame;
-        }
-        if (nextUpdates.fromFrame !== undefined) {
-          nextUpdates.fromFrame = Math.max(0, Math.min(state.frames.length - 1, nextUpdates.fromFrame));
-          nextUpdates.startFrame = nextUpdates.fromFrame;
-        }
-        if (nextUpdates.toFrame !== undefined) {
-          nextUpdates.toFrame = Math.max(0, Math.min(state.frames.length - 1, nextUpdates.toFrame));
-          nextUpdates.endFrame = nextUpdates.toFrame;
-        }
-        Object.assign(clip, nextUpdates);
+        Object.assign(clip, updates, { startFrame, endFrame, fromFrame: startFrame, toFrame: endFrame });
         state.isDirty = true;
         state.editRevision += 1;
       }

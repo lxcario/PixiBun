@@ -3,6 +3,8 @@ import {
   encodeSignalingToken,
   decodeSignalingToken,
   P2PSyncSession,
+  DEFAULT_ICE_SERVERS,
+  PUBLIC_STUN_ICE_SERVERS,
   SignalingPayload,
   StructurePayload,
 } from '@/lib/sync/p2pSync';
@@ -12,6 +14,17 @@ import { useStudioStore } from '@/stores/studioStore';
 import { installDocumentCanvasMock } from './helpers/mockCanvas';
 
 describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
+  it('uses the module ICE default for CoDraw unless public STUN is requested', () => {
+    const bridge = new CoDrawBridge();
+    const createSession = (options: { lanOnly?: boolean }) =>
+      (bridge as unknown as { createSession: (options: { lanOnly?: boolean }) => P2PSyncSession })
+        .createSession(options);
+    const iceServers = (session: P2PSyncSession) =>
+      (session as unknown as { options: { iceServers: RTCIceServer[] } }).options.iceServers;
+
+    expect(iceServers(createSession({}))).toBe(DEFAULT_ICE_SERVERS);
+    expect(iceServers(createSession({ lanOnly: false }))).toBe(PUBLIC_STUN_ICE_SERVERS);
+  });
   it('encodes and decodes signaling tokens without loss', () => {
     const originalPayload: SignalingPayload = {
       version: 1,
@@ -55,6 +68,38 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
     expect(session.peerName).toBe('PixelMaster');
     expect(session.peerColor).toBe('#ff0055');
     expect(session.getState()).toBe('idle');
+  });
+
+  it('suppresses ordered reliable retries with constant-size receive state', () => {
+    const onRemotePixelOps = vi.fn();
+    const channel = {
+      label: 'pixibun-crdt-sync',
+      readyState: 'open',
+      send: vi.fn(),
+      close: vi.fn(),
+      bufferedAmount: 0,
+      onmessage: null as ((event: { data: string }) => void) | null,
+    };
+    const session = new P2PSyncSession({ peerId: 'local', onRemotePixelOps });
+    (session as unknown as { setupChannel: (channel: RTCDataChannel) => void }).setupChannel(
+      channel as unknown as RTCDataChannel
+    );
+    const op = new CrdtPixelBuffer(8, 8, 'remote').setPixel(2, 3, [255, 0, 0, 255])!;
+    const deliver = (deliveryId: number) => channel.onmessage?.({
+      data: JSON.stringify({ type: 'PIXEL_OPS', peerId: 'remote', layerId: 'layer-1', ops: [op], deliveryId }),
+    });
+
+    for (let id = 1; id <= 2000; id++) deliver(id);
+    deliver(1);
+    deliver(2000);
+    expect(onRemotePixelOps).toHaveBeenCalledTimes(2000);
+    expect(channel.send).toHaveBeenCalledTimes(2002);
+    expect((session as unknown as { lastReceivedDeliveryId: number }).lastReceivedDeliveryId).toBe(2000);
+
+    deliver(2001);
+    expect(onRemotePixelOps).toHaveBeenCalledTimes(2001);
+    session.disconnect();
+    expect((session as unknown as { lastReceivedDeliveryId: number }).lastReceivedDeliveryId).toBe(0);
   });
 
   it('coordinates dual RTCDataChannel message transmission with CrdtPixelBuffer', () => {

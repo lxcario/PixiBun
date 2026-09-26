@@ -135,6 +135,38 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     ).rejects.toThrow('MP4 export aborted');
   });
 
+  it('closes the WebCodecs encoder and frame when export aborts after encoding', async () => {
+    const originalVideoEncoder = (window as unknown as { VideoEncoder?: unknown }).VideoEncoder;
+    const originalVideoFrame = (window as unknown as { VideoFrame?: unknown }).VideoFrame;
+    const closeEncoder = vi.fn();
+    const closeFrame = vi.fn();
+    const encode = vi.fn();
+    const controller = new AbortController();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    (window as unknown as { VideoEncoder: unknown }).VideoEncoder = class {
+      configure() {}
+      encode = encode;
+      flush = vi.fn(async () => {});
+      close = closeEncoder;
+    };
+    (window as unknown as { VideoFrame: unknown }).VideoFrame = class {
+      close = closeFrame;
+    };
+
+    try {
+      await expect(exportAnimationToMp4Async([createMockCanvas(16, 16), createMockCanvas(16, 16)], {
+        signal: controller.signal,
+        onProgress: () => controller.abort(),
+      })).rejects.toThrow('MP4 export aborted');
+      expect(encode).toHaveBeenCalledTimes(1);
+      expect(closeFrame).toHaveBeenCalledTimes(1);
+      expect(closeEncoder).toHaveBeenCalledTimes(1);
+    } finally {
+      (window as unknown as { VideoEncoder?: unknown }).VideoEncoder = originalVideoEncoder;
+      (window as unknown as { VideoFrame?: unknown }).VideoFrame = originalVideoFrame;
+    }
+  });
+
   it('detects when MP4 export is unsupported in environment without MediaRecorder', () => {
     uninstallMediaRecorderMock();
     expect(isMp4ExportSupported()).toBe(false);
@@ -280,6 +312,6 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     });
 
     expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 16, 34);
-    expect(mockCtx.drawImage).toHaveBeenCalledWith(frame, 0, 0, 16, 34);
+    expect(mockCtx.drawImage).toHaveBeenCalledWith(frame, 0, 0, 15, 33);
   });
 });

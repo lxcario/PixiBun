@@ -8,6 +8,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { BlendMode } from '@/types/canvas';
 import IconButton from '@/components/ui/IconButton';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { MAX_METADATA_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 
 const EFFECT_LABELS: Record<string, string> = {
   photometric: '2.5D lighting',
@@ -239,6 +240,7 @@ export const LayersPanel: React.FC = () => {
                 {editingLayerId === layer.id ? (
                   <input
                     type="text"
+                    maxLength={MAX_METADATA_NAME_LENGTH}
                     value={layerNameInput}
                     onChange={(e) => setLayerNameInput(e.target.value)}
                     onBlur={() => {

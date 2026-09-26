@@ -3,9 +3,9 @@
 ## 1. Zero-Cloud & Local-First Philosophy
 PixiBun Atelier is architected as an offline-first, client-side application:
 - All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
-- Artwork and project data persist on-device in browser IndexedDB storage (note: `window.__pixibunDb` is attached to `window` in development, test, and when production builds are served from `localhost` or `127.0.0.1` for local inspection; it is omitted on remote production hostnames).
+- Artwork and project data persist on-device in browser IndexedDB storage. The `window.__pixibunDb` and `window.__studioStore` debug handles are exposed only in development and test builds, including when those builds run on localhost. Production builds do not expose them on any hostname. Browser E2E tests use a development server to access these handles.
 - No user accounts, credentials, or tracking telemetry are collected.
-- WebRTC P2P co-draw defaults to zero-egress local network collaboration (`LAN_ICE_SERVERS = []`) in the studio UI, while programmatic invocation without `lanOnly: true` falls back to public Google STUN for NAT traversal.
+- WebRTC P2P co-draw defaults to zero-egress local network collaboration (`LAN_ICE_SERVERS = []`); public STUN requires `lanOnly: false`.
 
 ## 2. Secrets & Secret Hygiene
 - PixiBun requires zero API keys or external authentication tokens for local or production use.
@@ -14,7 +14,7 @@ PixiBun Atelier is architected as an offline-first, client-side application:
 
 ## 3. Diagnostics Relay Security Boundaries & Threat Model
 The optional crash and diagnostic relay endpoint (`/api/diagnostics/relay`) acts as a server-side proxy to an operator-configured upstream (`DIAGNOSTICS_RELAY_URL`). Its threat model and defense boundaries include:
-- **Diagnostic Content Privacy:** Error messages and stack traces are free text and can contain names, file paths, URLs, or browser environment data. Truncation is not redaction. Review diagnostic reports before opting into transmission; a zero-PII guarantee is not established.
+- **Diagnostic Content Privacy:** Local diagnostic capture is enabled by default and records the page pathname (`window.location.pathname`) unless the caller supplies a route. Detail text is capped at 2,048 characters with a truncation marker. Error messages and stack traces are free text and can contain names, file paths, URLs, or browser environment data. Truncation is not redaction. Review diagnostic reports before opting into transmission; a zero-PII guarantee is not established.
 - **Origin Validation & CSRF Mitigation:** The endpoint inspects the `Origin` request header against the request host (`Host` or `X-Forwarded-Host`). Requests originating from untrusted foreign origins are rejected with HTTP 403 Forbidden to prevent cross-site request forgery and quota exhaustion.
 - **Trusted Reverse Proxy Assumptions & Client IP Identity:** Client identity is extracted via `X-Forwarded-For` and `X-Real-IP`. Security assumption: In production (e.g. Vercel, Cloudflare, AWS ALB), an operator-trusted edge reverse proxy must sanitize or prepend the client IP. In raw, direct Internet-facing Node.js deployments without an edge proxy, an adversary could spoof `X-Forwarded-For` headers to circumvent per-IP rate limits or exhaust quotas of other IP addresses.
 - **In-Memory Token Bucket Limits & Multi-Instance Serverless Scaling:** Rate limiting (`capacity: 12, refillPerMinute: 12`) is stored in process memory via `TokenBucketStore`. This rate limit is local to the active Node.js / serverless worker container. In horizontally scaled or multi-instance serverless deployments, each container enforces its own rate limit independently; aggregate cluster throughput scales to (N_instances * 12 req/min) rather than an authoritative global ceiling. Enforcing a global cluster limit would require an external distributed cache (e.g. Redis or Upstash).

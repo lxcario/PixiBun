@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { useStudioStore } from '@/stores/studioStore';
+import { studioEvents } from '@/lib/events/studioEvents';
 import { makeCanvas, type MockCtx } from '../helpers/mockCanvas';
 
 vi.mock('@/lib/project/serialize', async (importOriginal) => {
@@ -108,6 +109,27 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it('shows a user-facing error when PNG encoding fails', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(() => {
+      throw new Error('Canvas encoding unavailable');
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const toast = vi.fn();
+    const unsubscribe = studioEvents.on('pixibun:toast', toast);
+    const handleClose = vi.fn();
+    try {
+      render(<ExportModal isOpen={true} onClose={handleClose} />);
+      fireEvent.click(screen.getByRole('button', { name: /Download PNG/i }));
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'error',
+        message: expect.stringMatching(/Canvas encoding unavailable/),
+      }));
+      expect(handleClose).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 
   it('defers URL.revokeObjectURL by 1000ms on project JSON export to prevent download abortion', async () => {

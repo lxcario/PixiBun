@@ -14,6 +14,7 @@ import {
 } from '@/lib/color/paletteCycling';
 import { createId } from '@/lib/engine/id';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { MAX_PALETTE_CYCLE_TRACKS, paletteCycleTrackError } from '@/lib/color/paletteAdmission';
 import PanelSection from '@/components/ui/PanelSection';
 import StudioSelect from '@/components/ui/StudioSelect';
 import StudioNumberInput from '@/components/ui/StudioNumberInput';
@@ -74,9 +75,11 @@ export const PalettePanel: React.FC = () => {
           payload = bytes.slice(8, 16);
         }
         const track = parseCRNG(payload, createId('track'));
+        const error = paletteCycleTrackError(track, currentPalette.colors.length);
+        if (error) throw new Error(error);
         addPaletteCycleTrack(currentPalette.id, track);
       } catch (err) {
-        console.error('Failed to parse CRNG chunk:', err);
+        reportImportError(err);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -289,8 +292,9 @@ export const PalettePanel: React.FC = () => {
             <div className="flex gap-1">
               <button
                 onClick={() => crngFileInputRef.current?.click()}
-                className="text-[var(--accent-gold)] hover:underline cursor-pointer text-[10px] font-mono"
-                title="Import Deluxe Paint CRNG binary chunk"
+                disabled={tracks.length >= MAX_PALETTE_CYCLE_TRACKS}
+                className="text-[var(--accent-gold)] hover:underline cursor-pointer text-[10px] font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                title={tracks.length >= MAX_PALETTE_CYCLE_TRACKS ? 'Cycle track limit reached' : 'Import Deluxe Paint CRNG binary chunk'}
               >
                 + Import CRNG
               </button>
@@ -363,13 +367,13 @@ export const PalettePanel: React.FC = () => {
                         label="Low Index"
                         value={track.low}
                         min={0}
-                        max={currentPalette.colors.length - 1}
+                        max={track.high}
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { low: val })}
                       />
                       <StudioNumberInput
                         label="High Index"
                         value={track.high}
-                        min={0}
+                        min={track.low}
                         max={currentPalette.colors.length - 1}
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { high: val })}
                       />
@@ -407,6 +411,7 @@ export const PalettePanel: React.FC = () => {
             variant="tactile"
             size="md"
             onClick={handleAddTrack}
+            disabled={tracks.length >= MAX_PALETTE_CYCLE_TRACKS}
             className="w-full mt-2"
           >
             <PixelIcon name="plus" size={12} />

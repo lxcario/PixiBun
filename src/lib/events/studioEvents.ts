@@ -119,6 +119,7 @@ type EventHandler<T> = (data: T) => void;
 
 class StudioEventBus {
   private handlers = new Map<keyof StudioEventMap, Set<EventHandler<unknown>>>();
+  private emittedDomEvents = new WeakSet<Event>();
 
   on<K extends keyof StudioEventMap>(event: K, handler: EventHandler<StudioEventMap[K]>): () => void {
     let set = this.handlers.get(event);
@@ -129,7 +130,7 @@ class StudioEventBus {
     set.add(handler as EventHandler<unknown>);
 
     const windowListener = (e: Event) => {
-      if ((e as unknown as { _studioBus?: boolean })._studioBus) {
+      if (this.emittedDomEvents.has(e)) {
         // Event was already dispatched in-memory by studioEvents.emit()
         return;
       }
@@ -174,7 +175,7 @@ class StudioEventBus {
     // 2. Dispatch to DOM window for external listeners and test spies
     if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
       const customEvent = new CustomEvent(event, { detail: data });
-      (customEvent as unknown as { _studioBus: boolean })._studioBus = true;
+      this.emittedDomEvents.add(customEvent);
       window.dispatchEvent(customEvent);
     }
   }

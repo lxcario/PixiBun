@@ -9,7 +9,7 @@
  * Automatically falls back to synchronous main-thread execution when running
  * in environments without Web Worker support (Node.js, Vitest, SSR, or restrictive CSP).
  *
- * Includes bounded execution timeout (default 10s), AbortSignal cancellation,
+ * Includes per-request execution timeout (default 10s), AbortSignal cancellation,
  * and deterministic crash recovery that invalidates and terminates corrupt worker instances.
  */
 
@@ -43,6 +43,21 @@ interface PendingRequest {
 let sharedWorker: Worker | null = null;
 let workerFactory: (() => Worker) | null = null;
 let pendingCallbacks = new Map<string, PendingRequest>();
+let workerFallbackReported = false;
+
+function reportWorkerFallback(reason: unknown): void {
+  if (typeof window === 'undefined' || workerFallbackReported) return;
+  workerFallbackReported = true;
+  const detail = reason instanceof Error ? reason.message : String(reason);
+  console.warn('Heavy compute worker unavailable; using main-thread fallback:', detail);
+  void import('@/lib/diagnostics/capture')
+    .then(({ captureDiagnostic }) => captureDiagnostic({
+      kind: 'error',
+      message: 'Heavy compute worker unavailable; using main-thread fallback.',
+      detail,
+    }))
+    .catch(() => {});
+}
 
 /**
  * Terminates the current worker, rejects all active in-flight requests,
@@ -102,8 +117,9 @@ function getOrCreateWorker(): Worker | null {
       sharedWorker = workerFactory();
       attachWorkerListeners(sharedWorker);
       return sharedWorker;
-    } catch {
+    } catch (err) {
       sharedWorker = null;
+      reportWorkerFallback(err);
       return null;
     }
   }
@@ -112,21 +128,25 @@ function getOrCreateWorker(): Worker | null {
     typeof Worker !== 'undefined'
       ? Worker
       : typeof globalThis !== 'undefined'
-      ? (globalThis as unknown as { Worker?: typeof Worker }).Worker
+      ? globalThis.Worker
       : undefined;
 
   if (!WorkerCtor) {
+    reportWorkerFallback(new Error('Web Worker API is unavailable.'));
     return null;
   }
 
   try {
-    sharedWorker = new WorkerCtor(
+    // Keep the constructor literal so Turbopack recognizes and bundles the
+    // worker entrypoint instead of copying the TypeScript source as an asset.
+    sharedWorker = new Worker(
       new URL('../../workers/heavyCompute.worker.ts', import.meta.url),
       { type: 'module' }
     );
     attachWorkerListeners(sharedWorker);
-  } catch {
+  } catch (err) {
     sharedWorker = null;
+    reportWorkerFallback(err);
   }
 
   return sharedWorker;
@@ -165,9 +185,16 @@ function dispatchToWorker<T>(
 
     if (timeoutMs > 0 && Number.isFinite(timeoutMs)) {
       timerId = setTimeout(() => {
-        terminateWorkerAndRejectAll(
-          new Error(`Worker terminated due to timeout on request ${req.id} after ${timeoutMs}ms`)
-        );
+        const pending = pendingCallbacks.get(req.id);
+        if (!pending) return;
+        pendingCallbacks.delete(req.id);
+        pending.cleanupAbortListener?.();
+        const timeoutError = new Error(`Worker request ${req.id} timed out after ${timeoutMs}ms`);
+        timeoutError.name = 'WorkerTimeoutError';
+        pending.reject(timeoutError);
+        // A lone timed-out request may be stuck in the worker. Dispose it so
+        // the next request starts fresh; peers with their own deadlines remain live.
+        if (pendingCallbacks.size === 0) terminateWorkerAndRejectAll(timeoutError);
       }, timeoutMs);
     }
 
@@ -261,6 +288,7 @@ export async function runRotSpriteInWorker(
     if (
       err instanceof Error &&
       (err.name === 'AbortError' ||
+        err.name === 'WorkerTimeoutError' ||
         err.message.includes('Worker terminated') ||
         err.message.includes('Worker fatal error'))
     ) {
@@ -302,6 +330,7 @@ export async function runWfcInWorker(
     if (
       err instanceof Error &&
       (err.name === 'AbortError' ||
+        err.name === 'WorkerTimeoutError' ||
         err.message.includes('Worker terminated') ||
         err.message.includes('Worker fatal error'))
     ) {
@@ -353,6 +382,7 @@ export async function runMorphInWorker(
     if (
       err instanceof Error &&
       (err.name === 'AbortError' ||
+        err.name === 'WorkerTimeoutError' ||
         err.message.includes('Worker terminated') ||
         err.message.includes('Worker fatal error'))
     ) {
@@ -372,7 +402,7 @@ export interface EdtNormalMapOptions extends WorkerDispatcherOptions {
 
 /**
  * Offload Euclidean Distance Transform (EDT) and Normal Map baking to Web Worker,
- * with zero-copy Transferable ArrayBuffers and automatic synchronous fallback.
+ * with a defensive input copy, Transferable ArrayBuffers, and synchronous fallback.
  */
 export async function runEdtNormalMapInWorker(
   rgba: Uint8ClampedArray,
@@ -415,7 +445,7 @@ export async function runEdtNormalMapInWorker(
   }
 
   const id = getNextId();
-  const bufferCopy = (rgba.buffer as ArrayBuffer).slice(0);
+  const bufferCopy = rgba.slice().buffer;
 
   const req: HeavyWorkerRequest = {
     id,
@@ -437,6 +467,7 @@ export async function runEdtNormalMapInWorker(
     if (
       err instanceof Error &&
       (err.name === 'AbortError' ||
+        err.name === 'WorkerTimeoutError' ||
         err.message.includes('Worker terminated') ||
         err.message.includes('Worker fatal error'))
     ) {
@@ -450,6 +481,7 @@ export async function runEdtNormalMapInWorker(
 export function _resetSharedWorkerForTesting(): void {
   terminateWorkerAndRejectAll(new Error('Reset for testing'));
   workerFactory = null;
+  workerFallbackReported = false;
 }
 
 export function _setSharedWorkerForTesting(worker: Worker | null): void {

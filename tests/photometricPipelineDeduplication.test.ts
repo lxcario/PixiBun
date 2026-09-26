@@ -275,7 +275,6 @@ function legacyUnoptimizedCharacterFlow(
   const pData = photometricCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
   const shadedPixels: Array<{ x: number; y: number; r: number; g: number; b: number; a: number }> = [];
   const specularPixels: Array<{ x: number; y: number; r: number; g: number; b: number; a: number }> = [];
-  const rimPixels: Array<{ x: number; y: number; r: number; g: number; b: number; a: number }> = [];
   const isMetallic = params.material === 'gold' || params.material === 'metal';
   const shininess = params.specularShininess || 16;
 
@@ -326,7 +325,7 @@ function legacyUnoptimizedCharacterFlow(
     }
   }
 
-  return { shadedPixels, specularPixels, rimPixels };
+  return { shadedPixels, specularPixels };
 }
 
 describe('photometric pipeline deduplication (H6)', () => {
@@ -343,8 +342,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -365,8 +362,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -386,8 +381,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -396,8 +389,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -410,7 +401,6 @@ describe('photometric pipeline deduplication (H6)', () => {
     expect(optimizedResult.specularPixels).toEqual(legacyResult.specularPixels);
 
     // 3. Rim pixels match
-    expect(optimizedResult.rimPixels).toEqual(legacyResult.rimPixels);
   });
 
   it('proves metallic character output pixels are byte-identical across gold/metal materials', () => {
@@ -424,8 +414,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 40,
       shadowIntensity: 0.6,
       specularShininess: 24,
-      rimLight: false,
-      selOut: false,
       material: 'gold',
     });
 
@@ -434,8 +422,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 40,
       shadowIntensity: 0.6,
       specularShininess: 24,
-      rimLight: false,
-      selOut: false,
       material: 'gold',
     });
 
@@ -457,8 +443,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 35,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'metal',
     });
 
@@ -491,8 +475,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 45,
       shadowIntensity: 0.5,
       specularShininess: 16,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -512,14 +494,11 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 45,
       shadowIntensity: 0.5,
       specularShininess: 16,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
     expect(result.shadedPixels).toHaveLength(0);
     expect(result.specularPixels).toHaveLength(0);
-    expect(result.rimPixels).toHaveLength(0);
   });
 
   it('proves small opaque sprite executes deterministically without errors', () => {
@@ -543,8 +522,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 45,
       shadowIntensity: 0.5,
       specularShininess: 16,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -562,8 +539,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 
@@ -589,8 +564,6 @@ describe('photometric pipeline deduplication (H6)', () => {
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 

@@ -8,6 +8,7 @@ import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { clearPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { validateProjectFile } from '@/lib/project/schema';
+import { MAX_PROJECT_NAME_LENGTH, projectNameError } from '@/lib/project/metadataAdmission';
 
 export interface StoredProject {
   id: string;
@@ -92,12 +93,8 @@ export class PixiBunDatabase extends Dexie {
 export const db = new PixiBunDatabase();
 
 if (typeof window !== 'undefined') {
-  const isDevOrTest =
-    process.env.NODE_ENV !== 'production' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-  if (isDevOrTest) {
-    (window as unknown as { __pixibunDb?: PixiBunDatabase }).__pixibunDb = db;
+  if (process.env.NODE_ENV !== 'production') {
+    (window as Window & { __pixibunDb?: PixiBunDatabase }).__pixibunDb = db;
   }
 }
 
@@ -465,7 +462,8 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
 
       const newId = createId('proj');
       const now = Date.now();
-      const clonedName = newName || `Copy of ${source.name}`;
+      const clonedName = newName ?? `Copy of ${source.name}`.slice(0, MAX_PROJECT_NAME_LENGTH);
+      if (projectNameError(clonedName)) return null;
 
       let updatedDataJson = source.dataJson;
       const decoded = decodeAndValidateProject(source.dataJson);
@@ -507,6 +505,7 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
 
 // Rename an existing project
 export async function renameProject(id: string, newName: string): Promise<boolean> {
+  if (projectNameError(newName)) return false;
   try {
     if (!db.isOpen()) await db.open();
     return await db.transaction('rw', db.projects, async () => {
@@ -514,16 +513,14 @@ export async function renameProject(id: string, newName: string): Promise<boolea
       if (!project) return false;
 
       const now = Date.now();
-      let updatedDataJson = project.dataJson;
       const decoded = decodeAndValidateProject(project.dataJson);
-      if (decoded.ok) {
-        const validated = decoded.value;
-        validated.name = newName;
-        validated.updatedAt = now;
-        updatedDataJson = JSON.stringify(validated);
-      } else {
-        console.warn(`Rename project ${id}: source data failed validation (${decoded.error}), preserving data structure.`);
-      }
+      if (!decoded.ok) return false;
+      const validated = decoded.value;
+      validated.name = newName;
+      validated.updatedAt = now;
+      const renamed = validateProjectFile(validated);
+      if (!renamed.ok) return false;
+      const updatedDataJson = JSON.stringify(renamed.value);
 
       await db.projects.update(id, {
         name: newName,
@@ -608,6 +605,8 @@ export async function createBlankProject(
   width: number = 32,
   height: number = 32
 ): Promise<StoredProject> {
+  const nameError = projectNameError(name);
+  if (nameError) throw new RangeError(nameError);
   const initialProjectFile = createBlankProjectFile(name, width, height);
   const newId = createId('proj');
   const now = initialProjectFile.createdAt;

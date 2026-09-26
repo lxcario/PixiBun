@@ -801,8 +801,6 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
       elevationDeg: 35,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'fabric',
     });
     expect(fabricResult.specularPixels.length).toBeGreaterThan(0);
@@ -817,8 +815,6 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
       elevationDeg: 35,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
     expect(matteResult.specularPixels.length).toBeGreaterThan(0);
@@ -833,8 +829,6 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
       elevationDeg: 35,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'metal',
     });
 
@@ -907,8 +901,6 @@ describe('Photometric Shading Pipelines (Smooth 3D Orbs & Discrete Character Cel
       elevationDeg: 50,
       shadowIntensity: 0.5,
       specularShininess: 32,
-      rimLight: false,
-      selOut: false,
       material: 'matte',
     });
 

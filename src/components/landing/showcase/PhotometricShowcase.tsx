@@ -476,7 +476,7 @@ export const PhotometricShowcase: React.FC = () => {
           {/* 2.5D Ground Shadow Mode Controls */}
           <div>
             <span className="block text-[10px] font-mono text-[var(--text-muted)] mb-1 uppercase tracking-wider">
-              2.5D Ground Shadow (Aaltonen Raymarcher)
+              2.5D Ground Shadow
             </span>
             <div className="grid grid-cols-3 gap-1.5">
               {(['cast', 'drop', 'none'] as const).map((mode) => (

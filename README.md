@@ -20,13 +20,22 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 **PixiBun is designed to feel like a wooden drafting desk late at night.**
 
 * **No Accounts or Logins** — Open the studio and begin placing pixels immediately.
-* **Local-First & Private Core** — Artwork and frame metadata persist on-device in IndexedDB. The undo history stack is bounded to 64 MiB and 50 entries (with an independent depth-bounded redo stack of up to 50 entries). The replay baseline is separately bounded by current project raster complexity and does not grow with session duration. Local diagnostics are enabled by default; transmission requires opt-in. Co-draw defaults at the application configuration level to zero-egress LAN mode (`iceServers: []`); public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
+* **Local-First & Private Core** — Artwork and frame metadata persist on-device in IndexedDB. Undo and redo stacks are independently depth-bounded (up to 50 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. If a single completed edit needs a snapshot larger than that limit, the edit remains on canvas and Undo/Redo history is cleared with a visible warning; otherwise older snapshots could restore the wrong state. The replay baseline is separately bounded by current project raster complexity and does not grow with session duration. Local diagnostics are enabled by default, record the page pathname, and cap detail text at 2,048 characters; transmission requires opt-in. Co-draw defaults at the application configuration level to zero-egress LAN mode (`iceServers: []`); public WebRTC STUN signaling and the optional diagnostics relay require explicit user opt-in.
 * **Purpose-Built for Indie & Game Jam Sprites** — Optimized for $16\times16$ to $128\times128$ character sprites, tilesets, and animation loops. Rather than competing with heavy native desktop software (e.g., Aseprite) for 500+ frame 4K cinematic timelines, PixiBun is engineered for instant zero-install browser crafting, 2.5D photometric lighting, and frictionless game engine exports.
 * **Tactile Mechanical Feedback** — Integer-aligned strokes, physical button depression physics, specular light-sweeps, and homestyle palettes.
-* **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite 8x distortion-free rotation, OKLab perceptual color science, and intelligent image pixelization.
+* **Mathematical Graphics Engine** — Built-in 2.5D photometric lighting, analytical normal mapping, RotSprite-inspired 8x rotation, OKLab perceptual color science, and image pixelization.
 * **Procedural Lo-Fi Radio** — Real-time Web Audio synthesizer with vinyl noise, gentle rain, and warm Rhodes chord progressions playing from a vintage desktop boombox.
 * **Command Palette** — Press <kbd>Ctrl+K</kbd> to fuzzy-search and launch any tool, toggle, or project action instantly.
 * **Dual Studio Themes** — Switch between **Atelier** (modern midnight) and **Cozy Classic** (plum & wisteria) via the Appearance Popover, each available in dark and light color schemes.
+
+---
+
+## Practical Limits
+
+- Canvas width and height: 1–2,048 pixels per axis. The studio is optimized for 16–128 pixel sprites; 2,048 pixels is the hard canvas limit.
+- Project structure: up to 500 animation frames, 100 layers in one frame, 2,000 layers across the project, and 67,108,864 aggregate layer pixels (64 Mi pixels). Each frame duration must be 1–60,000 ms.
+- Project metadata: up to 50 palettes, 100 animation clips, 100 custom ramps, and 256 characters in a project name.
+- Imports: a maximum file size of 50 MiB (52,428,800 bytes) applies to project files **and images**. Every stored layer PNG must decode to exactly the project canvas dimensions; a mismatch blocks normal opening and requires recovery.
 
 ---
 
@@ -46,7 +55,7 @@ graph LR
 ###  Live Interactive Engine Showcase (Landing Page)
 Before stepping into the full studio, visitors can interact directly with PixiBun's computer graphics algorithms right on the home desk (`#engine-showcase`):
 * **2.5D Photometric Studio & Shadows:** Interactive draggable pixel light bulb gizmo with live continuous azimuth/elevation orbit, real-time stepped OKLCH cel-shading on the Hearth Ghost sprite, 5 Blinn-Phong material profiles (*Matte, Metal, Gold, Glass, Fabric*), and bounded 2.5D directional ground cast shadows vs. contact drop AO (with physical 2D distance-field sphere-tracing dormant in engine).
-* **RotSprite Precision Rotation:** Live angular slider demonstrating Xenowhirl 8x Scale2X continuous inverse sampling vs. standard nearest-neighbor affine rotation (`imageSmoothingEnabled = false`), maintaining crisp single-pixel contours at 45°.
+* **RotSprite-Inspired Precision Rotation:** Live angular slider comparing PixiBun's 8x Scale2x, inverse-sampling rotation with standard nearest-neighbor affine rotation (`imageSmoothingEnabled = false`).
 * **Intelligent Image Synthesis:** Real-time downsampling interactive demo showcasing Forward-difference gradient salience edge-preservation and OKLab color quantization.
 * **Game Engine Exports:** Live sprite sheet packing viewer with instant Godot 4 `.tres`, Unity, and Phaser 3 JSON metadata inspection.
 
@@ -92,7 +101,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 * **Dielectric Fresnel Rim Reflection with Cauchy Dispersion:** Stylized grazing angle reflectance modulated by per-channel index-of-refraction splitting ($F_{0, R} < F_{0, G} < F_{0, B}$) for crystalline edges and rim-lit character contours.
 * **Kajiya-Kay Anisotropic Highlight:** Directional tangent vector fields $\mathbf{T}(\mathbf{x})$ with dual-cuticle shifts for continuous specular highlight bands across hair strands, fur, and brushed metal blades.
 * **Contact Ground Drop Shadows & Auto Outline:** 1-click generation of soft elliptical contact shadows under feet and clean 1px outer stroke silhouette layers.
-* **Canonical Xenowhirl RotSprite Engine:** 3-pass Scale2X (EPX) cascade ($1\times \to 2\times \to 4\times \to 8\times$) combined with subpixel continuous inverse sampling and parabolic majority voting, substantially reducing 45° distortion, blooming, and outline erosion while preserving palette purity.
+* **RotSprite-Inspired Precision Rotation:** 3-pass Scale2x/EPX cascade ($1\times \to 2\times \to 4\times \to 8\times$) combined with subpixel inverse sampling and parabolic majority voting. PixiBun does not implement the canonical rotation-offset search or single-pixel detail-restoration pass.
 * **Zhang-Suen Line Thinning:** Morphological skeleton algorithm for normalizing thick strokes down to clean 1px lines.
 * **5 Physical Material Presets:** Matte Clay, Polished Metal, Glossy Glass/Gem, Velvet Fabric, and Gold/Brass.
 
@@ -110,14 +119,14 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 ---
 
 ###  Color Science & Advanced Dithering Suite
-* **OKLab Perceptual Matching:** Color differences computed via $\Delta E_{\text{OKLab}} = \sqrt{\Delta L^2 + \Delta a^2 + \Delta b^2}$ to respect human ocular sensitivity.
+* **OKLab Perceptual Matching in Image Conversion:** The import and pixelization pipeline compares colors via $\Delta E_{\text{OKLab}} = \sqrt{\Delta L^2 + \Delta a^2 + \Delta b^2}$. The canvas Bayer, Atkinson, and Riemersma dither tools choose palette colors using squared RGB distance.
 * **Bayer Matrix Ordered Dithering:** Recursive $2\times2$, $4\times4$, and $8\times8$ threshold offset modulation before quantization to prevent dirty color pollution.
 * **Atkinson 75% Error Retention Dither:** Classic vintage Macintosh error-diffusion for high-contrast, atmospheric shading.
 * **Riemersma Space-Filling Hilbert Dither:** Space-filling curve error propagation that eliminates directional worming artifacts.
 * **Harmonic Ramp Generator:** Generates 5-step highlight and shadow ramps in OKLCH space with natural warm sun / cool shadow hue-shifting.
 * **Atmospheric Photographic Color Grading:** Stylized photographic color grading presets in OKLCH (Golden Sunset, Cool Moonlight, Neon Dusk, DMG Game Boy).
 * **Scan & Snap Palette Tools:** Scan entire canvas to create instant palettes or snap layer pixels to the active palette colors.
-* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Full binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. Features allocation-free per-pixel LUT blitting using preallocated Uint32Array buffers (with bounded per-frame string/array allocations during palette color updates), triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, harmonic rational retuning for loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
+* **Mark Ferrari 8-Bit Dynamic Palette Cycling Engine:** Binary support for Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunks. PixiBun uses `CCRT` direction value `2` for ping-pong cycling as a nonstandard extension; standard readers may not interpret that mode. Features allocation-free per-pixel LUT blitting using preallocated Uint32Array buffers (with bounded per-frame string/array allocations during palette color updates), triangle-wave ping-pong period with zero-bound fencepost safety, sub-step `BlendShift` linear color interpolation, harmonic rational retuning for loop baking, and standalone Godot 4 (`.gdshader`) & Unity URP 2D HLSL shader generation.
 
 <p align="center">
   <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Mark Ferrari Palette Cycling Live in Studio" width="680" />
@@ -138,7 +147,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 ###  Game-Ready Export Pipeline
 * **Tag Clip Export Scope:** Choose to export the full project or isolate a specific named clip (`Walk [1-4]`) into an individual GIF or SpriteSheet with automatic $0$-indexed game engine metadata.
 * **Multi-Threaded Web Worker GIF Encoder:** Background LZW bit-packing with transferable `ArrayBuffer` objects, eliminating main-thread UI lag, featuring cancellation via `AbortController` and a live progress bar.
-* **Lossless PNG:** Integer scaling from $1\times$ up to $32\times$ with crisp nearest-neighbor sampling, enforced up to the $4096\text{px}$ / $16.7\text{ MP}$ safety ceiling in the PNG tab (animated export and sprite sheet ceilings remain open in H2/H3; up to $32\times$ for sprites $\le 128\times128$, with higher scales dynamically disabled on larger canvases).
+* **Lossless PNG:** Integer scaling from $1\times$ up to $32\times$ with crisp nearest-neighbor sampling, enforced up to the $4096\text{px}$ / $16.7\text{ MP}$ safety ceiling. Animated export and sprite sheets use the same per-output geometry ceiling; GIF and APNG also have an aggregate frame-pixel limit. Scales above the limit are disabled for larger canvases.
 * **APNG Animated PNG:** Lossless full 24-bit RGB + 8-bit alpha animated sequences with configurable loop iteration control (zero-dependency uncompressed deflate store-block streaming for instant client-side rendering).
 * **MP4 & WebM Video:** Hardware-accelerated canvas video encoding with automated even-dimension macroblock rounding (`(dim * scale + 1) & ~1`):
   * **Primary WebCodecs Path & ISOBMFF Muxing:** Fast hardware-accelerated H.264 video encoding via WebCodecs `VideoEncoder` (`avc1.42001f`), packaged in-memory through a pure-TypeScript ISOBMFF Fast-Start container box muxer (`isobmffWriter.ts`).
@@ -263,7 +272,7 @@ PixiBun is engineered as a local-first web application:
 * **Accessibility support and testing:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and automated axe-core scans. Passing scans are scoped to the pages and states exercised; they are not a conformance certification.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
 * **Non-Destructive Safe Modes & Repair Wizard:** Damaged or structurally compromised projects are never opened as writable workspaces and original source records are never repaired in place; they remain 100% untouched in IndexedDB. Startup detection routes cleanly into a safe blank workspace, while gallery open failure preserves the existing active workspace. An interactive Recovery Wizard displays the deterministic production recovery plan with precise layer and frame diagnostics, requiring explicit user consent before creating a separate recovered project copy (`[Recovered] <ProjectName>`). Users can export a complete untouched ZIP backup archive at any stage. Recovered destination projects must pass bounded pre-hydration admission and canvas hydration before activation. Pending recovery state survives browser reloads via a minimal bounded identifier in session storage (`pixibun:pending-recovery-source`), and any post-commit admission or hydration failure strictly preserves both the active workspace and the pending recovery route. (Where structural corruption exceeds repair limits, automated reconstruction is safely blocked while preserving backup export).
-* **Continuous Quality & Performance Gates:** 1195 unit and integration tests across 122 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 15s budget assertion in `tests/benchmark.test.ts`), 13 E2E spec suites (55 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`, 4-theme browser accessibility audits in `tests/e2e/themeAccessibility.spec.ts`, real Chromium IndexedDB transaction liveness in `tests/e2e/recoveryTransactionLiveness.spec.ts`, and full safe-mode repair wizard verification in `tests/e2e/recoveryUIFlow.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 1237 unit and integration tests across 123 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 15s budget assertion in `tests/benchmark.test.ts`), 13 E2E spec suites (59 tests, including live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`, 4-theme browser accessibility audits in `tests/e2e/themeAccessibility.spec.ts`, real Chromium IndexedDB transaction liveness in `tests/e2e/recoveryTransactionLiveness.spec.ts`, full safe-mode repair wizard verification in `tests/e2e/recoveryUIFlow.spec.ts`, and project/worker browser checks in `tests/e2e/auditPersistence.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
@@ -276,7 +285,7 @@ PixiBun is engineered as a local-first web application:
 | **Design System** | Tactile UI Component Library | Accessible `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, and collapsible `PanelSection` with WCAG AA focus rings. |
 | **Modular Hooks** | Studio Lifecycle & Viewport Handlers | Decoupled `useStudioAutosave`, `useStudioClipboard`, `useStudioFileSystem`, and tool-specific `useBrushPointerHandler`, `useChiselPointerHandler`, `useSelectionPointerHandler`, `useShapePointerHandler`. |
 | **PWA & Offline** | Hand-rolled Service Worker + Manifest | Shell precaching, Stale-While-Revalidate static assets, zero-dependency reliability. |
-| **Raster Engine** | OffscreenCanvas Compositor | Direct `ImageData` Uint8ClampedArray access with $O(1)$ integer blitting. |
+| **Raster Engine** | HTML Canvas Compositor | Detached `HTMLCanvasElement` layer buffers and direct `ImageData`/`Uint8ClampedArray` access with integer pixel blitting. |
 | **Smart Math & AI** | Felzenszwalb EDT, Sobel, Blinn-Phong, RNM Normal Sculptor, Bounded 2.5D Shadows, Mark Ferrari Cycling | Deterministic on-device computer graphics math for 2.5D shading, micro-relief carving, bounded sprite cast shadows (with physical 2D raymarching dormant), palette cycling, and normal baking. |
 | **Image Synthesis** | Forward-Difference Salience + OKLab Median-Cut | Lossless & retro pixel art downsampling with Floyd-Steinberg and Atkinson dithering. |
 | **Audio Engine** | Web Audio API Synthesizer | Procedural vinyl rain generator and tape-flutter chord progressions with zero network bandwidth. |
@@ -285,8 +294,8 @@ PixiBun is engineered as a local-first web application:
 | **Observability** | Local IndexedDB Buffer + Web Vitals | Zero telemetry promise kept; diagnostics stay on user device by default. |
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag dual-axis theme transitions (`AppearancePopover`). |
 | **Local Persistence & Recovery System** | Dexie.js (IndexedDB Schema v5) + ZIP32 Streaming Core | Dedicated `layerBlobs` and `recoveryRecords` tables, atomic multi-table rollbacks, keyset-paginated stored-blob assessment, low-level Store-only ZIP32 writer, untouched backup archive export, and non-destructive Repair Wizard with safe-mode routing (Phases 1B.1–1B.8 complete; Phase 2+ unstarted). |
-| **Collaboration** | P2P WebRTC + CRDT Sync Bridge | Dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication (presence channel rate limited via token bucket; session dedup Set unpruned over long sessions). |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 1195 unit and integration tests across 122 suites and 13 E2E spec suites (55 tests) + Axe WCAG scans + LHCI budgets. |
+| **Collaboration** | Two-peer WebRTC + CRDT Sync Bridge | One host and one guest share a dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication (presence channel rate limited via token bucket; ordered reliable messages use a constant-size receive high-water mark). |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 1237 unit and integration tests across 123 suites and 13 E2E spec suites (59 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 
@@ -305,4 +314,3 @@ For an academic deep-dive into the next-generation architecture of PixiBun — e
 * **License:** Licensed under the [MIT License](./LICENSE).
  
 *Handcrafted with pixels, coffee, and care.* *
-

@@ -5,7 +5,7 @@
  * 2. Checks for duplicate section numbers and monotonicity in ARCHITECTURE.md.
  * 3. Asserts all local filepaths cited in CHANGELOG.md exist on disk.
  * 4. Asserts line-count claims in CHANGELOG.md match measured file lengths.
- * 5. Asserts test count and suite claims in README.md match live Vitest and Playwright test suites.
+ * 5. Asserts current test count and suite claims in README.md and BENCHMARKS.md match live runners.
  * 6. Asserts package.json version matches the latest release version in CHANGELOG.md.
  */
 
@@ -33,18 +33,22 @@ if (fs.existsSync(tasksPath)) {
   const tasksContent = fs.readFileSync(tasksPath, 'utf8');
   const phaseHeaderRegex = /^## Phase ([\d.]+[a-z]?)/gm;
   const seenPhases = new Map();
+  let hasDuplicatePhase = false;
   let match;
 
   while ((match = phaseHeaderRegex.exec(tasksContent)) !== null) {
     const phaseNum = match[1];
     if (seenPhases.has(phaseNum)) {
       reportError(`Duplicate Phase number "${phaseNum}" found in TASKS.md!`);
+      hasDuplicatePhase = true;
     } else {
       seenPhases.set(phaseNum, true);
     }
   }
 
-  if (!seenPhases.has('32') || seenPhases.get('32') === true) {
+  if (seenPhases.size === 0) {
+    reportError('No phase headers found in TASKS.md');
+  } else if (!hasDuplicatePhase) {
     reportPass(`TASKS.md phase headers verified (all ${seenPhases.size} phases unique)`);
   }
 } else {
@@ -191,6 +195,19 @@ if (fs.existsSync(readmePath)) {
         reportError('No unit test count claims found in README.md to verify.');
       }
 
+      const benchmarkPath = path.join(rootDir, 'BENCHMARKS.md');
+      if (!fs.existsSync(benchmarkPath)) {
+        reportError('BENCHMARKS.md not found');
+      } else {
+        const benchmarkContent = fs.readFileSync(benchmarkPath, 'utf8');
+        const benchmarkMatch = benchmarkContent.match(/Current suite inventory:\s*(\d+) unit tests across (\d+) suites/);
+        if (!benchmarkMatch) {
+          reportError('Current unit test inventory claim not found in BENCHMARKS.md');
+        } else if (Number(benchmarkMatch[1]) !== liveUnitTests || Number(benchmarkMatch[2]) !== liveUnitSuites) {
+          reportError(`BENCHMARKS.md current suite inventory mismatch: claimed ${benchmarkMatch[1]} tests across ${benchmarkMatch[2]} suites, but Vitest reports ${liveUnitTests} across ${liveUnitSuites}.`);
+        }
+      }
+
       const e2eRegex = /(\d+)\s+E2E spec suites\s*\(\s*(\d+)\s+tests/g;
       let e2eMatch;
       let e2eClaimsFound = 0;
@@ -211,7 +228,7 @@ if (fs.existsSync(readmePath)) {
 
       if (unitClaimsFound > 0 && e2eClaimsFound > 0 && errorCount === 0) {
         reportPass(
-          `README.md test metrics verified against live runners (${liveUnitTests} unit tests across ${liveUnitSuites} suites; ${liveE2ETests} E2E tests across ${liveE2ESuites} suites)`
+          `README.md and BENCHMARKS.md test metrics verified against live runners (${liveUnitTests} unit tests across ${liveUnitSuites} suites; ${liveE2ETests} E2E tests across ${liveE2ESuites} suites)`
         );
       }
     }

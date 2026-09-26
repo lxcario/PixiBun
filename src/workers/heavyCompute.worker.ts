@@ -16,6 +16,9 @@ import {
 } from '@/lib/ai/math/edtNormalMap';
 import { computeMinecraftSkinNormalField } from '@/lib/ai/math/minecraftSkin';
 
+// This entrypoint runs in a worker; DOM typings expose the Window overload for self.
+const postWorkerMessage = self.postMessage.bind(self) as (message: unknown, transfer?: ArrayBufferLike[]) => void;
+
 export type HeavyWorkerRequest =
   | {
       id: string;
@@ -101,7 +104,7 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
           outPivotY
         );
         const transfer = [res.data.buffer];
-        (self as unknown as Worker).postMessage(
+        postWorkerMessage(
           { id, type: 'rotSprite:done', result: res },
           transfer
         );
@@ -112,7 +115,7 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
         const { id, input, options } = req;
         const res = synthesizeWfc(input, options);
         const transfer = res.data?.buffer ? [res.data.buffer] : [];
-        (self as unknown as Worker).postMessage(
+        postWorkerMessage(
           { id, type: 'wfc:done', result: res },
           transfer
         );
@@ -126,7 +129,7 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
             ? [morphInBetweenFrameAtFraction(frameA, frameB, fraction)]
             : morphInBetweenFramesSync(frameA, frameB, steps);
         const transfer = res.map((r) => r.data.buffer);
-        (self as unknown as Worker).postMessage(
+        postWorkerMessage(
           { id, type: 'morph:done', result: res },
           transfer
         );
@@ -163,7 +166,7 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
 
         const outRgba = bakeNormalMapToRgba(normalField, width, height, isOpaque);
         const transfer = [outRgba.buffer];
-        (self as unknown as Worker).postMessage(
+        postWorkerMessage(
           { id, type: 'edtNormalMap:done', result: { width, height, data: outRgba } },
           transfer
         );
@@ -171,7 +174,7 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
       }
     }
   } catch (err) {
-    (self as unknown as Worker).postMessage({
+    postWorkerMessage({
       id: req.id,
       type: 'error',
       message: err instanceof Error ? err.message : String(err),

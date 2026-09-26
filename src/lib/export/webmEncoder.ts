@@ -61,13 +61,13 @@ export async function exportAnimationToWebmAsync(
   const hasMediaRecorder =
     typeof window !== 'undefined' &&
     typeof document !== 'undefined' &&
-    typeof (window as unknown as { MediaRecorder?: typeof MediaRecorder }).MediaRecorder !== 'undefined';
+    typeof window.MediaRecorder !== 'undefined';
 
   if (!hasMediaRecorder) {
     // Node / Vitest fallback: produce a dummy/mock WebM blob for test stability
     const mockData = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3]); // EBML header bytes
     options.onProgress?.(frameCanvases.length * loopCount, frameCanvases.length * loopCount);
-    return new Blob([mockData.buffer as ArrayBuffer], { type: 'video/webm' });
+    return new Blob([mockData.buffer], { type: 'video/webm' });
   }
 
   const exportCanvas = document.createElement('canvas');

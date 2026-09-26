@@ -14,6 +14,7 @@ export type { RawFrameData };
 import { extractScaledCanvasRgba } from '@/lib/canvas/scaleCanvas';
 import { validateExportGeometry } from './exportGeometryValidation';
 import { MAX_EXPORT_AGGREGATE_PIXELS } from '@/config/canvasLimits';
+import { toBlobPart } from './blobBytes';
 
 /**
  * Extracts scaled RawFrameData array from a list of HTMLCanvasElements.
@@ -150,5 +151,5 @@ export async function createAnimatedGifBlobAsync(
 
   // Main thread fallback
   const gifUint8 = encodeGifRawFrames(rawFrames, fps, onProgress, delays);
-  return new Blob([gifUint8 as unknown as BlobPart], { type: 'image/gif' });
+  return new Blob([toBlobPart(gifUint8)], { type: 'image/gif' });
 }

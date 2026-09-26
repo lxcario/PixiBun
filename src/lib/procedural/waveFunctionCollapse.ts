@@ -10,7 +10,8 @@
  * across orthogonal directions, and collapses a wave of possibilities using minimum Shannon entropy
  * observation and constraint propagation (AC-4 arc consistency with pre-allocated support counters).
  *
- * For successfully converged outputs (status === 'complete'), guarantees zero local neighborhood constraint violations across generated regions.
+ * A WfcResult with success === true and status === 'complete' has zero local
+ * neighborhood constraint violations across the generated region.
  */
 
 import { MAX_WFC_WORKING_SET_BYTES } from '@/config/canvasLimits';
@@ -30,6 +31,7 @@ export interface WfcResourceBreakdown {
   waveBytes: number;
   compatibilityBytes: number;
   entropyBytes: number;
+  propagationStackBytes: number;
   outputBytes: number;
   totalWorkingSetBytes: number;
 }
@@ -118,20 +120,23 @@ export function safeAdd(...terms: number[]): number | null {
  * - wave: Uint8Array (C * P * 1 byte, exact)
  * - compatible: Int32Array (C * P * D * 4 = 16 * C * P bytes, exact)
  * - entropy: possibleCount (Int32Array, 4*C), cellSumWeights (Float64Array, 8*C), cellSumWeightLogWeights (Float64Array, 8*C) (20 * C bytes, exact)
+ * - propagation stack: Int32Array (C * P * 2 entries, 8 * C * P bytes, upper bound)
  * - output: Uint8ClampedArray (C * 4 bytes, exact)
  * - pattern storage: patterns (Uint32Array(n^2)[], P * 4*n^2 bytes), weights (Float64Array, 8*P bytes), weightLogWeights (Float64Array, 8*P bytes) (exact typed buffers)
  * - propagator: WfcPropagatorTable CSR typed representation (offsets: Int32Array, counts: Int32Array, neighbors: Int32Array).
- *   Modeled pre-allocation by its dense capacity upper bound D * P^2 * 4 = 16 * P^2 bytes.
+ *   Modeled pre-allocation by dense neighbor capacity plus offsets, counts, and temporary write positions.
  *
  * Resource model breakdown:
  * - patternStorageBytes: P * (n^2 * 4 bytes + 16 bytes weights) [exact typed array allocations]
- * - propagatorBytes: D * P * P * 4 bytes [dense CSR typed neighbor capacity upper bound]
+ * - propagatorBytes: D * P * P * 4 + D * P * 12 bytes [dense neighbors and three slot arrays]
  * - waveBytes: C * P * 1 byte [exact typed array allocation]
  * - compatibilityBytes: C * P * D * 4 bytes (16 * C * P) [exact typed array allocation]
  * - entropyBytes: C * 20 bytes [exact typed array allocations]
+ * - propagationStackBytes: C * P * 8 bytes [bounded typed array allocation]
  * - outputBytes: C * 4 bytes [exact typed array allocation]
  *
- * Total modeled working set = 17 * C * P + 24 * C + 16 * P^2 + (4*n^2 + 16) * P bytes.
+ * Total modeled solver working set = 25 * C * P + 24 * C + 16 * P^2 + (4*n^2 + 64) * P bytes.
+ * Admission also charges the caller's sample buffer and the packed sample copy.
  */
 export function estimateWfcWorkingSet(
   numPatterns: number,
@@ -162,10 +167,13 @@ export function estimateWfcWorkingSet(
   const patternStorageBytes = safeMultiply(numPatterns, bytesPerPattern);
   if (patternStorageBytes === null) return null;
 
-  // propagatorBytes = D * P * P * 4 = 16 * P^2
+  // Dense neighbors plus offsets, counts, and temporary write positions.
   const pSquared = safeMultiply(numPatterns, numPatterns);
   if (pSquared === null) return null;
-  const propagatorBytes = safeMultiply(directions, pSquared, 4);
+  const propagatorBytes = safeAdd(
+    safeMultiply(directions, pSquared, 4) ?? Number.MAX_SAFE_INTEGER,
+    safeMultiply(directions, numPatterns, 12) ?? Number.MAX_SAFE_INTEGER
+  );
   if (propagatorBytes === null) return null;
 
   // waveBytes = C * P
@@ -180,6 +188,9 @@ export function estimateWfcWorkingSet(
   const entropyBytes = safeMultiply(numCells, 20);
   if (entropyBytes === null) return null;
 
+  const propagationStackBytes = safeMultiply(numCells, numPatterns, 8);
+  if (propagationStackBytes === null) return null;
+
   // outputBytes = C * 4
   const outputBytes = safeMultiply(numCells, 4);
   if (outputBytes === null) return null;
@@ -190,6 +201,7 @@ export function estimateWfcWorkingSet(
     waveBytes,
     compatibilityBytes,
     entropyBytes,
+    propagationStackBytes,
     outputBytes
   );
   if (totalWorkingSetBytes === null) return null;
@@ -200,6 +212,7 @@ export function estimateWfcWorkingSet(
     waveBytes,
     compatibilityBytes,
     entropyBytes,
+    propagationStackBytes,
     outputBytes,
     totalWorkingSetBytes,
   };
@@ -214,6 +227,7 @@ export function validateWfcResourceBudget(params: {
   n?: number;
   directions?: number;
   maxWorkingSetBytes?: number;
+  retainedSampleBytes?: number;
 }): WfcResourceEstimateResult {
   const { numPatterns, numCells, n = 2, directions = 4 } = params;
   const requestedBudget = params.maxWorkingSetBytes ?? MAX_WFC_WORKING_SET_BYTES;
@@ -235,6 +249,17 @@ export function validateWfcResourceBudget(params: {
   // but cannot bypass or raise the safety ceiling above MAX_WFC_WORKING_SET_BYTES.
   const maxWorkingSetBytes = Math.min(requestedBudget, MAX_WFC_WORKING_SET_BYTES);
 
+  const retainedSampleBytes = params.retainedSampleBytes ?? 0;
+  if (!Number.isSafeInteger(retainedSampleBytes) || retainedSampleBytes < 0) {
+    return {
+      admitted: false,
+      totalWorkingSetBytes: Infinity,
+      maxWorkingSetBytes,
+      breakdown: null,
+      error: 'WaveFunctionCollapse: invalid retained sample byte count.',
+    };
+  }
+
   const breakdown = estimateWfcWorkingSet(numPatterns, numCells, n, directions);
   if (!breakdown) {
     return {
@@ -246,12 +271,13 @@ export function validateWfcResourceBudget(params: {
     };
   }
 
-  if (breakdown.totalWorkingSetBytes > maxWorkingSetBytes) {
-    const estimatedMib = (breakdown.totalWorkingSetBytes / (1024 * 1024)).toFixed(1);
+  const totalWorkingSetBytes = safeAdd(breakdown.totalWorkingSetBytes, retainedSampleBytes);
+  if (totalWorkingSetBytes === null || totalWorkingSetBytes > maxWorkingSetBytes) {
+    const estimatedMib = ((totalWorkingSetBytes ?? Number.MAX_SAFE_INTEGER) / (1024 * 1024)).toFixed(1);
     const budgetMib = (maxWorkingSetBytes / (1024 * 1024)).toFixed(0);
     return {
       admitted: false,
-      totalWorkingSetBytes: breakdown.totalWorkingSetBytes,
+      totalWorkingSetBytes: totalWorkingSetBytes ?? Infinity,
       maxWorkingSetBytes,
       breakdown,
       error: `WaveFunctionCollapse: projected working set (${estimatedMib} MiB) exceeds safe resource budget (${budgetMib} MiB). Reduce output dimensions, sample size, or symmetries.`,
@@ -260,7 +286,7 @@ export function validateWfcResourceBudget(params: {
 
   return {
     admitted: true,
-    totalWorkingSetBytes: breakdown.totalWorkingSetBytes,
+    totalWorkingSetBytes,
     maxWorkingSetBytes,
     breakdown,
   };
@@ -604,7 +630,7 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
   // - candidatePixelWork = S * K * A
   // - cumulativeCandidateBytes = S * K * (4 * A) (deterministic cumulative raw candidate-payload allowance, not peak heap)
   // - samplePixelsBytes = samplePixelsCount * 4 (known exact raw pixel input bytes)
-  // - minSolverBytes = 41 * numCells + 4*n^2 + 32 (minimal solver structures with P=1)
+  // - minSolverBytes = 49 * numCells + 4*n^2 + 80 (minimal solver structures with P=1)
   const sourcePositions = safeMultiply(xLimit, yLimit);
   const patternPixelArea = safeMultiply(n, n);
   const patternFootprint = patternPixelArea !== null ? safeMultiply(patternPixelArea, 4) : null;
@@ -616,13 +642,17 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
       : null;
   const samplePixelsBytes = safeMultiply(samplePixelsCount, 4);
   const minSolverBytes = safeAdd(
-    safeMultiply(numCells, 41) ?? Number.MAX_SAFE_INTEGER,
-    safeAdd(patternFootprint ?? 16, 32) ?? 48
+    safeMultiply(numCells, 49) ?? Number.MAX_SAFE_INTEGER,
+    safeAdd(patternFootprint ?? 16, 80) ?? 96
   );
 
+  // The input view and packed RGBA copy coexist with the solver and output.
+  const retainedSampleBytes =
+    samplePixelsBytes !== null ? safeAdd(sampleData.byteLength, samplePixelsBytes) : null;
+
   const coexistingCoreBytes =
-    samplePixelsBytes !== null && minSolverBytes !== null
-      ? safeAdd(samplePixelsBytes, minSolverBytes)
+    retainedSampleBytes !== null && minSolverBytes !== null
+      ? safeAdd(retainedSampleBytes, minSolverBytes)
       : null;
 
   const earlyLowerBoundBytes =
@@ -692,6 +722,7 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
             n,
             directions: 4,
             maxWorkingSetBytes,
+            retainedSampleBytes: retainedSampleBytes ?? Number.MAX_SAFE_INTEGER,
           });
           if (!incrementalCheck.admitted) {
             return {
@@ -740,6 +771,7 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
     n,
     directions: 4,
     maxWorkingSetBytes,
+    retainedSampleBytes: retainedSampleBytes ?? Number.MAX_SAFE_INTEGER,
   });
 
   if (!admission.admitted) {
@@ -778,6 +810,9 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
   const propagator = _wfcInternal.buildPropagatorTable(patterns, n, 4);
 
   // 4. Attempt synthesis loop with retries on contradiction
+  // Each (cell, pattern) can be banned at most once per attempt; reuse this
+  // bounded typed stack rather than allocating JS tuple arrays on propagation.
+  const stack = new Int32Array(numCells * numPatterns * 2);
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const prng = createPrng(baseSeed + attempt * 7919);
 
@@ -791,8 +826,7 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
         initialSumWeightLogWeights
       );
 
-    // Stack for constraint propagation: pairs of [cell, pattern]
-    const stack: [number, number][] = [];
+    let stackTop = 0;
 
     const ban = (c: number, p: number): boolean => {
       const idx = c * numPatterns + p;
@@ -809,7 +843,8 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
       cellSumWeights[c] -= w;
       cellSumWeightLogWeights[c] -= weightLogWeights[p];
 
-      stack.push([c, p]);
+      stack[stackTop++] = c;
+      stack[stackTop++] = p;
       return true;
     };
 
@@ -884,8 +919,9 @@ export function synthesizeWfc(input: WfcInput, options: WfcOptions = {}): WfcRes
       if (contradiction) break;
 
       // 4c. Propagate constraints (AC-4)
-      while (stack.length > 0) {
-        const [currCell, removedP] = stack.pop()!;
+      while (stackTop > 0) {
+        const removedP = stack[--stackTop];
+        const currCell = stack[--stackTop];
         const cx = currCell % outputWidth;
         const cy = Math.floor(currCell / outputWidth);
 

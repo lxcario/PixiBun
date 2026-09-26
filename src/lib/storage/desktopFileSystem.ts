@@ -9,6 +9,16 @@
 
 import { SafeJson } from '@/lib/safety/safeJson';
 
+interface FileHandleWithPermissions extends FileSystemFileHandle {
+  queryPermission?: (descriptor: { mode: string }) => Promise<PermissionState>;
+  requestPermission?: (descriptor: { mode: string }) => Promise<PermissionState>;
+}
+
+interface FilePickerWindow extends Window {
+  showOpenFilePicker?: (options?: unknown) => Promise<FileSystemFileHandle[]>;
+  showSaveFilePicker?: (options?: unknown) => Promise<FileSystemFileHandle>;
+}
+
 export const PIXIBUN_FILE_TYPES = [
   {
     description: 'PixiBun Project File (*.pixibun)',
@@ -20,10 +30,7 @@ export async function verifyHandlePermission(
   handle: FileSystemFileHandle,
   mode: 'read' | 'readwrite' = 'readwrite'
 ): Promise<boolean> {
-  const h = handle as unknown as {
-    queryPermission?: (descriptor: { mode: string }) => Promise<PermissionState>;
-    requestPermission?: (descriptor: { mode: string }) => Promise<PermissionState>;
-  };
+  const h = handle as FileHandleWithPermissions;
   if (typeof h.queryPermission !== 'function') return true;
 
   try {
@@ -47,8 +54,8 @@ export class DesktopFileSystem {
   public static isSupported(): boolean {
     return (
       typeof window !== 'undefined' &&
-      typeof (window as unknown as { showOpenFilePicker?: unknown }).showOpenFilePicker === 'function' &&
-      typeof (window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker === 'function'
+      typeof (window as FilePickerWindow).showOpenFilePicker === 'function' &&
+      typeof (window as FilePickerWindow).showSaveFilePicker === 'function'
     );
   }
 
@@ -84,9 +91,8 @@ export class DesktopFileSystem {
   } | null> {
     if (this.isSupported()) {
       try {
-        const picker = (window as unknown as {
-          showOpenFilePicker: (options?: unknown) => Promise<FileSystemFileHandle[]>;
-        }).showOpenFilePicker;
+        const picker = (window as FilePickerWindow).showOpenFilePicker;
+        if (!picker) throw new Error('File picker is unavailable');
 
         const [handle] = await picker({
           multiple: false,
@@ -160,9 +166,8 @@ export class DesktopFileSystem {
         let handle = this.activeProjectId === projectId ? this.activeHandle : null;
 
         if (!handle || forceSaveAs) {
-          const savePicker = (window as unknown as {
-            showSaveFilePicker: (options?: unknown) => Promise<FileSystemFileHandle>;
-          }).showSaveFilePicker;
+          const savePicker = (window as FilePickerWindow).showSaveFilePicker;
+          if (!savePicker) throw new Error('Save picker is unavailable');
 
           handle = await savePicker({
             suggestedName,

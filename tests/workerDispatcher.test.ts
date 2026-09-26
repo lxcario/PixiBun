@@ -3,6 +3,7 @@ import {
   runRotSpriteInWorker,
   runWfcInWorker,
   runMorphInWorker,
+  runEdtNormalMapInWorker,
   _setSharedWorkerForTesting,
   _resetSharedWorkerForTesting,
   _setWorkerFactoryForTesting,
@@ -132,6 +133,23 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
 
+  it('sends only the selected pixel view to the normal-map worker', async () => {
+    const mockWorker = new MockWorker();
+    _setSharedWorkerForTesting(mockWorker as unknown as Worker);
+    const backing = new Uint8ClampedArray([91, 92, 93, 94, ...Array.from({ length: 16 }, (_, i) => i + 1), 95, 96]);
+    const pixels = backing.subarray(4, 20);
+    const promise = runEdtNormalMapInWorker(pixels, 2, 2);
+
+    const request = mockWorker.postMessage.mock.calls[0][0] as Extract<HeavyWorkerRequest, { type: 'edtNormalMap' }>;
+    expect(request.buffer.byteLength).toBe(16);
+    expect(Array.from(new Uint8ClampedArray(request.buffer))).toEqual(Array.from(pixels));
+    expect(backing[4]).toBe(1);
+    mockWorker.onmessage?.({
+      data: { id: request.id, type: 'edtNormalMap', result: { width: 2, height: 2, data: new Uint8ClampedArray(16) } },
+    } as MessageEvent);
+    await expect(promise).resolves.toMatchObject({ width: 2, height: 2 });
+  });
+
   it('terminates worker and rejects all pending callbacks on worker fatal error', async () => {
     const mockWorker = new MockWorker();
     _setSharedWorkerForTesting(mockWorker as unknown as Worker);
@@ -167,7 +185,7 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     // Advance time past timeout
     vi.advanceTimersByTime(150);
 
-    await expect(promise).rejects.toThrow(/Worker terminated due to timeout/i);
+    await expect(promise).rejects.toThrow(/Worker request .* timed out/i);
     expect(mockWorker.terminate).toHaveBeenCalled();
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
@@ -208,7 +226,7 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
 
-  it('multi-request concurrent failure: Request A times out -> A and B rejected -> worker terminated -> Request C succeeds on fresh worker', async () => {
+  it('a timed-out request does not reject a concurrent request that can still finish', async () => {
     vi.useFakeTimers();
 
     const createdWorkers: MockWorker[] = [];
@@ -235,20 +253,31 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     // Advance 120ms: Request A times out
     vi.advanceTimersByTime(120);
 
-    // Both A and B MUST be rejected because shared worker is invalidated
-    await expect(promiseA).rejects.toThrow(/Worker terminated due to timeout on request/i);
-    await expect(promiseB).rejects.toThrow(/Worker terminated due to timeout on request/i);
-    expect(firstWorker.terminate).toHaveBeenCalled();
+    await expect(promiseA).rejects.toThrow(/Worker request .* timed out/i);
+    expect(firstWorker.terminate).not.toHaveBeenCalled();
+    expect(_getPendingCallbacksCountForTesting()).toBe(1);
+
+    const reqA = firstWorker.postMessage.mock.calls[0][0] as HeavyWorkerRequest;
+    const reqB = firstWorker.postMessage.mock.calls[1][0] as HeavyWorkerRequest;
+    firstWorker.onmessage?.({
+      data: { id: reqA.id, type: 'rotSprite', result: { width: 2, height: 2, data: new Uint8ClampedArray(16) } },
+    } as MessageEvent);
+    expect(_getPendingCallbacksCountForTesting()).toBe(1);
+    firstWorker.onmessage?.({
+      data: {
+        id: reqB.id,
+        type: 'rotSprite',
+        result: { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(42) },
+      },
+    } as MessageEvent);
+    expect((await promiseB).data[0]).toBe(42);
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
 
-    // Subsequent Request C should instantiate a fresh worker
+    // The healthy worker remains available for a later request.
     const promiseC = runRotSpriteInWorker(src, Math.PI / 2);
-    expect(createdWorkers.length).toBe(2);
-    const secondWorker = createdWorkers[1];
-    expect(secondWorker).not.toBe(firstWorker);
-
-    const reqC = secondWorker.postMessage.mock.calls[0][0] as HeavyWorkerRequest;
-    secondWorker.onmessage?.({
+    expect(createdWorkers.length).toBe(1);
+    const reqC = firstWorker.postMessage.mock.calls[2][0] as HeavyWorkerRequest;
+    firstWorker.onmessage?.({
       data: {
         id: reqC.id,
         type: 'rotSprite',
@@ -258,7 +287,7 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
 
     const resultC = await promiseC;
     expect(resultC.data[0]).toBe(99);
-    expect(secondWorker.terminate).not.toHaveBeenCalled();
+    expect(firstWorker.terminate).not.toHaveBeenCalled();
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
 });

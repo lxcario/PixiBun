@@ -126,29 +126,4 @@ export function getIsometric2p1Line(x0: number, y0: number, x1: number, y1: numb
   return points;
 }
 
-export function calculate47TileBitmask(
-  isMatchingNeighbor: (nx: number, ny: number) => boolean,
-  x: number,
-  y: number
-): number {
-  const N = isMatchingNeighbor(x, y - 1) ? 1 : 0;
-  const E = isMatchingNeighbor(x + 1, y) ? 1 : 0;
-  const S = isMatchingNeighbor(x, y + 1) ? 1 : 0;
-  const W = isMatchingNeighbor(x - 1, y) ? 1 : 0;
-
-  const NE = N && E && isMatchingNeighbor(x + 1, y - 1) ? 1 : 0;
-  const SE = S && E && isMatchingNeighbor(x + 1, y + 1) ? 1 : 0;
-  const SW = S && W && isMatchingNeighbor(x - 1, y + 1) ? 1 : 0;
-  const NW = N && W && isMatchingNeighbor(x - 1, y - 1) ? 1 : 0;
-
-  return (
-    N * 1 +
-    NE * 2 +
-    E * 4 +
-    SE * 8 +
-    S * 16 +
-    SW * 32 +
-    W * 64 +
-    NW * 128
-  );
-}
+export { calculate47TileBitmask } from './autotileEngine';

@@ -6,8 +6,9 @@
  *    IEEE International Conference on Communications (ICC), 1973.
  * 2. Bill Atkinson, Atkinson Dithering Algorithm, Apple Computer, 1984.
  *    Fractional (1/8) error diffusion distributing error to 6 neighboring pixels, preserving specular highlights.
- * 3. Thiadmer Riemersma, "A Balanced Dithering Algorithm",
+ * 3. Thiadmer Riemersma, "A Balanced Dithering Technique",
  *    C/C++ Users Journal, Vol. 16, No. 12, December 1998.
+ *    https://www.compuphase.com/articles_pub_en.htm
  *    1D error diffusion along a recursive 2D Hilbert space-filling curve with exponential error decay.
  */
 
@@ -156,8 +157,14 @@ export function applyRiemersmaDither(
     order *= 2;
   }
 
-  const path: [number, number][] = [];
   const numPoints = order * order;
+  const historyLength = 16;
+  const errR = new Array<number>(historyLength).fill(0);
+  const errG = new Array<number>(historyLength).fill(0);
+  const errB = new Array<number>(historyLength).fill(0);
+  // A 16:1 newest-to-oldest weight ratio keeps recent quantization error
+  // strong enough to dither while retaining spatial context along the curve.
+  const decay = Math.pow(1 / 16, 1 / (historyLength - 1));
 
   for (let d = 0; d < numPoints; d++) {
     let rx: number, ry: number, s: number;
@@ -182,19 +189,7 @@ export function applyRiemersmaDither(
       t = Math.floor(t / 4);
     }
 
-    if (x >= 0 && x < width && y >= 0 && y < height) {
-      path.push([x, y]);
-    }
-  }
-
-  const historyLength = 16;
-  const errR = new Array<number>(historyLength).fill(0);
-  const errG = new Array<number>(historyLength).fill(0);
-  const errB = new Array<number>(historyLength).fill(0);
-  const decay = 1 / 8;
-
-  for (let p = 0; p < path.length; p++) {
-    const [x, y] = path[p];
+    if (x >= width || y >= height) continue;
     const idx = y * width + x;
 
     if (data[idx * 4 + 3] <= 30) continue;
@@ -204,7 +199,7 @@ export function applyRiemersmaDither(
     let totalErrB = 0;
 
     for (let i = 0; i < historyLength; i++) {
-      const weight = Math.pow(decay, historyLength - i);
+      const weight = Math.pow(decay, historyLength - 1 - i);
       totalErrR += errR[i] * weight;
       totalErrG += errG[i] * weight;
       totalErrB += errB[i] * weight;

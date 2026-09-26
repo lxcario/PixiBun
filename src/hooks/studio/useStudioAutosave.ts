@@ -14,7 +14,7 @@ import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { studioEvents } from '@/lib/events/studioEvents';
 
-import type { SaveResult, ProjectFile } from '@/types/project';
+import type { SaveResult } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
 import { createId } from '@/lib/engine/id';
 import {
@@ -319,6 +319,15 @@ export function useStudioAutosave() {
     }
   }), [scheduleAutosave]);
 
+  // An edit made while startup restore is still finishing can miss the
+  // subscription or have its first timer expire before autosave is permitted.
+  // Retry the dirty revision once the workspace becomes active.
+  useEffect(() => {
+    if (lifecycleState.phase === 'active' && useStudioStore.getState().isDirty) {
+      scheduleAutosave();
+    }
+  }, [lifecycleState, scheduleAutosave]);
+
   // Native exit guard when changes are unsaved (UX-2)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -421,7 +430,7 @@ export function useStudioAutosave() {
         updateLifecycle({ phase: 'hydrating', projectId: targetProjectId });
         try {
           await hydrateProject(
-            admission.project as ProjectFile,
+            admission.project,
             admission.projectId,
             admission.sourceBlobs,
             () => !isOpenStale(epoch) && !signal.aborted
@@ -680,7 +689,7 @@ export function useStudioAutosave() {
         updateLifecycle({ phase: 'hydrating', projectId: targetId });
         try {
           await hydrateProject(
-            admission.project as ProjectFile,
+            admission.project,
             admission.projectId,
             admission.sourceBlobs,
             () => !unmounted && !isOpenStale(epoch) && !signal.aborted

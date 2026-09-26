@@ -137,7 +137,7 @@ export function bufferToHex(buffer: ArrayBuffer | Uint8Array): string {
 export async function sha256DigestHex(data: Uint8Array): Promise<string> {
   const buf = new Uint8Array(data.byteLength);
   buf.set(data);
-  const digest = await crypto.subtle.digest('SHA-256', buf.buffer as ArrayBuffer);
+  const digest = await crypto.subtle.digest('SHA-256', buf.buffer);
   return bufferToHex(digest);
 }
 
@@ -715,7 +715,7 @@ export async function prepareRecoveryPlan(
   ) {
     const reasonCode: RecoveryReasonCode | 'MALFORMED_METADATA' =
       'reasonCode' in assessment && typeof assessment.reasonCode === 'string'
-        ? (assessment.reasonCode as RecoveryReasonCode)
+        ? (assessment.reasonCode)
         : 'MALFORMED_METADATA';
     return {
       status: 'unrecoverable-blocked',

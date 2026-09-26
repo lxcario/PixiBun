@@ -6,7 +6,8 @@
  * These limits are bounded recovery inspection ceilings designed specifically for
  * Restricted Recovery Mode and the recovery metadata classifier. They are distinct
  * from normal WORKSPACE_ENVELOPE boundaries (which define active editing capacity)
- * and do not alter normal strict project validation.
+ * Some identifier and palette color ceilings are also applied by normal project
+ * validation so newly admitted documents stay inside the recovery inspection bound.
  *
  * Note on Memory & Allocation:
  * classifyProjectMetadata operates on project metadata without decoding raster layers,

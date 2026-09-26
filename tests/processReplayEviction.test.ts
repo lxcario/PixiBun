@@ -827,7 +827,7 @@ describe('Finding H4: Redo-triggered eviction advances process replay baseline',
       description: 'Huge current',
       frameIndex: 0,
       layerId: 'layer-new',
-      imageData: createSolidImageData(24, 24, 99, 99, 99), // 24*24*4 + 512 = 2816 bytes > 2500
+      imageData: createSolidImageData(18, 18, 99, 99, 99), // 18*18*4 + 512 = 1808 bytes <= 2500
     };
     engine.redo(hugeCurrent);
     expect(engine.evictionCount).toBe(1);

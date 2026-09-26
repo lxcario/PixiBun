@@ -111,6 +111,23 @@ describe('In-Between Frame Morphing with Fraction & Multi-Source BFS', () => {
     expect(opaqueCount).toBeGreaterThan(0);
   });
 
+  it('preserves intermediate alpha and rejects mismatched frame dimensions', () => {
+    const translucentA = new Uint8ClampedArray(dataA);
+    const translucentB = new Uint8ClampedArray(dataB);
+    for (let i = 3; i < translucentA.length; i += 4) {
+      if (translucentA[i] > 0) translucentA[i] = 64;
+      if (translucentB[i] > 0) translucentB[i] = 192;
+    }
+    const frameA = { width, height, data: translucentA };
+    const frameB = { width, height, data: translucentB };
+    const middle = morphInBetweenFrameAtFraction(frameA, frameB, 0.5);
+    expect(middle.data[(1 * width + 1) * 4 + 3]).toBe(128);
+    expect(morphInBetweenFramesSync(frameA, frameB, 1)[0].data[(1 * width + 1) * 4 + 3]).toBe(128);
+
+    expect(() => morphInBetweenFrameAtFraction(frameA, { ...frameB, width: width + 1 }, 0.5)).toThrow(RangeError);
+    expect(() => morphInBetweenFramesSync(frameA, { ...frameB, width: width + 1 }, 1)).toThrow(RangeError);
+  });
+
   it('morphInBetweenFrames respects arbitrary t parameter instead of hardcoding 0.5', () => {
     const originalCreateElement = globalThis.document?.createElement;
     const docShim = {

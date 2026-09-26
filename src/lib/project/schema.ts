@@ -14,6 +14,7 @@ import { SafeJson, type SafeJsonParseOptions } from '@/lib/safety/safeJson';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 import { validateProjectResourceBudget, safeMultiply } from './resourceBudget';
 import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
+import { MAX_PALETTE_CYCLE_TRACKS } from '@/lib/color/paletteAdmission';
 import {
   type EnvelopeViolation,
   type EnvelopeViolationCode,
@@ -83,7 +84,7 @@ export function validateLayerEffect(input: unknown): LayerEffectRecipe | string 
       return 'has an invalid effect parameter.';
     }
     if (typeof value === 'number' && !Number.isFinite(value)) return 'has a non-finite effect parameter.';
-    params[key] = value as SmartEffectParameter;
+    params[key] = value;
   }
 
   let analysis: LayerEffectRecipe['analysis'];
@@ -531,35 +532,34 @@ function validateSanitizedProjectCore(
       };
     }
 
-    // In recovery mode only, enforce unique palette IDs, length and color count bounds for safe pruning
-    if (!isStrict) {
-      if (paletteIds.has(pal.id)) {
-        return {
-          ok: false,
-          error: `Palette ${i + 1} has duplicate identifier (${pal.id}).`,
-          reasonCode: 'DUPLICATE_PALETTE_ID',
-        };
-      }
-      if (
-        pal.id.length === 0 ||
-        pal.id.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
-        pal.name.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
-        (pal.author !== undefined &&
-          (typeof pal.author !== 'string' || pal.author.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH))
-      ) {
-        return {
-          ok: false,
-          error: `Palette ${i + 1} is malformed.`,
-          reasonCode: 'INVALID_PALETTES',
-        };
-      }
-      if (pal.colors.length > RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_COLORS_PER_PALETTE) {
-        return {
-          ok: false,
-          error: `Palette ${i + 1} exceeds recovery color inspection ceiling (${RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_COLORS_PER_PALETTE} colors).`,
-          reasonCode: 'INSPECTION_CEILING_EXCEEDED',
-        };
-      }
+    if (paletteIds.has(pal.id)) {
+      return {
+        ok: false,
+        error: `Palette ${i + 1} has duplicate identifier (${pal.id}).`,
+        reasonCode: 'DUPLICATE_PALETTE_ID',
+      };
+    }
+    if (
+      pal.id.length === 0 ||
+      pal.id.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
+      pal.name.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
+      (pal.author !== undefined &&
+        (typeof pal.author !== 'string' || pal.author.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH))
+    ) {
+      return {
+        ok: false,
+        error: `Palette ${i + 1} is malformed.`,
+        reasonCode: 'INVALID_PALETTES',
+      };
+    }
+    if (pal.colors.length > RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_COLORS_PER_PALETTE) {
+      return {
+        ok: false,
+        error: isStrict
+          ? `Palette ${i + 1} exceeds the ${RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_COLORS_PER_PALETTE} color limit.`
+          : `Palette ${i + 1} exceeds recovery color inspection ceiling (${RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_COLORS_PER_PALETTE} colors).`,
+        reasonCode: isStrict ? 'INVALID_PALETTES' : 'INSPECTION_CEILING_EXCEEDED',
+      };
     }
 
     if (!pal.colors.every(isHexColor)) {
@@ -570,12 +570,51 @@ function validateSanitizedProjectCore(
       };
     }
 
+    let cycleTracks: ProjectFile['palettes'][number]['cycleTracks'];
+    if (pal.cycleTracks !== undefined) {
+      if (!Array.isArray(pal.cycleTracks) || pal.cycleTracks.length > MAX_PALETTE_CYCLE_TRACKS) {
+        return { ok: false, error: `Palette ${i + 1} has malformed cycle tracks.`, reasonCode: 'INVALID_PALETTES' };
+      }
+      cycleTracks = [];
+      const trackIds = new Set<string>();
+      for (const track of pal.cycleTracks) {
+        if (
+          !isPlainObject(track) ||
+          typeof track.id !== 'string' || track.id.length === 0 ||
+          track.id.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
+          trackIds.has(track.id) ||
+          (track.name !== undefined &&
+            (typeof track.name !== 'string' || track.name.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH)) ||
+          typeof track.low !== 'number' || typeof track.high !== 'number' ||
+          !Number.isInteger(track.low) || !Number.isInteger(track.high) ||
+          track.low < 0 || track.high < track.low || track.high >= pal.colors.length ||
+          typeof track.rate !== 'number' || !Number.isFinite(track.rate) || track.rate < 0 || track.rate > 1000 ||
+          (track.direction !== 'forward' && track.direction !== 'reverse' && track.direction !== 'ping-pong') ||
+          typeof track.blendShift !== 'boolean' || typeof track.enabled !== 'boolean'
+        ) {
+          return { ok: false, error: `Palette ${i + 1} has malformed cycle tracks.`, reasonCode: 'INVALID_PALETTES' };
+        }
+        trackIds.add(track.id);
+        cycleTracks.push({
+          id: track.id,
+          name: typeof track.name === 'string' ? track.name : undefined,
+          low: track.low,
+          high: track.high,
+          rate: track.rate,
+          direction: track.direction,
+          blendShift: track.blendShift,
+          enabled: track.enabled,
+        });
+      }
+    }
+
     paletteIds.add(pal.id);
     validatedPalettes.push({
       id: pal.id,
       name: pal.name,
       author: typeof pal.author === 'string' ? pal.author : undefined,
       colors: pal.colors.slice(),
+      cycleTracks,
     });
   }
 
@@ -586,8 +625,7 @@ function validateSanitizedProjectCore(
       reasonCode: 'INVALID_ACTIVE_PALETTE',
     };
   }
-  // In recovery mode only: require active palette to resolve to an existing palette
-  if (!isStrict && !paletteIds.has(normalized.currentPaletteId)) {
+  if (!paletteIds.has(normalized.currentPaletteId)) {
     return {
       ok: false,
       error: 'The active palette reference does not match any palette in the project.',
@@ -658,34 +696,31 @@ function validateSanitizedProjectCore(
       };
     }
 
-    // In recovery mode only, enforce unique clip IDs, bounded string lengths, and relational bounds
-    if (!isStrict) {
-      if (
-        clip.id.length === 0 ||
-        clip.id.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
-        clip.name.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH
-      ) {
-        return {
-          ok: false,
-          error: `Animation clip ${i + 1} has an invalid or oversized identifier/name.`,
-          reasonCode: 'INVALID_CLIPS',
-        };
-      }
-      if (clipIds.has(clip.id)) {
-        return {
-          ok: false,
-          error: `Animation clip ${i + 1} has duplicate identifier (${clip.id}).`,
-          reasonCode: 'DUPLICATE_CLIP_ID',
-        };
-      }
-      clipIds.add(clip.id);
-      if (clip.startFrame > clip.endFrame) {
-        return {
-          ok: false,
-          error: `Animation clip ${i + 1} has inverted frame range (startFrame > endFrame).`,
-          reasonCode: 'MALFORMED_CLIP_RANGE',
-        };
-      }
+    if (
+      clip.id.length === 0 ||
+      clip.id.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH ||
+      clip.name.length > RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH
+    ) {
+      return {
+        ok: false,
+        error: `Animation clip ${i + 1} has an invalid or oversized identifier/name.`,
+        reasonCode: 'INVALID_CLIPS',
+      };
+    }
+    if (clipIds.has(clip.id)) {
+      return {
+        ok: false,
+        error: `Animation clip ${i + 1} has duplicate identifier (${clip.id}).`,
+        reasonCode: 'DUPLICATE_CLIP_ID',
+      };
+    }
+    clipIds.add(clip.id);
+    if (clip.startFrame > clip.endFrame) {
+      return {
+        ok: false,
+        error: `Animation clip ${i + 1} has inverted frame range (startFrame > endFrame).`,
+        reasonCode: 'MALFORMED_CLIP_RANGE',
+      };
     }
 
     const start =
@@ -818,17 +853,14 @@ function validateSanitizedProjectCore(
     frames.push(frame);
   }
 
-  // In recovery mode only, verify clip frame ranges against actual frame count
-  if (!isStrict) {
-    for (let i = 0; i < validatedClips.length; i++) {
-      const clip = validatedClips[i];
-      if (clip.startFrame < 0 || clip.startFrame > clip.endFrame || clip.endFrame >= frames.length) {
-        return {
-          ok: false,
-          error: `Animation clip ${i + 1} ("${clip.name}") has frame range (${clip.startFrame}..${clip.endFrame}) outside project frame count (${frames.length}).`,
-          reasonCode: 'MALFORMED_CLIP_RANGE',
-        };
-      }
+  for (let i = 0; i < validatedClips.length; i++) {
+    const clip = validatedClips[i];
+    if (clip.startFrame < 0 || clip.startFrame > clip.endFrame || clip.endFrame >= frames.length) {
+      return {
+        ok: false,
+        error: `Animation clip ${i + 1} ("${clip.name}") has frame range (${clip.startFrame}..${clip.endFrame}) outside project frame count (${frames.length}).`,
+        reasonCode: 'MALFORMED_CLIP_RANGE',
+      };
     }
   }
 
@@ -983,7 +1015,7 @@ export function validateProjectWithPolicy(
       reasonCode: 'INVALID_ROOT_TYPE',
     };
   }
-  const clean = SafeJson.sanitizeObject(input) as Record<string, unknown>;
+  const clean = SafeJson.sanitizeObject(input);
   return validateSanitizedProjectCore(clean, options);
 }
 
@@ -1012,7 +1044,7 @@ export function validateProjectJsonWithPolicy(
       reasonCode: 'INVALID_ROOT_TYPE',
     };
   }
-  return validateSanitizedProjectCore(parsed as Record<string, unknown>, validationOptions);
+  return validateSanitizedProjectCore(parsed, validationOptions);
 }
 
 /**

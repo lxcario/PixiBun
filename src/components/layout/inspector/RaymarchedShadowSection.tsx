@@ -89,7 +89,7 @@ export const RaymarchedShadowSection: React.FC = () => {
   return (
     <PanelSection
       title="Cast & Ground Shadows"
-      ariaLabel="Cast & Ground Shadows (Raymarched Soft Shadows)"
+      ariaLabel="Cast & Ground Shadows (2.5D Ground Shadows)"
       storageKey="pixibun:panel:shadows"
       defaultOpen={false}
       actions={<span className="text-[9px] font-sans text-[var(--text-muted)]">Floor Shadow</span>}

@@ -161,8 +161,6 @@ describe('PixiBud AI Math & Rendering Engines', () => {
         elevationDeg: 45,
         shadowIntensity: 0.8,
         specularShininess: 64,
-        rimLight: false,
-        selOut: false,
         material: 'gold',
       });
 
@@ -197,8 +195,6 @@ describe('PixiBud AI Math & Rendering Engines', () => {
         elevationDeg: 45,
         shadowIntensity: 0.8,
         specularShininess: 64,
-        rimLight: false,
-        selOut: false,
         material: 'gold',
       });
 
@@ -229,8 +225,6 @@ describe('PixiBud AI Math & Rendering Engines', () => {
         elevationDeg: 45,
         shadowIntensity: 0.8,
         specularShininess: 64,
-        rimLight: false,
-        selOut: false,
         material: 'glass',
       });
 

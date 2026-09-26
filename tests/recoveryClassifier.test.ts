@@ -61,7 +61,7 @@ function validBaseFixture() {
   };
 }
 
-describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
+describe('Phase 1B.1: Project Validation and Recovery Classification', () => {
   it('all existing validateProjectFile behavior continues passing for well-formed projects', () => {
     const fixture = validBaseFixture();
     const result = validateProjectFile(fixture);
@@ -115,7 +115,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts long palette id/name/author while recovery rejects them', () => {
+  it('normal and recovery validation reject long palette id/name/author', () => {
     const longId = 'pal-id-'.repeat(25); // 175 chars > 128
     const longName = 'Palette-Name-'.repeat(15); // 195 chars > 128
     const longAuthor = 'Author-Name-'.repeat(15); // 180 chars > 128
@@ -127,9 +127,9 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       currentPaletteId: longId,
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B behavior)
+    // Normal validation now shares these bounds with recovery inspection.
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects it as malformed palette identifier/name/author
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -139,7 +139,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts palettes with > 512 valid colors while recovery rejects them', () => {
+  it('normal and recovery validation reject palettes with > 512 valid colors', () => {
     const manyColors = Array.from({ length: 600 }, (_, i) => `#${(i % 16).toString(16).repeat(6)}`);
     const fixture = {
       ...validBaseFixture(),
@@ -149,9 +149,9 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       currentPaletteId: 'pal-large',
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B had no 512 color cap, only 50 palettes)
+    // The normal editor must not admit a palette beyond the bounded color count.
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects it with INSPECTION_CEILING_EXCEEDED
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -162,15 +162,14 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts unresolved currentPaletteId string while recovery rejects it', () => {
+  it('normal and recovery validation reject an unresolved currentPaletteId', () => {
     const fixture = {
       ...validBaseFixture(),
       currentPaletteId: 'non-existent-pal-id',
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B only checked typeof string)
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects unresolved active palette for safe pruning
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -180,7 +179,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts duplicate clip IDs while recovery rejects them', () => {
+  it('normal and recovery validation reject duplicate clip IDs', () => {
     const fixture = {
       ...validBaseFixture(),
       clips: [
@@ -189,9 +188,8 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       ],
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B did not check clip id uniqueness)
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects duplicate clip IDs
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -201,7 +199,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts empty or long clip id/name while recovery rejects them', () => {
+  it('normal and recovery validation reject empty or long clip id/name', () => {
     const fixture = {
       ...validBaseFixture(),
       clips: [
@@ -209,9 +207,8 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       ],
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B only checked typeof clip.id === 'string')
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects empty clip IDs
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -221,7 +218,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts startFrame > endFrame while recovery rejects it', () => {
+  it('normal and recovery validation reject an inverted clip range', () => {
     const fixture = {
       ...validBaseFixture(),
       clips: [
@@ -229,9 +226,8 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       ],
     };
 
-    // Strict validator MUST accept this (pre-Phase-1B only checked isIntegerInRange for both)
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects inverted clip ranges
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -241,7 +237,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts duplicate palette IDs while recovery rejects them', () => {
+  it('normal and recovery validation reject duplicate palette IDs', () => {
     const fixture = {
       ...validBaseFixture(),
       palettes: [
@@ -251,9 +247,8 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       currentPaletteId: 'pal-dup',
     };
 
-    // Strict validator accepts this (pre-Phase-1B behavior)
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects duplicate palette IDs to avoid active palette ambiguity
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));
@@ -263,7 +258,7 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
     }
   });
 
-  it('characterization: strict validator accepts clip range beyond frame count while recovery rejects it', () => {
+  it('normal and recovery validation reject clips beyond the frame count', () => {
     const fixture = {
       ...validBaseFixture(),
       frames: [
@@ -284,9 +279,8 @@ describe('Phase 1B.1: Strict Compatibility & Characterization', () => {
       ],
     };
 
-    // Strict validator accepts this (pre-Phase-1B behavior)
     const strictRes = validateProjectFile(fixture);
-    expect(strictRes.ok).toBe(true);
+    expect(strictRes.ok).toBe(false);
 
     // Recovery mode rejects clip range beyond frame count
     const recoveryRes = classifyProjectMetadata(JSON.stringify(fixture));

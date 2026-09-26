@@ -68,9 +68,9 @@ export function usePhotometricEvents({
       const existing = requestedLayer ?? currentFrame.layers.find((layer) => layer.tag === 'photometric');
       const savedParams = existing?.effect?.kind === 'photometric' ? existing.effect.params : undefined;
       const readNumber = (key: string, fallback: number) =>
-        typeof savedParams?.[key] === 'number' ? savedParams[key] as number : fallback;
+        typeof savedParams?.[key] === 'number' ? savedParams[key] : fallback;
       const readString = (key: string, fallback: string) =>
-        typeof savedParams?.[key] === 'string' ? savedParams[key] as string : fallback;
+        typeof savedParams?.[key] === 'string' ? savedParams[key] : fallback;
 
       let azimuth = state.tools.lightAzimuth;
       let elevation = state.tools.lightElevation;

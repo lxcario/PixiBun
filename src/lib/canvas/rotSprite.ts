@@ -1,9 +1,12 @@
 /**
- * RotSprite Algorithm Implementation.
+ * RotSprite-inspired pixel-art rotation. The canonical rotation-offset search
+ * and single-pixel detail-restoration pass are not implemented here.
  *
  * Academic & Historical Reference:
  * - Xenowhirl (2007), "RotSprite: An algorithm for rotating pixel art" (as popularized in Aseprite).
- * - Eric Johnston (1992), "EPX / Scale2x algorithm", LucasArts.
+ * - Eric Johnston, EPX (Eric's Pixel Expansion), LucasArts, 1992.
+ * - Andrea Mazzoleni, Scale2x for AdvanceMAME, 2001 (equivalent output to EPX).
+ *   https://www.scale2x.it/scale2xandepx
  *
  * Architecture:
  * 1. Lossless integer fast-paths for 0°, 90°, 180°, 270°.
@@ -241,7 +244,7 @@ export function downscale8xMajorityVote(
 }
 
 /**
- * Main RotSprite Algorithm entry point.
+ * Main RotSprite-inspired rotation entry point.
  * Rotates pixel art with Scale8x and parabolic majority-voting.
  */
 export function rotSprite(

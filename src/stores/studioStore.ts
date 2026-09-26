@@ -39,11 +39,7 @@ export const useStudioStore = create<StudioState>()(
 );
 
 if (typeof window !== 'undefined') {
-  const isDevOrTest =
-    process.env.NODE_ENV !== 'production' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-  if (isDevOrTest) {
-    (window as unknown as { __studioStore?: typeof useStudioStore }).__studioStore = useStudioStore;
+  if (process.env.NODE_ENV !== 'production') {
+    (window as Window & { __studioStore?: typeof useStudioStore }).__studioStore = useStudioStore;
   }
 }

@@ -9,6 +9,8 @@
  * with zero external libraries or npm dependencies.
  */
 
+import { toBlobPart } from './blobBytes';
+
 export class IsobmffWriter {
   private buffer: Uint8Array;
   private view: DataView;
@@ -178,6 +180,7 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
 
   // 2. Build moov Box (Fast Start: placed before mdat)
   const moovWriter = new IsobmffWriter(8192);
+  let stcoBoxOffset = -1;
   moovWriter.box('moov', () => {
     // mvhd: Movie Header
     moovWriter.fullBox('mvhd', 0, 0, () => {
@@ -328,6 +331,7 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
             });
 
             // stco: Chunk Offset Table (single chunk, will backpatch)
+            stcoBoxOffset = moovWriter.getLength();
             moovWriter.fullBox('stco', 0, 0, () => {
               moovWriter.u32(1); // entry_count = 1
               moovWriter.u32(0); // placeholder chunk_offset
@@ -357,19 +361,12 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
   const mdatHeaderOffset = ftypBytes.length + moovBytes.length;
   const chunkOffset = mdatHeaderOffset + 8;
 
-  for (let i = 0; i < moovBytes.length - 8; i++) {
-    if (
-      moovBytes[i] === 0x73 &&
-      moovBytes[i + 1] === 0x74 &&
-      moovBytes[i + 2] === 0x63 &&
-      moovBytes[i + 3] === 0x6f // 'stco'
-    ) {
-      const view = new DataView(moovBytes.buffer, moovBytes.byteOffset, moovBytes.byteLength);
-      // Box header: 4 bytes size, 4 bytes FourCC, 4 bytes ver/flags, 4 bytes entry count, 4 bytes offset
-      view.setUint32(i + 12, chunkOffset, false);
-      break;
-    }
+  if (stcoBoxOffset < 0 || stcoBoxOffset + 20 > moovBytes.length) {
+    throw new Error('MP4 chunk offset box was not written.');
   }
+  const view = new DataView(moovBytes.buffer, moovBytes.byteOffset, moovBytes.byteLength);
+  // Box layout: size (4), FourCC (4), version/flags (4), entry count (4), offset (4).
+  view.setUint32(stcoBoxOffset + 16, chunkOffset, false);
 
   // 4. Build mdat Box Header
   const mdatPayloadLength = track.samples.reduce((acc, s) => acc + s.data.length, 0);
@@ -381,12 +378,12 @@ export function muxToMp4Blob(track: Mp4MuxerTrack): Blob {
   mdatHeader[6] = 0x61; // 'a'
   mdatHeader[7] = 0x74; // 't'
 
-  // 5. Package into compliant Blob
+  // 5. Package into compliant Blob; shared-backed samples are copied safely.
   const parts: BlobPart[] = [
-    ftypBytes as unknown as BlobPart,
-    moovBytes as unknown as BlobPart,
-    mdatHeader as unknown as BlobPart,
-    ...track.samples.map((s) => s.data as unknown as BlobPart),
+    toBlobPart(ftypBytes),
+    toBlobPart(moovBytes),
+    mdatHeader,
+    ...track.samples.map((s) => toBlobPart(s.data)),
   ];
   return new Blob(parts, {
     type: 'video/mp4',

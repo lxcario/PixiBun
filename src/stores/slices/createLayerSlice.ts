@@ -5,6 +5,7 @@ import { getOrCreateBuffer, cloneBuffers, deleteBuffers, touchBuffer } from '@/l
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { metadataNameError } from '@/lib/project/metadataAdmission';
 
 export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   activeLayerId: 'layer-1',
@@ -19,6 +20,12 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     const currentStore = get();
     const frame = currentStore.frames[currentStore.activeFrameIndex];
     if (!frame) return;
+
+    const nameError = name === undefined ? null : metadataNameError(name, 'layer');
+    if (nameError) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: nameError });
+      return;
+    }
 
     const capacity = canAddLayersToFrame(
       currentStore.frames,
@@ -203,6 +210,11 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   renameLayer: (layerId, name) => {
+    const error = metadataNameError(name, 'layer');
+    if (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error });
+      return;
+    }
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;

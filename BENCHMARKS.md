@@ -2,7 +2,9 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-> **Environment Note:** Empirical micro-benchmarks were captured on a modern reference development workstation (x86-64 / Apple Silicon equivalent, Node v22 / V8 engine). Automated CI tests in `tests/benchmark.test.ts` verify that operations remain within generous upper-bound latency ceilings ($\le 16.66\text{ ms}$ for 60 FPS interaction) rather than asserting identical machine-specific timings.
+Current suite inventory: 1237 unit tests across 123 suites. Historical measurements below retain their original test counts and timings.
+
+> **Environment Note:** The older micro-benchmark tables outside §7 do not record exact hardware and have not been reproduced for this audit; treat them as historical observations. §7 records a fresh run with named hardware. Automated tests in `tests/benchmark.test.ts` enforce generous latency ceilings rather than identical machine-specific timings.
 
 ---
 
@@ -23,7 +25,7 @@ The palette cycling engine operates via an allocation-free per-pixel 32-bit pack
 | **256 × 256** | 65,536 | $< 0.005\text{ ms}$ | $0.199\text{ ms}$ | **$0.204\text{ ms}$** | **1.22%** |
 | **512 × 512** | 262,144 | $< 0.005\text{ ms}$ | $0.802\text{ ms}$ | **$0.807\text{ ms}$** | **4.84%** |
 
-> **Conclusion:** Across empirical runs up to $512 \times 512$, continuous palette cycling measured $<5\%$ of the 16.66ms browser frame budget, remaining well within automated CI latency budgets.
+> **Historical observation:** The recorded palette-cycling runs were below 5% of a 16.66ms frame budget. Their hardware and raw samples were not retained, so these figures are not a current performance guarantee.
 
 ---
 
@@ -31,7 +33,7 @@ The palette cycling engine operates via an allocation-free per-pixel 32-bit pack
 
 **Class:** `HistoryEngine`  
 **File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
-**Stack Ceilings:** 50 undo steps (subject to 64 MiB hard memory ceiling) with independent 50-step redo stack; new edits clear redo
+**Stack Ceilings:** 50 undo steps with independent 50-step redo stack (constrained by a unified 64 MiB combined history byte envelope); new edits clear redo
 
 Each pixel history step in this modeled analysis represents a full-canvas single-layer modification storing uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$) plus a 512-byte object overhead (`calculateStepBytes` in `src/lib/engine/historyEngine.ts`).
 
@@ -48,7 +50,7 @@ Each pixel history step in this modeled analysis represents a full-canvas single
 | **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$** | 15 steps (16 raw RGBA frames exceed 64 MiB by 8 KB with +512B overhead) |
 | **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$** | 3 steps (4 raw RGBA frames exceed 64 MiB by 2 KB with +512B overhead) |
 
-> **Mathematical Note on 64 MiB Cap & Eviction Accounting:** Production code in `src/lib/engine/historyEngine.ts` enforces `DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024` (64 MiB = 67,108,864 bytes). For resolutions $512 \times 512$ and below, 50 steps fit within 64 MiB. For $1024 \times 1024$ and $2048 \times 2048$, a naive division of raw pixel bytes ($64\text{ MiB} / 4\text{ MiB} = 16$ and $64\text{ MiB} / 16\text{ MiB} = 4$) does not account for the +512-byte per-step metadata overhead (`calculateStepBytes`). In actual execution, 16 steps at $1024\times1024$ total $67,117,056\text{ bytes}$ (8,192 bytes over the 64 MiB cap), and 4 steps at $2048\times2048$ total $67,110,912\text{ bytes}$ (2,048 bytes over the cap). The eviction check `(totalBytes + stepBytes > limitBytes)` triggers before insertion, yielding exactly 15 and 3 steps respectively in the active undo stack for single-layer full-canvas modifications. For multi-layer or structural history steps (which snapshot frame metadata and back up all affected layer buffers), step byte footprints vary dynamically by operation, and steps are evicted strictly according to aggregate byte size rather than a fixed step count. Redo steps are stored on an independent 50-step stack without an explicit byte budget check.
+> **Mathematical Note on 64 MiB Cap & Eviction Accounting:** Production code in `src/lib/engine/historyEngine.ts` enforces `DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024` (64 MiB = 67,108,864 bytes). For resolutions $512 \times 512$ and below, 50 steps fit within 64 MiB. For $1024 \times 1024$ and $2048 \times 2048$, a naive division of raw pixel bytes ($64\text{ MiB} / 4\text{ MiB} = 16$ and $64\text{ MiB} / 16\text{ MiB} = 4$) does not account for the +512-byte per-step metadata overhead (`calculateStepBytes`). In actual execution, 16 steps at $1024\times1024$ total $67,117,056\text{ bytes}$ (8,192 bytes over the 64 MiB cap), and 4 steps at $2048\times2048$ total $67,110,912\text{ bytes}$ (2,048 bytes over the cap). The eviction check `(totalBytes + stepBytes > limitBytes)` triggers before insertion, yielding exactly 15 and 3 steps respectively in the active undo stack for single-layer full-canvas modifications. For multi-layer or structural history steps (which snapshot frame metadata and back up all affected layer buffers), step byte footprints vary dynamically by operation, and steps are evicted strictly according to aggregate byte size rather than a fixed step count. Redo steps are stored on an independent 50-step stack subject to the unified 64 MiB combined history byte envelope (with oldest redo entries evicted under combined byte pressure).
 
 ---
 
@@ -131,18 +133,18 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 
 ## 7. Autonomous Local Quality Gate Pipeline Benchmark
 
-**Harness:** `scripts/runQualityGate.mjs` (`npm run gate`)  
-**Target Invariant:** Fast local feedback loop on reference development hardware with zero cloud dependency.
+**Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for stages 1–4 and `npm run gate:full` for stages 1–5. Stage times are wall-clock durations printed by that runner. These measurements were captured on 2026-09-26 on Windows (NT 10.0.26200) x64, Intel Core i5-12500H (16 logical CPUs), 31.7 GiB RAM, Node v26.5.1, and npm 11.17.0. The checkout was `3c77c31` plus the uncommitted audit fixes in this plan; dependencies and Next.js build caches were already present. They are reference observations, not a performance guarantee for other machines.
 
-> **Historical Context Note:** The table below records the historical v1.13.1 / Phase C benchmark snapshot captured when the test suite stood at 699 unit tests across 98 suites. Observed reference execution on this environment for `npm run gate` on the expanded test suite (1,104 unit tests across 117 suites) measured ~37s, while `npm run gate:full` (including Next.js production build) measured ~45s.
+| Stage | Check | Standard gate | Full gate | Result |
+|---|---|---:|---:|---|
+| 1 | Documentation integrity | 17.48 s | 19.01 s | Passed: 68 phases, 32 sections, 275 cited paths, current test inventory |
+| 2 | TypeScript | 4.00 s | 3.28 s | Passed |
+| 3 | ESLint | 18.81 s | 16.96 s | Passed: source, tests, scripts, configs |
+| 4 | Vitest | 23.89 s | 21.52 s | Passed: 1,227 tests across 123 suites |
+| 5 | Next.js production build | — | 17.18 s | Passed |
+| **Total** | | **64.18 s** | **77.95 s** | **Passed** |
 
-| Stage | Subsystem | Historical Measured Duration (v1.13.1) | Status | Checked Invariants |
-|---|---|---|---|---|
-| **Stage 1** | `verifyDocIntegrity.mjs` | **$7.27\text{ s}$** | **PASSED** | 57 unique phases, 31 monotonic sections, 208 filepaths, line counts, test claims. |
-| **Stage 2** | `tsc --noEmit` | **$2.19\text{ s}$** | **PASSED** | 0 TypeScript compilation errors across whole codebase. |
-| **Stage 3** | `eslint` | **$3.15\text{ s}$** | **PASSED** | 0 lint or accessibility rule violations across source and tests. |
-| **Stage 4** | `vitest run` | **$6.83\text{ s}$** | **PASSED** | Unit and integration suite (699 tests across 98 suites at capture; 1,104 tests across 117 suites currently). |
-| **Total** | **`npm run gate`** | **$19.44\text{ s}$** | **ALL GREEN** | Pre-push gatekeeper validates release readiness with zero cloud dependency. |
+The previous v1.13.1 snapshot (699 tests across 98 suites) reported a 19.44 s gate. It is historical and does not describe the current suite or hardware.
 
 ---
 
@@ -152,6 +154,8 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 **Target Budget:** $\le 16.66\text{ ms}$ on typical sprite resolutions ($32\times32$ to $64\times64$) for continuous interactive bulb manipulation.
 
 Phase 63 introduced source-shading normalization, two-sided ink edge classification, hue/chroma ramp grouping, discrete 1/2/3-tone cel-shading quantization, continuous 3D specular highlight pill with line-of-sight gating, and non-destructive `LayerEffectRecipe` metadata serialization.
+
+The timing table below is a historical estimate without retained raw samples or a reproducible hardware record. It has not been remeasured for the current code and must not be used as a 60 FPS guarantee.
 
 ### Performance Scaling Analysis
 
@@ -163,7 +167,7 @@ Phase 63 introduced source-shading normalization, two-sided ink edge classificat
 | **Discrete Tone Quantization** | Single / Dual / Trio OKLCH bands | $0.11\text{ ms}$ | $0.34\text{ ms}$ | $1.12\text{ ms}$ | Discrete OKLCH tone thresholds without color banding |
 | **3D Specular Highlight Pill** | Blinn-Phong + $N_{3D} \cdot L_{3D} > 0$ gate | $0.09\text{ ms}$ | $0.26\text{ ms}$ | $0.84\text{ ms}$ | Macro-silhouette normals; facial/ink feature shielding |
 | **Recipe Serialization (v3)** | Non-destructive `LayerEffectRecipe` | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $O(1)$ JSON payload ($< 1\text{ KB}$ per layer) |
-| **Total Interactive Preview** | Single-frame gizmo drag | **$1.07\text{ ms}$** | **$3.25\text{ ms}$** | **$10.86\text{ ms}$** | Consistently $< 16.66\text{ ms}$ (60 FPS solid) |
+| **Total Interactive Preview** | Single-frame gizmo drag | **$1.07\text{ ms}$** | **$3.25\text{ ms}$** | **$10.86\text{ ms}$** | Historical estimate; current frame rate unverified |
 
 ---
 
@@ -184,4 +188,3 @@ Phase 63 introduced source-shading normalization, two-sided ink edge classificat
 2. **Keyset-Paginated Stored-Blob Assessment (`src/lib/recovery/recoveryDiagnosis.ts`):**
    - **Compound Index Scans:** Bounded batch reads (batches of 25) against `[projectId+id]` on `layerBlobs` ensure that inspection of stored project blobs avoids instantiating unbounded arrays in memory.
    - **Bounded Blob Header Probing:** Probes a bounded 24-byte Blob slice (`record.blob.slice(0, 24)`) via `ImageHeaderProbe` to validate PNG format and dimensions without instantiating canvas backing stores or decoding raster bitmaps, keeping memory negligible.
-

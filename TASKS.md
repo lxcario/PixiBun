@@ -2,16 +2,56 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 75 — Palette persistence and audit reconciliation
+
+**Current status:** C1, H1–H6, M1, and M12 are resolved. Earlier phase entries preserve their status at the time they were written. The Phase 72 bounding-box implementation was subsequently replaced with component-member traversal and one shared distance buffer.
+
+- [x] Project, layer, and clip actions enforce metadata admission limits; frame deletion remaps clip ranges so autosaved files remain reopenable.
+- [x] Oversized Redo admission clears disconnected history; edits above the 64 MiB snapshot cap remain on canvas without Undo.
+- [x] Odd-size MP4 frames are padded instead of stretched; H1 traversal avoids temporary neighbor arrays per visited pixel.
+- [x] Corrected current palette-allocation, shadow-mode, apex-slope, and specular-alpha claims.
+- [x] Rechecked current Markdown against source and corrected export-limit status, HTML canvas buffer descriptions, RotSprite scope, undo restore cost, worker transfer wording, and historical v2 metrics.
+- [x] Normal-map worker dispatch copies the selected typed-array view, with a regression test for nonzero byte offsets.
+
+- [x] Palette and cycle-track actions enforce project admission limits before changing state.
+- [x] Accepted palette edits advance the dirty revision; edits made during startup save when the workspace becomes active.
+- [x] Current architecture, audit status, and test inventory documentation reconciled with the implementation.
+
+## Phase 74 — PixiBun v1.14.1 M1 Hardening: Redo Stack Byte Budget & Combined History Retention Envelope
+**Goal:** Implement canonical MEDIUM finding M1: the redo stack has no byte budget, allowing retained undo + redo history to substantially exceed the documented 64 MiB history envelope. Track redo retained bytes explicitly (`redoBytes`), enforce independent depth bounds on both stacks (`limitDepth`, default 50), and constrain combined retained history payload to a single unified byte envelope (`undoBytes + redoBytes <= limitBytes`, default 64 MiB). On `undo()`, if combined retained bytes exceed the limit, evict the oldest/farthest-future redo entries (`redoStack.shift()`) until the combined invariant holds, strictly preserving the active undo chain without corrupting the process replay baseline. On `redo()`, the undo admission helper considers remaining `redoBytes` and uses H4's baseline-aware eviction path (`evictUntilWithinBudget`) if undo entries must be compacted to admit `currentState`. When a new stroke is pushed (`push()`), the redo branch is cleared and `redoBytes` resets to 0. `clear()` resets all history byte counters to 0.
+
+**Deliverables:**
+- [x] **Exact Redo Byte Accounting & Combined Budget (`src/lib/engine/historyEngine.ts`)**: Added `redoBytes`, `undoBytes`, and `redoDepth` tracking to `HistoryEngine`. Enforced single combined byte envelope `undoBytes + redoBytes <= limitBytes` across `push()`, `undo()`, `redo()`, and `clear()`.
+- [x] **Oldest-First Redo Eviction Policy (`src/lib/engine/historyEngine.ts`)**: On `undo()`, evict oldest/farthest-future redo states from the front of `redoStack` (`redoStack.shift()`) under combined byte pressure or depth limits, preserving nearest redo states without mutating the process replay baseline.
+- [x] **Unretained Snapshot Handling (`src/lib/engine/historyEngine.ts`)**: Clear unreachable redo entries when an undo capture cannot fit. Reject an individually oversized redo capture before any undo-stack eviction or baseline mutation.
+- [x] **H4 Baseline Synchronization Non-Regression (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**: Preserved `updateBaselineFromEvicted` on undo-stack eviction during `redo()` when admitting `currentState` under remaining redo byte pressure. Proved that redo eviction never touches baseline, while undo eviction always updates baseline exactly once.
+- [x] **Comprehensive Test Verification (`tests/historyEngine.test.ts`)**: Added 16 unit tests in `tests/historyEngine.test.ts` covering post-fix combined byte invariant on M1 reproduction scenario, independent redo depth eviction (Case A), redo byte eviction before depth cap (Case B), combined byte budget invariance (Case C), push clearing redoBytes (Case D), redo pop decrementing redoBytes (Case E), clear resetting both byte counters (Case F), variable-size entry accounting (Case G), baseline invariance under redo eviction (Case H & Section 14), baseline update when redo forces undo eviction (Case I & Section 13), H4 process replay preservation (Case J), mixed structural and pixel step accounting (Case K), continuous accounting invariant across complex sequences (Section 15), and oversized currentState handling (Section 10).
+- [ ] **Canonical Audit Finding M12 (Open)**: M12 remains OPEN and unchanged.
+- [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
+
+**Verification:**
+- Vitest unit & integration test suite: 1,213 tests across 122 suites (100% green).
+- Playwright E2E spec suite: 55 tests across 13 suites (100% green in real Chromium).
+- TypeScript typecheck (`tsc --noEmit`): 0 errors.
+- ESLint (`eslint src tests`): 0 errors.
+- Next.js Turbopack production build (`next build`): successful clean build.
+- Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
+
+**Status:** Complete (Accepted) — M1 resolved; C1, H1–H6 resolved; M12 remains OPEN and unchanged; Phase 2+ deferred (Not Started)
+
+---
+
 ## Phase 73 — PixiBun v1.14.1 H5 Hardening: WaveFunctionCollapse Working-Set Modeling & Resource Admission Bounding
-**Goal:** Implement canonical HIGH finding H5: WaveFunctionCollapse pattern and compatibility resource growth can scale without a defensible resource bound. WFC resource demand is modeled before dominant solver allocations ($17 \cdot C \cdot P + 24 \cdot C + 16 \cdot P^2 + (4n^2 + 16) \cdot P$ bytes) and admitted against PixiBun's configured WFC subsystem admission-policy ceiling `MAX_WFC_WORKING_SET_BYTES` (64 MiB, defined in `src/config/canvasLimits.ts`). Rejection is strictly input-derived from exact deduplicated pattern count $P$ and output cell count $C$ using overflow-checked arithmetic within JavaScript's safe-integer range (`safeMultiply`, `safeAdd`), without arbitrary magic pattern caps or silent pattern/sample downscaling. When projected demand exceeds the budget, synthesis rejects early with a typed `resource_limit_exceeded` status before constructing the dense $D \times P^2$ compatibility table, allocating the $C \times P$ wave buffer, or instantiating the $16 \cdot C \cdot P$ byte AC-4 support counter array. In the artisan UI event handler (`src/hooks/viewport/events/useArtisanEvents.ts`), resource admission failures emit structured user-facing toast alerts and assistant notifications without mutating existing artwork, dirtying layers, or modifying undo history. Determinism, Mulberry32 PRNG seed progression, and AC-4 constraint propagation are bit-for-bit preserved for admitted configurations.
+**Goal:** Implement canonical HIGH finding H5: WaveFunctionCollapse pattern and compatibility resource growth can scale without a defensible resource bound. WFC resource demand is modeled before dominant solver allocations ($25 \cdot C \cdot P + 24 \cdot C + 16 \cdot P^2 + (4n^2 + 64) \cdot P$ bytes) and admitted against PixiBun's configured WFC subsystem admission-policy ceiling `MAX_WFC_WORKING_SET_BYTES` (64 MiB, defined in `src/config/canvasLimits.ts`). Rejection is strictly input-derived from exact deduplicated pattern count $P$ and output cell count $C$ using overflow-checked arithmetic within JavaScript's safe-integer range (`safeMultiply`, `safeAdd`), without arbitrary magic pattern caps or silent pattern/sample downscaling. When projected demand exceeds the budget, synthesis rejects early with a typed `resource_limit_exceeded` status before constructing the dense $D \times P^2$ compatibility table, allocating the $C \times P$ wave buffer, or instantiating the $16 \cdot C \cdot P$ byte AC-4 support counter array. In the artisan UI event handler (`src/hooks/viewport/events/useArtisanEvents.ts`), resource admission failures emit structured user-facing toast alerts and assistant notifications without mutating existing artwork, dirtying layers, or modifying undo history. Determinism, Mulberry32 PRNG seed progression, and AC-4 constraint propagation are bit-for-bit preserved for admitted configurations.
 
 **Deliverables:**
 - [x] **Canonical WFC Resource Envelope (`src/config/canvasLimits.ts`)**: Defined `WFC_ENVELOPE.MAX_WFC_WORKING_SET_BYTES = 64 * 1024 * 1024` (64 MiB) as PixiBun's configured WFC subsystem admission-policy ceiling, aligning with single-subsystem working memory envelopes (e.g. `DEFAULT_HISTORY_MAX_BYTES = 64 MiB`) to bound modeled typed-array solver allocations and structural compatibility work before dominant solver allocation.
-- [x] **Deterministic Working-Set Estimator & Safe Arithmetic (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented pure `estimateWfcWorkingSet` and `validateWfcResourceBudget` modeling exact typed array allocations across pattern storage ($P \cdot (4n^2 + 16)$), dense propagator compatibility ($16 \cdot P^2$), wave state ($C \cdot P$), AC-4 support counters ($16 \cdot C \cdot P$), entropy tracking ($20 \cdot C$), and output raster ($4 \cdot C$), guarded by overflow-checked arithmetic within JavaScript's safe-integer range (`safeMultiply`, `safeAdd`).
+- [x] **Coexisting Sample and Propagation Memory (`src/lib/procedural/waveFunctionCollapse.ts`)**: Charge retained input and packed sample buffers during admission. Replace the unbounded JavaScript tuple propagation stack with a typed stack and include its $8 \cdot C \cdot P$ byte capacity in the solver estimate.
+- [x] **Deterministic Working-Set Estimator & Safe Arithmetic (`src/lib/procedural/waveFunctionCollapse.ts`)**: Implemented pure `estimateWfcWorkingSet` and `validateWfcResourceBudget` modeling exact typed array allocations across pattern storage ($P \cdot (4n^2 + 64)$), dense propagator compatibility ($16 \cdot P^2$), wave state ($C \cdot P$), AC-4 support counters ($16 \cdot C \cdot P$), entropy tracking ($20 \cdot C$), and output raster ($4 \cdot C$), guarded by overflow-checked arithmetic within JavaScript's safe-integer range (`safeMultiply`, `safeAdd`).
 - [x] **Input-Derived Early Admission & Allocator Decoupling (`src/lib/procedural/waveFunctionCollapse.ts`)**: Guarded `synthesizeWfc` with input dimension validation, pre-extraction lower-bound structural evaluation, candidate extraction footprint bounding, incremental unique-pattern admission during the extraction loop (aborting early before retaining new patterns in Map/structures if next P exceeds budget), and post-extraction resource admission against `maxWorkingSetBytes`. Unsafe configurations reject before compatibility loops, propagator construction, or solver state allocation. Decoupled propagator build via `_wfcInternal.buildPropagatorTable` and solver state allocation via `_wfcInternal.allocateSolverState` to guarantee and empirically verify zero propagator / dominant solver-state allocations occur after resource rejection.
 - [x] **Non-Destructive UI Error Propagation (`src/hooks/viewport/events/useArtisanEvents.ts`)**: Propagated typed `result.error` to toast alert and assistant message on resource admission failure, preserving layer canvases, active artwork, and undo history without destructive mutation.
-- [x] **Comprehensive Test Verification (`tests/wfcResourceSafety.test.ts`)**: Added 24 unit tests covering exact estimator formulas across tiny, large P small C, small P large C, and large P large C dimensions; safe arithmetic boundary and overflow protection; budget boundary tests (<= B admitted, > B rejected); pre-allocation rejection proof (spying on propagator and state allocators to prove 0 calls); candidate footprint early structural rejection; incremental unique-P early abort on high-entropy sources before candidate enumeration finishes; duplicate-heavy source non-rejection; output-grid C-growth verification; logical contradiction vs resource limit distinction; and determinism non-regression across multiple seeds and sample patterns.
-- [ ] **Canonical Audit Finding M1 (Open)**: M1 remains OPEN and unchanged.
+- [x] **Comprehensive Test Verification (`tests/wfcResourceSafety.test.ts`)**: Added 26 unit tests covering exact estimator formulas across tiny, large P small C, small P large C, and large P large C dimensions; safe arithmetic boundary and overflow protection; budget boundary tests (<= B admitted, > B rejected); pre-allocation rejection proof (spying on propagator and state allocators to prove 0 calls); candidate footprint early structural rejection; incremental unique-P early abort on high-entropy sources before candidate enumeration finishes; duplicate-heavy source non-rejection; output-grid C-growth verification; logical contradiction vs resource limit distinction; and determinism non-regression across multiple seeds and sample patterns.
+- [x] **Canonical Audit Finding M1 (Resolved)**: Resolved in Phase 74. Enforced unified combined retained history byte budget (undoBytes + redoBytes <= limitBytes) with exact redo byte accounting and oldest-redo eviction order. M12 remains OPEN and unchanged.
 - [ ] **Phase 2+ Deferred Capabilities (Not Started)**: Dynamic brush engine, Smart Effect schema expansion, and high-frequency pointer ergonomics deferred to Phase 2+.
 
 **Verification:**
@@ -22,7 +62,7 @@
 - Next.js Turbopack production build (`next build`): successful clean build.
 - Documentation integrity audit (`scripts/verifyDocIntegrity.mjs`): 100% clean pass.
 
-**Status:** Complete (Accepted) — H5 resolved; H1, H2, H3, H4, H6 resolved; M1 remains OPEN and unchanged; Phase 2+ deferred (Not Started)
+**Status:** Complete (Accepted) — H5 resolved; H1, H2, H3, H4, H6 resolved; M1 resolved in Phase 74; Phase 2+ deferred (Not Started)
 
 ---
 
@@ -800,7 +840,7 @@
 ---
 
 ## Phase 46 — 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite
-**Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, zero-allocation 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, harmonic rational retuning, and Godot 4 / Unity URP shader generation).
+**Goal:** Deliver two desktop-grade creative graphics systems for PixiBun: manual 2.5D normal micro-relief sculpting (directional bevels, rivet dome stamping, Reoriented Normal Mapping [RNM], two-phase stroke envelope buffering) and the Mark Ferrari 8-bit dynamic palette cycling engine (IFF ILBM `CRNG`/`CCRT` chunks, 32-bit LUT cycling at 60 FPS, BlendShift sub-step lerp, harmonic rational retuning, and Godot 4 / Unity URP shader generation).
 
 **Evidence & Rationale:**
 - Prior to Phase 46, normal maps could only be automatically generated from 2D layer silhouettes via Euclidean Distance Transform (EDT). Artists had no manual chisel, directional chamfer, or stud/rivet carving tools to sculpt micro-relief directly on normal maps.
@@ -820,7 +860,7 @@
   - Chisel and rivet icons on LeftToolbar with keyboard shortcuts.
 - [x] Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`):
   - Amiga IFF ILBM `CRNG` (8-byte) and Commodore Graphicraft `CCRT` (14-byte) chunk parsing and serialization.
-  - Zero-allocation 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS without GC thrashing.
+  - 32-bit LUT renderer (`updateLivePaletteLUT32`) running at 60 FPS; palette parsing and blending allocate RGB tuples, while per-pixel remapping does not.
   - Triangle-wave ping-pong period $M = 2(S - 1)$ with zero-bound fencepost safety.
   - Sub-step `BlendShift` linear color interpolation.
   - Harmonic rational retuning (`retuneTracksForSeamlessLoop`) ensuring coprime cycle tracks loop over duration $T$.
@@ -1307,7 +1347,7 @@
   - Extended `computeContentAwareHeightmap` decomposition to props and general objects, isolating pure spherical dome EDT strictly to geometric orbs (`formType === 'orb'`).
   - Unified `formType` inference in `src/hooks/viewport/useViewportStudioEvents.ts` across Auto and Manual studio modes.
 - [x] **Calibrated Spherical Convex Dome Normal Mathematics (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`)**:
-  - Calibrated spherical dome heightmap inflation ($z = R\sqrt{1 - (1 - d/R)^2}$) with zero derivative at the apex to eliminate conical pinch creases on spherical primitives (`tests/orbPhotometricCelShading.test.ts`).
+  - Calibrated spherical dome heightmap inflation blends a spherical profile with a gamma profile, retaining a nonzero apex slope (`tests/orbPhotometricCelShading.test.ts`).
   - Decoupled direct key light from cavity ambient occlusion on convex slopes to eliminate center-locked apex highlight glitches.
 
 **Acceptance criteria:**
@@ -1463,7 +1503,7 @@ The following claims from preliminary inspection were investigated and confirmed
   - Aaltonen tangent geometric correction and physical cone tracing `tracePhysical2DSoftShadow(edt, width, height, px, py, lx, ly, lightRadius)`.
   - Zero-allocation full grid generator `generateRaymarchedShadowMap(...)` utilizing `acquireFloat32Buffer` / `releaseFloat32Buffer`.
   - Full pipeline `executeRaymarchedCastShadowPipeline(...)` with Bayer matrix stippling (`none`, `2x2`, `4x4`, `8x8`) and atmospheric color tinting.
-- [x] Studio Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Raymarched Soft Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector.
+- [x] Studio Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Cast & Ground Shadows** card with light coordinates, light disk radius ($R_L$), opacity slider, shadow color picker with 5 presets (Indigo `#180B26`, Obsidian `#0A0612`, Umber `#26140B`, Violet `#2E1065`, Teal/Fog `#062419`), and Bayer dither mode selector. The current UI uses bounded 2.5D shadows.
 - [x] Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`): Added event listener for `pixibun:render-cast-shadow` writing output non-destructively to tagged output layer (`Layer.tag = 'cast-shadow'`) without mutating base artwork.
 - [x] Unit Test Suite (`tests/shadowRayMarcher.test.ts`): 9 comprehensive unit and integration tests covering bilinear sampling precision, boundary clamping, contact hardening, memory pool recycling, color composition, Bayer stippling, and non-destructive layer replacement.
 - [x] Documentation & Test Metrics Synchronization (`TASKS.md`, `LOGS.md`, `ARCHITECTURE.md`, `README.md`, `MAIN.md`, `PIXIBUN_DEEP_DIVE.md`): Updated formulas, test metrics (123 unit tests across 20 suites), and architectural descriptions.

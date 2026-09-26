@@ -3,6 +3,8 @@ import { createId } from '@/lib/engine/id';
 import { resizeAllBuffers } from '@/lib/engine/bufferRegistry';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
 import { validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
+import { projectNameError } from '@/lib/project/metadataAdmission';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get) => ({
   currentProjectId: createId('proj'),
@@ -72,6 +74,12 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   },
 
   setProjectName: name => {
+    const error = projectNameError(name);
+    if (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error });
+      return;
+    }
+    if (name === get().projectName) return;
     set(state => {
       state.projectName = name;
       state.isDirty = true;

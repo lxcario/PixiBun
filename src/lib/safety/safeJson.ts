@@ -255,6 +255,7 @@ export class SafeJson {
         for (let i = 0; i < obj.length; i++) {
           arr.push(this.sanitizeObject(obj[i], traversalBudget, currentDepth + 1, maxDepth));
         }
+        // T is the caller's input shape; recursive sanitation preserves its array shape.
         return arr as unknown as T;
       }
 
@@ -262,11 +263,12 @@ export class SafeJson {
       for (let i = 0; i < obj.length; i++) {
         arr[i] = this.sanitizeObject(obj[i], undefined, currentDepth + 1, maxDepth);
       }
+      // T is the caller's input shape; recursive sanitation preserves its array shape.
       return arr as unknown as T;
     }
 
     const clean: Record<string, unknown> = {};
-    for (const key of Object.keys(obj as Record<string, unknown>)) {
+    for (const key of Object.keys(obj)) {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         continue;
       }
@@ -278,6 +280,7 @@ export class SafeJson {
       );
     }
 
+    // Sanitization removes forbidden keys, so callers must still validate the result's schema.
     return clean as unknown as T;
   }
 }

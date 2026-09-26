@@ -53,7 +53,7 @@ export function useRadialContextMenu(containerRef?: React.RefObject<HTMLElement 
     
     // Attach touch events to container (scoped) or document (fallback)
     target.addEventListener('touchstart', handleTouchStart, { passive: true });
-    target.addEventListener('touchmove', handleTouchMove, { passive: true } as AddEventListenerOptions);
+    target.addEventListener('touchmove', handleTouchMove, { passive: true });
     target.addEventListener('touchend', handleTouchEnd);
     target.addEventListener('touchcancel', handleTouchEnd);
     

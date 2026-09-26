@@ -8,7 +8,7 @@ import { PixelVines } from './PixelVines';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const NAV_LINKS = [
-  { href: '/playground', label: 'Playground', isExternal: true },
+    { href: '/playground', label: 'Playground', isExternal: true },
   { href: '/studio', label: 'Studio', isExternal: true },
   { href: '#engine-showcase', label: 'Engine', sectionId: 'engine-showcase' },
   { href: '#features', label: 'Pillars', sectionId: 'features' },

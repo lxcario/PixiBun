@@ -4,7 +4,7 @@
 // - Optical Flow & SDF 2D In-Between Frame Morphing
 // - Sub-Pixel Anti-Aliasing (De-Jaggy) & Staircase Corner Smoothing
 // - Directional Selective Outlining (Sel-Out) with Light Normal Vectors
-// - OKLab Color Temperature & Atmospheric Kelvin Color Grading
+// - OKLCH hue-based atmospheric color grading presets
 // - 47-Tile Wang / Blob Autotiling Bitmask Analysis
 // -----------------------------------------------------------------------------
 
@@ -239,8 +239,8 @@ export function cleanJaggiesOnCanvas(
 
 /**
  * 3. Atmospheric Photographic Color Grading:
- * Implements real physical Kelvin color temperature shifts, chromatic adaptation matrices,
- * and cinematic split-toning in OKLab space.
+ * Applies fixed OKLCH hue, lightness, and chroma adjustments for stylized
+ * sunset, moonlight, and neon looks, plus a four-color Game Boy palette.
  */
 export function applyAtmosphericColorGrade(
   srcCtx: CanvasRenderingContext2D,
@@ -267,7 +267,7 @@ export function applyAtmosphericColorGrade(
     const [L, C, H] = rgbToOklch(r, g, b);
 
     if (grade === 'sunset') {
-      // Golden Hour: Warm Kelvin shift (+2800K), amber peach highlights, warm auburn shadows
+      // Golden Hour: shift hue toward warm amber with brighter, more saturated color.
       const newH = shiftHueToward(H, 65, 30);
       const newL = Math.min(0.96, L * 1.08 + 0.02);
       const newC = Math.min(0.35, C * 1.25);
@@ -276,7 +276,7 @@ export function applyAtmosphericColorGrade(
       data[i + 1] = ng;
       data[i + 2] = nb;
     } else if (grade === 'moonlight') {
-      // Moonlight / Cool Night: Cool Kelvin shift (-3500K), Purkinje dark adaptation, luminous cobalt blue tint
+      // Moonlight / Cool Night: shift hue toward cobalt with lower lightness and chroma.
       const newH = shiftHueToward(H, 260, 35);
       const newL = Math.max(0.06, L * 0.92);
       const newC = Math.max(0.02, C * 0.85);
@@ -310,8 +310,9 @@ export function applyAtmosphericColorGrade(
 }
 
 /**
- * Precomputes nearest opaque pixel index for all pixels in O(W * H) using multi-source BFS.
- * Replaces per-pixel concentric spiral/Chebyshev ring searches.
+ * Precomputes a nearby opaque pixel index for all pixels in O(W * H) using
+ * 8-connected multi-source BFS. This uses Chebyshev path distance and can pick
+ * a different seed than a Euclidean nearest-neighbor search.
  */
 function computeNearestColorMap(data: Uint8ClampedArray, width: number, height: number): Int32Array {
   const totalPixels = width * height;
@@ -356,11 +357,28 @@ function computeNearestColorMap(data: Uint8ClampedArray, width: number, height: 
  * Generates an in-between frame at arbitrary fraction t in [0, 1] using Signed Distance Field
  * interpolation with multi-source nearest-color sampling and linear sRGB cross-fading.
  */
+function assertMorphFramesCompatible(
+  frameA: { width: number; height: number; data: Uint8ClampedArray },
+  frameB: { width: number; height: number; data: Uint8ClampedArray }
+): void {
+  const pixels = frameA.width * frameA.height;
+  if (
+    !Number.isSafeInteger(frameA.width) || !Number.isSafeInteger(frameA.height) ||
+    frameA.width <= 0 || frameA.height <= 0 ||
+    frameB.width !== frameA.width || frameB.height !== frameA.height ||
+    !Number.isSafeInteger(pixels) ||
+    frameA.data.length !== pixels * 4 || frameB.data.length !== pixels * 4
+  ) {
+    throw new RangeError('SDF morph frames must have identical positive dimensions and RGBA buffer lengths.');
+  }
+}
+
 export function morphInBetweenFrameAtFraction(
   frameA: { width: number; height: number; data: Uint8ClampedArray },
   frameB: { width: number; height: number; data: Uint8ClampedArray },
   fraction: number
 ): { width: number; height: number; data: Uint8ClampedArray } {
+  assertMorphFramesCompatible(frameA, frameB);
   const { width, height } = frameA;
   const t = Math.max(0, Math.min(1, fraction));
 
@@ -415,11 +433,13 @@ export function morphInBetweenFrameAtFraction(
         const rB = hasB ? dataB[bIdx] : (hasA ? dataA[aIdx] : 0);
         const gB = hasB ? dataB[bIdx + 1] : (hasA ? dataA[aIdx + 1] : 0);
         const bB = hasB ? dataB[bIdx + 2] : (hasA ? dataA[aIdx + 2] : 0);
+        const alphaA = hasA ? dataA[aIdx + 3] : 0;
+        const alphaB = hasB ? dataB[bIdx + 3] : 0;
 
         outData[outIdx] = Math.round(rA * (1 - t) + rB * t);
         outData[outIdx + 1] = Math.round(gA * (1 - t) + gB * t);
         outData[outIdx + 2] = Math.round(bA * (1 - t) + bB * t);
-        outData[outIdx + 3] = 255;
+        outData[outIdx + 3] = Math.round(alphaA * (1 - t) + alphaB * t);
       }
     }
   }
@@ -435,6 +455,7 @@ export function morphInBetweenFramesSync(
   frameB: { width: number; height: number; data: Uint8ClampedArray },
   steps: number = 1
 ): { width: number; height: number; data: Uint8ClampedArray }[] {
+  assertMorphFramesCompatible(frameA, frameB);
   const { width, height } = frameA;
   const dataA = frameA.data;
   const dataB = frameB.data;
@@ -485,11 +506,13 @@ export function morphInBetweenFramesSync(
           const rB = hasB ? dataB[bIdx] : (hasA ? dataA[aIdx] : 0);
           const gB = hasB ? dataB[bIdx + 1] : (hasA ? dataA[aIdx + 1] : 0);
           const bB = hasB ? dataB[bIdx + 2] : (hasA ? dataA[aIdx + 2] : 0);
+          const alphaA = hasA ? dataA[aIdx + 3] : 0;
+          const alphaB = hasB ? dataB[bIdx + 3] : 0;
 
           outData[outIdx] = Math.round(rA * (1 - t) + rB * t);
           outData[outIdx + 1] = Math.round(gA * (1 - t) + gB * t);
           outData[outIdx + 2] = Math.round(bA * (1 - t) + bB * t);
-          outData[outIdx + 3] = 255;
+          outData[outIdx + 3] = Math.round(alphaA * (1 - t) + alphaB * t);
         }
       }
     }

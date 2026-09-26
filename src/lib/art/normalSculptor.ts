@@ -139,12 +139,13 @@ export function blendNormalsRNM(
   const ry = ty * dotTU - uy * tz;
   const rz = tz * dotTU - uz * tz;
 
-  const len = Math.hypot(rx, ry, rz);
+  const clampedZ = Math.max(0, rz);
+  const len = Math.hypot(rx, ry, clampedZ);
   if (len < 1e-6) {
     return [0, 0, 1];
   }
 
-  return [rx / len, ry / len, Math.max(0, rz / len)];
+  return [rx / len, ry / len, clampedZ / len];
 }
 
 /**

@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect } from 'vitest';
 import { validateProjectFile } from '@/lib/project/schema';
 import { PROJECT_FORMAT_ID, PROJECT_FORMAT_VERSION } from '@/types/project';
+import { useStudioStore } from '@/stores/studioStore';
+import type { PaletteCycleTrack } from '@/types/palette';
+import { createBlankProjectFile } from '@/lib/storage/db';
 
 function validProjectFixture() {
   return {
@@ -94,6 +97,28 @@ describe('validateProjectFile', () => {
     const result = validateProjectFile(fixture);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/palette/i);
+  });
+
+  it('preserves valid palette cycles and rejects malformed cycles', () => {
+    const fixture = validProjectFixture();
+    const cycle = {
+      id: 'glow', name: 'Glow', low: 0, high: 2, rate: 4,
+      direction: 'ping-pong', blendShift: true, enabled: true,
+    };
+    const withCycle = {
+      ...fixture,
+      palettes: [{ ...fixture.palettes[0], cycleTracks: [cycle] }],
+    };
+    const valid = validateProjectFile(withCycle);
+    expect(valid.ok).toBe(true);
+    if (valid.ok) expect(valid.value.palettes[0].cycleTracks).toEqual([cycle]);
+
+    const invalid = validateProjectFile({
+      ...withCycle,
+      palettes: [{ ...withCycle.palettes[0], cycleTracks: [{ ...cycle, high: 3 }] }],
+    });
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) expect(invalid.error).toMatch(/cycle tracks/i);
   });
 
   it('seamlessly migrates legacy v1 files missing customRamps, clips, onionSkin, and layer blendModes', () => {
@@ -200,6 +225,149 @@ describe('validateProjectFile', () => {
     expect(updated.onionSkin.prevColor).toBe('#ff0000');
     expect(updated.customRamps).toHaveLength(1);
     expect(updated.customRamps[0].baseColor).toBe('#ff0055');
+  });
+});
+
+describe('palette edits stay inside the saved project envelope', () => {
+  const initialState = useStudioStore.getState();
+  const colors = Array.from({ length: 8 }, (_, index) => `#${index.toString(16).padStart(6, '0')}`);
+  const track: PaletteCycleTrack = {
+    id: 'cycle', name: 'Cycle', low: 0, high: 3, rate: 4,
+    direction: 'forward', blendShift: false, enabled: true,
+  };
+
+  beforeEach(() => {
+    useStudioStore.setState({
+      palettes: [{ id: 'palette', name: 'Test palette', colors: [...colors] }],
+      currentPaletteId: 'palette',
+      customRamps: [],
+      editRevision: 0,
+      isDirty: false,
+    });
+  });
+
+  afterEach(() => useStudioStore.setState(initialState, true));
+
+  it('rejects an imported track outside the palette and an inverted track update', () => {
+    useStudioStore.getState().addPaletteCycleTrack('palette', { ...track, high: 15 });
+    expect(useStudioStore.getState().palettes[0].cycleTracks).toBeUndefined();
+    expect(useStudioStore.getState().editRevision).toBe(0);
+
+    useStudioStore.getState().addPaletteCycleTrack('palette', track);
+    expect(useStudioStore.getState().editRevision).toBe(1);
+    useStudioStore.getState().updatePaletteCycleTrack('palette', track.id, { low: 4 });
+    expect(useStudioStore.getState().palettes[0].cycleTracks?.[0].low).toBe(0);
+    expect(useStudioStore.getState().editRevision).toBe(1);
+  });
+
+  it('rejects a sixty-fifth cycle track without dirtying the project', () => {
+    useStudioStore.setState({
+      palettes: [{ id: 'palette', name: 'Test palette', colors: [...colors],
+        cycleTracks: Array.from({ length: 64 }, (_, index) => ({ ...track, id: `cycle-${index}` })) }],
+    });
+    useStudioStore.getState().addPaletteCycleTrack('palette', { ...track, id: 'overflow' });
+    expect(useStudioStore.getState().palettes[0].cycleTracks).toHaveLength(64);
+    expect(useStudioStore.getState().editRevision).toBe(0);
+  });
+
+  it('rejects oversized palette imports and the fifty-first palette', () => {
+    const oversizedColors = Array.from({ length: 513 }, (_, index) => `#${index.toString(16).padStart(6, '0')}`);
+    useStudioStore.getState().addExtractedPalette('Oversized', oversizedColors);
+    expect(useStudioStore.getState().palettes).toHaveLength(1);
+
+    useStudioStore.setState({
+      palettes: Array.from({ length: 50 }, (_, index) => ({ id: `palette-${index}`, name: 'Palette', colors: [...colors] })),
+    });
+    useStudioStore.getState().addExtractedPalette('Extra', colors);
+    expect(useStudioStore.getState().palettes).toHaveLength(50);
+    expect(useStudioStore.getState().editRevision).toBe(0);
+  });
+
+  it('marks valid palette and track edits dirty while refusing color overflow', () => {
+    useStudioStore.getState().addCustomColorToPalette('palette', '#ABCDEF');
+    expect(useStudioStore.getState().editRevision).toBe(1);
+    expect(useStudioStore.getState().isDirty).toBe(true);
+
+    useStudioStore.getState().addPaletteCycleTrack('palette', track);
+    useStudioStore.getState().updatePaletteCycleTrack('palette', track.id, { rate: 5 });
+    useStudioStore.getState().deletePaletteCycleTrack('palette', track.id);
+    expect(useStudioStore.getState().editRevision).toBe(4);
+
+    useStudioStore.getState().setCustomRamps([{ baseColor: '#123456', shades: ['#123456'] }]);
+    expect(useStudioStore.getState().editRevision).toBe(5);
+    useStudioStore.getState().setCustomRamps([{ baseColor: '#123456', shades: Array(257).fill('#123456') }]);
+    expect(useStudioStore.getState().customRamps).toHaveLength(1);
+    expect(useStudioStore.getState().editRevision).toBe(5);
+
+    const fullColors = Array.from({ length: 512 }, (_, index) => `#${index.toString(16).padStart(6, '0')}`);
+    useStudioStore.setState({ palettes: [{ id: 'palette', name: 'Test palette', colors: fullColors }] });
+    useStudioStore.getState().addCustomColorToPalette('palette', '#ABCDEF');
+    expect(useStudioStore.getState().palettes[0].colors).toHaveLength(512);
+    expect(useStudioStore.getState().editRevision).toBe(5);
+  });
+});
+
+describe('editor metadata remains admissible after public actions', () => {
+  const originalState = useStudioStore.getState();
+  beforeEach(() => useStudioStore.getState().resetToNewProject());
+  afterEach(() => useStudioStore.setState(originalState, true));
+
+  it('rejects names that would make project or layer metadata unsaveable', () => {
+    const initial = useStudioStore.getState();
+    const layerId = initial.activeLayerId;
+    const revision = initial.editRevision;
+    initial.setProjectName('X'.repeat(257));
+    initial.renameLayer(layerId, 'L'.repeat(129));
+    expect(useStudioStore.getState().projectName).toBe('Untitled Sprite');
+    expect(useStudioStore.getState().frames[0].layers[0].name).toBe('Base Layer');
+    expect(useStudioStore.getState().editRevision).toBe(revision);
+
+    initial.setProjectName('Valid name');
+    initial.renameLayer(layerId, 'Valid layer');
+    expect(useStudioStore.getState().editRevision).toBe(revision + 2);
+  });
+
+  it('rejects the 101st clip and invalid clip updates', () => {
+    useStudioStore.setState({ clips: [] });
+    for (let index = 0; index < 100; index++) {
+      useStudioStore.getState().addClip(`Clip ${index}`, 0, 0);
+    }
+    const before = useStudioStore.getState();
+    before.addClip('Overflow', 0, 0);
+    expect(useStudioStore.getState().clips).toHaveLength(100);
+    expect(useStudioStore.getState().editRevision).toBe(before.editRevision);
+
+    const clipId = before.clips[0].id;
+    before.updateClip(clipId, { name: 'X'.repeat(129) });
+    before.updateClip(clipId, { endFrame: 2 });
+    expect(useStudioStore.getState().clips[0].name).toBe('Clip 0');
+    expect(useStudioStore.getState().clips[0].endFrame).toBe(0);
+    expect(useStudioStore.getState().editRevision).toBe(before.editRevision);
+  });
+
+  it('remaps surviving clips and removes a clip when its only frame is deleted', () => {
+    const state = useStudioStore.getState();
+    state.addFrame();
+    state.addFrame();
+    state.addClip('Last only', 2, 2);
+    state.addClip('Middle through last', 1, 2);
+    const lastOnlyId = useStudioStore.getState().clips.find((clip) => clip.name === 'Last only')!.id;
+    useStudioStore.getState().deleteFrame(2);
+
+    const after = useStudioStore.getState();
+    expect(after.clips.some((clip) => clip.id === lastOnlyId)).toBe(false);
+    expect(after.clips.find((clip) => clip.name === 'Middle through last')).toMatchObject({
+      startFrame: 1, endFrame: 1, fromFrame: 1, toFrame: 1,
+    });
+    expect(after.activeClipId).not.toBe(lastOnlyId);
+
+    const candidate = createBlankProjectFile();
+    candidate.frames = after.frames.map((frame) => ({
+      id: frame.id, durationMs: frame.durationMs,
+      layers: frame.layers.map((layer) => ({ ...layer })),
+    }));
+    candidate.clips = after.clips.map((clip) => ({ ...clip }));
+    expect(validateProjectFile(candidate).ok).toBe(true);
   });
 });
 

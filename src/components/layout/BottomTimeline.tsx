@@ -9,6 +9,7 @@ import { compositeFrame } from '@/lib/render/compositor';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { TagManagerModal } from '@/components/modals/TagManagerModal';
 import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
+import { MAX_METADATA_NAME_LENGTH, MAX_PROJECT_CLIPS } from '@/lib/project/metadataAdmission';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -656,6 +657,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             {isCreatingClip ? (
               <input
                 type="text"
+                maxLength={MAX_METADATA_NAME_LENGTH}
                 value={newClipName}
                 onChange={(e) => setNewClipName(e.target.value)}
                 onBlur={handleCreateClipSubmit}
@@ -668,9 +670,10 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <>
                 <button
                   type="button"
+                  disabled={clips.length >= MAX_PROJECT_CLIPS}
                   onClick={() => setIsCreatingClip(true)}
                   className="h-6 px-2 rounded-[2px] text-[10px] font-sans font-medium pixel-tactile-chip text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer flex items-center justify-center"
-                  title="Add Tagged Animation Clip"
+                  title={clips.length >= MAX_PROJECT_CLIPS ? `Maximum ${MAX_PROJECT_CLIPS} clips reached` : 'Add Tagged Animation Clip'}
                 >
                   + Tag Clip
                 </button>
