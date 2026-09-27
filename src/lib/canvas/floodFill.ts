@@ -72,6 +72,41 @@ export function colorsMatch(
   return diff <= tolerance;
 }
 
+/** Recolor matching visible pixels in one layer, leaving their transparency intact. */
+export function replaceLayerColor(
+  imageData: ImageData,
+  x: number,
+  y: number,
+  replacementHex: string,
+  tolerance: number = 0
+): number {
+  const { width, height, data } = imageData;
+  if (x < 0 || x >= width || y < 0 || y >= height) return 0;
+  const source = (y * width + x) * 4;
+  if (data[source + 3] <= 30) return 0;
+
+  const r = data[source];
+  const g = data[source + 1];
+  const b = data[source + 2];
+  const replacement = hexToRgba(replacementHex);
+  const limit = Math.max(0, Math.min(255, tolerance)) ** 2;
+  let changed = 0;
+
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] <= 30) continue;
+    const dr = data[i] - r;
+    const dg = data[i + 1] - g;
+    const db = data[i + 2] - b;
+    if (dr * dr + dg * dg + db * db > limit) continue;
+    if (data[i] === replacement.r && data[i + 1] === replacement.g && data[i + 2] === replacement.b) continue;
+    data[i] = replacement.r;
+    data[i + 1] = replacement.g;
+    data[i + 2] = replacement.b;
+    changed++;
+  }
+  return changed;
+}
+
 // Iterative 4-connected stack-based Flood Fill
 export function performFloodFill(
   ctx: CanvasRenderingContext2D,

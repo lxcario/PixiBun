@@ -4,6 +4,7 @@
  * with options for cell sizing, column/row layouts, non-empty frame detection,
  * and palette extraction.
  */
+import { MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
 
 export interface SliceConfig {
   cellWidth: number;
@@ -46,8 +47,8 @@ export function computeGridDimensions(
   const availableW = Math.max(0, imageWidth - startX);
   const availableH = Math.max(0, imageHeight - startY);
 
-  const columns = Math.max(1, Math.floor((availableW + spacingX) / stepX));
-  const rows = Math.max(1, Math.floor((availableH + spacingY) / stepY));
+  const columns = availableW >= safeCellW && stepX > 0 ? Math.max(0, Math.floor((availableW + spacingX) / stepX)) : 0;
+  const rows = availableH >= safeCellH && stepY > 0 ? Math.max(0, Math.floor((availableH + spacingY) / stepY)) : 0;
 
   return {
     columns,
@@ -101,17 +102,28 @@ export function sliceSpriteSheet(
     order = 'row-major',
   } = config;
 
+  if ([cellWidth, cellHeight, startX, startY, spacingX, spacingY].some((value) => !Number.isSafeInteger(value) || value < 0) ||
+      cellWidth < 1 || cellHeight < 1 ||
+      (config.columns !== undefined && (!Number.isSafeInteger(config.columns) || config.columns < 0)) ||
+      (config.rows !== undefined && (!Number.isSafeInteger(config.rows) || config.rows < 0))) {
+    throw new RangeError('Sprite sheet cell size, offsets, spacing, and grid counts must be valid whole numbers.');
+  }
+
   const grid = computeGridDimensions(imgW, imgH, cellWidth, cellHeight, startX, startY, spacingX, spacingY);
   const cols = config.columns ?? grid.columns;
   const rows = config.rows ?? grid.rows;
   const totalCells = cols * rows;
+  if (totalCells > MAX_CANVAS_FRAMES) {
+    throw new RangeError(`Sprite sheet has more than ${MAX_CANVAS_FRAMES} cells. Increase the cell size or crop the sheet.`);
+  }
+  if (totalCells === 0) return { frames: [], totalCells: 0, nonEmptyCount: 0, skippedCount: 0 };
 
   const srcCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
   if (!srcCtx) {
     return { frames: [], totalCells: 0, nonEmptyCount: 0, skippedCount: 0 };
   }
 
-  const fullImageData = srcCtx.getImageData(0, 0, imgW, imgH);
+  const fullImageData = skipEmpty ? srcCtx.getImageData(0, 0, imgW, imgH) : null;
   const frames: HTMLCanvasElement[] = [];
   let skippedCount = 0;
 
@@ -143,7 +155,7 @@ export function sliceSpriteSheet(
       continue;
     }
 
-    if (skipEmpty && isCellEmpty(fullImageData, x, y, cellWidth, cellHeight)) {
+    if (fullImageData && isCellEmpty(fullImageData, x, y, cellWidth, cellHeight)) {
       skippedCount++;
       continue;
     }

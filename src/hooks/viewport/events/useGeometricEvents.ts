@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import {
@@ -7,7 +7,6 @@ import {
   generateGroundShadowData,
 } from '@/lib/ai/pixelAiEngine';
 import {
-  rotateWithRotSprite,
   renderParametric2p5DLighting,
   computeSeparableEDT,
   renderBoundedSpriteCastShadow,
@@ -15,6 +14,9 @@ import {
 import { inferRaymarchedShadowSettings } from '@/lib/ai/math/shadowAuto';
 import type { ViewportEventContext } from './types';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { planLayerRotation } from '@/lib/canvas/rotSpriteLayer';
+import { runRotSpriteInWorker } from '@/lib/engine/workerDispatcher';
+import { getBufferRevision, touchBuffer } from '@/lib/engine/bufferRegistry';
 
 export function useGeometricEvents({
   canvasWidth,
@@ -28,7 +30,9 @@ export function useGeometricEvents({
   compositeSourceSnapshot,
   updateTaggedLayer,
 }: ViewportEventContext) {
+  const rotationInFlightRef = useRef(false);
   useEffect(() => {
+    let disposed = false;
     const handleAutoShadeEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       const tools = useStudioStore.getState().tools;
@@ -272,7 +276,8 @@ export function useGeometricEvents({
       });
     };
 
-    const handleRotSpriteEvent = (e: Event) => {
+    const handleRotSpriteEvent = async (e: Event) => {
+      if (rotationInFlightRef.current) return;
       const customEvent = e as CustomEvent;
       const angle =
         customEvent.detail?.angle ??
@@ -284,51 +289,78 @@ export function useGeometricEvents({
         ? currentFrame.layers.filter((layer) => layer.id !== activeLayerId && layer.tag).map((layer) => layer.id)
         : [];
       const affectedLayerIds = [activeLayerId, ...taggedIds];
-
-      pushStructuralHistoryStep(`RotSprite ${angle}°`, {
-        opKind: 'rotsprite',
-        affectedLayerIds,
-        canvasWidth,
-        canvasHeight,
-      });
-      const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
-      if (tCtx) {
-        const rotated = rotateWithRotSprite(tCtx, canvasWidth, canvasHeight, angle);
-        tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-        const dx = Math.round((canvasWidth - rotated.width) / 2);
-        const dy = Math.round((canvasHeight - rotated.height) / 2);
-        tCtx.drawImage(rotated, dx, dy);
-
-        const state = useStudioStore.getState();
-        const currentFrame = state.frames[state.activeFrameIndex];
-        if (currentFrame) {
-          currentFrame.layers.forEach((layer) => {
-            if (layer.id !== activeLayerId && layer.tag) {
-              const lCanvas = getOrCreateLayerCanvas(layer.id);
-              const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
-              if (lCtx) {
-                const lRotated = rotateWithRotSprite(lCtx, canvasWidth, canvasHeight, angle);
-                lCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-                const ldx = Math.round((canvasWidth - lRotated.width) / 2);
-                const ldy = Math.round((canvasHeight - lRotated.height) / 2);
-                lCtx.drawImage(lRotated, ldx, ldy);
-              }
-            }
-          });
+      const angleRad = angle * Math.PI / 180;
+      const originalRevision = state.editRevision;
+      const originalFrameIndex = state.activeFrameIndex;
+      const prepared = [] as Array<{ id: string; canvas: HTMLCanvasElement; plan: NonNullable<ReturnType<typeof planLayerRotation>['plan']> }>;
+      for (const id of affectedLayerIds) {
+        const canvas = getOrCreateLayerCanvas(id);
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+        const pixels = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const result = planLayerRotation({ width: canvasWidth, height: canvasHeight, data: pixels.data }, angleRad);
+        if (result.error) {
+          studioEvents.emit('pixibun:toast', { type: 'error', message: result.error });
+          return;
         }
+        if (result.plan) prepared.push({ id, canvas, plan: result.plan });
+      }
+      if (prepared.length === 0) return;
+      const originalBufferRevisions = new Map(affectedLayerIds.map((id) => [id, getBufferRevision(id)]));
 
+      rotationInFlightRef.current = true;
+      try {
+        const rotated = [] as Array<{ id: string; canvas: HTMLCanvasElement; plan: (typeof prepared)[number]['plan']; data: Uint8ClampedArray }>;
+        for (const item of prepared) {
+          const plan = item.plan;
+          const output = await runRotSpriteInWorker(
+            plan.source, angleRad, plan.sourcePivotX, plan.sourcePivotY,
+            plan.targetWidth, plan.targetHeight,
+            { outPivotX: plan.outputPivotX, outPivotY: plan.outputPivotY, timeoutMs: 30_000 }
+          );
+          rotated.push({ ...item, data: output.data });
+        }
+        const latest = useStudioStore.getState();
+        if (disposed) return;
+        if (latest.editRevision !== originalRevision || latest.activeFrameIndex !== originalFrameIndex ||
+            affectedLayerIds.some((id) => getBufferRevision(id) !== originalBufferRevisions.get(id)) ||
+            latest.canvasWidth !== canvasWidth || latest.canvasHeight !== canvasHeight) {
+          studioEvents.emit('pixibun:toast', { type: 'error', message: 'The canvas changed during rotation. No artwork was replaced; please try again.' });
+          return;
+        }
+        const ready = rotated.map((item) => {
+          const ctx = item.canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) throw new Error('A layer canvas is unavailable.');
+          const image = ctx.createImageData(item.plan.targetWidth, item.plan.targetHeight);
+          image.data.set(item.data);
+          return { ...item, ctx, image };
+        });
+        pushStructuralHistoryStep(`RotSprite ${angle}°`, {
+          opKind: 'rotsprite', affectedLayerIds, canvasWidth, canvasHeight,
+        });
+        for (const item of ready) {
+          item.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+          item.ctx.putImageData(item.image, item.plan.destX, item.plan.destY);
+          touchBuffer(item.id);
+        }
         useStudioStore.setState((draft) => {
           const frame = draft.frames[draft.activeFrameIndex];
           if (!frame) return;
           frame.layers.forEach((layer) => {
-            if (layer.id === activeLayerId || layer.tag) layer.effect = undefined;
+            if (affectedLayerIds.includes(layer.id)) layer.effect = undefined;
           });
           draft.isDirty = true;
           draft.editRevision += 1;
         });
         renderComposite();
         bumpBufferVersion();
+      } catch (error) {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: error instanceof Error ? `Rotation failed: ${error.message}` : 'Rotation failed.',
+        });
+      } finally {
+        rotationInFlightRef.current = false;
       }
     };
 
@@ -356,6 +388,7 @@ export function useGeometricEvents({
     ];
 
     return () => {
+      disposed = true;
       unsubs.forEach((unsub) => unsub());
     };
   }, [

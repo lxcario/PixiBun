@@ -319,6 +319,7 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
         <div
           data-testid="gizmo-hud-bar"
           className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-[#140d1f]/95 border border-[#3a2e4c] rounded-[2px] px-1 py-0.5 flex items-center gap-1 shadow-lg pointer-events-auto z-50 text-[11px] font-mono"
+          onPointerDown={(event) => event.stopPropagation()}
         >
           <button
             type="button"

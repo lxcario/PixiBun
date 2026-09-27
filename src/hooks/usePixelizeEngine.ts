@@ -116,6 +116,7 @@ export function usePixelizeEngine({
     addToPalette,
     setAddToPalette,
     previewResult,
+    setPreviewResult,
     imgElementRef,
     runPixelization,
   };

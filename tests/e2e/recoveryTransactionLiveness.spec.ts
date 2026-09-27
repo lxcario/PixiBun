@@ -96,6 +96,9 @@ test.describe('Real Chromium IndexedDB Transaction Liveness & Recovery Persisten
   test.beforeEach(async ({ page }) => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
+    // Let startup finish choosing its active project before this test seeds a
+    // damaged project into the same IndexedDB database.
+    await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
 
     // Inject real Dexie bundle into the Chromium browser window for low-level liveness proofs
     const dexieBundlePath = require.resolve('dexie/dist/dexie.min.js');

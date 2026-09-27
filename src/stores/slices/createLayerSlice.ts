@@ -1,4 +1,5 @@
 import { LayerSlice, StudioSliceCreator } from './types';
+import { current } from 'immer';
 import { Layer } from '@/types/canvas';
 import { createId } from '@/lib/engine/id';
 import { getOrCreateBuffer, cloneBuffers, deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
@@ -123,7 +124,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
         id: newLayerId,
         name: `${src.name} (Copy)`,
         effect: src.effect
-          ? { ...structuredClone(src.effect), id: createId('effect'), updatedAt: Date.now() }
+          ? { ...structuredClone(current(src.effect)), id: createId('effect'), updatedAt: Date.now() }
           : undefined,
       };
 

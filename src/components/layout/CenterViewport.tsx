@@ -4,6 +4,7 @@ import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
@@ -41,6 +42,22 @@ interface CenterViewportProps {
   onOpenImport?: (payload: ImportPayload) => void;
 }
 
+function ScreenGuide({ axis, fraction, color, thickness = 1 }: {
+  axis: 'vertical' | 'horizontal';
+  fraction: number;
+  color: string;
+  thickness?: number;
+}) {
+  const vertical = axis === 'vertical';
+  return <div aria-hidden="true" className="absolute pointer-events-none" style={{
+    left: vertical ? `${fraction * 100}%` : 0,
+    top: vertical ? 0 : `${fraction * 100}%`,
+    width: vertical ? `${thickness}px` : '100%',
+    height: vertical ? '100%' : `${thickness}px`,
+    backgroundImage: `repeating-linear-gradient(to ${vertical ? 'bottom' : 'right'}, ${color} 0 4px, transparent 4px 8px)`,
+  }} />;
+}
+
 export const CenterViewport: React.FC<CenterViewportProps> = ({
   onCommitHistory,
   onOpenImport,
@@ -51,7 +68,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const onionCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
-  const cursorCanvasRef = useRef<HTMLCanvasElement>(null);
+  const cursorCanvasRef = useRef<HTMLDivElement>(null);
 
   // Store atomic subscriptions
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -63,7 +80,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const setPan = useStudioStore((s) => s.setPan);
   const setZoomAndPan = useStudioStore((s) => s.setZoomAndPan);
   const showGrid = useStudioStore((s) => s.showGrid);
+  const referenceOverlay = useStudioStore((s) => s.referenceOverlay);
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
+  const isPlaygroundActive = useOnboardingStore((s) => s.isPlaygroundActive);
+  const activeLessonId = useOnboardingStore((s) => s.activeLessonId);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
   const photometricGizmoActive = useStudioStore((s) => s.photometricGizmoActive);
@@ -162,6 +182,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     canvasWidth,
     canvasHeight,
     activeLayerId,
+    previewCanvasRef,
     getOrCreateLayerCanvas,
     renderComposite: () => renderComposite(),
     captureSnapshot,
@@ -373,10 +394,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     canvasWidth,
     canvasHeight,
     zoom,
-    showGrid,
-    showIsoGuides,
-    symmetryHorizontal: tools.symmetryHorizontal,
-    symmetryVertical: tools.symmetryVertical,
     selection,
     selectionMask,
     floatingSelection,
@@ -542,6 +559,21 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   const stageWidth = (canvasWidth * zoom) / 100;
   const stageHeight = (canvasHeight * zoom) / 100;
+  const referenceFractions = referenceOverlay === 'thirds' ? [1 / 3, 2 / 3]
+    : referenceOverlay === 'golden' ? [0.382, 0.618]
+    : referenceOverlay === 'center' ? [0.5] : [];
+  const referenceColor = referenceOverlay === 'thirds' ? 'rgba(199, 146, 223, 0.7)'
+    : referenceOverlay === 'golden' ? 'rgba(240, 190, 124, 0.75)'
+    : 'rgba(220, 171, 223, 0.7)';
+  const screenScale = zoom / 100;
+  const isoGuidePeriod = 16 * screenScale / Math.sqrt(5);
+  const hasGroundGuide = isPlaygroundActive && (
+    activeLessonId === 'master-bouncing-ball' ||
+    activeLessonId === 'character-hop-shock' ||
+    activeLessonId === 'combat-slash-hitstop'
+  );
+  const trajectoryStart = activeLessonId === 'master-bouncing-ball' ? 10
+    : activeLessonId === 'character-hop-shock' ? 8 : null;
 
   return (
     <main
@@ -723,6 +755,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         {/* Layer 4: Interactive Stroke & Shape Live Preview Canvas */}
         <canvas
           ref={previewCanvasRef}
+          data-testid="stroke-preview-canvas"
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"
@@ -732,17 +765,51 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         {/* Layer 5: Grid & Marching Ants Selection Overlay */}
         <canvas
           ref={gridCanvasRef}
-          width={stageWidth}
-          height={stageHeight}
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          data-testid="grid-selection-overlay"
+          width={canvasWidth}
+          height={canvasHeight}
+          className="absolute inset-0 w-full h-full pointer-events-none pixelated"
+          style={showGrid && zoom >= 400 ? {
+            backgroundImage: 'linear-gradient(to right, rgba(58, 46, 76, 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(58, 46, 76, 0.16) 1px, transparent 1px)',
+            backgroundSize: `${zoom / 100}px ${zoom / 100}px`,
+          } : undefined}
         />
 
-        {/* Layer 6: Brush Ghost Bounding Cursor */}
-        <canvas
+        {/* Screen-pixel guides stay thin without zoom-sized canvas buffers. */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          {showIsoGuides && <div data-testid="isometric-guide-overlay" className="absolute inset-0" style={{
+            backgroundImage: [26.565, 153.435].map((angle) =>
+              `repeating-linear-gradient(${angle}deg, rgba(240, 190, 124, 0.45) 0 1px, transparent 1px ${isoGuidePeriod}px)`
+            ).join(', '),
+          }} />}
+          {referenceFractions.flatMap((fraction) => [
+            <ScreenGuide key={`reference-v-${fraction}`} axis="vertical" fraction={fraction} color={referenceColor} />,
+            <ScreenGuide key={`reference-h-${fraction}`} axis="horizontal" fraction={fraction} color={referenceColor} />,
+          ])}
+          {tools.symmetryHorizontal && <ScreenGuide axis="vertical" fraction={0.5} color="rgba(199, 146, 223, 0.85)" thickness={2} />}
+          {tools.symmetryVertical && <ScreenGuide axis="horizontal" fraction={0.5} color="rgba(199, 146, 223, 0.85)" thickness={2} />}
+          {hasGroundGuide && <div data-testid="playground-ground-guide" className="absolute left-0 w-full" style={{
+            top: `${26 * screenScale}px`, height: '1.5px',
+            backgroundImage: 'repeating-linear-gradient(to right, rgba(240, 190, 124, 0.6) 0 4px, transparent 4px 6px)',
+          }} />}
+          {isPlaygroundActive && trajectoryStart !== null && <div data-testid="playground-trajectory-guide" className="absolute" style={{
+            left: `${16 * screenScale}px`, top: `${trajectoryStart * screenScale}px`,
+            width: '1px', height: `${(26 - trajectoryStart) * screenScale}px`,
+            backgroundImage: 'repeating-linear-gradient(to bottom, rgba(240, 190, 124, 0.35) 0 2px, transparent 2px 6px)',
+          }} />}
+        </div>
+
+        {/* Layer 6: Brush Ghost Bounding Cursor (screen-space CSS stroke) */}
+        <div
           ref={cursorCanvasRef}
-          width={stageWidth}
-          height={stageHeight}
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          data-testid="brush-ghost-overlay"
+          className="absolute pointer-events-none"
+          style={{
+            display: 'none',
+            boxSizing: 'border-box',
+            border: '1px solid rgba(240, 190, 124, 0.6)',
+            outline: '1px solid rgba(20, 12, 30, 0.5)',
+          }}
         />
 
         {/* Layer 6.5: Selection Free-Transform Gizmo & Marching Ants */}

@@ -18,6 +18,7 @@ import {
 } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { MAX_METADATA_NAME_LENGTH } from '@/lib/project/metadataAdmission';
 
 export interface ImageImportExecutionResult {
   ok: boolean;
@@ -150,24 +151,36 @@ export function executeImageImport(confirmData: ImageImportConfirmPayload): Imag
   const height = currentStore.canvasHeight;
 
   if (slicedFrames && slicedFrames.length > 0) {
+    const sheetLayerName = `Sprite Sheet: ${filename.replace(/\.[^/.]+$/, '')}`.slice(0, MAX_METADATA_NAME_LENGTH);
+    const originalFrameCount = currentStore.frames.length;
     if (target === 'sprite-sheet-replace') {
       const existingCount = currentStore.frames.length;
       const newCount = slicedFrames.length;
 
-      // 1. Draw frame 0 onto the first frame's active layer
-      const targetLayerId = currentStore.activeLayerId;
+      // 1. Clear every existing layer in each replaced frame. Otherwise old
+      // artwork can remain visible beneath the imported sheet frame.
+      for (let i = 0; i < Math.min(existingCount, newCount); i++) {
+        for (const layer of currentStore.frames[i].layers) {
+          const buffer = getOrCreateBuffer(layer.id, width, height);
+          buffer.canvas.getContext('2d')?.clearRect(0, 0, width, height);
+          touchBuffer(layer.id);
+        }
+      }
+
+      // 2. Draw frame 0 into frame 0, regardless of the previously active frame.
+      const targetLayerId = currentStore.frames[0]?.layers[0]?.id;
       if (targetLayerId) {
         const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
         const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
         if (ctx) {
           ctx.clearRect(0, 0, width, height);
           ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(slicedFrames[0], 0, 0, width, height);
+          ctx.drawImage(slicedFrames[0], 0, 0);
           touchBuffer(targetLayerId);
         }
       }
 
-      // 2. Overwrite existing frames 1..min(existingCount, newCount) - 1
+      // 3. Overwrite existing frames 1..min(existingCount, newCount) - 1
       const overwriteCount = Math.min(existingCount, newCount);
       for (let i = 1; i < overwriteCount; i++) {
         const frame = currentStore.frames[i];
@@ -178,13 +191,13 @@ export function executeImageImport(confirmData: ImageImportConfirmPayload): Imag
           if (fCtx) {
             fCtx.clearRect(0, 0, width, height);
             fCtx.imageSmoothingEnabled = false;
-            fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+            fCtx.drawImage(slicedFrames[i], 0, 0);
             touchBuffer(lId);
           }
         }
       }
 
-      // 3. If new frames > existing frames, add new frames for the remainder
+      // 4. If new frames > existing frames, add new frames for the remainder
       for (let i = existingCount; i < newCount; i++) {
         currentStore.addFrame();
         const st = useStudioStore.getState();
@@ -195,12 +208,12 @@ export function executeImageImport(confirmData: ImageImportConfirmPayload): Imag
         if (fCtx) {
           fCtx.clearRect(0, 0, width, height);
           fCtx.imageSmoothingEnabled = false;
-          fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+          fCtx.drawImage(slicedFrames[i], 0, 0);
           touchBuffer(lId);
         }
       }
 
-      // 4. If existing frames > new frames, delete excess frames from the end
+      // 5. If existing frames > new frames, delete excess frames from the end
       for (let i = existingCount - 1; i >= newCount; i--) {
         currentStore.deleteFrame(i);
       }
@@ -218,11 +231,28 @@ export function executeImageImport(confirmData: ImageImportConfirmPayload): Imag
         if (fCtx) {
           fCtx.clearRect(0, 0, width, height);
           fCtx.imageSmoothingEnabled = false;
-          fCtx.drawImage(slicedFrames[i], 0, 0, width, height);
+          fCtx.drawImage(slicedFrames[i], 0, 0);
           touchBuffer(lId);
         }
       }
     }
+    const firstImportedFrame = target === 'sprite-sheet-replace' ? 0 : originalFrameCount;
+    useStudioStore.setState((state) => {
+      for (let i = firstImportedFrame; i < firstImportedFrame + slicedFrames.length; i++) {
+        const frame = state.frames[i];
+        if (!frame) continue;
+        for (const layer of frame.layers) layer.effect = undefined;
+        const firstLayer = frame.layers[0];
+        if (firstLayer) {
+          firstLayer.name = sheetLayerName;
+          firstLayer.visible = true;
+          firstLayer.opacity = 1;
+          firstLayer.blendMode = 'source-over';
+        }
+      }
+      state.isDirty = true;
+      state.editRevision += 1;
+    });
   } else {
     let targetLayerId = currentStore.activeLayerId;
 

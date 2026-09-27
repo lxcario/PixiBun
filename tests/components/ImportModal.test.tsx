@@ -122,7 +122,7 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
     expect(screen.getByText(/4 cols × 2 rows = 8 total frames/)).toBeDefined();
   });
 
-  it('shows empty warning banner and disables import button when all cells are transparent', () => {
+  it('preserves blank animation cells by default and can opt in to skipping them', () => {
     const handleClose = vi.fn();
     const handleConfirmImage = vi.fn();
     const handleConfirmProject = vi.fn();
@@ -142,17 +142,13 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
 
     // The mock canvas initially has all-zero (transparent) image data
     // In HappyDOM, image loading triggers the preview where all cells are empty
-    const skipEmptyCheckbox = screen.getByLabelText('Skip Empty (Transparent) Cells') as HTMLInputElement;
-    expect(skipEmptyCheckbox.checked).toBe(true);
+    const skipEmptyCheckbox = screen.getByLabelText('Skip Empty (Transparent) Cells — shortens animation') as HTMLInputElement;
+    expect(skipEmptyCheckbox.checked).toBe(false);
 
-    // Should display warning and disable button when nonZeroFramesCount is 0
     const sliceBtn = screen.getByText('Slice & Import Frames').closest('button');
     expect(sliceBtn).toBeDefined();
-
-    // When Skip Empty is checked and cells are empty, import button is disabled
-    // If the user unchecks Skip Empty, the button is re-enabled to import blank frames
-    fireEvent.click(skipEmptyCheckbox);
-    expect(skipEmptyCheckbox.checked).toBe(false);
     expect(sliceBtn?.disabled).toBe(false);
+    fireEvent.click(skipEmptyCheckbox);
+    expect(skipEmptyCheckbox.checked).toBe(true);
   });
 });

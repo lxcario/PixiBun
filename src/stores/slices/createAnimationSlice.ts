@@ -1,4 +1,5 @@
 import { AnimationSlice, StudioSliceCreator } from './types';
+import { current } from 'immer';
 import { Layer, AnimationFrame } from '@/types/canvas';
 import { AnimationClip } from '@/types/animation';
 import { createId } from '@/lib/engine/id';
@@ -94,7 +95,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
           ...l,
           id: createId('layer'),
           effect: l.effect
-            ? { ...structuredClone(l.effect), id: createId('effect'), updatedAt: Date.now() }
+            ? { ...structuredClone(current(l.effect)), id: createId('effect'), updatedAt: Date.now() }
             : undefined,
         }));
 
@@ -153,7 +154,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
         ...l,
         id: createId('layer'),
         effect: l.effect
-          ? { ...structuredClone(l.effect), id: createId('effect'), updatedAt: Date.now() }
+          ? { ...structuredClone(current(l.effect)), id: createId('effect'), updatedAt: Date.now() }
           : undefined,
       }));
 

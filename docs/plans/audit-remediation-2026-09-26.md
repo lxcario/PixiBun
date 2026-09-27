@@ -69,7 +69,7 @@ Source: `PIXIBUN_AUDIT_RESULTS+DEEP.md`. The audit has 66 finding IDs, despite i
 
 - [x] Palette creation, color addition, cycle-track edits, and custom ramp replacement now respect the same limits as project validation. Rejected edits show an error and leave the project unchanged.
 - [x] Accepted palette edits advance the dirty revision, and startup completion schedules autosave for an edit made while the workspace was opening. A Chromium check verifies persistence across reload.
-- [x] Reconciled current architecture and quality-inventory documentation with the shipped code. The historical counts above describe the earlier remediation run; the current inventory is 1,237 unit tests across 123 suites and 59 Chromium tests across 13 specs.
+- [x] Reconciled current architecture and quality-inventory documentation with the shipped code. The historical counts above describe the earlier remediation run; the current inventory is 1,245 unit tests across 124 suites and 65 Chromium tests across 15 specs.
 
 ## Follow-up — metadata, history, export, and claim accuracy
 

@@ -267,7 +267,7 @@ export function useSelectionPointerHandler({
       return true;
     }
 
-    if (tools.activeTool === 'select-lasso') {
+    if (tools.activeTool === 'select-lasso' && isDrawingRef.current && strokeStart) {
       setLassoPoints((prev) => {
         const next = [...prev, coords];
         const previewCanvas = previewCanvasRef.current;

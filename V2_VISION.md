@@ -650,7 +650,7 @@ Measuring CPU performance in PixiBun v1 (`v1.13.1`) across these resolutions rev
 * **Felzenszwalb-Huttenlocher EDT:** The historical $\approx 1.8\text{ ms}$ estimate for a $256\times256$ canvas has not been remeasured for this revision.
 * **RotSprite 8x Scale2x:** Takes **$\approx 2.5\text{ ms}$** for a $128\times128$ sprite.
 * **Bresenham & 2:1 Isometric Stepper:** Takes **$< 0.05\text{ ms}$**.
-* **6-Layer Canvas Stack:** Targets a 60 FPS ($16.6\text{ ms}$ frame budget) refresh rate; a zero-dropped-frame claim has not been measured for this revision.
+* **Five raster canvas layers with CSS overlays:** Targets a 60 FPS ($16.6\text{ ms}$ frame budget) refresh rate; a zero-dropped-frame claim has not been measured for this revision.
 
 The proposed $0.1\text{ ms}$ WebGPU or WASM figure is a design estimate, not a measured speedup. Whether a GPU or SIMD path improves the current editor depends on end-to-end profiling, including transfer and composition costs.
 
@@ -665,7 +665,7 @@ At the 2026-09-26 verification point:
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-The codebase enforces automated quality gates (123 Vitest suites, TypeScript and ESLint), while deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
+The codebase enforces automated quality gates (124 Vitest suites, 15 Chromium spec suites, TypeScript and ESLint as of 2026-09-27), while deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
 
 ---
 

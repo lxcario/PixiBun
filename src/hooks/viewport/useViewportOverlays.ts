@@ -21,14 +21,10 @@ interface UseViewportOverlaysProps {
   gridCanvasRef: RefObject<HTMLCanvasElement | null>;
   onionCanvasRef: RefObject<HTMLCanvasElement | null>;
   stencilCanvasRef: RefObject<HTMLCanvasElement | null>;
-  cursorCanvasRef: RefObject<HTMLCanvasElement | null>;
+  cursorCanvasRef: RefObject<HTMLDivElement | null>;
   canvasWidth: number;
   canvasHeight: number;
   zoom: number;
-  showGrid: boolean;
-  showIsoGuides: boolean;
-  symmetryHorizontal: boolean;
-  symmetryVertical: boolean;
   selection: { x: number; y: number; w: number; h: number } | null;
   selectionMask: Uint8Array | null;
   floatingSelection: FloatingSelection | null;
@@ -46,10 +42,6 @@ export function useViewportOverlays({
   canvasWidth,
   canvasHeight,
   zoom,
-  showGrid,
-  showIsoGuides,
-  symmetryHorizontal,
-  symmetryVertical,
   selection,
   selectionMask,
   floatingSelection,
@@ -59,7 +51,6 @@ export function useViewportOverlays({
   brushSize,
 }: UseViewportOverlaysProps) {
   const onionGhostCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const referenceOverlay = useStudioStore((state) => state.referenceOverlay);
 
   // Matrix-only lens: safe for translucent stacked surfaces (preserves alpha)
   const cvdFilterCss = cvdLens !== 'none' ? `url(#${CVD_FILTER_IDS[cvdLens]})` : undefined;
@@ -197,184 +188,31 @@ export function useViewportOverlays({
     stencilCanvasRef,
   ]);
 
-  // Render Grid, Isometric Guides, Symmetry, and Marching Ants Selection Overlay
+  // Render the selection mask tint on a logical-size canvas.
   const renderGridAndSelection = useCallback(() => {
     const gridCanvas = gridCanvasRef.current;
     if (!gridCanvas) return;
+    // Keep the backing store in artwork pixels. CSS stretches this layer with
+    // the stage; zoom must never multiply a canvas allocation.
+    const scale = 1;
+    const width = canvasWidth;
+    const height = canvasHeight;
+    if (gridCanvas.width !== width) gridCanvas.width = width;
+    if (gridCanvas.height !== height) gridCanvas.height = height;
     const ctx = gridCanvas.getContext('2d');
     if (!ctx) return;
 
-    const scale = zoom / 100;
-    const width = canvasWidth * scale;
-    const height = canvasHeight * scale;
-
-    gridCanvas.width = width;
-    gridCanvas.height = height;
-
     ctx.clearRect(0, 0, width, height);
 
-    // 1. Pixel Grid Lines
-    if (showGrid && scale >= 4) {
-      ctx.strokeStyle = 'rgba(58, 46, 76, 0.16)';
-      ctx.lineWidth = 1;
-
-      for (let x = 0; x <= canvasWidth; x++) {
-        ctx.beginPath();
-        ctx.moveTo(x * scale, 0);
-        ctx.lineTo(x * scale, height);
-        ctx.stroke();
-      }
-
-      for (let y = 0; y <= canvasHeight; y++) {
-        ctx.beginPath();
-        ctx.moveTo(0, y * scale);
-        ctx.lineTo(width, y * scale);
-        ctx.stroke();
-      }
-    }
-
-    // 1.05 Reference Overlays (Rule of Thirds, Golden Ratio, Center Cross)
-    if (referenceOverlay !== 'none') {
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-
-      const drawHLine = (yVal: number) => {
-        ctx.beginPath();
-        ctx.moveTo(0, yVal);
-        ctx.lineTo(width, yVal);
-        ctx.stroke();
-      };
-      const drawVLine = (xVal: number) => {
-        ctx.beginPath();
-        ctx.moveTo(xVal, 0);
-        ctx.lineTo(xVal, height);
-        ctx.stroke();
-      };
-
-      if (referenceOverlay === 'thirds') {
-        ctx.strokeStyle = 'rgba(199, 146, 223, 0.7)'; // Wisteria
-        drawVLine(width / 3);
-        drawVLine((2 * width) / 3);
-        drawHLine(height / 3);
-        drawHLine((2 * height) / 3);
-      } else if (referenceOverlay === 'golden') {
-        ctx.strokeStyle = 'rgba(240, 190, 124, 0.75)'; // Amber gold
-        drawVLine(width * 0.382);
-        drawVLine(width * 0.618);
-        drawHLine(height * 0.382);
-        drawHLine(height * 0.618);
-      } else if (referenceOverlay === 'center') {
-        ctx.strokeStyle = 'rgba(220, 171, 223, 0.7)'; // Plum
-        drawVLine(width / 2);
-        drawHLine(height / 2);
-      }
-
-      ctx.setLineDash([]);
-    }
-
-    // 1.1 Ground Baseline Guide (Playground physics mode)
-    if (
-      isPlaygroundActive &&
-      (activeLessonId === 'master-bouncing-ball' ||
-        activeLessonId === 'character-hop-shock' ||
-        activeLessonId === 'combat-slash-hitstop')
-    ) {
-      const groundY = 26 * scale;
-      ctx.strokeStyle = 'rgba(240, 190, 124, 0.6)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 2]);
-      ctx.beginPath();
-      ctx.moveTo(0, groundY);
-      ctx.lineTo(width, groundY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // 1.2 Trajectory Guide Hints (Playground physics mode)
-    if (isPlaygroundActive) {
-      if (activeLessonId === 'master-bouncing-ball') {
-        const cx = 16 * scale;
-        ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 4]);
-        ctx.beginPath();
-        ctx.moveTo(cx, 10 * scale);
-        ctx.lineTo(cx, 26 * scale);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      } else if (activeLessonId === 'character-hop-shock') {
-        const cx = 16 * scale;
-        ctx.strokeStyle = 'rgba(240, 190, 124, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 4]);
-        ctx.beginPath();
-        ctx.moveTo(cx, 8 * scale);
-        ctx.lineTo(cx, 26 * scale);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    }
-
-    // 2. Isometric 2:1 Guide Grid Lines
-    if (showIsoGuides) {
-      ctx.strokeStyle = 'rgba(240, 190, 124, 0.45)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 2]);
-
-      const isoStep = 16 * scale;
-      const span = width + height * 2;
-      for (let offset = -span; offset <= span * 2; offset += isoStep) {
-        // Forward diagonals (2:1 slope: dx = 2*dy)
-        ctx.beginPath();
-        ctx.moveTo(offset, 0);
-        ctx.lineTo(offset + height * 2, height);
-        ctx.stroke();
-
-        // Backward diagonals (-2:1 slope: dx = -2*dy)
-        ctx.beginPath();
-        ctx.moveTo(offset, 0);
-        ctx.lineTo(offset - height * 2, height);
-        ctx.stroke();
-      }
-      ctx.setLineDash([]);
-    }
-
-    // 3. Symmetry Line Indicators
-    if (symmetryHorizontal) {
-      const midX = (canvasWidth / 2) * scale;
-      ctx.strokeStyle = 'rgba(199, 146, 223, 0.85)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(midX, 0);
-      ctx.lineTo(midX, height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    if (symmetryVertical) {
-      const midY = (canvasHeight / 2) * scale;
-      ctx.strokeStyle = 'rgba(199, 146, 223, 0.85)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(0, midY);
-      ctx.lineTo(width, midY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
+    // Pixel-grid hairlines are a CSS pattern on the overlay element, so they
+    // stay one screen pixel wide even when the logical canvas is enlarged.
 
     // 4. Selection Bounding Box & Marching Ants
     const activeBox = floatingSelection
       ? { x: floatingSelection.x, y: floatingSelection.y, w: floatingSelection.w, h: floatingSelection.h }
       : selection;
 
-    if (activeBox) {
-      const sx = activeBox.x * scale;
-      const sy = activeBox.y * scale;
-      const sw = activeBox.w * scale;
-      const sh = activeBox.h * scale;
-
+    if (activeBox && !floatingSelection) {
       // Render irregular mask tint
       if (selectionMask) {
         ctx.fillStyle = 'rgba(100, 150, 255, 0.3)';
@@ -389,53 +227,23 @@ export function useViewportOverlays({
         }
       }
 
-      // Dark dashed border
-      ctx.strokeStyle = '#3A2E4C';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(sx, sy, sw, sh);
-
-      // Light inner dashed border
-      ctx.strokeStyle = '#C792DF';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeRect(sx, sy, sw, sw > 0 && sh > 0 ? sh : 0);
-      ctx.setLineDash([]);
+      // The selection gizmo draws its own screen-space marching-ants border.
+      // Keeping only the mask tint here avoids a zoom-thick duplicate outline.
     }
   }, [
-    activeLessonId,
     canvasHeight,
     canvasWidth,
     floatingSelection,
     gridCanvasRef,
-    isPlaygroundActive,
     selection,
     selectionMask,
-    showGrid,
-    showIsoGuides,
-    referenceOverlay,
-    symmetryHorizontal,
-    symmetryVertical,
-    zoom,
   ]);
 
-  // Canvas Brush Ghost Bounding Cursor per DESIGN.md Section 8
+  // Brush footprint outline per DESIGN.md Section 8
   const renderBrushGhost = useCallback(
     (coords: Point | null) => {
-      const canvas = cursorCanvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const scale = zoom / 100;
-      const targetW = canvasWidth * scale;
-      const targetH = canvasHeight * scale;
-
-      if (canvas.width !== targetW || canvas.height !== targetH) {
-        canvas.width = targetW;
-        canvas.height = targetH;
-      }
-
-      ctx.clearRect(0, 0, targetW, targetH);
+      const ghost = cursorCanvasRef.current;
+      if (!ghost) return;
 
       const isBrushTool =
         activeTool === 'pen' ||
@@ -447,31 +255,21 @@ export function useViewportOverlays({
         activeTool === 'ellipse';
 
       if (!coords || zoom < 400 || !isBrushTool) {
+        ghost.style.display = 'none';
         return;
       }
 
+      const scale = zoom / 100;
       const offset = Math.floor(brushSize / 2);
       const bx = coords.x - offset;
       const by = coords.y - offset;
-
-      const sx = Math.round(bx * scale);
-      const sy = Math.round(by * scale);
-      const sw = Math.round(brushSize * scale);
-      const sh = Math.round(brushSize * scale);
-
-      ctx.imageSmoothingEnabled = false;
-
-      // Outer shadow stroke: 1px #140C1E at 50% opacity
-      ctx.strokeStyle = 'rgba(20, 12, 30, 0.5)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sx - 0.5, sy - 0.5, sw + 1, sh + 1);
-
-      // Inner highlight stroke: 1px #F0BE7C at 60% opacity
-      ctx.strokeStyle = 'rgba(240, 190, 124, 0.6)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sx + 0.5, sy + 0.5, sw - 1, sh - 1);
+      ghost.style.display = 'block';
+      ghost.style.left = `${Math.round(bx * scale)}px`;
+      ghost.style.top = `${Math.round(by * scale)}px`;
+      ghost.style.width = `${Math.round(brushSize * scale)}px`;
+      ghost.style.height = `${Math.round(brushSize * scale)}px`;
     },
-    [activeTool, brushSize, canvasHeight, canvasWidth, cursorCanvasRef, zoom]
+    [activeTool, brushSize, cursorCanvasRef, zoom]
   );
 
   useEffect(() => {

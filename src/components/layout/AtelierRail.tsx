@@ -77,6 +77,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const setDitherMatrix = useStudioStore((s) => s.setDitherMatrix);
   const setDitherDensity = useStudioStore((s) => s.setDitherDensity);
   const setBucketContiguous = useStudioStore((s) => s.setBucketContiguous);
+  const setBucketTolerance = useStudioStore((s) => s.setBucketTolerance);
   const setShapeFilled = useStudioStore((s) => s.setShapeFilled);
   const setCurveTightness = useStudioStore((s) => s.setCurveTightness);
   const setIsoAngleSnap = useStudioStore((s) => s.setIsoAngleSnap);
@@ -197,6 +198,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     tools.activeTool === 'curve' ||
     tools.activeTool === 'eraser' ||
     tools.activeTool === 'bucket' ||
+    tools.activeTool === 'color-replace' ||
     tools.activeTool === 'dither' ||
     isShapeTool;
 
@@ -413,6 +415,23 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               >
                 {tools.bucketContiguous ? 'Contiguous' : 'Global Replace'}
               </button>
+            )}
+
+            {tools.activeTool === 'color-replace' && (
+              <div className="flex items-center gap-1.5 shrink-0 text-[10px]" title="Replaces matching colors on the active layer. Increase tolerance to include similar shades; transparent pixels and other layers are preserved.">
+                <span className="text-[var(--text-muted)]">Active layer · Tolerance:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="255"
+                  step="1"
+                  value={tools.bucketTolerance}
+                  onChange={(e) => setBucketTolerance(Number(e.target.value))}
+                  aria-label="Color Replace tolerance"
+                  className="w-24 h-1 accent-[var(--accent-gold)] cursor-pointer"
+                />
+                <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.bucketTolerance}</span>
+              </div>
             )}
 
             {/* Dither Matrix & Density */}

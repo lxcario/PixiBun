@@ -35,6 +35,32 @@ if (typeof document === 'undefined') {
 }
 
 describe('spritesheetSlicer pure utilities', () => {
+  it('rejects an excessive cell grid before reading pixels or allocating frame canvases', () => {
+    const getImageData = vi.fn();
+    const sheet = { width: 1024, height: 1024, getContext: () => ({ getImageData }) } as unknown as HTMLCanvasElement;
+    expect(() => sliceSpriteSheet(sheet, { cellWidth: 1, cellHeight: 1, skipEmpty: false })).toThrow(/more than 500 cells/);
+    expect(getImageData).not.toHaveBeenCalled();
+  });
+
+  it('does not report cells when the configured cell is larger than the image', () => {
+    expect(computeGridDimensions(16, 16, 32, 32).totalCells).toBe(0);
+  });
+
+  it('honors offset, spacing and column traversal without reading pixels when blanks are kept', () => {
+    const getImageData = vi.fn();
+    const sheet = {
+      width: 38, height: 20,
+      getContext: () => ({ getImageData }),
+    } as unknown as HTMLCanvasElement;
+    const result = sliceSpriteSheet(sheet, {
+      cellWidth: 8, cellHeight: 8, startX: 2, startY: 1,
+      spacingX: 2, spacingY: 2, skipEmpty: false, order: 'column-major',
+    });
+    expect(result.totalCells).toBe(6);
+    expect(result.frames).toHaveLength(6);
+    expect(getImageData).not.toHaveBeenCalled();
+  });
+
   it('computes grid columns and rows correctly', () => {
     // 64x32 image with 16x16 cells -> 4 columns, 2 rows, 8 total
     const grid = computeGridDimensions(64, 32, 16, 16);

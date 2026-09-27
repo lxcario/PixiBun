@@ -50,7 +50,7 @@ interface UseViewportSelectionTransformProps {
 }
 
 export function useViewportSelectionTransform({
-  canvasWidth: _canvasWidth,
+  canvasWidth,
   canvasHeight: _canvasHeight,
   activeLayerId,
   selection,
@@ -152,6 +152,21 @@ export function useViewportSelectionTransform({
         selection.w,
         selection.h
       );
+      if (selectionMask) {
+        const pixels = bCtx.getImageData(0, 0, selection.w, selection.h);
+        for (let y = 0; y < selection.h; y++) {
+          for (let x = 0; x < selection.w; x++) {
+            if (selectionMask[(selection.y + y) * canvasWidth + selection.x + x] !== 1) {
+              const offset = (y * selection.w + x) * 4;
+              pixels.data[offset] = 0;
+              pixels.data[offset + 1] = 0;
+              pixels.data[offset + 2] = 0;
+              pixels.data[offset + 3] = 0;
+            }
+          }
+        }
+        bCtx.putImageData(pixels, 0, 0);
+      }
     }
 
     originalSourceRef.current = {
@@ -181,7 +196,7 @@ export function useViewportSelectionTransform({
       w: selection.w,
       h: selection.h,
     };
-  }, [activeLayerId, floatingSelection, getOrCreateLayerCanvas, liftSelectionToFloating, selection, selectionMask]);
+  }, [activeLayerId, canvasWidth, floatingSelection, getOrCreateLayerCanvas, liftSelectionToFloating, selection, selectionMask]);
 
   // Start a transform interaction with a specific handle
   const handlePointerDown = useCallback(
@@ -598,13 +613,6 @@ export function useViewportSelectionTransform({
         if (rCtx) {
           const outImg = rCtx.createImageData(rotResult.width, rotResult.height);
           outImg.data.set(rotResult.data);
-          // Enforce 1-bit hard alpha boundary to eliminate fringe artifacts on rotated pixel art
-          const outData = outImg.data;
-          for (let i = 3; i < outData.length; i += 4) {
-            if (outData[i] > 0) {
-              outData[i] = outData[i] >= 128 ? 255 : 0;
-            }
-          }
           rCtx.putImageData(outImg, 0, 0);
           finalCanvas = rotatedCanvas;
         }

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, type RefObject } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { createBoxMask, mergeSelectionMask } from '@/lib/canvas/selectionUtils';
 import { useStudioStore } from '@/stores/studioStore';
@@ -8,6 +8,7 @@ interface UseViewportSelectionProps {
   canvasWidth: number;
   canvasHeight: number;
   activeLayerId: string;
+  previewCanvasRef: RefObject<HTMLCanvasElement | null>;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
   captureSnapshot: (description: string) => void;
@@ -18,6 +19,7 @@ export function useViewportSelection({
   canvasWidth,
   canvasHeight,
   activeLayerId,
+  previewCanvasRef,
   getOrCreateLayerCanvas,
   renderComposite,
   captureSnapshot,
@@ -36,6 +38,34 @@ export function useViewportSelection({
 
   const selectionModifierRef = useRef<'replace' | 'union' | 'subtract'>('replace');
   const baseSelectionMaskRef = useRef<Uint8Array | null>(null);
+
+  const clearPreview = useCallback(() => {
+    const canvas = previewCanvasRef.current;
+    canvas?.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
+  }, [canvasHeight, canvasWidth, previewCanvasRef]);
+
+  const clearSelectedPixels = useCallback(() => {
+    if (!selection) return;
+    const ctx = getOrCreateLayerCanvas(activeLayerId).getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    if (!selectionMask) {
+      ctx.clearRect(selection.x, selection.y, selection.w, selection.h);
+      return;
+    }
+    for (let y = 0; y < selection.h; y++) {
+      const rowOffset = (selection.y + y) * canvasWidth + selection.x;
+      let x = 0;
+      while (x < selection.w) {
+        if (selectionMask[rowOffset + x] !== 1) {
+          x++;
+          continue;
+        }
+        const start = x;
+        while (x < selection.w && selectionMask[rowOffset + x] === 1) x++;
+        ctx.clearRect(selection.x + start, selection.y + y, x - start, 1);
+      }
+    }
+  }, [activeLayerId, canvasWidth, getOrCreateLayerCanvas, selection, selectionMask]);
 
   // Lift selected pixels from active layer into floating selection
   const liftSelectionToFloating = useCallback(() => {
@@ -207,28 +237,28 @@ export function useViewportSelection({
 
   const handleCut = useCallback(() => {
     handleCopy();
+    clearPreview();
     if (floatingSelection) {
       setFloatingSelection(null);
       setSelection(null);
+      commitSnapshot();
       renderComposite();
       bumpBufferVersion();
     } else if (selection) {
       captureSnapshot('Cut Selection');
-      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const ctx = layerCanvas.getContext('2d');
-      ctx?.clearRect(selection.x, selection.y, selection.w, selection.h);
+      clearSelectedPixels();
       setSelection(null);
       commitSnapshot();
       renderComposite();
       bumpBufferVersion();
     }
   }, [
-    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
+    clearPreview,
+    clearSelectedPixels,
     commitSnapshot,
     floatingSelection,
-    getOrCreateLayerCanvas,
     handleCopy,
     renderComposite,
     selection,
@@ -264,28 +294,28 @@ export function useViewportSelection({
   }, [canvasHeight, canvasWidth, commitFloatingSelection, floatingSelection, renderComposite, setSelection]);
 
   const handleDeleteSelection = useCallback(() => {
+    clearPreview();
     if (floatingSelection) {
       setFloatingSelection(null);
       setSelection(null);
+      commitSnapshot();
       renderComposite();
       bumpBufferVersion();
     } else if (selection) {
       captureSnapshot('Delete Selection');
-      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
-      const ctx = layerCanvas.getContext('2d');
-      ctx?.clearRect(selection.x, selection.y, selection.w, selection.h);
+      clearSelectedPixels();
       setSelection(null);
       commitSnapshot();
       renderComposite();
       bumpBufferVersion();
     }
   }, [
-    activeLayerId,
     bumpBufferVersion,
     captureSnapshot,
+    clearPreview,
+    clearSelectedPixels,
     commitSnapshot,
     floatingSelection,
-    getOrCreateLayerCanvas,
     renderComposite,
     selection,
     setSelection,
@@ -362,10 +392,13 @@ export function useViewportSelection({
       } else if (e.key === 'Escape') {
         commitFloatingSelection();
         setSelection(null);
+        clearPreview();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selection || floatingSelection) {
           e.preventDefault();
           handleDeleteSelection();
+        } else {
+          clearPreview();
         }
       } else if (e.key.toLowerCase() === 'h' && (selection || floatingSelection)) {
         e.preventDefault();
@@ -392,6 +425,7 @@ export function useViewportSelection({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     commitFloatingSelection,
+    clearPreview,
     floatingSelection,
     handleCopy,
     handleCut,

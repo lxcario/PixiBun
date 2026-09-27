@@ -1,0 +1,167 @@
+import { test, expect } from '@playwright/test';
+
+async function pngFromCanvas(page: import('@playwright/test').Page, width: number, height: number, cells?: number[]) {
+  const base64 = await page.evaluate(({ width, height, cells }) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d')!;
+    if (cells) {
+      cells.forEach((color, index) => {
+        if (!color) return;
+        ctx.fillStyle = color === 1 ? '#ff0000' : '#0000ff';
+        ctx.fillRect(index * 64, 0, 64, 64);
+      });
+    } else {
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(0, 0, width, height);
+    }
+    return canvas.toDataURL('image/png').split(',')[1];
+  }, { width, height, cells });
+  return Buffer.from(base64, 'base64');
+}
+
+async function centeredMotifPng(page: import('@playwright/test').Page) {
+  const base64 = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(28, 28, 1, 7);
+    ctx.fillStyle = '#0000ff';
+    ctx.fillRect(28, 34, 7, 1);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  return Buffer.from(base64, 'base64');
+}
+
+test('image import keeps the chosen fit and original-size modes through preview and confirmation', async ({ page }) => {
+  await page.goto('/studio');
+  await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
+  await expect(page.getByRole('button', { name: '64×64' })).toBeVisible();
+  const buffer = await pngFromCanvas(page, 128, 64);
+  const picker = page.locator('input[type=file]').first();
+  await picker.setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer });
+  let dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Single Sprite / Layer' }).click();
+  await dialog.getByLabel('Fit into Current Canvas (64×64 px)').check();
+  await expect(dialog.getByLabel('Fit into Current Canvas (64×64 px)')).toBeChecked();
+  await expect(dialog.getByText('64 × 64 px', { exact: true }).last()).toBeVisible();
+  await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { canvasWidth: number; canvasHeight: number } } }).__studioStore!.getState().canvasWidth)).toBe(64);
+
+  await picker.setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer });
+  dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await dialog.getByRole('button', { name: 'Single Sprite / Layer' }).click();
+  await dialog.getByLabel('Match Image Size (128×64 px)').check();
+  await expect(dialog.getByLabel('Match Image Size (128×64 px)')).toBeChecked();
+  await expect(dialog.getByText('128 × 64 px', { exact: true }).last()).toBeVisible();
+  await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => { canvasWidth: number; canvasHeight: number } } }).__studioStore!.getState();
+    return `${state.canvasWidth}x${state.canvasHeight}`;
+  })).toBe('128x64');
+});
+
+test('suggested sprite sheet keeps blank timing cells and creates distinct timeline artwork', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
+  await expect(page.getByRole('button', { name: '64×64' })).toBeVisible();
+  const buffer = await pngFromCanvas(page, 192, 64, [1, 0, 2]);
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'walk.png', mimeType: 'image/png', buffer });
+  const dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await expect(dialog.getByText('Possible sprite sheet detected.')).toBeVisible();
+  await expect(dialog.getByText('3 cols × 1 rows = 3 total frames')).toBeVisible();
+  await expect(dialog.getByLabel('Skip Empty (Transparent) Cells — shortens animation')).not.toBeChecked();
+  await dialog.getByRole('button', { name: 'Slice & Import Frames' }).click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => { frames: unknown[] } } }).__studioStore!.getState();
+    return state.frames.length;
+  })).toBe(4);
+  const names = await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => { frames: Array<{ layers: Array<{ name: string }> }> } } }).__studioStore!.getState();
+    return state.frames.slice(1).map((frame) => frame.layers[0].name);
+  });
+  expect(names).toEqual(['Sprite Sheet: walk', 'Sprite Sheet: walk', 'Sprite Sheet: walk']);
+
+  for (const [frameIndex, expected] of [[1, '255,0,0,255'], [2, '0,0,0,0'], [3, '0,0,255,255']] as const) {
+    await page.evaluate((index) => (window as Window & { __studioStore?: { getState: () => { setActiveFrame: (index: number) => void } } }).__studioStore!.getState().setActiveFrame(index), frameIndex);
+    await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) => {
+      const pixel = element.getContext('2d')!.getImageData(10, 10, 1, 1).data;
+      return Array.from(pixel).join(',');
+    })).toBe(expected);
+  }
+});
+
+test('replacing frames clears artwork and effects from old layers', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
+  const picker = page.locator('input[type=file]').first();
+  await picker.setInputFiles({ name: 'old.png', mimeType: 'image/png', buffer: await pngFromCanvas(page, 64, 64) });
+  let dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) =>
+    Array.from(element.getContext('2d')!.getImageData(10, 10, 1, 1).data).join(','))).toBe('255,0,0,255');
+  await page.evaluate(() => {
+    const store = (window as Window & { __studioStore?: { setState: (callback: (state: { frames: Array<{ layers: Array<{ effect?: unknown }> }> }) => void) => void } }).__studioStore!;
+    store.setState((state) => { state.frames[0].layers[1].effect = { id: 'stale', kind: 'outline' }; });
+  });
+
+  await picker.setInputFiles({ name: 'new_sheet.png', mimeType: 'image/png', buffer: await pngFromCanvas(page, 128, 64, [0, 2]) });
+  dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await dialog.getByRole('button', { name: 'Replace Frames' }).click();
+  await dialog.getByRole('button', { name: 'Slice & Import Frames' }).click();
+  await expect(dialog).toBeHidden();
+  const state = await page.evaluate(() => {
+    const store = (window as Window & { __studioStore?: { getState: () => { frames: Array<{ layers: Array<{ effect?: unknown; visible: boolean }> }> } } }).__studioStore!.getState();
+    return store.frames.map((frame) => frame.layers.map((layer) => ({ hasEffect: Boolean(layer.effect), visible: layer.visible })));
+  });
+  expect(state).toHaveLength(2);
+  expect(state[0]).toHaveLength(2);
+  expect(state[0].every((layer) => !layer.hasEffect)).toBe(true);
+  expect(state[0][0].visible).toBe(true);
+  await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) =>
+    Array.from(element.getContext('2d')!.getImageData(10, 10, 1, 1).data).join(','))).toBe('0,0,0,0');
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveFrame: (index: number) => void } } }).__studioStore!.getState().setActiveFrame(1));
+  await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) =>
+    Array.from(element.getContext('2d')!.getImageData(10, 10, 1, 1).data).join(','))).toBe('0,0,255,255');
+});
+
+test('the studio 45-degree RotSprite command preserves its palette and visibly turns a centered motif', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
+  await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'motif.png', mimeType: 'image/png', buffer: await centeredMotifPng(page) });
+  const dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  const before = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, 64, 64).data));
+  const editRevision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
+  await page.getByRole('button', { name: 'PixiTools (PixiBud AI)' }).click();
+  await page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' }).click();
+  await page.getByRole('button', { name: '+45°' }).click();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision)).toBeGreaterThan(editRevision);
+  const after = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, 64, 64).data));
+  expect(after).not.toEqual(before);
+  const colors = new Set<string>();
+  for (let i = 0; i < after.length; i += 4) {
+    if (after[i + 3] > 0) colors.add(after.slice(i, i + 4).join(','));
+  }
+  expect(colors).toEqual(new Set(['255,0,0,255', '0,0,255,255']));
+});

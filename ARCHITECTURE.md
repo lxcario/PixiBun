@@ -56,18 +56,18 @@ graph TD
 ## 2. Canvas & Rendering Pipeline
 
 ### Multi-Canvas Layered Viewport Stack
-To avoid browser layout recalculations, eliminate visual ghost contamination during color picking, and achieve sub-16ms interactive drawing latency, viewport rendering is separated into a hardware-accelerated 6-canvas layered stack (backed by L0 CSS background and topped by the interactive SVG selection gizmo overlay):
+To avoid browser layout recalculations and keep editor guides out of color picking, viewport rendering uses five logical-size canvas layers, CSS screen-pixel guides, and a CSS brush cursor. Zoom changes the stage's display size without multiplying any canvas backing store; the interactive SVG selection gizmo supplies the screen-space marquee.
 
 ```mermaid
 graph TD
-    subgraph Viewport_Stack ["️ CenterViewport Canvas Stack (Bottom to Top)"]
+    subgraph Viewport_Stack ["️ CenterViewport Layer Stack (Bottom to Top)"]
         L0["0. Solid Background (White #ffffff)"]
         L1["1. Onion Skin Underlay (onionCanvasRef: Tinted Ghosts & Falloff)"]
         L2["2. Playground Tracing Stencil (stencilCanvasRef: Lessons & Guides)"]
         L3["3. Main Artwork Composite (mainCanvasRef: Layers & Normal Map Preview)"]
         L4["4. Interactive Shape Preview (previewCanvasRef: Bézier & Vector Shapes)"]
-        L5["5. Precision HUD (gridCanvasRef: Pixel Grid, Iso Guides & Marquee)"]
-        L6["6. Brush Ghost Cursor (cursorCanvasRef: Dynamic Brush Reticle)"]
+        L5["5. Precision HUD (logical canvas: selection tint; CSS grid, iso, reference and playground guides)"]
+        L6["6. Brush Ghost Cursor (CSS border, no canvas backing store)"]
     end
     
     L0 --> L1
@@ -514,9 +514,9 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   3. **Parabolic Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a radially symmetric parabolic center-weighted kernel $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$ for $(u, v) \in \{-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5\}^2$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Feature conservation thresholds preserve 1px thin lines when the center core touches solid pixels, otherwise requiring a solid majority (38%) to prevent outline dilation while preserving palette purity without interpolating artificial intermediate colors.
 * **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
   - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
-  - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 16x16px screen-space hit area regardless of canvas zoom factor ($100\% - 3200\%$).
+  - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 18x18px screen-space hit area regardless of canvas zoom factor ($100\% - 6400\%$).
   - **Center Pivot Crosshair Reticle ($\oplus$):** Draggable pivot point initialized to selection center $((x_1+x_2)/2, (y_1+y_2)/2)$. Serves as the origin for both interactive scaling and RotSprite affine rotation.
-  - **Outer Corner Rotation Zone & HUD:** Corner hit zones extend $20\text{px}$ outside the boundary handles to detect rotational drag. Holding `Shift` snaps rotation to $15^\circ$ increments. A floating degree readout badge displays active angle, and a quick-action HUD bar exposes Flip Horizontal, Flip Vertical, Rotate 90° CW/CCW, Commit, and Cancel actions.
+  - **Outer Corner Rotation Zone & HUD:** Corner hit zones extend $24\text{px}$ outside the boundary handles to detect rotational drag. Holding `Shift` snaps rotation to $15^\circ$ increments. A floating degree readout badge displays active angle, and a quick-action HUD bar exposes Flip Horizontal, Flip Vertical, Rotate 90° CW/CCW, Commit, and Cancel actions. Lasso preview strokes require an active pointer drag; lifted irregular selections keep excluded bounding-box pixels transparent during scaling and rotation, and the source mask tint disappears while the selection floats.
 * **Sprite Sheet Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`):**
   - High-performance grid computation (`computeGridDimensions`) partitioning arbitrary atlas sheets into uniform cells (presets: 16x16, 24x24, 32x32, 48x48, 64x64, custom).
   - 32-bit alpha scanning (`isCellEmpty`) to optionally filter blank cells.

@@ -285,7 +285,7 @@ export const StudioLayout: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
+    <div data-restoration-phase={lifecycleState.phase} className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <AtelierRail
         onOpenExport={() => setIsExportOpen(true)}

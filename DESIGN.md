@@ -198,11 +198,11 @@ graph TD
 
 ## 8. Viewport Ergonomics & HUD Precision Guidance
 
-### Canvas Brush Bounding Box (HUD Cursor Overlay)
+### Brush Bounding Box (HUD Cursor Overlay)
 At high zoom factors ($\ge 400\%$), navigating multi-pixel brush sizes ($2\text{px}$ to $16\text{px}$) requires direct spatial feedback:
-* **Geometry:** A 1px crisp bounding box matching `tools.brushSize` centered on the cursor canvas coordinate.
+* **Geometry:** A crisp CSS bounding box matching the square `tools.brushSize` footprint centered on the cursor's artwork coordinate.
 * **Color & Contrast:** 1px stroke in warm studio amber (`#F0BE7C` at 60% opacity) layered over a 1px dark shadow stroke (`#140C1E` at 50% opacity) ensuring visibility over both light and dark pixels.
-* **Performance Invariant:** Rendered exclusively onto `gridCanvasRef` on `pointermove` without touching Zustand state or triggering React re-renders.
+* **Performance Invariant:** The cursor is a CSS element with no canvas backing store; pointer movement updates its position and size without touching Zustand state or triggering React re-renders.
 
 ### Viewport Fit & Scale Navigation Standards
 Keyboard conventions for rapid drafting ergonomics:

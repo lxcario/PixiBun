@@ -4,7 +4,7 @@ import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
 import { Point } from '@/lib/canvas/rasterMath';
-import { performFloodFill, rgbaToHex, hexToRgba } from '@/lib/canvas/floodFill';
+import { performFloodFill, rgbaToHex, replaceLayerColor } from '@/lib/canvas/floodFill';
 import { compositeFrame } from '@/lib/render/compositor';
 import type { HistoryStep } from '@/types/canvas';
 
@@ -154,30 +154,32 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
+    const currentFrame = frames[activeFrameIndex];
+    const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
+
+    // Prevent edits to locked layers for every pixel-changing tool.
+    if (currentLayer?.locked && tools.activeTool !== 'eyedropper') {
+      props.setLockedWarning(true);
+      if (props.lockedWarningTimerRef.current !== null) {
+        window.clearTimeout(props.lockedWarningTimerRef.current);
+      }
+      props.lockedWarningTimerRef.current = window.setTimeout(() => {
+        props.setLockedWarning(false);
+      }, 1600);
+      return;
+    }
+
     // Color Replace Tool
     if (tools.activeTool === 'color-replace') {
-      props.captureSnapshot('Color Replace');
+      if (!currentLayer) return;
+      if (props.floatingSelection) props.commitFloatingSelection();
       const targetCanvas = props.getOrCreateLayerCanvas(activeLayerId);
       const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
       if (ctx) {
         const imgData = ctx.getImageData(0, 0, props.canvasWidth, props.canvasHeight);
-        const data = imgData.data;
-        const targetIdx = (coords.y * props.canvasWidth + coords.x) * 4;
-        const tr = data[targetIdx];
-        const tg = data[targetIdx + 1];
-        const tb = data[targetIdx + 2];
-        const ta = data[targetIdx + 3];
-
-        if (ta > 30) {
-          const replaceRgb = hexToRgba(primaryColor);
-          for (let i = 0; i < data.length; i += 4) {
-            if (data[i + 3] > 30 && data[i] === tr && data[i + 1] === tg && data[i + 2] === tb) {
-              data[i] = replaceRgb.r;
-              data[i + 1] = replaceRgb.g;
-              data[i + 2] = replaceRgb.b;
-              data[i + 3] = replaceRgb.a;
-            }
-          }
+        const changed = replaceLayerColor(imgData, coords.x, coords.y, primaryColor, tools.bucketTolerance);
+        if (changed > 0) {
+          props.captureSnapshot('Color Replace');
           ctx.putImageData(imgData, 0, 0);
           props.commitSnapshot();
           props.renderComposite();
@@ -193,19 +195,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     }
 
     // Prevent drawing on locked layers
-    const currentFrame = frames[activeFrameIndex];
-    const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
-    if (currentLayer?.locked) {
-      props.setLockedWarning(true);
-      if (props.lockedWarningTimerRef.current !== null) {
-        window.clearTimeout(props.lockedWarningTimerRef.current);
-      }
-      props.lockedWarningTimerRef.current = window.setTimeout(() => {
-        props.setLockedWarning(false);
-      }, 1600);
-      return;
-    }
-
     props.captureSnapshot(`Tool: ${tools.activeTool}`);
 
     try {

@@ -12,6 +12,9 @@ import {
   extractPaletteFromFrames,
   isCellEmpty,
 } from '@/lib/canvas/spritesheetSlicer';
+import { suggestSpriteSheetGrid } from '@/lib/canvas/spriteSheetSuggestion';
+import { MAX_CANVAS_DIMENSION, MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 export type { ImportPayload, ImageImportConfirmPayload };
@@ -63,6 +66,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     addToPalette,
     setAddToPalette,
     previewResult,
+    setPreviewResult,
     imgElementRef,
     runPixelization,
   } = usePixelizeEngine({
@@ -80,46 +84,64 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   // Sprite Sheet Slicer State
   const [slicerCellW, setSlicerCellW] = useState<number>(32);
   const [slicerCellH, setSlicerCellH] = useState<number>(32);
-  const [slicerSkipEmpty, setSlicerSkipEmpty] = useState<boolean>(true);
+  const [slicerStartX, setSlicerStartX] = useState(0);
+  const [slicerStartY, setSlicerStartY] = useState(0);
+  const [slicerSpacingX, setSlicerSpacingX] = useState(0);
+  const [slicerSpacingY, setSlicerSpacingY] = useState(0);
+  const [slicerOrder, setSlicerOrder] = useState<'row-major' | 'column-major'>('row-major');
+  const [slicerSkipEmpty, setSlicerSkipEmpty] = useState<boolean>(false);
   const [slicerTarget, setSlicerTarget] = useState<'sprite-sheet-append' | 'sprite-sheet-replace'>('sprite-sheet-append');
-  const [slicerResizeCanvas, setSlicerResizeCanvas] = useState<boolean>(true);
+  const [slicerResizeCanvas, setSlicerResizeCanvas] = useState<boolean>(false);
   const [nonZeroFramesCount, setNonZeroFramesCount] = useState<number>(1);
+  const [loadedImageRevision, setLoadedImageRevision] = useState(0);
+  const [sheetSuggestion, setSheetSuggestion] = useState(false);
+  const imageDataUrl = payload?.type === 'image' ? payload.dataUrl : undefined;
+  const imageFilename = payload?.type === 'image' ? payload.filename : '';
+  const imageWidth = payload?.type === 'image' ? payload.imgWidth : undefined;
+  const imageHeight = payload?.type === 'image' ? payload.imgHeight : undefined;
 
-  // Load Image Element once when payload changes
+  // Decode only when the file changes. Preview option changes must never reset the choice.
   useEffect(() => {
-    if (!payload?.dataUrl || payload.type !== 'image') {
+    if (!imageDataUrl) {
       imgElementRef.current = null;
+      setPreviewResult(null);
       return;
     }
 
+    let cancelled = false;
+    imgElementRef.current = null;
+    setPreviewResult(null);
+    setSizeMode((imageWidth ?? 0) <= 512 && (imageHeight ?? 0) <= 512 ? 'match-image' : 'fit-canvas');
+    const suggestion = suggestSpriteSheetGrid(imageWidth ?? 0, imageHeight ?? 0, canvasWidth, canvasHeight, imageFilename);
+    setImportMode(suggestion ? 'slicer' : 'single');
+    setSheetSuggestion(Boolean(suggestion));
+    setSlicerSkipEmpty(false);
+    setSlicerResizeCanvas(false);
+    setSlicerStartX(0);
+    setSlicerStartY(0);
+    setSlicerSpacingX(0);
+    setSlicerSpacingY(0);
+    setSlicerOrder('row-major');
+    if (suggestion) {
+      setSlicerCellW(suggestion.width);
+      setSlicerCellH(suggestion.height);
+    }
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = payload.dataUrl;
     img.onload = () => {
+      if (cancelled) return;
       imgElementRef.current = img;
-      // Default to match-image if image dimensions are reasonable sprite size
-      setSizeMode(img.width <= 512 && img.height <= 512 ? 'match-image' : 'fit-canvas');
-
-      // Intelligently default cell size if image dimensions suggest sprite sheet
-      if (img.width > 64 || img.height > 64) {
-        if (img.width % 32 === 0 && img.height % 32 === 0) {
-          setSlicerCellW(32);
-          setSlicerCellH(32);
-        } else if (img.width % 16 === 0 && img.height % 16 === 0) {
-          setSlicerCellW(16);
-          setSlicerCellH(16);
-        }
-      }
-
-      runPixelization(img);
+      setLoadedImageRevision((value) => value + 1);
     };
-  }, [payload, runPixelization, setSizeMode, imgElementRef]);
+    img.src = imageDataUrl;
+    return () => { cancelled = true; img.onload = null; };
+  }, [imageDataUrl, imageFilename, imageWidth, imageHeight, canvasWidth, canvasHeight, imgElementRef, setPreviewResult, setSizeMode]);
 
   useEffect(() => {
-    if (imgElementRef.current) {
+    if (loadedImageRevision > 0 && imgElementRef.current) {
       runPixelization();
     }
-  }, [runPixelization, imgElementRef]);
+  }, [runPixelization, loadedImageRevision, imgElementRef]);
 
   // Render Single Sprite preview canvas
   useEffect(() => {
@@ -154,45 +176,38 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(img, 0, 0, imgW, imgH);
 
-    // Read full image data to test for empty cells
-    const fullImgData = ctx.getImageData(0, 0, imgW, imgH);
+    const grid = computeGridDimensions(imgW, imgH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
+    if (grid.totalCells > MAX_CANVAS_FRAMES) {
+      setNonZeroFramesCount(0);
+      return;
+    }
+    const fullImgData = slicerSkipEmpty ? ctx.getImageData(0, 0, imgW, imgH) : null;
 
-    const grid = computeGridDimensions(imgW, imgH, slicerCellW, slicerCellH);
-
-    // Draw grid cutlines
+    // Draw actual cell boundaries, including offsets and spacing.
     ctx.strokeStyle = '#f0be7c';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
-
-    for (let c = 0; c <= grid.columns; c++) {
-      const x = Math.min(imgW, c * slicerCellW);
-      ctx.beginPath();
-      ctx.moveTo(x + 0.5, 0);
-      ctx.lineTo(x + 0.5, imgH);
-      ctx.stroke();
-    }
-
-    for (let r = 0; r <= grid.rows; r++) {
-      const y = Math.min(imgH, r * slicerCellH);
-      ctx.beginPath();
-      ctx.moveTo(0, y + 0.5);
-      ctx.lineTo(imgW, y + 0.5);
-      ctx.stroke();
+    for (let r = 0; r < grid.rows; r++) {
+      for (let c = 0; c < grid.columns; c++) {
+        ctx.strokeRect(slicerStartX + c * (slicerCellW + slicerSpacingX) + 0.5,
+          slicerStartY + r * (slicerCellH + slicerSpacingY) + 0.5, slicerCellW, slicerCellH);
+      }
     }
     ctx.setLineDash([]);
 
-    // Draw frame numbering badges on cells
     let frameNum = 1;
     ctx.font = 'bold 9px monospace';
     ctx.textBaseline = 'top';
 
-    for (let r = 0; r < grid.rows; r++) {
-      for (let c = 0; c < grid.columns; c++) {
-        const x = c * slicerCellW;
-        const y = r * slicerCellH;
+    for (let primary = 0; primary < (slicerOrder === 'row-major' ? grid.rows : grid.columns); primary++) {
+      for (let secondary = 0; secondary < (slicerOrder === 'row-major' ? grid.columns : grid.rows); secondary++) {
+        const c = slicerOrder === 'row-major' ? secondary : primary;
+        const r = slicerOrder === 'row-major' ? primary : secondary;
+        const x = slicerStartX + c * (slicerCellW + slicerSpacingX);
+        const y = slicerStartY + r * (slicerCellH + slicerSpacingY);
         if (x + slicerCellW > imgW || y + slicerCellH > imgH) continue;
 
-        const empty = isCellEmpty(fullImgData, x, y, slicerCellW, slicerCellH);
+        const empty = fullImgData ? isCellEmpty(fullImgData, x, y, slicerCellW, slicerCellH) : false;
         if (empty && slicerSkipEmpty) {
           // Dim empty cell
           ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -211,20 +226,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     }
 
     setNonZeroFramesCount(slicerSkipEmpty ? frameNum - 1 : grid.totalCells);
-  }, [imgElementRef, slicerCellW, slicerCellH, slicerSkipEmpty]);
+  }, [imgElementRef, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY, slicerOrder, slicerSkipEmpty]);
 
   useEffect(() => {
     if (importMode === 'slicer') {
       renderSlicerPreview();
     }
-  }, [importMode, renderSlicerPreview]);
+  }, [importMode, renderSlicerPreview, loadedImageRevision]);
 
   if (!payload) return null;
 
   const srcW = payload.imgWidth || 32;
   const srcH = payload.imgHeight || 32;
   const isDifferentSize = srcW !== canvasWidth || srcH !== canvasHeight;
-  const slicerGrid = computeGridDimensions(srcW, srcH, slicerCellW, slicerCellH);
+  const sourceExceedsCanvasLimit = srcW > MAX_CANVAS_DIMENSION || srcH > MAX_CANVAS_DIMENSION;
+  const slicerGrid = computeGridDimensions(srcW, srcH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
+  const slicerInvalid = slicerGrid.totalCells === 0 || slicerGrid.totalCells > MAX_CANVAS_FRAMES ||
+    (slicerSkipEmpty && nonZeroFramesCount === 0);
 
   return (
     <ModalWrapper
@@ -266,6 +284,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       {/* 2. Image Import View (with Tab Switcher between Single Sprite and Slicer) */}
       {payload.type === 'image' && (
         <div className="flex flex-col gap-3">
+          {sheetSuggestion && importMode === 'slicer' && (
+            <p className="text-[11px] text-[var(--text-body)] bg-[var(--desk-surface)] border border-[var(--desk-border)] p-2">
+              Possible sprite sheet detected. Review the cell grid below, then confirm the frames to import. Choose Single Sprite if this is one image.
+            </p>
+          )}
           {/* Mode Switcher Tabs */}
           <div className="flex items-center gap-2 border-b border-[var(--desk-border)] pb-2">
             <button
@@ -310,7 +333,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                   </div>
 
                   {/* Canvas Sizing Option */}
-                  {isDifferentSize && (
                     <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
                       <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Canvas Sizing</span>
                       <label htmlFor="size-mode-match-image" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
@@ -324,10 +346,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         />
                         <div className="flex flex-col">
                           <span className="font-bold text-[var(--text-heading)] text-[11px]">
-                            Match Image Size ({srcW}×{srcH} px)
+                            {sourceExceedsCanvasLimit ? `Fit Within Canvas Limit (${MAX_CANVAS_DIMENSION} px)` : `Match Image Size (${srcW}×${srcH} px)`}
                           </span>
                           <span className="text-[9px] text-[#a89ab8]">
-                            Keeps exact 1:1 original pixels (Recommended for skins, sprites, textures)
+                            {sourceExceedsCanvasLimit ? 'The source exceeds the canvas limit and must be downscaled.' : 'Keeps exact 1:1 original pixels.'}
                           </span>
                         </div>
                       </label>
@@ -346,12 +368,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                             Fit into Current Canvas ({canvasWidth}×{canvasHeight} px)
                           </span>
                           <span className="text-[9px] text-[#a89ab8]">
-                            Scales image down to current canvas dimensions
+                            Fits proportionally inside the current canvas dimensions.
                           </span>
                         </div>
                       </label>
                     </div>
-                  )}
 
                   {/* Pixel Art Stylize Toggle */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
@@ -493,8 +514,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
                   <span className="text-[9px] text-[var(--text-body)] text-center font-mono">
                     {sizeMode === 'match-image'
-                      ? `Canvas will be set to ${srcW}×${srcH} px with exact pixels`
-                      : `Scaled to current ${canvasWidth}×${canvasHeight} px canvas`}
+                      ? `Canvas will be set to ${previewResult?.width ?? srcW}×${previewResult?.height ?? srcH} px${sourceExceedsCanvasLimit ? ' after downscaling' : ' with exact pixels'}`
+                      : `Fitted into current ${canvasWidth}×${canvasHeight} px canvas`}
                   </span>
                 </div>
               </div>
@@ -522,7 +543,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                             : undefined,
                       });
                     }
-                    onClose();
                   }}
                   className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4"
                 >
@@ -606,9 +626,39 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-1 pt-1">
+                      {([
+                        ['Start X', slicerStartX, setSlicerStartX],
+                        ['Start Y', slicerStartY, setSlicerStartY],
+                        ['Gap X', slicerSpacingX, setSlicerSpacingX],
+                        ['Gap Y', slicerSpacingY, setSlicerSpacingY],
+                      ] as const).map(([label, value, setter]) => (
+                        <label key={label} className="flex items-center gap-1 text-[9px] text-[var(--text-body)]">
+                          {label}
+                          <input type="number" min="0" max={label.endsWith('X') ? srcW : srcH}
+                            aria-label={`${label} in pixels`} value={value}
+                            onChange={(event) => setter(Math.min(label.endsWith('X') ? srcW : srcH,
+                              Math.max(0, Number.parseInt(event.target.value, 10) || 0)))}
+                            className="w-full min-w-0 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c] px-1" />
+                        </label>
+                      ))}
+                    </div>
+                    <label className="flex items-center gap-2 text-[9px] text-[var(--text-body)]">
+                      Frame order
+                      <select aria-label="Sprite sheet frame order" value={slicerOrder}
+                        onChange={(event) => setSlicerOrder(event.target.value as 'row-major' | 'column-major')}
+                        className="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c]">
+                        <option value="row-major">Across rows</option>
+                        <option value="column-major">Down columns</option>
+                      </select>
+                    </label>
+
                     <span className="text-[9px] text-[#a89ab8]">
                       {slicerGrid.columns} cols × {slicerGrid.rows} rows = {slicerGrid.totalCells} total frames
                     </span>
+                    {slicerGrid.totalCells > MAX_CANVAS_FRAMES && (
+                      <span className="text-[9px] text-[#ff99aa]">At most {MAX_CANVAS_FRAMES} cells can be imported. Increase the cell size.</span>
+                    )}
                   </div>
 
                   {/* Filtering Options */}
@@ -622,7 +672,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         onChange={(e) => setSlicerSkipEmpty(e.target.checked)}
                         className="accent-[#f0be7c]"
                       />
-                      <span>Skip Empty (Transparent) Cells</span>
+                      <span>Skip Empty (Transparent) Cells — shortens animation</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer text-[10px] text-[var(--text-body)]">
@@ -632,7 +682,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         onChange={(e) => setSlicerResizeCanvas(e.target.checked)}
                         className="accent-[#f0be7c]"
                       />
-                      <span>Set Canvas Size to Cell Size ({slicerCellW}×{slicerCellH} px)</span>
+                      <span>Resize entire project to cell size ({slicerCellW}×{slicerCellH} px)</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer text-[10px] text-[var(--text-body)]">
@@ -645,7 +695,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       <span>Add Extracted Colors to Swatches</span>
                     </label>
 
-                    {slicerSkipEmpty && nonZeroFramesCount === 0 && (
+                    {slicerSkipEmpty && nonZeroFramesCount === 0 && slicerGrid.totalCells <= MAX_CANVAS_FRAMES && (
                       <div
                         data-testid="slicer-empty-warning"
                         className="p-1.5 rounded-[2px] bg-[#3d1928] border border-[#6b283d] text-[#ff99aa] text-[10px] font-bold leading-tight"
@@ -721,7 +771,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 <TactileButton
                   size="sm"
                   variant="primary"
-                  disabled={slicerSkipEmpty && nonZeroFramesCount === 0}
+                  disabled={slicerInvalid}
                   onClick={() => {
                     const img = imgElementRef.current;
                     if (!img) return;
@@ -734,11 +784,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       sCtx.drawImage(img, 0, 0);
                     }
 
-                    const sliceRes = sliceSpriteSheet(sourceCanvas, {
-                      cellWidth: slicerCellW,
-                      cellHeight: slicerCellH,
-                      skipEmpty: slicerSkipEmpty,
-                    });
+                    let sliceRes;
+                    try {
+                      sliceRes = sliceSpriteSheet(sourceCanvas, {
+                        cellWidth: slicerCellW,
+                        cellHeight: slicerCellH,
+                        startX: slicerStartX,
+                        startY: slicerStartY,
+                        spacingX: slicerSpacingX,
+                        spacingY: slicerSpacingY,
+                        order: slicerOrder,
+                        skipEmpty: slicerSkipEmpty,
+                      });
+                    } catch (error) {
+                      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'Sprite sheet could not be sliced.' });
+                      return;
+                    }
 
                     if (sliceRes.frames.length === 0) return;
 
@@ -758,16 +819,15 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       slicedFrames: sliceRes.frames,
                     });
 
-                    onClose();
                   }}
                   className={`bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4 ${
-                    slicerSkipEmpty && nonZeroFramesCount === 0
+                    slicerInvalid
                       ? 'opacity-50 cursor-not-allowed'
                       : 'cursor-pointer'
                   }`}
                   title={
-                    slicerSkipEmpty && nonZeroFramesCount === 0
-                      ? 'No non-empty frames to import'
+                    slicerInvalid
+                      ? 'Choose a valid grid with at least one frame'
                       : 'Slice & Import Frames'
                   }
                 >

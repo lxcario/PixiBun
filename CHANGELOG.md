@@ -4,6 +4,10 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased — 2026-09-26
 
+- Color Replace now offers an active-layer tolerance slider for nearby shades, preserves each replaced pixel's transparency, skips transparent/no-op clicks without adding history, and respects layer locks. Added focused pixel tests and a Chromium undo/lock interaction test.
+- Lasso preview now draws only during an active drag. Floating selections no longer show their unrotated blue mask tint; transform scaling samples only pixels inside an irregular selection, and toolbar pointer events no longer start a new lasso. Delete and Cut honor irregular selection masks and clear stale preview strokes. Added Chromium pixel checks through an angled selection transform and masked deletion.
+- Bounded viewport overlays: the selection tint canvas now keeps artwork-sized backing dimensions at every zoom, grid/reference/isometric/playground guides use screen-pixel CSS patterns, and the brush ghost is a CSS border without a canvas allocation. Added a Chromium regression at 2048×2048 and 1600%/6400% zoom.
+- Hoisted the four-neighbor offsets in discrete Laplace cavity computation, removing the remaining per-pixel neighbor-array allocation in the photometric bake path.
 - Normal-map worker dispatch now copies only the selected `Uint8ClampedArray` view, so subarray offsets cannot change the pixels sent for baking.
 - Browser project round-trip proof now covers two frames, two layers per frame, clip metadata, and a nondefault frame duration; current collaboration docs state the v1 two-peer scope.
 - Rechecked current Markdown against source: corrected export-limit status, canvas buffer type, worker-copy semantics, RotSprite scope, undo cost, historical v2 metrics, and an outdated plan index entry.

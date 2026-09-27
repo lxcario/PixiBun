@@ -1109,7 +1109,7 @@
 - [x] Variable Frame Duration Pacing (`BottomTimeline.tsx`, `studioStore.ts`, `gifEncoder.ts`): Wire `durationMs` to timeline animation loops and GIF/spritesheet frame delays. Render proportional timeline cards visualizing animation spacing.
 - [x] Additive & Subtractive Selection Modifiers (`CenterViewport.tsx`): Support `e.shiftKey` (Union) and `e.altKey` (Subtract) across Marquee, Lasso, and Magic Wand selection tools.
 - [x] Keyboard Navigation Shortcuts (`StudioLayout.tsx`, `ShortcutsModal.tsx`): Bind `Ctrl/Cmd +`, `Ctrl/Cmd -`, `Ctrl/Cmd 0` (trigger existing `handleFitToScreen`), and `Ctrl/Cmd 1` (100% integer zoom). List all shortcuts in `ShortcutsModal.tsx`.
-- [x] Brush Footprint Ghost Cursor (`CenterViewport.tsx`): Render a 1px integer pixel bounding box matching `tools.brushSize` on `gridCanvasRef` when zoom >= 400%.
+- [x] Brush Footprint Ghost Cursor (`CenterViewport.tsx`): Render a CSS bounding box matching the square `tools.brushSize` footprint when zoom >= 400%, without a zoom-sized canvas backing store.
 
 **Acceptance criteria:**
 - Unit test `tests/mergeLayer.test.ts` confirms pixel-exact compositing and layer removal on merge down.

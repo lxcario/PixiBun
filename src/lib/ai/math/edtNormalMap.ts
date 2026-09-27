@@ -319,6 +319,8 @@ export function computeDiscreteLaplaceCavity(
   cavityStrength: number = 1.0
 ): Float32Array {
   const cavity = new Float32Array(width * height);
+  const neighborDx = [0, -1, 1, 0];
+  const neighborDy = [-1, 0, 0, 1];
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -333,16 +335,9 @@ export function computeDiscreteLaplaceCavity(
       // Transparent background pixels (nH <= 0) represent open environment and do not occlude.
       let occlusion = 0;
       let count = 0;
-      const neighbors = [
-        [x, y - 1],
-        [x - 1, y],
-        [x + 1, y],
-        [x, y + 1],
-      ];
-
       for (let n = 0; n < 4; n++) {
-        const nx = neighbors[n][0];
-        const ny = neighbors[n][1];
+        const nx = x + neighborDx[n];
+        const ny = y + neighborDy[n];
         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
           const nH = heightmap[ny * width + nx];
           if (nH > 0) {

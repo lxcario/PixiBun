@@ -40,7 +40,7 @@ export function colorDistance32(c1: number, c2: number): number {
  * 1-pass Scale2x / EPX algorithm.
  * Expands an image 2x in each dimension based on 4-orthogonal neighbors (B, D, F, H).
  */
-export function scale2x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer {
+export function scale2x(src: PixelBuffer, similarityThreshold = 0): PixelBuffer {
   const { width: curW, height: curH, data: srcBytes } = src;
   const outW = curW * 2;
   const outH = curH * 2;
@@ -49,17 +49,14 @@ export function scale2x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer
   const src32 = new Uint32Array(srcBytes.buffer, srcBytes.byteOffset, curW * curH);
   const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, outW * outH);
 
-  const OOB = -1;
   const getPx = (x: number, y: number): number => {
-    if (x < 0 || x >= curW || y < 0 || y >= curH) return OOB;
+    if (x < 0 || x >= curW || y < 0 || y >= curH) {
+      return src32[Math.min(curH - 1, Math.max(0, y)) * curW + Math.min(curW - 1, Math.max(0, x))];
+    }
     return src32[y * curW + x];
   };
 
-  // Safe distance helper ensuring out-of-bounds coordinates never match inside pixels or each other
-  const dist = (c1: number, c2: number): number => {
-    if (c1 === OOB || c2 === OOB) return 100000;
-    return colorDistance32(c1, c2);
-  };
+  const dist = colorDistance32;
 
   for (let y = 0; y < curH; y++) {
     for (let x = 0; x < curW; x++) {
@@ -104,7 +101,7 @@ export function scale2x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer
 /**
  * 3-pass Scale2x cascade to expand an image 8x (1x -> 2x -> 4x -> 8x).
  */
-export function scale8x(src: PixelBuffer, similarityThreshold = 28): PixelBuffer {
+export function scale8x(src: PixelBuffer, similarityThreshold = 0): PixelBuffer {
   const p1 = scale2x(src, similarityThreshold);
   const p2 = scale2x(p1, similarityThreshold);
   return scale2x(p2, similarityThreshold);
@@ -208,7 +205,7 @@ export function downscale8xMajorityVote(
             color = s8_32[sy8 * w8 + sx8];
           }
 
-          if (color !== 0) {
+          if ((color >>> 24) !== 0) {
             votes.set(color, (votes.get(color) || 0) + weight);
             nonTransparentWeight += weight;
             if ((ui === 3 || ui === 4) && (vi === 3 || vi === 4)) {
@@ -277,6 +274,29 @@ export function rotSprite(
   const cy = pivotY ?? h / 2;
   const ocx = outPivotX ?? cx;
   const ocy = outPivotY ?? cy;
+
+  // Explicit destination geometry (selection/layer transforms) can still use
+  // exact integer quarter turns, even when the crop and pivot are off-center.
+  if (targetW !== undefined && targetH !== undefined && outPivotX !== undefined && outPivotY !== undefined &&
+      (isNear(0) || isNear(Math.PI / 2) || isNear(Math.PI) || isNear((3 * Math.PI) / 2))) {
+    const quarter = isNear(Math.PI / 2) ? 1 : isNear(Math.PI) ? 2 : isNear((3 * Math.PI) / 2) ? 3 : 0;
+    const outBytes = new Uint8ClampedArray(outW * outH * 4);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const dx = x + 0.5 - cx;
+        const dy = y + 0.5 - cy;
+        const rx = quarter === 0 ? dx : quarter === 1 ? -dy : quarter === 2 ? -dx : dy;
+        const ry = quarter === 0 ? dy : quarter === 1 ? dx : quarter === 2 ? -dy : -dx;
+        const ox = Math.floor(rx + ocx);
+        const oy = Math.floor(ry + ocy);
+        if (ox >= 0 && ox < outW && oy >= 0 && oy < outH) {
+          const sourceOffset = (y * w + x) * 4;
+          outBytes.set(data.subarray(sourceOffset, sourceOffset + 4), (oy * outW + ox) * 4);
+        }
+      }
+    }
+    return { width: outW, height: outH, data: outBytes };
+  }
 
   // 1. Lossless fast-paths for exact orthogonal 90-degree multiples when output dimensions match
   if ((isNear(0) || isNear(TWO_PI)) && outW === w && outH === h) {
