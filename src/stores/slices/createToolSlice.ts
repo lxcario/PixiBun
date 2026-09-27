@@ -101,6 +101,12 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     ditherDensity: 0.5,
     bucketContiguous: true,
     bucketTolerance: 0,
+    fillTolerance: 24,
+    fillEnclosedSpecks: false,
+    eraseColorTolerance: 24,
+    eraseColorContiguous: false,
+    eraseColorFamily: true,
+    eraseColorAllFrames: false,
     shapeFilled: false,
     symmetryHorizontal: false,
     symmetryVertical: false,
@@ -182,6 +188,45 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   setBucketTolerance: tolerance => {
     set(state => {
       state.tools.bucketTolerance = Math.max(0, Math.min(255, tolerance));
+    });
+  },
+
+  setFillTolerance: tolerance => {
+    set(state => {
+      state.tools.fillTolerance = Math.max(0, Math.min(255, tolerance));
+    });
+  },
+
+  setFillEnclosedSpecks: enabled => {
+    set(state => {
+      state.tools.fillEnclosedSpecks = enabled;
+    });
+  },
+
+  setEraseColorTolerance: tolerance => {
+    set(state => {
+      state.tools.eraseColorTolerance = Math.max(0, Math.min(255, tolerance));
+    });
+  },
+
+  setEraseColorContiguous: enabled => {
+    set(state => {
+      state.tools.eraseColorContiguous = enabled;
+      if (enabled) state.tools.eraseColorAllFrames = false;
+    });
+  },
+
+  setEraseColorFamily: enabled => {
+    set(state => {
+      state.tools.eraseColorFamily = enabled;
+      if (enabled) state.tools.eraseColorContiguous = false;
+    });
+  },
+
+  setEraseColorAllFrames: enabled => {
+    set(state => {
+      state.tools.eraseColorAllFrames = enabled;
+      if (enabled) state.tools.eraseColorContiguous = false;
     });
   },
 

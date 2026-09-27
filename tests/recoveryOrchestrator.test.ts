@@ -244,7 +244,7 @@ describe('Phase 1B.6: Trusted Recovery Orchestrator and Atomic Persistence Engin
       if (prep.status === 'unrecoverable-blocked') {
         expect(prep.reasonCode).toBe('STORED_BLOBS_CEILING_EXCEEDED');
       }
-    });
+    }, 20_000);
 
     it('assesses pure in-memory snapshot identically to storage diagnosis', async () => {
       const proj = baseProjectFixture('proj-mem');

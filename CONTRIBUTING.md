@@ -4,7 +4,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ---
 
-## ️ Core Engineering Principles
+## Core Engineering Principles
 
 1. **Zero Third-Party Algorithmic Dependencies:**
    All core pixel art and computer graphics algorithms—including the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), photometric normal map generation, 47-blob Wang autotiling, APNG/GIF decoders, and ISOBMFF Fast-Start MP4 muxing—are authored from scratch in pure TypeScript using TypedArrays and Web Platform standards (framework dependencies like React, Next.js, Zustand, Immer, and Dexie handle UI and storage plumbing). We do not accept PRs introducing third-party algorithmic bloat or unnecessary math packages.
@@ -22,7 +22,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ---
 
-## ️ The Local Quality Gate
+## The Local Quality Gate
 
 The local Quality Gate took 64.18 seconds (`npm run gate`) and 77.95 seconds (`npm run gate:full`) in the 2026-09-26 reference runs. Hardware, commands, cache state, and per-stage timings are recorded in `BENCHMARKS.md` §7; timing varies by machine and suite size.
 

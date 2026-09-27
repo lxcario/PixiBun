@@ -6,6 +6,7 @@ export type PixelIconName =
   | 'pen' 
   | 'curve'
   | 'eraser' 
+  | 'erase-color'
   | 'bucket' 
   | 'dither' 
   | 'eyedropper' 
@@ -92,6 +93,14 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
             <path d="M22 21H7" />
             <path d="m5 11 9 9" />
+          </svg>
+        );
+
+      case 'erase-color':
+        return (
+          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" strokeLinejoin="miter" className={className}>
+            <path d="m14 2 6 6-2 2-6-6zM12 5 5 12l-1 4 4-1 7-7" />
+            <path d="M4 19h4v4H4zM8 16h4v3H8zM12 19h4v4h-4z" />
           </svg>
         );
 

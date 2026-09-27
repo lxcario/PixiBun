@@ -29,6 +29,49 @@ describe('hexToRgba: hex color parsing', () => {
 });
 
 describe('performFloodFill: 32-bit unsigned pixel matching', () => {
+  it('includes nearby imported shades but stops at a different-color outline', () => {
+    const canvas = makeCanvas(5, 3);
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    ctx.fillStyle = '#171827';
+    ctx.fillRect(0, 0, 5, 3);
+    ctx.fillStyle = '#f0c080';
+    ctx.fillRect(1, 1, 1, 1);
+    ctx.fillStyle = '#eabc7d';
+    ctx.fillRect(2, 1, 1, 1);
+    ctx.fillStyle = '#ffa000';
+    ctx.fillRect(3, 1, 1, 1);
+
+    performFloodFill(ctx, 1, 1, '#90aaff', true, 24);
+    const data = ctx.getImageData(0, 0, 5, 3).data;
+    const pixel = (x: number, y: number) => Array.from(data.slice((y * 5 + x) * 4, (y * 5 + x) * 4 + 4));
+    expect(pixel(1, 1)).toEqual([144, 170, 255, 255]);
+    expect(pixel(2, 1)).toEqual([144, 170, 255, 255]);
+    expect(pixel(3, 1)).toEqual([255, 160, 0, 255]);
+    expect(pixel(0, 1)).toEqual([23, 24, 39, 255]);
+  });
+
+  it('fills only small enclosed specks when enabled and preserves open or larger details', () => {
+    const canvas = makeCanvas(12, 12);
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    ctx.fillStyle = '#202020';
+    ctx.fillRect(0, 0, 12, 12);
+    ctx.fillStyle = '#f0c080';
+    ctx.fillRect(1, 1, 10, 10);
+    ctx.fillStyle = '#ff9000';
+    ctx.fillRect(3, 3, 1, 1);
+    ctx.fillRect(5, 5, 3, 3); // nine pixels: intentional larger detail
+    ctx.fillRect(1, 8, 2, 1); // connected to the outer border
+    ctx.clearRect(4, 4, 1, 1); // transparent hole remains transparent
+
+    performFloodFill(ctx, 2, 2, '#90aaff', true, 0, false);
+    expect(Array.from(ctx.getImageData(3, 3, 1, 1).data)).toEqual([255, 144, 0, 255]);
+    performFloodFill(ctx, 2, 2, '#90aaff', true, 0, true);
+    expect(Array.from(ctx.getImageData(3, 3, 1, 1).data)).toEqual([144, 170, 255, 255]);
+    expect(Array.from(ctx.getImageData(6, 6, 1, 1).data)).toEqual([255, 144, 0, 255]);
+    expect(Array.from(ctx.getImageData(1, 8, 1, 1).data)).toEqual([255, 144, 0, 255]);
+    expect(ctx.getImageData(4, 4, 1, 1).data[3]).toBe(0);
+  });
+
   it('fills an opaque colored region on a canvas with tolerance = 0', () => {
     const canvas = makeCanvas(4, 4);
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;

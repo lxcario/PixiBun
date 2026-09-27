@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -8,6 +8,7 @@ import PanelSection from '@/components/ui/PanelSection';
 import StudioSlider from '@/components/ui/StudioSlider';
 import { harmonizePaletteColors } from '@/lib/ai/pixelAiEngine';
 import { studioEvents } from '@/lib/events/studioEvents';
+import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
 
 export const PixiBudAssistanceSection: React.FC = () => {
   const palettes = useStudioStore((s) => s.palettes);
@@ -15,7 +16,25 @@ export const PixiBudAssistanceSection: React.FC = () => {
   const addCustomColorToPalette = useStudioStore((s) => s.addCustomColorToPalette);
 
   const [rotationAngle, setRotationAngle] = useState<number>(45);
+  const [cleanupAlpha, setCleanupAlpha] = useState(96);
+  const [cleanupPalette, setCleanupPalette] = useState(true);
+  const [cleanupThin, setCleanupThin] = useState(false);
+  const [cleanupAllFrames, setCleanupAllFrames] = useState(false);
+  const [cleanupReport, setCleanupReport] = useState<{
+    phase: 'scan' | 'applied'; stats: SpriteCleanupStats; frames: number; skippedLocked: number;
+    beforePreview?: string; afterPreview?: string;
+  } | null>(null);
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
+
+  useEffect(() => studioEvents.on('pixibun:sprite-cleanup-report', setCleanupReport), []);
+
+  const cleanupOptions = (): SpriteCleanupOptions => ({
+    alphaCutoff: cleanupAlpha,
+    maxSpeckPixels: 2,
+    paletteSize: 24,
+    simplifyColors: cleanupPalette,
+    thinDarkLines: cleanupThin,
+  });
 
   const handleRotSprite = (angle: number) => {
     studioEvents.emit('pixibun:rot-sprite', { angle });
@@ -63,9 +82,83 @@ export const PixiBudAssistanceSection: React.FC = () => {
       title="Pixel Cleanup & RotSprite"
       ariaLabel="Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)"
       storageKey="pixibun:panel:pixibud"
-      defaultOpen={false}
+      defaultOpen={true}
     >
       <div className="flex flex-col gap-4">
+        <div className="bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] p-2.5 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-[var(--text-heading)]">Analyze &amp; Crisp Artwork</span>
+            <span className="text-[9px] text-[var(--text-muted)]">Undoable</span>
+          </div>
+          <p className="text-[10px] leading-snug text-[var(--text-muted)]">
+            Scan the selected layer for faint pixels, detached specks, excess shades, and thick dark edges.
+          </p>
+          <label className="flex items-center gap-2 text-[10px] text-[var(--text-body)]">
+            <span className="shrink-0">Faint alpha ≤ {cleanupAlpha}</span>
+            <input type="range" min="0" max="200" value={cleanupAlpha}
+              aria-label="Cleanup faint alpha threshold"
+              onChange={(event) => { setCleanupAlpha(Number(event.target.value)); setCleanupReport(null); }}
+              className="w-full h-1 accent-[var(--accent-gold)]" />
+          </label>
+          <div className="flex gap-1.5">
+            <button type="button" aria-label="Cleanup simplify shades" aria-pressed={cleanupPalette}
+              onClick={() => { setCleanupPalette(!cleanupPalette); setCleanupReport(null); }}
+              className="flex-1 py-1 text-[9px] pixel-tactile-btn cursor-pointer">
+              Shades: {cleanupPalette ? 'Crisp' : 'Keep'}
+            </button>
+            <button type="button" aria-label="Cleanup thin dark lines" aria-pressed={cleanupThin}
+              title="Optional: tighten thick dark strokes. Leave off to preserve facial and interior details."
+              onClick={() => { setCleanupThin(!cleanupThin); setCleanupReport(null); }}
+              className="flex-1 py-1 text-[9px] pixel-tactile-btn cursor-pointer">
+              Lines: {cleanupThin ? 'Thin' : 'Keep'}
+            </button>
+          </div>
+          <button type="button" aria-label="Cleanup frame scope"
+            onClick={() => { setCleanupAllFrames(!cleanupAllFrames); setCleanupReport(null); }}
+            className="py-1 text-[9px] pixel-tactile-btn cursor-pointer">
+            {cleanupAllFrames ? 'Same layer across all frames' : 'Current frame only'}
+          </button>
+          <div className="grid grid-cols-2 gap-1.5">
+            <TactileButton size="sm" variant="default" aria-label="Scan artwork for cleanup"
+              onClick={() => studioEvents.emit('pixibun:sprite-cleanup-scan', {
+                options: cleanupOptions(), allFrames: cleanupAllFrames,
+              })} className="text-[10px] justify-center">
+              Scan Artwork
+            </TactileButton>
+            <TactileButton size="sm" variant="primary" aria-label="Apply analyzed artwork cleanup"
+              disabled={!cleanupReport || cleanupReport.phase !== 'scan' || cleanupReport.stats.changedPixels === 0}
+              onClick={() => studioEvents.emit('pixibun:sprite-cleanup-apply', {
+                options: cleanupOptions(), allFrames: cleanupAllFrames,
+              })} className="text-[10px] justify-center">
+              Apply Cleanup
+            </TactileButton>
+          </div>
+          {cleanupReport && (
+            <div role="status" aria-live="polite" className="text-[9px] leading-relaxed text-[var(--text-body)]">
+              {cleanupReport.phase === 'scan' ? 'Found' : 'Changed'} {cleanupReport.stats.changedPixels} pixels in {cleanupReport.frames} frame{cleanupReport.frames === 1 ? '' : 's'}:
+              {' '}{cleanupReport.stats.removedFaint} faint removed, {cleanupReport.stats.hardenedAlpha} alpha hardened,
+              {' '}{cleanupReport.stats.removedSpecks} stray,
+              {' '}{cleanupReport.stats.simplifiedColors} shade, {cleanupReport.stats.thinnedLinePixels} line.
+              {' '}Colors: {cleanupReport.stats.sourceColors} → {cleanupReport.stats.resultColors}.
+              {cleanupReport.stats.removedFaint === 0 && cleanupReport.stats.hardenedAlpha === 0 &&
+                ' No translucent pixels found; the alpha slider cannot remove opaque gray marks.'}
+              {cleanupReport.skippedLocked > 0 && ` Skipped ${cleanupReport.skippedLocked} locked layer${cleanupReport.skippedLocked === 1 ? '' : 's'}.`}
+            </div>
+          )}
+          {cleanupReport?.phase === 'scan' && cleanupReport.beforePreview && cleanupReport.afterPreview && (
+            <div className="grid grid-cols-2 gap-1.5 text-center text-[9px] text-[var(--text-muted)]">
+              {([['Before', cleanupReport.beforePreview], ['Preview', cleanupReport.afterPreview]] as const).map(([label, url]) => (
+                <div key={label}>
+                  <div className="mb-0.5">{label}</div>
+                  <div role="img" aria-label={`${label} artwork cleanup thumbnail`}
+                    className="h-24 border border-[var(--desk-border)] bg-white bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${url})`, backgroundSize: 'contain', imageRendering: 'pixelated' }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Module 4: Pixel Perfection & RotSprite Engine */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between">

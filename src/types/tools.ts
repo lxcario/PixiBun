@@ -13,6 +13,7 @@ export type ToolType =
   | 'rectangle' 
   | 'ellipse' 
   | 'color-replace'
+  | 'erase-color'
   | 'normal-chisel'
   | 'rivet-stamp';
 
@@ -98,6 +99,12 @@ export interface ToolSettings {
   ditherDensity: number; // 0.1 to 0.9
   bucketContiguous: boolean;
   bucketTolerance: number; // 0 to 255
+  fillTolerance: number; // RGB/alpha distance for the bucket, 0 to 255
+  fillEnclosedSpecks: boolean; // Include small, fully enclosed color islands
+  eraseColorTolerance: number; // RGB distance, 0 to 255
+  eraseColorContiguous: boolean;
+  eraseColorFamily: boolean;
+  eraseColorAllFrames: boolean;
   shapeFilled: boolean;
   symmetryHorizontal: boolean;
   symmetryVertical: boolean;

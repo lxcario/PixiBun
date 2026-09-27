@@ -61,3 +61,7 @@ scripts/capture_*.mjs
 scripts/debug_*.mjs
 scripts/test_*.mjs
 scripts/verify_responsive_and_invariants.mjs
+
+# local transcripts and uncommitted specs
+chat.md
+PIXIMOTION_ENGINE_MASTER_SPEC.md

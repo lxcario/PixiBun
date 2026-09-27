@@ -655,7 +655,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         role="application"
         tabIndex={0}
         aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
-        className="relative shrink-0 border border-[var(--desk-border)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-gold)]"
+        className="relative shrink-0 outline outline-1 outline-[var(--desk-border)] focus:ring-2 focus:ring-[var(--accent-gold)]"
         style={{
           width: `${stageWidth}px`,
           height: `${stageHeight}px`,
@@ -748,7 +748,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           data-testid="main-composite-canvas"
           width={canvasWidth}
           height={canvasHeight}
-          className="absolute inset-0 w-full h-full pixelated shadow-pixel-frame border border-[var(--desk-border)]/20 cursor-crosshair"
+          className="absolute inset-0 w-full h-full pixelated shadow-pixel-frame cursor-crosshair"
           style={{ filter: mainFilterCss, imageRendering: 'pixelated' }}
         />
 

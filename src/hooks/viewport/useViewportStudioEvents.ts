@@ -5,6 +5,7 @@ import { rgbaToHex } from '@/lib/canvas/floodFill';
 import { usePhotometricEvents } from './events/usePhotometricEvents';
 import { useGeometricEvents } from './events/useGeometricEvents';
 import { useArtisanEvents } from './events/useArtisanEvents';
+import { useSpriteCleanupEvents } from './events/useSpriteCleanupEvents';
 import { createId } from '@/lib/engine/id';
 import type { LayerEffectDescriptor } from '@/types/canvas';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
@@ -297,6 +298,19 @@ export function useViewportStudioEvents({
   });
 
   useArtisanEvents({
+    canvasWidth,
+    canvasHeight,
+    activeLayerId,
+    getOrCreateLayerCanvas,
+    renderComposite,
+    captureSnapshot,
+    commitSnapshot,
+    bumpBufferVersion,
+    compositeSourceSnapshot,
+    updateTaggedLayer,
+  });
+
+  useSpriteCleanupEvents({
     canvasWidth,
     canvasHeight,
     activeLayerId,

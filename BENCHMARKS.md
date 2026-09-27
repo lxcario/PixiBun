@@ -2,7 +2,7 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-Current suite inventory: 1249 unit tests across 126 suites. Historical measurements below retain their original test counts and timings.
+Current suite inventory: 1270 unit tests across 129 suites. Historical measurements below retain their original test counts and timings.
 
 > **Environment Note:** The older micro-benchmark tables outside §7 do not record exact hardware and have not been reproduced for this audit; treat them as historical observations. §7 records a fresh run with named hardware. Automated tests in `tests/benchmark.test.ts` enforce generous latency ceilings rather than identical machine-specific timings.
 
@@ -133,7 +133,9 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 
 ## 7. Autonomous Local Quality Gate Pipeline Benchmark
 
-**Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for stages 1–4 and `npm run gate:full` for stages 1–5. Stage times are wall-clock durations printed by that runner. These measurements were captured on 2026-09-26 on Windows (NT 10.0.26200) x64, Intel Core i5-12500H (16 logical CPUs), 31.7 GiB RAM, Node v26.5.1, and npm 11.17.0. The checkout was `3c77c31` plus the uncommitted audit fixes in this plan; dependencies and Next.js build caches were already present. They are reference observations, not a performance guarantee for other machines.
+**Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for stages 1–4 and `npm run gate:full` for stages 1–5. Stage times are wall-clock durations printed by that runner.
+
+> **Reference Testbench:** Windows 10 (NT 10.0.26200) x64 • Intel Core i5-12500H (16 logical CPUs) • 31.7 GiB RAM • Node v26.5.1 • npm 11.17.0 (captured 2026-09-26 on checkout `3c77c31`). These measurements are reference observations with warm dependency and build caches, not an empirical guarantee for other host machines.
 
 | Stage | Check | Standard gate | Full gate | Result |
 |---|---|---:|---:|---|

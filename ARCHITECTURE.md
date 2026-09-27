@@ -1,4 +1,4 @@
-# ️ Architecture & System Design — PixiBun Atelier
+# Architecture & System Design — PixiBun Atelier
 
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
@@ -7,6 +7,43 @@
 ```
 
 > **A high-performance, offline-first raster graphics workstation designed for sub-16ms interactive drawing latency and mathematically sound 2.5D computer graphics.**
+
+---
+
+## Table of Contents
+
+- [1. System Topology Overview](#1-system-topology-overview)
+- [2. Canvas & Rendering Pipeline](#2-canvas--rendering-pipeline)
+- [3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)](#3-pixibud-smart-math--computer-graphics-engine-srclibaimath)
+- [4. State Management, Layer Security & Undo Architecture](#4-state-management-layer-security--undo-architecture)
+- [5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)](#5-local-first-storage--multi-project-lifecycle-srclibstoragedbts-srclibprojectschemats)
+- [6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)](#6-multi-engine-export--web-worker-pipeline-srclibexport)
+- [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
+- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixilaienginets)
+- [9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-intelligent-image-to-pixel-art-synthesis-pipeline-srclibaipixelizeenginets)
+- [10. Procedural Web Audio Ambient Radio (`src/lib/audio/lofiRadio.ts`)](#10-procedural-web-audio-ambient-radio-srclibaudiolofiradiots)
+- [11. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)](#11-zero-lag-theme-architecture-srcstoresthemestorets)
+- [12. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#12-zero-gc-memory-management--buffer-pooling-srclibenginebufferpoolts)
+- [13. Multithreaded Worker & Deterministic CG Math Architecture](#13-multithreaded-worker--deterministic-cg-math-architecture)
+- [14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)](#14-strongly-typed-studio-event-bus-srclibeventsstudioeventsts)
+- [15. Vercel & CI/CD Deployment Pipeline](#15-vercel--cicd-deployment-pipeline)
+- [16. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)](#16-p2p-co-draw-sync-bridge-srclibsynccodrawbridgets)
+- [17. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)](#17-diagnostics-relay-hardening-srcappapidiagnosticsrelayroutets)
+- [18. Algorithmic Scope Boundaries & Target System Envelope](#18-algorithmic-scope-boundaries--target-system-envelope)
+- [19. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)](#19-25d-normal-chisel--bas-relief-sculptor-srclibartnormalsculptorts)
+- [20. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)](#20-mark-ferrari-8-bit-dynamic-palette-cycling-engine-srclibcolorpalettecyclingts)
+- [21. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)](#21-database--canvas-teardown-lifecycle-invariants-srclibstoragedbts-testse2echiselandpaletteliveproofspects)
+- [22. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening](#22-bitwise-normalization-hot-path-viewport-decoupling--export-pipeline-hardening)
+- [23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine](#23-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine)
+- [24. Workstation Architectural Upgrades (`p2pHostAuthority`, `structuralHistory`, `desktopFS`, `47-blob`, `isobmffMuxer`)](#24-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
+- [25. Comprehensive Defensive Hardening & Invariant Architecture](#25-comprehensive-defensive-hardening--invariant-architecture)
+- [26. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection](#26-autonomous-local-cicd-quality-gate--git-pre-push-protection)
+- [27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants](#27-studio-workstation-ergonomics-focus-trapping--unsaved-invariants)
+- [28. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection](#28-photometric-studio-resolution-aware-bevel-scaling--dark-palette-protection)
+- [29. Studio UI Architecture & Design System Primitives](#29-studio-ui-architecture--design-system-primitives)
+- [30. Teaching Animation Board & Playground Education System](#30-teaching-animation-board--playground-education-system)
+- [31. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)](#31-neutral-25d-relighting--smart-effect-recipe-provenance-phase-63)
+- [32. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)](#32-restricted-recovery-mode-envelope-guards--streaming-archive-architecture-phase-1a--phase-1b)
 
 ---
 
@@ -19,7 +56,7 @@ graph TD
     subgraph UI_Layer [" UI & Workspace Shell (React 19 + Tailwind v4)"]
         AtelierRail["AtelierRail (Project Actions, Zoom, Tool Params, CVD, Appearance)"]
         LeftRail["LeftToolbar (Categorized Tool Rails & Dual Color Wells)"]
-        ViewportShell["CenterViewport (Dual-Canvas Viewport & HUD Overlay)"]
+        ViewportShell["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
         RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
         StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]
@@ -33,7 +70,7 @@ graph TD
         UndoRedo["historyEngine (50-Step Undo Stack / 50-Step Redo Stack)"]
     end
 
-    subgraph Core_Engines ["️ Computational & Raster Engines"]
+    subgraph Core_Engines ["Computational & Raster Engines"]
         RasterCore["Artisan Raster Engine (Bresenham, 2:1 Iso Stepper, Bézier)"]
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
         PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
@@ -58,9 +95,11 @@ graph TD
 ### Multi-Canvas Layered Viewport Stack
 To avoid browser layout recalculations and keep editor guides out of color picking, viewport rendering uses five logical-size canvas layers, CSS screen-pixel guides, and a CSS brush cursor. Zoom changes the stage's display size without multiplying any canvas backing store; the interactive SVG selection gizmo supplies the screen-space marquee.
 
+The stage and main composite canvas use no layout-affecting border. A CSS outline marks the stage edge, leaving the artwork raster and grid overlay with the same CSS origin and dimensions (`canvasWidth × zoom / 100` by `canvasHeight × zoom / 100`). Pointer coordinates are mapped through the main canvas bounds, so this equality also protects tool hit positions at high zoom.
+
 ```mermaid
 graph TD
-    subgraph Viewport_Stack ["️ CenterViewport Layer Stack (Bottom to Top)"]
+    subgraph Viewport_Stack ["CenterViewport Layer Stack (Bottom to Top)"]
         L0["0. Solid Background (White #ffffff)"]
         L1["1. Onion Skin Underlay (onionCanvasRef: Tinted Ghosts & Falloff)"]
         L2["2. Playground Tracing Stencil (stencilCanvasRef: Lessons & Guides)"]
@@ -111,6 +150,7 @@ The graphics intelligence engine is decomposed into modular, deterministic mathe
 - `shadowAuto.ts`: Canvas sprite geometry analysis, contact baseline detection, and directional shadow parameter inference.
 - `shadowRayMarcher.ts`: 2.5D bounded sprite cast shadows with 1-to-1 sheared silhouette projection, classic ground contact drop shadow ellipses (`shadowStyle: 'drop'`), and uniform flat opacity (`ditherMode: 'none'`).
 - `colorSpace.ts`: sRGB $\leftrightarrow$ linear $\leftrightarrow$ OKLab $\leftrightarrow$ OKLCH conversions and perceptual hue shifting (`shiftHue`).
+- `spriteCleanup.ts`: Multi-stage scan and non-destructive pixel cleanup, faint alpha stripping, small detached speck removal, neutral-gray shade reduction, and optional line thinning with before/after previews.
 
 ```mermaid
 graph TD
@@ -497,6 +537,8 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 ## 22. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening
 
 * **Signed vs. Unsigned 32-Bit Bitwise Invariant (`src/lib/canvas/floodFill.ts`):** JavaScript bitwise operators coerce values to 32-bit signed integers. When packing RGBA color words via `(a << 24 | b << 16 | g << 8 | r)`, any fully opaque pixel ($a = 255$) sets the sign bit (bit 31), yielding a negative number (e.g. `-16777216`). Direct comparison against values from a `Uint32Array` view (which yields unsigned integers, e.g. `4278190335`) evaluated to `false`, terminating flood fill after a single pixel on opaque regions. All 32-bit color word conversions strictly enforce unsigned casting via the zero-fill right shift operator `>>> 0`. In addition, `Uint32Array` buffer views are constructed with explicit byte offset and aligned byte length parameters `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
+* **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 24); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
+* **Sampled Color Erasure Engine (`src/lib/canvas/eraseMatchingColor.ts`):** Erases exact or nearby shades to transparent alpha on the active layer or across animation frames. Features default color-family cleanup that removes faint background specks and repairs dark color spill embedded within outlines, respecting selection masks and locked layers with single undoable steps.
 * **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber prevents React re-render cascades on every pointer move event during active brush strokes, preserving sub-16ms interactive latency.
 * **Deferred Object URL Revocation (`src/components/modals/ExportModal.tsx`):** Synchronously invoking `URL.revokeObjectURL(url)` immediately following `link.click()` creates race conditions in browser download managers (such as Firefox and Safari) where the memory blob is released before the file stream is opened. Revocations are deferred by 1000ms via `setTimeout(() => URL.revokeObjectURL(url), 1000)` across all export codecs.
 * **Video Encoding Dimension Alignment (`src/lib/export/mp4Encoder.ts`):** H.264 macroblock encoders and YUV 4:2:0 chroma subsampling require even-numbered dimensions ($2 \times 2$ pixel blocks). Video export canvases pad odd widths and heights to the nearest even integer `(w + 1) & ~1` and `(h + 1) & ~1`.
@@ -518,11 +560,12 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 18x18px screen-space hit area regardless of canvas zoom factor ($100\% - 6400\%$).
   - **Center Pivot Crosshair Reticle ($\oplus$):** Draggable pivot point initialized to selection center $((x_1+x_2)/2, (y_1+y_2)/2)$. Serves as the origin for both interactive scaling and RotSprite affine rotation.
   - **Outer Corner Rotation Zone & HUD:** Corner hit zones extend $24\text{px}$ outside the boundary handles to detect rotational drag. Holding `Shift` snaps rotation to $15^\circ$ increments. A floating degree readout badge displays active angle, and a quick-action HUD bar exposes Flip Horizontal, Flip Vertical, Rotate 90° CW/CCW, Commit, and Cancel actions. Lasso preview strokes require an active pointer drag; lifted irregular selections keep excluded bounding-box pixels transparent during scaling and rotation, and the source mask tint disappears while the selection floats.
-* **Sprite Sheet Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/components/modals/ImportModal.tsx`):**
+* **Sprite Sheet Slicer Engine (`src/lib/canvas/spritesheetSlicer.ts`, `src/lib/canvas/spriteSheetAnalysis.ts`, `src/components/modals/ImportModal.tsx`):**
   - High-performance grid computation (`computeGridDimensions`) partitioning arbitrary atlas sheets into uniform cells (presets: 16x16, 24x24, 32x32, 48x48, 64x64, custom).
+  - `analyzeSpriteSheetGrid` examines source pixels for transparent or dominant-background cut lines, repeating occupied bands, margins, and gutters. A dimension-only `suggestSpriteSheetGrid` result remains a labeled guess when pixel evidence is insufficient; both suggestions are editable before import. Analysis is bounded to images of at most 4,194,304 pixels.
   - 32-bit alpha scanning (`isCellEmpty`) to optionally filter blank cells.
   - Live interactive cutline preview canvas rendering neon boundary lines and numbered frame badges (`#1`, `#2`, ...).
-  - Direct integration into `StudioLayout.tsx` supporting batch frame ingestion for timeline append and timeline replacement workflows.
+  - Direct integration into `StudioLayout.tsx` supporting batch frame ingestion for timeline append and timeline replacement workflows. Blank cells remain timing frames unless the artist explicitly skips them; cells larger than the target canvas require a resize before import.
 * **Heavy Compute Web Worker Offloading (`src/workers/heavyCompute.worker.ts`, `src/lib/engine/workerDispatcher.ts`):**
   - Dedicated background Web Worker executing CPU-intensive algorithms: RotSprite $8\times$ transformations, WaveFunctionCollapse (WFC) constraint synthesis, and In-Between frame SDF morphing.
   - Copies live input pixel buffers before transferring those copies to the worker, so the caller's buffers stay usable. Transferable `ArrayBuffer` messages avoid an additional structured-clone copy during dispatch.
@@ -641,9 +684,9 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
 
 ---
 
-### Audit clarifications (2026-09-19)
+### Audit clarifications (2026-09-19; updated Phase 74)
 
-Undo and redo share one 50-entry budget and are not serialized. Export scale selection is automatically reduced when canvas dimensions make a previous choice unsafe. Squint preview takes precedence over a selected CVD lens. CRDT merge uses per-pixel clock comparison and deterministic peer-ID tie-breaking; mixed legacy timestamp/HLC inputs follow the normalization in `crdtPixelBuffer.ts`. This is not a certification of convergence for every full-app workflow. Reliable co-draw messages now remain in a bounded queue until acknowledged and are retried after congestion; explicit disconnect discards that session queue, and a new session starts from the host snapshot. Both peers must run the acknowledgment-capable protocol.
+Undo and redo stacks are independently depth-bounded to 50 entries each and share one 64 MiB combined retained HistoryStep byte envelope, and are not serialized. Export scale selection is automatically reduced when canvas dimensions make a previous choice unsafe. Squint preview takes precedence over a selected CVD lens. CRDT merge uses per-pixel clock comparison and deterministic peer-ID tie-breaking; mixed legacy timestamp/HLC inputs follow the normalization in `crdtPixelBuffer.ts`. This is not a certification of convergence for every full-app workflow. Reliable co-draw messages now remain in a bounded queue until acknowledged and are retried after congestion; explicit disconnect discards that session queue, and a new session starts from the host snapshot. Both peers must run the acknowledgment-capable protocol.
 
 ---
 
@@ -656,7 +699,7 @@ Phase 62 restructures the studio workspace from a monolithic `StudioLayout.tsx` 
 graph TD
     subgraph Shell ["Studio Workspace Shell"]
         Rail["AtelierRail (Project, Zoom, Tool Params, CVD, Appearance)"]
-        Viewport["CenterViewport (6-Canvas Stack + SVG Gizmo)"]
+        Viewport["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
         Inspector["RightInspector (Layers / Palette / PixiBud)"]
         Timeline["BottomTimeline (Frames, Onion Skin, Scrub Preview)"]
         Status["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]

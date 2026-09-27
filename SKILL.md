@@ -24,7 +24,7 @@ ALWAYS DO THIS
 - Implement tactile button physics: resting bevel -> subtle hover scale (<= 1.025) with smooth CC light-sweep sliding left-to-right -> reverse slide to left and scale down on unhover -> tactile depression bounce on active click.
 - Ensure all canvas drawing tools (Pen, Eraser, Fill, Dither, Select) operate cleanly on `ImageData` / custom layer buffers with immediate visual feedback.
 - Maintain a rock-solid, memory-efficient undo/redo history stack (max 50 steps) that snapshots state without UI stutter.
-- Support responsive keyboard shortcuts (B for Pen, E for Eraser, G for Fill, I for Eyedropper, M for Select, Space+Drag for Pan, Z/Ctrl+Z for Undo, Ctrl+Y for Redo, Ctrl+K for Command Palette, Ctrl+S for Save, S for Squint Lens, P for CVD Lens, K for Chisel).
+- Support responsive keyboard shortcuts (B for Pen, E for Eraser, G for Fill, I for Eyedropper, M for Select, R for Color Replace, Shift+R for Erase Color, Space+Drag for Pan, Z/Ctrl+Z for Undo, Ctrl+Y for Redo, Ctrl+K for Command Palette, Ctrl+S for Save, S for Squint Lens, P for CVD Lens, K for Chisel, N for Rivet).
 - Structure all smart graphics features to operate directly and deterministically on on-device pixel buffers with zero network dependencies.
 - Store all projects locally first using Dexie.js (IndexedDB) with instant autosave.
 - Maintain high contrast ratios (WCAG AA compliant) for all tool labels and UI text against the dark cedarwood background.

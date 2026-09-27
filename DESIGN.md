@@ -40,7 +40,7 @@ Our color system is authored in **OKLCH** color space to maintain perceptual uni
 
 ```mermaid
 graph LR
-    Highlight["️ Warm Sunlight Highlight<br/>(H ≈ 80° - 105° Lamp Amber #F0BE7C)"] --- Base[" Core Wisteria Lavender<br/>(H ≈ 305° - 315° #C792DF)"]
+    Highlight["Warm Sunlight Highlight<br/>(H ≈ 80° - 105° Lamp Amber #F0BE7C)"] --- Base[" Core Wisteria Lavender<br/>(H ≈ 305° - 315° #C792DF)"]
     Base --- Shadow[" Cool Plum Shadow<br/>(H ≈ 285° - 295° #3A2E4C)"]
 ```
 
@@ -97,11 +97,13 @@ graph LR
 |---|---|---|
 | `--desk-bg` | `#fbf8f3` | Clean morning desk base |
 | `--desk-surface` | `#f3ebe0` | Warm tactile paper panels |
+| `--desk-surface-raised` | `#fffdf9` | Elevated cards and inputs |
 | `--desk-border` | `#3c2254` | High-contrast velvet border |
 | `--text-heading` | `#221233` | Crisp legible ink headings |
 | `--text-body` | `#4a3559` | Legible morning body text |
 | `--text-muted` | `#685179` | High-contrast muted metadata |
 | `--accent-gold` | `#d97818` | Morning sunlight buttons |
+| `--accent-wisteria` | `#9940b5` | Active tool indicator & wisteria accents |
 | `--accent-plum` | `#7e2b96` | Deep plum active tool accents |
 
 ---
@@ -203,6 +205,12 @@ At high zoom factors ($\ge 400\%$), navigating multi-pixel brush sizes ($2\text{
 * **Geometry:** A crisp CSS bounding box matching the square `tools.brushSize` footprint centered on the cursor's artwork coordinate.
 * **Color & Contrast:** 1px stroke in warm studio amber (`#F0BE7C` at 60% opacity) layered over a 1px dark shadow stroke (`#140C1E` at 50% opacity) ensuring visibility over both light and dark pixels.
 * **Performance Invariant:** The cursor is a CSS element with no canvas backing store; pointer movement updates its position and size without touching Zustand state or triggering React re-renders.
+
+### Artwork Grid Alignment
+The stage border is a CSS outline, outside the layout box. The main artwork canvas, selection/grid overlay, and stage share an identical screen origin and size at every zoom. CSS grid pitch is `zoom / 100` screen pixels per artwork pixel. A visible grid line must never drift across an artwork pixel as zoom increases.
+
+### Imported-Art Bucket Controls
+The Bucket toolbar exposes Connected/Global, a separately labeled tolerance slider (default 24), and an optional **Enclosed specks** switch for tiny visible color islands. The switch starts off because artists may intend small contrasting details. Transparent holes remain transparent. Color Replace keeps its own exact-match tolerance setting.
 
 ### Viewport Fit & Scale Navigation Standards
 Keyboard conventions for rapid drafting ergonomics:

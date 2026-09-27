@@ -13,6 +13,7 @@ import {
   isCellEmpty,
 } from '@/lib/canvas/spritesheetSlicer';
 import { suggestSpriteSheetGrid } from '@/lib/canvas/spriteSheetSuggestion';
+import { analyzeSpriteSheetGrid } from '@/lib/canvas/spriteSheetAnalysis';
 import { MAX_CANVAS_DIMENSION, MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
 import { studioEvents } from '@/lib/events/studioEvents';
 
@@ -95,6 +96,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const [nonZeroFramesCount, setNonZeroFramesCount] = useState<number>(1);
   const [loadedImageRevision, setLoadedImageRevision] = useState(0);
   const [sheetSuggestion, setSheetSuggestion] = useState(false);
+  const [sheetAnalysisNote, setSheetAnalysisNote] = useState('');
   const imageDataUrl = payload?.type === 'image' ? payload.dataUrl : undefined;
   const imageFilename = payload?.type === 'image' ? payload.filename : '';
   const imageWidth = payload?.type === 'image' ? payload.imgWidth : undefined;
@@ -115,6 +117,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     const suggestion = suggestSpriteSheetGrid(imageWidth ?? 0, imageHeight ?? 0, canvasWidth, canvasHeight, imageFilename);
     setImportMode(suggestion ? 'slicer' : 'single');
     setSheetSuggestion(Boolean(suggestion));
+    setSheetAnalysisNote(suggestion ? 'Pixel analysis has not verified these cut lines. The canvas-size guess may split sprites; check the preview and adjust the cell dimensions before importing.' : '');
     setSlicerSkipEmpty(false);
     setSlicerResizeCanvas(false);
     setSlicerStartX(0);
@@ -131,6 +134,33 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     img.onload = () => {
       if (cancelled) return;
       imgElementRef.current = img;
+      const width = img.naturalWidth || img.width;
+      const height = img.naturalHeight || img.height;
+      if (width * height <= 4_194_304) {
+        try {
+          const analysisCanvas = document.createElement('canvas');
+          analysisCanvas.width = width;
+          analysisCanvas.height = height;
+          const context = analysisCanvas.getContext('2d', { willReadFrequently: true });
+          if (context) {
+            context.drawImage(img, 0, 0);
+            const detected = analyzeSpriteSheetGrid(context.getImageData(0, 0, width, height), canvasWidth, canvasHeight);
+            if (detected) {
+              setSlicerCellW(detected.width);
+              setSlicerCellH(detected.height);
+              setSlicerStartX(detected.startX);
+              setSlicerStartY(detected.startY);
+              setSlicerSpacingX(detected.spacingX);
+              setSlicerSpacingY(detected.spacingY);
+              setSheetSuggestion(true);
+              setSheetAnalysisNote('Detected repeating artwork and measured the cut lines from image pixels. Review before importing.');
+              setImportMode('slicer');
+            }
+          }
+        } catch {
+          // Decoding or reading pixels may fail; dimension-based review remains available.
+        }
+      }
       setLoadedImageRevision((value) => value + 1);
     };
     img.src = imageDataUrl;
@@ -241,8 +271,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const isDifferentSize = srcW !== canvasWidth || srcH !== canvasHeight;
   const sourceExceedsCanvasLimit = srcW > MAX_CANVAS_DIMENSION || srcH > MAX_CANVAS_DIMENSION;
   const slicerGrid = computeGridDimensions(srcW, srcH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
+  const slicerWouldClip = !slicerResizeCanvas && (slicerCellW > canvasWidth || slicerCellH > canvasHeight);
   const slicerInvalid = slicerGrid.totalCells === 0 || slicerGrid.totalCells > MAX_CANVAS_FRAMES ||
-    (slicerSkipEmpty && nonZeroFramesCount === 0);
+    (slicerSkipEmpty && nonZeroFramesCount === 0) || slicerWouldClip;
 
   return (
     <ModalWrapper
@@ -286,7 +317,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         <div className="flex flex-col gap-3">
           {sheetSuggestion && importMode === 'slicer' && (
             <p className="text-[11px] text-[var(--text-body)] bg-[var(--desk-surface)] border border-[var(--desk-border)] p-2">
-              Possible sprite sheet detected. Review the cell grid below, then confirm the frames to import. Choose Single Sprite if this is one image.
+              Possible sprite sheet detected. {sheetAnalysisNote} Choose Single Sprite if this is one image.
             </p>
           )}
           {/* Mode Switcher Tabs */}
@@ -684,6 +715,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       />
                       <span>Resize entire project to cell size ({slicerCellW}×{slicerCellH} px)</span>
                     </label>
+                    {slicerWouldClip && (
+                      <div role="alert" className="p-1.5 rounded-[2px] bg-[#3d1928] border border-[#6b283d] text-[#ff99aa] text-[10px] font-bold leading-tight">
+                        Each frame is {slicerCellW}×{slicerCellH}, but the canvas is {canvasWidth}×{canvasHeight}. Enable resize above to import without cropping artwork.
+                      </div>
+                    )}
 
                     <label className="flex items-center gap-2 cursor-pointer text-[10px] text-[var(--text-body)]">
                       <input

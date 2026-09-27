@@ -1,4 +1,4 @@
-#  PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
+# PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
 
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
@@ -7,6 +7,29 @@
 ```
 
 > **This document provides an in-depth technical explanation of PixiBun's raster drawing engine, 2.5D photometric mathematics laboratory, optical color quantization algorithms, Web Audio synthesizer, memory management, and tactile design system.**
+
+---
+
+## Table of Contents
+
+- [1. Directory & File Architecture](#1-directory--file-architecture)
+- [2. Memory Architecture & Dual-Layer Drawing Pipeline](#2-memory-architecture--dual-layer-drawing-pipeline)
+- [3. Raster, Geometry & Canvas Algorithms](#3-raster-geometry--canvas-algorithms)
+- [4. PixiBud 2.5D Photometric Studio](#4-pixibud-25d-photometric-studio)
+- [5. 3D Minecraft Skin Recognition & Dedicated Shading](#5-3d-minecraft-skin-recognition--dedicated-shading)
+- [6. Signed Distance Field (SDF) In-Between Animation Morphing](#6-signed-distance-field-sdf-in-between-animation-morphing)
+- [7. Image-to-Pixel Synthesis (`pixelizeEngine.ts`)](#7-image-to-pixel-synthesis-pixelizeenginets)
+- [8. Procedural Web Audio Lo-Fi Synthesizer (`lofiRadio.ts`)](#8-procedural-web-audio-lo-fi-synthesizer-lofiradiots)
+- [9. Storage, Serialization & Game Engine Exports](#9-storage-serialization--game-engine-exports)
+- [10. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`)](#10-bounded-25d-sprite-cast-shadows--ground-drop-shadows-shadowraymarcherts)
+- [11. 2.5D Normal Sculptor & Reoriented Normal Mapping (`normalSculptor.ts`)](#11-25d-normal-sculptor--reoriented-normal-mapping-normalsculptorts)
+- [12. Mark Ferrari 8-Bit Dynamic Palette Cycling (`paletteCycling.ts`)](#12-mark-ferrari-8-bit-dynamic-palette-cycling-palettecyclingts)
+- [13. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety](#13-bitwise-buffer-normalization-hot-path-viewport-decoupling--export-safety)
+- [14. RotSprite-Inspired Rotation & Vector Depixelization](#14-rotsprite-inspired-rotation--vector-depixelization)
+- [15. Viewport Lenses, Accessibility & Direct Hotkeys](#15-viewport-lenses-accessibility--direct-hotkeys)
+- [16. Modern Studio Shell & Design System Primitives Architecture](#16-modern-studio-shell--design-system-primitives-architecture)
+- [17. Teaching Animation Board & Discrete Jump Physics Engine](#17-teaching-animation-board--discrete-jump-physics-engine)
+- [18. Smart-Effect Recipe Architecture & Non-Destructive Workflow](#18-smart-effect-recipe-architecture--non-destructive-workflow)
 
 ---
 
@@ -108,7 +131,7 @@ sequenceDiagram
 * FloatingPreviewWindow subscribes to this integer counter and redraws its preview when the buffer changes.
 
 ### 3. Undo/Redo History Engine
-* src/lib/engine/historyEngine.ts maintains a bounded 50-step undo stack plus up to 50 redo steps (100 steps total max capacity, `createHistoryEngine(50)`).
+* `src/lib/engine/historyEngine.ts` maintains independently depth-bounded 50-step undo and redo stacks (`createHistoryEngine(50)`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope.
 * Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for $O(1)$ pixel restoration.
 
 ---
@@ -133,8 +156,14 @@ Calculates integer de Casteljau curves across 3 control points ($P_0, P_1, P_2$)
 $$B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]$$
 
 ### 4. Flood Fill (performFloodFill)
-* Compares colors as 32-bit integers using Uint32Array buffer views ((a << 24) | (b << 16) | (g << 8) | r).
-* Employs an index-based BFS queue to eliminate GC allocations during traversal.
+* Exact matching compares unsigned 32-bit RGBA words through `Uint32Array` views; nonzero tolerance compares the clicked source color to each candidate's RGBA distance.
+* Connected fill uses an iterative four-neighbor stack and a typed visited mask. It does not allocate neighbor arrays per pixel, though the stack itself is a JavaScript array.
+* The Bucket toolbar supplies its own default tolerance of 24. Optional enclosed-speck cleanup walks unfilled components inside the filled region's bounds, recoloring only visible islands of up to eight pixels and preserving transparent holes.
+
+### 5. Erase Sampled Color (`eraseMatchingColor.ts`)
+* Performs tolerance-guided color matching to make targeted colors transparent on the active layer or across animation frames.
+* Color-family matching clears faint background specks and repairs dark color spill embedded within outlines.
+* Supports bounding boxes, selection masks, and locked-layer exclusion with single-action undo/redo bounded by the history byte envelope.
 
 ---
 
@@ -425,6 +454,8 @@ Cycles display-only simulation matrices for color vision deficiencies:
 ### 3. Precision Tool Hotkeys
 * <kbd>N</kbd> (or <kbd>Shift</kbd> + <kbd>K</kbd>): Direct activation of the 2.5D Rivet Dome Stamp tool.
 * <kbd>K</kbd>: Direct activation of the Normal Chisel tool.
+* <kbd>R</kbd>: Direct activation of the Color Replace tool.
+* <kbd>Shift</kbd> + <kbd>R</kbd>: Direct activation of the Erase Sampled Color tool.
 * <kbd>Ctrl</kbd> + <kbd>K</kbd>: Fuzzy-search Command Palette launcher.
 * <kbd>Ctrl</kbd> + <kbd>S</kbd>: Direct project persistence commit to IndexedDB and active native file handle.
 

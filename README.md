@@ -43,12 +43,12 @@ Modern creative software has grown noisy — cluttered with account walls, manda
 
 ```mermaid
 graph LR
-    subgraph Atelier [" PixiBun Studio"]
-        Raster["️ Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
-        Math["️ PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
-        Anim[" Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
-        Import["️ Smart Import & Pixelize<br/>• Forward-Difference Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
-        Export[" Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
+    subgraph Atelier ["PixiBun Studio"]
+        Raster["Artisan Raster Engine<br/>• Pixel-Perfect Pen<br/>• Atkinson & Bayer Dither<br/>• 2:1 Isometric Lines<br/>• Quadratic Bézier Splines"]
+        Math["PixiBud 2.5D Studio<br/>• Linear O(N) EDT<br/>• Sobel Tangent Normals<br/>• Blinn-Phong Specular<br/>• Laplace Cavity AO"]
+        Anim["Timeline & Onion Skin<br/>• Multi-Frame Timeline<br/>• Wisteria Ghosting<br/>• 1–60 FPS Playback<br/>• Clip Tagging & SDF Morph"]
+        Import["Smart Import & Pixelize<br/>• Forward-Difference Salience Downsample<br/>• OKLab Color Quantization<br/>• Floyd-Steinberg Dither<br/>• Auto BG Keying & Swatches"]
+        Export["Export Pipeline<br/>• 1x–32x Lossless PNG (≤4096px)<br/>• Animated GIF<br/>• Packed Sprite Sheets<br/>• Godot, Unity & Phaser JSON"]
     end
 ```
 
@@ -61,12 +61,14 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### ️ Artisan Raster & Drawing Engine
+### Artisan Raster & Drawing Engine
 * **Pixel-Perfect Pen:** Automatic double-pixel / L-corner elimination (Bresenham stroke smoothing).
 * **Quantized 2:1 Isometric Lines & Guides:** Authentic 26.565° ($\arctan 0.5$ dimetric) isometric grid snapping and 2:1 diamond viewport guide lines without jagged stepping.
 * **3x3 Pattern Matrix Viewport:** Real-time 8-tile ghost matrix wrapping the canvas to test repeatable textures and terrain tiles on the fly.
 * **Quadratic Bézier Curves:** Exact quadratic integer de Casteljau curves (<kbd>C</kbd>) for fluid ribbon and contour plotting.
-* **Flood Fill & Global Color Replacement:** Contiguous island fill and active-layer color swapping. Color Replace has an adjustable tolerance for similar shades, preserves pixel transparency, and respects layer locks.
+* **Flood Fill & Global Color Replacement:** Bucket Fill supports connected or global matching with its own default tolerance of 24 for nearby shades. An optional switch includes visible color islands of up to eight pixels fully enclosed by the filled area; it starts off to protect intentional details and preserves transparent holes. Color Replace has a separate adjustable tolerance, preserves pixel transparency, and respects layer locks.
+* **Erase Sampled Color:** Click a color to make matching pixels transparent. Color-family cleanup is on by default: it clears pale background specks and repairs dark color spill within outlines. Adjustable tolerance and connected or all-match mode are available. Supports selection masking and an optional all-frame scope for the same unlocked layer position in each animation frame. Multi-frame removal is one undoable action.
+* **Analyze & Crisp Artwork:** In PixiTools → Cleanup, scan a layer and compare before/after thumbnails before applying an undoable cleanup. It removes faint alpha and detached 1–2 pixel specks, including opaque gray marks on white, and reduces neutral gray haze to a few crisp tones. Optional line thinning is off by default to protect details. Choose the current frame or the same layer across the animation; locked layers are skipped.
 * **Full Selection Suite:** Marquee Box (<kbd>M</kbd>), Freehand Lasso (<kbd>Q</kbd>), and Magic Wand (<kbd>W</kbd>) with Shift (Union) and Alt (Subtract) modifier modes, floating buffer nudging, copy/cut/paste (<kbd>Ctrl+C/X/V</kbd>), and horizontal/vertical flipping (<kbd>H</kbd> / <kbd>V</kbd>).
 * **Brush Footprint Cursor & Zoom Ergonomics:** Non-destructive CSS bounding box matching the square brush footprint at $\ge 400\%$ zoom, with `Ctrl + + / - / 0 / 1` integer keyboard navigation.
 * **Dual Overlapping Tactile Color Wells:** Primary/Secondary color slots with quick swap (<kbd>X</kbd>), custom HSV/HEX modal picker, and 8-color quick palette dock.
@@ -74,7 +76,7 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### ️ PixiBud 2.5D Photometric Studio & Smart Math Engine
+### PixiBud 2.5D Photometric Studio & Smart Math Engine
 * **Deep Canvas Art Understanding & Anatomical Classification:** Analyzes artwork morphology to classify forms into `character` (creatures with ears/horns, facial features, limbs) vs. `orb` (geometric spheres) vs. `prop`. Connected-component clustering isolates eyes, pupils, mouth, snout, and lateral whiskers (`isFeature`, `isInkLine`), preserving original artist RGB values from diffuse darkening or ambient crush.
 * **Frontal Face Cushion Plateau & Independent Ear Geometry:** For character forms, the interior face height forms a level camera-facing plateau with near-perpendicular surface normals, ensuring light illuminates faces without splitting them in half with shadow, while form shadows hug only the outer silhouette bevel ($2.8\text{px} \times \text{scaleFactor}$). Distinct convex lobes preserve independent 3D cone geometry for ears and horns. Dynamic scale factor $\text{scaleFactor} = \max(1.0, \min(W, H) / 32)$ scales bevel radii proportionally for $64\times64$ and $128\times128$ canvases to prevent premature normal collapse while maintaining byte-exact output on $32\times32$ sprites.
 * **Perceptual OKLCH Stepped Cel-Shading & Shading Band Modes (Single / Dual / Trio):** Unshaded and pre-shaded pixel art sprites receive crisp discrete tone steps across all forms (orbs, characters, props). Supports **1 Single** (1 shadow tone for classic 2-tone arcade sprites), **2 Dual** (core + deep shadow, default), and **3 Trio** (soft penumbra $L \times 0.93$ + core mid-shadow + deep umbra crescent along outer boundaries). Dynamic cavity AO auto-scaling adapts `cavityStrength` and scales `creviceAOThresh` with silhouette complexity, preventing hair spikes and thin fur tufts from being engulfed in non-directional shadow tone. Shadow placement is driven purely by directional diffuse signal (`diffSignal < shadowThresh`), decoupled from ambient fill to ensure crisp anatomical shadow termination.
@@ -107,14 +109,15 @@ Before stepping into the full studio, visitors can interact directly with PixiBu
 
 ---
 
-### ️ Intelligent Image-to-Pixel-Art Synthesis & Import Suite
+### Intelligent Image-to-Pixel-Art Synthesis & Import Suite
 * **Linear Optical Gamma-Corrected Area Box Downsampling:** Accurately integrates light flux during downscaling without dark-halo fringe artifacts.
 * **Forward-Difference Gradient Salience Edge-Preservation:** Boosts high-contrast edge weights to preserve delicate line-art, facial features, and character silhouettes when converting photos or high-res art.
 * **OKLab Perceptual Color Quantization:** Median-Cut partitioning with four Lloyd iterations initialized by median-cut centroids in OKLab perceptual color space.
 * **Advanced Error Diffusion & Ordered Dithering:** Choice of Serpentine Floyd-Steinberg, Atkinson 75% error retention, or Bayer 4x4 matrix dither during image conversion.
 * **Auto-Background Transparency Keying:** Automatically identifies and removes solid background colors by sampling canvas corners with adjustable tolerance.
 * **Image Sizing Choices:** Choose original image dimensions or proportionally fit inside the current canvas. Original dimensions retain 1:1 pixels within the 2048 px canvas limit; larger sources are downscaled and labeled accordingly.
-* **Sprite Sheet Import:** A regular grid matching the current canvas or a sheet filename is suggested for review, then each cell becomes a timeline frame. The grid supports offsets, gaps, and row or column order. Transparent cells remain as timing frames by default; the user can skip them or replace existing frames.
+* **Sprite Sheet Import:** For regular sheets up to 4 million pixels, the importer examines transparency, dominant background colors, and low-ink cut lines to detect repeating artwork, cell dimensions, leading margins, and gutters. Dimension-only guesses are marked for review. Cut lines remain editable; each cell becomes a timeline frame. Transparent cells remain as timing frames by default, or can be skipped. Cells larger than the current canvas require resizing before import to prevent clipping. Irregular packed atlases require preprocessing into a regular grid.
+* **Aligned High-Zoom Grid:** The canvas raster and CSS grid share exact screen bounds and pixel pitch; the stage outline cannot shrink the artwork relative to its grid.
 * **Automatic Swatch Extraction:** Derives up to 32 dominant colors from imported artwork and adds them straight into your active palette swatches.
 
 ---
@@ -188,7 +191,7 @@ PixiBun Atelier features two distinct, fully crafted visual identities selectabl
 
 ---
 
-## ️ Keyboard Shortcuts Reference
+## Keyboard Shortcuts Reference
 
 | Key | Tool / Action |
 |---|---|
@@ -211,6 +214,7 @@ PixiBun Atelier features two distinct, fully crafted visual identities selectabl
 | <kbd>K</kbd> | **Normal Chisel** Tool |
 | <kbd>Shift</kbd> + <kbd>K</kbd> / <kbd>N</kbd> | **Rivet Stamp** Tool |
 | <kbd>R</kbd> | **Color Replace** Tool |
+| <kbd>Shift</kbd> + <kbd>R</kbd> | **Erase Sampled Color** Tool |
 | <kbd>S</kbd> | **Toggle Squint / Silhouette Mode** (Display-Only Value Lens) |
 | <kbd>P</kbd> | **Cycle CVD Colorblindness Lens** (Protanopia, Deuteranopia, Tritanopia, Grayscale) |
 | <kbd>X</kbd> | **Swap Primary / Secondary Colors** |
@@ -252,7 +256,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### ️ Autonomous Quality Gate & Git Pre-Push Protection
+### Autonomous Quality Gate & Git Pre-Push Protection
 PixiBun includes an automated, zero-dependency local Quality Gate runner that executes before every push:
 ```bash
 # Run documentation checks, typecheck, lint, and the unit test suite
@@ -273,11 +277,11 @@ PixiBun is engineered as a local-first web application:
 * **Accessibility support and testing:** Full keyboard navigation alternatives for drag actions (arrow key canvas panning and selection nudging), focus traps with return-to-opener in modal dialogues, accessible touch and toolbar hit sizes ($\ge 24\text{px}$ touch targets), consistent help surfaces, and automated axe-core scans. Passing scans are scoped to the pages and states exercised; they are not a conformance certification.
 * **Privacy-First Local Diagnostics:** Zero third-party trackers or external scripts. Diagnostics and Web Vitals are captured strictly into a local IndexedDB ring buffer (200 entries max) with an instant "Export Diagnostics" JSON tool and a strictly opt-in, rate-limited crash relay.
 * **Non-Destructive Safe Modes & Repair Wizard:** Damaged or structurally compromised projects are never opened as writable workspaces and original source records are never repaired in place; they remain 100% untouched in IndexedDB. Startup detection routes cleanly into a safe blank workspace, while gallery open failure preserves the existing active workspace. An interactive Recovery Wizard displays the deterministic production recovery plan with precise layer and frame diagnostics, requiring explicit user consent before creating a separate recovered project copy (`[Recovered] <ProjectName>`). Users can export a complete untouched ZIP backup archive at any stage. Recovered destination projects must pass bounded pre-hydration admission and canvas hydration before activation. Pending recovery state survives browser reloads via a minimal bounded identifier in session storage (`pixibun:pending-recovery-source`), and any post-commit admission or hydration failure strictly preserves both the active workspace and the pending recovery route. (Where structural corruption exceeds repair limits, automated reconstruction is safely blocked while preserving backup export).
-* **Continuous Quality & Performance Gates:** 1249 unit and integration tests across 126 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 15s budget assertion in `tests/benchmark.test.ts`), 18 E2E spec suites (71 tests, including frame layer isolation in `tests/e2e/frameLayerIsolation.spec.ts`, Color Replace tolerance and lock checks in `tests/e2e/colorReplaceTolerance.spec.ts`, bounded viewport and brush-footprint checks in `tests/e2e/viewportOverlayBounds.spec.ts`, lasso hover, transform, and masked deletion pixel checks in `tests/e2e/lassoTransformIntegrity.spec.ts`, import and RotSprite outline browser checks in `tests/e2e/importImageAndSheet.spec.ts`, live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`, 4-theme browser accessibility audits in `tests/e2e/themeAccessibility.spec.ts`, real Chromium IndexedDB transaction liveness in `tests/e2e/recoveryTransactionLiveness.spec.ts`, full safe-mode repair wizard verification in `tests/e2e/recoveryUIFlow.spec.ts`, and project/worker browser checks in `tests/e2e/auditPersistence.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
+* **Continuous Quality & Performance Gates:** 1270 unit and integration tests across 129 suites (including an automated $4000\times3000$ photo downsampling benchmark under a 15s budget assertion in `tests/benchmark.test.ts`), 20 E2E spec suites (80 tests, including frame layer isolation in `tests/e2e/frameLayerIsolation.spec.ts`, Color Replace tolerance and lock checks in `tests/e2e/colorReplaceTolerance.spec.ts`, color erasure with multi-frame undo, locked-layer, and color-family checks in `tests/e2e/eraseColor.spec.ts`, scanned artwork cleanup and multi-frame undo in `tests/e2e/spriteCleanup.spec.ts`, bucket shades and grid alignment at 1600% zoom in `tests/e2e/viewportOverlayBounds.spec.ts`, lasso hover, transform, and masked deletion pixel checks in `tests/e2e/lassoTransformIntegrity.spec.ts`, import, sheet pixel analysis, and RotSprite outline browser checks in `tests/e2e/importImageAndSheet.spec.ts`, live studio chisel, normal preview, relighting, and palette cycling proof in `tests/e2e/chiselAndPaletteLiveProof.spec.ts`, 4-theme browser accessibility audits in `tests/e2e/themeAccessibility.spec.ts`, real Chromium IndexedDB transaction liveness in `tests/e2e/recoveryTransactionLiveness.spec.ts`, full safe-mode repair wizard verification in `tests/e2e/recoveryUIFlow.spec.ts`, and project/worker browser checks in `tests/e2e/auditPersistence.spec.ts`) with automated axe audits, and Lighthouse CI performance/accessibility score budgets.
 
 ---
 
-## ️ Technical Architecture
+## Technical Architecture
 
 | Subsystem | Technology | Architectural Rationale |
 |---|---|---|
@@ -296,7 +300,7 @@ PixiBun is engineered as a local-first web application:
 | **Tactile UI** | Tailwind CSS v4 + Motion | Physical button depression physics, CSS `@theme` cascade tokens, and zero-lag dual-axis theme transitions (`AppearancePopover`). |
 | **Local Persistence & Recovery System** | Dexie.js (IndexedDB Schema v5) + ZIP32 Streaming Core | Dedicated `layerBlobs` and `recoveryRecords` tables, atomic multi-table rollbacks, keyset-paginated stored-blob assessment, low-level Store-only ZIP32 writer, untouched backup archive export, and non-destructive Repair Wizard with safe-mode routing (Phases 1B.1–1B.8 complete; Phase 2+ unstarted). |
 | **Collaboration** | Two-peer WebRTC + CRDT Sync Bridge | One host and one guest share a dual-channel LWW-CRDT pixel buffer with delivery ACKs, backpressure queueing, and retry deduplication (presence channel rate limited via token bucket; ordered reliable messages use a constant-size receive high-water mark). |
-| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 1249 unit and integration tests across 126 suites and 18 E2E spec suites (71 tests) + Axe WCAG scans + LHCI budgets. |
+| **Quality & Tests** | Vitest + Playwright + Lighthouse CI | 1270 unit and integration tests across 129 suites and 20 E2E spec suites (80 tests) + Axe WCAG scans + LHCI budgets. |
 
 ---
 

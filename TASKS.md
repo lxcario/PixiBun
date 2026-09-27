@@ -2,6 +2,21 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 76 — Imported artwork editing and viewport alignment (2026-09-28)
+
+**Goal:** Make regular sprite sheets, sampled-background removal, raster cleanup, and recoloring predictable on imported art, while keeping the canvas pixel grid aligned at high zoom.
+
+- [x] Inspect source pixels for repeated sheet cells, leading margins, and gutters; keep dimension-only guesses explicitly provisional and let artists review cut lines. Preserve transparent timing cells by default and reject cells that would clip on the current canvas.
+- [x] Add Erase Sampled Color with tolerance, default color-family matching, connected or all-match scope, optional matching layers across frames, selection masking, locked-layer protection, and undo.
+- [x] Add Analyze & Crisp Artwork with a scan and before/after preview, faint-alpha and small detached-speck cleanup, neutral-gray shade reduction, optional line thinning, frame scope, and undo. Keep line thinning off by default to protect details.
+- [x] Give Bucket Fill its own default tolerance of 24 and an optional mode for visible color islands of up to eight pixels fully enclosed by the filled region. Preserve transparent holes and keep Color Replace's exact-match default separate.
+- [x] Remove layout borders that made the artwork raster and CSS grid differ in screen size. Verify exact bounds and bucket clicks at 1600% zoom.
+- [x] Add focused unit and Chromium regressions, update current reference docs, and retain the TestSprite regression plans for later execution.
+
+**Verification:** The latest full quality gate passed with 1,270/1,270 unit tests across 129 suites, zero type or lint errors, document integrity, and a production build. A full Chromium run passed 80/80 tests; focused bucket and grid checks passed after the final transparent-hole refinement. TestSprite was not run because its CLI is unavailable in this workspace.
+
+---
+
 ## Phase 75 — Palette persistence and audit reconciliation
 
 **Current status:** C1, H1–H6, M1, and M12 are resolved. Earlier phase entries preserve their status at the time they were written. The Phase 72 bounding-box implementation was subsequently replaced with component-member traversal and one shared distance buffer.
@@ -1527,7 +1542,7 @@ The following claims from preliminary inspection were investigated and confirmed
   - Dielectric Schlick Fresnel reflectance with Cauchy chromatic dispersion `evaluateDielectricFresnel(cosTheta, etaBase, dispersion, roughness, fresnelPower)`.
   - Anisotropic curvature and directional tangent field generator `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)`.
   - Full pipeline `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` executing Beer-Lambert SSS, Fresnel rim glow, dual-cuticle Kajiya-Kay anisotropic specular highlights, and OKLab Bayer dither palette quantization.
-- [x] PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Volumetric Optics & SSS** panel with material preset buttons ( Gem,  Slime,  Hair,  Leaf, ️ Metal), interactive depth/rim/flow sliders, and "Render Volumetric Optics" action.
+- [x] PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`): Built dedicated **Volumetric Optics & SSS** panel with material preset buttons (Gem, Slime, Hair, Leaf, Metal), interactive depth/rim/flow sliders, and "Render Volumetric Optics" action.
 - [x] Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`): Added event listener for `pixibun:volumetric-optics` writing output non-destructively to tagged output layers (`Layer.tag = 'optical-output'`) without mutating base artwork.
 - [x] Unit Test Suite (`tests/volumetricOptics.test.ts`): 11 comprehensive unit tests covering phase function derivations, Fresnel grazing reflectance, Cauchy dispersion splitting, tangent rotations, and gemstone/hair rendering.
 - [x] Playwright E2E Spec (`tests/e2e/studio.spec.ts`): End-to-end test verifying gemstone preset selection, rendering, and tagged output layer creation.

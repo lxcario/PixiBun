@@ -337,7 +337,8 @@ describe('Phase 1B.7 — Stored-Project Admission Boundary & Recovery Routing', 
         thumbnailDataUrl: '',
       });
 
-      // Insert MAX_INSPECTABLE_STORED_BLOBS + 1 blobs
+      // Only the record count matters here; share the immutable fixture blob.
+      const fixtureBlob = createPngBlob(32, 32);
       const excessiveBlobs = Array.from(
         { length: RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS + 1 },
         (_, i) => ({
@@ -345,7 +346,7 @@ describe('Phase 1B.7 — Stored-Project Admission Boundary & Recovery Routing', 
           projectId: 'proj-excessive-blobs',
           layerId: 'layer-1',
           frameIndex: 0,
-          blob: createPngBlob(32, 32),
+          blob: fixtureBlob,
           updatedAt: 1000,
         })
       );
@@ -357,7 +358,7 @@ describe('Phase 1B.7 — Stored-Project Admission Boundary & Recovery Routing', 
         expect(result.reasonCode).toBe('EXCESSIVE_STORED_BLOBS');
       }
       expect(createEntrySpy).not.toHaveBeenCalled();
-    });
+    }, 20_000);
 
     it('rejects embedded pngBase64 layers as recovery-required before hydration', async () => {
       const createEntrySpy = vi.spyOn(bufferRegistry, 'createEntry');

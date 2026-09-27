@@ -184,7 +184,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           state.setActiveTool('ellipse');
           break;
         case 'r':
-          state.setActiveTool('color-replace');
+          state.setActiveTool(e.shiftKey ? 'erase-color' : 'color-replace');
           break;
         case 'k':
           if (e.shiftKey) {

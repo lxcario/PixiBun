@@ -517,7 +517,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
   - **Kajiya-Kay Anisotropic Highlight**: Implemented `computeAnisotropicTangentField(normalField, width, height, flowPreset, angleDeg)` generating curvature and directional tangent fields with dual-cuticle shifts ($s_1 = +0.10, s_2 = -0.15$) for hair, fur, and brushed metal.
   - **Full Optical Pipeline**: Implemented `executeVolumetricOpticalPipeline(srcCtx, width, height, params)` blending SSS, Fresnel, and Anisotropic specular passes with perceptual OKLab palette snapping and Bayer matrix dither modulation.
 - **PixiBud AI Inspector UI (`src/components/layout/RightInspector.tsx`)**:
-  - Built **Volumetric Optics & SSS** module in PixiBud AI tab with tactile preset buttons ( Gem,  Slime,  Hair,  Leaf, ️ Metal).
+  - Built **Volumetric Optics & SSS** module in PixiBud AI tab with tactile preset buttons (Gem, Slime, Hair, Leaf, Metal).
   - Added interactive parameter sliders for SSS Depth ($1 - 32\text{px}$), Fresnel Rim Power ($1.0 - 8.0\times$), Flow Preset selector (Vertical, Horizontal, Radial, Curvature), and Anisotropy Angle ($0^\circ - 180^\circ$).
 - **Non-Destructive Viewport Layer Execution (`src/components/layout/CenterViewport.tsx`)**:
   - Wired `pixibun:volumetric-optics` custom event to non-destructive tagged output layer (`Layer.tag = 'optical-output'`).
@@ -582,7 +582,7 @@ The Phase 14 photometric pipeline had a single class of bug across three symptom
 
 ---
 
-## Phase 29 — SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
+## Phase 29b — SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)
 **Delivered:**
 - **In-Between Frame SDF Morphing (src/lib/ai/pixelAiEngine.ts)**: Ripped out the flawed, artifact-prone optical flow algorithm. Rewrote morphInBetweenFramesSync to use Signed Distance Fields (SDF) based on Felzenszwalb-Huttenlocher's O(N) Euclidean Distance Transform (EDT). This perfectly interpolates structural boundaries and preserves pixel art topologies without tearing or muddy sRGB crossfading of pre-lit pixels.
 - **Automated Morph Relighting Pipeline (src/components/layout/CenterViewport.tsx)**: Re-architected handleInBetweenFrameEvent to strip AI-generated layers (photometrics, drop shadows) prior to morphing via a pure getCleanCtx extraction. Automatically re-dispatches \pixibun:photometric-lighting\ and \pixibun:volumetric-optics\ events to dynamically shade the new frame, completely fixing the "muddy baked colors" artifact.
@@ -597,7 +597,7 @@ otateWithRotSprite\).
 
 ---
 
-## Phase 29 — Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
+## Phase 29a — Onboarding, Selection Tools, and UX Enhancements (2026-09-01)
 **Delivered:**
 - **Progressive Onboarding (feat(onboarding))**: Implemented a progressive playground allowing users to doodle and interact before transitioning fully into the studio workspace.
 - **Advanced Selection Utilities (feat(selection))**: Added Magic Wand tool logic for continuous flood-fill color selection. Implemented polygon rasterization for the freehand Lasso tool to produce perfectly aliased boundaries.
@@ -1942,4 +1942,20 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - TestSprite: Not applicable / unverified because Phase 1B.4 has no deployed user-facing recovery surface.
 
 **Status:** Complete through Phase 1B.4 (2026-09-22) — Phase 1A, Phase 1B.1, Phase 1B.2, Phase 1B.3, and Phase 1B.4 verified; Phase 1B.5+ deferred
+
+---
+
+## 2026-09-28 — Imported artwork editing, fill behavior, and grid alignment
+
+**Delivered:**
+- Sprite sheet import now inspects image pixels to infer repeating cells, margins, and spacing when the evidence is sufficient. Dimension-only suggestions are labeled for review. The preview shows the cut lines, transparent timing cells are retained by default, and oversized cells cannot silently clip into a smaller canvas.
+- Erase Sampled Color removes matching pixels with adjustable tolerance and default color-family matching. It supports connected or all matches, selection masking, optional matching layers across frames, locked-layer protection, and one undoable edit.
+- PixiTools Analyze & Crisp Artwork reports a scan and before/after preview before an undoable cleanup of faint alpha, detached specks, and neutral-gray haze. Dark-line thinning is optional and off by default; matching animation layers can be processed while locked layers are skipped.
+- Bucket Fill now passes a separate tolerance to the fill engine (default 24). An optional enclosed-speck mode fills visible color islands of at most eight pixels without filling transparent holes. Color Replace keeps its independent exact-match default.
+- The artwork stage and main canvas no longer use layout-affecting borders; the artwork and grid occupy identical screen bounds at 1600% zoom.
+- Updated the older RotSprite browser tests to open the PixiTools section only when collapsed, and made the brush-cursor browser check hover the stage explicitly.
+
+**Checks run:** Full quality gate passed: documentation checks, typecheck, lint, 1,270/1,270 unit tests across 129 suites, and production build. Chromium passed 80/80 tests across 20 suites; the four focused viewport tests passed after the final transparent-hole refinement. `git diff --check` passed. TestSprite plans were drafted but no TestSprite run was possible because the CLI is unavailable here.
+
+**Status:** Locally verified. Git history records publication status.
 

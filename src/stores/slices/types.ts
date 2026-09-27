@@ -75,6 +75,12 @@ export interface ToolSlice {
   setDitherDensity: (density: number) => void;
   setBucketContiguous: (enabled: boolean) => void;
   setBucketTolerance: (tolerance: number) => void;
+  setFillTolerance: (tolerance: number) => void;
+  setFillEnclosedSpecks: (enabled: boolean) => void;
+  setEraseColorTolerance: (tolerance: number) => void;
+  setEraseColorContiguous: (enabled: boolean) => void;
+  setEraseColorFamily: (enabled: boolean) => void;
+  setEraseColorAllFrames: (enabled: boolean) => void;
   setShapeFilled: (filled: boolean) => void;
   toggleSymmetryH: () => void;
   toggleSymmetryV: () => void;

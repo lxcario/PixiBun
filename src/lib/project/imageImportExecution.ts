@@ -50,6 +50,12 @@ export function executeImageImport(confirmData: ImageImportConfirmPayload): Imag
     }
   }
 
+  if (slicedFrames?.some((frame) => frame.width > targetWidth || frame.height > targetHeight)) {
+    const message = 'Sprite sheet cells exceed the canvas. Resize the canvas to the cell size before importing.';
+    studioEvents.emit('pixibun:toast', { message, type: 'error' });
+    return { ok: false, reason: message };
+  }
+
   // Prospective capacity validation BEFORE any state mutation, buffer allocation, or history clearing:
   if (slicedFrames && slicedFrames.length > 0) {
     if (target === 'sprite-sheet-replace') {

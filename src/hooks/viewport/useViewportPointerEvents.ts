@@ -5,6 +5,11 @@ import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
 import { Point } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, replaceLayerColor } from '@/lib/canvas/floodFill';
+import { eraseMatchingColor } from '@/lib/canvas/eraseMatchingColor';
+import { touchBuffer } from '@/lib/engine/bufferRegistry';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
+import { studioEvents } from '@/lib/events/studioEvents';
 import { compositeFrame } from '@/lib/render/compositor';
 import type { HistoryStep } from '@/types/canvas';
 
@@ -169,6 +174,83 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
+    if (tools.activeTool === 'erase-color') {
+      if (!currentLayer) return;
+      if (props.floatingSelection) props.commitFloatingSelection();
+      const state = useStudioStore.getState();
+      const sourceCanvas = props.getOrCreateLayerCanvas(activeLayerId);
+      const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
+      if (!sourceCtx) return;
+      const sourcePixel = sourceCtx.getImageData(coords.x, coords.y, 1, 1).data;
+      if (sourcePixel[3] === 0) return;
+      const sampled = [sourcePixel[0], sourcePixel[1], sourcePixel[2]] as const;
+      let selectionMask = state.selectionMask;
+      if (!selectionMask && state.selection) {
+        selectionMask = new Uint8Array(props.canvasWidth * props.canvasHeight);
+        const box = state.selection;
+        for (let y = Math.max(0, box.y); y < Math.min(props.canvasHeight, box.y + box.h); y++) {
+          for (let x = Math.max(0, box.x); x < Math.min(props.canvasWidth, box.x + box.w); x++) {
+            selectionMask[y * props.canvasWidth + x] = 1;
+          }
+        }
+      }
+      if (selectionMask && !selectionMask[coords.y * props.canvasWidth + coords.x]) return;
+
+      const allFrames = tools.eraseColorAllFrames;
+      const layerIndex = currentFrame.layers.findIndex((layer) => layer.id === activeLayerId);
+      const targets = allFrames
+        ? state.frames.map((frame) => frame.layers[layerIndex]).filter((layer) => layer && !layer.locked)
+        : [currentLayer];
+      if (allFrames && targets.length * props.canvasWidth * props.canvasHeight * 4 > DEFAULT_HISTORY_MAX_BYTES / 2) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'Too many frame pixels for one undoable color erase. Use This frame.' });
+        return;
+      }
+      const edits: Array<{ id: string; ctx: CanvasRenderingContext2D; image: ImageData }> = [];
+      for (const layer of targets) {
+        const ctx = props.getOrCreateLayerCanvas(layer.id).getContext('2d', { willReadFrequently: true });
+        if (!ctx) continue;
+        const image = ctx.getImageData(0, 0, props.canvasWidth, props.canvasHeight);
+        const changed = eraseMatchingColor(image, sampled, tools.eraseColorTolerance, {
+          contiguous: !allFrames && tools.eraseColorContiguous,
+          family: tools.eraseColorFamily,
+          x: coords.x,
+          y: coords.y,
+          mask: selectionMask,
+        });
+        if (changed > 0) edits.push({ id: layer.id, ctx, image });
+      }
+      if (edits.length === 0) return;
+      if (allFrames) {
+        pushStructuralHistoryStep('Erase Color (All Frames)', { affectedLayerIds: edits.map((edit) => edit.id) });
+      } else {
+        props.captureSnapshot('Erase Color');
+      }
+      for (const edit of edits) {
+        const before = allFrames ? edit.ctx.getImageData(0, 0, props.canvasWidth, props.canvasHeight) : null;
+        edit.ctx.putImageData(edit.image, 0, 0);
+        touchBuffer(edit.id);
+        if (before) coDrawBridge.notifyStrokeCommitted(edit.id, before);
+      }
+      if (allFrames) {
+        const affected = new Set(edits.map((edit) => edit.id));
+        useStudioStore.setState((draft) => {
+          for (const frame of draft.frames) for (const layer of frame.layers) {
+            if (affected.has(layer.id)) layer.effect = undefined;
+          }
+        });
+        state.setDirty(true);
+        const lockedCount = state.frames.filter((frame) => frame.layers[layerIndex]?.locked).length;
+        if (lockedCount > 0) studioEvents.emit('pixibun:toast', {
+          type: 'default', message: `Skipped ${lockedCount} locked frame layer${lockedCount === 1 ? '' : 's'}.`,
+        });
+      } else {
+        props.commitSnapshot();
+      }
+      props.renderComposite();
+      bumpBufferVersion();
+      return;
+    }
+
     // Color Replace Tool
     if (tools.activeTool === 'color-replace') {
       if (!currentLayer) return;
@@ -259,7 +341,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
           const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
           if (ctx) {
             const drawColor = e.shiftKey ? useStudioStore.getState().secondaryColor : primaryColor;
-            performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous);
+            performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous, tools.fillTolerance, tools.fillEnclosedSpecks);
             props.renderComposite();
             props.commitSnapshot();
             bumpBufferVersion();

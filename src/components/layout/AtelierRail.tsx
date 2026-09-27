@@ -78,6 +78,12 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const setDitherDensity = useStudioStore((s) => s.setDitherDensity);
   const setBucketContiguous = useStudioStore((s) => s.setBucketContiguous);
   const setBucketTolerance = useStudioStore((s) => s.setBucketTolerance);
+  const setFillTolerance = useStudioStore((s) => s.setFillTolerance);
+  const setFillEnclosedSpecks = useStudioStore((s) => s.setFillEnclosedSpecks);
+  const setEraseColorTolerance = useStudioStore((s) => s.setEraseColorTolerance);
+  const setEraseColorContiguous = useStudioStore((s) => s.setEraseColorContiguous);
+  const setEraseColorFamily = useStudioStore((s) => s.setEraseColorFamily);
+  const setEraseColorAllFrames = useStudioStore((s) => s.setEraseColorAllFrames);
   const setShapeFilled = useStudioStore((s) => s.setShapeFilled);
   const setCurveTightness = useStudioStore((s) => s.setCurveTightness);
   const setIsoAngleSnap = useStudioStore((s) => s.setIsoAngleSnap);
@@ -199,6 +205,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     tools.activeTool === 'eraser' ||
     tools.activeTool === 'bucket' ||
     tools.activeTool === 'color-replace' ||
+    tools.activeTool === 'erase-color' ||
     tools.activeTool === 'dither' ||
     isShapeTool;
 
@@ -403,7 +410,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             )}
 
             {/* Bucket Contiguous vs Global */}
-            {tools.activeTool === 'bucket' && (
+            {tools.activeTool === 'bucket' && (<>
               <button
                 onClick={() => setBucketContiguous(!tools.bucketContiguous)}
                 title={tools.bucketContiguous ? 'Contiguous Island Fill' : 'Global Color Replace'}
@@ -415,7 +422,24 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               >
                 {tools.bucketContiguous ? 'Contiguous' : 'Global Replace'}
               </button>
-            )}
+              <label className="flex items-center gap-1 shrink-0 text-[10px]" title="Include nearby shades when filling imported or shaded artwork. Lower this if the fill crosses an outline.">
+                <span className="text-[var(--text-muted)]">Tolerance:</span>
+                <input type="range" min="0" max="255" step="1"
+                  value={tools.fillTolerance}
+                  onChange={(event) => setFillTolerance(Number(event.target.value))}
+                  aria-label="Bucket fill tolerance"
+                  className="w-20 h-1 accent-[var(--accent-gold)] cursor-pointer" />
+                <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.fillTolerance}</span>
+              </label>
+              {tools.bucketContiguous && <button type="button"
+                onClick={() => setFillEnclosedSpecks(!tools.fillEnclosedSpecks)}
+                aria-label="Fill enclosed specks"
+                aria-pressed={tools.fillEnclosedSpecks}
+                title="Also fill color islands of up to 8 pixels fully enclosed by the filled area. Can replace small intentional details."
+                className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 ${tools.fillEnclosedSpecks ? 'pixel-primary-btn' : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)]'}`}>
+                Enclosed specks: {tools.fillEnclosedSpecks ? 'On' : 'Off'}
+              </button>}
+            </>)}
 
             {tools.activeTool === 'color-replace' && (
               <div className="flex items-center gap-1.5 shrink-0 text-[10px]" title="Replaces matching colors on the active layer. Increase tolerance to include similar shades; transparent pixels and other layers are preserved.">
@@ -431,6 +455,35 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   className="w-24 h-1 accent-[var(--accent-gold)] cursor-pointer"
                 />
                 <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.bucketTolerance}</span>
+              </div>
+            )}
+
+            {tools.activeTool === 'erase-color' && (
+              <div className="flex items-center gap-1.5 shrink-0 text-[10px]" title="Click a visible color to make matching pixels transparent. All frames edits the same layer position in each frame, skipping locked layers. Undo restores the artwork.">
+                <span className="text-[var(--text-muted)]">Erase color · Tolerance:</span>
+                <input type="range" min="0" max="255" step="1"
+                  value={tools.eraseColorTolerance}
+                  onChange={(event) => setEraseColorTolerance(Number(event.target.value))}
+                  aria-label="Erase Color tolerance"
+                  className="w-20 h-1 accent-[var(--accent-gold)] cursor-pointer" />
+                <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.eraseColorTolerance}</span>
+                <button type="button" onClick={() => setEraseColorContiguous(!tools.eraseColorContiguous)}
+                  aria-label="Erase Color matching mode"
+                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  {tools.eraseColorContiguous ? 'Connected' : 'All matches'}
+                </button>
+                <button type="button" onClick={() => setEraseColorFamily(!tools.eraseColorFamily)}
+                  aria-label="Erase Color family mode"
+                  aria-pressed={tools.eraseColorFamily}
+                  title="Remove shades of the clicked color, including dark edge spill. The tolerance slider widens the hue range. Enabling this also searches all matching pixels; neutral outlines are protected."
+                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  {tools.eraseColorFamily ? 'Color family: On' : 'Color family: Off'}
+                </button>
+                <button type="button" onClick={() => setEraseColorAllFrames(!tools.eraseColorAllFrames)}
+                  aria-label="Erase Color frame scope"
+                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  {tools.eraseColorAllFrames ? 'All frames' : 'This frame'}
+                </button>
               </div>
             )}
 

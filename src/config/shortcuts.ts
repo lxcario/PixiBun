@@ -27,6 +27,7 @@ export const CANONICAL_TOOLS: ToolMeta[] = [
   { id: 'bucket', label: 'Flood Fill', shortcut: 'G', icon: 'bucket', group: 'Drawing' },
   { id: 'dither', label: 'Dither Brush', shortcut: 'D', icon: 'dither', group: 'Drawing' },
   { id: 'color-replace', label: 'Color Replace', shortcut: 'R', icon: 'color-replace', group: 'Drawing' },
+  { id: 'erase-color', label: 'Erase Sampled Color', shortcut: 'Shift + R', icon: 'erase-color', group: 'Drawing' },
 
   // Selection
   { id: 'select-box', label: 'Marquee Box', shortcut: 'M', icon: 'select-box', group: 'Selection' },
@@ -63,6 +64,7 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'U', description: 'Rectangle Tool', category: 'Tools', toolId: 'rectangle' },
   { key: 'O', description: 'Ellipse Tool', category: 'Tools', toolId: 'ellipse' },
   { key: 'R', description: 'Color Replace Tool', category: 'Tools', toolId: 'color-replace' },
+  { key: 'Shift + R', description: 'Erase Sampled Color Tool', category: 'Tools', toolId: 'erase-color' },
   { key: 'K', description: 'Normal Chisel Tool', category: 'Tools', toolId: 'normal-chisel' },
   { key: 'N / Shift + K', description: 'Rivet Stamp Tool', category: 'Tools', toolId: 'rivet-stamp' },
 

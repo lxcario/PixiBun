@@ -2,8 +2,13 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## Unreleased — 2026-09-26
+## Unreleased — updated 2026-09-28
 
+- Reconciled the current task log, build log, architecture, design, product scope, and algorithm reference with the imported-art tools, bucket semantics, grid geometry, and verified test inventory. The independent audit reports and dated plans remain historical snapshots.
+- Added TestSprite regression plans for frame isolation, lasso deletion, color replacement, and RotSprite behavior. They are saved as plans, not reported as executed TestSprite runs.
+- Bucket fill now includes nearby shades at a controlled default tolerance, with an optional switch for tiny enclosed color specks in imported art. The bucket keeps its own setting so Color Replace remains exact by default. Removed layout borders that made the main artwork slightly smaller than its grid at high zoom. Added focused fill tests and Chromium checks for real bucket clicks and exact artwork/grid alignment.
+- Added PixiTools Analyze & Crisp Artwork: scans the active layer or matching layers across frames before applying an undoable cleanup, with before/after thumbnails. It removes faint alpha and tiny detached specks (including opaque gray specks on white backgrounds), hardens surviving alpha, reduces opaque neutral grays to crisp tonal bands, and preserves distinct accents. Optional dark-line thinning is off by default to protect facial details. The panel reports per-stage pixel counts and skips locked layers.
+- Added Erase Sampled Color (Shift+R): click a visible color to remove exact or nearby shades to transparency on the active layer. Color family is on by default; it clears pale background specks and replaces dark color spill embedded in an outline with a neighboring outline color. The tool has its own eyedropper/checker icon. Choose connected or all matches, and optionally apply the sampled color to the corresponding unlocked layer across animation frames. Selection masks and undo/redo are preserved; multi-frame edits are bounded by the history budget.
 - Rechecked current documentation against the code and live test inventory. Corrected outdated v2 suite counts and broad dependency/proof claims, clarified that dated implementation plans are snapshots, and added a v2 inventory check to the documentation gate.
 - Blank frames retain the current layer names and settings under fresh layer IDs with empty pixels, while Duplicate Frame also copies the artwork. The timeline tooltips now explain that difference, and the layer panel identifies its active frame. Added a two-layer Chromium isolation check.
 - RotSprite now restores border-only and interior-only source colors to the matching region of the rotated silhouette, preventing dark blotches inside and fill-color breaks along an outline at 45°. Added a regression from the reported 32×32 circle and a Chromium check through the Rotate Cleanly button.
@@ -421,7 +426,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ### Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection (Phase 56)
 - **Local Quality Gate Runner (`scripts/runQualityGate.mjs`, `package.json`)**:
-  - Engineered an autonomous, zero-dependency Node.js ESM release gatekeeper that executes 3 sequential validation stages (`npm run gate`) in ~16 seconds:
+  - Engineered an autonomous, zero-dependency Node.js ESM release gatekeeper executing sequential validation stages (`npm run gate` for pre-push, `npm run gate:full` for release bundling):
     - Stage 1: Documentation Integrity & Sync Invariant Audit (`npm run verify:docs`)
     - Stage 2: Strict Static Type Safety (`npm run typecheck` - 0 compiler errors)
     - Stage 3: Comprehensive Unit & Defensive Invariant Test Suite (`npm test` - 609 tests across 88 suites)

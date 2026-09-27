@@ -6,6 +6,7 @@
  */
 import type { AnisoFlowPreset, CelToneCount, OpticalPresetType, ShadingBandMode } from '@/types/tools';
 import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
+import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
 
 export type StudioEventMap = {
   'pixibun:undo': void;
@@ -53,6 +54,16 @@ export type StudioEventMap = {
   'pixibun:color-grade': { grade: 'sunset' | 'moonlight' | 'neon' | 'gameboy' };
   'pixibun:quantize-palette': { colors?: string[]; paletteColors?: string[] };
   'pixibun:remove-strays': void;
+  'pixibun:sprite-cleanup-scan': { options: SpriteCleanupOptions; allFrames: boolean };
+  'pixibun:sprite-cleanup-apply': { options: SpriteCleanupOptions; allFrames: boolean };
+  'pixibun:sprite-cleanup-report': {
+    phase: 'scan' | 'applied';
+    stats: SpriteCleanupStats;
+    frames: number;
+    skippedLocked: number;
+    beforePreview?: string;
+    afterPreview?: string;
+  };
   'pixibun:photometric-lighting': {
     material?: string;
     lightAzimuth?: number;

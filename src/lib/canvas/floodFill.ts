@@ -114,7 +114,8 @@ export function performFloodFill(
   startY: number,
   fillColorHex: string,
   contiguous: boolean = true,
-  tolerance: number = 0
+  tolerance: number = 0,
+  fillEnclosedSpecks: boolean = false
 ): void {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
@@ -136,7 +137,7 @@ export function performFloodFill(
   const replacementColor = hexToRgba(fillColorHex);
 
   // If target color already matches replacement color, abort to avoid infinite loop
-  if (colorsMatch(targetColor, replacementColor, 0)) return;
+  if (colorsMatch(targetColor, replacementColor, 0) && tolerance === 0 && !fillEnclosedSpecks) return;
 
   const targetColor32 = ((targetColor.a << 24) | (targetColor.b << 16) | (targetColor.g << 8) | targetColor.r) >>> 0;
   const replacementColor32 = ((replacementColor.a << 24) | (replacementColor.b << 16) | (replacementColor.g << 8) | replacementColor.r) >>> 0;
@@ -165,6 +166,10 @@ export function performFloodFill(
     const queue: number[] = [startX, startY];
     const visited = new Uint8Array(width * height);
     visited[startY * width + startX] = 1;
+    let minX = startX;
+    let maxX = startX;
+    let minY = startY;
+    let maxY = startY;
 
     while (queue.length > 0) {
       const y = queue.pop()!;
@@ -172,16 +177,15 @@ export function performFloodFill(
 
       const index = y * width + x;
       pixels32[index] = replacementColor32;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
 
-      // 4-connected neighbors
-      const neighbors = [
-        [x + 1, y],
-        [x - 1, y],
-        [x, y + 1],
-        [x, y - 1],
-      ];
-
-      for (const [nx, ny] of neighbors) {
+      // 4-connected neighbors without allocating a new array for each pixel.
+      for (let direction = 0; direction < 4; direction++) {
+        const nx = x + (direction === 0 ? 1 : direction === 1 ? -1 : 0);
+        const ny = y + (direction === 2 ? 1 : direction === 3 ? -1 : 0);
         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
           const nIndex = ny * width + nx;
           if (!visited[nIndex]) {
@@ -204,6 +208,45 @@ export function performFloodFill(
               visited[nIndex] = 1;
               queue.push(nx, ny);
             }
+          }
+        }
+      }
+    }
+
+    if (fillEnclosedSpecks) {
+      // Keep this optional: a small enclosed detail can be intentional artwork.
+      // Only islands surrounded by the filled region, never outside the region,
+      // are eligible. The 8-pixel limit avoids swallowing larger features.
+      const checked = new Uint8Array(width * height);
+      const islandQueue = new Uint32Array((maxX - minX + 1) * (maxY - minY + 1));
+      let tail = 0;
+      const visitIslandNeighbor = (neighbor: number) => {
+        if (visited[neighbor] || checked[neighbor]) return;
+        checked[neighbor] = 1;
+        islandQueue[tail++] = neighbor;
+      };
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const start = y * width + x;
+          if (visited[start] || checked[start]) continue;
+          let head = 0;
+          tail = 1;
+          let enclosed = true;
+          checked[start] = 1;
+          islandQueue[0] = start;
+          while (head < tail) {
+            const index = islandQueue[head++];
+            const px = index % width;
+            const py = Math.floor(index / width);
+            if (px === minX || px === maxX || py === minY || py === maxY) enclosed = false;
+            if (data[index * 4 + 3] <= 10) enclosed = false;
+            if (px > minX) visitIslandNeighbor(index - 1);
+            if (px < maxX) visitIslandNeighbor(index + 1);
+            if (py > minY) visitIslandNeighbor(index - width);
+            if (py < maxY) visitIslandNeighbor(index + width);
+          }
+          if (enclosed && tail <= 8) {
+            for (let i = 0; i < tail; i++) pixels32[islandQueue[i]] = replacementColor32;
           }
         }
       }

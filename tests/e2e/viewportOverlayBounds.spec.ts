@@ -1,5 +1,67 @@
 import { test, expect } from '@playwright/test';
 
+test('the artwork and grid share exact screen bounds at high zoom', async ({ page }) => {
+  await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
+  await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => {
+      setCanvasSize: (w: number, h: number) => void; setZoom: (zoom: number) => void;
+    } } }).__studioStore!.getState();
+    state.setCanvasSize(32, 32);
+    state.setZoom(1600);
+  });
+  const sizes = await page.evaluate(() => {
+    const stage = document.querySelector('#center-canvas-area')!.getBoundingClientRect();
+    const artwork = document.querySelector('[data-testid="main-composite-canvas"]')!.getBoundingClientRect();
+    const grid = document.querySelector('[data-testid="grid-selection-overlay"]')!.getBoundingClientRect();
+    return {
+      stage: [stage.x, stage.y, stage.width, stage.height],
+      artwork: [artwork.x, artwork.y, artwork.width, artwork.height],
+      grid: [grid.x, grid.y, grid.width, grid.height],
+      pitch: getComputedStyle(document.querySelector('[data-testid="grid-selection-overlay"]')!).backgroundSize,
+    };
+  });
+  expect(sizes.stage.slice(2)).toEqual([512, 512]);
+  expect(sizes.artwork).toEqual(sizes.stage);
+  expect(sizes.grid).toEqual(sizes.stage);
+  expect(sizes.pitch).toBe('16px 16px, 16px 16px');
+});
+
+test('bucket recolors nearby shades through the visible grid without crossing a contrasting color', async ({ page }) => {
+  await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
+  const artwork = page.getByTestId('main-composite-canvas');
+  await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => {
+      setCanvasSize: (w: number, h: number) => void; setZoom: (zoom: number) => void;
+    } } }).__studioStore!.getState();
+    state.setCanvasSize(32, 32);
+    state.setZoom(1600);
+  });
+  await expect(artwork).toHaveAttribute('width', '32');
+  const stage = await page.locator('#center-canvas-area').boundingBox();
+  expect(stage).not.toBeNull();
+  const at = (x: number, y: number) => ({ x: stage!.x + (x + 0.5) * 16, y: stage!.y + (y + 0.5) * 16 });
+  const pixel = (x: number, y: number) => artwork.evaluate((canvas: HTMLCanvasElement, point: [number, number]) =>
+    Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
+  for (const [x, color] of [[8, '#f0c080'], [9, '#eabc7d'], [10, '#ffa000']] as const) {
+    await page.evaluate((next) => (window as Window & { __studioStore?: { getState: () => { setPrimaryColor: (color: string) => void } } }).__studioStore!.getState().setPrimaryColor(next), color);
+    await page.mouse.click(at(x, 8).x, at(x, 8).y);
+  }
+  await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => {
+      setPrimaryColor: (color: string) => void; setActiveTool: (tool: 'bucket') => void;
+    } } }).__studioStore!.getState();
+    state.setPrimaryColor('#90aaff');
+    state.setActiveTool('bucket');
+  });
+  await expect(page.getByRole('slider', { name: 'Bucket fill tolerance' })).toHaveValue('24');
+  await page.mouse.click(at(8, 8).x, at(8, 8).y);
+  await expect.poll(() => pixel(8, 8)).toEqual([144, 170, 255, 255]);
+  await expect.poll(() => pixel(9, 8)).toEqual([144, 170, 255, 255]);
+  expect(await pixel(10, 8)).toEqual([255, 160, 0, 255]);
+});
+
 test('large supported artwork never scales overlay backing stores with zoom', async ({ page }) => {
   await page.goto('/studio');
   const grid = page.getByTestId('grid-selection-overlay');
@@ -51,8 +113,8 @@ test('a three-pixel pen uses the same square footprint as its CSS brush outline'
   const zoom = 16;
   const x = stage!.x + 10.5 * zoom;
   const y = stage!.y + 10.5 * zoom;
-  await page.mouse.move(x - zoom, y - zoom);
-  await page.mouse.move(x, y, { steps: 4 });
+  await page.locator('#center-canvas-area').hover({ position: { x: 10.5 * zoom, y: 10.5 * zoom } });
+  await page.mouse.move(x + 1, y + 1);
   await expect(ghost).toBeVisible();
   await expect.poll(() => ghost.evaluate((element) => getComputedStyle(element).width)).toBe('48px');
   await expect.poll(() => ghost.evaluate((element) => getComputedStyle(element).height)).toBe('48px');

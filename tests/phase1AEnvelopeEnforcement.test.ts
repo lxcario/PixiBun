@@ -1019,6 +1019,33 @@ describe('Phase 1A: Prevention & Safe Persistence (Workspace Envelope Enforcemen
   });
 
   describe('7. Real Studio Image Import Route Testing (executeImageImport)', () => {
+    it('rejects sheet cells larger than the canvas before mutating the project', () => {
+      useStudioStore.setState({
+        canvasWidth: 64,
+        canvasHeight: 64,
+        frames: [createDummyFrame('f0', [createDummyLayer('l0')])],
+        editRevision: 4,
+        isDirty: false,
+      });
+      const toastEvents: Array<{ type?: string; message?: string }> = [];
+      const unsubToast = studioEvents.on('pixibun:toast', (event) => toastEvents.push(event));
+      const result = executeImageImport({
+        canvas: makeCanvas(128, 192),
+        target: 'sprite-sheet-append',
+        slicedFrames: [makeCanvas(128, 192)],
+        extractedPalette: [],
+        addToPalette: false,
+        filename: 'cats.png',
+      });
+      unsubToast();
+      expect(result.ok).toBe(false);
+      expect(result.reason).toMatch(/Resize the canvas/);
+      expect(toastEvents).toHaveLength(1);
+      expect(useStudioStore.getState().frames).toHaveLength(1);
+      expect(useStudioStore.getState().editRevision).toBe(4);
+      expect(useStudioStore.getState().isDirty).toBe(false);
+    });
+
     it('sprite-sheet-replace exceeding 500 frames halts with zero side-effects', () => {
       useStudioStore.setState({
         canvasWidth: 32,
