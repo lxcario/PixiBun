@@ -89,8 +89,8 @@ export const LayersPanel: React.FC = () => {
     <div className="flex flex-col h-full bg-[var(--desk-surface)]">
       {/* 1. Flush Action Header */}
       <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
-        <span className="text-[11px] font-sans font-medium text-[var(--text-muted)]" data-testid="layers-stack-header">
-          Layers <span data-testid="layers-stack-count" className="font-mono text-[10px] text-[var(--text-body)]">({currentFrame?.layers.length || 0})</span>
+        <span className="text-[11px] font-sans font-medium text-[var(--text-muted)]" data-testid="layers-stack-header" title="Each frame has its own layer pixels. A new blank frame keeps the layer names and settings.">
+          Frame {activeFrameIndex + 1} · Layers <span data-testid="layers-stack-count" className="font-mono text-[10px] text-[var(--text-body)]">({currentFrame?.layers.length || 0})</span>
         </span>
         <div className="flex items-center gap-1">
           <TactileButton

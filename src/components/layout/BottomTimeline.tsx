@@ -399,7 +399,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           <button
             disabled={isGuest}
             onClick={addFrame}
-            title={isGuest ? guestFrameLockTitle : 'Add Blank Frame'}
+            title={isGuest ? guestFrameLockTitle : 'Add blank frame with the current layer names and settings (no artwork)'}
             className={`px-1.5 py-0.5 text-[10px] font-sans font-medium rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer flex items-center gap-1 ${
               isGuest ? 'opacity-40 cursor-not-allowed' : ''
             }`}
@@ -549,7 +549,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
             variant="default"
             disabled={isGuest}
             onClick={addFrame}
-            title={isGuest ? guestFrameLockTitle : 'Add Blank Frame'}
+            title={isGuest ? guestFrameLockTitle : 'Add blank frame with the current layer names and settings (no artwork)'}
             aria-label="+ Frame"
             data-testid="add-frame-button"
             data-tutorial="add-frame"
@@ -568,7 +568,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 variant="default"
                 disabled={isGuest}
                 onClick={() => duplicateFrame(activeFrameIndex)}
-                title={isGuest ? guestFrameLockTitle : 'Duplicate Active Frame'}
+                title={isGuest ? guestFrameLockTitle : 'Duplicate active frame with all layer artwork'}
                 className={`w-7 h-7 flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] ${
                   isGuest ? 'opacity-40 cursor-not-allowed' : ''
                 }`}
