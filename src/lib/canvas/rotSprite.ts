@@ -240,9 +240,80 @@ export function downscale8xMajorityVote(
   return { width: targetW, height: targetH, data: outBytes };
 }
 
+/** Keep source-only border colors on the rotated silhouette boundary. */
+function restoreRotatedContourColors(
+  source: PixelBuffer,
+  output: PixelBuffer,
+  angleRad: number,
+  sourcePivotX: number,
+  sourcePivotY: number,
+  outputPivotX: number,
+  outputPivotY: number
+): PixelBuffer {
+  const { width: sw, height: sh } = source;
+  const { width: ow, height: oh } = output;
+  const src32 = new Uint32Array(source.data.buffer, source.data.byteOffset, sw * sh);
+  const out32 = new Uint32Array(output.data.buffer, output.data.byteOffset, ow * oh);
+  const sourceClass = new Uint8Array(sw * sh);
+  const colorClasses = new Map<number, number>();
+  const maxClassifiedColors = 4096;
+  const solid = (x: number, y: number) => x >= 0 && y >= 0 && x < sw && y < sh && (src32[y * sw + x] >>> 24) !== 0;
+
+  for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+    const index = y * sw + x;
+    const color = src32[index];
+    if ((color >>> 24) === 0) continue;
+    const kind = solid(x - 1, y) && solid(x + 1, y) && solid(x, y - 1) && solid(x, y + 1) ? 2 : 1;
+    sourceClass[index] = kind;
+    colorClasses.set(color, (colorClasses.get(color) ?? 0) | kind);
+    if (colorClasses.size > maxClassifiedColors) return output;
+  }
+  let hasBorderOnly = false;
+  let hasInteriorOnly = false;
+  for (const kind of colorClasses.values()) {
+    if (kind === 1) hasBorderOnly = true;
+    if (kind === 2) hasInteriorOnly = true;
+  }
+  if (!hasBorderOnly || !hasInteriorOnly) return output;
+
+  const cos = Math.cos(-angleRad);
+  const sin = Math.sin(-angleRad);
+  const outputSolid = (x: number, y: number) => x >= 0 && y >= 0 && x < ow && y < oh && (out32[y * ow + x] >>> 24) !== 0;
+  for (let y = 0; y < oh; y++) for (let x = 0; x < ow; x++) {
+    const index = y * ow + x;
+    const color = out32[index];
+    if ((color >>> 24) === 0) continue;
+    const kind = outputSolid(x - 1, y) && outputSolid(x + 1, y) && outputSolid(x, y - 1) && outputSolid(x, y + 1) ? 2 : 1;
+    if (colorClasses.get(color) !== (kind === 1 ? 2 : 1)) continue;
+
+    const dx = x + 0.5 - outputPivotX;
+    const dy = y + 0.5 - outputPivotY;
+    const sx = cos * dx - sin * dy + sourcePivotX;
+    const sy = sin * dx + cos * dy + sourcePivotY;
+    let nearest = -1;
+    let distance = Infinity;
+    for (let yy = Math.floor(sy) - 2; yy <= Math.floor(sy) + 2; yy++) {
+      for (let xx = Math.floor(sx) - 2; xx <= Math.floor(sx) + 2; xx++) {
+        if (xx < 0 || yy < 0 || xx >= sw || yy >= sh) continue;
+        const candidate = yy * sw + xx;
+        if (sourceClass[candidate] !== kind || colorClasses.get(src32[candidate]) !== kind) continue;
+        const d = (xx + 0.5 - sx) ** 2 + (yy + 0.5 - sy) ** 2;
+        if (d < distance) {
+          distance = d;
+          nearest = candidate;
+        }
+      }
+    }
+    if (nearest >= 0) {
+      out32[index] = (src32[nearest] & 0x00ffffff) | (color & 0xff000000);
+    }
+  }
+  return output;
+}
+
 /**
  * Main RotSprite-inspired rotation entry point.
- * Rotates pixel art with Scale8x and parabolic majority-voting.
+ * Rotates pixel art with Scale8x, parabolic majority voting, and contour color restoration.
  */
 export function rotSprite(
   src: PixelBuffer,
@@ -407,5 +478,6 @@ export function rotSprite(
   const src8x = scale8x(src);
 
   // 3. Downscale using subpixel inverse rotation and center-weighted Gaussian majority voting
-  return downscale8xMajorityVote(src8x, outW, outH, angleRad, cx, cy, ocx, ocy);
+  const rotated = downscale8xMajorityVote(src8x, outW, outH, angleRad, cx, cy, ocx, ocy);
+  return restoreRotatedContourColors(src, rotated, angleRad, cx, cy, ocx, ocy);
 }

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { OUTLINED_CIRCLE_ROWS } from '../fixtures/outlinedCircle';
 
 async function pngFromCanvas(page: import('@playwright/test').Page, width: number, height: number, cells?: number[]) {
   const base64 = await page.evaluate(({ width, height, cells }) => {
@@ -164,4 +165,47 @@ test('the studio 45-degree RotSprite command preserves its palette and visibly t
     if (after[i + 3] > 0) colors.add(after.slice(i, i + 4).join(','));
   }
   expect(colors).toEqual(new Set(['255,0,0,255', '0,0,255,255']));
+});
+
+test('Rotate Cleanly keeps an outlined circle closed at 45 degrees', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  const base64 = await page.evaluate((rows) => {
+    const image = document.createElement('canvas');
+    image.width = image.height = 32;
+    const ctx = image.getContext('2d')!;
+    rows.forEach((row, rowIndex) => [...row].forEach((glyph, x) => {
+      if (glyph === '.') return;
+      ctx.fillStyle = glyph === '#' ? '#2e203d' : '#b278ca';
+      ctx.fillRect(x, rowIndex + 8, 1, 1);
+    }));
+    return image.toDataURL('image/png').split(',')[1];
+  }, OUTLINED_CIRCLE_ROWS);
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'outlined-circle.png', mimeType: 'image/png', buffer: Buffer.from(base64, 'base64') });
+  const dialog = page.getByRole('dialog', { name: 'Import Image' });
+  await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  const revision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
+  await page.getByRole('button', { name: 'PixiTools (PixiBud AI)' }).click();
+  await page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' }).click();
+  await page.getByRole('button', { name: '+45°' }).click();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision)).toBeGreaterThan(revision);
+  const result = await canvas.evaluate((element: HTMLCanvasElement) => {
+    const { width, height } = element;
+    const data = element.getContext('2d')!.getImageData(0, 0, width, height).data;
+    const solid = (x: number, y: number) => x >= 0 && y >= 0 && x < width && y < height && data[(y * width + x) * 4 + 3] !== 0;
+    let leaks = 0, filled = 0;
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      if (data[i + 3] === 0) continue;
+      const interior = solid(x - 1, y) && solid(x + 1, y) && solid(x, y - 1) && solid(x, y + 1);
+      const expected = interior ? [178, 120, 202, 255] : [46, 32, 61, 255];
+      if (expected.some((value, channel) => data[i + channel] !== value)) leaks++;
+      filled++;
+    }
+    return { leaks, filled };
+  });
+  expect(result.leaks).toBe(0);
+  expect(result.filled).toBeGreaterThan(150);
 });

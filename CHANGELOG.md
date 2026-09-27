@@ -4,6 +4,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased — 2026-09-26
 
+- RotSprite now restores border-only and interior-only source colors to the matching region of the rotated silhouette, preventing dark blotches inside and fill-color breaks along an outline at 45°. Added a regression from the reported 32×32 circle and a Chromium check through the Rotate Cleanly button.
 - Color Replace now offers an active-layer tolerance slider for nearby shades, preserves each replaced pixel's transparency, skips transparent/no-op clicks without adding history, and respects layer locks. Added focused pixel tests and a Chromium undo/lock interaction test.
 - Lasso preview now draws only during an active drag. Floating selections no longer show their unrotated blue mask tint; transform scaling samples only pixels inside an irregular selection, and toolbar pointer events no longer start a new lasso. Delete and Cut honor irregular selection masks and clear stale preview strokes. Added Chromium pixel checks through an angled selection transform and masked deletion.
 - Bounded viewport overlays: the selection tint canvas now keeps artwork-sized backing dimensions at every zoom, grid/reference/isometric/playground guides use screen-pixel CSS patterns, and the brush ghost is a CSS border without a canvas allocation. Added a Chromium regression at 2048×2048 and 1600%/6400% zoom.

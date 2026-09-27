@@ -2,7 +2,7 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-Current suite inventory: 1248 unit tests across 125 suites. Historical measurements below retain their original test counts and timings.
+Current suite inventory: 1249 unit tests across 126 suites. Historical measurements below retain their original test counts and timings.
 
 > **Environment Note:** The older micro-benchmark tables outside §7 do not record exact hardware and have not been reproduced for this audit; treat them as historical observations. §7 records a fresh run with named hardware. Automated tests in `tests/benchmark.test.ts` enforce generous latency ceilings rather than identical machine-specific timings.
 
