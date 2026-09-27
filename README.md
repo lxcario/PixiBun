@@ -234,8 +234,8 @@ PixiBun Atelier features two distinct, fully crafted visual identities selectabl
 ##  Getting Started
 
 ### Prerequisites
-* **Node.js:** v22.x (Active LTS, e.g., v22.14.0)
-* **Package Manager:** `npm`, `pnpm`, or `yarn`
+* **Node.js:** v22.x (the version declared in `package.json`)
+* **Package Manager:** `npm` for the committed lockfile; other package managers are not covered by the project checks.
 
 ### Setup & Run Locally
 ```bash

@@ -2,6 +2,8 @@
 
 This directory stores historical implementation plans and engineering design documents for PixiBun phases.
 
+Test counts and completion statements in dated plans describe the checkout at the time of each plan. See the root `README.md` for the current test inventory and release status.
+
 - `implementation_plan.md`: Initial architecture and phased feature planning document.
 - `implementation_plan_v2.md`: Historical Pixel Atelier landing-page redesign plan.
 - `audit_remediation_plan.md`: Cross-boundary canvas envelope unification, safety hardening, and version sync plan (Phase 59).

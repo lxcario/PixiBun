@@ -4,6 +4,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased — 2026-09-26
 
+- Rechecked current documentation against the code and live test inventory. Corrected outdated v2 suite counts and broad dependency/proof claims, clarified that dated implementation plans are snapshots, and added a v2 inventory check to the documentation gate.
 - Blank frames retain the current layer names and settings under fresh layer IDs with empty pixels, while Duplicate Frame also copies the artwork. The timeline tooltips now explain that difference, and the layer panel identifies its active frame. Added a two-layer Chromium isolation check.
 - RotSprite now restores border-only and interior-only source colors to the matching region of the rotated silhouette, preventing dark blotches inside and fill-color breaks along an outline at 45°. Added a regression from the reported 32×32 circle and a Chromium check through the Rotate Cleanly button.
 - Color Replace now offers an active-layer tolerance slider for nearby shades, preserves each replaced pixel's transparency, skips transparent/no-op clicks without adding history, and respects layer locks. Added focused pixel tests and a Chromium undo/lock interaction test.

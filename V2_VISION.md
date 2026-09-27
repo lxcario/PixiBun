@@ -48,7 +48,7 @@
 
 ## 1. Executive Summary & North Star
 
-PixiBun v1 (`v1.14.1`) established a mathematically verified, zero-dependency raster workstation running entirely within modern web browsers. By combining an integer-exact Bresenham rasterizer, separable Felzenszwalb-Huttenlocher Euclidean Distance Transforms, Mark Ferrari palette cycling, 2.5D photometric relighting, and a host-authoritative P2P co-draw engine, v1 proved that high-end digital crafting software can exist without bloatware, native installation barriers, or subscription paywalls.
+PixiBun v1 (`v1.14.1`) established a local-first raster workstation running in modern web browsers. Its graphics algorithms are implemented in the repository; the application also depends on React, Next.js, and other UI and storage packages. It combines an integer Bresenham rasterizer, separable Felzenszwalb-Huttenlocher Euclidean Distance Transforms, palette cycling, 2.5D photometric relighting, and a two-peer P2P co-draw engine. The automated checks cover specific invariants and user journeys; they do not constitute a mathematical proof of every feature.
 
 **The PixiBun v2 Vision** expands beyond the boundaries of traditional single-threaded browser applications. v2 is designed as a hybrid **WebGPU / WebAssembly SIMD / Rust Native** digital content creation (DCC) system capable of:
 * Scaling from $16\times16$ micro-sprites up to $4096\times4096$ multi-megapixel (16.7 MP) isometric scenes with zero frame drops ($<1.5\text{ms}$ total composite latency).
@@ -665,7 +665,7 @@ At the 2026-09-26 verification point:
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-The codebase enforces automated quality gates (124 Vitest suites, 15 Chromium spec suites, TypeScript and ESLint as of 2026-09-27), while deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
+Current suite inventory: 1249 unit and integration tests across 126 suites; 71 Chromium E2E tests across 18 spec suites (2026-09-27). The codebase also checks TypeScript and ESLint. Deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
 
 ---
 

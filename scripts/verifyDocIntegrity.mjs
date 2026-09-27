@@ -5,7 +5,7 @@
  * 2. Checks for duplicate section numbers and monotonicity in ARCHITECTURE.md.
  * 3. Asserts all local filepaths cited in CHANGELOG.md exist on disk.
  * 4. Asserts line-count claims in CHANGELOG.md match measured file lengths.
- * 5. Asserts current test count and suite claims in README.md and BENCHMARKS.md match live runners.
+ * 5. Asserts current test count and suite claims in README.md, BENCHMARKS.md, and V2_VISION.md match live runners.
  * 6. Asserts package.json version matches the latest release version in CHANGELOG.md.
  */
 
@@ -208,6 +208,22 @@ if (fs.existsSync(readmePath)) {
         }
       }
 
+      const visionPath = path.join(rootDir, 'V2_VISION.md');
+      if (!fs.existsSync(visionPath)) {
+        reportError('V2_VISION.md not found');
+      } else {
+        const visionContent = fs.readFileSync(visionPath, 'utf8');
+        const visionMatch = visionContent.match(/Current suite inventory:\s*(\d+) unit and integration tests across (\d+) suites; (\d+) Chromium E2E tests across (\d+) spec suites/);
+        if (!visionMatch) {
+          reportError('Current test inventory claim not found in V2_VISION.md');
+        } else if (
+          Number(visionMatch[1]) !== liveUnitTests || Number(visionMatch[2]) !== liveUnitSuites ||
+          Number(visionMatch[3]) !== liveE2ETests || Number(visionMatch[4]) !== liveE2ESuites
+        ) {
+          reportError(`V2_VISION.md current test inventory mismatch: claimed ${visionMatch[1]}/${visionMatch[2]} unit and ${visionMatch[3]}/${visionMatch[4]} E2E, but live runners report ${liveUnitTests}/${liveUnitSuites} unit and ${liveE2ETests}/${liveE2ESuites} E2E.`);
+        }
+      }
+
       const e2eRegex = /(\d+)\s+E2E spec suites\s*\(\s*(\d+)\s+tests/g;
       let e2eMatch;
       let e2eClaimsFound = 0;
@@ -228,7 +244,7 @@ if (fs.existsSync(readmePath)) {
 
       if (unitClaimsFound > 0 && e2eClaimsFound > 0 && errorCount === 0) {
         reportPass(
-          `README.md and BENCHMARKS.md test metrics verified against live runners (${liveUnitTests} unit tests across ${liveUnitSuites} suites; ${liveE2ETests} E2E tests across ${liveE2ESuites} suites)`
+          `README.md, BENCHMARKS.md, and V2_VISION.md test metrics verified against live runners (${liveUnitTests} unit tests across ${liveUnitSuites} suites; ${liveE2ETests} E2E tests across ${liveE2ESuites} suites)`
         );
       }
     }

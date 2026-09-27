@@ -1,6 +1,6 @@
 # Contributing to PixiBun Atelier 
 
-Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a high-performance, in-browser pixel art and animation workstation built with a strict **zero-dependency, local-first, mathematically rigorous** engineering philosophy.
+Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is an in-browser pixel art and animation workstation built with a local-first approach and in-repository graphics algorithms. The app uses framework, UI, and storage dependencies listed in `package.json`.
 
 ---
 
@@ -42,7 +42,7 @@ npm run gate:full
 
 | Stage | Command | Purpose |
 | :--- | :--- | :--- |
-| **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, current test counts in `README.md` and `BENCHMARKS.md`, and version synchronization in `package.json`. |
+| **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, current test counts in `README.md`, `BENCHMARKS.md`, and `V2_VISION.md`, and version synchronization in `package.json`. |
 | **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
 | **Stage 3** | `npm run lint` | Checks source, tests, scripts, configs, and accessibility rules. |
 | **Stage 4** | `npm test` | Runs the current unit and invariant test suite via Vitest. |
