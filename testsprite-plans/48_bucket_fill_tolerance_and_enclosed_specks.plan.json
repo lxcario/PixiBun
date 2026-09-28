@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Bucket fill tolerance and enclosed specks options fill nearby shades and enclosed color specks",
+  "description": "Setting the Bucket tool tolerance slider fills similar color values across contiguous regions, and enabling Enclosed specks clears tiny isolated detail specks inside the fill.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a dark circular boundary with a small pale shade variation inside" },
+    { "type": "action", "description": "Select the Bucket tool in the left toolbar" },
+    { "type": "assertion", "description": "Verify the tool options rail displays the Bucket fill tolerance slider and Enclosed specks button" },
+    { "type": "action", "description": "Adjust the Bucket fill tolerance slider to 40" },
+    { "type": "action", "description": "Click the Enclosed specks button to toggle it On" },
+    { "type": "action", "description": "Choose a vibrant teal color from the palette" },
+    { "type": "action", "description": "Click inside the circular boundary to fill" },
+    { "type": "assertion", "description": "Verify the entire enclosed region including the shade variation is filled with uniform teal color" }
+  ]
+}

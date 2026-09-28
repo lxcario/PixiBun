@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "RotSprite 45-degree rotation preserves outline contours and color boundaries",
+  "description": "Rotating a circular sprite with a dark outline and light interior by 45 degrees preserves the exterior contour without dark blotches inside or outline breaks.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the ellipse tool in the left toolbar" },
+    { "type": "action", "description": "Choose a light cyan color and enable filled shape" },
+    { "type": "action", "description": "Draw a centered filled circle leaving generous margin from canvas edges" },
+    { "type": "action", "description": "Choose a dark navy outline color and disable filled shape" },
+    { "type": "action", "description": "Draw a concentric circular border surrounding the light cyan circle" },
+    { "type": "action", "description": "Open the PixiTools inspector in the right sidebar" },
+    { "type": "action", "description": "Expand the Pixel Cleanup & RotSprite section" },
+    { "type": "action", "description": "Set the rotation angle slider to 45 degrees" },
+    { "type": "action", "description": "Click the Rotate Cleanly button" },
+    { "type": "assertion", "description": "Verify the rotated silhouette maintains a solid dark perimeter around the light cyan interior" },
+    { "type": "assertion", "description": "Verify no stray dark pixels appear inside the cyan fill and no cyan pixels breach the outer margin" }
+  ]
+}

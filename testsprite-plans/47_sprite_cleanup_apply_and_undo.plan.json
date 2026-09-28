@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Apply Artwork Cleanup hardens semi-transparent pixels and supports undo restoration",
+  "description": "Applying the analyzed sprite cleanup bakes crisp solid pixels into the active layer, and triggering Undo restores the original semi-transparent artwork.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a small sprite shape with soft edges on the canvas" },
+    { "type": "action", "description": "Open the PixiTools inspector in the right sidebar" },
+    { "type": "action", "description": "Expand the Pixel Cleanup & RotSprite section" },
+    { "type": "action", "description": "Click the Scan Artwork button in the Analyze & Crisp Artwork panel" },
+    { "type": "action", "description": "Click the Apply Cleanup button" },
+    { "type": "assertion", "description": "Verify the cleanup report updates to confirm the changes have been applied to the layer" },
+    { "type": "action", "description": "Click the Undo button in the top toolbar" },
+    { "type": "assertion", "description": "Verify the canvas reverts to the original pre-cleanup state without error" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Active frame duration input updates timeline card layout and reverts via Undo",
+  "description": "Modifying the active frame duration in milliseconds updates the timeline card width and duration label, and triggering Undo restores the prior duration value.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
+    { "type": "action", "description": "Click the Add blank frame button in the bottom timeline to create frame 2" },
+    { "type": "assertion", "description": "Verify frame 2 displays the default duration label in the timeline" },
+    { "type": "action", "description": "Click the Active frame duration input field in the bottom timeline bar" },
+    { "type": "action", "description": "Type 350 into the duration input field" },
+    { "type": "action", "description": "Click outside the duration input field to commit the value" },
+    { "type": "assertion", "description": "Verify the frame 2 card in the timeline updates its width and displays 350ms" },
+    { "type": "action", "description": "Click the Undo button in the top toolbar" },
+    { "type": "assertion", "description": "Verify the frame 2 duration reverts back to its default duration value" }
+  ]
+}

@@ -4,6 +4,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useThemeStore } from '@/stores/themeStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import StudioToggle from '@/components/ui/StudioToggle';
+import {
+  isToolPreviewsDisabled,
+  setToolPreviewsDisabled,
+  TOOL_PREVIEWS_CHANGED_EVENT,
+} from '@/components/ui/ToolMotionPreview';
 
 export interface AppearancePopoverProps {
   className?: string;
@@ -21,8 +27,20 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   const lightRef = useRef<HTMLButtonElement>(null);
   const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
 
+  const [toolPreviewsEnabled, setToolPreviewsEnabled] = useState(true);
+
   useEffect(() => {
     setMounted(true);
+    const sync = () => {
+      setToolPreviewsEnabled(!isToolPreviewsDisabled());
+    };
+    sync();
+    window.addEventListener('storage', sync);
+    window.addEventListener(TOOL_PREVIEWS_CHANGED_EVENT, sync);
+    return () => {
+      window.removeEventListener('storage', sync);
+      window.removeEventListener(TOOL_PREVIEWS_CHANGED_EVENT, sync);
+    };
   }, []);
 
   const updateCoords = useCallback(() => {
@@ -315,6 +333,15 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                   <span>Light</span>
                 </button>
               </div>
+            </div>
+
+            {/* Tool Previews Preference Toggle */}
+            <div className="pt-2 border-t border-[var(--desk-border)]">
+              <StudioToggle
+                label="Tool Previews"
+                checked={toolPreviewsEnabled}
+                onChange={(enabled) => setToolPreviewsDisabled(!enabled)}
+              />
             </div>
           </div>,
           document.body

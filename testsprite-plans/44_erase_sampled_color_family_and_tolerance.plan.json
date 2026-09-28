@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Erase Sampled Color tool removes color family shades to transparency while preserving outlines",
+  "description": "When a user selects the Erase Color tool (Shift+R) with Color Family active and clicks a visible color, exact and related shades are erased to transparency while dark contours and other colors remain untouched.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Choose a bright pink drawing color from the palette" },
+    { "type": "action", "description": "Draw a circular patch of pink pixels on the canvas" },
+    { "type": "action", "description": "Choose a dark outline color" },
+    { "type": "action", "description": "Draw an outline enclosing the pink patch" },
+    { "type": "action", "description": "Select the Erase Color tool with eyedropper and checkerboard icon in the left toolbar" },
+    { "type": "assertion", "description": "Verify the tool options rail displays the Erase Color settings with tolerance slider, matching mode, and Color Family toggle set to On" },
+    { "type": "action", "description": "Click on the pink patch inside the outlined area" },
+    { "type": "assertion", "description": "Verify the pink pixels are erased to transparent canvas while the dark outline contour remains intact" },
+    { "type": "action", "description": "Click the Undo button in the top toolbar" },
+    { "type": "assertion", "description": "Verify the erased pink artwork is fully restored within the outline" }
+  ]
+}

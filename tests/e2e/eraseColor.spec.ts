@@ -61,15 +61,28 @@ async function clickPixel(page: Page, x: number, y: number) {
   await page.mouse.click(stage!.x + (x + 0.5) * stage!.width / 32, stage!.y + (y + 0.5) * stage!.height / 32);
 }
 
+async function thumbnailPixel(page: Page, frameIndex: number, x: number, y: number) {
+  return page.getByTestId(`frame-thumbnail-${frameIndex}`).evaluate((canvas: HTMLCanvasElement, point: [number, number]) =>
+    Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
+}
+
 test('Erase Sampled Color removes green across animation frames and undo restores both', async ({ page }) => {
   await importGreenSheet(page);
   await page.getByTestId('erase-color-tool').click();
   await expect(page.getByRole('slider', { name: 'Erase Color tolerance' })).toHaveValue('24');
-  await page.getByRole('button', { name: 'Erase Color frame scope' }).click();
-  await expect(page.getByRole('button', { name: 'Erase Color frame scope' })).toContainText('All frames');
+  const scopeBtn = page.getByRole('button', { name: 'Erase Color frame scope' });
+  await expect(scopeBtn).toHaveAttribute('aria-pressed', 'false');
+  await scopeBtn.click();
+  await expect(scopeBtn).toContainText('All frames');
+  await expect(scopeBtn).toHaveAttribute('aria-pressed', 'true');
   await clickPixel(page, 2, 2);
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
   expect(await pixel(page, 15, 15)).toEqual([255, 48, 48, 255]);
+
+  // Both timeline thumbnails must update immediately without switching frames
+  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([0, 0, 0, 0]);
+
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveFrame: (index: number) => void } } }).__studioStore!.getState().setActiveFrame(1));
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
   expect(await pixel(page, 15, 15)).toEqual([48, 48, 255, 255]);
@@ -79,8 +92,15 @@ test('Erase Sampled Color removes green across animation frames and undo restore
   await expect.poll(() => pixel(page, 2, 2)).toEqual([20, 210, 40, 255]);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveFrame: (index: number) => void } } }).__studioStore!.getState().setActiveFrame(1));
   await expect.poll(() => pixel(page, 2, 2)).toEqual([25, 205, 44, 255]);
+
+  // Both thumbnails must be restored after undo
+  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([20, 210, 40, 255]);
+  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([25, 205, 44, 255]);
+
   await page.getByTestId('redo-button').click();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([0, 0, 0, 0]);
 });
 
 test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
@@ -117,4 +137,62 @@ test('Default color family clears pale spill, repairs dark green outline pixels,
   expect(await pixel(page, 5, 1)).toEqual([20, 32, 44, 255]);
   expect(await pixel(page, 3, 1)).toEqual([18, 29, 26, 255]);
   expect(await pixel(page, 15, 15)).toEqual([255, 48, 48, 255]);
+});
+
+test('Erase Sampled Color with All Frames scope clears matching color across animation frames', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
+
+  // Select pen tool
+  await page.getByTestId('pen-tool').click();
+
+  // Set orange drawing color
+  await page.evaluate(() => {
+    (window as Window & { __studioStore?: { getState: () => { setPrimaryColor: (c: string) => void } } }).__studioStore!.getState().setPrimaryColor('#ff8800');
+  });
+
+  // Draw orange mark on center of frame 1 (16, 16)
+  await clickPixel(page, 16, 16);
+  await expect.poll(() => pixel(page, 16, 16)).toEqual([255, 136, 0, 255]);
+  await expect.poll(() => thumbnailPixel(page, 0, 16, 16)).toEqual([255, 136, 0, 255]);
+
+  // Click Add blank frame button in timeline to create frame 2
+  await page.getByTestId('add-frame-button').click();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { activeFrameIndex: number } } }).__studioStore!.getState().activeFrameIndex)).toBe(1);
+
+  // Draw orange mark on frame 2 at the same location
+  await clickPixel(page, 16, 16);
+  await expect.poll(() => pixel(page, 16, 16)).toEqual([255, 136, 0, 255]);
+  await expect.poll(() => thumbnailPixel(page, 1, 16, 16)).toEqual([255, 136, 0, 255]);
+
+  // Select Erase Color tool in left toolbar
+  await page.getByTestId('erase-color-tool').click();
+
+  // Click the frame scope button in the tool options rail to switch from This frame to All frames
+  const scopeButton = page.getByRole('button', { name: 'Erase Color frame scope' });
+  await expect(scopeButton).toContainText('This frame');
+  await scopeButton.click();
+  await expect(scopeButton).toContainText('All frames');
+  await expect(scopeButton).toHaveAttribute('aria-pressed', 'true');
+
+  // Click on the orange mark in the center of the canvas
+  await clickPixel(page, 16, 16);
+
+  // Verify orange mark on frame 2 is erased to transparent canvas
+  await expect.poll(() => pixel(page, 16, 16)).toEqual([0, 0, 0, 0]);
+
+  // Timeline thumbnail for frame 2 must be transparent
+  await expect.poll(() => thumbnailPixel(page, 1, 16, 16)).toEqual([0, 0, 0, 0]);
+
+  // Timeline thumbnail for frame 1 must ALSO be transparent immediately
+  await expect.poll(() => thumbnailPixel(page, 0, 16, 16)).toEqual([0, 0, 0, 0]);
+
+  // Select frame 1 in the bottom timeline
+  await page.getByRole('button', { name: /Frame 1/i }).click();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { activeFrameIndex: number } } }).__studioStore!.getState().activeFrameIndex)).toBe(0);
+
+  // Verify the orange mark on frame 1 was also removed across the animation timeline
+  await expect.poll(() => pixel(page, 16, 16)).toEqual([0, 0, 0, 0]);
 });

@@ -1969,3 +1969,21 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Status:** Locally verified. No deployment was performed.
 
+---
+
+## 2026-09-28 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening
+
+**Delivered:**
+- Built interactive Tool Motion Previews (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`) rendering 4-beat rhythm micro-animations on hover and keyboard focus for drawing tools and AI/shading actions.
+- Added dual preview layers: `DrawingToolsPreviewLayer` for the primary toolbar and `PixiToolsPreviewLayer` for inspector action buttons.
+- Updated `TactileButton` disabled state to `disabled:cursor-not-allowed` so users can inspect capabilities of temporarily disabled actions prior to prerequisites.
+- Implemented user preferences with persistent toggle in `AppearancePopover` and quick dismiss controls (Escape, close button, and "Don't show again").
+- Expanded Chromium E2E suite to 86 tests across 21 files with dedicated preview verification (`tests/e2e/toolMotionPreview.spec.ts`) and animation frame synchronization checks (`tests/e2e/eraseColor.spec.ts`).
+- Created the 6-week Learn-by-Making experiment roadmap (`docs/plans/learn-by-making-2026.md`) with artwork-preservation gates and the 5-participant observational study kit (`docs/research/pixitools-baseline-study.md`).
+- Authored 15 TestSprite frontend regression plans (`testsprite-plans/` 44 through 58) and updated TestSprite agent skills with verified CLI environment and tunnel handling.
+
+**Checks run:** 1,268/1,268 Vitest tests across 128 suites, 86/86 Chromium tests across 21 suites, strict TypeScript typecheck (0 errors), ESLint (0 errors, 0 warnings), and documentation integrity verification passed.
+
+**Status:** Locally verified.
+
+

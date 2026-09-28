@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Studio workspace renders focused atelier layout without obsolete music radio widget",
+  "description": "Verifying the atelier header, rail, canvas, inspector, and status bar shows responsive editor tools and clean workspace without leftover audio controls or broken dependencies.",
+  "priority": "p2",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "assertion", "description": "Verify the top atelier rail contains project title, zoom controls, undo and redo buttons, and action modals" },
+    { "type": "assertion", "description": "Verify the left vertical toolbar displays drawing tools, eraser, bucket, color replace, erase color, shapes, and eyedropper" },
+    { "type": "assertion", "description": "Verify the center drawing canvas renders with the active pixel artwork grid in the viewport" },
+    { "type": "assertion", "description": "Verify the right inspector panel displays Tabs for Layers, Palette, and PixiTools" },
+    { "type": "assertion", "description": "Verify the bottom status bar displays canvas dimensions, cursor coordinate indicators, and no music player widgets" }
+  ]
+}

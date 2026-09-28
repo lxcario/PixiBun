@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Erase Sampled Color with All Frames scope clears matching color across animation frames",
+  "description": "Switching Erase Color scope to All Frames removes the clicked sampled color on the corresponding unlocked layer across every frame in the project animation timeline.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Choose an orange drawing color" },
+    { "type": "action", "description": "Draw an orange mark on the center of frame 1" },
+    { "type": "action", "description": "Click the Add blank frame button in the timeline to create frame 2" },
+    { "type": "action", "description": "Draw an orange mark on frame 2 at the same location" },
+    { "type": "action", "description": "Select the Erase Color tool in the left toolbar" },
+    { "type": "action", "description": "Click the frame scope button in the tool options rail to switch from This frame to All frames" },
+    { "type": "action", "description": "Click on the orange mark in the center of the canvas" },
+    { "type": "assertion", "description": "Verify the orange mark on frame 2 is erased to transparent canvas" },
+    { "type": "action", "description": "Select frame 1 in the bottom timeline" },
+    { "type": "assertion", "description": "Verify the orange mark on frame 1 was also removed across the animation timeline" }
+  ]
+}

@@ -330,7 +330,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       {/* ── 2. CENTER ZONE: Contextual Active-Tool Parameters ── */}
       <div className="flex-1 flex items-center justify-center min-w-0 px-2 overflow-hidden h-full">
         {hasToolParams ? (
-          <div className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
+          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
             {/* Tool indicator */}
             <span className="text-[10px] font-sans font-medium text-[var(--text-heading)] hidden md:inline shrink-0">
               {tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1)}:
@@ -479,9 +479,19 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
                   {tools.eraseColorFamily ? 'Color family: On' : 'Color family: Off'}
                 </button>
-                <button type="button" onClick={() => setEraseColorAllFrames(!tools.eraseColorAllFrames)}
+                <button
+                  type="button"
+                  onClick={() => setEraseColorAllFrames(!tools.eraseColorAllFrames)}
                   aria-label="Erase Color frame scope"
-                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  aria-pressed={tools.eraseColorAllFrames}
+                  data-testid="erase-color-frame-scope"
+                  title="Erase Color frame scope: Erase color across all animation frames or active frame only"
+                  className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 transition-all ${
+                    tools.eraseColorAllFrames
+                      ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'
+                      : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
+                  }`}
+                >
                   {tools.eraseColorAllFrames ? 'All frames' : 'This frame'}
                 </button>
               </div>

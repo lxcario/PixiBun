@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Layer visibility lock opacity and blend mode edits create structural Undo steps",
+  "description": "Changing layer properties such as opacity, blend mode, visibility, and lock state creates reversible structural history steps without corrupting canvas pixel data.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a simple character sprite on the canvas" },
+    { "type": "action", "description": "Open the Layers panel in the right sidebar" },
+    { "type": "action", "description": "Adjust the Layer opacity slider from 100 percent to 50 percent" },
+    { "type": "action", "description": "Change the Layer blend mode dropdown from Normal to Multiply" },
+    { "type": "action", "description": "Click the Hide layer eye button to make the layer invisible" },
+    { "type": "assertion", "description": "Verify the layer artwork is hidden on the canvas" },
+    { "type": "action", "description": "Click the Undo button in the top toolbar" },
+    { "type": "assertion", "description": "Verify the layer visibility is restored and the artwork reappears" },
+    { "type": "action", "description": "Click the Undo button again" },
+    { "type": "assertion", "description": "Verify the Layer blend mode reverts back from Multiply to Normal" },
+    { "type": "action", "description": "Click the Undo button a third time" },
+    { "type": "assertion", "description": "Verify the Layer opacity slider reverts back to 100 percent" }
+  ]
+}

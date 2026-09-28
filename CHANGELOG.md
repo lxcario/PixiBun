@@ -4,7 +4,21 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased
 
-No changes recorded.
+- Added interactive Tool Motion Previews (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`):
+  - Canvas-rendered animated micro-previews with 4-beat rhythm loops on hover and keyboard focus for drawing tools in `src/components/layout/LeftToolbar.tsx` and AI/shading actions in `src/components/layout/inspector/AiToolsPanel.tsx`.
+  - Preview coverage across core drawing tools (Pen, Curve, Eraser, Bucket, Dither, Color Replace, Erase Color, Marquee Box, Lasso, Wand, Line, Iso Line, Rect, Ellipse, Chisel, Rivet, Eyedropper) and PixiTools actions (Lighting, Normal Map, Specular Glint, Sel-Out, Ground Shadow, Material Shading, Seamless Pattern, Tiles, Autotile, Jaggies, Thin to 1px, Erase Strays, Scan Artwork, Apply Cleanup, RotSprite, Palette Moods, Dithering, Palette Snap, Harmonize Accents, OKLCH Ramp, and In-Between Animation).
+  - Tactile button accessibility: updated `src/components/ui/TactileButton.tsx` disabled state to `disabled:cursor-not-allowed` so users can inspect preview capabilities of disabled actions.
+  - User controls: Dismiss via Escape key, close button, or "Don't show again" button. Added "Tool Previews" preference toggle in `src/components/ui/AppearancePopover.tsx` with `localStorage` persistence and event-driven cross-component synchronization (`pixibun:tool-previews-changed`).
+  - Smooth gliding transitions between tools, warmup delay scheduling, and viewport auto-clamping/re-anchoring on scroll.
+- E2E Test Suite Expansion:
+  - Added `tests/e2e/toolMotionPreview.spec.ts` (3 Chromium tests covering drawing tool previews on hover & focus, PixiTools action previews, and permanent dismissal/re-enabling).
+  - Added multi-frame Erase Sampled Color test in `tests/e2e/eraseColor.spec.ts` verifying timeline thumbnails and canvas state across animation frames. Suite expanded to 86 tests across 21 spec suites.
+- TestSprite Suite & Plans:
+  - Added 15 frontend test plans (`testsprite-plans/` 44 through 58 and `testsprite_tests/latest_15_regression_plans.jsonl`) covering color erasure, sprite cleanup, bucket fill tolerance, color replace tolerance, RotSprite contours & bounds, lasso hover & deletion, blank frame layer isolation, layer property structural undo, active frame duration timeline undo, smart spritesheet slicer, export modal geometry, and workspace hygiene.
+  - Updated TestSprite agent skills (`.agents/skills/testsprite-onboard/SKILL.md` and `.agents/skills/testsprite-verify/SKILL.md`) with comprehensive guidance on `--env`, `--local <port>` tunnels, exit codes (10–13), wait lifecycle, cancellation refunds, and pinned run steps.
+- Learning & Baseline Usability Research:
+  - Added 6-week Learn-by-Making experiment plan (`docs/plans/learn-by-making-2026.md`) with artwork-preservation engineering gate, 3 first-success paths (Draw, Animate, Light), and measurement definitions.
+  - Added baseline usability study kit (`docs/research/pixitools-baseline-study.md`) for 5-participant observational research.
 
 ## [v1.14.1] - 2026-09-28 (Production Sign-off)
 

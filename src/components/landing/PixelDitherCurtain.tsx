@@ -10,12 +10,13 @@ export const PixelDitherCurtain: React.FC = () => {
   const isDoneRef = useRef(false);
 
   const dismiss = useCallback(() => {
-    if (isDoneRef.current) return;
     isDoneRef.current = true;
     setDismissed(true);
   }, []);
 
   useEffect(() => {
+    isDoneRef.current = false;
+
     // Respect reduced motion or automated test runners
     if (
       typeof window !== 'undefined' &&

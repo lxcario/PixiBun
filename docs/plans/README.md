@@ -10,3 +10,4 @@ Test counts and completion statements in dated plans describe the checkout at th
 - `audit_remediation_walkthrough.md`: Resolution, verification, and certification walkthrough for all audit findings.
 - `audit-remediation-2026-09-26.md`: Current audit reconciliation and remediation checklist, including later corrections to historical phase notes.
 - `research_grounded_product_roadmap.md`: Current cross-feature roadmap grounded in computer vision, compositing, real-time rendering, and local-first research.
+- `learn-by-making-2026.md`: Six-week learning experience and creator-content plan, with current-code safety gates and measurement definitions. The companion baseline study kit is in `../research/pixitools-baseline-study.md`.

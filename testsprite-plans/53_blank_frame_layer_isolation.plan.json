@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Blank frame creation retains layer names and properties with empty isolated artwork",
+  "description": "Adding a blank frame from the timeline creates new empty layers inheriting existing layer names, preventing edits on the new frame from modifying the original frame.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a stroke on the base layer of frame 1" },
+    { "type": "action", "description": "Open the Layers panel in the right sidebar" },
+    { "type": "action", "description": "Add a new layer and rename it to Shading" },
+    { "type": "action", "description": "Draw a separate stroke on the Shading layer" },
+    { "type": "action", "description": "Click the Add blank frame button with plus icon in the bottom timeline" },
+    { "type": "assertion", "description": "Verify the bottom timeline activates frame 2" },
+    { "type": "assertion", "description": "Verify the Layers panel lists both the base layer and Shading layer with clean blank canvas" },
+    { "type": "action", "description": "Draw a new test stroke on frame 2" },
+    { "type": "action", "description": "Select frame 1 in the bottom timeline" },
+    { "type": "assertion", "description": "Verify frame 1 retains both original strokes and does not contain the stroke drawn on frame 2" }
+  ]
+}

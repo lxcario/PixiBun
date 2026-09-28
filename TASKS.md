@@ -4,6 +4,19 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 78 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening (2026-09-28)
+
+- [x] Build interactive animated micro-previews with 4-beat rhythm loops (`ToolMotionPreview.tsx`, `ToolPreviewCanvas.tsx`, `ToolMotionPreview.module.css`) for all drawing tools in `LeftToolbar` and AI/shading actions in `AiToolsPanel`.
+- [x] Enable preview inspection on disabled actions by adjusting `TactileButton` to `disabled:cursor-not-allowed`.
+- [x] Add user preview preferences: persistent toggle in `AppearancePopover` and quick dismiss controls (Escape, close button, and "Don't show again").
+- [x] Expand E2E Chromium test coverage to 86 tests across 21 suites with dedicated tests in `tests/e2e/toolMotionPreview.spec.ts` and multi-frame animation verification in `tests/e2e/eraseColor.spec.ts`.
+- [x] Establish the 6-week Learn-by-Making experiment roadmap (`docs/plans/learn-by-making-2026.md`) with artwork-preservation engineering gate, alongside the 5-participant observational study kit (`docs/research/pixitools-baseline-study.md`).
+- [x] Author 15 TestSprite regression plans (`testsprite-plans/` 44 through 58) and update agent skills with verified CLI environment, tunnel, and execution specifications.
+
+**Verification:** 1,268/1,268 unit and integration tests across 128 suites, 86/86 Chromium E2E tests across 21 suites, strict TypeScript typecheck (0 errors), ESLint (0 errors, 0 warnings), and documentation integrity verification passed.
+
+---
+
 ## Phase 77 — Metadata Undo and bounded structural edits (2026-09-28)
 
 - [x] Make layer visibility, lock, opacity, blend mode, name, tag, and effect-recipe changes and frame-duration edits undoable. Group continuous opacity and duration controls into one interaction.

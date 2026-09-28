@@ -196,10 +196,12 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       }
       if (selectionMask && !selectionMask[coords.y * props.canvasWidth + coords.x]) return;
 
-      const allFrames = tools.eraseColorAllFrames;
+      const allFrames = state.tools.eraseColorAllFrames;
       const layerIndex = currentFrame.layers.findIndex((layer) => layer.id === activeLayerId);
       const targets = allFrames
-        ? state.frames.map((frame) => frame.layers[layerIndex]).filter((layer) => layer && !layer.locked)
+        ? state.frames
+            .map((frame) => frame.layers[layerIndex] || frame.layers.find((layer) => layer.name === currentLayer.name))
+            .filter((layer): layer is import('@/types/canvas').Layer => Boolean(layer && !layer.locked))
         : [currentLayer];
       if (allFrames && targets.length * props.canvasWidth * props.canvasHeight * 4 > DEFAULT_HISTORY_MAX_BYTES / 2) {
         studioEvents.emit('pixibun:toast', { type: 'error', message: 'Too many frame pixels for one undoable color erase. Use This frame.' });
@@ -210,9 +212,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         const ctx = props.getOrCreateLayerCanvas(layer.id).getContext('2d', { willReadFrequently: true });
         if (!ctx) continue;
         const image = ctx.getImageData(0, 0, props.canvasWidth, props.canvasHeight);
-        const changed = eraseMatchingColor(image, sampled, tools.eraseColorTolerance, {
-          contiguous: !allFrames && tools.eraseColorContiguous,
-          family: tools.eraseColorFamily,
+        const changed = eraseMatchingColor(image, sampled, state.tools.eraseColorTolerance, {
+          contiguous: !allFrames && state.tools.eraseColorContiguous,
+          family: state.tools.eraseColorFamily,
           x: coords.x,
           y: coords.y,
           mask: selectionMask,
@@ -234,12 +236,18 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       if (allFrames) {
         const affected = new Set(edits.map((edit) => edit.id));
         useStudioStore.setState((draft) => {
-          for (const frame of draft.frames) for (const layer of frame.layers) {
-            if (affected.has(layer.id)) layer.effect = undefined;
+          for (const frame of draft.frames) {
+            for (const layer of frame.layers) {
+              if (affected.has(layer.id)) layer.effect = undefined;
+            }
           }
+          draft.isDirty = true;
+          draft.editRevision += 1;
         });
-        state.setDirty(true);
-        const lockedCount = state.frames.filter((frame) => frame.layers[layerIndex]?.locked).length;
+        const lockedCount = state.frames.filter((frame) => {
+          const l = frame.layers[layerIndex] || frame.layers.find((layer) => layer.name === currentLayer.name);
+          return l?.locked;
+        }).length;
         if (lockedCount > 0) studioEvents.emit('pixibun:toast', {
           type: 'default', message: `Skipped ${lockedCount} locked frame layer${lockedCount === 1 ? '' : 's'}.`,
         });

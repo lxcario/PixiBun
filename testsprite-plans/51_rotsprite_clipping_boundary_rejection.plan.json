@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "RotSprite rejects rotation safely when artwork would extend outside canvas bounds",
+  "description": "Attempting a 45-degree RotSprite rotation on artwork positioned at the canvas borders triggers an explanatory clipping warning and leaves the original pixels untouched.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a stroke directly touching the top-left edge of the canvas" },
+    { "type": "action", "description": "Draw a stroke directly touching the bottom-right edge of the canvas" },
+    { "type": "action", "description": "Open the PixiTools inspector in the right sidebar" },
+    { "type": "action", "description": "Expand the Pixel Cleanup & RotSprite section" },
+    { "type": "action", "description": "Set the rotation angle slider to 45 degrees" },
+    { "type": "action", "description": "Click the Rotate Cleanly button" },
+    { "type": "assertion", "description": "Verify an informative notification toast explains that the rotation would clip the artwork" },
+    { "type": "assertion", "description": "Verify both corner strokes remain in their exact original canvas positions" }
+  ]
+}

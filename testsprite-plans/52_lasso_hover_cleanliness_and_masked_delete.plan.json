@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Lasso selection hover remains inert and irregular masked Delete leaves unselected artwork intact",
+  "description": "Moving the cursor over canvas with the Lasso tool selected does not paint preview artifacts, and deleting an irregular selection removes only enclosed pixels.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a distinct mark on the left side of the canvas" },
+    { "type": "action", "description": "Draw a second distinct mark on the right side of the canvas" },
+    { "type": "action", "description": "Select the Lasso tool in the left toolbar" },
+    { "type": "action", "description": "Move the mouse across the canvas without holding any button" },
+    { "type": "assertion", "description": "Verify neither mark is modified and no preview lines or stray pixels appear on the canvas" },
+    { "type": "action", "description": "Click and drag an irregular lasso loop around only the left mark" },
+    { "type": "action", "description": "Press the Delete key" },
+    { "type": "assertion", "description": "Verify the left mark is completely deleted while the right mark remains fully intact" },
+    { "type": "assertion", "description": "Verify no lingering lasso selection lines or border artifacts remain on the canvas" }
+  ]
+}

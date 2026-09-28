@@ -81,7 +81,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-desk text-text-primary antialiased font-sans">
         <a
-          href="#main-workspace"
+          href="/studio#main-workspace"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-[99999] px-4 py-2 bg-[var(--desk-surface)] text-[var(--accent-gold)] border-2 border-[var(--accent-gold)] font-mono text-xs rounded shadow-lg"
         >
           Skip to workspace

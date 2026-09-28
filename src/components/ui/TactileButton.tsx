@@ -98,7 +98,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)]',
             !isImageButton && 'border',
             'transition-colors duration-100',
-            'disabled:opacity-40 disabled:pointer-events-none',
+            'disabled:opacity-40 disabled:cursor-not-allowed',
             'overflow-hidden',
             sizeClasses,
             variantClasses,

@@ -7,6 +7,7 @@ import { RaymarchedShadowSection } from './RaymarchedShadowSection';
 import { VolumetricOpticsSection } from './VolumetricOpticsSection';
 import { TilesetDecomposerSection } from './TilesetDecomposerSection';
 import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
+import { PixiToolsPreviewLayer } from '@/components/ui/ToolMotionPreview';
 
 type DomainKey = 'all' | 'lighting' | 'tileset' | 'polish';
 
@@ -67,7 +68,8 @@ export const AiToolsPanel: React.FC = () => {
       </div>
 
       {/* Main Domain Content Stream */}
-      <div className="flex-1 p-3 flex flex-col gap-3 overflow-y-auto">
+      <PixiToolsPreviewLayer>
+      <div className="p-3 flex flex-col gap-3">
         {/* 1. Lighting & Depth Domain */}
         {(activeDomain === 'all' || activeDomain === 'lighting') && (
           <div className="flex flex-col gap-2">
@@ -94,6 +96,7 @@ export const AiToolsPanel: React.FC = () => {
           </div>
         )}
       </div>
+      </PixiToolsPreviewLayer>
     </div>
   );
 };

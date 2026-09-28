@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Color Replace with active layer tolerance slider replaces shades while respecting locked layers",
+  "description": "The Color Replace tool replaces exact or nearby shades on the active layer based on its tolerance slider, while skipping transparent pixels and locked background layers.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Choose a deep red drawing color" },
+    { "type": "action", "description": "Draw a red stroke on the base layer" },
+    { "type": "action", "description": "Open the Layers panel in the right sidebar" },
+    { "type": "action", "description": "Add a new layer above the base layer" },
+    { "type": "action", "description": "Choose a lighter coral red drawing color" },
+    { "type": "action", "description": "Draw a coral stroke on the new layer" },
+    { "type": "action", "description": "Click the lock button on the base layer to lock it" },
+    { "type": "action", "description": "Select the Color Replace tool in the left toolbar" },
+    { "type": "assertion", "description": "Verify the tool options rail displays the Color Replace tolerance slider" },
+    { "type": "action", "description": "Adjust the Color Replace tolerance slider to 30" },
+    { "type": "action", "description": "Choose a bright yellow replacement color from the palette" },
+    { "type": "action", "description": "Click the coral red stroke on the active layer" },
+    { "type": "assertion", "description": "Verify the coral stroke on the active layer turns yellow" },
+    { "type": "assertion", "description": "Verify the red stroke on the locked base layer remains completely red and unchanged" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Analyze and Crisp Artwork scans active layer for faint alpha and specks with before and after previews",
+  "description": "Opening the PixiTools inspector and scanning artwork with Analyze & Crisp Artwork reports counts of faint alpha, specks, and color bands, and displays side-by-side Before and Preview thumbnails.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the brush tool in the left toolbar" },
+    { "type": "action", "description": "Draw artwork with varying stroke opacity on the canvas" },
+    { "type": "action", "description": "Open the PixiTools inspector in the right sidebar" },
+    { "type": "action", "description": "Expand the Pixel Cleanup & RotSprite section" },
+    { "type": "assertion", "description": "Verify the Analyze & Crisp Artwork assistant panel is visible with Faint alpha slider, Shades toggle, and Scan Artwork button" },
+    { "type": "action", "description": "Click the Scan Artwork button" },
+    { "type": "assertion", "description": "Verify a status summary appears detailing detected faint pixels, hardened alpha, and color counts" },
+    { "type": "assertion", "description": "Verify side-by-side Before and Preview artwork cleanup thumbnails are displayed" }
+  ]
+}

@@ -13,18 +13,16 @@ import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 
 interface FrameThumbnailProps {
   frameIndex: number;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
-const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex, isActive }) => {
+const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasWidth = useStudioStore((state) => state.canvasWidth);
   const canvasHeight = useStudioStore((state) => state.canvasHeight);
   const frames = useStudioStore((state) => state.frames);
   const bufferVersion = useStudioStore((state) => state.bufferVersion);
   const currentProjectId = useStudioStore((state) => state.currentProjectId);
-
-  const activeBufferVersion = isActive ? bufferVersion : 0;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -45,7 +43,7 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex, isActive })
     canvasHeight,
     frames,
     currentProjectId,
-    activeBufferVersion,
+    bufferVersion,
   ]);
 
   return (
@@ -644,6 +642,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
           <div className="flex items-center gap-1 border-r border-[var(--desk-border)] pr-2 shrink-0">
             <button
               onClick={() => setActiveClipId(null)}
+              aria-label={`Filter clips: All frames (${frames.length})`}
+              title="Show all frames in timeline"
+              data-testid="timeline-clip-filter-all"
               className={`h-6 px-2 rounded-[2px] text-[10px] font-sans font-medium pixel-tactile-chip cursor-pointer ${
                 activeClipId === null
                   ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] font-bold shadow-xs'

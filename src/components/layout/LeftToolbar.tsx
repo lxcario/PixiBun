@@ -7,7 +7,10 @@ import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { motion } from 'motion/react';
 import { ToolType } from '@/types/tools';
-import StudioTooltip from '@/components/ui/StudioTooltip';
+import {
+  DrawingToolPreview,
+  DrawingToolsPreviewLayer,
+} from '@/components/ui/ToolMotionPreview';
 
 // Heavy color picker dialog is code-split client-side (Phase 33): it mounts
 // only while open, so its chunk is fetched on first open, never on page load.
@@ -140,39 +143,38 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   return (
     <aside className="w-14 bg-[var(--desk-surface)] border-r border-[var(--desk-border)] flex flex-col items-center py-2 justify-between select-none z-10 overflow-y-auto transition-colors duration-150">
       {/* 1. Categorized Tool Groups */}
-      <div className="flex flex-col gap-2 w-full px-1.5 items-center">
-        {activeToolGroups.map((group, gIdx) => (
-          <div key={group.groupName} className="flex flex-col gap-1 w-full items-center">
-            {gIdx > 0 && <div className="w-7 h-[1px] bg-gradient-to-r from-transparent via-[var(--desk-border-highlight)]/40 to-transparent my-1" />}
-            {group.tools.map((tool) => {
-              const isActive = tools.activeTool === tool.id;
-              return (
-                <StudioTooltip
-                  key={tool.id}
-                  content={tool.label}
-                  shortcut={tool.shortcut}
-                  position="right"
-                >
-                  <button
-                    onClick={() => setActiveTool(tool.id)}
-                    title={`${tool.label} (${tool.shortcut})`}
-                    aria-label={tool.label}
-                    data-testid={`${tool.id}-tool`}
-                    data-tutorial={`${tool.id}-tool`}
-                    className={`w-8 h-8 rounded-[2px] flex items-center justify-center cursor-pointer ${
-                      isActive
-                        ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)]'
-                        : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
-                    }`}
+      <DrawingToolsPreviewLayer>
+        <div className="flex flex-col gap-2 w-full px-1.5 items-center">
+          {activeToolGroups.map((group, gIdx) => (
+            <div key={group.groupName} className="flex flex-col gap-1 w-full items-center">
+              {gIdx > 0 && <div className="w-7 h-[1px] bg-gradient-to-r from-transparent via-[var(--desk-border-highlight)]/40 to-transparent my-1" />}
+              {group.tools.map((tool) => {
+                const isActive = tools.activeTool === tool.id;
+                return (
+                  <DrawingToolPreview
+                    key={tool.id}
+                    toolId={tool.id}
                   >
-                    <PixelIcon name={tool.icon} size={16} />
-                  </button>
-                </StudioTooltip>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+                    <button
+                      onClick={() => setActiveTool(tool.id)}
+                      aria-label={tool.label}
+                      data-testid={`${tool.id}-tool`}
+                      data-tutorial={`${tool.id}-tool`}
+                      className={`w-8 h-8 rounded-[2px] flex items-center justify-center cursor-pointer ${
+                        isActive
+                          ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)]'
+                          : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
+                      }`}
+                    >
+                      <PixelIcon name={tool.icon} size={16} />
+                    </button>
+                  </DrawingToolPreview>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </DrawingToolsPreviewLayer>
 
       {/* 2. Professional Creative Suite Color Dock */}
       <div

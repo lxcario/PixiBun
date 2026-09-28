@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Export modal Animated tab validates safe dimensions and displays safety limits",
+  "description": "Navigating to the Animated tab in the Export modal verifies scale choices, uncompressed frame memory constraints, and user warning feedback when limits are approached.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Select the pen tool in the left toolbar" },
+    { "type": "action", "description": "Draw a small icon on the canvas" },
+    { "type": "action", "description": "Click the Export button in the top atelier rail" },
+    { "type": "assertion", "description": "Verify the Export modal opens with PNG, Animated, Sprite Sheet, and Project tabs" },
+    { "type": "action", "description": "Click the Animated tab" },
+    { "type": "assertion", "description": "Verify format options for GIF, APNG, MP4, and WebM are available" },
+    { "type": "assertion", "description": "Verify resolution scale buttons show safe multipliers up to allowed memory ceilings" },
+    { "type": "action", "description": "Switch between GIF and APNG formats" },
+    { "type": "assertion", "description": "Verify the export configuration panel calculates estimated file dimensions and enables the Export Action button" }
+  ]
+}

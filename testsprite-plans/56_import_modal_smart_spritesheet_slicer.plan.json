@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+  "type": "frontend",
+  "name": "Import modal Sprite Sheet Slicer configures cell grid dimensions with cutline preview",
+  "description": "Opening the Import dialog, choosing Sprite Sheet Slicer, and adjusting cell dimensions renders an interactive cutline grid over the sheet and enables slicing into animation frames.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Click the Import button in the top atelier rail" },
+    { "type": "assertion", "description": "Verify the Import Modal opens displaying file source selection" },
+    { "type": "action", "description": "Choose the Sprite Sheet Slicer mode option" },
+    { "type": "assertion", "description": "Verify slicer dimension inputs for Cell Width, Cell Height, and frame ordering appear" },
+    { "type": "action", "description": "Enter 32 for cell width and 32 for cell height" },
+    { "type": "assertion", "description": "Verify the slicer cutline preview canvas renders grid lines dividing the sprite sheet into cells" },
+    { "type": "assertion", "description": "Verify the Slice and Import Frames button is active and displays frame count" }
+  ]
+}
