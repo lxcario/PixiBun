@@ -1,6 +1,6 @@
 #  PixiBun Atelier — v1.14.1
 
-> **Release Status:** `v1.14.1 hardening in progress` (Phase 1A and Phases 1B.1–1B.8 accepted; Phase 2+ unstarted).
+> **Release Status:** `v1.14.1 signed off for production` (2026-09-28). The [release sign-off](docs/releases/v1.14.1-signoff.md) records the checks, deployed build, and deferred verification. Phase 2+ feature work has not started.
 
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *

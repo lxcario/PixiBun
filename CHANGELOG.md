@@ -2,7 +2,13 @@
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 
-## Unreleased — updated 2026-09-28
+## Unreleased
+
+No changes recorded.
+
+## [v1.14.1] - 2026-09-28 (Production Sign-off)
+
+- Fixed the production `/sw.js` MIME type by setting service-worker headers on the route response. The previous deployment served `text/plain`, preventing browser registration. The deployed fix registers and controls the studio, and a warmed production studio reloads offline. See `docs/releases/v1.14.1-signoff.md` for release evidence and deferred checks.
 
 - Layer visibility, lock, opacity, blend mode, name, tag, effect recipe, and frame-duration edits now create structural Undo steps. Continuous opacity and duration input changes are grouped into one interaction; tutorial initialization bypasses user history.
 - History-backed structural edits now estimate both Undo and Redo snapshot sizes before mutation. Edits that exceed the configured history budget are rejected with a visible message, preserving the artwork and existing history. Selection extraction now uses the tested SafeCanvas boundary helper.
@@ -31,7 +37,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - Startup completion retries autosave for an edit made before the workspace became active.
 - Updated current architecture and audit documentation. The Phase 72 bounding-box strategy recorded below was later replaced by component-member traversal with a shared distance buffer; M12 was resolved in the later audit remediation.
 
-## [v1.14.1] - 2026-09-21 (Hardening Complete)
+**Initial hardening milestone:** 2026-09-21.
 ### Redo Stack Byte Budget & Combined History Retention Envelope (Phase 74 / M1 Hardening)
 - **Combined History Byte Envelope & Exact Redo Accounting (`src/lib/engine/historyEngine.ts`, `tests/historyEngine.test.ts`)**:
   - Implemented exact redo byte accounting (`redoBytes`) and enforced a unified combined retained-history byte envelope (`undoBytes + redoBytes <= limitBytes`). Undo and redo stacks remain independently depth-bounded by `limitDepth` (default 50), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope (`limitBytes`).

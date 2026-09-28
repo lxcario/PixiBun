@@ -1,5 +1,7 @@
 # Build Plan — PixiBun
 
+> **Release sign-off:** v1.14.1 was signed off for production on 2026-09-28 after the live service-worker MIME fix and offline reload verification. See [v1.14.1 sign-off](docs/releases/v1.14.1-signoff.md) for evidence and deferred checks. Phase 2+ remains unstarted.
+
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## Phase 77 — Metadata Undo and bounded structural edits (2026-09-28)
