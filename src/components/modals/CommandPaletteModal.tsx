@@ -50,32 +50,30 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const {
-    setActiveTool,
-    toggleGrid,
-    toggleIsoGuides,
-    toggleTilePreview,
-    toggleFloatingPreview,
-    toggleSquintMode,
-    setCvdLens,
-    cvdLens,
-    setZoom,
-    setPan,
-    canvasWidth,
-    canvasHeight,
-    isPlaying,
-    setIsPlaying,
-    activeFrameIndex,
-    setActiveFrame,
-    frames,
-    loopMode,
-    setLoopMode,
-    onionSkin,
-    setOnionSkin,
-    toggleSymmetryH,
-    toggleSymmetryV,
-    swapColors,
-  } = useStudioStore();
+  const setActiveTool = useStudioStore((s) => s.setActiveTool);
+  const toggleGrid = useStudioStore((s) => s.toggleGrid);
+  const toggleIsoGuides = useStudioStore((s) => s.toggleIsoGuides);
+  const toggleTilePreview = useStudioStore((s) => s.toggleTilePreview);
+  const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
+  const toggleSquintMode = useStudioStore((s) => s.toggleSquintMode);
+  const setCvdLens = useStudioStore((s) => s.setCvdLens);
+  const cvdLens = useStudioStore((s) => s.cvdLens);
+  const setZoom = useStudioStore((s) => s.setZoom);
+  const setPan = useStudioStore((s) => s.setPan);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
+  const frames = useStudioStore((s) => s.frames);
+  const loopMode = useStudioStore((s) => s.loopMode);
+  const setLoopMode = useStudioStore((s) => s.setLoopMode);
+  const onionSkin = useStudioStore((s) => s.onionSkin);
+  const setOnionSkin = useStudioStore((s) => s.setOnionSkin);
+  const toggleSymmetryH = useStudioStore((s) => s.toggleSymmetryH);
+  const toggleSymmetryV = useStudioStore((s) => s.toggleSymmetryV);
+  const swapColors = useStudioStore((s) => s.swapColors);
 
   const commands: CommandItem[] = useMemo(() => {
     const list: CommandItem[] = [];

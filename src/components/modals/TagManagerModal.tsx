@@ -29,16 +29,14 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const {
-    frames,
-    clips,
-    activeClipId,
-    addTag,
-    updateTag,
-    deleteTag,
-    reorderTags,
-    setActiveTagId,
-  } = useStudioStore();
+  const frames = useStudioStore((s) => s.frames);
+  const clips = useStudioStore((s) => s.clips);
+  const activeClipId = useStudioStore((s) => s.activeClipId);
+  const addTag = useStudioStore((s) => s.addTag);
+  const updateTag = useStudioStore((s) => s.updateTag);
+  const deleteTag = useStudioStore((s) => s.deleteTag);
+  const reorderTags = useStudioStore((s) => s.reorderTags);
+  const setActiveTagId = useStudioStore((s) => s.setActiveTagId);
 
   const [newTagName, setNewTagName] = useState('');
   const [newFromFrame, setNewFromFrame] = useState(1);

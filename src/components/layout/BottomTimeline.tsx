@@ -6,10 +6,10 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LoopMode } from '@/types/animation';
 import { compositeFrame } from '@/lib/render/compositor';
-import { studioEvents } from '@/lib/events/studioEvents';
 import { TagManagerModal } from '@/components/modals/TagManagerModal';
 import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { MAX_METADATA_NAME_LENGTH, MAX_PROJECT_CLIPS } from '@/lib/project/metadataAdmission';
+import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -118,12 +118,17 @@ export interface BottomTimelineProps {
 export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode = false }) => {
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const currentProjectId = useStudioStore((s) => s.currentProjectId);
   const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
   const reorderFrames = useStudioStore((s) => s.reorderFrames);
   const addFrame = useStudioStore((s) => s.addFrame);
   const duplicateFrame = useStudioStore((s) => s.duplicateFrame);
   const deleteFrame = useStudioStore((s) => s.deleteFrame);
   const setFrameDuration = useStudioStore((s) => s.setFrameDuration);
+  const durationGestureFrameRef = useRef<number | null>(null);
+  useEffect(() => {
+    durationGestureFrameRef.current = null;
+  }, [activeFrameIndex, currentProjectId]);
   const isPlaying = useStudioStore((s) => s.isPlaying);
   const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
   const fps = useStudioStore((s) => s.fps);
@@ -140,15 +145,12 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const { isGuest } = useCoDrawStatus();
   const guestFrameLockTitle = 'Frame structure is managed by the session host.';
 
-  const isPingPongForwardRef = useRef(true);
   const [isCreatingClip, setIsCreatingClip] = useState(false);
   const [newClipName, setNewClipName] = useState('New Clip');
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(null);
   const [dragOverFrameIndex, setDragOverFrameIndex] = useState<number | null>(null);
   const [hoveredFrameIndex, setHoveredFrameIndex] = useState<number | null>(null);
-  const [audioPulseActive, setAudioPulseActive] = useState(false);
-  const pulseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
@@ -175,24 +177,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     });
   };
 
-  useEffect(() => {
-    const unsub = studioEvents.on('pixibun:audio-onset', () => {
-      setAudioPulseActive(true);
-      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
-      pulseTimeoutRef.current = setTimeout(() => {
-        setAudioPulseActive(false);
-      }, 140);
-    });
-
-    return () => {
-      unsub();
-      if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
-    };
-  }, []);
-
   const activeClip = clips.find(c => c.id === activeClipId);
-  const minFrame = activeClip ? activeClip.startFrame : 0;
-  const maxFrame = activeClip ? activeClip.endFrame : frames.length - 1;
 
   // Frame Drag-and-Drop Reordering Handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -237,73 +222,85 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     setDragOverFrameIndex(null);
   };
 
-  // Playback timer loop scoped to active clip or entire frame stack
+  // Keep one clock for the playback session. Frame changes must not discard elapsed time.
   useEffect(() => {
-    if (!isPlaying || frames.length <= 1) return;
+    if (!isPlaying) return;
 
-    const baseFrameDuration = Math.round(1000 / fps);
-    let lastTimestamp = 0;
+    let lastTimestamp: number | null = null;
     let accumulator = 0;
     let animFrameId: number;
+    let forward = true;
+    let publishedIndex = useStudioStore.getState().activeFrameIndex;
+
+    const onVisibilityChange = () => {
+      // A background tab is suspended; resume without replaying hidden time.
+      lastTimestamp = null;
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     const tick = (timestamp: number) => {
-      if (lastTimestamp === 0) lastTimestamp = timestamp;
-      accumulator += timestamp - lastTimestamp;
+      if (document.hidden) {
+        lastTimestamp = null;
+        animFrameId = requestAnimationFrame(tick);
+        return;
+      }
+      if (lastTimestamp !== null) accumulator += Math.max(0, Math.min(250, timestamp - lastTimestamp));
       lastTimestamp = timestamp;
-
-      const currentDuration = frames[activeFrameIndex]?.durationMs || baseFrameDuration;
-
-      if (accumulator >= currentDuration) {
-        accumulator = Math.max(0, accumulator - currentDuration);
-        if (loopMode === 'repeat') {
-          if (activeFrameIndex < maxFrame) {
-            setActiveFrame(activeFrameIndex + 1);
-          } else {
-            setActiveFrame(minFrame);
-          }
-        } else if (loopMode === 'once') {
-          if (activeFrameIndex < maxFrame) {
-            setActiveFrame(activeFrameIndex + 1);
-          } else {
-            setIsPlaying(false);
-          }
-        } else if (loopMode === 'ping-pong') {
-          if (isPingPongForwardRef.current) {
-            if (activeFrameIndex < maxFrame) {
-              setActiveFrame(activeFrameIndex + 1);
-            } else {
-              isPingPongForwardRef.current = false;
-              setActiveFrame(Math.max(minFrame, activeFrameIndex - 1));
-            }
-          } else {
-            if (activeFrameIndex > minFrame) {
-              setActiveFrame(activeFrameIndex - 1);
-            } else {
-              isPingPongForwardRef.current = true;
-              setActiveFrame(Math.min(maxFrame, activeFrameIndex + 1));
-            }
-          }
+      const state = useStudioStore.getState();
+      if (!state.isPlaying) return;
+      if (state.activeFrameIndex !== publishedIndex) {
+        // A scrub or step starts a fresh hold for the frame the artist selected.
+        publishedIndex = state.activeFrameIndex;
+        accumulator = 0;
+      }
+      const clip = state.clips.find((item) => item.id === state.activeClipId);
+      const first = clip?.startFrame ?? 0;
+      const last = Math.min(clip?.endFrame ?? state.frames.length - 1, state.frames.length - 1);
+      let index = publishedIndex;
+      if (index < first || index > last) {
+        index = first;
+        accumulator = 0;
+      }
+      let stopped = false;
+      if (first === last && state.loopMode === 'once') {
+        const duration = state.frames[index]?.durationMs ?? Math.round(1000 / state.fps);
+        stopped = accumulator >= duration;
+      }
+      // 250ms of catch-up is the most one RAF can contribute; even 1ms frames fit.
+      for (let steps = 0; steps < 256 && first < last; steps++) {
+        const duration = state.frames[index]?.durationMs ?? Math.round(1000 / state.fps);
+        if (accumulator < duration) break;
+        accumulator -= duration;
+        if (state.loopMode === 'once' && index === last) {
+          stopped = true;
+          accumulator = 0;
+          break;
+        }
+        if (state.loopMode === 'ping-pong') {
+          if (index === last) forward = false;
+          if (index === first) forward = true;
+          index += forward ? 1 : -1;
+        } else {
+          index = index === last ? first : index + 1;
         }
       }
-
-      if (isPlaying) {
-        animFrameId = requestAnimationFrame(tick);
+      if (index !== publishedIndex) {
+        publishedIndex = index;
+        state.setActiveFrame(index);
       }
+      if (stopped) {
+        state.setIsPlaying(false);
+        return;
+      }
+      animFrameId = requestAnimationFrame(tick);
     };
 
     animFrameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animFrameId);
-  }, [
-    isPlaying,
-    fps,
-    frames,
-    activeFrameIndex,
-    loopMode,
-    maxFrame,
-    minFrame,
-    setActiveFrame,
-    setIsPlaying,
-  ]);
+    return () => {
+      cancelAnimationFrame(animFrameId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [isPlaying]);
 
   const handleStepForward = () => {
     if (activeFrameIndex < frames.length - 1) {
@@ -489,8 +486,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <span className="text-[var(--text-muted)] font-sans text-[10px]">FPS:</span>
                   <input
                     type="range"
-                    min="1"
-                    max="30"
+                    min={ANIMATION_TIMING_LIMITS.fpsMin}
+                    max={ANIMATION_TIMING_LIMITS.fpsMax}
                     value={fps}
                     aria-label="Playback speed in frames per second"
                     onChange={(e) => setFps(parseInt(e.target.value, 10))}
@@ -506,17 +503,24 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <span className="text-[var(--text-muted)] font-sans text-[10px]">Dur:</span>
                   <input
                     type="number"
-                    min="10"
-                    max="5000"
-                    step="10"
+                    min={ANIMATION_TIMING_LIMITS.durationMinMs}
+                    max={ANIMATION_TIMING_LIMITS.durationMaxMs}
+                    step="1"
                     aria-label="Active frame duration in milliseconds"
                     value={frames[activeFrameIndex]?.durationMs || Math.round(1000 / fps)}
                     onChange={(e) => {
                       const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val) && val >= 10) {
-                        setFrameDuration(activeFrameIndex, val);
+                      if (!isNaN(val) && val >= ANIMATION_TIMING_LIMITS.durationMinMs) {
+                        if (setFrameDuration(activeFrameIndex, val, durationGestureFrameRef.current === activeFrameIndex)) {
+                          durationGestureFrameRef.current = activeFrameIndex;
+                        }
                       }
                     }}
+                    onPointerUp={() => { durationGestureFrameRef.current = null; }}
+                    onKeyDown={(e) => {
+                      if ((e.ctrlKey || e.metaKey) && ['z', 'y'].includes(e.key.toLowerCase())) durationGestureFrameRef.current = null;
+                    }}
+                    onBlur={() => { durationGestureFrameRef.current = null; }}
                     className="w-11 h-5 bg-transparent text-[var(--text-heading)] font-mono text-right px-0.5 outline-none text-[10px] tabular-nums"
                   />
                   <span className="text-[var(--text-muted)] text-[9px] font-mono">ms</span>
@@ -544,6 +548,32 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
         {/* Right: Frame Actions (Add, Duplicate, Delete, Collapse) */}
         <div className="flex items-center gap-1.5">
+          {!isPlaygroundMode && (
+            <>
+              <TactileButton
+                size="icon-sm"
+                variant="default"
+                disabled={isGuest || isPlaying || activeFrameIndex === 0}
+                onClick={() => reorderFrames(activeFrameIndex, activeFrameIndex - 1)}
+                title="Move active frame left"
+                aria-label="Move active frame left"
+                className="w-7 h-7"
+              >
+                <PixelIcon name="step-backward" size={12} />
+              </TactileButton>
+              <TactileButton
+                size="icon-sm"
+                variant="default"
+                disabled={isGuest || isPlaying || activeFrameIndex >= frames.length - 1}
+                onClick={() => reorderFrames(activeFrameIndex, activeFrameIndex + 1)}
+                title="Move active frame right"
+                aria-label="Move active frame right"
+                className="w-7 h-7"
+              >
+                <PixelIcon name="step-forward" size={12} />
+              </TactileButton>
+            </>
+          )}
           <TactileButton
             size="sm"
             variant="default"
@@ -734,9 +764,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                     : isDropTarget
                     ? 'border-[var(--accent-gold)] bg-[#3d2757] ring-2 ring-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.6)] scale-105'
                     : isActive
-                    ? audioPulseActive
-                      ? 'bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] ring-2 ring-[var(--accent-gold)]/60 shadow-[0_0_10px_rgba(240,190,124,0.45)] scale-[1.03]'
-                      : 'bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] shadow-[var(--timeline-frame-active-shadow,none)]'
+                    ? 'bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] shadow-[var(--timeline-frame-active-shadow,none)]'
                     : isInsideClip
                     ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[var(--timeline-frame-hover-bg)] hover:border-[var(--timeline-frame-hover-border)]'
                     : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'

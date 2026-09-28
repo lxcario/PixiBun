@@ -53,7 +53,7 @@ export const AtelierCtaBanner: React.FC = () => {
                   PULL UP A CHAIR. STAY A WHILE.
                 </h2>
                 <p className="font-sans text-sm sm:text-base text-[var(--text-heading)] mb-7 leading-relaxed max-w-md mx-auto">
-                  The radio&apos;s on and the desk is free. Come draw something.
+                  The desk is ready. Come draw something.
                 </p>
 
                 {/* Quick Canvas Size Shortcuts */}

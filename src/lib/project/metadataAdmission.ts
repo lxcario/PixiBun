@@ -4,6 +4,17 @@ export const MAX_PROJECT_NAME_LENGTH = RECOVERY_INSPECTION_CEILINGS.MAX_PROJECT_
 export const MAX_METADATA_NAME_LENGTH = RECOVERY_INSPECTION_CEILINGS.MAX_IDENTIFIER_LENGTH;
 export const MAX_PROJECT_CLIPS = RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_CLIPS;
 
+export function makeLayerCopyName(name: string): string {
+  const suffix = ' (Copy)';
+  const stemLimit = MAX_METADATA_NAME_LENGTH - suffix.length;
+  let stem = '';
+  for (const character of name) {
+    if (stem.length + character.length > stemLimit) break;
+    stem += character;
+  }
+  return `${stem}${suffix}`;
+}
+
 export function projectNameError(name: string): string | null {
   if (typeof name !== 'string' || name.trim().length === 0) return 'Project name cannot be empty.';
   if (name.length > MAX_PROJECT_NAME_LENGTH) {

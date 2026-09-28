@@ -46,7 +46,6 @@ export type StudioEventMap = {
   };
   'pixibun:apply-47-blob': void;
   'pixibun:wfc-synthesis': { n?: number; symmetries?: 1 | 4 | 8; seed?: number } | void;
-  'pixibun:audio-onset': { flux: number; timestamp: number };
   'pixibun:rot-sprite': { angle: number };
   'pixibun:atkinson-dither': { colors?: string[]; paletteColors?: string[] };
   'pixibun:riemersma-dither': { colors?: string[]; paletteColors?: string[] };

@@ -221,7 +221,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       }
       if (edits.length === 0) return;
       if (allFrames) {
-        pushStructuralHistoryStep('Erase Color (All Frames)', { affectedLayerIds: edits.map((edit) => edit.id) });
+        if (!pushStructuralHistoryStep('Erase Color (All Frames)', { affectedLayerIds: edits.map((edit) => edit.id) })) return;
       } else {
         props.captureSnapshot('Erase Color');
       }

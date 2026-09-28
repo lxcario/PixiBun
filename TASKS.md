@@ -2,6 +2,17 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Phase 77 — Metadata Undo and bounded structural edits (2026-09-28)
+
+- [x] Make layer visibility, lock, opacity, blend mode, name, tag, and effect-recipe changes and frame-duration edits undoable. Group continuous opacity and duration controls into one interaction.
+- [x] Estimate both Undo and Redo snapshot sizes before history-backed structural edits change artwork. Reject over-budget edits with a visible message while retaining existing history and artwork.
+- [x] Use the tested SafeCanvas helper in selection extraction, and remove unused cursor, autosave, and safety-barrel modules.
+- [x] Update current architecture, security, product, benchmark, and deep-dive documentation. Keep older phase entries as historical records.
+
+**Verification:** 1,268/1,268 unit and integration tests across 128 suites, 82/82 Chromium tests across 20 suites, strict unused-code typecheck, lint, and production build passed. TestSprite could not run because its CLI is unavailable in this workspace.
+
+---
+
 ## Phase 76 — Imported artwork editing and viewport alignment (2026-09-28)
 
 **Goal:** Make regular sprite sheets, sampled-background removal, raster cleanup, and recoloring predictable on imported art, while keeping the canvas pixel grid aligned at high zoom.

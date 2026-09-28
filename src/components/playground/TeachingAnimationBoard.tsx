@@ -142,7 +142,6 @@ export const TeachingAnimationBoard: React.FC<TeachingAnimationBoardProps> = ({
   // Previous & next frame indices for onion skinning
   const prevFrameIndex =
     (currentFrame - 1 + character.jumpFrames.length) % character.jumpFrames.length;
-  const _nextFrameIndex = (currentFrame + 1) % character.jumpFrames.length;
 
   return (
     <div className="flex flex-col w-full h-full bg-[var(--desk-bg)] text-[var(--text-heading)] select-none overflow-y-auto relative font-sans">

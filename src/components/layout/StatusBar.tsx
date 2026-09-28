@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import type { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { subscribeCursorHUD } from '@/components/layout/CursorStatusBadge';
-import { StudioRadioWidget } from '@/components/audio/StudioRadioWidget';
 
 /* ── Status Bar Component ── */
 
@@ -103,13 +102,6 @@ export const StatusBar: React.FC = React.memo(() => {
           <span className="w-px h-3 bg-[var(--desk-border)]" />
         </>
       )}
-
-      {/* Studio Synthesizer Radio Desk Accessory (Quiet & Discrete) */}
-      <div className="flex items-center">
-        <StudioRadioWidget compact placement="top" />
-      </div>
-
-      <span className="w-px h-3 bg-[var(--desk-border)]" />
 
       {/* Active Tool */}
       <span className="flex items-center gap-1.5">

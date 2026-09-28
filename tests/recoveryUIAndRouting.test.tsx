@@ -269,12 +269,11 @@ describe('Phase 1B.8: Recovery UI, Safe Modes & Repair Wizard Tests', () => {
       // Transitions to ready phase with deterministic plan details
       await waitFor(() => {
         expect(screen.getByText(/Deterministic Recovery Plan/i)).toBeTruthy();
+        expect(screen.getByText(/Damaged Artwork \(Recovered\)/i)).toBeTruthy();
+        expect(screen.getByText(/valid layer bitmap\(s\) preserved and remapped/i)).toBeTruthy();
+        expect(screen.getByText(/32 × 32 px/i)).toBeTruthy();
+        expect(screen.getByText(/animation frame\(s\)/i)).toBeTruthy();
       });
-
-      expect(screen.getByText(/Damaged Artwork \(Recovered\)/i)).toBeTruthy();
-      expect(screen.getByText(/valid layer bitmap\(s\) preserved and remapped/i)).toBeTruthy();
-      expect(screen.getByText(/32 × 32 px/i)).toBeTruthy();
-      expect(screen.getByText(/animation frame\(s\)/i)).toBeTruthy();
 
       // Original custody lock badge is visible
       expect(screen.getByText(/Original Project Preserved Untouched/i)).toBeTruthy();

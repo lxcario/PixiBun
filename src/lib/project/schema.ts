@@ -15,6 +15,7 @@ import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 import { validateProjectResourceBudget, safeMultiply } from './resourceBudget';
 import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
 import { MAX_PALETTE_CYCLE_TRACKS } from '@/lib/color/paletteAdmission';
+import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import {
   type EnvelopeViolation,
   type EnvelopeViolationCode,
@@ -170,7 +171,7 @@ function validateFrame(
       reasonCode: 'INVALID_FRAME_STRUCTURE',
     };
   }
-  if (!isIntegerInRange(input.durationMs, 1, 60_000)) {
+  if (!isIntegerInRange(input.durationMs, ANIMATION_TIMING_LIMITS.durationMinMs, ANIMATION_TIMING_LIMITS.durationMaxMs)) {
     return {
       error: `Frame ${frameIndex + 1} has an out-of-range duration.`,
       reasonCode: 'INVALID_FRAME_STRUCTURE',
@@ -449,7 +450,7 @@ function validateSanitizedProjectCore(
   const validatedWidth: number = normalized.width;
   const validatedHeight: number = normalized.height;
 
-  if (!isIntegerInRange(normalized.fps, 1, 60)) {
+  if (!isIntegerInRange(normalized.fps, ANIMATION_TIMING_LIMITS.fpsMin, ANIMATION_TIMING_LIMITS.fpsMax)) {
     return {
       ok: false,
       error: 'The project playback speed is out of range.',

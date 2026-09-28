@@ -6,7 +6,7 @@ import { getOrCreateBuffer, cloneBuffers, deleteBuffers, touchBuffer } from '@/l
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { metadataNameError } from '@/lib/project/metadataAdmission';
+import { makeLayerCopyName, metadataNameError } from '@/lib/project/metadataAdmission';
 
 export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   activeLayerId: 'layer-1',
@@ -44,7 +44,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     }
 
     if (!skipHistory) {
-      pushStructuralHistoryStep('Add Layer', { opKind: 'add-layer', affectedLayerIds: [] });
+      if (!pushStructuralHistoryStep('Add Layer', { opKind: 'add-layer', affectedLayerIds: [], redoBufferCount: 1, addedLayerCount: 1 })) return;
     }
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -73,7 +73,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     const frame = get().frames[get().activeFrameIndex];
     if (!frame || frame.layers.length <= 1 || !frame.layers.some((layer) => layer.id === layerId)) return;
     if (!skipHistory) {
-      pushStructuralHistoryStep('Delete Layer', { opKind: 'delete-layer', affectedLayerIds: [layerId] });
+      if (!pushStructuralHistoryStep('Delete Layer', { opKind: 'delete-layer', affectedLayerIds: [layerId] })) return;
     }
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -109,7 +109,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       return;
     }
 
-    pushStructuralHistoryStep('Duplicate Layer', { opKind: 'duplicate-layer', affectedLayerIds: [] });
+    if (!pushStructuralHistoryStep('Duplicate Layer', { opKind: 'duplicate-layer', affectedLayerIds: [], redoBufferCount: 1, addedLayerCount: 1 })) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -122,7 +122,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       const duplicate: Layer = {
         ...src,
         id: newLayerId,
-        name: `${src.name} (Copy)`,
+        name: makeLayerCopyName(src.name),
         effect: src.effect
           ? { ...structuredClone(current(src.effect)), id: createId('effect'), updatedAt: Date.now() }
           : undefined,
@@ -146,7 +146,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       endIndex >= frame.layers.length ||
       startIndex === endIndex
     ) return;
-    pushStructuralHistoryStep('Reorder Layers', { opKind: 'reorder-layers', affectedLayerIds: [] });
+    if (!pushStructuralHistoryStep('Reorder Layers', { opKind: 'reorder-layers', affectedLayerIds: [] })) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -159,6 +159,8 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   toggleLayerVisibility: layerId => {
+    if (!get().frames[get().activeFrameIndex]?.layers.some((layer) => layer.id === layerId)) return;
+    if (!pushStructuralHistoryStep('Toggle Layer Visibility')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -172,6 +174,8 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   toggleLayerLock: layerId => {
+    if (!get().frames[get().activeFrameIndex]?.layers.some((layer) => layer.id === layerId)) return;
+    if (!pushStructuralHistoryStep('Toggle Layer Lock')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -184,20 +188,29 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     });
   },
 
-  setLayerOpacity: (layerId, opacity) => {
+  setLayerOpacity: (layerId, opacity, skipHistory = false) => {
+    if (!Number.isFinite(opacity)) return false;
+    const layer = get().frames[get().activeFrameIndex]?.layers.find((candidate) => candidate.id === layerId);
+    const nextOpacity = Math.max(0, Math.min(1, opacity));
+    if (!layer || layer.opacity === nextOpacity) return false;
+    if (!skipHistory && !pushStructuralHistoryStep('Change Layer Opacity')) return false;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
       const layer = currentFrame.layers.find(l => l.id === layerId);
       if (layer) {
-        layer.opacity = Math.max(0, Math.min(1, opacity));
+        layer.opacity = nextOpacity;
         state.isDirty = true;
         state.editRevision += 1;
       }
     });
+    return true;
   },
 
   setLayerBlendMode: (layerId, blendMode) => {
+    const layer = get().frames[get().activeFrameIndex]?.layers.find((candidate) => candidate.id === layerId);
+    if (!layer || layer.blendMode === blendMode) return;
+    if (!pushStructuralHistoryStep('Change Layer Blend Mode')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -216,6 +229,9 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       studioEvents.emit('pixibun:toast', { type: 'error', message: error });
       return;
     }
+    const layer = get().frames[get().activeFrameIndex]?.layers.find((candidate) => candidate.id === layerId);
+    if (!layer || layer.name === name) return;
+    if (!pushStructuralHistoryStep('Rename Layer')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -232,6 +248,9 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   // because store state is frozen (autoFreeze) — direct mutation of a layer
   // object retrieved via getState() throws "object is not extensible".
   setLayerTag: (layerId, tag) => {
+    const layer = get().frames[get().activeFrameIndex]?.layers.find((candidate) => candidate.id === layerId);
+    if (!layer || layer.tag === tag) return;
+    if (!pushStructuralHistoryStep('Change Layer Tag')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -245,6 +264,8 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   },
 
   setLayerEffect: (layerId, effect) => {
+    if (!get().frames[get().activeFrameIndex]?.layers.some((layer) => layer.id === layerId)) return;
+    if (!pushStructuralHistoryStep('Change Layer Effect')) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame) return;
@@ -263,10 +284,11 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     if (!frame || frame.layers.length <= 1 || layerIndex < 0 || layerIndex >= frame.layers.length - 1) return;
     const upper = frame.layers[layerIndex];
     const lower = frame.layers[layerIndex + 1];
-    pushStructuralHistoryStep('Merge Down Layer', {
+    if (upper.locked || lower.locked) return;
+    if (!pushStructuralHistoryStep('Merge Down Layer', {
       opKind: 'merge-layer',
       affectedLayerIds: [upper.id, lower.id],
-    });
+    })) return;
     set(state => {
       const currentFrame = state.frames[state.activeFrameIndex];
       if (!currentFrame || currentFrame.layers.length <= 1) return;

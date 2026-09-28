@@ -45,7 +45,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   onConfirmImage,
   onConfirmProject,
 }) => {
-  const { canvasWidth, canvasHeight, palettes, currentPaletteId } = useStudioStore();
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
 
   const activePalette = useMemo(() => {
     return palettes.find((p) => p.id === currentPaletteId)?.colors || [];

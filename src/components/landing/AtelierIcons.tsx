@@ -18,16 +18,6 @@ export const IconHintLamp: React.FC<IconProps> = ({ size = 12, className = '' })
   </svg>
 );
 
-export const IconHintRadio: React.FC<IconProps> = ({ size = 12, className = '' }) => (
-  <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
-    <rect x="9" y="1" width="1" height="3" fill="#f4f1fa" />
-    <rect x="2" y="4" width="8" height="6" fill="#4a3d68" />
-    <rect x="3" y="5" width="4" height="2" fill="#130e20" />
-    <rect x="8" y="5" width="1" height="1" fill="#e0b94d" />
-    <rect x="3" y="8" width="2" height="1" fill="#b8aecf" />
-  </svg>
-);
-
 export const IconHintPen: React.FC<IconProps> = ({ size = 12, className = '' }) => (
   <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
     <rect x="8" y="1" width="3" height="3" fill="#f5c2d9" />
@@ -169,4 +159,3 @@ export const IconCozyHearth: React.FC<IconProps> = ({ size = 96, className = '',
     <rect x="29" y="-2" width="2" height="2" fill="#f0be7c" />
   </svg>
 );
-

@@ -58,7 +58,7 @@ test.describe('Volumetric Optics Visual Proof', () => {
     await canvas.screenshot({ path: beforeShot });
 
     // 3. Switch to PixiBud AI inspector tab
-    const aiTabBtn = page.getByRole('button', { name: /PixiBud AI/i });
+    const aiTabBtn = page.getByRole('button', { name: /PixiTools/i });
     await expect(aiTabBtn).toBeVisible();
     await aiTabBtn.click();
     await page.waitForTimeout(400);

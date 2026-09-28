@@ -59,7 +59,6 @@ export type PixelIconName =
   | 'rivet'
   | 'save'
   | 'lamp-pixel'
-  | 'radio-pixel'
   | 'pen-pixel'
   | 'plant-pixel'
   | 'clock-pixel'
@@ -576,17 +575,6 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <rect x="3" y="3" width="6" height="3" fill="#f0be7c" />
             <rect x="5" y="6" width="2" height="3" fill="#78608a" />
             <rect x="3" y="9" width="6" height="2" fill="#140c1e" />
-          </svg>
-        );
-
-      case 'radio-pixel':
-        return (
-          <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`pixelated ${className}`} aria-hidden="true">
-            <rect x="9" y="1" width="1" height="3" fill="#f4f1fa" />
-            <rect x="2" y="4" width="8" height="6" fill="#4a3d68" />
-            <rect x="3" y="5" width="4" height="2" fill="#140c1e" />
-            <rect x="8" y="5" width="1" height="1" fill="#f0be7c" />
-            <rect x="3" y="8" width="2" height="1" fill="#b8aecf" />
           </svg>
         );
 

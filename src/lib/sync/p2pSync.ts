@@ -27,6 +27,7 @@ import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBuck
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
 import { validateLayerEffect } from '@/lib/project/schema';
 import { validateProjectResourceBudget } from '@/lib/project/resourceBudget';
+import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import type { LayerEffectRecipe } from '@/types/canvas';
 
 export interface RemoteCursor {
@@ -158,7 +159,7 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
     frameIds.add(f.id);
     if (
       typeof f.durationMs !== 'number' || !Number.isInteger(f.durationMs) ||
-      f.durationMs < 1 || f.durationMs > 60_000
+      f.durationMs < ANIMATION_TIMING_LIMITS.durationMinMs || f.durationMs > ANIMATION_TIMING_LIMITS.durationMaxMs
     ) {
       return null;
     }

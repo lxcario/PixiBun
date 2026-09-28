@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, type RefObject } from 'react'
 import { Point } from '@/lib/canvas/rasterMath';
 import { createBoxMask, mergeSelectionMask } from '@/lib/canvas/selectionUtils';
 import { useStudioStore } from '@/stores/studioStore';
+import { SafeCanvas } from '@/lib/safety/safeCanvas';
 import { FloatingSelection } from './useViewportOverlays';
 
 interface UseViewportSelectionProps {
@@ -45,7 +46,7 @@ export function useViewportSelection({
   }, [canvasHeight, canvasWidth, previewCanvasRef]);
 
   const clearSelectedPixels = useCallback(() => {
-    if (!selection) return;
+    if (!selection || selection.w <= 0 || selection.h <= 0) return;
     const ctx = getOrCreateLayerCanvas(activeLayerId).getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
     if (!selectionMask) {
@@ -84,8 +85,8 @@ export function useViewportSelection({
     if (!fCtx) return;
 
     if (selectionMask) {
-      const srcData = ctx.getImageData(selection.x, selection.y, selection.w, selection.h);
-      const floatData = fCtx.createImageData(selection.w, selection.h);
+      const srcData = SafeCanvas.getImageData(ctx, selection.x, selection.y, selection.w, selection.h);
+      const floatData = SafeCanvas.createImageData(fCtx, selection.w, selection.h);
 
       for (let dy = 0; dy < selection.h; dy++) {
         for (let dx = 0; dx < selection.w; dx++) {
@@ -194,8 +195,8 @@ export function useViewportSelection({
       if (selectionMask) {
         const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-        const srcData = ctx.getImageData(selection.x, selection.y, selection.w, selection.h);
-        const floatData = cCtx.createImageData(selection.w, selection.h);
+        const srcData = SafeCanvas.getImageData(ctx, selection.x, selection.y, selection.w, selection.h);
+        const floatData = SafeCanvas.createImageData(cCtx, selection.w, selection.h);
 
         for (let dy = 0; dy < selection.h; dy++) {
           for (let dx = 0; dx < selection.w; dx++) {

@@ -4,6 +4,10 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased — updated 2026-09-28
 
+- Layer visibility, lock, opacity, blend mode, name, tag, effect recipe, and frame-duration edits now create structural Undo steps. Continuous opacity and duration input changes are grouped into one interaction; tutorial initialization bypasses user history.
+- History-backed structural edits now estimate both Undo and Redo snapshot sizes before mutation. Edits that exceed the configured history budget are rejected with a visible message, preserving the artwork and existing history. Selection extraction now uses the tested SafeCanvas boundary helper.
+- Removed unused cursor and autosave components and an unused safety export barrel. Updated current design and architecture notes to match the running app.
+- Removed the Studio music widget, procedural arrangements and synthesis engine, audio-driven timeline pulse, and related landing-page copy. Earlier changelog entries below remain historical records of files that no longer ship.
 - Reconciled the current task log, build log, architecture, design, product scope, and algorithm reference with the imported-art tools, bucket semantics, grid geometry, and verified test inventory. The independent audit reports and dated plans remain historical snapshots.
 - Added TestSprite regression plans for frame isolation, lasso deletion, color replacement, and RotSprite behavior. They are saved as plans, not reported as executed TestSprite runs.
 - Bucket fill now includes nearby shades at a controlled default tolerance, with an optional switch for tiny enclosed color specks in imported art. The bucket keeps its own setting so Color Replace remains exact by default. Removed layout borders that made the main artwork slightly smaller than its grid at high zoom. Added focused fill tests and Chromium checks for real bucket clicks and exact artwork/grid alignment.
@@ -20,7 +24,7 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - Browser project round-trip proof now covers two frames, two layers per frame, clip metadata, and a nondefault frame duration; current collaboration docs state the v1 two-peer scope.
 - Rechecked current Markdown against source: corrected export-limit status, canvas buffer type, worker-copy semantics, RotSprite scope, undo cost, historical v2 metrics, and an outdated plan index entry.
 - Project, layer, and clip edits now reject metadata that project validation cannot reopen. Deleting a frame remaps affected clip ranges; invalid gallery renames are not saved, and duplicated names stay within the project-name limit.
-- Oversized Redo snapshots now clear the disconnected history chain with a visible warning. A completed edit larger than the 64 MiB snapshot limit remains on canvas but cannot be undone.
+- Oversized Redo snapshots now clear the disconnected history chain with a visible warning. The history engine retains this fallback for already-applied snapshots; current structural editor actions preflight their estimated snapshot sizes before editing.
 - Odd-size MP4 exports pad to encoder-compatible even dimensions without stretching the artwork. Content-aware heightmap traversal no longer allocates neighbor arrays for each visited pixel.
 - Corrected palette LUT allocation, shadow mode, spherical-dome slope, and specular-alpha descriptions to match the implementation.
 - Palette and cycle-track edits now obey project validation limits, report rejected input, and mark accepted changes for autosave.

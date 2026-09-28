@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PwaUpdateToast } from './PwaUpdateToast';
 import { captureDiagnostic } from '@/lib/diagnostics/capture';
 

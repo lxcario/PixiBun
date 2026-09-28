@@ -1083,7 +1083,7 @@ export function loadTeachingAnimationIntoPlayground(char: TeachingCharacter, pal
 
   const state = useStudioStore.getState();
   char.jumpFrames.forEach((frameDef, fIdx) => {
-    state.setFrameDuration(fIdx, frameDef.holdMs);
+    state.setFrameDuration(fIdx, frameDef.holdMs, true);
     const targetFrame = state.frames[fIdx];
     if (!targetFrame || !targetFrame.layers[0]) return;
     const layerId = targetFrame.layers[0].id;

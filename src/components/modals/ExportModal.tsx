@@ -53,17 +53,15 @@ interface ExportModalProps {
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
-  const {
-    projectName,
-    canvasWidth,
-    canvasHeight,
-    frames,
-    activeFrameIndex,
-    fps,
-    clips,
-    palettes,
-    currentPaletteId,
-  } = useStudioStore();
+  const projectName = useStudioStore((s) => s.projectName);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const fps = useStudioStore((s) => s.fps);
+  const clips = useStudioStore((s) => s.clips);
+  const palettes = useStudioStore((s) => s.palettes);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
 
   const [exportType, setExportType] = useState<ExportType>('png');
   const [shaderTarget, setShaderTarget] = useState<'godot' | 'unity'>('godot');

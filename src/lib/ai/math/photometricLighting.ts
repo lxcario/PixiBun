@@ -1492,9 +1492,6 @@ export function executeVolumetricOpticalPipeline(
       let b255: number;
       let toneStep = 0;
 
-      const baseLab = rgbToOKLab(data[pIdx], data[pIdx + 1], data[pIdx + 2]);
-      const _baseLch = okLabToOKLCH(baseLab.L, baseLab.a, baseLab.b);
-
       if (celTones === 'smooth') {
         const finalR = origR * 0.4 + (origR * diffuseLight * 0.6) + sssRadianceR * 0.8 + rimRadianceR * 0.6 + anisoHighlightR * 0.7;
         const finalG = origG * 0.4 + (origG * diffuseLight * 0.6) + sssRadianceG * 0.8 + rimRadianceG * 0.6 + anisoHighlightG * 0.7;

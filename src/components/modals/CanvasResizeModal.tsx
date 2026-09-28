@@ -23,7 +23,8 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
   onClose,
   onResize,
 }) => {
-  const { canvasWidth, canvasHeight } = useStudioStore();
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
 
   const [width, setWidth] = useState(canvasWidth);
   const [height, setHeight] = useState(canvasHeight);

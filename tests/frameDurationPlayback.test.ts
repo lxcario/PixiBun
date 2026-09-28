@@ -15,13 +15,16 @@ describe('Variable Frame Duration & Animation Playback Timing', () => {
     store.setFrameDuration(0, 250);
     expect(useStudioStore.getState().frames[0].durationMs).toBe(250);
 
-    // Clamps minimum to 10ms
+    // Project-format boundaries are editable without changing their values.
     store.setFrameDuration(1, 2);
-    expect(useStudioStore.getState().frames[1].durationMs).toBe(10);
+    expect(useStudioStore.getState().frames[1].durationMs).toBe(2);
+    store.setFrameDuration(1, 0);
+    expect(useStudioStore.getState().frames[1].durationMs).toBe(1);
 
-    // Clamps maximum to 10000ms
-    store.setFrameDuration(2, 50000);
-    expect(useStudioStore.getState().frames[2].durationMs).toBe(10000);
+    store.setFrameDuration(2, 60_000);
+    expect(useStudioStore.getState().frames[2].durationMs).toBe(60_000);
+    store.setFrameDuration(2, 60_001);
+    expect(useStudioStore.getState().frames[2].durationMs).toBe(60_000);
   });
 
   it('calculates total animation cycle duration with heterogeneous frame durations', () => {

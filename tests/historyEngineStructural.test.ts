@@ -8,8 +8,10 @@ import {
 } from '@/lib/engine/historyEngine';
 import {
   captureLayerBuffers,
+  restoreStructuralWorkspace,
 } from '@/lib/engine/structuralHistory';
 import { useStudioStore } from '@/stores/studioStore';
+import { studioEvents } from '@/lib/events/studioEvents';
 import {
   getOrCreateBuffer,
   clearAllBuffers,
@@ -46,6 +48,80 @@ describe('History Engine Byte Budgeting & Structural Inversion', () => {
   });
 
   describe('Byte Budgeting & Oversized Step Safety', () => {
+    it('records one reversible metadata step for a continuous opacity edit', () => {
+      const engine = createHistoryEngine();
+      setGlobalHistoryEngine(engine);
+      const layerId = useStudioStore.getState().frames[0].layers[0].id;
+
+      expect(useStudioStore.getState().setLayerOpacity(layerId, 0.75)).toBe(true);
+      expect(useStudioStore.getState().setLayerOpacity(layerId, 0.5, true)).toBe(true);
+      expect(engine.depth).toBe(1);
+
+      const before = engine.peekUndo() as StructuralHistoryStep;
+      expect(before.frames[0].layers[0].opacity).toBe(1);
+      const current = useStudioStore.getState();
+      const target = engine.undo({
+        type: 'structural', description: 'Change Layer Opacity', frameIndex: 0,
+        frames: structuredClone(current.frames), activeFrameIndex: 0, activeLayerId: layerId,
+        canvasWidth: current.canvasWidth, canvasHeight: current.canvasHeight,
+      }) as StructuralHistoryStep;
+      restoreStructuralWorkspace({ ...target, canvasWidth: target.canvasWidth ?? current.canvasWidth, canvasHeight: target.canvasHeight ?? current.canvasHeight });
+      expect(useStudioStore.getState().frames[0].layers[0].opacity).toBe(1);
+      const redoTarget = engine.redo(before) as StructuralHistoryStep;
+      restoreStructuralWorkspace({ ...redoTarget, canvasWidth: redoTarget.canvasWidth ?? current.canvasWidth, canvasHeight: redoTarget.canvasHeight ?? current.canvasHeight });
+      expect(useStudioStore.getState().frames[0].layers[0].opacity).toBe(0.5);
+    });
+
+    it('records frame duration and blend mode as separate structural Undo steps', () => {
+      const engine = createHistoryEngine();
+      setGlobalHistoryEngine(engine);
+      const layerId = useStudioStore.getState().frames[0].layers[0].id;
+      const originalDuration = useStudioStore.getState().frames[0].durationMs;
+      useStudioStore.getState().setFrameDuration(0, 250);
+      useStudioStore.getState().setLayerBlendMode(layerId, 'multiply');
+      expect(engine.getHistory().map((step) => step.description)).toEqual([
+        'Change Frame Duration', 'Change Layer Blend Mode',
+      ]);
+      expect((engine.getHistory()[0] as StructuralHistoryStep).frames[0].durationMs).toBe(originalDuration);
+      expect((engine.getHistory()[1] as StructuralHistoryStep).frames[0].layers[0].blendMode).toBe('source-over');
+    });
+
+    it('blocks an oversized destructive edit before changing the canvas or existing history', () => {
+      useStudioStore.getState().addLayer('Top');
+      const state = useStudioStore.getState();
+      const [top, lower] = state.frames[0].layers;
+      getOrCreateBuffer(top.id, state.canvasWidth, state.canvasHeight);
+      getOrCreateBuffer(lower.id, state.canvasWidth, state.canvasHeight);
+      const engine = createHistoryEngine({ maxBytes: 5_000 });
+      setGlobalHistoryEngine(engine);
+      state.setLayerOpacity(top.id, 0.5);
+      expect(engine.depth).toBe(1);
+
+      const notices: string[] = [];
+      const unsubscribe = studioEvents.on('pixibun:toast', (notice) => notices.push(notice.message));
+      state.mergeLayerDown(top.id);
+      unsubscribe();
+      expect(useStudioStore.getState().frames[0].layers).toHaveLength(2);
+      expect(useStudioStore.getState().frames[0].layers[0].opacity).toBe(0.5);
+      expect(engine.depth).toBe(1);
+      expect(engine.isTruncated).toBe(false);
+      expect(notices.some((message) => message.includes('The edit was not applied'))).toBe(true);
+    });
+
+    it('blocks a new frame when its prospective Redo buffer cannot fit', () => {
+      const state = useStudioStore.getState();
+      const layerId = state.frames[0].layers[0].id;
+      const engine = createHistoryEngine({ maxBytes: 5_000 });
+      setGlobalHistoryEngine(engine);
+      state.setLayerOpacity(layerId, 0.5);
+      expect(engine.depth).toBe(1);
+
+      state.addFrame();
+      expect(useStudioStore.getState().frames).toHaveLength(1);
+      expect(engine.depth).toBe(1);
+      expect(engine.isTruncated).toBe(false);
+    });
+
     it('calculates step bytes accurately for pixel and structural steps', () => {
       const pixelStep: PixelHistoryStep = {
         type: 'pixel',

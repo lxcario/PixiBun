@@ -33,7 +33,7 @@ export function syncStudioWithLesson(lesson: PlaygroundLesson) {
   const updatedState = useStudioStore.getState();
   lesson.frames.forEach((frameTemplate, idx) => {
     if (idx < updatedState.frames.length && frameTemplate.recommendedHoldMs) {
-      updatedState.setFrameDuration(idx, frameTemplate.recommendedHoldMs);
+      updatedState.setFrameDuration(idx, frameTemplate.recommendedHoldMs, true);
     }
   });
 

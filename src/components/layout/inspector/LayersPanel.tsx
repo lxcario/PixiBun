@@ -38,9 +38,11 @@ export const LayersPanel: React.FC = () => {
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const activeLayerId = useStudioStore((s) => s.activeLayerId);
+  const currentProjectId = useStudioStore((s) => s.currentProjectId);
   const setActiveLayer = useStudioStore((s) => s.setActiveLayer);
   const addLayer = useStudioStore((s) => s.addLayer);
   const duplicateLayer = useStudioStore((s) => s.duplicateLayer);
+  const reorderLayers = useStudioStore((s) => s.reorderLayers);
   const deleteLayer = useStudioStore((s) => s.deleteLayer);
   const mergeLayerDown = useStudioStore((s) => s.mergeLayerDown);
   const toggleLayerVisibility = useStudioStore((s) => s.toggleLayerVisibility);
@@ -52,12 +54,17 @@ export const LayersPanel: React.FC = () => {
   const currentFrame = frames[activeFrameIndex];
   const activeLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
   const activeLayerIndex = currentFrame?.layers.findIndex((l) => l.id === activeLayerId) ?? -1;
-  const isMergeDownAvailable = activeLayerIndex >= 0 && !!currentFrame && activeLayerIndex < currentFrame.layers.length - 1;
+  const isMergeDownAvailable = activeLayerIndex >= 0 && !!currentFrame && activeLayerIndex < currentFrame.layers.length - 1 && !activeLayer?.locked && !currentFrame.layers[activeLayerIndex + 1]?.locked;
 
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
   const [mergeConfirmLayerId, setMergeConfirmLayerId] = useState<string | null>(null);
   const mergeTimerRef = useRef<number | null>(null);
+  const opacityGestureLayerRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    opacityGestureLayerRef.current = null;
+  }, [activeLayerId, activeFrameIndex, currentProjectId]);
 
   useEffect(() => {
     return () => {
@@ -124,8 +131,8 @@ export const LayersPanel: React.FC = () => {
               isGuest
                 ? guestLockTitle
                 : mergeConfirmLayerId === activeLayer?.id
-                ? 'Click again to confirm merge (irreversible)'
-                : 'Merge Down (irreversible)'
+                ? 'Click again to merge layers and flatten the lower effect recipe. Undo is available while history is retained.'
+                : 'Merge Down (flattens the lower effect recipe)'
             }
             aria-label="Merge Down"
             className="w-6 h-6 p-0 text-xs"
@@ -157,7 +164,19 @@ export const LayersPanel: React.FC = () => {
               max="100"
               step="5"
               value={Math.round(activeLayer.opacity * 100)}
-              onChange={(e) => setLayerOpacity(activeLayer.id, parseFloat(e.target.value) / 100)}
+              onChange={(e) => {
+                const layerId = activeLayer.id;
+                if (setLayerOpacity(layerId, parseFloat(e.target.value) / 100, opacityGestureLayerRef.current === layerId)) {
+                  opacityGestureLayerRef.current = layerId;
+                }
+              }}
+              onPointerUp={() => { opacityGestureLayerRef.current = null; }}
+              onPointerCancel={() => { opacityGestureLayerRef.current = null; }}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && ['z', 'y'].includes(e.key.toLowerCase())) opacityGestureLayerRef.current = null;
+              }}
+              onKeyUp={() => { opacityGestureLayerRef.current = null; }}
+              onBlur={() => { opacityGestureLayerRef.current = null; }}
               aria-label="Layer opacity"
               className="w-12 h-1 accent-[var(--accent-gold)] cursor-pointer"
             />
@@ -221,7 +240,7 @@ export const LayersPanel: React.FC = () => {
       <div className="overflow-y-auto flex-1 min-h-[60px] divide-y divide-[var(--desk-border)]/40 bg-[var(--desk-surface)]">
         {currentFrame?.layers.map((layer, index) => {
           const isActive = layer.id === activeLayerId;
-          const canMergeDown = !isGuest && index < (currentFrame?.layers.length || 0) - 1;
+          const canMergeDown = !isGuest && !layer.locked && index < (currentFrame?.layers.length || 0) - 1 && !currentFrame?.layers[index + 1]?.locked;
           return (
             <div
               key={layer.id}
@@ -293,7 +312,7 @@ export const LayersPanel: React.FC = () => {
                         setEditingLayerId(layer.id);
                         setLayerNameInput(layer.name);
                       }}
-                      className="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-[10px] p-0.5 cursor-pointer transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-[10px] p-0.5 cursor-pointer transition-opacity"
                       title="Rename Layer"
                       aria-label={`Rename layer ${layer.name}`}
                     >
@@ -304,6 +323,20 @@ export const LayersPanel: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1">
+                <IconButton
+                  icon="step-backward"
+                  size="sm"
+                  label={`Move layer ${layer.name} up`}
+                  disabled={isGuest || index === 0}
+                  onClick={() => reorderLayers(index, index - 1)}
+                />
+                <IconButton
+                  icon="step-forward"
+                  size="sm"
+                  label={`Move layer ${layer.name} down`}
+                  disabled={isGuest || index === currentFrame.layers.length - 1}
+                  onClick={() => reorderLayers(index, index + 1)}
+                />
                 {layer.effect?.kind === 'photometric' && (
                   <button
                     type="button"

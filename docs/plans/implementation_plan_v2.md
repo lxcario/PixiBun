@@ -1,5 +1,7 @@
 # Redesign PixiBun Home Page into a Cozy Interactive Pixel Atelier (v2)
 
+> Historical implementation plan. The live website no longer includes the proposed music or radio feature; see the current [architecture](../../ARCHITECTURE.md) and [changelog](../../CHANGELOG.md).
+
 Transform PixiBun's home page into the "Pixel Atelier" concept, using AI-generated pixel art assets (Nano Banana Pro, via Antigravity) for the illustrated scene, and reserving hand-written code for the parts that are genuinely interactive.
 
 ## What changed from v1

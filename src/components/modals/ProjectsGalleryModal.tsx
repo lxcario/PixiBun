@@ -40,7 +40,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [storageError, setStorageError] = useState<string | null>(null);
 
-  const { setProjectName } = useStudioStore();
+  const setProjectName = useStudioStore((s) => s.setProjectName);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -308,7 +308,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                             e.stopPropagation();
                             handleStartRename(project);
                           }}
-                          className="opacity-0 group-hover/title:opacity-100 text-[var(--text-muted)] hover:text-[#f0be7c] p-0.5"
+                          className="opacity-0 group-hover/title:opacity-100 group-focus-within/title:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[#f0be7c] p-0.5"
                           title="Rename artwork"
                           aria-label="Rename artwork"
                         >

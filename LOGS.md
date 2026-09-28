@@ -1959,3 +1959,13 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Status:** Locally verified. Git history records publication status.
 
+---
+
+## 2026-09-28 — Metadata Undo and structural history admission
+
+**Delivered:** Layer property and frame-duration edits now record Undo snapshots; continuous controls group changes by interaction. History-backed structural operations estimate both Undo and Redo memory before mutation and reject edits above the configured history budget without changing artwork or clearing existing history. Selection extraction now calls SafeCanvas, and unused cursor, autosave, and safety-barrel modules were removed. Current product, architecture, security, benchmark, and deep-dive docs were reconciled with these changes.
+
+**Checks run:** 1,268/1,268 Vitest tests across 128 suites, 82/82 Chromium tests across 20 suites, strict TypeScript unused-code check, lint, and production build passed. TestSprite was unavailable because its CLI is not installed in this workspace.
+
+**Status:** Locally verified. No deployment was performed.
+

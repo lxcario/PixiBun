@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import { BottomTimeline } from '@/components/layout/BottomTimeline';
 import { useStudioStore } from '@/stores/studioStore';
 
@@ -76,5 +75,61 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
     // Modal title should now be visible in DOM
     const modalTitle = screen.getByText(/Animation Tags & Clips/);
     expect(modalTitle).toBeDefined();
+  });
+
+  it('moves the selected frame with a button', () => {
+    render(<BottomTimeline />);
+    fireEvent.click(screen.getByLabelText(/Select frame 2/));
+    fireEvent.click(screen.getByRole('button', { name: 'Move active frame left' }));
+    expect(useStudioStore.getState().frames.map((frame) => frame.id)).toEqual(['f2', 'f1', 'f3']);
+    expect(useStudioStore.getState().activeFrameIndex).toBe(0);
+  });
+
+  it('keeps fractional elapsed time across frame transitions', () => {
+    const state = useStudioStore.getState();
+    state.frames.forEach((frame) => { frame.durationMs = 10; });
+    const callbacks = new Map<number, FrameRequestCallback>();
+    let nextId = 0;
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      const id = ++nextId;
+      callbacks.set(id, callback);
+      return id;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => callbacks.delete(id));
+    const advance = (time: number) => {
+      const entry = callbacks.entries().next().value;
+      expect(entry).toBeDefined();
+      callbacks.delete(entry![0]);
+      act(() => entry![1](time));
+    };
+    render(<BottomTimeline />);
+    act(() => useStudioStore.getState().setIsPlaying(true));
+    advance(1000);
+    advance(1016);
+    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    advance(1032);
+    expect(useStudioStore.getState().activeFrameIndex).toBe(0);
+    advance(1048);
+    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    act(() => useStudioStore.getState().setIsPlaying(false));
+    vi.unstubAllGlobals();
+  });
+
+  it('stops once playback after the hold of a single frame', () => {
+    useStudioStore.getState().resetToNewProject();
+    useStudioStore.getState().setFrameDuration(0, 10);
+    useStudioStore.getState().setLoopMode('once');
+    const callbacks: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    render(<BottomTimeline />);
+    act(() => useStudioStore.getState().setIsPlaying(true));
+    act(() => callbacks.shift()?.(1000));
+    act(() => callbacks.shift()?.(1016));
+    expect(useStudioStore.getState().isPlaying).toBe(false);
+    vi.unstubAllGlobals();
   });
 });

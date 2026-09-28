@@ -12,7 +12,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 2. **Defensive Invariant Hardening:**
    All canvas operations, viewport transformations, and file deserialization routines must strictly respect mathematical invariants:
    - Clamp all zoom/pan operations against `NaN`, `Infinity`, or zero-division using `src/lib/safety/mathInvariants.ts`.
-   - Prevent canvas `IndexSizeError` and clipping crashes using `src/lib/safety/safeCanvas.ts`.
+   - Use `src/lib/safety/safeCanvas.ts` for selection image extraction and apply equivalent bounds checks to other canvas readback paths.
    - Protect binary parsers against decompression bombs (CWE-409) using `src/lib/safety/imageHeaderProbe.ts`.
    - Protect JSON deserializers against prototype pollution (CWE-1321) using `src/lib/safety/safeJson.ts`.
    - Gracefully handle storage exhaustion using `src/lib/safety/storageResilience.ts`.

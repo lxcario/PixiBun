@@ -1,5 +1,7 @@
 # Audit remediation plan — 2026-09-26
 
+> Historical checklist for the 2026-09-26 audit. The current [Phase 77 status](../../TASKS.md) records metadata Undo and preflight rejection of structural edits above the history budget; the entries below retain their original assessment.
+
 Source: `PIXIBUN_AUDIT_RESULTS+DEEP.md`. The audit has 66 finding IDs, despite its original 60-item summary. This checklist tracks the 41 findings assessed as open or partial on 2026-09-26. A checked item means the behavior has been changed and locally verified; a partial finding stays unchecked until its remaining claim is addressed.
 
 ## Phase 1 — export correctness and collaboration memory

@@ -107,6 +107,13 @@ if (fs.existsSync(changelogPath)) {
   const pathRegex = /`((?:src|tests)\/[^`]+)`/g;
   let match;
   const citedPaths = new Set();
+  // Historical changelog entries can name files intentionally removed from the product.
+  const removedHistoricalPaths = new Set([
+    'src/lib/audio/lofiRadio.ts',
+    'src/lib/audio/tracks.ts',
+    'src/lib/audio/spectralFlux.ts',
+    'tests/audioOnsetDetection.test.ts',
+  ]);
 
   while ((match = pathRegex.exec(changelogContent)) !== null) {
     const cleanPath = match[1].trim();
@@ -119,7 +126,7 @@ if (fs.existsSync(changelogPath)) {
   let pathsPassed = 0;
   for (const relPath of citedPaths) {
     const fullPath = path.join(rootDir, relPath);
-    if (!fs.existsSync(fullPath)) {
+    if (!fs.existsSync(fullPath) && !removedHistoricalPaths.has(relPath)) {
       reportError(`Phantom file cited in CHANGELOG.md does not exist: "${relPath}"`);
     } else {
       pathsPassed++;

@@ -706,7 +706,6 @@ export function computeContentAwareHeightmap(
       }
     }
   }
-  const _boxW = Math.max(1, maxX - minX + 1);
   const boxH = Math.max(1, maxY - minY + 1);
 
   if (!isCharacter) {

@@ -122,7 +122,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     }
 
     // 3. Switch right inspector to AI Tools tab
-    const aiToolsTab = page.getByRole('button', { name: /PixiBud AI|AI Tools/i });
+    const aiToolsTab = page.getByRole('button', { name: /PixiTools/i });
     await expect(aiToolsTab).toBeVisible();
     await aiToolsTab.click();
     await page.waitForTimeout(200);

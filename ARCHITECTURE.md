@@ -21,29 +21,28 @@
 - [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
 - [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixilaienginets)
 - [9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-intelligent-image-to-pixel-art-synthesis-pipeline-srclibaipixelizeenginets)
-- [10. Procedural Web Audio Ambient Radio (`src/lib/audio/lofiRadio.ts`)](#10-procedural-web-audio-ambient-radio-srclibaudiolofiradiots)
-- [11. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)](#11-zero-lag-theme-architecture-srcstoresthemestorets)
-- [12. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#12-zero-gc-memory-management--buffer-pooling-srclibenginebufferpoolts)
-- [13. Multithreaded Worker & Deterministic CG Math Architecture](#13-multithreaded-worker--deterministic-cg-math-architecture)
-- [14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)](#14-strongly-typed-studio-event-bus-srclibeventsstudioeventsts)
-- [15. Vercel & CI/CD Deployment Pipeline](#15-vercel--cicd-deployment-pipeline)
-- [16. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)](#16-p2p-co-draw-sync-bridge-srclibsynccodrawbridgets)
-- [17. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)](#17-diagnostics-relay-hardening-srcappapidiagnosticsrelayroutets)
-- [18. Algorithmic Scope Boundaries & Target System Envelope](#18-algorithmic-scope-boundaries--target-system-envelope)
-- [19. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)](#19-25d-normal-chisel--bas-relief-sculptor-srclibartnormalsculptorts)
-- [20. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)](#20-mark-ferrari-8-bit-dynamic-palette-cycling-engine-srclibcolorpalettecyclingts)
-- [21. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)](#21-database--canvas-teardown-lifecycle-invariants-srclibstoragedbts-testse2echiselandpaletteliveproofspects)
-- [22. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening](#22-bitwise-normalization-hot-path-viewport-decoupling--export-pipeline-hardening)
-- [23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine](#23-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine)
-- [24. Workstation Architectural Upgrades (`p2pHostAuthority`, `structuralHistory`, `desktopFS`, `47-blob`, `isobmffMuxer`)](#24-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
-- [25. Comprehensive Defensive Hardening & Invariant Architecture](#25-comprehensive-defensive-hardening--invariant-architecture)
-- [26. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection](#26-autonomous-local-cicd-quality-gate--git-pre-push-protection)
-- [27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants](#27-studio-workstation-ergonomics-focus-trapping--unsaved-invariants)
-- [28. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection](#28-photometric-studio-resolution-aware-bevel-scaling--dark-palette-protection)
-- [29. Studio UI Architecture & Design System Primitives](#29-studio-ui-architecture--design-system-primitives)
-- [30. Teaching Animation Board & Playground Education System](#30-teaching-animation-board--playground-education-system)
-- [31. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)](#31-neutral-25d-relighting--smart-effect-recipe-provenance-phase-63)
-- [32. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)](#32-restricted-recovery-mode-envelope-guards--streaming-archive-architecture-phase-1a--phase-1b)
+- [10. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)](#10-zero-lag-theme-architecture-srcstoresthemestorets)
+- [11. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-zero-gc-memory-management--buffer-pooling-srclibenginebufferpoolts)
+- [12. Multithreaded Worker & Deterministic CG Math Architecture](#12-multithreaded-worker--deterministic-cg-math-architecture)
+- [13. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)](#13-strongly-typed-studio-event-bus-srclibeventsstudioeventsts)
+- [14. Vercel & CI/CD Deployment Pipeline](#14-vercel--cicd-deployment-pipeline)
+- [15. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)](#15-p2p-co-draw-sync-bridge-srclibsynccodrawbridgets)
+- [16. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)](#16-diagnostics-relay-hardening-srcappapidiagnosticsrelayroutets)
+- [17. Algorithmic Scope Boundaries & Target System Envelope](#17-algorithmic-scope-boundaries--target-system-envelope)
+- [18. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)](#18-25d-normal-chisel--bas-relief-sculptor-srclibartnormalsculptorts)
+- [19. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)](#19-mark-ferrari-8-bit-dynamic-palette-cycling-engine-srclibcolorpalettecyclingts)
+- [20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)](#20-database--canvas-teardown-lifecycle-invariants-srclibstoragedbts-testse2echiselandpaletteliveproofspects)
+- [21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening](#21-bitwise-normalization-hot-path-viewport-decoupling--export-pipeline-hardening)
+- [22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine](#22-selection-free-transform-gizmo-sprite-sheet-slicer--web-worker-offloading-engine)
+- [23. Workstation Architectural Upgrades (`p2pHostAuthority`, `structuralHistory`, `desktopFS`, `47-blob`, `isobmffMuxer`)](#23-workstation-architectural-upgrades-p2p-host-authority-structural-history-desktop-fs-47-blob-autotile--pure-isobmff-muxer)
+- [24. Comprehensive Defensive Hardening & Invariant Architecture](#24-comprehensive-defensive-hardening--invariant-architecture)
+- [25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection](#25-autonomous-local-cicd-quality-gate--git-pre-push-protection)
+- [26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants](#26-studio-workstation-ergonomics-focus-trapping--unsaved-invariants)
+- [27. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection](#27-photometric-studio-resolution-aware-bevel-scaling--dark-palette-protection)
+- [28. Studio UI Architecture & Design System Primitives](#28-studio-ui-architecture--design-system-primitives)
+- [29. Teaching Animation Board & Playground Education System](#29-teaching-animation-board--playground-education-system)
+- [30. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)](#30-neutral-25d-relighting--smart-effect-recipe-provenance-phase-63)
+- [31. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)](#31-restricted-recovery-mode-envelope-guards--streaming-archive-architecture-phase-1a--phase-1b)
 
 ---
 
@@ -59,7 +58,7 @@ graph TD
         ViewportShell["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
         RightStudio["RightInspector (Layers / Palettes / PixiBud Math Studio)"]
         TimelineDock["BottomTimeline (Frame Scrubbing, Onion Skin, Scrub Preview)"]
-        StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]
+        StatusBar["StatusBar (Cursor, Tool, Canvas, Zoom)"]
         Modals["Modals (Import, Export, Resize, Palette, Shortcuts, CommandPalette)"]
     end
 
@@ -75,7 +74,6 @@ graph TD
         MathCore["PixiBud Smart Math Engine (Felzenszwalb EDT, Sobel Normals, Blinn-Phong, Laplace AO)"]
         PixelizeCore["Image Synthesis Engine (Gradient Salience, OKLab Median-Cut, Floyd-Steinberg)"]
         DitherCore["Dither Suite (Bayer Matrix, Atkinson, Riemersma Hilbert)"]
-        AudioCore["Web Audio Lo-Fi Synthesizer (Vinyl Rain Noise, Rhodes Chords, FFT Analyser)"]
     end
 
     subgraph Storage_Layer [" Local Storage & Export Pipeline"]
@@ -138,6 +136,7 @@ The undo/redo pipeline is fully decoupled from the React rendering tree into a p
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
+- Layer property and frame-duration edits use metadata-only structural snapshots; continuous opacity and duration controls group one interaction into one history step. History-backed structural mutations estimate both Undo and Redo snapshot sizes before changing artwork and reject over-budget edits without clearing existing history.
 
 ---
 
@@ -371,34 +370,7 @@ graph TD
 
 ---
 
-## 10. Procedural Web Audio Ambient Radio (`src/lib/audio/lofiRadio.ts`)
-
-```mermaid
-graph LR
-    subgraph AudioEngine ["Web Audio Synth"]
-        NoiseGen["Pink Noise / Vinyl Pops Generator"] --> NoiseFilter["Biquad Lowpass (800Hz)"]
-        NoiseFilter --> NoiseGain["Noise Gain Node"]
-        
-        ChordOsc["Triangle Chords (Rhodes Envelope)"] --> VibratoLFO["LFO Tape Flutter (0.3Hz)"]
-        VibratoLFO --> ChordFilter["Biquad Lowpass Sweep (950Hz -> 300Hz)"]
-        ChordFilter --> ChordGain["Chord Gain Node"]
-        
-        SubBass["Sub-Bass Sine (f/2)"] --> BassGain["Bass Gain Node"]
-        
-        NoiseGain & ChordGain & BassGain --> MasterGain["Master Volume Gain"]
-        MasterGain --> Analyser["FFT Analyser (fftSize: 64)"]
-        Analyser --> Destination["AudioContext Destination (Speakers)"]
-    end
-    
-    Analyser --> EqualizerBars["Animated Boombox LED Spectrum Bars"]
-```
-
-* **Zero-Bandwidth Procedural Synth (`src/lib/audio/tracks.ts`):** Synthesizes warm rain ambiance, subtle vinyl crackles, acoustic felt piano, 25%/50% pulse flutes with delayed vibrato, NES triangle bass, and warm pad chords completely in code without loading external `.mp3` or `.wav` assets. Features 3 complete in-memory procedural arrangements: *"Field of Hopes"*, *"My Castle Town"*, and *"Empty Town"*.
-* **Real-Time Spectrum Visualizer:** 4-band FFT frequency analyzer samples frequency buckets ($b_0, b_1, b_2, b_3$) on every animation frame for animated LED spectrum feedback.
-
----
-
-## 11. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)
+## 10. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)
 
 The studio theme engine is architected around two orthogonal axes managed by `useThemeStore`:
 * **Studio Theme (`studioTheme`):** `'atelier'` (modern midnight default) or `'cozy-classic'` (original plum/wisteria historical identity).
@@ -412,7 +384,7 @@ To prevent simultaneous layout recalculations and repaint stutter across thousan
 
 ---
 
-## 12. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)
+## 11. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)
 
 High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral Filters, Laplace Normal Map baking, downsampling) require substantial TypedArray scratch space. To eliminate garbage collection pauses during live canvas interactions:
 - **Pool Sizing & Lifecycle:** Pre-allocates and bounds reusable `Float32Array` and `Int32Array` buffers.
@@ -422,7 +394,7 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 ---
 
-## 13. Multithreaded Worker & Deterministic CG Math Architecture
+## 12. Multithreaded Worker & Deterministic CG Math Architecture
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
@@ -430,7 +402,7 @@ Compute-bound tasks are balanced between background Web Workers and on-device Ty
 
 ---
 
-## 14. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
+## 13. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
 Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, 2.5D cast shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
 - **Discriminated Event Map:** All 32 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
@@ -438,14 +410,14 @@ Cross-component triggers (normal map baking, palette quantization, volumetric li
 
 ---
 
-## 15. Vercel & CI/CD Deployment Pipeline
+## 14. Vercel & CI/CD Deployment Pipeline
 
 * **Framework Engine:** Next.js 16 App Router on Vercel Edge Network.
 * **Continuous Deployment:** Every push to `main` triggers automated typechecking (`tsc --noEmit`), linting (`eslint`), unit testing (`vitest`), and static optimization before deploying to production.
 
 ---
 
-## 16. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)
+## 15. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)
 
 The current bridge holds one `P2PSyncSession`, so a session supports one host and one guest. General multi-peer convergence is outside the verified v1 scope.
 
@@ -460,7 +432,7 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 
 ---
 
-## 17. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)
+## 16. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)
 
 * **Rate Limiting:** Token bucket (12 requests/minute, burst 12) keyed by client IP, implemented as a pure module in `src/lib/server/tokenBucket.ts`. State is per-process memory — correct for a single Node instance, a per-instance limit on multi-instance deployments.
 * **Input Ceilings:** 64KB request-body ceiling enforced before JSON parsing, and a 100-event cap on forwarded batches, with explicit 413/429 responses.
@@ -468,7 +440,7 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 
 ---
 
-## 18. Algorithmic Scope Boundaries & Target System Envelope
+## 17. Algorithmic Scope Boundaries & Target System Envelope
 
 To maintain sub-16ms interactive drawing latency and prevent runaway complexity, PixiBun's algorithms operate within explicit, mathematically defined envelopes:
 
@@ -479,7 +451,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 
 ---
 
-## 19. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)
+## 18. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)
 
 * **Tangent-Space Normal Vector Encoding:** Standard OpenGL convention where $+Y$ points Up (green channel increases towards the top of the sprite) and flat perpendicular surfaces encode to $(128, 128, 255)$. Decoded vectors are strictly normalized to unit length $\|(N_x, N_y, N_z)\| = 1$.
 * **Analytical Bevel & Chamfer Geometry:** Given compass azimuth $\alpha \in [0, 360^\circ)$ ($0^\circ=\text{North}$, $90^\circ=\text{East}$) and slope incline $\phi \in (0, 90^\circ]$, directional normal vectors are evaluated analytically:
@@ -501,7 +473,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 
 ---
 
-## 20. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)
+## 19. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)
 
 * **Amiga IFF ILBM `CRNG` & Commodore Graphicraft `CCRT` Codecs:** Full binary parsing and serialization for legacy 8-byte `CRNG` and 14-byte `CCRT` chunks, including big-endian 16-bit rates ($16384 = 60\text{Hz}$), direction flags, and microsecond intervals.
 * **Allocation-Free Per-Pixel LUT Blit (`updateLivePaletteLUT32`):** Direct update of a preallocated `Uint32Array` LUT packed in little-endian `0xAABBGGRR` format. Per-pixel blitting operates without memory allocation on `ImageData` 32-bit views, while per-frame LUT recomputations incur small, bounded scratch allocations.
@@ -519,7 +491,7 @@ To maintain sub-16ms interactive drawing latency and prevent runaway complexity,
 
 ---
 
-## 21. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)
+## 20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)
 
 To ensure sequential test isolation, prevent cross-run state accumulation, and protect multi-tab sessions:
 * **Explicit Connection Teardown (`db.close()`):** Before initiating database deletion or project resets, active Dexie database instances are explicitly closed via `window.__pixibunDb.close()`. This ensures no hanging locks or open transactions block schema drops.
@@ -534,7 +506,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ---
 
-## 22. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening
+## 21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening
 
 * **Signed vs. Unsigned 32-Bit Bitwise Invariant (`src/lib/canvas/floodFill.ts`):** JavaScript bitwise operators coerce values to 32-bit signed integers. When packing RGBA color words via `(a << 24 | b << 16 | g << 8 | r)`, any fully opaque pixel ($a = 255$) sets the sign bit (bit 31), yielding a negative number (e.g. `-16777216`). Direct comparison against values from a `Uint32Array` view (which yields unsigned integers, e.g. `4278190335`) evaluated to `false`, terminating flood fill after a single pixel on opaque regions. All 32-bit color word conversions strictly enforce unsigned casting via the zero-fill right shift operator `>>> 0`. In addition, `Uint32Array` buffer views are constructed with explicit byte offset and aligned byte length parameters `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
 * **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 24); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
@@ -547,7 +519,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ---
 
-## 23. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
+## 22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
 
 * **RotSprite-Inspired Rotation (`src/lib/canvas/rotSprite.ts`):** Uses ideas from Xenowhirl's 2007 pixel-art rotation algorithm, with a PixiBun-specific voting downscaler. It does not implement the canonical rotation-offset search or single-pixel detail-restoration pass. The implementation has four stages:
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
@@ -573,7 +545,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ---
 
-## 24. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)
+## 23. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)
 
 * **P2P Co-Draw Guest UI Mutation Locking (`src/hooks/useCoDrawStatus.ts`, `src/components/layout/inspector/LayersPanel.tsx`, `src/components/layout/BottomTimeline.tsx`):**
   - Establishes host-authoritative structural protection across WebRTC peer connections.
@@ -602,7 +574,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ---
 
-## 25. Comprehensive Defensive Hardening & Invariant Architecture
+## 24. Comprehensive Defensive Hardening & Invariant Architecture
 
 To immunize the client-side graphics workstation against browser anomalies, memory exhaustion, floating-point singularity, and malicious payloads, PixiBun introduces a dedicated, zero-dependency safety substrate (`src/lib/safety/`):
 
@@ -610,7 +582,7 @@ To immunize the client-side graphics workstation against browser anomalies, memo
   - **IEEE 754 Floating-Point Invariants:** Grounded in Goldberg (1991) and Knuth (1997), `clampZoom(zoom, fallback)` sanitizes zoom values against `NaN`, `Infinity`, $\le 0$, and bounds to $[0.05, 64.0]$. `safeDivide(n, d, fallback)` prevents zero-division singularities.
   - **Cohen-Sutherland 2D Line Clipping (`clipLineToCanvas`):** Formulates 4-bit outcodes (`INSIDE=0`, `LEFT=1`, `RIGHT=2`, `BOTTOM=4`, `TOP=8`) based on Foley et al. (1990) to clip raster line segments to canvas boundaries $[0, w-1] \times [0, h-1]$ prior to pixel traversal.
 * **Safe Canvas Hardware Boundary Clamping (`src/lib/safety/safeCanvas.ts`):**
-  - Defensively wraps `createImageData` and `getImageData`. Enforces positive integer dimensions, clamps selection bounds against hardware GPU limits (8192px probe default / 16384x16384px area ceiling), and returns safe empty/padded `ImageData` buffers rather than throwing browser-crashing `IndexSizeError` exceptions on zero-area selections.
+  - Selection extraction in `useViewportSelection.ts` uses these `createImageData` and `getImageData` wrappers. They enforce positive integer dimensions, bound allocation requests against probed hardware limits, and return empty or padded `ImageData` for out-of-bounds selections. Other canvas readback paths use their own guards and are not covered by this wrapper.
 * **CWE-409 Decompression Bomb & Pixel Bomb Mitigation (`src/lib/safety/imageHeaderProbe.ts`):**
   - Pre-flight parses raw binary file headers (streaming window paging up to 256KB+) for PNG (`IHDR`), JPEG (`SOF0`/`SOF2`), GIF, and BMP formats. Rejects dimensions $>8192\text{px}$ or pixel areas $>67\text{ MP}$ before memory buffer allocation or `createImageBitmap` invocation.
 * **CWE-1321 Prototype Pollution Defense & Safe JSON Parsing (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`):**
@@ -622,7 +594,7 @@ To immunize the client-side graphics workstation against browser anomalies, memo
 
 ---
 
-## 26. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
+## 25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
 
 To decouple development from cloud CI billing constraints while maintaining uncompromising release standards:
 
@@ -641,7 +613,7 @@ To decouple development from cloud CI billing constraints while maintaining unco
   - Drop-in `.github/workflows/ci.yml` pipeline configuration enforcing automated quality gates.
 
 ---
-## 27. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
+## 26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
 
 To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
 
@@ -661,7 +633,7 @@ To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 
 
 ---
 
-## 28. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
+## 27. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection
 
 To ensure that the 2.5D Photometric Studio delivers mathematically sound volumetric lighting across all canvas sizes ($16\times16$ through $128\times128$) and dark color palettes:
 
@@ -690,7 +662,7 @@ Undo and redo stacks are independently depth-bounded to 50 entries each and shar
 
 ---
 
-## 29. Studio UI Architecture & Design System Primitives
+## 28. Studio UI Architecture & Design System Primitives
 
 ### Workspace Shell Decomposition
 Phase 62 restructures the studio workspace from a monolithic `StudioLayout.tsx` into a modular shell architecture:
@@ -702,7 +674,7 @@ graph TD
         Viewport["CenterViewport (Five Logical-Size Canvases & CSS HUD)"]
         Inspector["RightInspector (Layers / Palette / PixiBud)"]
         Timeline["BottomTimeline (Frames, Onion Skin, Scrub Preview)"]
-        Status["StatusBar (Cursor, Tool, Canvas, Zoom, Radio)"]
+        Status["StatusBar (Cursor, Tool, Canvas, Zoom)"]
         CmdPalette["CommandPaletteModal (Ctrl+K Fuzzy Search)"]
     end
 
@@ -717,7 +689,7 @@ graph TD
 ```
 
 * **AtelierRail (`src/components/layout/AtelierRail.tsx`):** Unified top header rail merging the former `TopHeader` and `ContextOptionsBar`. Houses project title editing, save/export/import/gallery/co-draw actions, undo/redo, zoom control group with fit calculation, tool-specific contextual parameter toggles, CVD colorblindness lenses, squint mode, symmetry axes, and the `AppearancePopover` theme trigger.
-* **StatusBar (`src/components/layout/StatusBar.tsx`):** Fixed 24px bottom chrome bar displaying live canvas cursor coordinates via `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, active layer/frame info, and the embedded procedural lo-fi radio widget.
+* **StatusBar (`src/components/layout/StatusBar.tsx`):** Fixed 24px bottom chrome bar displaying live canvas cursor coordinates via `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, and active layer/frame info.
 * **CommandPaletteModal (`src/components/modals/CommandPaletteModal.tsx`):** Accessible keyboard-driven fuzzy-search modal (`Ctrl+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut hint badges.
 
 ### Design System Component Library
@@ -760,7 +732,7 @@ The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) provides a f
 
 ---
 
-## 30. Teaching Animation Board & Playground Education System
+## 29. Teaching Animation Board & Playground Education System
 
 The Playground (`/playground`) includes an interactive teaching animation board for beginner-to-advanced pixel art animation education.
 
@@ -771,7 +743,7 @@ The Playground (`/playground`) includes an interactive teaching animation board 
 
 ---
 
-## 31. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)
+## 30. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)
 
 Phase 63 eliminates directional bias from base 2.5D heightmaps, normalizes pre-authored shading, and establishes a unified non-destructive recipe model for all generated graphics features.
 
@@ -837,7 +809,7 @@ export interface LayerEffectRecipe {
 
 ---
 
-## 32. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)
+## 31. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)
 
 Phase 1A and Phase 1B establish defensive boundaries against runaway workspace complexity, prototype pollution, malformed stored records, and storage corruption, providing non-destructive forensic diagnosis and a low-level streaming archive-writer foundation.
 

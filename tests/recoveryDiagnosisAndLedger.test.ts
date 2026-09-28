@@ -35,12 +35,6 @@ function createCorruptPngBlob(): Blob {
   return new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00])], { type: 'image/png' });
 }
 
-function _createGifBlob(): Blob {
-  // GIF89a header
-  const bytes = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 32, 0, 32, 0]);
-  return new Blob([bytes], { type: 'image/gif' });
-}
-
 function baseProjectFixture(_id = 'proj-test-1', width = 32, height = 32): ProjectFile {
   return {
     format: PROJECT_FORMAT_ID,
@@ -201,7 +195,7 @@ describe('Phase 1B.2: Recovery Ledger and Stored-Blob Diagnosis', () => {
       layers: [{ id: `l-${f}`, name: `L`, visible: true, locked: false, opacity: 1, blendMode: 'source-over' }],
     }));
 
-    const blobs = proj.frames.map((f, i) => ({
+    const blobs = proj.frames.map((_, i) => ({
       id: i + 1,
       layerId: `l-${i}`,
       frameIndex: i,
@@ -336,7 +330,7 @@ describe('Phase 1B.2: Recovery Ledger and Stored-Blob Diagnosis', () => {
       durationMs: 100,
       layers: [{ id: `l-${f}`, name: `L`, visible: true, locked: false, opacity: 1, blendMode: 'source-over' }],
     }));
-    const blobs = proj.frames.map((f, i) => ({
+    const blobs = proj.frames.map((_, i) => ({
       id: i + 1,
       layerId: `l-${i}`,
       frameIndex: i,

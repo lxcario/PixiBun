@@ -6,7 +6,7 @@
   > ^ <    Engineering, Computer Graphics & Architecture Reference
 ```
 
-> **This document provides an in-depth technical explanation of PixiBun's raster drawing engine, 2.5D photometric mathematics laboratory, optical color quantization algorithms, Web Audio synthesizer, memory management, and tactile design system.**
+> **This document provides an in-depth technical explanation of PixiBun's raster drawing engine, 2.5D photometric mathematics laboratory, optical color quantization algorithms, memory management, and tactile design system.**
 
 ---
 
@@ -19,17 +19,16 @@
 - [5. 3D Minecraft Skin Recognition & Dedicated Shading](#5-3d-minecraft-skin-recognition--dedicated-shading)
 - [6. Signed Distance Field (SDF) In-Between Animation Morphing](#6-signed-distance-field-sdf-in-between-animation-morphing)
 - [7. Image-to-Pixel Synthesis (`pixelizeEngine.ts`)](#7-image-to-pixel-synthesis-pixelizeenginets)
-- [8. Procedural Web Audio Lo-Fi Synthesizer (`lofiRadio.ts`)](#8-procedural-web-audio-lo-fi-synthesizer-lofiradiots)
-- [9. Storage, Serialization & Game Engine Exports](#9-storage-serialization--game-engine-exports)
-- [10. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`)](#10-bounded-25d-sprite-cast-shadows--ground-drop-shadows-shadowraymarcherts)
-- [11. 2.5D Normal Sculptor & Reoriented Normal Mapping (`normalSculptor.ts`)](#11-25d-normal-sculptor--reoriented-normal-mapping-normalsculptorts)
-- [12. Mark Ferrari 8-Bit Dynamic Palette Cycling (`paletteCycling.ts`)](#12-mark-ferrari-8-bit-dynamic-palette-cycling-palettecyclingts)
-- [13. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety](#13-bitwise-buffer-normalization-hot-path-viewport-decoupling--export-safety)
-- [14. RotSprite-Inspired Rotation & Vector Depixelization](#14-rotsprite-inspired-rotation--vector-depixelization)
-- [15. Viewport Lenses, Accessibility & Direct Hotkeys](#15-viewport-lenses-accessibility--direct-hotkeys)
-- [16. Modern Studio Shell & Design System Primitives Architecture](#16-modern-studio-shell--design-system-primitives-architecture)
-- [17. Teaching Animation Board & Discrete Jump Physics Engine](#17-teaching-animation-board--discrete-jump-physics-engine)
-- [18. Smart-Effect Recipe Architecture & Non-Destructive Workflow](#18-smart-effect-recipe-architecture--non-destructive-workflow)
+- [8. Storage, Serialization & Game Engine Exports](#8-storage-serialization--game-engine-exports)
+- [9. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`)](#9-bounded-25d-sprite-cast-shadows--ground-drop-shadows-shadowraymarcherts)
+- [10. 2.5D Normal Sculptor & Reoriented Normal Mapping (`normalSculptor.ts`)](#10-25d-normal-sculptor--reoriented-normal-mapping-normalsculptorts)
+- [11. Mark Ferrari 8-Bit Dynamic Palette Cycling (`paletteCycling.ts`)](#11-mark-ferrari-8-bit-dynamic-palette-cycling-palettecyclingts)
+- [12. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety](#12-bitwise-buffer-normalization-hot-path-viewport-decoupling--export-safety)
+- [13. RotSprite-Inspired Rotation & Vector Depixelization](#13-rotsprite-inspired-rotation--vector-depixelization)
+- [14. Viewport Lenses, Accessibility & Direct Hotkeys](#14-viewport-lenses-accessibility--direct-hotkeys)
+- [15. Modern Studio Shell & Design System Primitives Architecture](#15-modern-studio-shell--design-system-primitives-architecture)
+- [16. Teaching Animation Board & Discrete Jump Physics Engine](#16-teaching-animation-board--discrete-jump-physics-engine)
+- [17. Smart-Effect Recipe Architecture & Non-Destructive Workflow](#17-smart-effect-recipe-architecture--non-destructive-workflow)
 
 ---
 
@@ -47,8 +46,7 @@ src/
 │   ├── playground/page.tsx          # Interactive tutorial, sandbox, and Teaching Animation Board
 │   └── studio/page.tsx              # Main studio drawing editor and workspace
 ├── components/
-│   ├── audio/                       # StudioRadioWidget (Web Audio synthesizer boombox & spectrum)
-│   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, PixelCursor etc.)
+│   ├── landing/                     # Landing components (AtelierDeskScene, PixelVines, etc.)
 │   ├── layout/                      # Studio shell (AtelierRail, LeftToolbar, CenterViewport, StatusBar, CursorStatusBadge, RightInspector + PanelSection subpanels, BottomTimeline)
 │   ├── modals/                      # Dialog windows (CommandPaletteModal, ImportModal, ExportModal, CanvasResizeModal, ShortcutsModal, CoDrawModal, ProjectsGalleryModal)
 │   ├── playground/                  # Educational modules (TeachingAnimationBoard, TeachingBoardModal)
@@ -74,8 +72,6 @@ src/
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
 │   │   └── shadowRayMarcher.ts      # Bounded 2.5D sprite cast shadow projection, drop shadow, Aaltonen cone tracing
 │   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
-│   ├── audio/
-│   │   └── lofiRadio.ts             # Web Audio API procedural lo-fi synth (Pink noise, Rhodes chords, FFT analyzer)
 │   ├── canvas/                      # Raster fundamentals: Bresenham, 2:1 iso stepper, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, harmonic rational retuning)
@@ -132,7 +128,7 @@ sequenceDiagram
 
 ### 3. Undo/Redo History Engine
 * `src/lib/engine/historyEngine.ts` maintains independently depth-bounded 50-step undo and redo stacks (`createHistoryEngine(50)`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope.
-* Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for $O(1)$ pixel restoration.
+* Prior to each stroke, ctx.getImageData(0, 0, width, height) captures a layer snapshot for pixel restoration. Layer properties and frame duration use metadata-only structural snapshots. Structural edits are rejected before mutation when their projected Undo or Redo snapshot exceeds the history budget.
 
 ---
 
@@ -280,16 +276,7 @@ $$\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L}
 
 ---
 
-# 8. Procedural Web Audio Lo-Fi Synthesizer (lofiRadio.ts)
-
-* **Pink Noise & Vinyl Rain:** Synthesizes rain/vinyl crackle through an 800Hz lowpass filter with zero network audio assets.
-* **Tape Flutter:** 0.3Hz LFO introduces $\pm 1.5\text{ Hz}$ subtle analog pitch waver.
-* **Equalizer Spectrum:** 4-band real-time FFT analyzer powers boombox visualizer bars.
-* **Procedural Track Arrangements (`src/lib/audio/tracks.ts`):** Features 3 complete in-memory procedural arrangements ("Field of Hopes", "My Castle Town", "Empty Town") with acoustic felt piano, 25%/50% pulse flutes with delayed vibrato, NES triangle bass, warm pad chords, and subtle tape percussion.
-
----
-
-# 9. Storage, Serialization & Game Engine Exports
+# 8. Storage, Serialization & Game Engine Exports
 
 ### 1. IndexedDB Workspace & Format v3 (db.ts, schema.ts)
 * Dexie-backed multi-project workspace with dedicated binary `layerBlobs` table storing raw PNG blobs directly (eliminating base64 serialization overhead).
@@ -319,7 +306,7 @@ $$\text{wrap}(\mathbf{N}\cdot\mathbf{L}) = \left(\frac{\mathbf{N}\cdot\mathbf{L}
 
 ---
 
-# 10. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (shadowRayMarcher.ts)
+# 9. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (shadowRayMarcher.ts)
 
 ### 1. Exact 1-to-1 Sheared Silhouette Projection
 Rather than tracing an unbounded 2D planar wedge across the floor, the engine projects sprite pixels directly onto the ground plane:
@@ -336,7 +323,7 @@ When `ditherMode === 'none'`, shadows render with crisp uniform flat opacity $\t
 
 ---
 
-# 11. 2.5D Normal Sculptor & Reoriented Normal Mapping (normalSculptor.ts)
+# 10. 2.5D Normal Sculptor & Reoriented Normal Mapping (normalSculptor.ts)
 
 ### 1. Tangent Space Normal Vector Encoding
 Normal vectors follow the standard OpenGL tangent space convention ($+Y$ points up, $+X$ points right, $+Z$ points outward towards the camera):
@@ -360,7 +347,7 @@ $$\mathbf{r} = \mathbf{t}(\mathbf{t} \cdot \mathbf{u}) - \mathbf{u} \, t_z, \qua
 
 ---
 
-# 12. Mark Ferrari 8-Bit Dynamic Palette Cycling (paletteCycling.ts)
+# 11. Mark Ferrari 8-Bit Dynamic Palette Cycling (paletteCycling.ts)
 
 ### 1. IFF ILBM `CRNG` & Commodore `CCRT` Binary Codecs
 Binary parser and serializer supporting classic Deluxe Paint II/III/IV animation tracks:
@@ -390,7 +377,7 @@ Guarantees loop unrolling into loopable APNG, GIF, and standalone Godot 4 (`.gds
 
 ---
 
-# 13. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety
+# 12. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety
 
 ### 1. Unsigned 32-Bit Bitwise Invariant (`floodFill.ts`)
 JavaScript bitwise operations evaluate in signed 32-bit two's complement. For fully opaque pixels with alpha $A = 255$:
@@ -416,7 +403,7 @@ Hardware video encoders require even integer dimensions for $16 \times 16$ macro
 
 ---
 
-# 14. RotSprite-Inspired Rotation & Vector Depixelization
+# 13. RotSprite-Inspired Rotation & Vector Depixelization
 
 ### 1. RotSprite-Inspired Rotation (`rotSprite.ts`)
 PixiBun combines an 8x Scale2x expansion, inverse sampling, and its own majority-vote downscaler. It does not implement Xenowhirl's canonical rotation-offset search or single-pixel detail-restoration pass:
@@ -439,7 +426,7 @@ Converts pixel art into resolution-independent SVG vector graphics following the
 
 ---
 
-# 15. Viewport Lenses, Accessibility & Direct Hotkeys
+# 14. Viewport Lenses, Accessibility & Direct Hotkeys
 
 ### 1. Silhouette / Squint Mode Lens (<kbd>S</kbd>)
 Toggles a high-contrast binary luminance lens on the viewport display. It computes perceived luminance $Y = 0.299R + 0.587G + 0.114B$ and maps pixels to pure black or pure white against a configurable threshold. This allows artists to evaluate readability, value hierarchies, and negative space without mutating the artwork's color data.
@@ -461,12 +448,12 @@ Cycles display-only simulation matrices for color vision deficiencies:
 
 ---
 
-# 16. Modern Studio Shell & Design System Primitives Architecture
+# 15. Modern Studio Shell & Design System Primitives Architecture
 
 ### 1. Workspace Shell Decomposition
 The monolithic `StudioLayout.tsx` has been decomposed into a decoupled shell architecture:
 * **`AtelierRail.tsx`**: Top studio rail unifying project identity, file actions (Save, Save As, Import, Export, Gallery, Co-Draw), Undo/Redo controls, zoom group with responsive fit calculation (`handleFitToScreen`), tool-specific contextual parameter controls, CVD colorblindness lenses, squint mode, symmetry rulers, and `AppearancePopover`.
-* **`StatusBar.tsx`**: 24px bottom chrome bar displaying real-time cursor coordinates via decoupled `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, active layer/frame indicators, and embedded procedural Web Audio lo-fi radio boombox.
+* **`StatusBar.tsx`**: 24px bottom chrome bar displaying real-time cursor coordinates via decoupled `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, and active layer/frame indicators.
 * **`CommandPaletteModal.tsx`**: Accessible fuzzy-search launcher (`Ctrl+K` / `Cmd+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut hint badges.
 
 ### 2. Design System Component Library (`src/components/ui/`)
@@ -481,7 +468,7 @@ All studio inspector panels and dialogs are standardized on tactile, accessible 
 
 ---
 
-# 17. Teaching Animation Board & Discrete Jump Physics Engine
+# 16. Teaching Animation Board & Discrete Jump Physics Engine
 
 ### 1. Interactive Teaching Animation Board (`TeachingAnimationBoard.tsx`)
 Built into `/playground` (and openable in the studio via `pixibun:open-teaching-board`), the Teaching Animation Board provides structured visual pixel art education:
@@ -493,7 +480,7 @@ Built into `/playground` (and openable in the studio via `pixibun:open-teaching-
 
 ---
 
-# 18. Smart-Effect Recipe Architecture & Non-Destructive Workflow
+# 17. Smart-Effect Recipe Architecture & Non-Destructive Workflow
 
 Phase 63 introduces a portable, non-destructive effect recipe model (`LayerEffectRecipe`) across all generated layer types:
 

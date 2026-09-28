@@ -114,7 +114,7 @@ describe('Photometric Auto-Analysis Engine', () => {
 
   it('infers matte shading for soft, low-contrast art without highlights', () => {
     // Smooth vertical gradient, mid tones, zero specular pixels, low saturation
-    const data = makeData(32, 32, (x, y) => {
+    const data = makeData(32, 32, (_, y) => {
       const v = 110 + Math.round(30 * (y / 31));
       return [v, v - 6, v - 12, 255];
     });

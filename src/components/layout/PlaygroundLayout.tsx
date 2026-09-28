@@ -29,20 +29,18 @@ export const PlaygroundLayout: React.FC = () => {
     setStepIndex,
   } = useOnboardingStore();
 
-  const {
-    activeFrameIndex,
-    activeLayerId,
-    canvasWidth,
-    canvasHeight,
-    isPlaying,
-    canUndo,
-    canRedo,
-    tools,
-    setBrushSize,
-    setActiveTool,
-    swapColors,
-    setIsPlaying,
-  } = useStudioStore();
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const activeLayerId = useStudioStore((s) => s.activeLayerId);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const isPlaying = useStudioStore((s) => s.isPlaying);
+  const canUndo = useStudioStore((s) => s.canUndo);
+  const canRedo = useStudioStore((s) => s.canRedo);
+  const tools = useStudioStore((s) => s.tools);
+  const setBrushSize = useStudioStore((s) => s.setBrushSize);
+  const setActiveTool = useStudioStore((s) => s.setActiveTool);
+  const swapColors = useStudioStore((s) => s.swapColors);
+  const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
 
   const stepConfig = getCurrentStep();
 

@@ -1,5 +1,4 @@
 // @vitest-environment happy-dom
-import React from 'react';
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup, act } from '@testing-library/react';
 import { CursorStatusBadge, updateCursorHUD } from '@/components/layout/CursorStatusBadge';

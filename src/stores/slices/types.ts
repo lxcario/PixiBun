@@ -142,7 +142,7 @@ export interface LayerSlice {
   reorderLayers: (startIndex: number, endIndex: number) => void;
   toggleLayerVisibility: (layerId: string) => void;
   toggleLayerLock: (layerId: string) => void;
-  setLayerOpacity: (layerId: string, opacity: number) => void;
+  setLayerOpacity: (layerId: string, opacity: number, skipHistory?: boolean) => boolean;
   setLayerBlendMode: (layerId: string, blendMode: BlendMode) => void;
   renameLayer: (layerId: string, name: string) => void;
   setLayerTag: (layerId: string, tag: string) => void;
@@ -163,7 +163,7 @@ export interface AnimationSlice {
   addFrame: () => void;
   duplicateFrame: (frameIndex: number) => void;
   deleteFrame: (frameIndex: number) => void;
-  setFrameDuration: (frameIndex: number, durationMs: number) => void;
+  setFrameDuration: (frameIndex: number, durationMs: number, skipHistory?: boolean) => boolean;
   reorderFrames: (startIndex: number, endIndex: number) => void;
   setActiveFrame: (index: number) => void;
   setFps: (fps: number) => void;

@@ -24,6 +24,53 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await expect(page.getByTitle(/Export PNG, GIF, or Spritesheet/i)).toBeVisible();
   });
 
+  test('reorders layers with buttons and has no music control', async ({ page }) => {
+    await page.goto('/studio');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Studio Synthesizer Radio' })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Add New Layer' }).click();
+    const layerNames = page.getByRole('button', { name: /^Select layer / });
+    await expect(layerNames).toHaveText(['Layer 2', 'Base Layer']);
+    await page.getByRole('button', { name: 'Move layer Base Layer up' }).click();
+    await expect(layerNames).toHaveText(['Base Layer', 'Layer 2']);
+  });
+
+  test('undoes and redoes layer properties and frame timing in order', async ({ page }) => {
+    await page.goto('/studio');
+    await expect(page.locator('div[role="application"]')).toBeVisible();
+    const undo = page.getByTitle('Undo (Ctrl+Z)');
+    const redo = page.getByTitle('Redo (Ctrl+Y)');
+    const opacity = page.getByRole('slider', { name: 'Layer opacity' });
+    const duration = page.getByRole('spinbutton', { name: 'Active frame duration in milliseconds' });
+    const blend = page.getByRole('combobox', { name: 'Layer blend mode' });
+
+    await expect(opacity).toHaveValue('100');
+    const originalDuration = await duration.inputValue();
+    await opacity.focus();
+    await opacity.press('ArrowLeft');
+    await expect(opacity).toHaveValue('95');
+    await duration.fill('250');
+    await duration.blur();
+    await expect(duration).toHaveValue('250');
+    await blend.selectOption('multiply');
+    await expect(blend).toHaveValue('multiply');
+
+    await undo.click();
+    await expect(blend).toHaveValue('source-over');
+    await undo.click();
+    await expect(duration).toHaveValue(originalDuration);
+    await undo.click();
+    await expect(opacity).toHaveValue('100');
+
+    await redo.click();
+    await expect(opacity).toHaveValue('95');
+    await redo.click();
+    await expect(duration).toHaveValue('250');
+    await redo.click();
+    await expect(blend).toHaveValue('multiply');
+  });
+
   test('opens Guide and Shortcuts modal via hotkey and button', async ({ page }) => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
@@ -303,7 +350,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await page.waitForTimeout(150);
 
     // 2. Switch to PixiBud AI tab
-    const aiTabBtn = page.getByRole('button', { name: /PixiBud AI/i });
+    const aiTabBtn = page.getByRole('button', { name: /PixiTools/i });
     await aiTabBtn.click();
     await page.waitForTimeout(150);
 
@@ -380,7 +427,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     expect(paletteResults.violations).toEqual([]);
 
     // Tab 3: PixiBud AI with both collapsible panels expanded
-    await page.getByRole('button', { name: /PixiBud AI/i }).click();
+    await page.getByRole('button', { name: /PixiTools/i }).click();
     await page.waitForTimeout(300);
     await page.getByRole('button', { name: /2\.5D Photometric Studio/i }).click();
     await page.getByRole('button', { name: /Volumetric Optics & SSS/i }).click();

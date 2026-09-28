@@ -85,9 +85,9 @@ export function useSpriteCleanupEvents({
       }
       if (apply && edits.length > 0) {
         if (request.allFrames) {
-          pushStructuralHistoryStep('Analyze & Crisp (All Frames)', {
+          if (!pushStructuralHistoryStep('Analyze & Crisp (All Frames)', {
             affectedLayerIds: edits.map((edit) => edit.id),
-          });
+          })) return;
         } else {
           captureSnapshot('Analyze & Crisp');
         }

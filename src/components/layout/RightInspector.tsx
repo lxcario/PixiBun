@@ -53,7 +53,7 @@ export const RightInspector: React.FC = () => {
 
         <button
           onClick={() => setActiveInspectorTab('ai')}
-          aria-label="PixiTools (PixiBud AI)"
+          aria-label="PixiTools"
           data-testid="tab-ai"
           title="PixiTools"
           className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-sans cursor-pointer rounded-[2px] transition-all duration-100 ${

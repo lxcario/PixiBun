@@ -665,7 +665,7 @@ At the 2026-09-26 verification point:
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-Current suite inventory: 1270 unit and integration tests across 129 suites; 80 Chromium E2E tests across 20 spec suites (2026-09-28). The codebase also checks TypeScript and ESLint. Deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
+Current suite inventory: 1268 unit and integration tests across 128 suites; 82 Chromium E2E tests across 20 spec suites (2026-09-28). The codebase also checks TypeScript and ESLint. Deferred capabilities and unresolved audit uncertainties remain cataloged for future verification.
 
 ---
 

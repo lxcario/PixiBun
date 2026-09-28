@@ -35,7 +35,7 @@ export function useChiselPointerHandler({
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
 
-  const onPointerDown = (e: React.PointerEvent, coords: Point) => {
+  const onPointerDown = (_e: React.PointerEvent, coords: Point) => {
     const currentFrame = frames[activeFrameIndex];
     const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
 
@@ -85,7 +85,7 @@ export function useChiselPointerHandler({
     }
   };
 
-  const onPointerMove = (e: React.PointerEvent, coords: Point) => {
+  const onPointerMove = (_e: React.PointerEvent, coords: Point) => {
     if (tools.activeTool === 'normal-chisel') {
       if (lastPoint && chiselSessionRef.current) {
         const dx = coords.x - lastPoint.x;

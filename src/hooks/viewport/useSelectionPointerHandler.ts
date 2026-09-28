@@ -222,7 +222,7 @@ export function useSelectionPointerHandler({
     return false;
   };
 
-  const onPointerMove = (e: React.PointerEvent, coords: Point): boolean => {
+  const onPointerMove = (_e: React.PointerEvent, coords: Point): boolean => {
     if (isDraggingSelection && floatingSelection) {
       const newX = coords.x - dragOffset.x;
       const newY = coords.y - dragOffset.y;
@@ -294,7 +294,7 @@ export function useSelectionPointerHandler({
     return false;
   };
 
-  const onPointerUp = (e: React.PointerEvent | undefined, endCoords: Point | null): boolean => {
+  const onPointerUp = (_e: React.PointerEvent | undefined, endCoords: Point | null): boolean => {
     if (tools.activeTool === 'select-box' && strokeStart && endCoords) {
       const bx = Math.min(strokeStart.x, endCoords.x);
       const by = Math.min(strokeStart.y, endCoords.y);

@@ -2,7 +2,7 @@
 
 ## Problem & Audience
 - **Who this is for:** Indie game developers, pixel artists, animators, and digital creators looking for a desktop-grade, tactile 2D pixel art studio and animation suite in the browser.
-- **What they're trying to do:** Create precision 2D pixel art, build multi-frame animated sprite sheets, manage color ramps and layers, convert reference art to authentic pixel sprites, and work at a peaceful, cozy desk with procedural lo-fi beats and intelligent computer graphics tools.
+- **What they're trying to do:** Create precision 2D pixel art, build multi-frame animated sprite sheets, manage color ramps and layers, convert reference art to authentic pixel sprites, and work at a peaceful, cozy desk with computer graphics tools.
 - **What success looks like:** A responsive, sub-16ms latency pixel drawing and animation tool with zero-lag integer zoom/pan, layered compositing, onion skinning, game-ready sprite sheet export (PNG + Godot, Unity & Phaser 3 JSON), 2.5D photometric lighting, intelligent image-to-pixel-art synthesis, and a cozy PixiBud companion that provides instant non-destructive auto-shading, palette harmonization, and frame generation.
 
 ## Scope
@@ -16,8 +16,7 @@
 - **3D Minecraft Skin Recognition & Dedicated Shading:** Deep 8-connected topological discriminator (`analyzeMinecraftSkinTopology`) with dominant component ratio, bilateral limb verification, and canonical void zone integrity to protect centered character sprites from false-positive Minecraft UV classification. Automatic Java/Bedrock UV layout detection ($64\times64$ and $64\times32$), 12-region 3D normal mapping, Half-Lambert diffuse wrap, anatomical contact AO, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting. Tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector controls for user sovereignty.
 - **Smart Pixel Math Suite:** RotSprite precision rotation (exact lossless 90°/180°/270° orthogonal permutations + 8x Scale2x cascade with parabolic center-weighted majority voting for arbitrary angles), Zhang-Suen 1px line thinning, Smart Sub-Pixel Anti-Aliasing (De-Jaggy), Directional Selective Outlining (Sel-Out), Clean Stray Pixels, previewed Analyze & Crisp Artwork cleanup for imported rasters, Atkinson 75% error-diffusion, and Riemersma Hilbert space-filling dithering.
 - **Color & Palette Management:** OKLCH/HSV/HEX color picker, preset palettes (Endesga 32, Pico-8, Solarized, Cozy Hearth 16), custom color ramp generator, scan canvas to palette, snap layer to palette, harmonize OKLCH tones, atmospheric photographic color grading (Sunset, Moonlight, Neon, Game Boy), and **Mark Ferrari 8-Bit Dynamic Palette Cycling** (`src/lib/color/paletteCycling.ts`: Amiga IFF ILBM `CRNG` and Commodore `CCRT` binary chunk parsing/serialization, allocation-free per-pixel 32-bit direct LUT blitting, ping-pong triangle-wave fencepost safety, and harmonic rational retuning for loop export).
-- **Procedural Lo-Fi Ambient Radio:** Built-in Web Audio API synthesizer with rain/vinyl pink noise, warm Rhodes chord progressions, sub-bass, and 4-band real-time spectrum visualizer on the desktop boombox.
-- **Modern Studio Shell & Design System:** Modular `AtelierRail` consolidating project actions, contextual tool options, zoom fit calculations, CVD lenses, and appearance switching; persistent 24px `StatusBar` with real-time cursor coordinates and embedded lo-fi radio; keyboard-driven `CommandPaletteModal` (`Ctrl+K`); responsive `PixiBunLogo` component; and standardized WCAG AA accessible `Studio*` design system primitives (`StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`).
+- **Modern Studio Shell & Design System:** Modular `AtelierRail` consolidating project actions, contextual tool options, zoom fit calculations, CVD lenses, and appearance switching; persistent 24px `StatusBar` with real-time cursor coordinates; keyboard-driven `CommandPaletteModal` (`Ctrl+K`); responsive `PixiBunLogo` component; and standardized WCAG AA accessible `Studio*` design system primitives (`StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`).
 - **Interactive Animation Education:** `TeachingAnimationBoard` in `/playground` with 10-frame jump curves, squash & stretch physics, 7-stage progressive sprite construction, Bun and Gel Slime curricula, 8 alt palette colorways, and 1-click timeline injection.
 - **Theme System:** Dual-axis first-party theme system (`studioTheme`: 'atelier' vs 'cozy-classic' × `colorScheme`: 'dark' vs 'light') with zero-lag transition suppression and `AppearancePopover`.
 - **Modular Studio Architecture:** Decomposed lifecycle hooks (`useStudioAutosave`, `useStudioClipboard`, `useStudioFileSystem`, `useStudioKeyboard`) and viewport pointer handlers (`useBrushPointerHandler`, `useChiselPointerHandler`, `useSelectionPointerHandler`, `useShapePointerHandler`).
@@ -27,7 +26,7 @@
 ### Explicitly out of scope for v1:
 - Centralized server-hosted WebSockets collaboration (reserved for v2; collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and per-pixel LWW-CRDT synchronization, with the host owning the layer structure while connected).
 - Native 3D mesh voxel conversions.
-- Full multi-track digital audio workstation (DAW) or custom sound effect synthesizer (the built-in lo-fi ambient background radio is included for atmosphere; external audio creation tools are out of scope).
+- Music production and sound design tools.
 
 ## Practical Limits
 
@@ -37,13 +36,12 @@ The studio canvas is limited to 2,048 pixels on either axis. Projects allow up t
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | **Next.js 16 (App Router) + React 19 + TypeScript** | Turbopack default bundler, fine-grained leaf subscriptions, modern SSR/client boundaries, and zero client bundle bloat. |
-| Studio Shell | **AtelierRail + StatusBar + CommandPalette** | Modular workspace chrome: consolidated top rail, 24px bottom coordinate bar, fuzzy launcher, and live lo-fi radio boombox. |
+| Studio Shell | **AtelierRail + StatusBar + CommandPalette** | Modular workspace chrome: consolidated top rail, 24px bottom coordinate bar, and fuzzy launcher. |
 | Design System | **Studio* Accessible Primitives Library** | Standardized `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`. |
 | Viewport & Hooks | **Decomposed Pointer Handlers & Studio Hooks** | Clean separation of concerns: tool-specific pointer handlers and dedicated hooks for autosave, clipboard, filesystem, and keyboard shortcuts. |
 | Canvas & Raster Engine | **Custom HTML5 2D Canvas Compositor** | Detached `HTMLCanvasElement` layer buffers, direct `ImageData` access, nearest-neighbor integer scaling, and custom Bresenham/DDA line interpolation. |
 | State & History | **Zustand + Immer** | Zero-re-render canvas stroke pipeline, fast undo/redo history snapshotting, and predictable decoupled state for layers and timeline. |
 | Image Synthesis | **Custom OKLab & Sobel Pipeline (`pixelizeEngine.ts`)** | Gamma-corrected downsampling, salience preservation, OKLab median-cut, Floyd-Steinberg/Atkinson dithering. |
-| Procedural Audio | **Web Audio API Engine (`lofiRadio.ts`)** | Zero-network ambient vinyl rain noise, warm chord progressions, and real-time spectrum analysis with 0 external audio files. |
 | Styling & Design Tokens | **Tailwind CSS v4** | CSS-first configuration (`@theme`), OKLCH color space native support, container queries, and custom tactile pixel utility classes. |
 | Tactile Motion | **Motion (`motion/react`)** | Fluid micro-interactions, floating cozy tool dock transitions, dialogs, and drawer animations without layout thrashing. |
 | Storage & Autosave | **Dexie.js (IndexedDB Schema v5)** | Local-first, continuous single-transaction autosave with dedicated binary `layerBlobs` and `recoveryRecords` tables, offline support, and schema-validated project file serialization. |

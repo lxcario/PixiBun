@@ -1,5 +1,4 @@
 // @vitest-environment happy-dom
-import React from 'react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, screen, cleanup, act } from '@testing-library/react';
 import { useThemeStore, getInitialStudioTheme, StudioTheme } from '@/stores/themeStore';

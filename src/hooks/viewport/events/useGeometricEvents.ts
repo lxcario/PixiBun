@@ -335,9 +335,9 @@ export function useGeometricEvents({
           image.data.set(item.data);
           return { ...item, ctx, image };
         });
-        pushStructuralHistoryStep(`RotSprite ${angle}°`, {
+        if (!pushStructuralHistoryStep(`RotSprite ${angle}°`, {
           opKind: 'rotsprite', affectedLayerIds, canvasWidth, canvasHeight,
-        });
+        })) return;
         for (const item of ready) {
           item.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
           item.ctx.putImageData(item.image, item.plan.destX, item.plan.destY);

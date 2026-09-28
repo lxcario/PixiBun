@@ -8,6 +8,7 @@ async function pixel(page: Page, x: number, y: number) {
 test('PixiTools scans before cleanup, cleans matching animation layers, and undo restores the source', async ({ page }) => {
   await page.goto('/studio');
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   const base64 = await page.evaluate(() => {
     const sheet = document.createElement('canvas');
     sheet.width = 64;
@@ -41,7 +42,7 @@ test('PixiTools scans before cleanup, cleans matching animation layers, and undo
   await expect(dialog).toBeHidden();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([120, 120, 120, 51]);
 
-  await page.getByRole('button', { name: 'PixiTools (PixiBud AI)' }).click();
+  await page.getByRole('button', { name: 'PixiTools' }).click();
   await page.getByRole('button', { name: 'Clean & Polish' }).click();
   const section = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await section.getAttribute('aria-expanded') === 'false') await section.click();
@@ -86,6 +87,7 @@ test('PixiTools scans before cleanup, cleans matching animation layers, and undo
 test('cleanup detects opaque gray artifacts when the alpha slider cannot', async ({ page }) => {
   await page.goto('/studio');
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   const base64 = await page.evaluate(() => {
     const art = document.createElement('canvas');
     art.width = 32; art.height = 32;
@@ -104,7 +106,7 @@ test('cleanup detects opaque gray artifacts when the alpha slider cannot', async
   await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([180, 182, 181, 255]);
-  await page.getByRole('button', { name: 'PixiTools (PixiBud AI)' }).click();
+  await page.getByRole('button', { name: 'PixiTools' }).click();
   await page.getByRole('button', { name: 'Clean & Polish' }).click();
   const section = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await section.getAttribute('aria-expanded') === 'false') await section.click();

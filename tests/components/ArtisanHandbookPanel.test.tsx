@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ArtisanHandbookPanel } from '@/components/onboarding/ArtisanHandbookPanel';
 import { useOnboardingStore } from '@/stores/onboardingStore';

@@ -66,7 +66,6 @@ export class CoDrawBridge {
   private crdtBuffers = new Map<string, CrdtPixelBuffer>();
   private cursors = new Map<string, RemoteCursor>();
   private lastCursorBroadcast = 0;
-  private initialSyncComplete = false;
   private syncedLayerIds = new Set<string>();
   private unsubscribeStructure: (() => void) | null = null;
   private lastSeenFrames: unknown = null;
@@ -129,7 +128,6 @@ export class CoDrawBridge {
     this.role = null;
     this.crdtBuffers.clear();
     this.cursors.clear();
-    this.initialSyncComplete = false;
     this.syncedLayerIds.clear();
     if (this.unsubscribeStructure) {
       this.unsubscribeStructure();
@@ -142,18 +140,14 @@ export class CoDrawBridge {
 
   private handleConnectionState(state: P2PConnectionState): void {
     if (state === 'connected') {
-      this.initialSyncComplete = false;
       this.syncedLayerIds.clear();
       if (this.role === 'host') {
         // Data channels may not be 'open' yet when the PC reports connected;
         // retry until the structure + snapshots actually go out (RFC 8831:
         // channel readiness is orthogonal to PeerConnection state).
         this.sendInitialStateWithRetry(0);
-      } else {
-        this.initialSyncComplete = true;
       }
     } else if (state === 'disconnected' || state === 'failed') {
-      this.initialSyncComplete = false;
       this.syncedLayerIds.clear();
       if (this.unsubscribeStructure) {
         this.unsubscribeStructure();
@@ -221,7 +215,6 @@ export class CoDrawBridge {
         this.crdtBuffers.delete(id);
       }
     }
-    this.initialSyncComplete = true;
     return true;
   }
 

@@ -8,6 +8,7 @@ import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { clipRangeError, MAX_PROJECT_CLIPS, metadataNameError } from '@/lib/project/metadataAdmission';
+import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 
 function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number): AnimationClip | null {
   const startFrame = clip.startFrame - (removedIndex < clip.startFrame ? 1 : 0);
@@ -84,7 +85,10 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       return;
     }
 
-    pushStructuralHistoryStep('Add Frame', { opKind: 'add-frame', affectedLayerIds: [] });
+    if (!pushStructuralHistoryStep('Add Frame', {
+      opKind: 'add-frame', affectedLayerIds: [], redoBufferCount: incomingLayerCount,
+      addedLayerCount: incomingLayerCount, addedFrameCount: 1,
+    })) return;
     set(state => {
       const newFrameId = createId('frame');
       const currentFrame = state.frames[state.activeFrameIndex];
@@ -144,7 +148,10 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       return;
     }
 
-    pushStructuralHistoryStep('Duplicate Frame', { opKind: 'duplicate-frame', affectedLayerIds: [] });
+    if (!pushStructuralHistoryStep('Duplicate Frame', {
+      opKind: 'duplicate-frame', affectedLayerIds: [], redoBufferCount: incomingLayerCount,
+      addedLayerCount: incomingLayerCount, addedFrameCount: 1,
+    })) return;
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
@@ -182,10 +189,10 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   deleteFrame: frameIndex => {
     if (get().frames.length <= 1 || frameIndex < 0 || frameIndex >= get().frames.length) return;
     const frameToDelete = get().frames[frameIndex];
-    pushStructuralHistoryStep('Delete Frame', {
+    if (!pushStructuralHistoryStep('Delete Frame', {
       opKind: 'delete-frame',
       affectedLayerIds: frameToDelete.layers.map(l => l.id),
-    });
+    })) return;
     set(state => {
       if (state.frames.length <= 1) return;
       // Bounds guard: an out-of-range index would crash on removedFrame.layers
@@ -206,15 +213,21 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
     });
   },
 
-  setFrameDuration: (frameIndex, durationMs) => {
+  setFrameDuration: (frameIndex, durationMs, skipHistory = false) => {
+    if (!Number.isFinite(durationMs)) return false;
+    const frame = get().frames[frameIndex];
+    const nextDuration = Math.max(ANIMATION_TIMING_LIMITS.durationMinMs, Math.min(ANIMATION_TIMING_LIMITS.durationMaxMs, Math.round(durationMs)));
+    if (!frame || frame.durationMs === nextDuration) return false;
+    if (!skipHistory && !pushStructuralHistoryStep('Change Frame Duration')) return false;
     set(state => {
       const frame = state.frames[frameIndex];
       if (frame) {
-        frame.durationMs = Math.max(10, Math.min(10000, Math.round(durationMs)));
+        frame.durationMs = nextDuration;
         state.isDirty = true;
         state.editRevision += 1;
       }
     });
+    return true;
   },
 
   reorderFrames: (startIndex, endIndex) => {
@@ -226,7 +239,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       endIndex >= frameCount ||
       startIndex === endIndex
     ) return;
-    pushStructuralHistoryStep('Reorder Frames', { opKind: 'reorder-frames', affectedLayerIds: [] });
+    if (!pushStructuralHistoryStep('Reorder Frames', { opKind: 'reorder-frames', affectedLayerIds: [] })) return;
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
       if (
@@ -262,7 +275,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   setFps: fps => {
     set(state => {
-      state.fps = Math.max(1, Math.min(60, fps));
+      if (!Number.isFinite(fps)) return;
+      state.fps = Math.max(ANIMATION_TIMING_LIMITS.fpsMin, Math.min(ANIMATION_TIMING_LIMITS.fpsMax, Math.round(fps)));
       state.isDirty = true;
       state.editRevision += 1;
     });

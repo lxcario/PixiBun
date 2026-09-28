@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { captureDiagnostic, exportDiagnosticsFile } from '@/lib/diagnostics/capture';
 

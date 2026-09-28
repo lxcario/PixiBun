@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TeachingAnimationBoard } from '@/components/playground/TeachingAnimationBoard';
 import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';

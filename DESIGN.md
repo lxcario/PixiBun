@@ -164,9 +164,9 @@ stateDiagram-v2
 
 ## 5. 16-Bit Pixel Cursor & Interactive Atmosphere
 
-On fine-pointer devices (mouse / trackpad), PixiBun activates a custom 16-bit pixel cursor system:
+On fine-pointer devices (mouse / trackpad), the landing hero uses custom pixel cursors and click sparks:
 * **Custom SVG Cursors:** Sharp pixel-art quill/arrow for resting state and an illuminated golden wand for clickable elements.
-* **Golden Sparkle Particle Trail (`PixelCursor.tsx`):** Lightweight canvas overlay emitting soft amber/wisteria micro-sparkles on rapid cursor movement, with an automatic sleep state when idle to conserve battery and CPU cycles.
+* **Click Sparks (`ClickSpark.tsx`):** Short amber and wisteria particles on pointer activation.
 
 ---
 

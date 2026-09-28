@@ -64,14 +64,12 @@ export const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
   onClose,
   target,
 }) => {
-  const {
-    primaryColor,
-    secondaryColor,
-    setPrimaryColor,
-    setSecondaryColor,
-    addCustomColorToPalette,
-    currentPaletteId,
-  } = useStudioStore();
+  const primaryColor = useStudioStore((s) => s.primaryColor);
+  const secondaryColor = useStudioStore((s) => s.secondaryColor);
+  const setPrimaryColor = useStudioStore((s) => s.setPrimaryColor);
+  const setSecondaryColor = useStudioStore((s) => s.setSecondaryColor);
+  const addCustomColorToPalette = useStudioStore((s) => s.addCustomColorToPalette);
+  const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
 
   const currentColor = target === 'primary' ? primaryColor : secondaryColor;
 
