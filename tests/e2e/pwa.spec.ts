@@ -16,6 +16,7 @@ test.describe('PWA Manifest & Service Worker Assets', () => {
   test('serves service worker script with appropriate headers', async ({ request }) => {
     const res = await request.get('/sw.js');
     expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toMatch(/^application\/javascript(?:;|$)/);
     expect(res.headers()['service-worker-allowed']).toBe('/');
     const text = await res.text();
     expect(text).toContain('CACHE_NAME');

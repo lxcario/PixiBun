@@ -5,6 +5,9 @@ describe('Service Worker Route Handler (sw.js/route.ts)', () => {
   it('returns status 200 with complete JavaScript service worker script', async () => {
     const response = await GET();
     expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/javascript; charset=utf-8');
+    expect(response.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate');
+    expect(response.headers.get('service-worker-allowed')).toBe('/');
 
     const script = await response.text();
     expect(script).toContain('CACHE_NAME');

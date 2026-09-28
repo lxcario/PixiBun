@@ -9,9 +9,9 @@
  * produces a byte-different /sw.js, which triggers a service worker update,
  * and `activate` deletes every cache bucket that is not the current version.
  *
- * Response headers (no-cache + Service-Worker-Allowed + Content-Type) are
- * supplied by the '/sw.js' entry in next.config.ts `headers()` — this handler
- * deliberately sets none of them to avoid duplicated headers.
+ * Set the service-worker headers on this Response. The production host can
+ * override next.config.ts headers with its default text/plain type for a
+ * dynamic route, which causes browsers to reject registration.
  *
  * SKIP_WAITING flow is unchanged (see the message listener below).
  */
@@ -185,8 +185,13 @@ self.addEventListener('fetch', (event) => {
 }
 
 export async function GET() {
-  // Content-Type / Cache-Control / Service-Worker-Allowed are appended by the
-  // '/sw.js' headers entry in next.config.ts — do not duplicate them here.
   const script = buildServiceWorkerScript();
-  return new Response(script, { status: 200 });
+  return new Response(script, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/javascript; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Service-Worker-Allowed': '/',
+    },
+  });
 }
