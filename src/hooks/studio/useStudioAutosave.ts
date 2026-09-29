@@ -230,12 +230,7 @@ export function useStudioAutosave() {
               } else {
                 autosavePendingRef.current = true;
               }
-              // Reset to idle after a short delay so it doesn't stay 'saved' forever
-              setTimeout(() => {
-                if (useStudioStore.getState().saveStatus === 'saved') {
-                  useStudioStore.getState().setSaveStatus('idle');
-                }
-              }, 2000);
+              // Keep the last confirmed write visible until a new edit or save attempt.
             } else {
               setSaveStatus('error');
               if (saveOutcome.reason === 'invariant-invalid') {

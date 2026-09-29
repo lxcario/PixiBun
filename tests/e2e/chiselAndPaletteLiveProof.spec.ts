@@ -125,6 +125,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     const aiToolsTab = page.getByRole('button', { name: /PixiTools/i });
     await expect(aiToolsTab).toBeVisible();
     await aiToolsTab.click();
+    await page.getByTestId('pixitools-task-lighting').click();
     await page.waitForTimeout(200);
 
     // Verify 2.5D Normal Sculptor section is mounted
@@ -139,7 +140,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     }
 
     // 5. Select Normal Chisel tool from LeftToolbar
-    const chiselBtn = page.getByTitle(/Normal Chisel \(K\)/i);
+    const chiselBtn = page.getByTestId('normal-chisel-tool');
     await expect(chiselBtn).toBeVisible();
     await chiselBtn.click();
     await page.waitForTimeout(200);
@@ -285,7 +286,7 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     });
 
     // 9. Test Rivet Stamp while keeping Right Inspector strictly on PixiBud AI tab!
-    const rivetBtn = page.getByTitle(/Rivet Stamp \(N\)/i);
+    const rivetBtn = page.getByTestId('rivet-stamp-tool');
     await expect(rivetBtn).toBeVisible();
     await rivetBtn.click();
     await page.waitForTimeout(200);

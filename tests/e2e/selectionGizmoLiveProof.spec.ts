@@ -103,7 +103,7 @@ test.describe('Selection Free-Transform Gizmo E2E Live Proof', () => {
     await page.waitForTimeout(200);
 
     // 3. Select Marquee Box tool
-    const marqueeBtn = page.getByTitle(/Marquee Box \(M\)/i).first();
+    const marqueeBtn = page.getByTestId('select-box-tool').first();
     await expect(marqueeBtn).toBeVisible();
     await marqueeBtn.click();
     await page.waitForTimeout(200);

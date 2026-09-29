@@ -135,6 +135,13 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const setLoopMode = useStudioStore((s) => s.setLoopMode);
   const onionSkin = useStudioStore((s) => s.onionSkin);
   const setOnionSkin = useStudioStore((s) => s.setOnionSkin);
+  const onionNotice = onionSkin.enabled
+    ? frames.length <= 1
+      ? 'Add another frame to see neighboring drawings.'
+      : isPlaying
+        ? 'Pause to see onion skin while editing.'
+        : null
+    : null;
   const clips = useStudioStore((s) => s.clips);
   const activeClipId = useStudioStore((s) => s.activeClipId);
   const setActiveClipId = useStudioStore((s) => s.setActiveClipId);
@@ -529,7 +536,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   size="sm"
                   variant="default"
                   onClick={() => setOnionSkin({ enabled: !onionSkin.enabled })}
-                  title="Toggle Onion Skinning"
+                  title={onionNotice ?? 'Toggle Onion Skinning'}
+                  aria-pressed={onionSkin.enabled}
+                  aria-describedby={onionNotice ? 'onion-skin-notice' : undefined}
                   className={`h-7 px-2 text-xs font-sans font-medium flex items-center justify-center gap-1 pixel-tactile-btn ${
                     onionSkin.enabled
                       ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border-[var(--accent-gold)] shadow-[inset_1px_1px_0_rgba(229,169,98,0.2)] font-bold'
@@ -539,6 +548,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <PixelIcon name="onion" size={12} />
                   <span>Onion Skin</span>
                 </TactileButton>
+                <span id="onion-skin-notice" className="w-[94px] shrink-0 text-[9px] leading-tight text-[var(--text-muted)]" aria-live="polite">
+                  {onionNotice}
+                </span>
               </div>
             </>
           )}

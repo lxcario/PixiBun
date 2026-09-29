@@ -4,15 +4,21 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased
 
+- Improved the current studio UX after the 2026-09-29 audit and direct feedback:
+  - The top rail distinguishes local save states from a portable `.pixibun` backup. `Back up` opens the Project Backup export, which stays open with an inline error after cancellation or a failed write. Onion skin explains why it has no visible ghosts with one frame or during playback.
+  - PixiTools opens with task choices for lighting, tiles, or cleanup, with a Browse all route. Lighting exposes a clear Auto/Manual choice and keeps advanced controls in named disclosures.
+  - Tool previews now use a 304px card with 14px titles and 13px descriptions. The 43 distinct drawing and PixiTools scenes show their own action and result, with readable step labels and an on-brand sprite. Lasso traces an irregular selection; Magic Wand selects a connected color region. Reduced motion shows the result frame.
+  - Added focused unit and Chromium coverage for backup trust, PixiTools navigation, preview readability, and tool scenes. Current inventory: 1,314 unit tests across 130 suites and 91 Chromium tests across 23 suites. The preview browser suite, build, typecheck, and documentation checks pass; lint has one existing `ImportModal.tsx` dependency warning. TestSprite could not run because its CLI is unavailable.
+
 - Added interactive Tool Motion Previews (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`):
-  - Canvas-rendered animated micro-previews with 4-beat rhythm loops on hover and keyboard focus for drawing tools in `src/components/layout/LeftToolbar.tsx` and AI/shading actions in `src/components/layout/inspector/AiToolsPanel.tsx`.
+  - Canvas-rendered before/action/result previews on hover and keyboard focus for drawing tools in `src/components/layout/LeftToolbar.tsx` and AI/shading actions in `src/components/layout/inspector/AiToolsPanel.tsx`.
   - Preview coverage across core drawing tools (Pen, Curve, Eraser, Bucket, Dither, Color Replace, Erase Color, Marquee Box, Lasso, Wand, Line, Iso Line, Rect, Ellipse, Chisel, Rivet, Eyedropper) and PixiTools actions (Lighting, Normal Map, Specular Glint, Sel-Out, Ground Shadow, Material Shading, Seamless Pattern, Tiles, Autotile, Jaggies, Thin to 1px, Erase Strays, Scan Artwork, Apply Cleanup, RotSprite, Palette Moods, Dithering, Palette Snap, Harmonize Accents, OKLCH Ramp, and In-Between Animation).
   - Tactile button accessibility: updated `src/components/ui/TactileButton.tsx` disabled state to `disabled:cursor-not-allowed` so users can inspect preview capabilities of disabled actions.
   - User controls: Dismiss via Escape key, close button, or "Don't show again" button. Added "Tool Previews" preference toggle in `src/components/ui/AppearancePopover.tsx` with `localStorage` persistence and event-driven cross-component synchronization (`pixibun:tool-previews-changed`).
   - Smooth gliding transitions between tools, warmup delay scheduling, and viewport auto-clamping/re-anchoring on scroll.
 - E2E Test Suite Expansion:
   - Added `tests/e2e/toolMotionPreview.spec.ts` (3 Chromium tests covering drawing tool previews on hover & focus, PixiTools action previews, and permanent dismissal/re-enabling).
-  - Added multi-frame Erase Sampled Color test in `tests/e2e/eraseColor.spec.ts` verifying timeline thumbnails and canvas state across animation frames. Suite expanded to 86 tests across 21 spec suites.
+  - Added multi-frame Erase Sampled Color test in `tests/e2e/eraseColor.spec.ts` verifying timeline thumbnails and canvas state across animation frames. That initial suite contained 86 tests across 21 spec suites; the current inventory is recorded above.
 - TestSprite Suite & Plans:
   - Added 15 frontend test plans (`testsprite-plans/` 44 through 58 and `testsprite_tests/latest_15_regression_plans.jsonl`) covering color erasure, sprite cleanup, bucket fill tolerance, color replace tolerance, RotSprite contours & bounds, lasso hover & deletion, blank frame layer isolation, layer property structural undo, active frame duration timeline undo, smart spritesheet slicer, export modal geometry, and workspace hygiene.
   - Updated TestSprite agent skills (`.agents/skills/testsprite-onboard/SKILL.md` and `.agents/skills/testsprite-verify/SKILL.md`) with comprehensive guidance on `--env`, `--local <port>` tunnels, exit codes (10–13), wait lifecycle, cancellation refunds, and pinned run steps.

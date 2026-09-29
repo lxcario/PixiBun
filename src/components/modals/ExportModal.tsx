@@ -50,9 +50,10 @@ import { ProjectExportTab } from './export/ProjectExportTab';
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialType?: ExportType;
 }
 
-export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
+export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initialType = 'png' }) => {
   const projectName = useStudioStore((s) => s.projectName);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
@@ -63,7 +64,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
 
-  const [exportType, setExportType] = useState<ExportType>('png');
+  const [exportType, setExportType] = useState<ExportType>(initialType);
+  const [projectExportError, setProjectExportError] = useState<string | null>(null);
+  const [isProjectExporting, setIsProjectExporting] = useState(false);
+  const projectExportInFlightRef = React.useRef(false);
   const [shaderTarget, setShaderTarget] = useState<'godot' | 'unity'>('godot');
   const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
   const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
@@ -136,6 +140,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
   const handleSelectExportType = (type: ExportType) => {
     setExportType(type);
+    setProjectExportError(null);
   };
 
   const handleExportPNG = () => {
@@ -643,18 +648,31 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   };
 
   const handleExportProjectJson = async () => {
-    let projectData: string;
+    if (projectExportInFlightRef.current) return;
+    projectExportInFlightRef.current = true;
+    setIsProjectExporting(true);
+    setProjectExportError(null);
     try {
       const project = await buildProjectFileAsync();
-      projectData = JSON.stringify(project, null, 2);
+      const projectData = JSON.stringify(project, null, 2);
+      const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
+      const result = await DesktopFileSystem.saveProject(projectData, filename, true);
+      if (!result.success) {
+        setProjectExportError(
+          result.error === 'Save cancelled by user'
+            ? 'No backup was created. Your project is still open here.'
+            : 'Couldn’t create the project backup. Try again or choose another location.'
+        );
+        return;
+      }
+      onClose();
     } catch (err) {
-      console.error('Project serialization failed during export:', err);
-      return;
+      console.error('Project backup failed:', err);
+      setProjectExportError('Couldn’t create the project backup. Try again or choose another location.');
+    } finally {
+      projectExportInFlightRef.current = false;
+      setIsProjectExporting(false);
     }
-
-    const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
-    await DesktopFileSystem.saveProject(projectData, filename, true);
-    onClose();
   };
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
@@ -763,12 +781,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   const historyLength = getGlobalHistory().length;
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={handleCancel} title="Export Studio Assets" maxWidth="w-[560px]">
+    <ModalWrapper isOpen={isOpen} onClose={handleCancel} title={exportType === 'project' ? 'Project backup' : 'Export Studio Assets'} maxWidth="w-[560px]">
       {/* Format Selector Tabs */}
       <ExportTabsNav
         exportType={exportType}
         onSelectType={handleSelectExportType}
-        isExporting={isExporting}
+        isExporting={isExporting || isProjectExporting}
       />
 
       {/* Export Scope (Tag Clips) Selector */}
@@ -880,12 +898,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
         <ProjectExportTab totalFrames={frames.length} />
       )}
 
+      {projectExportError && exportType === 'project' && (
+        <p role="alert" className="text-xs text-[var(--state-danger)] border border-[var(--state-danger)]/40 bg-[var(--surface-0)] px-2 py-1.5 rounded-[2px]">
+          {projectExportError}
+        </p>
+      )}
+
       {/* Modal Actions */}
       <div className="flex justify-end gap-2 pt-2 border-t border-[var(--desk-border)]">
         <TactileButton
           size="sm"
           variant="default"
-          disabled={isExporting}
+          disabled={isExporting || isProjectExporting}
           onClick={handleCancel}
           aria-label="Cancel"
           data-testid="export-cancel-button"
@@ -898,7 +922,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           size="sm"
           variant="primary"
           disabled={
-            isExporting ||
+            isExporting || isProjectExporting ||
             (exportType === 'replay' && (historyLength === 0 || (replayFormat === 'mp4' && !isMp4Supported))) ||
             (exportType === 'mp4' && !isMp4Supported)
           }
@@ -928,7 +952,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
-          <span>{isExporting ? 'Encoding Video...' : `Download ${exportType.toUpperCase()}`}</span>
+          <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Encoding Video...' : exportType === 'project' ? 'Download project backup' : `Download ${exportType.toUpperCase()}`}</span>
         </TactileButton>
       </div>
     </ModalWrapper>

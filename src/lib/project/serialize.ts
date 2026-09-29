@@ -443,4 +443,5 @@ export async function hydrateProject(
     }
     initProjectPersistedRevisions(projectId, persisted);
   }
+  useStudioStore.getState().setSaveStatus(projectId ? 'saved' : 'idle');
 }

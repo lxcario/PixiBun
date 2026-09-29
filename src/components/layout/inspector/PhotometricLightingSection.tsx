@@ -229,39 +229,46 @@ export const PhotometricLightingSection: React.FC = () => {
             <span>Manual</span>
           </button>
         </div>
+        <p className="text-[10px] leading-4 text-[var(--text-muted)]">
+          {mode === 'auto'
+            ? 'Auto reads your sprite; you choose where the light goes.'
+            : 'Manual lets you set light direction and material yourself.'}
+        </p>
 
         {/* Shading Tones Mode: 1 Single | 2 Dual | 3 Trio */}
-        <div className="flex flex-col gap-1 p-1.5 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
-          <div className="flex items-center justify-between text-[9px] font-sans">
-            <span className="font-medium text-[var(--text-heading)]">Shading Tones</span>
+        <details className="group bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
+          <summary className="min-h-7 px-2 flex items-center justify-between gap-2 text-[10px] font-sans text-[var(--text-heading)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]">
+            <span className="flex items-center gap-1 font-medium"><span aria-hidden="true" className="inline-block text-[9px] group-open:rotate-90">▸</span>Shading style</span>
             <span className="text-[var(--accent-gold)] font-mono text-[9px]">
               {tools.shadingBands === 1 ? '1 Tone (Single)' : tools.shadingBands === 3 ? '3 Tones (Trio)' : '2 Tones (Dual)'}
             </span>
+          </summary>
+          <div className="p-1.5 pt-0">
+            <div className="grid grid-cols-3 gap-0.5" role="group" aria-label="Shading tones count">
+              {([
+                { count: 1 as const, label: '1 Single', title: '1 shadow tone (classic flat 2-tone cel-shading)' },
+                { count: 2 as const, label: '2 Dual', title: '2 shadow tones (core + deep shadow)' },
+                { count: 3 as const, label: '3 Trio', title: '3 shadow tones (soft penumbra + mid + deep core)' },
+              ] as const).map(({ count, label, title }) => (
+                <button
+                  key={count}
+                  type="button"
+                  data-testid={`photometric-shade-${count}`}
+                  onClick={() => setShadingBands(count)}
+                  aria-pressed={tools.shadingBands === count}
+                  title={title}
+                  className={`min-h-6 py-1 text-[9px] font-sans font-medium text-center rounded-[1px] cursor-pointer transition-colors ${
+                    tools.shadingBands === count
+                      ? 'border border-[var(--accent-gold)] bg-[var(--surface-3)] text-[var(--accent-gold)] font-semibold shadow-xs'
+                      : 'border border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-0.5" role="group" aria-label="Shading tones count">
-            {([
-              { count: 1 as const, label: '1 Single', title: '1 shadow tone (classic flat 2-tone cel-shading)' },
-              { count: 2 as const, label: '2 Dual', title: '2 shadow tones (core + deep shadow)' },
-              { count: 3 as const, label: '3 Trio', title: '3 shadow tones (soft penumbra + mid + deep core)' },
-            ] as const).map(({ count, label, title }) => (
-              <button
-                key={count}
-                type="button"
-                data-testid={`photometric-shade-${count}`}
-                onClick={() => setShadingBands(count)}
-                aria-pressed={tools.shadingBands === count}
-                title={title}
-                className={`py-1 text-[9px] font-sans font-medium text-center rounded-[1px] cursor-pointer transition-colors ${
-                  tools.shadingBands === count
-                    ? 'border border-[var(--accent-gold)] bg-[var(--surface-3)] text-[var(--accent-gold)] font-semibold shadow-xs'
-                    : 'border border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)]'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+        </details>
 
         {mode === 'auto' && (
           <div className="flex flex-col gap-1">
@@ -513,53 +520,60 @@ export const PhotometricLightingSection: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-1.5">
-            <TactileButton
-              size="sm"
-              variant="default"
-              onClick={handleBakeNormalMap}
-              title="Save 3D surface depth angles into a new normal map layer"
-              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
-            >
-              <PixelIcon name="export" size={11} />
-              <span>Bake Normal Map</span>
-            </TactileButton>
+          <details className="group border border-[var(--desk-border)] rounded-[2px] bg-[var(--surface-0)]">
+            <summary className="min-h-7 px-2 flex items-center gap-1 text-[10px] font-medium text-[var(--text-body)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]">
+              <span aria-hidden="true" className="inline-block text-[9px] group-open:rotate-90">▸</span>More lighting actions
+            </summary>
+            <div className="p-1.5 pt-0 flex flex-col gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
+                <TactileButton
+                  size="sm"
+                  variant="default"
+                  onClick={handleBakeNormalMap}
+                  title="Save 3D surface depth angles into a new normal map layer"
+                  className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+                >
+                  <PixelIcon name="export" size={11} />
+                  <span>Bake Normal Map</span>
+                </TactileButton>
 
-            <TactileButton
-              size="sm"
-              variant={showNormalMapPreview ? 'primary' : 'default'}
-              onClick={toggleNormalMapPreview}
-              title="Preview 3D surface depth angles on the canvas"
-              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
-            >
-              <PixelIcon name={showNormalMapPreview ? 'eye-off' : 'eye'} size={11} />
-              <span>{showNormalMapPreview ? 'Hide Normals' : 'View Normals'}</span>
-            </TactileButton>
-          </div>
+                <TactileButton
+                  size="sm"
+                  variant={showNormalMapPreview ? 'primary' : 'default'}
+                  onClick={toggleNormalMapPreview}
+                  title="Preview 3D surface depth angles on the canvas"
+                  className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+                >
+                  <PixelIcon name={showNormalMapPreview ? 'eye-off' : 'eye'} size={11} />
+                  <span>{showNormalMapPreview ? 'Hide Normals' : 'View Normals'}</span>
+                </TactileButton>
+              </div>
 
-          <div className="grid grid-cols-2 gap-1.5">
-            <TactileButton
-              size="sm"
-              variant="default"
-              onClick={handleSpecularHighlight}
-              title="Add sharp light reflections to illuminated surfaces"
-              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
-            >
-              <PixelIcon name="sun" size={11} />
-              <span>Specular Glint</span>
-            </TactileButton>
+              <div className="grid grid-cols-2 gap-1.5">
+                <TactileButton
+                  size="sm"
+                  variant="default"
+                  onClick={handleSpecularHighlight}
+                  title="Add sharp light reflections to illuminated surfaces"
+                  className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+                >
+                  <PixelIcon name="sun" size={11} />
+                  <span>Specular Glint</span>
+                </TactileButton>
 
-            <TactileButton
-              size="sm"
-              variant="default"
-              onClick={handleSelOut}
-              title="Selective outline lighting (Sel-Out): soften highlights and deepen shadows along borders"
-              className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
-            >
-              <PixelIcon name="pen" size={11} />
-              <span>Sel-Out</span>
-            </TactileButton>
-          </div>
+                <TactileButton
+                  size="sm"
+                  variant="default"
+                  onClick={handleSelOut}
+                  title="Selective outline lighting (Sel-Out): soften highlights and deepen shadows along borders"
+                  className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
+                >
+                  <PixelIcon name="pen" size={11} />
+                  <span>Sel-Out</span>
+                </TactileButton>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
     </PanelSection>

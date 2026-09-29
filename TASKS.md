@@ -4,6 +4,18 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## UX follow-up — 2026-09-29
+
+- [x] Audit the supplied research against the running app and record verified friction, open hypotheses, and bounded implementation work in `PIXIBUN_UX_AUDIT.md` and `PIXIBUN_UX_IMPLEMENTATION_PLAN.md`.
+- [x] Clarify local save states, add a direct `.pixibun` backup path, retain the export dialog after a failed backup, and explain inactive onion ghosts.
+- [x] Make PixiTools task based on first entry and simplify its lighting controls while preserving Browse all and advanced actions.
+- [x] Rebuild 43 tool preview scenes around each action and result; enlarge the card and text, and verify Lasso and Magic Wand selection previews in Chromium.
+- [x] Update the session record in `PIXIBUN_UX_CHANGELOG.md` and synchronize current test inventory in `README.md`, `BENCHMARKS.md`, and `V2_VISION.md`.
+
+**Verification:** 1,314/1,314 unit tests across 130 suites; targeted preview Chromium tests 3/3; typecheck, production build, and documentation integrity pass. Existing session browser runs covered the 91-test, 23-suite inventory across runs. ESLint reports one pre-existing `ImportModal.tsx` effect-dependency warning. TestSprite was unavailable because its CLI is not installed. The task-finding study and remaining UX roadmap are open work, not measured outcomes.
+
+---
+
 ## Phase 78 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening (2026-09-28)
 
 - [x] Build interactive animated micro-previews with 4-beat rhythm loops (`ToolMotionPreview.tsx`, `ToolPreviewCanvas.tsx`, `ToolMotionPreview.module.css`) for all drawing tools in `LeftToolbar` and AI/shading actions in `AiToolsPanel`.

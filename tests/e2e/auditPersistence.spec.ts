@@ -223,7 +223,7 @@ test('pattern generation starts and receives a heavy-compute worker response', a
   expect(box).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await page.getByTestId('tab-ai').click();
-  await page.getByRole('button', { name: 'Tiles & Patterns' }).click();
+  await page.getByTestId('pixitools-task-tileset').click();
   await page.getByRole('button', { name: 'Seamless Patterns & Tilesets' }).click();
   await page.getByRole('button', { name: 'Generate Seamless Pattern (WFC)' }).click();
   await expect.poll(() => page.evaluate(() =>

@@ -173,6 +173,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
       state.panX = 0;
       state.panY = 0;
       state.isDirty = false;
+      state.saveStatus = 'idle';
       state.canUndo = false;
       state.canRedo = false;
       state.frames = [

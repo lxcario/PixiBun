@@ -140,12 +140,12 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     const handleClose = vi.fn();
     render(<ExportModal isOpen={true} onClose={handleClose} />);
 
-    // Switch to Project JSON (.pixibun) tab
-    const projectTab = screen.getByRole('button', { name: '.pixibun' });
+    // Switch to the portable project backup tab.
+    const projectTab = screen.getByRole('button', { name: 'Project Backup' });
     fireEvent.click(projectTab);
 
     // Click download button
-    const downloadBtn = screen.getByRole('button', { name: /Download PROJECT/i });
+    const downloadBtn = screen.getByRole('button', { name: /Download project backup/i });
     fireEvent.click(downloadBtn);
     await act(async () => {
       await Promise.resolve();

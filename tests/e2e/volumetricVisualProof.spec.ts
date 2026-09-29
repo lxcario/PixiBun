@@ -61,6 +61,7 @@ test.describe('Volumetric Optics Visual Proof', () => {
     const aiTabBtn = page.getByRole('button', { name: /PixiTools/i });
     await expect(aiTabBtn).toBeVisible();
     await aiTabBtn.click();
+    await page.getByTestId('pixitools-task-lighting').click();
     await page.waitForTimeout(400);
 
     await page.getByRole('button', { name: /Glow & Translucent Materials/ }).click();

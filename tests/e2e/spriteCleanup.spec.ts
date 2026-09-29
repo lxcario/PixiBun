@@ -43,7 +43,7 @@ test('PixiTools scans before cleanup, cleans matching animation layers, and undo
   await expect.poll(() => pixel(page, 2, 2)).toEqual([120, 120, 120, 51]);
 
   await page.getByRole('button', { name: 'PixiTools' }).click();
-  await page.getByRole('button', { name: 'Clean & Polish' }).click();
+  await page.getByTestId('pixitools-task-polish').click();
   const section = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await section.getAttribute('aria-expanded') === 'false') await section.click();
   await page.getByRole('button', { name: 'Cleanup frame scope' }).click();
@@ -107,7 +107,7 @@ test('cleanup detects opaque gray artifacts when the alpha slider cannot', async
   await expect(dialog).toBeHidden();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([180, 182, 181, 255]);
   await page.getByRole('button', { name: 'PixiTools' }).click();
-  await page.getByRole('button', { name: 'Clean & Polish' }).click();
+  await page.getByTestId('pixitools-task-polish').click();
   const section = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await section.getAttribute('aria-expanded') === 'false') await section.click();
   await page.getByRole('slider', { name: 'Cleanup faint alpha threshold' }).fill('200');

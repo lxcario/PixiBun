@@ -16,6 +16,7 @@ import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoo
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
+import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -35,6 +36,7 @@ const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
 
 export interface AtelierRailProps {
   onOpenExport?: () => void;
+  onOpenBackup?: () => void;
   onOpenImport?: (payload: ImportPayload) => void;
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
@@ -50,6 +52,7 @@ export interface AtelierRailProps {
 
 export const AtelierRail: React.FC<AtelierRailProps> = ({
   onOpenExport,
+  onOpenBackup,
   onOpenImport,
   onOpenShortcuts,
   onOpenResize,
@@ -212,10 +215,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="h-11 sm:h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center justify-between px-3 gap-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="h-24 2xl:h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] grid grid-cols-[auto_minmax(0,1fr)] grid-rows-[48px_48px] 2xl:flex items-center justify-between px-3 gap-x-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="col-start-1 row-start-1 flex items-center gap-2 shrink-0">
         {/* Atelier Logo Mark */}
         <a
           href="/"
@@ -270,27 +273,21 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           {canvasWidth}×{canvasHeight}
         </button>
 
-        {/* Quiet Saved State Indicator */}
-        <div className="h-6 flex items-center gap-1.5 text-[10px] text-[var(--text-body)] pl-0.5">
+        {/* Local save is distinct from a portable project backup. */}
+        <div data-testid="local-save-status" className="h-6 flex items-center gap-1.5 text-[10px] text-[var(--text-body)] pl-0.5 whitespace-nowrap">
           <span
             className={`w-1.5 h-1.5 rounded-full transition-colors ${
               saveStatus === 'saving'
                 ? 'bg-[var(--accent-gold)] animate-pulse'
                 : saveStatus === 'error'
                 ? 'bg-[var(--state-danger)]'
-                : isDirty
+                : isDirty || saveStatus === 'idle'
                 ? 'bg-[var(--text-muted)] opacity-60'
                 : 'bg-[var(--state-success)]'
             }`}
           />
           <span className="text-[10px] text-[var(--text-muted)] font-medium">
-            {saveStatus === 'saving'
-              ? 'Saving…'
-              : saveStatus === 'error'
-              ? 'Error'
-              : isDirty
-              ? 'Unsaved changes'
-              : 'Saved'}
+            {getLocalSaveLabel(saveStatus, isDirty)}
           </span>
         </div>
 
@@ -328,7 +325,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       </div>
 
       {/* ── 2. CENTER ZONE: Contextual Active-Tool Parameters ── */}
-      <div className="flex-1 flex items-center justify-center min-w-0 px-2 overflow-hidden h-full">
+      <div className="col-start-2 row-start-1 flex-1 flex items-center justify-center min-w-0 px-2 overflow-hidden h-full">
         {hasToolParams ? (
           <div data-testid="tool-options-rail" aria-label="Tool options rail" className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
             {/* Tool indicator */}
@@ -357,14 +354,14 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 </span>
 
                 {/* Quick 1..4 presets as a unified segmented control */}
-                <div className="inline-flex items-center bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] p-0.5 ml-1">
+                <div className="inline-flex items-center bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] ml-1">
                   {[1, 2, 3, 4].map((size) => (
                     <button
                       key={`preset-${size}`}
                       onClick={() => setBrushSize(size)}
                       title={`Brush size ${size}px`}
                       aria-label={`${size}px brush preset`}
-                      className={`w-5 h-4 text-[9px] font-mono rounded-[1px] cursor-pointer flex items-center justify-center transition-colors active:translate-y-[1px] ${
+                      className={`w-6 h-6 text-[9px] font-mono rounded-[1px] cursor-pointer flex items-center justify-center transition-colors active:translate-y-[1px] ${
                         tools.brushSize === size
                           ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] font-bold shadow-xs'
                           : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'
@@ -561,7 +558,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       </div>
 
       {/* ── 3. RIGHT ZONE: 3 Coherent Semantic Instrument Groups ── */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="col-span-2 row-start-2 flex items-center gap-2 shrink-0 max-2xl:w-full max-2xl:justify-between">
         {/* GROUP A — CANVAS: Zoom, Fit, Horizontal & Vertical Symmetry, View */}
         <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5 text-xs">
           {/* Zoom Instrument (Connected Cluster) */}
@@ -687,7 +684,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-6 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="layers" size={12} />
-            <span>Projects</span>
+            <span className="hidden 2xl:inline">Projects</span>
           </TactileButton>
 
           <TactileButton
@@ -699,7 +696,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-6 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="sparkles" size={12} />
-            <span>Co-Draw</span>
+            <span className="hidden 2xl:inline">Co-Draw</span>
           </TactileButton>
 
           <TactileButton
@@ -712,7 +709,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-6 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="help" size={12} />
-            <span>Guide</span>
+            <span className="hidden 2xl:inline">Guide</span>
           </TactileButton>
         </div>
 
@@ -728,19 +725,44 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-6 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="plus" size={12} />
-            <span>New</span>
+            <span className="hidden 2xl:inline">New</span>
           </TactileButton>
 
           <TactileButton
             size="sm"
             variant="default"
             onClick={onSaveNow}
-            title="Save now to local storage"
+            title="Save now on this device (Ctrl+S)"
             aria-label="Save now"
             className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
           >
             <PixelIcon name="save" size={12} />
-            <span>Save</span>
+            <span className="hidden 2xl:inline">Save</span>
+          </TactileButton>
+
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={onOpenBackup}
+            title="Download a portable .pixibun project backup"
+            aria-label="Back up project to a .pixibun file"
+            data-testid="project-backup-button"
+            className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
+          >
+            <span>Back up</span>
+          </TactileButton>
+
+          <TactileButton
+            size="sm"
+            variant="default"
+            onClick={() => fileInputRef.current?.click()}
+            title="Import image, sprite sheet, or .pixibun file"
+            aria-label="Import"
+            data-testid="import-button"
+            className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
+          >
+            <PixelIcon name="export" size={12} className="rotate-180" />
+            <span>Import</span>
           </TactileButton>
 
           <TactileButton

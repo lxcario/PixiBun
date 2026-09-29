@@ -246,6 +246,7 @@ test('the studio 45-degree RotSprite command preserves its palette and visibly t
   const before = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, 64, 64).data));
   const editRevision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
   await page.getByRole('button', { name: 'PixiTools' }).click();
+  await page.getByTestId('pixitools-task-polish').click();
   const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await cleanupPanel.getAttribute('aria-expanded') === 'false') await cleanupPanel.click();
   await page.getByRole('button', { name: '+45°' }).click();
@@ -280,6 +281,7 @@ test('Rotate Cleanly keeps an outlined circle closed at 45 degrees', async ({ pa
   await expect(dialog).toBeHidden();
   const revision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
   await page.getByRole('button', { name: 'PixiTools' }).click();
+  await page.getByTestId('pixitools-task-polish').click();
   const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await cleanupPanel.getAttribute('aria-expanded') === 'false') await cleanupPanel.click();
   await page.getByRole('button', { name: '+45°' }).click();

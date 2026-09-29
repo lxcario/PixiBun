@@ -59,7 +59,7 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
       case 'palette-cycle':
         return 'Cycle Loop';
       case 'project':
-        return '.pixibun';
+        return 'Project Backup';
       default:
         return type.toUpperCase();
     }

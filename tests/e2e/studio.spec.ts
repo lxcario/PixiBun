@@ -236,7 +236,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     const initialTitle = await colorWell.getAttribute('title');
 
     // 5. Select Eyedropper tool
-    const eyedropperBtn = page.getByTitle(/Eyedropper \(I\)/i);
+    const eyedropperBtn = page.getByTestId('eyedropper-tool');
     await eyedropperBtn.click();
     await page.waitForTimeout(100);
 
@@ -352,6 +352,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     // 2. Switch to PixiBud AI tab
     const aiTabBtn = page.getByRole('button', { name: /PixiTools/i });
     await aiTabBtn.click();
+    await page.getByTestId('pixitools-task-lighting').click();
     await page.waitForTimeout(150);
 
     await page.getByRole('button', { name: /Glow & Translucent Materials/ }).click();
@@ -428,6 +429,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
 
     // Tab 3: PixiBud AI with both collapsible panels expanded
     await page.getByRole('button', { name: /PixiTools/i }).click();
+    await page.getByTestId('pixitools-browse-all').click();
     await page.waitForTimeout(300);
     await page.getByRole('button', { name: /2\.5D Photometric Studio/i }).click();
     await page.getByRole('button', { name: /Volumetric Optics & SSS/i }).click();

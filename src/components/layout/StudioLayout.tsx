@@ -20,6 +20,8 @@ import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { executeImageImport } from '@/lib/project/imageImportExecution';
 import type { PendingRecoveryContext } from '@/lib/recovery/projectAdmission';
+import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
+import type { ExportType } from '@/components/modals/export/ExportTabsNav';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
@@ -68,6 +70,7 @@ const RecoveryModal = dynamic(
 
 export const StudioLayout: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportInitialType, setExportInitialType] = useState<ExportType>('png');
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isResizeOpen, setIsResizeOpen] = useState(false);
@@ -78,6 +81,11 @@ export const StudioLayout: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [importPayload, setImportPayload] = useState<ImportPayload | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+
+  const openExport = (type: ExportType = 'png') => {
+    setExportInitialType(type);
+    setIsExportOpen(true);
+  };
 
   const [recoveryTarget, setRecoveryTarget] = useState<PendingRecoveryContext | null>(null);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
@@ -288,7 +296,8 @@ export const StudioLayout: React.FC = () => {
     <div data-restoration-phase={lifecycleState.phase} className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <AtelierRail
-        onOpenExport={() => setIsExportOpen(true)}
+        onOpenExport={() => openExport()}
+        onOpenBackup={() => openExport('project')}
         onOpenImport={handleOpenImport}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
@@ -306,13 +315,7 @@ export const StudioLayout: React.FC = () => {
 
       {/* Accessible Status Announcements for Screen Readers (WCAG 4.1.3) */}
       <div className="sr-only" role="status" aria-live="polite">
-        {saveStatus === 'saving'
-          ? 'Saving project...'
-          : saveStatus === 'error'
-          ? 'Error saving project'
-          : isDirty
-          ? 'Unsaved changes'
-          : 'All changes saved'}
+        {getLocalSaveLabel(saveStatus, isDirty)}
       </div>
 
       {/* Autosave Disk Write Error (Non-Layout-Shifting Toast) */}
@@ -342,7 +345,7 @@ export const StudioLayout: React.FC = () => {
             <TactileButton
               size="sm"
               variant="danger"
-              onClick={() => setIsExportOpen(true)}
+              onClick={() => openExport()}
               title="Open Export Dialog"
               className="text-xs px-2.5 py-1 bg-[#eb5a66] hover:bg-[#ff8c94] text-[#140d1f] font-bold border border-[#8c202a]"
             >
@@ -404,6 +407,7 @@ export const StudioLayout: React.FC = () => {
       {isExportOpen && (
         <ExportModal
           isOpen={isExportOpen}
+          initialType={exportInitialType}
           onClose={() => setIsExportOpen(false)}
         />
       )}
@@ -481,7 +485,7 @@ export const StudioLayout: React.FC = () => {
         <CommandPaletteModal
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}
-          onOpenExport={() => setIsExportOpen(true)}
+          onOpenExport={() => openExport()}
           onOpenImport={() => setIsImportOpen(true)}
           onOpenResize={() => setIsResizeOpen(true)}
           onOpenGallery={() => setIsGalleryOpen(true)}

@@ -483,6 +483,8 @@ export function setToolPreviewsDisabled(disabled: boolean) {
 // Global warmth tracker for instant cross-tool transitions
 let globalLastDismissTime = 0;
 let globalActiveSource: HTMLElement | null = null;
+const PREVIEW_WIDTH = 304;
+const PREVIEW_HEIGHT = 290;
 
 function PreviewCard({
   definition,
@@ -513,7 +515,7 @@ function PreviewCard({
       {/* Caret arrow pointing at triggering tool button */}
       <div
         className={styles.caret}
-        style={{ top: `${Math.max(10, Math.min(145, caretTop))}px` }}
+        style={{ top: `${Math.max(10, Math.min(PREVIEW_HEIGHT - 16, caretTop))}px` }}
         aria-hidden="true"
       />
 
@@ -690,8 +692,8 @@ function usePreviewController(side: 'left' | 'right') {
       if (isToolPreviewsDisabled()) return;
       pending.current = null;
       const box = source.getBoundingClientRect();
-      const cardWidth = 196;
-      const cardHeight = 170;
+      const cardWidth = Math.min(PREVIEW_WIDTH, window.innerWidth - 24);
+      const cardHeight = PREVIEW_HEIGHT;
 
       // Horizontal positioning
       const x = side === 'right'
@@ -753,8 +755,8 @@ function usePreviewController(side: 'left' | 'right') {
       // re-anchor rather than abruptly destroying the preview
       if (active?.source && event.target instanceof Node && event.target.contains(active.source)) {
         const box = active.source.getBoundingClientRect();
-        const cardWidth = 196;
-        const cardHeight = 170;
+        const cardWidth = Math.min(PREVIEW_WIDTH, window.innerWidth - 24);
+        const cardHeight = PREVIEW_HEIGHT;
         const x = side === 'right'
           ? Math.min(window.innerWidth - cardWidth - 12, box.right + 8)
           : Math.max(12, box.left - cardWidth - 8);

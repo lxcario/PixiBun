@@ -732,12 +732,14 @@ The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) provides a f
 
 ### Contextual Tool Motion Previews & Tactile Affordances
 The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolPreviewCanvas.tsx`, `src/components/ui/ToolMotionPreview.module.css`) delivers instant visual affordances across the studio without mutating document state:
-1. **Interactive Pixel Previews:** Procedural 96×54 canvas scenes execute a structured 4-beat rhythm loop (Setup, Tactile Gesture, Sparkle, Hold) demonstrating core drawing tools and advanced 2.5D CG / lighting effects in isolation.
+1. **Interactive Pixel Previews:** Procedural 96×54 canvas scenes cycle through before, action, and result states for 43 drawing and PixiTools effects. The Lasso traces an irregular path; Magic Wand marks one connected color region. The preview card is 304px wide, and step labels render as crisp HTML over the canvas. Reduced-motion users see the result state. These demonstrations do not mutate artwork.
 2. **Dual-Layer Context Architecture:**
    - `DrawingToolsPreviewLayer`: Mounted around `LeftToolbar` to anchor previews to the right of drawing tool buttons.
    - `PixiToolsPreviewLayer`: Mounted around `AiToolsPanel` to anchor previews to the left of photometric, procedural, and cleanup action controls.
 3. **Motion Ergonomics & Gliding Transitions:** Hover transitions between adjacent controls glide smoothly (`0.18s` cubic bezier) with warmth tracking (`450ms` window) eliminating pop flicker. Re-anchors dynamically on container scroll and clamps safely within the viewport (`minY = 48px` to preserve header visibility).
 4. **User Preferences & Dismissal:** Provides an explicit "Don't show again" option and close button on each card, with a master toggle in `AppearancePopover`. Setting state persists in `localStorage` under `pixibun:tool-previews-disabled` with real-time cross-tab/window event synchronization (`pixibun:tool-previews-changed`).
+
+`AiToolsPanel.tsx` begins with lighting, tiles, and cleanup task choices, keeps Browse all available, and remembers the choice for the browser tab. `PhotometricLightingSection.tsx` exposes the primary lighting action before specialist settings.
 
 ---
 

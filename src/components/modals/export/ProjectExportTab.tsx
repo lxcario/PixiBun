@@ -10,7 +10,7 @@ export const ProjectExportTab: React.FC<ProjectExportTabProps> = ({ totalFrames 
   return (
     <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
       <p className="text-[var(--text-body)] leading-relaxed font-medium">
-        Export the full project file (.pixibun) containing all {totalFrames} frames, layers, palettes, and timing metadata.
+        Keep a portable .pixibun copy outside this browser. It includes all {totalFrames} frames, layers, palettes, and timing.
       </p>
     </div>
   );

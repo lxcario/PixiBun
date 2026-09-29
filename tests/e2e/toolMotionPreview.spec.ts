@@ -10,6 +10,8 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await expect(preview).toBeVisible();
   await expect(preview.getByText('Draw crisp, pixel-perfect strokes and contours.')).toBeVisible();
   await expect(preview.locator('canvas')).toBeVisible();
+  await expect(preview).toHaveCSS('width', '304px');
+  await expect(preview.locator('p')).toHaveCSS('font-size', '13px');
   await page.waitForTimeout(600);
   await preview.screenshot({ path: testInfo.outputPath('pen-preview.png') });
   await page.keyboard.press('Escape');
@@ -84,17 +86,33 @@ test('drawing tools show a short visual preview on hover and keyboard focus', as
   await expect(isoPreview).toBeVisible();
   await page.waitForTimeout(1000);
   await isoPreview.screenshot({ path: testInfo.outputPath('iso-preview.png') });
+
+  // Freeform and connected-color selections must have their own demonstrations.
+  await page.getByTestId('select-lasso-tool').hover();
+  const lassoPreview = page.getByRole('group', { name: 'Lasso Select preview' });
+  await expect(lassoPreview.locator('canvas[data-scene="select-lasso"]')).toBeVisible();
+  await expect(lassoPreview.locator('[data-step-label]')).toHaveAttribute('data-step-label', /TRACE ARTWORK|FREEFORM SELECTED/);
+  await expect(lassoPreview.locator('canvas')).toHaveAttribute('data-preview-phase', 'result', { timeout: 3000 });
+  await lassoPreview.screenshot({ path: testInfo.outputPath('lasso-preview.png') });
+
+  await page.getByTestId('select-wand-tool').hover();
+  const wandPreview = page.getByRole('group', { name: 'Magic Wand preview' });
+  await expect(wandPreview.locator('canvas[data-scene="select-wand"]')).toBeVisible();
+  await expect(wandPreview.locator('canvas')).toHaveAttribute('data-preview-phase', 'result', { timeout: 3000 });
+  await wandPreview.screenshot({ path: testInfo.outputPath('wand-preview.png') });
 });
 
 test('PixiTools actions preview their effect without changing the project', async ({ page }, testInfo) => {
   await page.goto('/studio');
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
   await page.getByTestId('tab-ai').click();
+  await page.getByTestId('pixitools-browse-all').click();
   const lighting = page.getByRole('button', { name: '3D Lighting & Shading (2.5D Photometric Studio)' });
   await expect(lighting).toBeVisible();
   await lighting.hover();
   await page.waitForTimeout(400);
   await expect(page.getByRole('group', { name: /preview/ })).toHaveCount(0);
+  await page.getByText('More lighting actions').click();
   const viewNormals = page.getByRole('button', { name: /View Normals/ });
   await viewNormals.hover();
   const preview = page.getByRole('group', { name: 'Normal Map preview' });
@@ -223,4 +241,3 @@ test('user can dismiss preview permanently via "Don\'t show again"', async ({ pa
   await pen.hover();
   await expect(preview).toBeVisible();
 });
-
