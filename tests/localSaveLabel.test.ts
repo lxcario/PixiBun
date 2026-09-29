@@ -9,7 +9,7 @@ describe('local save copy', () => {
     expect(getLocalSaveLabel('error', true)).toBe('Local save failed');
   });
 
-  it('names the storage location after a confirmed write', () => {
-    expect(getLocalSaveLabel('saved', false)).toBe('Saved on this device');
+  it('announces a confirmed write without persistent storage copy', () => {
+    expect(getLocalSaveLabel('saved', false)).toBe('Changes saved');
   });
 });

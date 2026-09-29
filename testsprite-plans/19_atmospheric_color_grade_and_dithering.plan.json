@@ -40,7 +40,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Sunset' atmosphere LUT button"
+      "description": "Click 'Sunset', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",
@@ -48,7 +48,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Atkinson Dither' button in the color science panel"
+      "description": "Click 'Atkinson Dither', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",
@@ -56,7 +56,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Riemersma Dither' button"
+      "description": "Click 'Smooth Dither', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",

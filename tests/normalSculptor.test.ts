@@ -6,7 +6,6 @@ import {
   encodeNormalRGB,
   decodeNormalRGB,
   computeDirectionalBevelNormal,
-  computeRivetNormal,
   blendNormalsRNM,
   blendNormalsUDN,
   blendNormals,
@@ -98,49 +97,6 @@ describe('2.5D Normal Chisel & Bas-Relief Sculptor', () => {
     });
   });
 
-  describe('computeRivetNormal', () => {
-    it('returns flat normal at center of rivet dome (dx = 0, dy = 0)', () => {
-      const normal = computeRivetNormal(0, 0, 8, 1.0, false, true);
-      expect(normal).not.toBeNull();
-      if (normal) {
-        expect(normal[0]).toBeCloseTo(0, 2);
-        expect(normal[1]).toBeCloseTo(0, 2);
-        expect(normal[2]).toBeCloseTo(1, 2);
-      }
-    });
-
-    it('returns null outside the circular radius', () => {
-      const normal = computeRivetNormal(10, 10, 8, 1.0, false, true);
-      expect(normal).toBeNull();
-    });
-
-    it('flattens slope when flattening factor h is small', () => {
-      const hemisphere = computeRivetNormal(4, 0, 8, 1.0, false, true);
-      const shallowStud = computeRivetNormal(4, 0, 8, 0.2, false, true);
-
-      expect(hemisphere).not.toBeNull();
-      expect(shallowStud).not.toBeNull();
-      if (hemisphere && shallowStud) {
-        // Shallow stud has much flatter Z than full hemisphere
-        expect(shallowStud[2]).toBeGreaterThan(hemisphere[2]);
-        expect(shallowStud[0]).toBeLessThan(hemisphere[0]);
-      }
-    });
-
-    it('inverts normal slope when invert flag is true (screwhole dimple)', () => {
-      const dome = computeRivetNormal(4, 0, 8, 0.8, false, true);
-      const dimple = computeRivetNormal(4, 0, 8, 0.8, true, true);
-
-      expect(dome).not.toBeNull();
-      expect(dimple).not.toBeNull();
-      if (dome && dimple) {
-        expect(dimple[0]).toBeCloseTo(-dome[0], 2);
-        expect(dimple[1]).toBeCloseTo(-dome[1], 2);
-        expect(dimple[2]).toBeCloseTo(dome[2], 2);
-      }
-    });
-  });
-
   describe('Reoriented Normal Mapping (RNM) Blending', () => {
     it('identity base normal (0, 0, 1) leaves detail normal unchanged', () => {
       const base: [number, number, number] = [0, 0, 1];
@@ -227,22 +183,20 @@ describe('2.5D Normal Chisel & Bas-Relief Sculptor', () => {
       }
 
       const session = new ChiselStrokeSession(8, 8);
-      session.stampRivet(4, 4, {
-        radius: 3,
-        flatten: 0.5,
-        invert: false,
+      session.stampChisel(4, 4, {
+        azimuth: 90,
+        incline: 45,
+        width: 3,
+        ridgeMode: false,
         blendMode: 'rnm',
       });
 
       session.compositeOnto(img, 'rnm');
 
-      // Center pixel (4, 4) should remain perpendicular normal
+      // The chisel's center catches a directional normal while untouched pixels stay flat.
       const centerIdx = (4 * 8 + 4) * 4;
-      expect(img.data[centerIdx + 2]).toBe(255);
-
-      // Edge of rivet should have shifted normal X/Y
-      const edgeIdx = (4 * 8 + 6) * 4;
-      expect(img.data[edgeIdx]).not.toBe(128);
+      expect(img.data[centerIdx]).not.toBe(128);
+      expect(img.data[0]).toBe(128);
     });
   });
 });

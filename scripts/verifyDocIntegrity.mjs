@@ -113,6 +113,8 @@ if (fs.existsSync(changelogPath)) {
     'src/lib/audio/tracks.ts',
     'src/lib/audio/spectralFlux.ts',
     'tests/audioOnsetDetection.test.ts',
+    'src/components/layout/inspector/VolumetricOpticsSection.tsx',
+    'tests/e2e/volumetricVisualProof.spec.ts',
   ]);
 
   while ((match = pathRegex.exec(changelogContent)) !== null) {

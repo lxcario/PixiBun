@@ -35,21 +35,18 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
 
       const state = useStudioStore.getState();
 
-      // Desktop / Local Project Save: Ctrl/Cmd + S (Save) / Ctrl/Cmd + Shift + S (Save As)
+      // Save now flushes browser storage. Save As explicitly creates a project file.
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         if (optionsRef.current.autosaveTimerRef.current !== null) {
           window.clearTimeout(optionsRef.current.autosaveTimerRef.current);
           optionsRef.current.autosaveTimerRef.current = null;
         }
-        // Flush the debounced IndexedDB autosave first, then hand off to the
-        // desktop File System Access save — sequenced so the project is never
-        // serialized twice concurrently (and the OS dialog can't interleave
-        // with the local write).
+        // Flush browser storage first. Only Save As opens the OS file picker.
         void (async () => {
           const res = await optionsRef.current.runAutosave();
           if (typeof res === 'boolean' ? res : res.ok) optionsRef.current.triggerSaveToast();
-          await optionsRef.current.handleSaveDesktopProject(e.shiftKey);
+          if (e.shiftKey) await optionsRef.current.handleSaveDesktopProject(true);
         })();
         return;
       }
@@ -187,14 +184,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           state.setActiveTool(e.shiftKey ? 'erase-color' : 'color-replace');
           break;
         case 'k':
-          if (e.shiftKey) {
-            state.setActiveTool('rivet-stamp');
-          } else {
-            state.setActiveTool('normal-chisel');
-          }
-          break;
-        case 'n':
-          state.setActiveTool('rivet-stamp');
+          state.setActiveTool('normal-chisel');
           break;
         case 's': {
           // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens

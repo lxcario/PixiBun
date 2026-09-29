@@ -4,6 +4,19 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## UX follow-up — 2026-09-30
+
+- [x] Align the header around project identity, New, and Save; remove duplicate header backup and visible local-save text while keeping project backup under Export and autosave error feedback.
+- [x] Consolidate pen size and zoom controls, refine timeline playback/frame actions and readable scrub preview, and use drag reordering for layers.
+- [x] Retire Rivet Stamp and one-click Material Shading without changing the photometric lighting engine or existing normal-map and legacy effect-layer compatibility.
+- [x] Replace artwork-changing Seamless Pattern generation with an exact selection-based 3×3 repeat preview and tile PNG download; require review before 47-blob contours create a layer.
+- [x] Preview cleanup, color mood, dither, and palette actions before applying; invalidate stale scans/previews when source artwork or relevant state changes.
+- [x] Update user, architecture, audit, plan, and test-inventory documentation for the final workflow.
+
+**Verification:** The full quality gate passed: documentation integrity, typecheck, lint, 1,315 unit tests across 131 suites, and production build. A clean full Chromium run passed 98/98 tests across 24 spec files, including photometric relighting, recovery, accessibility, and the preview workflows. TestSprite is unavailable because its CLI is not installed. The 2026-09-29 section below records the earlier header and backup iteration, later superseded by direct feedback.
+
+---
+
 ## UX follow-up — 2026-09-29
 
 - [x] Audit the supplied research against the running app and record verified friction, open hypotheses, and bounded implementation work in `PIXIBUN_UX_AUDIT.md` and `PIXIBUN_UX_IMPLEMENTATION_PLAN.md`.

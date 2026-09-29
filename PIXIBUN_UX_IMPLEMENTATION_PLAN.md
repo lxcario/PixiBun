@@ -1,5 +1,7 @@
 # PixiBun UX implementation plan — 2026-09-29
 
+> **Status update (2026-09-30):** This document records the original 2026-09-29 plan and its then-current acceptance wording. Direct user feedback changed the header: portable project backup is reached through Export, while the duplicate Back up button and visible “Saved on this device” text were removed. New sits beside the project name and Save. The tool cleanup, preview-first PixiTools actions, layer drag reordering, and timeline refinements are implemented. See [the session changelog](PIXIBUN_UX_CHANGELOG.md) for the current behavior. Artist task studies and larger responsive-workspace work remain proposals.
+
 ## Goal and boundaries
 
 For first-time pixel artists, returning sprite makers and experienced frame animators, make saving, backup and animation controls understandable while preserving the canvas-first handcrafted studio. Success for this slice: artists can distinguish local save from a portable project backup; a failed backup leaves the dialog open with an actionable error; onion skin explains why no ghosts appear. No renderer, project schema, undo transaction, animation model, AI feature or visual-language rewrite is in scope.
@@ -8,7 +10,7 @@ The supplied report reviewed established creative-tool patterns; it did not test
 
 ## Milestones and dependencies
 
-Milestones 1 and 2 were implemented and verified in the first audit. Following direct user feedback, milestone 3 now has a task-based PixiTools entry screen; its study and label refinement remain open. A separate tool-preview readability and accuracy slice is complete, with comprehension testing still open. Milestones 4–8 remain proposals requiring the stated study or design work.
+Milestones 1 and 2 were implemented and verified in the first audit. Later feedback superseded the direct header Backup control and visible saved label from milestone 1 while keeping the underlying Export backup and autosave error handling. Milestone 3 has a task-based PixiTools entry screen, with study and label refinement still open. The tool-preview readability slice, timeline control cleanup, layer drag reorder, and preview-first effect flow are implemented. Larger storage architecture, workspace presets, and responsive/touch work remain proposals requiring the stated study or design work.
 
 | Milestone | Priority | Work and dependency | Estimated effort | Acceptance / validation |
 |---|---|---|---:|---|
@@ -22,7 +24,7 @@ Milestones 1 and 2 were implemented and verified in the first audit. Following d
 | 7. Visual interaction polish | P2 | Reproduce reported picker/panel/button issues on desktop first. | 1–3d per verified issue | Smooth symmetric transitions, stable layout, reduced-motion check. |
 | 8. Responsive/touch editor and direct lighting expansion | V2 | Requires input and layout design; existing light gizmo is already functional. | Separate estimate | Tablet task study and performance profile before implementation. |
 
-## Interaction specification A — local save and portable backup
+## Historical interaction specification A — local save and portable backup
 
 **Intention/entry:** An artist wants confidence that current work is stored and a file they control. The top bar is visible throughout drawing. A direct `Back up…` control opens the existing Export dialog with `.pixibun` selected; ordinary Export still opens its usual image tab.
 

@@ -71,7 +71,7 @@ src/
 │   │   ├── pixelAiEngine.ts         # SDF morphing, jaggy cleanup, ground shadow, outline
 │   │   ├── pixelizeEngine.ts        # Image-to-pixel: Sobel salience, OKLab Median-Cut + K-Means++
 │   │   └── shadowRayMarcher.ts      # Bounded 2.5D sprite cast shadow projection, drop shadow, Aaltonen cone tracing
-│   ├── art/                         # normalSculptor.ts (2.5D normal chisel & rivet dome stamp), starter templates
+│   ├── art/                         # normalSculptor.ts (2.5D normal chisel), starter templates
 │   ├── canvas/                      # Raster fundamentals: Bresenham, 2:1 iso stepper, Bezier, Flood Fill, Dither matrices, rotSprite.ts, spritesheetSlicer.ts
 │   ├── collab/                      # CRDT engine: crdtPixelBuffer (per-pixel LWW-Register with HLC clocks and bounded drift)
 │   ├── color/                       # paletteCycling.ts (Mark Ferrari 8-bit cycling, IFF CRNG/CCRT, 32-bit LUT, harmonic rational retuning)
@@ -330,20 +330,19 @@ Normal vectors follow the standard OpenGL tangent space convention ($+Y$ points 
 $$\mathbf{C}_{\text{encoded}} = \text{round}\left((\mathbf{N} + 1) \times 127.5\right)$$
 Flat perpendicular baseline planes $(0, 0, 1)$ map to $(128, 128, 255)$ lavender.
 
-### 2. Analytical Directional Bevels & Rivet Dome Stamping
+### 2. Analytical Directional Bevels
 * **Directional Bevel:** Given compass heading $\alpha \in [0, 360^\circ)$ and slope incline $\phi \in (0, 90^\circ]$:
   $$N_x = \sin\phi \sin\alpha, \quad N_{y,\text{OpenGL}} = \sin\phi \cos\alpha, \quad N_z = \cos\phi$$
-* **Rivet Dome Stamp:** For circular stamps of radius $R$ and flattening factor $h \in (0, 1]$:
-  $$\mathbf{N} = \text{normalize}\left(h \frac{dx}{R}, h \frac{dy}{R}, \sqrt{1 - \frac{dx^2 + dy^2}{R^2}}\right)$$
+The Rivet Stamp tool and shortcut were retired in the 2026-09-30 UX cleanup. Existing normal-map layers remain compatible with the chisel and photometric renderer.
 
 ### 3. Reoriented Normal Mapping (RNM)
 Rotates stamped micro-relief normals $\mathbf{D}$ into the tangent frame of the underlying base surface $\mathbf{B}$ via shortest-arc quaternion rotation without slope flattening:
 $$\mathbf{t} = (B_x, B_y, B_z + 1), \quad \mathbf{u} = (-D_x, -D_y, D_z)$$
 $$\mathbf{r} = \mathbf{t}(\mathbf{t} \cdot \mathbf{u}) - \mathbf{u} \, t_z, \quad \mathbf{N}_{\text{blended}} = \frac{\mathbf{r}}{\|\mathbf{r}\|}$$
 
-| Live Normal Preview (RNM Blended) | 45° vs 225° Relit Difference (32,558 px) | Rivet Dome Stamping |
-|:---:|:---:|:---:|
-| ![Normal Preview](docs/assets/screenshots/proof_20260908_1215_02_normal_preview_on.png) | ![Relit Diff Heatmap](docs/assets/screenshots/proof_20260908_1215_05_diff_heatmap.png) | ![Rivet Dome Stamping](docs/assets/screenshots/proof_20260908_1215_07_rivet_dome_closeup.png) |
+| Live Normal Preview (RNM Blended) | 45° vs 225° Relit Difference (32,558 px) |
+|:---:|:---:|
+| ![Normal Preview](docs/assets/screenshots/proof_20260908_1215_02_normal_preview_on.png) | ![Relit Diff Heatmap](docs/assets/screenshots/proof_20260908_1215_05_diff_heatmap.png) |
 
 ---
 
@@ -439,7 +438,6 @@ Cycles display-only simulation matrices for color vision deficiencies:
 * **Achromatopsia / Grayscale:** Total absence of color perception.
 
 ### 3. Precision Tool Hotkeys
-* <kbd>N</kbd> (or <kbd>Shift</kbd> + <kbd>K</kbd>): Direct activation of the 2.5D Rivet Dome Stamp tool.
 * <kbd>K</kbd>: Direct activation of the Normal Chisel tool.
 * <kbd>R</kbd>: Direct activation of the Color Replace tool.
 * <kbd>Shift</kbd> + <kbd>R</kbd>: Direct activation of the Erase Sampled Color tool.

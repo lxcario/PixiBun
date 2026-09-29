@@ -5,7 +5,6 @@ import { MaterialType, PhotometricAnalysisGeometry } from '@/types/tools';
 import {
   executePhotometricPipeline,
   computePhotometricAnalysis,
-  executeVolumetricOpticalPipeline,
   detectMinecraftSkin,
 } from '@/lib/ai/smartMathEngine';
 import { runEdtNormalMapInWorker } from '@/lib/engine/workerDispatcher';
@@ -617,55 +616,6 @@ export function usePhotometricEvents({
       });
     };
 
-    const handleVolumetricOpticsEvent = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const detail = customEvent.detail || {};
-
-      const srcCtx = compositeSourceSnapshot('optical-output');
-      if (!srcCtx) return;
-
-      const state = useStudioStore.getState();
-      const preset = detail.preset ?? state.tools.opticalPreset;
-      const shadedCanvas = executeVolumetricOpticalPipeline(
-        srcCtx,
-        canvasWidth,
-        canvasHeight,
-        {
-          preset,
-          translucencyDepth: detail.translucencyDepth ?? state.tools.translucencyDepth,
-          fresnelPower: detail.fresnelPower ?? state.tools.fresnelPower,
-          anisoAngle: detail.anisoAngle ?? state.tools.anisoAngle,
-          anisoFlow: detail.anisoFlow ?? state.tools.anisoFlow,
-          celTones: detail.celTones ?? state.tools.opticalCelTones,
-          lightAzimuth: detail.lightAzimuth ?? state.tools.lightAzimuth,
-          lightElevation: detail.lightElevation ?? state.tools.lightElevation,
-          lightColor: detail.lightColor ?? '#FFFFFF',
-          paletteColors: detail.paletteColors ?? [],
-          ditherModulation: detail.ditherModulation ?? state.tools.ditherModulation ?? 0.0,
-        }
-      );
-
-      updateTaggedLayer(`Optics (${preset})`, 'optical-output', (outCtx) => {
-        outCtx.drawImage(shadedCanvas, 0, 0);
-      }, {
-        kind: 'volumetric-optics',
-        version: 1,
-        sourceMode: 'composite-excluding-self',
-        params: {
-          preset,
-          translucencyDepth: detail.translucencyDepth ?? state.tools.translucencyDepth,
-          fresnelPower: detail.fresnelPower ?? state.tools.fresnelPower,
-          anisoAngle: detail.anisoAngle ?? state.tools.anisoAngle,
-          anisoFlow: detail.anisoFlow ?? state.tools.anisoFlow,
-          celTones: detail.celTones ?? state.tools.opticalCelTones,
-          lightAzimuth: detail.lightAzimuth ?? state.tools.lightAzimuth,
-          lightElevation: detail.lightElevation ?? state.tools.lightElevation,
-          ditherModulation: detail.ditherModulation ?? state.tools.ditherModulation ?? 0,
-          paletteColors: detail.paletteColors ?? [],
-        },
-      });
-    };
-
     const handleBakeNormalMapEvent = async () => {
       const srcCtx = compositeSourceSnapshot('normal-map');
       if (!srcCtx) return;
@@ -753,9 +703,6 @@ export function usePhotometricEvents({
       ),
       studioEvents.on('pixibun:photometric-gizmo-commit', handlePhotometricGizmoCommitEvent),
       studioEvents.on('pixibun:photometric-gizmo-cancel', handlePhotometricGizmoCancelEvent),
-      studioEvents.on('pixibun:volumetric-optics', (detail) =>
-        handleVolumetricOpticsEvent({ detail } as CustomEvent)
-      ),
       studioEvents.on('pixibun:bake-normal-map', handleBakeNormalMapEvent),
     ];
 

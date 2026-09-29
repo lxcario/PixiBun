@@ -133,7 +133,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     setLastPoint: props.setLastPoint,
     getOrCreateLayerCanvas: props.getOrCreateLayerCanvas,
     renderComposite: props.renderComposite,
-    commitSnapshot: props.commitSnapshot,
   });
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -315,13 +314,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         shapeHandler.onPointerDown(e, coords);
         break;
       }
-      case 'normal-chisel':
-      case 'rivet-stamp': {
+      case 'normal-chisel': {
         chiselHandler.onPointerDown(e, coords);
-        if (tools.activeTool === 'rivet-stamp') {
-          props.isDrawingRef.current = false;
-          props.setIsDrawing(false);
-        }
         break;
       }
       case 'eyedropper': {

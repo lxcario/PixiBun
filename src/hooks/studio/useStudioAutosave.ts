@@ -400,12 +400,27 @@ export function useStudioAutosave() {
         autosaveTimerRef.current = null;
       }
 
-      // Best effort save of current workspace if active
-      if (previousActiveState.phase === 'active') {
+      // Preserve unsaved edits before replacing the live workspace.
+      if (previousActiveState.phase === 'active' && useStudioStore.getState().isDirty) {
         try {
-          await runAutosave();
+          const result = await runAutosave();
+          if (!result.ok || useStudioStore.getState().isDirty) {
+            return {
+              success: false,
+              reason: 'blocked',
+              projectId: targetProjectId,
+              reasonCode: 'unsaved-workspace',
+              message: 'The current drawing could not be saved. Export a backup before opening another project.',
+            };
+          }
         } catch {
-          // best-effort
+          return {
+            success: false,
+            reason: 'blocked',
+            projectId: targetProjectId,
+            reasonCode: 'unsaved-workspace',
+            message: 'The current drawing could not be saved. Export a backup before opening another project.',
+          };
         }
       }
 

@@ -7,7 +7,7 @@ import { APP_VERSION } from '@/config/version';
  *
  * 1. Origin Validation & Cross-Site Request Forgery (CSRF):
  *    - Diagnostic events are transmitted via POST. The handler validates the incoming `Origin`
- *      header against the request `Host` / `X-Forwarded-Host` header. Requests from untrusted
+ *      header against the request URL's exact scheme, host, and port. Requests from untrusted
  *      foreign origins are rejected with HTTP 403 to prevent cross-site quota exhaustion.
  *
  * 2. Trusted Reverse Proxy Assumptions & Client IP Identity:
@@ -53,18 +53,9 @@ function clientKey(request: Request): string {
 function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
   if (!origin) return true; // Same-origin or non-browser client without Origin header
-
-  const host = request.headers.get('host') || request.headers.get('x-forwarded-host');
-  if (!host) return true;
-
   try {
     const originUrl = new URL(origin);
-    const hostName = host.split(':')[0];
-    return (
-      originUrl.hostname === hostName ||
-      originUrl.hostname === 'localhost' ||
-      originUrl.hostname === '127.0.0.1'
-    );
+    return origin === originUrl.origin && originUrl.origin === new URL(request.url).origin;
   } catch {
     return false;
   }

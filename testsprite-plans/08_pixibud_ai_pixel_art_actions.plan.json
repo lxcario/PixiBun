@@ -24,11 +24,11 @@
     },
     {
       "type": "action",
-      "description": "Click the 'De-Jaggy' action button"
+      "description": "Click 'Smooth Jaggies' and inspect the before-and-after preview"
     },
     {
       "type": "action",
-      "description": "Click the 'Thin to 1px' action button"
+      "description": "Apply the Smooth Jaggies preview, then click 'Thin to 1px' and inspect its preview"
     },
     {
       "type": "assertion",
@@ -36,7 +36,11 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Sunset' mood tint button"
+      "description": "Click the 'Sunset' mood button and inspect the before-and-after preview"
+    },
+    {
+      "type": "action",
+      "description": "Click 'Apply to Layer' for the Sunset preview"
     },
     {
       "type": "assertion",

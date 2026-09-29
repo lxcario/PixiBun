@@ -56,7 +56,6 @@ export type PixelIconName =
   | 'lamp'
   | 'tag'
   | 'chisel'
-  | 'rivet'
   | 'save'
   | 'lamp-pixel'
   | 'pen-pixel'
@@ -547,15 +546,6 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
             <path d="M14 2 8 8l4 4 6-6Z" />
             <path d="m8 8-5 5 3 3 5-5" />
             <path d="m3 13-1 8 8-1" />
-          </svg>
-        );
-
-      case 'rivet':
-        return (
-          <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <circle cx="12" cy="12" r="8" />
-            <circle cx="12" cy="12" r="3" fill="currentColor" />
-            <path d="M12 4v2m0 12v2M4 12h2m12 0h2" />
           </svg>
         );
 

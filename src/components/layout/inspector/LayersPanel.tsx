@@ -15,13 +15,13 @@ const EFFECT_LABELS: Record<string, string> = {
   'auto-shade': 'auto shade',
   'cast-shadow': 'cast shadow',
   'ground-shadow': 'ground shadow',
-  'volumetric-optics': 'material optics',
+  'volumetric-optics': 'older material shading',
   'normal-map': 'normal map',
   specular: 'specular light',
   'sel-out': 'selective outline',
   outline: 'outer outline',
   autotile: 'autotile contours',
-  wfc: 'tile synthesis',
+  wfc: 'older pattern synthesis',
 };
 
 function formatRecipeValue(value: string | number | boolean | null | string[]): string {
@@ -59,6 +59,8 @@ export const LayersPanel: React.FC = () => {
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [layerNameInput, setLayerNameInput] = useState('');
   const [mergeConfirmLayerId, setMergeConfirmLayerId] = useState<string | null>(null);
+  const [draggedLayerId, setDraggedLayerId] = useState<string | null>(null);
+  const [dropTargetLayerId, setDropTargetLayerId] = useState<string | null>(null);
   const mergeTimerRef = useRef<number | null>(null);
   const opacityGestureLayerRef = useRef<string | null>(null);
 
@@ -90,6 +92,13 @@ export const LayersPanel: React.FC = () => {
       setMergeConfirmLayerId((current) => (current === layerId ? null : current));
       mergeTimerRef.current = null;
     }, 2500);
+  };
+
+  const moveLayer = (sourceId: string, targetId: string) => {
+    if (isGuest || sourceId === targetId || !currentFrame) return;
+    const sourceIndex = currentFrame.layers.findIndex((layer) => layer.id === sourceId);
+    const targetIndex = currentFrame.layers.findIndex((layer) => layer.id === targetId);
+    if (sourceIndex >= 0 && targetIndex >= 0) reorderLayers(sourceIndex, targetIndex);
   };
 
   return (
@@ -219,6 +228,11 @@ export const LayersPanel: React.FC = () => {
           <div className="text-[8px] font-mono text-[var(--text-muted)]">
             Source: {activeLayer.effect.sourceMode.replaceAll('-', ' ')}
           </div>
+          {(activeLayer.effect.kind === 'volumetric-optics' || activeLayer.effect.kind === 'wfc') && (
+            <div className="mt-1 text-[9px] text-[var(--text-body)]">
+              This older generated layer is saved as pixels. Hide it to see the original artwork below.
+            </div>
+          )}
           <div className="mt-1 text-[9px] font-sans text-[var(--text-muted)] truncate">
             {Object.entries(activeLayer.effect.params)
               .slice(0, 4)
@@ -244,18 +258,49 @@ export const LayersPanel: React.FC = () => {
           return (
             <div
               key={layer.id}
+              data-testid={`layer-row-${layer.id}`}
+              onDragOver={(event) => {
+                if (isGuest || !draggedLayerId) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setDropTargetLayerId(layer.id);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node)) setDropTargetLayerId(null);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const sourceId = event.dataTransfer.getData('application/x-pixibun-layer') || draggedLayerId;
+                if (sourceId) moveLayer(sourceId, layer.id);
+                setDraggedLayerId(null);
+                setDropTargetLayerId(null);
+              }}
               className={`h-8 px-3 flex items-center justify-between text-xs transition-colors group ${
                 isActive
                   ? 'bg-[var(--desk-surface-raised)] border-l-2 border-l-[var(--desk-border-highlight)] text-[var(--text-heading)] font-medium'
                   : 'text-[var(--text-body)] hover:bg-[var(--desk-surface-raised)]/40'
-              } ${layer.locked ? 'opacity-70' : ''}`}
+              } ${layer.locked ? 'opacity-70' : ''} ${dropTargetLayerId === layer.id && draggedLayerId !== layer.id ? 'outline outline-2 outline-[var(--accent-gold)] outline-offset-[-2px]' : ''} ${draggedLayerId === layer.id ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0 pr-1">
-                <span
-                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                    isActive ? 'bg-[var(--accent-gold)]' : 'bg-transparent'
-                  }`}
-                />
+                <button type="button" draggable={!isGuest && currentFrame.layers.length > 1}
+                  disabled={isGuest || currentFrame.layers.length <= 1}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData('application/x-pixibun-layer', layer.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                    setDraggedLayerId(layer.id);
+                  }}
+                  onDragEnd={() => { setDraggedLayerId(null); setDropTargetLayerId(null); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+                    event.preventDefault();
+                    const targetIndex = index + (event.key === 'ArrowUp' ? -1 : 1);
+                    if (targetIndex >= 0 && targetIndex < currentFrame.layers.length) reorderLayers(index, targetIndex);
+                  }}
+                  title="Drag to reorder; use arrow keys when focused"
+                  aria-label={`Reorder layer ${layer.name}`}
+                  className="w-4 h-6 shrink-0 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--accent-gold)] cursor-grab active:cursor-grabbing disabled:opacity-40 disabled:cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]">
+                  <span aria-hidden="true" className="text-[13px] leading-none">⠿</span>
+                </button>
                 {editingLayerId === layer.id ? (
                   <input
                     type="text"
@@ -323,20 +368,6 @@ export const LayersPanel: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1">
-                <IconButton
-                  icon="step-backward"
-                  size="sm"
-                  label={`Move layer ${layer.name} up`}
-                  disabled={isGuest || index === 0}
-                  onClick={() => reorderLayers(index, index - 1)}
-                />
-                <IconButton
-                  icon="step-forward"
-                  size="sm"
-                  label={`Move layer ${layer.name} down`}
-                  disabled={isGuest || index === currentFrame.layers.length - 1}
-                  onClick={() => reorderLayers(index, index + 1)}
-                />
                 {layer.effect?.kind === 'photometric' && (
                   <button
                     type="button"

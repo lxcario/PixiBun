@@ -6,7 +6,7 @@
   "description": "Moving the cursor over canvas with the Lasso tool selected does not paint preview artifacts, and deleting an irregular selection removes only enclosed pixels.",
   "priority": "p0",
   "planSteps": [
-    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "action", "description": "Select the pen tool in the left toolbar" },
     { "type": "action", "description": "Draw a distinct mark on the left side of the canvas" },
     { "type": "action", "description": "Draw a second distinct mark on the right side of the canvas" },

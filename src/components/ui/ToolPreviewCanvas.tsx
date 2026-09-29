@@ -359,19 +359,6 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
       label = done ? 'BEVELED SURFACE' : 'CARVE EDGE';
       break;
     }
-    case 'rivet': {
-      box(ctx, 24, 15, 48, 24, '#48566f');
-      box(ctx, 26, 17, 44, 20, '#354158');
-      if (action > 0.42) {
-        box(ctx, 45, 23, 9, 9, INK);
-        box(ctx, 47, 24, 6, 6, '#acb9c9');
-        box(ctx, 48, 24, 2, 2, WHITE);
-        box(ctx, 51, 28, 2, 2, '#657185');
-      }
-      if (!done) cursor(ctx, 49, 27, action > 0);
-      label = done ? 'ONE RAISED STUD' : 'CLICK TO STAMP';
-      break;
-    }
     case 'eyedropper': {
       box(ctx, 26, 18, 18, 17, RED);
       box(ctx, 44, 18, 22, 17, BLUE);
@@ -446,17 +433,6 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
       label = done ? 'GROUND SHADOW' : 'CAST ON FLOOR';
       break;
     }
-    case 'material': {
-      wipeSprite(ctx, action, { flat: true }, {
-        base: '#9c5d91', highlight: '#a9f4f0', shadow: '#394685', outline: '#69cbd5', glint: true,
-      });
-      if (done) {
-        box(ctx, 32, 25, 2, 10, '#69cbd5');
-        box(ctx, 62, 25, 2, 10, '#69cbd5');
-      }
-      label = done ? 'MATERIAL GLOW' : 'APPLY MATERIAL';
-      break;
-    }
     case 'seamless': {
       const repeat = Math.max(1, Math.round(1 + action * 11));
       for (let i = 0; i < repeat; i++) {
@@ -470,7 +446,7 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
         line(ctx, x + 7, y + 9, x + 10, y + 2, '#899bd0');
       }
       if (!done) outlineRect(ctx, 14, 10, 18, 12, GOLD);
-      label = done ? 'SEAMLESS REPEAT' : 'EXTEND PATTERN';
+      label = done ? 'CHECK TILE SEAMS' : 'REPEAT SELECTED TILE';
       break;
     }
     case 'tiles': {

@@ -5,9 +5,6 @@ import {
   ToolSettings,
   DitherMatrixType,
   MaterialType,
-  OpticalPresetType,
-  AnisoFlowPreset,
-  CelToneCount,
   WallpaperGroup,
   ShadingBandMode,
 } from '@/types/tools';
@@ -98,19 +95,10 @@ export interface ToolSlice {
   setDitherModulation: (mod: number) => void;
   setCurveTightness: (tightness: number) => void;
   setIsoAngleSnap: (snap: boolean) => void;
-  setOpticalPreset: (preset: OpticalPresetType) => void;
-  setTranslucencyDepth: (depth: number) => void;
-  setFresnelPower: (power: number) => void;
-  setAnisoAngle: (angle: number) => void;
-  setAnisoFlow: (flow: AnisoFlowPreset) => void;
-  setOpticalCelTones: (tones: CelToneCount) => void;
   setChiselAzimuth: (azimuth: number) => void;
   setChiselIncline: (incline: number) => void;
   setChiselWidth: (width: number) => void;
   setChiselRidgeMode: (ridge: boolean) => void;
-  setRivetRadius: (radius: number) => void;
-  setRivetFlatten: (flatten: number) => void;
-  setRivetInvert: (invert: boolean) => void;
   setNormalBlendMode: (mode: 'rnm' | 'udn' | 'overwrite') => void;
 
   isPaletteCycling: boolean;

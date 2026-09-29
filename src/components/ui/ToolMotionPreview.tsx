@@ -22,7 +22,6 @@ export type Scene =
   | 'select-lasso'
   | 'select-wand'
   | 'depth'
-  | 'rivet'
   | 'eyedropper'
   | 'light'
   | 'bake-light'
@@ -41,7 +40,6 @@ export type Scene =
   | 'strays'
   | 'normal-map'
   | 'bake-normal'
-  | 'material'
   | 'seamless'
   | 'dither-atkinson'
   | 'dither-smooth'
@@ -199,16 +197,6 @@ export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
     shortcut: 'K',
     icon: 'chisel',
   },
-  'rivet-stamp': {
-    title: 'Rivet Stamp',
-    group: '2.5D Sculpt',
-    description: 'Stamp a raised or inset detail.',
-    proTip: 'Stamps 3D beveled studs with metallic highlights.',
-    scene: 'rivet',
-    shortcut: 'N',
-    secondaryShortcut: 'Shift + K',
-    icon: 'rivet',
-  },
   eyedropper: {
     title: 'Eyedropper',
     group: 'Utility',
@@ -277,14 +265,6 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'depth',
     icon: 'chisel',
   }],
-  [/rivet & stud/i, {
-    title: 'Rivet & Stud',
-    group: '2.5D Sculpt',
-    description: 'Stamp a raised surface detail.',
-    proTip: 'Embeds calculated normal depth and specular highlights.',
-    scene: 'rivet',
-    icon: 'rivet',
-  }],
   [/add floor shadow|cast ground shadow|render cast shadow|analyze & cast shadow/i, {
     title: 'Ground Shadow',
     group: 'AI & Shading',
@@ -293,19 +273,11 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'shadow',
     icon: 'sun',
   }],
-  [/apply material shading|render volumetric optics/i, {
-    title: 'Material Shading',
-    group: 'AI & Shading',
-    description: 'Simulate translucent subsurface scattering with inner glow and rim light.',
-    proTip: 'Applies volumetric ambient occlusion and neon bloom optics.',
-    scene: 'material',
-    icon: 'sparkles',
-  }],
-  [/generate seamless pattern/i, {
-    title: 'Seamless Pattern',
+  [/repeat preview/i, {
+    title: 'Repeat Preview',
     group: 'Tileset Engine',
-    description: 'Synthesize an infinite repeating wallpaper pattern from artwork edges.',
-    proTip: 'Eliminates edge seams for infinite scrolling background textures.',
+    description: 'Inspect a selected tile repeated in both directions.',
+    proTip: 'Edit the selected tile on the canvas to improve visible seams.',
     scene: 'seamless',
     icon: 'grid',
   }],
@@ -317,11 +289,11 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'tiles',
     icon: 'grid',
   }],
-  [/autotile edges|47-blob/i, {
-    title: '47-Blob Autotiler',
+  [/shade 47-blob contours/i, {
+    title: '47-Blob Contours',
     group: 'Tileset Engine',
-    description: 'Generate standard 47-blob corner and edge transitions for terrain tilesets.',
-    proTip: 'Deconstructs sprites into autotiling Wang blob terrain sets.',
+    description: 'Shade contour pixels using 47-blob neighbor masks.',
+    proTip: 'Creates a separate visible contour layer.',
     scene: 'autotile',
     icon: 'grid-iso',
   }],

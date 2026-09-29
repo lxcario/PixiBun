@@ -37,6 +37,25 @@ async function centeredMotifPng(page: import('@playwright/test').Page) {
   return Buffer.from(base64, 'base64');
 }
 
+test('visible import actions let the user choose a real file', async ({ page }) => {
+  await page.goto('/studio');
+  await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+  const buffer = await pngFromCanvas(page, 16, 16);
+
+  const headerChooser = page.waitForEvent('filechooser');
+  await page.getByTestId('import-button').click();
+  await (await headerChooser).setFiles({ name: 'header-art.png', mimeType: 'image/png', buffer });
+  await expect(page.getByRole('dialog', { name: 'Import Image' }).getByText('header-art.png').first()).toBeVisible();
+  await page.getByRole('dialog', { name: 'Import Image' }).getByRole('button', { name: 'Close dialog' }).click();
+
+  await page.getByRole('button', { name: 'Projects Gallery' }).click();
+  await page.getByRole('dialog', { name: 'Atelier Projects & Gallery' }).getByRole('button', { name: 'Import File' }).click();
+  const importDialog = page.getByRole('dialog', { name: 'Import File' });
+  await expect(importDialog.getByText('Choose a .pixibun project, image, or sprite sheet to import.')).toBeVisible();
+  await importDialog.getByTestId('import-modal-file-input').setInputFiles({ name: 'gallery-art.png', mimeType: 'image/png', buffer });
+  await expect(page.getByRole('dialog', { name: 'Import Image' }).getByText('gallery-art.png').first()).toBeVisible();
+});
+
 test('image import keeps the chosen fit and original-size modes through preview and confirmation', async ({ page }) => {
   await page.goto('/studio');
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();

@@ -4,6 +4,6 @@ export function getLocalSaveLabel(status: LocalSaveStatus, isDirty: boolean): st
   if (status === 'error') return 'Local save failed';
   if (status === 'saving') return 'Saving locally…';
   if (isDirty) return 'Unsaved changes';
-  if (status === 'saved') return 'Saved on this device';
+  if (status === 'saved') return 'Changes saved';
   return 'Not saved yet';
 }

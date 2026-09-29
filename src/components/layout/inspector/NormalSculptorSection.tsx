@@ -18,9 +18,6 @@ export const NormalSculptorSection: React.FC = () => {
   const setChiselIncline = useStudioStore((s) => s.setChiselIncline);
   const setChiselWidth = useStudioStore((s) => s.setChiselWidth);
   const setChiselRidgeMode = useStudioStore((s) => s.setChiselRidgeMode);
-  const setRivetRadius = useStudioStore((s) => s.setRivetRadius);
-  const setRivetFlatten = useStudioStore((s) => s.setRivetFlatten);
-  const setRivetInvert = useStudioStore((s) => s.setRivetInvert);
   const setNormalBlendMode = useStudioStore((s) => s.setNormalBlendMode);
   const addLayer = useStudioStore((s) => s.addLayer);
   const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
@@ -30,7 +27,6 @@ export const NormalSculptorSection: React.FC = () => {
   const isDraggingGizmoRef = useRef<boolean>(false);
 
   const isChiselActive = tools.activeTool === 'normal-chisel';
-  const isRivetActive = tools.activeTool === 'rivet-stamp';
 
   // Current directional normal vector
   const bevelNormal = computeDirectionalBevelNormal(
@@ -193,8 +189,8 @@ export const NormalSculptorSection: React.FC = () => {
           <span>Bevel angles and normal maps</span>
           <span className="opacity-60">2.5D Normal Sculptor</span>
         </div>
-        {/* Tool Selector Buttons */}
-        <div className="grid grid-cols-2 gap-1.5">
+        {/* Directional normal sculpting stays available for the lighting engine. */}
+        <div>
           <button
             onClick={() => setActiveTool('normal-chisel')}
             aria-label="Normal Chisel - Chisel Bevel"
@@ -208,18 +204,6 @@ export const NormalSculptorSection: React.FC = () => {
             <span>Chisel Bevel</span>
           </button>
 
-          <button
-            onClick={() => setActiveTool('rivet-stamp')}
-            aria-label="Rivet Stamp - Rivet & Stud"
-            className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
-              isRivetActive
-                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
-                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
-            }`}
-          >
-            <PixelIcon name="rivet" size={13} />
-            <span>Rivet &amp; Stud</span>
-          </button>
         </div>
 
         {/* Normal Chisel Settings */}
@@ -336,60 +320,6 @@ export const NormalSculptorSection: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Rivet Stamp Settings */}
-        {isRivetActive && (
-          <div className="flex flex-col gap-3 pt-1">
-            {/* Rivet Radius Slider */}
-            <StudioSlider
-              label="Rivet Radius"
-              value={tools.rivetRadius}
-              min={1}
-              max={32}
-              unit="px"
-              onChange={(val) => setRivetRadius(val)}
-            />
-
-            {/* Dome Height Slider */}
-            <StudioSlider
-              label="Dome Height"
-              value={Math.round(tools.rivetFlatten * 100)}
-              min={10}
-              max={100}
-              unit="%"
-              onChange={(val) => setRivetFlatten(val / 100)}
-            />
-
-            {/* Invert Toggle */}
-            <StudioToggle
-              label="Invert (Dimple / Hole)"
-              checked={tools.rivetInvert}
-              onChange={(val) => setRivetInvert(val)}
-            />
-
-            {/* Rivet Presets */}
-            <div className="grid grid-cols-2 gap-1 text-[10px] font-mono">
-              {[
-                { label: 'Hemisphere Dome', r: 8, flat: 1.0, inv: false },
-                { label: 'Shallow Stud', r: 6, flat: 0.35, inv: false },
-                { label: 'Countersunk Screw', r: 5, flat: 0.7, inv: true },
-                { label: 'Dimple Crevice', r: 4, flat: 0.25, inv: true },
-              ].map((preset) => (
-                <button
-                  key={preset.label}
-                  onClick={() => {
-                    setRivetRadius(preset.r);
-                    setRivetFlatten(preset.flat);
-                    setRivetInvert(preset.inv);
-                  }}
-                  className="py-1 px-1.5 text-center rounded-[2px] border border-[var(--desk-border)] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] hover:text-[var(--accent-gold)] text-[var(--text-body)] transition-colors cursor-pointer"
-                >
-                  {preset.label}
-                </button>
-              ))}
             </div>
           </div>
         )}

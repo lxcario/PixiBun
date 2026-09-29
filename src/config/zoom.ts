@@ -4,10 +4,10 @@
  */
 
 export const ZOOM_LADDER = [
-  100, 200, 300, 400, 500, 600, 800, 1000, 1200, 1600, 2400, 3200, 4800, 6400,
+  10, 20, 25, 50, 75, 100, 200, 300, 400, 500, 600, 800, 1000, 1200, 1600, 2400, 3200, 4800, 6400,
 ] as const;
 
-export const MIN_ZOOM = 100;
+export const MIN_ZOOM = 10;
 export const MAX_ZOOM = 6400;
 export const DEFAULT_ZOOM = 1600;
 
@@ -37,8 +37,8 @@ export function getPrevZoomStep(current: number): number {
  * It guarantees:
  * - The canvas fits comfortably within available center-stage width/height with safe margins
  * - Never collapses small canvases (16x16, 32x32) into an unusable microscopic speck
- * - Clamps accurately between MIN_ZOOM (100) and MAX_ZOOM (6400)
- * - Selects an integer step from ZOOM_LADDER
+ * - Allows a reduced-scale overview for canvases larger than the viewport
+ * - Uses the available space closely for canvases that require a scale below 100%
  */
 export function calculateFitZoom(
   canvasWidth: number,
@@ -48,14 +48,16 @@ export function calculateFitZoom(
 ): number {
   if (canvasWidth <= 0 || canvasHeight <= 0) return DEFAULT_ZOOM;
 
-  // Available stage width and height accounting for LeftToolbar (56px), RightInspector (320px),
-  // AtelierRail (40px), Timeline (~104px), StatusBar (24px), and comfortable perimeter margins
-  const availW = (viewportWidth ?? (typeof window !== 'undefined' ? window.innerWidth - 420 : 860)) * 0.88;
-  const availH = (viewportHeight ?? (typeof window !== 'undefined' ? window.innerHeight - 200 : 520)) * 0.88;
+  const viewport = typeof document !== 'undefined' ? document.getElementById('main-content') : null;
+  const availW = Math.max(1, (viewportWidth ?? viewport?.clientWidth ?? 860) - 48);
+  const availH = Math.max(1, (viewportHeight ?? viewport?.clientHeight ?? 520) - 48);
 
-  const maxFitW = Math.floor((Math.max(100, availW) / canvasWidth) * 100);
-  const maxFitH = Math.floor((Math.max(100, availH) / canvasHeight) * 100);
+  const maxFitW = Math.floor((availW / canvasWidth) * 100);
+  const maxFitH = Math.floor((availH / canvasHeight) * 100);
   const rawFit = Math.min(maxFitW, maxFitH);
+
+  // Reduced views benefit from using the available stage, even between toolbar steps.
+  if (rawFit < 100) return Math.max(MIN_ZOOM, Math.min(99, rawFit));
 
   // Find the highest step from ZOOM_LADDER that fits within rawFit
   const step = [...ZOOM_LADDER].reverse().find((s) => s <= rawFit);
@@ -63,7 +65,6 @@ export function calculateFitZoom(
     return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, step));
   }
 
-  // If rawFit is smaller than the lowest ladder step (e.g. huge canvas), clamp to MIN_ZOOM
+  // Very large canvases use the smallest overview step.
   return MIN_ZOOM;
 }
-

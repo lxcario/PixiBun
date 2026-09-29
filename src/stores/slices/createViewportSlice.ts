@@ -89,7 +89,7 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
 
   setZoom: zoom => {
     set(state => {
-      state.zoom = Math.max(100, Math.min(6400, Math.round(zoom)));
+      state.zoom = Math.max(10, Math.min(6400, Math.round(zoom)));
     });
   },
 
@@ -102,7 +102,7 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
 
   setZoomAndPan: (zoom, x, y) => {
     set(state => {
-      state.zoom = Math.max(100, Math.min(6400, Math.round(zoom)));
+      state.zoom = Math.max(10, Math.min(6400, Math.round(zoom)));
       state.panX = Math.round(x);
       state.panY = Math.round(y);
     });

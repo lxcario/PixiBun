@@ -75,6 +75,7 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
         onClose={handleClose}
         onConfirmImage={handleConfirmImage}
         onConfirmProject={handleConfirmProject}
+        onFileSelected={vi.fn()}
       />
     );
 
@@ -106,6 +107,7 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
         onClose={handleClose}
         onConfirmImage={handleConfirmImage}
         onConfirmProject={handleConfirmProject}
+        onFileSelected={vi.fn()}
       />
     );
 
@@ -133,6 +135,7 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
         onClose={handleClose}
         onConfirmImage={handleConfirmImage}
         onConfirmProject={handleConfirmProject}
+        onFileSelected={vi.fn()}
       />
     );
 

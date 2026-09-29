@@ -3,7 +3,7 @@
  * 2.5D Normal Chisel & Bas-Relief Sculptor
  * 
  * Tangent-space normal vector encoding/decoding, directional bevel & chamfer geometry,
- * shallow spherical rivet/stud domes, Reoriented Normal Mapping (RNM, Barré-Brisebois & Hill 2012),
+ * Reoriented Normal Mapping (RNM, Barré-Brisebois & Hill 2012),
  * and two-phase stroke envelope buffer to eliminate intra-stroke angular accumulation.
  */
 
@@ -20,13 +20,6 @@ export interface ChiselSettings {
   incline: number; // 15° to 75° (angle relative to flat plane)
   width: number; // brush width (1 to 32px)
   ridgeMode: boolean; // dual-flank V-groove carving
-  blendMode: NormalBlendMode;
-}
-
-export interface RivetSettings {
-  radius: number; // 1 to 32px
-  flatten: number; // 0.1 to 1.0 (1 = full hemisphere, 0.1 = shallow stud)
-  invert: boolean; // false = dome/stud, true = dimple/countersunk screwhole
   blendMode: NormalBlendMode;
 }
 
@@ -184,47 +177,6 @@ export function blendNormals(
 }
 
 /**
- * Computes normal vector for a shallow spherical rivet or countersunk screwhole dimple.
- * @param dx Distance from rivet center X (-radius to +radius)
- * @param dy Distance from rivet center Y (-radius to +radius)
- * @param radius Rivet stamp radius in pixels
- * @param flatten Flattening factor h in (0, 1] (1 = hemisphere, 0.2 = shallow stud)
- * @param invert Inversion flag (true = dimple / screwhole)
- * @param openGLConvention Whether +Y is OpenGL up
- */
-export function computeRivetNormal(
-  dx: number,
-  dy: number,
-  radius: number,
-  flatten: number = 0.5,
-  invert: boolean = false,
-  openGLConvention: boolean = true
-): [number, number, number] | null {
-  const rSq = (dx * dx + dy * dy) / (radius * radius);
-  if (rSq > 1.0) {
-    return null; // outside circular dome
-  }
-
-  const h = Math.max(0.05, Math.min(1.0, flatten));
-  const u = dx / radius;
-  const v = dy / radius;
-  const zDome = Math.sqrt(Math.max(0, 1.0 - rSq));
-
-  // Flattening scales horizontal slope components relative to vertical dome height
-  let nx = h * u;
-  let ny = openGLConvention ? -h * v : h * v;
-  const nz = zDome;
-
-  if (invert) {
-    nx = -nx;
-    ny = -ny;
-  }
-
-  const len = Math.hypot(nx, ny, nz) || 1;
-  return [nx / len, ny / len, Math.max(0, nz / len)];
-}
-
-/**
  * Intra-stroke envelope session.
  * Prevents angular accumulation artifacts when stamping continuously along a brush stroke.
  * Chiseled facets are tracked within an intra-stroke buffer, then composited onto the
@@ -314,41 +266,6 @@ export class ChiselStrokeSession {
         this.strokeNx[idx] = facetNormal[0];
         this.strokeNy[idx] = facetNormal[1];
         this.strokeNz[idx] = facetNormal[2];
-        this.strokeAlpha[idx] = 1.0;
-        this.modifiedIndices.add(idx);
-      }
-    }
-  }
-
-  /**
-   * Applies a spherical rivet or screwhole stamp at canvas coordinate (cx, cy).
-   */
-  stampRivet(cx: number, cy: number, settings: RivetSettings): void {
-    const rInt = Math.ceil(settings.radius);
-
-    for (let dy = -rInt; dy <= rInt; dy++) {
-      const py = cy + dy;
-      if (py < 0 || py >= this.height) continue;
-
-      for (let dx = -rInt; dx <= rInt; dx++) {
-        const px = cx + dx;
-        if (px < 0 || px >= this.width) continue;
-
-        const normal = computeRivetNormal(
-          dx,
-          dy,
-          settings.radius,
-          settings.flatten,
-          settings.invert,
-          true
-        );
-
-        if (!normal) continue;
-
-        const idx = py * this.width + px;
-        this.strokeNx[idx] = normal[0];
-        this.strokeNy[idx] = normal[1];
-        this.strokeNz[idx] = normal[2];
         this.strokeAlpha[idx] = 1.0;
         this.modifiedIndices.add(idx);
       }

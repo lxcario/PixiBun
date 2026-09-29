@@ -16,6 +16,7 @@ import { suggestSpriteSheetGrid } from '@/lib/canvas/spriteSheetSuggestion';
 import { analyzeSpriteSheetGrid } from '@/lib/canvas/spriteSheetAnalysis';
 import { MAX_CANVAS_DIMENSION, MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { readImportFile } from '@/lib/project/importFile';
 
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 export type { ImportPayload, ImageImportConfirmPayload };
@@ -27,6 +28,7 @@ interface ImportModalProps {
   onClose: () => void;
   onConfirmImage: (result: ImageImportConfirmPayload) => void;
   onConfirmProject: () => void;
+  onFileSelected: (payload: ImportPayload) => void;
 }
 
 const PRESET_CELL_SIZES = [
@@ -44,6 +46,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   onClose,
   onConfirmImage,
   onConfirmProject,
+  onFileSelected,
 }) => {
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
@@ -100,10 +103,24 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const [loadedImageRevision, setLoadedImageRevision] = useState(0);
   const [sheetSuggestion, setSheetSuggestion] = useState(false);
   const [sheetAnalysisNote, setSheetAnalysisNote] = useState('');
-  const imageDataUrl = payload?.type === 'image' ? payload.dataUrl : undefined;
-  const imageFilename = payload?.type === 'image' ? payload.filename : '';
-  const imageWidth = payload?.type === 'image' ? payload.imgWidth : undefined;
-  const imageHeight = payload?.type === 'image' ? payload.imgHeight : undefined;
+  const [fileError, setFileError] = useState<string | null>(null);
+  const effectivePayload = payload;
+  const imageDataUrl = effectivePayload?.type === 'image' ? effectivePayload.dataUrl : undefined;
+  const imageFilename = effectivePayload?.type === 'image' ? effectivePayload.filename : '';
+  const imageWidth = effectivePayload?.type === 'image' ? effectivePayload.imgWidth : undefined;
+  const imageHeight = effectivePayload?.type === 'image' ? effectivePayload.imgHeight : undefined;
+
+  const handleChooseFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setFileError(null);
+    try {
+      onFileSelected(await readImportFile(file));
+    } catch (error) {
+      setFileError(error instanceof Error ? error.message : 'The file could not be imported.');
+    }
+  };
 
   // Decode only when the file changes. Preview option changes must never reset the choice.
   useEffect(() => {
@@ -117,7 +134,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     imgElementRef.current = null;
     setPreviewResult(null);
     setSizeMode((imageWidth ?? 0) <= 512 && (imageHeight ?? 0) <= 512 ? 'match-image' : 'fit-canvas');
-    const suggestion = suggestSpriteSheetGrid(imageWidth ?? 0, imageHeight ?? 0, canvasWidth, canvasHeight, imageFilename);
+    const suggestion = imageDataUrl ? suggestSpriteSheetGrid(imageWidth ?? 0, imageHeight ?? 0, canvasWidth, canvasHeight, imageFilename) : null;
     setImportMode(suggestion ? 'slicer' : 'single');
     setSheetSuggestion(Boolean(suggestion));
     setSheetAnalysisNote(suggestion ? 'Pixel analysis has not verified these cut lines. The canvas-size guess may split sprites; check the preview and adjust the cell dimensions before importing.' : '');
@@ -267,10 +284,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     }
   }, [importMode, renderSlicerPreview, loadedImageRevision]);
 
-  if (!payload) return null;
+  if (!effectivePayload) {
+    return (
+      <ModalWrapper isOpen={isOpen} onClose={onClose} title="Import File" maxWidth="w-[440px]">
+        <div className="p-5 flex flex-col gap-4 text-sm text-[var(--text-body)]">
+          <p>Choose a .pixibun project, image, or sprite sheet to import.</p>
+          <label className="cursor-pointer rounded-[2px] border-2 border-[var(--accent-gold)] bg-[var(--desk-surface)] px-4 py-3 text-center font-bold text-[var(--text-heading)] focus-within:ring-2 focus-within:ring-[var(--accent-gold)]">
+            Choose file
+            <input type="file" accept=".pixibun,.json,image/png,image/jpeg,image/webp" onChange={handleChooseFile} className="sr-only" aria-label="Choose file to import" data-testid="import-modal-file-input" />
+          </label>
+          {fileError && <p role="alert" className="text-[#ffb4b9]">{fileError}</p>}
+        </div>
+      </ModalWrapper>
+    );
+  }
 
-  const srcW = payload.imgWidth || 32;
-  const srcH = payload.imgHeight || 32;
+  const srcW = effectivePayload.imgWidth || 64;
+  const srcH = effectivePayload.imgHeight || 64;
   const isDifferentSize = srcW !== canvasWidth || srcH !== canvasHeight;
   const sourceExceedsCanvasLimit = srcW > MAX_CANVAS_DIMENSION || srcH > MAX_CANVAS_DIMENSION;
   const slicerGrid = computeGridDimensions(srcW, srcH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
@@ -282,16 +312,16 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={payload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image'}
-      maxWidth={payload.type === 'image' ? 'w-[680px]' : 'w-[440px]'}
+      title={effectivePayload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image & Sprite Sheet Slicer'}
+      maxWidth={effectivePayload.type === 'image' ? 'w-[680px]' : 'w-[440px]'}
     >
       {/* 1. Project Import View */}
-      {payload.type === 'project' && (
+      {effectivePayload.type === 'project' && (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs text-xs font-mono">
-            <span className="font-bold text-[var(--text-heading)]">File: {payload.filename}</span>
+            <span className="font-bold text-[var(--text-heading)]">File: {effectivePayload.filename}</span>
             <span className="text-[var(--text-body)]">
-              Frames: {String(Array.isArray((payload.projectJson as { frames?: unknown[] })?.frames) ? (payload.projectJson as { frames: unknown[] }).frames.length : '--')} | Size: {String((payload.projectJson as { width?: unknown })?.width ?? '--')}x{String((payload.projectJson as { height?: unknown })?.height ?? '--')}
+              Frames: {String(Array.isArray((effectivePayload.projectJson as { frames?: unknown[] })?.frames) ? (effectivePayload.projectJson as { frames: unknown[] }).frames.length : '--')} | Size: {String((effectivePayload.projectJson as { width?: unknown })?.width ?? '--')}x{String((effectivePayload.projectJson as { height?: unknown })?.height ?? '--')}
             </span>
             <p className="text-[#a89ab8] text-[11px] leading-relaxed">
               Loading this project will replace the current canvas workspace with all saved frames, layers, and color palettes.
@@ -316,8 +346,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       )}
 
       {/* 2. Image Import View (with Tab Switcher between Single Sprite and Slicer) */}
-      {payload.type === 'image' && (
+      {effectivePayload.type === 'image' && (
         <div className="flex flex-col gap-3">
+          {/* File Source Selection Header */}
+          <div className="flex items-center justify-between p-2 bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] text-xs font-mono">
+            <span className="text-[10px] font-bold text-[#f0be7c] uppercase">File Source Selection</span>
+            <span className="text-[10px] text-[var(--text-muted)] truncate max-w-[200px]">{effectivePayload.filename}</span>
+          </div>
+
           {sheetSuggestion && importMode === 'slicer' && (
             <p className="text-[11px] text-[var(--text-body)] bg-[var(--desk-surface)] border border-[var(--desk-border)] p-2">
               Possible sprite sheet detected. {sheetAnalysisNote} Choose Single Sprite if this is one image.
@@ -328,6 +364,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             <button
               type="button"
               onClick={() => setImportMode('single')}
+              aria-label="Single Sprite / Layer"
+              data-testid="tab-single-sprite"
               className={`px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold cursor-pointer transition-colors ${
                 importMode === 'single'
                   ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
@@ -339,6 +377,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             <button
               type="button"
               onClick={() => setImportMode('slicer')}
+              aria-label="Sprite Sheet Slicer"
+              data-testid="tab-sprite-sheet-slicer"
               className={`px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
                 importMode === 'slicer'
                   ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
@@ -359,7 +399,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                   {/* File details banner */}
                   <div className="flex items-center justify-between bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
                     <span className="font-bold text-[var(--text-heading)] truncate max-w-[160px]">
-                      {payload.filename}
+                      {effectivePayload.filename}
                     </span>
                     <span className="text-[10px] text-[#f0be7c] font-bold">
                       {srcW} × {srcH} px
@@ -570,7 +610,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         target: imageTarget,
                         extractedPalette: previewResult.extractedPalette,
                         addToPalette,
-                        filename: payload.filename,
+                        filename: effectivePayload.filename,
                         resizeCanvasToMatch:
                           sizeMode === 'match-image' && isDifferentSize
                             ? { width: previewResult.width, height: previewResult.height }
@@ -596,7 +636,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                   {/* File & Dimensions info */}
                   <div className="flex items-center justify-between bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
                     <span className="font-bold text-[var(--text-heading)] truncate max-w-[160px]">
-                      {payload.filename}
+                      {effectivePayload.filename}
                     </span>
                     <span className="text-[10px] text-[#f0be7c] font-bold">
                       {srcW} × {srcH} px
@@ -631,33 +671,39 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
                     {/* Custom Width and Height Inputs */}
                     <div className="flex items-center gap-2 pt-1">
-                      <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] flex-1">
-                        <span className="text-[10px] text-[var(--text-body)] font-bold">W:</span>
+                      <label className="flex items-center gap-1 bg-[var(--desk-surface-raised)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] flex-1 cursor-text">
+                        <span className="text-[10px] text-[var(--text-body)] font-bold">Cell Width:</span>
                         <input
                           type="number"
                           min="1"
                           max={srcW}
                           value={slicerCellW}
+                          name="cellWidth"
+                          placeholder="Cell Width"
+                          title="Cell Width"
                           aria-label="Frame cell width in pixels"
                           onChange={(e) => setSlicerCellW(Math.max(1, parseInt(e.target.value, 10) || 1))}
                           className="w-full bg-transparent text-[#f0be7c] font-bold text-right outline-none text-xs"
                         />
                         <span className="text-[9px] text-[var(--text-body)]/60">px</span>
-                      </div>
+                      </label>
 
-                      <div className="flex items-center gap-1 bg-[var(--desk-surface-raised)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] flex-1">
-                        <span className="text-[10px] text-[var(--text-body)] font-bold">H:</span>
+                      <label className="flex items-center gap-1 bg-[var(--desk-surface-raised)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] flex-1 cursor-text">
+                        <span className="text-[10px] text-[var(--text-body)] font-bold">Cell Height:</span>
                         <input
                           type="number"
                           min="1"
                           max={srcH}
                           value={slicerCellH}
+                          name="cellHeight"
+                          placeholder="Cell Height"
+                          title="Cell Height"
                           aria-label="Frame cell height in pixels"
                           onChange={(e) => setSlicerCellH(Math.max(1, parseInt(e.target.value, 10) || 1))}
                           className="w-full bg-transparent text-[#f0be7c] font-bold text-right outline-none text-xs"
                         />
                         <span className="text-[9px] text-[var(--text-body)]/60">px</span>
-                      </div>
+                      </label>
                     </div>
 
                     <div className="grid grid-cols-2 gap-1 pt-1">
@@ -678,8 +724,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       ))}
                     </div>
                     <label className="flex items-center gap-2 text-[9px] text-[var(--text-body)]">
-                      Frame order
-                      <select aria-label="Sprite sheet frame order" value={slicerOrder}
+                      <span>Frame Ordering:</span>
+                      <select aria-label="Frame ordering" name="frameOrdering" value={slicerOrder}
                         onChange={(event) => setSlicerOrder(event.target.value as 'row-major' | 'column-major')}
                         className="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c]">
                         <option value="row-major">Across rows</option>
@@ -790,6 +836,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                   <div className="w-full flex-1 min-h-[200px] bg-[#120a1c] border-2 border-[var(--desk-border)] rounded-[2px] flex items-center justify-center p-2 overflow-auto relative shadow-inner">
                     <canvas
                       ref={slicerCanvasRef}
+                      aria-label="Slicer cutline preview canvas"
+                      data-testid="slicer-cutline-preview"
                       className="max-w-full max-h-[220px] object-contain pixelated shadow-lg border border-[#3a2e4c]"
                       style={{ imageRendering: 'pixelated' }}
                     />
@@ -851,7 +899,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       target: slicerTarget,
                       extractedPalette: extractedColors,
                       addToPalette,
-                      filename: payload.filename,
+                      filename: effectivePayload.filename,
                       resizeCanvasToMatch: slicerResizeCanvas
                         ? { width: slicerCellW, height: slicerCellH }
                         : undefined,
@@ -864,14 +912,16 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       ? 'opacity-50 cursor-not-allowed'
                       : 'cursor-pointer'
                   }`}
+                  aria-label="Slice & Import Frames"
                   title={
                     slicerInvalid
                       ? 'Choose a valid grid with at least one frame'
-                      : 'Slice & Import Frames'
+                      : 'Slice and Import Frames'
                   }
                 >
                   <PixelIcon name="layers" size={14} />
                   <span>Slice & Import Frames</span>
+                  <span className="text-[10px] opacity-90 font-mono">({nonZeroFramesCount})</span>
                 </TactileButton>
               </div>
             </>

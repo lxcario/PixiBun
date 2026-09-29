@@ -42,7 +42,6 @@ export const CANONICAL_TOOLS: ToolMeta[] = [
 
   // 2.5D Sculpt
   { id: 'normal-chisel', label: 'Normal Chisel', shortcut: 'K', icon: 'chisel', group: '2.5D Sculpt' },
-  { id: 'rivet-stamp', label: 'Rivet Stamp', shortcut: 'N', secondaryShortcut: 'Shift + K', icon: 'rivet', group: '2.5D Sculpt' },
 
   // Utility
   { id: 'eyedropper', label: 'Eyedropper', shortcut: 'I', icon: 'eyedropper', group: 'Utility' },
@@ -66,7 +65,6 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'R', description: 'Color Replace Tool', category: 'Tools', toolId: 'color-replace' },
   { key: 'Shift + R', description: 'Erase Sampled Color Tool', category: 'Tools', toolId: 'erase-color' },
   { key: 'K', description: 'Normal Chisel Tool', category: 'Tools', toolId: 'normal-chisel' },
-  { key: 'N / Shift + K', description: 'Rivet Stamp Tool', category: 'Tools', toolId: 'rivet-stamp' },
 
   // Editing
   { key: 'Ctrl + S', description: 'Save Project Now', category: 'Editing' },

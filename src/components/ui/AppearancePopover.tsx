@@ -128,7 +128,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   };
 
   if (!mounted) {
-    return <div className={`w-6 h-6 rounded-[1px] ${className}`} aria-hidden="true" />;
+    return <div className={`w-7 h-7 rounded-[1px] ${className}`} aria-hidden="true" />;
   }
 
   return (
@@ -142,7 +142,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         data-testid="appearance-button"
-        className={`w-6 h-6 flex items-center justify-center rounded-[1px] pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${
+        className={`w-7 h-7 flex items-center justify-center rounded-[1px] pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${
           isOpen ? 'bg-[var(--surface-2)] text-[var(--text-heading)] font-bold' : ''
         } ${className}`}
       >

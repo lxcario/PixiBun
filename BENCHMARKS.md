@@ -2,7 +2,7 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-Current suite inventory: 1314 unit tests across 130 suites. Historical measurements below retain their original test counts and timings.
+Current suite inventory: 1315 unit tests across 131 suites. Historical measurements below retain their original test counts and timings.
 
 Current history-backed structural edits estimate both the prior-state Undo snapshot and projected Redo snapshot before mutation. An individual edit that exceeds the 64 MiB history budget is rejected; the historical tables below describe retained pixel-step capacity for admitted edits.
 

@@ -1,5 +1,7 @@
 # PixiBun UX audit — 2026-09-29
 
+> **Current-status note (2026-09-30):** The findings and code locations below are the 2026-09-29 audit snapshot. Later feedback removed the direct header Backup button and visible “Saved on this device” label while keeping `.pixibun` backup under Export and autosave failure feedback. New, Save, and project identity now sit together; layers reorder by dragging; the timeline controls and scrub preview were refined. Rivet Stamp, one-click Material Shading, and artwork-changing Seamless Pattern generation were retired. PixiTools cleanup, color effects, and 47-blob contours now require a before/after review before Apply. See [the current UX changelog](PIXIBUN_UX_CHANGELOG.md).
+
 ## Scope and evidence
 
 This audit compares the supplied *Making PixiBun a World-Class Pixel Art & Animation Studio* report with the current checkout. The report explicitly had no codebase or user-session access; its competitor patterns and academic findings are design inputs, not observations about PixiBun. Code locations below were inspected in this checkout. The in-app browser loaded `/studio` but showed the `MobileStudioGate` at its narrow viewport; desktop interaction was checked with Chromium browser tests and 1024px/1280px screenshots. Existing uncommitted edits in `AtelierRail.tsx`, `StudioLayout.tsx`, `PixiBudAssistanceSection.tsx`, `ImportModal.tsx`, and four TestSprite plans predate this audit and are preserved.

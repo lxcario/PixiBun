@@ -147,15 +147,29 @@ export const StudioLayout: React.FC = () => {
   const projectName = useStudioStore((s) => s.projectName);
   const resetToNewProject = useStudioStore((s) => s.resetToNewProject);
 
-  const handleConfirmNewDrawing = useCallback(async () => {
-    // Attempt best-effort autosave, but never block user from starting new drawing if autosave failed
-    await runAutosave();
+  const saveBeforeReplacingWorkspace = useCallback(async (): Promise<boolean> => {
+    if (!useStudioStore.getState().isDirty) return true;
+    const result = await runAutosave();
+    if (result.ok && !useStudioStore.getState().isDirty) return true;
+    studioEvents.emit('pixibun:toast', {
+      type: 'error',
+      message: 'The current drawing could not be saved. Export a backup before replacing it.',
+    });
+    return false;
+  }, [runAutosave]);
+
+  const startNewWorkspace = useCallback(() => {
     clearAllBuffers();
     resetToNewProject();
-    setIsNewConfirmOpen(false);
     studioEvents.emit('pixibun:history-clear');
     void runAutosave();
   }, [resetToNewProject, runAutosave]);
+
+  const handleConfirmNewDrawing = useCallback(async () => {
+    if (!await saveBeforeReplacingWorkspace()) return;
+    startNewWorkspace();
+    setIsNewConfirmOpen(false);
+  }, [saveBeforeReplacingWorkspace, startNewWorkspace]);
 
   const handleOpenProject = useCallback(async (projectId: string) => {
     const result = await openStoredProject(projectId);
@@ -239,8 +253,8 @@ export const StudioLayout: React.FC = () => {
   );
 
   // Handle File Import Trigger
-  const handleOpenImport = useCallback((payload: ImportPayload) => {
-    setImportPayload(payload);
+  const handleOpenImport = useCallback((payload?: ImportPayload) => {
+    setImportPayload(payload || null);
     setIsImportOpen(true);
   }, []);
 
@@ -297,7 +311,6 @@ export const StudioLayout: React.FC = () => {
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <AtelierRail
         onOpenExport={() => openExport()}
-        onOpenBackup={() => openExport('project')}
         onOpenImport={handleOpenImport}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenResize={() => setIsResizeOpen(true)}
@@ -446,10 +459,12 @@ export const StudioLayout: React.FC = () => {
           error={importError}
           onClose={() => {
             setImportError(null);
+            setImportPayload(null);
             setIsImportOpen(false);
           }}
           onConfirmImage={handleConfirmImportImage}
           onConfirmProject={handleConfirmImportProject}
+          onFileSelected={handleOpenImport}
         />
       )}
 
@@ -460,15 +475,12 @@ export const StudioLayout: React.FC = () => {
           onClose={() => setIsGalleryOpen(false)}
           currentProjectId={currentProjectId}
           onOpenProject={handleOpenProject}
-          onNewProject={() => {
-            clearAllBuffers();
-            resetToNewProject();
-            studioEvents.emit('pixibun:history-clear');
-            void runAutosave();
+          onNewProject={async (skipCurrentSave = false) => {
+            if (!skipCurrentSave && !await saveBeforeReplacingWorkspace()) return false;
+            startNewWorkspace();
+            return true;
           }}
-          onOpenImport={() => {
-            setIsImportOpen(true);
-          }}
+          onOpenImport={() => handleOpenImport()}
         />
       )}
 
@@ -486,7 +498,7 @@ export const StudioLayout: React.FC = () => {
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}
           onOpenExport={() => openExport()}
-          onOpenImport={() => setIsImportOpen(true)}
+          onOpenImport={() => handleOpenImport()}
           onOpenResize={() => setIsResizeOpen(true)}
           onOpenGallery={() => setIsGalleryOpen(true)}
           onOpenCoDraw={() => setIsCoDrawOpen(true)}

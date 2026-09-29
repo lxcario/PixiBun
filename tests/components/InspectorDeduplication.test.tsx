@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { VolumetricOpticsSection } from '@/components/layout/inspector/VolumetricOpticsSection';
 import { TilesetDecomposerSection } from '@/components/layout/inspector/TilesetDecomposerSection';
 import { studioEvents } from '@/lib/events/studioEvents';
 
@@ -11,27 +10,16 @@ describe('Inspector Control Deduplication', () => {
     vi.restoreAllMocks();
   });
 
-  it('VolumetricOpticsSection excludes misplaced 47-Blob Autotile Edges and duplicate Ground Drop Shadow buttons', () => {
-    render(<VolumetricOpticsSection />);
-
-    // Primary action button must be present
-    expect(screen.getByRole('button', { name: /Render Volumetric Optics/i })).toBeDefined();
-
-    // The misplaced buttons must be completely absent
-    expect(screen.queryByRole('button', { name: /47-Blob Autotile Edges/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /Ground Drop Shadow/i })).toBeNull();
-  });
-
-  it('TilesetDecomposerSection renders 47-Blob Autotile Edges and emits studioEvents', () => {
+  it('TilesetDecomposerSection offers a contour preview before applying', () => {
     const emitSpy = vi.spyOn(studioEvents, 'emit');
 
     render(<TilesetDecomposerSection />);
 
-    const blobBtn = screen.getByRole('button', { name: /47-Blob Autotile Edges/i });
+    const blobBtn = screen.getByRole('button', { name: /Preview 47-blob contours/i });
     expect(blobBtn).toBeDefined();
 
     fireEvent.click(blobBtn);
 
-    expect(emitSpy).toHaveBeenCalledWith('pixibun:apply-47-blob');
+    expect(emitSpy).not.toHaveBeenCalledWith('pixibun:apply-47-blob');
   });
 });

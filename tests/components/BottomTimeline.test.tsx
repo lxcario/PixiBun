@@ -80,7 +80,7 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
   it('moves the selected frame with a button', () => {
     render(<BottomTimeline />);
     fireEvent.click(screen.getByLabelText(/Select frame 2/));
-    fireEvent.click(screen.getByRole('button', { name: 'Move active frame left' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Move frame earlier' }));
     expect(useStudioStore.getState().frames.map((frame) => frame.id)).toEqual(['f2', 'f1', 'f3']);
     expect(useStudioStore.getState().activeFrameIndex).toBe(0);
   });
@@ -111,6 +111,27 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
     expect(useStudioStore.getState().activeFrameIndex).toBe(0);
     advance(1048);
     expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    act(() => useStudioStore.getState().setIsPlaying(false));
+    vi.unstubAllGlobals();
+  });
+
+  it('changes preview speed without changing frame durations', () => {
+    const state = useStudioStore.getState();
+    state.frames.forEach((frame) => { frame.durationMs = 100; });
+    const callbacks: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    render(<BottomTimeline />);
+    fireEvent.click(screen.getByRole('button', { name: 'Preview speed' }));
+    fireEvent.click(screen.getByRole('button', { name: '2× preview speed' }));
+    act(() => useStudioStore.getState().setIsPlaying(true));
+    act(() => callbacks.shift()?.(1000));
+    act(() => callbacks.shift()?.(1050));
+    expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    expect(useStudioStore.getState().frames[0].durationMs).toBe(100);
     act(() => useStudioStore.getState().setIsPlaying(false));
     vi.unstubAllGlobals();
   });

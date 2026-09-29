@@ -3,7 +3,7 @@
   "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
   "type": "frontend",
   "name": "Pixel art restorations execute Clean Jaggies, Remove Strays, 1px Skeleton Thinning, and 47-Blob Contours",
-  "description": "Verify drawing a jagged ball with stray pixels, coloring it, and applying staircase smoothing (De-Jaggy), stray removal, topological Zhang-Suen 1px thinning, and 47-blob autotile contour generation.",
+  "description": "Verify drawing a jagged ball with stray pixels, coloring it, and applying staircase smoothing (De-Jaggy), stray removal, topological Zhang-Suen 1px thinning, and 47-blob contour shading.",
   "priority": "p1",
   "planSteps": [
     {
@@ -28,7 +28,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'De-Jaggy' action button in the RotSprite & Cleanup section"
+      "description": "Click 'Smooth Jaggies', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",
@@ -36,7 +36,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Remove Stray Pixels' action button"
+      "description": "Click 'Erase Stray Pixels', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",
@@ -44,7 +44,7 @@
     },
     {
       "type": "action",
-      "description": "Click the 'Thin to 1px' action button"
+      "description": "Click 'Thin to 1px', review the before-and-after preview, then click 'Apply to Layer'"
     },
     {
       "type": "assertion",
@@ -52,11 +52,11 @@
     },
     {
       "type": "action",
-      "description": "Click the '47-Blob Autotile Edges' button in the tileset section"
+      "description": "Click 'Preview 47-blob Contours' in the tileset section, inspect the two thumbnails, then click 'Apply Contours'"
     },
     {
       "type": "assertion",
-      "description": "Verify a dedicated '47-Blob Contours' layer is created with 47-tile bitmask edge outlines"
+      "description": "Verify a dedicated '47-Blob Contours' layer is created with shaded contour pixels"
     }
   ]
 }

@@ -14,8 +14,7 @@ export type ToolType =
   | 'ellipse' 
   | 'color-replace'
   | 'erase-color'
-  | 'normal-chisel'
-  | 'rivet-stamp';
+  | 'normal-chisel';
 
 export type DitherMatrixType = '2x2' | '4x4' | '8x8' | 'atkinson' | 'riemersma' | 'blue-noise';
 
@@ -122,19 +121,10 @@ export interface ToolSettings {
   ditherModulation: number; // 0 to 1
   curveTightness: number; // 0 to 1
   isoAngleSnap: boolean;
-  opticalPreset: OpticalPresetType;
-  translucencyDepth: number; // 1 to 32px
-  fresnelPower: number; // 1.0 to 8.0
-  anisoAngle: number; // 0 to 180 deg
-  anisoFlow: AnisoFlowPreset;
-  opticalCelTones: CelToneCount; // 2, 3, 4, or 'smooth'
   chiselAzimuth: number; // 0 to 360 deg
   chiselIncline: number; // 15 to 75 deg
   chiselWidth: number; // 1 to 32px
   chiselRidgeMode: boolean;
-  rivetRadius: number; // 1 to 32px
-  rivetFlatten: number; // 0.1 to 1.0
-  rivetInvert: boolean;
   normalBlendMode: 'rnm' | 'udn' | 'overwrite';
 }
 

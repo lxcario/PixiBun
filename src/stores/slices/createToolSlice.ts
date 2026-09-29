@@ -124,19 +124,10 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     ditherModulation: 0.0,
     curveTightness: 0.5,
     isoAngleSnap: true,
-    opticalPreset: 'gemstone',
-    translucencyDepth: 8,
-    fresnelPower: 3.5,
-    anisoAngle: 90,
-    anisoFlow: 'vertical',
-    opticalCelTones: 3,
     chiselAzimuth: 315,
     chiselIncline: 45,
     chiselWidth: 4,
     chiselRidgeMode: false,
-    rivetRadius: 6,
-    rivetFlatten: 0.5,
-    rivetInvert: false,
     normalBlendMode: 'rnm',
   },
 
@@ -332,42 +323,6 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     });
   },
 
-  setOpticalPreset: preset => {
-    set(state => {
-      state.tools.opticalPreset = preset;
-    });
-  },
-
-  setTranslucencyDepth: depth => {
-    set(state => {
-      state.tools.translucencyDepth = Math.max(1, Math.min(32, depth));
-    });
-  },
-
-  setFresnelPower: power => {
-    set(state => {
-      state.tools.fresnelPower = Math.max(1, Math.min(8, power));
-    });
-  },
-
-  setAnisoAngle: angle => {
-    set(state => {
-      state.tools.anisoAngle = ((angle % 180) + 180) % 180;
-    });
-  },
-
-  setAnisoFlow: flow => {
-    set(state => {
-      state.tools.anisoFlow = flow;
-    });
-  },
-
-  setOpticalCelTones: tones => {
-    set(state => {
-      state.tools.opticalCelTones = tones;
-    });
-  },
-
   setChiselAzimuth: azimuth => {
     set(state => {
       state.tools.chiselAzimuth = ((azimuth % 360) + 360) % 360;
@@ -389,24 +344,6 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   setChiselRidgeMode: ridge => {
     set(state => {
       state.tools.chiselRidgeMode = ridge;
-    });
-  },
-
-  setRivetRadius: radius => {
-    set(state => {
-      state.tools.rivetRadius = Math.max(1, Math.min(32, radius));
-    });
-  },
-
-  setRivetFlatten: flatten => {
-    set(state => {
-      state.tools.rivetFlatten = Math.max(0.1, Math.min(1.0, flatten));
-    });
-  },
-
-  setRivetInvert: invert => {
-    set(state => {
-      state.tools.rivetInvert = invert;
     });
   },
 

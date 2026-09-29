@@ -13,7 +13,7 @@ import {
   applyRiemersmaDither,
   applyZhangSuenThinning,
 } from '@/lib/ai/smartMathEngine';
-import { runWfcInWorker, runMorphInWorker } from '@/lib/engine/workerDispatcher';
+import { runMorphInWorker } from '@/lib/engine/workerDispatcher';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import type { ViewportEventContext } from './types';
 
@@ -58,117 +58,6 @@ export function useArtisanEvents({
         version: 1,
         sourceMode: 'composite-excluding-self',
         params: { mode: '47-blob-contours' },
-      });
-    };
-
-    const handleWfcSynthesisEvent = async (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const detail = customEvent.detail || {};
-      const n = detail.n ?? 2;
-      const symmetries = detail.symmetries ?? 8;
-      const seed = detail.seed ?? Math.floor(Math.random() * 100000);
-
-      const state = useStudioStore.getState();
-      const selection = state.selection;
-
-      const srcCtx = compositeSourceSnapshot('wfc-synthesis');
-      if (!srcCtx) return;
-
-      let sampleX = 0;
-      let sampleY = 0;
-      let sampleW = canvasWidth;
-      let sampleH = canvasHeight;
-
-      if (selection && selection.w >= 2 && selection.h >= 2) {
-        sampleX = Math.max(0, Math.min(canvasWidth - 1, Math.round(selection.x)));
-        sampleY = Math.max(0, Math.min(canvasHeight - 1, Math.round(selection.y)));
-        sampleW = Math.min(Math.round(selection.w), canvasWidth - sampleX);
-        sampleH = Math.min(Math.round(selection.h), canvasHeight - sampleY);
-      } else if (canvasWidth > 16 || canvasHeight > 16) {
-        sampleW = Math.min(16, canvasWidth);
-        sampleH = Math.min(16, canvasHeight);
-      }
-
-      const sampleImg = srcCtx.getImageData(sampleX, sampleY, sampleW, sampleH);
-      const origin = {
-        projectId: state.currentProjectId,
-        frameId: state.frames[state.activeFrameIndex]?.id,
-        revision: state.editRevision,
-      };
-
-      const result = await runWfcInWorker(
-        {
-          sampleData: sampleImg.data,
-          sampleWidth: sampleW,
-          sampleHeight: sampleH,
-          outputWidth: canvasWidth,
-          outputHeight: canvasHeight,
-        },
-        {
-          N: n,
-          symmetries,
-          seed,
-          periodicInput: true,
-          periodicOutput: true,
-        }
-      );
-
-      const latest = useStudioStore.getState();
-      if (
-        latest.currentProjectId !== origin.projectId ||
-        latest.frames[latest.activeFrameIndex]?.id !== origin.frameId ||
-        latest.editRevision !== origin.revision
-      ) {
-        studioEvents.emit('pixibun:toast', {
-          message: 'Pattern result was discarded because the source frame changed while it was processing.',
-          type: 'error',
-        });
-        latest.addAiMessage({
-          sender: 'assistant',
-          text: 'Pattern result was discarded because the source frame changed while it was processing.',
-        });
-        return;
-      }
-
-      if (!result.success) {
-        const defaultContradictionMsg =
-          'WaveFunctionCollapse: synthesis encountered contradictions after retries. Try a different sample region or N=2.';
-        const failureMessage = result.error || defaultContradictionMsg;
-        studioEvents.emit('pixibun:toast', {
-          message: failureMessage,
-          type: 'error',
-        });
-        state.addAiMessage({
-          sender: 'assistant',
-          text: failureMessage,
-        });
-        return;
-      }
-
-      updateTaggedLayer('WFC Synthesis', 'wfc-synthesis', (outCtx) => {
-        const outImgData = outCtx.createImageData(canvasWidth, canvasHeight);
-        outImgData.data.set(result.data);
-        outCtx.putImageData(outImgData, 0, 0);
-      }, {
-        kind: 'wfc',
-        version: 1,
-        sourceMode: selection ? 'selection' : 'composite-excluding-self',
-        params: {
-          n,
-          symmetries,
-          seed,
-          sampleX,
-          sampleY,
-          sampleWidth: sampleW,
-          sampleHeight: sampleH,
-          periodicInput: true,
-          periodicOutput: true,
-        },
-      });
-
-      state.addAiMessage({
-        sender: 'assistant',
-        text: `WaveFunctionCollapse synthesized a ${canvasWidth}×${canvasHeight} tileable pattern from the ${sampleW}×${sampleH} sample obeying local N=${n} neighborhood constraints with 0 adjacency violations!`,
       });
     };
 
@@ -357,9 +246,6 @@ export function useArtisanEvents({
       if (frameA.layers.some((l) => l.tag === 'photometric')) {
         studioEvents.emit('pixibun:photometric-lighting', {});
       }
-      if (frameA.layers.some((l) => l.tag === 'optical-output')) {
-        studioEvents.emit('pixibun:volumetric-optics', {});
-      }
       if (frameA.layers.some((l) => l.tag === 'cast-shadow')) {
         studioEvents.emit('pixibun:render-cast-shadow', {});
       }
@@ -368,9 +254,6 @@ export function useArtisanEvents({
     const unsubs = [
       studioEvents.on('pixibun:clean-jaggies', handleCleanJaggiesEvent),
       studioEvents.on('pixibun:apply-47-blob', handle47BlobEvent),
-      studioEvents.on('pixibun:wfc-synthesis', (detail) =>
-        handleWfcSynthesisEvent({ detail } as CustomEvent)
-      ),
       studioEvents.on('pixibun:atkinson-dither', (detail) =>
         handleAtkinsonDitherEvent({ detail } as CustomEvent)
       ),

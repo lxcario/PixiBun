@@ -15,7 +15,6 @@ interface ChiselHandlerProps {
   setLastPoint: (pt: Point | null) => void;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
-  commitSnapshot: () => void;
 }
 
 export function useChiselPointerHandler({
@@ -27,13 +26,11 @@ export function useChiselPointerHandler({
   setLastPoint,
   getOrCreateLayerCanvas,
   renderComposite,
-  commitSnapshot,
 }: ChiselHandlerProps) {
   const tools = useStudioStore((s) => s.tools);
   const activeLayerId = useStudioStore((s) => s.activeLayerId);
   const frames = useStudioStore((s) => s.frames);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
-  const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
 
   const onPointerDown = (_e: React.PointerEvent, coords: Point) => {
     const currentFrame = frames[activeFrameIndex];
@@ -60,26 +57,6 @@ export function useChiselPointerHandler({
           chiselSessionRef.current.compositeOnto(workingImg, tools.normalBlendMode);
           lCtx.putImageData(workingImg, 0, 0);
           renderComposite();
-        }
-      }
-    } else if (tools.activeTool === 'rivet-stamp') {
-      if (targetLayerId) {
-        const session = new ChiselStrokeSession(canvasWidth, canvasHeight);
-        session.stampRivet(coords.x, coords.y, {
-          radius: tools.rivetRadius,
-          flatten: tools.rivetFlatten,
-          invert: tools.rivetInvert,
-          blendMode: tools.normalBlendMode,
-        });
-        const lCanvas = getOrCreateLayerCanvas(targetLayerId);
-        const lCtx = lCanvas.getContext('2d', { willReadFrequently: true });
-        if (lCtx) {
-          const imgData = lCtx.getImageData(0, 0, canvasWidth, canvasHeight);
-          session.compositeOnto(imgData, tools.normalBlendMode);
-          lCtx.putImageData(imgData, 0, 0);
-          renderComposite();
-          commitSnapshot();
-          bumpBufferVersion();
         }
       }
     }

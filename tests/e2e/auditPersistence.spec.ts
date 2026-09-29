@@ -198,40 +198,35 @@ test('a multi-frame, multi-layer project restores its layer PNG bytes after impo
   expect(second.clips).toEqual(first.clips);
 });
 
-test('pattern generation starts and receives a heavy-compute worker response', async ({ page }) => {
-  await page.addInitScript(() => {
-    const NativeWorker = window.Worker;
-    const tracking = { started: 0, responses: 0, url: '', errors: [] as string[], responseTypes: [] as string[] };
-    Object.assign(window, { __workerTracking: tracking });
-    window.Worker = class extends NativeWorker {
-      constructor(scriptURL: string | URL, options?: WorkerOptions) {
-        super(scriptURL, options);
-        tracking.started++;
-        tracking.url = String(scriptURL);
-        this.addEventListener('message', (event: MessageEvent<{ type: string }>) => {
-          tracking.responses++;
-          tracking.responseTypes.push(event.data.type);
-        });
-        this.addEventListener('error', (event) => tracking.errors.push(event.message));
-      }
-    };
-  });
+test('repeat preview exports the selected tile without changing the artwork', async ({ page }, testInfo) => {
   await page.goto('/studio');
   const canvas = page.getByTestId('main-composite-canvas');
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  const before = await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => { frames: { layers: unknown[] }[]; activeFrameIndex: number; editRevision: number } } }).__studioStore!.getState();
+    return { layers: state.frames[state.activeFrameIndex].layers.length, revision: state.editRevision };
+  });
+  await page.getByTestId('select-box-tool').click();
+  await page.mouse.move(box!.x + box!.width * 0.4, box!.y + box!.height * 0.4);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width * 0.6, box!.y + box!.height * 0.6);
+  await page.mouse.up();
   await page.getByTestId('tab-ai').click();
   await page.getByTestId('pixitools-task-tileset').click();
-  await page.getByRole('button', { name: 'Seamless Patterns & Tilesets' }).click();
-  await page.getByRole('button', { name: 'Generate Seamless Pattern (WFC)' }).click();
-  await expect.poll(() => page.evaluate(() =>
-    (window as unknown as { __workerTracking: { started: number } }).__workerTracking.started)).toBeGreaterThan(0);
-  await expect.poll(() => page.evaluate(() =>
-    (window as unknown as { __workerTracking: { responses: number } }).__workerTracking.responses),
-  { timeout: 30000 }).toBeGreaterThan(0);
-  expect(await page.evaluate(() =>
-    (window as unknown as { __workerTracking: { url: string; errors: string[]; responseTypes: string[] } }).__workerTracking))
-    .toMatchObject({ errors: [], responseTypes: expect.arrayContaining(['wfc:done']), url: expect.stringContaining('/_next/static/chunks/') });
+  await page.getByRole('button', { name: 'Patterns & Tilesets' }).click();
+  await expect(page.getByAltText('Selected tile repeated three times in each direction')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('repeat-preview.png') });
+  await expect(page.getByRole('button', { name: 'Generate Seamless Pattern (WFC)' })).toHaveCount(0);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Export selected tile PNG' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('pixibun-tile.png');
+  const after = await page.evaluate(() => {
+    const state = (window as Window & { __studioStore?: { getState: () => { frames: { layers: unknown[] }[]; activeFrameIndex: number; editRevision: number } } }).__studioStore!.getState();
+    return { layers: state.frames[state.activeFrameIndex].layers.length, revision: state.editRevision };
+  });
+  expect(after).toEqual(before);
 });

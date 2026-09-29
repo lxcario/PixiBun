@@ -9,13 +9,11 @@ test('project backup explains local storage and stays open after picker cancella
     });
   });
   await page.goto('/studio');
-  await expect(page.getByTestId('project-backup-button')).toBeVisible();
   await expect(page.getByTestId('export-button')).toBeInViewport();
-  await expect(page.getByTestId('local-save-status')).toContainText(/Not saved yet|Saved on this device/);
+  await expect(page.getByText('Saved on this device', { exact: true })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('studio-before-backup.png') });
   await page.setViewportSize({ width: 1024, height: 768 });
   await expect(page.getByTestId('export-button')).toBeInViewport();
-  await expect(page.getByTestId('project-backup-button')).toBeInViewport();
   const headerOverflows = await page.locator('header[role="banner"]').evaluate((header) => {
     const bounds = header.getBoundingClientRect();
     return Array.from(header.children).some((child) => child.getBoundingClientRect().bottom > bounds.bottom + 1);
@@ -23,9 +21,10 @@ test('project backup explains local storage and stays open after picker cancella
   expect(headerOverflows).toBe(false);
   await page.screenshot({ path: testInfo.outputPath('studio-1024-before-backup.png') });
 
-  await page.getByTestId('project-backup-button').click();
+  await page.getByTestId('export-button').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
+  await dialog.getByTestId('export-tab-project').click();
   await expect(dialog.getByTestId('export-tab-project')).toHaveText('Project Backup');
   await expect(dialog.getByText('Keep a portable .pixibun copy outside this browser.')).toBeVisible();
   await dialog.screenshot({ path: testInfo.outputPath('project-backup.png') });
@@ -63,23 +62,22 @@ test('project backup writes a complete file without changing local-save status',
     });
   });
   await page.goto('/studio');
-  await page.getByTestId('project-backup-button').click();
+  await page.getByTestId('export-button').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  const before = await page.getByTestId('local-save-status').innerText();
+  await dialog.getByTestId('export-tab-project').click();
   await dialog.getByRole('button', { name: 'Download project backup' }).click();
   await expect(dialog).toHaveCount(0);
   const writes = await page.evaluate(() => (window as typeof window & { __backupWrites: string[] }).__backupWrites);
   expect(writes).toHaveLength(1);
   expect(JSON.parse(writes[0]).name).toBe('Untitled Sprite');
-  await expect(page.getByTestId('local-save-status')).toHaveText(before);
+  await expect(page.getByText('Saved on this device', { exact: true })).toHaveCount(0);
 });
 
-test('local save status becomes specific only after a completed write', async ({ page }) => {
+test('Save now sits with project controls without a persistent local-save label', async ({ page }) => {
   await page.goto('/studio');
-  await expect(page.getByTestId('local-save-status')).toContainText('Not saved yet');
   await page.getByRole('button', { name: 'Save now' }).click();
-  await expect(page.getByTestId('local-save-status')).toContainText('Saved on this device');
+  await expect(page.getByText('Saved on this device', { exact: true })).toHaveCount(0);
 });
 
 test('onion skin explains why no ghost is visible', async ({ page }) => {

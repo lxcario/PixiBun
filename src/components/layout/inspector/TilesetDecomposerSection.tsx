@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -8,12 +8,34 @@ import PanelSection from '@/components/ui/PanelSection';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { decomposeIntoTileset } from '@/lib/canvas/tileStamp';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { compositeFrame } from '@/lib/render/compositor';
+import { generate47BlobEdgeData } from '@/lib/ai/pixelAiEngine';
+
+function contourThumbnail(canvas: HTMLCanvasElement): string {
+  const thumbnail = document.createElement('canvas');
+  const scale = Math.min(1, 160 / Math.max(canvas.width, canvas.height));
+  thumbnail.width = Math.max(1, Math.round(canvas.width * scale));
+  thumbnail.height = Math.max(1, Math.round(canvas.height * scale));
+  const ctx = thumbnail.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(canvas, 0, 0, thumbnail.width, thumbnail.height);
+  return thumbnail.toDataURL('image/png');
+}
 
 export const TilesetDecomposerSection: React.FC = () => {
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
   const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
+  const selection = useStudioStore((s) => s.selection);
+  const bufferVersion = useStudioStore((s) => s.bufferVersion);
+  const frames = useStudioStore((s) => s.frames);
+  const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
+  const canvasWidth = useStudioStore((s) => s.canvasWidth);
+  const canvasHeight = useStudioStore((s) => s.canvasHeight);
+  const currentProjectId = useStudioStore((s) => s.currentProjectId);
+  const editRevision = useStudioStore((s) => s.editRevision);
 
-  const [wfcN, setWfcN] = useState<2 | 3>(2);
+  const [tilePreview, setTilePreview] = useState<{ tileUrl: string; repeatUrl: string; width: number; height: number } | null>(null);
+  const [contourPreview, setContourPreview] = useState<{ beforeUrl: string; afterUrl: string; count: number; sourceKey: string } | null>(null);
   const [tilesetSize, setTilesetSize] = useState<8 | 16 | 32>(16);
   const [tilesetResult, setTilesetResult] = useState<{
     uniqueCount: number;
@@ -23,14 +45,80 @@ export const TilesetDecomposerSection: React.FC = () => {
   } | null>(null);
   const [copiedTilemap, setCopiedTilemap] = useState(false);
 
-  const handleWfcExtend = () => {
-    if (showNormalMapPreview) toggleNormalMapPreview();
-    studioEvents.emit('pixibun:wfc-synthesis', { n: wfcN, symmetries: 8 });
+  useEffect(() => {
+    if (!selection) {
+      setTilePreview(null);
+      return;
+    }
+    const x = Math.max(0, Math.floor(selection.x));
+    const y = Math.max(0, Math.floor(selection.y));
+    const width = Math.min(canvasWidth - x, Math.ceil(selection.w));
+    const height = Math.min(canvasHeight - y, Math.ceil(selection.h));
+    if (width < 1 || height < 1) {
+      setTilePreview(null);
+      return;
+    }
+
+    const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
+    if (!source) return;
+    const tile = document.createElement('canvas');
+    tile.width = width;
+    tile.height = height;
+    const tileCtx = tile.getContext('2d');
+    if (!tileCtx) return;
+    tileCtx.imageSmoothingEnabled = false;
+    tileCtx.drawImage(source, x, y, width, height, 0, 0, width, height);
+
+    // Bound the preview even when the selected export tile is very large.
+    const previewScale = Math.min(1, 384 / (3 * Math.max(width, height)));
+    const previewTileWidth = Math.max(1, Math.floor(width * previewScale));
+    const previewTileHeight = Math.max(1, Math.floor(height * previewScale));
+    const repeat = document.createElement('canvas');
+    repeat.width = previewTileWidth * 3;
+    repeat.height = previewTileHeight * 3;
+    const repeatCtx = repeat.getContext('2d');
+    if (!repeatCtx) return;
+    repeatCtx.imageSmoothingEnabled = false;
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        repeatCtx.drawImage(tile, col * previewTileWidth, row * previewTileHeight, previewTileWidth, previewTileHeight);
+      }
+    }
+    setTilePreview({ tileUrl: tile.toDataURL('image/png'), repeatUrl: repeat.toDataURL('image/png'), width, height });
+  }, [selection, bufferVersion, frames, activeFrameIndex, canvasWidth, canvasHeight]);
+
+  const frame = frames[activeFrameIndex];
+  const contourSourceKey = JSON.stringify([currentProjectId, frame?.id, editRevision, bufferVersion]);
+  const contourPreviewCurrent = contourPreview?.sourceKey === contourSourceKey;
+
+  const preview47Blob = () => {
+    if (!frame) return;
+    const sourceFrames = frames.slice();
+    sourceFrames[activeFrameIndex] = { ...frame, layers: frame.layers.filter((layer) => layer.tag !== 'blob-edges') };
+    const source = compositeFrame(sourceFrames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
+    const sourceCtx = source?.getContext('2d', { willReadFrequently: true });
+    if (!source || !sourceCtx) return;
+    const { blobPixels } = generate47BlobEdgeData(sourceCtx, canvasWidth, canvasHeight);
+    const result = document.createElement('canvas');
+    result.width = canvasWidth;
+    result.height = canvasHeight;
+    const resultCtx = result.getContext('2d');
+    if (!resultCtx) return;
+    resultCtx.imageSmoothingEnabled = false;
+    resultCtx.drawImage(source, 0, 0);
+    for (const pixel of blobPixels) {
+      resultCtx.fillStyle = `rgba(${pixel.r}, ${pixel.g}, ${pixel.b}, ${pixel.a / 255})`;
+      resultCtx.fillRect(pixel.x, pixel.y, 1, 1);
+    }
+    setContourPreview({ beforeUrl: contourThumbnail(source), afterUrl: contourThumbnail(result),
+      count: blobPixels.length, sourceKey: contourSourceKey });
   };
 
-  const handle47Blob = () => {
+  const apply47Blob = () => {
+    if (!contourPreviewCurrent || !contourPreview?.count) return;
     if (showNormalMapPreview) toggleNormalMapPreview();
     studioEvents.emit('pixibun:apply-47-blob');
+    setContourPreview(null);
   };
 
   const handleDecomposeTileset = () => {
@@ -80,56 +168,43 @@ export const TilesetDecomposerSection: React.FC = () => {
 
   return (
     <PanelSection
-      title="Seamless Patterns & Tilesets"
-      ariaLabel="Seamless Patterns & Tilesets (WFC & Tileset Tools)"
+      title="Patterns & Tilesets"
+      ariaLabel="Patterns & Tilesets"
       storageKey="pixibun:panel:tileset"
       defaultOpen={false}
     >
       <div className="flex flex-col gap-4">
-        {/* Module 2.5: Procedural WaveFunctionCollapse (WFC) Texture Synthesis */}
+        {/* The selected tile is repeated as-is; drawing remains on the source canvas. */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-sans font-medium text-[var(--text-heading)] flex items-center gap-1.5">
               <PixelIcon name="grid" size={12} />
-              <span>Seamless Pattern Generator</span>
+              <span>Repeat Preview</span>
             </span>
-            <span className="text-[9px] font-sans text-[var(--text-muted)]">Tile Extender</span>
+            <span className="text-[9px] font-sans text-[var(--text-muted)]">3 × 3</span>
           </div>
 
           <p className="text-[10px] text-[var(--text-muted)] font-sans leading-tight">
-            Sample selection edges to synthesize an extended repeating pattern.
+            Select a tile on the canvas. This preview repeats its exact pixels, so you can edit the tile and inspect the seams.
           </p>
-
-          <div className="flex items-center justify-between text-[10px] font-sans">
-            <span className="text-[var(--text-body)] font-medium">Sample Window:</span>
-            <div className="inline-flex bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] p-0.5">
-              {([2, 3] as const).map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setWfcN(size)}
-                  className={`px-2 py-0.5 text-[10px] font-mono font-medium rounded-[1px] transition-colors cursor-pointer ${
-                    wfcN === size
-                      ? 'bg-[var(--surface-3)] text-[var(--text-heading)] shadow-xs'
-                      : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
-                  }`}
-                >
-                  {size}×{size}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <TactileButton
-            size="sm"
-            variant="primary"
-            onClick={handleWfcExtend}
-            title="Generate an extended seamless texture based on your canvas artwork"
-            aria-label="Generate Seamless Pattern (WFC)"
-            className="text-xs py-1.5 font-bold justify-center"
-          >
-            <PixelIcon name="grid" size={12} />
-            <span>Generate Seamless Pattern</span>
-          </TactileButton>
+          {selection && tilePreview ? (
+            <>
+              <div className="text-[10px] font-mono text-[var(--text-body)]">Selected tile: {tilePreview.width} × {tilePreview.height} px</div>
+              <div
+                className="flex items-center justify-center h-44 overflow-hidden border border-[var(--desk-border)]"
+                aria-label="3 by 3 repeated tile preview"
+                style={{ backgroundColor: '#f0eef3', backgroundImage: 'linear-gradient(45deg, #dcd9e2 25%, transparent 25%), linear-gradient(-45deg, #dcd9e2 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #dcd9e2 75%), linear-gradient(-45deg, transparent 75%, #dcd9e2 75%)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0' }}
+              >
+                <img src={tilePreview.repeatUrl} alt="Selected tile repeated three times in each direction" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+              </div>
+              <a href={tilePreview.tileUrl} download="pixibun-tile.png" className="text-center text-[10px] font-semibold py-1.5 border border-[var(--desk-border)] bg-[var(--surface-1)] text-[var(--text-heading)] hover:text-[var(--accent-gold)]">
+                Export selected tile PNG
+              </a>
+              <p className="text-[10px] text-[var(--text-muted)]">The exported tile is unchanged. Check the preview edges before using it as a seamless texture.</p>
+            </>
+          ) : (
+            <p className="text-[10px] text-[var(--text-body)] border border-[var(--desk-border)] p-2">Use a selection tool to choose the tile you want to repeat.</p>
+          )}
         </div>
 
         <div className="h-px w-full bg-[var(--desk-border)]" />
@@ -181,14 +256,34 @@ export const TilesetDecomposerSection: React.FC = () => {
           <TactileButton
             size="sm"
             variant="default"
-            onClick={handle47Blob}
-            title="Generate standard 47-blob corner and edge transitions for terrain tilesets"
-            aria-label="47-Blob Autotile Edges"
+            onClick={preview47Blob}
+            title="Preview highlighted and shaded contours based on 47-blob neighbor masks"
+            aria-label="Preview 47-blob contours"
             className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] justify-center flex items-center gap-1"
           >
             <PixelIcon name="grid-iso" size={12} />
-            <span>Autotile Edges (47-Blob)</span>
+            <span>Preview 47-blob Contours</span>
           </TactileButton>
+
+          {contourPreview && (
+            <div className="flex flex-col gap-2 border border-[var(--desk-border)] bg-[var(--surface-1)] p-2" aria-label="47-blob contour preview">
+              <p className="text-[10px] text-[var(--text-body)]">{contourPreview.count} contour pixels would be drawn on a separate layer.</p>
+              <div className="grid grid-cols-2 gap-1.5 text-center text-[9px] text-[var(--text-muted)]">
+                {([['Before', contourPreview.beforeUrl], ['After', contourPreview.afterUrl]] as const).map(([label, url]) => (
+                  <div key={label}>
+                    <div className="mb-0.5">{label}</div>
+                    <div role="img" aria-label={`${label} contour thumbnail`} className="h-24 border border-[var(--desk-border)] bg-white bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${url})`, backgroundSize: 'contain', imageRendering: 'pixelated' }} />
+                  </div>
+                ))}
+              </div>
+              {!contourPreviewCurrent && <p className="text-[10px] text-[var(--accent-gold)]">Artwork changed. Preview again before applying.</p>}
+              <div className="grid grid-cols-2 gap-1.5">
+                <TactileButton size="sm" variant="default" onClick={() => setContourPreview(null)} className="text-[10px] justify-center">Cancel</TactileButton>
+                <TactileButton size="sm" variant="primary" onClick={apply47Blob} disabled={!contourPreviewCurrent || contourPreview.count === 0} aria-label="Apply previewed 47-blob contours" className="text-[10px] justify-center">Apply Contours</TactileButton>
+              </div>
+            </div>
+          )}
 
           {tilesetResult && (
             <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)] text-[10px] font-mono">

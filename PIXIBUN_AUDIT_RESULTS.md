@@ -2,6 +2,8 @@
 
 > Historical audit of the 2026-09-14 tree. Current remediation and verification are recorded in [TASKS.md](TASKS.md) Phase 77 and [CHANGELOG.md](CHANGELOG.md); file locations, test counts, and open findings below describe the older snapshot.
 
+> The 2026-09-30 editor UX cleanup is recorded in [PIXIBUN_UX_CHANGELOG.md](PIXIBUN_UX_CHANGELOG.md). Its tool removals and preview workflows do not retroactively change this audit's evidence.
+
 Date (UTC): 2026-09-14. Auditor: independent senior code auditor (skeptical stance). Scope: live working tree at commit `4753dc6` (`main`), verified by direct file reads and command execution. A prior report dated 2026-09-12 existed at this path; it is treated as a claim, not evidence — several of its numbers are now stale (see section 3).
 
 Evidence labels used exactly as specified: `[CODE-READ]`, `[EXECUTION]`, `[WEB-VERIFIED]`, `[SUSPICIOUS/UNVERIFIED]`.

@@ -122,7 +122,7 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     const mockFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     globalThis.fetch = mockFetch;
 
-    const req = new Request('http://localhost:3000/api/diagnostics/relay', {
+    const req = new Request('https://pixibun.example.com/api/diagnostics/relay', {
       method: 'POST',
       headers: {
         origin: 'https://pixibun.example.com',
@@ -134,4 +134,15 @@ describe('POST /api/diagnostics/relay (SSRF guard & proxy)', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
   });
+
+  it.each(['http://localhost:3000', 'https://pixibun.example.com:444', 'http://pixibun.example.com'])(
+    'rejects a different origin even when host headers claim the production host: %s', async (origin) => {
+      const req = new Request('https://pixibun.example.com/api/diagnostics/relay', {
+        method: 'POST',
+        headers: { origin, host: 'pixibun.example.com' },
+        body: JSON.stringify({ events: [] }),
+      });
+      expect((await POST(req)).status).toBe(403);
+    }
+  );
 });

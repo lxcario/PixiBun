@@ -4,7 +4,7 @@
  * Eliminates loose window.dispatchEvent(new CustomEvent(...)) strings and provides
  * type safety, lifecycle cleanup, and predictable event dispatch across studio panels.
  */
-import type { AnisoFlowPreset, CelToneCount, OpticalPresetType, ShadingBandMode } from '@/types/tools';
+import type { ShadingBandMode } from '@/types/tools';
 import type { P2PConnectionState, RemoteCursor } from '@/lib/sync/p2pSync';
 import type { SpriteCleanupOptions, SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
 
@@ -45,7 +45,6 @@ export type StudioEventMap = {
     shadowStyle?: 'cast' | 'drop';
   };
   'pixibun:apply-47-blob': void;
-  'pixibun:wfc-synthesis': { n?: number; symmetries?: 1 | 4 | 8; seed?: number } | void;
   'pixibun:rot-sprite': { angle: number };
   'pixibun:atkinson-dither': { colors?: string[]; paletteColors?: string[] };
   'pixibun:riemersma-dither': { colors?: string[]; paletteColors?: string[] };
@@ -60,6 +59,13 @@ export type StudioEventMap = {
     stats: SpriteCleanupStats;
     frames: number;
     skippedLocked: number;
+    source: {
+      projectId: string;
+      frameId: string;
+      layerId: string;
+      editRevision: number;
+      bufferVersion: number;
+    };
     beforePreview?: string;
     afterPreview?: string;
   };
@@ -99,22 +105,10 @@ export type StudioEventMap = {
     lightCenterY?: number;
     lightBrightness?: number;
   };
-  'pixibun:volumetric-optics': {
-    preset?: OpticalPresetType;
-    translucencyDepth?: number;
-    fresnelPower?: number;
-    anisoAngle?: number;
-    anisoFlow?: AnisoFlowPreset;
-    celTones?: CelToneCount;
-    lightAzimuth?: number;
-    lightElevation?: number;
-    lightColor?: string;
-    paletteColors?: string[];
-    ditherModulation?: number;
-  };
   'pixibun:bake-normal-map': void;
   'pixibun:in-between-frame': void;
   'pixibun:codraw-state': P2PConnectionState;
+  'pixibun:codraw-error': string;
   'pixibun:remote-cursors': RemoteCursor[];
   'pixibun:request-composite': void;
   'pixibun:remote-change': void;

@@ -148,7 +148,7 @@ describe('useViewportTransform', () => {
     expect(setPan).toHaveBeenCalledWith(60, 50);
   });
 
-  it('clamps zoom within 100% and 6400%', () => {
+  it('clamps zoom within 10% and 6400%', () => {
     // Zoom max clamp
     const { result: maxResult, setZoom: setZoomMax } = setupHook(6400);
     const wheelUp = {
@@ -167,7 +167,7 @@ describe('useViewportTransform', () => {
     expect(setZoomMax).not.toHaveBeenCalled();
 
     // Zoom min clamp
-    const { result: minResult, setZoom: setZoomMin } = setupHook(100);
+    const { result: minResult, setZoom: setZoomMin } = setupHook(10);
     const wheelDown = {
       preventDefault: vi.fn(),
       deltaY: 100,
@@ -180,7 +180,7 @@ describe('useViewportTransform', () => {
     act(() => {
       minResult.current.handleWheel(wheelDown);
     });
-    // Already at 100, cannot decrease below 100
+    // Already at 10, cannot decrease below 10
     expect(setZoomMin).not.toHaveBeenCalled();
   });
 

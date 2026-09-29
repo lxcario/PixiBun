@@ -459,6 +459,7 @@ export class P2PSyncSession {
 
   // Defensive Token Bucket Rate Limiters (Turner 1986 / Tanenbaum §5.3)
   private pendingMessages = new Map<number, { json: string; sentAt: number }>();
+  private pendingMessageBytes = 0;
   // The reliable channel is ordered. A high-water mark suppresses retries without
   // retaining one ID for every message in a long co-draw session.
   private lastReceivedDeliveryId = 0;
@@ -469,13 +470,13 @@ export class P2PSyncSession {
     const id = ++this.deliveryId;
     const json = JSON.stringify({ ...msg, deliveryId: id });
     const bytes = new TextEncoder().encode(json).length;
-    const queuedBytes = Array.from(this.pendingMessages.values()).reduce((n, item) => n + item.json.length * 2, 0);
-    if (bytes > MAX_P2P_PAYLOAD_SIZE || queuedBytes + json.length * 2 > 32 * 1024 * 1024) {
+    if (bytes > MAX_P2P_PAYLOAD_SIZE || this.pendingMessageBytes + bytes > 32 * 1024 * 1024) {
       this.options.onError?.(new Error('Co-draw queue is full. Reconnect to resynchronize artwork.'));
       this.setState('failed');
       return false;
     }
     this.pendingMessages.set(id, { json, sentAt: 0 });
+    this.pendingMessageBytes += bytes;
     if (!this.retryTimer) this.retryTimer = setInterval(() => this.flushReliable(), 250);
     this.flushReliable();
     return true;
@@ -579,7 +580,11 @@ export class P2PSyncSession {
           }
           const raw = SafeJson.parse<Record<string, unknown>>(e.data);
           if (raw?.type === 'ACK' && Number.isSafeInteger(raw.deliveryId)) {
-            this.pendingMessages.delete(raw.deliveryId as number);
+            const pending = this.pendingMessages.get(raw.deliveryId as number);
+            if (pending) {
+              this.pendingMessageBytes -= getUtf8ByteLength(pending.json);
+              this.pendingMessages.delete(raw.deliveryId as number);
+            }
             this.flushReliable();
             return;
           }
@@ -913,6 +918,7 @@ export class P2PSyncSession {
     if (this.retryTimer) clearInterval(this.retryTimer);
     this.retryTimer = null;
     this.pendingMessages.clear();
+    this.pendingMessageBytes = 0;
     this.lastReceivedDeliveryId = 0;
     if (this.syncChannel) {
       this.syncChannel.close();

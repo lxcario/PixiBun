@@ -1,6 +1,18 @@
-# PixiBun UX changelog — 2026-09-29
+# PixiBun UX changelog — 2026-09-29–30
 
-Test counts below are the observations made at each step. The latest verified unit inventory is 1,314 tests in 130 suites; the Chromium inventory is 91 tests in 23 suites. These are local checkout results, not a new production sign-off.
+Test counts below are observations made at each step. The current discovered inventory is 1,315 unit tests in 131 suites and 98 Chromium tests in 24 spec files. These are local checkout results, not a new production sign-off.
+
+## Follow-up after direct UI feedback — 2026-09-30
+
+- Moved New beside the project name and Save; aligned the main header actions. Removed the duplicate Back up header button and visible “Saved on this device” label. Project backup remains available through Export → Project Backup, and autosave failures still surface through the existing error feedback.
+- Consolidated pen size and zoom options into compact controls. Removed the confusing Pixel Perfect toggle from the top tool options. Standardized compact playback controls, grouped frame operations, and placed the frame scrub preview above surrounding panels for readability.
+- Changed layer ordering to drag and drop, removing the additional move icons. The expanded timeline still supports frame reordering and clip management.
+- Retired Rivet Stamp, the separate one-click Material Shading / Glow & Translucent Materials panel, and the artwork-changing Generate Seamless Pattern action. Existing normal maps and legacy effect layers remain loadable; the photometric lighting pipeline remains available.
+- Added exact 3×3 repeat inspection for a selected tile and PNG download. 47-blob contour generation now waits for a before/after preview and explicit Apply.
+- Added before/after previews for jaggy cleanup, thinning, stray removal, color moods, dithering, and palette snap. Cleanup scans and previews cannot be applied after source pixels, layer, frame, or relevant settings change; Undo remains available after applying.
+- Updated project gallery, import, Co-Draw, and related browser checks to match the new workflow. The full 98-case Chromium run passed after the cleanup, including photometric relighting and all four theme accessibility scans. The five-stage quality gate also passed: documentation, typecheck, lint, all 1,315 unit tests, and production build. TestSprite remains unavailable because its CLI is not installed.
+
+The 2026-09-29 entries below record the earlier implementation stage. The direct Backup control and visible local-save label described there were later removed from the header.
 
 ## Tool preview follow-up
 

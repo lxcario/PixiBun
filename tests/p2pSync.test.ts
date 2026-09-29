@@ -12,8 +12,41 @@ import { CrdtPixelBuffer, type PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { CoDrawBridge } from '@/lib/sync/coDrawBridge';
 import { useStudioStore } from '@/stores/studioStore';
 import { installDocumentCanvasMock } from './helpers/mockCanvas';
+import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 
 describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
+  it('rejects an oversized host workspace before creating an invite or allocating CRDT buffers', async () => {
+    const bridge = new CoDrawBridge();
+    useStudioStore.setState({
+      canvasWidth: 1024,
+      canvasHeight: 1024,
+      frames: [{
+        id: 'large-frame', durationMs: 100,
+        layers: [{ id: 'large-layer', name: 'Large', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }],
+      }],
+    });
+    await expect(bridge.startHost()).rejects.toThrow('total layer pixels');
+    expect(bridge.getSession()).toBeNull();
+  });
+
+  it('rejects a dense host artwork before the initial sync can overflow its queue', async () => {
+    installDocumentCanvasMock();
+    const bridge = new CoDrawBridge();
+    useStudioStore.setState({
+      canvasWidth: 200,
+      canvasHeight: 200,
+      frames: [{
+        id: 'dense-frame', durationMs: 100,
+        layers: [{ id: 'dense-layer', name: 'Dense', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }],
+      }],
+    });
+    const buffer = getOrCreateBuffer('dense-layer', 200, 200);
+    buffer.ctx.fillStyle = '#ffffff';
+    buffer.ctx.fillRect(0, 0, 180, 180);
+    await expect(bridge.startHost()).rejects.toThrow('painted pixels');
+    expect(bridge.getSession()).toBeNull();
+  });
+
   it('uses the module ICE default for CoDraw unless public STUN is requested', () => {
     const bridge = new CoDrawBridge();
     const createSession = (options: { lanOnly?: boolean }) =>

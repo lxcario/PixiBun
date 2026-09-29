@@ -22,7 +22,7 @@
 // for pixel state; canvas buffers are views that converge on op application.
 
 import { useStudioStore } from '@/stores/studioStore';
-import { getOrCreateBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, hasBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
 import type { PixelOp } from '@/lib/collab/crdtPixelBuffer';
@@ -47,6 +47,15 @@ export const CURSOR_BROADCAST_MIN_INTERVAL_MS = 33;
 export const CURSOR_STALE_MS = 4000;
 const CONNECT_SEND_RETRY_MS = 250;
 const CONNECT_SEND_MAX_RETRIES = 40;
+export const MAX_CODRAW_LAYER_PIXELS = 262_144;
+export const MAX_CODRAW_INITIAL_PAINTED_PIXELS = 32_000;
+
+function getStructureCapacityError(width: number, height: number, layerCount: number): string | null {
+  if (width * height * layerCount > MAX_CODRAW_LAYER_PIXELS) {
+    return `Co-draw supports up to ${MAX_CODRAW_LAYER_PIXELS.toLocaleString()} total layer pixels. Reduce canvas size, frames, or layers to start a session.`;
+  }
+  return null;
+}
 
 export const CODRAW_STATE_EVENT = 'pixibun:codraw-state';
 export const CODRAW_CURSORS_EVENT = 'pixibun:remote-cursors';
@@ -85,6 +94,8 @@ export class CoDrawBridge {
   }
 
   async startHost(options: CoDrawStartOptions = {}): Promise<string> {
+    const capacityError = this.getHostCapacityError();
+    if (capacityError) throw new Error(capacityError);
     this.reset();
     this.role = 'host';
     this.peerId = createId('peer');
@@ -119,6 +130,7 @@ export class CoDrawBridge {
       onInitialSync: (ops, layerId) => this.applyRemoteOps(ops, layerId),
       onStructureSync: (payload) => this.adoptStructure(payload),
       onRemoteCursor: (cursor) => this.handleRemoteCursor(cursor),
+      onError: (error) => studioEvents.emit('pixibun:codraw-error', error.message),
     });
   }
 
@@ -160,6 +172,12 @@ export class CoDrawBridge {
 
   private sendInitialStateWithRetry(attempt: number): void {
     if (!this.session || this.session.getState() !== 'connected') return;
+    const capacityError = this.getHostCapacityError();
+    if (capacityError) {
+      studioEvents.emit('pixibun:codraw-error', capacityError);
+      this.session.disconnect();
+      return;
+    }
     const ok = this.sendStructureAndSnapshots();
     if (ok) {
       if (!this.unsubscribeStructure) {
@@ -170,6 +188,31 @@ export class CoDrawBridge {
     if (attempt < CONNECT_SEND_MAX_RETRIES) {
       setTimeout(() => this.sendInitialStateWithRetry(attempt + 1), CONNECT_SEND_RETRY_MS);
     }
+  }
+
+  private getHostCapacityError(): string | null {
+    const state = useStudioStore.getState();
+    const layerIds = new Set(state.frames.flatMap((frame) => frame.layers.map((layer) => layer.id)));
+    const structureError = getStructureCapacityError(state.canvasWidth, state.canvasHeight, layerIds.size);
+    if (structureError) return structureError;
+    if (new TextEncoder().encode(JSON.stringify(state.frames)).length > 240 * 1024) {
+      return 'Co-draw layer and frame metadata is too large to sync. Reduce the number of frames or layers to start a session.';
+    }
+
+    let painted = 0;
+    for (const layerId of layerIds) {
+      if (!hasBuffer(layerId)) continue;
+      const data = getOrCreateBuffer(layerId, state.canvasWidth, state.canvasHeight)
+        .ctx.getImageData(0, 0, state.canvasWidth, state.canvasHeight).data;
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] === 0) continue;
+        painted++;
+        if (painted > MAX_CODRAW_INITIAL_PAINTED_PIXELS) {
+          return `Co-draw supports up to ${MAX_CODRAW_INITIAL_PAINTED_PIXELS.toLocaleString()} painted pixels when joining. Reduce painted area to start a session.`;
+        }
+      }
+    }
+    return null;
   }
 
   private sendStructureAndSnapshots(): boolean {
@@ -344,6 +387,13 @@ export class CoDrawBridge {
    */
   private adoptStructure(payload: StructurePayload): void {
     if (typeof document === 'undefined') return;
+    const layerCount = payload.frames.reduce((count, frame) => count + frame.layers.length, 0);
+    const capacityError = getStructureCapacityError(payload.width, payload.height, layerCount);
+    if (capacityError) {
+      studioEvents.emit('pixibun:codraw-error', capacityError);
+      this.session?.disconnect();
+      return;
+    }
     clearAllBuffers();
 
     const activeLayerIds = new Set<string>();

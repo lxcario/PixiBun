@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { PlaygroundLayout } from '@/components/layout/PlaygroundLayout';
-import { MobileStudioGate } from '@/components/layout/MobileStudioGate';
+import { PocketDoodlePad } from '@/components/playground/PocketDoodlePad';
 
 export const metadata: Metadata = {
   title: 'PixiBun Playground — Beginner Pixel Art Onboarding',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function PlaygroundPage() {
   return (
     <>
-      <MobileStudioGate />
+      <PocketDoodlePad />
       <div className="hidden lg:block w-full h-full">
         <PlaygroundLayout />
       </div>

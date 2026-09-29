@@ -6,7 +6,6 @@ import { PixiToolsPreviewLayer } from '@/components/ui/ToolMotionPreview';
 import { NormalSculptorSection } from './NormalSculptorSection';
 import { PhotometricLightingSection } from './PhotometricLightingSection';
 import { RaymarchedShadowSection } from './RaymarchedShadowSection';
-import { VolumetricOpticsSection } from './VolumetricOpticsSection';
 import { TilesetDecomposerSection } from './TilesetDecomposerSection';
 import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
 
@@ -15,15 +14,15 @@ type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish';
 const LAST_DOMAIN_KEY = 'pixibun:pixitools:last-domain';
 
 const TASKS: { key: Exclude<DomainKey, 'start' | 'all'>; title: string; description: string; icon: PixelIconName }[] = [
-  { key: 'lighting', title: 'Add light and depth', description: 'Light, shadows, surface shape and glow.', icon: 'lamp' },
-  { key: 'tileset', title: 'Build tiles and patterns', description: 'Make repeating textures or a tilemap.', icon: 'grid' },
+  { key: 'lighting', title: 'Add light and depth', description: 'Light, shadows and surface shape.', icon: 'lamp' },
+  { key: 'tileset', title: 'Build tiles and patterns', description: 'Preview a repeating tile or export a tilemap.', icon: 'grid' },
   { key: 'polish', title: 'Clean and refine', description: 'Find stray pixels and polish your sprite.', icon: 'sparkles' },
 ];
 
 const DOMAIN_COPY: Record<Exclude<DomainKey, 'start'>, { title: string; description: string }> = {
   all: { title: 'All PixiTools', description: 'Explore every tool by what it does.' },
-  lighting: { title: 'Add light and depth', description: 'Start with 3D Lighting & Shading to place a light on your sprite. Open the other sections for shape, shadows and glow.' },
-  tileset: { title: 'Build tiles and patterns', description: 'Create a seamless pattern, split artwork into tiles, or generate terrain edges.' },
+  lighting: { title: 'Add light and depth', description: 'Start with 3D Lighting & Shading to place a light on your sprite. Open the other sections for surface shape and shadows.' },
+  tileset: { title: 'Build tiles and patterns', description: 'Select a tile to inspect how it repeats, or split artwork into tiles.' },
   polish: { title: 'Clean and refine', description: 'Scan first to review what cleanup would change, then apply it when you are ready.' },
 };
 
@@ -109,7 +108,6 @@ export const AiToolsPanel: React.FC = () => {
                   <PhotometricLightingSection />
                   <NormalSculptorSection />
                   <RaymarchedShadowSection />
-                  <VolumetricOpticsSection />
                 </div>
               )}
               {(activeDomain === 'all' || activeDomain === 'tileset') && (

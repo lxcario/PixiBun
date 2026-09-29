@@ -3,7 +3,7 @@ import { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { MathInvariants } from '@/lib/safety/mathInvariants';
-import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
+import { getNextZoomStep, getPrevZoomStep, calculateFitZoom, MIN_ZOOM, MAX_ZOOM } from '@/config/zoom';
 
 interface UseViewportTransformProps {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -87,7 +87,7 @@ export function useViewportTransform({
       }
 
       // Mouse Wheel scrolling (and Ctrl/Cmd+Wheel) = Zoom in/out anchored to cursor
-      const safeCurrentZoom = Math.max(100, Math.min(6400, MathInvariants.isSafeFinite(zoom) ? zoom : 100));
+      const safeCurrentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, MathInvariants.isSafeFinite(zoom) ? zoom : 100));
       const newZoom = e.deltaY < 0 ? getNextZoomStep(safeCurrentZoom) : getPrevZoomStep(safeCurrentZoom);
       if (newZoom === safeCurrentZoom) return;
 
@@ -123,19 +123,7 @@ export function useViewportTransform({
     const container = containerRef.current;
     if (!container) return;
 
-    const pad = 64;
-    const availW = Math.max(100, container.clientWidth - pad);
-    const availH = Math.max(100, container.clientHeight - pad);
-
-    const safeW = Math.max(1, MathInvariants.isSafeFinite(canvasWidth) ? canvasWidth : 32);
-    const safeH = Math.max(1, MathInvariants.isSafeFinite(canvasHeight) ? canvasHeight : 32);
-
-    const scaleX = MathInvariants.safeDivide(availW, safeW, 1);
-    const scaleY = MathInvariants.safeDivide(availH, safeH, 1);
-    const bestScale = Math.min(scaleX, scaleY);
-
-    const integerZoom = Math.max(100, Math.floor(bestScale) * 100);
-    setZoom(integerZoom);
+    setZoom(calculateFitZoom(canvasWidth, canvasHeight, container.clientWidth, container.clientHeight));
     setPan(0, 0);
   }, [canvasHeight, canvasWidth, containerRef, setPan, setZoom]);
 

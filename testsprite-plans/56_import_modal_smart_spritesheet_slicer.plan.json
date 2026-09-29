@@ -6,7 +6,7 @@
   "description": "Opening the Import dialog, choosing Sprite Sheet Slicer, and adjusting cell dimensions renders an interactive cutline grid over the sheet and enables slicing into animation frames.",
   "priority": "p1",
   "planSteps": [
-    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "action", "description": "Click the Import button in the top atelier rail" },
     { "type": "assertion", "description": "Verify the Import Modal opens displaying file source selection" },
     { "type": "action", "description": "Choose the Sprite Sheet Slicer mode option" },

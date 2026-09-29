@@ -5,6 +5,80 @@ async function pixel(page: Page, x: number, y: number) {
     Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
 }
 
+test('cleanup requires a fresh scan after the artwork changes', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(box!.x + box!.width * 0.45, box!.y + box!.height * 0.45);
+
+  await page.getByTestId('tab-ai').click();
+  await page.getByTestId('pixitools-task-polish').click();
+  const apply = page.getByRole('button', { name: 'Apply analyzed artwork cleanup' });
+  await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
+  await expect(apply).toBeEnabled();
+
+  await page.getByTestId('pen-tool').click();
+  await page.mouse.click(box!.x + box!.width * 0.55, box!.y + box!.height * 0.55);
+  await expect(apply).toBeDisabled();
+  await expect(page.getByText('Artwork changed since this preview. Scan again before applying.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
+  await expect(apply).toBeEnabled();
+});
+
+test('stray removal previews the real edit before applying and invalidates when pixels change', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect.poll(async () => (await pixel(page, 16, 16))[3]).toBeGreaterThan(0);
+
+  await page.getByTestId('tab-ai').click();
+  await page.getByTestId('pixitools-task-polish').click();
+  await page.getByRole('button', { name: 'Erase Stray Pixels - Remove Stray Pixels' }).click();
+  await expect(page.getByText('Erase Stray Pixels preview')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Before Erase Stray Pixels thumbnail' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'After Erase Stray Pixels thumbnail' })).toBeVisible();
+  expect((await pixel(page, 16, 16))[3]).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Apply Erase Stray Pixels preview' }).click();
+  await expect.poll(async () => (await pixel(page, 16, 16))[3]).toBe(0);
+  await page.getByTestId('undo-button').click();
+  await expect.poll(async () => (await pixel(page, 16, 16))[3]).toBeGreaterThan(0);
+
+  await page.getByRole('button', { name: 'Erase Stray Pixels - Remove Stray Pixels' }).click();
+  await page.getByTestId('pen-tool').click();
+  await page.mouse.click(box!.x + box!.width * 0.7, box!.y + box!.height * 0.7);
+  await expect(page.getByRole('button', { name: 'Apply Erase Stray Pixels preview' })).toBeDisabled();
+});
+
+test('color grading previews without editing and applies the shown result', async ({ page }) => {
+  await page.goto('/studio');
+  const canvas = page.getByTestId('main-composite-canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect.poll(async () => (await pixel(page, 16, 16))[3]).toBeGreaterThan(0);
+  const original = await pixel(page, 16, 16);
+
+  await page.getByTestId('tab-ai').click();
+  await page.getByTestId('pixitools-task-polish').click();
+  await page.getByRole('button', { name: 'Sunset', exact: true }).click();
+  await expect(page.getByText('Sunset Mood preview')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'After Sunset Mood thumbnail' })).toBeVisible();
+  expect(await pixel(page, 16, 16)).toEqual(original);
+  await page.getByRole('button', { name: 'Apply Sunset Mood preview' }).click();
+  await expect.poll(async () => pixel(page, 16, 16)).not.toEqual(original);
+  const graded = await pixel(page, 16, 16);
+  expect(graded[3]).toBe(original[3]);
+  await page.getByTestId('undo-button').click();
+  await expect.poll(async () => pixel(page, 16, 16)).toEqual(original);
+});
+
 test('PixiTools scans before cleanup, cleans matching animation layers, and undo restores the source', async ({ page }) => {
   await page.goto('/studio');
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();

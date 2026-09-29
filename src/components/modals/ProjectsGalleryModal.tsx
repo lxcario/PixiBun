@@ -20,7 +20,7 @@ interface ProjectsGalleryModalProps {
   onClose: () => void;
   currentProjectId: string;
   onOpenProject: (projectId: string) => Promise<void>;
-  onNewProject: () => void;
+  onNewProject: (skipCurrentSave?: boolean) => Promise<boolean>;
   onOpenImport?: () => void;
 }
 
@@ -97,12 +97,16 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   };
 
   const handleDelete = async (id: string) => {
-    await deleteProject(id);
+    const deleted = await deleteProject(id);
+    if (!deleted) {
+      setStorageError('The project could not be deleted. Your workspace was left unchanged.');
+      return;
+    }
     setDeleteConfirmId(null);
 
     // If user deletes active project, reset to a clean new project
     if (id === currentProjectId) {
-      onNewProject();
+      await onNewProject(true);
       onClose();
       return;
     }
@@ -155,9 +159,8 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
             <TactileButton
               variant="primary"
               size="sm"
-              onClick={() => {
-                onNewProject();
-                onClose();
+              onClick={async () => {
+                if (await onNewProject()) onClose();
               }}
               className="gap-2"
             >

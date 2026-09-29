@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { planSpriteCleanup, type SpriteCleanupOptions, type SpriteCleanupStats } from '@/lib/ai/spriteCleanup';
 import { touchBuffer } from '@/lib/engine/bufferRegistry';
 import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
@@ -14,15 +14,30 @@ export function useSpriteCleanupEvents({
   canvasWidth, canvasHeight, getOrCreateLayerCanvas, renderComposite,
   captureSnapshot, commitSnapshot, bumpBufferVersion,
 }: ViewportEventContext) {
+  const lastScanKey = useRef<string | null>(null);
   useEffect(() => {
     const run = (request: CleanupRequest, apply: boolean) => {
       const state = useStudioStore.getState();
       const currentFrame = state.frames[state.activeFrameIndex];
       const layerIndex = currentFrame?.layers.findIndex((layer) => layer.id === state.activeLayerId) ?? -1;
       if (layerIndex < 0) return;
+      const source = {
+        projectId: state.currentProjectId,
+        frameId: currentFrame.id,
+        layerId: state.activeLayerId,
+        editRevision: state.editRevision,
+        bufferVersion: state.bufferVersion,
+      };
       const candidates = request.allFrames
         ? state.frames.map((frame) => frame.layers[layerIndex]).filter((layer) => Boolean(layer))
         : [currentFrame.layers[layerIndex]];
+      const scanKey = JSON.stringify({ source, options: request.options, allFrames: request.allFrames,
+        targets: candidates.map((layer) => [layer.id, layer.locked]) });
+      if (apply && lastScanKey.current !== scanKey) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'Artwork changed since the preview. Scan again before applying cleanup.' });
+        return;
+      }
+      if (!apply) lastScanKey.current = null;
       const skippedLocked = candidates.filter((layer) => layer.locked).length;
       const targets = candidates.filter((layer) => !layer.locked);
       if (targets.length === 0) {
@@ -112,9 +127,10 @@ export function useSpriteCleanupEvents({
         renderComposite();
         bumpBufferVersion();
       }
+      lastScanKey.current = apply ? null : scanKey;
       studioEvents.emit('pixibun:sprite-cleanup-report', {
         phase: apply ? 'applied' : 'scan', stats, frames: targets.length, skippedLocked,
-        beforePreview, afterPreview,
+        source, beforePreview, afterPreview,
       });
       if (apply) studioEvents.emit('pixibun:toast', {
         type: 'success',

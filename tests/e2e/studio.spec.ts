@@ -24,7 +24,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await expect(page.getByTitle(/Export PNG, GIF, or Spritesheet/i)).toBeVisible();
   });
 
-  test('reorders layers with buttons and has no music control', async ({ page }) => {
+  test('reorders layers by dragging and has no music control', async ({ page }) => {
     await page.goto('/studio');
     await expect(page.locator('div[role="application"]')).toBeVisible();
     await expect(page.getByRole('region', { name: 'Studio Synthesizer Radio' })).toHaveCount(0);
@@ -32,8 +32,10 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await page.getByRole('button', { name: 'Add New Layer' }).click();
     const layerNames = page.getByRole('button', { name: /^Select layer / });
     await expect(layerNames).toHaveText(['Layer 2', 'Base Layer']);
-    await page.getByRole('button', { name: 'Move layer Base Layer up' }).click();
+    await page.getByRole('button', { name: 'Reorder layer Base Layer' }).dragTo(layerNames.first());
     await expect(layerNames).toHaveText(['Base Layer', 'Layer 2']);
+    await page.getByRole('button', { name: 'Reorder layer Base Layer' }).press('ArrowDown');
+    await expect(layerNames).toHaveText(['Layer 2', 'Base Layer']);
   });
 
   test('undoes and redoes layer properties and frame timing in order', async ({ page }) => {
@@ -329,53 +331,6 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     expect(thumb1PaintedCount).toBeGreaterThan(0);
   });
 
-  test('PixiBud AI renders volumetric optics non-destructively to tagged output layer', async ({ page }) => {
-    await page.goto('/studio');
-    await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('div[role="application"]')).toBeVisible();
-    await page.waitForTimeout(500);
-
-    const canvas = page.locator('canvas[data-testid="main-composite-canvas"]');
-    const box = await canvas.boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
-
-    // 1. Draw a block on the active layer
-    const targetX = box.x + (box.width / 32) * 16.5;
-    const targetY = box.y + (box.height / 32) * 16.5;
-    await page.mouse.move(targetX, targetY);
-    await page.mouse.down();
-    await page.mouse.move(targetX + 8, targetY + 8);
-    await page.mouse.up();
-    await page.waitForTimeout(150);
-
-    // 2. Switch to PixiBud AI tab
-    const aiTabBtn = page.getByRole('button', { name: /PixiTools/i });
-    await aiTabBtn.click();
-    await page.getByTestId('pixitools-task-lighting').click();
-    await page.waitForTimeout(150);
-
-    await page.getByRole('button', { name: /Glow & Translucent Materials/ }).click();
-    // 3. Select Gemstone preset
-    const gemBtn = page.getByRole('button', { name: /^Gem$/i });
-    await expect(gemBtn).toBeVisible();
-    await gemBtn.click();
-    await page.waitForTimeout(100);
-
-    // 4. Click Render Volumetric Optics
-    const renderBtn = page.getByRole('button', { name: /Render Volumetric Optics/i });
-    await expect(renderBtn).toBeVisible();
-    await renderBtn.click();
-    await page.waitForTimeout(200);
-
-    // 5. Switch back to Layers tab
-    const layersTabBtn = page.getByRole('button', { name: /Layers/i });
-    await layersTabBtn.click();
-    await page.waitForTimeout(150);
-
-    // 6. Assert non-destructive output layer 'Optics (gemstone)' exists
-    await expect(page.locator('text=Optics (gemstone)')).toBeVisible();
-  });
 });
 
 test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () => {
@@ -427,12 +382,14 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     const paletteResults = await scanStudioAccessibility(page);
     expect(paletteResults.violations).toEqual([]);
 
-    // Tab 3: PixiBud AI with both collapsible panels expanded
+    // Tab 3: PixiTools with the available lighting and patterns panels expanded
     await page.getByRole('button', { name: /PixiTools/i }).click();
     await page.getByTestId('pixitools-browse-all').click();
     await page.waitForTimeout(300);
-    await page.getByRole('button', { name: /2\.5D Photometric Studio/i }).click();
-    await page.getByRole('button', { name: /Volumetric Optics & SSS/i }).click();
+    for (const name of [/2\.5D Photometric Studio/i, /^Patterns & Tilesets$/i]) {
+      const panel = page.getByRole('button', { name });
+      if (await panel.getAttribute('aria-expanded') === 'false') await panel.click();
+    }
     await page.waitForTimeout(300);
     const aiResults = await scanStudioAccessibility(page);
     expect(aiResults.violations).toEqual([]);

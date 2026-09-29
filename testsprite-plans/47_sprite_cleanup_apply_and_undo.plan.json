@@ -6,7 +6,7 @@
   "description": "Applying the analyzed sprite cleanup bakes crisp solid pixels into the active layer, and triggering Undo restores the original semi-transparent artwork.",
   "priority": "p1",
   "planSteps": [
-    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "action", "description": "Select the pen tool in the left toolbar" },
     { "type": "action", "description": "Draw a small sprite shape with soft edges on the canvas" },
     { "type": "action", "description": "Open the PixiTools inspector in the right sidebar" },

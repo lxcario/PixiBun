@@ -50,6 +50,35 @@ function validProjectFixture() {
 }
 
 describe('validateProjectFile', () => {
+  it('keeps retired generator layers and normal artwork readable in saved projects', () => {
+    const base = validProjectFixture();
+    const effects = [
+      { id: 'legacy-optics', kind: 'volumetric-optics', tag: 'optical-output' },
+      { id: 'legacy-pattern', kind: 'wfc', tag: 'wfc-synthesis' },
+    ] as const;
+    const project = {
+      ...base,
+      frames: [{ ...base.frames[0], layers: [
+        ...effects.map(({ id, kind, tag }) => ({
+          ...base.frames[0].layers[0], id, tag,
+          effect: { id: `${id}-recipe`, kind, version: 1, sourceMode: 'composite-excluding-self', params: {}, updatedAt: 1_700_000_000_000 },
+        })),
+        { ...base.frames[0].layers[0], id: 'legacy-normal', tag: 'normal' },
+        base.frames[0].layers[0],
+      ] }],
+    };
+    const result = validateProjectFile(project);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.frames[0].layers.map((layer) => layer.tag)).toEqual([
+        'optical-output', 'wfc-synthesis', 'normal', undefined,
+      ]);
+      expect(result.value.frames[0].layers.slice(0, 2).map((layer) => layer.effect?.kind)).toEqual([
+        'volumetric-optics', 'wfc',
+      ]);
+    }
+  });
+
   it('accepts a well-formed project and echoes normalized data', () => {
     const result = validateProjectFile(validProjectFixture());
     expect(result.ok).toBe(true);

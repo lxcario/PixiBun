@@ -42,7 +42,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
     const unsub = studioEvents.on('pixibun:codraw-state', (state) => {
       setConnectionState(state);
     });
-    return unsub;
+    const unsubError = studioEvents.on('pixibun:codraw-error', setErrorMsg);
+    return () => { unsub(); unsubError(); };
   }, []);
 
   const handleCreateHostSession = async () => {
@@ -232,6 +233,9 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     <p className="text-[var(--text-body)] leading-relaxed">
                       Host an accountless, serverless co-drawing session directly from your browser.
                       Your canvas — layers, frames and strokes — is shared with your peer.
+                    </p>
+                    <p className="text-[10px] text-[var(--text-muted)]">
+                      Session limit: 262,144 total layer pixels and 32,000 painted pixels at join.
                     </p>
                     <TactileButton
                       size="sm"

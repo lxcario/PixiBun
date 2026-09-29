@@ -18,7 +18,6 @@ interface WindowWithStudio {
         activeTool: string;
         chiselAzimuth: number;
         lightAzimuth: number;
-        rivetRadius: number;
       };
       showNormalMapPreview: boolean;
       activeInspectorTab: string;
@@ -34,7 +33,7 @@ interface WindowWithStudio {
   };
 }
 
-test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relighting', () => {
+test.describe('Live Studio Integration Proof: Chisel, Preview & Relighting', () => {
   test('verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling', async ({ page }) => {
     test.setTimeout(60000);
 
@@ -285,58 +284,11 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
       fullPage: false,
     });
 
-    // 9. Test Rivet Stamp while keeping Right Inspector strictly on PixiBud AI tab!
-    const rivetBtn = page.getByTestId('rivet-stamp-tool');
-    await expect(rivetBtn).toBeVisible();
-    await rivetBtn.click();
-    await page.waitForTimeout(200);
-
-    // In 2.5D Normal Sculptor, select "Rivet Stamp" and "Hemisphere Dome" preset (r: 8)
-    const rivetToolBtn = page.getByRole('button', { name: /^Rivet Stamp$/ }).first();
-    if (await rivetToolBtn.isVisible()) {
-      await rivetToolBtn.click();
-      await page.waitForTimeout(100);
-    }
-
-    const domePreset = page.getByRole('button', { name: /Hemisphere Dome/i });
-    if (await domePreset.isVisible()) {
-      await domePreset.click();
-      await page.waitForTimeout(100);
-    }
-
-    if (box) {
-      // Stamp prominent 8px rivet dome in upper-left quadrant
-      await page.mouse.click(box.x + box.width * 0.28, box.y + box.height * 0.28);
-    }
-    await page.waitForTimeout(300);
-
-    // Assert store state for rivet tool, radius 8, and active tab AI before screenshot
-    const rivetTool = await page.evaluate(() => (window as unknown as WindowWithStudio).__studioStore?.getState().tools.activeTool);
-    expect(rivetTool).toBe('rivet-stamp');
-    const rivetR = await page.evaluate(() => (window as unknown as WindowWithStudio).__studioStore?.getState().tools.rivetRadius);
-    expect(rivetR).toBe(8);
-    const currentTab = await page.evaluate(() => (window as unknown as WindowWithStudio).__studioStore?.getState().activeInspectorTab);
-    expect(currentTab).toBe('ai');
-
-    // Take screenshot of Live Studio with prominent Rivet stamped AND Normal Sculptor visible
-    const rivetStampedPath = path.join(outDir, `${RUN_ID}_06_rivet_stamped_full.png`);
-    await page.screenshot({
-      path: rivetStampedPath,
-      fullPage: false,
-    });
-
-    // Capture dynamic bounding boxes for both Canvas and Inspector
+    // Capture the canvas bounds for the lighting difference image.
     const dynamicCanvasBox = await canvas.boundingBox();
     expect(dynamicCanvasBox).not.toBeNull();
-    const inspectorAside = page.locator('aside.border-l');
-    const dynamicInspectorBox = await inspectorAside.boundingBox();
-    expect(dynamicInspectorBox).not.toBeNull();
 
-    // Single-step atomic undo test
-    await page.keyboard.press('Control+z');
-    await page.waitForTimeout(200);
-
-    // 10. Test Palette Cycling in Live Studio (Switching to Palette tab only NOW)
+    // 9. Test Palette Cycling in Live Studio
     const paletteTab = page.getByRole('button', { name: /^Palette$/i });
     await expect(paletteTab).toBeVisible();
     await paletteTab.click();
@@ -372,13 +324,12 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
     await pauseBtn.click();
     await expect(page.getByRole('button', { name: /Play Cycle/i })).toBeVisible();
 
-    // 11. Create side-by-side diff heatmap and rivet closeup with dynamic canvas & inspector boxes
-    if (dynamicCanvasBox && dynamicInspectorBox) {
+    // 10. Create a side-by-side lighting difference heatmap.
+    if (dynamicCanvasBox) {
       const b64_45 = fs.readFileSync(relit45Path).toString('base64');
       const b64_225 = fs.readFileSync(relit225Path).toString('base64');
-      const b64_rivet = fs.readFileSync(rivetStampedPath).toString('base64');
 
-      const processed = await page.evaluate(async ({ b45, b225, bRivet, cBox, iBox }) => {
+      const processed = await page.evaluate(async ({ b45, b225, cBox }) => {
         const loadImg = (b64: string) => new Promise<HTMLImageElement>((res) => {
           const img = new Image();
           img.onload = () => res(img);
@@ -387,7 +338,6 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
 
         const img45 = await loadImg(b45);
         const img225 = await loadImg(b225);
-        const imgRivet = await loadImg(bRivet);
 
         // Dynamic bounding boxes!
         const cropX = Math.round(cBox.x);
@@ -453,65 +403,28 @@ test.describe('Live Studio Integration Proof: Chisel, Rivet, Preview & Relightin
         dCtx.strokeRect(cropW + 20, 45, cropW, cropH);
         dCtx.strokeRect(cropW * 2 + 30, 45, cropW, cropH);
 
-        // Build Rivet Close-up using dynamic canvas & inspector boxes
-        const rCanvas = document.createElement('canvas');
-        rCanvas.width = 620;
-        rCanvas.height = 360;
-        const rCtx = rCanvas.getContext('2d');
-        if (!rCtx) throw new Error('Failed to get 2d context for rivet canvas');
-        rCtx.fillStyle = '#140d1f';
-        rCtx.fillRect(0, 0, rCanvas.width, rCanvas.height);
-
-        // Canvas stamped crop
-        rCtx.imageSmoothingEnabled = false;
-        rCtx.drawImage(imgRivet, cropX, cropY, cropW, cropH, 15, 45, 270, 270);
-
-        // Inspector crop
-        const insX = Math.round(iBox.x);
-        const insY = Math.round(iBox.y);
-        const insW = Math.round(iBox.width);
-        const insH = Math.round(iBox.height);
-        rCtx.drawImage(imgRivet, insX, insY, insW, Math.min(insH, 400), 305, 45, 300, 270);
-
-        rCtx.font = 'bold 12px monospace';
-        rCtx.fillStyle = '#f0be7c';
-        rCtx.fillText('Live Canvas: 8px Rivet Dome', 15, 30);
-        rCtx.fillText('Right Inspector: PixiBud AI Rivet Controls', 305, 30);
-
-        rCtx.strokeStyle = '#352248';
-        rCtx.lineWidth = 2;
-        rCtx.strokeRect(15, 45, 270, 270);
-        rCtx.strokeRect(305, 45, 300, 270);
-
         return {
           diffDataUrl: diffCanvas.toDataURL('image/png'),
-          rivetCloseupDataUrl: rCanvas.toDataURL('image/png'),
           deltaCount,
         };
       }, {
         b45: b64_45,
         b225: b64_225,
-        bRivet: b64_rivet,
         cBox: dynamicCanvasBox,
-        iBox: dynamicInspectorBox,
       });
 
       const diffHeatmapPath = path.join(outDir, `${RUN_ID}_05_diff_heatmap.png`);
       fs.writeFileSync(diffHeatmapPath, Buffer.from(processed.diffDataUrl.split(',')[1], 'base64'));
 
-      const rivetCloseupPath = path.join(outDir, `${RUN_ID}_07_rivet_dome_closeup.png`);
-      fs.writeFileSync(rivetCloseupPath, Buffer.from(processed.rivetCloseupDataUrl.split(',')[1], 'base64'));
     }
 
-    // 12. Generate SHA256 manifest
+    // 11. Generate SHA256 manifest
     const manifestFiles = [
       `${RUN_ID}_01_chisel_carved.png`,
       `${RUN_ID}_02_normal_preview_on.png`,
       `${RUN_ID}_03_relit_45deg.png`,
       `${RUN_ID}_04_relit_225deg.png`,
       `${RUN_ID}_05_diff_heatmap.png`,
-      `${RUN_ID}_06_rivet_stamped_full.png`,
-      `${RUN_ID}_07_rivet_dome_closeup.png`,
       `${RUN_ID}_08_palette_cycling_active.png`,
     ];
 

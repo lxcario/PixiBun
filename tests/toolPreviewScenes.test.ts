@@ -31,7 +31,7 @@ describe('tool preview storyboards', () => {
     expect(Object.keys(DRAWING_PREVIEWS)).toEqual(expect.arrayContaining([
       'pen', 'curve', 'eraser', 'bucket', 'dither', 'color-replace', 'erase-color',
       'select-box', 'select-lasso', 'select-wand', 'line', 'isometric-line',
-      'rectangle', 'ellipse', 'normal-chisel', 'rivet-stamp', 'eyedropper',
+      'rectangle', 'ellipse', 'normal-chisel', 'eyedropper',
     ]));
   });
 

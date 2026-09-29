@@ -16,7 +16,6 @@ import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoo
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
-import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -36,7 +35,6 @@ const CVD_LENS_TITLES: Record<CvdLensMode, string> = {
 
 export interface AtelierRailProps {
   onOpenExport?: () => void;
-  onOpenBackup?: () => void;
   onOpenImport?: (payload: ImportPayload) => void;
   onOpenShortcuts?: () => void;
   onOpenResize?: () => void;
@@ -52,7 +50,6 @@ export interface AtelierRailProps {
 
 export const AtelierRail: React.FC<AtelierRailProps> = ({
   onOpenExport,
-  onOpenBackup,
   onOpenImport,
   onOpenShortcuts,
   onOpenResize,
@@ -69,8 +66,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const setProjectName = useStudioStore((s) => s.setProjectName);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
-  const isDirty = useStudioStore((s) => s.isDirty);
-  const saveStatus = useStudioStore((s) => s.saveStatus);
   const zoom = useStudioStore((s) => s.zoom);
   const setZoom = useStudioStore((s) => s.setZoom);
   const setPan = useStudioStore((s) => s.setPan);
@@ -115,6 +110,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
+  const [isBrushMenuOpen, setIsBrushMenuOpen] = useState(false);
+  const [isZoomMenuOpen, setIsZoomMenuOpen] = useState(false);
+  const brushMenuRef = useRef<HTMLDivElement>(null);
+  const zoomMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // View Options Popover state
@@ -127,6 +126,27 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isBrushMenuOpen && !isZoomMenuOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (!brushMenuRef.current?.contains(target)) setIsBrushMenuOpen(false);
+      if (!zoomMenuRef.current?.contains(target)) setIsZoomMenuOpen(false);
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsBrushMenuOpen(false);
+        setIsZoomMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [isBrushMenuOpen, isZoomMenuOpen]);
 
   const updatePopoverCoords = useCallback(() => {
     if (viewMenuRef.current) {
@@ -228,7 +248,17 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           <PixiBunLogo className="drop-shadow-sm" />
         </a>
 
-        {/* Project Name (Click to edit) */}
+        {/* Document actions stay beside the current project. */}
+        <TactileButton
+          size="sm" variant="default" onClick={onOpenGallery}
+          title="Open Projects Gallery" aria-label="Projects Gallery"
+          data-testid="gallery-button"
+          className="h-7 px-2.5 text-xs flex items-center gap-1.5"
+        >
+          <PixelIcon name="layers" size={12} />
+          <span>Projects</span>
+        </TactileButton>
+
         {isEditingName ? (
           <input
             type="text"
@@ -263,39 +293,39 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             {projectName}
           </button>
         )}
+        <TactileButton
+          size="sm" variant="default" onClick={onNewDrawing}
+          title="Start a New Blank Drawing" aria-label="Start a New Blank Drawing"
+          data-testid="new-drawing-button"
+          className="h-7 min-w-[64px] px-2.5 text-xs flex items-center gap-1.5"
+        >
+          <PixelIcon name="plus" size={12} />
+          <span>New</span>
+        </TactileButton>
+
+        <TactileButton
+          size="sm" variant="default" onClick={onSaveNow}
+          title="Save now (Ctrl+S)" aria-label="Save now"
+          className="h-7 min-w-[64px] px-2.5 text-xs flex items-center gap-1.5"
+        >
+          <PixelIcon name="save" size={12} />
+          <span>Save</span>
+        </TactileButton>
 
         {/* Canvas Resolution Badge */}
         <button
           onClick={onOpenResize}
           title="Click to Resize / Resample Canvas"
-          className="h-6 text-[10px] text-[var(--text-muted)] pixel-tactile-btn hover:text-[var(--text-heading)] px-1.5 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] cursor-pointer"
+          className="h-7 text-[10px] text-[var(--text-muted)] pixel-tactile-btn hover:text-[var(--text-heading)] px-2 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] cursor-pointer"
         >
           {canvasWidth}×{canvasHeight}
         </button>
-
-        {/* Local save is distinct from a portable project backup. */}
-        <div data-testid="local-save-status" className="h-6 flex items-center gap-1.5 text-[10px] text-[var(--text-body)] pl-0.5 whitespace-nowrap">
-          <span
-            className={`w-1.5 h-1.5 rounded-full transition-colors ${
-              saveStatus === 'saving'
-                ? 'bg-[var(--accent-gold)] animate-pulse'
-                : saveStatus === 'error'
-                ? 'bg-[var(--state-danger)]'
-                : isDirty || saveStatus === 'idle'
-                ? 'bg-[var(--text-muted)] opacity-60'
-                : 'bg-[var(--state-success)]'
-            }`}
-          />
-          <span className="text-[10px] text-[var(--text-muted)] font-medium">
-            {getLocalSaveLabel(saveStatus, isDirty)}
-          </span>
-        </div>
 
         {/* Offline Indicator when disconnected */}
         <OfflineIndicator />
 
         {/* Undo / Redo Micro Actions */}
-        <div className="h-6 flex items-center gap-1 border-l border-[var(--desk-border)] pl-1.5">
+        <div className="h-7 flex items-center gap-1 border-l border-[var(--desk-border)] pl-1.5">
           <StudioTooltip content="Undo" shortcut="Ctrl+Z">
             <button
               onClick={onUndo}
@@ -303,7 +333,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               data-testid="undo-button"
               title="Undo (Ctrl+Z)"
               aria-label="Undo last action"
-              className="w-6 h-6 rounded-[2px] flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
+              className="w-7 h-7 rounded-[2px] flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
             >
               <PixelIcon name="undo" size={12} />
             </button>
@@ -316,7 +346,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               data-testid="redo-button"
               title="Redo (Ctrl+Y)"
               aria-label="Redo last action"
-              className="w-6 h-6 rounded-[2px] flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
+              className="w-7 h-7 rounded-[2px] flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
             >
               <PixelIcon name="redo" size={12} />
             </button>
@@ -325,9 +355,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       </div>
 
       {/* ── 2. CENTER ZONE: Contextual Active-Tool Parameters ── */}
-      <div className="col-start-2 row-start-1 flex-1 flex items-center justify-center min-w-0 px-2 overflow-hidden h-full">
+      <div className="col-start-2 row-start-1 flex-1 flex items-center justify-center min-w-0 px-2 h-full">
         {hasToolParams ? (
-          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
+          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full">
             {/* Tool indicator */}
             <span className="text-[10px] font-sans font-medium text-[var(--text-heading)] hidden md:inline shrink-0">
               {tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1)}:
@@ -339,54 +369,45 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               tools.activeTool === 'eraser' ||
               tools.activeTool === 'dither' ||
               isShapeTool) && (
-              <div className="flex items-center gap-1 shrink-0">
-                <input
-                  type="range"
-                  min="1"
-                  max="16"
-                  value={tools.brushSize}
-                  onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
-                  aria-label="Brush size"
-                  className="w-14 h-1 accent-[var(--accent-gold)] cursor-pointer"
-                />
-                <span className="text-[10px] font-mono font-medium text-[var(--text-heading)] min-w-[20px] text-right tabular-nums">
-                  {tools.brushSize}px
-                </span>
-
-                {/* Quick 1..4 presets as a unified segmented control */}
-                <div className="inline-flex items-center bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] ml-1">
-                  {[1, 2, 3, 4].map((size) => (
-                    <button
-                      key={`preset-${size}`}
-                      onClick={() => setBrushSize(size)}
-                      title={`Brush size ${size}px`}
-                      aria-label={`${size}px brush preset`}
-                      className={`w-6 h-6 text-[9px] font-mono rounded-[1px] cursor-pointer flex items-center justify-center transition-colors active:translate-y-[1px] ${
-                        tools.brushSize === size
-                          ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] font-bold shadow-xs'
-                          : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+              <div ref={brushMenuRef} className="relative shrink-0">
+                <button type="button" onClick={() => setIsBrushMenuOpen((open) => !open)}
+                  aria-label={`Brush size ${tools.brushSize} pixels`} aria-expanded={isBrushMenuOpen}
+                  className="h-6 px-2 flex items-center gap-1.5 rounded-[2px] text-xs text-[var(--text-heading)] hover:bg-[var(--surface-2)]">
+                  <span>Size</span><span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
+                </button>
+                {isBrushMenuOpen && (
+                  <div role="group" aria-label="Brush size controls"
+                    className="absolute top-full left-0 mt-1 z-[100] w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-3 shadow-lg space-y-3">
+                    <label className="flex items-center gap-2 text-xs text-[var(--text-heading)]">
+                      <span>Size</span>
+                      <input type="range" min="1" max="32" value={tools.brushSize}
+                        onChange={(event) => setBrushSize(Number(event.target.value))}
+                        aria-label="Brush size" className="min-w-0 flex-1 accent-[var(--accent-gold)]" />
+                      <input type="number" min="1" max="32" value={tools.brushSize}
+                        onChange={(event) => setBrushSize(Number(event.target.value))}
+                        aria-label="Brush size in pixels"
+                        className="w-12 h-8 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] text-center font-mono" />
+                    </label>
+                    <div className="flex gap-1" aria-label="Common brush sizes">
+                      {[1, 2, 3, 4, 8].map((size) => (
+                        <button key={size} type="button" onClick={() => setBrushSize(size)}
+                          aria-label={`${size} pixel brush preset`} aria-pressed={tools.brushSize === size}
+                          className={`h-8 flex-1 rounded-[2px] text-xs font-mono ${tools.brushSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)]' : 'bg-[var(--surface-1)] text-[var(--text-body)]'}`}>
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                    {(tools.activeTool === 'pen' || tools.activeTool === 'curve') && (
+                      <label className="flex items-start gap-2 border-t border-[var(--desk-border)] pt-2 text-xs text-[var(--text-heading)] cursor-pointer">
+                        <input type="checkbox" checked={tools.pixelPerfect}
+                          onChange={(event) => setPixelPerfect(event.target.checked)}
+                          aria-label="Clean corners" className="mt-0.5 accent-[var(--accent-gold)]" />
+                        <span>Clean corners<span className="block text-[10px] text-[var(--text-muted)]">Removes doubled pixels at turns.</span></span>
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Pixel-Perfect Smoothing Toggle (Pen & Curve) */}
-            {(tools.activeTool === 'pen' || tools.activeTool === 'curve') && (
-              <button
-                onClick={() => setPixelPerfect(!tools.pixelPerfect)}
-                title="Pixel-Perfect Smoothing: Eliminates L-corner double pixels"
-                className={`h-5 px-1.5 text-[9px] font-sans font-medium rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
-                  tools.pixelPerfect
-                    ? 'pixel-primary-btn font-bold shadow-[0_1px_0_var(--btn-shadow)]'
-                    : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                PP: {tools.pixelPerfect ? 'On' : 'Off'}
-              </button>
             )}
 
             {/* Curve Tightness */}
@@ -559,7 +580,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
       {/* ── 3. RIGHT ZONE: 3 Coherent Semantic Instrument Groups ── */}
       <div className="col-span-2 row-start-2 flex items-center gap-2 shrink-0 max-2xl:w-full max-2xl:justify-between">
-        {/* GROUP A — CANVAS: Zoom, Fit, Horizontal & Vertical Symmetry, View */}
+        {/* Zoom is a single instrument; display modifiers have their own group. */}
         <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5 text-xs">
           {/* Zoom Instrument (Connected Cluster) */}
           <div className="flex items-center">
@@ -571,9 +592,25 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             >
               −
             </button>
-            <span className="px-1.5 min-w-[46px] text-center text-[var(--text-heading)] font-mono text-xs font-semibold select-none tabular-nums">
-              {zoom}%
-            </span>
+            <div ref={zoomMenuRef} className="relative">
+              <button type="button" onClick={() => setIsZoomMenuOpen((open) => !open)}
+                aria-label={`Zoom ${zoom} percent. Choose zoom level`}
+                aria-expanded={isZoomMenuOpen}
+                className="h-6 px-1.5 min-w-[52px] text-center text-[var(--text-heading)] font-mono text-xs font-semibold tabular-nums hover:bg-[var(--surface-2)]">
+                {zoom}%
+              </button>
+              {isZoomMenuOpen && (
+                <div role="group" aria-label="Zoom levels"
+                  className="absolute top-full right-0 mt-1 z-[100] w-28 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-1 shadow-lg">
+                  {[100, 200, 400, 800, 1600].map((level) => (
+                    <button key={level} type="button" onClick={() => { setZoom(level); setIsZoomMenuOpen(false); }}
+                      className="block w-full text-left px-2 py-1.5 text-xs font-mono text-[var(--text-body)] hover:bg-[var(--surface-3)] hover:text-[var(--text-heading)]">
+                      {level}%{level === 100 ? ' · Actual size' : ''}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setZoom(getNextZoomStep(zoom))}
               className="w-6 h-6 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer font-mono text-xs transition-colors"
@@ -600,8 +637,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           >
             Fit
           </button>
+        </div>
 
-          <div className="w-px h-3.5 bg-[var(--desk-border)] mx-0.5" />
+        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5 text-xs">
 
           {/* Symmetry Mirror Controls (Pixel-native icons, tactile state, no radio dots) */}
           <div className="flex items-center gap-0.5">
@@ -670,22 +708,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           </div>
         </div>
 
-        {/* GROUP B — WORKSPACE: Theme, Projects, Co-Draw, Guide */}
+        {/* Collaboration and help are separate from document and file actions. */}
         <div className="h-7 hidden md:flex items-center gap-1 text-xs">
           <AppearancePopover />
-
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={onOpenGallery}
-            title="Open Projects Gallery"
-            aria-label="Projects Gallery"
-            data-testid="gallery-button"
-            className="h-6 px-2 text-xs flex items-center gap-1.5"
-          >
-            <PixelIcon name="layers" size={12} />
-            <span className="hidden 2xl:inline">Projects</span>
-          </TactileButton>
 
           <TactileButton
             size="sm"
@@ -693,10 +718,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             onClick={onOpenCoDraw}
             title="P2P Co-Draw Multi-User Studio"
             aria-label="Co-Draw session"
-            className="h-6 px-2 text-xs flex items-center gap-1.5"
+            className="h-7 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="sparkles" size={12} />
-            <span className="hidden 2xl:inline">Co-Draw</span>
+            <span className="hidden xl:inline">Co-Draw</span>
           </TactileButton>
 
           <TactileButton
@@ -706,60 +731,23 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             title="Atelier Guide, Diagnostics & Shortcuts (?)"
             aria-label="Atelier Guide, Diagnostics and Shortcuts"
             data-testid="shortcuts-guide-button"
-            className="h-6 px-2 text-xs flex items-center gap-1.5"
+            className="h-7 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="help" size={12} />
-            <span className="hidden 2xl:inline">Guide</span>
+            <span className="sr-only">Guide</span>
           </TactileButton>
         </div>
 
-        {/* GROUP C — FILE ACTIONS: New (tertiary), Save (secondary), Export (primary hero) */}
+        {/* File actions: imports enter the studio; exports leave it. */}
         <div className="h-7 flex items-center gap-1 text-xs">
           <TactileButton
             size="sm"
             variant="default"
-            onClick={onNewDrawing}
-            title="Start a New Blank Drawing"
-            aria-label="Start a New Blank Drawing"
-            data-testid="new-drawing-button"
-            className="h-6 px-2 text-xs flex items-center gap-1.5"
-          >
-            <PixelIcon name="plus" size={12} />
-            <span className="hidden 2xl:inline">New</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={onSaveNow}
-            title="Save now on this device (Ctrl+S)"
-            aria-label="Save now"
-            className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
-          >
-            <PixelIcon name="save" size={12} />
-            <span className="hidden 2xl:inline">Save</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={onOpenBackup}
-            title="Download a portable .pixibun project backup"
-            aria-label="Back up project to a .pixibun file"
-            data-testid="project-backup-button"
-            className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
-          >
-            <span>Back up</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant="default"
             onClick={() => fileInputRef.current?.click()}
-            title="Import image, sprite sheet, or .pixibun file"
+            title="Import Asset, Image or Sprite Sheet"
             aria-label="Import"
             data-testid="import-button"
-            className="h-6 px-2 text-xs flex items-center gap-1.5 font-medium"
+            className="h-7 px-2 text-xs flex items-center gap-1.5 font-medium"
           >
             <PixelIcon name="export" size={12} className="rotate-180" />
             <span>Import</span>
@@ -772,7 +760,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             title="Export PNG, GIF, or Spritesheet (E)"
             aria-label="Export drawing"
             data-testid="export-button"
-            className="h-6 px-2.5 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
+            className="h-7 px-2.5 text-xs font-bold font-sans tracking-wide flex items-center gap-1.5"
           >
             <PixelIcon name="export" size={12} className="text-[#16141a]" />
             <span>Export</span>

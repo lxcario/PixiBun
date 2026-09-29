@@ -2,6 +2,16 @@
 
 > **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
+## Studio UX follow-up (2026-09-30)
+
+**Delivered:** Consolidated document actions and tool options; refined layer drag ordering, timeline controls, scrub preview, import and project flows; retired Rivet Stamp, one-click Material Shading, and artwork-changing Seamless Pattern generation. Added selection-based tile repeat, preview-before-apply for 47-blob contours and raster effects, and stale-source guards. Existing photometric relighting and saved-project compatibility were preserved.
+
+**Checks:** All five quality stages passed: documentation integrity, typecheck, lint, 1,315 unit tests in 131 suites, and production build. A clean full Chromium run passed 98/98 tests in 24 spec files, including normal preview and photometric relighting. TestSprite is unavailable because its CLI is not installed.
+
+**Status:** Unreleased checkout work. See [UX session changelog](PIXIBUN_UX_CHANGELOG.md) and [main changelog](CHANGELOG.md).
+
+---
+
 ## Phase 0 — Intake, Architecture & Foundation Docs (2026-08-18)
 **Delivered:**
 - Completed the Part XII intake interview via /grill-me.

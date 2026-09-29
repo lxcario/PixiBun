@@ -1,6 +1,37 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Projects Gallery & Workspace Management', () => {
+  test('failed save keeps the current drawing when starting a gallery project', async ({ page }) => {
+    await page.goto('/studio');
+    await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+    const canvas = page.getByTestId('main-composite-canvas');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    const originalId = await page.evaluate(() => (window as Window & {
+      __studioStore?: { getState: () => { currentProjectId: string } };
+    }).__studioStore!.getState().currentProjectId);
+    await page.evaluate(() => {
+      const db = (window as Window & {
+        __pixibunDb?: { transaction: (...args: unknown[]) => Promise<unknown> };
+      }).__pixibunDb!;
+      db.transaction = async () => { throw new Error('Simulated storage failure'); };
+    });
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await expect.poll(() => page.evaluate(() => (window as Window & {
+      __studioStore?: { getState: () => { isDirty: boolean } };
+    }).__studioStore!.getState().isDirty)).toBe(true);
+
+    await page.getByRole('button', { name: 'Projects Gallery' }).click();
+    const gallery = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+    await gallery.getByRole('button', { name: 'New Drawing' }).click();
+    await expect(gallery).toBeVisible();
+    await expect(page.getByTestId('studio-toast')).toContainText('could not be saved');
+    const currentId = await page.evaluate(() => (window as Window & {
+      __studioStore?: { getState: () => { currentProjectId: string } };
+    }).__studioStore!.getState().currentProjectId);
+    expect(currentId).toBe(originalId);
+  });
+
   test('opens projects gallery, switches projects, and invalidates undo history (P0)', async ({ page }) => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');

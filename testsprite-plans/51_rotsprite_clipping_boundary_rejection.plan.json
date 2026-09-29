@@ -6,7 +6,7 @@
   "description": "Attempting a 45-degree RotSprite rotation on artwork positioned at the canvas borders triggers an explanatory clipping warning and leaves the original pixels untouched.",
   "priority": "p1",
   "planSteps": [
-    { "type": "action", "description": "Navigate to the studio workspace" },
+    { "type": "action", "description": "Navigate to https://pixibun.vercel.app/studio" },
     { "type": "action", "description": "Select the pen tool in the left toolbar" },
     { "type": "action", "description": "Draw a stroke directly touching the top-left edge of the canvas" },
     { "type": "action", "description": "Draw a stroke directly touching the bottom-right edge of the canvas" },

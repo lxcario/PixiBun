@@ -2,8 +2,10 @@ import { expect, test } from '@playwright/test';
 
 test('drawing tools show a short visual preview on hover and keyboard focus', async ({ page }, testInfo) => {
   await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
   const pen = page.getByTestId('pen-tool');
+  await page.mouse.move(400, 200);
   await pen.hover();
   const preview = page.getByRole('group', { name: 'Pen preview' });
   await expect(preview).toHaveCount(0);

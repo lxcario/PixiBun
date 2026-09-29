@@ -61,38 +61,4 @@ describe('Variable Frame Duration & Animation Playback Timing', () => {
     }
   });
 
-  it('computes proportional timeline card width and hold badge correctly', () => {
-    const fps = 8;
-    const baseTime = Math.round(1000 / fps); // 125ms
-
-    // Helper matching BottomTimeline.tsx logic
-    const getCardMetrics = (durationMs: number) => {
-      const cardWidth = Math.max(48, Math.min(160, Math.round(48 * (durationMs / baseTime))));
-      const isHold = durationMs >= 2 * baseTime;
-      const extraMs = durationMs - baseTime;
-      return { cardWidth, isHold, extraMs };
-    };
-
-    // Standard frame (125ms at 8fps)
-    const normal = getCardMetrics(125);
-    expect(normal.cardWidth).toBe(48);
-    expect(normal.isHold).toBe(false);
-
-    // Short frame (50ms) clamps to minimum 48px
-    const short = getCardMetrics(50);
-    expect(short.cardWidth).toBe(48);
-    expect(short.isHold).toBe(false);
-
-    // 2x Hold frame (250ms >= 2 * 125ms)
-    const hold = getCardMetrics(250);
-    expect(hold.cardWidth).toBe(96);
-    expect(hold.isHold).toBe(true);
-    expect(hold.extraMs).toBe(125);
-
-    // Very long hold (600ms) clamps to max 160px
-    const longHold = getCardMetrics(600);
-    expect(longHold.cardWidth).toBe(160);
-    expect(longHold.isHold).toBe(true);
-    expect(longHold.extraMs).toBe(475);
-  });
 });
