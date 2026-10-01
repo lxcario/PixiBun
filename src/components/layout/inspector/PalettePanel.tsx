@@ -2,7 +2,7 @@
 
 import { SafeJson } from '@/lib/safety/safeJson';
 import { reportImportError } from '@/lib/project/importFile';
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { parsePaletteFile } from '@/lib/color/lospecPalette';
@@ -22,6 +22,8 @@ import StudioToggle from '@/components/ui/StudioToggle';
 import IconButton from '@/components/ui/IconButton';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PaletteRolesSection } from './PaletteRolesSection';
+import { CreatePaletteModal } from '@/components/modals/CreatePaletteModal';
+import { PaletteCycleColors } from './PaletteCycleColors';
 
 export const PalettePanel: React.FC = () => {
   const palettes = useStudioStore((s) => s.palettes);
@@ -33,6 +35,7 @@ export const PalettePanel: React.FC = () => {
   const setSecondaryColor = useStudioStore((s) => s.setSecondaryColor);
   const generateAndAddRamp = useStudioStore((s) => s.generateAndAddRamp);
   const addExtractedPalette = useStudioStore((s) => s.addExtractedPalette);
+  const removePaletteColor = useStudioStore((s) => s.removePaletteColor);
   const isPaletteCycling = useStudioStore((s) => s.isPaletteCycling);
   const togglePaletteCycling = useStudioStore((s) => s.togglePaletteCycling);
   const paletteCycleSpeedMultiplier = useStudioStore((s) => s.paletteCycleSpeedMultiplier);
@@ -44,6 +47,12 @@ export const PalettePanel: React.FC = () => {
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
   const paletteFileInputRef = useRef<HTMLInputElement | null>(null);
   const crngFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [creatingPalette, setCreatingPalette] = useState(false);
+  const closePaletteCreator = useCallback(() => setCreatingPalette(false), []);
+  const [selectedSwatch, setSelectedSwatch] = useState<{ paletteId: string; index: number } | null>(null);
+  const selectedIndex = selectedSwatch?.paletteId === currentPalette.id
+    ? Math.min(selectedSwatch.index, currentPalette.colors.length - 1)
+    : currentPalette.colors.findIndex(color => color.toLowerCase() === primaryColor.toLowerCase());
 
   const tracks = currentPalette.cycleTracks || [];
 
@@ -134,7 +143,7 @@ export const PalettePanel: React.FC = () => {
       <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
           <span className="text-[11px] font-sans font-medium text-[var(--text-muted)] shrink-0">
-            Preset
+            Palette
           </span>
           <select
             value={currentPaletteId}
@@ -180,7 +189,7 @@ export const PalettePanel: React.FC = () => {
             return (
               <button
                 key={`${color}-${idx}`}
-                onClick={() => setPrimaryColor(color)}
+                onClick={() => { setPrimaryColor(color); setSelectedSwatch({ paletteId: currentPalette.id, index: idx }); }}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setSecondaryColor(color);
@@ -210,15 +219,26 @@ export const PalettePanel: React.FC = () => {
             );
           })}
         </div>
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <span className="text-[11px] font-mono text-[var(--text-muted)]">{selectedIndex >= 0 ? currentPalette.colors[selectedIndex] : 'Choose a color'}</span>
+          <TactileButton size="sm" disabled={selectedIndex < 0 || currentPalette.colors.length <= 1}
+            title={currentPalette.colors.length <= 1 ? 'Keep at least one color.' : 'Remove the selected swatch. Artwork stays unchanged.'}
+            onClick={() => { if (removePaletteColor(currentPalette.id, selectedIndex)) setSelectedSwatch({ paletteId: currentPalette.id, index: Math.max(0, selectedIndex - 1) }); }}>
+            <PixelIcon name="trash" size={12} /> Remove color
+          </TactileButton>
+        </div>
       </div>
 
       {/* 3. Palette Quick Utilities Strip */}
-      <div className="p-2.5 border-b border-[var(--desk-border)] flex gap-2 bg-[var(--desk-surface)]">
+      <div className="p-2.5 border-b border-[var(--desk-border)] grid grid-cols-3 gap-2 bg-[var(--desk-surface)]">
+        <TactileButton variant="primary" size="sm" onClick={() => setCreatingPalette(true)} className="col-span-3 justify-center">
+          <PixelIcon name="plus" size={12} /> Create palette
+        </TactileButton>
         <TactileButton
           variant="tactile"
           size="sm"
           onClick={() => studioEvents.emit('pixibun:extract-palette')}
-          title="Scan canvas for unique colors and create new palette"
+          title="Group the visible artwork into up to 6 main colors. Artwork stays unchanged."
           className="flex-1 text-[11px] font-sans"
         >
           Scan Canvas
@@ -259,6 +279,8 @@ export const PalettePanel: React.FC = () => {
         />
       </div>
 
+      {creatingPalette && <CreatePaletteModal onClose={closePaletteCreator} />}
+
       {/* 4. Cycle Engine Section */}
       <PaletteRolesSection key={currentPalette.id} palette={currentPalette} />
       <PanelSection
@@ -282,9 +304,9 @@ export const PalettePanel: React.FC = () => {
             options={[
               { value: "0.25", label: "0.25x" },
               { value: "0.5", label: "0.5x" },
-              { value: "1.0", label: "1.0x" },
-              { value: "2.0", label: "2.0x" },
-              { value: "4.0", label: "4.0x" },
+              { value: "1", label: "1.0x" },
+              { value: "2", label: "2.0x" },
+              { value: "4", label: "4.0x" },
             ]}
             onChange={(val) => setPaletteCycleSpeedMultiplier(parseFloat(val))}
           />
@@ -352,19 +374,13 @@ export const PalettePanel: React.FC = () => {
                   }
                 >
                   <div className="flex flex-col gap-3">
-                    {/* Range Swatch Bar */}
-                    <div className="flex h-3 w-full rounded-[var(--radius-sm)] overflow-hidden border border-[var(--desk-border)]">
-                      {currentPalette.colors.slice(track.low, track.high + 1).map((c, i) => (
-                        <div
-                          key={`${track.id}-c-${i}`}
-                          style={{ backgroundColor: c }}
-                          className="flex-1 h-full"
-                          title={`Register ${track.low + i}: ${c}`}
-                        />
-                      ))}
-                    </div>
+                    <PaletteCycleColors colors={currentPalette.colors} track={track}
+                      onChange={range => updatePaletteCycleTrack(currentPalette.id, track.id, range)} />
 
                     <div className="flex flex-col gap-2">
+                      <details className="text-[10px] text-[var(--text-muted)]">
+                        <summary className="cursor-pointer min-h-6 leading-6">Color index numbers</summary>
+                        <div className="flex flex-col gap-2 pt-1">
                       <StudioNumberInput
                         label="Low Index"
                         value={track.low}
@@ -379,6 +395,8 @@ export const PalettePanel: React.FC = () => {
                         max={currentPalette.colors.length - 1}
                         onChange={(val) => updatePaletteCycleTrack(currentPalette.id, track.id, { high: val })}
                       />
+                        </div>
+                      </details>
                       <StudioNumberInput
                         label="Rate (Hz)"
                         value={track.rate}

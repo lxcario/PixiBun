@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { importGameDeliveryFixture } from './gameDeliveryFixture';
 
 /** Parse the downloaded formats independently of the production encoders. */
-function gifHolds(bytes: Buffer): number[] {
+export function gifHolds(bytes: Buffer): number[] {
   expect(bytes.subarray(0, 6).toString()).toBe('GIF89a');
   const holds: number[] = [];
   let offset = 13 + ((bytes[10] & 0x80) ? 3 * (2 << (bytes[10] & 7)) : 0);
@@ -25,7 +25,7 @@ function gifHolds(bytes: Buffer): number[] {
   return holds;
 }
 
-function apngTiming(bytes: Buffer): { holds: number[]; plays: number; count: number } {
+export function apngTiming(bytes: Buffer): { holds: number[]; plays: number; count: number } {
   expect(bytes.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
   const result = { holds: [] as number[], plays: -1, count: -1 };
   for (let offset = 8; offset < bytes.length;) {

@@ -19,6 +19,18 @@ export interface PaletteCycleTrack {
   enabled: boolean;
 }
 
+/** Pixels whose nearest register is outside all active ranges retain their exact
+ * source bytes. A paused or one-color track must not quantize unrelated artwork. */
+export function buildCycleRegisterMask(tracks: PaletteCycleTrack[], colorCount: number): Uint8Array {
+  const mask = new Uint8Array(colorCount);
+  for (const track of tracks) {
+    if (!track.enabled || track.rate <= 0 || track.high <= track.low) continue;
+    const low = Math.max(0, track.low), high = Math.min(colorCount - 1, track.high);
+    for (let i = low; i <= high; i++) mask[i] = 1;
+  }
+  return mask;
+}
+
 /**
  * Standard Deluxe Paint CRNG (Color Register Range) flags.
  */

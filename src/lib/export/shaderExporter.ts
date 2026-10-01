@@ -13,6 +13,7 @@ import {
   updateLivePaletteLUT32,
   retuneTracksForSeamlessLoop,
   hexToRgb,
+  buildCycleRegisterMask,
 } from '@/lib/color/paletteCycling';
 
 /**
@@ -215,6 +216,9 @@ export function generateLoopAnimationCanvases(
 
   const indexMap = buildCanvasPaletteIndexMap(ctx, width, height, basePaletteHex);
   const retunedTracks = retuneTracksForSeamlessLoop(tracks, targetDurationSec);
+  const cyclingRegisters = buildCycleRegisterMask(retunedTracks, basePaletteHex.length);
+  const sourceData = ctx.getImageData(0, 0, width, height);
+  const source32 = new Uint32Array(sourceData.data.buffer);
 
   const totalFrames = Math.max(1, Math.round(targetDurationSec * fps));
   const canvases: HTMLCanvasElement[] = [];
@@ -235,8 +239,8 @@ export function generateLoopAnimationCanvases(
 
     for (let i = 0; i < width * height; i++) {
       const palIdx = indexMap.indices[i];
-      if (indexMap.alpha[i] === 0) {
-        data32[i] = 0;
+      if (indexMap.alpha[i] === 0 || !cyclingRegisters[palIdx]) {
+        data32[i] = source32[i];
       } else {
         data32[i] = ((lut32[palIdx] ?? 0) & 0x00ffffff) | (indexMap.alpha[i] << 24);
       }

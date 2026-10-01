@@ -29,6 +29,25 @@ function createMockCanvas(width: number, height: number, fillColor: [number, num
 }
 
 describe('In-Browser Animated PNG (APNG) Export Engine', () => {
+  it.each([3, 5, 8, 15])('stores exact %i FPS rational delays without changing authored frame holds', async fps => {
+    const frames = [createMockCanvas(2, 2, [255, 80, 0, 255]), createMockCanvas(2, 2, [255, 180, 0, 255])];
+    const holds = async (blob: Blob) => {
+      const data = new Uint8Array(await blob.arrayBuffer()), view = new DataView(data.buffer);
+      const result: number[][] = [];
+      for (let offset = 8; offset < data.length;) {
+        const length = view.getUint32(offset);
+        if (new TextDecoder().decode(data.slice(offset + 4, offset + 8)) === 'fcTL') {
+          result.push([view.getUint16(offset + 28), view.getUint16(offset + 30)]);
+        }
+        offset += length + 12;
+      }
+      return result;
+    };
+    expect(await holds(await exportAnimationToApngAsync(frames, { fps }))).toEqual([[1, fps], [1, fps]]);
+    expect(await holds(await exportAnimationToApngAsync(frames, { fps, durationsMs: [250, 750] })))
+      .toEqual([[250, 1000], [750, 1000]]);
+  });
+
   it('computes IEEE 802.3 CRC32 correctly against known vectors', () => {
     // Standard CRC-32 test: "123456789" -> 0xCBF43926
     const testBytes = new TextEncoder().encode('123456789');

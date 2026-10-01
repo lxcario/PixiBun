@@ -171,9 +171,9 @@ The [single-row full gate](evidence/2026-10-01/header-one-row-gate.log) passed a
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](specular-glint-2026-10-01.md).
+The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
 
-The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](session-completion-2026-10-01.md).
+The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
 
 
@@ -184,3 +184,15 @@ The specular review replaces broad white/gold-biased overlays in the studio work
 ### Glint visibility correction
 
 The user found the first glint too faint. The new reflection has a clearly brighter core and a stepped shoulder at native pixel resolution. Matte and fabric no longer suppress it nearly to invisibility. The bulb has a smaller footprint and no halo, idle guides fade, and the angle badge only appears during interaction. No extra toolbar controls or explanatory copy were added. An imported purple character now exercises visible contrast in the full lighting preview, rather than checking only that blue sphere bytes change. [Correction and evidence](specular-glint-2026-10-01.md#visibility-correction).
+
+### Palette creation and compact scan
+
+Palette → Create palette opens a named draft with equal-width Pick colors / Copy palette / From artwork choices. Swatches support native color picking, hex input, ordering and removal. From artwork and Scan Canvas summarize up to six main source colors, grouping tiny raster variations rather than listing every byte difference. Cancel preserves the project. The panel also has a visible Remove color action; palette history preserves source artwork, remaining register IDs and adjusted cycling ranges. [Implementation and local evidence](palette-creator-2026-10-01.md).
+
+### Fire-only cycle controls
+
+Two matching palette rows replace index-number editing as the primary range selector. First and Last swatches receive visible selected outlines; the selected inclusive range appears in a strip underneath. Numeric inputs remain in a disclosure. Local browser proof checks equal row widths and actual pixel preservation. [Details](palette-cycle-scope-2026-10-01.md).
+
+### Cycle Loop export
+
+Loop length, Frame rate, File format and Image size use equal-width choices within each row. Selected choices expose pressed state. A short summary shows frame count, duration and FPS; current-frame scope replaces the unused clip selector and export is disabled without a moving cycle. [Workflow and proof](palette-cycle-export-2026-10-01.md).

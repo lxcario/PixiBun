@@ -80,7 +80,7 @@ Produce the illustrated, non-interactive parts of the scene as real image assets
 ## Proposed Changes
 
 ### 1. Web Audio Ambience & Sound Engine
-#### [NEW] [lofiRadio.ts](../../src/lib/audio/lofiRadio.ts)
+#### [NEW] `src/lib/audio/lofiRadio.ts` (planned file)
 - Unchanged from v1: Web Audio synthesizer for rain/tape-hiss noise and chiptune chord progressions, with play/pause, volume, and track switching (Lo-Fi Beats, Rainy Night, Cozy Hearth).
 - Note for verification: this logic is not meaningfully unit-testable in jsdom — treat as manual-QA only, don't imply coverage from `npm run test`.
 
@@ -172,7 +172,7 @@ npm run test
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-This document retains its dated findings and verification scope. The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](../research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](../research/specular-glint-2026-10-01.md).
+This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../research/session-ui-ux-2026-10-01.md), [palette tools](../research/palette-creator-2026-10-01.md), [cycle scope](../research/palette-cycle-scope-2026-10-01.md), [export timing](../research/palette-cycle-export-2026-10-01.md) and [GIF correction](../research/gif-8x-corruption-2026-10-01.md).
 
-The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](../research/session-completion-2026-10-01.md).
+The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

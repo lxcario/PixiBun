@@ -120,8 +120,9 @@ export interface ToolSlice {
   swapColors: () => void;
   selectPalette: (id: string) => void;
   addCustomColorToPalette: (paletteId: string, color: string) => void;
+  removePaletteColor: (paletteId: string, index: number) => boolean;
   setCustomRamps: (ramps: ColorRamp[]) => void;
-  addExtractedPalette: (name: string, colors: string[]) => void;
+  addExtractedPalette: (name: string, colors: string[]) => boolean;
   generateAndAddRamp: (baseColor: string) => void;
 }
 

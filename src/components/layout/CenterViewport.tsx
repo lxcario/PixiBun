@@ -21,7 +21,7 @@ import {
   bakeNormalMapToCanvas,
 } from '@/lib/ai/smartMathEngine';
 import { decodeNormalRGB, blendNormalsRNM } from '@/lib/art/normalSculptor';
-import { updateLivePaletteLUT32 } from '@/lib/color/paletteCycling';
+import { buildCycleRegisterMask, updateLivePaletteLUT32 } from '@/lib/color/paletteCycling';
 import { buildCanvasPaletteIndexMap } from '@/lib/export/shaderExporter';
 
 import { useViewportTransform } from '@/hooks/viewport/useViewportTransform';
@@ -339,6 +339,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const indexMap = buildCanvasPaletteIndexMap(ctx, canvasWidth, canvasHeight, currentPalette.colors);
     const numPixels = canvasWidth * canvasHeight;
     const outLUT32 = new Uint32Array(currentPalette.colors.length);
+    const cyclingRegisters = buildCycleRegisterMask(tracks, currentPalette.colors.length);
 
     const frameData = ctx.createImageData(canvasWidth, canvasHeight);
     const data32 = new Uint32Array(frameData.data.buffer);
@@ -353,7 +354,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
       for (let i = 0; i < numPixels; i++) {
         const palIdx = indexMap.indices[i];
-        if (indexMap.alpha[i] === 0) {
+        if (indexMap.alpha[i] === 0 || !cyclingRegisters[palIdx]) {
           data32[i] = baseData32[i];
         } else {
           data32[i] = ((outLUT32[palIdx] ?? baseData32[i]) & 0x00ffffff) | (indexMap.alpha[i] << 24);

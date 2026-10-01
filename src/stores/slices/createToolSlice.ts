@@ -11,7 +11,7 @@ import {
   paletteEntryError,
 } from '@/lib/color/paletteAdmission';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { parsePaletteSemantics } from '@/lib/color/paletteSemantics';
+import { estimatePaletteBytes, parsePaletteSemantics } from '@/lib/color/paletteSemantics';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 function rejectPaletteEdit(message: string): void {
@@ -537,28 +537,47 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     get().setDirty(true);
   },
 
+  removePaletteColor: (paletteId, index) => {
+    const palette = get().palettes.find(p => p.id === paletteId);
+    if (!palette || !Number.isInteger(index) || index < 0 || index >= palette.colors.length) return false;
+    if (palette.colors.length <= 1) { rejectPaletteEdit('Keep at least one color in your palette.'); return false; }
+    if (!pushStructuralHistoryStep('Remove palette color', { includePalettes: true })) return false;
+    set(state => {
+      const target = state.palettes.find(p => p.id === paletteId)!;
+      target.colors.splice(index, 1);
+      if (target.semantics) {
+        const removed = target.semantics.entries.splice(index, 1)[0]?.id;
+        target.semantics.bindings = target.semantics.bindings.filter(b => b.entryId !== removed);
+      }
+      target.cycleTracks = target.cycleTracks?.flatMap(track => {
+        if (index > track.high) return [track];
+        if (index < track.low) return [{ ...track, low: track.low - 1, high: track.high - 1 }];
+        return track.high > track.low ? [{ ...track, high: track.high - 1 }] : [];
+      });
+    });
+    get().setDirty(true);
+    return true;
+  },
+
   addExtractedPalette: (name, colors) => {
     if (get().palettes.length >= MAX_PROJECT_PALETTES) {
       rejectPaletteEdit(`A project can have at most ${MAX_PROJECT_PALETTES} palettes.`);
-      return;
+      return false;
     }
     const nextColors = colors.length > 0 ? colors : ['#3A2E4C', '#C792DF', '#DCABDF', '#DDDFDF'];
     const error = paletteEntryError(name, nextColors);
     if (error) {
       rejectPaletteEdit(error);
-      return;
+      return false;
     }
-    if (!pushStructuralHistoryStep('Add palette', { includePalettes: true })) return;
+    const newPalette: ColorPalette = { id: createId('palette'), name, colors: [...nextColors] };
+    if (!pushStructuralHistoryStep('Add palette', { includePalettes: true, addedMetadataBytes: estimatePaletteBytes(newPalette) })) return false;
     set(state => {
-      const newPalette: ColorPalette = {
-        id: createId('palette'),
-        name,
-        colors: [...nextColors],
-      };
       state.palettes.push(newPalette);
       state.currentPaletteId = newPalette.id;
     });
     get().setDirty(true);
+    return true;
   },
 
   generateAndAddRamp: baseColor => {

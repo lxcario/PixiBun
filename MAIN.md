@@ -67,7 +67,21 @@ The studio canvas is limited to 2,048 pixels on either axis. Projects allow up t
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
 
-The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
+The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
+
+## Palette making follow-up — 2026-10-01
+
+Palette → Create palette builds a named, editable draft from picked colors, the current palette or up to six main artwork colors. Swatches can be reordered and removed before creation. Scan Canvas groups near-duplicate source shades; Remove color works directly on the active palette. These actions preserve raster pixels, save palette data with the project and support Undo/Redo. [Details](docs/research/palette-creator-2026-10-01.md).
+
+### Fire-only palette cycling
+
+First/Last swatch controls let artists exclude brown wood and black outlines from a fire cycle. Excluded source shades keep their exact pixels in playback and generated frames. [Verification](docs/research/palette-cycle-scope-2026-10-01.md).
+
+Cycle Loop exports the active frame’s color animation as APNG/GIF at selectable FPS, including 15 FPS. [Workflow and checks](docs/research/palette-cycle-export-2026-10-01.md).
+
+Cycle export now includes 3/5/8 FPS and starts at 8 FPS. Lower export FPS gives fewer samples; cycle speed remains a separate setting. [Research and checks](docs/research/palette-cycle-export-2026-10-01.md#slower-fps-choices).
+
+8x GIF corruption is corrected in the shared LZW encoder. Previously exported corrupted files need regeneration. [Decoded-pixel proof](docs/research/gif-8x-corruption-2026-10-01.md).

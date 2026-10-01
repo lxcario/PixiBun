@@ -1,7 +1,7 @@
 import { useEffect, useCallback, RefObject } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { rgbaToHex } from '@/lib/canvas/floodFill';
+import { extractCompactPalette } from '@/lib/color/compactPalette';
 import { usePhotometricEvents } from './events/usePhotometricEvents';
 import { useGeometricEvents } from './events/useGeometricEvents';
 import { useArtisanEvents } from './events/useArtisanEvents';
@@ -336,20 +336,10 @@ export function useViewportStudioEvents({
 
       const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
       const data = imgData.data;
-      const uniqueColors = new Set<string>();
-
-      for (let i = 0; i < data.length; i += 4) {
-        const a = data[i + 3];
-        if (a > 30) {
-          const hex = rgbaToHex(data[i], data[i + 1], data[i + 2], a);
-          uniqueColors.add(hex);
-        }
-      }
-
-      const colorsArr = Array.from(uniqueColors);
+      const colorsArr = extractCompactPalette(data, 6);
       if (colorsArr.length > 0) {
-        addExtractedPalette(`Extracted (${colorsArr.length})`, colorsArr);
-      }
+        addExtractedPalette('Artwork colors', colorsArr);
+      } else studioEvents.emit('pixibun:toast', { type: 'default', message: 'Draw or import some artwork first.' });
     };
 
     const unsubs = [

@@ -2023,12 +2023,32 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
 
-The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
+The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
 
 
 ## 2026-10-01 — Live glint correction
 
-The bulb HUD now offers Off/Soft/Crisp. The glint action previews before Apply, preserves colored outlines and authored normal directions, and uses bounded highlights instead of broad white/gold patches. Real browser checks exposed and corrected lost blending modes during pixel-history Redo and HUD clipping. Research and final local results are recorded in [the glint report](docs/research/specular-glint-2026-10-01.md). This follow-up is unpushed checkout work.
+The bulb HUD now offers Off/Soft/Crisp. The glint action previews before Apply, preserves colored outlines and authored normal directions, and uses bounded highlights instead of broad white/gold patches. Real browser checks exposed and corrected lost blending modes during pixel-history Redo and HUD clipping. Research and final local results are recorded in [the glint report](docs/research/specular-glint-2026-10-01.md). This follow-up is included in the requested Git publication.
+
+## Palette creator and compact scan — 2026-10-01
+
+The user requested custom palette creation, then reported excessive scan swatches and requested direct removal. The new draft editor supports naming/picking/copying/ordering; scan summarizes at most six main source colors. Panel removal keeps artwork intact, preserves remaining role IDs and adjusts cycling ranges. Focused local Chromium checks cover creation/reload, Cancel, compact scans and removal history. [Current implementation and evidence](docs/research/palette-creator-2026-10-01.md).
+
+### 2026-10-01 — cycle scope follow-up
+
+Added visual range endpoints and fixed unwanted quantization of source pixels outside active cycle ranges. Focused unit and local browser checks verify animated fire with unchanged wood, Undo/Redo and saved range restoration. [Evidence and complete verification](docs/research/palette-cycle-scope-2026-10-01.md).
+
+### 2026-10-01 — cycle export timing
+
+Added frame-rate choices and a frame-count summary. Fixed preview-speed omission, exact APNG frame timing and GIF loop-duration drift. Native downloaded files are checked independently of the encoders. [Evidence](docs/research/palette-cycle-export-2026-10-01.md).
+
+### 2026-10-01 — slow cycle export verified
+
+3/5/8 FPS choices are delivered with an 8-FPS initial setting. All five gates passed in 54.22s (1,498 tests/148 suites); eight native APNG/GIF downloads passed their timing and artwork-preservation checks. Research distinguishes frame rate, pose count and cycle speed. [Sources and evidence](docs/research/palette-cycle-export-2026-10-01.md#slower-fps-choices).
+
+### 2026-10-01 — 8x GIF raster corruption fixed
+
+Removed an invalid phrase insertion after the shared GIF encoder clears its full LZW dictionary. Four new regressions fail before the fix and pass afterward. Native Chromium decoded all 16 frames of a real 512×512 8x cycle GIF with zero pixel differences. The final five-stage gate passed in 65.39s with 1,502 tests/149 suites; the focused browser scenario passed in 8.5s. Existing corrupted downloads need re-export. [Reproduction, specification and evidence](docs/research/gif-8x-corruption-2026-10-01.md).

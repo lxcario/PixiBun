@@ -207,7 +207,8 @@ export function lzwEncode(pixels: Uint8Array, colorDepth: number): number[] {
           dict.clear();
           dictSize = clearCode + 2;
           codeSize = minCodeSize + 1;
-          dict.set(key, dictSize++);
+          // A Clear code starts a new stream: the decoder has no previous
+          // phrase. Do not carry the old prefix into its fresh dictionary.
         }
         prefix = c;
       }

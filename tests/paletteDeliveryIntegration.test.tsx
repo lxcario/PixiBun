@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { webcrypto } from 'node:crypto';
 import { makeCanvas } from './helpers/mockCanvas';
 import { useStudioStore } from '@/stores/studioStore';
+import { PRESET_PALETTES } from '@/stores/slices/createToolSlice';
 import { clearAllBuffers, getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import { setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
@@ -22,6 +23,7 @@ beforeEach(() => {
   });
   vi.clearAllMocks(); vi.stubGlobal('crypto', webcrypto); clearAllBuffers(); setGlobalHistoryEngine(null);
   useStudioStore.getState().resetToNewProject('palette-kit');
+  useStudioStore.setState({ palettes: structuredClone(PRESET_PALETTES), currentPaletteId: PRESET_PALETTES[0].id });
   vi.mocked(compositeFrame).mockImplementation(() => makeCanvas(32, 32));
 });
 afterEach(() => { cleanup(); setGlobalHistoryEngine(null); clearAllBuffers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); expect(getMemoryBudgetUsage().reservedBytes).toBe(0); });
@@ -42,6 +44,37 @@ it('roles, explicit bindings and cycling undo and redo together without changing
   act(() => hook.result.current.performRedo()); act(() => hook.result.current.performRedo());
   expect(activePalette().semantics).toEqual(semantics); expect(activePalette().cycleTracks?.some(t => t.id === 'cycle')).toBe(true);
   expect(getOrCreateBuffer(id, 32, 32).ctx.getImageData(0, 0, 32, 32).data).toEqual(before);
+});
+
+it('removes a swatch with stable roles, remapped cycle ranges and exact palette undo/redo', () => {
+  const hook = drawing(), state = useStudioStore.getState(), palette = activePalette();
+  const semantics = defaultPaletteSemantics(palette);
+  semantics.bindings = [0, 1].map(index => ({ id: `binding-${index}`, frameId: state.frames[0].id, entryId: semantics.entries[index].id, x: index, y: 0, w: 1, h: 1 }));
+  state.setPaletteSemantics(palette.id, semantics);
+  state.addPaletteCycleTrack(palette.id, { id: 'after', low: 2, high: 3, rate: 2, direction: 'forward', blendShift: false, enabled: true });
+  state.addPaletteCycleTrack(palette.id, { id: 'single', low: 1, high: 1, rate: 2, direction: 'forward', blendShift: false, enabled: true });
+  const original = structuredClone(activePalette());
+  const pixels = getOrCreateBuffer(state.activeLayerId, 32, 32).ctx.getImageData(0, 0, 32, 32).data.slice();
+  act(() => { expect(useStudioStore.getState().removePaletteColor(palette.id, 1)).toBe(true); });
+  expect(activePalette().colors).toEqual(original.colors.filter((_, i) => i !== 1));
+  expect(activePalette().semantics?.entries.map(e => e.id)).toEqual(original.semantics!.entries.filter((_, i) => i !== 1).map(e => e.id));
+  expect(activePalette().semantics?.bindings).toHaveLength(1);
+  expect(activePalette().cycleTracks?.find(t => t.id === 'after')).toMatchObject({ low: 1, high: 2 });
+  expect(activePalette().cycleTracks?.some(t => t.id === 'single')).toBe(false);
+  expect(activePalette().cycleTracks?.find(t => t.id === 'wisteria-pulse')).toMatchObject({ low: 1, high: 5 });
+  const removed = structuredClone(activePalette());
+  act(() => hook.result.current.performUndo()); expect(activePalette()).toEqual(original);
+  act(() => hook.result.current.performRedo()); expect(activePalette()).toEqual(removed);
+  expect(getOrCreateBuffer(state.activeLayerId, 32, 32).ctx.getImageData(0, 0, 32, 32).data).toEqual(pixels);
+  expect(validateProjectFile(buildProjectFile()).ok).toBe(true);
+});
+
+it('refuses removing the last swatch or an invalid index without dirtying the project', () => {
+  useStudioStore.setState({ palettes: [{ id: 'one', name: 'One', colors: ['#123456'] }], currentPaletteId: 'one', isDirty: false });
+  const before = useStudioStore.getState().editRevision;
+  expect(useStudioStore.getState().removePaletteColor('one', 0)).toBe(false);
+  expect(useStudioStore.getState().removePaletteColor('one', -1)).toBe(false);
+  expect(activePalette().colors).toEqual(['#123456']); expect(useStudioStore.getState().editRevision).toBe(before);
 });
 it('project admission round-trips register identity and rejects corrupted bindings', () => {
   const palette = activePalette(), semantics = defaultPaletteSemantics(palette); semantics.entries[0].role = 'cloth-shadow';

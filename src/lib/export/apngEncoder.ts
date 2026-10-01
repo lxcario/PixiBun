@@ -261,16 +261,16 @@ async function encodeApng(
     const frame = i === 0 ? firstFrame : extractScaledCanvasRgba(frameCanvases[i], scale);
 
     // Determine frame delay
-    let delayMs = Math.round(1000 / fps);
+    // APNG stores a rational delay, so integer FPS needs no millisecond rounding.
+    let delayNum = Number.isInteger(fps) ? 1 : Math.round(1000 / fps);
+    let delayDen = Number.isInteger(fps) ? fps : 1000;
     if (options.durationsMs && options.durationsMs[i] !== undefined) {
-      delayMs = Math.max(10, options.durationsMs[i]);
+      delayNum = Math.max(10, options.durationsMs[i]);
+      delayDen = 1000;
     } else if (options.delays && options.delays[i] !== undefined) {
-      delayMs = Math.max(10, options.delays[i] * 10);
+      delayNum = Math.max(10, options.delays[i] * 10);
+      delayDen = 1000;
     }
-
-    // Convert delay to fraction (numerator / denominator)
-    const delayNum = delayMs;
-    const delayDen = 1000;
 
     // 3. fcTL Chunk (Frame Control - 26 bytes)
     // sequence_number(4), width(4), height(4), x_offset(4), y_offset(4),

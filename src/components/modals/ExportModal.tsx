@@ -67,6 +67,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const loopMode = useStudioStore((s) => s.loopMode);
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
+  const paletteCycleSpeedMultiplier = useStudioStore((s) => s.paletteCycleSpeedMultiplier);
 
   const [exportType, setExportType] = useState<ExportType>(initialType);
   const [projectExportError, setProjectExportError] = useState<string | null>(null);
@@ -79,6 +80,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const [kitError, setKitError] = useState<string | null>(null);
   const kitInFlightRef = React.useRef(false);
   const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
+  const [cycleLoopFps, setCycleLoopFps] = useState<number>(8);
   const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
   const [replayFormat, setReplayFormat] = useState<'gif' | 'mp4'>('gif');
   // Isolated export scale state per export tab to prevent cross-tab clamping and state bleed
@@ -717,7 +719,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
-  const activeCycleTracks = currentPalette?.cycleTracks?.filter((t) => t.enabled && t.rate > 0) || [];
+  const activeCycleTracks = currentPalette?.cycleTracks?.filter((t) => t.enabled && t.rate > 0 && t.high > t.low) || [];
 
   const handleExportShader = () => {
     const code =
@@ -736,10 +738,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportCycleLoop = async () => {
+    if (!currentPalette || !activeCycleTracks.length) return;
     const effectiveScale = cycleLoopFormat === 'apng' ? Math.min(scale, 16) : Math.min(scale, 8);
     const outW = canvasWidth * effectiveScale;
     const outH = canvasHeight * effectiveScale;
-    const estimatedFrames = Math.max(1, Math.round(cycleLoopDuration * 30));
+    const estimatedFrames = Math.max(1, Math.round(cycleLoopDuration * cycleLoopFps));
     const isAggregateFormat = cycleLoopFormat === 'apng' || cycleLoopFormat === 'gif';
     const validation = validateExportGeometry(outW, outH, {
       frameCount: isAggregateFormat ? estimatedFrames : undefined,
@@ -759,22 +762,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
 
     setIsExporting(true);
     try {
-      const loopFps = 30;
+      const loopFps = cycleLoopFps;
       const frameCanvases = generateLoopAnimationCanvases(
         source,
         currentPalette.colors,
-        activeCycleTracks,
+        activeCycleTracks.map(track => ({ ...track, rate: track.rate * paletteCycleSpeedMultiplier })),
         cycleLoopDuration,
         loopFps
       );
 
       if (cycleLoopFormat === 'apng') {
         const effectiveScale = Math.min(scale, 16);
-        const delays = frameCanvases.map(() => 1000 / loopFps);
         const apngBlob = await exportAnimationToApngAsync(frameCanvases, {
           fps: loopFps,
           scale: effectiveScale,
-          durationsMs: delays,
           loopCount: 0,
           onProgress: (current: number, total: number) => {
             setExportProgress({ current, total });
@@ -788,7 +789,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       } else {
         const effectiveScale = Math.min(scale, 8);
-        const delays = frameCanvases.map(() => Math.max(2, Math.round((1000 / loopFps) / 10)));
+        // Distribute GIF's centisecond rounding across frames instead of drifting
+        // the whole loop (15 FPS uses 70/60/70ms, totaling exactly 2s for 30 frames).
+        const delays = frameCanvases.map((_, i) => Math.max(2,
+          Math.round((i + 1) * 100 / loopFps) - Math.round(i * 100 / loopFps)));
         const gifBlob = await createAnimatedGifBlobAsync(
           frameCanvases,
           loopFps,
@@ -831,7 +835,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       />
 
       {/* Export Scope (Tag Clips) Selector */}
-      {clips.length > 0 && exportType !== 'project' && (
+      {clips.length > 0 && exportType !== 'project' && exportType !== 'palette-cycle' && exportType !== 'shader' && (
         <ExportScopeSelector
           clips={clips}
           selectedClipId={selectedClipId}
@@ -932,6 +936,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           setCycleLoopDuration={setCycleLoopDuration}
           cycleLoopFormat={cycleLoopFormat}
           setCycleLoopFormat={setCycleLoopFormat}
+          cycleLoopFps={cycleLoopFps}
+          setCycleLoopFps={setCycleLoopFps}
+          activeCycleTracksCount={activeCycleTracks.length}
           scale={scale}
           setScale={setScale}
         />
@@ -973,6 +980,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
             (exportType === 'replay' && (historyLength === 0 || (replayFormat === 'mp4' && !isMp4Supported))) ||
             (exportType === 'mp4' && !isMp4Supported) ||
             (exportType === 'webm' && !isWebmSupported)
+            || (exportType === 'palette-cycle' && activeCycleTracks.length === 0)
           }
           onClick={
             exportType === 'godot-kit'
@@ -1002,7 +1010,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
-          <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : `Download ${exportType.toUpperCase()}`}</span>
+          <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : exportType === 'palette-cycle' ? 'Download cycle animation' : `Download ${exportType.toUpperCase()}`}</span>
         </TactileButton>
       </div>
     </ModalWrapper>
