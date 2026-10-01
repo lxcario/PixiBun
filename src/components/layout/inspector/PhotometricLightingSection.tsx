@@ -124,6 +124,7 @@ export const PhotometricLightingSection: React.FC<{ taskView?: boolean }> = ({ t
 
   const handleSpecularHighlight = () => {
     if (showNormalMapPreview) toggleNormalMapPreview();
+    if (showNormalMapPreview) toggleNormalMapPreview();
     studioEvents.emit('pixibun:highlight', {
       lightAzimuth: tools.lightAzimuth,
       lightElevation: tools.lightElevation,
@@ -557,7 +558,7 @@ export const PhotometricLightingSection: React.FC<{ taskView?: boolean }> = ({ t
                   size="sm"
                   variant="default"
                   onClick={handleSpecularHighlight}
-                  title="Add sharp light reflections to illuminated surfaces"
+                  title="Move the light bulb to preview a soft or crisp highlight"
                   className="text-[10px] py-1 font-medium flex items-center justify-center gap-1"
                 >
                   <PixelIcon name="sun" size={11} />

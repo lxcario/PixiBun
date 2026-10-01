@@ -1,0 +1,55 @@
+
+Running 12 tests using 1 worker
+
+(node:28288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   1 [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths (10.6s)
+(node:12296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › tests\e2e\colorReplaceTolerance.spec.ts:12:5 › Color Replace respects tolerance, active layer lock, and undo (1.5s)
+  ok  3 [chromium] › tests\e2e\eraseColor.spec.ts:70:5 › Erase Sampled Color removes green across animation frames and undo restores both (2.5s)
+  ok  4 [chromium] › tests\e2e\eraseColor.spec.ts:108:5 › Erase Sampled Color skips a locked frame layer (2.3s)
+  ok  5 [chromium] › tests\e2e\eraseColor.spec.ts:125:5 › Default color family clears pale spill, repairs dark green outline pixels, and has a distinct icon (2.1s)
+  ok  6 [chromium] › tests\e2e\eraseColor.spec.ts:146:5 › Erase Sampled Color with All Frames scope clears matching color across animation frames (1.4s)
+  ok  7 [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths (2.0s)
+  ok  8 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Dark (3.3s)
+  ok  9 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Light (3.4s)
+  ok 10 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Dark (3.3s)
+  ok 11 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Light (3.4s)
+  ok 12 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:30:5 › bucket recolors nearby shades through the visible grid without crossing a contrasting color (1.2s)
+
+
+  1) [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('dialog', { name: /Resize/ }).getByRole('spinbutton').first()
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 5000ms
+      - waiting for getByRole('dialog', { name: /Resize/ }).getByRole('spinbutton').first()
+        14 × locator resolved to <input min="4" max="512" value="32" type="number" class="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[#f0be7c] outline-none"/>
+           - unexpected value "inactive"
+
+
+      192 |   const resizeDialog = page.getByRole('dialog', { name: /Resize/ });
+      193 |   await expect(resizeDialog).toBeVisible();
+    > 194 |   await expect(resizeDialog.getByRole('spinbutton').first()).toBeFocused();
+          |                                                              ^
+      195 |   await page.keyboard.press('Escape');
+      196 |   await expect(resizeDialog).toBeHidden();
+      197 |   await header.getByTestId('appearance-button').click();
+        at D:\PixiBun\tests\e2e\backupTrust.spec.ts:194:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+  11 passed (39.8s)

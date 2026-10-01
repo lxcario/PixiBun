@@ -150,7 +150,8 @@ The undo/redo pipeline is fully decoupled from the React rendering tree into a p
 
 The graphics intelligence engine is decomposed into modular, deterministic mathematical modules under `src/lib/ai/math/` and `src/lib/ai/`:
 - `edtNormalMap.ts`: Felzenszwalb-Huttenlocher $O(N)$ EDT, non-linear dome inflation ($\gamma = 0.5$), bilateral smoothing, content-aware heightmaps, anatomical part segmentation, frontal face cushion plateau (level camera-facing plateau), independent ear cone ridges, and Sobel tangent normal vector fields.
-- `photometricLighting.ts`: Parametric 2.5D Blinn-Phong lighting, feature preservation (eyes/mouth/outlines), stepped OKLCH cel-shading with perceptual hue shifts, and in-place tagged relighting (`Photometric <material>`).
+- `photometricLighting.ts`: Parametric 2.5D lighting, protected features/ink, stepped OKLCH diffuse shading and live tagged relighting. Explicit glint choices use the pixel reflection path; calls omitting the choice retain legacy renderer behavior.
+- `pixelGlint.ts`: Finite GGX-shaped reflection masks, painted-normal priority with OpenGL-up conversion, two flat core/shoulder coverage levels, bounded hue-related lightness lifts, and preserved source alpha. This is artist-directed pixel shading, not a full energy-conserving BRDF.
 - `photometricAuto.ts`: Canvas art morphology analysis, anatomical classification (`character`, `orb`, `prop`), connected-component feature clustering (eyes, mouth, whiskers), convex lobe ear/horn scanning, and automated lighting parameter inference.
 - `shadowAuto.ts`: Canvas sprite geometry analysis, contact baseline detection, and directional shadow parameter inference.
 - `shadowRayMarcher.ts`: 2.5D bounded sprite cast shadows with 1-to-1 sheared silhouette projection, classic ground contact drop shadow ellipses (`shadowStyle: 'drop'`), and uniform flat opacity (`ditherMode: 'none'`).
@@ -694,7 +695,7 @@ graph TD
     Shell --> Hooks
 ```
 
-* **AtelierRail (`src/components/layout/AtelierRail.tsx`):** Unified top header rail merging the former `TopHeader` and `ContextOptionsBar`. Houses project title editing, save/export/import/gallery/co-draw actions, undo/redo, zoom control group with fit calculation, tool-specific contextual parameter toggles, CVD colorblindness lenses, squint mode, symmetry axes, and the `AppearancePopover` theme trigger.
+* **AtelierRail (`src/components/layout/AtelierRail.tsx`):** Unified top header rail merging the former `TopHeader` and `ContextOptionsBar`. Keeps one 48px row at tested 1024–1920px desktop widths. File groups Projects/New/Import/Canvas size; Studio groups appearance/Co-Draw/Help. Save, history, drawing options and Export remain direct. Mirror, Zoom/Fit and View share an adjacent frame; larger tool forms open on demand.
 * **StatusBar (`src/components/layout/StatusBar.tsx`):** Fixed 24px bottom chrome bar displaying live canvas cursor coordinates via `CursorStatusBadge` subscription, active tool name, canvas dimensions, zoom factor, and active layer/frame info.
 * **CommandPaletteModal (`src/components/modals/CommandPaletteModal.tsx`):** Accessible keyboard-driven fuzzy-search modal (`Ctrl+K`) with categorized commands (Tools, View & Guides, Animation, Project & Studio), keyboard arrow navigation, and shortcut hint badges.
 
@@ -802,7 +803,7 @@ export interface LayerEffectRecipe {
 ```
 
 * **Zero-Latency Raster Caching:** The layer's raster bitmap is stored in `bufferRegistry` and IndexedDB `layerBlobs` for instant 60fps compositing without runtime recomputation.
-* **Atomic History Integration:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe`, ensuring undo/redo restores both pixel buffers and recipe metadata.
+* **Atomic History Integration:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe` and `layerBlendMode?: BlendMode`, so Undo/Redo restores pixel buffers, recipe metadata and the original compositing operation, including `source-atop` masked effects.
 * **Layers Panel Reopening (`Edit FX`):** Photometric layers display an `Edit FX` button in `LayersPanel.tsx`, reopening the interactive `PixelLightBulbGizmo` populated with the exact saved azimuth, elevation, brightness, and material parameters.
 * **P2P Collaboration Parity:** Collaborative structure payloads (`StructureLayer`) include `effect?: LayerEffectRecipe`, verified by `validateLayerEffect` during network ingestion.
 
@@ -931,5 +932,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

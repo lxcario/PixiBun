@@ -117,6 +117,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     lightElevation: 45,
     lightRadius: 64,
     lightBrightness: 1.15,
+    glintStyle: 'soft',
     sourceShadingRemoval: 0,
     materialPreset: 'matte',
     formType: 'auto',
@@ -293,6 +294,10 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     set(state => {
       state.tools.minecraftSkinMode = mode;
     });
+  },
+
+  setGlintStyle: style => {
+    set(state => { state.tools.glintStyle = style; });
   },
 
   setShadingBands: bands => {

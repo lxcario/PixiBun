@@ -7,6 +7,7 @@ import {
   MaterialType,
   WallpaperGroup,
   ShadingBandMode,
+  GlintStyle,
 } from '@/types/tools';
 import { ColorPalette, ColorRamp, PaletteCycleTrack } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
@@ -37,6 +38,7 @@ export interface ViewportSlice {
   cvdLens: CvdLensMode;
   squintMode: boolean;
   photometricGizmoActive: boolean;
+  photometricGlintOnly?: boolean;
   referenceOverlay: 'none' | 'thirds' | 'golden' | 'center';
 
   setReferenceOverlay: (mode: 'none' | 'thirds' | 'golden' | 'center') => void;
@@ -90,6 +92,7 @@ export interface ToolSlice {
   setMaterialPreset: (preset: MaterialType) => void;
   setFormType: (formType: 'auto' | 'character' | 'orb' | 'prop') => void;
   setMinecraftSkinMode: (mode: 'auto' | 'enabled' | 'disabled') => void;
+  setGlintStyle: (style: GlintStyle) => void;
   setShadingBands: (bands: ShadingBandMode) => void;
   setCavityStrength: (strength: number) => void;
   setDitherModulation: (mod: number) => void;

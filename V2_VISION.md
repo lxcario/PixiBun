@@ -665,7 +665,7 @@ At the 2026-09-26 verification point:
 * **TypeScript & ESLint:** 0 errors, 0 warnings.
 * **Next.js 16 Turbopack Production Build:** Compiles flawlessly.
 
-Current suite inventory: 1472 unit and integration tests across 143 suites; 146 Chromium E2E tests across 32 spec suites (2026-10-01). The codebase also checks TypeScript and ESLint. The six audit phases delivered bounded local animation, palette/game-delivery and research workflows; this does not complete the wider v2 vision. Recorded passing runs, subsequent interface changes and artist/device/collaboration questions are distinguished in the [session completion record](docs/research/session-completion-2026-10-01.md).
+Current suite inventory: 1482 unit and integration tests across 144 suites; 149 Chromium E2E tests across 33 spec suites (2026-10-01). The codebase also checks TypeScript and ESLint. The six audit phases delivered bounded local animation, palette/game-delivery and research workflows; this does not complete the wider v2 vision. Recorded passing runs, subsequent interface changes and artist/device/collaboration questions are distinguished in the [session completion record](docs/research/session-completion-2026-10-01.md).
 
 ---
 
@@ -700,5 +700,7 @@ Maintain the rock-solid stability achieved in v1, deliver the studio into the ha
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

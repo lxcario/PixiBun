@@ -19,8 +19,8 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await expect(stage).toBeVisible();
 
     // Verify key studio UI regions
-    await expect(page.getByTitle(/Start a New Blank Drawing/i)).toBeVisible();
-    await expect(page.getByTitle(/Atelier Guide, Diagnostics & Shortcuts/i)).toBeVisible();
+    await expect(page.getByTestId('file-menu-button')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Studio options' })).toBeVisible();
     await expect(page.getByTitle(/Export PNG, GIF, or Spritesheet/i)).toBeVisible();
   });
 

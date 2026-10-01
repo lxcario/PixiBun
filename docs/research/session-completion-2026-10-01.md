@@ -21,6 +21,8 @@ These six audit phases are separate from the historical product-roadmap phase nu
 
 ## Verification and current inventory
 
+The earlier [toolbar simplification](session-ui-ux-2026-10-01.md#toolbar-simplification-follow-up) groups document actions under File and appearance/Co-Draw/Help under Studio, reducing the closed pen header from 20 to 15 buttons. It followed the earlier session push and is included in this requested publication. Seventeen distinct scoped browser scenarios passed, including menu accessibility across four themes and affected import/recovery paths; five final focus/theme scenarios also passed. Final documentation/type/lint/unit checks passed and the production build passed after a cache-permission retry. The table distinguishes those earlier runs from the current inventory and latest glint follow-up.
+
 | Evidence | Recorded result and scope |
 | --- | --- |
 | [Repository gate](evidence/2026-09-30/phase6-gate-final.log) | Documentation, TypeScript, ESLint, 1,466 unit/integration tests in 143 files and production build passed in 45.50 seconds |
@@ -30,7 +32,7 @@ These six audit phases are separate from the historical product-roadmap phase nu
 | [Compiled three-engine run](evidence/2026-09-30/phase6-production-final.log) | 32/33 scenarios passed in 15.5 minutes; all nine new research scenarios passed |
 | [Targeted Firefox rerun](evidence/2026-09-30/phase6-production-firefox-rerun.log) | The remaining animation-review timeout passed unchanged in 12.0 seconds |
 | Phase 5 engine evidence | 850 Godot 4.7.2 assertions passed, as recorded in the [phase report](phase-implementation-status.md); this does not establish engine parity for new research lighting |
-| Current discovered inventory | 1,472 unit/integration tests in 143 files; 146 editor tests in 32 files; 39 separate compiled-production scenarios |
+| Current discovered inventory | 1,482 unit/integration tests in 144 files; 149 editor tests in 33 files; 39 separate compiled-production scenarios |
 | [UI repository gate before outlined-artwork follow-up](evidence/2026-10-01/ui-ux-gate-final-rerun.log) | All five checks passed in 81.46 seconds, including 1,469 unit tests and the production build |
 | [Full editor run before outlined-artwork follow-up](evidence/2026-10-01/ui-ux-editor-final.log) | 145 Chromium checks passed in 2.8 minutes |
 | [Compiled three-engine run before outlined-artwork follow-up](evidence/2026-10-01/ui-ux-production-final.log) | All 36 scenarios passed in 5.9 minutes |
@@ -96,7 +98,7 @@ Updated files:
 - [docs/research/PHASE6_UX_HARDENING.md](PHASE6_UX_HARDENING.md)
 - [docs/research/evidence/2026-09-30/README.md](evidence/2026-09-30/README.md)
 
-The new completion record itself is part of this update. Generic operating guides (`AGENTS.md`, `SKILL.md`, `FullStackGuide.md`), the historical `chat.md` transcript, older dated remediation/planning records, the PixiMotion master specification and unrelated study/content plans retain their original text. They were not implementation deliverables of this session; current status is available through the updated document indexes.
+The new completion record itself is part of this update. Generic operating guides (`AGENTS.md`, `SKILL.md`, `FullStackGuide.md`), older dated remediation/planning records and unrelated study/content plans retain their original core text. Local ignored transcripts/specifications and bundled agent skills are not publication deliverables. Their historical or operating content is preserved; their status checkpoints now link to the latest header/glint verification.
 
 ## Header placement follow-up
 
@@ -109,5 +111,18 @@ The later Add light and depth review replaces technical headings with matching o
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The user requested Git publication of the six-phase audit implementation and later interface fixes. Current behavior includes protected artwork previews, default outline preservation and rounded lighting, the bottom-right save badge, grouped responsive header controls and beginner lighting menus. The latest full gate passed in 59.24 seconds; all 1,472 unit tests in 143 files and the production build passed. Seven focused menu checks passed in 48.1 seconds, followed by two final action checks. The current inventory remains 146 editor scenarios and 39 compiled scenarios; their dated execution scopes are retained above. [Current UI/UX evidence](session-ui-ux-2026-10-01.md) records these changes. Artist evaluation, broader device coverage and deployed-release approval remain open.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
+
+
+### Live glint follow-up
+
+The specular review replaces broad white/gold-biased overlays in the studio workflow with bounded, hue-preserving Soft/Crisp pixel highlights and adds Off/Soft/Crisp beside Shade in the bulb HUD. Specular Glint now opens a cancellable live preview, supports painted surface normals, and commits one editable, alpha-masked layer. Pixel history now preserves the effect blending mode so Redo restores the same composite. [Research, implementation decisions, local verification and limits](specular-glint-2026-10-01.md) distinguish this change from legacy renderer compatibility and unrelated optics. This work is included in the user-requested Git publication; deployment and release sign-off remain separate.
+
+### Glint visibility correction
+
+The subsequent screenshot complaint is addressed with brighter two-tone pixel clusters and reduced bulb/guide obstruction. A matte purple-character fixture now verifies a visible contrast floor in the combined lighting preview. All five quality gates passed in 59.18s, including 1,482 unit/integration tests across 144 suites and the production build; three focused Chromium scenarios passed in 12.8s. The discovered editor inventory is 149 tests in 33 files; it was not all rerun for this correction. [Research, screenshots and evidence](specular-glint-2026-10-01.md#visibility-correction). The user requested Git publication of these changes; deployment remains separate.
+
+Publication reconciliation: 43 project Markdown documents were reviewed and updated, with 463 local links resolving. The [publication documentation check](evidence/2026-10-01/publication-markdown-check.log) passed the current inventories and structural rules. Bundled skill instructions and ignored local scratch artifacts remain outside this publication.

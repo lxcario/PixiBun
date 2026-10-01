@@ -553,5 +553,7 @@ This table verifies that 100% of the rich technical material, case studies, comp
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-Project implementation and verification status is maintained in the [session completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX report](docs/research/session-ui-ux-2026-10-01.md). The six bounded audit phases and later header, footer and lighting-menu improvements are implemented. These project status records do not change the operating instructions above.
+The project status references below do not change this document's operating instructions. The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

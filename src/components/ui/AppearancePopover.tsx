@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useThemeStore } from '@/stores/themeStore';
-import { PixelIcon } from '@/components/ui/PixelIcon';
+import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
 import StudioToggle from '@/components/ui/StudioToggle';
 import {
   isToolPreviewsDisabled,
@@ -14,9 +14,12 @@ import {
 export interface AppearancePopoverProps {
   className?: string;
   label?: string;
+  /** Optional studio actions share this panel without another submenu. */
+  actions?: Array<{ label: string; icon: PixelIconName; onSelect?: () => void; testId?: string; ariaLabel?: string }>;
 }
 
-export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className = '', label }) => {
+export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className = '', label, actions }) => {
+  const dialogId = useId();
   const { studioTheme, setStudioTheme, colorScheme, setColorScheme } = useThemeStore();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -26,6 +29,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   const cozyRef = useRef<HTMLButtonElement>(null);
   const darkRef = useRef<HTMLButtonElement>(null);
   const lightRef = useRef<HTMLButtonElement>(null);
+  const firstActionRef = useRef<HTMLButtonElement>(null);
   const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
 
   const [toolPreviewsEnabled, setToolPreviewsEnabled] = useState(true);
@@ -56,9 +60,12 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
 
   // Initial focus on open
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && coords && !popoverRef.current?.contains(document.activeElement)) {
       const timer = requestAnimationFrame(() => {
-        if (studioTheme === 'cozy-classic') {
+        if (popoverRef.current?.contains(document.activeElement)) return;
+        if (firstActionRef.current) {
+          firstActionRef.current.focus();
+        } else if (studioTheme === 'cozy-classic') {
           cozyRef.current?.focus();
         } else {
           atelierRef.current?.focus();
@@ -66,7 +73,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
       });
       return () => cancelAnimationFrame(timer);
     }
-  }, [isOpen, studioTheme]);
+  }, [isOpen, studioTheme, coords]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -138,18 +145,20 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        title="Appearance (Theme & Color Scheme)"
-        aria-label="Appearance (Theme & Color Scheme)"
+        title={actions ? 'Studio: theme, co-draw and help' : 'Appearance (Theme & Color Scheme)'}
+        aria-label={actions ? 'Studio options' : 'Appearance (Theme & Color Scheme)'}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
+        aria-controls={isOpen && coords ? dialogId : undefined}
         data-testid="appearance-button"
-        className={`${label ? 'w-[72px] px-2 gap-1.5 text-xs' : 'w-7'} h-7 flex items-center justify-center rounded-[1px] pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${
+        className={`${label ? 'px-2.5 gap-1.5 text-xs' : 'w-7'} h-7 flex items-center justify-center rounded-[1px] pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${
           isOpen ? 'bg-[var(--surface-2)] text-[var(--text-heading)] font-bold' : ''
         } ${className}`}
       >
         {/* Pixel-native Palette/Appearance icon */}
-        <PixelIcon name="palette" size={12} />
+        {!actions && <PixelIcon name="palette" size={12} />}
         {label && <span>{label}</span>}
+        {actions && <span aria-hidden="true" className="text-[8px]">▼</span>}
       </button>
 
       {isOpen &&
@@ -157,19 +166,21 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
         createPortal(
           <div
             ref={popoverRef}
+            id={dialogId}
             role="dialog"
             aria-modal="false"
-            aria-label="Appearance settings"
-            className="fixed z-[9999] w-64 bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-2xl p-3 text-xs font-sans text-[var(--text-heading)] select-none animate-in fade-in zoom-in-95 duration-100"
+            aria-label={actions ? 'Studio options' : 'Appearance settings'}
+            className="fixed z-[9999] w-64 max-w-[calc(100vw-24px)] overflow-y-auto bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-2xl p-3 text-xs font-sans text-[var(--text-heading)] select-none animate-in fade-in zoom-in-95 duration-100"
             style={{
               top: `${coords.top}px`,
               right: `${coords.right}px`,
+              maxHeight: `calc(100dvh - ${coords.top + 12}px)`,
             }}
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[var(--desk-border)]">
               <span className="font-semibold text-[11px] tracking-wide text-[var(--text-heading)]">
-                Appearance
+                {actions ? 'Studio' : 'Appearance'}
               </span>
               <button
                 type="button"
@@ -177,12 +188,21 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                   setIsOpen(false);
                   triggerRef.current?.focus();
                 }}
-                aria-label="Close appearance popover"
-                className="w-4 h-4 rounded-[1px] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)] cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)]"
+                aria-label={actions ? 'Close studio options' : 'Close appearance popover'}
+                className="w-6 h-6 rounded-[1px] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-1)] cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)]"
               >
                 ✕
               </button>
             </div>
+
+            {actions && <div className="grid grid-cols-2 gap-2 pb-3 mb-3 border-b border-[var(--desk-border)]">
+              {actions.map((action, index) => <button key={action.label} ref={index === 0 ? firstActionRef : undefined}
+                type="button" data-testid={action.testId} aria-label={action.ariaLabel}
+                onClick={() => { setIsOpen(false); triggerRef.current?.focus(); action.onSelect?.(); }}
+                className="h-9 flex items-center justify-center gap-1.5 pixel-tactile-btn rounded-[2px] border border-[var(--desk-border)] text-[var(--text-body)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[var(--accent-gold)]">
+                <PixelIcon name={action.icon} size={12} />{action.label}
+              </button>)}
+            </div>}
 
             {/* Studio Style Section */}
             <div

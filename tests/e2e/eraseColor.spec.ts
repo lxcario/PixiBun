@@ -56,6 +56,7 @@ async function pixel(page: Page, x: number, y: number) {
 }
 
 async function clickPixel(page: Page, x: number, y: number) {
+  await page.keyboard.press('Escape');
   const stage = await page.locator('#center-canvas-area').boundingBox();
   expect(stage).not.toBeNull();
   await page.mouse.click(stage!.x + (x + 0.5) * stage!.width / 32, stage!.y + (y + 0.5) * stage!.height / 32);
@@ -69,6 +70,7 @@ async function thumbnailPixel(page: Page, frameIndex: number, x: number, y: numb
 test('Erase Sampled Color removes green across animation frames and undo restores both', async ({ page }) => {
   await importGreenSheet(page);
   await page.getByTestId('erase-color-tool').click();
+  await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Erase Color tolerance' })).toHaveValue('24');
   const scopeBtn = page.getByRole('button', { name: 'Erase Color frame scope' });
   await expect(scopeBtn).toHaveAttribute('aria-pressed', 'false');
@@ -112,6 +114,7 @@ test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
     state.setActiveFrame(0);
   });
   await page.getByTestId('erase-color-tool').click();
+  await page.getByTestId('tool-options-button').click();
   await page.getByRole('button', { name: 'Erase Color frame scope' }).click();
   await clickPixel(page, 2, 2);
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
@@ -122,6 +125,7 @@ test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
 test('Default color family clears pale spill, repairs dark green outline pixels, and has a distinct icon', async ({ page }) => {
   await importGreenSheet(page);
   await page.getByTestId('erase-color-tool').click();
+  await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('button', { name: 'Erase Color family mode' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Erase Color matching mode' })).toContainText('All matches');
   const icons = await page.evaluate(() => [
@@ -171,6 +175,7 @@ test('Erase Sampled Color with All Frames scope clears matching color across ani
   await page.getByTestId('erase-color-tool').click();
 
   // Click the frame scope button in the tool options rail to switch from This frame to All frames
+  await page.getByTestId('tool-options-button').click();
   const scopeButton = page.getByRole('button', { name: 'Erase Color frame scope' });
   await expect(scopeButton).toContainText('This frame');
   await scopeButton.click();

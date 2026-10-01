@@ -1,6 +1,6 @@
 import type { AnimationClip } from './animation';
 
-export type BlendMode = 'source-over' | 'multiply' | 'screen' | 'overlay' | 'color-dodge';
+export type BlendMode = 'source-over' | 'multiply' | 'screen' | 'overlay' | 'color-dodge' | 'source-atop';
 
 export type SmartEffectKind =
   | 'photometric'
@@ -110,6 +110,7 @@ export interface PixelHistoryStep {
   createdLayerIndex?: number;
   layerName?: string;
   layerTag?: string;
+  layerBlendMode?: BlendMode;
   preserveLayerEffect?: boolean;
   // Generated-layer recipe at the moment this pixel snapshot was captured.
   // Keeping it beside the raster state makes effect edits undo/redo atomically.

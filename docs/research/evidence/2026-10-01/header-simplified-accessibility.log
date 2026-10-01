@@ -1,0 +1,19 @@
+
+Running 12 tests using 1 worker
+
+(node:10872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\auditPersistence.spec.ts:124:5 › a multi-frame, multi-layer project restores its layer PNG bytes after import (6.3s)
+  ok  2 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:140:7 › Startup Recovery Routing & Controlled Hydration (E2E) › gallery open of damaged project displays error and preserves current active workspace (1.8s)
+  ok  3 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:232:7 › Startup Recovery Routing & Controlled Hydration (E2E) › header-valid but decode-invalid PNG blob passes admission probe but safely fails hydration in Chromium (2.6s)
+  ok  4 [chromium] › tests\e2e\studio.spec.ts:13:7 › Studio Workbench & Drawing Interactions › loads Studio workspace, renders canvas stage and panels (785ms)
+  ok  5 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Dark (3.5s)
+  ok  6 [chromium] › tests\e2e\themeAccessibility.spec.ts:146:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Dark (3.6s)
+  ok  7 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Light (3.2s)
+  ok  8 [chromium] › tests\e2e\themeAccessibility.spec.ts:146:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Light (3.7s)
+  ok  9 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Dark (3.2s)
+  ok 10 [chromium] › tests\e2e\themeAccessibility.spec.ts:146:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Dark (3.9s)
+  ok 11 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Light (4.9s)
+  ok 12 [chromium] › tests\e2e\themeAccessibility.spec.ts:146:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Light (6.2s)
+
+  12 passed (47.6s)

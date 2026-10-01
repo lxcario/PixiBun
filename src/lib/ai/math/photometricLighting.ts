@@ -57,6 +57,7 @@ export {
 import { getBayerMatrixThreshold } from './dithering';
 import { detectMinecraftSkin, computeMinecraftSkinNormalField, executeMinecraftSkinShadingPipeline } from './minecraftSkin';
 import { ShadedPixel } from './curvesAndLines';
+import { renderPixelGlints, applyPixelGlints } from './pixelGlint';
 
 export const MATERIAL_PROFILES: Record<MaterialType, MaterialProperties> = {
   matte: {
@@ -607,6 +608,15 @@ export function computePhotometricAnalysis(
     isInkLineMask = analysis.isInkLine;
   }
 
+  // Keep reflected light independent of palette boundaries. Reuse orb geometry;
+  // other forms get a cached silhouette estimate, overridden by painted normals.
+  const glintNormalField = params.glintStyle !== undefined
+    ? formType === 'orb' ? normalField : computeTangentNormalField(
+        applyBilateralFilter(generateInflatedHeightmap(computeSeparableEDT(isOpaque, width, height), width, height, 0.5), width, height, 1.5, 2),
+        width, height, 2
+      )
+    : undefined;
+
   // Pre-blend custom manual sculpt normals (from dedicated normal layers or chisel strokes) using RNM
   if (params.normalMapData) {
     const nData = params.normalMapData instanceof ImageData
@@ -648,6 +658,7 @@ export function computePhotometricAnalysis(
     formType,
     normalField,
     baseNormalField,
+    glintNormalField,
     appendageData,
     cavityAO,
     isFeatureMask,
@@ -697,6 +708,7 @@ export function executePhotometricPipeline(
   let isInkLineMask: Uint8Array | null = null;
   let artworkRampBounds: Map<number, CharacterRampBounds> | undefined;
 
+  let geometry = params.precomputedAnalysis;
   if (params.precomputedAnalysis) {
     formType = params.precomputedAnalysis.formType;
     normalField = params.precomputedAnalysis.normalField;
@@ -714,6 +726,7 @@ export function executePhotometricPipeline(
     artworkRampBounds = params.precomputedAnalysis.artworkRampBounds;
   } else {
     const analysis = computePhotometricAnalysis(srcCtx, width, height, params);
+    geometry = analysis;
     formType = analysis.formType;
     normalField = analysis.normalField;
     cavityAO = analysis.cavityAO;
@@ -954,7 +967,7 @@ export function executePhotometricPipeline(
         const creviceAOThresh = Math.min(0.30, Math.max(0.12, 0.12 + 0.16 * cavStrength));
 
         // Highlight condition: only for shiny/metallic materials (never on matte clay or velvet fabric)
-        const isShinyMaterial = mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
+        const isShinyMaterial = params.glintStyle === undefined && mat.ks > 0.1 && params.material !== 'matte' && params.material !== 'fabric';
 
         // Highlight uses the full directional signal amplified by brightness
         const highlightLevel = diffSignal * brightness;
@@ -1033,7 +1046,7 @@ export function executePhotometricPipeline(
       const diffB = mat.kd * wrapNdotL * (origB * lightB) * effectiveFalloff * lightIntensity;
 
       const NdotH = Math.max(0, Nx * pixNormHx + Ny * pixNormHy + Nz * pixNormHz);
-      const Ispec = mat.ks * Math.pow(NdotH, mat.shininess);
+      const Ispec = params.glintStyle === undefined ? mat.ks * Math.pow(NdotH, mat.shininess) : 0;
 
       let specR = Ispec * lightR * lightIntensity;
       let specG = Ispec * lightG * lightIntensity;
@@ -1093,6 +1106,33 @@ export function executePhotometricPipeline(
     }
   }
 
+  if (params.glintStyle !== undefined && geometry) {
+    const glints = renderPixelGlints(data, width, height, { ...params, glintStyle: params.glintStyle }, geometry);
+    applyPixelGlints(outData, width, glints);
+    // Explicit palette snapping still constrains the finished highlight colors.
+    if (paletteRgba.length > 0) {
+      for (const pixel of glints) {
+        const offset = (pixel.y * width + pixel.x) * 4;
+        const lab = rgbToOKLab(outData[offset], outData[offset + 1], outData[offset + 2]);
+        let nearest = 0, distance = Infinity;
+        for (let k = 0; k < paletteOKLab.length; k++) {
+          const candidate = deltaEOKLab(lab, paletteOKLab[k]);
+          if (candidate < distance) { distance = candidate; nearest = k; }
+        }
+        outData[offset] = paletteRgba[nearest].r;
+        outData[offset + 1] = paletteRgba[nearest].g;
+        outData[offset + 2] = paletteRgba[nearest].b;
+      }
+    }
+    for (let offset = 3; offset < data.length; offset += 4) {
+      outData[offset] = data[offset];
+      if (data[offset] <= 30) {
+        outData[offset - 3] = data[offset - 3];
+        outData[offset - 2] = data[offset - 2];
+        outData[offset - 1] = data[offset - 1];
+      }
+    }
+  }
   outCtx.putImageData(outImgData, 0, 0);
   return outputCanvas;
 }

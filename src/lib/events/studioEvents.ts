@@ -86,7 +86,7 @@ export type StudioEventMap = {
     paletteColors?: string[];
   };
   'pixibun:photometric-auto': void;
-  'pixibun:photometric-gizmo-start': { auto?: boolean; layerId?: string } | void;
+  'pixibun:photometric-gizmo-start': { auto?: boolean; layerId?: string; glintOnly?: boolean } | void;
   'pixibun:photometric-analysis': {
     formType: 'character' | 'orb' | 'prop';
     material: string;

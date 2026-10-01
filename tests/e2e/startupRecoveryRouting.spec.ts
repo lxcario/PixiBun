@@ -203,7 +203,8 @@ test.describe('Startup Recovery Routing & Controlled Hydration (E2E)', () => {
     }, galleryDamagedId);
 
     // Open Projects Gallery
-    const projectsBtn = page.getByRole('button', { name: /Projects Gallery|Projects/i });
+    await page.getByTestId('file-menu-button').click();
+    const projectsBtn = page.getByRole('menuitem', { name: 'Projects', exact: true });
     await expect(projectsBtn).toBeVisible();
     await projectsBtn.click();
 
@@ -306,7 +307,8 @@ test.describe('Startup Recovery Routing & Controlled Hydration (E2E)', () => {
 
     // 3. Test Gallery open boundary:
     // User attempts to open the header-valid/body-invalid project via Gallery
-    const projectsBtn = page.getByRole('button', { name: /Projects Gallery|Projects/i });
+    await page.getByTestId('file-menu-button').click();
+    const projectsBtn = page.getByRole('menuitem', { name: 'Projects', exact: true });
     await projectsBtn.click();
 
     const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });

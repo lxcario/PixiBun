@@ -55,5 +55,7 @@ Retest the same tasks on a revised build with new participants in Week 6. Compar
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and screenshot-driven interface fixes are implemented: matching lighting cards, preview/apply labels, explicit surface-layer setup, grouped header controls and a bottom-right save badge. [Current behavior and local verification](session-ui-ux-2026-10-01.md) should be used when preparing tasks; this update does not supply participant observations or comparative usability results. See the [completion record](session-completion-2026-10-01.md) for remaining evaluation work.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

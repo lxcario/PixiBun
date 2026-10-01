@@ -55,6 +55,12 @@ test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
         const canvas = page.getByTestId('main-composite-canvas');
         await expect(canvas).toBeVisible();
 
+        await page.getByRole('button', { name: 'Studio options' }).click();
+        await expect(page.getByRole('dialog', { name: 'Studio options' })).toBeInViewport();
+        const studioResults = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(WCAG_TAGS).analyze();
+        expect(studioResults.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious')).toEqual([]);
+        await page.keyboard.press('Escape');
+
         const results = await new AxeBuilder({ page })
           .withTags(WCAG_TAGS)
           .analyze();
@@ -138,7 +144,10 @@ test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
       });
 
       test(`projects gallery modal meets WCAG standards under ${theme.name}`, async ({ page }) => {
-        const galleryBtn = page.getByRole('button', { name: /Projects Gallery|Projects/i }).or(page.getByTestId('gallery-button'));
+        await page.getByTestId('file-menu-button').click();
+        const fileResults = await new AxeBuilder({ page }).include('[role="menu"]').withTags(WCAG_TAGS).analyze();
+        expect(fileResults.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious')).toEqual([]);
+        const galleryBtn = page.getByRole('menuitem', { name: 'Projects', exact: true });
         await expect(galleryBtn.first()).toBeVisible();
         await galleryBtn.first().click();
 

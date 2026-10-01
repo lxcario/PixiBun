@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:31408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\liveGlint.spec.ts:22:5 › glints follow the live bulb, cancel safely, apply once, and undo without repainting the source (5.0s)
+  ok 2 [chromium] › tests\e2e\liveGlint.spec.ts:104:5 › the lighting bulb exposes glint choices beside Shade and previews them immediately (3.0s)
+
+  2 passed (9.4s)

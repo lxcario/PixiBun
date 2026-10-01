@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
+import { useStudioStore } from '@/stores/studioStore';
 import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
 
 describe('PixelLightBulbGizmo Component', () => {
@@ -89,6 +90,22 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(onLightChange).toHaveBeenCalledTimes(1);
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(callOrder).toEqual(['render', 'commit']);
+  });
+
+  it('selects glint styles live, flushes before Apply, and keeps Enter on a choice from applying', () => {
+    useStudioStore.getState().setGlintStyle('soft');
+    const onLightChange = vi.fn(), onCommit = vi.fn();
+    render(<PixelLightBulbGizmo canvasWidth={32} canvasHeight={32} zoom={1600}
+      mainCanvasRef={dummyCanvasRef} onCommit={onCommit} onCancel={vi.fn()} onLightChange={onLightChange} />);
+    const crisp = screen.getByTestId('pixel-light-glint-crisp');
+    fireEvent.click(crisp);
+    expect(crisp.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.keyDown(crisp, { key: 'Enter' });
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('pixel-light-apply'));
+    expect(onLightChange).toHaveBeenCalledTimes(1);
+    expect(useStudioStore.getState().tools.glintStyle).toBe('crisp');
+    expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
   it('triggers onCommit when Enter key is pressed', () => {

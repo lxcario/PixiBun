@@ -26,7 +26,7 @@ The initial [four-failure baseline](evidence/2026-10-01/ui-ux-baseline.log) repr
 
 ## Verification
 
-The broad results below describe the preceding correction pass. The subsequent outlined-artwork fix has its own current evidence in the follow-up section; inventory counts are now 1,472 unit tests, 146 editor tests and 39 compiled scenarios.
+The broad results below describe the preceding correction pass. The subsequent outlined-artwork fix has its own current evidence in the follow-up section; that earlier inventory was 1,472 unit tests, 146 editor tests and 39 compiled scenarios; the current inventory is 1,482/149/39.
 
 | Check | Result |
 | --- | --- |
@@ -136,8 +136,51 @@ Current screenshots: [matching choices](evidence/2026-10-01/lighting-menu-choice
 
 After removing the rendered-normal-map hover association from blank-layer creation, [both final action checks](evidence/2026-10-01/lighting-menu-actions-final.log) passed in 15.7 seconds. The [full repository gate](evidence/2026-10-01/lighting-menu-gate.log) passed all five stages in 59.24 seconds, including all 1,472 unit tests in 143 files, documentation checks, TypeScript, ESLint and a production build. Whitespace checks passed. The session record was then updated with these results.
 
+## Toolbar simplification follow-up
+
+The user found the grouped header still crowded. The closed pen header now has **15 buttons instead of 20** (including rename, mirror toggles and four zoom controls). **File** holds Projects, New drawing, Import and Canvas size. Dimensions appear as plain metadata. **Studio** presents Co-Draw, Help and appearance choices together, with equal-sized action buttons and no nested submenu. Save, Undo/Redo, active-tool options, Mirror, Zoom/Fit/View and Export stay directly accessible; save status remains at the bottom right. The layout wraps at narrower desktop widths.
+
+[NN/G progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/) informed moving occasional actions behind named triggers; frequency choices are a design judgment, not measured usage data. [W3C's menu-button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/) informed File's menu semantics, opening focus, arrow/Home/End navigation, Escape restoration and Tab exit. Studio remains a nonmodal settings dialog because it mixes action buttons, theme radio choices and a preference toggle.
+
+File menu rows are 36px high. Studio action buttons share bounds. The geometry scenario checks visible targets and overlap at 1920, 1536, 1280 and 1024px with Pen, Bucket and Erase Color, including a long project name. Keyboard checks cover File, brush/zoom choices and theme radio focus; real Resize, Co-Draw and Help dialogs open from the new panels. Brush presets now close their popup so it cannot cover adjacent controls. Studio initially focuses Co-Draw and preserves focus during subsequent theme changes.
+
+Local evidence: [five workflow checks](evidence/2026-10-01/header-simplified-browser-fixed.log) passed in 14.9s; [twelve scoped checks](evidence/2026-10-01/header-simplified-accessibility.log) passed in 47.6s, including File and Studio axe scans across four themes, actual PNG/project imports and damaged-gallery workspace preservation; [five final focus/theme checks](evidence/2026-10-01/header-simplified-focus-final.log) passed in 19.0s after the final focus adjustment. No critical or serious axe violations were found in tested menu/dialog scopes. This does not establish whole-product accessibility conformance or measured beginner task success.
+
+The [preceding full gate](evidence/2026-10-01/header-simplified-gate.log) passed all five stages in 66.22s, including 1,472 unit tests in 143 files and the production build. The [sandbox launch failure](evidence/2026-10-01/header-simplified-browser.log) and [first actual browser run](evidence/2026-10-01/header-simplified-browser-local.log) remain recorded. The latter caught initial Studio focus, a brush popup covering Fit and an outdated repeated-gallery selector; passing reruns follow their corrections. Inventories remain 1,472 unit tests, 146 editor scenarios and 39 compiled scenarios.
+
+Screenshots: [1920px header](evidence/2026-10-01/header-simplified-1920.png), [1024px header](evidence/2026-10-01/header-simplified-1024.png), [Erase Color at 1024px](evidence/2026-10-01/header-simplified-erase-color-1024.png), [File](evidence/2026-10-01/header-file-menu.png) and [Studio](evidence/2026-10-01/header-studio-options.png). This follow-up is local checkout work; the earlier session push remains in Git history. No external upload, tunnel, deployment or new cross-engine verification is claimed.
+
+After the final focus guard, [documentation/type/lint and all 1,472 units passed again](evidence/2026-10-01/header-simplified-gate-final.log). That run's build was blocked by sandbox access to an existing Turbopack cache file; [the unchanged production build then passed](evidence/2026-10-01/header-simplified-build-final.log) with filesystem access. Final source whitespace checks passed. The first four-theme run and the final focused rerun jointly cover 17 distinct browser scenarios; the five final scenarios repeat affected coverage rather than adding to the inventory.
+
+### Visible canvas controls
+
+The user clarified that Mirror, Fit and View should be placed near one another and stay directly visible. Mirror, zoom/Fit and View now occupy one shared frame with narrow dividers and matching 24px control heights. They wrap together as a single group, keeping the same actions, shortcuts and 15-button closed pen-header count. The geometry scenario checks common heights, left-to-right order and section gaps of at most 5px at 1920, 1536, 1280 and 1024px with Pen, Bucket and Erase Color. Screenshots: [wide](evidence/2026-10-01/header-adjacent-controls-1920.png), [1024px](evidence/2026-10-01/header-adjacent-controls-1024.png), [Erase Color](evidence/2026-10-01/header-adjacent-controls-erase-color-1024.png). [Six local browser checks](evidence/2026-10-01/header-adjacent-controls-browser.log) cover layout, direct symmetry/Fit actions, existing menus and four-theme shell accessibility.
+
+The [final full gate](evidence/2026-10-01/header-adjacent-controls-gate.log) passed all five stages in 79.49s, including documentation, TypeScript, lint, 1,472 unit tests and the production build. All six browser checks passed in 23.0s. This placement adjustment remains locally verified checkout work.
+
+### Single-row correction
+
+The user rejected the wrapped header shown in the preceding 1024px screenshot. The final layout keeps project, active tool, Mirror, zoom/Fit, View, Studio and Export on one **48px row**. Below 1280px, the mascot remains visible while the wordmark and standalone dimensions yield space; the full project name and canvas dimensions remain in the name tooltip. Larger tool forms open from a labeled active-tool button; Pen and Eraser keep their existing size control directly on the row. Opening, outside dismissal and Escape focus restoration are explicit. Offline status reads Offline with the local-save explanation retained in its tooltip.
+
+The expanded geometry scenario passes at 1920, 1536, 1280 and 1024px for all 11 configurable tools, requiring every visible control to share the header center line, remain in bounds, have at least a 24px target and avoid overlap. It also verifies one-row bounds with offline status. [The final layout run](evidence/2026-10-01/header-one-row-layout-final.log) passed in 11.7s. [Eleven other local scenarios passed](evidence/2026-10-01/header-one-row-browser-stable.log), covering four-theme shell/Studio accessibility, direct brush/Fit controls and real-artwork Bucket/Color Replace/Erase Color behavior. The same run's layout scenario failed a test-only assumption that Resize autofocuses its first numeric input; the actual dialog focuses a preset button. The final check waits for focus inside the dialog and verifies Escape dismissal. Earlier [settings-selector failure](evidence/2026-10-01/header-one-row-browser.log) and [dialog interaction failure](evidence/2026-10-01/header-one-row-browser-final.log) are retained; no cause is established for the latter. Twelve distinct browser scenarios therefore have passing results across the final scoped runs.
+
+Current screenshots: [1024px single row](evidence/2026-10-01/header-one-row-1024.png), [1920px single row](evidence/2026-10-01/header-one-row-1920.png), [Erase Color](evidence/2026-10-01/header-one-row-erase-color-1024.png). This supersedes the preceding wrapped-layout screenshots. No narrower-device or cross-engine guarantee is claimed by these scoped Chromium checks.
+
+The [single-row full gate](evidence/2026-10-01/header-one-row-gate.log) passed all five stages in 81.16s: documentation, TypeScript, lint, 1,472 unit tests in 143 files and the production build. Source whitespace checks passed; inventory counts remain unchanged. This is locally verified checkout work.
+
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The user requested a complete Markdown reconciliation and Git publication. The latest lighting-menu gate passed all five checks, including 1,472 unit tests and a production build; seven focused browser scenarios cover the menu workflows and four themes. Repository publication and deployed-release approval are tracked separately. See the [completion record](session-completion-2026-10-01.md).
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
+
+
+### Live glint follow-up
+
+The specular review replaces broad white/gold-biased overlays in the studio workflow with bounded, hue-preserving Soft/Crisp pixel highlights and adds Off/Soft/Crisp beside Shade in the bulb HUD. Specular Glint now opens a cancellable live preview, supports painted surface normals, and commits one editable, alpha-masked layer. Pixel history now preserves the effect blending mode so Redo restores the same composite. [Research, implementation decisions, local verification and limits](specular-glint-2026-10-01.md) distinguish this change from legacy renderer compatibility and unrelated optics. This work is included in the user-requested Git publication; deployment and release sign-off remain separate.
+
+### Glint visibility correction
+
+The user found the first glint too faint. The new reflection has a clearly brighter core and a stepped shoulder at native pixel resolution. Matte and fabric no longer suppress it nearly to invisibility. The bulb has a smaller footprint and no halo, idle guides fade, and the angle badge only appears during interaction. No extra toolbar controls or explanatory copy were added. An imported purple character now exercises visible contrast in the full lighting preview, rather than checking only that blue sphere bytes change. [Correction and evidence](specular-glint-2026-10-01.md#visibility-correction).

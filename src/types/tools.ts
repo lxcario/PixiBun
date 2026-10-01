@@ -18,6 +18,8 @@ export type ToolType =
 
 export type DitherMatrixType = '2x2' | '4x4' | '8x8' | 'atkinson' | 'riemersma' | 'blue-noise';
 
+export type GlintStyle = 'off' | 'soft' | 'crisp';
+
 export type MaterialType = 'matte' | 'metal' | 'glass' | 'fabric' | 'gold';
 
 export interface MaterialProperties {
@@ -46,6 +48,7 @@ export interface PhotometricAnalysisGeometry {
     width: number;
     height: number;
   };
+  glintNormalField?: PhotometricAnalysisGeometry['normalField'];
   baseNormalField?: {
     nx: Float32Array;
     ny: Float32Array;
@@ -67,6 +70,7 @@ export interface PhotometricAnalysisGeometry {
 }
 
 export interface PhotometricLightingParams {
+  glintStyle?: GlintStyle;
   lightAzimuth: number; // 0° to 360°
   lightElevation: number; // 0° to 90°
   lightRadius: number; // Distance attenuation radius (e.g. 16 to 128px)
@@ -91,6 +95,7 @@ export interface PhotometricLightingParams {
 export type ShadingBandMode = 1 | 2 | 3;
 
 export interface ToolSettings {
+  glintStyle?: GlintStyle;
   activeTool: ToolType;
   brushSize: number; // 1 to 32
   pixelPerfect: boolean;

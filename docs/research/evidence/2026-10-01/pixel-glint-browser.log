@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:31608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\liveGlint.spec.ts:23:5 › glints follow the live bulb, cancel safely, apply once, and undo without repainting the source (4.7s)
+  ok 2 [chromium] › tests\e2e\liveGlint.spec.ts:105:5 › Soft glints are legible pixel clusters on a matte character in the full lighting preview (3.6s)
+  ok 3 [chromium] › tests\e2e\liveGlint.spec.ts:162:5 › the lighting bulb exposes glint choices beside Shade and previews them immediately (2.9s)
+
+  3 passed (12.8s)

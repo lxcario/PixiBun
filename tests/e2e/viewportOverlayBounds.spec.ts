@@ -55,7 +55,9 @@ test('bucket recolors nearby shades through the visible grid without crossing a 
     state.setPrimaryColor('#90aaff');
     state.setActiveTool('bucket');
   });
+  await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Bucket fill tolerance' })).toHaveValue('24');
+  await page.keyboard.press('Escape');
   await page.mouse.click(at(8, 8).x, at(8, 8).y);
   await expect.poll(() => pixel(8, 8)).toEqual([144, 170, 255, 255]);
   await expect.poll(() => pixel(9, 8)).toEqual([144, 170, 255, 255]);

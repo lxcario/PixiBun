@@ -62,34 +62,8 @@ export function useGeometricEvents({
       });
     };
 
-    const handleHighlightEvent = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const tools = useStudioStore.getState().tools;
-      const lightAz = customEvent.detail?.lightAzimuth ?? tools.lightAzimuth;
-      const lightEl = customEvent.detail?.lightElevation ?? tools.lightElevation;
-
-      const srcCtx = compositeSourceSnapshot('specular');
-      if (!srcCtx) return;
-
-      const { specularPixels } = renderParametric2p5DLighting(srcCtx, canvasWidth, canvasHeight, {
-        azimuthDeg: lightAz,
-        elevationDeg: lightEl,
-        shadowIntensity: 0.8,
-        specularShininess: 16,
-        material: tools.materialPreset,
-      });
-
-      updateTaggedLayer(`Specular ${lightAz}°`, 'specular', (outCtx) => {
-        specularPixels.forEach((p) => {
-          outCtx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a / 255})`;
-          outCtx.fillRect(p.x, p.y, 1, 1);
-        });
-      }, {
-        kind: 'specular',
-        version: 1,
-        sourceMode: 'composite-excluding-self',
-        params: { lightAzimuth: lightAz, lightElevation: lightEl, material: tools.materialPreset },
-      });
+    const handleHighlightEvent = () => {
+      studioEvents.emit('pixibun:photometric-gizmo-start', { auto: false, glintOnly: true });
     };
 
     const handleSelOutEvent = (e: Event) => {
@@ -368,9 +342,7 @@ export function useGeometricEvents({
       studioEvents.on('pixibun:auto-shade', (detail) =>
         handleAutoShadeEvent({ detail } as CustomEvent)
       ),
-      studioEvents.on('pixibun:highlight', (detail) =>
-        handleHighlightEvent({ detail } as CustomEvent)
-      ),
+      studioEvents.on('pixibun:highlight', handleHighlightEvent),
       studioEvents.on('pixibun:sel-out', (detail) => handleSelOutEvent({ detail } as CustomEvent)),
       studioEvents.on('pixibun:auto-outline', (detail) =>
         handleAutoOutlineEvent({ detail } as CustomEvent)

@@ -2,12 +2,13 @@
 
 import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
+import { HeaderFileMenu } from './HeaderFileMenu';
 import StudioTooltip from '@/components/ui/StudioTooltip';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
@@ -114,6 +115,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const [tempName, setTempName] = useState(projectName);
   const [isBrushMenuOpen, setIsBrushMenuOpen] = useState(false);
   const [isZoomMenuOpen, setIsZoomMenuOpen] = useState(false);
+  const [toolMenuFor, setToolMenuFor] = useState<string | null>(null);
+  const toolOptionsId = useId();
+  const isToolMenuOpen = toolMenuFor === tools.activeTool;
+  const toolMenuRef = useRef<HTMLDivElement>(null);
   const brushMenuRef = useRef<HTMLDivElement>(null);
   const zoomMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,16 +135,21 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!isBrushMenuOpen && !isZoomMenuOpen) return;
+    if (!isBrushMenuOpen && !isZoomMenuOpen && !isToolMenuOpen) return;
     const onPointerDown = (event: MouseEvent) => {
       const target = event.target as Node;
       if (!brushMenuRef.current?.contains(target)) setIsBrushMenuOpen(false);
       if (!zoomMenuRef.current?.contains(target)) setIsZoomMenuOpen(false);
+      if (!toolMenuRef.current?.contains(target)) setToolMenuFor(null);
     };
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsBrushMenuOpen(false);
         setIsZoomMenuOpen(false);
+        if (isToolMenuOpen) {
+          setToolMenuFor(null);
+          toolMenuRef.current?.querySelector<HTMLButtonElement>('[data-testid="tool-options-button"]')?.focus();
+        }
       }
     };
     document.addEventListener('mousedown', onPointerDown);
@@ -148,7 +158,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onEscape);
     };
-  }, [isBrushMenuOpen, isZoomMenuOpen]);
+  }, [isBrushMenuOpen, isZoomMenuOpen, isToolMenuOpen]);
 
   const updatePopoverCoords = useCallback(() => {
     if (viewMenuRef.current) {
@@ -234,32 +244,32 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     tools.activeTool === 'dither' ||
     isShapeTool;
 
+  const hasExpandedToolParams = hasToolParams && tools.activeTool !== 'pen' && tools.activeTool !== 'eraser';
+  const toolLabel = tools.activeTool === 'erase-color' ? 'Erase color' : tools.activeTool === 'color-replace' ? 'Replace color' : tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1);
+
   return (
     <header
       role="banner"
-      className="min-h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex flex-wrap items-center px-3 py-2 gap-x-4 gap-y-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-2 xl:px-3 gap-2 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
-      <div role="group" aria-label="Project controls" className="flex flex-wrap items-center gap-2">
+      <div role="group" aria-label="Project controls" className="flex min-w-0 items-center gap-1.5 xl:gap-2">
         {/* Atelier Logo Mark */}
         <a
           href="/"
           title="Return to PixiBun Home"
-          className="flex items-center gap-1.5 pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 hover:scale-[1.02] transition-all"
+          aria-label="PixiBun Home"
+          className="flex shrink-0 items-center pr-1.5 xl:pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 transition-opacity"
         >
-          <PixiBunLogo size="sm" className="drop-shadow-sm" />
+          <PixiBunLogo size="sm" wordmarkClassName="hidden xl:flex" className="drop-shadow-sm" />
         </a>
 
-        {/* Document actions stay beside the current project. */}
-        <TactileButton
-          size="sm" variant="default" onClick={onOpenGallery}
-          title="Open Projects Gallery" aria-label="Projects Gallery"
-          data-testid="gallery-button"
-          className="h-7 px-2.5 text-xs flex items-center gap-1.5"
-        >
-          <PixelIcon name="layers" size={12} />
-          <span>Projects</span>
-        </TactileButton>
+        <HeaderFileMenu actions={[
+          { label: 'Projects', icon: 'layers', testId: 'gallery-button', onSelect: () => onOpenGallery?.() },
+          { label: 'New drawing', icon: 'plus', testId: 'new-drawing-button', onSelect: () => onNewDrawing?.() },
+          { label: 'Import…', icon: 'import', testId: 'import-button', onSelect: () => fileInputRef.current?.click() },
+          { label: 'Canvas size…', icon: 'rectangle', testId: 'resize-canvas-button', onSelect: () => onOpenResize?.() },
+        ]} />
 
         {isEditingName ? (
           <input
@@ -281,7 +291,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               }
             }}
             ref={(el) => el?.focus()}
-            className="bg-[var(--surface-0)] text-[var(--text-heading)] px-2 py-0.5 rounded-[2px] border border-[var(--accent-gold)] outline-none text-xs font-mono font-medium max-w-[130px]"
+            className="h-7 min-w-6 w-20 xl:w-[120px] bg-[var(--surface-0)] text-[var(--text-heading)] px-2 rounded-[2px] border border-[var(--accent-gold)] outline-none text-xs font-mono font-medium"
           />
         ) : (
           <button
@@ -289,46 +299,16 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               setTempName(projectName);
               setIsEditingName(true);
             }}
-            className="h-7 font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate max-w-[120px] cursor-pointer text-left leading-none"
+            className="h-7 min-w-6 max-w-20 xl:max-w-[120px] font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate cursor-pointer text-left leading-none"
             aria-label={`Rename project ${projectName}`}
-            title="Click to rename project"
+            title={`${projectName} · ${canvasWidth}×${canvasHeight}px · Click to rename`}
           >
             {projectName}
           </button>
         )}
-        {/* Canvas Resolution Badge */}
-        <button
-          onClick={onOpenResize}
-          title="Resize / Resample Canvas"
-          aria-label={`Resize canvas ${canvasWidth} by ${canvasHeight} pixels`}
-          data-testid="resize-canvas-button"
-          className="h-7 text-[10px] text-[var(--text-muted)] pixel-tactile-btn hover:text-[var(--text-heading)] px-2 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] cursor-pointer"
-        >
+        <span title="Canvas size · change it in File" className="hidden xl:inline shrink-0 text-[10px] font-mono text-[var(--text-muted)]">
           {canvasWidth}×{canvasHeight}
-        </button>
-
-        <TactileButton
-          size="sm" variant="default" onClick={onNewDrawing}
-          title="Start a New Blank Drawing" aria-label="Start a New Blank Drawing"
-          data-testid="new-drawing-button"
-          className="h-7 min-w-[64px] px-2.5 text-xs flex items-center gap-1.5"
-        >
-          <PixelIcon name="plus" size={12} />
-          <span>New</span>
-        </TactileButton>
-
-        <TactileButton
-          size="sm"
-          variant="default"
-          onClick={() => fileInputRef.current?.click()}
-          title="Import Asset, Image or Sprite Sheet"
-          aria-label="Import"
-          data-testid="import-button"
-          className="h-7 px-2 text-xs flex items-center gap-1.5 font-medium"
-        >
-          <PixelIcon name="export" size={12} className="rotate-180" />
-          <span>Import</span>
-        </TactileButton>
+        </span>
 
         <TactileButton
           size="sm"
@@ -404,12 +384,18 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         </div>
       </div>
 
-      {/* Drawing options wrap together, in document order, without clipping menus. */}
-      <div role="group" aria-label="Drawing controls" className="flex flex-wrap items-center gap-2">
+      {/* Larger tool forms open on request so the header stays one row. */}
+      <div ref={toolMenuRef} role="group" aria-label="Drawing controls" className="relative flex shrink-0 items-center">
+        {hasExpandedToolParams && <button type="button" data-testid="tool-options-button"
+          aria-label={`${toolLabel} tool options`} aria-expanded={isToolMenuOpen} aria-controls={toolOptionsId}
+          onClick={() => setToolMenuFor(isToolMenuOpen ? null : tools.activeTool)}
+          className="h-7 px-2 flex items-center gap-1.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] text-[var(--text-heading)]">
+          {toolLabel}<span aria-hidden="true" className="text-[8px]">▼</span>
+        </button>}
         {hasToolParams ? (
-          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="min-h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex flex-wrap items-center gap-2 max-w-full">
+          <div id={toolOptionsId} role={hasExpandedToolParams ? 'group' : undefined} data-testid="tool-options-rail" aria-label={hasExpandedToolParams ? `${toolLabel} settings` : 'Tool options rail'} className={`${hasExpandedToolParams ? `${isToolMenuOpen ? 'flex' : 'hidden'} absolute top-full left-0 mt-1 z-[100] w-[360px] max-w-[calc(100vw-16px)] p-3 shadow-xl` : 'flex h-7 px-2 xl:px-2.5'} bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex-wrap items-center gap-2`}>
             {/* Tool indicator */}
-            <span className="text-[10px] font-sans font-medium text-[var(--text-heading)] hidden md:inline shrink-0">
+            <span className={`text-[10px] font-sans font-medium text-[var(--text-heading)] shrink-0 ${hasExpandedToolParams ? 'w-full' : 'hidden xl:inline'}`}>
               {tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1)}:
             </span>
 
@@ -440,7 +426,11 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                     </label>
                     <div className="flex gap-1" aria-label="Common brush sizes">
                       {[1, 2, 3, 4, 8].map((size) => (
-                        <button key={size} type="button" onClick={() => setBrushSize(size)}
+                        <button key={size} type="button" onClick={() => {
+                          setBrushSize(size);
+                          setIsBrushMenuOpen(false);
+                          brushMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+                        }}
                           aria-label={`${size} pixel brush preset`} aria-pressed={tools.brushSize === size}
                           className={`h-8 flex-1 rounded-[2px] text-xs font-mono ${tools.brushSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)]' : 'bg-[var(--surface-1)] text-[var(--text-body)]'}`}>
                           {size}
@@ -624,8 +614,12 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             )}
           </div>
         ) : null}
-        {/* Symmetry affects drawing, so keep it beside the active tool. */}
-        <div role="group" aria-label="Mirror drawing" className="h-7 flex items-center gap-0.5 px-1 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px]">
+      </div>
+
+      {/* Canvas controls stay on the same row as the project and active tool. */}
+      <div className="ml-auto flex shrink-0 items-center gap-2 xl:gap-3">
+        <div role="group" aria-label="Canvas controls" className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
+        <div role="group" aria-label="Mirror drawing" className="h-6 flex items-center gap-0.5 px-1">
           <span className="px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
             <StudioTooltip position="bottom" content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
               <button
@@ -660,12 +654,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             </StudioTooltip>
           </div>
 
-      </div>
-
-      {/* Canvas view, studio utilities, then the final Export action. */}
-      <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-        {/* Zoom is a single instrument; display modifiers have their own group. */}
-        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
+        <div aria-hidden="true" className="w-px h-3.5 bg-[var(--desk-border)] mx-0.5" />
+        <div className="flex items-center">
           {/* Zoom Instrument (Connected Cluster) */}
           <div className="flex items-center">
             <button
@@ -723,7 +713,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           </button>
         </div>
 
-        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
+        <div aria-hidden="true" className="w-px h-3.5 bg-[var(--desk-border)] mx-0.5" />
+        <div className="flex items-center">
 
           {/* View Menu Trigger (Recognizable trigger, subtle active count, natural casing) */}
           <div className="relative" ref={viewMenuRef}>
@@ -757,34 +748,13 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           </div>
         </div>
 
-        {/* Collaboration and help are separate from document and file actions. */}
-        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center gap-1 text-xs border-l border-[var(--desk-border)] pl-3">
-          <AppearancePopover label="Theme" />
+        </div>
 
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={onOpenCoDraw}
-            title="P2P Co-Draw Multi-User Studio"
-            aria-label="Co-Draw session"
-            className="h-7 px-2 text-xs flex items-center gap-1.5"
-          >
-            <PixelIcon name="sparkles" size={12} />
-            <span>Co-Draw</span>
-          </TactileButton>
-
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={onOpenShortcuts}
-            title="Atelier Guide, Diagnostics & Shortcuts (?)"
-            aria-label="Atelier Guide, Diagnostics and Shortcuts"
-            data-testid="shortcuts-guide-button"
-            className="h-7 px-2 text-xs flex items-center gap-1.5"
-          >
-            <PixelIcon name="help" size={12} />
-            <span>Help</span>
-          </TactileButton>
+        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-2 xl:pl-3">
+          <AppearancePopover label="Studio" actions={[
+            { label: 'Co-Draw', icon: 'sparkles', ariaLabel: 'Co-Draw session', onSelect: onOpenCoDraw },
+            { label: 'Help', icon: 'help', ariaLabel: 'Atelier Guide, Diagnostics and Shortcuts', testId: 'shortcuts-guide-button', onSelect: onOpenShortcuts },
+          ]} />
         </div>
 
         {/* Export stays at the right edge. */}

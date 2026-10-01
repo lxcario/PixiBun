@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test('project controls, pen size, zoom, and timeline work at desktop widths', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto('/studio');
-  await expect(page.getByTestId('new-drawing-button')).toBeInViewport();
+  await expect(page.getByTestId('file-menu-button')).toBeInViewport();
+  await expect(page.getByTestId('new-drawing-button')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Save now' })).toBeInViewport();
   await expect(page.getByTestId('export-button')).toBeInViewport();
   await expect(page.getByTestId('project-backup-button')).toHaveCount(0);

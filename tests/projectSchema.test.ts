@@ -50,6 +50,20 @@ function validProjectFixture() {
 }
 
 describe('validateProjectFile', () => {
+  it('round-trips glints masked to authored alpha without discarding their blend or recipe', () => {
+    const project = validProjectFixture();
+    project.frames[0].layers[0].blendMode = 'source-atop';
+    Object.assign(project.frames[0].layers[0], { tag: 'specular', effect: {
+      id: 'glint-test', kind: 'specular', version: 1, sourceMode: 'composite-excluding-self',
+      params: { glintStyle: 'crisp', lightAzimuth: 315 }, updatedAt: Date.now(),
+    } });
+    const validated = validateProjectFile(project);
+    expect(validated.ok).toBe(true);
+    if (!validated.ok) throw new Error(validated.error);
+    expect(validated.value.frames[0].layers[0].blendMode).toBe('source-atop');
+    expect(validated.value.frames[0].layers[0].effect?.params.glintStyle).toBe('crisp');
+  });
+
   it('keeps retired generator layers and normal artwork readable in saved projects', () => {
     const base = validProjectFixture();
     const effects = [

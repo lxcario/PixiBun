@@ -102,7 +102,7 @@ export const MAX_PRESENCE_BUFFERED_AMOUNT = 64 * 1024; // 64 KB presence buffer 
 export const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /** Blend modes that may appear in a STRUCTURE_SYNC payload (mirrors types/canvas.ts). */
-export const STRUCTURE_BLEND_MODES = ['source-over', 'multiply', 'screen', 'overlay', 'color-dodge'] as const;
+export const STRUCTURE_BLEND_MODES = ['source-over', 'multiply', 'screen', 'overlay', 'color-dodge', 'source-atop'] as const;
 
 export interface StructureLayer {
   id: string;

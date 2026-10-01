@@ -1,5 +1,21 @@
 # Build Log — PixiBun
 
+## Glint visibility correction — 2026-10-01
+
+The previous bounded reflection was too faint on the user's matte character. Small color lifts multiplied by low material coverage hid it. The correction uses brighter, hue-related core/shoulder tones and finite, slightly wider reflection masks; coverage has two flat levels rather than a local lighting gradient. A smaller bulb without a glow and quieter idle guides expose the artwork. Local Chromium checks now include a purple character in the combined lighting preview, quantitative visible contrast, matching applied pixels and Undo, in addition to the prior glint lifecycle and compact-HUD checks. [Current evidence and limits](docs/research/specular-glint-2026-10-01.md#visibility-correction).
+
+## Toolbar simplification — 2026-10-01
+
+**Final single-row correction:** The user rejected a wrapped second row. The header is now a single 48px row at tested 1024–1920px widths. Compact branding/name treatment and on-demand larger tool forms keep canvas controls visible. The offline badge stays compact. Geometry checks cover all 11 configurable tools, and real-artwork checks cover Bucket, Color Replace and Erase Color. Current evidence is in the [single-row correction](docs/research/session-ui-ux-2026-10-01.md#single-row-correction).
+
+**Latest placement follow-up:** At the user's request, Mirror, zoom/Fit and View remain visible and now share one adjacent, aligned canvas-control group. Their existing actions and shortcuts are unchanged. The header check now verifies common heights and gaps of at most 5px between sections at four desktop widths with Pen, Bucket and Erase Color. See the [current placement](docs/research/session-ui-ux-2026-10-01.md#visible-canvas-controls).
+
+**Delivered locally:** File groups document actions; Studio groups appearance, Co-Draw and Help without nested menus. Five fewer buttons appear in the closed pen header. Save, history, tool options, Mirror, zoom and Export stay visible. File supports arrows, Home/End, Escape and Tab; theme selection retains focus; brush presets dismiss their popup. Matched targets and content wrapping remain.
+
+**Checks:** Five toolbar/import/project browser checks passed, followed by twelve scoped theme, gallery, import and recovery checks. Five final focus/theme checks passed after the last focus adjustment. The preceding full gate passed all 1,472 unit tests and the production build. Final evidence and its precise scope are in the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md#toolbar-simplification-follow-up). Verification stays local; no external upload or tunnel.
+
+**Final state:** Documentation/type/lint and all 1,472 units passed again. The build then hit sandbox permissions on an existing Turbopack cache file; the unchanged build passed with filesystem access. Source whitespace checks passed. This toolbar follow-up remains local checkout work after the earlier session publication.
+
 ## Audit implementation completion — 2026-10-01
 
 **Delivered:** All six bounded audit implementation phases, including protected animation cleanup, shared game-animation ordering/holds, semantic palette delivery, a Godot kit and three reversible research workflows. Repository publication is authorized by the user; Git history records the committed state.
@@ -2007,5 +2023,12 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->
+
+
+## 2026-10-01 — Live glint correction
+
+The bulb HUD now offers Off/Soft/Crisp. The glint action previews before Apply, preserves colored outlines and authored normal directions, and uses bounded highlights instead of broad white/gold patches. Real browser checks exposed and corrected lost blending modes during pixel-history Redo and HUD clipping. Research and final local results are recorded in [the glint report](docs/research/specular-glint-2026-10-01.md). This follow-up is unpushed checkout work.

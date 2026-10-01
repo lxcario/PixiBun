@@ -2,7 +2,9 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-Current suite inventory: 1472 unit tests across 143 suites. Historical measurements below retain their original test counts and timings.
+Current suite inventory: 1482 unit tests across 144 suites. Historical measurements below retain their original test counts and timings.
+
+Latest glint visibility follow-up: the full gate passed in 59.18s, including all 1,482 tests (14.30s Vitest duration) and production compilation (7.74s gate stage). Three focused Chromium scenarios passed in 12.8s. These are local run observations, not a general performance guarantee. [Gate log](docs/research/evidence/2026-10-01/pixel-glint-gate.log), [browser log](docs/research/evidence/2026-10-01/pixel-glint-browser.log).
 
 **Audit session — 2026-10-01:** The recorded Phase 6 five-stage gate passed in 45.50 seconds on the supported workspace-local Node 22.23.3 runtime. Its 134-test editor run passed in 2.1 minutes. Research previews admit at most 256 pixels per axis, 16 frames and 262,144 source pixels, with a 30-second worker deadline; tile search admits at most 16 tiles and 20,000 states. These bounds and estimated reservations do not establish a measured heap peak, 60 fps or long-duration device behavior. See the [session record](docs/research/session-completion-2026-10-01.md) for execution scope and later UI additions.
 
@@ -198,5 +200,7 @@ The timing table below is a historical estimate without retained raw samples or 
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

@@ -851,5 +851,7 @@ The three flagged files are where residual risk of undiscovered defects is highe
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX verification](docs/research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+This document retains its dated findings and verification scope. The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

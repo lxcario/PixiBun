@@ -366,8 +366,16 @@ In retro arcade and pixel art styles, surfaces are shaded using controlled, disc
 * **3 Trio (4 Total Colors):** Soft penumbra ($L \approx 0.93 \cdot L_{\text{base}}$) + core mid-shadow + deep umbra crescent. Emulates rich hand-drawn anime and 16-bit RPG boss sprites.
 * **Studio Controls:** Available via the `Shading Tones` button group in the inspector and on the on-canvas `PixelLightBulbGizmo` bottom HUD (`SHADE: 1 | 2 | 3`).
 
-### 2. Continuous 3D Specular Highlight Pill
-* **Natural Volumetric Pill:** Instead of artificial 1-pixel speck clusters or broad flat washes, highlights render as a continuous 3D Blinn-Phong highlight pill with smooth alpha falloff.
+### 2. Current live pixel glints
+
+Off/Soft/Crisp sits beside Shade in the bulb bar. The reflection uses a bright core and a stepped shoulder at native resolution; Soft is wider and Crisp tighter. Matte and fabric retain visible highlights. A smaller bulb without a glow, quiet idle guides and an interaction-only angle badge expose more artwork. Equal-height choices stay on one toolbar row within the workspace at tested compact desktop widths. Apply commits the exact preview and Cancel restores prior artwork.
+
+The [current glint report](docs/research/specular-glint-2026-10-01.md) records painted-normal priority, ink/alpha protection and real-character contrast checks.
+
+### 3. Legacy continuous highlight pill
+
+The following Phase 63 description applies to renderer calls that omit the new glint choice; it does not describe the current studio bulb.
+* **Legacy Volumetric Pill:** Earlier calls render a continuous 3D Blinn-Phong highlight with smooth alpha falloff.
 * **Macro-Silhouette Normal Field:** Normals are sampled from the smooth inflated dome (`specularNormalField`), guaranteeing that interior eye depressions and color boundaries never produce reflective scars or cliff cuts.
 * **Physical Visibility Gating:** Strict line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) ensures specular highlights only appear on lit surfaces facing the light source.
 * **Feature Shielding:** Facial features (eyes, mouth) and dark outlines are masked out, ensuring highlights land only on organic surface curves.
@@ -375,5 +383,7 @@ In retro arcade and pixel art styles, surfaces are shaded using controlled, disc
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

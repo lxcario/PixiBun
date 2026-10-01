@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:31524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths (5.6s)
+  ok 2 [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths (2.1s)
+  ok 3 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Dark (3.3s)
+  ok 4 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Light (3.5s)
+  ok 5 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Dark (3.3s)
+  ok 6 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Light (3.4s)
+
+  6 passed (23.0s)

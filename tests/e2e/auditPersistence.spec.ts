@@ -172,6 +172,7 @@ test('a multi-frame, multi-layer project restores its layer PNG bytes after impo
     clip.name === 'Two-frame proof' && clip.startFrame === 0 && clip.endFrame === 1)).toBe(true);
   expect(first.frames[0].layers.some((layer: { pngBase64: string }) => layer.pngBase64)).toBe(true);
 
+  await page.getByTestId('file-menu-button').click();
   await page.getByTestId('new-drawing-button').click();
   await page.getByRole('button', { name: 'Start New Drawing' }).click();
   await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) =>

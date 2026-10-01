@@ -31,7 +31,9 @@ test('Color Replace respects tolerance, active layer lock, and undo', async ({ p
     state.setPrimaryColor('#ff00aa');
     state.setActiveTool('color-replace');
   });
+  await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Color Replace tolerance' })).toHaveValue('0');
+  await page.keyboard.press('Escape');
   await page.mouse.click(at(3, 4).x, at(3, 4).y);
   await expect.poll(() => pixel(3, 4)).toEqual([255, 0, 170, 255]);
   expect(await pixel(6, 4)).toEqual([136, 102, 165, 255]);
@@ -39,7 +41,9 @@ test('Color Replace respects tolerance, active layer lock, and undo', async ({ p
   await page.getByTestId('undo-button').click();
   await expect.poll(() => pixel(3, 4)).toEqual([128, 96, 160, 255]);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState().setBucketTolerance(12));
+  await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Color Replace tolerance' })).toHaveValue('12');
+  await page.keyboard.press('Escape');
   await page.mouse.click(at(3, 4).x, at(3, 4).y);
   await expect.poll(() => pixel(6, 4)).toEqual([255, 0, 170, 255]);
   expect(await pixel(9, 4)).toEqual([40, 32, 60, 255]);

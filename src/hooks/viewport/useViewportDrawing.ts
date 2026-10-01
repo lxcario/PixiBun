@@ -105,6 +105,7 @@ export function useViewportDrawing({
         createdLayerIndex,
         layerName: targetLayer?.name,
         layerTag: targetLayer?.tag,
+        layerBlendMode: targetLayer?.blendMode,
         preserveLayerEffect,
         layerEffect: targetLayer?.effect ? structuredClone(targetLayer.effect) : undefined,
       };
@@ -266,6 +267,9 @@ export function useViewportDrawing({
         layerTag: useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
           (layer) => layer.id === previousStep.layerId
         )?.tag,
+        layerBlendMode: useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
+          layer => layer.id === previousStep.layerId
+        )?.blendMode,
         preserveLayerEffect: previousStep.preserveLayerEffect,
         layerEffect: (() => {
           const effect = useStudioStore.getState().frames[previousStep.frameIndex]?.layers.find(
@@ -316,6 +320,7 @@ export function useViewportDrawing({
           if (layer) {
             layer.name = stepToRestore.layerName ?? layer.name;
             layer.tag = stepToRestore.layerTag;
+            if (stepToRestore.layerBlendMode) layer.blendMode = stepToRestore.layerBlendMode;
             layer.effect = stepToRestore.layerEffect
               ? structuredClone(stepToRestore.layerEffect)
               : undefined;
@@ -420,6 +425,9 @@ export function useViewportDrawing({
         layerTag: state.frames[nextStep.frameIndex]?.layers.find(
           (layer) => layer.id === nextStep.layerId
         )?.tag,
+        layerBlendMode: state.frames[nextStep.frameIndex]?.layers.find(
+          layer => layer.id === nextStep.layerId
+        )?.blendMode,
         preserveLayerEffect: nextStep.preserveLayerEffect,
         layerEffect: (() => {
           const effect = state.frames[nextStep.frameIndex]?.layers.find(
@@ -465,7 +473,7 @@ export function useViewportDrawing({
               visible: true,
               locked: false,
               opacity: 1,
-              blendMode: 'source-over',
+              blendMode: stepToRestore.layerBlendMode ?? 'source-over',
               ...(stepToRestore.createdLayerTag ? { tag: stepToRestore.createdLayerTag } : {}),
               ...(stepToRestore.layerEffect
                 ? { effect: structuredClone(stepToRestore.layerEffect) }
@@ -497,6 +505,7 @@ export function useViewportDrawing({
           if (layer) {
             layer.name = stepToRestore.layerName ?? layer.name;
             layer.tag = stepToRestore.layerTag;
+            if (stepToRestore.layerBlendMode) layer.blendMode = stepToRestore.layerBlendMode;
             layer.effect = stepToRestore.layerEffect
               ? structuredClone(stepToRestore.layerEffect)
               : undefined;

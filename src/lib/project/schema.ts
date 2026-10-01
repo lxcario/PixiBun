@@ -26,7 +26,7 @@ import {
   type RecoveryReasonCode,
 } from '@/lib/recovery/recoveryTypes';
 
-const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge']);
+const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge', 'source-atop']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
 const SMART_EFFECT_KINDS = new Set<SmartEffectKind>([
   'photometric',
@@ -277,7 +277,8 @@ function validateFrame(
       rawLayer.blendMode === 'multiply' ||
       rawLayer.blendMode === 'screen' ||
       rawLayer.blendMode === 'overlay' ||
-      rawLayer.blendMode === 'color-dodge'
+      rawLayer.blendMode === 'color-dodge' ||
+      rawLayer.blendMode === 'source-atop'
     ) {
       blendMode = rawLayer.blendMode;
     }

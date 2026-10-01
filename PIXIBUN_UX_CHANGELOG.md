@@ -1,6 +1,10 @@
 # PixiBun UX changelog — 2026-09-29–30
 
-Test counts below are observations made at each step. As of 2026-10-01, the discovered inventory is 1,472 unit/integration tests in 143 suites and 146 Chromium tests in 32 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
+Test counts below are observations made at each step. As of 2026-10-01, the discovered inventory is 1,482 unit/integration tests in 144 suites and 149 Chromium tests in 33 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
+
+## Single-row header and visible glints — 2026-10-01
+
+File/Studio group secondary actions while Save/history/drawing/Export and adjacent Mirror/Zoom/Fit/View remain directly visible on one header row. Larger tool forms open on demand. The lighting bulb now previews Off/Soft/Crisp glints; a brighter core and stepped shoulder are visible on matte characters, while the smaller unglowing bulb and quiet guides reveal the artwork. Native effects preserve alpha, painted normals, ink, Cancel, Apply and exact Undo/Redo. The final full gate and three scoped Chromium checks passed; [glint evidence](docs/research/specular-glint-2026-10-01.md#visibility-correction) and [header evidence](docs/research/session-ui-ux-2026-10-01.md#single-row-correction) retain their exact scopes.
 
 ## Session UI/UX corrections — 2026-10-01
 
@@ -63,5 +67,7 @@ The 2026-09-29 entries below record the earlier implementation stage. The direct
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

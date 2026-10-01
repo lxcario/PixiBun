@@ -1,0 +1,123 @@
+
+Running 5 tests using 1 worker
+
+(node:25284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths (7.3s)
+(node:18832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\importImageAndSheet.spec.ts:40:5 › visible import actions let the user choose a real file (2.5s)
+  ok 3 [chromium] › tests\e2e\projects.spec.ts:4:7 › Projects Gallery & Workspace Management › failed save keeps the current drawing when starting a gallery project (1.9s)
+  x  4 [chromium] › tests\e2e\projects.spec.ts:36:7 › Projects Gallery & Workspace Management › opens projects gallery, switches projects, and invalidates undo history (P0) (30.1s)
+(node:1196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths (30.1s)
+
+
+  1) [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('dialog', { name: 'Studio options' }).getByRole('button', { name: 'Co-Draw session' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Studio options' }).getByRole('button', { name: 'Co-Draw session' })
+        14 × locator resolved to <button type="button" aria-label="Co-Draw session" class="h-9 flex items-center justify-center gap-1.5 pixel-tactile-btn rounded-[2px] border border-[var(--desk-border)] text-[var(--text-body)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[var(--accent-gold)]">…</button>
+           - unexpected value "inactive"
+
+
+      153 |   const studio = page.getByRole('dialog', { name: 'Studio options' });
+      154 |   await expect(studio).toBeInViewport();
+    > 155 |   await expect(studio.getByRole('button', { name: 'Co-Draw session' })).toBeFocused();
+          |                                                                         ^
+      156 |   await expect(studio.getByTestId('shortcuts-guide-button')).toHaveText('Help');
+      157 |   const actions = await studio.getByRole('button', { name: 'Co-Draw session' }).boundingBox();
+      158 |   const help = await studio.getByTestId('shortcuts-guide-button').boundingBox();
+        at D:\PixiBun\tests\e2e\backupTrust.spec.ts:155:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\projects.spec.ts:36:7 › Projects Gallery & Workspace Management › opens projects gallery, switches projects, and invalidates undo history (P0) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('menuitem', { name: 'Projects', exact: true })
+
+
+      89 |
+      90 |     // 4. Open gallery and verify multiple projects exist
+    > 91 |     await projectsBtn.click();
+         |                       ^
+      92 |     await expect(modal).toBeVisible();
+      93 |
+      94 |     // Test Duplication / Clone action
+        at D:\PixiBun\tests\e2e\projects.spec.ts:91:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\projects-Projects-Gallery--45c0d-nvalidates-undo-history-P0--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\projects-Projects-Gallery--45c0d-nvalidates-undo-history-P0--chromium\error-context.md
+
+  3) [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByTestId('fit-canvas-button')
+        - locator resolved to <button data-testid="fit-canvas-button" title="Fit Canvas to Viewport (Ctrl+0)" aria-label="Fit Canvas to Viewport (Ctrl+0)" class="h-6 px-1.5 flex items-center justify-center text-xs font-sans font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] active:translate-y-[1px] rounded-[1px] cursor-pointer transition-colors">Fit</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <label class="flex items-center gap-2 text-xs text-[var(--text-heading)]">…</label> from <div role="group" aria-label="Drawing controls" class="flex flex-wrap items-center gap-2">…</div> subtree intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <label class="flex items-center gap-2 text-xs text-[var(--text-heading)]">…</label> from <div role="group" aria-label="Drawing controls" class="flex flex-wrap items-center gap-2">…</div> subtree intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        55 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <label class="flex items-center gap-2 text-xs text-[var(--text-heading)]">…</label> from <div role="group" aria-label="Drawing controls" class="flex flex-wrap items-center gap-2">…</div> subtree intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      24 |     state.setCanvasSize(2048, 2048);
+      25 |   });
+    > 26 |   await page.getByTestId('fit-canvas-button').click();
+         |                                               ^
+      27 |   const fittedZoom = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { zoom: number } } }).__studioStore!.getState().zoom);
+      28 |   expect(fittedZoom).toBeLessThan(100);
+      29 |
+        at D:\PixiBun\tests\e2e\studioChrome.spec.ts:26:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\studioChrome-project-contr-b63ec-line-work-at-desktop-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\studioChrome-project-contr-b63ec-line-work-at-desktop-widths-chromium\error-context.md
+
+  3 failed
+    [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+    [chromium] › tests\e2e\projects.spec.ts:36:7 › Projects Gallery & Workspace Management › opens projects gallery, switches projects, and invalidates undo history (P0) 
+    [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths 
+  2 passed (1.2m)

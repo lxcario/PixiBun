@@ -207,6 +207,7 @@ export const LayersPanel: React.FC = () => {
               <option value="screen">Screen</option>
               <option value="overlay">Overlay</option>
               <option value="color-dodge">Color Dodge</option>
+              <option value="source-atop">On artwork only</option>
             </select>
           </div>
         </div>
@@ -368,7 +369,7 @@ export const LayersPanel: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1">
-                {layer.effect?.kind === 'photometric' && (
+                {(layer.effect?.kind === 'photometric' || layer.effect?.kind === 'specular') && (
                   <button
                     type="button"
                     onClick={(e) => {
@@ -378,7 +379,7 @@ export const LayersPanel: React.FC = () => {
                     }}
                     className="h-5 px-1 rounded-[2px] border border-[var(--desk-border)] text-[8px] font-mono text-[var(--accent-gold)] hover:bg-[var(--surface-2)] cursor-pointer"
                     title="Reopen this lighting recipe and move the bulb"
-                    aria-label={`Edit lighting effect on ${layer.name}`}
+                    aria-label={`Edit ${layer.effect.kind === 'specular' ? 'glint' : 'lighting'} effect on ${layer.name}`}
                   >
                     Edit FX
                   </button>

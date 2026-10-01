@@ -24,6 +24,10 @@ The optional crash and diagnostic relay endpoint (`/api/diagnostics/relay`) acts
 - **SSRF Defense & Transport Security:** The endpoint ignores any client-supplied destination URLs and strictly proxies to the server-side environment variable `DIAGNOSTICS_RELAY_URL`, requiring HTTPS. Upstream requests enforce a 5-second timeout (`AbortSignal.timeout(5000)`).
 - **Opt-In Transmission:** Diagnostic transmission requires explicit user opt-in; once enabled, captured error events can be sent automatically. Local client-side diagnostic capture in IndexedDB is enabled by default.
 
+## Current generated-effect safeguards — 2026-10-01
+
+Live lighting and glint layers use `source-atop` (On artwork only), keeping source coverage intact. The native project schema and Co-Draw structure allowlist accept this blend mode. Pixel history retains the mode and restores it on Undo/Redo, including replay baselines. Locked effects refuse editing; cancelled previews restore earlier pixels, metadata, blending and layer focus. These targeted safeguards do not establish general collaboration convergence or certify every graphics path. [Local evidence and limits](docs/research/specular-glint-2026-10-01.md).
+
 ## 4. Defense-in-Depth & Quality Gate Invariants
 PixiBun Atelier enforces an automated, zero-trust Quality Gate (`npm run gate`) wired into a local `.git/hooks/pre-push` gatekeeper. The configured hook runs documentation checks, typecheck, lint and unit tests. Hooks can be bypassed and passing checks are not a security certification. Relevant safeguards include:
 - **CWE-409 Decompression Bomb Defense:** Image imports probe binary headers via `ImageHeaderProbe` (`imageHeaderProbe.ts`), rejecting dimensions $>8192\text{px}$ or pixel counts $>67\text{ MP}$ before memory allocation.
@@ -41,5 +45,7 @@ If you discover a security vulnerability or secret exposure in this project, ple
 <!-- session-publication-2026-10-01 -->
 ## Session checkpoint — 2026-10-01
 
-The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+The latest studio follow-up keeps File, drawing controls, adjacent Mirror/Zoom/Fit/View, Studio and Export on one desktop header row. The live bulb offers Off/Soft/Crisp glints with a brighter pixel core and stepped edge, preserves outlines and alpha, and supports Cancel, Apply and exact Undo/Redo. See the [UI/UX record](docs/research/session-ui-ux-2026-10-01.md) and [glint research, screenshots and evidence](docs/research/specular-glint-2026-10-01.md).
+
+The latest full gate passed documentation, types, lint, **1,482 unit/integration tests across 144 suites**, and the production build. Three focused Chromium glint scenarios passed; the current discovered editor inventory is **149 tests in 33 files**, plus 39 separate compiled-production scenarios. Earlier full-run results retain their dates and scope. The user requested Git publication of this checkpoint; it does not authorize deployment or replace the existing release sign-off. [Delivered work and open validation](docs/research/session-completion-2026-10-01.md).
 <!-- /session-publication-2026-10-01 -->

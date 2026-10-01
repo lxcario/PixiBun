@@ -21,7 +21,8 @@ test.describe('Projects Gallery & Workspace Management', () => {
       __studioStore?: { getState: () => { isDirty: boolean } };
     }).__studioStore!.getState().isDirty)).toBe(true);
 
-    await page.getByRole('button', { name: 'Projects Gallery' }).click();
+    await page.getByTestId('file-menu-button').click();
+    await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
     const gallery = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
     await gallery.getByRole('button', { name: 'New Drawing' }).click();
     await expect(gallery).toBeVisible();
@@ -40,8 +41,9 @@ test.describe('Projects Gallery & Workspace Management', () => {
     // Settle React hydration
     await page.waitForTimeout(400);
 
-    // 1. Open Projects Gallery via TopHeader button
-    const projectsBtn = page.getByRole('button', { name: /Projects Gallery|Projects/i });
+    // 1. Open Projects Gallery through File.
+    await page.getByTestId('file-menu-button').click();
+    const projectsBtn = page.getByRole('menuitem', { name: 'Projects', exact: true });
     await expect(projectsBtn).toBeVisible();
     await projectsBtn.click();
 
@@ -73,6 +75,7 @@ test.describe('Projects Gallery & Workspace Management', () => {
     await expect(undoBtn).toBeEnabled();
 
     // 3. Create a new drawing via Projects Gallery
+    await page.getByTestId('file-menu-button').click();
     await projectsBtn.click();
     const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
     await expect(modal).toBeVisible();
@@ -85,6 +88,7 @@ test.describe('Projects Gallery & Workspace Management', () => {
     await expect(undoBtn).toBeDisabled();
 
     // 4. Open gallery and verify multiple projects exist
+    await page.getByTestId('file-menu-button').click();
     await projectsBtn.click();
     await expect(modal).toBeVisible();
 

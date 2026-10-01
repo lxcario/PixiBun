@@ -8,6 +8,8 @@ export interface PixiBunLogoProps {
   size?: 'sm' | 'md' | 'lg';
   /** Whether to render the 'ATELIER' subtitle under 'PIXIBUN' (default true). */
   showSubtitle?: boolean;
+  /** Optional responsive treatment of the wordmark; the mascot stays visible. */
+  wordmarkClassName?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -15,6 +17,7 @@ export interface PixiBunLogoProps {
 export const PixiBunLogo: React.FC<PixiBunLogoProps> = ({
   size = 'md',
   showSubtitle = true,
+  wordmarkClassName = '',
   className = '',
   style,
 }) => {
@@ -52,7 +55,7 @@ export const PixiBunLogo: React.FC<PixiBunLogoProps> = ({
       >
         <BunMascot size={sizeConfig.mascot} animate />
       </div>
-      <div className="flex flex-col leading-none">
+      <div className={`flex flex-col leading-none ${wordmarkClassName}`}>
         <span
           className={`font-display font-bold ${sizeConfig.title} text-[var(--text-heading)]`}
         >

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo, useLayoutEffect } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -37,10 +37,16 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   onLightChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
+  const panX = useStudioStore((s) => s.panX);
+  const panY = useStudioStore((s) => s.panY);
+  const [hudBounds, setHudBounds] = useState<{ left: number; top: number; maxWidth: number } | null>(null);
   const tools = useStudioStore((s) => s.tools);
   const setLightAzimuth = useStudioStore((s) => s.setLightAzimuth);
   const setLightElevation = useStudioStore((s) => s.setLightElevation);
   const setLightBrightness = useStudioStore((s) => s.setLightBrightness);
+  const glintOnly = useStudioStore((s) => s.photometricGlintOnly);
+  const setGlintStyle = useStudioStore((s) => s.setGlintStyle);
   const setShadingBands = useStudioStore((s) => s.setShadingBands);
 
   const [dragTarget, setDragTarget] = useState<'none' | 'bulb' | 'center'>('none');
@@ -58,6 +64,31 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   const scale = zoom / 100;
   const stageWidth = canvasWidth * scale;
   const stageHeight = canvasHeight * scale;
+
+  // Keep every HUD action inside the workspace, even when zoomed or panned.
+  useLayoutEffect(() => {
+    const container = containerRef.current, hud = hudRef.current;
+    const workspace = container?.closest('main');
+    if (!container || !hud || !workspace) return;
+    const place = () => {
+      const stage = container.getBoundingClientRect(), area = workspace.getBoundingClientRect();
+      if (!area.width) return;
+      const maxWidth = Math.max(1, area.width - 16);
+      const size = hud.getBoundingClientRect();
+      const width = Math.min(size.width, maxWidth);
+      const minLeft = area.left - stage.left + 8;
+      const maxLeft = area.right - stage.left - width - 8;
+      const left = Math.max(minLeft, Math.min(maxLeft, stage.width / 2 - width / 2)) + width / 2;
+      const top = Math.max(area.top - stage.top + 8, Math.min(stage.height + 8, area.bottom - stage.top - size.height - 8));
+      setHudBounds(previous => previous?.left === left && previous.top === top && previous.maxWidth === maxWidth
+        ? previous : { left, top, maxWidth });
+    };
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(workspace); observer.observe(hud); observer.observe(container);
+    window.addEventListener('resize', place);
+    return () => { observer.disconnect(); window.removeEventListener('resize', place); };
+  }, [canvasWidth, canvasHeight, zoom, panX, panY, glintOnly]);
 
   // Middle light point in canvas coordinates (freely draggable focus)
   const [canvasCentroid, setCanvasCentroid] = useState<GizmoPoint>(() => ({
@@ -188,6 +219,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength, Alt+R to reset focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && (e.target as HTMLElement)?.closest?.('button, input, select')) return;
       if (e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
@@ -384,20 +416,22 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
     >
       {/* Floating Viewport HUD Bar (positioned below bottom canvas edge) */}
       <div
-        className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#181124]/95 border-2 border-[#f0be7c] px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
+        className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 xl:gap-1.5 max-w-[calc(100vw-2rem)] overflow-x-auto bg-[#181124]/95 border-2 border-[#f0be7c] px-2 xl:px-3 py-1.5 rounded-[3px] shadow-[0_8px_24px_rgba(0,0,0,0.85)] font-mono text-xs pointer-events-auto whitespace-nowrap"
+        ref={hudRef}
+        style={hudBounds ? { left: hudBounds.left, top: hudBounds.top, maxWidth: hudBounds.maxWidth, marginTop: 0 } : undefined}
         role="toolbar"
         aria-label="Live Light Bulb Controls"
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-1.5 text-[#f0be7c] font-bold">
           <PixelIcon name="lamp" size={14} className="drop-shadow-[0_0_8px_#f0be7c]" />
-          <span className="tracking-wide uppercase text-[10px]">Live Light Bulb</span>
+          <span className="tracking-wide uppercase text-[10px] hidden 2xl:inline">{glintOnly ? 'Live Glint' : 'Live Light Bulb'}</span>
         </div>
 
         {/* Angle Readout */}
         <div
           title="Light Azimuth & Elevation"
-          className="flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#dcabdf] font-bold text-[11px]"
+          className="hidden xl:flex items-center gap-1 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#dcabdf] font-bold text-[11px]"
         >
           <span>{tools.lightAzimuth}°</span>
           <span className="opacity-50">/</span>
@@ -407,7 +441,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         {/* Middle Light Center Readout */}
         <div
           title="Current Middle Light Point (Drag center reticle to move focus)"
-          className="flex items-center gap-1.5 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[10px]"
+          className="hidden 2xl:flex items-center gap-1.5 px-1.5 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[10px]"
         >
           <svg
             viewBox="0 0 12 12"
@@ -432,20 +466,21 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         <button
           type="button"
           onClick={handleResetCenter}
+          aria-label="Recenter light"
           title="Reset middle light point to artwork centroid"
-          className="px-1.5 py-0.5 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/30 rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[10px]"
+          className="h-6 px-1.5 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/30 rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[10px]"
         >
-          <span>↺ Recenter</span>
+          <span aria-hidden="true">↺<span className="hidden xl:inline"> Recenter</span></span>
         </button>
 
-        <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
+        <div className="w-px h-3.5 bg-[#f0be7c]/30 xl:mx-0.5" />
 
         {/* Light Strength / Intensity Steppers & Slider */}
         <div
           title="Light Strength / Brightness (Click - / + or use mouse wheel)"
-          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
+          className="flex items-center gap-1 xl:gap-1.5 px-1.5 xl:px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
         >
-          <PixelIcon name="sun" size={12} className="text-[#f0be7c]" />
+          <PixelIcon name="sun" size={12} className="hidden xl:block text-[#f0be7c]" />
           <span className="text-[10px] text-[#dcabdf] uppercase">Strength</span>
           <button
             type="button"
@@ -454,7 +489,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
               e.stopPropagation();
               adjustStrength(-0.15);
             }}
-            className="w-4 h-4 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
             title="Decrease light strength (- / [)"
             aria-label="Decrease light strength"
           >
@@ -473,7 +508,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
               e.stopPropagation();
               adjustStrength(+0.15);
             }}
-            className="w-4 h-4 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
+            className="w-6 h-6 flex items-center justify-center bg-[#181124] text-[#f0be7c] rounded-[2px] hover:bg-[#382352] active:scale-95 cursor-pointer font-bold text-xs border border-[#f0be7c]/30"
             title="Increase light strength (+ / ])"
             aria-label="Increase light strength"
           >
@@ -488,16 +523,17 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
             value={brightness}
             onChange={(e) => updateStrength(parseFloat(e.target.value))}
             title={`Strength: ${Math.round(brightness * 100)}%`}
-            className="w-14 h-1.5 accent-[#f0be7c] bg-[#181124] rounded cursor-pointer ml-0.5"
+            className="hidden xl:block w-14 h-1.5 accent-[#f0be7c] bg-[#181124] rounded cursor-pointer ml-0.5"
           />
         </div>
 
-        <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
+        {!glintOnly && <div className="w-px h-3.5 bg-[#f0be7c]/30 xl:mx-0.5" />}
 
         {/* Shading Bands Mode: 1 Single | 2 Dual | 3 Trio */}
+        {!glintOnly && (
         <div
           title="Shading Color Tones: 1 = Single (1 shadow), 2 = Dual (2 shadows), 3 = Trio (3 shadows)"
-          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
+          className="flex items-center gap-1 xl:gap-1.5 px-1.5 xl:px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40 text-[#f0be7c] font-bold text-[11px]"
         >
           <span className="text-[10px] text-[#dcabdf] uppercase">Shade</span>
           <div className="flex items-center gap-0.5" role="group" aria-label="Shading tones">
@@ -514,13 +550,14 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
                   key={count}
                   type="button"
                   data-testid={`pixel-light-shade-${count}`}
+                  aria-pressed={active}
                   onClick={(e) => {
                     e.stopPropagation();
                     setShadingBands(count);
                     scheduleLightChange(tools.lightAzimuth, tools.lightElevation, canvasCentroid.x, canvasCentroid.y, brightness);
                   }}
                   title={title}
-                  className={`px-1.5 py-0.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
+                  className={`min-w-6 h-6 px-1.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
                     active
                       ? 'bg-[#f0be7c] text-[#181124] shadow-xs'
                       : 'text-[#dcabdf] hover:text-[#ffe082] hover:bg-[#382352]'
@@ -533,18 +570,43 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           </div>
         </div>
 
-        <div className="w-px h-3.5 bg-[#f0be7c]/30 mx-0.5" />
+        )}
+
+        <div className="w-px h-3.5 bg-[#f0be7c]/30 xl:mx-0.5" />
+
+        <div className="flex items-center gap-1 xl:gap-1.5 px-1.5 xl:px-2 py-0.5 bg-[#261838] rounded-[2px] border border-[#f0be7c]/40">
+          <span className="text-[10px] text-[#dcabdf] uppercase font-bold">Glint</span>
+          <div role="group" aria-label="Glint style" className="flex items-center gap-0.5">
+            {(['off', 'soft', 'crisp'] as const).map((style) => (
+              <button
+                key={style}
+                type="button"
+                aria-pressed={(tools.glintStyle ?? 'soft') === style}
+                data-testid={`pixel-light-glint-${style}`}
+                title={style === 'off' ? 'No reflected highlight' : style === 'soft' ? 'Gentle, wider highlight' : 'Small, defined highlight'}
+                onClick={() => {
+                  setGlintStyle(style);
+                  scheduleLightChange(tools.lightAzimuth, tools.lightElevation, canvasCentroid.x, canvasCentroid.y, brightness);
+                }}
+                className={`min-w-8 h-6 px-1.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${(tools.glintStyle ?? 'soft') === style ? 'bg-[#f0be7c] text-[#181124]' : 'text-[#dcabdf] hover:text-[#ffe082] hover:bg-[#382352]'}`}
+              >
+                {style === 'off' ? 'Off' : style === 'soft' ? 'Soft' : 'Crisp'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="w-px h-3.5 bg-[#f0be7c]/30 xl:mx-0.5" />
 
         <button
           type="button"
           onClick={handleApply}
-          title="Commit and bake lighting into layer (Enter)"
+          title="Apply preview to an editable layer (Enter)"
           aria-label="Apply"
           data-testid="pixel-light-apply"
-          className="px-2.5 py-1 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
+          className="h-7 px-2.5 bg-[#f0be7c] text-[#140d1f] font-bold rounded-[2px] hover:bg-[#ffe082] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px] shadow-xs"
         >
           <span>Apply</span>
-          <span className="text-[9px] opacity-75 font-normal">(Enter)</span>
+          <span className="hidden xl:inline text-[9px] opacity-75 font-normal">(Enter)</span>
         </button>
 
         <button
@@ -553,10 +615,10 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           title="Discard preview and restore layer (Esc)"
           aria-label="Cancel"
           data-testid="pixel-light-cancel"
-          className="px-2 py-1 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
+          className="h-7 px-2 bg-[#261838] text-[#dcabdf] border border-[#f0be7c]/40 font-bold rounded-[2px] hover:bg-[#382352] active:scale-95 transition-transform cursor-pointer flex items-center gap-1 text-[11px]"
         >
           <span>Cancel</span>
-          <span className="text-[9px] opacity-75 font-normal">(Esc)</span>
+          <span className="hidden xl:inline text-[9px] opacity-75 font-normal">(Esc)</span>
         </button>
       </div>
 
@@ -566,16 +628,6 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         width={stageWidth}
         height={stageHeight}
       >
-        <defs>
-          <filter id="bulb-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
         {/* Horizon Range Guide Ring */}
         <circle
           cx={stageCentroid.x}
@@ -585,7 +637,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           stroke="#f0be7c"
           strokeWidth="1.5"
           strokeDasharray="4 4"
-          opacity="0.35"
+          opacity={dragTarget ? 0.35 : 0.12}
         />
 
         {/* Zenith Overhead Ring */}
@@ -597,7 +649,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           stroke="#f0be7c"
           strokeWidth="1"
           strokeDasharray="2 3"
-          opacity="0.2"
+          opacity={dragTarget ? 0.2 : 0.08}
         />
 
         {/* Ray from Middle Light Point to Light Bulb */}
@@ -609,7 +661,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           stroke="#f0be7c"
           strokeWidth="2"
           strokeDasharray="5 3"
-          opacity="0.85"
+          opacity={dragTarget ? 0.75 : 0.2}
         />
       </svg>
 
@@ -676,23 +728,13 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
           top: `${bulbCoords.y}px`,
         }}
       >
-        {/* Glowing Halo */}
-        <div
-          className="absolute -inset-4 rounded-full pointer-events-none transition-opacity duration-150 animate-pulse"
-          style={{
-            background: 'radial-gradient(circle, rgba(250,204,21,0.5) 0%, rgba(240,190,124,0.2) 50%, rgba(0,0,0,0) 75%)',
-            opacity: dragTarget === 'bulb' ? 0.9 : 0.65,
-          }}
-          aria-hidden="true"
-        />
-
         {/* Retro 16-bit Pixel Art Light Bulb SVG */}
         <svg
-          width="32"
-          height="36"
+          width="24"
+          height="27"
           viewBox="0 0 16 18"
           fill="none"
-          className="relative drop-shadow-[0_4px_12px_rgba(250,204,21,0.7)]"
+          className="relative"
         >
           {/* Glass Dome Outline */}
           <rect x="5" y="1" width="6" height="1" fill="#181124" />
@@ -730,7 +772,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         </svg>
 
         {/* Angle Badge Tooltip */}
-        <div className="absolute left-1/2 -bottom-5 -translate-x-1/2 px-1.5 py-0.5 bg-[#181124] text-[#f0be7c] text-[9px] font-mono font-bold rounded-[2px] border border-[#f0be7c]/60 shadow-xs whitespace-nowrap pointer-events-none">
+        <div className="absolute left-1/2 -bottom-5 -translate-x-1/2 px-1.5 py-0.5 bg-[#181124] text-[#f0be7c] text-[9px] font-mono font-bold rounded-[2px] border border-[#f0be7c]/60 shadow-xs whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100">
           {tools.lightAzimuth}°
         </div>
       </div>

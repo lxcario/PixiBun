@@ -166,7 +166,7 @@ export function createHistoryEngine(
                   imageData: cloneImageData(evicted.imageData),
                   name: evicted.layerName,
                   opacity: 1,
-                  blendMode: 'source-over',
+                  blendMode: evicted.layerBlendMode ?? 'source-over',
                   visible: true,
                   order: 0,
                 },
@@ -186,6 +186,7 @@ export function createHistoryEngine(
         if (existingLayer) {
           existingLayer.imageData = cloneImageData(evicted.imageData);
           if (evicted.layerName) existingLayer.name = evicted.layerName;
+          if (evicted.layerBlendMode) existingLayer.blendMode = evicted.layerBlendMode;
         } else {
           frame.layers.push({
             layerId: evicted.layerId,
@@ -193,7 +194,7 @@ export function createHistoryEngine(
             imageData: cloneImageData(evicted.imageData),
             name: evicted.layerName,
             opacity: 1,
-            blendMode: 'source-over',
+            blendMode: evicted.layerBlendMode ?? 'source-over',
             visible: true,
             order: frame.layers.length,
           });

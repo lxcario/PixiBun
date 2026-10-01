@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { MaterialType, PhotometricAnalysisGeometry } from '@/types/tools';
+import { MaterialType, PhotometricAnalysisGeometry, PhotometricLightingParams } from '@/types/tools';
 import {
   executePhotometricPipeline,
   computePhotometricAnalysis,
@@ -14,7 +14,26 @@ import { createId } from '@/lib/engine/id';
 import type { ViewportPhotometricContext } from './types';
 import type { LayerEffectRecipe } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { renderPixelGlints } from '@/lib/ai/math/pixelGlint';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
+
+function renderLightPreview(
+  srcCtx: CanvasRenderingContext2D, width: number, height: number,
+  params: PhotometricLightingParams, paletteColors: string[], glintOnly: boolean
+): HTMLCanvasElement {
+  if (!glintOnly) return executePhotometricPipeline(srcCtx, width, height, params, paletteColors);
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+  const image = ctx.createImageData(width, height);
+  const geometry = params.precomputedAnalysis ?? computePhotometricAnalysis(srcCtx, width, height, params);
+  const source = srcCtx.getImageData(0, 0, width, height).data;
+  for (const pixel of renderPixelGlints(source, width, height, { ...params, glintStyle: params.glintStyle ?? 'soft' }, geometry)) {
+    image.data.set([pixel.r, pixel.g, pixel.b, pixel.a], (pixel.y * width + pixel.x) * 4);
+  }
+  ctx.putImageData(image, 0, 0);
+  return canvas;
+}
 
 export function usePhotometricEvents({
   canvasWidth,
@@ -34,6 +53,8 @@ export function usePhotometricEvents({
     targetLayerId: string;
     isNewLayer: boolean;
     material: MaterialType;
+    glintOnly: boolean;
+    previousTargetBlend?: import('@/types/canvas').BlendMode;
     brightness: number;
     formType: RecognizedFormType;
     paletteColors: string[];
@@ -52,7 +73,8 @@ export function usePhotometricEvents({
   } | null>(null);
 
   useEffect(() => {
-    const handlePhotometricGizmoStartEvent = (detail?: { auto?: boolean; layerId?: string }) => {
+    const handlePhotometricGizmoStartEvent = (detail?: { auto?: boolean; layerId?: string; glintOnly?: boolean }) => {
+      if (photometricSessionRef.current) return;
       const srcCtx = compositeSourceSnapshot('photometric');
       if (!srcCtx) return;
 
@@ -64,8 +86,15 @@ export function usePhotometricEvents({
       const requestedLayer = detail?.layerId
         ? currentFrame.layers.find((layer) => layer.id === detail.layerId)
         : undefined;
-      const existing = requestedLayer ?? currentFrame.layers.find((layer) => layer.tag === 'photometric');
-      const savedParams = existing?.effect?.kind === 'photometric' ? existing.effect.params : undefined;
+      const glintOnly = detail?.glintOnly || requestedLayer?.effect?.kind === 'specular' || false;
+      const existing = requestedLayer ?? currentFrame.layers.find((layer) => layer.tag === (glintOnly ? 'specular' : 'photometric'));
+      if (existing?.locked) {
+        studioEvents.emit('pixibun:toast', { message: 'Unlock the effect layer before previewing changes.', type: 'error' });
+        return;
+      }
+      const savedParams = existing?.effect?.params;
+      state.setGlintStyle(savedParams?.glintStyle === 'off' || savedParams?.glintStyle === 'soft' || savedParams?.glintStyle === 'crisp'
+        ? savedParams.glintStyle : glintOnly ? 'crisp' : state.tools.glintStyle ?? 'soft');
       const readNumber = (key: string, fallback: number) =>
         typeof savedParams?.[key] === 'number' ? savedParams[key] : fallback;
       const readString = (key: string, fallback: string) =>
@@ -148,8 +177,8 @@ export function usePhotometricEvents({
 
       let targetLayerId: string;
       let isNewLayer = false;
-      const tag = 'photometric';
-      const displayName = `Photometric ${material}`;
+      const tag = glintOnly ? 'specular' : 'photometric';
+      const displayName = glintOnly ? 'Glint' : `Photometric ${material}`;
 
       if (existing) {
         targetLayerId = existing.id;
@@ -183,7 +212,7 @@ export function usePhotometricEvents({
             visible: true,
             locked: false,
             opacity: 1,
-            blendMode: 'source-over',
+            blendMode: 'source-atop',
             tag,
           });
           draft.activeLayerId = targetLayerId;
@@ -198,6 +227,7 @@ export function usePhotometricEvents({
         if (layer) {
           layer.name = displayName;
           layer.tag = tag;
+          layer.blendMode = 'source-atop';
         }
       });
 
@@ -214,6 +244,7 @@ export function usePhotometricEvents({
       };
 
       const params = {
+        glintStyle: useStudioStore.getState().tools.glintStyle ?? 'soft',
         lightAzimuth: azimuth,
         lightElevation: elevation,
         lightRadius: 64,
@@ -235,7 +266,7 @@ export function usePhotometricEvents({
 
       const analysis = computePhotometricAnalysis(srcCtx, canvasWidth, canvasHeight, params, inferred);
 
-      const shadedCanvas = executePhotometricPipeline(
+      const shadedCanvas = renderLightPreview(
         srcCtx,
         canvasWidth,
         canvasHeight,
@@ -243,7 +274,8 @@ export function usePhotometricEvents({
           ...params,
           precomputedAnalysis: analysis,
         },
-        []
+        [],
+        glintOnly
       );
 
       if (targetCtx) {
@@ -260,6 +292,8 @@ export function usePhotometricEvents({
         targetLayerId,
         isNewLayer,
         material,
+        glintOnly,
+        previousTargetBlend: existing?.blendMode,
         brightness,
         formType,
         paletteColors: [],
@@ -280,6 +314,7 @@ export function usePhotometricEvents({
       if (previousActiveLayerId && previousActiveLayerId !== targetLayerId) {
         state.setActiveLayer(previousActiveLayerId);
       }
+      useStudioStore.setState({ photometricGlintOnly: glintOnly });
       state.setPhotometricGizmoActive(true);
     };
 
@@ -308,7 +343,8 @@ export function usePhotometricEvents({
 
         if (angularDrift >= 20) {
           const params = {
-            lightAzimuth: detail.lightAzimuth,
+            glintStyle: state.tools.glintStyle ?? 'soft',
+          lightAzimuth: detail.lightAzimuth,
             lightElevation: detail.lightElevation,
             lightRadius: 64,
             lightColor: '#FFFFFF',
@@ -335,11 +371,12 @@ export function usePhotometricEvents({
         }
       }
 
-      const shadedCanvas = executePhotometricPipeline(
+      const shadedCanvas = renderLightPreview(
         session.srcCtx,
         canvasWidth,
         canvasHeight,
         {
+          glintStyle: state.tools.glintStyle ?? 'soft',
           lightAzimuth: detail.lightAzimuth,
           lightElevation: detail.lightElevation,
           lightRadius: 64,
@@ -359,7 +396,8 @@ export function usePhotometricEvents({
           normalMapData: session.normalMapData || undefined,
           precomputedAnalysis: session.analysis,
         },
-        session.paletteColors
+        session.paletteColors,
+        session.glintOnly
       );
 
       const lCanvas = getOrCreateLayerCanvas(session.targetLayerId);
@@ -384,6 +422,7 @@ export function usePhotometricEvents({
         let commitAnalysis = session.analysis;
         if (session.formType === 'character' || session.analysis?.appendageData) {
           commitAnalysis = computePhotometricAnalysis(session.srcCtx, canvasWidth, canvasHeight, {
+            glintStyle: state.tools.glintStyle ?? 'soft',
             lightAzimuth: state.tools.lightAzimuth,
             lightElevation: state.tools.lightElevation,
             lightRadius: 64,
@@ -403,11 +442,12 @@ export function usePhotometricEvents({
         }
 
         // Ensure the final commit render strictly aligns with the committed azimuth and elevation
-        const shadedCanvas = executePhotometricPipeline(
+        const shadedCanvas = renderLightPreview(
           session.srcCtx,
           canvasWidth,
           canvasHeight,
           {
+            glintStyle: state.tools.glintStyle ?? 'soft',
             lightAzimuth: state.tools.lightAzimuth,
             lightElevation: state.tools.lightElevation,
             lightRadius: 64,
@@ -427,7 +467,8 @@ export function usePhotometricEvents({
             normalMapData: session.normalMapData || undefined,
             precomputedAnalysis: commitAnalysis,
           },
-          session.paletteColors
+          session.paletteColors,
+          session.glintOnly
         );
 
         const lCanvas = getOrCreateLayerCanvas(session.targetLayerId);
@@ -440,10 +481,11 @@ export function usePhotometricEvents({
 
         const committedEffect: LayerEffectRecipe = {
           id: session.effectId,
-          kind: 'photometric',
+          kind: session.glintOnly ? 'specular' : 'photometric',
           version: 1,
           sourceMode: 'composite-excluding-self',
           params: {
+            glintStyle: state.tools.glintStyle ?? 'soft',
             lightAzimuth: state.tools.lightAzimuth,
             lightElevation: state.tools.lightElevation,
             lightCenterX: session.lastCenterX ?? null,
@@ -482,6 +524,7 @@ export function usePhotometricEvents({
         }
       }
 
+      useStudioStore.setState({ photometricGlintOnly: false });
       state.setPhotometricGizmoActive(false);
       renderComposite();
       bumpBufferVersion();
@@ -510,6 +553,7 @@ export function usePhotometricEvents({
             if (!layer) return;
             layer.name = session.previousTargetName ?? layer.name;
             layer.tag = session.previousTargetTag;
+            if (session.previousTargetBlend) layer.blendMode = session.previousTargetBlend;
             layer.effect = session.previousTargetEffect
               ? structuredClone(session.previousTargetEffect)
               : undefined;
@@ -522,6 +566,7 @@ export function usePhotometricEvents({
         photometricSessionRef.current = null;
       }
 
+      useStudioStore.setState({ photometricGlintOnly: false });
       state.setPhotometricGizmoActive(false);
       renderComposite();
       bumpBufferVersion();
@@ -553,6 +598,7 @@ export function usePhotometricEvents({
       const sourceShadingRemoval = detail.sourceShadingRemoval ?? state.tools.sourceShadingRemoval;
       const shadingBands = detail.shadingBands ?? state.tools.shadingBands;
       const pipelineParams = {
+        glintStyle: state.tools.glintStyle ?? 'soft',
         lightAzimuth,
         lightElevation,
         lightRadius: detail.lightRadius ?? state.tools.lightRadius,
