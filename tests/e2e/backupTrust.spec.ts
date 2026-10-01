@@ -183,11 +183,11 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await expect(page.getByText('Saved on this device', { exact: true })).toHaveCount(0);
   await page.setViewportSize({ width: 1920, height: 900 });
   await page.mouse.move(0, 200);
-  await header.screenshot({ path: 'docs/research/evidence/2026-10-01/header-one-row-1920.png' });
+  await header.screenshot({ path: test.info().outputPath('captures', 'header-one-row-1920.png') });
   await page.setViewportSize({ width: 1024, height: 900 });
-  await header.screenshot({ path: 'docs/research/evidence/2026-10-01/header-one-row-1024.png' });
+  await header.screenshot({ path: test.info().outputPath('captures', 'header-one-row-1024.png') });
   await fileButton.click();
-  await file.screenshot({ path: 'docs/research/evidence/2026-10-01/header-file-menu.png' });
+  await file.screenshot({ path: test.info().outputPath('captures', 'header-file-menu.png') });
   await file.getByTestId('resize-canvas-button').click();
   const resizeDialog = page.getByRole('dialog', { name: /Resize/ });
   await expect(resizeDialog).toBeVisible();
@@ -195,7 +195,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await page.keyboard.press('Escape');
   await expect(resizeDialog).toBeHidden();
   await header.getByTestId('appearance-button').click();
-  await studio.screenshot({ path: 'docs/research/evidence/2026-10-01/header-studio-options.png' });
+  await studio.screenshot({ path: test.info().outputPath('captures', 'header-studio-options.png') });
   await studio.getByRole('button', { name: 'Co-Draw session' }).click();
   await expect(page.getByRole('dialog', { name: 'Peer-to-Peer Co-Draw' })).toBeVisible();
   await expect(studio).toHaveCount(0);
@@ -207,7 +207,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await page.keyboard.press('Escape');
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveTool: (tool: string) => void } } }).__studioStore!.getState().setActiveTool('erase-color'));
   await expect(drawing.getByTestId('tool-options-rail')).toContainText('Erase-color:');
-  await header.screenshot({ path: 'docs/research/evidence/2026-10-01/header-one-row-erase-color-1024.png' });
+  await header.screenshot({ path: test.info().outputPath('captures', 'header-one-row-erase-color-1024.png') });
   await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Erase Color tolerance' })).toBeInViewport();
   await page.keyboard.press('Escape');

@@ -9,7 +9,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 ## Core Engineering Principles
 
 1. **Zero Third-Party Algorithmic Dependencies:**
-   All core pixel art and computer graphics algorithms—including the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), photometric normal map generation, 47-blob Wang autotiling, APNG/GIF decoders, and ISOBMFF Fast-Start MP4 muxing—are authored from scratch in pure TypeScript using TypedArrays and Web Platform standards (framework dependencies like React, Next.js, Zustand, Immer, and Dexie handle UI and storage plumbing). We do not accept PRs introducing third-party algorithmic bloat or unnecessary math packages.
+   All core pixel art and computer graphics algorithms—including the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), photometric normal map generation, 47-blob Wang autotiling, APNG/GIF encoders, and ISOBMFF Fast-Start MP4 muxing—are authored from scratch in pure TypeScript using TypedArrays and Web Platform standards (framework dependencies like React, Next.js, Zustand, Immer, and Dexie handle UI and storage plumbing). We do not accept PRs introducing third-party algorithmic bloat or unnecessary math packages.
 
 2. **Defensive Invariant Hardening:**
    All canvas operations, viewport transformations, and file deserialization routines must strictly respect mathematical invariants:
@@ -48,8 +48,8 @@ npm run gate:full
 
 | Stage | Command | Purpose |
 | :--- | :--- | :--- |
-| **Stage 1** | `npm run verify:docs` | Verifies phase uniqueness in `TASKS.md`, section monotonicity in `ARCHITECTURE.md`, current test counts in `README.md`, `BENCHMARKS.md`, and `V2_VISION.md`, and version synchronization in `package.json`. |
-| **Stage 2** | `npm run typecheck` | Enforces 100% strict TypeScript typing with zero compiler errors across the codebase. |
+| **Stage 1** | `npm run verify:docs` | Checks owned local links/headings, generated inventory, selected source contracts, phase/section rules and version parity. |
+| **Stage 2** | `npm run typecheck` | Checks strict project TypeScript compilation; skipLibCheck, casts, JavaScript dependencies and runtime inputs remain separate boundaries. |
 | **Stage 3** | `npm run lint` | Checks source, tests, scripts, configs, and accessibility rules. |
 | **Stage 4** | `npm test` | Runs the current unit and invariant test suite via Vitest. |
 | **Stage 5** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
@@ -58,7 +58,7 @@ npm run gate:full
 
 ##  Automated Pre-Push Git Hook
 
-PixiBun includes an automatic Git hook that intercepts `git push` on your local machine and executes `npm run gate`. If any type error, failing test, or doc inconsistency is detected, the push is blocked before it leaves your workstation.
+PixiBun includes a convenience Git hook that checks the working tree before `git push` on your local machine and executes `npm run gate`. A failing configured check aborts that invocation. Hooks are bypassable and do not prove the pushed commits match the tested working tree. Installation resolves Git paths and preserves unrelated hooks; see [testing and evidence](docs/guides/testing.md).
 
 ### Hook Setup
 
@@ -77,7 +77,7 @@ node scripts/installGitHooks.mjs
 
 - **Unit & Logic Tests:** Located in `tests/`. Every new algorithm, safety guard, or utility function must include comprehensive unit tests testing nominal, boundary, and pathological inputs.
 - **E2E & Accessibility Tests:** Located in `tests/e2e/`. Critical workstation workflows and accessibility benchmarks (via `@axe-core/playwright`) are tested end-to-end.
-- **Test Metrics Integrity:** Never hardcode or inflate test counters in documentation. `verifyDocIntegrity.mjs` checks the specific README test-count patterns against runner enumeration, plus phase/section/path/version invariants. It does not verify every number, narrative claim, performance result, or test outcome.
+- **Test Metrics Integrity:** Never hardcode or inflate test counters in documentation. `verifyDocIntegrity.mjs` checks owned local links/headings, generated live inventory, selected source contracts and phase/section/path/version rules. It does not verify every number, narrative claim, performance result, or test outcome.
 
 ---
 
@@ -87,12 +87,4 @@ Before submitting a Pull Request:
 1. Run `npm run gate` and verify that all stages pass green ([x]).
 2. Ensure no untyped `any` or `@ts-ignore` flags are introduced.
 3. If new features or phases are added, document them cleanly in `ARCHITECTURE.md` and `CHANGELOG.md`.
-4. Run `npm run verify:docs` to ensure zero documentation drift.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->
+4. Run `npm run verify:docs` to check the implemented documentation rules and review affected prose.

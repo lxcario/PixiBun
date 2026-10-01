@@ -43,7 +43,7 @@ test('PixiTools starts with tasks and keeps expert browse available', async ({ p
   await page.getByText('More lighting actions').click();
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.screenshot({ path: testInfo.outputPath('pixitools-lighting-1024.png') });
-  await page.getByTestId('right-inspector').screenshot({ path: 'docs/research/evidence/2026-10-01/lighting-menu-ready.png' });
+  await page.getByTestId('right-inspector').screenshot({ path: test.info().outputPath('captures', 'lighting-menu-ready.png') });
   const inspectorOverflows = await page.getByTestId('right-inspector').evaluate((element) => element.scrollWidth > element.clientWidth + 1);
   expect(inspectorOverflows).toBe(false);
   expect(await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision)).toBe(revision);
@@ -56,7 +56,7 @@ test('PixiTools starts with tasks and keeps expert browse available', async ({ p
   expect(new Set(menuBoxes.map((box) => `${box!.x}:${box!.width}:${box!.height}`)).size).toBe(1);
   await page.getByTestId('save-button').focus();
   await page.mouse.move(0, 200);
-  await page.getByTestId('right-inspector').screenshot({ path: 'docs/research/evidence/2026-10-01/lighting-menu-choices.png' });
+  await page.getByTestId('right-inspector').screenshot({ path: test.info().outputPath('captures', 'lighting-menu-choices.png') });
   const beforeSurface = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, element.width, element.height).data));
   await menus[1].focus();
   await page.keyboard.press('Space');
@@ -68,7 +68,7 @@ test('PixiTools starts with tasks and keeps expert browse available', async ({ p
   await page.getByTestId('save-button').focus();
   await page.mouse.move(0, 200);
   await page.keyboard.press('Escape');
-  await page.getByTestId('right-inspector').screenshot({ path: 'docs/research/evidence/2026-10-01/lighting-menu-surface.png' });
+  await page.getByTestId('right-inspector').screenshot({ path: test.info().outputPath('captures', 'lighting-menu-surface.png') });
   expect(await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, element.width, element.height).data))).toEqual(beforeSurface);
   await paintSurface.click();
   await expect(paintSurface).toHaveAttribute('aria-pressed', 'true');
@@ -84,7 +84,7 @@ test('PixiTools starts with tasks and keeps expert browse available', async ({ p
   await page.getByRole('button', { name: 'Analyze & Cast Shadow' }).scrollIntoViewIfNeeded();
   await page.mouse.move(0, 200);
   await page.keyboard.press('Escape');
-  await page.getByTestId('right-inspector').screenshot({ path: 'docs/research/evidence/2026-10-01/lighting-menu-shadow.png' });
+  await page.getByTestId('right-inspector').screenshot({ path: test.info().outputPath('captures', 'lighting-menu-shadow.png') });
   await page.getByTestId('tab-layers').click();
   await page.getByTestId('tab-ai').click();
   await expect(page.getByRole('heading', { name: 'Add light and depth' })).toBeVisible();

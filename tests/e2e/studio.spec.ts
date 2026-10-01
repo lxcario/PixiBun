@@ -79,7 +79,8 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await expect(page.locator('div[role="application"]')).toBeVisible();
     await page.waitForTimeout(300);
 
-    const guideBtn = page.getByRole('button', { name: /Atelier Guide, Diagnostics and Shortcuts|Guide/i });
+    await page.getByTestId('appearance-button').click();
+    const guideBtn = page.getByTestId('shortcuts-guide-button');
     await expect(guideBtn).toBeVisible();
     await page.waitForTimeout(400);
     await guideBtn.click();
@@ -386,7 +387,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     await page.getByRole('button', { name: /PixiTools/i }).click();
     await page.getByTestId('pixitools-browse-all').click();
     await page.waitForTimeout(300);
-    for (const name of [/2\.5D Photometric Studio/i, /^Patterns & Tilesets$/i]) {
+    for (const name of [/Light your sprite/i, /^Patterns & Tilesets$/i]) {
       const panel = page.getByRole('button', { name });
       if (await panel.getAttribute('aria-expanded') === 'false') await panel.click();
     }

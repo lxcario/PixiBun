@@ -47,7 +47,7 @@ test.describe('Real Offline Resilience (B1)', () => {
     await context.setOffline(true);
 
     // Verify offline mode indicator appears
-    const offlineIndicator = page.getByText(/Offline · Drawing & local saves active|Offline Mode/i);
+    const offlineIndicator = page.getByText('Offline', { exact: true });
     await expect(offlineIndicator).toBeVisible({ timeout: 6000 });
 
     // 3. Reload /studio while completely offline (proves SW cache-first navigation and precached shell)

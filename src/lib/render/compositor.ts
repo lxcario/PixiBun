@@ -1,11 +1,10 @@
 // Single source of visual truth for "what a frame looks like": bottom-up
 // layer compositing honoring visibility, opacity, and blend modes. Deliberately
-// pure and overlay-free - no onion skins, grid, or selection marquee ever
+// overlay-free - no onion skins, grid, or selection marquee ever
 // leak into what the eyedropper samples or what exporters write to disk.
 //
-// Milestone 2 migrates the viewport renderer itself onto this module; today
-// it already feeds every export path so exported files can never contain
-// editor chrome.
+// Reads DOM canvases and the raster registry. Fresh output is the default;
+// callers retaining frames must not opt into the shared mutable canvas.
 
 import type { AnimationFrame } from '@/types/canvas';
 import { getOrCreateBuffer, hasBuffer } from '@/lib/engine/bufferRegistry';
@@ -13,7 +12,7 @@ import { getOrCreateBuffer, hasBuffer } from '@/lib/engine/bufferRegistry';
 export interface CompositeOptions {
   /** Include hidden layers (used by flatten-style exports). Default false. */
   includeInvisible?: boolean;
-  /** If true, always allocates a fresh HTMLCanvasElement instance rather than using the pooled singleton. */
+  /** Defaults true. False reuses a shared canvas whose contents change on the next call. A targetCanvas takes precedence. */
   freshCanvas?: boolean;
 }
 

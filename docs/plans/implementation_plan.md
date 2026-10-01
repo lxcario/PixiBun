@@ -1,5 +1,7 @@
 # Implementation Plan — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability
 
+> **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
+
 ## Overview
 
 Make PixiBun a genuinely professional web application across four pillars, chosen by the owner: **(1) PWA/offline install** — the README has claimed "100% offline-capable" since day one, but there is no `public/` directory, no manifest, no service worker; today the app is a lie on a plane. **(2) WCAG 2.2 AA accessibility** — the app has good a11y instincts (amber focus rings, `aria-label`s, `useReducedMotion`) but zero enforcement, no error boundaries (`error.tsx` absent), and the canvas-centric UI has dragging-only interactions. **(3) Test & performance gates** — 61 node-only Vitest tests never touch a React component or a browser; no E2E, no performance budgets; Lighthouse CI closes this. **(4) Privacy-first observability** — the "zero telemetry" brand promise is honored by making diagnostics **local-only by default** (IndexedDB ring buffer + "Export diagnostics" button) with a strictly **opt-in** relay, implemented with a ~100-line hand-rolled reporter instead of the Sentry SDK, honoring SKILL.md's zero-bloat rule.
@@ -146,11 +148,3 @@ Deliberately **not** added: Workbox (hand-rolled SW — the shell is ~10 assets;
 12. Production build + full manual sweep (install on desktop/Android, airplane-mode reload, keyboard-only pass, screen-reader smoke via NVDA), adversarial self-review per FullStackGuide Gate 5, `TASKS.md` Phase 21 entry, conventional commits per phase.
 
 Every phase exits with `typecheck`, `lint`, `test`, and `next build` green — now also enforced by the existing CI on `main`.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../research/session-ui-ux-2026-10-01.md), [palette tools](../research/palette-creator-2026-10-01.md), [cycle scope](../research/palette-cycle-scope-2026-10-01.md), [export timing](../research/palette-cycle-export-2026-10-01.md) and [GIF correction](../research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

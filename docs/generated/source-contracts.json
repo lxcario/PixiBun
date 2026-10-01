@@ -1,0 +1,113 @@
+{
+  "packageVersion": "1.14.1",
+  "node": ">=22.0.0 <23.0.0",
+  "tools": [
+    {
+      "id": "pen",
+      "label": "Pen",
+      "shortcut": "B"
+    },
+    {
+      "id": "curve",
+      "label": "Bézier Curve",
+      "shortcut": "C"
+    },
+    {
+      "id": "eraser",
+      "label": "Eraser",
+      "shortcut": "E"
+    },
+    {
+      "id": "bucket",
+      "label": "Flood Fill",
+      "shortcut": "G"
+    },
+    {
+      "id": "dither",
+      "label": "Dither Brush",
+      "shortcut": "D"
+    },
+    {
+      "id": "color-replace",
+      "label": "Color Replace",
+      "shortcut": "R"
+    },
+    {
+      "id": "erase-color",
+      "label": "Erase Sampled Color",
+      "shortcut": "Shift + R"
+    },
+    {
+      "id": "select-box",
+      "label": "Marquee Box",
+      "shortcut": "M"
+    },
+    {
+      "id": "select-lasso",
+      "label": "Lasso Select",
+      "shortcut": "Q"
+    },
+    {
+      "id": "select-wand",
+      "label": "Magic Wand",
+      "shortcut": "W"
+    },
+    {
+      "id": "line",
+      "label": "Line",
+      "shortcut": "L"
+    },
+    {
+      "id": "isometric-line",
+      "label": "2:1 Iso Line",
+      "shortcut": "J"
+    },
+    {
+      "id": "rectangle",
+      "label": "Rectangle",
+      "shortcut": "U"
+    },
+    {
+      "id": "ellipse",
+      "label": "Ellipse",
+      "shortcut": "O"
+    },
+    {
+      "id": "normal-chisel",
+      "label": "Normal Chisel",
+      "shortcut": "K"
+    },
+    {
+      "id": "eyedropper",
+      "label": "Eyedropper",
+      "shortcut": "I"
+    }
+  ],
+  "exports": [
+    {
+      "format": "WebM",
+      "source": "src/lib/export/webmEncoder.ts",
+      "implementation": "recordCanvasVideo",
+      "alpha": "not-guaranteed"
+    },
+    {
+      "format": "APNG",
+      "source": "src/lib/export/apngEncoder.ts",
+      "implementation": "encodeZlibDeflate",
+      "alpha": "RGBA",
+      "compression": "DEFLATE-store-blocks"
+    },
+    {
+      "format": "MP4",
+      "source": "src/lib/export/mp4Encoder.ts",
+      "implementation": "VideoEncoder",
+      "alpha": "not-guaranteed"
+    },
+    {
+      "format": "GIF",
+      "source": "src/lib/export/gifEncoderCore.ts",
+      "implementation": "LZW",
+      "alpha": "palette-transparency"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "capturedAt": "2026-10-01T23:30:48.989Z",
+  "timezone": "Europe/Istanbul",
+  "revision": "277dc0b02680a3afc56a6860cbb14cbc7f5fd53f",
+  "workingTree": "uncommitted README refresh; current local application",
+  "command": "Node capture script using Playwright and the visible project importer/theme/lighting controls",
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "viewport": "1440x960, device scale 1",
+  "verdict": "three screenshot states captured with assertions and no page errors; not a full workflow-suite rerun",
+  "artworkSources": [
+    "src/lib/art/starterTemplates.ts",
+    "src/lib/art/bunSprite.ts"
+  ],
+  "captures": [
+    {
+      "path": "studio-cozy-dark.png",
+      "description": "Cozy Classic dark; built-in starter artwork and Bun poses arranged in an imported three-frame project.",
+      "sha256": "fa731c395c74c17759c72b9220bcf2bf215270edcf70e18f6d56ee3a2f2f5149"
+    },
+    {
+      "path": "studio-cozy-light.png",
+      "description": "The same project in Cozy Classic light, selected through the actual Studio options.",
+      "sha256": "9655cad5e7233785cd2661846e0f4b064503072f5a7b2cd965c8e74e78182542"
+    },
+    {
+      "path": "bun-lighting-preview.png",
+      "description": "Actual uncommitted lighting preview on Bun; Apply and Cancel remain visible.",
+      "sha256": "9e61ab88559a749af73d0cdb313d49c970741ebf0574bfad94d04fd5ef7be390"
+    }
+  ]
+}

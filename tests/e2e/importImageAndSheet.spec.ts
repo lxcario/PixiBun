@@ -63,7 +63,7 @@ test('image import keeps the chosen fit and original-size modes through preview 
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
   await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
-  await expect(page.getByRole('button', { name: '64×64' })).toBeVisible();
+  await expect(page.getByTestId('main-composite-canvas')).toHaveJSProperty('width', 64);
   const buffer = await pngFromCanvas(page, 128, 64);
   const picker = page.locator('input[type=file]').first();
   await picker.setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer });
@@ -97,7 +97,7 @@ test('suggested sprite sheet keeps blank timing cells and creates distinct timel
   await expect(canvas).toBeVisible();
   await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState().setCanvasSize(64, 64));
-  await expect(page.getByRole('button', { name: '64×64' })).toBeVisible();
+  await expect(page.getByTestId('main-composite-canvas')).toHaveJSProperty('width', 64);
   const buffer = await pngFromCanvas(page, 192, 64, [1, 0, 2]);
   await page.locator('input[type=file]').first().setInputFiles({ name: 'walk.png', mimeType: 'image/png', buffer });
   const dialog = page.getByRole('dialog', { name: 'Import Image' });

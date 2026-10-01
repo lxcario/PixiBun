@@ -1,0 +1,6474 @@
+[
+  {
+    "path": "V2_VISION.md",
+    "tracked": true,
+    "lines": 707,
+    "bytes": 42151,
+    "headings": [
+      {
+        "line": 1,
+        "title": "#  PixiBun Atelier — v2 Architecture & Strategic Vision"
+      },
+      {
+        "line": 14,
+        "title": "##  Table of Contents"
+      },
+      {
+        "line": 49,
+        "title": "## 1. Executive Summary & North Star"
+      },
+      {
+        "line": 82,
+        "title": "## 2. Pillar 1: WebGPU Compute Shaders (WGSL) for 2D Grid Algorithms"
+      },
+      {
+        "line": 84,
+        "title": "### 2.1 Jump Flooding Algorithm (JFA) vs. CPU Felzenszwalb EDT"
+      },
+      {
+        "line": 95,
+        "title": "#### Mathematical Formulation & Pass Schedule"
+      },
+      {
+        "line": 115,
+        "title": "### 2.2 WGSL Compute Pipeline & Workgroup Shared Memory Tiling"
+      },
+      {
+        "line": 178,
+        "title": "### 2.3 Sobel Tangent Normal & Specular Lighting in WGSL"
+      },
+      {
+        "line": 228,
+        "title": "### 2.4 Zero-Copy Texture Compositing Architecture"
+      },
+      {
+        "line": 236,
+        "title": "## 3. Pillar 2: WebAssembly 128-bit SIMD for Hot-Path 2D Pixel Operations"
+      },
+      {
+        "line": 238,
+        "title": "### 3.1 W3C WASM SIMD Specification Overview"
+      },
+      {
+        "line": 244,
+        "title": "### 3.2 4-Way Parallel Scanline Flood Fill Bitmask Evaluation"
+      },
+      {
+        "line": 266,
+        "title": "### 3.3 16-Pixel Single-Cycle Palette Cycling via `i8x16_swizzle`"
+      },
+      {
+        "line": 284,
+        "title": "### 3.4 Vectorized Alpha Compositing (Porter-Duff Over)"
+      },
+      {
+        "line": 318,
+        "title": "## 4. Pillar 3: Distributed Tree CRDTs for Multi-User Hierarchies"
+      },
+      {
+        "line": 320,
+        "title": "### 4.1 The Concurrent Tree Move Anomaly in Layer Stacks"
+      },
+      {
+        "line": 335,
+        "title": "### 4.2 Kleppmann-Beresford Cycle-Free Tree Move State Machine"
+      },
+      {
+        "line": 345,
+        "title": "#### Operation Structure & Invariants"
+      },
+      {
+        "line": 373,
+        "title": "#### Cycle Prevention Logic"
+      },
+      {
+        "line": 380,
+        "title": "#### Undo / Replay Mechanism"
+      },
+      {
+        "line": 386,
+        "title": "### 4.3 1D Frame Sequence CRDT & Tombstone Compaction Horizons"
+      },
+      {
+        "line": 395,
+        "title": "## 5. Pillar 4: Wide Color Gamut (Display-P3) & CSS Color Level 4"
+      },
+      {
+        "line": 397,
+        "title": "### 5.1 Colorimetric Depth: Display-P3 vs. sRGB in Pixel Art"
+      },
+      {
+        "line": 424,
+        "title": "### 5.2 HTML5 Canvas `colorSpace: 'display-p3'` Pipeline"
+      },
+      {
+        "line": 441,
+        "title": "### 5.3 Color Gamut Transformation Mathematics in OKLCH"
+      },
+      {
+        "line": 458,
+        "title": "### 5.4 Binary Chunk Encoder (`iCCP`, `cHRM`, `gAMA`) & ISO Standards"
+      },
+      {
+        "line": 464,
+        "title": "#### The Canonical PNG Wide-Gamut Chunk Rules:"
+      },
+      {
+        "line": 477,
+        "title": "## 6. Pillar 5: Desktop DCC Native Packaging with Tauri 2.0"
+      },
+      {
+        "line": 479,
+        "title": "### 6.1 Tauri 2.0 Architecture & Multi-Platform Runtime (WRY/TAO)"
+      },
+      {
+        "line": 510,
+        "title": "### 6.2 Zero-Copy Binary IPC Buffer Streaming"
+      },
+      {
+        "line": 527,
+        "title": "### 6.3 OS File Associations, Named Pipe Handover & Crash Resilience"
+      },
+      {
+        "line": 539,
+        "title": "### 6.4 Virtual Memory-Mapped Undo Paging (`memmap2`)"
+      },
+      {
+        "line": 551,
+        "title": "## 7. Pillar 6: On-Device Local Neural Pixel Art Inference"
+      },
+      {
+        "line": 553,
+        "title": "### 7.1 WebNN (DirectML/CoreML) vs. ONNX Runtime Web (`ort-web`)"
+      },
+      {
+        "line": 569,
+        "title": "### 7.2 FSRCNN-Pixel INT8 Quantized Architecture"
+      },
+      {
+        "line": 579,
+        "title": "## 8. Phased Implementation Roadmap (Milestones A–E)"
+      },
+      {
+        "line": 597,
+        "title": "### Milestone A: WebGPU Compute Engine & JFA Distance Fields"
+      },
+      {
+        "line": 604,
+        "title": "### Milestone B: WASM SIMD 128-bit Acceleration Pipeline"
+      },
+      {
+        "line": 611,
+        "title": "### Milestone C: Decentralized Move-Tree CRDT Multi-User Collaboration"
+      },
+      {
+        "line": 618,
+        "title": "### Milestone D: Display-P3 & Deep Color Pipeline"
+      },
+      {
+        "line": 624,
+        "title": "### Milestone E: Tauri 2.0 Native Desktop Packaging"
+      },
+      {
+        "line": 633,
+        "title": "## 9. Strategic Engineering Assessment: Is Developing v2 Necessary Right Now?"
+      },
+      {
+        "line": 635,
+        "title": "###  Direct & Candid Engineering Verdict:"
+      },
+      {
+        "line": 642,
+        "title": "### 1. The Scale of Pixel Art & Mathematical Performance Envelope"
+      },
+      {
+        "line": 659,
+        "title": "### 2. High Stability & Historical Audit Resolution of v1"
+      },
+      {
+        "line": 672,
+        "title": "### 3. Compatibility and Deployment Risks (WebGPU & WASM Realities)"
+      },
+      {
+        "line": 680,
+        "title": "### 4. When Should PixiBun v2 Be Built?"
+      },
+      {
+        "line": 693,
+        "title": "###  Final Decision & Recommendation"
+      },
+      {
+        "line": 701,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "18a42457b2a2726c0855674c7af8b6876f9729edcc885e62aa59c4734997b8ee"
+  },
+  {
+    "path": "FullStackGuide.md",
+    "tracked": true,
+    "lines": 560,
+    "bytes": 36571,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# The Anti-Slop Operating System (v2)"
+      },
+      {
+        "line": 2,
+        "title": "### The Hardened Engineering, Security, and Design Protocol for Full-Stack Web Apps"
+      },
+      {
+        "line": 8,
+        "title": "## 1. Executive Summary & The Core Thesis"
+      },
+      {
+        "line": 22,
+        "title": "## 2. Normative Language & Requirement Levels"
+      },
+      {
+        "line": 36,
+        "title": "## 3. Verified System Assumptions (Living Technical Registry)"
+      },
+      {
+        "line": 52,
+        "title": "# Part I — The 8 Operational Gates (The Development Spine)"
+      },
+      {
+        "line": 69,
+        "title": "### Gate 0 — Spec, Problem Statement & Scope Boundaries"
+      },
+      {
+        "line": 83,
+        "title": "### Gate 1 — Token System & Signature Design Decision"
+      },
+      {
+        "line": 97,
+        "title": "### Gate 2 — Information Architecture, Flow & Real Content"
+      },
+      {
+        "line": 111,
+        "title": "### Gate 3 — Implementation, Tactile Physics & Pixel Integrity"
+      },
+      {
+        "line": 130,
+        "title": "### Gate 4 — Security Boundary & Data Isolation"
+      },
+      {
+        "line": 146,
+        "title": "### Gate 5 — The Adversarial Review Loop (Dual-Agent Audit)"
+      },
+      {
+        "line": 163,
+        "title": "### Gate 6 — Quality Assurance, Accessibility & Performance"
+      },
+      {
+        "line": 178,
+        "title": "### Gate 7 — Pre-Launch Verification & Deployment"
+      },
+      {
+        "line": 192,
+        "title": "# Part II — The Reference Manual"
+      },
+      {
+        "line": 198,
+        "title": "## 1. Planning & Specification Mechanics"
+      },
+      {
+        "line": 201,
+        "title": "### 1.1 Defining the Actual Problem"
+      },
+      {
+        "line": 205,
+        "title": "### 1.2 Competitive Audits"
+      },
+      {
+        "line": 211,
+        "title": "### 1.4 Information Architecture"
+      },
+      {
+        "line": 215,
+        "title": "### 1.6 Spec-Driven Development"
+      },
+      {
+        "line": 224,
+        "title": "## 2. Diagnostic Taxonomy of AI Slop"
+      },
+      {
+        "line": 227,
+        "title": "### 2.1 Visual & Structural Tells"
+      },
+      {
+        "line": 234,
+        "title": "### 2.2 Motion & Interaction Tells"
+      },
+      {
+        "line": 238,
+        "title": "### 2.3 Copywriting Tells"
+      },
+      {
+        "line": 245,
+        "title": "## 3. Distinctive Design & Tactile Physics"
+      },
+      {
+        "line": 248,
+        "title": "### 3.1 Typography Systems"
+      },
+      {
+        "line": 255,
+        "title": "### 3.2 Color Systems in OKLCH"
+      },
+      {
+        "line": 264,
+        "title": "### 3.3 Layout & Spatial Composition"
+      },
+      {
+        "line": 269,
+        "title": "### 3.4 Motion with Intent"
+      },
+      {
+        "line": 273,
+        "title": "#### 3.4.1 Tactile Physics & Button Animation Standard"
+      },
+      {
+        "line": 280,
+        "title": "### 3.6 The One-Signature-Element Principle"
+      },
+      {
+        "line": 284,
+        "title": "### 3.7 Meaningful, Human Copywriting"
+      },
+      {
+        "line": 288,
+        "title": "### 3.9 Pixel Art & Canvas Integrity"
+      },
+      {
+        "line": 299,
+        "title": "## 4. UI Library & Tooling Landscape"
+      },
+      {
+        "line": 301,
+        "title": "### 4.1 Headless Primitives"
+      },
+      {
+        "line": 306,
+        "title": "### 4.2 Customizing shadcn Primitives"
+      },
+      {
+        "line": 309,
+        "title": "### 4.3 Animation Tooling"
+      },
+      {
+        "line": 314,
+        "title": "### 4.6 Icons"
+      },
+      {
+        "line": 322,
+        "title": "## 5. Full-Stack Architecture"
+      },
+      {
+        "line": 324,
+        "title": "### 5.1 Next.js 16 App Router Mechanics"
+      },
+      {
+        "line": 331,
+        "title": "### 5.4 API Design and Validation"
+      },
+      {
+        "line": 337,
+        "title": "## 6. Security Mechanics & Case Studies"
+      },
+      {
+        "line": 339,
+        "title": "### 6.1 Real-World Security Incident Post-Mortems"
+      },
+      {
+        "line": 347,
+        "title": "### 6.2 Secrets & Configuration"
+      },
+      {
+        "line": 353,
+        "title": "### 6.3 Access Control & RLS Deep Dive"
+      },
+      {
+        "line": 360,
+        "title": "### 6.4 Input, Upload & Injection Defenses"
+      },
+      {
+        "line": 365,
+        "title": "### 6.6 Security Headers"
+      },
+      {
+        "line": 377,
+        "title": "## 7. Performance & Core Web Vitals"
+      },
+      {
+        "line": 380,
+        "title": "### 7.1 Core Web Vitals"
+      },
+      {
+        "line": 386,
+        "title": "### 7.4 Memory Leak Prevention"
+      },
+      {
+        "line": 391,
+        "title": "## 8. QA, Accessibility & Adversarial Auditing"
+      },
+      {
+        "line": 394,
+        "title": "### 8.1 Accessibility Baseline"
+      },
+      {
+        "line": 399,
+        "title": "### 8.2 The Adversarial Review Loop"
+      },
+      {
+        "line": 406,
+        "title": "## 9. Pre-Launch & Infrastructure"
+      },
+      {
+        "line": 409,
+        "title": "### 9.1 Pre-Launch Checklist"
+      },
+      {
+        "line": 414,
+        "title": "### 9.2 Production Infrastructure"
+      },
+      {
+        "line": 420,
+        "title": "# Part III — Appendices & Enforceable Contracts"
+      },
+      {
+        "line": 424,
+        "title": "## Appendix A — Complete Anti-Slop Visual & Structural Audit"
+      },
+      {
+        "line": 439,
+        "title": "## Appendix B — Complete Security Audit Checklist"
+      },
+      {
+        "line": 452,
+        "title": "## Appendix C — Curated Toolbox (2026 Reference)"
+      },
+      {
+        "line": 465,
+        "title": "## Appendix D — Code & Process Professionalism Audit"
+      },
+      {
+        "line": 476,
+        "title": "## Appendix E — The Enforceable AI Agent Contract"
+      },
+      {
+        "line": 510,
+        "title": "## Appendix F — Project Bootstrap Blueprint Files"
+      },
+      {
+        "line": 522,
+        "title": "## Appendix G — V1 to V2 Comprehensive Preservation Audit"
+      },
+      {
+        "line": 554,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "cf7b7f63a5defbd44d750c4e2d603a9273fc57de6a5ec5c278163db1c1b4833b"
+  },
+  {
+    "path": "CONTRIBUTING.md",
+    "tracked": true,
+    "lines": 99,
+    "bytes": 7380,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Contributing to PixiBun Atelier "
+      },
+      {
+        "line": 9,
+        "title": "## Core Engineering Principles"
+      },
+      {
+        "line": 27,
+        "title": "## Interface and graphics regression evidence"
+      },
+      {
+        "line": 31,
+        "title": "## The Local Quality Gate"
+      },
+      {
+        "line": 35,
+        "title": "### Running the Quality Gate"
+      },
+      {
+        "line": 47,
+        "title": "### Four standard stages and an optional build"
+      },
+      {
+        "line": 59,
+        "title": "##  Automated Pre-Push Git Hook"
+      },
+      {
+        "line": 63,
+        "title": "### Hook Setup"
+      },
+      {
+        "line": 76,
+        "title": "##  Testing Standards"
+      },
+      {
+        "line": 84,
+        "title": "##  Pull Request Checklist"
+      },
+      {
+        "line": 93,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "daf97a22393c50cedcad22628404e1c75316fda0ad29a219d67f6a301d7c50bd"
+  },
+  {
+    "path": "AGENTS.md",
+    "tracked": true,
+    "lines": 18,
+    "bytes": 2396,
+    "headings": [
+      {
+        "line": 3,
+        "title": "# This is NOT the Next.js you know"
+      },
+      {
+        "line": 12,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "1b56d1c87b005d2f6a320be3d5b5693c7bb2a34bfa13b920d8e61fe8efbc2ed6"
+  },
+  {
+    "path": "BENCHMARKS.md",
+    "tracked": true,
+    "lines": 207,
+    "bytes": 20850,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun Performance Benchmarks & Runtime Memory Models"
+      },
+      {
+        "line": 17,
+        "title": "## 1. Palette Cycling 32-Bit LUT Remapping Performance"
+      },
+      {
+        "line": 25,
+        "title": "### Empirical Frame Timings"
+      },
+      {
+        "line": 38,
+        "title": "## 2. HistoryEngine Memory Footprint & Ceilings"
+      },
+      {
+        "line": 46,
+        "title": "### Memory Scaling Analysis"
+      },
+      {
+        "line": 63,
+        "title": "## 3. Viewport Decoupling & React Render Performance"
+      },
+      {
+        "line": 72,
+        "title": "## 4. Interactive Selection Transform & Inverse Affine Sampling Performance"
+      },
+      {
+        "line": 80,
+        "title": "### Empirical Frame Timings (100 Iterations per Resolution)"
+      },
+      {
+        "line": 93,
+        "title": "## 5. Export Memory Budgets & Canvas Safety Bounds"
+      },
+      {
+        "line": 103,
+        "title": "### Memory Footprint & Safety Evaluation"
+      },
+      {
+        "line": 121,
+        "title": "## 6. Worker EDT & Normal Map Offloading Performance"
+      },
+      {
+        "line": 140,
+        "title": "## 7. Autonomous Local Quality Gate Pipeline Benchmark"
+      },
+      {
+        "line": 159,
+        "title": "## 8. Neutral Relighting & Smart-Effect Recipe Processing Budget"
+      },
+      {
+        "line": 168,
+        "title": "### Performance Scaling Analysis"
+      },
+      {
+        "line": 182,
+        "title": "## 9. Streaming Store-Only ZIP32 & Stored-Blob Assessment Resource Bounds (Phase 1B Design Invariants)"
+      },
+      {
+        "line": 189,
+        "title": "### Memory & Execution Architecture"
+      },
+      {
+        "line": 201,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "7f038612bc7354b0cf2cf22eb3062ddb510ab0607894b740b6a17c6f8eb99e63"
+  },
+  {
+    "path": "PIXIBUN_UX_IMPLEMENTATION_PLAN.md",
+    "tracked": true,
+    "lines": 66,
+    "bytes": 11579,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX implementation plan — 2026-09-29"
+      },
+      {
+        "line": 5,
+        "title": "## Goal and boundaries"
+      },
+      {
+        "line": 11,
+        "title": "## Milestones and dependencies"
+      },
+      {
+        "line": 27,
+        "title": "## Historical interaction specification A — local save and portable backup"
+      },
+      {
+        "line": 43,
+        "title": "## Interaction specification B — onion visibility explanation"
+      },
+      {
+        "line": 55,
+        "title": "## Deferred work and research protocol"
+      },
+      {
+        "line": 60,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "39e3fd5f2962b01e599c1ead397b575632a1a3260830725016a90e2f35152d73"
+  },
+  {
+    "path": "PIXIBUN_UX_CHANGELOG.md",
+    "tracked": true,
+    "lines": 74,
+    "bytes": 11729,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX changelog — 2026-09-29–30"
+      },
+      {
+        "line": 5,
+        "title": "## Single-row header and visible glints — 2026-10-01"
+      },
+      {
+        "line": 9,
+        "title": "## Session UI/UX corrections — 2026-10-01"
+      },
+      {
+        "line": 15,
+        "title": "## Follow-up after direct UI feedback — 2026-09-30"
+      },
+      {
+        "line": 27,
+        "title": "## Tool preview follow-up"
+      },
+      {
+        "line": 34,
+        "title": "## PixiTools follow-up"
+      },
+      {
+        "line": 43,
+        "title": "## Audit and plan"
+      },
+      {
+        "line": 49,
+        "title": "## Implemented changes"
+      },
+      {
+        "line": 58,
+        "title": "## Tests and limitations"
+      },
+      {
+        "line": 68,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "95f4356bb3bade4e021dec85856ed371065ea09eb2829411c8cdcaab33ad6bb3"
+  },
+  {
+    "path": "PIXIBUN_UX_AUDIT.md",
+    "tracked": true,
+    "lines": 60,
+    "bytes": 16765,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX audit — 2026-09-29"
+      },
+      {
+        "line": 5,
+        "title": "## Scope and evidence"
+      },
+      {
+        "line": 11,
+        "title": "## Research-to-repository comparison"
+      },
+      {
+        "line": 34,
+        "title": "## Consequential verified findings"
+      },
+      {
+        "line": 43,
+        "title": "## Implemented verification observations"
+      },
+      {
+        "line": 49,
+        "title": "## Specific unverified concerns"
+      },
+      {
+        "line": 54,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "131542761cdc9116ee701d7423d0df5ed3990a6b8236fef3c8efbdd9be3becf9"
+  },
+  {
+    "path": "PIXIBUN_DEEP_DIVE.md",
+    "tracked": true,
+    "lines": 543,
+    "bytes": 43598,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun: Comprehensive Technical, Mathematical & Architectural Reference"
+      },
+      {
+        "line": 15,
+        "title": "## Table of Contents"
+      },
+      {
+        "line": 37,
+        "title": "# 1. Directory & File Architecture"
+      },
+      {
+        "line": 99,
+        "title": "# 2. Memory Architecture & Dual-Layer Drawing Pipeline"
+      },
+      {
+        "line": 121,
+        "title": "### 1. `bufferRegistry.ts` (Layer Buffer Store)"
+      },
+      {
+        "line": 127,
+        "title": "### 2. `bufferVersion` Reactive Signal"
+      },
+      {
+        "line": 131,
+        "title": "### 3. Undo/Redo History Engine"
+      },
+      {
+        "line": 137,
+        "title": "# 3. Raster, Geometry & Canvas Algorithms"
+      },
+      {
+        "line": 141,
+        "title": "### 1. Pixel-Perfect Bresenham (`filterPixelPerfect`)"
+      },
+      {
+        "line": 146,
+        "title": "### 2. Quantized 2:1 Isometric Line Stepper (`getIsometric2p1Line`)"
+      },
+      {
+        "line": 151,
+        "title": "### 3. Quadratic Bézier Curves (`getQuadraticBezierPoints`)"
+      },
+      {
+        "line": 156,
+        "title": "### 4. Flood Fill (performFloodFill)"
+      },
+      {
+        "line": 161,
+        "title": "### 5. Erase Sampled Color (`eraseMatchingColor.ts`)"
+      },
+      {
+        "line": 168,
+        "title": "# 4. PixiBud 2.5D Photometric Studio"
+      },
+      {
+        "line": 189,
+        "title": "### 1. $O(N)$ Linear-Time Euclidean Distance Transform (EDT)"
+      },
+      {
+        "line": 194,
+        "title": "### 2. Dome Profile Inflation & Bilateral Filtering"
+      },
+      {
+        "line": 199,
+        "title": "### 3. Analytical Tangent-Space Normals & Sobel Gradients"
+      },
+      {
+        "line": 204,
+        "title": "### 4. Normal Map Baking"
+      },
+      {
+        "line": 209,
+        "title": "### 5. Content-Aware Frontal Face Cushion & Anatomical Feature Isolation"
+      },
+      {
+        "line": 217,
+        "title": "### 6. Interactive On-Canvas Pixel Light Bulb Gizmo & Reticle Architecture"
+      },
+      {
+        "line": 224,
+        "title": "# 5. 3D Minecraft Skin Recognition & Dedicated Shading"
+      },
+      {
+        "line": 251,
+        "title": "# 6. Signed Distance Field (SDF) In-Between Animation Morphing"
+      },
+      {
+        "line": 267,
+        "title": "# 7. Image-to-Pixel Synthesis (`pixelizeEngine.ts`)"
+      },
+      {
+        "line": 281,
+        "title": "# 8. Storage, Serialization & Game Engine Exports"
+      },
+      {
+        "line": 283,
+        "title": "### 1. IndexedDB Workspace & Format v3 (db.ts, schema.ts)"
+      },
+      {
+        "line": 288,
+        "title": "### 2. Game Engine Export Pipeline (spriteSheetPacker.ts)"
+      },
+      {
+        "line": 293,
+        "title": "### 3. GIF89a LZW Encoder (gifEncoderCore.ts)"
+      },
+      {
+        "line": 296,
+        "title": "### 4. Animated PNG Encoder (apngEncoder.ts)"
+      },
+      {
+        "line": 299,
+        "title": "### 5. WebM & MP4 Hardware-Accelerated Video (webmEncoder.ts, mp4Encoder.ts)"
+      },
+      {
+        "line": 303,
+        "title": "### 6. Process Replay Speedpaint Timelapse (processReplayExport.ts)"
+      },
+      {
+        "line": 306,
+        "title": "### 7. Standalone Game Engine Shaders (shaderExporter.ts)"
+      },
+      {
+        "line": 311,
+        "title": "# 9. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (shadowRayMarcher.ts)"
+      },
+      {
+        "line": 313,
+        "title": "### 1. Exact 1-to-1 Sheared Silhouette Projection"
+      },
+      {
+        "line": 319,
+        "title": "### 2. Ground Contact Drop Shadows (shadowStyle: 'drop')"
+      },
+      {
+        "line": 323,
+        "title": "### 3. Authentic Uniform Flat Opacity (ditherMode: 'none')"
+      },
+      {
+        "line": 328,
+        "title": "# 10. 2.5D Normal Sculptor & Reoriented Normal Mapping (normalSculptor.ts)"
+      },
+      {
+        "line": 330,
+        "title": "### 1. Tangent Space Normal Vector Encoding"
+      },
+      {
+        "line": 335,
+        "title": "### 2. Analytical Directional Bevels"
+      },
+      {
+        "line": 340,
+        "title": "### 3. Reoriented Normal Mapping (RNM)"
+      },
+      {
+        "line": 351,
+        "title": "# 11. Mark Ferrari 8-Bit Dynamic Palette Cycling (paletteCycling.ts)"
+      },
+      {
+        "line": 353,
+        "title": "### 1. IFF ILBM `CRNG` & Commodore `CCRT` Binary Codecs"
+      },
+      {
+        "line": 358,
+        "title": "### 2. 60 FPS 32-Bit LUT Renderer"
+      },
+      {
+        "line": 365,
+        "title": "### 3. Ping-Pong Triangle Wave Fencepost Safety"
+      },
+      {
+        "line": 370,
+        "title": "### 4. Harmonic Rational Retuning"
+      },
+      {
+        "line": 381,
+        "title": "# 12. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety"
+      },
+      {
+        "line": 383,
+        "title": "### 1. Unsigned 32-Bit Bitwise Invariant (`floodFill.ts`)"
+      },
+      {
+        "line": 393,
+        "title": "### 2. Viewport Cursor HUD Decoupling (`CursorStatusBadge.tsx`)"
+      },
+      {
+        "line": 396,
+        "title": "### 3. Asynchronous Object URL Teardown (`ExportModal.tsx`)"
+      },
+      {
+        "line": 402,
+        "title": "### 4. H.264 / YUV 4:2:0 Macroblock Alignment (`mp4Encoder.ts`)"
+      },
+      {
+        "line": 407,
+        "title": "# 13. RotSprite-Inspired Rotation & Vector Depixelization"
+      },
+      {
+        "line": 409,
+        "title": "### 1. RotSprite-Inspired Rotation (`rotSprite.ts`)"
+      },
+      {
+        "line": 421,
+        "title": "### 2. Adapted Kopf-Lischinski Vector Depixelization (`depixelizeVector.ts`)"
+      },
+      {
+        "line": 430,
+        "title": "# 14. Viewport Lenses, Accessibility & Direct Hotkeys"
+      },
+      {
+        "line": 432,
+        "title": "### 1. Silhouette / Squint Mode Lens (<kbd>S</kbd>)"
+      },
+      {
+        "line": 435,
+        "title": "### 2. CVD Colorblindness Simulation Lens (<kbd>P</kbd>)"
+      },
+      {
+        "line": 442,
+        "title": "### 3. Precision Tool Hotkeys"
+      },
+      {
+        "line": 451,
+        "title": "# 15. Modern Studio Shell & Design System Primitives Architecture"
+      },
+      {
+        "line": 453,
+        "title": "### 1. Workspace Shell Decomposition"
+      },
+      {
+        "line": 459,
+        "title": "### 2. Design System Component Library (`src/components/ui/`)"
+      },
+      {
+        "line": 471,
+        "title": "# 16. Teaching Animation Board & Discrete Jump Physics Engine"
+      },
+      {
+        "line": 473,
+        "title": "### 1. Interactive Teaching Animation Board (`TeachingAnimationBoard.tsx`)"
+      },
+      {
+        "line": 483,
+        "title": "# 17. Smart-Effect Recipe Architecture & Non-Destructive Workflow"
+      },
+      {
+        "line": 487,
+        "title": "### 1. Unified Recipe Model (`src/types/canvas.ts`)"
+      },
+      {
+        "line": 519,
+        "title": "### 2. Non-Destructive Layer Provenance & Runtime Invariants"
+      },
+      {
+        "line": 525,
+        "title": "### 3. Discrete Cel-Shading Ramps & 3D Specular Highlight System"
+      },
+      {
+        "line": 537,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "ef996869235e0bfeb79de5fd812863da9a4f68fdbde2047d49cfbbccbe7fcc86"
+  },
+  {
+    "path": "PIXIBUN_AUDIT_RESULTS+DEEP.md",
+    "tracked": true,
+    "lines": 858,
+    "bytes": 90268,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PIXIBUN — Independent Code & Documentation Audit (Final)"
+      },
+      {
+        "line": 18,
+        "title": "# 1. Summary"
+      },
+      {
+        "line": 20,
+        "title": "### Repository inventory (measured)"
+      },
+      {
+        "line": 34,
+        "title": "### Audit coverage"
+      },
+      {
+        "line": 49,
+        "title": "### Findings by severity"
+      },
+      {
+        "line": 64,
+        "title": "# 2. Critical and High Priority Bugs"
+      },
+      {
+        "line": 66,
+        "title": "### [CRITICAL] C1 — The editor creates projects that its own persistence layer refuses to reopen, and the recovery path replaces the user's workspace with a blank one"
+      },
+      {
+        "line": 114,
+        "title": "### [HIGH] H1 — `computeContentAwareHeightmap` is super-linear in canvas area and is the default path for both `character` and `prop` artwork"
+      },
+      {
+        "line": 160,
+        "title": "### [HIGH] H2 — Sprite-sheet export has no dimension ceiling and never validates its own output"
+      },
+      {
+        "line": 184,
+        "title": "### [HIGH] H3 — GIF, APNG, WebM and MP4 exports bypass the ceiling the documentation calls universal"
+      },
+      {
+        "line": 208,
+        "title": "### [HIGH] H4 — `redo()` evicts undo entries without updating the replay baseline"
+      },
+      {
+        "line": 232,
+        "title": "### [HIGH] H5 — WaveFunctionCollapse has no pattern-count bound; a user selection sizes an O(patterns²) build and a multi-gigabyte allocation"
+      },
+      {
+        "line": 271,
+        "title": "### [HIGH] H6 — `renderParametric2p5DLighting` runs the expensive content-aware analysis twice, plus a third full EDT pipeline, per invocation"
+      },
+      {
+        "line": 289,
+        "title": "# 3. Documentation Errors / False Claims"
+      },
+      {
+        "line": 291,
+        "title": "## `README.md`"
+      },
+      {
+        "line": 293,
+        "title": "### [MEDIUM] M6 — \"zero-allocation 32-bit LUT renderer\" is false"
+      },
+      {
+        "line": 299,
+        "title": "### [MEDIUM] M7 — The Aaltonen raymarcher is advertised as a shipped feature but is unreachable from the UI"
+      },
+      {
+        "line": 313,
+        "title": "### [MEDIUM] M16 — \"Physical Kelvin temperature shifts\" and \"chromatic adaptation matrices\" describe mathematics that does not exist"
+      },
+      {
+        "line": 324,
+        "title": "### [MEDIUM] M17 — The stated Beer–Lambert chord formula is not the one implemented"
+      },
+      {
+        "line": 335,
+        "title": "### [LOW] L14 — Benchmark budget misquoted as 10 s; the test asserts 15 s"
+      },
+      {
+        "line": 338,
+        "title": "### [LOW] L15 — \"Canonical Xenowhirl RotSprite Engine\" omits two stages of the canonical algorithm"
+      },
+      {
+        "line": 341,
+        "title": "### [LOW] L16 — OKLab perceptual matching is claimed for dither tools that use Euclidean RGB"
+      },
+      {
+        "line": 344,
+        "title": "### [LOW] L28 — \"smooth, continuous highlight pill with natural alpha falloff\" is a hard threshold"
+      },
+      {
+        "line": 347,
+        "title": "### Cross-reference"
+      },
+      {
+        "line": 352,
+        "title": "## `BENCHMARKS.md`"
+      },
+      {
+        "line": 354,
+        "title": "### [MEDIUM] M9 — §7 \"Quality Gate Pipeline Benchmark\" is stale on three independently measurable counts"
+      },
+      {
+        "line": 372,
+        "title": "### [MEDIUM] M10 — \"50 combined undo/redo steps\" is wrong; the engine holds 50 undo **plus** 50 redo"
+      },
+      {
+        "line": 375,
+        "title": "### [LOW] L17 — §2's two largest rows describe states the engine cannot reach"
+      },
+      {
+        "line": 378,
+        "title": "### [LOW] L18 — §6 \"Main Thread Blocking (Worker Offload) 0.00 ms\" does not cover the expensive path"
+      },
+      {
+        "line": 381,
+        "title": "### [LOW] L29 — Stage timings are an order of magnitude below measurement"
+      },
+      {
+        "line": 386,
+        "title": "## `PIXIBUN_DEEP_DIVE.md`"
+      },
+      {
+        "line": 388,
+        "title": "### [MEDIUM] M14 — The documented cel-shadow terminator formula does not match the implementation"
+      },
+      {
+        "line": 410,
+        "title": "### [MEDIUM] M15 — \"exact zero derivative at the apex\" is false for the shipped profile"
+      },
+      {
+        "line": 431,
+        "title": "## `MAIN.md` and `ARCHITECTURE.md`"
+      },
+      {
+        "line": 433,
+        "title": "### [MEDIUM] M11 — \"sub-millisecond execution\" / \"zero latency\" for the math engine"
+      },
+      {
+        "line": 448,
+        "title": "### [LOW] L30 — \"guaranteeing zero unpersisted metadata state\""
+      },
+      {
+        "line": 451,
+        "title": "### [LOW] L31 — \"token-bucket traffic shaping\" overstates what the reliable channel does"
+      },
+      {
+        "line": 456,
+        "title": "## Documentation that was checked and **holds**"
+      },
+      {
+        "line": 481,
+        "title": "# 4. Undocumented Code Behavior"
+      },
+      {
+        "line": 483,
+        "title": "### [MEDIUM] M1 — The redo stack has no byte budget, so total history memory is not bounded to 64 MiB"
+      },
+      {
+        "line": 488,
+        "title": "### [MEDIUM] M2 — `receivedMessages` dedup set grows without bound for the session lifetime"
+      },
+      {
+        "line": 491,
+        "title": "### [MEDIUM] M12 — An oversized edit is silently made permanently non-undoable, and destroys the redo chain"
+      },
+      {
+        "line": 494,
+        "title": "### [MEDIUM] M13 — The Dexie handle is attached to `window` in production builds served from localhost"
+      },
+      {
+        "line": 503,
+        "title": "### [MEDIUM] M18 — `cleanJaggiesOnCanvas` writes semi-transparent pixels into the user's layer buffer, contradicting the project's own invariant"
+      },
+      {
+        "line": 506,
+        "title": "### [LOW] L19 — The 50 MB import ceiling applies to images, not just project JSON"
+      },
+      {
+        "line": 509,
+        "title": "### [LOW] L20 — JSON nesting is hard-capped at depth 32, enforced twice"
+      },
+      {
+        "line": 512,
+        "title": "### [LOW] L12 — `sanitizeObject` strips any key literally named `constructor` or `prototype`, anywhere"
+      },
+      {
+        "line": 515,
+        "title": "### [LOW] L21 — Project load aborts entirely if any one layer PNG's decoded size differs from the canvas"
+      },
+      {
+        "line": 518,
+        "title": "### [LOW] L22 — The 2048 px canvas ceiling is absent from `README.md` and `MAIN.md`"
+      },
+      {
+        "line": 521,
+        "title": "### [LOW] L23 — PNG export failure is reported to the console only"
+      },
+      {
+        "line": 524,
+        "title": "### [LOW] L24 — Diagnostics capture records `window.location.pathname` and truncates detail at 2 KB"
+      },
+      {
+        "line": 527,
+        "title": "### [LOW] L25 — Structural envelope limits are enforced but undocumented for users"
+      },
+      {
+        "line": 530,
+        "title": "### [LOW] L26 — The MediaRecorder MP4 fallback bypasses the ISOBMFF muxer entirely"
+      },
+      {
+        "line": 533,
+        "title": "### [LOW] L27 — The heavy-compute worker silently degrades to synchronous main-thread execution"
+      },
+      {
+        "line": 536,
+        "title": "### [LOW] L32 — A worker timeout on one request rejects every concurrent request"
+      },
+      {
+        "line": 539,
+        "title": "### [LOW] L33 — SDF morph output is forced fully opaque and assumes both frames share dimensions"
+      },
+      {
+        "line": 542,
+        "title": "### [LOW] L34 — `renderParametric2p5DLighting` returns a permanently empty `rimPixels` array and ignores two of its parameters"
+      },
+      {
+        "line": 545,
+        "title": "### [LOW] L35 — `CoDrawBridge` defaults to public STUN when called without options, inverting the module default"
+      },
+      {
+        "line": 548,
+        "title": "### [LOW] L2 — Blank-canvas analysis returns four aliased references to one buffer"
+      },
+      {
+        "line": 551,
+        "title": "### [LOW] L10 — Zhang–Suen never thins the outer 1 px border"
+      },
+      {
+        "line": 554,
+        "title": "### [LOW] L36 — `getBresenhamLine` has no integer guard and will hang on fractional input"
+      },
+      {
+        "line": 567,
+        "title": "# 5. Algorithm / Attribution Verification Table"
+      },
+      {
+        "line": 599,
+        "title": "### Detailed note — Riemersma error weighting is a genuine algorithmic mismatch"
+      },
+      {
+        "line": 624,
+        "title": "# 6. Test / Build Health"
+      },
+      {
+        "line": 642,
+        "title": "### Dependency install"
+      },
+      {
+        "line": 652,
+        "title": "### Unit tests"
+      },
+      {
+        "line": 660,
+        "title": "### Build"
+      },
+      {
+        "line": 671,
+        "title": "### Quality gate (timed)"
+      },
+      {
+        "line": 681,
+        "title": "### Live server exercise"
+      },
+      {
+        "line": 702,
+        "title": "### Repository-wide automated defect scans (all 237 source files)"
+      },
+      {
+        "line": 719,
+        "title": "# 7. Unverified / Suspicious Findings"
+      },
+      {
+        "line": 769,
+        "title": "# 8. Recommended Fixes"
+      },
+      {
+        "line": 771,
+        "title": "## Critical"
+      },
+      {
+        "line": 775,
+        "title": "## High"
+      },
+      {
+        "line": 789,
+        "title": "## Medium"
+      },
+      {
+        "line": 805,
+        "title": "## Low"
+      },
+      {
+        "line": 832,
+        "title": "## Cosmetic"
+      },
+      {
+        "line": 843,
+        "title": "## Closing assessment"
+      },
+      {
+        "line": 852,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "eac1b5d44516cc9281d42bf4ba6da31cd57108abc0f346653b83acec8968d464"
+  },
+  {
+    "path": "LOGS.md",
+    "tracked": true,
+    "lines": 2055,
+    "bytes": 214061,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Build Log — PixiBun"
+      },
+      {
+        "line": 3,
+        "title": "## Glint visibility correction — 2026-10-01"
+      },
+      {
+        "line": 7,
+        "title": "## Toolbar simplification — 2026-10-01"
+      },
+      {
+        "line": 19,
+        "title": "## Audit implementation completion — 2026-10-01"
+      },
+      {
+        "line": 29,
+        "title": "## Studio UX follow-up (2026-09-30)"
+      },
+      {
+        "line": 39,
+        "title": "## Phase 0 — Intake, Architecture & Foundation Docs (2026-08-18)"
+      },
+      {
+        "line": 57,
+        "title": "## Phase 1 & 2 — Studio Foundations, Tactile UI & Pixel Canvas Engine (2026-08-18)"
+      },
+      {
+        "line": 74,
+        "title": "## Phase 3, 4, 5 & 6 — Full Suite Delivery (2026-08-18)"
+      },
+      {
+        "line": 88,
+        "title": "## Phase 7 — Comprehensive Hardening, Accessibility & Full Audit Resolution (2026-08-22)"
+      },
+      {
+        "line": 117,
+        "title": "## Phase 8 — Milestone 1: Data Integrity & Truthful Foundations (2026-08-25)"
+      },
+      {
+        "line": 136,
+        "title": "## 2026-08-25 - Phase 13: Lamplit Identity, De-Slop & Landing Page"
+      },
+      {
+        "line": 152,
+        "title": "## 2026-08-25 - Landing v2: The Desk Comes Alive"
+      },
+      {
+        "line": 162,
+        "title": "## 2026-08-26 - Interim Phase 13.5: Landing Hero Overhaul — Pixel Vines, Articulated Lamp, Windowsill Cat & Vintage Cassette Boombox"
+      },
+      {
+        "line": 226,
+        "title": "## Phase 14 — 2.5D Photometric Studio, Normal Mapping, Geometry Engine & Mathematical Dithering Suite (2026-08-28)"
+      },
+      {
+        "line": 250,
+        "title": "## Hotfix — PixiBud AI Panel Compositing Violation, Stale Preview & Bake Normals Index (2026-08-29)"
+      },
+      {
+        "line": 259,
+        "title": "## Phase 16 — Minecraft 3D Skin Photometric Engine, Optical Flow Tweening, Sub-Pixel Anti-Aliasing & 3x3 Tiling (2026-08-30)"
+      },
+      {
+        "line": 293,
+        "title": "## Phase 17 — Compass Convention Alignment, Optical Flow Center-Bias & Dynamic Compass Indicator (2026-08-30)"
+      },
+      {
+        "line": 313,
+        "title": "## Phase 18 — Data Persistence Hardening, Dynamic Undo Limits, Schema Migration & Locked Layer Security (2026-08-30)"
+      },
+      {
+        "line": 336,
+        "title": "## Phase 19 — Tag Clip Export Scoping & Multi-Threaded Web Worker GIF Encoding (2026-08-30)"
+      },
+      {
+        "line": 358,
+        "title": "## Phase 20 — Audit Remediation, Security Hardening, Dead Dependency Pruning, Linter Hygiene & CI Enforcement (2026-08-30)"
+      },
+      {
+        "line": 387,
+        "title": "## Phase 21 — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability (2026-08-30)"
+      },
+      {
+        "line": 426,
+        "title": "## Phase 22 — Dead Route Pruning & Architectural Truthfulness (2026-08-30)"
+      },
+      {
+        "line": 447,
+        "title": "## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction (2026-08-30)"
+      },
+      {
+        "line": 478,
+        "title": "## Phase 24 — Multi-Project Workspace Management (2026-08-30)"
+      },
+      {
+        "line": 511,
+        "title": "## Phase 25 — Honest Ghosts & Living Timeline (2026-08-30)"
+      },
+      {
+        "line": 546,
+        "title": "## Phase 26 — Volumetric Optics, Subsurface Scattering & Anisotropic Shaders (2026-08-30)"
+      },
+      {
+        "line": 574,
+        "title": "## Phase 27 — 2D Ray Marching & Physically Accurate Soft Shadows (2026-08-31)"
+      },
+      {
+        "line": 595,
+        "title": "## Phase 28 — Security Audit Remediation (Token Revocation, CSP Hardening, Event Bus Migration) (2026-09-01)"
+      },
+      {
+        "line": 619,
+        "title": "## Phase 29b — SDF Morphing, Smart Math Engine Rewrite, and Export Pipeline Fixes (2026-09-01)"
+      },
+      {
+        "line": 634,
+        "title": "## Phase 29a — Onboarding, Selection Tools, and UX Enhancements (2026-09-01)"
+      },
+      {
+        "line": 646,
+        "title": "## Phase 30 - Performance, Hot-Path Decoupling and Dexie Schema v4 (2026-09-03)"
+      },
+      {
+        "line": 663,
+        "title": "## Phase 31 - Product Alignment, Variable Frame Timing and Viewport Precision (2026-09-03)"
+      },
+      {
+        "line": 680,
+        "title": "## Precision Polish & Critical UX Bug Fixes (2026-09-03)"
+      },
+      {
+        "line": 699,
+        "title": "## Area-Preserving Downsampling, True Xenowhirl 8x RotSprite & Live Preview Window Resize (2026-09-03)"
+      },
+      {
+        "line": 714,
+        "title": "## Canonical Xenowhirl RotSprite Engine & 45-Degree Distortion Remediation (2026-09-03)"
+      },
+      {
+        "line": 730,
+        "title": "## Phase 32 — Studio Accessibility, Next.js 16 Security Proxy & Perceptual Color Lenses (2026-09-03)"
+      },
+      {
+        "line": 757,
+        "title": "## Hotfix — Specular Glints Smeared On The Silhouette Outline + Photometric Studio UX Redesign (2026-09-04)"
+      },
+      {
+        "line": 774,
+        "title": "## Phase 36 — Smart Canvas Art Analysis & Bounded 2.5D Sprite Cast Shadows (2026-09-04 / 2026-09-05)"
+      },
+      {
+        "line": 792,
+        "title": "## Phase 37 — PixiBud Deep Art Understanding, Anatomical Feature Isolation & OKLCH Cel-Shading (2026-09-05)"
+      },
+      {
+        "line": 831,
+        "title": "## 2026-09-05 — Phase 38: Live On-Canvas Pixel Light Bulb Gizmo, Dynamic Direction Alignment & Character Analysis Hardening"
+      },
+      {
+        "line": 868,
+        "title": "## 2026-09-05 — Phase 39: Studio UI/UX 10/10 Overhaul: Amethyst Wisteria Hover, Specular Sweep Upgrade & Viewport Harmonization"
+      },
+      {
+        "line": 905,
+        "title": "## 2026-09-05 — Phase 40: Audit Remediation & Quality Gate Parity"
+      },
+      {
+        "line": 957,
+        "title": "## 2026-09-05 — Phase 41: TestSprite Cloud End-to-End Suite & Complex Feature Verification"
+      },
+      {
+        "line": 994,
+        "title": "## 2026-09-06 — Phase 42: Co-Draw Activation, Deep Audit Remediation & Server Hardening"
+      },
+      {
+        "line": 1024,
+        "title": "## 2026-09-06 — Phase 41.5: Landing v3 — Interactive Engine Showcase & Pillars Navigation"
+      },
+      {
+        "line": 1050,
+        "title": "## 2026-09-07 — Phase 43: Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty"
+      },
+      {
+        "line": 1074,
+        "title": "## 2026-09-07 — Phase 43b: Cel-Shading Shadow Terminator Math Fix (v1.10.2)"
+      },
+      {
+        "line": 1094,
+        "title": "## 2026-09-07 — Phase 44: Zero-Slop Hardening, Accessibility & Documentation Parity (v1.10.3)"
+      },
+      {
+        "line": 1120,
+        "title": "## 2026-09-07 — Phase 45: Landing Page Anti-Slop Remediation & Silky-Smooth Animations (v1.10.4)"
+      },
+      {
+        "line": 1145,
+        "title": "## 2026-09-08 — Phase 46: 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite (v1.11.0)"
+      },
+      {
+        "line": 1196,
+        "title": "## 2026-09-08 — Phase 47: Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening (v1.11.1)"
+      },
+      {
+        "line": 1243,
+        "title": "## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading (2026-09-08)"
+      },
+      {
+        "line": 1276,
+        "title": "## Comprehensive Codebase Audit & Algorithmic Remediation (2026-09-09)"
+      },
+      {
+        "line": 1315,
+        "title": "## 2026-09-09 — Senior Pixel Art Animation Physics & Dynamic Discrete Mechanics"
+      },
+      {
+        "line": 1342,
+        "title": "## 2026-09-11 — Procedural Lofi Track Synthesis, Normal Sculpt Shortcuts & Doc Alignment"
+      },
+      {
+        "line": 1365,
+        "title": "## 2026-09-12 — Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Quality Gate Verification"
+      },
+      {
+        "line": 1405,
+        "title": "## 2026-09-12 — Phase 50: External Audit Remediation & Terminology Harmonization"
+      },
+      {
+        "line": 1428,
+        "title": "## 2026-09-12 — Phase 51: Deep Documentation Truthfulness, Academic Rigor & Marketing De-Escalation"
+      },
+      {
+        "line": 1448,
+        "title": "## 2026-09-12 — Phase 52: Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation"
+      },
+      {
+        "line": 1477,
+        "title": "## Phase 53 — Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (2026-09-12)"
+      },
+      {
+        "line": 1511,
+        "title": "## Phase 54 — Six Workstation Architectural Upgrades (2026-09-12)"
+      },
+      {
+        "line": 1546,
+        "title": "## Phase 55 — Comprehensive Defensive Hardening & Mathematical Invariants (2026-09-12)"
+      },
+      {
+        "line": 1574,
+        "title": "## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection (2026-09-12)"
+      },
+      {
+        "line": 1598,
+        "title": "## Phase 57 — Studio Workstation Ergonomics, Accessibility Focus Trapping & Unsaved Invariants (2026-09-13)"
+      },
+      {
+        "line": 1622,
+        "title": "## 2026-09-13 — Phase 58: Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection"
+      },
+      {
+        "line": 1645,
+        "title": "## 2026-09-14 — Phase 59: Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning"
+      },
+      {
+        "line": 1682,
+        "title": "## 2026-09-14 — Phase 60: Photometric Drag-Session Correctness & Cavity AO Auto-Scaling"
+      },
+      {
+        "line": 1707,
+        "title": "## 2026-09-14 — Phase 61: Anatomical Part Decomposition & Volumetric Character Photometric Shading"
+      },
+      {
+        "line": 1734,
+        "title": "## 2026-09-19 / 2026-09-20 — Phase 62: Studio Architecture Overhaul, Dual Themes & Comprehensive Audit Remediation"
+      },
+      {
+        "line": 1798,
+        "title": "## 2026-09-20 — Phase 63: Neutral Relighting & Smart-Effect Provenance"
+      },
+      {
+        "line": 1857,
+        "title": "## 2026-09-21 — Phase 64: Integrity, Recovery & Resource Safety (Phase A)"
+      },
+      {
+        "line": 1881,
+        "title": "## 2026-09-21 — Phase 65: Runtime Performance, Offline Reliability, Persistence & History (Phase B)"
+      },
+      {
+        "line": 1903,
+        "title": "## 2026-09-21 — Phase 66: System Hardening & Production Polish (Phase C)"
+      },
+      {
+        "line": 1926,
+        "title": "## 2026-09-22 — Phase 67: Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger, Streaming ZIP32 Core & Untouched Backup Assembly (Phase 1A & Phase 1B)"
+      },
+      {
+        "line": 1982,
+        "title": "## 2026-09-28 — Imported artwork editing, fill behavior, and grid alignment"
+      },
+      {
+        "line": 1998,
+        "title": "## 2026-09-28 — Metadata Undo and structural history admission"
+      },
+      {
+        "line": 2008,
+        "title": "## 2026-09-28 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening"
+      },
+      {
+        "line": 2024,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 2032,
+        "title": "## 2026-10-01 — Live glint correction"
+      },
+      {
+        "line": 2036,
+        "title": "## Palette creator and compact scan — 2026-10-01"
+      },
+      {
+        "line": 2040,
+        "title": "### 2026-10-01 — cycle scope follow-up"
+      },
+      {
+        "line": 2044,
+        "title": "### 2026-10-01 — cycle export timing"
+      },
+      {
+        "line": 2048,
+        "title": "### 2026-10-01 — slow cycle export verified"
+      },
+      {
+        "line": 2052,
+        "title": "### 2026-10-01 — 8x GIF raster corruption fixed"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "5cf10e5a10ec3d78e0d682bdc468a9a9cb4242c448fb4c4fcd6a7806556fef36"
+  },
+  {
+    "path": "MAIN.md",
+    "tracked": true,
+    "lines": 88,
+    "bytes": 16563,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun"
+      },
+      {
+        "line": 5,
+        "title": "## Problem & Audience"
+      },
+      {
+        "line": 10,
+        "title": "## Scope"
+      },
+      {
+        "line": 11,
+        "title": "### In scope for v1:"
+      },
+      {
+        "line": 28,
+        "title": "### Explicitly out of scope for v1:"
+      },
+      {
+        "line": 33,
+        "title": "## Practical Limits"
+      },
+      {
+        "line": 37,
+        "title": "## Stack (with rationale)"
+      },
+      {
+        "line": 52,
+        "title": "## Repo & Environments"
+      },
+      {
+        "line": 58,
+        "title": "## Related Docs"
+      },
+      {
+        "line": 68,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 75,
+        "title": "## Palette making follow-up — 2026-10-01"
+      },
+      {
+        "line": 79,
+        "title": "### Fire-only palette cycling"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "682e09320048b39e0d531d36d1f835734b97443ea3e2012f08bc580457439111"
+  },
+  {
+    "path": "ARCHITECTURE.md",
+    "tracked": true,
+    "lines": 951,
+    "bytes": 116639,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Architecture & System Design — PixiBun Atelier"
+      },
+      {
+        "line": 3,
+        "title": "## Audit session architecture update — 2026-10-01"
+      },
+      {
+        "line": 19,
+        "title": "## Table of Contents"
+      },
+      {
+        "line": 55,
+        "title": "## 1. System Topology Overview"
+      },
+      {
+        "line": 97,
+        "title": "## 2. Canvas & Rendering Pipeline"
+      },
+      {
+        "line": 99,
+        "title": "### Multi-Canvas Layered Viewport Stack"
+      },
+      {
+        "line": 124,
+        "title": "### Pure Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)"
+      },
+      {
+        "line": 130,
+        "title": "### Pure Onion Skinning Engine (`src/lib/render/onionSkin.ts`)"
+      },
+      {
+        "line": 134,
+        "title": "### Direct Buffer Memory Management (`src/lib/engine/bufferRegistry.ts`)"
+      },
+      {
+        "line": 139,
+        "title": "### Pure History Engine (`src/lib/engine/historyEngine.ts`)"
+      },
+      {
+        "line": 149,
+        "title": "## 3. PixiBud Smart Math & Computer Graphics Engine (`src/lib/ai/math/`)"
+      },
+      {
+        "line": 183,
+        "title": "### Key Mathematical Formulations:"
+      },
+      {
+        "line": 239,
+        "title": "## 4. State Management, Layer Security & Undo Architecture"
+      },
+      {
+        "line": 251,
+        "title": "## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)"
+      },
+      {
+        "line": 275,
+        "title": "## 6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)"
+      },
+      {
+        "line": 288,
+        "title": "## 7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)"
+      },
+      {
+        "line": 312,
+        "title": "### Topological Invariant Discriminator:"
+      },
+      {
+        "line": 321,
+        "title": "### Mathematical Formulations:"
+      },
+      {
+        "line": 332,
+        "title": "## 8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)"
+      },
+      {
+        "line": 349,
+        "title": "## 9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)"
+      },
+      {
+        "line": 380,
+        "title": "## 10. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)"
+      },
+      {
+        "line": 394,
+        "title": "## 11. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)"
+      },
+      {
+        "line": 404,
+        "title": "## 12. Multithreaded Worker & Deterministic CG Math Architecture"
+      },
+      {
+        "line": 412,
+        "title": "## 13. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)"
+      },
+      {
+        "line": 420,
+        "title": "## 14. Vercel & CI/CD Deployment Pipeline"
+      },
+      {
+        "line": 427,
+        "title": "## 15. P2P Co-Draw Sync Bridge (`src/lib/sync/coDrawBridge.ts`)"
+      },
+      {
+        "line": 442,
+        "title": "## 16. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)"
+      },
+      {
+        "line": 450,
+        "title": "## 17. Algorithmic Scope Boundaries & Target System Envelope"
+      },
+      {
+        "line": 461,
+        "title": "## 18. 2.5D Normal Chisel & Bas-Relief Sculptor (`src/lib/art/normalSculptor.ts`)"
+      },
+      {
+        "line": 483,
+        "title": "## 19. Mark Ferrari 8-Bit Dynamic Palette Cycling Engine (`src/lib/color/paletteCycling.ts`)"
+      },
+      {
+        "line": 501,
+        "title": "## 20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)"
+      },
+      {
+        "line": 516,
+        "title": "## 21. Bitwise Normalization, Hot-Path Viewport Decoupling & Export Pipeline Hardening"
+      },
+      {
+        "line": 529,
+        "title": "## 22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine"
+      },
+      {
+        "line": 555,
+        "title": "## 23. Workstation Architectural Upgrades (P2P Host Authority, Structural History, Desktop FS, 47-Blob Autotile & Pure ISOBMFF Muxer)"
+      },
+      {
+        "line": 584,
+        "title": "## 24. Comprehensive Defensive Hardening & Invariant Architecture"
+      },
+      {
+        "line": 604,
+        "title": "## 25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection"
+      },
+      {
+        "line": 623,
+        "title": "## 26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants"
+      },
+      {
+        "line": 643,
+        "title": "## 27. Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection"
+      },
+      {
+        "line": 666,
+        "title": "### Audit clarifications (2026-09-19; updated Phase 74)"
+      },
+      {
+        "line": 672,
+        "title": "## 28. Studio UI Architecture & Design System Primitives"
+      },
+      {
+        "line": 674,
+        "title": "### Workspace Shell Decomposition"
+      },
+      {
+        "line": 702,
+        "title": "### Design System Component Library"
+      },
+      {
+        "line": 715,
+        "title": "### Viewport Pointer & Studio Event Handler Decomposition"
+      },
+      {
+        "line": 731,
+        "title": "### Dual-Axis Theme Architecture"
+      },
+      {
+        "line": 740,
+        "title": "### Contextual Tool Motion Previews & Tactile Affordances"
+      },
+      {
+        "line": 753,
+        "title": "## 29. Teaching Animation Board & Playground Education System"
+      },
+      {
+        "line": 764,
+        "title": "## 30. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)"
+      },
+      {
+        "line": 768,
+        "title": "### 1. Neutral 2.5D Silhouette & Macro-Detail Reconstruction"
+      },
+      {
+        "line": 778,
+        "title": "### 2. Source Shading Normalization"
+      },
+      {
+        "line": 784,
+        "title": "### 3. Non-Destructive Smart-Effect Recipe Architecture"
+      },
+      {
+        "line": 810,
+        "title": "### 4. Discrete OKLCH Cel-Shading Ramps & Continuous 3D Specular Highlight Pill"
+      },
+      {
+        "line": 823,
+        "title": "### 5. Live Photometric Preview Session & Atomic Cancellation"
+      },
+      {
+        "line": 830,
+        "title": "## 31. Restricted Recovery Mode, Envelope Guards & Streaming Archive Architecture (Phase 1A & Phase 1B)"
+      },
+      {
+        "line": 836,
+        "title": "### 1. Workspace Envelope Guard & Decoupled Import Execution (Phase 1A)"
+      },
+      {
+        "line": 840,
+        "title": "### 2. Policy-Driven Schema Validation & Typed SafeJson Defense (Phase 1B.1)"
+      },
+      {
+        "line": 850,
+        "title": "### 3. Recovery Ledger & Bounded Stored-Blob Diagnosis (Phase 1B.2)"
+      },
+      {
+        "line": 854,
+        "title": "### 4. Streaming Store-Only ZIP32 Archive Writer Core (Phase 1B.3)"
+      },
+      {
+        "line": 863,
+        "title": "### 5. Untouched Recovery Archive Assembly & Safe Export Adapters (Phase 1B.4)"
+      },
+      {
+        "line": 874,
+        "title": "### 6. Deterministic Recovery Plan Builder & Safe Candidate Reconstruction (Phase 1B.5)"
+      },
+      {
+        "line": 886,
+        "title": "### 7. Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (Phase 1B.6)"
+      },
+      {
+        "line": 891,
+        "title": "### 8. Startup Recovery Routing & Controlled Hydration (Phase 1B.7)"
+      },
+      {
+        "line": 895,
+        "title": "### 9. Recovery UI, Safe Modes & Repair Wizard (Phase 1B.8)"
+      },
+      {
+        "line": 929,
+        "title": "### 10. Deferred Capabilities (Phase 2+ — Not Started)"
+      },
+      {
+        "line": 933,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 940,
+        "title": "## Palette authoring follow-up — 2026-10-01"
+      },
+      {
+        "line": 944,
+        "title": "## Palette cycle scope follow-up — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "ea24c1622c51b4a68c62c83c932907761fc5aa9b506ab779c5daade7ccc37c08"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "tracked": true,
+    "lines": 1153,
+    "bytes": 185079,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun Atelier — Changelog"
+      },
+      {
+        "line": 5,
+        "title": "## Unreleased"
+      },
+      {
+        "line": 75,
+        "title": "## [v1.14.1] - 2026-09-28 (Production Sign-off)"
+      },
+      {
+        "line": 107,
+        "title": "### Redo Stack Byte Budget & Combined History Retention Envelope (Phase 74 / M1 Hardening)"
+      },
+      {
+        "line": 117,
+        "title": "### WaveFunctionCollapse Working-Set Modeling & Resource Admission Bounding (Phase 73 / H5 Hardening)"
+      },
+      {
+        "line": 127,
+        "title": "### Content-Aware Heightmap Algorithmic Work & Allocation Bounding (Phase 72 / H1 Hardening)"
+      },
+      {
+        "line": 134,
+        "title": "### Photometric Pipeline Deduplication & Hoisted Analysis (Phase 71 / H6 Hardening)"
+      },
+      {
+        "line": 141,
+        "title": "### Redo Eviction Process-Replay Baseline Synchronization (Phase 70 / H4 Hardening)"
+      },
+      {
+        "line": 147,
+        "title": "### Animated Exporters Output Safety Ceilings (Phase 69 / H3 Hardening)"
+      },
+      {
+        "line": 155,
+        "title": "### Sprite-Sheet Export Output Ceilings (Phase 68 / H2 Hardening)"
+      },
+      {
+        "line": 162,
+        "title": "### Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger & Streaming ZIP32 Core (Phase 67 / Phase 1A & Phase 1B)"
+      },
+      {
+        "line": 228,
+        "title": "### System Hardening & Production Polish (Phase 66 / Phase C)"
+      },
+      {
+        "line": 258,
+        "title": "### Runtime Performance, Offline Reliability, Persistence & History (Phase 65 / Phase B)"
+      },
+      {
+        "line": 287,
+        "title": "### Integrity, Recovery & Resource Safety (Phase 64 / Phase A)"
+      },
+      {
+        "line": 321,
+        "title": "## [v1.14.0] - 2026-09-20"
+      },
+      {
+        "line": 322,
+        "title": "### Neutral Relighting & Smart-Effect Provenance (Phase 63)"
+      },
+      {
+        "line": 367,
+        "title": "### Studio Architecture Overhaul, Dual Themes & Audit Remediation (Phase 62)"
+      },
+      {
+        "line": 418,
+        "title": "## [v1.13.1] - 2026-09-14"
+      },
+      {
+        "line": 419,
+        "title": "### Anatomical Part Decomposition & Volumetric Character Photometric Shading (Phase 61)"
+      },
+      {
+        "line": 434,
+        "title": "### Photometric Drag-Session Correctness & Cavity AO Auto-Scaling (Phase 60)"
+      },
+      {
+        "line": 445,
+        "title": "### Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning (Phase 59)"
+      },
+      {
+        "line": 472,
+        "title": "### Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection (Phase 58)"
+      },
+      {
+        "line": 487,
+        "title": "## [v1.13.0] - 2026-09-13"
+      },
+      {
+        "line": 488,
+        "title": "### Studio Workstation Ergonomics, Accessibility Focus Trapping & Unsaved Invariants (Phase 57)"
+      },
+      {
+        "line": 503,
+        "title": "### Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection (Phase 56)"
+      },
+      {
+        "line": 518,
+        "title": "### Comprehensive Defensive Hardening & Mathematical Invariants (Phase 55)"
+      },
+      {
+        "line": 535,
+        "title": "### Workstation-Class Architectural Upgrades (Phase 54)"
+      },
+      {
+        "line": 559,
+        "title": "## [v1.12.1] - 2026-09-12"
+      },
+      {
+        "line": 560,
+        "title": "### Comprehensive Audit Resolution, Algorithmic Precision & State Isolation (Phase 53)"
+      },
+      {
+        "line": 581,
+        "title": "### Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation (Phase 52)"
+      },
+      {
+        "line": 598,
+        "title": "### Documentation Truthfulness, Academic Rigor & Tone De-Escalation (Phase 51)"
+      },
+      {
+        "line": 606,
+        "title": "### External Audit Remediation & Terminology Harmonization (Phase 50)"
+      },
+      {
+        "line": 616,
+        "title": "### Deep Audit Remediation, RotSprite Fast Paths, SDF Morphing & Test Suite Re-alignment (Phase 49)"
+      },
+      {
+        "line": 667,
+        "title": "## [v1.12.0] - 2026-09-08"
+      },
+      {
+        "line": 668,
+        "title": "### Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine (Phase 48)"
+      },
+      {
+        "line": 697,
+        "title": "## [v1.11.1] - 2026-09-08"
+      },
+      {
+        "line": 698,
+        "title": "### Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening (Phase 47)"
+      },
+      {
+        "line": 718,
+        "title": "## [v1.11.0] - 2026-09-08"
+      },
+      {
+        "line": 719,
+        "title": "### 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite (Phase 46)"
+      },
+      {
+        "line": 754,
+        "title": "## [v1.10.4] - 2026-09-07"
+      },
+      {
+        "line": 755,
+        "title": "### Landing Page Anti-Slop Remediation & Silky-Smooth Animations (Phase 45)"
+      },
+      {
+        "line": 770,
+        "title": "## [v1.10.3] - 2026-09-07"
+      },
+      {
+        "line": 771,
+        "title": "### Zero-Slop Hardening, Accessibility & Documentation Parity (Phase 44)"
+      },
+      {
+        "line": 785,
+        "title": "## [v1.10.2] - 2026-09-07"
+      },
+      {
+        "line": 786,
+        "title": "### Cel-Shading Shadow Terminator Math Fix (Phase 43b)"
+      },
+      {
+        "line": 792,
+        "title": "## [v1.10.1] - 2026-09-07"
+      },
+      {
+        "line": 793,
+        "title": "### Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty (Phase 43)"
+      },
+      {
+        "line": 811,
+        "title": "## [v1.10.0] - 2026-09-06"
+      },
+      {
+        "line": 812,
+        "title": "### Co-Draw Activation: End-to-End CRDT Sync & Deep Audit Remediation (Phase 42)"
+      },
+      {
+        "line": 836,
+        "title": "## [v1.9.2] - 2026-09-05"
+      },
+      {
+        "line": 837,
+        "title": "### TestSprite Cloud End-to-End Suite & Complex Feature Verification (Phase 41)"
+      },
+      {
+        "line": 848,
+        "title": "## [v1.9.1] - 2026-09-05"
+      },
+      {
+        "line": 849,
+        "title": "### Audit Remediation & Quality Gate Parity (Phase 40)"
+      },
+      {
+        "line": 882,
+        "title": "## [v1.9.0] - 2026-09-05"
+      },
+      {
+        "line": 883,
+        "title": "### Studio UI/UX 10/10 Overhaul: Amethyst Wisteria Hover, Specular Sweep Upgrade & Viewport Harmonization"
+      },
+      {
+        "line": 905,
+        "title": "## [v1.8.0] - 2026-09-05"
+      },
+      {
+        "line": 906,
+        "title": "### Live-Time On-Canvas Pixel Light Bulb Gizmo & Dynamic Focus Alignment"
+      },
+      {
+        "line": 915,
+        "title": "### Deep Character / Object Analysis Hardening & Cel-Shading Engine Restoration"
+      },
+      {
+        "line": 927,
+        "title": "### Test Suite & Verification Expansion"
+      },
+      {
+        "line": 932,
+        "title": "## [v1.7.0] - 2026-09-05"
+      },
+      {
+        "line": 933,
+        "title": "### Deep Art Understanding, Anatomical Part Segmentation & OKLCH Cel-Shading"
+      },
+      {
+        "line": 955,
+        "title": "### Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows"
+      },
+      {
+        "line": 970,
+        "title": "### Test Suite & Verification Expansion"
+      },
+      {
+        "line": 976,
+        "title": "## [v1.6.0] - 2026-09-04"
+      },
+      {
+        "line": 977,
+        "title": "### Architectural Decoupling & Modularization (Phase 33)"
+      },
+      {
+        "line": 998,
+        "title": "### Academic Research-Backed Graphics Intelligence (Phase 34)"
+      },
+      {
+        "line": 1004,
+        "title": "### Direct-Manipulation Interaction Model (Phase 35)"
+      },
+      {
+        "line": 1007,
+        "title": "### Sharing, Collaboration & Process Value (Phase 36)"
+      },
+      {
+        "line": 1013,
+        "title": "### Competitive Parity & Platform Strategy (Phase 37)"
+      },
+      {
+        "line": 1033,
+        "title": "## [v1.5.0] - 2026-09-03"
+      },
+      {
+        "line": 1034,
+        "title": "### Accessibility, Next.js 16 Security Proxy & Perceptual Color Lenses (Phase 32)"
+      },
+      {
+        "line": 1051,
+        "title": "## [v1.4.0] - 2026-09-03"
+      },
+      {
+        "line": 1053,
+        "title": "### Performance, Storage & Hot-Path Decoupling (Phase 30)"
+      },
+      {
+        "line": 1061,
+        "title": "### Product Alignment, Viewport Precision & Timing (Phase 31)"
+      },
+      {
+        "line": 1069,
+        "title": "### Critical UX, Viewport Precision & RotSprite Polish"
+      },
+      {
+        "line": 1080,
+        "title": "## [v1.3.0] - 2026-09-01"
+      },
+      {
+        "line": 1082,
+        "title": "### UX & Onboarding Overhaul"
+      },
+      {
+        "line": 1087,
+        "title": "### Advanced Selection Tools"
+      },
+      {
+        "line": 1090,
+        "title": "### Rendering Pipeline & AI Morphing Rewrite"
+      },
+      {
+        "line": 1101,
+        "title": "## [v1.2.0] - 2026-08-31"
+      },
+      {
+        "line": 1103,
+        "title": "### 2D Ray Marching & Physically Accurate Soft Shadows Engine"
+      },
+      {
+        "line": 1114,
+        "title": "## [v1.1.0] - 2026-08-30"
+      },
+      {
+        "line": 1116,
+        "title": "### Core Engine & Rendering Optimizations"
+      },
+      {
+        "line": 1126,
+        "title": "### Architecture & State Management"
+      },
+      {
+        "line": 1130,
+        "title": "### Web Platform, Accessibility & Security"
+      },
+      {
+        "line": 1140,
+        "title": "## [v1.0.0] - Initial Release"
+      },
+      {
+        "line": 1147,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "4e66923cabae1873212e2694736ebc211f0addd12a6ed68aed0c9a7310c3deb5"
+  },
+  {
+    "path": "SECURITY.md",
+    "tracked": true,
+    "lines": 52,
+    "bytes": 11221,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Security Policy — PixiBun Atelier"
+      },
+      {
+        "line": 5,
+        "title": "## 1. Zero-Cloud & Local-First Philosophy"
+      },
+      {
+        "line": 12,
+        "title": "## 2. Secrets & Secret Hygiene"
+      },
+      {
+        "line": 17,
+        "title": "## 3. Diagnostics Relay Security Boundaries & Threat Model"
+      },
+      {
+        "line": 27,
+        "title": "## Current generated-effect safeguards — 2026-10-01"
+      },
+      {
+        "line": 31,
+        "title": "## 4. Defense-in-Depth & Quality Gate Invariants"
+      },
+      {
+        "line": 42,
+        "title": "## 5. Reporting a Vulnerability"
+      },
+      {
+        "line": 46,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "accb8145e10389b2bd041e4202d3f47b254d55c7097d804ca2fcaf184c9ca0d1"
+  },
+  {
+    "path": "SKILL.md",
+    "tracked": true,
+    "lines": 47,
+    "bytes": 5878,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Agent Skill & Rules — PixiBun"
+      },
+      {
+        "line": 41,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "9f360b34693d2a097b8c768a7887ffdd33016bccd139f3ba21f95180a83533e0"
+  },
+  {
+    "path": "TASKS.md",
+    "tracked": true,
+    "lines": 1954,
+    "bytes": 237528,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Build Plan — PixiBun"
+      },
+      {
+        "line": 3,
+        "title": "## Studio publication follow-up — 2026-10-01"
+      },
+      {
+        "line": 13,
+        "title": "## Audit implementation session — 2026-10-01"
+      },
+      {
+        "line": 28,
+        "title": "## UX follow-up — 2026-09-30"
+      },
+      {
+        "line": 41,
+        "title": "## UX follow-up — 2026-09-29"
+      },
+      {
+        "line": 53,
+        "title": "## Phase 78 — Contextual Tool Motion Previews, Usability Baseline, and Regression Hardening (2026-09-28)"
+      },
+      {
+        "line": 66,
+        "title": "## Phase 77 — Metadata Undo and bounded structural edits (2026-09-28)"
+      },
+      {
+        "line": 77,
+        "title": "## Phase 76 — Imported artwork editing and viewport alignment (2026-09-28)"
+      },
+      {
+        "line": 92,
+        "title": "## Phase 75 — Palette persistence and audit reconciliation"
+      },
+      {
+        "line": 107,
+        "title": "## Phase 74 — PixiBun v1.14.1 M1 Hardening: Redo Stack Byte Budget & Combined History Retention Envelope"
+      },
+      {
+        "line": 131,
+        "title": "## Phase 73 — PixiBun v1.14.1 H5 Hardening: WaveFunctionCollapse Working-Set Modeling & Resource Admission Bounding"
+      },
+      {
+        "line": 156,
+        "title": "## Phase 72 — PixiBun v1.14.1 H1 Hardening: Content-Aware Heightmap Algorithmic Work & Allocation Bounding"
+      },
+      {
+        "line": 177,
+        "title": "## Phase 71 — PixiBun v1.14.1 H6 Hardening: Photometric Pipeline Deduplication & Hoisted Analysis"
+      },
+      {
+        "line": 198,
+        "title": "## Phase 70 — PixiBun v1.14.1 H4 Hardening: Redo Eviction Process-Replay Baseline Synchronization"
+      },
+      {
+        "line": 219,
+        "title": "## Phase 69 — PixiBun v1.14.1 H3 Hardening: Animated Exporters Output Safety Ceilings"
+      },
+      {
+        "line": 247,
+        "title": "## Phase 68 — PixiBun v1.14.1 H2 Hardening: Sprite-Sheet Export Output Ceilings"
+      },
+      {
+        "line": 270,
+        "title": "## Phase 67 — PixiBun v1.14.1 Phase 1A & Phase 1B: Workspace Envelope Hardening, Forensic Diagnosis, Recovery Ledger, Streaming ZIP32 Core, Untouched Backup Assembly, Deterministic Plan Builder & Trusted Recovery Orchestrator"
+      },
+      {
+        "line": 299,
+        "title": "## Phase 66 — PixiBun v1.14.1 Phase C: System Hardening & Production Polish"
+      },
+      {
+        "line": 324,
+        "title": "## Phase 65 — PixiBun v1.14.1 Phase B: Runtime Performance, Offline Reliability, Persistence & History"
+      },
+      {
+        "line": 348,
+        "title": "## Phase 64 — PixiBun v1.14.1 Phase A: Integrity, Recovery & Resource Safety"
+      },
+      {
+        "line": 375,
+        "title": "## Phase 63 — Neutral Relighting & Smart-Effect Provenance"
+      },
+      {
+        "line": 401,
+        "title": "## Phase 62 — Studio Architecture Overhaul, Dual Themes & Comprehensive Audit Remediation"
+      },
+      {
+        "line": 441,
+        "title": "## Phase 61 — Anatomical Part Decomposition & Volumetric Character Photometric Shading"
+      },
+      {
+        "line": 475,
+        "title": "## Phase 60a — Live-Drag Photometric Analysis Cache Invalidation"
+      },
+      {
+        "line": 500,
+        "title": "## Phase 60b — Cavity AO Auto-Scaling for Complex/Appendage-Heavy Silhouettes"
+      },
+      {
+        "line": 526,
+        "title": "## Phase 59 — Canvas Envelope Unification, Safe Subsystems Hardening & Canonical Versioning"
+      },
+      {
+        "line": 554,
+        "title": "## Phase 58 — Photometric Studio Resolution-Aware Bevel Scaling & Dark Palette Protection"
+      },
+      {
+        "line": 578,
+        "title": "## Phase 57 — Studio Workstation Ergonomics, Modal Focus Trapping & Unsaved Invariants"
+      },
+      {
+        "line": 605,
+        "title": "## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection"
+      },
+      {
+        "line": 629,
+        "title": "## Phase 55 — Comprehensive Defensive Hardening & Mathematical Invariants"
+      },
+      {
+        "line": 658,
+        "title": "## Phase 54 — Six Workstation Architectural Upgrades (100% Pure-TypeScript, Zero Dependencies)"
+      },
+      {
+        "line": 687,
+        "title": "## Phase 53 — Comprehensive Audit Resolution, Algorithmic Precision & State Isolation"
+      },
+      {
+        "line": 715,
+        "title": "## Phase 52 — Canvas Safety Ceilings, Codebase Calibration & Rigor Remediation"
+      },
+      {
+        "line": 742,
+        "title": "## Phase 51 — Deep Documentation Truthfulness, Academic Rigor & Marketing De-Escalation"
+      },
+      {
+        "line": 770,
+        "title": "## Phase 50 — External Audit Remediation & Terminology Harmonization"
+      },
+      {
+        "line": 799,
+        "title": "## Phase 49 — Deep Audit Algorithmic Remediation, RotSprite Fast Paths, SDF Morphing & Test Coverage Re-alignment"
+      },
+      {
+        "line": 844,
+        "title": "## Phase 48 — Selection Free-Transform Gizmo, Sprite Sheet Slicer & Heavy Compute Web Worker Offloading"
+      },
+      {
+        "line": 885,
+        "title": "## Phase 47 — Graphics Pipeline Bug Fixes, Bitwise Normalization & System Hardening"
+      },
+      {
+        "line": 929,
+        "title": "## Phase 46 — 2.5D Normal Chisel & Mark Ferrari Palette Cycling Suite"
+      },
+      {
+        "line": 982,
+        "title": "## Phase 45 — Landing Page Anti-Slop Remediation & Silky-Smooth Animations"
+      },
+      {
+        "line": 1005,
+        "title": "## Phase 44 — Zero-Slop Hardening, Accessibility & Documentation Parity"
+      },
+      {
+        "line": 1039,
+        "title": "## Phase 43b — Cel-Shading Shadow Terminator Math Fix"
+      },
+      {
+        "line": 1066,
+        "title": "## Phase 43 — Minecraft Skin vs 2.5D Character Sprite Topological Discriminator & Photometric User Sovereignty"
+      },
+      {
+        "line": 1102,
+        "title": "## Phase 42 — Co-Draw Activation, Deep Audit Remediation & Server Hardening"
+      },
+      {
+        "line": 1130,
+        "title": "## Phase 41.5 — Landing v3: Interactive Engine Showcase & Navigation Architecture"
+      },
+      {
+        "line": 1156,
+        "title": "## Phase 30 — Critical Bug Remediation & Hot-Path Performance (P0/P1)"
+      },
+      {
+        "line": 1184,
+        "title": "## Phase 31 — Product Say-Do Alignment & Viewport Precision (P2)"
+      },
+      {
+        "line": 1211,
+        "title": "## Phase 31.5 — Precision Polish & Critical UX Remediation"
+      },
+      {
+        "line": 1235,
+        "title": "## Phase 31.6 — Canonical Xenowhirl RotSprite Engine & 45° Distortion Remediation"
+      },
+      {
+        "line": 1253,
+        "title": "## Phase 32 — Studio Accessibility & Automated Auditing (A11y)"
+      },
+      {
+        "line": 1278,
+        "title": "## Phase 33 — Architectural Decoupling & Modularization"
+      },
+      {
+        "line": 1309,
+        "title": "## Phase 34 — Academic Research-Backed Graphics Intelligence"
+      },
+      {
+        "line": 1350,
+        "title": "## Phase 35 — Market Expansion & Tileset Ecosystem"
+      },
+      {
+        "line": 1380,
+        "title": "## Phase 36 — Smart Canvas Art Analysis & Bounded 2.5D Sprite Cast Shadows"
+      },
+      {
+        "line": 1399,
+        "title": "## Phase 37 — PixiBud Deep Art Understanding, Anatomical Feature Isolation & OKLCH Cel-Shading"
+      },
+      {
+        "line": 1419,
+        "title": "## Phase 38 — Live On-Canvas Pixel Light Bulb Gizmo, Dynamic Direction Alignment & Character Analysis Hardening"
+      },
+      {
+        "line": 1451,
+        "title": "## Phase 39 — Studio UI/UX 10/10 Overhaul: Amethyst Wisteria Hover, Specular Sweep Upgrade & Viewport Harmonization"
+      },
+      {
+        "line": 1482,
+        "title": "## Phase 40 — Audit Remediation & Quality Gate Parity"
+      },
+      {
+        "line": 1524,
+        "title": "## Phase 41 — TestSprite Cloud End-to-End Suite & Complex Feature Verification"
+      },
+      {
+        "line": 1542,
+        "title": "## Excluded Claims (Transparency Audit)"
+      },
+      {
+        "line": 1551,
+        "title": "## Phase 29 — UX Enhancement: Radial Menu, Progressive Disclosure, Recent Colors, Autosave Feedback"
+      },
+      {
+        "line": 1571,
+        "title": "## Phase 28 — Security Audit Remediation (Token Revocation, CSP Hardening, Event Bus Migration)"
+      },
+      {
+        "line": 1584,
+        "title": "## Phase 27 — 2D Ray Marching & Physically Accurate Soft Shadows (Aaltonen Cone Tracing Engine)"
+      },
+      {
+        "line": 1607,
+        "title": "## Phase 26 — Volumetric Optics, Subsurface Scattering & Anisotropic Shaders (PixiBud AI Physical Shading Suite)"
+      },
+      {
+        "line": 1634,
+        "title": "## Phase 25 — Honest Ghosts & Living Timeline (Onion-Skin Overlay Split + Timeline Thumbnails)"
+      },
+      {
+        "line": 1657,
+        "title": "## Phase 24 — Multi-Project Workspace Management (Projects Gallery, Persistence & Lifecycle UX)"
+      },
+      {
+        "line": 1681,
+        "title": "## Phase 23 — Truth-in-Testing, Single CI Truth & Engine Extraction"
+      },
+      {
+        "line": 1707,
+        "title": "## Phase 22 — Dead Route Pruning & Architectural Truthfulness"
+      },
+      {
+        "line": 1727,
+        "title": "## Phase 21 — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability"
+      },
+      {
+        "line": 1754,
+        "title": "## Phase 20 — Audit Remediation, Security Hardening, Dependency Pruning, Linter Hygiene & CI Enforcement"
+      },
+      {
+        "line": 1780,
+        "title": "## Phase 19 — Tag Clip Export Scoping & Multi-Threaded Web Worker GIF Encoding"
+      },
+      {
+        "line": 1801,
+        "title": "## Phase 18 — Data Persistence Hardening, Dynamic Undo Limits, Schema Migration & Locked Layer Security"
+      },
+      {
+        "line": 1822,
+        "title": "## Phase 17 — Compass Convention Light Vector Alignment, Optical Flow Center-Bias & Dynamic Compass Indicator"
+      },
+      {
+        "line": 1841,
+        "title": "## Phase 16 — Minecraft 3D Photometric Shading Engine, Optical Flow Tweening, Anti-Aliasing & 3x3 Tiling"
+      },
+      {
+        "line": 1866,
+        "title": "## Phase 15 — Non-Destructive Photometric Output & Live Preview Signal"
+      },
+      {
+        "line": 1900,
+        "title": "## Phase 14 — 2.5D Photometric Studio, Normal Mapping, Geometry Engine & Mathematical Dithering Suite"
+      },
+      {
+        "line": 1925,
+        "title": "## Phase 13 — Lamplit Identity: De-Slop, Cozy Studio & Hero Landing Page"
+      },
+      {
+        "line": 1944,
+        "title": "## Phase 8 — Data Integrity, Truthful Exports & Verification Harness"
+      },
+      {
+        "line": 1948,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "9e2f02b4919afd2c331ef7afd3ffa3625ee1e8b8fe3057f4aaa078bd05e30956"
+  },
+  {
+    "path": "README.md",
+    "tracked": true,
+    "lines": 350,
+    "bytes": 48661,
+    "headings": [
+      {
+        "line": 1,
+        "title": "#  PixiBun Atelier — v1.14.1"
+      },
+      {
+        "line": 20,
+        "title": "##  Why PixiBun?"
+      },
+      {
+        "line": 40,
+        "title": "## Practical Limits"
+      },
+      {
+        "line": 49,
+        "title": "## Features & Capabilities"
+      },
+      {
+        "line": 62,
+        "title": "###  Live Interactive Engine Showcase (Landing Page)"
+      },
+      {
+        "line": 71,
+        "title": "### Artisan Raster & Drawing Engine"
+      },
+      {
+        "line": 88,
+        "title": "### PixiBud 2.5D Photometric Studio & Smart Math Engine"
+      },
+      {
+        "line": 118,
+        "title": "### Intelligent Image-to-Pixel-Art Synthesis & Import Suite"
+      },
+      {
+        "line": 131,
+        "title": "###  Color Science & Advanced Dithering Suite"
+      },
+      {
+        "line": 147,
+        "title": "###  Animation Suite & Layer Stack"
+      },
+      {
+        "line": 157,
+        "title": "###  Animation and Game Export Pipeline"
+      },
+      {
+        "line": 175,
+        "title": "##  Dual First-Party Studio Themes"
+      },
+      {
+        "line": 179,
+        "title": "### 1. Atelier Theme (Modern Midnight Studio Default)"
+      },
+      {
+        "line": 190,
+        "title": "### 2. Cozy Classic Theme (Original Plum & Wisteria Identity)"
+      },
+      {
+        "line": 203,
+        "title": "## Keyboard Shortcuts Reference"
+      },
+      {
+        "line": 246,
+        "title": "##  Getting Started"
+      },
+      {
+        "line": 248,
+        "title": "### Prerequisites"
+      },
+      {
+        "line": 252,
+        "title": "### Setup & Run Locally"
+      },
+      {
+        "line": 254,
+        "title": "# 1. Clone the repository"
+      },
+      {
+        "line": 258,
+        "title": "# 2. Install dependencies"
+      },
+      {
+        "line": 261,
+        "title": "# 3. Start the Turbopack dev server"
+      },
+      {
+        "line": 267,
+        "title": "### Autonomous Quality Gate & Git Pre-Push Protection"
+      },
+      {
+        "line": 270,
+        "title": "# Run documentation checks, typecheck, lint, and the unit test suite"
+      },
+      {
+        "line": 273,
+        "title": "# Run full suite including Next.js production compilation"
+      },
+      {
+        "line": 276,
+        "title": "# Install the three browser engines once, then test the compiled production build"
+      },
+      {
+        "line": 284,
+        "title": "##  Offline PWA, Accessibility & Privacy Observability"
+      },
+      {
+        "line": 296,
+        "title": "## Technical Architecture"
+      },
+      {
+        "line": 319,
+        "title": "##  Future Roadmap & v2 Architecture"
+      },
+      {
+        "line": 325,
+        "title": "##  Craft Values & Open Source"
+      },
+      {
+        "line": 336,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "20f0ba23ce5b14ba7cf43be5fb394979b5560628c9d785d6445d60a6313f8f6b"
+  },
+  {
+    "path": "DESIGN.md",
+    "tracked": true,
+    "lines": 390,
+    "bytes": 27463,
+    "headings": [
+      {
+        "line": 1,
+        "title": "#  Design System & Spatial Architecture — PixiBun Atelier"
+      },
+      {
+        "line": 16,
+        "title": "## 1. Core Visual Metaphor: The Lamplit Drafting Desk"
+      },
+      {
+        "line": 27,
+        "title": "### Material Invariants"
+      },
+      {
+        "line": 39,
+        "title": "## 2. Semantic Color Tokens"
+      },
+      {
+        "line": 49,
+        "title": "### 1. Atelier Theme Tokens (Modern Workstation Baseline)"
+      },
+      {
+        "line": 51,
+        "title": "#### Atelier Dark (Default Midnight Studio)"
+      },
+      {
+        "line": 66,
+        "title": "#### Atelier Light (Warm Alabaster Morning)"
+      },
+      {
+        "line": 81,
+        "title": "### 2. Cozy Classic Theme Tokens (Original Historical Identity)"
+      },
+      {
+        "line": 83,
+        "title": "#### Cozy Classic Dark (Cozy Midnight)"
+      },
+      {
+        "line": 97,
+        "title": "#### Cozy Classic Light (Morning Atelier)"
+      },
+      {
+        "line": 113,
+        "title": "## 3. Dual-Axis Theme Switching & Zero-Lag Transition Engine"
+      },
+      {
+        "line": 136,
+        "title": "## 4. Tactile Physics & Button Mechanical Standard"
+      },
+      {
+        "line": 167,
+        "title": "## 5. 16-Bit Pixel Cursor & Interactive Atmosphere"
+      },
+      {
+        "line": 175,
+        "title": "## 6. Typography Scale & Hierarchies"
+      },
+      {
+        "line": 197,
+        "title": "## 7. Anti-Slop Voice & Copywriting Guidelines"
+      },
+      {
+        "line": 205,
+        "title": "## 8. Viewport Ergonomics & HUD Precision Guidance"
+      },
+      {
+        "line": 207,
+        "title": "### Brush Bounding Box (HUD Cursor Overlay)"
+      },
+      {
+        "line": 213,
+        "title": "### Artwork Grid Alignment"
+      },
+      {
+        "line": 216,
+        "title": "### Imported-Art Bucket Controls"
+      },
+      {
+        "line": 219,
+        "title": "### Viewport Fit & Scale Navigation Standards"
+      },
+      {
+        "line": 224,
+        "title": "### Accessible Form Controls & Screen Reader Semantics"
+      },
+      {
+        "line": 230,
+        "title": "## 9. Animation Spacing & Variable Timing Visualizer"
+      },
+      {
+        "line": 232,
+        "title": "### Classical Timing vs. Spacing Principles"
+      },
+      {
+        "line": 241,
+        "title": "## 10. Direct Manipulation Lighting Gizmo (`PixelLightBulbGizmo.tsx`)"
+      },
+      {
+        "line": 252,
+        "title": "## 11. Tileset Palette & Stamping Workflow"
+      },
+      {
+        "line": 254,
+        "title": "### Grid Partitioning & Slicing Viewport"
+      },
+      {
+        "line": 261,
+        "title": "## 12. Perceptual Accessibility: CVD (Colorblindness) Lens"
+      },
+      {
+        "line": 273,
+        "title": "## 13. Silhouette & Value Contrast Testing (Squint Mode)"
+      },
+      {
+        "line": 284,
+        "title": "## 14. Studio Design System Primitives"
+      },
+      {
+        "line": 288,
+        "title": "### Control Inventory"
+      },
+      {
+        "line": 300,
+        "title": "### Token Integration"
+      },
+      {
+        "line": 307,
+        "title": "### Appearance Popover"
+      },
+      {
+        "line": 316,
+        "title": "## 15. PixiBunLogo Brand Geometry & Scale System (`PixiBunLogo.tsx`)"
+      },
+      {
+        "line": 320,
+        "title": "### Scale Hierarchy"
+      },
+      {
+        "line": 328,
+        "title": "### Design Invariants"
+      },
+      {
+        "line": 335,
+        "title": "## 16. Smart-Effect Recipe Provenance & FX Inspector Semantics"
+      },
+      {
+        "line": 339,
+        "title": "### 1. Layers Panel FX Provenance"
+      },
+      {
+        "line": 344,
+        "title": "### 2. Live Recipe Reopening (`Edit FX`)"
+      },
+      {
+        "line": 350,
+        "title": "### 3. Real-Time Analysis Readout Card"
+      },
+      {
+        "line": 359,
+        "title": "## 17. Discrete Shading Tones & 3D Specular Highlight System"
+      },
+      {
+        "line": 363,
+        "title": "### 1. Shading Tones Modes"
+      },
+      {
+        "line": 369,
+        "title": "### 2. Current live pixel glints"
+      },
+      {
+        "line": 375,
+        "title": "### 3. Legacy continuous highlight pill"
+      },
+      {
+        "line": 384,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "40e17313daad92e1c6de4260fce1b2ff5698925728a2b81e71d2682bf54ff12f"
+  },
+  {
+    "path": "docs/plans/research_grounded_product_roadmap.md",
+    "tracked": true,
+    "lines": 171,
+    "bytes": 16224,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun research-grounded product roadmap"
+      },
+      {
+        "line": 7,
+        "title": "## Design principles"
+      },
+      {
+        "line": 16,
+        "title": "## Research basis"
+      },
+      {
+        "line": 27,
+        "title": "## Phase A — trustworthy generated layers"
+      },
+      {
+        "line": 46,
+        "title": "## Phase B — unified effect editing"
+      },
+      {
+        "line": 62,
+        "title": "## Phase C — lighting, depth, and materials"
+      },
+      {
+        "line": 79,
+        "title": "## Phase D — pixel geometry and cleanup"
+      },
+      {
+        "line": 92,
+        "title": "## Phase E — palettes, dithering, and color"
+      },
+      {
+        "line": 106,
+        "title": "## Phase F — animation and temporal coherence"
+      },
+      {
+        "line": 119,
+        "title": "## Phase G — tiles, synthesis, and game export"
+      },
+      {
+        "line": 132,
+        "title": "## Phase H — collaboration, performance, and accessibility"
+      },
+      {
+        "line": 148,
+        "title": "## Delivery rule"
+      },
+      {
+        "line": 152,
+        "title": "## Reliability pass applied on 2026-09-20"
+      },
+      {
+        "line": 165,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "eac2889dd485e475b93ca715542fee9f9329c35ff0283f773dbcfb026309866f"
+  },
+  {
+    "path": ".agents/skills/testsprite-verify/SKILL.md",
+    "tracked": true,
+    "lines": 570,
+    "bytes": 31761,
+    "headings": [
+      {
+        "line": 7,
+        "title": "# TestSprite Verification Loop"
+      },
+      {
+        "line": 17,
+        "title": "## When to run"
+      },
+      {
+        "line": 45,
+        "title": "## When to skip"
+      },
+      {
+        "line": 58,
+        "title": "## The one-test minimum"
+      },
+      {
+        "line": 82,
+        "title": "## 1. Preflight"
+      },
+      {
+        "line": 94,
+        "title": "## 2. Find the project"
+      },
+      {
+        "line": 124,
+        "title": "## 3. Decide what to test"
+      },
+      {
+        "line": 131,
+        "title": "### (a) An existing test covers the change"
+      },
+      {
+        "line": 142,
+        "title": "### (b) A new test for the change (most common)"
+      },
+      {
+        "line": 190,
+        "title": "# /tmp/login-empty-password.py — runs against the project's target URL, creds injected."
+      },
+      {
+        "line": 198,
+        "title": "# Required: actually invoke the test so its assertions run."
+      },
+      {
+        "line": 222,
+        "title": "# Auto-injected credentials — do not modify"
+      },
+      {
+        "line": 255,
+        "title": "# producer — captures a variable for later waves"
+      },
+      {
+        "line": 259,
+        "title": "# consumer — scheduled in a wave after every producer it names"
+      },
+      {
+        "line": 263,
+        "title": "# cleanup — always scheduled in the final wave"
+      },
+      {
+        "line": 282,
+        "title": "#### Authoring planSteps the testing agent will execute reliably"
+      },
+      {
+        "line": 348,
+        "title": "### (c) A coverage set — multiple FE plans as a batch"
+      },
+      {
+        "line": 364,
+        "title": "### (d) Refine an existing test"
+      },
+      {
+        "line": 375,
+        "title": "## 4. Run"
+      },
+      {
+        "line": 385,
+        "title": "# One-time setup for a deployed target"
+      },
+      {
+        "line": 388,
+        "title": "# (a) existing test"
+      },
+      {
+        "line": 391,
+        "title": "# (a-rerun) replay of a deployed test (V3 FE: 0.5 credit). Replays saved code (auto-heal on — more"
+      },
+      {
+        "line": 392,
+        "title": "# lenient than a fresh run; for strict verification of a new change prefer `test run`)."
+      },
+      {
+        "line": 393,
+        "title": "# BE: dispatches the WHOLE dependency closure — producers and teardowns run too, not just <test-id>,"
+      },
+      {
+        "line": 394,
+        "title": "# so expect their side effects (fixtures re-created, teardown deletes) and extra runs in history."
+      },
+      {
+        "line": 398,
+        "title": "# (b-FE) new FE test from plan"
+      },
+      {
+        "line": 401,
+        "title": "# (b-BE) new BE test from Python (backend create needs --project)"
+      },
+      {
+        "line": 404,
+        "title": "# (b-BE coverage set with dependencies) create each test without --run, then one wave-ordered batch"
+      },
+      {
+        "line": 408,
+        "title": "# (c) FE coverage set — single-call create + run (FE-only)"
+      },
+      {
+        "line": 411,
+        "title": "# Two-step alternative (inspect before running):"
+      },
+      {
+        "line": 412,
+        "title": "#   testsprite test create-batch --plans plans.jsonl --output json"
+      },
+      {
+        "line": 413,
+        "title": "#   then trigger each id: testsprite test run <test-id> --env staging --wait --timeout 600"
+      },
+      {
+        "line": 415,
+        "title": "# (d-FE) refine + re-run"
+      },
+      {
+        "line": 419,
+        "title": "# (d-BE) refine BE code + re-run. NOTE: if you reach for `test rerun` here instead, a BE rerun"
+      },
+      {
+        "line": 420,
+        "title": "# dispatches the full producer/teardown closure — use --skip-dependencies while iterating on one"
+      },
+      {
+        "line": 421,
+        "title": "# script (producers already verified this round), then finish with a closure run before reporting."
+      },
+      {
+        "line": 500,
+        "title": "## 4a. Read the result — plan, or product?"
+      },
+      {
+        "line": 546,
+        "title": "## 5. On failure → download the artifact"
+      },
+      {
+        "line": 555,
+        "title": "## 6. Report"
+      }
+    ],
+    "checkpoint": false,
+    "sha256": "3757039ab63649aff295b98d936a4498b7d0b5e70572fd091a9beb0ecd78ebd6"
+  },
+  {
+    "path": "docs/plans/README.md",
+    "tracked": true,
+    "lines": 24,
+    "bytes": 3194,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Implementation Plans Archive"
+      },
+      {
+        "line": 18,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "f1d406624386833509570d9fb4cb882de2aca8affaf141ab65a8421d12b0a892"
+  },
+  {
+    "path": "docs/plans/learn-by-making-2026.md",
+    "tracked": true,
+    "lines": 92,
+    "bytes": 12090,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun — Learn by Making"
+      },
+      {
+        "line": 5,
+        "title": "## Outcome and boundaries"
+      },
+      {
+        "line": 11,
+        "title": "## Current implementation: audit hypotheses"
+      },
+      {
+        "line": 23,
+        "title": "### First engineering gate: protect artwork"
+      },
+      {
+        "line": 27,
+        "title": "## Three connected workstreams"
+      },
+      {
+        "line": 29,
+        "title": "### A. Interactive first success"
+      },
+      {
+        "line": 41,
+        "title": "### B. Contextual PixiTools learning"
+      },
+      {
+        "line": 47,
+        "title": "### C. Developer storytelling"
+      },
+      {
+        "line": 53,
+        "title": "## Six-week sequence"
+      },
+      {
+        "line": 66,
+        "title": "## Measurement contract"
+      },
+      {
+        "line": 76,
+        "title": "## Source notes"
+      },
+      {
+        "line": 86,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "ffbc794aea92390345ef5d27818aa7a55472639eb47d67ff80b01bd88c3183a6"
+  },
+  {
+    "path": "docs/plans/implementation_plan_v2.md",
+    "tracked": true,
+    "lines": 179,
+    "bytes": 12871,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Redesign PixiBun Home Page into a Cozy Interactive Pixel Atelier (v2)"
+      },
+      {
+        "line": 7,
+        "title": "## What changed from v1"
+      },
+      {
+        "line": 15,
+        "title": "## Architecture & Layout Overview"
+      },
+      {
+        "line": 35,
+        "title": "## Locked Visual Language (sampled from the reference image)"
+      },
+      {
+        "line": 56,
+        "title": "## Phase 0 (NEW): Pixel Asset Generation Pipeline"
+      },
+      {
+        "line": 58,
+        "title": "#### Goal"
+      },
+      {
+        "line": 61,
+        "title": "#### Workflow (Antigravity + Nano Banana Pro)"
+      },
+      {
+        "line": 66,
+        "title": "#### Assets needed"
+      },
+      {
+        "line": 74,
+        "title": "#### New file"
+      },
+      {
+        "line": 75,
+        "title": "#### [NEW] `PixelSprite.tsx` (proposed component; never added to the current codebase)"
+      },
+      {
+        "line": 80,
+        "title": "## Proposed Changes"
+      },
+      {
+        "line": 82,
+        "title": "### 1. Web Audio Ambience & Sound Engine"
+      },
+      {
+        "line": 83,
+        "title": "#### [NEW] `src/lib/audio/lofiRadio.ts` (planned file)"
+      },
+      {
+        "line": 87,
+        "title": "### 2. Interactive Atelier Hero & Pixel Desk Scene"
+      },
+      {
+        "line": 88,
+        "title": "#### [NEW] [AtelierDeskScene.tsx](../../src/components/landing/AtelierDeskScene.tsx)"
+      },
+      {
+        "line": 96,
+        "title": "#### [NEW] [AtelierHero.tsx](../../src/components/landing/AtelierHero.tsx)"
+      },
+      {
+        "line": 99,
+        "title": "### 3. Navigation Bar & Header"
+      },
+      {
+        "line": 100,
+        "title": "#### [NEW] [LandingNav.tsx](../../src/components/landing/LandingNav.tsx)"
+      },
+      {
+        "line": 103,
+        "title": "### 4. Tactile Feature Cards (\"* Everything you need to create *\")"
+      },
+      {
+        "line": 104,
+        "title": "#### [NEW] [CozyFeatureGrid.tsx](../../src/components/landing/CozyFeatureGrid.tsx)"
+      },
+      {
+        "line": 111,
+        "title": "### 5. Interactive Starter Shelf"
+      },
+      {
+        "line": 112,
+        "title": "#### [NEW] [AtelierGallery.tsx](../../src/components/landing/AtelierGallery.tsx)"
+      },
+      {
+        "line": 115,
+        "title": "### 6. Artisan Story & Cozy Vignette"
+      },
+      {
+        "line": 116,
+        "title": "#### [NEW] [ArtisanStory.tsx](../../src/components/landing/ArtisanStory.tsx)"
+      },
+      {
+        "line": 119,
+        "title": "### 7. Call To Action Banner & Site Footer"
+      },
+      {
+        "line": 120,
+        "title": "#### [NEW] [AtelierCtaBanner.tsx](../../src/components/landing/AtelierCtaBanner.tsx)"
+      },
+      {
+        "line": 121,
+        "title": "#### [NEW] [AtelierFooter.tsx](../../src/components/landing/AtelierFooter.tsx)"
+      },
+      {
+        "line": 124,
+        "title": "### 8. Page Assembly & Styling"
+      },
+      {
+        "line": 125,
+        "title": "#### [MODIFY] [page.tsx](../../src/app/page.tsx)"
+      },
+      {
+        "line": 128,
+        "title": "#### [MODIFY] [globals.css](../../src/app/globals.css)"
+      },
+      {
+        "line": 133,
+        "title": "## Sequencing"
+      },
+      {
+        "line": 143,
+        "title": "## Verification Plan"
+      },
+      {
+        "line": 145,
+        "title": "### Automated"
+      },
+      {
+        "line": 153,
+        "title": "### Visual QA"
+      },
+      {
+        "line": 157,
+        "title": "### Performance"
+      },
+      {
+        "line": 161,
+        "title": "### Accessibility"
+      },
+      {
+        "line": 166,
+        "title": "### Manual"
+      },
+      {
+        "line": 173,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "55668b8555e79ef2baf92c31f6df2d39de15ff04f7f5c4e529870f4e91319e7c"
+  },
+  {
+    "path": "docs/plans/implementation_plan.md",
+    "tracked": true,
+    "lines": 157,
+    "bytes": 14724,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Implementation Plan — PixiBun Professionalization: Offline Truth, WCAG 2.2, Test Gates & Privacy-First Observability"
+      },
+      {
+        "line": 3,
+        "title": "## Overview"
+      },
+      {
+        "line": 11,
+        "title": "## Types"
+      },
+      {
+        "line": 39,
+        "title": "## Files"
+      },
+      {
+        "line": 77,
+        "title": "## Functions"
+      },
+      {
+        "line": 96,
+        "title": "## Classes"
+      },
+      {
+        "line": 100,
+        "title": "## Dependencies"
+      },
+      {
+        "line": 113,
+        "title": "## Testing"
+      },
+      {
+        "line": 124,
+        "title": "## Implementation Order"
+      },
+      {
+        "line": 151,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "55e9f06d8815fac1807de755e2dcc3f861b4ee3d058851c29a492814add721d8"
+  },
+  {
+    "path": "docs/plans/audit_remediation_walkthrough.md",
+    "tracked": true,
+    "lines": 92,
+    "bytes": 8262,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit Remediation Walkthrough: PIXIBUN_AUDIT_RESULTS.md"
+      },
+      {
+        "line": 9,
+        "title": "## ️ Executive Verification Summary"
+      },
+      {
+        "line": 22,
+        "title": "## ️ Implemented Fixes by Subsystem"
+      },
+      {
+        "line": 24,
+        "title": "### 1. Canvas Envelope Unification Across Subsystems [Critical]"
+      },
+      {
+        "line": 40,
+        "title": "### 2. SafeJson UTF-8 Byte Counter & Prototype Retention [High]"
+      },
+      {
+        "line": 47,
+        "title": "### 3. ImageHeaderProbe Window Paging & Distinct Error [High]"
+      },
+      {
+        "line": 54,
+        "title": "### 4. SafeCanvas `byteOffset` Support & Accurate Method References [High]"
+      },
+      {
+        "line": 61,
+        "title": "### 5. Canonical Version Single Source of Truth [High]"
+      },
+      {
+        "line": 68,
+        "title": "### 6. Photometric Studio Drag Caching & Dynamic Appendage Stabilization [Perf & Precision]"
+      },
+      {
+        "line": 78,
+        "title": "### 7. Documentation Invariant Synchronization"
+      },
+      {
+        "line": 86,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "9486f363c9cd30e082e28827f7625be32666d98b721d0e5a3b482effd1a59ae8"
+  },
+  {
+    "path": "docs/plans/audit_remediation_plan.md",
+    "tracked": true,
+    "lines": 171,
+    "bytes": 10229,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Implementation Plan: Fix All Audit Findings from PIXIBUN_AUDIT_RESULTS.md (Amended)"
+      },
+      {
+        "line": 5,
+        "title": "## Proposed Changes"
+      },
+      {
+        "line": 7,
+        "title": "### 1. Canvas Envelope Unification [Critical]"
+      },
+      {
+        "line": 16,
+        "title": "#### [NEW] [canvasLimits.ts](../../src/config/canvasLimits.ts)"
+      },
+      {
+        "line": 30,
+        "title": "#### [MODIFY] [schema.ts](../../src/lib/project/schema.ts)"
+      },
+      {
+        "line": 33,
+        "title": "#### [MODIFY] [p2pSync.ts](../../src/lib/sync/p2pSync.ts)"
+      },
+      {
+        "line": 41,
+        "title": "#### [MODIFY] [PngExportTab.tsx](../../src/components/modals/export/PngExportTab.tsx)"
+      },
+      {
+        "line": 44,
+        "title": "#### [MODIFY] [ExportModal.tsx](../../src/components/modals/ExportModal.tsx)"
+      },
+      {
+        "line": 47,
+        "title": "#### [MODIFY] [safeCanvas.ts](../../src/lib/safety/safeCanvas.ts)"
+      },
+      {
+        "line": 51,
+        "title": "#### [MODIFY] [imageHeaderProbe.ts](../../src/lib/safety/imageHeaderProbe.ts)"
+      },
+      {
+        "line": 57,
+        "title": "### 2. SafeJson Byte Length & Sanitization Hardening [High]"
+      },
+      {
+        "line": 59,
+        "title": "#### [MODIFY] [safeJson.ts](../../src/lib/safety/safeJson.ts)"
+      },
+      {
+        "line": 65,
+        "title": "### 3. ImageHeaderProbe Segment Paging & Distinct Error [High]"
+      },
+      {
+        "line": 67,
+        "title": "#### [MODIFY] [imageHeaderProbe.ts](../../src/lib/safety/imageHeaderProbe.ts)"
+      },
+      {
+        "line": 75,
+        "title": "### 4. SafeCanvas `byteOffset` Support [High]"
+      },
+      {
+        "line": 77,
+        "title": "#### [MODIFY] [safeCanvas.ts](../../src/lib/safety/safeCanvas.ts)"
+      },
+      {
+        "line": 95,
+        "title": "### 5. Version Single Source of Truth to 1.13.1 [High]"
+      },
+      {
+        "line": 97,
+        "title": "#### [NEW] [version.ts](../../src/config/version.ts)"
+      },
+      {
+        "line": 103,
+        "title": "#### [MODIFY] [capture.ts](../../src/lib/diagnostics/capture.ts)"
+      },
+      {
+        "line": 106,
+        "title": "#### [MODIFY] [route.ts](../../src/app/api/diagnostics/relay/route.ts)"
+      },
+      {
+        "line": 109,
+        "title": "#### [MODIFY] [package-lock.json](../../package-lock.json)"
+      },
+      {
+        "line": 114,
+        "title": "### 6. Documentation Metric Reconciliation [Medium/Low]"
+      },
+      {
+        "line": 116,
+        "title": "#### [MODIFY] [CONTRIBUTING.md](../../CONTRIBUTING.md)"
+      },
+      {
+        "line": 120,
+        "title": "#### [MODIFY] [ARCHITECTURE.md](../../ARCHITECTURE.md)"
+      },
+      {
+        "line": 125,
+        "title": "#### [MODIFY] [TASKS.md](../../TASKS.md)"
+      },
+      {
+        "line": 128,
+        "title": "#### [CLEANUP] Untracked root audit files"
+      },
+      {
+        "line": 133,
+        "title": "## Verification Plan"
+      },
+      {
+        "line": 135,
+        "title": "### Automated Tests"
+      },
+      {
+        "line": 165,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "3fd0ddaff6682125f9c51d3c888d851c968d625c43510b14b1372dfffe036418"
+  },
+  {
+    "path": "docs/plans/audit-remediation-2026-09-26.md",
+    "tracked": true,
+    "lines": 96,
+    "bytes": 11276,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit remediation plan — 2026-09-26"
+      },
+      {
+        "line": 7,
+        "title": "## Phase 1 — export correctness and collaboration memory"
+      },
+      {
+        "line": 13,
+        "title": "## Phase 2 — project and history integrity"
+      },
+      {
+        "line": 22,
+        "title": "## Phase 3 — algorithmic cost and correctness"
+      },
+      {
+        "line": 38,
+        "title": "## Phase 4 — security, tests, and developer checks"
+      },
+      {
+        "line": 47,
+        "title": "## Phase 5 — claims, limits, and attribution"
+      },
+      {
+        "line": 63,
+        "title": "## Phase 6 — browser closure and newly exposed defects"
+      },
+      {
+        "line": 70,
+        "title": "## Follow-up — palette admission and documentation"
+      },
+      {
+        "line": 76,
+        "title": "## Follow-up — metadata, history, export, and claim accuracy"
+      },
+      {
+        "line": 90,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "c238ad3e97e916997b7dd6d5ff3caf5ef0ae6824f2496975cc8fb5a6dbdf968c"
+  },
+  {
+    "path": ".agents/skills/testsprite-onboard/SKILL.md",
+    "tracked": true,
+    "lines": 268,
+    "bytes": 12061,
+    "headings": [
+      {
+        "line": 14,
+        "title": "# TestSprite: onboard a repo with a seed test suite"
+      },
+      {
+        "line": 23,
+        "title": "## When to use"
+      },
+      {
+        "line": 28,
+        "title": "## When NOT to use"
+      },
+      {
+        "line": 33,
+        "title": "## Prerequisites"
+      },
+      {
+        "line": 42,
+        "title": "## Steps"
+      },
+      {
+        "line": 44,
+        "title": "### 1. Understand the app"
+      },
+      {
+        "line": 54,
+        "title": "### 2. Create the project"
+      },
+      {
+        "line": 90,
+        "title": "#### 2b. FE: register the app's test-hook attribute"
+      },
+      {
+        "line": 96,
+        "title": "### 3. Get the tests"
+      },
+      {
+        "line": 109,
+        "title": "#### 3a. Preferred: generate → review → accept"
+      },
+      {
+        "line": 145,
+        "title": "#### 3b. Author the tests by hand"
+      },
+      {
+        "line": 195,
+        "title": "### 4. Batch-create (hand-authored path only — skip if you accepted generated proposals)"
+      },
+      {
+        "line": 213,
+        "title": "### 5. Smoke-run a few — NOT all (protect credits)"
+      },
+      {
+        "line": 230,
+        "title": "### 6. Report"
+      },
+      {
+        "line": 241,
+        "title": "## Quality checklist (self-check before reporting done)"
+      },
+      {
+        "line": 252,
+        "title": "## Don'ts"
+      },
+      {
+        "line": 264,
+        "title": "## Hand off to verify"
+      }
+    ],
+    "checkpoint": false,
+    "sha256": "630f721defee9ae1aef1753c4d494ab75c97d1c6616a7b72d901891a4ef25421"
+  },
+  {
+    "path": "docs/research/specular-glint-2026-10-01.md",
+    "tracked": true,
+    "lines": 88,
+    "bytes": 15626,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Pixel glints and the live light bulb"
+      },
+      {
+        "line": 5,
+        "title": "## What was wrong"
+      },
+      {
+        "line": 13,
+        "title": "## Research and decisions"
+      },
+      {
+        "line": 26,
+        "title": "## Current behavior"
+      },
+      {
+        "line": 41,
+        "title": "## Verification and limits"
+      },
+      {
+        "line": 50,
+        "title": "### Initial local results"
+      },
+      {
+        "line": 62,
+        "title": "## Visibility correction"
+      },
+      {
+        "line": 82,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "5263216177818d6da1d3592957af93a5f5facc7ae3c3e7af34817e8f7452ffa2"
+  },
+  {
+    "path": "docs/research/session-ui-ux-2026-10-01.md",
+    "tracked": true,
+    "lines": 199,
+    "bytes": 36525,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Session UI/UX improvements — 2026-10-01"
+      },
+      {
+        "line": 5,
+        "title": "## Artist feedback and corrections"
+      },
+      {
+        "line": 23,
+        "title": "## Design sources"
+      },
+      {
+        "line": 27,
+        "title": "## Verification"
+      },
+      {
+        "line": 42,
+        "title": "## Limits"
+      },
+      {
+        "line": 54,
+        "title": "## Outlined-artwork screenshot follow-up"
+      },
+      {
+        "line": 78,
+        "title": "## Save-status placement follow-up"
+      },
+      {
+        "line": 84,
+        "title": "## Header placement review"
+      },
+      {
+        "line": 98,
+        "title": "### Research and application"
+      },
+      {
+        "line": 107,
+        "title": "### Current local verification"
+      },
+      {
+        "line": 117,
+        "title": "## Lighting-menu follow-up"
+      },
+      {
+        "line": 139,
+        "title": "## Toolbar simplification follow-up"
+      },
+      {
+        "line": 155,
+        "title": "### Visible canvas controls"
+      },
+      {
+        "line": 161,
+        "title": "### Single-row correction"
+      },
+      {
+        "line": 172,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 180,
+        "title": "### Live glint follow-up"
+      },
+      {
+        "line": 184,
+        "title": "### Glint visibility correction"
+      },
+      {
+        "line": 188,
+        "title": "### Palette creation and compact scan"
+      },
+      {
+        "line": 192,
+        "title": "### Fire-only cycle controls"
+      },
+      {
+        "line": 196,
+        "title": "### Cycle Loop export"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "8312d67b018f1b9f8453599d0f692d4a9e55ead7ca85be52405478a30ce24e14"
+  },
+  {
+    "path": "docs/research/session-completion-2026-10-01.md",
+    "tracked": true,
+    "lines": 153,
+    "bytes": 19560,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit session completion — 2026-10-01"
+      },
+      {
+        "line": 7,
+        "title": "## Delivered work"
+      },
+      {
+        "line": 22,
+        "title": "## Verification and current inventory"
+      },
+      {
+        "line": 55,
+        "title": "## Open work"
+      },
+      {
+        "line": 65,
+        "title": "## Markdown reconciliation"
+      },
+      {
+        "line": 103,
+        "title": "## Header placement follow-up"
+      },
+      {
+        "line": 107,
+        "title": "## Lighting-menu follow-up"
+      },
+      {
+        "line": 112,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 120,
+        "title": "### Live glint follow-up"
+      },
+      {
+        "line": 124,
+        "title": "### Glint visibility correction"
+      },
+      {
+        "line": 130,
+        "title": "### Palette authoring and scan follow-up"
+      },
+      {
+        "line": 134,
+        "title": "### Fire-only cycle follow-up"
+      },
+      {
+        "line": 138,
+        "title": "### Cycle animation export at 15 FPS"
+      },
+      {
+        "line": 142,
+        "title": "### Slow cycle export choices"
+      },
+      {
+        "line": 146,
+        "title": "### Large GIF corruption correction"
+      },
+      {
+        "line": 150,
+        "title": "### Palette and GIF publication reconciliation"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "fac02567d41f6ab3368a2f57c935d08136685a5b030a0f8f50449ecb014bbaab"
+  },
+  {
+    "path": "docs/research/pixitools-baseline-study.md",
+    "tracked": true,
+    "lines": 62,
+    "bytes": 5924,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiTools baseline usability study — ready-to-run kit"
+      },
+      {
+        "line": 5,
+        "title": "## Recruit and prepare"
+      },
+      {
+        "line": 11,
+        "title": "## Moderator opening"
+      },
+      {
+        "line": 17,
+        "title": "## Tasks, in order"
+      },
+      {
+        "line": 26,
+        "title": "## Per-participant record"
+      },
+      {
+        "line": 43,
+        "title": "## Issue synthesis after all five sessions"
+      },
+      {
+        "line": 56,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "7b34a2aea128fef41ab5cc9b83bd9f0a6eaf890c1135534063d1fc5def202f44"
+  },
+  {
+    "path": "docs/research/PIXIBUN_UX_VISUAL_QA.md",
+    "tracked": true,
+    "lines": 199,
+    "bytes": 21519,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX Verification, Visual QA & Regression Hardening Pass"
+      },
+      {
+        "line": 12,
+        "title": "## 1. Executive Summary"
+      },
+      {
+        "line": 18,
+        "title": "### Key Verdict"
+      },
+      {
+        "line": 23,
+        "title": "## 2. Visual Evidence & State Inventory"
+      },
+      {
+        "line": 53,
+        "title": "## 3. Visual & Interaction Findings & Polish Interventions"
+      },
+      {
+        "line": 57,
+        "title": "### Finding 1: Animation Review Below-the-Fold Scrolling (Resolved)"
+      },
+      {
+        "line": 66,
+        "title": "### Finding 2: Save Status Indicator Redundancy (Resolved)"
+      },
+      {
+        "line": 75,
+        "title": "### Finding 3: Palette Roles Duplicate Warning Accessibility (Verified)"
+      },
+      {
+        "line": 82,
+        "title": "### Finding 4: Accessibility Alert Ambiguity in Multi-Tab Tests (Resolved)"
+      },
+      {
+        "line": 89,
+        "title": "### Finding 5: Reduced Motion Policy Enforcement (Resolved)"
+      },
+      {
+        "line": 96,
+        "title": "### Finding 6: Focus Restoration in Conditionally-Mounted Modals (Resolved)"
+      },
+      {
+        "line": 105,
+        "title": "### Finding 7: Firefox HTML Select Option Value Attribute Resolution (Resolved)"
+      },
+      {
+        "line": 114,
+        "title": "## 4. Interaction QA: Real Creative Workflows"
+      },
+      {
+        "line": 116,
+        "title": "### 4.1. Artwork Preservation & Unsaved Recovery"
+      },
+      {
+        "line": 123,
+        "title": "### 4.2. Concurrency Protection & Two-Tab Conflict"
+      },
+      {
+        "line": 132,
+        "title": "### 4.3. Animation Review & Non-Destructive Protection"
+      },
+      {
+        "line": 143,
+        "title": "### 4.4. Game Delivery & Preflight Inspection"
+      },
+      {
+        "line": 151,
+        "title": "### 4.5. Unsupported Video Codec Recovery"
+      },
+      {
+        "line": 157,
+        "title": "## 5. Authoritative Final Verification Table"
+      },
+      {
+        "line": 183,
+        "title": "## 6. Conclusion"
+      },
+      {
+        "line": 193,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "894ae3ebe8432b4979581f26f88bd86b594951a61f4938d253755653bccaf32d"
+  },
+  {
+    "path": "docs/research/PIXIBUN_UX_HARDENING_REPORT.md",
+    "tracked": true,
+    "lines": 373,
+    "bytes": 39985,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX Hardening Implementation Report"
+      },
+      {
+        "line": 9,
+        "title": "# Table of Contents"
+      },
+      {
+        "line": 21,
+        "title": "## UX Pass 1 — Artwork Safety Without Artist Anxiety (Phase 1)"
+      },
+      {
+        "line": 23,
+        "title": "### Problem"
+      },
+      {
+        "line": 28,
+        "title": "### Previous workflow"
+      },
+      {
+        "line": 33,
+        "title": "### New workflow"
+      },
+      {
+        "line": 38,
+        "title": "### Why"
+      },
+      {
+        "line": 44,
+        "title": "### Implementation"
+      },
+      {
+        "line": 52,
+        "title": "### Verification"
+      },
+      {
+        "line": 57,
+        "title": "### Remaining uncertainty"
+      },
+      {
+        "line": 62,
+        "title": "## UX Pass 2 — Export and Collaboration That Explains Itself (Phase 2)"
+      },
+      {
+        "line": 64,
+        "title": "### Problem"
+      },
+      {
+        "line": 70,
+        "title": "### Previous workflow"
+      },
+      {
+        "line": 76,
+        "title": "### New workflow"
+      },
+      {
+        "line": 86,
+        "title": "### Why"
+      },
+      {
+        "line": 92,
+        "title": "### Implementation"
+      },
+      {
+        "line": 99,
+        "title": "### Verification"
+      },
+      {
+        "line": 105,
+        "title": "## UX Pass 3 — Production Confidence (Phase 3)"
+      },
+      {
+        "line": 107,
+        "title": "### Problem"
+      },
+      {
+        "line": 113,
+        "title": "### Previous workflow"
+      },
+      {
+        "line": 117,
+        "title": "### New workflow"
+      },
+      {
+        "line": 123,
+        "title": "### Why"
+      },
+      {
+        "line": 129,
+        "title": "### Implementation"
+      },
+      {
+        "line": 136,
+        "title": "### Verification"
+      },
+      {
+        "line": 141,
+        "title": "### Remaining uncertainty"
+      },
+      {
+        "line": 146,
+        "title": "## UX Pass 4 — Completely Rework Animation Review UX (Phase 4)"
+      },
+      {
+        "line": 148,
+        "title": "### Problem"
+      },
+      {
+        "line": 154,
+        "title": "### Previous workflow"
+      },
+      {
+        "line": 160,
+        "title": "### New workflow"
+      },
+      {
+        "line": 174,
+        "title": "### Why"
+      },
+      {
+        "line": 179,
+        "title": "### Implementation"
+      },
+      {
+        "line": 184,
+        "title": "### Verification"
+      },
+      {
+        "line": 189,
+        "title": "### Remaining uncertainty"
+      },
+      {
+        "line": 194,
+        "title": "## UX Pass 5 — Game Export for Artists, Not Engine Programmers (Phase 5)"
+      },
+      {
+        "line": 196,
+        "title": "### Problem"
+      },
+      {
+        "line": 201,
+        "title": "### Previous workflow"
+      },
+      {
+        "line": 206,
+        "title": "### New workflow"
+      },
+      {
+        "line": 215,
+        "title": "### Why"
+      },
+      {
+        "line": 221,
+        "title": "### Implementation"
+      },
+      {
+        "line": 226,
+        "title": "### Verification"
+      },
+      {
+        "line": 231,
+        "title": "### Remaining uncertainty"
+      },
+      {
+        "line": 236,
+        "title": "## 6. Final UX Integration Pass"
+      },
+      {
+        "line": 238,
+        "title": "### Architectural Synthesis: From Internal Engineering to Protective Ergonomics"
+      },
+      {
+        "line": 248,
+        "title": "### Preservation of Visual Identity & Tactile Interaction"
+      },
+      {
+        "line": 254,
+        "title": "### Accessibility Auditing (WCAG & Axe)"
+      },
+      {
+        "line": 261,
+        "title": "## 7. End-to-End Artist Journeys Evaluation"
+      },
+      {
+        "line": 276,
+        "title": "### Journey 1: Draw & Compose"
+      },
+      {
+        "line": 281,
+        "title": "### Journey 2: Frame-by-Frame Animation"
+      },
+      {
+        "line": 286,
+        "title": "### Journey 3: Cleanup & Pixel Perfection"
+      },
+      {
+        "line": 291,
+        "title": "### Journey 4: Export & Delivery"
+      },
+      {
+        "line": 296,
+        "title": "### Journey 5: Game Engine Delivery (Godot 4.7)"
+      },
+      {
+        "line": 301,
+        "title": "### Journey 6: Failure & Recovery"
+      },
+      {
+        "line": 308,
+        "title": "## 8. Visual QA, Interaction QA & Final Verification Matrix"
+      },
+      {
+        "line": 312,
+        "title": "### Visual Evidence Inventory"
+      },
+      {
+        "line": 336,
+        "title": "### Polish Interventions Applied"
+      },
+      {
+        "line": 344,
+        "title": "### Authoritative Final Verification Matrix"
+      },
+      {
+        "line": 367,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "92cf25ec9320f6082626eed0bfe601d17141da747939107d6038615156a4eb49"
+  },
+  {
+    "path": "docs/research/PIXIBUN_UX_HARDENING_AUDIT.md",
+    "tracked": true,
+    "lines": 320,
+    "bytes": 23636,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun UX Hardening Audit: Engineering Maturity to Artist Flow"
+      },
+      {
+        "line": 11,
+        "title": "## 1. Executive Summary & Design Principles"
+      },
+      {
+        "line": 22,
+        "title": "### Guiding Principles Applied in this Audit"
+      },
+      {
+        "line": 34,
+        "title": "## 2. Comprehensive Workflow Audits (Phases 1–5)"
+      },
+      {
+        "line": 36,
+        "title": "### Workflow 1: Save State & Autosave Feedback (Phase 1 & Phase 3)"
+      },
+      {
+        "line": 55,
+        "title": "### Workflow 2: Layer Merge Safety & Feedback (Phase 1)"
+      },
+      {
+        "line": 73,
+        "title": "### Workflow 3: In-Between Frame Generation & Insertion (Phase 1)"
+      },
+      {
+        "line": 93,
+        "title": "### Workflow 4: Export Format Selection & Unsupported Codecs (Phase 2)"
+      },
+      {
+        "line": 112,
+        "title": "### Workflow 5: Peer-to-Peer Co-Draw Collaboration (Phase 2)"
+      },
+      {
+        "line": 130,
+        "title": "### Workflow 6: Multi-Tab Save Conflict & Offline Mode (Phase 3)"
+      },
+      {
+        "line": 150,
+        "title": "### Workflow 7: Safe Application Updates (Phase 3)"
+      },
+      {
+        "line": 167,
+        "title": "### Workflow 8: Combined Memory Admission Refusals (Phase 3)"
+      },
+      {
+        "line": 184,
+        "title": "### Workflow 9: Animation Review & Stability Analysis (Phase 4)"
+      },
+      {
+        "line": 211,
+        "title": "### Workflow 10: Protected Regions & Pixel Cleanup (Phase 4)"
+      },
+      {
+        "line": 233,
+        "title": "### Workflow 11: Palette Semantic Roles & Duplicate Colors (Phase 5)"
+      },
+      {
+        "line": 254,
+        "title": "### Workflow 12: Godot Kit Game Export & Preflight (Phase 5)"
+      },
+      {
+        "line": 274,
+        "title": "## 3. Systematic Action Plan Across UX Passes 1–5"
+      },
+      {
+        "line": 314,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "fad5213684aa9307fc1afc34d9105a994c8ba6033f2c1a942f05128265140f6f"
+  },
+  {
+    "path": "docs/research/PHASE6_UX_HARDENING.md",
+    "tracked": true,
+    "lines": 212,
+    "bytes": 19010,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun Phase 6 UX Hardening: Research Workbench"
+      },
+      {
+        "line": 13,
+        "title": "## 1. Executive Summary & Intent"
+      },
+      {
+        "line": 29,
+        "title": "## 2. Baseline Friction Audit"
+      },
+      {
+        "line": 51,
+        "title": "## 3. Core Information Architecture & Design Principles"
+      },
+      {
+        "line": 53,
+        "title": "### 3.1 Two Meaningful Disclosure Levels"
+      },
+      {
+        "line": 62,
+        "title": "### 3.2 Visual Result First"
+      },
+      {
+        "line": 68,
+        "title": "### 3.3 Authentic Cozy Pixel-Art Visual Language"
+      },
+      {
+        "line": 76,
+        "title": "## 4. Implementation Specification"
+      },
+      {
+        "line": 78,
+        "title": "### 4.1 Invariant Test Contracts & Selectors"
+      },
+      {
+        "line": 116,
+        "title": "### 4.2 Interactive Enhancements"
+      },
+      {
+        "line": 126,
+        "title": "## 5. Visual QA & Verification Results"
+      },
+      {
+        "line": 128,
+        "title": "### 5.1 Captured Visual Evidence"
+      },
+      {
+        "line": 149,
+        "title": "### 5.2 Test Execution Metrics"
+      },
+      {
+        "line": 164,
+        "title": "## 6. Dry-Run Artist Study Walkthrough"
+      },
+      {
+        "line": 168,
+        "title": "### Scenario 1: Simplification with Protected Details"
+      },
+      {
+        "line": 176,
+        "title": "### Scenario 2: Multi-Pose Lighting Rig"
+      },
+      {
+        "line": 183,
+        "title": "### Scenario 3: Seeded Tile-Scene Exploration"
+      },
+      {
+        "line": 192,
+        "title": "## 7. Artist-Study Readiness & Remaining Uncertainties"
+      },
+      {
+        "line": 194,
+        "title": "### 7.1 Readiness Assessment"
+      },
+      {
+        "line": 200,
+        "title": "### 7.2 Catalog of Bounded Limits & Uncertainties"
+      },
+      {
+        "line": 206,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "22ff1f7ff7b7de8c82f5338c4ef1f23c338966be9262096a980a3db871970b11"
+  },
+  {
+    "path": "docs/research/phase6-artist-evaluation.md",
+    "tracked": true,
+    "lines": 48,
+    "bytes": 7151,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Phase 6 artist evaluation guide"
+      },
+      {
+        "line": 7,
+        "title": "## Participants and projects"
+      },
+      {
+        "line": 13,
+        "title": "## Tasks and comparisons"
+      },
+      {
+        "line": 25,
+        "title": "## Record evidence"
+      },
+      {
+        "line": 35,
+        "title": "## Interpretation and next decisions"
+      },
+      {
+        "line": 42,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "b3849765ea1bfd498d19af374aa989b9f7ca63533c0344a7ddaf1e069fa105e5"
+  },
+  {
+    "path": "docs/research/PHASE4_ARTIST_UX_STUDY.md",
+    "tracked": true,
+    "lines": 137,
+    "bytes": 10113,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Phase 4 Artist Usability Study: Animation Stability & Review Protocol"
+      },
+      {
+        "line": 11,
+        "title": "## 1. Study Goals & Hypotheses"
+      },
+      {
+        "line": 13,
+        "title": "### Primary Goals"
+      },
+      {
+        "line": 19,
+        "title": "### Hypotheses"
+      },
+      {
+        "line": 27,
+        "title": "## 2. Participants & Environment"
+      },
+      {
+        "line": 29,
+        "title": "### Recruitment (5 Participants)"
+      },
+      {
+        "line": 34,
+        "title": "### Test Environment"
+      },
+      {
+        "line": 44,
+        "title": "## 3. Study Tasks Protocol"
+      },
+      {
+        "line": 46,
+        "title": "### Task A — Finding Animation Artifacts (Flicker, Silhouette Breaks, Stray Colors)"
+      },
+      {
+        "line": 61,
+        "title": "### Task B — Marking Intentional Motion (Smears, Sparkles, FX)"
+      },
+      {
+        "line": 76,
+        "title": "### Task C — Protecting Details During Automated Cleanup"
+      },
+      {
+        "line": 93,
+        "title": "### Task D — Checking Loop Seams"
+      },
+      {
+        "line": 108,
+        "title": "## 4. Evaluation Rubric & Metrics"
+      },
+      {
+        "line": 110,
+        "title": "### Quantitative Metrics"
+      },
+      {
+        "line": 115,
+        "title": "### Qualitative Scoring (1–5 Likert Scale)"
+      },
+      {
+        "line": 126,
+        "title": "## 5. Next Iteration Thresholds"
+      },
+      {
+        "line": 131,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "9f4c07d9d489d8734700e2905c731a70d33170dfae36224814019aefe2e87a0e"
+  },
+  {
+    "path": "docs/research/phase-implementation-status.md",
+    "tracked": true,
+    "lines": 312,
+    "bytes": 67804,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit implementation: phase status"
+      },
+      {
+        "line": 5,
+        "title": "## Phase 1 — Protect artwork"
+      },
+      {
+        "line": 20,
+        "title": "### Verification"
+      },
+      {
+        "line": 32,
+        "title": "### Verification limits"
+      },
+      {
+        "line": 38,
+        "title": "## Phase 2 — Trustworthy boundaries"
+      },
+      {
+        "line": 51,
+        "title": "### Verification and evidence"
+      },
+      {
+        "line": 61,
+        "title": "### Research behind the contracts"
+      },
+      {
+        "line": 68,
+        "title": "### Limits and deliberate policies"
+      },
+      {
+        "line": 78,
+        "title": "## Phase 3 — Production operation"
+      },
+      {
+        "line": 91,
+        "title": "### Verification and evidence"
+      },
+      {
+        "line": 103,
+        "title": "### Research behind the contracts"
+      },
+      {
+        "line": 114,
+        "title": "### Limits and deliberate policies"
+      },
+      {
+        "line": 128,
+        "title": "## Phase 4 — Animation stability review and protected regions"
+      },
+      {
+        "line": 132,
+        "title": "### Artist workflow"
+      },
+      {
+        "line": 148,
+        "title": "### Implemented contracts"
+      },
+      {
+        "line": 162,
+        "title": "### Research and design decisions"
+      },
+      {
+        "line": 172,
+        "title": "### Verification and evidence"
+      },
+      {
+        "line": 182,
+        "title": "### Scope and limits"
+      },
+      {
+        "line": 194,
+        "title": "## Phase 5 — Dependable game delivery"
+      },
+      {
+        "line": 198,
+        "title": "### Changes"
+      },
+      {
+        "line": 207,
+        "title": "### Research and engine findings"
+      },
+      {
+        "line": 221,
+        "title": "### Verification"
+      },
+      {
+        "line": 233,
+        "title": "### Scope and reproducibility"
+      },
+      {
+        "line": 241,
+        "title": "## Phase 6 — Bounded research variations"
+      },
+      {
+        "line": 245,
+        "title": "### Implemented workflows"
+      },
+      {
+        "line": 257,
+        "title": "### Hardening"
+      },
+      {
+        "line": 267,
+        "title": "### Research decisions and attribution"
+      },
+      {
+        "line": 276,
+        "title": "### Verification and limits"
+      },
+      {
+        "line": 291,
+        "title": "## Remaining phases"
+      },
+      {
+        "line": 306,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "fa5c26265115f23048fcfa83d76e4a3cb7037e2dac0414f047d520c5ba975506"
+  },
+  {
+    "path": "docs/research/palette-cycle-scope-2026-10-01.md",
+    "tracked": true,
+    "lines": 32,
+    "bytes": 4592,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Fire-only palette cycling"
+      },
+      {
+        "line": 5,
+        "title": "## Artist workflow"
+      },
+      {
+        "line": 11,
+        "title": "## Pixel preservation"
+      },
+      {
+        "line": 17,
+        "title": "## Local verification"
+      },
+      {
+        "line": 26,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "c7abca1c69759e479a5d2af74614eba06592d2509928d8df924811e1fea8a785"
+  },
+  {
+    "path": "docs/research/palette-cycle-export-2026-10-01.md",
+    "tracked": true,
+    "lines": 58,
+    "bytes": 8659,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Exporting color animation at 15 FPS"
+      },
+      {
+        "line": 5,
+        "title": "## Workflow"
+      },
+      {
+        "line": 13,
+        "title": "## Timing and preservation"
+      },
+      {
+        "line": 23,
+        "title": "## Local verification"
+      },
+      {
+        "line": 33,
+        "title": "## Slower FPS choices"
+      },
+      {
+        "line": 52,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "04abd179e178769899b9ef14e1a7e3cb89ec02ac56bea5f507f89e9f7398db4f"
+  },
+  {
+    "path": "docs/research/palette-creator-2026-10-01.md",
+    "tracked": true,
+    "lines": 39,
+    "bytes": 6075,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Palette creation, compact scans and swatch removal"
+      },
+      {
+        "line": 5,
+        "title": "## Behavior"
+      },
+      {
+        "line": 13,
+        "title": "## Scope and limits"
+      },
+      {
+        "line": 19,
+        "title": "## Verification"
+      },
+      {
+        "line": 33,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "83f192b2bc6b950985d2d2d80c7f8c2b7179a55f93b1490612ae48dd7127e48d"
+  },
+  {
+    "path": "docs/research/gif-8x-corruption-2026-10-01.md",
+    "tracked": true,
+    "lines": 32,
+    "bytes": 5279,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Large GIF raster corruption"
+      },
+      {
+        "line": 5,
+        "title": "## Cause and correction"
+      },
+      {
+        "line": 13,
+        "title": "## Reproduction and proof"
+      },
+      {
+        "line": 26,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "a3e85c1fe3e3b397fa7bcc7ccf7d2aed558660c9a6a0b75e3298c509f5d305be"
+  },
+  {
+    "path": "docs/research/2026-09-30-codebase-and-pixel-art-audit.md",
+    "tracked": true,
+    "lines": 397,
+    "bytes": 48623,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun: codebase audit and pixel art research"
+      },
+      {
+        "line": 9,
+        "title": "## Assessment"
+      },
+      {
+        "line": 19,
+        "title": "## Verification and limitations"
+      },
+      {
+        "line": 41,
+        "title": "## What already works well"
+      },
+      {
+        "line": 51,
+        "title": "## Reproduced defects"
+      },
+      {
+        "line": 55,
+        "title": "### A1 — P1: autosave can mark newer pixels saved without encoding them"
+      },
+      {
+        "line": 67,
+        "title": "### A9 — P1: a refused in-between insertion changes the original artwork"
+      },
+      {
+        "line": 77,
+        "title": "### A7 — P1: host-only structure ownership is not enforced on receipt"
+      },
+      {
+        "line": 89,
+        "title": "### A2 — P1: deleting and undoing a frame does not restore its clips"
+      },
+      {
+        "line": 99,
+        "title": "### A4 — P1: selecting a clip can leave the active layer in another frame"
+      },
+      {
+        "line": 109,
+        "title": "### A5 — P1: merge-down can change the visible result"
+      },
+      {
+        "line": 119,
+        "title": "### A3 — P2: undo leaves removed canvas buffers resident"
+      },
+      {
+        "line": 129,
+        "title": "### A6 — P2: palette index 255 collides with transparency"
+      },
+      {
+        "line": 139,
+        "title": "### A11 — P2: GIF worker failure reuses detached pixel buffers"
+      },
+      {
+        "line": 149,
+        "title": "### A10 — P2: missing video support returns a fake successful WebM"
+      },
+      {
+        "line": 159,
+        "title": "### A8 — P2: synchronous worker fallback ignores pre-existing cancellation"
+      },
+      {
+        "line": 169,
+        "title": "## Hardening recommendations requiring further scenario tests"
+      },
+      {
+        "line": 173,
+        "title": "### Persistence and project ownership"
+      },
+      {
+        "line": 179,
+        "title": "### Collaboration convergence"
+      },
+      {
+        "line": 185,
+        "title": "### Memory and computation"
+      },
+      {
+        "line": 193,
+        "title": "### Offline updates"
+      },
+      {
+        "line": 201,
+        "title": "### Export compatibility"
+      },
+      {
+        "line": 207,
+        "title": "### Security and diagnostics"
+      },
+      {
+        "line": 215,
+        "title": "### Command contracts and maintainability"
+      },
+      {
+        "line": 223,
+        "title": "### Test and delivery fidelity"
+      },
+      {
+        "line": 231,
+        "title": "## Research: what the sources support"
+      },
+      {
+        "line": 235,
+        "title": "### Academic work"
+      },
+      {
+        "line": 249,
+        "title": "### Books and practical study"
+      },
+      {
+        "line": 262,
+        "title": "### Studio and practitioner lessons"
+      },
+      {
+        "line": 274,
+        "title": "### Competitive baseline"
+      },
+      {
+        "line": 280,
+        "title": "## Feature opportunities"
+      },
+      {
+        "line": 282,
+        "title": "### 1. Animation stability workbench — recommended first differentiating feature"
+      },
+      {
+        "line": 292,
+        "title": "### 2. Pixel integrity inspector with protected regions"
+      },
+      {
+        "line": 302,
+        "title": "### 3. Semantic indexed palettes and complete palette-animation kits"
+      },
+      {
+        "line": 312,
+        "title": "### 4. Shared material and light rigs for pixel art"
+      },
+      {
+        "line": 322,
+        "title": "### 5. Constraint-directed pixelization"
+      },
+      {
+        "line": 332,
+        "title": "### 6. Engine export verifier and asset-family contracts"
+      },
+      {
+        "line": 342,
+        "title": "### 7. Tiles and scenes judged in context"
+      },
+      {
+        "line": 352,
+        "title": "### 8. Pose/exposure editing and project time machine"
+      },
+      {
+        "line": 362,
+        "title": "## Suggested implementation order"
+      },
+      {
+        "line": 375,
+        "title": "## Release acceptance scenarios"
+      },
+      {
+        "line": 391,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "e08868bfd209b596883634c940112726e89ab5e37e3d670023b147c8c44a83c5"
+  },
+  {
+    "path": "docs/releases/v1.14.1-signoff.md",
+    "tracked": true,
+    "lines": 38,
+    "bytes": 4533,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiBun v1.14.1 release sign-off"
+      },
+      {
+        "line": 7,
+        "title": "## Verification evidence"
+      },
+      {
+        "line": 18,
+        "title": "## Release fix"
+      },
+      {
+        "line": 22,
+        "title": "## Deferred verification"
+      },
+      {
+        "line": 32,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "3636334c34421d6f136393452489da1fbb231f8b563ad07b6a3efaae6beaa65f"
+  },
+  {
+    "path": "docs/research/evidence/2026-10-01/README.md",
+    "tracked": true,
+    "lines": 50,
+    "bytes": 7282,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Interface and glint evidence — 2026-10-01"
+      },
+      {
+        "line": 19,
+        "title": "## Palette authoring follow-up"
+      },
+      {
+        "line": 23,
+        "title": "## Fire-only cycling follow-up"
+      },
+      {
+        "line": 27,
+        "title": "## Cycle export at 15 FPS"
+      },
+      {
+        "line": 31,
+        "title": "## Slow cycle frame rates"
+      },
+      {
+        "line": 35,
+        "title": "## Large GIF compression correction"
+      },
+      {
+        "line": 40,
+        "title": "## Session checkpoint — 2026-10-01"
+      },
+      {
+        "line": 47,
+        "title": "## Palette and GIF documentation publication"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "13e53bda8b19b5f7ce47da6b7cc6ec26a73d56c94bb75e96add0e8fa84425771"
+  },
+  {
+    "path": "docs/research/evidence/2026-09-30/README.md",
+    "tracked": true,
+    "lines": 110,
+    "bytes": 16186,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit evidence — 30 September 2026"
+      },
+      {
+        "line": 11,
+        "title": "## Reproduction"
+      },
+      {
+        "line": 23,
+        "title": "## Files"
+      },
+      {
+        "line": 78,
+        "title": "## Phase 6"
+      },
+      {
+        "line": 104,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "db907285d7e51ce0d6e070897c55fd6557ce4c6a29bcb8e7acefa79c44778f2d"
+  },
+  {
+    "path": "AUDIT_REMEDIATION_2026-09-19.md",
+    "tracked": false,
+    "lines": 64,
+    "bytes": 11157,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# Audit remediation — 2026-09-19"
+      },
+      {
+        "line": 5,
+        "title": "## Behavior changes and evidence"
+      },
+      {
+        "line": 22,
+        "title": "## Documentation and test repairs"
+      },
+      {
+        "line": 39,
+        "title": "## Executed verification"
+      },
+      {
+        "line": 48,
+        "title": "## Remaining limits and tradeoffs"
+      },
+      {
+        "line": 58,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "f097872c06ee72a1f92ceca87945a6c25a0b7276a0c3c69b88e551fcd3842e00"
+  },
+  {
+    "path": "chat.md",
+    "tracked": false,
+    "lines": 7840,
+    "bytes": 338433,
+    "headings": [
+      {
+        "line": 7834,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "071b79d7ce47e6698279f3fcfcad5d43a462505d94e5637fcd423fe8e13ca2d0"
+  },
+  {
+    "path": "PIXIBUN_AUDIT_RESULTS.md",
+    "tracked": true,
+    "lines": 230,
+    "bytes": 31297,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PIXIBUN — Deep Code & Documentation Audit Results"
+      },
+      {
+        "line": 18,
+        "title": "# 1. Summary"
+      },
+      {
+        "line": 34,
+        "title": "# 2. Critical and High Priority Bugs"
+      },
+      {
+        "line": 36,
+        "title": "### [CRITICAL] Canvas envelope diverges across validators (schema 2048px vs export 4096px/16.7MP vs probe 8192px/67MP vs SafeCanvas 268MP vs P2P 4096px)"
+      },
+      {
+        "line": 44,
+        "title": "### [HIGH] SafeJson byte-vs-length confusion + null-prototype sanitize output"
+      },
+      {
+        "line": 48,
+        "title": "### [HIGH] JPEG probe 64KB window misclassifies valid late-SOF JPEGs as unsupported"
+      },
+      {
+        "line": 52,
+        "title": "### [HIGH] SafeCanvas partial-blit ignores ImageData byteOffset"
+      },
+      {
+        "line": 55,
+        "title": "# 3. Documentation Errors / False Claims"
+      },
+      {
+        "line": 59,
+        "title": "### CONTRIBUTING.md"
+      },
+      {
+        "line": 64,
+        "title": "### ARCHITECTURE.md"
+      },
+      {
+        "line": 71,
+        "title": "### TASKS.md"
+      },
+      {
+        "line": 78,
+        "title": "### README.md"
+      },
+      {
+        "line": 84,
+        "title": "### MAIN.md"
+      },
+      {
+        "line": 89,
+        "title": "### Prior report at this path (2026-09-12), now superseded"
+      },
+      {
+        "line": 93,
+        "title": "# 4. Undocumented Code Behavior"
+      },
+      {
+        "line": 110,
+        "title": "# 5. Algorithm / Attribution Verification Table"
+      },
+      {
+        "line": 124,
+        "title": "# 6. Test / Build Health"
+      },
+      {
+        "line": 126,
+        "title": "### Docs integrity — `npm run verify:docs` — exit 0 — PASSED"
+      },
+      {
+        "line": 129,
+        "title": "### Typecheck — `npm run typecheck` (`tsc --noEmit`) — exit 0 — PASSED (no output). **[EXECUTION]**."
+      },
+      {
+        "line": 131,
+        "title": "### Lint — `npm run lint` (`eslint src tests`) — exit 0 — PASSED (zero-`any` rule active, `eslint.config.mjs:39`). **[EXECUTION]**."
+      },
+      {
+        "line": 133,
+        "title": "### Tests — `npm test` (`vitest run`) — exit 0 — PASSED"
+      },
+      {
+        "line": 136,
+        "title": "### Gate — `npm run gate` — exit 0 — PASSED (3 stages, no build): `ALL 3 QUALITY GATES PASSED SUCCESSFULLY (18.65s)`. Contradicts CONTRIBUTING 8-12s (section 3). **[EXECUTION]**."
+      },
+      {
+        "line": 138,
+        "title": "### Build — `npm run build` (Next 16.3.4 Turbopack) — exit 0 — PASSED"
+      },
+      {
+        "line": 141,
+        "title": "### E2E — `npx playwright test --list` — exit 0 — ENUMERATED ONLY (20 tests / 8 files). Execution NOT run (browser install + live suites exceed session window; prior report likewise did not run). No \"E2E passed\" verdict. **[EXECUTION]** list; behavior **[SUSPICIOUS/UNVERIFIED]**."
+      },
+      {
+        "line": 143,
+        "title": "### App exercise — draw/save/load/import/export/undo/sync NOT click-tested live; compositor/serialize/history/P2P paths read only. Build success not claimed as functional proof. **[SUSPICIOUS/UNVERIFIED]**."
+      },
+      {
+        "line": 148,
+        "title": "# 7. Unverified / Suspicious Findings"
+      },
+      {
+        "line": 160,
+        "title": "# 8. Recommended Fixes"
+      },
+      {
+        "line": 183,
+        "title": "## Evidence log (commands executed this session)"
+      },
+      {
+        "line": 191,
+        "title": "### [HIGH] Diagnostics version stamp stale (1.13.0 vs 1.13.1); lockfile stale too"
+      },
+      {
+        "line": 197,
+        "title": "# 9. Audit Remediation & Verification (Phase 59)"
+      },
+      {
+        "line": 201,
+        "title": "### Remediation Verification Matrix"
+      },
+      {
+        "line": 224,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "8c2420022144e860c4fc448b019fcc0d1a2c0b490e7581bc722df5901818fcff"
+  },
+  {
+    "path": "PIXIMOTION_ENGINE_MASTER_SPEC.md",
+    "tracked": false,
+    "lines": 3341,
+    "bytes": 66819,
+    "headings": [
+      {
+        "line": 1,
+        "title": "# PixiMotion Engine"
+      },
+      {
+        "line": 2,
+        "title": "## Comprehensive Research-Driven Architecture & Implementation Specification"
+      },
+      {
+        "line": 13,
+        "title": "# 0. Executive Summary"
+      },
+      {
+        "line": 110,
+        "title": "# 1. Research Basis and Evidence Levels"
+      },
+      {
+        "line": 114,
+        "title": "## 1.1 Evidence labels"
+      },
+      {
+        "line": 116,
+        "title": "### [R] Established research / documented production practice"
+      },
+      {
+        "line": 120,
+        "title": "### [P] PixiMotion design proposal"
+      },
+      {
+        "line": 124,
+        "title": "### [E] Experimental PixiMotion hypothesis"
+      },
+      {
+        "line": 132,
+        "title": "# 2. Primary Research Conclusions"
+      },
+      {
+        "line": 134,
+        "title": "## 2.1 Automatic rigging is realistic, universal perfect recognition is not"
+      },
+      {
+        "line": 159,
+        "title": "## 2.2 Hybrid learned + deterministic systems are preferable to black-box end-to-end generation"
+      },
+      {
+        "line": 184,
+        "title": "## 2.3 Professional 2D rigging systems still combine automation with manual refinement"
+      },
+      {
+        "line": 202,
+        "title": "## 2.4 Studio-quality motion depends heavily on iteration and timing, not merely smooth interpolation"
+      },
+      {
+        "line": 217,
+        "title": "## 2.5 Pixel-art connectivity is structurally important"
+      },
+      {
+        "line": 228,
+        "title": "## 2.6 Secondary dynamics should use controllable constraint-based simulation"
+      },
+      {
+        "line": 256,
+        "title": "# 3. Non-Negotiable Product Requirements"
+      },
+      {
+        "line": 258,
+        "title": "## 3.1 Local-first runtime"
+      },
+      {
+        "line": 285,
+        "title": "## 3.2 In-house implementation"
+      },
+      {
+        "line": 307,
+        "title": "## 3.3 Non-destructive editing"
+      },
+      {
+        "line": 337,
+        "title": "## 3.4 Manual editing is always available"
+      },
+      {
+        "line": 355,
+        "title": "# 4. Core Asset Model"
+      },
+      {
+        "line": 367,
+        "title": "## 4.1 Primary asset archetypes"
+      },
+      {
+        "line": 369,
+        "title": "### ARTICULATED"
+      },
+      {
+        "line": 388,
+        "title": "### DEFORMABLE"
+      },
+      {
+        "line": 401,
+        "title": "### RIGID"
+      },
+      {
+        "line": 417,
+        "title": "### EFFECT"
+      },
+      {
+        "line": 432,
+        "title": "### HYBRID"
+      },
+      {
+        "line": 444,
+        "title": "# 5. General Articulation Graph"
+      },
+      {
+        "line": 448,
+        "title": "## 5.1 Graph representation"
+      },
+      {
+        "line": 495,
+        "title": "## 5.2 Templates are optional graph priors"
+      },
+      {
+        "line": 528,
+        "title": "# 6. Source Artwork Representation"
+      },
+      {
+        "line": 530,
+        "title": "## 6.1 Indexed logical pixels"
+      },
+      {
+        "line": 556,
+        "title": "## 6.2 Metadata PixiBun can exploit"
+      },
+      {
+        "line": 571,
+        "title": "# 7. Pixel Topology Representation"
+      },
+      {
+        "line": 573,
+        "title": "## 7.1 Adjacency graph"
+      },
+      {
+        "line": 587,
+        "title": "## 7.2 Connected components"
+      },
+      {
+        "line": 595,
+        "title": "## 7.3 Persistent source IDs"
+      },
+      {
+        "line": 606,
+        "title": "# 8. Manual Rigging Must Come Before Auto-Rig"
+      },
+      {
+        "line": 610,
+        "title": "## 8.1 Required manual operations"
+      },
+      {
+        "line": 627,
+        "title": "## 8.2 Why this ordering is mandatory"
+      },
+      {
+        "line": 641,
+        "title": "# 9. FK and IK"
+      },
+      {
+        "line": 643,
+        "title": "## 9.1 Forward kinematics"
+      },
+      {
+        "line": 653,
+        "title": "## 9.2 Analytic two-bone IK"
+      },
+      {
+        "line": 683,
+        "title": "## 9.3 FABRIK for arbitrary chains"
+      },
+      {
+        "line": 697,
+        "title": "## 9.4 Constraints"
+      },
+      {
+        "line": 710,
+        "title": "# 10. Foot and Contact Constraints"
+      },
+      {
+        "line": 742,
+        "title": "# 11. Part-Aware Deformation"
+      },
+      {
+        "line": 744,
+        "title": "## 11.1 Do not use one giant rubber mesh"
+      },
+      {
+        "line": 767,
+        "title": "## 11.2 Region representation"
+      },
+      {
+        "line": 786,
+        "title": "# 12. Occlusion and Hidden Artwork"
+      },
+      {
+        "line": 794,
+        "title": "## 12.1 Hidden plate"
+      },
+      {
+        "line": 804,
+        "title": "## 12.2 “Complete Hidden Area” UX"
+      },
+      {
+        "line": 825,
+        "title": "# 13. Mesh Generation"
+      },
+      {
+        "line": 829,
+        "title": "## 13.1 Contour extraction"
+      },
+      {
+        "line": 848,
+        "title": "## 13.2 Interior boundaries"
+      },
+      {
+        "line": 858,
+        "title": "## 13.3 Triangulation"
+      },
+      {
+        "line": 866,
+        "title": "## 13.4 Robust geometry"
+      },
+      {
+        "line": 878,
+        "title": "# 14. Skinning Weights"
+      },
+      {
+        "line": 880,
+        "title": "## 14.1 V1: topology-restricted local weights"
+      },
+      {
+        "line": 891,
+        "title": "## 14.2 Advanced: Bounded Biharmonic Weights"
+      },
+      {
+        "line": 910,
+        "title": "## 14.3 Runtime deformation"
+      },
+      {
+        "line": 919,
+        "title": "# 15. ARAP for Local Shape Preservation"
+      },
+      {
+        "line": 934,
+        "title": "# 16. Pixel-Native Transform and Rotation"
+      },
+      {
+        "line": 938,
+        "title": "## 16.1 Hard invariants"
+      },
+      {
+        "line": 947,
+        "title": "## 16.2 Rotation references"
+      },
+      {
+        "line": 967,
+        "title": "# 17. Pixel Motion Renderer"
+      },
+      {
+        "line": 973,
+        "title": "## 17.1 Inputs"
+      },
+      {
+        "line": 984,
+        "title": "## 17.2 Output"
+      },
+      {
+        "line": 994,
+        "title": "# 18. Candidate Rasterization"
+      },
+      {
+        "line": 1028,
+        "title": "# 19. Temporal Pixel Stabilization"
+      },
+      {
+        "line": 1041,
+        "title": "## 19.1 Baseline temporal hysteresis"
+      },
+      {
+        "line": 1053,
+        "title": "## 19.2 Contour stability"
+      },
+      {
+        "line": 1063,
+        "title": "## 19.3 Source correspondence"
+      },
+      {
+        "line": 1067,
+        "title": "## 19.4 Short-window optimization [E]"
+      },
+      {
+        "line": 1079,
+        "title": "## 19.5 Why this matters"
+      },
+      {
+        "line": 1087,
+        "title": "# 20. Pose Correctives"
+      },
+      {
+        "line": 1091,
+        "title": "## 20.1 Pose-space corrective"
+      },
+      {
+        "line": 1106,
+        "title": "## 20.2 Why local coordinates matter"
+      },
+      {
+        "line": 1119,
+        "title": "# 21. Final Frame Overrides"
+      },
+      {
+        "line": 1151,
+        "title": "# 22. Animation Timeline Model"
+      },
+      {
+        "line": 1178,
+        "title": "## 22.1 Interpolation modes"
+      },
+      {
+        "line": 1193,
+        "title": "# 23. Animation Principles"
+      },
+      {
+        "line": 1220,
+        "title": "# 24. Motion Library"
+      },
+      {
+        "line": 1253,
+        "title": "## 24.1 Retargeting"
+      },
+      {
+        "line": 1274,
+        "title": "# 25. Motion Variation and Seeds"
+      },
+      {
+        "line": 1284,
+        "title": "## 25.1 Do not use global stateful randomness"
+      },
+      {
+        "line": 1317,
+        "title": "## 25.2 Seed tree"
+      },
+      {
+        "line": 1334,
+        "title": "## 25.3 Locking"
+      },
+      {
+        "line": 1349,
+        "title": "## 25.4 Constraint rule"
+      },
+      {
+        "line": 1362,
+        "title": "# 26. Motion-Graph-Inspired Variation"
+      },
+      {
+        "line": 1386,
+        "title": "# 27. Automatic Idle System"
+      },
+      {
+        "line": 1394,
+        "title": "## 27.1 Layered idle"
+      },
+      {
+        "line": 1417,
+        "title": "## 27.2 Seeded event scheduler"
+      },
+      {
+        "line": 1438,
+        "title": "## 27.3 Non-obvious loops"
+      },
+      {
+        "line": 1446,
+        "title": "# 28. PixiDynamics Overview"
+      },
+      {
+        "line": 1466,
+        "title": "# 29. Chain Dynamics for Ears, Tails and Hair"
+      },
+      {
+        "line": 1491,
+        "title": "## 29.1 PBD-style solve"
+      },
+      {
+        "line": 1505,
+        "title": "# 30. Cape and Cloth Dynamics"
+      },
+      {
+        "line": 1509,
+        "title": "## 30.1 Control mesh"
+      },
+      {
+        "line": 1525,
+        "title": "## 30.2 Constraints"
+      },
+      {
+        "line": 1534,
+        "title": "## 30.3 XPBD compliance"
+      },
+      {
+        "line": 1559,
+        "title": "## 30.4 Fixed timestep"
+      },
+      {
+        "line": 1572,
+        "title": "# 31. Dynamics Material Presets"
+      },
+      {
+        "line": 1576,
+        "title": "### Soft Ear"
+      },
+      {
+        "line": 1582,
+        "title": "### Cat Tail"
+      },
+      {
+        "line": 1588,
+        "title": "### Silk Cape"
+      },
+      {
+        "line": 1593,
+        "title": "### Heavy Cloak"
+      },
+      {
+        "line": 1599,
+        "title": "### Ribbon"
+      },
+      {
+        "line": 1615,
+        "title": "# 32. Body Collision for Dynamics"
+      },
+      {
+        "line": 1619,
+        "title": "## 32.1 Collider primitives"
+      },
+      {
+        "line": 1633,
+        "title": "## 32.2 Solve order"
+      },
+      {
+        "line": 1649,
+        "title": "# 33. Wind System"
+      },
+      {
+        "line": 1653,
+        "title": "## 33.1 Parameters"
+      },
+      {
+        "line": 1670,
+        "title": "## 33.2 Smooth deterministic wind"
+      },
+      {
+        "line": 1695,
+        "title": "## 33.3 Spatial wind [later]"
+      },
+      {
+        "line": 1709,
+        "title": "# 34. Dynamics Baking"
+      },
+      {
+        "line": 1725,
+        "title": "## 34.1 Key reduction"
+      },
+      {
+        "line": 1745,
+        "title": "# 35. Deterministic Simulation"
+      },
+      {
+        "line": 1749,
+        "title": "## 35.1 Canonical export mode"
+      },
+      {
+        "line": 1766,
+        "title": "## 35.2 Preview vs export"
+      },
+      {
+        "line": 1778,
+        "title": "# 36. PixiFX: General Effect Architecture"
+      },
+      {
+        "line": 1801,
+        "title": "# 37. Box → Explosion"
+      },
+      {
+        "line": 1812,
+        "title": "## 37.1 Fragment generation"
+      },
+      {
+        "line": 1826,
+        "title": "## 37.2 Fragment motion"
+      },
+      {
+        "line": 1839,
+        "title": "## 37.3 Additional layers"
+      },
+      {
+        "line": 1851,
+        "title": "# 38. Dissolve Effect"
+      },
+      {
+        "line": 1871,
+        "title": "# 39. Asset Structure Understanding"
+      },
+      {
+        "line": 1882,
+        "title": "## 39.1 Input analysis"
+      },
+      {
+        "line": 1901,
+        "title": "# 40. Euclidean Distance Transform"
+      },
+      {
+        "line": 1917,
+        "title": "# 41. Skeletonization"
+      },
+      {
+        "line": 1925,
+        "title": "## 41.1 Graph extraction"
+      },
+      {
+        "line": 1934,
+        "title": "## 41.2 Branch pruning"
+      },
+      {
+        "line": 1950,
+        "title": "# 42. Structural Classification"
+      },
+      {
+        "line": 1981,
+        "title": "# 43. Template Fitting"
+      },
+      {
+        "line": 1985,
+        "title": "## 43.1 Objective"
+      },
+      {
+        "line": 2010,
+        "title": "## 43.2 Weak priors only"
+      },
+      {
+        "line": 2024,
+        "title": "# 44. Confidence"
+      },
+      {
+        "line": 2049,
+        "title": "# 45. Correction UX"
+      },
+      {
+        "line": 2068,
+        "title": "# 46. Region Extraction from Rig"
+      },
+      {
+        "line": 2072,
+        "title": "## 46.1 Ownership cost"
+      },
+      {
+        "line": 2087,
+        "title": "## 46.2 Palette/edge barriers"
+      },
+      {
+        "line": 2091,
+        "title": "## 46.3 Manual paint fallback"
+      },
+      {
+        "line": 2097,
+        "title": "# 47. Multi-Pose Rig Recovery"
+      },
+      {
+        "line": 2117,
+        "title": "# 48. Optional Future Local Learned Model"
+      },
+      {
+        "line": 2121,
+        "title": "## 48.1 Possible outputs"
+      },
+      {
+        "line": 2130,
+        "title": "## 48.2 Training data"
+      },
+      {
+        "line": 2147,
+        "title": "## 48.3 Runtime independence"
+      },
+      {
+        "line": 2159,
+        "title": "# 49. Why Not Universal Semantic Recognition?"
+      },
+      {
+        "line": 2194,
+        "title": "# 50. Automatic Appendage Detection"
+      },
+      {
+        "line": 2217,
+        "title": "# 51. Motion Profiles"
+      },
+      {
+        "line": 2247,
+        "title": "# 52. Quadruped Motion"
+      },
+      {
+        "line": 2265,
+        "title": "# 53. Animation FPS"
+      },
+      {
+        "line": 2288,
+        "title": "# 54. Onion Skin and Ghosting"
+      },
+      {
+        "line": 2307,
+        "title": "# 55. Authoring UX"
+      },
+      {
+        "line": 2332,
+        "title": "# 56. Auto-Key"
+      },
+      {
+        "line": 2344,
+        "title": "# 57. Pose Library"
+      },
+      {
+        "line": 2364,
+        "title": "# 58. Pixel Correction Round-Trip"
+      },
+      {
+        "line": 2378,
+        "title": "# 59. Undo/Redo Architecture"
+      },
+      {
+        "line": 2394,
+        "title": "# 60. Serialization"
+      },
+      {
+        "line": 2421,
+        "title": "# 61. Export"
+      },
+      {
+        "line": 2423,
+        "title": "## 61.1 Raster export"
+      },
+      {
+        "line": 2430,
+        "title": "## 61.2 Editable PixiMotion project"
+      },
+      {
+        "line": 2434,
+        "title": "## 61.3 Runtime format [later]"
+      },
+      {
+        "line": 2448,
+        "title": "# 62. Performance Architecture"
+      },
+      {
+        "line": 2450,
+        "title": "## Main thread"
+      },
+      {
+        "line": 2462,
+        "title": "## Worker"
+      },
+      {
+        "line": 2473,
+        "title": "## GPU [optional]"
+      },
+      {
+        "line": 2485,
+        "title": "# 63. Performance Targets"
+      },
+      {
+        "line": 2489,
+        "title": "### Interactive pose"
+      },
+      {
+        "line": 2494,
+        "title": "### Pointer response"
+      },
+      {
+        "line": 2498,
+        "title": "### Dynamics"
+      },
+      {
+        "line": 2502,
+        "title": "### Typical auto-rig"
+      },
+      {
+        "line": 2507,
+        "title": "### Export"
+      },
+      {
+        "line": 2512,
+        "title": "# 64. Memory Targets"
+      },
+      {
+        "line": 2528,
+        "title": "# 65. Testing Strategy"
+      },
+      {
+        "line": 2530,
+        "title": "## 65.1 Golden characters"
+      },
+      {
+        "line": 2546,
+        "title": "## 65.2 Pathological cases"
+      },
+      {
+        "line": 2564,
+        "title": "# 66. Auto-Rig Metrics"
+      },
+      {
+        "line": 2585,
+        "title": "# 67. Raster Metrics"
+      },
+      {
+        "line": 2598,
+        "title": "# 68. Dynamics Metrics"
+      },
+      {
+        "line": 2608,
+        "title": "# 69. Motion Metrics"
+      },
+      {
+        "line": 2618,
+        "title": "# 70. Golden Visual Tests"
+      },
+      {
+        "line": 2640,
+        "title": "# 71. Property and Fuzz Testing"
+      },
+      {
+        "line": 2655,
+        "title": "# 72. Determinism Tests"
+      },
+      {
+        "line": 2671,
+        "title": "# 73. Failure Modes"
+      },
+      {
+        "line": 2673,
+        "title": "## Auto-rig ambiguity"
+      },
+      {
+        "line": 2684,
+        "title": "## Hidden pixels"
+      },
+      {
+        "line": 2692,
+        "title": "## Joint melting"
+      },
+      {
+        "line": 2702,
+        "title": "## Pixel flicker"
+      },
+      {
+        "line": 2710,
+        "title": "## Cloth penetration"
+      },
+      {
+        "line": 2720,
+        "title": "## Seeded motion looks random/bad"
+      },
+      {
+        "line": 2730,
+        "title": "# 74. What Not to Build First"
+      },
+      {
+        "line": 2747,
+        "title": "# 75. Phased Implementation Roadmap"
+      },
+      {
+        "line": 2749,
+        "title": "## Phase 0 — Research Harness"
+      },
+      {
+        "line": 2765,
+        "title": "## Phase 1 — PixiMotion Data Model"
+      },
+      {
+        "line": 2780,
+        "title": "## Phase 2 — Manual PixiRig"
+      },
+      {
+        "line": 2792,
+        "title": "## Phase 3 — FK / IK"
+      },
+      {
+        "line": 2805,
+        "title": "## Phase 4 — Rigid Region Animation"
+      },
+      {
+        "line": 2816,
+        "title": "## Phase 5 — Local Deformation"
+      },
+      {
+        "line": 2827,
+        "title": "## Phase 6 — Pixel Motion Renderer V1"
+      },
+      {
+        "line": 2840,
+        "title": "## Phase 7 — Temporal Stabilization V1"
+      },
+      {
+        "line": 2851,
+        "title": "## Phase 8 — Timeline and Manual Animation"
+      },
+      {
+        "line": 2866,
+        "title": "## Phase 9 — Correctives"
+      },
+      {
+        "line": 2877,
+        "title": "## Phase 10 — PixiDynamics Chains"
+      },
+      {
+        "line": 2890,
+        "title": "## Phase 11 — Cloth/Cape XPBD"
+      },
+      {
+        "line": 2903,
+        "title": "## Phase 12 — Dynamics Bake"
+      },
+      {
+        "line": 2914,
+        "title": "## Phase 13 — Motion Library and Retargeting"
+      },
+      {
+        "line": 2926,
+        "title": "## Phase 14 — Seeded Variation"
+      },
+      {
+        "line": 2938,
+        "title": "## Phase 15 — Automatic Idle"
+      },
+      {
+        "line": 2951,
+        "title": "## Phase 16 — PixiFX V1"
+      },
+      {
+        "line": 2963,
+        "title": "## Phase 17 — Deterministic Auto-Rig"
+      },
+      {
+        "line": 2978,
+        "title": "## Phase 18 — Quadruped Auto-Rig"
+      },
+      {
+        "line": 2989,
+        "title": "## Phase 19 — Auto Appendage / Dynamics Proposal"
+      },
+      {
+        "line": 3001,
+        "title": "## Phase 20 — Multi-Pose Rig Recovery"
+      },
+      {
+        "line": 3009,
+        "title": "## Phase 21 — Advanced Temporal Rasterizer"
+      },
+      {
+        "line": 3020,
+        "title": "## Phase 22 — Advanced Weights / BBW"
+      },
+      {
+        "line": 3028,
+        "title": "## Phase 23 — Optional Local Learned Recognition"
+      },
+      {
+        "line": 3036,
+        "title": "# 76. Studio-Quality Definition"
+      },
+      {
+        "line": 3061,
+        "title": "# 77. Definition of Done"
+      },
+      {
+        "line": 3089,
+        "title": "# 78. Core Technical Risks"
+      },
+      {
+        "line": 3091,
+        "title": "## Risk A — Pixel temporal stabilization may be harder than rigging"
+      },
+      {
+        "line": 3098,
+        "title": "## Risk B — Automatic rig classification fails on extreme stylization"
+      },
+      {
+        "line": 3106,
+        "title": "## Risk C — Cloth creates ugly pixel noise"
+      },
+      {
+        "line": 3114,
+        "title": "## Risk D — Architecture becomes too broad"
+      },
+      {
+        "line": 3123,
+        "title": "## Risk E — Over-engineering academic algorithms before UX validation"
+      },
+      {
+        "line": 3132,
+        "title": "# 79. Recommended First R&D Sprint"
+      },
+      {
+        "line": 3136,
+        "title": "### Prototype A — Pixel Bone"
+      },
+      {
+        "line": 3144,
+        "title": "### Prototype B — Elbow"
+      },
+      {
+        "line": 3153,
+        "title": "### Prototype C — Bunny Ear"
+      },
+      {
+        "line": 3161,
+        "title": "### Prototype D — Cape"
+      },
+      {
+        "line": 3169,
+        "title": "### Prototype E — Box Explosion"
+      },
+      {
+        "line": 3181,
+        "title": "# 80. Research Reference Index"
+      },
+      {
+        "line": 3183,
+        "title": "## Automatic rigging / part understanding"
+      },
+      {
+        "line": 3200,
+        "title": "## Deformation / rig math"
+      },
+      {
+        "line": 3214,
+        "title": "## Pixel structure and raster references"
+      },
+      {
+        "line": 3228,
+        "title": "## Binary-shape analysis"
+      },
+      {
+        "line": 3236,
+        "title": "## Dynamics / cloth"
+      },
+      {
+        "line": 3256,
+        "title": "## Animation synthesis and quality"
+      },
+      {
+        "line": 3270,
+        "title": "## Production workflow"
+      },
+      {
+        "line": 3280,
+        "title": "# 81. Final Architectural Statement"
+      },
+      {
+        "line": 3335,
+        "title": "## Session checkpoint — 2026-10-01"
+      }
+    ],
+    "checkpoint": true,
+    "sha256": "550f6dc30eff6d835f15c7a85cf9c7bf6038ea3514cdda3feb47d45ba69f36ba"
+  }
+]

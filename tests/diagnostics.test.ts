@@ -42,6 +42,24 @@ describe('diagnostics capture & settings', () => {
     expect(updated.relayOptIn).toBe(true);
   });
 
+  it.each(['"true"', '1', '[]', '{}', 'null', '"false"'])('does not relay for malformed saved consent %s', async (consent) => {
+    window.localStorage.setItem('pixibun-diagnostics', `{"enabled":"false","relayOptIn":${consent}}`);
+    expect(getDiagnosticsSettings()).toEqual({ enabled: true, relayOptIn: false });
+    await captureDiagnostic({ kind: 'error', message: 'Local only' });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['null', '[]', 'true', '{broken'])('resets invalid settings containers after an earlier opt-in: %s', (raw) => {
+    setDiagnosticsSettings({ relayOptIn: true });
+    window.localStorage.setItem('pixibun-diagnostics', raw);
+    expect(getDiagnosticsSettings()).toEqual({ enabled: true, relayOptIn: false });
+  });
+
+  it('preserves explicit boolean capture-off and consent settings', () => {
+    window.localStorage.setItem('pixibun-diagnostics', '{"enabled":false,"relayOptIn":true}');
+    expect(getDiagnosticsSettings()).toEqual({ enabled: false, relayOptIn: true });
+  });
+
   it('captures diagnostic entry and truncates oversized detail stack', async () => {
     const hugeStack = 'A'.repeat(5000);
     const entry = await captureDiagnostic({

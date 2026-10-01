@@ -1,0 +1,14 @@
+
+Running 7 tests using 1 worker
+
+(node:30652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › artifacts\doc-audit-2026-10-02\adapted\importImageAndSheet.spec.ts:61:5 › image import keeps the chosen fit and original-size modes through preview and confirmation (2.7s)
+  ok 2 [chromium] › artifacts\doc-audit-2026-10-02\adapted\importImageAndSheet.spec.ts:94:5 › suggested sprite sheet keeps blank timing cells and creates distinct timeline artwork (1.9s)
+  ok 3 [chromium] › artifacts\doc-audit-2026-10-02\adapted\offline.spec.ts:5:7 › Real Offline Resilience (B1) › warm installed studio operates, reloads, edits, persists, and restores while completely offline (5.6s)
+  ok 4 [chromium] › artifacts\doc-audit-2026-10-02\adapted\recoveryUIFlow.spec.ts:270:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › opening damaged project from gallery opens recovery modal while leaving active workspace intact (3.5s)
+  ok 5 [chromium] › artifacts\doc-audit-2026-10-02\adapted\studio.spec.ts:76:7 › Studio Workbench & Drawing Interactions › opens Guide and Shortcuts modal via hotkey and button (2.4s)
+  ok 6 [chromium] › artifacts\doc-audit-2026-10-02\adapted\studio.spec.ts:367:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › RightInspector panels expanded pass automated WCAG 2.2 axe scan (7.0s)
+  ok 7 [chromium] › artifacts\doc-audit-2026-10-02\adapted\uxVisualQa.spec.ts:8:7 › PixiBun Visual QA & UX Verification Suite › Capture Studio default, dirty, save states, offline, and update notifications (1.8s)
+
+  7 passed (26.1s)

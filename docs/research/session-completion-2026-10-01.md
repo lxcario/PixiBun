@@ -108,15 +108,6 @@ The later screenshot-driven header review groups project actions, places Mirror 
 
 The later Add light and depth review replaces technical headings with matching outcome cards, starts the new task view with lighting open, simplifies preview/apply and shadow choices, and makes surface-layer setup explicit. New disclosure preferences persist separately from legacy expert-panel state. The menu paint action requires an unlocked Normal layer; Enter and Space operate disclosures without triggering animation playback. Research, current screenshots, local verification and the scope of that layer check are recorded in the [lighting-menu review](session-ui-ux-2026-10-01.md#lighting-menu-follow-up). Inventories are unchanged.
 
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->
-
-
 ### Live glint follow-up
 
 The specular review replaces broad white/gold-biased overlays in the studio workflow with bounded, hue-preserving Soft/Crisp pixel highlights and adds Off/Soft/Crisp beside Shade in the bulb HUD. Specular Glint now opens a cancellable live preview, supports painted surface normals, and commits one editable, alpha-masked layer. Pixel history now preserves the effect blending mode so Redo restores the same composite. [Research, implementation decisions, local verification and limits](specular-glint-2026-10-01.md) distinguish this change from legacy renderer compatibility and unrelated optics. This work is included in the user-requested Git publication; deployment and release sign-off remain separate.

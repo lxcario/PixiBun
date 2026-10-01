@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { importAnimationReviewFixture } from '../helpers/animationReviewFixture';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 
-const SCREENSHOT_DIR = 'docs/research/evidence/ux-qa';
 
 test.describe('PixiBun Visual QA & UX Verification Suite', () => {
   test('Capture Studio default, dirty, save states, offline, and update notifications', async ({ page, context }) => {
@@ -11,24 +10,24 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await page.goto('/studio');
     await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
     await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/01-default-studio.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '01-default-studio.png') });
 
     // 2. Dirty project (paint a pixel)
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
     await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
     await expect(page.getByTestId('save-status-badge')).toContainText(/Unsaved/i);
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/02-dirty-project.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '02-dirty-project.png') });
 
     // 3. Saving & Saved
     await page.getByTestId('save-button').click();
     await expect(page.getByTestId('save-status-badge')).toContainText(/Saved/i);
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-saved-state.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '03-saved-state.png') });
 
     // 4. Offline state
     await context.setOffline(true);
-    const offlineIndicator = page.getByText(/Offline · Drawing & local saves active/i);
+    const offlineIndicator = page.getByText('Offline', { exact: true });
     await expect(offlineIndicator).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/04-offline-state.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '04-offline-state.png') });
     await context.setOffline(false);
   });
 
@@ -42,16 +41,16 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await expect(dialog).toBeVisible();
 
     // 5. Export modal with 3 grouped categories
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/05-export-modal-grouped.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '05-export-modal-grouped.png') });
 
     // 6. WebM tab
     await dialog.getByTestId('export-tab-webm').click();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/06-export-webm-tab.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '06-export-webm-tab.png') });
 
     // 7. Godot Kit Export Tab with live preflight
     await dialog.getByTestId('export-tab-godot-kit').click();
     await expect(dialog.getByText(/Preflight inspection/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/07-godot-preflight-ready.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '07-godot-preflight-ready.png') });
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -96,7 +95,7 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await expect(alert).toContainText(/Your current artwork is safe in this tab/i);
     await expect(secondTab.getByRole('button', { name: 'Save a copy', exact: true })).toBeVisible();
 
-    await secondTab.screenshot({ path: `${SCREENSHOT_DIR}/08-two-tab-save-conflict.png` });
+    await secondTab.screenshot({ path: test.info().outputPath('captures', '08-two-tab-save-conflict.png') });
 
     await secondTab.close();
   });
@@ -106,7 +105,7 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await importAnimationReviewFixture(page);
 
     // 9. Animation Review before scan
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/09-animation-review-before-scan.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '09-animation-review-before-scan.png') });
 
     // Click Scan Animation
     await page.getByRole('button', { name: 'Scan animation', exact: true }).click();
@@ -115,11 +114,11 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
 
     // 10. Animation Review with human findings
     await expect(report.getByText(/Review findings/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/10-animation-review-findings.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '10-animation-review-findings.png') });
 
     // 11. Animation Review details expanded
     await page.getByText('Analysis details').click();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/11-animation-review-details-expanded.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '11-animation-review-details-expanded.png') });
 
     // 12. Create a protected region from selection
     await page.getByTestId('select-box-tool').click();
@@ -130,7 +129,7 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await page.mouse.up();
 
     await page.getByText(/Regions and protection/i).click();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/12-region-creation-active-selection.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '12-region-creation-active-selection.png') });
 
     await page.getByRole('textbox', { name: 'Animation region name' }).fill('Eye highlight');
     await page.getByRole('button', { name: 'Save selected region' }).click();
@@ -141,7 +140,7 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await page.getByTestId('pixitools-task-polish').click();
     await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
     await expect(page.getByText(/Protected regions active/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/13-cleanup-preview-protected-badge.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '13-cleanup-preview-protected-badge.png') });
   });
 
   test('Capture Palette Roles, duplicate conflict, locate on canvas, and 1024px responsive layout', async ({ page }) => {
@@ -154,11 +153,11 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
 
     // Duplicate color warning banner visible
     await expect(page.getByText(/Duplicate Color Register/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/14-palette-duplicate-conflict.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '14-palette-duplicate-conflict.png') });
 
     // Click Locate on canvas
     await page.getByRole('button', { name: 'Locate on canvas' }).first().click();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/15-palette-locate-on-canvas.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '15-palette-locate-on-canvas.png') });
 
     // 15. Godot kit preflight with duplicate register warning
     await page.getByTestId('export-button').click();
@@ -166,12 +165,12 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await dialog.getByTestId('export-tab-godot-kit').click();
     await dialog.getByRole('checkbox', { name: 'Include indexed palette and runtime cycling' }).check();
     await expect(dialog.getByText(/Needs attention/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/16-godot-preflight-attention.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '16-godot-preflight-attention.png') });
     await page.keyboard.press('Escape');
 
     // 16. 1024px Viewport Responsive Check
     await page.setViewportSize({ width: 1024, height: 768 });
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/17-responsive-1024x768.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '17-responsive-1024x768.png') });
 
     // Verify right inspector has no horizontal scroll
     const rightInspector = page.getByTestId('right-inspector');

@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 import { openResearch, preview, openResearchOptions, selectResearchWorkflow } from '../helpers/researchWorkflows';
 
-const SCREENSHOT_DIR = 'docs/research/evidence/ux-qa';
 
 test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
   test('Task 1: Detail-preserving simplification with protected details, candidate comparison, and safe undo', async ({ page }) => {
@@ -38,7 +37,7 @@ test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
     await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
 
     // 5. Capture screenshot of simplification comparison
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/23-simplification-preview.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '23-simplification-preview.png') });
 
     // 6. Apply research preview and verify toast with Undo button
     const beforeArtwork = await page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
@@ -83,7 +82,7 @@ test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
     await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
 
     // 5. Capture screenshot of multi-pose lighting pass
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/24-lighting-passes.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '24-lighting-passes.png') });
 
     // 6. Apply across all poses
     await page.getByRole('button', { name: 'Apply research preview' }).click();
@@ -124,7 +123,7 @@ test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
     await page.mouse.click(cBox.x + cBox.width * 0.75, cBox.y + cBox.height * 0.75);
 
     // 7. Capture screenshot of interactive tile scene with D-pad & seam overlay
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/25-tile-scene-interactive.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '25-tile-scene-interactive.png') });
 
     // 8. Apply research preview & test undo/redo
     await page.getByRole('button', { name: 'Apply research preview' }).click();

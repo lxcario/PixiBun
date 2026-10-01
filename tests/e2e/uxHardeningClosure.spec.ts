@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { importAnimationReviewFixture } from '../helpers/animationReviewFixture';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 
-const SCREENSHOT_DIR = 'docs/research/evidence/ux-qa';
 
 test.describe('PixiBun UX Hardening Closure Verification Suite', () => {
   test('Viewport 1280x720 layout: canvas, inspector, timeline, Animation Review, and Godot preflight', async ({ page }) => {
@@ -22,7 +21,7 @@ test.describe('PixiBun UX Hardening Closure Verification Suite', () => {
     // Run Animation Review scan
     await page.getByRole('button', { name: 'Scan animation', exact: true }).click();
     await expect(page.getByTestId('animation-review-report')).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/18-viewport-1280x720-animation-review.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '18-viewport-1280x720-animation-review.png') });
 
     // Open Export modal -> Godot Kit tab
     await page.getByTestId('export-button').click();
@@ -34,7 +33,7 @@ test.describe('PixiBun UX Hardening Closure Verification Suite', () => {
     // Verify modal fits within 720px height
     const dialogBox = (await dialog.boundingBox())!;
     expect(dialogBox.height).toBeLessThanOrEqual(720);
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/19-viewport-1280x720-godot-preflight.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '19-viewport-1280x720-godot-preflight.png') });
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -82,7 +81,7 @@ test.describe('PixiBun UX Hardening Closure Verification Suite', () => {
       Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
     expect(pixelAfter).toEqual(pixelBefore);
 
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/20-save-issue-state.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '20-save-issue-state.png') });
   });
 
   test('Export progress, cancellation, and retry recovery', async ({ page }) => {
@@ -132,7 +131,7 @@ test.describe('PixiBun UX Hardening Closure Verification Suite', () => {
     const switchApngBtn = dialog.getByRole('button', { name: 'Switch to APNG', exact: true });
     await expect(switchApngBtn).toBeVisible();
 
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/21-unsupported-codec-recovery.png` });
+    await page.screenshot({ path: test.info().outputPath('captures', '21-unsupported-codec-recovery.png') });
 
     // Click Switch to GIF and verify navigation
     await switchGifBtn.click();

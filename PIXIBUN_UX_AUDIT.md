@@ -1,5 +1,7 @@
 # PixiBun UX audit — 2026-09-29
 
+> **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
+
 > **Current-status note (2026-09-30):** The findings and code locations below are the 2026-09-29 audit snapshot. Later feedback removed the direct header Backup button and visible “Saved on this device” label while keeping `.pixibun` backup under Export and autosave failure feedback. New, Save, and project identity now sit together; layers reorder by dragging; the timeline controls and scrub preview were refined. Rivet Stamp, one-click Material Shading, and artwork-changing Seamless Pattern generation were retired. PixiTools cleanup, color effects, and 47-blob contours now require a before/after review before Apply. See [the current UX changelog](PIXIBUN_UX_CHANGELOG.md).
 
 ## Scope and evidence
@@ -49,11 +51,3 @@ Status: **done** = implemented correctly in the inspected path; **friction** = i
 ## Specific unverified concerns
 
 Color-picker placement, right-panel transition symmetry, delayed close, button scaling, inspector jumping, tool findability, and onboarding effectiveness require desktop runtime observation or user testing. The report cannot prove these defects. Project safety changes need isolated tests with failed/cancelled writes and existing artwork; do not change file format, undo semantics, or storage migrations as part of this UX slice.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

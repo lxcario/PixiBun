@@ -1,5 +1,7 @@
 # Build Log — PixiBun
 
+> **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
+
 ## Glint visibility correction — 2026-10-01
 
 The previous bounded reflection was too faint on the user's matte character. Small color lifts multiplied by low material coverage hid it. The correction uses brighter, hue-related core/shoulder tones and finite, slightly wider reflection masks; coverage has two flat levels rather than a local lighting gradient. A smaller bulb without a glow and quieter idle guides expose the artwork. Local Chromium checks now include a purple character in the combined lighting preview, quantitative visible contrast, matching applied pixels and Undo, in addition to the prior glint lifecycle and compact-HUD checks. [Current evidence and limits](docs/research/specular-glint-2026-10-01.md#visibility-correction).
@@ -20,11 +22,11 @@ The previous bounded reflection was too faint on the user's matte character. Sma
 
 **Delivered:** All six bounded audit implementation phases, including protected animation cleanup, shared game-animation ordering/holds, semantic palette delivery, a Godot kit and three reversible research workflows. Repository publication is authorized by the user; Git history records the committed state.
 
-**Recorded checks:** The earlier six-phase run passed 1,466 unit/integration tests in 143 files and all five repository gates; 134 editor checks in 31 files passed; the compiled run passed 32/33 scenarios, with the remaining Firefox timeout passing unchanged on a targeted rerun. Phase 5 separately records 850 Godot engine assertions. Later interface and color-preservation corrections bring the current inventory to 1,472 unit tests, 146 editor checks in 32 files and 39 compiled scenarios. Their [UI/UX evidence](docs/research/session-ui-ux-2026-10-01.md) is separate from those earlier full runs.
+**Recorded checks:** The earlier six-phase run passed 1,466 unit/integration tests in 143 files and all five repository gates; 134 editor checks in 31 files passed; the compiled run passed 32/33 scenarios, with the remaining Firefox timeout passing unchanged on a targeted rerun. Phase 5 separately records 850 Godot engine assertions. Later interface and color-preservation corrections brought the inventory at that checkpoint to 1,472 unit tests, 146 editor checks in 32 files and 39 compiled scenarios. Their [UI/UX evidence](docs/research/session-ui-ux-2026-10-01.md) is separate from those earlier full runs.
 
 **Open:** Measured artist benefit, broader device/memory coverage, collaboration policy and release approval. TestSprite CLI/authentication were found available during Phase 4, but the user chose local verification after its proposed upload was blocked; no TestSprite run is claimed. [Session record](docs/research/session-completion-2026-10-01.md), [phase evidence](docs/research/phase-implementation-status.md).
 
-> **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
+> **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, algorithm assertions and engineering observations, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## Studio UX follow-up (2026-09-30)
 
@@ -1527,7 +1529,7 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 - **47-Blob Autotile Interactive Engine (`src/lib/ai/math/autotileEngine.ts`, `tests/autotileEngine.test.ts`)**:
   - Implemented complete 8-neighbor Moore bitmasking with cardinal-corner dominance, collapsing $2^8 = 256$ neighborhood configurations into the canonical 47 Wang/Blob equivalence classes.
   - Precomputed an $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX`) and built a Chebyshev $3\times3$ dirty neighborhood reactive updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
-  - Authored procedural 47-tile pixel renderer and validated full mathematical proofs in `tests/autotileEngine.test.ts`.
+  - Authored procedural 47-tile pixel renderer and validated full algorithm assertions and engineering observations in `tests/autotileEngine.test.ts`.
 - **Pure-TypeScript ISOBMFF Fast-Start MP4 Container Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`, `tests/isobmffWriter.test.ts`)**:
   - Built a 100% scratch pure-TypeScript ISO Base Media File Format container muxer (`ftyp`, `moov`, `mdat`) with progressive download Fast-Start box ordering and chunk offset back-patching in `stco`.
   - Eliminated reliance on real-time `MediaRecorder` stream playback by coupling hardware-accelerated WebCodecs `VideoEncoder` (`avc1.42001f`) with the scratch ISOBMFF muxer, while preserving graceful `MediaRecorder` fallback.
@@ -2019,15 +2021,6 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 **Checks run:** 1,268/1,268 Vitest tests across 128 suites, 86/86 Chromium tests across 21 suites, strict TypeScript typecheck (0 errors), ESLint (0 errors, 0 warnings), and documentation integrity verification passed.
 
 **Status:** Locally verified.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->
-
 
 ## 2026-10-01 — Live glint correction
 

@@ -1,5 +1,7 @@
 # PixiBun UX Hardening Implementation Report
 
+> **Scope clarification — 2 October 2026:** The journeys/captures below are engineering walkthroughs and automated checks of the named historical UI. No participant confidence, measured benefit, full WCAG conformance or universal timing is established. Current File/Studio menus and compact Offline label supersede old selectors; palette location uses a selection bounding box, not a per-pixel pulsing overlay. [Current contracts and evidence](../current-status.md).
+
 > **Session reconciliation — 2026-10-01:** This report records the separate interface pass. The [phase implementation report](phase-implementation-status.md) holds the engineering verification, and the [Phase 6 UX report](PHASE6_UX_HARDENING.md) describes later research-interface work. Automated journeys are not participant evaluation. See the [session completion record](session-completion-2026-10-01.md) for evidence scope and remaining work.
 
 Tracking authoritative UX implementation passes across Phases 1–5 and Final Integration.
@@ -12,9 +14,9 @@ Tracking authoritative UX implementation passes across Phases 1–5 and Final In
 3. [UX Pass 3 — Production Confidence (Phase 3)](#ux-pass-3--production-confidence-phase-3)
 4. [UX Pass 4 — Completely Rework Animation Review UX (Phase 4)](#ux-pass-4--completely-rework-animation-review-ux-phase-4)
 5. [UX Pass 5 — Game Export for Artists, Not Engine Programmers (Phase 5)](#ux-pass-5--game-export-for-artists-not-engine-programmers-phase-5)
-6. [Final UX Integration Pass](#final-ux-integration-pass)
-7. [End-to-End Artist Journeys Evaluation](#end-to-end-artist-journeys-evaluation)
-8. [Visual QA, Interaction QA & Final Verification Matrix](#visual-qa-interaction-qa--final-verification-matrix)
+6. [Final UX Integration Pass](#6-final-ux-integration-pass)
+7. [End-to-End Artist Journeys Evaluation](#7-end-to-end-artist-journeys-evaluation)
+8. [Visual QA, Interaction QA & Final Verification Matrix](#8-visual-qa-interaction-qa--final-verification-matrix)
 
 ---
 
@@ -204,7 +206,7 @@ Tracking authoritative UX implementation passes across Phases 1–5 and Final In
 - In Palette Roles → Artist saw only `#i: color`. Finding which pixels on canvas belonged to an ambiguous duplicate color was completely manual.
 
 ### New workflow
-- **Live Preflight Inspection**: `GodotKitExportTab.tsx` and `inspectGodotKitPreflight` (`godotKit.ts`) run an instantaneous, live preflight check categorized into 3 clear artist tiers:
+- **Live Preflight Inspection**: `GodotKitExportTab.tsx` and `inspectGodotKitPreflight` (`godotKit.ts`) run an immediate-looking in the recorded walkthrough (latency unmeasured), live preflight check categorized into 3 clear artist tiers:
   - *Ready* (green dot): Verified atlas geometry dimensions (sheet W×H within 4M limit), verified unique palette registers, verified neutral normal layers on all frames, and verified animation clips with duration holds.
   - *Needs attention* (amber dot): Specific, actionable warnings before export (e.g. duplicate colors requiring bindings, missing normal-map layers on specific frames).
   - *Optional improvements* (purple dot): Creative suggestions (e.g. adding named clips for SpriteFrames, enabling normal maps for dynamic lighting).
@@ -260,7 +262,7 @@ Crucially, this pass was executed with strict adherence to PixiBun's creative et
 
 ## 7. End-to-End Artist Journeys Evaluation
 
-The refined atelier was systematically evaluated across 6 complete artist journeys:
+The refined atelier was checked through six scripted task walkthroughs:
 
 ```mermaid
 flowchart LR
@@ -275,32 +277,32 @@ flowchart LR
 
 ### Journey 1: Draw & Compose
 - **Artist Actions**: Launch atelier, sketch sprite silhouette with Pen tool, create multiple layers (Linework, Color, Shading), merge down color onto linework, resize canvas with anchor offset.
-- **Observed Experience**: Save badge quietly transitions from `Saved` to `Unsaved` to `Saving…` to `Saved` without layout shifts. Attempting to merge a layer with Multiply blending provides an informative refusal identifying the layer name and blend mode. Successful merge emits an affirmative toast with an immediate `Undo` action. Canvas resize repositions artwork correctly and safely invalidates history snapshots without memory corruption.
+- **Engineering walkthrough**: Save badge quietly transitions from `Saved` to `Unsaved` to `Saving…` to `Saved` without layout shifts. Attempting to merge a layer with Multiply blending provides an informative refusal identifying the layer name and blend mode. Successful merge emits an affirmative toast with an immediate `Undo` action. Canvas resize repositions artwork correctly and safely invalidates history snapshots without memory corruption.
 - **Assessment**: Smooth, tactile, and completely protective.
 
 ### Journey 2: Frame-by-Frame Animation
 - **Artist Actions**: Add frames on timeline, toggle onion skinning, adjust hold durations in milliseconds, generate an in-between frame with AI morphing, configure playback loop mode (loop vs ping-pong).
-- **Observed Experience**: In-between generation displays progress cues and provides 1-click `Undo` on completion. If project capacity or memory budget prevents insertion, clear guidance explains the constraint while confirming existing frames remain intact. Playback respects per-frame hold durations accurately in both directions.
+- **Engineering walkthrough**: In-between generation displays progress cues and provides 1-click `Undo` on completion. If project capacity or memory budget prevents insertion, clear guidance explains the constraint while confirming existing frames remain intact. Playback respects per-frame hold durations accurately in both directions.
 - **Assessment**: High confidence during timing adjustments and pose interpolations.
 
 ### Journey 3: Cleanup & Pixel Perfection
 - **Artist Actions**: Rotate sprite by 45° using RotSprite, define a protected region around the character's eyes/face, run Sprite Cleanup to eliminate stray specks and simplify colors across all frames.
-- **Observed Experience**: RotSprite produces crisp, non-blurry pixelated edges. The active canvas selection coordinates badge in `AnimationReviewSection` makes defining protected regions immediate. In `PixiBudAssistanceSection`, the cleanup preview prominently displays an amber badge: *"Protected regions active · 2 pixels shielded from cleanup"*. The artist inspects before/after thumbnails and applies cleanup with total confidence.
+- **Engineering walkthrough**: RotSprite produces crisp, non-blurry pixelated edges. The active canvas selection coordinates badge in `AnimationReviewSection` makes defining protected regions immediate. In `PixiBudAssistanceSection`, the cleanup preview prominently displays an amber badge: *"Protected regions active · 2 pixels shielded from cleanup"*. The artist inspects before/after thumbnails and applies cleanup with a reversible preview; artist confidence was not measured.
 - **Assessment**: Transparent, non-destructive automation that respects human artistry.
 
 ### Journey 4: Export & Delivery
 - **Artist Actions**: Open Export modal, browse export destinations, configure animated GIF and MP4 options, export animated file, observe progress, cancel an in-flight export.
-- **Observed Experience**: Formats are clearly grouped into *Image & Animation*, *Game Delivery*, and *Backup & Archive*. If MP4 codec is unsupported by the browser, quick-action switch buttons (`Switch to WebM`, `Switch to GIF`) appear inside the alert. Progress bar is calm, steady, and explicitly reassures: *"Compiling frames. You can safely cancel at any time — your artwork remains intact."*
+- **Engineering walkthrough**: Formats are clearly grouped into *Image & Animation*, *Game Delivery*, and *Backup & Archive*. If MP4 codec is unsupported by the browser, quick-action switch buttons (`Switch to WebM`, `Switch to GIF`) appear inside the alert. Progress bar is calm, steady, and explicitly reassures: *"Compiling frames. You can safely cancel at any time — your artwork remains intact."*
 - **Assessment**: Eliminates export anxiety and dead-ends.
 
 ### Journey 5: Game Engine Delivery (Godot 4.7)
 - **Artist Actions**: Switch to Godot Kit export tab, inspect preflight status, annotate semantic palette registers in Palette inspector, locate duplicate colors on canvas, download Godot kit archive.
-- **Observed Experience**: Preflight checklist immediately flags atlas geometry, normal map compliance, and palette status before clicking download. In the Palette inspector, clicking a common role preset (`Skin`, `Outline`) assigns names instantly. Conflicting duplicate registers trigger an amber banner with a 1-click `Locate on canvas` action that automatically frames the pixels in a selection box. Download produces a clean, valid Godot 4.7 ZIP package containing `manifest.json`, `sprite_frames.tres`, and indexed textures.
+- **Engineering walkthrough**: Preflight checklist immediately flags atlas geometry, normal map compliance, and palette status before clicking download. In the Palette inspector, clicking a common role preset (`Skin`, `Outline`) assigns names instantly. Conflicting duplicate registers trigger an amber banner with a 1-click `Locate on canvas` action that automatically frames the pixels in a selection box. Download produces a clean, valid Godot 4.7 ZIP package containing `manifest.json`, `sprite_frames.tres`, and indexed textures.
 - **Assessment**: Bridges the gap between game artists and engine programmers seamlessly.
 
 ### Journey 6: Failure & Recovery
 - **Artist Actions**: Open the same project in two browser tabs, paint in both tabs, attempt saving in the second tab; simulate offline network drop; test high-memory export refusal.
-- **Observed Experience**: Second tab receives a calm, protective banner: *"This project was changed in another PixiBun tab. Your current artwork is safe in this tab."* with 1-click `Save a copy` and `Keep editing` options. Going offline changes the indicator to a steady *"Offline · Drawing & local saves active"* without distracting pulses. Large export memory refusals provide constructive artist actions (fewer frames, smaller scale) instead of blunt quota errors.
+- **Engineering walkthrough**: Second tab receives a calm, protective banner: *"This project was changed in another PixiBun tab. Your current artwork is safe in this tab."* with 1-click `Save a copy` and `Keep editing` options. Going offline changes the indicator to a steady *"Offline · Drawing & local saves active"* without distracting pulses. Large export memory refusals provide constructive artist actions (fewer frames, smaller scale) instead of blunt quota errors.
 - **Assessment**: Unshakeable trust in artwork preservation under all adversarial operating conditions.
 
 ---
@@ -362,11 +364,3 @@ An exhaustive Visual QA and Interaction QA pass was executed against the running
 | **PWA Update Toast** | Service worker update-ready prompt | **PASS** | Prompts artist to save and reload without forced unexpected refreshes | `VERIFIED` |
 | **Memory Allocation Refusal** | Combined 512 MiB CPU memory admission | **PASS** | Bounded preflight rejects oversized allocations while preserving existing artwork | `VERIFIED` |
 | **TestSprite CLI Preflight** | `testsprite --version` | **UNAVAILABLE** | TestSprite CLI is not installed in the execution environment | `VERIFIED WITH LIMITATIONS` (Environment constraint) |
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

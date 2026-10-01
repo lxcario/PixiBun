@@ -1,4 +1,6 @@
 # The Anti-Slop Operating System (v2)
+
+> **Generic reference, not the PixiBun operating contract.** Its MUST/SHOULD gates and August 2026 assumptions are illustrative guidance and do not override [AGENTS.md](AGENTS.md), project instructions or current source-backed [documentation](docs/README.md). No new security/performance certification is implied.
 ### The Hardened Engineering, Security, and Design Protocol for Full-Stack Web Apps
 
 *A comprehensive operational protocol and reference manual for human engineers and autonomous AI coding agents. Synthesized from modern web platform standards, design-system research, security incident post-mortems, and anti-slop engineering principles. Current as of August 2026.*
@@ -549,11 +551,3 @@ This table verifies that 100% of the rich technical material, case studies, comp
 | **Pre-Launch & Post-Launch Operations** | Gate 7 + Ref §9.1, §9.2 | Launch readiness | Preserved & Linked | **Yes** — OG tags, telemetry, backups intact |
 | **Appendices A–F (Audits, Contract, Templates)** | App A–F | Direct copy-paste artifacts | Preserved & Linked | **Yes** — All checklists, contract, templates intact |
 | **RFC 2119 Normative Levels** | Section 2 | Precision requirement definitions | Added in V2 | **Yes** — `MUST` vs `SHOULD` vs `MAY` codified |
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The project status references below do not change this document's operating instructions. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

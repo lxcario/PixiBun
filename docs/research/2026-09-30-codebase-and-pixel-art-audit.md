@@ -386,11 +386,3 @@ Do not assign calendar estimates until the command/persistence fixes are scoped.
 10. Measured memory returns to baseline after repeated edit/undo/branch/export sequences within the supported envelope.
 
 The principal engineering goal is to make every edit complete across the systems that represent it. The principal product opportunity is to preserve an artist's intent while making timing, palettes, light, and game delivery easier to inspect and revise.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

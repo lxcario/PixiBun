@@ -1,8 +1,10 @@
 # PixiBun Phase 6 UX Hardening: Research Workbench
 
-Status: **Verified & Hardened**  
+> **Scope clarification — 2 October 2026:** The journeys/captures below are engineering walkthroughs and automated checks of the named historical UI. No participant confidence, measured benefit, full WCAG conformance or universal timing is established. Current File/Studio menus and compact Offline label supersede old selectors; palette location uses a selection bounding box, not a per-pixel pulsing overlay. [Current contracts and evidence](../current-status.md).
 
-**Evidence reconciliation — 2026-10-01:** This records the earlier shared interface pass. Its reported automated checks are separate from the 2026-09-30 full editor/compiled results. A subsequent [UI/UX correction pass](session-ui-ux-2026-10-01.md) addresses reproduced keyboard, scrolling, freshness and readiness issues with its own evidence. Current editor inventory is 146 tests in 32 files. The three dry-runs below are not a participant study or measured artist benefit. See the [session completion record](session-completion-2026-10-01.md).
+Status: **Scoped workflow verification**
+
+**Evidence reconciliation — 2026-10-01:** This records the earlier shared interface pass. Its reported automated checks are separate from the 2026-09-30 full editor/compiled results. A subsequent [UI/UX correction pass](session-ui-ux-2026-10-01.md) addresses reproduced keyboard, scrolling, freshness and readiness issues with its own evidence. The inventory at that earlier interface checkpoint was 146 tests in 32 files; [current status](../current-status.md) records later discovery and runs. The three dry-runs below are not a participant study or measured artist benefit. See the [session completion record](session-completion-2026-10-01.md).
 
 Scope: `PixiTools → Explore variations` (`src/components/layout/inspector/ResearchWorkbenchSection.tsx`)  
 Principles: Low threshold, high ceiling · Artist intent first · Visual comparison above the fold · Tactile controls · Safe non-destructive undo  
@@ -34,7 +36,7 @@ A rigorous inspection of the initial workbench implementation revealed critical 
 |---|---|---|---|---|
 | **Global** | Layout order | **High** | Preview canvas rendered at the very bottom (lines 147–152) below a 20-row form. | At 1024×768 or 1280×720, the preview was pushed completely off-screen. Artists adjusted abstract numbers blindly without immediate visual feedback. |
 | **Global** | Workflow selection | **Medium** | Single `<select>` dropdown buried inside form: `"Keep details when simplifying"`, `"Use one light across frames"`, `"Check tiles in a scene"`. | Looked like an academic study chooser rather than a creative studio suite. No visual indication of the 3 distinct creative workspaces. |
-| **Global** | Provenance feedback | **Medium** | Raw string status text (`Source pixels are current.`) without visual status cues or prominent recompute triggers. | Artists had difficulty understanding whether their current canvas matched the recipe or needed recomputation. |
+| **Global** | Provenance feedback | **Medium** | Raw string status text (`Source pixels are current.`) without visual status cues or prominent recompute triggers. | The engineering walkthrough identified possible difficulty understanding whether their current canvas matched the recipe or needed recomputation. |
 | **Global** | Apply / Undo safety | **Medium** | "Apply research preview" added layers silently with basic text status. | Lack of prominent confirmation toast and one-click interactive Undo action reduced confidence to experiment freely. |
 | **Simplification** | Candidate selection | **Medium** | Dropdown with technical labels: `"Average color"`, `"Strongest color contrast"`, `"Center sample"`. | Sounded like DSP filtering. Artists could not anticipate what each candidate would do visually. |
 | **Simplification** | Block size | **Low** | Monolithic dropdown with numbers 2..16. | Lacked quick-touch presets for common pixel art downscaling ratios (2px, 3px, 4px, 8px). |
@@ -201,11 +203,3 @@ Phase 6 is **Ready for Formative Artist Evaluation** with 5–8 participants:
 1. **Maximum Canvas Size:** The research worker bounds each axis to 256 pixels, each batch to 16 poses, and total source pixels to 262,144 (e.g. 16 poses of 128×128 or 4 poses of 256×256). These limits do not establish measured 60 fps, peak heap usage or larger-device behavior.
 2. **Tile Count Limit:** The tile scene solver is bounded to at most 16 square tiles and a 20,000-step search limit. It is an exploration and seam diagnostic tool, not an open-world procedural map generator.
 3. **Subjective Aesthetic Feedback:** While mathematically conforming to palette roles, normal-map dot products, and edge strings, artist preference between Average and Contrast candidates depends heavily on character style (e.g., chibi vs dark fantasy). The upcoming study will record subjective rating data (1–7 scale) across usefulness, control, and recovery confidence.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

@@ -1,5 +1,7 @@
 # PixiBun UX implementation plan — 2026-09-29
 
+> **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
+
 > **Status update (2026-09-30):** This document records the original 2026-09-29 plan and its then-current acceptance wording. Direct user feedback changed the header: portable project backup is reached through Export, while the duplicate Back up button and visible “Saved on this device” text were removed. New sits beside the project name and Save. The tool cleanup, preview-first PixiTools actions, layer drag reordering, and timeline refinements are implemented. See [the session changelog](PIXIBUN_UX_CHANGELOG.md) for the current behavior. Artist task studies and larger responsive-workspace work remain proposals.
 
 ## Goal and boundaries
@@ -26,7 +28,9 @@ Milestones 1 and 2 were implemented and verified in the first audit. Later feedb
 
 ## Historical interaction specification A — local save and portable backup
 
-**Intention/entry:** An artist wants confidence that current work is stored and a file they control. The top bar is visible throughout drawing. A direct `Back up…` control opens the existing Export dialog with `.pixibun` selected; ordinary Export still opens its usual image tab.
+**Superseded header placement:** The later single-row header removed this duplicate Back up control; portable backup is under Export. [Current safety contract](docs/guides/artwork-safety.md).
+
+**Intention/entry at this plan checkpoint:** An artist wants confidence that current work is stored and a file they control. The top bar is visible throughout drawing. A direct `Back up…` control opens the existing Export dialog with `.pixibun` selected; ordinary Export still opens its usual image tab.
 
 **Current friction:** The bar says `Saved` after IndexedDB success, and the screen-reader status says `All changes saved`. The native project tab is late in a multi-format export selector. Its handler closes on `{success:false}` and provides no error when serialization throws.
 
@@ -55,11 +59,3 @@ Milestones 1 and 2 were implemented and verified in the first audit. Later feedb
 ## Deferred work and research protocol
 
 Do not implement a second export modal, mandatory tutorial, semantic AI, new checkpoint format, fully non-destructive effect stack, panel preset state or renderer workers inside this slice. For later prioritization, run consented first-sprite, first-animation, outcome-based PixiTools and backup-comprehension sessions. Record task completion and errors locally; do not collect artwork pixels or claim population-level findings. Measure latency only with representative projects and hardware before citing the report's proposed budgets.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

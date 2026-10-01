@@ -1,0 +1,459 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: studio.spec.ts >> Studio Automated Accessibility Audits (axe-core, WCAG 2.2) >> RightInspector panels expanded pass automated WCAG 2.2 axe scan
+- Location: tests\e2e\studio.spec.ts:367:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: /2\.5D Photometric Studio/i })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to workspace" [ref=e2] [cursor=pointer]:
+    - /url: /studio#main-workspace
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - group "Project controls" [ref=e6]:
+        - link "PixiBun Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]:
+            - img "Bun, the PixiBun bunny" [ref=e10]
+            - generic [ref=e174]:
+              - generic [ref=e175]: PIXIBUN
+              - generic [ref=e176]: ATELIER
+        - button "File" [ref=e177]:
+          - text: File
+          - generic [ref=e178]: ▼
+        - button "Rename project Untitled Sprite" [ref=e179] [cursor=pointer]: Untitled Sprite
+        - generic "Canvas size · change it in File" [ref=e180]: 32×32
+        - button "Save now" [ref=e181]:
+          - generic [ref=e182]: Save
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - button "Undo last action" [disabled]
+          - generic [ref=e186]:
+            - button "Redo last action" [disabled]
+      - group "Drawing controls" [ref=e187]:
+        - generic "Tool options rail" [ref=e188]:
+          - generic [ref=e189]: "Pen:"
+          - button "Brush size 1 pixels" [ref=e191]:
+            - generic [ref=e192]: Size
+            - generic [ref=e193]: 1 px
+            - generic [ref=e194]: ▾
+      - generic [ref=e195]:
+        - group "Canvas controls" [ref=e196]:
+          - group "Mirror drawing" [ref=e197]:
+            - generic [ref=e198]: Mirror
+            - button "Horizontal symmetry" [ref=e200] [cursor=pointer]
+            - button "Vertical symmetry" [ref=e202] [cursor=pointer]
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - button "Zoom Out" [ref=e206] [cursor=pointer]: −
+              - button "Zoom 1600 percent. Choose zoom level" [ref=e208]: 1600%
+              - button "Zoom In" [ref=e209] [cursor=pointer]: +
+            - button "Fit Canvas to Viewport (Ctrl+0)" [ref=e211] [cursor=pointer]: Fit
+          - button "View options menu" [ref=e215] [cursor=pointer]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: View
+              - generic "1 active view options" [ref=e218]
+            - generic [ref=e219]: ▼
+        - group "Studio settings and help" [ref=e220]:
+          - button "Studio options" [ref=e221] [cursor=pointer]:
+            - generic [ref=e222]: Studio
+            - generic [ref=e223]: ▼
+        - button "Export drawing" [ref=e225]:
+          - generic [ref=e226]: Export
+    - status [ref=e228]: Not saved yet
+    - generic [ref=e229]:
+      - complementary [ref=e230]:
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - button "Pen" [ref=e234] [cursor=pointer]
+            - button "Bézier Curve" [ref=e236] [cursor=pointer]
+            - button "Eraser" [ref=e238] [cursor=pointer]
+            - button "Flood Fill" [ref=e240] [cursor=pointer]
+            - button "Dither Brush" [ref=e242] [cursor=pointer]
+            - button "Color Replace" [ref=e244] [cursor=pointer]
+            - button "Erase Sampled Color" [ref=e246] [cursor=pointer]
+          - generic [ref=e247]:
+            - button "Marquee Box" [ref=e250] [cursor=pointer]
+            - button "Lasso Select" [ref=e252] [cursor=pointer]
+            - button "Magic Wand" [ref=e254] [cursor=pointer]
+          - generic [ref=e255]:
+            - button "Line" [ref=e258] [cursor=pointer]
+            - button "2:1 Iso Line" [ref=e260] [cursor=pointer]
+            - button "Rectangle" [ref=e262] [cursor=pointer]
+            - button "Ellipse" [ref=e264] [cursor=pointer]
+          - button "Normal Chisel" [ref=e268] [cursor=pointer]
+          - button "Eyedropper" [ref=e272] [cursor=pointer]
+        - generic [ref=e273]:
+          - generic [ref=e274]:
+            - button "Swap colors (X)" [ref=e275] [cursor=pointer]: ⇄
+            - button "Reset default black and white colors (Shift+D)" [ref=e276] [cursor=pointer]
+            - 'button "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap" [ref=e277] [cursor=pointer]'
+            - 'button "Primary color #3A2E4C. Click for quick swatches, double click for picker, right click to swap" [ref=e278] [cursor=pointer]'
+          - generic [ref=e279]:
+            - generic [ref=e280]:
+              - 'button "#DDDFDF (Click: Primary | Right-click: Secondary)" [ref=e281] [cursor=pointer]'
+              - 'button "#DDDDDF (Click: Primary | Right-click: Secondary)" [ref=e282] [cursor=pointer]'
+              - 'button "#D0C4DF (Click: Primary | Right-click: Secondary)" [ref=e283] [cursor=pointer]'
+              - 'button "#DCABDF (Click: Primary | Right-click: Secondary)" [ref=e284] [cursor=pointer]'
+            - button "Quick Swatches Flyout" [ref=e285] [cursor=pointer]
+      - main "Pixel art canvas workspace" [ref=e289]:
+        - application "Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan." [ref=e290]
+      - complementary [ref=e292]:
+        - generic [ref=e293]:
+          - button "Layers" [ref=e294] [cursor=pointer]
+          - button "Palette" [ref=e296] [cursor=pointer]
+          - button "PixiTools" [ref=e298] [cursor=pointer]
+        - generic [ref=e301]:
+          - generic [ref=e302]:
+            - button "← Choose another task" [ref=e303] [cursor=pointer]
+            - heading "All PixiTools" [level=2] [ref=e304]
+            - paragraph [ref=e305]: Explore every tool by what it does.
+          - generic [ref=e307]:
+            - generic [ref=e308]:
+              - heading [level=3] [ref=e310]:
+                - button "Animation stability" [expanded] [ref=e311] [cursor=pointer]:
+                  - generic [ref=e314]: ▾
+              - generic [ref=e316]:
+                - paragraph [ref=e317]: Non-destructive frame comparison. Intentional smears, sparkles and color cycling can be marked as expected.
+                - generic [ref=e318]:
+                  - text: Review clip
+                  - combobox "Animation review clip" [ref=e319]:
+                    - option "Choose a clip" [selected]
+                    - option "Default (1–1)"
+                - button "Create clip from all frames" [disabled] [ref=e320]
+            - region "Try a new look" [ref=e322]:
+              - tablist "Variation intention selector" [ref=e323]:
+                - tab "Simplify" [selected] [ref=e324] [cursor=pointer]
+                - tab "Light" [ref=e326] [cursor=pointer]
+                - tab "Tiles" [ref=e328] [cursor=pointer]
+              - tabpanel "Simplify" [ref=e330]:
+                - group "Simple choices" [ref=e331]:
+                  - generic [ref=e333]:
+                    - paragraph [ref=e334]: Pixel blocks
+                    - generic [ref=e335]:
+                      - button "Original" [pressed] [ref=e336] [cursor=pointer]
+                      - button "2px" [ref=e337] [cursor=pointer]
+                      - button "4px" [ref=e338] [cursor=pointer]
+                      - button "8px" [ref=e339] [cursor=pointer]
+                  - generic [ref=e340]:
+                    - generic [ref=e341]:
+                      - button "Select an area" [ref=e342] [cursor=pointer]
+                      - button "Keep this detail" [disabled] [ref=e343] [cursor=pointer]
+                    - paragraph [ref=e344]: Drag a box on your artwork.
+                  - group [ref=e345]:
+                    - generic "More options" [ref=e346] [cursor=pointer]
+                    - option "Fit artwork" [selected]
+                    - option "1× canvas"
+                    - option "4× canvas"
+                    - option "Current frame" [selected]
+                    - option "1px" [selected]
+                    - option "2px"
+                    - option "3px"
+                    - option "4px"
+                    - option "5px"
+                    - option "6px"
+                    - option "7px"
+                    - option "8px"
+                    - option "9px"
+                    - option "10px"
+                    - option "11px"
+                    - option "12px"
+                    - option "13px"
+                    - option "14px"
+                    - option "15px"
+                    - option "16px"
+                    - option "Blend"
+                    - option "Strongest"
+                    - option "Sample" [selected]
+                    - option "Keep artwork colors" [selected]
+                    - option "Replace with active palette"
+                - status [ref=e347]: The source layer has no stored pixels. Select painted artwork.
+                - generic [ref=e348]:
+                  - button "Create research preview" [ref=e350] [cursor=pointer]: Preview my artwork
+                  - paragraph [ref=e351]: Adds an editable layer. Undo restores this change.
+            - generic [ref=e352]:
+              - generic [ref=e353]:
+                - heading [level=3] [ref=e355]:
+                  - button "Light your sprite" [expanded] [ref=e356] [cursor=pointer]:
+                    - generic [ref=e358]:
+                      - generic [ref=e359]: Light your sprite
+                      - generic [ref=e360]: Move a light to preview highlights and shading.
+                    - generic [ref=e361]: ▾
+                - generic [ref=e363]:
+                  - group "Lighting setup" [ref=e364]:
+                    - button "Auto setup" [pressed] [ref=e365] [cursor=pointer]
+                    - button "Manual setup" [ref=e367] [cursor=pointer]
+                  - paragraph [ref=e369]: Auto chooses settings from your sprite.
+                  - group [ref=e370]:
+                    - generic "Shading style 2 shadow tones" [ref=e371] [cursor=pointer]:
+                      - generic [ref=e372]:
+                        - generic [ref=e373]: ▸
+                        - text: Shading style
+                      - generic [ref=e374]: 2 shadow tones
+                  - generic [ref=e375]:
+                    - button "Preview lighting" [ref=e376]
+                    - generic [ref=e379]: Drag the light on your artwork. Enter applies · Esc cancels.
+                  - group [ref=e381]:
+                    - generic "More lighting actions" [ref=e382] [cursor=pointer]:
+                      - generic [ref=e383]: ▸
+                      - text: More lighting actions
+              - heading [level=3] [ref=e386]:
+                - button "Shape the surface" [ref=e387] [cursor=pointer]:
+                  - generic [ref=e389]:
+                    - generic [ref=e390]: Shape the surface
+                    - generic [ref=e391]: Paint raised edges that respond to lighting.
+                  - generic [ref=e392]: ▸
+              - heading [level=3] [ref=e395]:
+                - button "Add a shadow" [ref=e396] [cursor=pointer]:
+                  - generic [ref=e398]:
+                    - generic [ref=e399]: Add a shadow
+                    - generic [ref=e400]: Place a shadow beneath or behind your sprite.
+                  - generic [ref=e401]: ▸
+            - heading [level=3] [ref=e406]:
+              - button "Patterns & Tilesets" [ref=e407] [cursor=pointer]:
+                - generic [ref=e410]: ▸
+            - generic [ref=e413]:
+              - heading [level=3] [ref=e415]:
+                - button "Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)" [expanded] [ref=e416] [cursor=pointer]:
+                  - generic [ref=e417]: Pixel Cleanup & RotSprite
+                  - generic [ref=e419]: ▾
+              - generic [ref=e421]:
+                - generic [ref=e422]:
+                  - generic [ref=e423]:
+                    - generic [ref=e424]: Analyze & Crisp Artwork
+                    - generic [ref=e425]: Undoable
+                  - paragraph [ref=e426]: Scan the selected layer for faint pixels, detached specks, excess shades, and thick dark edges.
+                  - generic [ref=e427]:
+                    - generic [ref=e428]: Faint alpha ≤ 96
+                    - slider "Cleanup faint alpha threshold" [ref=e429]: "96"
+                  - generic [ref=e430]:
+                    - button "Cleanup simplify shades" [pressed] [ref=e431] [cursor=pointer]: "Shades: Crisp"
+                    - button "Cleanup thin dark lines" [ref=e432] [cursor=pointer]: "Lines: Keep"
+                  - button "Cleanup frame scope" [ref=e433] [cursor=pointer]: Current frame only
+                  - generic [ref=e434]:
+                    - button "Scan artwork for cleanup" [ref=e435]:
+                      - generic [ref=e436]: Scan Artwork
+                    - button "Apply analyzed artwork cleanup" [disabled] [ref=e437]:
+                      - generic [ref=e438]: Apply Cleanup
+                - generic [ref=e439]:
+                  - generic [ref=e440]:
+                    - generic [ref=e441]: Clean Rotation & Lines
+                    - generic [ref=e443]: RotSprite
+                  - generic [ref=e444]:
+                    - generic [ref=e445]:
+                      - generic [ref=e446]:
+                        - generic [ref=e447]: Rotation Angle
+                        - generic [ref=e448]: 45°
+                      - slider "Rotation Angle" [ref=e450] [cursor=pointer]: "45"
+                    - generic [ref=e451]:
+                      - button "-90°" [ref=e452] [cursor=pointer]
+                      - button "-45°" [ref=e453] [cursor=pointer]
+                      - button "+45°" [ref=e454] [cursor=pointer]
+                      - button "+90°" [ref=e455] [cursor=pointer]
+                  - button "Rotate Cleanly" [ref=e456]:
+                    - generic [ref=e457]:
+                      - generic [ref=e458]: Rotate Cleanly
+                      - generic [ref=e459]: (45°)
+                  - generic [ref=e460]:
+                    - button "Smooth Jaggies - De-Jaggy" [ref=e461]:
+                      - generic [ref=e462]: Smooth Jaggies
+                    - button "Thin to 1px" [ref=e464]
+                  - button "Erase Stray Pixels - Remove Stray Pixels" [ref=e467]:
+                    - generic [ref=e468]: Erase Stray Pixels
+                - generic [ref=e471]:
+                  - generic [ref=e472]: Color Moods & Palette
+                  - generic [ref=e474]:
+                    - generic [ref=e475]: "Color Mood:"
+                    - generic [ref=e476]:
+                      - button "Sunset" [ref=e477] [cursor=pointer]
+                      - button "Moonlight" [ref=e478] [cursor=pointer]
+                      - button "Neon" [ref=e479] [cursor=pointer]
+                  - generic [ref=e480]:
+                    - button "Atkinson Dither" [ref=e481]
+                    - button "Smooth Dither - Riemersma Dither" [ref=e484]:
+                      - generic [ref=e485]: Smooth Dither
+                  - button "Snap to Active Palette" [ref=e487]
+                  - button "+ Harmonize Accents" [ref=e490]
+                  - button "+ In-Between Frame (Morph)" [ref=e493]:
+                    - generic [ref=e494]: + Generate In-Between Frame
+    - contentinfo [ref=e496]:
+      - generic [ref=e497]:
+        - generic [ref=e498]:
+          - generic [ref=e499]:
+            - button "Play" [ref=e500]
+            - button "Previous Frame (,)" [ref=e503]
+            - button "Next Frame (.)" [ref=e505]
+            - button "Repeat" [ref=e507]
+          - generic [ref=e511]:
+            - button "Preview speed" [ref=e513]:
+              - generic [ref=e514]: Preview
+              - generic [ref=e515]: 1×
+              - generic [ref=e516]: ▾
+            - generic [ref=e517]:
+              - generic [ref=e518]: Frame time
+              - spinbutton "Active frame duration in milliseconds" [ref=e519]: "100"
+              - generic [ref=e520]: ms
+            - button "Onion Skin" [ref=e521]
+        - generic [ref=e524]:
+          - button "+ Frame" [ref=e525]:
+            - generic [ref=e526]: Frame
+          - group [ref=e528]:
+            - generic "Frame actions" [ref=e529] [cursor=pointer]:
+              - text: Frame actions
+              - generic [ref=e530]: ▾
+          - button "Collapse Timeline" [ref=e532]:
+            - generic [ref=e533]:
+              - generic [ref=e534]: ▼
+              - generic [ref=e535]: Collapse
+      - generic [ref=e536]:
+        - 'button "Select frame 1. Duration: 100ms. Drag to reorder." [ref=e538]':
+          - generic:
+            - generic: "#1"
+            - generic: 100ms
+        - button "Clips" [ref=e539]
+    - generic [ref=e540]:
+      - generic [ref=e541]: "X: — Y: —"
+      - generic [ref=e544]: 32×32
+      - generic [ref=e547]: 1600%
+      - generic [ref=e549]: Frame 1/1
+      - generic [ref=e551]: Base Layer
+      - generic [ref=e552]: pen
+      - status "All changes saved to local storage" [ref=e557]:
+        - generic [ref=e559]: Saved
+  - alert [ref=e560]
+```
+
+# Test source
+
+```ts
+  291 |       if (!ctx) return 0;
+  292 |       const img = ctx.getImageData(0, 0, cvs.width, cvs.height);
+  293 |       let painted = 0;
+  294 |       for (let i = 3; i < img.data.length; i += 4) {
+  295 |         if (img.data[i] > 0) painted++;
+  296 |       }
+  297 |       return painted;
+  298 |     });
+  299 |     expect(thumb0PaintedCount).toBeGreaterThan(0);
+  300 | 
+  301 |     // Add a second frame
+  302 |     const addFrameBtn = page.getByTitle(/Add Blank Frame/i);
+  303 |     await addFrameBtn.click();
+  304 |     await page.waitForTimeout(200);
+  305 | 
+  306 |     const thumb1 = page.locator('canvas[data-testid="frame-thumbnail-1"]');
+  307 |     await expect(thumb1).toBeVisible();
+  308 | 
+  309 |     // Draw stroke on frame 1
+  310 |     const targetX1 = box.x + (box.width / 32) * 8.5;
+  311 |     const targetY1 = box.y + (box.height / 32) * 8.5;
+  312 |     await page.mouse.move(targetX1, targetY1);
+  313 |     await page.mouse.down();
+  314 |     await page.mouse.move(targetX1 + 4, targetY1 + 4);
+  315 |     await page.mouse.up();
+  316 |     await page.waitForTimeout(150);
+  317 | 
+  318 |     // Verify frame 1 thumbnail contains painted pixel data
+  319 |     const thumb1PaintedCount = await page.evaluate(() => {
+  320 |       const cvs = document.querySelector('canvas[data-testid="frame-thumbnail-1"]') as HTMLCanvasElement;
+  321 |       if (!cvs) return 0;
+  322 |       const ctx = cvs.getContext('2d', { willReadFrequently: true });
+  323 |       if (!ctx) return 0;
+  324 |       const img = ctx.getImageData(0, 0, cvs.width, cvs.height);
+  325 |       let painted = 0;
+  326 |       for (let i = 3; i < img.data.length; i += 4) {
+  327 |         if (img.data[i] > 0) painted++;
+  328 |       }
+  329 |       return painted;
+  330 |     });
+  331 |     expect(thumb1PaintedCount).toBeGreaterThan(0);
+  332 |   });
+  333 | 
+  334 | });
+  335 | 
+  336 | test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () => {
+  337 |   test('blank canvas workspace passes automated WCAG 2.2 axe scan', async ({ page }) => {
+  338 |     await page.goto('/studio');
+  339 |     await page.waitForLoadState('domcontentloaded');
+  340 |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  341 |     // Allow hydration, Dexie restore, and entrance animations to settle
+  342 |     await page.waitForTimeout(1100);
+  343 | 
+  344 |     const results = await scanStudioAccessibility(page);
+  345 |     expect(results.violations).toEqual([]);
+  346 |   });
+  347 | 
+  348 |   test('open Export modal passes automated WCAG 2.2 axe scan', async ({ page }) => {
+  349 |     await page.goto('/studio');
+  350 |     await page.waitForLoadState('domcontentloaded');
+  351 |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  352 |     await page.waitForTimeout(1100);
+  353 | 
+  354 |     const exportBtn = page.getByTitle(/Export PNG, GIF, or Spritesheet/i);
+  355 |     await expect(exportBtn).toBeVisible();
+  356 |     await exportBtn.click();
+  357 | 
+  358 |     // Export modal (lazy-loaded in Phase 33) — wait for dialog to mount
+  359 |     const dialog = page.getByRole('dialog');
+  360 |     await expect(dialog).toBeVisible();
+  361 |     await page.waitForTimeout(400);
+  362 | 
+  363 |     const results = await scanStudioAccessibility(page);
+  364 |     expect(results.violations).toEqual([]);
+  365 |   });
+  366 | 
+  367 |   test('RightInspector panels expanded pass automated WCAG 2.2 axe scan', async ({ page }) => {
+  368 |     await page.goto('/studio');
+  369 |     await page.waitForLoadState('domcontentloaded');
+  370 |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  371 |     await page.waitForTimeout(1100);
+  372 | 
+  373 |     // Tab 1: Layers
+  374 |     await page.getByRole('button', { name: /^Layers$/i }).click();
+  375 |     await page.waitForTimeout(300);
+  376 |     const layersResults = await scanStudioAccessibility(page);
+  377 |     expect(layersResults.violations).toEqual([]);
+  378 | 
+  379 |     // Tab 2: Palette
+  380 |     await page.getByRole('button', { name: /^Palette$/i }).click();
+  381 |     await page.waitForTimeout(300);
+  382 |     const paletteResults = await scanStudioAccessibility(page);
+  383 |     expect(paletteResults.violations).toEqual([]);
+  384 | 
+  385 |     // Tab 3: PixiTools with the available lighting and patterns panels expanded
+  386 |     await page.getByRole('button', { name: /PixiTools/i }).click();
+  387 |     await page.getByTestId('pixitools-browse-all').click();
+  388 |     await page.waitForTimeout(300);
+  389 |     for (const name of [/2\.5D Photometric Studio/i, /^Patterns & Tilesets$/i]) {
+  390 |       const panel = page.getByRole('button', { name });
+> 391 |       if (await panel.getAttribute('aria-expanded') === 'false') await panel.click();
+      |                       ^ Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+  392 |     }
+  393 |     await page.waitForTimeout(300);
+  394 |     const aiResults = await scanStudioAccessibility(page);
+  395 |     expect(aiResults.violations).toEqual([]);
+  396 |   });
+  397 | });
+  398 | 
+  399 | 
+```

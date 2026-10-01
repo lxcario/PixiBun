@@ -1,5 +1,7 @@
 # PixiBun research-grounded product roadmap
 
+> **Current capability map — 2 October 2026:** Recipe provenance/photometric reopening is implemented for supported tools; a universal Effect Inspector is deferred. Protected bounded simplification/shared-light/tile scenes, animation review and palette/game delivery are implemented subsets. General intrinsic depth inference, multi-user structure CRDTs and large-world generation are deferred. Artist evaluation remains pending. See [rendering](../contracts/rendering.md), [status](../current-status.md) and [research registry](../research/issue-registry.md) for contracts and limitations. Per-operation worker fallback differs; synchronous fallback can block.
+
 > **Implementation reconciliation — 2026-10-01:** The separate six-phase codebase audit implemented protected previews and source-change detection, animation review, semantic palette/game delivery and small shared-light/tile research workflows. This is partial progress toward the roadmap below, not completion of its broader Effect Inspector, depth inference, collaboration or world-generation requirements. See the [phase report](../research/phase-implementation-status.md) and [session completion record](../research/session-completion-2026-10-01.md).
 
 This plan treats PixiBun as a pixel-art workstation, not a collection of one-click filters. Every generated result should be understandable, editable, repeatable, and portable with the project.
@@ -160,11 +162,3 @@ Implement one vertical slice at a time across recipe, preview, persistence, undo
 - Light strength now scales direct diffuse/specular energy only. It no longer multiplies ambient and final exposure a second time, and it cannot erase the directional terminator at 250%. Auto cavity shading is capped and deep crevice tones are restricted to genuinely occluded pixels on the unlit side.
 - The draggable light center is a true spatial focus. Moving it translates the virtual point light, recomputes the per-pixel light and half vectors, and applies a soft inverse-quadratic focus falloff without creating a hard circular edge.
 - Generated-layer provenance records palette inputs where palette-constrained output depends on them. Dead recipe kinds and unused UI modules/assets were removed.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../research/session-ui-ux-2026-10-01.md), [palette tools](../research/palette-creator-2026-10-01.md), [cycle scope](../research/palette-cycle-scope-2026-10-01.md), [export timing](../research/palette-cycle-export-2026-10-01.md) and [GIF correction](../research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

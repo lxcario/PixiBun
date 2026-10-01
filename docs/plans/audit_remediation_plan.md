@@ -1,5 +1,7 @@
 # Implementation Plan: Fix All Audit Findings from PIXIBUN_AUDIT_RESULTS.md (Amended)
 
+> **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
+
 Resolve all Critical, High, and Medium findings identified in [`PIXIBUN_AUDIT_RESULTS.md`](../../PIXIBUN_AUDIT_RESULTS.md), establishing strict invariant boundaries across the canvas envelope, hardening safety routines against edge cases, synchronizing runtime versions, and updating documentation metrics.
 
 ## Proposed Changes
@@ -160,11 +162,3 @@ Currently, 5 subsystems maintain diverging canvas boundaries:
    - `npm test` — all Vitest suites pass.
    - `npm run build` — Next.js build succeeds.
    - `npm run gate:full` — full test suite passes.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../research/session-ui-ux-2026-10-01.md), [palette tools](../research/palette-creator-2026-10-01.md), [cycle scope](../research/palette-cycle-scope-2026-10-01.md), [export timing](../research/palette-cycle-export-2026-10-01.md) and [GIF correction](../research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

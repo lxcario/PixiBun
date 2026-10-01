@@ -226,7 +226,11 @@ export const SelectionTransformGizmo: React.FC<SelectionTransformGizmoProps> = (
           data-testid="gizmo-translate-body"
           className="absolute inset-0 cursor-move bg-transparent"
           title="Drag to move selection (Shift to lock axis)"
-          onPointerDown={(e) => startDrag('translate', e)}
+          onPointerDown={(e) => {
+            // Let the viewport subtract a selection instead of translating it.
+            if (e.altKey || e.button !== 0) return;
+            startDrag('translate', e);
+          }}
         />
 
         {/* Outer Rotation Hit Zones (4 Corners Extended Annulus, z-50 above handles) */}

@@ -142,8 +142,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
-    // Middle Click or Alt+Click = Pan Viewport
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    // Selection tools own Alt for subtraction; middle-click always pans.
+    if (e.button === 1 || (e.button === 0 && e.altKey && !tools.activeTool.startsWith('select-'))) {
       props.setIsPanning(true);
       props.setPanStart({ x: e.clientX - props.panX, y: e.clientY - props.panY });
       return;

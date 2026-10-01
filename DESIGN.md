@@ -110,7 +110,7 @@ graph LR
 
 ---
 
-## 3. Dual-Axis Theme Switching & Zero-Lag Transition Engine
+## 3. Dual-Axis Theme Switching & Theme Transition Engine
 
 The studio supports two independent theme dimensions:
 1. **Studio Theme:** `Atelier` (modern slate workstation) vs. `Cozy Classic` (historical plum & wisteria desk).
@@ -128,7 +128,7 @@ stateDiagram-v2
     RestoreTransitions --> [*]: Normal Fluid Interactions Restored
 ```
 
-* **Zero-Lag Transition Suppression:** During theme swaps, a temporary `<style>` block disables all CSS transitions across the DOM (`transition: none !important`), sets `data-studio-theme` and `data-color-scheme`, forces a synchronous reflow, and removes itself on the next `requestAnimationFrame` tick. This eliminates layout thrashing and repaint stutter across thousands of UI nodes.
+* **Temporary Transition Suppression:** During theme swaps, a temporary `<style>` block disables all CSS transitions across the DOM (`transition: none !important`), sets `data-studio-theme` and `data-color-scheme`, forces a synchronous reflow, and removes itself on the next `requestAnimationFrame` tick. This suppresses overlapping transitions; the synchronous style read and theme repaint still perform work and require measurement.
 * **Appearance Popover Swatches:** Interactive flyout provides real-time swatch palettes representing each theme's core colors before selection, with accessible keyboard navigation and Escape dismissal.
 
 ---
@@ -152,7 +152,7 @@ stateDiagram-v2
    * Subtle bottom shadow (`box-shadow: 0 2px 0 var(--btn-shadow)`).
 2. **Hover State (Light Sweep):**
    * Micro-scale lift: `transform: scale(1.025)`.
-   * Amethyst Wisteria background tint (`#603B82`) providing a 4.6:1 contrast ratio against gold and 6.2:1 against cream text (WCAG 2.2 AA compliant).
+   * Amethyst Wisteria background tint (`#603B82`) providing a 4.6:1 contrast ratio against gold and 6.2:1 against cream text (color-pair contrast calculation, not whole-interface conformance).
    * Dual-band specular reflection light-sweep with wisteria flanking wings gliding from left (`-160%`) to right (`+160%`).
 3. **Hover Leave (Unhover):**
    * Controlled transition back to `scale(1.0)` with the specular sweep gliding back to the left (`-160%`).
@@ -244,7 +244,7 @@ Grounded in Ben Shneiderman's 1983 direct-manipulation paradigm:
 * **Interactive Light Bulb Token:** A tactile incandescent pixel light bulb handle rendered on the canvas viewport representing the directional light vector ($\theta$ azimuth, $\phi$ elevation, and light distance radius).
 * **Decoupled Focal Reticle Anchor:** An independent central focal reticle handle (`lightCenterX`, `lightCenterY` / `stageCentroid`). Artists can reposition the focal anchor without perturbing the light direction angle, or orbit the bulb token around the anchor with zero drift.
 * **Azimuth Sweep Arc & Distance Line:** A subtle dashed indicator connecting the focal point to the orbiting bulb, visualizing the directional ray in real-time.
-* **Tactile Physics & 60fps rAF Updates:** Dragging either handle recalculates azimuth ($\theta = (\text{atan2}(dx, -dy) \times \frac{180}{\pi} + 360) \pmod{360}$) and elevation, rendering in-place preview frames via throttled `requestAnimationFrame` with zero perceptible UI latency.
+* **Tactile Physics & rAF-Scheduled Updates:** Dragging either handle recalculates azimuth ($\theta = (\text{atan2}(dx, -dy) \times \frac{180}{\pi} + 360) \pmod{360}$) and elevation, rendering in-place preview frames via throttled `requestAnimationFrame` with a low-latency target; complete interaction latency remains unmeasured.
 * **HUD Hotkeys & Micro-Steppers:** Embedded HUD pill with tactile `[-]` / `[+]` brightness steppers, mouse wheel scroll intensity adjustment, quick commit (<kbd>Enter</kbd>), cancel (<kbd>Esc</kbd>), and focal anchor reset (<kbd>R</kbd>).
 
 ---
@@ -309,7 +309,7 @@ The `AppearancePopover` (`src/components/ui/AppearancePopover.tsx`) consolidates
 1. **Studio Theme:** Atelier (modern midnight) or Cozy Classic (historical plum/wisteria).
 2. **Color Scheme:** Dark or Light.
 
-Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, ensuring zero-lag visual switching.
+Live preview swatches show the target theme's accent/surface colors. Selection triggers `applyThemeToDOM()` in `themeStore.ts` with transition suppression, suppressing simultaneous transition animations.
 
 ---
 
@@ -375,15 +375,7 @@ The [current glint report](docs/research/specular-glint-2026-10-01.md) records p
 ### 3. Legacy continuous highlight pill
 
 The following Phase 63 description applies to renderer calls that omit the new glint choice; it does not describe the current studio bulb.
-* **Legacy Volumetric Pill:** Earlier calls render a continuous 3D Blinn-Phong highlight with smooth alpha falloff.
-* **Macro-Silhouette Normal Field:** Normals are sampled from the smooth inflated dome (`specularNormalField`), guaranteeing that interior eye depressions and color boundaries never produce reflective scars or cliff cuts.
+* **Legacy Volumetric Pill:** Legacy calls use Blinn-Phong with a hard intensity gate and intensity-scaled alpha; the current pixel glint uses a separate two-level response.
+* **Macro-Silhouette Normal Field:** Normals are sampled from the smooth inflated dome (`specularNormalField`), reducing reflective artifacts around interior eye depressions and color boundaries.
 * **Physical Visibility Gating:** Strict line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) ensures specular highlights only appear on lit surfaces facing the light source.
 * **Feature Shielding:** Facial features (eyes, mouth) and dark outlines are masked out, ensuring highlights land only on organic surface curves.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

@@ -1,0 +1,126 @@
+
+> pixibun@1.14.1 test:e2e:production
+> playwright test --config playwright.production.config.ts
+
+[WebServer] (node:20380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 39 tests using 1 worker
+
+(node:18208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (2ms)
+(node:29764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   2 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (14ms)
+(node:2312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   3 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (6ms)
+(node:33196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   4 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (2ms)
+(node:33456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   5 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (2ms)
+(node:33552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   6 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (2ms)
+(node:33652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   7 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (3ms)
+(node:33744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   8 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (2ms)
+(node:32900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   9 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (7ms)
+(node:27988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  10 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (2ms)
+(node:33304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  11 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (3ms)
+(node:20384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  12 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (2ms)
+(node:22684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  13 [chromium] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (2ms)
+(node:33680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  14 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (2ms)
+(node:32924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  15 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (2ms)
+(node:33164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  16 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (3ms)
+(node:32196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  17 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (3ms)
+(node:32984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  18 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (3ms)
+(node:33500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  19 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (2ms)
+(node:16212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  20 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2ms)
+(node:29960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  21 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (2ms)
+(node:33636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  22 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (2ms)
+(node:24048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  23 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (2ms)
+(node:33676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  24 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (2ms)
+(node:33788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  25 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (2ms)
+(node:33192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  26 [firefox] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (3ms)
+(node:33072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  27 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (3ms)
+(node:4928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  28 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (2ms)
+(node:9580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  29 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (2ms)
+(node:33536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  30 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (2ms)
+(node:32824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  31 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (2ms)
+(node:33500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  32 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (2ms)
+(node:28008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  33 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2ms)
+(node:32720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  34 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (3ms)
+(node:24496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  35 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (2ms)
+(node:33048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  36 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (2ms)
+(node:4928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  37 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (2ms)
+(node:32984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  38 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (2ms)
+(node:19980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  39 [webkit] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (3ms)

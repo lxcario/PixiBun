@@ -1,0 +1,56 @@
+
+> pixibun@1.14.1 test:e2e:production
+> playwright test --config playwright.production.config.ts
+
+[WebServer] (node:26308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 39 tests using 1 worker
+
+(node:32664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (5.6s)
+  ok  2 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (5.4s)
+  ok  3 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (4.0s)
+  ok  4 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (2.0s)
+  ok  5 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (3.5s)
+  ok  6 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (5.8s)
+  ok  7 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (1.9s)
+  ok  8 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (3.8s)
+  ok  9 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (7.5s)
+  ok 10 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (12.0s)
+  ok 11 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (7.3s)
+  ok 12 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (4.3s)
+  ok 13 [chromium] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (8.3s)
+(node:32412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 14 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (26.8s)
+  ok 15 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (9.0s)
+  ok 16 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (6.9s)
+  ok 17 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (4.5s)
+  ok 18 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (9.1s)
+  ok 19 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (12.3s)
+  ok 20 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (3.2s)
+  ok 21 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (7.3s)
+  ok 22 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (9.9s)
+  ok 23 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (14.6s)
+  ok 24 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (10.3s)
+  ok 25 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (6.3s)
+  ok 26 [firefox] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (12.6s)
+(node:10568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 27 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (28.4s)
+  ok 28 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (19.2s)
+  ok 29 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (13.7s)
+  ok 30 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (5.4s)
+  ok 31 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (15.8s)
+  ok 32 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (18.7s)
+  ok 33 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (9.9s)
+  ok 34 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (7.3s)
+  ok 35 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (29.4s)
+  ok 36 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (27.3s)
+  ok 37 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (22.9s)
+  ok 38 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (11.2s)
+  ok 39 [webkit] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (25.1s)
+
+  39 passed (7.4m)

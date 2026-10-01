@@ -25,10 +25,10 @@ Research workflows admit at most 256 pixels per axis, 16 frames and 262,144 sour
 - [5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)](#5-local-first-storage--multi-project-lifecycle-srclibstoragedbts-srclibprojectschemats)
 - [6. Multi-Engine Export & Web Worker Pipeline (`src/lib/export/`)](#6-multi-engine-export--web-worker-pipeline-srclibexport)
 - [7. 3D Minecraft Skin Recognition & Domain Shading Engine (`src/lib/ai/math/minecraftSkin.ts`)](#7-3d-minecraft-skin-recognition--domain-shading-engine-srclibaimathminecraftskints)
-- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixilaienginets)
+- [8. Signed Distance Field (SDF) In-Between Animation Morphing (`src/lib/ai/pixelAiEngine.ts`)](#8-signed-distance-field-sdf-in-between-animation-morphing-srclibaipixelaienginets)
 - [9. Intelligent Image-to-Pixel-Art Synthesis Pipeline (`src/lib/ai/pixelizeEngine.ts`)](#9-intelligent-image-to-pixel-art-synthesis-pipeline-srclibaipixelizeenginets)
-- [10. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)](#10-zero-lag-theme-architecture-srcstoresthemestorets)
-- [11. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-zero-gc-memory-management--buffer-pooling-srclibenginebufferpoolts)
+- [10. Theme Architecture (`src/stores/themeStore.ts`)](#10-theme-architecture-srcstoresthemestorets)
+- [11. Bounded Idle Buffer Pooling (`src/lib/engine/bufferPool.ts`)](#11-bounded-idle-buffer-pooling-srclibenginebufferpoolts)
 - [12. Multithreaded Worker & Deterministic CG Math Architecture](#12-multithreaded-worker--deterministic-cg-math-architecture)
 - [13. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)](#13-strongly-typed-studio-event-bus-srclibeventsstudioeventsts)
 - [14. Vercel & CI/CD Deployment Pipeline](#14-vercel--cicd-deployment-pipeline)
@@ -54,7 +54,7 @@ Research workflows admit at most 256 pixels per axis, 16 frames and 262,144 sour
 
 ## 1. System Topology Overview
 
-PixiBun is structured as a client-side single-page application built on **Next.js 16 (App Router)** with zero mandatory server dependencies for drawing, animation, synthesis, or exporting.
+PixiBun is structured as a client-side single-page application built on **Next.js 16 (App Router)** with client-side creative operations after loading; initial access requires the Next.js server/platform runtime.
 
 ```mermaid
 graph TD
@@ -121,11 +121,11 @@ graph TD
     L5 --> L6
 ```
 
-### Pure Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)
+### Overlay-Free Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)
 The `compositeFrame()` module serves as the single visual source of truth for pure pixel compositing:
 - **Zero Editor Chrome**: Bottom-up compositing honoring layer visibility, opacity, and blend modes without including onion skin ghosts, grid lines, or selection marquees.
 - **Eyedropper & Exporters**: The eyedropper samples directly from `compositeFrame()`, making color picking completely immune to normal-map preview modes, HUD guides, and ghost underlays.
-- **Living Timeline Thumbnails**: Timeline frame cards render `<FrameThumbnail>` elements backed by `compositeFrame()`, with live re-compositing restricted to the active frame on `bufferVersion` updates to maintain $O(1)$ stroke performance.
+- **Living Timeline Thumbnails**: Timeline frame cards render `<FrameThumbnail>` elements backed by `compositeFrame()`, with live re-compositing restricted to the active frame on `bufferVersion` updates to limit the number of thumbnail recompositions; raster work still scales with pixel area.
 
 ### Pure Onion Skinning Engine (`src/lib/render/onionSkin.ts`)
 - Pure, DOM-free `getOnionSkinSpecs()` computes clamped previous/next ghost specifications with distance falloff `base * (1 - 0.25 * (dist - 1))` and `prevColor`/`nextColor` tint mapping.
@@ -140,7 +140,7 @@ Layers are maintained as detached `HTMLCanvasElement` objects indexed by layer U
 The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
 - Undo and redo stacks are independently depth-bounded (up to 50 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations. Oldest redo entries are evicted under combined byte pressure without mutating the baseline.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
-- Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic $O(1)$ state restoration via `ctx.putImageData`.
+- Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic pixel restoration proportional to copied raster area via `ctx.putImageData`.
 - Provides reactive boolean getters (`canUndo`, `canRedo`) synchronized with `useStudioStore`.
 - Layer property and frame-duration edits use metadata-only structural snapshots; continuous opacity and duration controls group one interaction into one history step. History-backed structural mutations estimate both Undo and Redo snapshot sizes before changing artwork and reject over-budget edits without clearing existing history.
 
@@ -193,19 +193,21 @@ graph TD
    Normals across the face interior level off to a camera-facing plateau, confining form shadows to the unlit silhouette edge. Features (eyes, mouth, whiskers) receive camera-facing normals $\mathbf{N} = (0, 0, 1)^T$.
 4. **Feature Segmentation & 4-Tone Discrete OKLCH Cel-Shading:**
     Pixels tagged `isFeature = 1` or `isInkLine = 1` bypass lighting multipliers entirely, preserving exact original RGB values. Unshaded base colors receive discrete stepped tone quantization in OKLCH via `buildCelRamp()` (4 tones):
-    * **Base Tone:** Original artist color preserved (55%–60% of lit surface)
+    * **Base Tone:** Original artist color preserved where the lighting thresholds select the base tone; no universal surface percentage
     * **Directional Mid-Shadow:** $L_{\text{shadow}} = \max(0.04, \min(L_{\text{base}} \times 0.86, L_{\text{base}} - 0.025))$, with authored hue and chroma strictly preserved (preserving original artwork color identity without blue-violet shifts).
     * **Deep Crevice:** $L_{\text{deep}} = \max(0.02, \min(L_{\text{base}} \times 0.72, L_{\text{base}} - 0.05))$ with authored hue and chroma preserved (concave seams where $AO < \text{creviceAOThresh}$, dynamically bounded to $[0.12, 0.30]$ scaling with cavity strength).
     * **Highlight:** $L_{\text{hi}} = \min(0.98, L_{\text{base}} + (0.98 - L_{\text{base}}) \times 0.22)$ with authored hue and chroma preserved (shiny materials only: $k_s > 0.1$ and not matte/fabric; penumbra uses $L_{\text{soft}} = \max(0.05, \min(L_{\text{base}} \times 0.93, L_{\text{base}} - 0.015))$).
     * **Exposure-Compensated Directional Terminator (Phase 63):** Cel shadow placement is evaluated purely over the directional diffuse signal $\text{diffSignal} = \text{wrapNdotL} \times \text{effectiveFalloff}$. To prevent high lamp brightness from flattening unlit geometry, the terminator threshold is exposure-compensated without shifting the geometric boundary via a piecewise linear mapping around baseline 1.15 ($\text{shadowThresh} = 0.52 + t \times 0.30$ for $\text{brightness} \le 1.15$, or $0.52 - t \times 0.32$ for $\text{brightness} > 1.15$). Optional Bayer matrix dither modulation perturbs the threshold for organic pixel art stippling.
-    * **Neutral Macro-Form & Material-Scale Synthesis (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), ensuring the 2.5D normal field $\mathbf{N}$ remains independent of light direction and allowing tones to dynamically track the light bulb across $360^\circ$ azimuth. Interior ink detection requires opposing two-sided luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted shadow boundaries from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
-5. **Blinn-Phong Specular Half-Vector:**
+    * **Neutral Macro-Form & Material-Scale Synthesis (Phase 63):** Superseded fixed head/neck/torso height priors with neutral macro-form and multi-scale material detail ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ for characters), keeping the base normal inference separate from lighting; appendage stabilization can depend on azimuth and allowing tones to dynamically track the light bulb across $360^\circ$ azimuth. Interior ink detection requires opposing two-sided luminance dips ($(\text{neighbor}_{\text{opposing}} - \text{lum}) \ge 0.12$), preventing painted shadow boundaries from being carved as permanent ink crevices. Connected-component flood fill clusters authored ramps by hue and chroma proximity ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$).
+5. **Legacy Blinn-Phong Specular Half-Vector (current bulb glints use a separate GGX-shaped quantized response):**
    $$\mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{\|\mathbf{L} + \mathbf{V}\|}, \quad I_s = k_s (\max(0, \mathbf{N} \cdot \mathbf{H}))^\alpha$$
    In discrete pixel-art ramps, sparse specular highlights are isolated when $I_s > 0.35$.
 6. **Discrete Laplace Cavity Occlusion:**
    $$\nabla^2 H \approx H * \begin{bmatrix} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{bmatrix}, \quad AO(p) = \text{clamp}(1.0 - k_{\text{ao}} \max(0, -\nabla^2 H), 0, 1)$$
 7. **2D Subsurface Scattering (Beer-Lambert + Henyey-Greenstein Forward Phase):**
-   $$T(\mathbf{x}) = 2\sqrt{\max\left(0, R^2 - D(\mathbf{x})^2\right)}, \quad I_{SSS}(\mathbf{x}) = C_{scatter} \exp\left(-\boldsymbol{\sigma}_t \frac{T(\mathbf{x})}{d_{trans}}\right) \cdot P_{2D}(\mathbf{L}', \mathbf{V}, g)$$
+   The implemented empirical optical chord is direction-dependent, not a circular chord reconstruction:
+   $$T(p) = \frac{2\max(0.5,D(p))}{\max(0.08,\mathbf{N}\cdot\mathbf{L}+wrap)},\quad T_{scaled}(p)=\frac{T(p)}{\max(1,d_{trans})}$$
+   Per-channel transmission is $\exp(-\sigma_c T_{scaled})$. Gemstone/slime extinction adapts to base pigment; core masks, forward glow, light color and later tone quantization also affect the output. See `photometricLighting.ts`; this is not measured physical scattering.
    $$P_{2D}(\theta, g) = \frac{1 - g^2}{2\pi (1 + g^2 - 2g \cos\theta)^{3/2}}$$
    *(Note: Evaluates the 3D Henyey-Greenstein kernel in 2D with a $2\pi$ circumference prefactor as an empirical forward-scattering highlight curve, clamped to $[0, 1.0]$ in the relighting pipeline).*
 8. **Dielectric Fresnel Reflectance with Cauchy Chromatic Dispersion:**
@@ -227,7 +229,7 @@ graph TD
     * Dynamic azimuth calculation from pointer coordinates orbiting around a stationary subject center reticle:
       $$\theta = \left(\text{atan2}(x_{\text{ptr}} - x_{\text{center}}, -(y_{\text{ptr}} - y_{\text{center}})) \times \frac{180}{\pi} + 360\right) \pmod{360}$$
     * Decoupled focal point reticle handle ($x_{\text{center}}, y_{\text{center}}$) allowing artists to reposition the lighting anchor without altering the light direction angle.
-    * 60fps `requestAnimationFrame` throttled preview updates.
+    * requestAnimationFrame-scheduled preview updates; 60 FPS is a target, not a guaranteed achieved rate.
 12. **Spherical Convex Dome Inflation & Slope AO Decoupling:**
     * Heightmap blends spherical dome inflation ($0.75$) with a gamma curve ($0.25$, default $\gamma = 0.5$):
       $$H(p) = \max(D) \cdot \left(0.75 \sqrt{\max\left(0, 1 - \left(1 - \frac{D(p)}{\max(D)}\right)^2\right)} + 0.25 \left(\frac{D(p)}{\max(D)}\right)^\gamma\right)$$
@@ -250,25 +252,11 @@ The application state is managed by Zustand with Immer middleware:
 
 ## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-* **Database Engine:** Dexie.js wrapping browser IndexedDB (`PixiBunDB`, Schema v5).
-* **Tables:**
-  * `projects`: Indexed by `id, name, updatedAt, createdAt`. Stores serialized `.pixibun` payload (`dataJson`), canvas bounds (`width, height`), `fps`, `createdAt`, `updatedAt`, and a downscaled composite preview (`thumbnailDataUrl`) for instant gallery card rendering.
-  * `layerBlobs`: Indexed by `++id, [projectId+layerId+frameIndex], projectId, layerId, [projectId+id]`. Stores raw binary PNG image `Blob` instances directly, eliminating JSON base64 stringification CPU overhead and reducing autosave storage footprints by ~33%.
-  * `diagnostics`: Indexed by `id, kind, timestamp`. Stores local telemetry and crash events in an on-device ring buffer (200 entries max).
-  * `recoveryRecords`: Indexed by `projectId, classificationState, lastConfirmedAt`. Stores disaster recovery lifecycle ledger records, tracking quarantine states and repair history keyed by projectId.
-* **Multi-Project Workspace Management (`ProjectsGalleryModal.tsx`):**
-  * Artists can maintain an unlimited on-device portfolio of sprites and animations.
-  * Supports full lifecycle management: instant switching, project duplication (`duplicateProject`), inline renaming (`renameProject`), and safe deletion (`deleteProject`).
-* **P0 History Stack Invalidation (`pixibun:history-clear`):**
-  * When switching projects, loading an artwork, or creating a new blank project, `hydrateProject` and `resetToNewProject` dispatch `pixibun:history-clear`.
-  * `CenterViewport` clears the 50-step `HistoryEngine` and resets `canUndo`/`canRedo` flags, eliminating cross-project undo state corruption.
-* **Persistent Storage Failure & Auto-Recovery Banner:** Continuous autosave invokes `autoSaveWorkspaceDetailed(...)`, returning a `Promise<AutoSaveOutcome>` (a discriminated union: `{ ok: true, status: 'saved' }` or failure `{ ok: false, reason: 'invariant-invalid' | 'aborted' | 'quota-exceeded' | 'error' }`). If 2 consecutive saves fail (e.g. disk quota exceeded, incognito clearance), a sticky warning banner appears with a 1-click `"Export Drawing"` button. When storage clears and autosave succeeds (`outcome.ok === true`), the banner auto-dismisses and resets error counts.
-* **Document Revision Autosave Trigger (`state.editRevision`):** In addition to pixel history commits, `useStudioAutosave` subscribes directly to store revision increments (`state.editRevision`). Structural changes (layer renames, reordering, locks, deletions, canvas resizing) and effect recipe parameter updates trigger debounced IndexedDB autosaves automatically, persisting metadata state within the debounce window.
-* **Full-Fidelity v1 $\to$ v2 $\to$ v3 Migration Engine (`migrateProjectPayload`):**
-  * Auto-detects legacy v1 (`version: undefined`) and v2 files.
-  * Backfills default `customRamps: []`, `clips: []`, `onionSkin`, per-layer `blendMode: 'source-over'`, `opacity: 1.0`, `visible: true`, `locked: false`, and validates optional `LayerEffectRecipe` payloads.
-  * Upgrades `version` to `PROJECT_FORMAT_VERSION = 3`.
-* **Forward Compatibility Guard:** Rejects files saved with a newer format (`input.version > PROJECT_FORMAT_VERSION`) with an explicit update prompt: `"This project was saved in format v${input.version}, but this version of PixiBun only supports up to v${PROJECT_FORMAT_VERSION}. Please update PixiBun to open this file."`. Non-integer, negative, or zero versions are rejected as invalid.
+The database and portable project formats are separate contracts: Dexie schema v5 versus `.pixibun` format v3. Logical `StoredLayerBlob` APIs expose Blob; current physical records store ArrayBuffer bytes plus `blobType`, reconstructing Blob on reads and retaining legacy Blob support. Metadata and raster commits are atomic with revision checks. Older deployments can lack the binary read path even with the same database version.
+
+`AutoSaveOutcome` is success or `conflict`, `memory-limit`, `invariant-invalid`, `aborted`, `quota-exceeded`, or `error`. A changed/deleted stored revision returns conflict and preserves active work for Save a copy. Debounced saves (800 ms) do not imply instant durability; encoding and commit add time, and newer edits queue another save. Restore/admission/cancellation states are coordinated separately from save outcomes.
+
+The schema validates dimensions, frame/layer counts, aggregate footprint, decoded raster geometry, versions and optional metadata. Newer unsupported versions are rejected; legacy migrations remain supported. See [storage and compatibility](docs/contracts/storage.md), [artwork safety and backup](docs/guides/artwork-safety.md) and [recovery architecture](#31-restricted-recovery-mode-envelope-guards--streaming-archive-architecture-phase-1a--phase-1b).
 
 ---
 
@@ -297,7 +285,7 @@ graph TD
     ModeCheck -->|auto| TopoAnalysis["analyzeMinecraftSkinTopology()"]
     TopoAnalysis --> BoundingBox["Bounding Box Margin Check (Flanks x < 10 & x > 48)"]
     TopoAnalysis --> Limbs["Bilateral Limb Verification (Right Leg x:0..16 & Right Arm x:40..56)"]
-    TopoAnalysis --> Voids["Canonical Void Zone Integrity Check (<20% pollution)"]
+    TopoAnalysis --> Voids["Canonical Void Zone Integrity Check (<25% pollution)"]
     TopoAnalysis --> Components["8-Connected Component Silhouette Analysis"]
     BoundingBox & Limbs & Voids & Components --> Decision{"Classification Verdict"}
     Decision -->|Disjoint UV Atlas| UVMap["12-Region Cuboid Face Normal Field N(x,y,z)"]
@@ -377,27 +365,19 @@ graph TD
 
 ---
 
-## 10. Zero-Lag Theme Architecture (`src/stores/themeStore.ts`)
+## 10. Theme Architecture (`src/stores/themeStore.ts`)
 
-The studio theme engine is architected around two orthogonal axes managed by `useThemeStore`:
-* **Studio Theme (`studioTheme`):** `'atelier'` (modern midnight default) or `'cozy-classic'` (original plum/wisteria historical identity).
-* **Color Scheme (`colorScheme`):** `'dark'` or `'light'`.
-
-To prevent simultaneous layout recalculations and repaint stutter across thousands of DOM elements during theme and scheme switching:
-1. **Transition Suppression:** Injects a high-priority stylesheet (`pixibun-theme-transition-killer`) with `transition: none !important` before mutating DOM attributes.
-2. **Synchronous Reflow & Attribute Mutation:** Sets `data-studio-theme` and `data-color-scheme` (with `data-theme` for backward compatibility) on `document.documentElement`, updates `.dark` / `.light` class states, and reads `getComputedStyle(css).opacity` to force instantaneous layout evaluation while transitions are suppressed.
-3. **Clean Teardown:** Removes the temporary override stylesheet on the subsequent `requestAnimationFrame` tick, restoring silky micro-interactions without visual flash or delay.
-4. **Appearance Popover:** Flyout modal (`src/components/ui/AppearancePopover.tsx`) in the top rail exposes direct tactile switching between themes with real-time swatch previews and focus trapping.
+The two axes are studio theme (`atelier` / `cozy-classic`) and color scheme (`dark` / `light`). `themeStore.ts` temporarily suppresses CSS transitions, updates root attributes/classes and performs a synchronous style read before restoring transitions on a following animation frame. This avoids overlapping transition animations; it still performs layout/repaint work and is not a zero-lag guarantee. Appearance choices are under the Studio menu. Qualify rendered colors, focus and reduced-motion states with the relevant UI checks.
 
 ---
 
-## 11. Zero-GC Memory Management & Buffer Pooling (`src/lib/engine/bufferPool.ts`)
+## 11. Bounded Idle Buffer Pooling (`src/lib/engine/bufferPool.ts`)
 
-High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral Filters, Laplace Normal Map baking, downsampling) require substantial TypedArray scratch space. To eliminate garbage collection pauses during live canvas interactions:
-- **Pool Sizing & Lifecycle:** Pre-allocates and bounds reusable `Float32Array` and `Int32Array` buffers.
-- **Resource Borrows:** Callers acquire buffers with `acquireFloat32Buffer(minLen)` and release them in `finally` blocks with `releaseFloat32Buffer(buf)`.
-- **Zero-Fill Guarantees:** Buffers are sanitized/cleared on release, preventing cross-frame data corruption.
-- **Compositor Canvas Pooling:** `compositeFrame()` leverages a persistent offscreen canvas singleton and accepts an optional `targetCanvas` destination to avoid allocating DOM canvas elements on every render tick.
+Scratch arrays use exact-size Float32/Int32 buckets. A miss allocates; a reused buffer is cleared on acquire. Release can retain the full buffer without clearing. Each bucket holds at most 16 arrays; all idle buffers share a 32 MiB cap with oldest-idle eviction and empty-bucket removal. Idle retention is registered as `scratchPool` in the estimated combined memory ledger and refused/evicted under admission pressure. Duplicate release, partial backing views, empty and oversized arrays are not retained. `clearBufferPool()` drops idle references without invalidating active callers.
+
+The combined 512 MiB ledger estimates selected rasters/history/collaboration/pool retention plus reservations. It is not total browser/worker/GPU/decoder/codec RAM. Checked-out scratch arrays need their operation's own ownership/reservation policy. Reuse reduces allocation; it does not eliminate all garbage collection or establish a frame rate.
+
+`compositeFrame()` returns a fresh DOM canvas by default; an explicit target takes precedence. `freshCanvas: false` reuses one mutable shared canvas. Retained frame arrays must not use that shared surface. The compositor reads registry/DOM state and excludes editor overlays; it is not a DOM-free pure function. [Rendering/ownership contract](docs/contracts/rendering.md).
 
 ---
 
@@ -405,22 +385,21 @@ High-frequency mathematical operations (Euclidean Distance Transforms, Bilateral
 
 Compute-bound tasks are balanced between background Web Workers and on-device TypedArray math:
 - **Web Worker GIF Encoding (`src/lib/export/gifEncoder.worker.ts`):** LZW compression and median-cut color quantization run off-thread with zero-copy transferable `ArrayBuffer` lists (`postMessage(payload, [buffer])`).
-- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and bounded sprite cast shadows run synchronously on the main thread using pre-allocated `bufferPool.ts` scratch buffers. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
+- **Deterministic On-Device Graphics Math (`src/lib/ai/math/`, `src/lib/ai/shadowRayMarcher.ts`):** 2.5D photometric lighting, $O(N)$ EDT, and bounded sprite cast shadows run synchronously on the main thread using exact-size reusable `bufferPool.ts` scratch buffers. For audit finding H1 (resolved), `computeContentAwareHeightmap` records component membership in a linear pass, then visits each component's members and propagates distances through them using one shared canvas-sized `cDist` buffer. The component stage avoids repeated full-canvas scans and per-component distance-buffer allocations. For audit finding H6 (resolved), the affected photometric render path reuses one content-aware analysis instead of recomputing the same full analysis twice, while retaining the separate specular silhouette cushion: `renderParametric2p5DLighting` hoists geometric analysis via `computePhotometricAnalysis` and feeds `precomputedAnalysis` directly into `executePhotometricPipeline`.
 
 ---
 
 ## 13. Strongly-Typed Studio Event Bus (`src/lib/events/studioEvents.ts`)
 
-Cross-component triggers (normal map baking, palette quantization, volumetric lighting triggers, 2.5D cast shadows) are managed through a strongly-typed subscriber facade bridging DOM CustomEvents:
-- **Discriminated Event Map:** All 32 studio actions are strictly typed in `StudioEventMap` with validated payload schemas.
-- **Subscriber Ergonomics:** `CenterViewport` and studio panels subscribe via `studioEvents.on(event, handler)` with automatic unsubscription cleanup and type-safe payload extraction, receiving events dispatched across studio panels via `window.dispatchEvent` or `studioEvents.emit`.
+`StudioEventMap` and typed emit/on helpers provide compile-time event shapes over DOM CustomEvents. Runtime DOM details are cast by the facade; the event bus does not run a schema for every action. Individual handlers, project admission, recipe parsers, worker and WebRTC boundaries have their own validators. Do not infer trusted runtime input from TypeScript types or a bare action count. Subscribers must unsubscribe at teardown; externally dispatched events still require boundary validation where used.
 
 ---
 
 ## 14. Vercel & CI/CD Deployment Pipeline
 
-* **Framework Engine:** Next.js 16 App Router on Vercel Edge Network.
-* **Continuous Deployment:** Every push to `main` triggers automated typechecking (`tsc --noEmit`), linting (`eslint`), unit testing (`vitest`), and static optimization before deploying to production.
+This Next.js 16 build has dynamic request-time responsibilities, including CSP nonces, routes and the optional relay. A Next-capable Node/platform runtime is required; the existing build is not a plain static export and CDN distribution is not an all-Edge-runtime guarantee. Creative raster work runs client-side after load; warm-cache offline behavior is a separate contract.
+
+GitHub and GitLab checks have different scope. GitHub runs the full gate/build, Chromium development workflows, three-engine compiled-production checks and Lighthouse. GitLab runs the standard gate and main-branch build. Coverage thresholds are configured but coverage is a separate command. Publication, deployment and release approval are distinct actions. [Operator guide](docs/guides/deployment.md), [testing matrix](docs/guides/testing.md).
 
 ---
 
@@ -430,7 +409,7 @@ The current bridge holds one `P2PSyncSession`, so a session supports one host an
 
 The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src/lib/sync/p2pSync.ts`) are pure, DOM-free modules; the bridge is the single integration point that connects them to the live studio. It is a module-scoped singleton so sessions survive modal unmount and drawing code can reach it without prop drilling.
 
-* **Structure Join:** On connection, the host broadcasts a `STRUCTURE_SYNC` message (`src/lib/sync/p2pSync.ts`, validated by `validateStructurePayload`) so both peers adopt one layer-ID namespace — the prerequisite for routing per-layer CRDT ops. The host owns the layer/frame tree for the session; guest structural edits stay local (documented MVP constraint that keeps identity deterministic).
+* **Structure Join:** On connection, the host broadcasts a `STRUCTURE_SYNC` message (`src/lib/sync/p2pSync.ts`, validated by `validateStructurePayload`) so both peers adopt one layer-ID namespace — the prerequisite for routing per-layer CRDT ops. The host owns the layer/frame tree for the session; guest structure controls are locked and receiving boundaries enforce host-owned layer/frame identity.
 * **Full-State Antientropy Join:** Following Shapiro et al. (SSS 2011, §4), the host seeds one `CrdtPixelBuffer` per layer from the live canvas pixels and transmits complete per-layer snapshots. A bounded retry loop handles the window where `RTCPeerConnection` reports `connected` before the RFC 8831 data channels are open.
 * **Delta Propagation:** On every stroke commit, the pre-stroke history snapshot is diffed against the live buffer (`src/lib/sync/strokeDiff.ts`) and each changed pixel becomes an LWW op broadcast per layer. Receivers apply ops through the HLC clock (bounded drift, deterministic peerId tie-break) and repaint layer buffers in one `getImageData`/`putImageData` pass.
 * **Rendering & Persistence Integration:** Applied remote ops dispatch `pixibun:request-composite` (consumed by `CenterViewport.tsx`) and `pixibun:remote-change` (consumed by `StudioLayout.tsx` to schedule the same debounced autosave as local edits).
@@ -441,20 +420,22 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 
 ## 16. Diagnostics Relay Hardening (`src/app/api/diagnostics/relay/route.ts`)
 
-* **Rate Limiting:** Token bucket (12 requests/minute, burst 12) keyed by client IP, implemented as a pure module in `src/lib/server/tokenBucket.ts`. State is per-process memory — correct for a single Node instance, a per-instance limit on multi-instance deployments.
-* **Input Ceilings:** 64KB request-body ceiling enforced before JSON parsing, and a 100-event cap on forwarded batches, with explicit 413/429 responses.
-* **SSRF Guard (unchanged):** Upstream is strictly the operator-configured HTTPS `DIAGNOSTICS_RELAY_URL`; client payloads are forwarded only as a bounded `{ app, version, timestamp, events }` envelope.
+The optional relay accepts a provided Origin only when it matches the request URL's exact scheme/host/port; absent Origin is accepted. This is browser-origin admission, not authentication or server proof of client consent. Proxy normalization and sanitized forwarded IP headers are operator responsibilities.
+
+Requests are limited to 64 KiB bodies / 100 events; process-local token buckets admit burst 12 and refill 12/minute per client key. Limits multiply across processes. A server-owned HTTPS target and five-second deadline bound upstream handling; configuration/redirect behavior still needs operator review. Forwarded events have bounded generic envelopes, not universal runtime DiagnosticEntry schemas.
+
+Local diagnostic capture defaults on; transmission defaults off and requires strict boolean opt-in. Messages/details may include free text, pathname and browser data; truncation is not PII redaction. [Security](SECURITY.md), [operator configuration](docs/guides/deployment.md).
 
 ---
 
 ## 17. Algorithmic Scope Boundaries & Target System Envelope
 
-To maintain sub-16ms interactive drawing latency and prevent runaway complexity, PixiBun's algorithms operate within explicit, mathematically defined envelopes:
+To target responsive drawing and bound admitted operation complexity, PixiBun's algorithms operate within explicit, mathematically defined envelopes:
 
 * **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. PixiBun targets browser-based crafting with IndexedDB binary blob persistence (`layerBlobs`), transferable buffers for worker export, and 2.5D photometric cel-shading.
 * **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Retained as an internal and legacy-project algorithm; the artwork-replacing Generate Seamless Pattern control is retired. The current Patterns & Tilesets panel previews an exact 3×3 repeat of the selected tile and exports that tile unchanged. The retained WFC solver implements an overlapping model with periodic boundaries for small textures ($16\times16$ to $64\times64$ outputs, $N=2$ or $N=3$ kernels). Its modeled working set is admitted against `MAX_WFC_WORKING_SET_BYTES` (64 MiB) before dominant allocations.
 * **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-designed planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
-* **Zero-Egress LAN Default & Network Boundaries:** Core creative features (raster engine, layers, animation timeline, photometric studio, color science, export encoders, and IndexedDB persistence) operate 100% on-device without network access. P2P co-draw defaults to `LAN_ICE_SERVERS = []` for true zero-egress local network collaboration. Public Internet WebRTC STUN NAT traversal and the optional diagnostics relay are the only subsystems that require network access, both requiring explicit user activation.
+* **Network Boundaries:** After resources are loaded/cached, core drawing, processing, export and persistence run on-device. App loading and service-worker updates still make same-origin requests. LAN co-draw defaults to `LAN_ICE_SERVERS = []`, avoiding configured public STUN requests; peer traffic still uses the network. Public STUN traversal and the diagnostics relay require explicit user activation. This describes application configuration, not a browser-wide zero-egress guarantee.
 
 ---
 
@@ -509,7 +490,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - `baseLayerName === 'Base Layer'`
   - `hasNormalLayer === false`
   - `showNormalPreview === false`
-* **Zero State Leakage:** Prevents concentric-circle stamp accumulation or dirty layer retention across consecutive automated test runs, guaranteeing deterministic ground-truth verification from turn one.
+* **Zero State Leakage:** Prevents concentric-circle stamp accumulation or dirty layer retention across consecutive automated test runs, providing fixture isolation checks; restoration/readiness must still be awaited.
 
 ---
 
@@ -575,7 +556,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - Utilizes a precomputed $O(1)$ 256-element bitmask lookup table (`BITMASK_TO_47_INDEX: Uint8Array`) and a reactive $3\times3$ Chebyshev dirty neighborhood updater (`updateAutotileAt`) that recalculates only affected adjacent tiles.
   - Includes a zero-dependency procedural 47-tile pixel renderer for instant terrain, wall, and platform synthesis.
 * **Pure-TypeScript ISOBMFF Fast-Start MP4 Container Muxer (`src/lib/export/isobmffWriter.ts`, `src/lib/export/mp4Encoder.ts`):**
-  - Pure-TS ISO Base Media File Format container writer (`ftyp`, `moov`, `mdat`) eliminating reliance on non-standard browser `MediaRecorder` H.264 implementations.
+  - The WebCodecs path uses a TypeScript ISO Base Media File Format writer (ftyp/moov/mdat). A supported MediaRecorder fallback still exists and bypasses this writer.
   - Formats boxes for progressive download Fast-Start playback (`moov` preceding `mdat`) and dynamically back-patches chunk offsets in `stco`.
   - Integrates hardware-accelerated WebCodecs `VideoEncoder` (`avc1.42001f`) with instant off-screen encoding, retaining graceful `MediaRecorder` fallback.
 
@@ -583,7 +564,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ## 24. Comprehensive Defensive Hardening & Invariant Architecture
 
-To immunize the client-side graphics workstation against browser anomalies, memory exhaustion, floating-point singularity, and malicious payloads, PixiBun introduces a dedicated, zero-dependency safety substrate (`src/lib/safety/`):
+To reduce risk from browser anomalies, memory exhaustion, floating-point singularity, and malicious payloads, PixiBun introduces a dedicated, zero-dependency safety substrate (`src/lib/safety/`):
 
 * **Mathematical Viewport Invariants & Line Clipping (`src/lib/safety/mathInvariants.ts`):**
   - **IEEE 754 Floating-Point Invariants:** Grounded in Goldberg (1991) and Knuth (1997), `clampZoom(zoom, fallback)` sanitizes zoom values against `NaN`, `Infinity`, $\le 0$, and bounds to $[0.05, 64.0]$. `safeDivide(n, d, fallback)` prevents zero-division singularities.
@@ -603,23 +584,14 @@ To immunize the client-side graphics workstation against browser anomalies, memo
 
 ## 25. Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
 
-To decouple development from cloud CI billing constraints while maintaining uncompromising release standards:
+The local gate runs documentation checks, strict project compilation, lint and unit/integration assertions; `gate:full` adds the production build. Browser, coverage, Lighthouse, physical-device and participant checks are separate. Runner discovery describes inventory, not successful execution.
 
-* **Zero-Dependency Local Quality Gate Runner (`scripts/runQualityGate.mjs`):**
-  - Executes a four-stage sequential validation pipeline via `npm run gate` (runtime depends on hardware and suite size):
-    1. **Stage 1 (Documentation & Sync Audit):** `npm run verify:docs` asserts phase uniqueness in `TASKS.md`, monotonic sections in `ARCHITECTURE.md`, 100% on-disk existence for `CHANGELOG.md` filepaths, truthful `README.md` test counters, and `package.json` version synchronization.
-    2. **Stage 2 (Static Type Safety):** `npm run typecheck` (`tsc --noEmit`) enforces 0 TypeScript compilation errors without type-stripping.
-    3. **Stage 3 (Lint):** `npm run lint` checks source and tests, including accessibility rules.
-    4. **Stage 4 (Defensive Invariant Test Suite):** `npm test` runs the current Vitest unit suite.
-    5. **Stage 5 (Optional Production Compilation):** `npm run gate:full` runs `next build` verifying clean Turbopack bundling and route trees.
-* **Automated Git Pre-Push Gatekeeper (`scripts/installGitHooks.mjs`, `.git/hooks/pre-push`):**
-  - Automatically installed via npm `prepare` lifecycle hook (`npm run prepare`).
-  - Intercepts `git push` on developer workstations, blocking any push that fails any Quality Gate stage before bytes ever reach a remote repository.
-* **Open Source Governance & Canonical GitHub Actions CI:**
-  - Standardized guidelines in `CONTRIBUTING.md` and `SECURITY.md`.
-  - Drop-in `.github/workflows/ci.yml` pipeline configuration enforcing automated quality gates.
+The convenience pre-push hook checks the current working tree, which may differ from pushed commits; Git hooks can be bypassed. The installer resolves Git's hook path, supports linked worktrees and core.hooksPath, upgrades its own managed hook, and preserves unrelated hooks with a manual integration message. It does not overwrite custom hooks or promise an unbypassable boundary. CI/review is still required.
+
+`verify:docs` checks all owned local links/headings, live generated inventory, selected tool/encoder/runtime contracts, monotonic sections, phase uniqueness, historical path exceptions and version parity. It reports existing versus explicitly allowed removed paths separately. It cannot determine the truth of every narrative/performance claim. [Contributor guide](CONTRIBUTING.md), [testing/evidence](docs/guides/testing.md).
 
 ---
+
 ## 26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
 
 To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
@@ -647,7 +619,7 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
 * **Resolution-Aware Bevel Scaling (`src/lib/ai/math/edtNormalMap.ts`):**
   - Introduces a dimensionless scale factor $\text{scaleFactor} = \max\left(1.0, \frac{\min(W, H)}{32}\right)$.
   - Dynamically scales the anatomical character bevel radius $R_{\text{char}} = 2.8 \times \text{scaleFactor}$, dynamic bevel radius $R_{\text{bevel}} \in [2.5, 6.0 \times \text{scaleFactor}]$, and appendage width ceilings.
-  - Prevents interior normal fields on $64\times64$ and $128\times128$ canvases from prematurely flattening to $N = [0, 0, 1]$, while maintaining 100% byte-exact parity with legacy $32\times32$ baseline sprites.
+  - Addresses interior normal fields flattening to $N = [0, 0, 1]$ on larger canvases. Recorded byte-exact parity applies to the tested legacy $32\times32$ baseline fixtures, not every possible sprite.
 * **Boundary-Aware Ink Line & Crevice Classification (`src/lib/ai/math/edtNormalMap.ts`):**
   - Replaces naive global luminance thresholds ($L < 0.22$) with contextual spatial heuristics:
     1. Dark boundary pixels touching transparent void ($L < 0.14$).
@@ -655,11 +627,11 @@ To ensure that the 2.5D Photometric Studio delivers mathematically sound volumet
     3. Near-black true ink lines ($L < 0.035$).
   - Prevents dark body colors (crimson $L=0.18$, navy $L=0.06$) from being falsely classified as unshaded line art.
 * **Monotonic Cel-Shading Ramp Clamping (`src/lib/ai/math/photometricLighting.ts`):**
-  - Ensures shadow luminance $L_{\text{shadow}} = \max(0.04, \min(0.78 L_{\text{base}}, L_{\text{base}} - 0.03))$ and deep crevice luminance $L_{\text{deep}} = \max(0.02, \min(0.60 L_{\text{base}}, L_{\text{base}} - 0.06))$ remain strictly darker than the base tone across the entire OKLCH luminance domain.
+  - Current mid/deep lightness uses factors 0.86/0.72 and minimum drops 0.025/0.05, with floors 0.04/0.02. Floors mean this is not a strict darker-than-base guarantee at every possible lightness. See the rendering contract.
 * **Dynamic Appendage Normal Stabilization & Drag Decoupling (`src/lib/ai/math/edtNormalMap.ts`, `src/lib/ai/math/photometricLighting.ts`):**
   - Decouples static pixel geometry (EDT, part segmentation, composite heightmap, bilateral filter, Laplace AO) from light-direction-coupled appendage normal stabilization.
-  - `applyAppendageStabilization` dynamically updates normals on narrow appendages (ears, horns, whiskers) in <0.01ms using `baseNormalField` and candidate pixel metadata.
-  - Guarantees 60 FPS live light dragging while achieving 100.000% byte-for-byte identity with fresh single-shot recomputation at any azimuth.
+  - Appendage stabilization updates narrow-feature normals using base fields, candidate metadata and light azimuth. End-to-end drag latency is unmeasured.
+  - Scheduled previews target responsive dragging; commit recomputes a fresh result. Recorded fixture parity does not guarantee every artwork/azimuth or 60 FPS.
 
 ---
 
@@ -763,67 +735,11 @@ The Playground (`/playground`) includes an interactive teaching animation board 
 
 ## 30. Neutral 2.5D Relighting & Smart-Effect Recipe Provenance (Phase 63)
 
-Phase 63 eliminates directional bias from base 2.5D heightmaps, normalizes pre-authored shading, and establishes a unified non-destructive recipe model for all generated graphics features.
+Legacy `LayerEffectRecipe` retains recognized kinds and bounded generic parameter containers as provenance. This is not a per-kind executable schema and does not make every generated tool editable/recomputable. Supported Edit FX workflows reload their saved controls; baked results remain raster buffers. Serialization/history retain supported metadata and pixels together. Merge/transform may detach single-source provenance; older readers can drop optional metadata.
 
-### 1. Neutral 2.5D Silhouette & Macro-Detail Reconstruction
-To ensure that relighting an artwork allows shadows and highlights to follow virtual light azimuth across $360^\circ$ without distortion:
-* **Decoupled Geometric Normals:** The fixed anatomical height prior (head/neck/torso height steps) from Phase 61 has been replaced by neutral macro-form and multi-scale material detail:
-  $$H_{\text{composite}}(p) = 0.70 \cdot H_{\text{macro}}(p) + 0.30 \cdot \left(\frac{H_{\text{micro}}(p)}{R_{\text{bevel}}}\right) \cdot \max(D)$$
-  The normal vector field $\mathbf{N}$ is derived purely from the silhouette contour, crevice boundaries, and surface curvature, remaining 100% independent of the virtual light source $\mathbf{L}$.
-* **Two-Sided Interior Ink Crevice Detection:** Single-sided luminance steps commonly represent authored cast shadows rather than anatomical crevices. The ink detector requires opposing luminance dips:
-  $$\min(L_{\text{left}} - L_{\text{pixel}}, L_{\text{right}} - L_{\text{pixel}}) \ge 0.12 \quad \lor \quad \min(L_{\text{up}} - L_{\text{pixel}}, L_{\text{down}} - L_{\text{pixel}}) \ge 0.12$$
-  This prevents painted shadow borders from being carved as permanent crevice valleys.
-* **Authored Ramp Hue/Chroma Clustering:** Connected-component flood fill clusters pixels along the same authored color ramp ($\Delta\text{hue} \le 35^\circ, \Delta\text{chroma} \le 0.25$), ensuring shaded zones form unified geometric surfaces rather than fracturing.
+Canonical research recipes are a different versioned contract, with bounded settings and source/normal fingerprints. Try a new look supports protected simplification, common stylized light and small tile scenes. Previews retain source pixels; worker generation/source freshness and ownership are checked before publishing ready buffers and one structural history step. Apply/Cancel/Undo/Redo and refusal are separate verified behaviors. Maximum 256 px/axis, 16 frames and 262,144 source pixels; scene search admits at most 16 tiles / 20,000 states.
 
-### 2. Source Shading Normalization
-When artists import or relight pre-shaded pixel art, the engine provides a controllable `sourceShadingRemoval` parameter ($0\% - 100\%$):
-* Evaluates luminance and chroma ratios relative to inferred light direction.
-* Conservatively normalizes directional value bands back toward the base palette tone prior to evaluating Blinn-Phong diffuse, specular, and OKLCH tone quantization.
-* Preserves hand-drawn pixel palette families with zero hue contamination.
-
-### 3. Non-Destructive Smart-Effect Recipe Architecture
-Every procedural or AI-assisted feature generates a structured `LayerEffectRecipe` attached to the output layer:
-
-```typescript
-export interface LayerEffectRecipe {
-  id: string;
-  kind: SmartEffectKind; // 'photometric' | 'auto-shade' | 'cast-shadow' | 'ground-shadow' | ...
-  version: 1;
-  sourceMode: 'composite-excluding-self' | 'active-layer' | 'selection';
-  params: Record<string, SmartEffectParameter>;
-  analysis?: {
-    formType?: 'character' | 'orb' | 'prop';
-    sourceLightAzimuth?: number;
-    sourceLightElevation?: number;
-    cueStrength?: number;
-    rationale?: string;
-  };
-  updatedAt: number;
-}
-```
-
-* **Zero-Latency Raster Caching:** The layer's raster bitmap is stored in `bufferRegistry` and IndexedDB `layerBlobs` for instant 60fps compositing without runtime recomputation.
-* **Atomic History Integration:** `PixelHistoryStep` records `layerEffect?: LayerEffectRecipe` and `layerBlendMode?: BlendMode`, so Undo/Redo restores pixel buffers, recipe metadata and the original compositing operation, including `source-atop` masked effects.
-* **Layers Panel Reopening (`Edit FX`):** Photometric layers display an `Edit FX` button in `LayersPanel.tsx`, reopening the interactive `PixelLightBulbGizmo` populated with the exact saved azimuth, elevation, brightness, and material parameters.
-* **P2P Collaboration Parity:** Collaborative structure payloads (`StructureLayer`) include `effect?: LayerEffectRecipe`, verified by `validateLayerEffect` during network ingestion.
-
-### 4. Discrete OKLCH Cel-Shading Ramps & Continuous 3D Specular Highlight Pill
-* **Discrete Shading Tones (1 Single / 2 Dual / 3 Trio):**
-  To maintain pixel art palette purity across all subjects (orbs, characters, props), the photometric engine evaluates non-linear diffuse signal thresholds partitioned by `shadingBands`:
-  - **Single (`1`):** 1 shadow tone ($S < T \rightarrow \text{ramp.shadow}, S \ge T \rightarrow \text{ramp.base}$).
-  - **Dual (`2`):** 2 shadow tones ($S < 0.48 \cdot T \rightarrow \text{ramp.deep}, S < T \rightarrow \text{ramp.shadow}, S \ge T \rightarrow \text{ramp.base}$).
-  - **Trio (`3`):** 3 shadow tones ($S < 0.32 \cdot T \rightarrow \text{ramp.deep}, S < 0.65 \cdot T \rightarrow \text{ramp.shadow}, S < T \rightarrow \text{ramp.soft}, S \ge T \rightarrow \text{ramp.base}$).
-  The soft penumbra tone (`ramp.soft`) is computed in perceptual OKLCH color space ($L_{\text{soft}} \approx 0.93 \cdot L_{\text{base}}$), ensuring natural luminance stepping without hue corruption.
-* **3D Specular Highlight Pill:**
-  - **Macro-Silhouette Normal Field:** Specular reflections are derived from the smooth inflated EDT dome (`specularNormalField`) with bilateral filtering ($r=1.5, \sigma=2.0$), preventing interior facial feature cliffs from producing reflective razor scars.
-  - **Physical Line-of-Sight Visibility Gate:** Enforces $\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$, guaranteeing specular glints never appear on unlit shadow surfaces.
-  - **Threshold-Gated Alpha:** Glints appear only where $I_{\text{spec}} > 0.35$; those pixels use $\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$. The threshold creates a hard entry edge.
-  - **Feature and Outline Shielding:** Facial features (`charFeatureMask`), ink lines (`charInkMask`), and dark outlines are strictly excluded from specular paint.
-
-### 5. Live Photometric Preview Session & Atomic Cancellation
-* **Session Encapsulation (`src/hooks/viewport/events/usePhotometricEvents.ts`):** When interacting with the on-canvas `PixelLightBulbGizmo`, an active session captures an immutable snapshot of the active layer's pre-rendered `ImageData` and existing `LayerEffectRecipe` metadata.
-* **Non-Blocking Asynchronous Preview:** Continuous pointer dragging triggers throttled photometric recalculations, blitting real-time lighting previews onto an ephemeral preview layer without freezing the main UI thread.
-* **Atomic Cancellation & Reversion:** Pressing `Escape` or clicking cancel invokes `cancelSession()`, instantly restoring pristine original pixel data and recipe metadata from the session snapshot. Committing (`Enter` or click outside) writes the finalized raster and recipe to the layer and pushes a unified undo/redo entry to `historyEngine`.
+The photometric base uses macro-form/material-scale inference but appendage stabilization can depend on light azimuth. Heuristic cue strength is not a calibrated probability. Source shading normalization is explicit and bounded, not general intrinsic-image decomposition. Current bulb glints, legacy pills and shared-light research rendering are distinct paths. [Rendering/recipe contract](docs/contracts/rendering.md), [phase evidence](docs/research/phase-implementation-status.md).
 
 ---
 
@@ -852,7 +768,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Non-Destructive Stored-Blob Assessment (`src/lib/recovery/recoveryDiagnosis.ts`):** `assessStoredProject` evaluates stored project health without mutating user state or allocating full raster buffers. Scans the complete `layerBlobs` compound-index key space `[projectId+id]` via keyset batch pagination (batches of 25). Probes a bounded 24-byte Blob slice (`record.blob.slice(0, 24)`) using `ImageHeaderProbe` to validate PNG format and dimensions without decoding the image. Ordinary zero-blob layers are intentionally valid transparent layers under hydration semantics. Diagnoses corrupted PNG headers, dimension mismatches, duplicate blob mappings, orphan blob records, embedded raster fields, and storage-record corruption. Stored-project assessment distinguishes: `valid`, `recoverable-envelope-exceeded`, `recoverable-blob-invalid`, `malformed`, `unsupported-version`, `unsafe-content`, `not-found`, `cancelled`, and `transient-load-failure`.
 
 ### 4. Streaming Store-Only ZIP32 Archive Writer Core (Phase 1B.3)
-* **Pure TypeScript Archive Writer Core (`src/lib/recovery/zipWriter.ts`):** Dependency-free streaming PKZIP 2.0 / ZIP32 implementation (`writeStoreOnlyZip`) serving as a low-level archive-writer foundation (not yet wired to IndexedDB or UI).
+* **Pure TypeScript Archive Writer Core (`src/lib/recovery/zipWriter.ts`):** Dependency-free streaming PKZIP 2.0 / ZIP32 implementation (`writeStoreOnlyZip`) serving as a low-level archive-writer foundation (the Phase 1B.1 foundation; later adapters/orchestration/UI wire it into stored recovery archives).
 * **Store-Only (Method 0) Streaming:** Eliminates CPU compression overhead, streaming uncompressed chunks directly to a consumer sink (`RecoveryZipSink`).
 * **Memory & Write Bounds:** Bounded to $O(1)$ payload-processing memory relative to payload size, payload sink writes capped at 64 KiB per write, and archive bookkeeping bounded at $O(\text{entry count})$ capped at 65,535 entries.
 * **Bit 3 + Bit 11 Data Descriptor Framing (`0x0808`):** Emits standard 16-byte signed Data Descriptors (`0x08074b50`) after each stream payload, enabling single-pass streaming CRC-32 calculation and size verification without modifying previously emitted local headers.
@@ -884,7 +800,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Responsive Cancellation:** Checks `signal?.aborted` immediately at function entry before preflight allocations; gives cancellation absolute priority over simultaneous probe failures during pending operations.
 * **Runtime Immutability:** Deep-freezes all candidate result trees, projects, and remap entries via `deepFreeze()`.
 ### 7. Trusted Recovery Orchestration & Atomic Recovered-Copy Persistence (Phase 1B.6)
-* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `sourceContentFingerprint` (covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to guarantee zero TOCTOU).
+* **Trusted Plan Preparation (`src/lib/recovery/recoveryOrchestrator.ts`):** Evaluates authoritative IndexedDB snapshots (`acquireStoredProjectSnapshot`) in memory. Computes dual SHA-256 binary fingerprints: `sourceContentFingerprint` (covering stored project record, exact UTF-8 `dataJson`, complete ordered blob keyspace, metadata, and 32-byte blob digests) and `commitPreimageFingerprint` (chaining source-content fingerprint with existing `recoveryRecords` ledger state to compare the preimage atomically and refuse changed source/ledger state).
 * **Token Branding & One-Use Semantics:** Protects candidate plans via module-private `WeakMap` token branding, enforcing one-use semantics (`TOKEN_ALREADY_CONSUMED`) and concurrent commit locking (`TOKEN_ALREADY_COMMITTING`).
 * **Atomic Persistence:** Re-evaluates exact source snapshot in-transaction with `Dexie.waitFor()` keepalive on asynchronous Web Crypto digests. Executes atomic persistence across `projects`, `layerBlobs`, and `recoveryRecords` in a single readwrite transaction, preserving the damaged source project untouched, persisting reconstructed data under a fresh collision-checked project ID (bounded retries $N=3$), remapping survivor blobs byte-for-byte, and appending resolution audit metadata. Rollback on mid-flight failure leaves zero partial destination state. Supports cooperative cancellation before, during, and after commit (`cancellationIgnoredPostCommit`).
 
@@ -928,14 +844,6 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 
 ### 10. Deferred Capabilities (Phase 2+ — Not Started)
 * **Phase 2+ Capabilities:** Long-term enhancements, WebGPU acceleration, and subsequent roadmap items remain strictly not started.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->
 
 ## Palette authoring follow-up — 2026-10-01
 

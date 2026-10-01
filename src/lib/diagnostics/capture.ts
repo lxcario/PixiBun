@@ -28,15 +28,18 @@ export function getDiagnosticsSettings(): DiagnosticsSettings {
     try {
       const raw = storage.getItem(SETTINGS_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw);
+        const parsed: unknown = JSON.parse(raw);
+        const settings = typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+          ? parsed as Record<string, unknown> : {};
         memorySettings = {
-          enabled: parsed.enabled ?? true,
-          relayOptIn: parsed.relayOptIn ?? false,
+          enabled: typeof settings.enabled === 'boolean' ? settings.enabled : true,
+          relayOptIn: settings.relayOptIn === true,
         };
         return memorySettings;
       }
     } catch {
-      // fallback to memory
+      // Invalid persisted consent must never inherit a previous opt-in.
+      memorySettings = { enabled: true, relayOptIn: false };
     }
   }
   return memorySettings;
@@ -46,7 +49,10 @@ export function setDiagnosticsSettings(
   partial: Partial<DiagnosticsSettings>
 ): DiagnosticsSettings {
   const current = getDiagnosticsSettings();
-  const updated: DiagnosticsSettings = { ...current, ...partial };
+  const updated: DiagnosticsSettings = {
+    enabled: typeof partial.enabled === 'boolean' ? partial.enabled : current.enabled,
+    relayOptIn: partial.relayOptIn === undefined ? current.relayOptIn : partial.relayOptIn === true,
+  };
   memorySettings = updated;
   const storage = getSafeStorage();
   if (storage) {

@@ -4,7 +4,7 @@
  * 
  * 🛡️ PixiBun Atelier — Autonomous Local CI/CD Quality Gate Runner
  * 
- * Executes sequential release-grade quality verification stages with fail-fast semantics:
+ * Executes configured local verification stages with fail-fast semantics:
  *   Stage 1: Documentation Integrity & Invariant Audit (verify:docs)
  *   Stage 2: Strict Static Typecheck (tsc --noEmit)
  *   Stage 3: Lint and accessibility rules (eslint)
@@ -51,7 +51,7 @@ const stages = [
     name: 'Stage 1: Documentation & Sync Invariant Audit',
     command: 'npm',
     args: ['run', 'verify:docs'],
-    description: 'Validates phase uniqueness, section monotonicity, test counters, and version parity.',
+    description: 'Checks local links, historical paths, generated discovery, selected source contracts and version parity.',
   },
   {
     name: 'Stage 2: Static Type Safety Invariant (0 Errors)',
@@ -99,7 +99,7 @@ async function runGate() {
     if (result.status !== 0) {
       log('');
       log(`${COLOR.bold}${COLOR.red}❌ FAILED: ${stage.name} (exited with code ${result.status}) [${stageDuration}s]${COLOR.reset}`);
-      log(`${COLOR.yellow}⚠️  Quality Gate intercepted a failure. Push/Release blocked.${COLOR.reset}`);
+      log(`${COLOR.yellow}⚠️  A configured check failed; this runner stopped. Hooks and external release policy are separate.${COLOR.reset}`);
       log('');
       process.exit(result.status ?? 1);
     }

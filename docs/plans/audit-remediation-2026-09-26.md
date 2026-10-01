@@ -1,5 +1,7 @@
 # Audit remediation plan — 2026-09-26
 
+> **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
+
 > Historical checklist for the 2026-09-26 audit. The current [Phase 77 status](../../TASKS.md) records metadata Undo and preflight rejection of structural edits above the history budget; the entries below retain their original assessment.
 
 Source: `PIXIBUN_AUDIT_RESULTS+DEEP.md`. The audit has 66 finding IDs, despite its original 60-item summary. This checklist tracks the 41 findings assessed as open or partial on 2026-09-26. A checked item means the behavior has been changed and locally verified; a partial finding stays unchecked until its remaining claim is addressed.
@@ -85,11 +87,3 @@ Source: `PIXIBUN_AUDIT_RESULTS+DEEP.md`. The audit has 66 finding IDs, despite i
 The original audit's other uncertainty items remain outside the 41-item remediation checklist: U-2 source-file review, U-3 test-quality review, U-4 full historical-document review, U-5 remaining attributions, U-7 old benchmark tables, U-9 genuine IFF fixtures, and U-10 empirical reproduction of the former `stco` bug. U-11 is clarified in current docs: the v1 bridge has one session and supports one host plus one guest; general multi-peer convergence remains unverified and is not claimed as a v1 feature. U-8 now has a two-frame, two-layer browser round trip, though this does not exhaust every possible project shape.
 
 After each phase: run focused tests, TypeScript, lint, and the relevant TestSprite test if the changed build is reachable. Preserve existing uncommitted work throughout.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../research/session-ui-ux-2026-10-01.md), [palette tools](../research/palette-creator-2026-10-01.md), [cycle scope](../research/palette-cycle-scope-2026-10-01.md), [export timing](../research/palette-cycle-export-2026-10-01.md) and [GIF correction](../research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

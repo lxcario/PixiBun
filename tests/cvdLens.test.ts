@@ -29,23 +29,23 @@ import { installDocumentCanvasMock, MockCanvas, MockCtx } from './helpers/mockCa
 describe('Machado 2009 CVD matrices — known reference vectors', () => {
   it('protanopia maps pure red to its published severity-1.0 response', () => {
     const [r, g, b] = applyCvdLensToPixel(255, 0, 0, 'protanopia');
-    expect(r).toBeCloseTo(0.152286 * 255, 3); // 38.82903
-    expect(g).toBeCloseTo(0.114503 * 255, 3); // 29.198265
+    expect(r).toBeCloseTo(108.785160, 3); // linear-RGB transform, encoded to sRGB
+    expect(g).toBeCloseTo(95.026841, 3);
     expect(b).toBeCloseTo(0, 3); // negative clamp
   });
 
   it('deuteranopia maps pure green to its published response', () => {
     const [r, g, b] = applyCvdLensToPixel(0, 255, 0, 'deuteranopia');
-    expect(r).toBeCloseTo(0.860646 * 255, 3);
-    expect(g).toBeCloseTo(0.672501 * 255, 3);
-    expect(b).toBeCloseTo(0.04294 * 255, 3);
+    expect(r).toBeCloseTo(238.693017, 3);
+    expect(g).toBeCloseTo(214.008173, 3);
+    expect(b).toBeCloseTo(58.443926, 3);
   });
 
   it('tritanopia maps pure blue to its published response with negative clamp', () => {
     const [r, g, b] = applyCvdLensToPixel(0, 0, 255, 'tritanopia');
     expect(r).toBeCloseTo(0, 3); // -0.178779 * 255 clamped
-    expect(g).toBeCloseTo(0.147602 * 255, 3);
-    expect(b).toBeCloseTo(0.3039 * 255, 3);
+    expect(g).toBeCloseTo(107.196897, 3);
+    expect(b).toBeCloseTo(149.756093, 3);
   });
 
   it('each published matrix row sums to 1 so grays are invariant', () => {
@@ -63,12 +63,12 @@ describe('Machado 2009 CVD matrices — known reference vectors', () => {
 
   it('monochromacy collapses every hue to Rec.709 luminance', () => {
     const [r, g, b] = applyCvdLensToPixel(255, 0, 0, 'monochromacy');
-    expect(r).toBeCloseTo(0.2126 * 255, 3);
-    expect(g).toBeCloseTo(0.2126 * 255, 3);
-    expect(b).toBeCloseTo(0.2126 * 255, 3);
+    expect(r).toBeCloseTo(127.10218, 3);
+    expect(g).toBeCloseTo(127.10218, 3);
+    expect(b).toBeCloseTo(127.10218, 3);
 
     const [r2, g2, b2] = applyCvdLensToPixel(30, 144, 255, 'monochromacy');
-    const lum = 0.2126 * 30 + 0.7152 * 144 + 0.0722 * 255;
+    const lum = 142.939972; // linear Rec.709 luminance re-encoded to sRGB
     expect(r2).toBeCloseTo(lum, 3);
     expect(g2).toBeCloseTo(lum, 3);
     expect(b2).toBeCloseTo(lum, 3);
@@ -96,7 +96,7 @@ describe('Machado 2009 CVD matrices — known reference vectors', () => {
     expect(out[7]).toBe(128);
     expect(out[11]).toBe(0);
     // First pixel red channel clamped/transformed by the protanopia matrix
-    expect(out[0]).toBeCloseTo(0.152286 * 255, 0);
+    expect(out[0]).toBeCloseTo(109, 0);
   });
 });
 describe('Silhouette / Squint Mode transform (#140C1E over white)', () => {

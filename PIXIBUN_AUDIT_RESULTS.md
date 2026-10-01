@@ -1,5 +1,7 @@
 # PIXIBUN — Deep Code & Documentation Audit Results
 
+> **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
+
 > **Subsequent session — 2026-10-01:** The six-phase 2026-09-30 audit implementation is recorded in the [phase report](docs/research/phase-implementation-status.md) and [completion record](docs/research/session-completion-2026-10-01.md). The dated findings and counts below remain historical evidence.
 
 > Historical audit of the 2026-09-14 tree. Current remediation and verification are recorded in [TASKS.md](TASKS.md) Phase 77 and [CHANGELOG.md](CHANGELOG.md); file locations, test counts, and open findings below describe the older snapshot.
@@ -219,11 +221,3 @@ Date (UTC): 2026-09-14. Status: **100% Remediated & Verified**. All Critical, Hi
 | **15. [Cosmetic] Historical Count Qualification** | Qualified historical phase counts in `TASKS.md` and `LOGS.md` as "at the time" snapshots. | `TASKS.md`, `LOGS.md`. |  **Resolved** |
 | **16. [Cosmetic] Repository Hygiene** | Cleaned up all temporary audit artifacts from workspace; verified git status clean. | Working tree audit. |  **Resolved** |
 | **17. [High] Photometric Live Drag Decoupling & Appendage Normal Stabilization** | Decoupled static EDT geometry from dynamic light azimuth via `applyAppendageStabilization`. Re-stabilizes narrow appendages in <0.01ms per frame from `baseNormalField`. Guarantees 0-pixel discrepancy between live dragging and fresh single-shot recomputation at any azimuth. Ensures explicit commit-time re-render in `usePhotometricEvents.ts`. | `tests/photometricNonDestructive.test.ts` (15 tests pass; live azimuth sweep test passes with 0 pixel difference). |  **Resolved** |
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-This document retains its dated findings and verification scope. The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

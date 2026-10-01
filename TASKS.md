@@ -1,5 +1,7 @@
 # Build Plan — PixiBun
 
+> **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
+
 ## Studio publication follow-up — 2026-10-01
 
 - [x] Keep one desktop header row with grouped File/Studio actions and direct adjacent Mirror, Zoom/Fit and View controls.
@@ -23,7 +25,7 @@ This audit's six phases are separate from the historical product phase numbering
 
 > **Release sign-off:** v1.14.1 was signed off for production on 2026-09-28 after the live service-worker MIME fix and offline reload verification. See [v1.14.1 sign-off](docs/releases/v1.14.1-signoff.md) for evidence and deferred checks. That release excludes later roadmap work and the separate six-phase local audit implementation above.
 
-> **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
+> **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, algorithm assertions and engineering observations, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## UX follow-up — 2026-09-30
 
@@ -603,10 +605,10 @@ This audit's six phases are separate from the historical product phase numbering
 ---
 
 ## Phase 56 — Autonomous Local CI/CD Quality Gate & Git Pre-Push Protection
-**Goal:** Establish an autonomous, zero-cost, fail-fast local Quality Gate runner (`npm run gate`) and automated Git pre-push hook (`.git/hooks/pre-push`) guaranteeing that 0 broken commits, type errors, test regressions, or documentation drift can leave the developer workstation, bypassing cloud CI billing quotas.
+**Goal:** Establish an autonomous, zero-cost, fail-fast local Quality Gate runner (`npm run gate`) and automated Git pre-push hook (`.git/hooks/pre-push`) checking configured working-tree invariants before a normal push; hooks are bypassable and do not guarantee correctness of all pushed commits, bypassing cloud CI billing quotas.
 
 **Evidence & Rationale:**
-- Private Cloud CI Constraints: GitHub Actions billing limits on private repositories can shut off cloud pipelines unexpectedly. An internal, zero-dependency Node.js ESM verification runner executing in ~16s guarantees continuous verification before every remote push.
+- Private Cloud CI Constraints: GitHub Actions billing limits on private repositories can shut off cloud pipelines unexpectedly. An internal, zero-dependency Node.js ESM verification runner executing in ~16s provides a convenience check before non-bypassed pushes.
 - Automated Pre-Push Gatekeeper: By installing a pre-push hook via npm's `prepare` lifecycle, any developer or agent attempting `git push` triggers full documentation checks, static type checks, and 609 Vitest unit tests. If any stage fails, the push is aborted before leaving the workstation.
 - Open Source Governance: Authored `CONTRIBUTING.md` and expanded `SECURITY.md` to formally document our zero-dependency pure TypeScript architecture and defense-in-depth invariants.
 
@@ -1943,11 +1945,3 @@ The following claims from preliminary inspection were investigated and confirmed
 
 ## Phase 8 — Data Integrity, Truthful Exports & Verification Harness
 **Status:** Complete (2026-08-25)
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

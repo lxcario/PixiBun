@@ -37,7 +37,7 @@ export const ViewportLensFilters: React.FC = () => {
           <filter
             key={mode}
             id={CVD_FILTER_IDS[mode]}
-            colorInterpolationFilters="sRGB"
+            colorInterpolationFilters="linearRGB"
             x="0"
             y="0"
             width="100%"

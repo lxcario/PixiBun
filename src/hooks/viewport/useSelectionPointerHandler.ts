@@ -71,7 +71,7 @@ export function useSelectionPointerHandler({
 
   const onPointerDown = (e: React.PointerEvent, coords: Point): boolean => {
     // Selection Drag Handler
-    if (tools.activeTool.startsWith('select-')) {
+    if (tools.activeTool.startsWith('select-') && !e.altKey) {
       const activeBox = floatingSelection || selection;
       if (
         activeBox &&

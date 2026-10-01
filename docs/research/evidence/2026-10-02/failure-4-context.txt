@@ -1,0 +1,343 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: recoveryUIFlow.spec.ts >> Recovery UI, Safe Modes & Repair Wizard (E2E) >> opening damaged project from gallery opens recovery modal while leaving active workspace intact
+- Location: tests\e2e\recoveryUIFlow.spec.ts:270:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: /Gallery/i })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=f1e1]:
+  - link "Skip to workspace" [ref=f1e2] [cursor=pointer]:
+    - /url: /studio#main-workspace
+  - generic [ref=f1e4]:
+    - banner [ref=f1e5]:
+      - group "Project controls" [ref=f1e6]:
+        - link "PixiBun Home" [ref=f1e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f1e8]:
+            - img "Bun, the PixiBun bunny" [ref=f1e10]
+            - generic [ref=f1e174]:
+              - generic [ref=f1e175]: PIXIBUN
+              - generic [ref=f1e176]: ATELIER
+        - button "File" [ref=f1e177]:
+          - text: File
+          - generic [ref=f1e178]: ▼
+        - button "Rename project Untitled Sprite" [ref=f1e179] [cursor=pointer]: Untitled Sprite
+        - generic "Canvas size · change it in File" [ref=f1e180]: 32×32
+        - button "Save now" [active] [ref=f1e181]:
+          - generic [ref=f1e182]: Save
+        - generic [ref=f1e184]:
+          - button "Undo last action" [ref=f1e186] [cursor=pointer]
+          - generic [ref=f1e187]:
+            - button "Redo last action" [disabled]
+      - group "Drawing controls" [ref=f1e188]:
+        - generic "Tool options rail" [ref=f1e189]:
+          - generic [ref=f1e190]: "Pen:"
+          - button "Brush size 1 pixels" [ref=f1e192]:
+            - generic [ref=f1e193]: Size
+            - generic [ref=f1e194]: 1 px
+            - generic [ref=f1e195]: ▾
+      - generic [ref=f1e196]:
+        - group "Canvas controls" [ref=f1e197]:
+          - group "Mirror drawing" [ref=f1e198]:
+            - generic [ref=f1e199]: Mirror
+            - button "Horizontal symmetry" [ref=f1e201] [cursor=pointer]
+            - button "Vertical symmetry" [ref=f1e203] [cursor=pointer]
+          - generic [ref=f1e205]:
+            - generic [ref=f1e206]:
+              - button "Zoom Out" [ref=f1e207] [cursor=pointer]: −
+              - button "Zoom 1600 percent. Choose zoom level" [ref=f1e209]: 1600%
+              - button "Zoom In" [ref=f1e210] [cursor=pointer]: +
+            - button "Fit Canvas to Viewport (Ctrl+0)" [ref=f1e212] [cursor=pointer]: Fit
+          - button "View options menu" [ref=f1e216] [cursor=pointer]:
+            - generic [ref=f1e217]:
+              - generic [ref=f1e218]: View
+              - generic "1 active view options" [ref=f1e219]
+            - generic [ref=f1e220]: ▼
+        - group "Studio settings and help" [ref=f1e221]:
+          - button "Studio options" [ref=f1e222] [cursor=pointer]:
+            - generic [ref=f1e223]: Studio
+            - generic [ref=f1e224]: ▼
+        - button "Export drawing" [ref=f1e226]:
+          - generic [ref=f1e227]: Export
+    - status [ref=f1e229]: Changes saved
+    - generic [ref=f1e230]:
+      - complementary [ref=f1e231]:
+        - generic [ref=f1e232]:
+          - generic [ref=f1e233]:
+            - button "Pen" [ref=f1e235] [cursor=pointer]
+            - button "Bézier Curve" [ref=f1e237] [cursor=pointer]
+            - button "Eraser" [ref=f1e239] [cursor=pointer]
+            - button "Flood Fill" [ref=f1e241] [cursor=pointer]
+            - button "Dither Brush" [ref=f1e243] [cursor=pointer]
+            - button "Color Replace" [ref=f1e245] [cursor=pointer]
+            - button "Erase Sampled Color" [ref=f1e247] [cursor=pointer]
+          - generic [ref=f1e248]:
+            - button "Marquee Box" [ref=f1e251] [cursor=pointer]
+            - button "Lasso Select" [ref=f1e253] [cursor=pointer]
+            - button "Magic Wand" [ref=f1e255] [cursor=pointer]
+          - generic [ref=f1e256]:
+            - button "Line" [ref=f1e259] [cursor=pointer]
+            - button "2:1 Iso Line" [ref=f1e261] [cursor=pointer]
+            - button "Rectangle" [ref=f1e263] [cursor=pointer]
+            - button "Ellipse" [ref=f1e265] [cursor=pointer]
+          - button "Normal Chisel" [ref=f1e269] [cursor=pointer]
+          - button "Eyedropper" [ref=f1e273] [cursor=pointer]
+        - generic [ref=f1e274]:
+          - generic [ref=f1e275]:
+            - button "Swap colors (X)" [ref=f1e276] [cursor=pointer]: ⇄
+            - button "Reset default black and white colors (Shift+D)" [ref=f1e277] [cursor=pointer]
+            - 'button "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap" [ref=f1e278] [cursor=pointer]'
+            - 'button "Primary color #3A2E4C. Click for quick swatches, double click for picker, right click to swap" [ref=f1e279] [cursor=pointer]'
+          - generic [ref=f1e280]:
+            - generic [ref=f1e281]:
+              - 'button "#DDDFDF (Click: Primary | Right-click: Secondary)" [ref=f1e282] [cursor=pointer]'
+              - 'button "#DDDDDF (Click: Primary | Right-click: Secondary)" [ref=f1e283] [cursor=pointer]'
+              - 'button "#D0C4DF (Click: Primary | Right-click: Secondary)" [ref=f1e284] [cursor=pointer]'
+              - 'button "#DCABDF (Click: Primary | Right-click: Secondary)" [ref=f1e285] [cursor=pointer]'
+            - button "Quick Swatches Flyout" [ref=f1e286] [cursor=pointer]
+      - main "Pixel art canvas workspace" [ref=f1e290]:
+        - application "Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan." [ref=f1e291]
+      - complementary [ref=f1e293]:
+        - generic [ref=f1e294]:
+          - button "Layers" [ref=f1e295] [cursor=pointer]
+          - button "Palette" [ref=f1e297] [cursor=pointer]
+          - button "PixiTools" [ref=f1e299] [cursor=pointer]
+        - generic [ref=f1e302]:
+          - generic [ref=f1e303]:
+            - generic "Each frame has its own layer pixels. A new blank frame keeps the layer names and settings." [ref=f1e304]:
+              - text: Frame 1 · Layers
+              - generic [ref=f1e305]: (1)
+            - generic [ref=f1e306]:
+              - button "Add New Layer" [ref=f1e307]
+              - button "Duplicate Layer" [ref=f1e309]
+              - button "Merge Down" [disabled] [ref=f1e311]
+              - button "Delete Layer" [disabled] [ref=f1e313]
+          - generic [ref=f1e315]:
+            - generic [ref=f1e316]:
+              - generic [ref=f1e317]: Opacity
+              - slider "Layer opacity" [ref=f1e318] [cursor=pointer]: "100"
+              - generic [ref=f1e319]: 100%
+            - generic [ref=f1e320]:
+              - generic [ref=f1e321]: Blend
+              - combobox "Layer blend mode" [ref=f1e322] [cursor=pointer]:
+                - option "Normal" [selected]
+                - option "Multiply"
+                - option "Screen"
+                - option "Overlay"
+                - option "Color Dodge"
+                - option "On artwork only"
+          - generic [ref=f1e324]:
+            - generic [ref=f1e325]:
+              - button "Reorder layer Base Layer" [disabled] [ref=f1e326]:
+                - generic [ref=f1e327]: ⠿
+              - generic [ref=f1e328]:
+                - button "Select layer Base Layer. Double click to rename" [ref=f1e329] [cursor=pointer]: Base Layer
+                - button "Rename layer Base Layer" [ref=f1e330] [cursor=pointer]
+            - generic [ref=f1e331]:
+              - button "Lock layer Base Layer" [ref=f1e332]
+              - button "Hide layer Base Layer" [ref=f1e333]
+    - contentinfo [ref=f1e334]:
+      - generic [ref=f1e335]:
+        - generic [ref=f1e336]:
+          - generic [ref=f1e337]:
+            - button "Play" [ref=f1e338]
+            - button "Previous Frame (,)" [ref=f1e341]
+            - button "Next Frame (.)" [ref=f1e343]
+            - button "Repeat" [ref=f1e345]
+          - generic [ref=f1e349]:
+            - button "Preview speed" [ref=f1e351]:
+              - generic [ref=f1e352]: Preview
+              - generic [ref=f1e353]: 1×
+              - generic [ref=f1e354]: ▾
+            - generic [ref=f1e355]:
+              - generic [ref=f1e356]: Frame time
+              - spinbutton "Active frame duration in milliseconds" [ref=f1e357]: "100"
+              - generic [ref=f1e358]: ms
+            - button "Onion Skin" [ref=f1e359]
+        - generic [ref=f1e362]:
+          - button "+ Frame" [ref=f1e363]:
+            - generic [ref=f1e364]: Frame
+          - group [ref=f1e366]:
+            - generic "Frame actions" [ref=f1e367] [cursor=pointer]:
+              - text: Frame actions
+              - generic [ref=f1e368]: ▾
+          - button "Collapse Timeline" [ref=f1e370]:
+            - generic [ref=f1e371]:
+              - generic [ref=f1e372]: ▼
+              - generic [ref=f1e373]: Collapse
+      - generic [ref=f1e374]:
+        - 'button "Select frame 1. Duration: 100ms. Drag to reorder." [ref=f1e376]':
+          - generic:
+            - generic: "#1"
+            - generic: 100ms
+        - button "Clips" [ref=f1e377]
+    - generic [ref=f1e378]:
+      - generic [ref=f1e379]: "X: — Y: —"
+      - generic [ref=f1e382]: 32×32
+      - generic [ref=f1e385]: 1600%
+      - generic [ref=f1e387]: Frame 1/1
+      - generic [ref=f1e389]: Base Layer
+      - generic [ref=f1e390]: pen
+      - status "All changes saved to local storage" [ref=f1e395]:
+        - generic [ref=f1e397]: Saved
+  - alert [ref=f1e398]
+```
+
+# Test source
+
+```ts
+  231 |       });
+  232 |     }, corruptProjectId);
+  233 | 
+  234 |     await page.reload();
+  235 |     await page.waitForLoadState('domcontentloaded');
+  236 | 
+  237 |     // Recovery modal appears
+  238 |     await expect(page.getByText(/Project Recovery & Safe Mode/i)).toBeVisible({ timeout: 10000 });
+  239 | 
+  240 |     // Click Cancel / Keep Editing
+  241 |     const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();
+  242 |     await cancelBtn.click();
+  243 | 
+  244 |     // Modal is dismissed, but safe recovery banner is visible
+  245 |     await expect(page.getByTestId('pending-recovery-banner')).toBeVisible({ timeout: 5000 });
+  246 |     await expect(page.getByText(/A previous project requires safe recovery/i)).toBeVisible();
+  247 | 
+  248 |     // User can continue drawing in their clean workspace
+  249 |     const canvas = page.getByTestId('main-composite-canvas');
+  250 |     await expect(canvas).toBeVisible();
+  251 | 
+  252 |     // Clicking "Review Recovery Plan" re-opens the recovery modal
+  253 |     await page.getByTestId('review-recovery-button').click();
+  254 |     await expect(page.getByText(/Project Recovery & Safe Mode/i)).toBeVisible();
+  255 | 
+  256 |     // Close again
+  257 |     await page.getByRole('button', { name: /Cancel/i }).first().click();
+  258 |     await expect(page.getByTestId('pending-recovery-banner')).toBeVisible();
+  259 | 
+  260 |     // Dismissing banner removes it and clears sessionStorage
+  261 |     await page.getByTestId('dismiss-recovery-button').click();
+  262 |     await expect(page.getByTestId('pending-recovery-banner')).not.toBeVisible();
+  263 | 
+  264 |     const pendingSessionKey = await page.evaluate(() => {
+  265 |       return sessionStorage.getItem('pixibun:pending-recovery-source');
+  266 |     });
+  267 |     expect(pendingSessionKey).toBeNull();
+  268 |   });
+  269 | 
+  270 |   test('opening damaged project from gallery opens recovery modal while leaving active workspace intact', async ({
+  271 |     page,
+  272 |   }) => {
+  273 |     await page.goto('/studio');
+  274 |     await page.waitForLoadState('domcontentloaded');
+  275 | 
+  276 |     // 1. Draw something in the active workspace and explicitly save it so it's the latest project
+  277 |     const canvas = page.getByTestId('main-composite-canvas');
+  278 |     await expect(canvas).toBeVisible();
+  279 |     const box = await canvas.boundingBox();
+  280 |     expect(box).not.toBeNull();
+  281 |     await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  282 | 
+  283 |     await page.getByTestId('save-button').click();
+  284 |     await expect(page.getByText(/Saved .* to browser storage/)).toBeVisible();
+  285 | 
+  286 |     // 2. Seed a damaged project in IndexedDB that is NOT the latest (older timestamp 1000)
+  287 |     const galleryDamagedId = 'e2e-gallery-damaged-project';
+  288 |     await page.evaluate(async (projectId) => {
+  289 |       const db = (window as unknown as { __pixibunDb: DexieLike }).__pixibunDb;
+  290 | 
+  291 |       const projectJson = {
+  292 |         format: 'pixibun-project',
+  293 |         version: 3,
+  294 |         name: 'Gallery Damaged Project',
+  295 |         width: 32,
+  296 |         height: 32,
+  297 |         fps: 12,
+  298 |         createdAt: 1000,
+  299 |         updatedAt: 1000,
+  300 |         loopMode: 'repeat',
+  301 |         onionSkin: { enabled: false, prevFrames: 1, nextFrames: 1, opacity: 0.35, prevColor: '#7fae6b', nextColor: '#c792df' },
+  302 |         customRamps: [],
+  303 |         palettes: [{ id: 'palette-default', name: 'Default', colors: ['#000000', '#ffffff'] }],
+  304 |         currentPaletteId: 'palette-default',
+  305 |         clips: [],
+  306 |         frames: [{ id: 'frame-1', durationMs: 83, layers: [{ id: 'l1', name: 'L1', visible: true, locked: false, opacity: 1, blendMode: 'source-over' }] }],
+  307 |       };
+  308 | 
+  309 |       await db.projects.put({
+  310 |         id: projectId,
+  311 |         name: 'Gallery Damaged Project',
+  312 |         width: 32,
+  313 |         height: 32,
+  314 |         fps: 12,
+  315 |         createdAt: 1000,
+  316 |         updatedAt: 1000,
+  317 |         dataJson: JSON.stringify(projectJson),
+  318 |         thumbnailDataUrl: '',
+  319 |       });
+  320 | 
+  321 |       await db.layerBlobs.put({
+  322 |         projectId,
+  323 |         layerId: 'l1',
+  324 |         frameIndex: 0,
+  325 |         blob: new Blob([new Uint8Array([0x00, 0x00, 0x00, 0x00])], { type: 'image/png' }),
+  326 |         updatedAt: 1000,
+  327 |       });
+  328 |     }, galleryDamagedId);
+  329 | 
+  330 |     // 3. Open Gallery Modal
+> 331 |     await page.getByRole('button', { name: /Gallery/i }).click();
+      |                                                          ^ Error: locator.click: Test timeout of 30000ms exceeded.
+  332 |     const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
+  333 |     await expect(modal).toBeVisible();
+  334 | 
+  335 |     // Click on Gallery Damaged Project card
+  336 |     const projectCard = modal.getByRole('button', { name: /Open project Gallery Damaged Project/i });
+  337 |     await expect(projectCard).toBeVisible();
+  338 |     await projectCard.click();
+  339 | 
+  340 |     // Gallery surfaces error banner indicating recovery is required
+  341 |     await expect(modal.getByText(/requires recovery and cannot be opened directly/i)).toBeVisible();
+  342 | 
+  343 |     // Close Gallery modal via Escape
+  344 |     await page.keyboard.press('Escape');
+  345 |     await expect(modal).not.toBeVisible();
+  346 | 
+  347 |     // Recovery Modal opened directly with custody assurances
+  348 |     await expect(page.getByText(/Project Recovery & Safe Mode/i)).toBeVisible({ timeout: 10000 });
+  349 |     await expect(page.getByText('Original Project Preserved Untouched')).toBeVisible();
+  350 | 
+  351 |     // Cancel recovery modal
+  352 |     await page.getByRole('button', { name: /Cancel/i }).first().click();
+  353 |     await expect(page.getByText(/Project Recovery & Safe Mode/i)).not.toBeVisible();
+  354 | 
+  355 |     // After cancelling, pending recovery banner appears at the top of the studio
+  356 |     const banner = page.getByTestId('pending-recovery-banner');
+  357 |     await expect(banner).toBeVisible();
+  358 | 
+  359 |     // Active project canvas should still be intact and visible
+  360 |     await expect(canvas).toBeVisible();
+  361 |   });
+  362 | });
+  363 | 
+```

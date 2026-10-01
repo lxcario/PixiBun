@@ -1,6 +1,6 @@
 # PixiBun UX changelog — 2026-09-29–30
 
-Test counts below are observations made at each step. As of 2026-10-01, the discovered inventory is 1,482 unit/integration tests in 144 suites and 149 Chromium tests in 33 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
+Test counts below are observations made at each step. At the glint checkpoint on 2026-10-01, the discovered inventory was 1,482 unit/integration tests in 144 suites and 149 Chromium tests in 33 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
 
 ## Single-row header and visible glints — 2026-10-01
 
@@ -63,11 +63,3 @@ The 2026-09-29 entries below record the earlier implementation stage. The direct
 - The optimized production build passed. `git diff --check` found no whitespace errors.
 - The in-app browser loaded `/studio` but its viewport displayed the deliberate `Desk Too Small` gate; desktop screenshots and browser checks were used at 1024px and 1280px.
 - TestSprite verification could not run because the `testsprite` CLI is not installed in this environment. No new TestSprite project was created.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

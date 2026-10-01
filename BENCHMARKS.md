@@ -2,15 +2,15 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-Current suite inventory: 1502 unit tests across 149 suites. Historical measurements below retain their original test counts and timings.
+Current discovery is in [generated/test-inventory.json](docs/generated/test-inventory.json); actual execution is in [current status](docs/current-status.md). Historical measurements retain their original counts and timings.
 
-Latest glint visibility follow-up: the full gate passed in 59.18s, including all 1,482 tests (14.30s Vitest duration) and production compilation (7.74s gate stage). Three focused Chromium scenarios passed in 12.8s. These are local run observations, not a general performance guarantee. [Gate log](docs/research/evidence/2026-10-01/pixel-glint-gate.log), [browser log](docs/research/evidence/2026-10-01/pixel-glint-browser.log).
+Recorded glint checkpoint — 1 October 2026: the full gate passed in 59.18s, including all 1,482 tests (14.30s Vitest duration) and production compilation (7.74s gate stage). Three focused Chromium scenarios passed in 12.8s. These are local run observations, not a general performance guarantee. [Gate log](docs/research/evidence/2026-10-01/pixel-glint-gate.log), [browser log](docs/research/evidence/2026-10-01/pixel-glint-browser.log).
 
 **Audit session — 2026-10-01:** The recorded Phase 6 five-stage gate passed in 45.50 seconds on the supported workspace-local Node 22.23.3 runtime. Its 134-test editor run passed in 2.1 minutes. Research previews admit at most 256 pixels per axis, 16 frames and 262,144 source pixels, with a 30-second worker deadline; tile search admits at most 16 tiles and 20,000 states. These bounds and estimated reservations do not establish a measured heap peak, 60 fps or long-duration device behavior. See the [session record](docs/research/session-completion-2026-10-01.md) for execution scope and later UI additions.
 
 Current history-backed structural edits estimate both the prior-state Undo snapshot and projected Redo snapshot before mutation. An individual edit that exceeds the 64 MiB history budget is rejected; the historical tables below describe retained pixel-step capacity for admitted edits.
 
-> **Environment Note:** The older micro-benchmark tables outside §7 do not record exact hardware and have not been reproduced for this audit; treat them as historical observations. §7 records a fresh run with named hardware. Automated tests in `tests/benchmark.test.ts` enforce generous latency ceilings rather than identical machine-specific timings.
+> **Environment Note:** The older micro-benchmark tables outside §7 do not record exact hardware and have not been reproduced for this audit; treat them as historical observations. §7 retains a 26 September run with named hardware; it is not a fresh run of this remediation. Automated tests in `tests/benchmark.test.ts` enforce generous latency ceilings rather than identical machine-specific timings.
 
 ---
 
@@ -41,20 +41,20 @@ The palette cycling engine operates via an allocation-free per-pixel 32-bit pack
 **File:** [`src/lib/engine/historyEngine.ts`](src/lib/engine/historyEngine.ts)  
 **Stack Ceilings:** 50 undo steps with independent 50-step redo stack (constrained by a unified 64 MiB combined history byte envelope); new edits clear redo
 
-Each pixel history step in this modeled analysis represents a full-canvas single-layer modification storing uncompressed 32-bit RGBA `ImageData` ($width \times height \times 4\text{ bytes}$) plus a 512-byte object overhead (`calculateStepBytes` in `src/lib/engine/historyEngine.ts`).
+Each modeled pixel history step stores full-canvas single-layer RGBA ($width \times height \times 4$ bytes) plus the engine's fixed 512-byte accounting allowance. That allowance is not a measured JavaScript object size. Replay baselines and browser backing copies are separate from this table.
 
 ### Memory Scaling Analysis
 
-| Canvas Size | Bytes per Pixel | Size per Step | Theoretical 50 Steps (Uncapped) | Actual Max Steps under 64 MiB Cap |
+| Canvas Size | Bytes per Pixel | Accounted Bytes per Step | Modeled 50 Steps, MiB (Uncapped) | Max Steps under 64 MiB Cap |
 |---|---|---|---|---|
-| **16 × 16** | 4 bytes | $1.0\text{ KB}$ | **$51.2\text{ KB}$** | 50 steps |
-| **32 × 32** (Standard) | 4 bytes | $4.1\text{ KB}$ | **$204.8\text{ KB}$** | 50 steps |
-| **64 × 64** | 4 bytes | $16.4\text{ KB}$ | **$819.2\text{ KB}$** | 50 steps |
-| **128 × 128** | 4 bytes | $65.5\text{ KB}$ | **$3.28\text{ MB}$** | 50 steps |
-| **256 × 256** | 4 bytes | $262.1\text{ KB}$ | **$13.11\text{ MB}$** | 50 steps |
-| **512 × 512** | 4 bytes | $1.05\text{ MB}$ | **$52.43\text{ MB}$** | ~50 steps |
-| **1024 × 1024** | 4 bytes | $4.19\text{ MB}$ | **$209.72\text{ MB}$** | 15 steps (16 raw RGBA frames exceed 64 MiB by 8 KB with +512B overhead) |
-| **2048 × 2048** (Envelope Max) | 4 bytes | $16.78\text{ MB}$ | **$838.86\text{ MB}$** | 3 steps (4 raw RGBA frames exceed 64 MiB by 2 KB with +512B overhead) |
+| **16 × 16** | 4 | 1,536 | 0.073 | 50 |
+| **32 × 32** | 4 | 4,608 | 0.220 | 50 |
+| **64 × 64** | 4 | 16,896 | 0.806 | 50 |
+| **128 × 128** | 4 | 66,048 | 3.149 | 50 |
+| **256 × 256** | 4 | 262,656 | 12.524 | 50 |
+| **512 × 512** | 4 | 1,049,088 | 50.024 | 50 |
+| **1024 × 1024** | 4 | 4,194,816 | 200.024 | 15 |
+| **2048 × 2048** | 4 | 16,777,728 | 800.024 | 3 |
 
 > **Mathematical Note on 64 MiB Cap & Eviction Accounting:** Production code in `src/lib/engine/historyEngine.ts` enforces `DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024` (64 MiB = 67,108,864 bytes). For resolutions $512 \times 512$ and below, 50 steps fit within 64 MiB. For $1024 \times 1024$ and $2048 \times 2048$, a naive division of raw pixel bytes ($64\text{ MiB} / 4\text{ MiB} = 16$ and $64\text{ MiB} / 16\text{ MiB} = 4$) does not account for the +512-byte per-step metadata overhead (`calculateStepBytes`). In actual execution, 16 steps at $1024\times1024$ total $67,117,056\text{ bytes}$ (8,192 bytes over the 64 MiB cap), and 4 steps at $2048\times2048$ total $67,110,912\text{ bytes}$ (2,048 bytes over the cap). The eviction check `(totalBytes + stepBytes > limitBytes)` triggers before insertion, yielding exactly 15 and 3 steps respectively in the active undo stack for single-layer full-canvas modifications. For multi-layer or structural history steps (which snapshot frame metadata and back up all affected layer buffers), step byte footprints vary dynamically by operation, and steps are evicted strictly according to aggregate byte size rather than a fixed step count. Redo steps are stored on an independent 50-step stack subject to the unified 64 MiB combined history byte envelope (with oldest redo entries evicted under combined byte pressure).
 
@@ -62,7 +62,7 @@ Each pixel history step in this modeled analysis represents a full-canvas single
 
 ## 3. Viewport Decoupling & React Render Performance
 
-To maintain sub-16ms interactive drawing latency without frame drops or garbage collection spikes during pen strokes:
+To target lower interaction overhead (no end-to-end sub-16ms/no-drop measurement established):
 - **`bufferVersion` Signal:** Decoupled from `CenterViewport`. Atomic integer signal subscribed exclusively by leaf widgets (`BottomTimeline`, `FloatingPreviewWindow`).
 - **`CursorStatusBadge`:** Decoupled from `CenterViewport`. Pointer movements across pixel boundaries broadcast via `updateCursorHUD(coords)` to an isolated subscriber leaf badge, incurring **0** re-renders on `CenterViewport`.
 - **Canvas Stack Separation:** Layered multi-canvas architecture ensures tool previews, grid lines, and marching ants redraw independently without dirtying or re-rasterizing base layer bitmaps.
@@ -75,7 +75,7 @@ To maintain sub-16ms interactive drawing latency without frame drops or garbage 
 **File:** [`src/lib/canvas/rotSprite.ts`](src/lib/canvas/rotSprite.ts), [`src/hooks/viewport/useViewportSelectionTransform.ts`](src/hooks/viewport/useViewportSelectionTransform.ts)  
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous pointer drag)
 
-During interactive selection transforms (corner scaling, edge stretching, translation, and rotation), PixiBun executes a fast nearest-neighbor inverse affine point sampling pass per pointer movement. This provides instantaneous visual feedback at full monitor refresh rates (60–144 Hz) without introducing blurry bilinear artifacts, deferring the heavy multi-pass RotSprite downscale until the transform is committed.
+During interactive selection transforms (corner scaling, edge stretching, translation, and rotation), PixiBun executes a fast nearest-neighbor inverse affine point sampling pass per pointer movement. This provides nearest-neighbor feedback scheduled for interaction; it avoids bilinear smoothing and defers the heavier RotSprite-inspired pass until commit. Achieved refresh rate is unmeasured.
 
 ### Empirical Frame Timings (100 Iterations per Resolution)
 
@@ -95,7 +95,7 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 **Components:** `ExportModal.tsx`, `PngExportTab.tsx`  
 **Max Safe Single-Axis Dimension:** $4,096\text{ px}$ (`MAX_SAFE_CANVAS_DIMENSION`)  
 **Max Safe Pixel Area:** $16,777,216\text{ pixels}$ (`MAX_SAFE_CANVAS_PIXELS`)  
-**Target Invariant:** Guard browser tab stability, prevent OOM heap exhaustion, and eliminate iOS Safari / WebKit canvas allocation crashes.
+**Target Invariant:** Reduce excessive allocation risk through admitted geometry; this does not cap total browser/codec/GPU memory or guarantee no device OOM.
 
 Raw uncompressed 32-bit RGBA pixel buffers allocated during scale transformations scale quadratically with respect to dimension:
 $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \times \text{scale}) \times 4\text{ bytes}$$
@@ -112,7 +112,7 @@ $$\text{Memory} = (\text{width} \times \text{scale}) \times (\text{height} \time
 | **256 × 256** | 32× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
 | **512 × 512** | 8× | 4,096 × 4,096 | 16,777,216 | $67.11\text{ MB}$ | **Allowed** | Exact safety boundary ($4096\text{px}$) |
 | **512 × 512** | 16× | 8,192 × 8,192 | 67,108,864 | $268.44\text{ MB}$ | **Blocked** | Exceeds $4096\text{px}$ / $16.7\text{MP}$ ceiling |
-| **512 × 512** | 32× | 16,384 × 16,384 | 268,435,456 | **$1.07\text{ GB}$** | **Blocked** | Severe memory risk; iOS Safari tab crash |
+| **512 × 512** | 32× | 16,384 × 16,384 | 268,435,456 | **$1.07\text{ GB}$** | **Blocked** | Outside configured envelope; crash not universally demonstrated |
 
 > **Conclusion:** By enforcing single-axis ($\le 4096\text{px}$) and total-pixel ($\le 16.7\text{MP}$) ceilings, one RGBA output buffer is constrained to $\le 67.11\text{ MB}$. Source canvases, multiple animation frames, encoder workspaces and browser copies can coexist, so this is not a peak-memory bound. No export heap peak was measured for this audit.
 
@@ -128,10 +128,10 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 
 | Canvas Size | Total Pixels | Synchronous Main Thread Compute (Without Worker) | Main Thread Compute (Worker Offloaded) | Worker Execution Time | UI Responsiveness |
 |---|---|---|---|---|---|
-| **64 × 64** | 4,096 | $\approx 2.4\text{ ms}$ | Lightweight dispatch overhead | $\approx 2.1\text{ ms}$ | Smooth (60 FPS interaction) |
-| **128 × 128** | 16,384 | $\approx 8.8\text{ ms}$ | Lightweight dispatch overhead | $\approx 7.9\text{ ms}$ | Smooth (60 FPS interaction) |
-| **256 × 256** | 65,536 | $\approx 34.2\text{ ms}$ | Lightweight dispatch overhead | $\approx 31.0\text{ ms}$ | Smooth (60 FPS interaction) |
-| **512 × 512** | 262,144 | $\approx 141.5\text{ ms}$ | Lightweight dispatch overhead | $\approx 128.0\text{ ms}$ | Smooth (60 FPS interaction) |
+| **64 × 64** | 4,096 | $\approx 2.4\text{ ms}$ | Dispatch overhead unmeasured | $\approx 2.1\text{ ms}$ | End-to-end interaction unmeasured |
+| **128 × 128** | 16,384 | $\approx 8.8\text{ ms}$ | Dispatch overhead unmeasured | $\approx 7.9\text{ ms}$ | End-to-end interaction unmeasured |
+| **256 × 256** | 65,536 | $\approx 34.2\text{ ms}$ | Dispatch overhead unmeasured | $\approx 31.0\text{ ms}$ | End-to-end interaction unmeasured |
+| **512 × 512** | 262,144 | $\approx 141.5\text{ ms}$ | Dispatch overhead unmeasured | $\approx 128.0\text{ ms}$ | End-to-end interaction unmeasured |
 
 > **Main-Thread Latency Breakdown Note:** The heavy EDT, bilateral Gaussian filtering, and Sobel convolution passes execute asynchronously inside `heavyCompute.worker.ts`, removing heavy compute pauses from the main thread. However, absolute zero main-thread overhead is not claimed: lightweight main-thread message dispatch/transfer overhead still occurs, and the optional content-aware anatomical heightmap pass (connected-component BFS and anatomical prior evaluation in `src/lib/ai/math/edtNormalMap.ts`) runs synchronously on the main thread when invoked.
 
@@ -173,8 +173,8 @@ The timing table below is a historical estimate without retained raw samples or 
 | **Neutral Heightmap Formulation** | Composite $0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$ | $0.45\text{ ms}$ | $1.42\text{ ms}$ | $4.81\text{ ms}$ | Neutral surface without fixed anatomical bias |
 | **Cel Terminator & Cavity AO** | Exposure-compensated clamp | $0.14\text{ ms}$ | $0.38\text{ ms}$ | $1.15\text{ ms}$ | Terminator fixed across brightness levels |
 | **Discrete Tone Quantization** | Single / Dual / Trio OKLCH bands | $0.11\text{ ms}$ | $0.34\text{ ms}$ | $1.12\text{ ms}$ | Discrete OKLCH tone thresholds without color banding |
-| **3D Specular Highlight Pill** | Blinn-Phong + $N_{3D} \cdot L_{3D} > 0$ gate | $0.09\text{ ms}$ | $0.26\text{ ms}$ | $0.84\text{ ms}$ | Macro-silhouette normals; facial/ink feature shielding |
-| **Recipe Serialization (v3)** | Non-destructive `LayerEffectRecipe` | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $O(1)$ JSON payload ($< 1\text{ KB}$ per layer) |
+| **Legacy 3D Specular Highlight Pill** | Blinn-Phong + $N_{3D} \cdot L_{3D} > 0$ gate | $0.09\text{ ms}$ | $0.26\text{ ms}$ | $0.84\text{ ms}$ | Macro-silhouette normals; facial/ink feature shielding |
+| **Recipe Serialization (v3)** | Non-destructive `LayerEffectRecipe` | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | $< 0.01\text{ ms}$ | JSON serialization scales with parameter payload; older table size/timing is not a current bound |
 | **Total Interactive Preview** | Single-frame gizmo drag | **$1.07\text{ ms}$** | **$3.25\text{ ms}$** | **$10.86\text{ ms}$** | Historical estimate; current frame rate unverified |
 
 ---
@@ -196,11 +196,3 @@ The timing table below is a historical estimate without retained raw samples or 
 2. **Keyset-Paginated Stored-Blob Assessment (`src/lib/recovery/recoveryDiagnosis.ts`):**
    - **Compound Index Scans:** Bounded batch reads (batches of 25) against `[projectId+id]` on `layerBlobs` ensure that inspection of stored project blobs avoids instantiating unbounded arrays in memory.
    - **Bounded Blob Header Probing:** Probes a bounded 24-byte Blob slice (`record.blob.slice(0, 24)`) via `ImageHeaderProbe` to validate PNG format and dimensions without instantiating canvas backing stores or decoding raster bitmaps, keeping memory negligible.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

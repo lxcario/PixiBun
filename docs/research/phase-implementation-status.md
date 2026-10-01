@@ -1,10 +1,12 @@
 # Audit implementation: phase status
 
+> **Publication/availability erratum — 2 October 2026:** The six-phase work and later palette/UI checkpoint were published in base revision 277dc0b. Earlier “uncommitted” and “CLI absent” statements describe their phase environment, not the current host/repository. Phase 4 corrected native CLI discovery and recorded the user’s local-only verification choice. No new deployment, TestSprite verdict or participant study follows from publication. See [current status](../current-status.md).
+
 Updated: 1 October 2026. Based on the [codebase audit](2026-09-30-codebase-and-pixel-art-audit.md). The six bounded implementation phases are delivered; artist evaluation and the wider follow-ups below remain open. The [session completion record](session-completion-2026-10-01.md) reconciles this recorded engineering evidence with later shared interface updates and the current test inventory.
 
 ## Phase 1 — Protect artwork
 
-Status: **Implemented; repository verification passed. TestSprite verification unavailable.** Changes are local and uncommitted; no deployment was performed.
+Status: **Implemented; repository verification passed. TestSprite verification unavailable.** At that phase checkpoint, changes were local and uncommitted; publication followed in revision 277dc0b. No deployment was performed.
 
 | Finding | Implemented behavior | Verification |
 | --- | --- | --- |
@@ -301,11 +303,3 @@ These are the completed implementation phases and their remaining validation sco
 | 6. Research extensions | Bounded implementation delivered; repository and browser checks verified, with one production timeout passing on rerun; artist evaluation pending | Protected block simplification, shared stylized light/material rigs, bounded scene-context tile studies; original fixtures and limits above |
 
 Phases 1 and 2 address the eleven reproduced audit findings; Phase 3 adds operational protection, Phase 4 implements animation review and protected cleanup, Phase 5 delivers shared animation ordering and a locally verified Godot/palette kit, and Phase 6 adds bounded reversible research variations. Artist usefulness evaluation, a wider command-service refactor, complete collaboration policy, additional engine adapters, and device-specific stress verification remain follow-up work. These results do not establish release signoff for all six phases.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](session-ui-ux-2026-10-01.md), [palette tools](palette-creator-2026-10-01.md), [cycle scope](palette-cycle-scope-2026-10-01.md), [export timing](palette-cycle-export-2026-10-01.md) and [GIF correction](gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

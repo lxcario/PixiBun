@@ -29,8 +29,8 @@ export const CVD_LENS_MODES: readonly CvdLensMode[] = [
 
 /**
  * Machado, Oliveira & Fernandes (2009) - severity 1.0 matrices, row-major
- * (R row, G row, B row), operating in linear-light-independent sRGB space as
- * published. Identity on grays (each row sums to 1).
+ * (R row, G row, B row), applied to linear RGB after decoding sRGB.
+ * See docs/contracts/rendering.md for attribution and transfer-function scope.
  */
 export const CVD_LENS_MATRICES: Readonly<
   Record<Exclude<CvdLensMode, 'none'>, readonly [number, number, number, number, number, number, number, number, number]>
@@ -74,8 +74,16 @@ export const CVD_FILTER_IDS: Readonly<Record<Exclude<CvdLensMode, 'none'>, strin
 export const SQUINT_FILTER_ID = 'pixibun-squint';
 
 const clampByte = (v: number): number => (v <= 0 ? 0 : v >= 255 ? 255 : v);
+const decodeSrgb = (byte: number): number => {
+  const c = clampByte(byte) / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+};
+const encodeSrgb = (linear: number): number => {
+  const c = Math.max(0, Math.min(1, linear));
+  return 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
+};
 /**
- * Applies a 3x3 row-major color matrix to a single sRGB triple.
+ * Decodes an sRGB triple, applies a linear RGB matrix, then encodes sRGB.
  * Pure: returns a new tuple, never mutates inputs.
  */
 export function applyCvdMatrixToRgb(
@@ -84,10 +92,11 @@ export function applyCvdMatrixToRgb(
   b: number,
   matrix: readonly number[]
 ): [number, number, number] {
+  const lr = decodeSrgb(r), lg = decodeSrgb(g), lb = decodeSrgb(b);
   return [
-    clampByte(matrix[0] * r + matrix[1] * g + matrix[2] * b),
-    clampByte(matrix[3] * r + matrix[4] * g + matrix[5] * b),
-    clampByte(matrix[6] * r + matrix[7] * g + matrix[8] * b),
+    encodeSrgb(matrix[0] * lr + matrix[1] * lg + matrix[2] * lb),
+    encodeSrgb(matrix[3] * lr + matrix[4] * lg + matrix[5] * lb),
+    encodeSrgb(matrix[6] * lr + matrix[7] * lg + matrix[8] * lb),
   ];
 }
 

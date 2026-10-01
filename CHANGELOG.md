@@ -4,6 +4,8 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased
 
+- **2026-10-02 audit corrections:** Reconciled current references and historical records, added safety/storage/export/rendering/shortcut/operator/testing contracts and generated source/test inventories. Strictly parse saved diagnostic consent, cap/account idle scratch buffers, apply CVD matrices in linear RGB, restore Alt selection subtraction, preserve unrelated/configured Git hooks and isolate routine screenshots from archived evidence. Corrected seven stale editor locators and the Export E hint. [Changes, executed checks and remaining qualification](docs/research/2026-10-02-audit-remediation.md).
+
 - **2026-10-01 large GIF integrity:** Removed a stale dictionary insertion after GIF LZW Clear codes that corrupted later pixels in larger exports, including 8x cycle loops. Added independent decompression regressions and a full native-decoder pixel comparison for every frame of a real 512×512 GIF. [Evidence](docs/research/gif-8x-corruption-2026-10-01.md).
 
 - **2026-10-01 slower cycle export:** Added 3, 5 and 8 FPS and made 8 FPS the initial setting. All eight choices share equal widths. Exact APNG timing and total GIF loop duration are verified at the new rates. [Sources and proof](docs/research/palette-cycle-export-2026-10-01.md#slower-fps-choices).
@@ -1142,11 +1144,3 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - Full artisan raster tools: Bresenham pen, dither brush, 2:1 isometric guides, flood fill, bezier curves.
 - PixiBud Smart Studio: Photometric surface normal baking, Blinn-Phong lighting, volumetric sub-surface scattering, and autotiling.
 - Offline-first storage with Dexie IndexedDB and multi-engine export suite (PNG, GIF, Godot, Unity, Phaser 3).
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](docs/research/session-ui-ux-2026-10-01.md), [palette tools](docs/research/palette-creator-2026-10-01.md), [cycle scope](docs/research/palette-cycle-scope-2026-10-01.md), [export timing](docs/research/palette-cycle-export-2026-10-01.md) and [GIF correction](docs/research/gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](docs/research/session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->

@@ -1,0 +1,987 @@
+{
+  "kind": "plans-not-executed-coverage",
+  "entries": [
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 1,
+      "name": "Enter the studio from the landing page",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "one passed entry workflow in generated 2026-09-09 report; not rerun"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 2,
+      "name": "Launch the studio from the landing page",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 3,
+      "name": "Draw with the pencil tool on the canvas",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 4,
+      "name": "Draw and erase on the canvas",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 5,
+      "name": "Export artwork as PNG",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 6,
+      "name": "Export animation as GIF",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 7,
+      "name": "Review the landing page before starting",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 8,
+      "name": "Use fill and eyedropper to recolor artwork",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 9,
+      "name": "Erase part of a drawing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 10,
+      "name": "Add and edit content on a new layer",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 11,
+      "name": "Use fill or recolor to change an area",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 12,
+      "name": "Create and duplicate animation frames",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 13,
+      "name": "Play and pause the animation",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 14,
+      "name": "Mirror a drawing across the canvas",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 15,
+      "name": "Export a spritesheet with metadata",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 16,
+      "name": "Use symmetry mode while drawing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 17,
+      "name": "Sample a color and continue drawing with it",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 18,
+      "name": "Export the project as JSON",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 19,
+      "name": "Reorder layers and see the composition update",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 20,
+      "name": "Hide and lock layers to protect artwork",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 21,
+      "name": "Switch active colors from the palette while drawing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 22,
+      "name": "Switch between palette colors while artwork exists",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 23,
+      "name": "Use primary and secondary colors while editing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 24,
+      "name": "Change playback speed with FPS",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 25,
+      "name": "Adjust layer opacity and continue editing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 26,
+      "name": "Create a custom swatch and generate a color ramp",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 27,
+      "name": "Use onion skinning while moving between frames",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/testsprite_frontend_test_plan.json",
+      "index": 28,
+      "name": "Reorder frames in an animation sequence",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/editor_regression_plans.jsonl",
+      "index": 1,
+      "name": "Blank frame keeps layer names but isolates artwork",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/editor_regression_plans.jsonl",
+      "index": 2,
+      "name": "Lasso hover and masked Delete leave other pixels untouched",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/editor_regression_plans.jsonl",
+      "index": 3,
+      "name": "Color Replace changes every exact match on the active layer",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/editor_regression_plans.jsonl",
+      "index": 4,
+      "name": "Forty-five-degree rotation preserves outlined sprite regions",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/editor_regression_plans.jsonl",
+      "index": 5,
+      "name": "Rotation clipping is rejected without changing artwork",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 1,
+      "name": "Erase Sampled Color tool removes color family shades to transparency while preserving outlines",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 2,
+      "name": "Erase Sampled Color with All Frames scope clears matching color across animation frames",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 3,
+      "name": "Analyze and Crisp Artwork scans active layer for faint alpha and specks with before and after previews",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 4,
+      "name": "Apply Artwork Cleanup hardens semi-transparent pixels and supports undo restoration",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 5,
+      "name": "Bucket fill tolerance and enclosed specks options fill nearby shades and enclosed color specks",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 6,
+      "name": "Color Replace with active layer tolerance slider replaces shades while respecting locked layers",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 7,
+      "name": "RotSprite 45-degree rotation preserves outline contours and color boundaries",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 8,
+      "name": "RotSprite rejects rotation safely when artwork would extend outside canvas bounds",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 9,
+      "name": "Lasso selection hover remains inert and irregular masked Delete leaves unselected artwork intact",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 10,
+      "name": "Blank frame creation retains layer names and properties with empty isolated artwork",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 11,
+      "name": "Layer visibility lock opacity and blend mode edits create structural Undo steps",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 12,
+      "name": "Active frame duration input updates timeline card layout and reverts via Undo",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 13,
+      "name": "Import modal Sprite Sheet Slicer configures cell grid dimensions with cutline preview",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 14,
+      "name": "Export modal Animated tab validates safe dimensions and displays safety limits",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/latest_15_regression_plans.jsonl",
+      "index": 15,
+      "name": "Studio workspace renders focused atelier layout without obsolete music radio widget",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/rotation_regression_plans.jsonl",
+      "index": 1,
+      "name": "A centered multicolor sprite rotates 45 degrees without new colors",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/rotation_regression_plans.jsonl",
+      "index": 2,
+      "name": "An edge-touching sprite refuses a rotation that would clip pixels",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite_tests/rotation_regression_plans.jsonl",
+      "index": 3,
+      "name": "A quarter-turn rotates pixels exactly and undo restores the drawing",
+      "projectId": null,
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/01_landing_to_studio.plan.json",
+      "index": 1,
+      "name": "Landing page navigation loads hero and enters studio workspace",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/02_canvas_drawing_tools_selection.plan.json",
+      "index": 1,
+      "name": "Toolbar allows selecting drawing tools and modifying brush size",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/03_palette_swatches_and_ramp_generation.plan.json",
+      "index": 1,
+      "name": "Palette tab switches color presets and generates OKLCH ramps",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/04_layer_stack_management_and_properties.plan.json",
+      "index": 1,
+      "name": "Layers tab creates new layers and modifies blend mode and visibility",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/05_animation_timeline_frames_and_playback.plan.json",
+      "index": 1,
+      "name": "Animation timeline manages frames, toggles onion skinning, and runs playback",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/06_keyboard_shortcuts_and_canvas_resizer.plan.json",
+      "index": 1,
+      "name": "Header opens keyboard shortcuts cheat sheet and canvas resize modal",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/07_export_modal_formats_and_options.plan.json",
+      "index": 1,
+      "name": "Export modal configures PNG, GIF, Sprite Sheet, and Project formats",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/08_pixibud_ai_pixel_art_actions.plan.json",
+      "index": 1,
+      "name": "PixiBud smart tools execute Auto-Shade, Clean Jaggies, and Mood Tints",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/09_theme_toggle_and_workspace_appearance.plan.json",
+      "index": 1,
+      "name": "Theme toggle switches between Dark Atelier and Light Alabaster themes",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/10_pixibud_ai_math_and_transparency.plan.json",
+      "index": 1,
+      "name": "PixiBud AI circle artwork, in-place photometric relighting, and RotSprite rotation",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/11_drawing_suite_dither_flood_color_replace.plan.json",
+      "index": 1,
+      "name": "Drawing suite exercises Pen, Dither Brush, Flood Fill, Color Replace, and Eyedropper",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/12_geometry_symmetry_mirror_shapes.plan.json",
+      "index": 1,
+      "name": "Geometric shapes and bilateral symmetry mirrored drawing",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/13_selection_box_lasso_wand_transform.plan.json",
+      "index": 1,
+      "name": "Selection operations cover Marquee Box, Lasso, Magic Wand, and floating pixel movement",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/14_photometric_studio_deep_inspection.plan.json",
+      "index": 1,
+      "name": "2.5D Photometric Studio configures light direction, material shaders, and bakes tangent normal maps",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/15_raymarched_cast_and_drop_shadows.plan.json",
+      "index": 1,
+      "name": "Raymarched 2.5D cast and drop shadows with dither filtering",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/16_volumetric_optics_and_sss.plan.json",
+      "index": 1,
+      "name": "Volumetric optical pipeline renders subsurface scattering and anisotropic hair highlights",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "retired-or-superseded-control",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/17_pixel_art_cleanup_jaggies_strays_thinning.plan.json",
+      "index": 1,
+      "name": "Pixel art restorations execute Clean Jaggies, Remove Strays, 1px Skeleton Thinning, and 47-Blob Contours",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/18_wave_function_collapse_synthesis.plan.json",
+      "index": 1,
+      "name": "WaveFunctionCollapse (WFC) procedural pattern synthesis",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "retired-or-superseded-control",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/19_atmospheric_color_grade_and_dithering.plan.json",
+      "index": 1,
+      "name": "Atmospheric color grading and mathematical Atkinson and Riemersma dithering",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/20_animation_in_between_frame_morph.plan.json",
+      "index": 1,
+      "name": "Animation in-between frame morphing synthesizes intermediate keyframes",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/21_tangent_normal_chisel_and_rivet_sculptor.plan.json",
+      "index": 1,
+      "name": "2.5D Normal Sculptor sculpts directional bevels and rivet dimples with RNM blending",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "retired-or-superseded-control",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/22_mark_ferrari_dynamic_palette_cycling.plan.json",
+      "index": 1,
+      "name": "Mark Ferrari 8-bit dynamic palette cycling engine runs 60 FPS color shifts",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/23_lofi_procedural_radio_and_onset_equalizer.plan.json",
+      "index": 1,
+      "name": "Lo-Fi procedural Web Audio radio plays tracks with Dixon spectral flux equalizer",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "retired-or-superseded-control",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/24_layer_stack_blend_modes_and_locking.plan.json",
+      "index": 1,
+      "name": "Layer stack manages opacity, blend modes, lock protection, and merge down",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/25_animation_timeline_clips_and_looping.plan.json",
+      "index": 1,
+      "name": "Animation timeline tags clips and controls playback with onion skinning",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/26_palette_oklch_ramps_and_canvas_extraction.plan.json",
+      "index": 1,
+      "name": "Palette customization generates OKLCH color ramps and extracts palettes from canvas",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/27_viewport_cvd_lenses_and_tile_matrix.plan.json",
+      "index": 1,
+      "name": "Viewport accessibility lenses simulate colorblindness and preview 3x3 repeating tiles",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/28_canvas_resize_anchor_and_rotsprite.plan.json",
+      "index": 1,
+      "name": "Canvas Resize modal scales canvas dimensions with anchor grid and aspect lock",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/29_export_modal_multi_format_pipeline.plan.json",
+      "index": 1,
+      "name": "Export modal multi-format pipeline validates PNG, Animated, Spritesheet, Vector, and Game Shaders",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/30_project_file_lifecycle_import_export.plan.json",
+      "index": 1,
+      "name": "Project file lifecycle verifies project naming, autosave indicator, and file import/export",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/31_ball_artwork_fill_and_photometric_light_bulb_gizmo.plan.json",
+      "index": 1,
+      "name": "Draws a solid ball, fills with color, launches Photometric Light Bulb gizmo, and repositions light direction",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/32_regression_non_destructive_tagged_layer_deduplication.plan.json",
+      "index": 1,
+      "name": "Regression: Non-destructive tagged layer updates prevent duplicate layer accumulation",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/33_regression_locked_layer_mutation_and_history_isolation.plan.json",
+      "index": 1,
+      "name": "Regression: Locked layer blocks painting tools, displays warning toast, and preserves history buffers",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/34_regression_palette_cycling_undo_history_isolation.plan.json",
+      "index": 1,
+      "name": "Regression: Mark Ferrari palette cycling maintains 60 FPS without polluting undo history buffers",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/35_regression_minecraft_skin_topology_and_mode_override.plan.json",
+      "index": 1,
+      "name": "Regression: Centered 64x64 character sprites avoid Minecraft UV misclassification and preserve smooth 2.5D lighting",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/36_regression_export_modal_multi_format_and_stream_safety.plan.json",
+      "index": 1,
+      "name": "Regression: Export modal multi-format navigation and deferred object URL teardown prevents download aborts",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/37_playground_animation_tutorials_and_stencil_evaluator.plan.json",
+      "index": 1,
+      "name": "Playground animation onboarding guides user through squash, stretch, and stencil evaluation",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/38_canvas_multiframe_animation_onion_skin_and_holds.plan.json",
+      "index": 1,
+      "name": "Canvas multi-frame animation workflow creates bouncing ball with onion skinning and custom frame holds",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/39_in_between_frame_morph_interpolation_proof.plan.json",
+      "index": 1,
+      "name": "In-Between Frame (Morph) synthesizes intermediate tween keyframes with SDF optical flow",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/40_stress_high_fps_multiframe_layer_compositing.plan.json",
+      "index": 1,
+      "name": "Stress & Boundary: Rapid 6-frame multi-layer compositing under 30 FPS live playback and tool switching",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/41_selection_free_transform_gizmo_and_marching_ants.plan.json",
+      "index": 1,
+      "name": "Draws artwork, activates Box Selection, manipulates 8-handle Free Transform gizmo with rotation and RotSprite bake",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/42_spritesheet_slicer_and_timeline_tag_manager.plan.json",
+      "index": 1,
+      "name": "Configures animation loop tags in TagManagerModal and imports a spritesheet via the interactive auto-slicer",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/43_on_canvas_light_bulb_gizmo.plan.json",
+      "index": 1,
+      "name": "On-canvas pixel light bulb gizmo controls light direction with live shading preview",
+      "projectId": "3cd2c711-e4c0-47de-9e3b-f9011ff9e1f8",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/44_erase_sampled_color_family_and_tolerance.plan.json",
+      "index": 1,
+      "name": "Erase Sampled Color tool removes color family shades to transparency while preserving outlines",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/45_erase_sampled_color_all_frames_sync.plan.json",
+      "index": 1,
+      "name": "Erase Sampled Color with All Frames scope clears matching color across animation frames",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/46_sprite_cleanup_analyze_and_preview.plan.json",
+      "index": 1,
+      "name": "Analyze and Crisp Artwork scans active layer for faint alpha and specks with before and after previews",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/47_sprite_cleanup_apply_and_undo.plan.json",
+      "index": 1,
+      "name": "Apply Artwork Cleanup hardens semi-transparent pixels and supports undo restoration",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/48_bucket_fill_tolerance_and_enclosed_specks.plan.json",
+      "index": 1,
+      "name": "Bucket fill tolerance and enclosed specks options fill nearby shades and enclosed color specks",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/49_color_replace_tolerance_and_layer_lock.plan.json",
+      "index": 1,
+      "name": "Color Replace with active layer tolerance slider replaces shades while respecting locked layers",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/50_rotsprite_45_deg_contour_integrity.plan.json",
+      "index": 1,
+      "name": "RotSprite 45-degree rotation preserves outline contours and color boundaries",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/51_rotsprite_clipping_boundary_rejection.plan.json",
+      "index": 1,
+      "name": "RotSprite rejects rotation safely when artwork would extend outside canvas bounds",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/52_lasso_hover_cleanliness_and_masked_delete.plan.json",
+      "index": 1,
+      "name": "Lasso selection hover remains inert and irregular masked Delete leaves unselected artwork intact",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/53_blank_frame_layer_isolation.plan.json",
+      "index": 1,
+      "name": "Blank frame creation retains layer names and properties with empty isolated artwork",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/54_layer_property_structural_undo.plan.json",
+      "index": 1,
+      "name": "Layer visibility lock opacity and blend mode edits create structural Undo steps",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/55_active_frame_duration_timeline_undo.plan.json",
+      "index": 1,
+      "name": "Active frame duration input updates timeline card layout and reverts via Undo",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/56_import_modal_smart_spritesheet_slicer.plan.json",
+      "index": 1,
+      "name": "Import modal Sprite Sheet Slicer configures cell grid dimensions with cutline preview",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/57_export_modal_geometry_and_safety_bounds.plan.json",
+      "index": 1,
+      "name": "Export modal Animated tab validates safe dimensions and displays safety limits",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/58_clean_studio_workspace_without_radio_widget.plan.json",
+      "index": 1,
+      "name": "Studio workspace renders focused atelier layout without obsolete music radio widget",
+      "projectId": "c7250fcf-b618-4b24-8868-e21df1035f15",
+      "status": "candidate-needs-current-control-review",
+      "targetRevision": "historical / not pinned",
+      "lastRecordedVerdict": "no terminal verdict established by this plan"
+    }
+  ],
+  "note": "58 individual plan files plus 51 overlapping plan entries in four aggregate files; not 109 unique workflows or executed tests."
+}

@@ -1,0 +1,688 @@
+{
+  "md": [
+    {
+      "path": "DESIGN.md",
+      "lines": 390,
+      "sha256": "40e17313daad92e1c6de4260fce1b2ff5698925728a2b81e71d2682bf54ff12f",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_DEEP_DIVE.md",
+      "lines": 543,
+      "sha256": "ef996869235e0bfeb79de5fd812863da9a4f68fdbde2047d49cfbbccbe7fcc86",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_AUDIT_RESULTS.md",
+      "lines": 230,
+      "sha256": "8c2420022144e860c4fc448b019fcc0d1a2c0b490e7581bc722df5901818fcff",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_AUDIT_RESULTS+DEEP.md",
+      "lines": 858,
+      "sha256": "eac1b5d44516cc9281d42bf4ba6da31cd57108abc0f346653b83acec8968d464",
+      "kind": "primary"
+    },
+    {
+      "path": "SKILL.md",
+      "lines": 47,
+      "sha256": "9f360b34693d2a097b8c768a7887ffdd33016bccd139f3ba21f95180a83533e0",
+      "kind": "primary"
+    },
+    {
+      "path": "SECURITY.md",
+      "lines": 52,
+      "sha256": "accb8145e10389b2bd041e4202d3f47b254d55c7097d804ca2fcaf184c9ca0d1",
+      "kind": "primary"
+    },
+    {
+      "path": "V2_VISION.md",
+      "lines": 707,
+      "sha256": "18a42457b2a2726c0855674c7af8b6876f9729edcc885e62aa59c4734997b8ee",
+      "kind": "primary"
+    },
+    {
+      "path": ".agents/skills/testsprite-verify/SKILL.md",
+      "lines": 570,
+      "sha256": "3757039ab63649aff295b98d936a4498b7d0b5e70572fd091a9beb0ecd78ebd6",
+      "kind": "primary"
+    },
+    {
+      "path": ".agents/skills/testsprite-onboard/SKILL.md",
+      "lines": 268,
+      "sha256": "630f721defee9ae1aef1753c4d494ab75c97d1c6616a7b72d901891a4ef25421",
+      "kind": "primary"
+    },
+    {
+      "path": "AUDIT_REMEDIATION_2026-09-19.md",
+      "lines": 64,
+      "sha256": "f097872c06ee72a1f92ceca87945a6c25a0b7276a0c3c69b88e551fcd3842e00",
+      "kind": "primary"
+    },
+    {
+      "path": "testsprite_tests/tmp/raw_report.md",
+      "lines": 35,
+      "sha256": "d94b296374f3a8102000bba8709f8912f524f1e07d128891b6dfaae6f6f77b4d",
+      "kind": "generated-local"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "lines": 99,
+      "sha256": "daf97a22393c50cedcad22628404e1c75316fda0ad29a219d67f6a301d7c50bd",
+      "kind": "primary"
+    },
+    {
+      "path": "chat.md",
+      "lines": 7840,
+      "sha256": "071b79d7ce47e6698279f3fcfcad5d43a462505d94e5637fcd423fe8e13ca2d0",
+      "kind": "primary"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "lines": 1153,
+      "sha256": "4e66923cabae1873212e2694736ebc211f0addd12a6ed68aed0c9a7310c3deb5",
+      "kind": "primary"
+    },
+    {
+      "path": "BENCHMARKS.md",
+      "lines": 207,
+      "sha256": "7f038612bc7354b0cf2cf22eb3062ddb510ab0607894b740b6a17c6f8eb99e63",
+      "kind": "primary"
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "lines": 951,
+      "sha256": "ea24c1622c51b4a68c62c83c932907761fc5aa9b506ab779c5daade7ccc37c08",
+      "kind": "primary"
+    },
+    {
+      "path": "AGENTS.md",
+      "lines": 18,
+      "sha256": "1b56d1c87b005d2f6a320be3d5b5693c7bb2a34bfa13b920d8e61fe8efbc2ed6",
+      "kind": "primary"
+    },
+    {
+      "path": "FullStackGuide.md",
+      "lines": 560,
+      "sha256": "cf7b7f63a5defbd44d750c4e2d603a9273fc57de6a5ec5c278163db1c1b4833b",
+      "kind": "primary"
+    },
+    {
+      "path": "MAIN.md",
+      "lines": 88,
+      "sha256": "682e09320048b39e0d531d36d1f835734b97443ea3e2012f08bc580457439111",
+      "kind": "primary"
+    },
+    {
+      "path": "LOGS.md",
+      "lines": 2055,
+      "sha256": "5cf10e5a10ec3d78e0d682bdc468a9a9cb4242c448fb4c4fcd6a7806556fef36",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_UX_CHANGELOG.md",
+      "lines": 74,
+      "sha256": "95f4356bb3bade4e021dec85856ed371065ea09eb2829411c8cdcaab33ad6bb3",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_UX_AUDIT.md",
+      "lines": 60,
+      "sha256": "131542761cdc9116ee701d7423d0df5ed3990a6b8236fef3c8efbdd9be3becf9",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIBUN_UX_IMPLEMENTATION_PLAN.md",
+      "lines": 66,
+      "sha256": "39e3fd5f2962b01e599c1ead397b575632a1a3260830725016a90e2f35152d73",
+      "kind": "primary"
+    },
+    {
+      "path": "PIXIMOTION_ENGINE_MASTER_SPEC.md",
+      "lines": 3341,
+      "sha256": "550f6dc30eff6d835f15c7a85cf9c7bf6038ea3514cdda3feb47d45ba69f36ba",
+      "kind": "primary"
+    },
+    {
+      "path": "README.md",
+      "lines": 350,
+      "sha256": "20f0ba23ce5b14ba7cf43be5fb394979b5560628c9d785d6445d60a6313f8f6b",
+      "kind": "primary"
+    },
+    {
+      "path": "TASKS.md",
+      "lines": 1954,
+      "sha256": "9e2f02b4919afd2c331ef7afd3ffa3625ee1e8b8fe3057f4aaa078bd05e30956",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/specular-glint-2026-10-01.md",
+      "lines": 88,
+      "sha256": "5263216177818d6da1d3592957af93a5f5facc7ae3c3e7af34817e8f7452ffa2",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/session-ui-ux-2026-10-01.md",
+      "lines": 199,
+      "sha256": "8312d67b018f1b9f8453599d0f692d4a9e55ead7ca85be52405478a30ce24e14",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/session-completion-2026-10-01.md",
+      "lines": 153,
+      "sha256": "fac02567d41f6ab3368a2f57c935d08136685a5b030a0f8f50449ecb014bbaab",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/pixitools-baseline-study.md",
+      "lines": 62,
+      "sha256": "7b34a2aea128fef41ab5cc9b83bd9f0a6eaf890c1135534063d1fc5def202f44",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_VISUAL_QA.md",
+      "lines": 199,
+      "sha256": "894ae3ebe8432b4979581f26f88bd86b594951a61f4938d253755653bccaf32d",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_HARDENING_REPORT.md",
+      "lines": 373,
+      "sha256": "92cf25ec9320f6082626eed0bfe601d17141da747939107d6038615156a4eb49",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_HARDENING_AUDIT.md",
+      "lines": 320,
+      "sha256": "fad5213684aa9307fc1afc34d9105a994c8ba6033f2c1a942f05128265140f6f",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/PHASE6_UX_HARDENING.md",
+      "lines": 212,
+      "sha256": "22ff1f7ff7b7de8c82f5338c4ef1f23c338966be9262096a980a3db871970b11",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/phase6-artist-evaluation.md",
+      "lines": 48,
+      "sha256": "b3849765ea1bfd498d19af374aa989b9f7ca63533c0344a7ddaf1e069fa105e5",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/PHASE4_ARTIST_UX_STUDY.md",
+      "lines": 137,
+      "sha256": "9f4c07d9d489d8734700e2905c731a70d33170dfae36224814019aefe2e87a0e",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/phase-implementation-status.md",
+      "lines": 312,
+      "sha256": "fa5c26265115f23048fcfa83d76e4a3cb7037e2dac0414f047d520c5ba975506",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/palette-cycle-scope-2026-10-01.md",
+      "lines": 32,
+      "sha256": "c7abca1c69759e479a5d2af74614eba06592d2509928d8df924811e1fea8a785",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/palette-cycle-export-2026-10-01.md",
+      "lines": 58,
+      "sha256": "04abd179e178769899b9ef14e1a7e3cb89ec02ac56bea5f507f89e9f7398db4f",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/palette-creator-2026-10-01.md",
+      "lines": 39,
+      "sha256": "83f192b2bc6b950985d2d2d80c7f8c2b7179a55f93b1490612ae48dd7127e48d",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/research/gif-8x-corruption-2026-10-01.md",
+      "lines": 32,
+      "sha256": "a3e85c1fe3e3b397fa7bcc7ccf7d2aed558660c9a6a0b75e3298c509f5d305be",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/V2_VISION.md",
+      "lines": 699,
+      "sha256": "30a0265682262a0774d81b544badf561c2c219a81a7dd7653a3362e40f70bd01",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": "docs/research/2026-09-30-codebase-and-pixel-art-audit.md",
+      "lines": 397,
+      "sha256": "e08868bfd209b596883634c940112726e89ab5e37e3d670023b147c8c44a83c5",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/MAIN.md",
+      "lines": 67,
+      "sha256": "63c190048e47727ba1b1949bef668e9ab6b4773cee70f32d7fa6f66d56e81f22",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/LOGS.md",
+      "lines": 1962,
+      "sha256": "69d4d3758d50500b0a5d1b6b81f5927a9381fa2d73e716e5d63c3f48cf419c90",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/FullStackGuide.md",
+      "lines": 552,
+      "sha256": "dd9811032bccda5ea72338a22b36a33e7ffcd88fd5bff05e5afa0f0fefe40b6f",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/BENCHMARKS.md",
+      "lines": 193,
+      "sha256": "4b2a8c8a697f681b1024a860ea6c743a24a67210a8846a894476e4015e38e18b",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/ARCHITECTURE.md",
+      "lines": 941,
+      "sha256": "7f2c86cee9ad7472766cf615ea17983590d1fd63410ed49fa4accd48d6cabe21",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/AGENTS.md",
+      "lines": 10,
+      "sha256": "ec1b6e023814ae1a510b02ea62229e5eb035d75e39e3335d5ea7f5ce5654d567",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/CONTRIBUTING.md",
+      "lines": 85,
+      "sha256": "536182b2ad3dd16775246c3bb33bd6008f3067704a50c34f7d8961a9fcd7f0e5",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/CHANGELOG.md",
+      "lines": 1070,
+      "sha256": "b5563309cb97e71df51e200207e842729215f1966ed6ce354de7ad5cd8576ab6",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/DESIGN.md",
+      "lines": 372,
+      "sha256": "8b5012427e83f0be2f3e9b19917e669200f392a9fc51c3ca6aedaa3bda35eb26",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/README.md",
+      "lines": 322,
+      "sha256": "6099c4f32774265b46ccbff175557d140dc30595791397f7acdf0be279261f00",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_AUDIT_RESULTS+DEEP.md",
+      "lines": 846,
+      "sha256": "29975c94584b74e799eaaad6f827f86256f54cf7ea9e85b128a0f9f7c69f0032",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_DEEP_DIVE.md",
+      "lines": 552,
+      "sha256": "13cbb0dfaaba555f37dde1a8db25d33120c7e129f7d8eff1cedad0ca112ca2e2",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_AUDIT_RESULTS.md",
+      "lines": 216,
+      "sha256": "a5a17ad85f062582e47f0d1c1f3b4ef10b6fb86f61f8040deda1b5dd733d59be",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/.agents/skills/testsprite-verify/SKILL.md",
+      "lines": 493,
+      "sha256": "25cb0e1164a0daa8d27553be81646fcf9bff7278e08b7deebdf3fed0dd114a92",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/.agents/skills/testsprite-onboard/SKILL.md",
+      "lines": 191,
+      "sha256": "cdadbbe82c99619fad44214e091311091135f5e8d3e11dfb857c7aec3051ab3e",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": "docs/releases/v1.14.1-signoff.md",
+      "lines": 38,
+      "sha256": "3636334c34421d6f136393452489da1fbb231f8b563ad07b6a3efaae6beaa65f",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/SECURITY.md",
+      "lines": 39,
+      "sha256": "9561a00aab551901b7671e983aca41530ed5528b33e421dec4a8953aab5fbc4a",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": "docs/plans/research_grounded_product_roadmap.md",
+      "lines": 171,
+      "sha256": "eac2889dd485e475b93ca715542fee9f9329c35ff0283f773dbcfb026309866f",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/README.md",
+      "lines": 24,
+      "sha256": "f1d406624386833509570d9fb4cb882de2aca8affaf141ab65a8421d12b0a892",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/learn-by-making-2026.md",
+      "lines": 92,
+      "sha256": "ffbc794aea92390345ef5d27818aa7a55472639eb47d67ff80b01bd88c3183a6",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/implementation_plan_v2.md",
+      "lines": 179,
+      "sha256": "55668b8555e79ef2baf92c31f6df2d39de15ff04f7f5c4e529870f4e91319e7c",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/implementation_plan.md",
+      "lines": 157,
+      "sha256": "55e9f06d8815fac1807de755e2dcc3f861b4ee3d058851c29a492814add721d8",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/audit_remediation_walkthrough.md",
+      "lines": 92,
+      "sha256": "9486f363c9cd30e082e28827f7625be32666d98b721d0e5a3b482effd1a59ae8",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/audit_remediation_plan.md",
+      "lines": 171,
+      "sha256": "3fd0ddaff6682125f9c51d3c888d851c968d625c43510b14b1372dfffe036418",
+      "kind": "primary"
+    },
+    {
+      "path": "docs/plans/audit-remediation-2026-09-26.md",
+      "lines": 96,
+      "sha256": "c238ad3e97e916997b7dd6d5ff3caf5ef0ae6824f2496975cc8fb5a6dbdf968c",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/research_grounded_product_roadmap.md",
+      "lines": 161,
+      "sha256": "d7421df8ea893130257044d77f6c948b72904a63f5b0c2004a370e5081df4a31",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/README.md",
+      "lines": 13,
+      "sha256": "e8d25c6b2aa58edbf669bed0569a8224aa8f10df73fa087f03487f09783788cd",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/implementation_plan_v2.md",
+      "lines": 169,
+      "sha256": "9a82f8fcf2d1fa8d7447eda1358ef770cc56e94d3eac221441847d80eeb59ee0",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/implementation_plan.md",
+      "lines": 149,
+      "sha256": "8279f85c6bc9f271d3accdb01a46a85a5abed338c312a70be816857a4759a252",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit_remediation_walkthrough.md",
+      "lines": 84,
+      "sha256": "eb8916d2d67510b81bf9a52a21b2ded2b0bc3b978dd082a4f865892cb00f329a",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit_remediation_plan.md",
+      "lines": 163,
+      "sha256": "bf71b3ae5b40cb04c038c642f96048da308ae78b762a200e446ee223d5bbde31",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit-remediation-2026-09-26.md",
+      "lines": 86,
+      "sha256": "3e66af92f7dda65b68d32d0ce69081d6a558b0288307ff4da85b4f9b758c1327",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": "docs/research/evidence/2026-09-30/README.md",
+      "lines": 110,
+      "sha256": "db907285d7e51ce0d6e070897c55fd6557ce4c6a29bcb8e7acefa79c44778f2d",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/SKILL.md",
+      "lines": 39,
+      "sha256": "95755fc4e3645ba235ebbd205a6ed419ea7e6bb21c68223329ddc07a6e56eb80",
+      "kind": "separate-checkout"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-01/README.md",
+      "lines": 50,
+      "sha256": "13e53bda8b19b5f7ce47da6b7cc6ec26a73d56c94bb75e96add0e8fa84425771",
+      "kind": "primary"
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/TASKS.md",
+      "lines": 1874,
+      "sha256": "5b551551fd268b13064b0729e56af6d60509b65c6d7e5464069ad123c50ccec4",
+      "kind": "separate-checkout"
+    }
+  ],
+  "copies": [
+    {
+      "path": ".kilo/worktrees/quirky-library/V2_VISION.md",
+      "lines": 699,
+      "sha256": "30a0265682262a0774d81b544badf561c2c219a81a7dd7653a3362e40f70bd01",
+      "kind": "separate-checkout",
+      "primary": "V2_VISION.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/MAIN.md",
+      "lines": 67,
+      "sha256": "63c190048e47727ba1b1949bef668e9ab6b4773cee70f32d7fa6f66d56e81f22",
+      "kind": "separate-checkout",
+      "primary": "MAIN.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/LOGS.md",
+      "lines": 1962,
+      "sha256": "69d4d3758d50500b0a5d1b6b81f5927a9381fa2d73e716e5d63c3f48cf419c90",
+      "kind": "separate-checkout",
+      "primary": "LOGS.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/FullStackGuide.md",
+      "lines": 552,
+      "sha256": "dd9811032bccda5ea72338a22b36a33e7ffcd88fd5bff05e5afa0f0fefe40b6f",
+      "kind": "separate-checkout",
+      "primary": "FullStackGuide.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/BENCHMARKS.md",
+      "lines": 193,
+      "sha256": "4b2a8c8a697f681b1024a860ea6c743a24a67210a8846a894476e4015e38e18b",
+      "kind": "separate-checkout",
+      "primary": "BENCHMARKS.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/ARCHITECTURE.md",
+      "lines": 941,
+      "sha256": "7f2c86cee9ad7472766cf615ea17983590d1fd63410ed49fa4accd48d6cabe21",
+      "kind": "separate-checkout",
+      "primary": "ARCHITECTURE.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/AGENTS.md",
+      "lines": 10,
+      "sha256": "ec1b6e023814ae1a510b02ea62229e5eb035d75e39e3335d5ea7f5ce5654d567",
+      "kind": "separate-checkout",
+      "primary": "AGENTS.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/CONTRIBUTING.md",
+      "lines": 85,
+      "sha256": "536182b2ad3dd16775246c3bb33bd6008f3067704a50c34f7d8961a9fcd7f0e5",
+      "kind": "separate-checkout",
+      "primary": "CONTRIBUTING.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/CHANGELOG.md",
+      "lines": 1070,
+      "sha256": "b5563309cb97e71df51e200207e842729215f1966ed6ce354de7ad5cd8576ab6",
+      "kind": "separate-checkout",
+      "primary": "CHANGELOG.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/DESIGN.md",
+      "lines": 372,
+      "sha256": "8b5012427e83f0be2f3e9b19917e669200f392a9fc51c3ca6aedaa3bda35eb26",
+      "kind": "separate-checkout",
+      "primary": "DESIGN.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/README.md",
+      "lines": 322,
+      "sha256": "6099c4f32774265b46ccbff175557d140dc30595791397f7acdf0be279261f00",
+      "kind": "separate-checkout",
+      "primary": "README.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_AUDIT_RESULTS+DEEP.md",
+      "lines": 846,
+      "sha256": "29975c94584b74e799eaaad6f827f86256f54cf7ea9e85b128a0f9f7c69f0032",
+      "kind": "separate-checkout",
+      "primary": "PIXIBUN_AUDIT_RESULTS+DEEP.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_DEEP_DIVE.md",
+      "lines": 552,
+      "sha256": "13cbb0dfaaba555f37dde1a8db25d33120c7e129f7d8eff1cedad0ca112ca2e2",
+      "kind": "separate-checkout",
+      "primary": "PIXIBUN_DEEP_DIVE.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/PIXIBUN_AUDIT_RESULTS.md",
+      "lines": 216,
+      "sha256": "a5a17ad85f062582e47f0d1c1f3b4ef10b6fb86f61f8040deda1b5dd733d59be",
+      "kind": "separate-checkout",
+      "primary": "PIXIBUN_AUDIT_RESULTS.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/.agents/skills/testsprite-verify/SKILL.md",
+      "lines": 493,
+      "sha256": "25cb0e1164a0daa8d27553be81646fcf9bff7278e08b7deebdf3fed0dd114a92",
+      "kind": "separate-checkout",
+      "primary": ".agents/skills/testsprite-verify/SKILL.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/.agents/skills/testsprite-onboard/SKILL.md",
+      "lines": 191,
+      "sha256": "cdadbbe82c99619fad44214e091311091135f5e8d3e11dfb857c7aec3051ab3e",
+      "kind": "separate-checkout",
+      "primary": ".agents/skills/testsprite-onboard/SKILL.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/SECURITY.md",
+      "lines": 39,
+      "sha256": "9561a00aab551901b7671e983aca41530ed5528b33e421dec4a8953aab5fbc4a",
+      "kind": "separate-checkout",
+      "primary": "SECURITY.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/research_grounded_product_roadmap.md",
+      "lines": 161,
+      "sha256": "d7421df8ea893130257044d77f6c948b72904a63f5b0c2004a370e5081df4a31",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/research_grounded_product_roadmap.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/README.md",
+      "lines": 13,
+      "sha256": "e8d25c6b2aa58edbf669bed0569a8224aa8f10df73fa087f03487f09783788cd",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/README.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/implementation_plan_v2.md",
+      "lines": 169,
+      "sha256": "9a82f8fcf2d1fa8d7447eda1358ef770cc56e94d3eac221441847d80eeb59ee0",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/implementation_plan_v2.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/implementation_plan.md",
+      "lines": 149,
+      "sha256": "8279f85c6bc9f271d3accdb01a46a85a5abed338c312a70be816857a4759a252",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/implementation_plan.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit_remediation_walkthrough.md",
+      "lines": 84,
+      "sha256": "eb8916d2d67510b81bf9a52a21b2ded2b0bc3b978dd082a4f865892cb00f329a",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/audit_remediation_walkthrough.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit_remediation_plan.md",
+      "lines": 163,
+      "sha256": "bf71b3ae5b40cb04c038c642f96048da308ae78b762a200e446ee223d5bbde31",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/audit_remediation_plan.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/docs/plans/audit-remediation-2026-09-26.md",
+      "lines": 86,
+      "sha256": "3e66af92f7dda65b68d32d0ce69081d6a558b0288307ff4da85b4f9b758c1327",
+      "kind": "separate-checkout",
+      "primary": "docs/plans/audit-remediation-2026-09-26.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/SKILL.md",
+      "lines": 39,
+      "sha256": "95755fc4e3645ba235ebbd205a6ed419ea7e6bb21c68223329ddc07a6e56eb80",
+      "kind": "separate-checkout",
+      "primary": "SKILL.md",
+      "sameAsPrimary": false
+    },
+    {
+      "path": ".kilo/worktrees/quirky-library/TASKS.md",
+      "lines": 1874,
+      "sha256": "5b551551fd268b13064b0729e56af6d60509b65c6d7e5464069ad123c50ccec4",
+      "kind": "separate-checkout",
+      "primary": "TASKS.md",
+      "sameAsPrimary": false
+    }
+  ]
+}

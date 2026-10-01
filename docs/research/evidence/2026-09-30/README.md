@@ -1,5 +1,7 @@
 # Audit evidence — 30 September 2026
 
+> Dated evidence index. Successive inventories and runs below retain their own scope; [current checkout status](../../../current-status.md) is maintained separately. Routine reruns now write ignored per-test outputs and do not refresh these captures.
+
 **Documentation reconciliation — 1 October 2026:** This directory retains dated execution evidence. The session's completed bounded work and remaining evaluation requirements are summarized in the [completion record](../../session-completion-2026-10-01.md). Later shared interface changes and three automated dry-runs are described in the [Phase 6 UX report](../../PHASE6_UX_HARDENING.md), with images under `../ux-qa/`. The subsequent [UI/UX corrections](../../session-ui-ux-2026-10-01.md) have separate evidence under `../2026-10-01/`. The live editor inventory is 146 tests in 32 files; the 134-test full run and compiled checks below retain their original scope and predate those later changes.
 
 Reviewed application commit: `23eaa10e662db349b20ae9c7f6a2e93a2f328cbb`, PixiBun 1.14.1.
@@ -99,11 +101,3 @@ Phase 6 uses original generated fixtures and local browser verification. Product
 The original audit and Phases 1/2 used available Node v26.5.1. Phases 3–6 use a checksum-verified workspace-local Node 22.23.3 runtime, matching the repository's supported major version. Their separate production suite covers three browser engines on Windows. This is not Apple Safari/iOS, hardware input, or long-duration memory certification. Original audit coverage includes instrumented files and two test-support files, rather than explicit all-production-source inclusion.
 
 The original analysis did not change application code, dependency versions, production settings, or artwork. The subsequent authorized implementation phases change local source and tests as described in the phase status; no commit, deployment, or remote CI run is claimed. Phase 4 native-access preflight corrected the earlier TestSprite-absence conclusion: CLI 0.13.0 and authentication are available. Its proposed workflow upload was rejected by automatic review, and the user explicitly chose local verification only; Phases 5 and 6 honor that choice, and no TestSprite run or verdict is claimed.
-
-<!-- session-publication-2026-10-01 -->
-## Session checkpoint — 2026-10-01
-
-The studio retains its single-row header and live pixel glints. Palette tools now support named creation, scans of at most six main artwork colors, and direct swatch removal. First/Last cycle swatches can animate fire while preserving wood and outlines. Cycle Loop exports APNG or GIF at 3/5/8/10/12/15/24/30 FPS, initially 8 FPS. The shared GIF encoder now restarts its compression dictionary correctly, fixing corrupted larger exports. Existing damaged GIFs need re-export. [Interface record](../../session-ui-ux-2026-10-01.md), [palette tools](../../palette-creator-2026-10-01.md), [cycle scope](../../palette-cycle-scope-2026-10-01.md), [export timing](../../palette-cycle-export-2026-10-01.md) and [GIF correction](../../gif-8x-corruption-2026-10-01.md).
-
-The latest full project gate passed documentation, types, lint, **1,502 unit/integration tests across 149 suites**, and the production build in 65.39s. A real 512×512 8x GIF passed native Chromium decoding of all 16 frames with zero pixel mismatches. The current discovered editor inventory is **155 tests in 37 files**, plus 39 separate compiled-production scenarios; the new work has scoped browser verification, not a full inventory rerun. Earlier results retain their dates and scope. The user requested documentation reconciliation and Git publication of this checkpoint; Git history records publication. [Delivered work, evidence and open validation](../../session-completion-2026-10-01.md).
-<!-- /session-publication-2026-10-01 -->
