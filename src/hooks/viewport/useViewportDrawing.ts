@@ -3,11 +3,14 @@ import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
 import { deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
-import { captureLayerBuffers, restoreStructuralWorkspace } from '@/lib/engine/structuralHistory';
+import { captureLayerBuffers, restoreStructuralWorkspace, estimateRestorationAllocation } from '@/lib/engine/structuralHistory';
 import { canAddLayersToFrame, validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
 import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { assertMemoryAvailable } from '@/lib/safety/memoryBudget';
+import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
+import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -188,9 +191,24 @@ export function useViewportDrawing({
   }, []);
 
   // Undo Action (Supports both Pixel and Structural steps)
+  const admitHistoryTransition = useCallback((step: HistoryStep, inverseIds: string[]) => {
+    const state = useStudioStore.getState();
+    const inverseBytes = (step.type === 'structural' ? new Set(inverseIds).size : 1) * state.canvasWidth * state.canvasHeight * 4;
+    const metadataBytes = state.frames.reduce((sum, frame) => sum + 256 + frame.layers.length * 256, 1024) +
+      state.clips.reduce((sum, clip) => sum + estimateClipBytes(clip), 0) +
+      (step.type === 'structural' && step.palettes ? state.palettes.reduce((sum, palette) => sum + estimatePaletteBytes(palette), 0) : 0);
+    const stagingBytes = step.type === 'structural' ? estimateRestorationAllocation({
+      canvasWidth: step.canvasWidth ?? state.canvasWidth, canvasHeight: step.canvasHeight ?? state.canvasHeight,
+      frames: step.frames, activeFrameIndex: step.activeFrameIndex, activeLayerId: step.activeLayerId, layerBuffers: step.layerBuffers,
+    }) : state.canvasWidth * state.canvasHeight * 4;
+    try { assertMemoryAvailable(inverseBytes + metadataBytes + stagingBytes, 'Undo/redo transition'); return true; }
+    catch (error) { studioEvents.emit('pixibun:toast', { type: 'error', message: (error as Error).message }); return false; }
+  }, []);
+
   const performUndo = useCallback(() => {
     const previousStep = historyEngineRef.current.peekUndo();
     if (!previousStep) return;
+    if (!admitHistoryTransition(previousStep, previousStep.type === 'structural' ? getRedoCaptureLayerIds(previousStep, useStudioStore.getState()) : [])) return;
 
     let currentStep: HistoryStep;
 
@@ -214,9 +232,12 @@ export function useViewportDrawing({
       currentStep = {
         type: 'structural',
         opKind: previousStep.opKind,
+        ...(previousStep.palettes ? { palettes: structuredClone(state.palettes), currentPaletteId: state.currentPaletteId } : {}),
         description: previousStep.description,
         frameIndex: state.activeFrameIndex,
         frames: structuredClone(state.frames),
+        clips: structuredClone(state.clips),
+        activeClipId: state.activeClipId,
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
         canvasWidth: state.canvasWidth,
@@ -268,6 +289,10 @@ export function useViewportDrawing({
         canvasWidth: targetWidth,
         canvasHeight: targetHeight,
         frames: targetFrames,
+        clips: stepToRestore.clips,
+        palettes: stepToRestore.palettes,
+        currentPaletteId: stepToRestore.currentPaletteId,
+        activeClipId: stepToRestore.activeClipId,
         activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
         layerBuffers: stepToRestore.layerBuffers,
@@ -299,17 +324,21 @@ export function useViewportDrawing({
       }
     }
 
+    if (currentStep.type !== 'structural' && currentStep.imageData) {
+      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, currentStep.imageData);
+    }
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
     useStudioStore.getState().setDirty(true);
-  }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, getRedoCaptureLayerIds, renderComposite, setCanRedo, setCanUndo]);
+  }, [admitHistoryTransition, bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, getRedoCaptureLayerIds, renderComposite, setCanRedo, setCanUndo]);
 
   // Redo Action (Supports both Pixel and Structural steps)
   const performRedo = useCallback(() => {
     const nextStep = historyEngineRef.current.peekRedo();
     if (!nextStep) return;
+    if (!admitHistoryTransition(nextStep, nextStep.type === 'structural' ? nextStep.affectedLayerIds ?? [] : [])) return;
 
     let currentStep: HistoryStep;
 
@@ -332,9 +361,12 @@ export function useViewportDrawing({
       currentStep = {
         type: 'structural',
         opKind: nextStep.opKind,
+        ...(nextStep.palettes ? { palettes: structuredClone(state.palettes), currentPaletteId: state.currentPaletteId } : {}),
         description: nextStep.description,
         frameIndex: state.activeFrameIndex,
         frames: structuredClone(state.frames),
+        clips: structuredClone(state.clips),
+        activeClipId: state.activeClipId,
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
         canvasWidth: state.canvasWidth,
@@ -411,6 +443,10 @@ export function useViewportDrawing({
         canvasWidth: targetWidth,
         canvasHeight: targetHeight,
         frames: targetFrames,
+        clips: stepToRestore.clips,
+        palettes: stepToRestore.palettes,
+        currentPaletteId: stepToRestore.currentPaletteId,
+        activeClipId: stepToRestore.activeClipId,
         activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
         layerBuffers: stepToRestore.layerBuffers,
@@ -469,19 +505,22 @@ export function useViewportDrawing({
       }
     }
 
+    if (currentStep.type !== 'structural' && currentStep.imageData) {
+      coDrawBridge.notifyStrokeCommitted(currentStep.layerId, currentStep.imageData);
+    }
     setCanUndo(historyEngineRef.current.canUndo);
     setCanRedo(historyEngineRef.current.canRedo);
     renderComposite();
     bumpBufferVersion();
     useStudioStore.getState().setDirty(true);
-  }, [bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
+  }, [admitHistoryTransition, bumpBufferVersion, canvasHeight, canvasWidth, getOrCreateLayerCanvas, renderComposite, setCanRedo, setCanUndo]);
 
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
     (points: Point[], color: string, isErase: boolean = false) => {
       const currentFrame = frames[activeFrameIndex];
       const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
-      if (!targetLayerId) return;
+      if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && !layer.locked)) return;
 
       const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
       const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });

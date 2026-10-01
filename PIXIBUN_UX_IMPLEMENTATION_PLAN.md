@@ -55,3 +55,9 @@ Milestones 1 and 2 were implemented and verified in the first audit. Later feedb
 ## Deferred work and research protocol
 
 Do not implement a second export modal, mandatory tutorial, semantic AI, new checkpoint format, fully non-destructive effect stack, panel preset state or renderer workers inside this slice. For later prioritization, run consented first-sprite, first-animation, outcome-based PixiTools and backup-comprehension sessions. Record task completion and errors locally; do not collect artwork pixels or claim population-level findings. Measure latency only with representative projects and hardware before citing the report's proposed budgets.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX verification](docs/research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

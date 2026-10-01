@@ -146,3 +146,9 @@ Deliberately **not** added: Workbox (hand-rolled SW — the shell is ~10 assets;
 12. Production build + full manual sweep (install on desktop/Android, airplane-mode reload, keyboard-only pass, screen-reader smoke via NVDA), adversarial self-review per FullStackGuide Gate 5, `TASKS.md` Phase 21 entry, conventional commits per phase.
 
 Every phase exits with `typecheck`, `lint`, `test`, and `next build` green — now also enforced by the existing CI on `main`.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](../research/session-completion-2026-10-01.md) and [UI/UX verification](../research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

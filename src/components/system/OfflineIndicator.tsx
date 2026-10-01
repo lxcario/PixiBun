@@ -37,11 +37,11 @@ export function OfflineIndicator() {
     <div
       role="status"
       aria-live="polite"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#281b3d] border border-[#f0be7c] text-[#f0be7c] text-[11px] font-mono font-bold rounded-[2px] shadow-sm animate-pulse select-none"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#281b3d] border border-[#f0be7c] text-[#f0be7c] text-[11px] font-mono font-bold rounded-[2px] shadow-sm select-none"
       title="You are currently offline. All drawings and changes are saved locally to IndexedDB."
     >
       <span className="w-2 h-2 rounded-full bg-[#f0be7c]" />
-      <span>Offline Mode (IndexedDB Active)</span>
+      <span>Offline · Drawing &amp; local saves active</span>
     </div>
   );
 }

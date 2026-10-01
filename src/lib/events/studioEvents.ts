@@ -65,6 +65,7 @@ export type StudioEventMap = {
       layerId: string;
       editRevision: number;
       bufferVersion: number;
+      reviewKey?: string;
     };
     beforePreview?: string;
     afterPreview?: string;
@@ -116,6 +117,10 @@ export type StudioEventMap = {
   'pixibun:toast': {
     message: string;
     type?: 'default' | 'error' | 'success';
+    action?: {
+      label: string;
+      onClick: () => void;
+    };
   };
 };
 

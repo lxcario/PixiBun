@@ -6,6 +6,8 @@
  * and generates unrolled animation frames using harmonic rational retuning for seamless APNG/GIF loops.
  */
 
+import { godotPaletteShader } from './godotPaletteShader';
+
 import {
   PaletteCycleTrack,
   updateLivePaletteLUT32,
@@ -20,65 +22,7 @@ export function generateGodot4Shader(
   tracks: PaletteCycleTrack[],
   paletteLength: number = 256
 ): string {
-  const activeTracks = tracks.filter((t) => t.enabled && t.rate > 0 && t.high > t.low);
-
-  let trackLogic = '';
-  activeTracks.forEach((track, idx) => {
-    const S = track.high - track.low + 1;
-    const isPingPong = track.direction === 'ping-pong';
-    const M = isPingPong ? 2 * (S - 1) : S;
-    const speed = track.rate.toFixed(3);
-    const low = track.low;
-    const high = track.high;
-
-    if (isPingPong) {
-      trackLogic += `
-    // Track ${idx}: Ping-Pong [${low}..${high}]
-    if (color_idx >= ${low} && color_idx <= ${high}) {
-        float rel_idx = float(color_idx - ${low});
-        float p = mod(TIME * ${speed} + rel_idx, ${M.toFixed(1)});
-        float offset = (p < ${S.toFixed(1)}) ? p : (${M.toFixed(1)} - p);
-        final_idx = float(${low}) + offset;
-    }`;
-    } else {
-      const dirSign = track.direction === 'reverse' ? '1.0' : '-1.0';
-      trackLogic += `
-    // Track ${idx}: ${track.direction === 'reverse' ? 'Reverse' : 'Forward'} [${low}..${high}]
-    if (color_idx >= ${low} && color_idx <= ${high}) {
-        float rel_idx = float(color_idx - ${low});
-        float shift = mod(rel_idx + (${dirSign} * TIME * ${speed}), ${S.toFixed(1)});
-        if (shift < 0.0) shift += ${S.toFixed(1)};
-        final_idx = float(${low}) + shift;
-    }`;
-    }
-  });
-
-  return `shader_type canvas_item;
-
-// Standalone Mark Ferrari Palette Cycling Shader for Godot 4
-// Exported from PixiBun (https://pixibun.artisan)
-// Texture requirement: The sprite must encode palette index in the RED channel (0.0 to 1.0 mapped to 0..255)
-// or use an indexed grayscale texture.
-
-uniform sampler2D palette_texture : filter_nearest, repeat_disable;
-uniform float palette_size = ${paletteLength.toFixed(1)};
-
-void fragment() {
-    vec4 base_color = texture(TEXTURE, UV);
-    if (base_color.a < 0.01) {
-        COLOR = vec4(0.0);
-    } else {
-        int color_idx = int(round(base_color.r * (palette_size - 1.0)));
-        float final_idx = float(color_idx);
-${trackLogic || '\n        // No active palette cycle tracks configured.'}
-
-        // Half-texel offset for pixel-perfect LUT sampling
-        float u = (final_idx + 0.5) / palette_size;
-        vec4 pal_color = texture(palette_texture, vec2(u, 0.5));
-        COLOR = vec4(pal_color.rgb, base_color.a);
-    }
-}
-`;
+  return godotPaletteShader(tracks, paletteLength, true);
 }
 
 /**
@@ -122,7 +66,8 @@ export function generateUnityUrpShader(
     }
   });
 
-  return `Shader "PixiBun/PaletteCycling2D"
+  return `// RED = index / max(1, palette_size - 1), ALPHA = source alpha.
+Shader "PixiBun/PaletteCycling2D"
 {
     Properties
     {
@@ -180,7 +125,7 @@ export function generateUnityUrpShader(
             half4 frag(Varyings input) : SV_Target
             {
                 half4 sprite = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-                if (sprite.a < 0.01) return half4(0, 0, 0, 0);
+                if (sprite.a == 0.0) return half4(0, 0, 0, 0);
 
                 int color_idx = (int)round(sprite.r * (_PaletteSize - 1.0));
                 float final_idx = (float)color_idx;
@@ -197,19 +142,24 @@ ${trackLogic || '                // No active tracks'}
 `;
 }
 
-/**
- * Builds an indexed pixel buffer matching canvas pixels to palette color registers.
- */
+export interface PaletteIndexMap { indices: Uint8Array; alpha: Uint8Array }
+
+/** RGB nearest match; equal-distance/duplicate colors choose the first register.
+ * Alpha is independent of index, preserving all 256 registers and partial opacity. */
 export function buildCanvasPaletteIndexMap(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   paletteHex: string[]
-): Uint8Array {
+): PaletteIndexMap {
+  if (paletteHex.length < 1 || paletteHex.length > 256) {
+    throw new RangeError('Palette cycling requires between 1 and 256 colors.');
+  }
   const imgData = ctx.getImageData(0, 0, width, height);
   const data = imgData.data;
   const numPixels = width * height;
   const indexMap = new Uint8Array(numPixels);
+  const alpha = new Uint8Array(numPixels);
 
   // Pre-parse palette RGBs
   const paletteRgbs = paletteHex.map((hex) => hexToRgb(hex));
@@ -217,10 +167,8 @@ export function buildCanvasPaletteIndexMap(
   for (let i = 0; i < numPixels; i++) {
     const pIdx = i * 4;
     const a = data[pIdx + 3];
-    if (a < 30) {
-      indexMap[i] = 255; // 255 reserved for transparent
-      continue;
-    }
+    alpha[i] = a;
+    if (a === 0) continue;
 
     const r = data[pIdx];
     const g = data[pIdx + 1];
@@ -245,7 +193,7 @@ export function buildCanvasPaletteIndexMap(
     indexMap[i] = bestIdx;
   }
 
-  return indexMap;
+  return { indices: indexMap, alpha };
 }
 
 
@@ -286,11 +234,11 @@ export function generateLoopAnimationCanvases(
     const data32 = new Uint32Array(frameData.data.buffer);
 
     for (let i = 0; i < width * height; i++) {
-      const palIdx = indexMap[i];
-      if (palIdx === 255) {
+      const palIdx = indexMap.indices[i];
+      if (indexMap.alpha[i] === 0) {
         data32[i] = 0;
       } else {
-        data32[i] = lut32[palIdx] ?? 0;
+        data32[i] = ((lut32[palIdx] ?? 0) & 0x00ffffff) | (indexMap.alpha[i] << 24);
       }
     }
 

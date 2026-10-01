@@ -51,3 +51,9 @@ Create three outputs:
 3. Four PixiTools preview candidates chosen from actual tool confusion, with the exact question each preview must answer.
 
 Retest the same tasks on a revised build with new participants in Week 6. Compare individual observations and timings as directional evidence. Do not report “X% of users” from five people.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and screenshot-driven interface fixes are implemented: matching lighting cards, preview/apply labels, explicit surface-layer setup, grouped header controls and a bottom-right save badge. [Current behavior and local verification](session-ui-ux-2026-10-01.md) should be used when preparing tasks; this update does not supply participant observations or comparative usability results. See the [completion record](session-completion-2026-10-01.md) for remaining evaluation work.
+<!-- /session-publication-2026-10-01 -->

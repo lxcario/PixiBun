@@ -18,8 +18,10 @@
  */
 
 import Dexie from 'dexie';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 import {
   db,
+  encodeLayerBlobRecord,
   type StoredProject,
   type StoredLayerBlob,
   type RecoveryRecord,
@@ -1153,13 +1155,17 @@ export async function commitRecoveredProject(
           throw new Error(`Corrupted internal capsule: missing sealed blob for record ${entry.sourceRecordId}`);
         }
 
-        await db.layerBlobs.add({
-          projectId: destinationId,
-          layerId: entry.targetLayerId,
-          frameIndex: entry.targetFrameIndex,
-          blob: sealed.blob,
-          updatedAt: commitTimestamp,
-        });
+        const releaseBytes = reserveMemory(sealed.blob.size, 'Recovery storage bytes');
+        try {
+          const encoded = await Dexie.waitFor(encodeLayerBlobRecord({
+            projectId: destinationId,
+            layerId: entry.targetLayerId,
+            frameIndex: entry.targetFrameIndex,
+            blob: sealed.blob,
+            updatedAt: commitTimestamp,
+          }));
+          await db.layerBlobs.add(encoded);
+        } finally { releaseBytes(); }
       }
 
       if (options?.signal?.aborted) {

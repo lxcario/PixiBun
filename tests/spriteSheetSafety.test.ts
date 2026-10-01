@@ -29,6 +29,7 @@ function createMockCanvas(width: number, height: number): HTMLCanvasElement {
 describe('Sprite-Sheet Export Output Ceilings (H2 Verification)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => createMockCanvas(32, 32).getContext('2d'));
   });
 
   // A. Safe horizontal sheet succeeds

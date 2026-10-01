@@ -1,5 +1,7 @@
 # Security Policy — PixiBun Atelier
 
+> **Audit-session hardening — 2026-10-01:** Revision/generation checks protect asynchronous saves and preview publication; conflicting tabs refuse stale saves; bounded workers validate output and support deadlines/cancellation; shared memory admission estimates retained buffers and history. Research recipe parsing bounds dimensions, palettes, regions, pins and fingerprints. This session used local verification only. These safeguards and their limitations are recorded in the [phase report](docs/research/phase-implementation-status.md) and [session record](docs/research/session-completion-2026-10-01.md); they do not establish a penetration-test certification or measured heap ceiling.
+
 ## 1. Zero-Cloud & Local-First Philosophy
 PixiBun Atelier is architected as an offline-first, client-side application:
 - All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
@@ -36,3 +38,8 @@ PixiBun Atelier enforces an automated, zero-trust Quality Gate (`npm run gate`) 
 ## 5. Reporting a Vulnerability
 If you discover a security vulnerability or secret exposure in this project, please open a private GitHub Security Advisory or report it directly to the maintainers.
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

@@ -111,6 +111,16 @@ function makeCanvas(initialWidth: number, initialHeight: number): MockCanvas {
         }
       }
     },
+    putImageData: (source: ImageData, x: number, y: number) => {
+      for (let py = 0; py < source.height; py++) {
+        for (let px = 0; px < source.width; px++) {
+          const destX = px + x, destY = py + y;
+          if (destX < 0 || destY < 0 || destX >= width || destY >= height) continue;
+          const srcIdx = (py * source.width + px) * 4;
+          imageData.data.set(source.data.subarray(srcIdx, srcIdx + 4), (destY * width + destX) * 4);
+        }
+      }
+    },
     getImageData: (x: number, y: number, w: number, h: number) => {
       const out = new FakeImageData(w, h);
       for (let py = 0; py < h; py++) {

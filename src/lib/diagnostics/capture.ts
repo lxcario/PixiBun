@@ -2,6 +2,8 @@ import { db } from '@/lib/storage/db';
 import { createId } from '@/lib/engine/id';
 import type { DiagnosticEntry, DiagnosticsSettings } from '@/types/diagnostics';
 import { APP_VERSION } from '@/config/version';
+import { getBufferRegistryUsage } from '@/lib/engine/bufferRegistry';
+import { getMemoryBudgetUsage } from '@/lib/safety/memoryBudget';
 
 const SETTINGS_KEY = 'pixibun-diagnostics';
 const MAX_DIAGNOSTICS_ENTRIES = 200;
@@ -165,6 +167,8 @@ export async function exportDiagnosticsFile(): Promise<void> {
       app: 'PixiBun Atelier',
       version: APP_VERSION,
       exportedAt: new Date().toISOString(),
+      rasterRegistry: getBufferRegistryUsage(),
+      memoryBudget: getMemoryBudgetUsage(),
       settings: {
         enabled: settings.enabled,
         relayOptIn: settings.relayOptIn,

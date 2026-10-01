@@ -18,9 +18,9 @@ export const ExportProgressBar: React.FC<ExportProgressBarProps> = ({
   const pct = Math.round((current / total) * 100);
 
   return (
-    <div className="bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#f0be7c] flex flex-col gap-2 shadow-md animate-pulse">
+    <div className="bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border-highlight)] flex flex-col gap-2 shadow-md">
       <div className="flex items-center justify-between text-xs font-mono">
-        <span className="text-[#f0be7c] font-bold">Encoding {exportType.toUpperCase()} via Browser Codec:</span>
+        <span className="text-[#f0be7c] font-bold">Encoding {exportType.toUpperCase()}…</span>
         <span className="text-[var(--text-heading)] font-bold">
           {current} / {total} frames ({pct}%)
         </span>
@@ -31,6 +31,9 @@ export const ExportProgressBar: React.FC<ExportProgressBarProps> = ({
           style={{ width: `${pct}%` }}
         />
       </div>
+      <p className="text-[10px] text-[var(--text-muted)] font-sans">
+        Compiling frames. You can safely cancel at any time — your artwork remains intact.
+      </p>
     </div>
   );
 };

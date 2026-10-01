@@ -209,7 +209,7 @@ export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
 };
 
 export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
-  [/bake light/i, {
+  [/bake light|apply lighting/i, {
     title: 'Bake Lighting',
     group: 'AI & Shading',
     description: 'Bake directional light and shadow tones permanently onto your artwork.',
@@ -217,7 +217,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'bake-light',
     icon: 'sun',
   }],
-  [/place light bulb|analyze & light bulb|^light bulb$/i, {
+  [/place light bulb|analyze & light bulb|^light bulb$|preview lighting/i, {
     title: 'Lighting',
     group: 'AI & Shading',
     description: 'Move the light across a finished sprite.',
@@ -225,7 +225,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'light',
     icon: 'lamp',
   }],
-  [/view normals|hide normals|3d map:/i, {
+  [/view normals|hide normals|3d map:|show surface directions|hide surface directions/i, {
     title: 'Normal Map',
     group: 'AI & Shading',
     description: 'See the surface directions used for lighting.',
@@ -257,7 +257,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
     scene: 'sel-out',
     icon: 'sparkles',
   }],
-  [/chisel bevel/i, {
+  [/chisel bevel|^paint raised edges$/i, {
     title: 'Chisel Bevel',
     group: '2.5D Sculpt',
     description: 'Carve sloped 3D bevels onto flat 2D edges so dynamic lighting creates relief.',

@@ -109,7 +109,7 @@ test('PixiTools actions preview their effect without changing the project', asyn
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
   await page.getByTestId('tab-ai').click();
   await page.getByTestId('pixitools-browse-all').click();
-  const lighting = page.getByRole('button', { name: '3D Lighting & Shading (2.5D Photometric Studio)' });
+  const lighting = page.getByRole('button', { name: 'Light your sprite' });
   await expect(lighting).toBeVisible();
   await lighting.hover();
   await page.waitForTimeout(400);
@@ -146,8 +146,8 @@ test('PixiTools actions preview their effect without changing the project', asyn
   await page.waitForTimeout(1000);
   await specularPreview.screenshot({ path: testInfo.outputPath('specular-preview.png') });
 
-  // Open Cast & Ground Shadows section and hover Add Floor Shadow to verify dedicated HUD Heart preview
-  const shadowHeader = page.getByRole('button', { name: /Cast & Ground Shadows/i });
+  // Open Add a shadow section and hover Add Floor Shadow to verify dedicated HUD Heart preview
+  const shadowHeader = page.getByRole('button', { name: /Add a shadow/i });
   await shadowHeader.click();
   const floorShadow = page.getByRole('button', { name: /Analyze & Cast Shadow/i });
   await floorShadow.hover();
@@ -208,6 +208,7 @@ test('PixiTools actions preview their effect without changing the project', asyn
 
 test('user can dismiss preview permanently via "Don\'t show again"', async ({ page }) => {
   await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await page.evaluate(() => localStorage.removeItem('pixibun:tool-previews-disabled'));
 
   const pen = page.getByTestId('pen-tool');

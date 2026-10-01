@@ -14,9 +14,9 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { createAnimatedGifBlobAsync } from '@/lib/export/gifEncoder';
 import { exportProcessReplayGifAsync } from '@/lib/export/processReplay';
 import { depixelizeToSvg } from '@/lib/export/depixelizeVector';
-import { exportAnimationToWebmAsync } from '@/lib/export/webmEncoder';
+import { exportAnimationToWebmAsync, isWebmExportSupported } from '@/lib/export/webmEncoder';
 import { exportAnimationToApngAsync } from '@/lib/export/apngEncoder';
-import { exportAnimationToMp4Async, isMp4ExportSupported } from '@/lib/export/mp4Encoder';
+import { exportAnimationToMp4Async, probeMp4ExportSupport } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import {
   getGlobalHistory,
@@ -46,6 +46,9 @@ import { ReplayExportTab } from './export/ReplayExportTab';
 import { VectorSvgExportTab } from './export/VectorSvgExportTab';
 import { ShaderExportTab } from './export/ShaderExportTab';
 import { ProjectExportTab } from './export/ProjectExportTab';
+import { GodotKitExportTab } from './export/GodotKitExportTab';
+import { buildGodotKit } from '@/lib/export/godotKit';
+import { buildAnimationModel, playbackOrder } from '@/lib/export/animationModel';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -61,6 +64,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const fps = useStudioStore((s) => s.fps);
   const clips = useStudioStore((s) => s.clips);
+  const loopMode = useStudioStore((s) => s.loopMode);
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
 
@@ -69,6 +73,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const [isProjectExporting, setIsProjectExporting] = useState(false);
   const projectExportInFlightRef = React.useRef(false);
   const [shaderTarget, setShaderTarget] = useState<'godot' | 'unity'>('godot');
+  const [kitIndexed, setKitIndexed] = useState(false);
+  const [kitNormals, setKitNormals] = useState(false);
+  const [kitPivot, setKitPivot] = useState<'center' | 'feet'>('center');
+  const [kitError, setKitError] = useState<string | null>(null);
+  const kitInFlightRef = React.useRef(false);
   const [cycleLoopDuration, setCycleLoopDuration] = useState<number>(2.0);
   const [cycleLoopFormat, setCycleLoopFormat] = useState<'apng' | 'gif'>('apng');
   const [replayFormat, setReplayFormat] = useState<'gif' | 'mp4'>('gif');
@@ -80,6 +89,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     webm: 4,
     mp4: 4,
     spritesheet: 2,
+    'godot-kit': 1,
     replay: 4,
     svg: 4,
     shader: 4,
@@ -107,14 +117,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const [holdLastFrameMs, setHoldLastFrameMs] = useState<number>(1000);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<{ current: number; total: number } | null>(null);
-  const [isMp4Supported, setIsMp4Supported] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? isMp4ExportSupported() : false
-  );
+  const [isMp4Supported, setIsMp4Supported] = useState(false);
+  const [isWebmSupported, setIsWebmSupported] = useState(false);
   const abortControllerRef = React.useRef<AbortController | null>(null);
+  useEffect(() => () => abortControllerRef.current?.abort(), []);
 
   useEffect(() => {
-    setIsMp4Supported(isMp4ExportSupported());
-  }, [isOpen]);
+    let disposed = false;
+    setIsMp4Supported(false);
+    setIsWebmSupported(isWebmExportSupported());
+    void probeMp4ExportSupport(canvasWidth * scale, canvasHeight * scale, fps).then(supported => {
+      if (!disposed) setIsMp4Supported(supported);
+    });
+    return () => { disposed = true; };
+  }, [isOpen, canvasWidth, canvasHeight, scale, fps]);
 
   // Compute targeted frames based on selected clip scope with inverted/out-of-bounds safety
   const selectedClip = clips.find((c) => c.id === selectedClipId);
@@ -125,6 +141,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     endIdx = Math.min(Math.max(0, frames.length - 1), Math.max(selectedClip.startFrame, selectedClip.endFrame));
   }
   const targetFrames = selectedClip ? frames.slice(startIdx, endIdx + 1) : frames;
+  const animationFrames = playbackOrder(0, targetFrames.length - 1, selectedClip?.loopMode, loopMode)
+    .map(index => targetFrames[index]);
   const scopeSuffix = selectedClip ? `_${selectedClip.name.replace(/\s+/g, '_')}` : '';
 
   const handleCancel = () => {
@@ -141,6 +159,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const handleSelectExportType = (type: ExportType) => {
     setExportType(type);
     setProjectExportError(null);
+    setKitError(null);
+  };
+
+  const handleExportGodotKit = async () => {
+    if (kitInFlightRef.current) return;
+    kitInFlightRef.current = true;
+    const controller = new AbortController(); abortControllerRef.current = controller;
+    setIsExporting(true); setKitError(null);
+    try {
+      const { blob } = await buildGodotKit({ clipId: selectedClipId, indexed: kitIndexed, normals: kitNormals, pivot: kitPivot, signal: controller.signal });
+      if (controller.signal.aborted) return;
+      const url = URL.createObjectURL(blob), link = document.createElement('a');
+      link.download = `${projectName.toLowerCase().replace(/[^a-z0-9_-]+/g, '_').slice(0, 64) || 'sprite'}-godot-kit.zip`;
+      link.href = url; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); onClose();
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) setKitError(error instanceof Error ? error.message : 'Game kit export failed. Retry the export.');
+    } finally {
+      kitInFlightRef.current = false;
+      if (abortControllerRef.current === controller) { abortControllerRef.current = null; setIsExporting(false); }
+    }
   };
 
   const handleExportPNG = () => {
@@ -215,26 +253,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const frameCanvases: HTMLCanvasElement[] = [];
-
-    for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (!composed) {
-        console.error(`Failed to composite frame ${i + 1} for sprite sheet export.`);
-        const fallback = document.createElement('canvas');
-        fallback.width = canvasWidth;
-        fallback.height = canvasHeight;
-        frameCanvases.push(fallback);
-      } else {
-        frameCanvases.push(composed);
-      }
-    }
-
     try {
+      const frameCanvases = targetFrames.map((_, i) => {
+        const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
+        if (!composed) throw new Error(`Frame ${i + 1} could not be rendered. Retry the export.`);
+        return composed;
+      });
+      const baseFilename = `${`${projectName}${scopeSuffix}`.toLowerCase().replace(/[^a-z0-9_-]+/g, '_').slice(0, 64) || 'sprite'}-sheet-${effectiveScale}x`;
+      const animation = buildAnimationModel(targetFrames, selectedClip ? [selectedClip] : clips,
+        useStudioStore.getState().loopMode, targetFrames.map((_, i) => startIdx + i));
       const packed = packSpriteSheet(frameCanvases, canvasWidth, canvasHeight, fps, projectName, {
         layout: layoutMode,
         scale: effectiveScale,
         padding,
+        animation,
+        textureFilename: `${baseFilename}.png`,
       });
 
       const dataUrl = packed.canvas.toDataURL('image/png');
@@ -242,7 +275,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         throw new Error('toDataURL returned empty or corrupted data.');
       }
 
-      const baseFilename = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-sheet-${effectiveScale}x`;
       const link = document.createElement('a');
       link.download = `${baseFilename}.png`;
       link.href = dataUrl;
@@ -277,20 +309,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     } catch (err) {
       console.error('Sprite sheet export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'The sprite sheet would be too large to export safely.',
+        message: err instanceof Error ? err.message : 'Sprite sheet export failed. Retry the export.',
         type: 'error',
       });
     }
   };
 
   const handleExportGIF = async () => {
-    if (isExporting || targetFrames.length === 0) return;
+    if (isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 8);
     const outW = canvasWidth * effectiveScale;
     const outH = canvasHeight * effectiveScale;
     const validation = validateExportGeometry(outW, outH, {
-      frameCount: targetFrames.length,
+      frameCount: animationFrames.length,
       maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
     });
     if (!validation.valid) {
@@ -304,11 +336,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
 
     const frameCanvases: HTMLCanvasElement[] = [];
 
-    for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (composed) {
-        frameCanvases.push(composed);
+    for (let i = 0; i < animationFrames.length; i++) {
+      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
+      if (!composed) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
+        return;
       }
+      frameCanvases.push(composed);
     }
 
     if (frameCanvases.length === 0) return;
@@ -319,7 +353,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     setIsExporting(true);
     setExportProgress({ current: 0, total: frameCanvases.length });
 
-    const delays = targetFrames.map((f) => {
+    const delays = animationFrames.map((f) => {
       const ms = f.durationMs || Math.round(1000 / fps);
       return Math.max(2, Math.round(ms / 10));
     });
@@ -333,7 +367,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           setExportProgress({ current, total });
         },
         controller.signal,
-        delays
+        delays,
+        loopMode !== 'once'
       );
 
       const url = URL.createObjectURL(blob);
@@ -350,7 +385,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       console.error('GIF export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'This animation would be too large to export safely.',
+        message: err instanceof Error ? err.message : 'GIF export failed. Please retry.',
         type: 'error',
       });
     } finally {
@@ -417,13 +452,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportApng = async () => {
-    if (isExporting || targetFrames.length === 0) return;
+    if (isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = canvasWidth * effectiveScale;
     const outH = canvasHeight * effectiveScale;
     const validation = validateExportGeometry(outW, outH, {
-      frameCount: targetFrames.length,
+      frameCount: animationFrames.length,
       maxAggregatePixels: MAX_EXPORT_AGGREGATE_PIXELS,
     });
     if (!validation.valid) {
@@ -436,11 +471,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     }
 
     const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (composed) {
-        frameCanvases.push(composed);
+    for (let i = 0; i < animationFrames.length; i++) {
+      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
+      if (!composed) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
+        return;
       }
+      frameCanvases.push(composed);
     }
 
     if (frameCanvases.length === 0) return;
@@ -451,14 +488,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     setIsExporting(true);
     setExportProgress({ current: 0, total: frameCanvases.length });
 
-    const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
+    const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
     try {
       const blob = await exportAnimationToApngAsync(frameCanvases, {
         fps,
         scale: effectiveScale,
         durationsMs,
-        loopCount: 0,
+        loopCount: loopMode === 'once' ? 1 : 0,
         onProgress: (current, total) => {
           setExportProgress({ current, total });
         },
@@ -489,7 +526,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportMp4 = async () => {
-    if (isExporting || targetFrames.length === 0) return;
+    if (isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = (canvasWidth * effectiveScale + 1) & ~1;
@@ -505,11 +542,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     }
 
     const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (composed) {
-        frameCanvases.push(composed);
+    for (let i = 0; i < animationFrames.length; i++) {
+      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
+      if (!composed) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
+        return;
       }
+      frameCanvases.push(composed);
     }
 
     if (frameCanvases.length === 0) return;
@@ -520,7 +559,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     setIsExporting(true);
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
-    const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
+    const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
     try {
       const blob = await exportAnimationToMp4Async(frameCanvases, {
@@ -547,7 +586,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       console.error('MP4 export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'This animation would be too large to export safely.',
+        message: err instanceof Error ? err.message : 'MP4 export failed. Please retry.',
         type: 'error',
       });
     } finally {
@@ -579,7 +618,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportWebm = async () => {
-    if (isExporting || targetFrames.length === 0) return;
+    if (isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = canvasWidth * effectiveScale;
@@ -595,11 +634,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     }
 
     const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < targetFrames.length; i++) {
-      const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (composed) {
-        frameCanvases.push(composed);
+    for (let i = 0; i < animationFrames.length; i++) {
+      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
+      if (!composed) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
+        return;
       }
+      frameCanvases.push(composed);
     }
 
     if (frameCanvases.length === 0) return;
@@ -610,7 +651,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     setIsExporting(true);
     setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
 
-    const durationsMs = targetFrames.map((f) => f.durationMs || Math.round(1000 / fps));
+    const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
     try {
       const blob = await exportAnimationToWebmAsync(frameCanvases, {
@@ -637,7 +678,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       console.error('WebM export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'This animation would be too large to export safely.',
+        message: err instanceof Error ? err.message : 'WebM export failed. Please retry.',
         type: 'error',
       });
     } finally {
@@ -825,11 +866,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           setScale={setScale}
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
-          totalFrames={targetFrames.length}
+          totalFrames={animationFrames.length}
           fps={fps}
           videoLoopCount={videoLoopCount}
           setVideoLoopCount={setVideoLoopCount}
           isMp4Supported={isMp4Supported}
+          isWebmSupported={isWebmSupported}
+          onSelectType={setExportType}
         />
       )}
 
@@ -898,6 +941,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         <ProjectExportTab totalFrames={frames.length} />
       )}
 
+      {exportType === 'godot-kit' && <GodotKitExportTab indexed={kitIndexed} normals={kitNormals} pivot={kitPivot}
+        onIndexed={setKitIndexed} onNormals={setKitNormals} onPivot={setKitPivot} disabled={isExporting} />}
+      {exportType === 'godot-kit' && kitError && <p role="alert" className="text-xs text-[var(--state-danger)]">{kitError}</p>}
+
       {projectExportError && exportType === 'project' && (
         <p role="alert" className="text-xs text-[var(--state-danger)] border border-[var(--state-danger)]/40 bg-[var(--surface-0)] px-2 py-1.5 rounded-[2px]">
           {projectExportError}
@@ -909,7 +956,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         <TactileButton
           size="sm"
           variant="default"
-          disabled={isExporting || isProjectExporting}
+          disabled={(isExporting && exportType !== 'godot-kit') || isProjectExporting}
           onClick={handleCancel}
           aria-label="Cancel"
           data-testid="export-cancel-button"
@@ -924,10 +971,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           disabled={
             isExporting || isProjectExporting ||
             (exportType === 'replay' && (historyLength === 0 || (replayFormat === 'mp4' && !isMp4Supported))) ||
-            (exportType === 'mp4' && !isMp4Supported)
+            (exportType === 'mp4' && !isMp4Supported) ||
+            (exportType === 'webm' && !isWebmSupported)
           }
           onClick={
-            exportType === 'shader'
+            exportType === 'godot-kit'
+              ? handleExportGodotKit
+              : exportType === 'shader'
               ? handleExportShader
               : exportType === 'palette-cycle'
               ? handleExportCycleLoop
@@ -952,7 +1002,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
-          <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Encoding Video...' : exportType === 'project' ? 'Download project backup' : `Download ${exportType.toUpperCase()}`}</span>
+          <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : `Download ${exportType.toUpperCase()}`}</span>
         </TactileButton>
       </div>
     </ModalWrapper>

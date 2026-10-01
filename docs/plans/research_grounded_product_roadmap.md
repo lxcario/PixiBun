@@ -1,5 +1,7 @@
 # PixiBun research-grounded product roadmap
 
+> **Implementation reconciliation — 2026-10-01:** The separate six-phase codebase audit implemented protected previews and source-change detection, animation review, semantic palette/game delivery and small shared-light/tile research workflows. This is partial progress toward the roadmap below, not completion of its broader Effect Inspector, depth inference, collaboration or world-generation requirements. See the [phase report](../research/phase-implementation-status.md) and [session completion record](../research/session-completion-2026-10-01.md).
+
 This plan treats PixiBun as a pixel-art workstation, not a collection of one-click filters. Every generated result should be understandable, editable, repeatable, and portable with the project.
 
 ## Design principles
@@ -158,3 +160,9 @@ Implement one vertical slice at a time across recipe, preview, persistence, undo
 - Light strength now scales direct diffuse/specular energy only. It no longer multiplies ambient and final exposure a second time, and it cannot erase the directional terminator at 250%. Auto cavity shading is capped and deep crevice tones are restricted to genuinely occluded pixels on the unlit side.
 - The draggable light center is a true spatial focus. Moving it translates the virtual point light, recomputes the per-pixel light and half vectors, and applies a soft inverse-quadratic focus falloff without creating a hard circular edge.
 - Generated-layer provenance records palette inputs where palette-constrained output depends on them. Dead recipe kinds and unused UI modules/assets were removed.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](../research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](../research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

@@ -16,6 +16,9 @@ import { validateProjectResourceBudget, safeMultiply } from './resourceBudget';
 import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
 import { MAX_PALETTE_CYCLE_TRACKS } from '@/lib/color/paletteAdmission';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
+import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
+import { parsePaletteSemantics } from '@/lib/color/paletteSemantics';
+import { parseResearchRecipe } from '@/lib/research/recipes';
 import {
   type EnvelopeViolation,
   type EnvelopeViolationCode,
@@ -258,6 +261,9 @@ function validateFrame(
       };
     }
     const effect = validateLayerEffect(rawLayer.effect);
+    let research;
+    try { research = parseResearchRecipe(rawLayer.research); }
+    catch (error) { return { error: `Frame ${frameIndex + 1}, layer ${i + 1}: ${(error as Error).message}`, reasonCode: 'INVALID_LAYER_STRUCTURE' }; }
     if (typeof effect === 'string') {
       return {
         error: `Frame ${frameIndex + 1}, layer ${i + 1} ${effect}`,
@@ -286,6 +292,7 @@ function validateFrame(
       pngBase64: typeof rawLayer.pngBase64 === 'string' ? rawLayer.pngBase64 : undefined,
       tag: typeof rawLayer.tag === 'string' ? rawLayer.tag : undefined,
       effect,
+      research,
     });
   }
 
@@ -609,6 +616,8 @@ function validateSanitizedProjectCore(
       }
     }
 
+    const semantics = pal.semantics === undefined ? undefined : parsePaletteSemantics(pal.semantics, pal.colors.length);
+    if (semantics === null) return { ok: false, error: `Palette ${i + 1} has invalid roles or index bindings.`, reasonCode: 'INVALID_PALETTES' };
     paletteIds.add(pal.id);
     validatedPalettes.push({
       id: pal.id,
@@ -616,6 +625,7 @@ function validateSanitizedProjectCore(
       author: typeof pal.author === 'string' ? pal.author : undefined,
       colors: pal.colors.slice(),
       cycleTracks,
+      ...(semantics ? { semantics } : {}),
     });
   }
 
@@ -743,6 +753,8 @@ function validateSanitizedProjectCore(
       loopMode = clip.loopMode;
     }
 
+    const review = clip.review === undefined ? undefined : parseAnimationReview(clip.review);
+    if (review === null) return { ok: false, error: `Animation clip ${i + 1} has invalid review regions or exceptions.`, reasonCode: 'INVALID_CLIPS' };
     validatedClips.push({
       id: clip.id,
       name: clip.name,
@@ -752,6 +764,7 @@ function validateSanitizedProjectCore(
       toFrame: end,
       color,
       loopMode,
+      ...(review ? { review } : {}),
     });
   }
 

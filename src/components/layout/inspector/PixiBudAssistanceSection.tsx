@@ -39,6 +39,8 @@ export const PixiBudAssistanceSection: React.FC = () => {
   const activeLayerId = useStudioStore((s) => s.activeLayerId);
   const editRevision = useStudioStore((s) => s.editRevision);
   const bufferVersion = useStudioStore((s) => s.bufferVersion);
+  const clips = useStudioStore((s) => s.clips);
+  const activeClipId = useStudioStore((s) => s.activeClipId);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const activeLayerLocked = useStudioStore((s) => s.frames[s.activeFrameIndex]?.layers.find((layer) => layer.id === s.activeLayerId)?.locked ?? false);
@@ -50,7 +52,7 @@ export const PixiBudAssistanceSection: React.FC = () => {
   const [cleanupAllFrames, setCleanupAllFrames] = useState(false);
   const [cleanupReport, setCleanupReport] = useState<{
     phase: 'scan' | 'applied'; stats: SpriteCleanupStats; frames: number; skippedLocked: number;
-    source: { projectId: string; frameId: string; layerId: string; editRevision: number; bufferVersion: number };
+    source: { projectId: string; frameId: string; layerId: string; editRevision: number; bufferVersion: number; reviewKey?: string };
     beforePreview?: string; afterPreview?: string;
   } | null>(null);
   const [rasterPreview, setRasterPreview] = useState<{
@@ -66,7 +68,8 @@ export const PixiBudAssistanceSection: React.FC = () => {
     cleanupReport.source.frameId === activeFrameId &&
     cleanupReport.source.layerId === activeLayerId &&
     cleanupReport.source.editRevision === editRevision &&
-    cleanupReport.source.bufferVersion === bufferVersion;
+    cleanupReport.source.bufferVersion === bufferVersion &&
+    cleanupReport.source.reviewKey === JSON.stringify(clips.find(clip => clip.id === activeClipId) ?? null);
 
   useEffect(() => studioEvents.on('pixibun:sprite-cleanup-report', setCleanupReport), []);
   useEffect(() => {
@@ -205,6 +208,7 @@ export const PixiBudAssistanceSection: React.FC = () => {
               {' '}{cleanupReport.stats.removedSpecks} stray,
               {' '}{cleanupReport.stats.simplifiedColors} shade, {cleanupReport.stats.thinnedLinePixels} line.
               {' '}Colors: {cleanupReport.stats.sourceColors} → {cleanupReport.stats.resultColors}.
+              {(cleanupReport.stats.protectedPixels ?? 0) > 0 && ` Kept ${cleanupReport.stats.protectedPixels} protected pixels. Category counts describe proposals before protection.`}
               {cleanupReport.stats.removedFaint === 0 && cleanupReport.stats.hardenedAlpha === 0 &&
                 ' No translucent pixels found; the alpha slider cannot remove opaque gray marks.'}
               {cleanupReport.skippedLocked > 0 && ` Skipped ${cleanupReport.skippedLocked} locked layer${cleanupReport.skippedLocked === 1 ? '' : 's'}.`}
@@ -214,15 +218,23 @@ export const PixiBudAssistanceSection: React.FC = () => {
             <p role="status" className="text-[10px] text-[var(--accent-gold)]">Artwork changed since this preview. Scan again before applying.</p>
           )}
           {cleanupReport?.phase === 'scan' && cleanupReport.beforePreview && cleanupReport.afterPreview && (
-            <div className="grid grid-cols-2 gap-1.5 text-center text-[9px] text-[var(--text-muted)]">
-              {([['Before', cleanupReport.beforePreview], ['Preview', cleanupReport.afterPreview]] as const).map(([label, url]) => (
-                <div key={label}>
-                  <div className="mb-0.5">{label}</div>
-                  <div role="img" aria-label={`${label} artwork cleanup thumbnail`}
-                    className="h-24 border border-[var(--desk-border)] bg-white bg-center bg-no-repeat"
-                    style={{ backgroundImage: `url(${url})`, backgroundSize: 'contain', imageRendering: 'pixelated' }} />
+            <div className="flex flex-col gap-1.5">
+              {(cleanupReport.stats.protectedPixels ?? 0) > 0 && (
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-[#251829] border border-[#f0be7c] text-[#f0be7c] text-[10px] font-mono rounded-[2px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f0be7c] shrink-0" />
+                  <span>Protected regions active · {cleanupReport.stats.protectedPixels} pixel{cleanupReport.stats.protectedPixels === 1 ? '' : 's'} shielded from cleanup</span>
                 </div>
-              ))}
+              )}
+              <div className="grid grid-cols-2 gap-1.5 text-center text-[9px] text-[var(--text-muted)]">
+                {([['Before', cleanupReport.beforePreview], ['Preview', cleanupReport.afterPreview]] as const).map(([label, url]) => (
+                  <div key={label}>
+                    <div className="mb-0.5">{label}</div>
+                    <div role="img" aria-label={`${label} artwork cleanup thumbnail`}
+                      className="h-24 border border-[var(--desk-border)] bg-white bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${url})`, backgroundSize: 'contain', imageRendering: 'pixelated' }} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

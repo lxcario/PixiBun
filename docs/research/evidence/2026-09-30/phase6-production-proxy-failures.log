@@ -1,0 +1,331 @@
+[WebServer] (node:42944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 33 tests using 1 worker
+
+(node:12068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (5.1s)
+  ok  2 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (4.8s)
+  ok  3 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (3.5s)
+  ok  4 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (1.7s)
+  ok  5 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (2.8s)
+Production browser error: Failed to load resource: the server responded with a status of 502 (Bad Gateway) []
+  x   6 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (10.2s)
+(node:21268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (1.9s)
+Production browser error: Failed to load resource: the server responded with a status of 502 (Bad Gateway) []
+  x   8 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (10.2s)
+(node:33384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (4.3s)
+  ok 10 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (4.0s)
+  ok 11 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (3.9s)
+(node:16660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 12 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (12.1s)
+  ok 13 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (5.6s)
+  ok 14 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (5.0s)
+  ok 15 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (3.8s)
+  ok 16 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (6.5s)
+  x  17 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (1.0m)
+(node:11920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 18 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (4.5s)
+  x  19 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (1.0m)
+(node:40820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  20 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (18.3s)
+(node:6908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 21 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (7.2s)
+  ok 22 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.1s)
+(node:28316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 23 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (21.4s)
+  ok 24 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (15.9s)
+  ok 25 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (10.5s)
+  ok 26 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (4.6s)
+  ok 27 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (7.5s)
+Production browser error: Failed to load resource: the server responded with a status of 502 (Bad Gateway) []
+  x  28 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (10.5s)
+(node:10156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 29 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (6.1s)
+Production browser error: Failed to load resource: the server responded with a status of 502 (Bad Gateway) []
+  x  30 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (10.4s)
+(node:23132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 31 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (16.6s)
+  ok 32 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (13.5s)
+  ok 33 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (12.9s)
+
+
+  1) [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-restoration-phase="active"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-restoration-phase="active"]')
+
+
+      15 |   });
+      16 |   await page.goto(url);
+    > 17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+         |                                                                   ^
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+      20 |
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:17:67)
+        at D:\PixiBun\tests\production\operation.spec.ts:79:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-restoration-phase="active"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-restoration-phase="active"]')
+
+
+      15 |   });
+      16 |   await page.goto(url);
+    > 17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+         |                                                                   ^
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+      20 |
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:17:67)
+        at D:\PixiBun\tests\production\operation.spec.ts:142:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.goto: Test timeout of 60000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:52489/studio", waiting until "load"
+
+
+      14 |     console.error('Production browser error:', message.text(), JSON.stringify(details));
+      15 |   });
+    > 16 |   await page.goto(url);
+         |              ^
+      17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:16:14)
+        at D:\PixiBun\tests\production\operation.spec.ts:79:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.goto: Test timeout of 60000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:59778/studio", waiting until "load"
+
+
+      14 |     console.error('Production browser error:', message.text(), JSON.stringify(details));
+      15 |   });
+    > 16 |   await page.goto(url);
+         |              ^
+      17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:16:14)
+        at D:\PixiBun\tests\production\operation.spec.ts:142:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Source changed: recompute this recipe.', { exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText('Source changed: recompute this recipe.', { exact: true })
+
+
+       at ..\helpers\researchWorkflows.ts:49
+
+      47 |   await page.mouse.click(canvas.x + canvas.width * 0.1, canvas.y + canvas.height * 0.25);
+      48 |   await page.getByRole('button', { name: 'Select layer Detail study. Double click to rename', exact: true }).click();
+    > 49 |   await openResearch(page); await expect(page.getByText('Source changed: recompute this recipe.', { exact: true })).toBeVisible();
+         |                                                                                                                     ^
+      50 | }
+      51 | export async function verifyLightWorkflow(page: Page) {
+      52 |   await importGameDeliveryFixture(page); const before = await artwork(page); await openResearch(page);
+        at verifyDetailWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:49:117)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:4:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-restoration-phase="active"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-restoration-phase="active"]')
+
+
+      15 |   });
+      16 |   await page.goto(url);
+    > 17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+         |                                                                   ^
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+      20 |
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:17:67)
+        at D:\PixiBun\tests\production\operation.spec.ts:79:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-restoration-phase="active"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-restoration-phase="active"]')
+
+
+      15 |   });
+      16 |   await page.goto(url);
+    > 17 |   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+         |                                                                   ^
+      18 |   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
+      19 | }
+      20 |
+        at ready (D:\PixiBun\tests\production\operation.spec.ts:17:67)
+        at D:\PixiBun\tests\production\operation.spec.ts:142:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+    [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+    [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+    [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+    [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+    [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+    [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+  26 passed (6.4m)

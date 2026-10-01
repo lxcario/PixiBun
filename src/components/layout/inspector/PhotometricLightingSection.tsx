@@ -56,7 +56,7 @@ const MATERIAL_CHIPS: MaterialChip[] = [
   },
 ];
 
-export const PhotometricLightingSection: React.FC = () => {
+export const PhotometricLightingSection: React.FC<{ taskView?: boolean }> = ({ taskView = false }) => {
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const tools = useStudioStore((s) => s.tools);
@@ -141,11 +141,11 @@ export const PhotometricLightingSection: React.FC = () => {
 
   return (
     <PanelSection
-      title="3D Lighting & Shading"
-      ariaLabel="3D Lighting & Shading (2.5D Photometric Studio)"
-      storageKey="pixibun:panel:lighting"
+      title="Light your sprite"
+      description="Move a light to preview highlights and shading."
+      icon="lamp"
+      storageKey={taskView ? 'pixibun:panel:lighting-task:v2' : 'pixibun:panel:lighting'}
       defaultOpen={true}
-      actions={<span className="text-[9px] font-mono text-[var(--text-muted)] font-normal">{tools.lightAzimuth}° / {tools.lightElevation}°</span>}
     >
       <div className="flex flex-col gap-2.5">
         {canvasWidth === 64 && (canvasHeight === 64 || canvasHeight === 32) && (
@@ -200,39 +200,39 @@ export const PhotometricLightingSection: React.FC = () => {
         <div
           className="inline-flex w-full bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5"
           role="group"
-          aria-label="Photometric lighting mode"
+          aria-label="Lighting setup"
         >
           <button
             type="button"
             onClick={() => setMode('auto')}
             aria-pressed={mode === 'auto'}
-            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+            className={`flex-1 min-h-8 py-1 text-[11px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'auto'
                 ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >
             <PixelIcon name="sun" size={11} />
-            <span>Auto</span>
+            <span>Auto setup</span>
           </button>
           <button
             type="button"
             onClick={() => setMode('manual')}
             aria-pressed={mode === 'manual'}
-            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+            className={`flex-1 min-h-8 py-1 text-[11px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'manual'
                 ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >
             <PixelIcon name="pen" size={11} />
-            <span>Manual</span>
+            <span>Manual setup</span>
           </button>
         </div>
         <p className="text-[10px] leading-4 text-[var(--text-muted)]">
           {mode === 'auto'
-            ? 'Auto reads your sprite; you choose where the light goes.'
-            : 'Manual lets you set light direction and material yourself.'}
+            ? 'Auto chooses settings from your sprite.'
+            : 'Choose the light direction and surface yourself.'}
         </p>
 
         {/* Shading Tones Mode: 1 Single | 2 Dual | 3 Trio */}
@@ -240,15 +240,15 @@ export const PhotometricLightingSection: React.FC = () => {
           <summary className="min-h-7 px-2 flex items-center justify-between gap-2 text-[10px] font-sans text-[var(--text-heading)] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]">
             <span className="flex items-center gap-1 font-medium"><span aria-hidden="true" className="inline-block text-[9px] group-open:rotate-90">▸</span>Shading style</span>
             <span className="text-[var(--accent-gold)] font-mono text-[9px]">
-              {tools.shadingBands === 1 ? '1 Tone (Single)' : tools.shadingBands === 3 ? '3 Tones (Trio)' : '2 Tones (Dual)'}
+              {tools.shadingBands} shadow {tools.shadingBands === 1 ? 'tone' : 'tones'}
             </span>
           </summary>
           <div className="p-1.5 pt-0">
             <div className="grid grid-cols-3 gap-0.5" role="group" aria-label="Shading tones count">
               {([
-                { count: 1 as const, label: '1 Single', title: '1 shadow tone (classic flat 2-tone cel-shading)' },
-                { count: 2 as const, label: '2 Dual', title: '2 shadow tones (core + deep shadow)' },
-                { count: 3 as const, label: '3 Trio', title: '3 shadow tones (soft penumbra + mid + deep core)' },
+                { count: 1 as const, label: '1 tone', title: 'One shadow shade' },
+                { count: 2 as const, label: '2 tones', title: 'Two shadow shades' },
+                { count: 3 as const, label: '3 tones', title: 'Three shadow shades' },
               ] as const).map(({ count, label, title }) => (
                 <button
                   key={count}
@@ -277,18 +277,20 @@ export const PhotometricLightingSection: React.FC = () => {
               variant="primary"
               onClick={handleAutoRenderPhotometric}
               title="Places an interactive light bulb on the canvas to preview shading live. Drag to adjust angle in real time, Enter to apply."
-              aria-label="Analyze & Light Bulb"
+              aria-label="Preview lighting"
               data-testid="analyze-light-bulb"
-              className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
+              className="h-9 text-xs font-medium justify-center flex items-center gap-1.5"
             >
               <PixelIcon name="lamp" size={13} />
-              <span>Place Light Bulb</span>
+              <span>Preview lighting</span>
             </TactileButton>
             <span className="text-[9px] text-[var(--text-muted)] text-center">
-              Canvas light gizmo • Drag to steer • Enter to apply
+              Drag the light on your artwork. Enter applies · Esc cancels.
             </span>
             {analysisSummary && (
-              <div className="mt-1.5 p-2 rounded-[2px] border border-[var(--desk-border)] bg-[var(--surface-0)] flex flex-col gap-1" aria-live="polite">
+              <details className="mt-1.5 rounded-[2px] border border-[var(--desk-border)] bg-[var(--surface-0)]">
+                <summary className="min-h-8 px-2 flex items-center text-[11px] text-[var(--text-body)] cursor-pointer">Detected lighting settings</summary>
+              <div className="p-2 flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2 text-[9px] font-mono">
                   <span className="text-[var(--text-heading)] uppercase">Detected {analysisSummary.formType}</span>
                   <span className="text-[var(--accent-gold)]">{analysisSummary.material}</span>
@@ -313,6 +315,7 @@ export const PhotometricLightingSection: React.FC = () => {
                 </div>
                 <p className="text-[8px] leading-snug text-[var(--text-muted)]">{analysisSummary.rationale}</p>
               </div>
+              </details>
             )}
           </div>
         )}
@@ -464,7 +467,7 @@ export const PhotometricLightingSection: React.FC = () => {
 
                 {/* Cavity / Crevice Ambient Occlusion */}
                 <StudioSlider
-                  label="Crevice AO"
+                  label="Darken creases"
                   value={Math.round(tools.cavityStrength * 100)}
                   min={0}
                   max={100}
@@ -497,12 +500,12 @@ export const PhotometricLightingSection: React.FC = () => {
                 variant="primary"
                 onClick={handleRenderPhotometricLighting}
                 title="Bake directional light and shadow onto the canvas"
-                aria-label="Bake Light"
+                aria-label="Apply lighting"
                 data-testid="bake-light-button"
                 className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
               >
                 <PixelIcon name="sun" size={13} />
-                <span>Bake Light</span>
+                <span>Apply lighting</span>
               </TactileButton>
 
               <TactileButton
@@ -510,12 +513,12 @@ export const PhotometricLightingSection: React.FC = () => {
                 variant="default"
                 onClick={handleStartLightGizmo}
                 title="Place an interactive light bulb on the canvas (Enter to apply, Esc to cancel)"
-                aria-label="Light Bulb"
+                aria-label="Preview lighting"
                 data-testid="light-bulb-button"
                 className="text-xs py-1.5 font-medium justify-center flex items-center gap-1.5"
               >
                 <PixelIcon name="lamp" size={13} />
-                <span>Light Bulb</span>
+                <span>Preview lighting</span>
               </TactileButton>
             </div>
           )}

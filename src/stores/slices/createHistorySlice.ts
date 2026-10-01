@@ -4,6 +4,7 @@ import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectFile } from '@/types/project';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
+import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
 
 /**
  * Studio Session & History Metadata Slice
@@ -143,6 +144,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
         state.clips = projectData.clips.map((c, idx) => {
           const from = c.fromFrame !== undefined ? c.fromFrame : (c.startFrame ?? 0);
           const to = c.toFrame !== undefined ? c.toFrame : (c.endFrame ?? from);
+          const review = c.review === undefined ? null : parseAnimationReview(c.review);
           return {
             id: c.id || `tag-${idx + 1}`,
             name: c.name || `Tag ${idx + 1}`,
@@ -152,6 +154,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
             endFrame: to,
             color: c.color || '#F0BE7C',
             loopMode: c.loopMode || 'forward',
+            ...(review ? { review } : {}),
           };
         });
       }

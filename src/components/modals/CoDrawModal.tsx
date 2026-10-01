@@ -116,7 +116,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
               }`}
             />
             <span className="font-bold capitalize text-[var(--text-heading)]">
-              Status: {connectionState.replace(/-/g, ' ')}
+              Status: {connectionState === 'connected' ? 'Connected' : connectionState === 'connecting' ? 'Connecting…' : connectionState === 'waiting-for-answer' ? 'Waiting for partner…' : 'Not connected'}
             </span>
           </div>
 
@@ -136,13 +136,13 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
         {connectionState === 'connected' ? (
           <div className="flex flex-col gap-3 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#a3be8c]">
             <p className="text-[var(--text-body)] leading-relaxed">
-              <strong className="text-[#a3be8c]">Direct P2P Connection Established!</strong> Strokes
-              and cursors now sync in real time over dual WebRTC data channels with Strong Eventual
-              Consistency (SEC). Remote strokes are merged per-pixel via a Last-Write-Wins CRDT.
+              <strong className="text-[#a3be8c]">Connected!</strong> You are drawing live together in real time. Remote strokes appear instantly.
+
+
             </p>
             <p className="text-[10px] text-[#ebcb8b] leading-relaxed">
-              Note: the host owns the layer structure while connected — layer/frame changes made by
-              the guest stay local.
+              Session role: The host manages project frames and layers. Guests paint freely on the active layers.
+
             </p>
             <div className="flex justify-end pt-2">
               <TactileButton

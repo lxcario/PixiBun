@@ -127,12 +127,12 @@ test.describe('Live Studio Integration Proof: Chisel, Preview & Relighting', () 
     await page.getByTestId('pixitools-task-lighting').click();
     await page.waitForTimeout(200);
 
-    // Verify 2.5D Normal Sculptor section is mounted
-    await page.getByRole('button', { name: /Surface Depth & Bevels/ }).click();
-    await expect(page.getByText('2.5D Normal Sculptor')).toBeVisible();
+    // Verify Paint raised edges section is mounted
+    await page.getByRole('button', { name: /Shape the surface/ }).click();
+    await expect(page.getByText('Paint raised edges', { exact: true })).toBeVisible();
 
-    // 4. Click "+ Add Dedicated Normal Layer"
-    const addNormalLayerBtn = page.getByRole('button', { name: /Add Dedicated Normal Layer/i });
+    // 4. Click "+ Create surface layer"
+    const addNormalLayerBtn = page.getByRole('button', { name: /Create surface layer/i });
     if (await addNormalLayerBtn.isVisible()) {
       await addNormalLayerBtn.click();
       await page.waitForTimeout(200);
@@ -184,13 +184,13 @@ test.describe('Live Studio Integration Proof: Chisel, Preview & Relighting', () 
     });
 
     // 6. TOGGLE "Preview: ON" to prove normal map inspection in live viewport
-    const previewBtn = page.getByRole('button', { name: /3D Map: OFF/i });
+    const previewBtn = page.getByRole('button', { name: /Show surface directions/i });
     await expect(previewBtn).toBeVisible();
     await previewBtn.click();
     await page.waitForTimeout(300);
 
     // Verify button flipped to "Preview: ON"
-    const previewOnBtn = page.getByRole('button', { name: /3D Map: ON/i });
+    const previewOnBtn = page.getByRole('button', { name: /Hide surface directions/i });
     await expect(previewOnBtn).toBeVisible();
 
     // Assert Zustand preview state is strictly true
@@ -207,12 +207,12 @@ test.describe('Live Studio Integration Proof: Chisel, Preview & Relighting', () 
     // Toggle preview back to OFF for relighting inspection
     await previewOnBtn.click();
     await page.waitForTimeout(200);
-    await expect(page.getByRole('button', { name: /3D Map: OFF/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Show surface directions/i })).toBeVisible();
 
     // 7. Test Live Studio Photometric Relighting (Light Direction 1: Azimuth 45°)
-    const lightingPanel = page.getByRole('button', { name: /2\.5D Photometric Studio/i });
+    const lightingPanel = page.getByRole('button', { name: /Light your sprite/i });
     if (await lightingPanel.getAttribute('aria-expanded') === 'false') await lightingPanel.click();
-    const manualModeBtn = page.getByLabel('Photometric lighting mode').getByRole('button', { name: /Manual/i });
+    const manualModeBtn = page.getByLabel('Lighting setup').getByRole('button', { name: /Manual/i });
     if (await manualModeBtn.isVisible()) {
       await manualModeBtn.click();
       await page.waitForTimeout(100);

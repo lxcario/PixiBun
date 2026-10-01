@@ -104,6 +104,9 @@ export const AUTOSAVE_DEBOUNCE_MS = 800;
 export function useStudioAutosave() {
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const [saveConflict, setSaveConflict] = useState<string | null>(null);
+  const storageVersionsRef = useRef(new Map<string, string>());
+  const conflictRef = useRef<string | null>(null);
   
   const autosaveTimerRef = useRef<number | null>(null);
   const autosaveInFlightRef = useRef(false);
@@ -164,6 +167,9 @@ export function useStudioAutosave() {
     }
 
     const currentProjId = useStudioStore.getState().currentProjectId;
+    if (conflictRef.current === currentProjId) {
+      return { ok: false, reason: 'conflict', error: 'Save a copy to preserve your work.' };
+    }
     if (
       lifecycleRef.current.phase === 'active' &&
       lifecycleRef.current.pendingRecovery?.sourceProjectId &&
@@ -190,6 +196,7 @@ export function useStudioAutosave() {
         do {
           autosavePendingRef.current = false;
           const state = useStudioStore.getState();
+          const expectedVersion = storageVersionsRef.current.get(state.currentProjectId) ?? null;
 
           const { setSaveStatus } = useStudioStore.getState();
           setSaveStatus('saving');
@@ -213,10 +220,13 @@ export function useStudioAutosave() {
               state.currentProjectId,
               project,
               thumbnailDataUrl,
-              layerBlobs
+              layerBlobs,
+              undefined,
+              expectedVersion
             );
 
             if (saveOutcome.ok) {
+              if (saveOutcome.storageVersion) storageVersionsRef.current.set(state.currentProjectId, saveOutcome.storageVersion);
               if (typeof commitPersistedRevisions === 'function') {
                 commitPersistedRevisions(state.currentProjectId, capturedRevisions);
               }
@@ -233,7 +243,16 @@ export function useStudioAutosave() {
               // Keep the last confirmed write visible until a new edit or save attempt.
             } else {
               setSaveStatus('error');
-              if (saveOutcome.reason === 'invariant-invalid') {
+              if (saveOutcome.reason === 'conflict') {
+                conflictRef.current = state.currentProjectId;
+                setSaveConflict(state.currentProjectId);
+                setAutosaveError(saveOutcome.error);
+                autosavePendingRef.current = false;
+                finalResult = { ok: false, reason: 'conflict', error: saveOutcome.error };
+              } else if (saveOutcome.reason === 'memory-limit') {
+                setAutosaveError(saveOutcome.error);
+                finalResult = { ok: false, reason: 'memory-limit', error: saveOutcome.error };
+              } else if (saveOutcome.reason === 'invariant-invalid') {
                 const errorMsg =
                   saveOutcome.error ||
                   'Autosave halted: workspace exceeds safety limits. Last valid save preserved.';
@@ -288,6 +307,19 @@ export function useStudioAutosave() {
     inFlightPromiseRef.current = savePromise;
     return await savePromise;
   }, []);
+
+  const saveConflictCopy = useCallback(async () => {
+    const state = useStudioStore.getState();
+    if (autosaveInFlightRef.current || conflictRef.current !== state.currentProjectId) return;
+    const newId = createId('proj');
+    // A new identity makes every raster dirty without clearing the live artwork/history.
+    useStudioStore.setState({ currentProjectId: newId, projectName: `${state.projectName.slice(0, 100)} (conflict copy)` });
+    useStudioStore.getState().setDirty(true);
+    conflictRef.current = null;
+    setSaveConflict(null);
+    updateLifecycle({ phase: 'active', projectId: newId });
+    await runAutosave();
+  }, [runAutosave, updateLifecycle]);
 
   const scheduleAutosave = useCallback(() => {
     if (autosaveTimerRef.current !== null) {
@@ -485,6 +517,7 @@ export function useStudioAutosave() {
 
         if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
         if (signal.aborted) return { success: false, reason: 'cancelled' };
+        if (admission.storageVersion) storageVersionsRef.current.set(targetProjectId, admission.storageVersion);
         if (isRecoveredCopy) {
           try {
             if (typeof window !== 'undefined') {
@@ -705,6 +738,7 @@ export function useStudioAutosave() {
             () => !unmounted && !isOpenStale(epoch) && !signal.aborted
           );
           if (!unmounted && !isOpenStale(epoch)) {
+            if (admission.storageVersion) storageVersionsRef.current.set(targetId, admission.storageVersion);
             let pendingRecovery: PendingRecoveryContext | undefined;
             try {
               const pendingSourceId =
@@ -845,6 +879,8 @@ export function useStudioAutosave() {
     runAutosave,
     handleCommitHistory,
     autosaveError,
+    saveConflict: lifecycleState.phase === 'active' && saveConflict === lifecycleState.projectId,
+    saveConflictCopy,
     setAutosaveError,
     storageWarning,
     setStorageWarning,

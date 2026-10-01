@@ -260,8 +260,8 @@ describe('Mark Ferrari 8-Bit Dynamic Palette Cycling Engine', () => {
       const shader = generateGodot4Shader(tracks, 256);
       expect(shader).toContain('shader_type canvas_item;');
       expect(shader).toContain('uniform sampler2D palette_texture');
-      expect(shader).toContain('color_idx >= 10 && color_idx <= 15');
-      expect(shader).toContain('TIME * 8.000');
+      expect(shader).toContain('idx >= 10 && idx <= 15');
+      expect(shader).toContain('floor(TIME * 8.0)');
     });
 
     it('generates valid Unity URP 2D HLSL shader code with cycle track logic', () => {
@@ -327,10 +327,8 @@ describe('Mark Ferrari 8-Bit Dynamic Palette Cycling Engine', () => {
         palette
       );
 
-      expect(indexMap[0]).toBe(0); // red -> palette 0
-      expect(indexMap[1]).toBe(2); // blue -> palette 2
-      expect(indexMap[2]).toBe(255); // transparent -> 255
-      expect(indexMap[3]).toBe(1); // green -> palette 1
+      expect(Array.from(indexMap.indices)).toEqual([0, 2, 0, 1]);
+      expect(Array.from(indexMap.alpha)).toEqual([255, 255, 0, 255]);
     });
   });
 });

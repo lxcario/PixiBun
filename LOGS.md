@@ -1,5 +1,13 @@
 # Build Log — PixiBun
 
+## Audit implementation completion — 2026-10-01
+
+**Delivered:** All six bounded audit implementation phases, including protected animation cleanup, shared game-animation ordering/holds, semantic palette delivery, a Godot kit and three reversible research workflows. Repository publication is authorized by the user; Git history records the committed state.
+
+**Recorded checks:** The earlier six-phase run passed 1,466 unit/integration tests in 143 files and all five repository gates; 134 editor checks in 31 files passed; the compiled run passed 32/33 scenarios, with the remaining Firefox timeout passing unchanged on a targeted rerun. Phase 5 separately records 850 Godot engine assertions. Later interface and color-preservation corrections bring the current inventory to 1,472 unit tests, 146 editor checks in 32 files and 39 compiled scenarios. Their [UI/UX evidence](docs/research/session-ui-ux-2026-10-01.md) is separate from those earlier full runs.
+
+**Open:** Measured artist benefit, broader device/memory coverage, collaboration policy and release approval. TestSprite CLI/authentication were found available during Phase 4, but the user chose local verification after its proposed upload was blocked; no TestSprite run is claimed. [Session record](docs/research/session-completion-2026-10-01.md), [phase evidence](docs/research/phase-implementation-status.md).
+
 > **Note on Historical Defect Prevention & Audit Records:** The log entries below document the progressive phases of adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
 ## Studio UX follow-up (2026-09-30)
@@ -1996,4 +2004,8 @@ User report: "why the glint on edge?" — after Render Photometric / Specular Gl
 
 **Status:** Locally verified.
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
 
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

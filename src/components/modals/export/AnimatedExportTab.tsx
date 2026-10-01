@@ -16,6 +16,8 @@ interface AnimatedExportTabProps {
   videoLoopCount: number;
   setVideoLoopCount: (count: number) => void;
   isMp4Supported: boolean;
+  isWebmSupported?: boolean;
+  onSelectType?: (type: 'gif' | 'apng' | 'webm' | 'mp4') => void;
 }
 
 export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
@@ -29,6 +31,8 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
   videoLoopCount,
   setVideoLoopCount,
   isMp4Supported,
+  isWebmSupported = false,
+  onSelectType,
 }) => {
   const isVideo = exportType === 'webm' || exportType === 'mp4';
   const scaleOptions = React.useMemo(
@@ -64,15 +68,64 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
 
   return (
     <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
+      {exportType === 'webm' && !isWebmSupported && (
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
+          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+            <PixelIcon name="warning" size={13} />
+            <span>WebM Video Recording Unsupported</span>
+          </div>
+          <p role="alert" className="text-[11px] leading-relaxed text-[#fcd2d7]">
+            WebM recording is unavailable in this browser. Choose <strong>GIF</strong> or <strong>APNG</strong> instead.
+          </p>
+          {onSelectType && (
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => onSelectType('gif')}
+                className="px-2.5 py-1 bg-[var(--surface-0)] hover:bg-[var(--surface-2)] text-[var(--accent-gold)] border border-[var(--desk-border)] rounded-[2px] font-bold cursor-pointer text-xs"
+              >
+                Switch to GIF
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectType('apng')}
+                className="px-2.5 py-1 bg-[var(--surface-0)] hover:bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] font-bold cursor-pointer text-xs"
+              >
+                Switch to APNG
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {exportType === 'mp4' && !isMp4Supported && (
-        <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
           <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
             <PixelIcon name="warning" size={13} />
             <span>MP4 Video Recording Unsupported</span>
           </div>
-          <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
-            Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>WebM</strong> for video or <strong>GIF / APNG</strong> for animation export instead.
+          <p role="alert" className="text-[11px] leading-relaxed text-[#fcd2d7]">
+            MP4 encoding is unavailable for this export configuration. Please choose <strong>WebM</strong> for video or <strong>GIF / APNG</strong> for animation export instead.
           </p>
+          {onSelectType && (
+            <div className="flex gap-2 pt-1">
+              {isWebmSupported && (
+                <button
+                  type="button"
+                  onClick={() => onSelectType('webm')}
+                  className="px-2.5 py-1 bg-[var(--surface-0)] hover:bg-[var(--surface-2)] text-[var(--accent-gold)] border border-[var(--desk-border)] rounded-[2px] font-bold cursor-pointer text-xs"
+                >
+                  Switch to WebM Video
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onSelectType('gif')}
+                className="px-2.5 py-1 bg-[var(--surface-0)] hover:bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] font-bold cursor-pointer text-xs"
+              >
+                Switch to GIF Animation
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -165,7 +218,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
         {exportType === 'apng' &&
           'Animated PNG (APNG) retains full 24-bit/32-bit RGBA color without GIF palette degradation. Encoded with uncompressed DEFLATE store blocks for instant offline generation.'}
         {exportType === 'webm' &&
-          'Encodes animation with exact per-frame millisecond holds for high-quality game dev video showcases and social sharing.'}
+          'Records animation with browser-paced frame holds. Use APNG for exact image frame timing.'}
         {exportType === 'mp4' &&
           'Universal MP4 container optimized for instant video previews across Discord, Twitter/X, and modern video players.'}
       </p>

@@ -1,5 +1,7 @@
 # PIXIBUN — Independent Code & Documentation Audit (Final)
 
+> **Subsequent session — 2026-10-01:** The six-phase 2026-09-30 audit implementation is recorded in the [phase report](docs/research/phase-implementation-status.md) and [completion record](docs/research/session-completion-2026-10-01.md). The audited archive, findings and counts below remain historical evidence.
+
 **Audited artifact:** `PixiBun-main.zip`, extracted; no `.git` directory present
 **Audit date:** 2026-09-21
 **Environment:** Node v22.22.2, npm 10.9.7, Linux x86-64 container, 392 packages installed via `npm ci`
@@ -845,3 +847,9 @@ The three flagged files are where residual risk of undiscovered defects is highe
 **What is demonstrably not true.** One Critical defect lets the editor produce documents it cannot reopen, and the recovery path replaces the user's workspace with a blank canvas. Six High defects cluster in two places: unbounded resource consumption in the algorithmic engine (H1, H5, H6) and missing output validation in the export pipeline (H2, H3), plus one history-engine asymmetry (H4). The documentation overstates in a consistent direction — "zero-allocation" that allocates 76,000 times a second, "sub-millisecond" that measures 1.27 s, "exact zero derivative" that measures 0.125, a shadow-terminator formula that agrees with the code at exactly one point, "Kelvin temperature shifts" and "chromatic adaptation matrices" that exist only as comment text, a Beer–Lambert chord formula that appears nowhere in the source, and a raymarcher advertised on the landing page that no UI path can reach.
 
 **What this report does not establish.** That the application works. No canvas, drawing, selection, undo, import, export, autosave or collaboration flow was exercised in a browser. 162 source files were never opened, three of them algorithmic files where residual risk is highest. 17 of 24 documentation files were searched, not read. Ten cited sources remain unverified and are marked as such. The absence of a finding in an un-inspected area carries no information.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX verification](docs/research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

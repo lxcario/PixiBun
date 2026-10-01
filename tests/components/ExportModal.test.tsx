@@ -6,6 +6,9 @@ import { ExportModal } from '@/components/modals/ExportModal';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { makeCanvas, type MockCtx } from '../helpers/mockCanvas';
+import * as compositor from '@/lib/render/compositor';
+import * as webm from '@/lib/export/webmEncoder';
+import * as mp4 from '@/lib/export/mp4Encoder';
 
 vi.mock('@/lib/project/serialize', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/project/serialize')>();
@@ -101,6 +104,8 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
       ],
       activeFrameIndex: 0,
       activeLayerId: 'l1',
+      clips: [],
+      loopMode: 'repeat',
     });
   });
 
@@ -109,6 +114,31 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it.each([
+    ['webm', 'reverse', [2, 1, 0], [110, 230, 70]],
+    ['mp4', 'reverse', [2, 1, 0], [110, 230, 70]],
+    ['webm', 'ping-pong', [0, 1, 2, 1], [70, 230, 110, 230]],
+    ['mp4', 'ping-pong', [0, 1, 2, 1], [70, 230, 110, 230]],
+  ] as const)('sends %s the %s pose sequence, its own holds and the chosen video cycles', async (format, direction, order, holds) => {
+    const sourceFrames = [70, 230, 110].map((durationMs, i) => ({ ...useStudioStore.getState().frames[0], id: `video-${i}`, durationMs }));
+    useStudioStore.setState({ frames: sourceFrames, clips: [{ id: 'direction', name: 'Direction', startFrame: 0, endFrame: 2, loopMode: direction }] });
+    const canvases = sourceFrames.map(() => makeCanvas(8, 8));
+    vi.spyOn(compositor, 'compositeFrame').mockImplementation((frames, index) => canvases[sourceFrames.findIndex(f => f.id === frames[index].id)]);
+    vi.spyOn(webm, 'isWebmExportSupported').mockReturnValue(true);
+    vi.spyOn(mp4, 'probeMp4ExportSupport').mockResolvedValue(true);
+    const encoder = format === 'webm' ? vi.spyOn(webm, 'exportAnimationToWebmAsync') : vi.spyOn(mp4, 'exportAnimationToMp4Async');
+    encoder.mockResolvedValue(new Blob(['video']));
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:video');
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    render(<ExportModal isOpen onClose={vi.fn()} initialType={format} />);
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Export frame scope' }), { target: { value: 'direction' } });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: `Download ${format.toUpperCase()}` })); });
+    expect(encoder).toHaveBeenCalledOnce();
+    expect(encoder.mock.calls[0][0]).toEqual(order.map(i => canvases[i]));
+    expect(encoder.mock.calls[0][1]).toEqual(expect.objectContaining({ durationsMs: [...holds], loopCount: 2 }));
   });
 
   it('shows a user-facing error when PNG encoding fails', () => {

@@ -352,11 +352,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       updateLivePaletteLUT32(currentPalette.colors, tracks, elapsedSec, outLUT32);
 
       for (let i = 0; i < numPixels; i++) {
-        const palIdx = indexMap[i];
-        if (palIdx === 255) {
+        const palIdx = indexMap.indices[i];
+        if (indexMap.alpha[i] === 0) {
           data32[i] = baseData32[i];
         } else {
-          data32[i] = outLUT32[palIdx] ?? baseData32[i];
+          data32[i] = ((outLUT32[palIdx] ?? baseData32[i]) & 0x00ffffff) | (indexMap.alpha[i] << 24);
         }
       }
 

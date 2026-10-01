@@ -1,0 +1,112 @@
+
+Running 4 tests using 1 worker
+
+(node:5712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\researchWorkbench.spec.ts:6:5 › research simplification preserves marked native pixels and saved source provenance (30.1s)
+(node:29956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › tests\e2e\researchWorkbench.spec.ts:7:5 › shared light previews all poses and applies and restores the entire rig (30.1s)
+(node:17580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [chromium] › tests\e2e\researchWorkbench.spec.ts:8:5 › scene rules reject contradictions and reproduce pinned walkable scenes after reload (7.5s)
+(node:10876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [chromium] › tests\e2e\researchWorkbench.spec.ts:9:5 › research controls and native previews fit and remain accessible (6.7s)
+
+
+  1) [chromium] › tests\e2e\researchWorkbench.spec.ts:6:5 › research simplification preserves marked native pixels and saved source provenance 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByTestId('pixitools-task-research')
+
+
+       at ..\helpers\researchWorkflows.ts:9
+
+       7 |   await page.getByTestId('tab-ai').click();
+       8 |   const choose = page.getByRole('button', { name: 'Choose another task' }); if (await choose.isVisible()) await choose.click();
+    >  9 |   await page.getByTestId('pixitools-task-research').click();
+         |                                                     ^
+      10 | }
+      11 | export async function preview(page: Page) {
+      12 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+        at openResearch (D:\PixiBun\tests\helpers\researchWorkflows.ts:9:53)
+        at saveReload (D:\PixiBun\tests\helpers\researchWorkflows.ts:19:3)
+        at verifyDetailWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:39:3)
+        at D:\PixiBun\tests\e2e\researchWorkbench.spec.ts:6:114
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\researchWorkbench-research-48e3b-and-saved-source-provenance-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\researchWorkbench-research-48e3b-and-saved-source-provenance-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\researchWorkbench.spec.ts:7:5 › shared light previews all poses and applies and restores the entire rig 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByTestId('pixitools-task-research')
+
+
+       at ..\helpers\researchWorkflows.ts:9
+
+       7 |   await page.getByTestId('tab-ai').click();
+       8 |   const choose = page.getByRole('button', { name: 'Choose another task' }); if (await choose.isVisible()) await choose.click();
+    >  9 |   await page.getByTestId('pixitools-task-research').click();
+         |                                                     ^
+      10 | }
+      11 | export async function preview(page: Page) {
+      12 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+        at openResearch (D:\PixiBun\tests\helpers\researchWorkflows.ts:9:53)
+        at saveReload (D:\PixiBun\tests\helpers\researchWorkflows.ts:19:3)
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:65:3)
+        at D:\PixiBun\tests\e2e\researchWorkbench.spec.ts:7:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\researchWorkbench-shared-l-de34f-and-restores-the-entire-rig-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\researchWorkbench-shared-l-de34f-and-restores-the-entire-rig-chromium\error-context.md
+
+  3) [chromium] › tests\e2e\researchWorkbench.spec.ts:8:5 › scene rules reject contradictions and reproduce pinned walkable scenes after reload 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/No scene satisfies/)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText(/No scene satisfies/)
+
+
+       at ..\helpers\researchWorkflows.ts:73
+
+      71 |   await page.getByRole('combobox', { name: 'Scene walkable path' }).selectOption('horizontal');
+      72 |   for (let tile = 0; tile < 2; tile++) { await page.getByRole('combobox', { name: 'Scene atlas tile' }).selectOption(String(tile)); await page.getByRole('textbox', { name: 'Tile east edge' }).fill('water'); }
+    > 73 |   await page.getByRole('button', { name: 'Create research preview' }).click(); await expect(page.getByText(/No scene satisfies/)).toBeVisible(); expect(await artwork(page)).toEqual(before);
+         |                                                                                                                                   ^
+      74 |   for (let tile = 0; tile < 2; tile++) { await page.getByRole('combobox', { name: 'Scene atlas tile' }).selectOption(String(tile)); await page.getByRole('textbox', { name: 'Tile east edge' }).fill('ground'); }
+      75 |   await page.getByRole('combobox', { name: 'Scene atlas tile' }).selectOption('1');
+      76 |   await page.getByRole('button', { name: 'Pin chosen tile to cell' }).click(); await preview(page); expect(await artwork(page)).toEqual(before);
+        at verifySceneWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:73:131)
+        at D:\PixiBun\tests\e2e\researchWorkbench.spec.ts:8:115
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\researchWorkbench-scene-ru-c3214-alkable-scenes-after-reload-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\researchWorkbench-scene-ru-c3214-alkable-scenes-after-reload-chromium\error-context.md
+
+  3 failed
+    [chromium] › tests\e2e\researchWorkbench.spec.ts:6:5 › research simplification preserves marked native pixels and saved source provenance 
+    [chromium] › tests\e2e\researchWorkbench.spec.ts:7:5 › shared light previews all poses and applies and restores the entire rig 
+    [chromium] › tests\e2e\researchWorkbench.spec.ts:8:5 › scene rules reject contradictions and reproduce pinned walkable scenes after reload 
+  1 passed (1.3m)

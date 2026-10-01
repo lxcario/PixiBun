@@ -1,0 +1,283 @@
+
+> pixibun@1.14.1 test:e2e
+> playwright test --workers=4
+
+
+Running 118 tests using 4 workers
+
+(node:4112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok   2 [chromium] › tests\e2e\artworkProtection.spec.ts:24:5 › drawing during a delayed native PNG encoding survives save and reload (6.6s)
+  ok   4 [chromium] › tests\e2e\animationReview.spec.ts:67:5 › the animation review remains accessible and fits the inspector at native and enlarged zoom (8.6s)
+  ok   5 [chromium] › tests\e2e\artworkProtection.spec.ts:53:7 › merge and undo preserve real canvas pixels for translucent lower and upper layers (3.1s)
+  ok   1 [chromium] › tests\e2e\animationReview.spec.ts:10:5 › native animation review is read-only, undoable, persists exceptions and expires them after drawing (11.6s)
+  ok   6 [chromium] › tests\e2e\artworkProtection.spec.ts:53:7 › merge and undo preserve real canvas pixels for a visible upper layer over a hidden lower layer (3.8s)
+  ok   3 [chromium] › tests\e2e\animationReview.spec.ts:38:5 › selected protection survives cleanup across the clip and metadata undo/redo and reload (12.6s)
+  ok   7 [chromium] › tests\e2e\artworkProtection.spec.ts:53:7 › merge and undo preserve real canvas pixels for a hidden upper layer over a translucent lower layer (2.9s)
+  ok  10 [chromium] › tests\e2e\artworkProtection.spec.ts:138:5 › drawing after clip selection changes the selected frame only (2.7s)
+  ok   8 [chromium] › tests\e2e\artworkProtection.spec.ts:89:5 › refused backdrop-dependent blending leaves pixels and the layer tree intact (3.7s)
+  ok   9 [chromium] › tests\e2e\artworkProtection.spec.ts:114:5 › frame deletion undo and redo restore clips before saving and reloading (5.7s)
+  ok  11 [chromium] › tests\e2e\auditPersistence.spec.ts:4:5 › drawing survives an explicit save and a fresh-page IndexedDB restore (5.6s)
+  ok  13 [chromium] › tests\e2e\auditPersistence.spec.ts:64:5 › frame deletion keeps clip metadata valid across save and reload (5.9s)
+  ok  12 [chromium] › tests\e2e\auditPersistence.spec.ts:22:5 › palette edits autosave and invalid cycle ranges never enter the project (6.4s)
+  ok  14 [chromium] › tests\e2e\auditPersistence.spec.ts:109:5 › header image picker decodes a real PNG and opens import controls (4.8s)
+  ok  16 [chromium] › tests\e2e\auditPersistence.spec.ts:201:5 › repeat preview exports the selected tile without changing the artwork (4.7s)
+  ok  15 [chromium] › tests\e2e\auditPersistence.spec.ts:124:5 › a multi-frame, multi-layer project restores its layer PNG bytes after import (8.4s)
+  ok  17 [chromium] › tests\e2e\backupTrust.spec.ts:3:5 › project backup explains local storage and stays open after picker cancellation (5.3s)
+  ok  18 [chromium] › tests\e2e\backupTrust.spec.ts:47:5 › project backup writes a complete file without changing local-save status (4.9s)
+  ok  19 [chromium] › tests\e2e\backupTrust.spec.ts:77:5 › Save now sits with project controls without a persistent local-save label (2.9s)
+  ok  20 [chromium] › tests\e2e\backupTrust.spec.ts:83:5 › onion skin explains why no ghost is visible (2.6s)
+  ok  22 [chromium] › tests\e2e\colorReplaceTolerance.spec.ts:12:5 › Color Replace respects tolerance, active layer lock, and undo (4.7s)
+  ok  24 [chromium] › tests\e2e\eraseColor.spec.ts:106:5 › Erase Sampled Color skips a locked frame layer (4.6s)
+  ok  23 [chromium] › tests\e2e\eraseColor.spec.ts:69:5 › Erase Sampled Color removes green across animation frames and undo restores both (5.5s)
+  ok  25 [chromium] › tests\e2e\eraseColor.spec.ts:122:5 › Default color family clears pale spill, repairs dark green outline pixels, and has a distinct icon (3.9s)
+  ok  26 [chromium] › tests\e2e\eraseColor.spec.ts:142:5 › Erase Sampled Color with All Frames scope clears matching color across animation frames (3.4s)
+  ok  27 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded GIF opens in the native decoder and contains painted pixels (4.6s)
+  ok  29 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (4.4s)
+  ok  28 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded WEBM opens in the native decoder and contains painted pixels (5.5s)
+  ok  30 [chromium] › tests\e2e\exportBoundaries.spec.ts:79:5 › unsupported WebM is explained and cannot download a placeholder (4.3s)
+  ok  32 [chromium] › tests\e2e\frameLayerIsolation.spec.ts:15:5 › a new blank frame keeps layer names but not the prior frame artwork (3.0s)
+  ok  31 [chromium] › tests\e2e\exportBoundaries.spec.ts:86:5 › GIF post-transfer failure tells the artist to retry and never downloads corrupted data (4.2s)
+  ok  21 [chromium] › tests\e2e\chiselAndPaletteLiveProof.spec.ts:37:7 › Live Studio Integration Proof: Chisel, Preview & Relighting › verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling (20.7s)
+  ok  33 [chromium] › tests\e2e\gameDelivery.spec.ts:10:5 › native indexed normal kit downloads one ZIP, preserves source artwork and uses exact holds (6.6s)
+  ok  34 [chromium] › tests\e2e\gameDelivery.spec.ts:22:5 › duplicate registers refuse indexed export and a color-only kit remains available (6.9s)
+  ok  35 [chromium] › tests\e2e\gameDelivery.spec.ts:33:5 › palette role saves undo, redo and reload without changing artwork (7.8s)
+  ok  38 [chromium] › tests\e2e\importImageAndSheet.spec.ts:40:5 › visible import actions let the user choose a real file (4.5s)
+  ok  36 [chromium] › tests\e2e\gameDelivery.spec.ts:48:5 › visible selection bindings resolve duplicate register identity on every exported frame (9.3s)
+  ok  39 [chromium] › tests\e2e\importImageAndSheet.spec.ts:59:5 › image import keeps the chosen fit and original-size modes through preview and confirmation (5.2s)
+  ok  40 [chromium] › tests\e2e\importImageAndSheet.spec.ts:92:5 › suggested sprite sheet keeps blank timing cells and creates distinct timeline artwork (3.8s)
+  ok  41 [chromium] › tests\e2e\importImageAndSheet.spec.ts:126:5 › pixel analysis finds opaque gutters and imports clean, separate frames (3.6s)
+  x   37 [chromium] › tests\e2e\gameDelivery.spec.ts:67:5 › new palette roles and game-kit controls remain accessible without inspector overflow (10.8s)
+(node:2632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  42 [chromium] › tests\e2e\importImageAndSheet.spec.ts:169:5 › large cat-style sheet uses eight full cells and cannot clip them into a small canvas (4.1s)
+  ok  46 [chromium] › tests\e2e\landing.spec.ts:5:7 › Landing Page & Accessibility › renders landing page, hero, and interactive features without console errors (2.3s)
+  ok  43 [chromium] › tests\e2e\importImageAndSheet.spec.ts:217:5 › replacing frames clears artwork and effects from old layers (5.2s)
+  ok  44 [chromium] › tests\e2e\importImageAndSheet.spec.ts:255:5 › the studio 45-degree RotSprite command preserves its palette and visibly turns a centered motif (5.3s)
+  ok  45 [chromium] › tests\e2e\importImageAndSheet.spec.ts:284:5 › Rotate Cleanly keeps an outlined circle closed at 45 degrees (5.5s)
+  ok  48 [chromium] › tests\e2e\lassoTransformIntegrity.spec.ts:10:5 › lasso hover leaves artwork and preview untouched (3.1s)
+  ok  49 [chromium] › tests\e2e\lassoTransformIntegrity.spec.ts:31:5 › scaling and rotating a lasso does not pick up excluded pixels or leave a tint ghost (5.9s)
+  ok  47 [chromium] › tests\e2e\landing.spec.ts:25:7 › Landing Page & Accessibility › passes automated WCAG 2.2 accessibility scan via axe (6.8s)
+  ok  50 [chromium] › tests\e2e\lassoTransformIntegrity.spec.ts:102:5 › Delete removes only lasso pixels and clears any stale preview (5.1s)
+  ok  53 [chromium] › tests\e2e\pixiToolsDiscoverability.spec.ts:45:5 › 47-blob contours preview before creating a generated layer (4.0s)
+  ok  52 [chromium] › tests\e2e\pixiToolsDiscoverability.spec.ts:3:5 › PixiTools starts with tasks and keeps expert browse available (4.8s)
+  ok  54 [chromium] › tests\e2e\pocketDoodlePad.spec.ts:3:5 › small-screen studio link opens a usable pocket doodle pad (3.9s)
+  ok  57 [chromium] › tests\e2e\pwa.spec.ts:4:7 › PWA Manifest & Service Worker Assets › serves valid web application manifest (102ms)
+  ok  58 [chromium] › tests\e2e\pwa.spec.ts:16:7 › PWA Manifest & Service Worker Assets › serves service worker script with appropriate headers (100ms)
+  ok  59 [chromium] › tests\e2e\pwa.spec.ts:26:7 › PWA Manifest & Service Worker Assets › serves theme initialization script for offline hydration (33ms)
+  ok  60 [chromium] › tests\e2e\pwa.spec.ts:33:7 › PWA Manifest & Service Worker Assets › serves offline static fallback page (23ms)
+  ok  51 [chromium] › tests\e2e\offline.spec.ts:5:7 › Real Offline Resilience (B1) › warm installed studio operates, reloads, edits, persists, and restores while completely offline (9.5s)
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 29 modules transformed.
+rendering chunks...
+✓ built in 629ms
+  ok  55 [chromium] › tests\e2e\projects.spec.ts:4:7 › Projects Gallery & Workspace Management › failed save keeps the current drawing when starting a gallery project (4.7s)
+vite v8.2.2 building client environment for production...
+  ok  61 [chromium] › tests\e2e\pwa.spec.ts:40:7 › PWA Manifest & Service Worker Assets › registers service worker and actively controls /studio (4.2s)
+transforming...
+  ok  56 [chromium] › tests\e2e\projects.spec.ts:35:7 › Projects Gallery & Workspace Management › opens projects gallery, switches projects, and invalidates undo history (P0) (5.1s)
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 29 modules transformed.
+rendering chunks...
+✓ built in 572ms
+  ok  62 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:113:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › without Dexie.waitFor(), asynchronous Web Crypto digest causes premature auto-commit in real Chromium (3.0s)
+✓ 29 modules transformed.
+rendering chunks...
+✓ built in 594ms
+  ok  63 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:298:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › atomic rollback in real Chromium: mid-flight failure rolls back all destination writes (2.9s)
+  ok  66 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:168:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › with Dexie.waitFor(), transaction stays alive across asynchronous Web Crypto SHA-256 digests and commits atomically in real Chromium (2.7s)
+  ok  64 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:430:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › production path: prepareRecoveryPlan and commitRecoveredProject execute atomically in real Chromium (2.6s)
+  ok  67 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:363:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › endures sequential multi-blob hashing with deep microtask yielding under Dexie.waitFor() (3.5s)
+  ok  65 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:44:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › damaged stored project on startup routes to safe mode, displays recovery modal with deterministic plan, and commits recovered copy (9.5s)
+  ok  69 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:270:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › opening damaged project from gallery opens recovery modal while leaving active workspace intact (8.6s)
+  ok  68 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:184:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › cancelling recovery modal preserves current safe workspace and presents recovery banner (8.7s)
+  ok  71 [chromium] › tests\e2e\spriteCleanup.spec.ts:8:5 › cleanup requires a fresh scan after the artwork changes (4.7s)
+  ok  70 [chromium] › tests\e2e\selectionGizmoLiveProof.spec.ts:26:7 › Selection Free-Transform Gizmo E2E Live Proof › creates selection marquee, scales via handle, rotates via outer zone, flips horizontal, and commits (8.5s)
+  ok  73 [chromium] › tests\e2e\spriteCleanup.spec.ts:58:5 › color grading previews without editing and applies the shown result (5.0s)
+  ok  72 [chromium] › tests\e2e\spriteCleanup.spec.ts:31:5 › stray removal previews the real edit before applying and invalidates when pixels change (5.3s)
+  ok  75 [chromium] › tests\e2e\spriteCleanup.spec.ts:161:5 › cleanup detects opaque gray artifacts when the alpha slider cannot (4.6s)
+  ok  74 [chromium] › tests\e2e\spriteCleanup.spec.ts:82:5 › PixiTools scans before cleanup, cleans matching animation layers, and undo restores the source (7.1s)
+  ok  76 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:19:7 › Startup Recovery Routing & Controlled Hydration (E2E) › admits and restores a valid project on startup through authoritative boundary (5.7s)
+  ok  77 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:52:7 › Startup Recovery Routing & Controlled Hydration (E2E) › routes damaged stored project to fresh workspace on startup and protects source in IndexedDB (5.7s)
+  ok  78 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:140:7 › Startup Recovery Routing & Controlled Hydration (E2E) › gallery open of damaged project displays error and preserves current active workspace (4.6s)
+  ok  80 [chromium] › tests\e2e\studio.spec.ts:13:7 › Studio Workbench & Drawing Interactions › loads Studio workspace, renders canvas stage and panels (2.2s)
+  ok  81 [chromium] › tests\e2e\studio.spec.ts:27:7 › Studio Workbench & Drawing Interactions › reorders layers by dragging and has no music control (3.0s)
+  ok  79 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:231:7 › Startup Recovery Routing & Controlled Hydration (E2E) › header-valid but decode-invalid PNG blob passes admission probe but safely fails hydration in Chromium (6.7s)
+  ok  82 [chromium] › tests\e2e\studio.spec.ts:41:7 › Studio Workbench & Drawing Interactions › undoes and redoes layer properties and frame timing in order (3.7s)
+  ok  84 [chromium] › tests\e2e\studio.spec.ts:99:7 › Studio Workbench & Drawing Interactions › handles canvas stroke drawing and undo/redo with pixel verification (2.9s)
+  ok  83 [chromium] › tests\e2e\studio.spec.ts:76:7 › Studio Workbench & Drawing Interactions › opens Guide and Shortcuts modal via hotkey and button (4.4s)
+  ok  86 [chromium] › tests\e2e\studio.spec.ts:262:7 › Studio Workbench & Drawing Interactions › timeline renders real thumbnails for frames (3.6s)
+  ok  85 [chromium] › tests\e2e\studio.spec.ts:176:7 › Studio Workbench & Drawing Interactions › onion skin ghosts never pollute eyedropper and empty picks are no-ops (4.3s)
+  ok  87 [chromium] › tests\e2e\studio.spec.ts:337:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › blank canvas workspace passes automated WCAG 2.2 axe scan (3.7s)
+  ok  88 [chromium] › tests\e2e\studio.spec.ts:348:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › open Export modal passes automated WCAG 2.2 axe scan (5.4s)
+  ok  91 [chromium] › tests\e2e\studioChrome.spec.ts:54:5 › Ctrl+S saves locally without opening a project file picker (2.5s)
+  ok  90 [chromium] › tests\e2e\studioChrome.spec.ts:3:5 › project controls, pen size, zoom, and timeline work at desktop widths (4.2s)
+  ok  92 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Dark (4.9s)
+  ok  93 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Dark (6.1s)
+  ok  94 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › export modal dialog meets WCAG standards under Atelier Dark (5.5s)
+  ok  89 [chromium] › tests\e2e\studio.spec.ts:367:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › RightInspector panels expanded pass automated WCAG 2.2 axe scan (10.5s)
+  ok  95 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Dark (4.0s)
+  ok  96 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › toast alert notification meets WCAG standards under Atelier Dark (3.9s)
+  ok  97 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Light (5.3s)
+  ok 100 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Light (5.7s)
+  ok  99 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › export modal dialog meets WCAG standards under Atelier Light (7.3s)
+  ok  98 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Light (8.9s)
+  ok 101 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › toast alert notification meets WCAG standards under Atelier Light (5.9s)
+  ok 102 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Dark (4.8s)
+  ok 104 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › export modal dialog meets WCAG standards under Cozy Classic Dark (5.7s)
+  ok 103 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Dark (6.4s)
+  ok 105 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Dark (6.1s)
+  ok 106 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › toast alert notification meets WCAG standards under Cozy Classic Dark (5.1s)
+  ok 107 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Light (4.6s)
+  ok 108 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Light (7.7s)
+  ok 109 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › export modal dialog meets WCAG standards under Cozy Classic Light (6.6s)
+  ok 110 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Light (5.3s)
+  ok 111 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › toast alert notification meets WCAG standards under Cozy Classic Light (5.8s)
+  ok 114 [chromium] › tests\e2e\toolMotionPreview.spec.ts:209:5 › user can dismiss preview permanently via "Don't show again" (4.3s)
+  ok 115 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:3:5 › the artwork and grid share exact screen bounds at high zoom (4.1s)
+  ok 117 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:65:5 › large supported artwork never scales overlay backing stores with zoom (1.8s)
+  ok 116 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:30:5 › bucket recolors nearby shades through the visible grid without crossing a contrasting color (3.1s)
+  ok 118 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:98:5 › a three-pixel pen uses the same square footprint as its CSS brush outline (1.7s)
+  ok 113 [chromium] › tests\e2e\toolMotionPreview.spec.ts:107:5 › PixiTools actions preview their effect without changing the project (13.4s)
+  ok 112 [chromium] › tests\e2e\toolMotionPreview.spec.ts:3:5 › drawing tools show a short visual preview on hover and keyboard focus (17.9s)
+
+
+  1) [chromium] › tests\e2e\gameDelivery.spec.ts:67:5 › new palette roles and game-kit controls remain accessible without inspector overflow 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -   1
+    + Received  + 105
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#907454",
+    +               "contrastRatio": 1.33,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#696274",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "bold",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 1.33 (foreground color: #696274, background color: #907454, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"PNG\" data-testid=\"export-tab-png\" class=\"flex-1 min-w-[70px] py-1.5 px-2 rounded-[2px] text-xs font-mono font-bold transition-colors cursor-pointer capitalize text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[var(--desk-surface)] \">PNG</button>",
+    +                 "target": Array [
+    +                   "button[aria-label=\"PNG\"]",
+    +                 ],
+    +               },
+    +               Object {
+    +                 "html": "<div class=\"flex flex-wrap gap-1 bg-[var(--desk-surface)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]\">",
+    +                 "target": Array [
+    +                   ".flex-wrap",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 1.33 (foreground color: #696274, background color: #907454, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+    +         "html": "<button type=\"button\" aria-label=\"PNG\" data-testid=\"export-tab-png\" class=\"flex-1 min-w-[70px] py-1.5 px-2 rounded-[2px] text-xs font-mono font-bold transition-colors cursor-pointer capitalize text-[var(--text-body)] hover:text-[#f0be7c] hover:bg-[var(--desk-surface)] \">PNG</button>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "button[aria-label=\"PNG\"]",
+    +         ],
+    +       },
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#80674e",
+    +               "contrastRatio": 1.14,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#7a7283",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "bold",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 1.14 (foreground color: #7a7283, background color: #80674e, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Godot Kit\" data-testid=\"export-tab-godot-kit\" class=\"flex-1 min-w-[70px] py-1.5 px-2 rounded-[2px] text-xs font-mono font-bold transition-colors cursor-pointer capitalize bg-[#f0be7c] text-[#140d1f] shadow-xs \">Godot Kit</button>",
+    +                 "target": Array [
+    +                   "button[aria-label=\"Godot Kit\"]",
+    +                 ],
+    +               },
+    +               Object {
+    +                 "html": "<div class=\"flex flex-wrap gap-1 bg-[var(--desk-surface)] p-1 rounded-[2px] border-2 border-[var(--desk-border)]\">",
+    +                 "target": Array [
+    +                   ".flex-wrap",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 1.14 (foreground color: #7a7283, background color: #80674e, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+    +         "html": "<button type=\"button\" aria-label=\"Godot Kit\" data-testid=\"export-tab-godot-kit\" class=\"flex-1 min-w-[70px] py-1.5 px-2 rounded-[2px] text-xs font-mono font-bold transition-colors cursor-pointer capitalize bg-[#f0be7c] text-[#140d1f] shadow-xs \">Godot Kit</button>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           "button[aria-label=\"Godot Kit\"]",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+      71 |   expect(await page.getByTestId('right-inspector').evaluate(e => e.scrollWidth > e.clientWidth + 1)).toBe(false);
+      72 |   expect((await new AxeBuilder({ page }).include('[data-testid="right-inspector"]').analyze()).violations).toEqual([]);
+    > 73 |   await openKit(page); expect((await new AxeBuilder({ page }).include('dialog').analyze()).violations).toEqual([]);
+         |                                                                                                        ^
+      74 | });
+      75 |
+        at D:\PixiBun\tests\e2e\gameDelivery.spec.ts:73:104
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\gameDelivery-new-palette-r-31348--without-inspector-overflow-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\gameDelivery-new-palette-r-31348--without-inspector-overflow-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\gameDelivery.spec.ts:67:5 › new palette roles and game-kit controls remain accessible without inspector overflow 
+  117 passed (2.8m)

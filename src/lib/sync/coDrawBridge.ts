@@ -22,7 +22,7 @@
 // for pixel state; canvas buffers are views that converge on op application.
 
 import { useStudioStore } from '@/stores/studioStore';
-import { getOrCreateBuffer, hasBuffer, clearAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, hasBuffer, createEntry, replaceAllBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { CrdtPixelBuffer } from '@/lib/collab/crdtPixelBuffer';
 import type { PixelOp } from '@/lib/collab/crdtPixelBuffer';
@@ -40,6 +40,7 @@ import type {
 import { diffImageDataToOps } from '@/lib/sync/strokeDiff';
 import type { ImageDataLike } from '@/lib/sync/strokeDiff';
 import { createId } from '@/lib/engine/id';
+import { assertMemoryAvailable, registerMemoryUsage, reserveMemory } from '@/lib/safety/memoryBudget';
 
 /** Min interval between cursor broadcasts (~30fps) over the lossy presence channel. */
 export const CURSOR_BROADCAST_MIN_INTERVAL_MS = 33;
@@ -80,6 +81,7 @@ export class CoDrawBridge {
   private lastSeenFrames: unknown = null;
   private lastSeenWidth = 0;
   private lastSeenHeight = 0;
+  private sessionGeneration = 0;
 
   getRole(): CoDrawRole | null {
     return this.role;
@@ -116,6 +118,8 @@ export class CoDrawBridge {
   }
 
   private createSession(options: CoDrawStartOptions): P2PSyncSession {
+    const generation = this.sessionGeneration;
+    const current = () => generation === this.sessionGeneration;
     return new P2PSyncSession({
       peerId: this.peerId,
       peerName: this.role === 'host' ? 'Atelier Host' : 'Atelier Guest',
@@ -125,16 +129,19 @@ export class CoDrawBridge {
           ? PUBLIC_STUN_ICE_SERVERS
           : DEFAULT_ICE_SERVERS,
       lanOnly: options.lanOnly,
-      onConnectionStateChange: (state) => this.handleConnectionState(state),
-      onRemotePixelOps: (ops, layerId) => this.applyRemoteOps(ops, layerId),
-      onInitialSync: (ops, layerId) => this.applyRemoteOps(ops, layerId),
-      onStructureSync: (payload) => this.adoptStructure(payload),
-      onRemoteCursor: (cursor) => this.handleRemoteCursor(cursor),
-      onError: (error) => studioEvents.emit('pixibun:codraw-error', error.message),
+      onConnectionStateChange: (state) => { if (current()) this.handleConnectionState(state); },
+      onRemotePixelOps: (ops, layerId) => { if (current()) this.applyRemoteOps(ops, layerId); },
+      onInitialSync: (ops, layerId) => {
+        if (current() && this.role === 'guest') this.applyRemoteOps(ops, layerId);
+      },
+      onStructureSync: (payload) => { if (current()) this.adoptStructure(payload); },
+      onRemoteCursor: (cursor) => { if (current()) this.handleRemoteCursor(cursor); },
+      onError: (error) => { if (current()) studioEvents.emit('pixibun:codraw-error', error.message); },
     });
   }
 
   private reset(): void {
+    this.sessionGeneration += 1;
     this.session?.disconnect();
     this.session = null;
     this.role = null;
@@ -186,7 +193,10 @@ export class CoDrawBridge {
       return;
     }
     if (attempt < CONNECT_SEND_MAX_RETRIES) {
-      setTimeout(() => this.sendInitialStateWithRetry(attempt + 1), CONNECT_SEND_RETRY_MS);
+      const generation = this.sessionGeneration;
+      setTimeout(() => {
+        if (generation === this.sessionGeneration) this.sendInitialStateWithRetry(attempt + 1);
+      }, CONNECT_SEND_RETRY_MS);
     }
   }
 
@@ -242,6 +252,14 @@ export class CoDrawBridge {
     for (const frame of state.frames) {
       for (const layer of frame.layers) {
         activeLayerIds.add(layer.id);
+        // Structural edits can bake/restore pixels in an existing layer ID.
+        // Reconcile the live raster before sending structure and snapshots so
+        // merge/undo/redo also update the shared pixel replica, including erasure.
+        if (this.syncedLayerIds.has(layer.id)) {
+          const crdt = this.getBuffer(layer.id, state.canvasWidth, state.canvasHeight);
+          const before = { width: crdt.width, height: crdt.height, data: crdt.toRgbaArray() };
+          this.notifyStrokeCommitted(layer.id, before);
+        }
         if (!this.syncedLayerIds.has(layer.id)) {
           const existing = this.crdtBuffers.get(layer.id);
           const crdt = this.getBuffer(layer.id, state.canvasWidth, state.canvasHeight);
@@ -318,6 +336,7 @@ export class CoDrawBridge {
     if (existing && existing.width === width && existing.height === height) {
       return existing;
     }
+    assertMemoryAvailable(width * height * 192 + 10_000 * 192, 'Collaboration replica');
     const fresh = new CrdtPixelBuffer(width, height, this.peerId);
     this.crdtBuffers.set(layerId, fresh);
     return fresh;
@@ -386,6 +405,10 @@ export class CoDrawBridge {
    * from its CRDT replica so pixels synced before this point survive.
    */
   private adoptStructure(payload: StructurePayload): void {
+    if (this.role !== 'guest') {
+      studioEvents.emit('pixibun:codraw-error', 'Only the host may replace the shared frame and layer structure.');
+      return;
+    }
     if (typeof document === 'undefined') return;
     const layerCount = payload.frames.reduce((count, frame) => count + frame.layers.length, 0);
     const capacityError = getStructureCapacityError(payload.width, payload.height, layerCount);
@@ -394,8 +417,6 @@ export class CoDrawBridge {
       this.session?.disconnect();
       return;
     }
-    clearAllBuffers();
-
     const activeLayerIds = new Set<string>();
     for (const frame of payload.frames) {
       for (const layer of frame.layers) {
@@ -403,12 +424,32 @@ export class CoDrawBridge {
       }
     }
 
-    // Drop replicas whose dimensions no longer match the shared canvas size, or layers that were deleted.
-    for (const [layerId, crdt] of this.crdtBuffers) {
+    // Stage the guest's views before publishing metadata. Allocation failure
+    // leaves its current workspace/replicas intact rather than exposing blank views.
+    const replicas = new Map(this.crdtBuffers);
+    const staged = new Map<string, ReturnType<typeof createEntry>>();
+    for (const [layerId, crdt] of replicas) {
       if (!activeLayerIds.has(layerId) || crdt.width !== payload.width || crdt.height !== payload.height) {
-        this.crdtBuffers.delete(layerId);
+        replicas.delete(layerId);
       }
     }
+    let releaseStaging: (() => void) | undefined;
+    try {
+      releaseStaging = reserveMemory((replicas.size + 2) * payload.width * payload.height * 4, 'Shared artwork staging');
+      for (const [layerId, crdt] of replicas) {
+        const entry = createEntry(payload.width, payload.height, 1, true);
+        const img = entry.ctx.createImageData(payload.width, payload.height);
+        img.data.set(crdt.toRgbaArray());
+        entry.ctx.putImageData(img, 0, 0);
+        staged.set(layerId, entry);
+      }
+    } catch {
+      studioEvents.emit('pixibun:codraw-error', 'Could not prepare the shared artwork. Reconnect to retry.');
+      this.session?.disconnect();
+      return;
+    } finally { releaseStaging?.(); }
+    this.crdtBuffers = replicas;
+    replaceAllBuffers(staged);
 
     useStudioStore.setState((state) => {
       state.canvasWidth = payload.width;
@@ -430,14 +471,6 @@ export class CoDrawBridge {
     });
 
     studioEvents.emit('pixibun:history-clear');
-
-    for (const [layerId, crdt] of this.crdtBuffers) {
-      const entry = getOrCreateBuffer(layerId, payload.width, payload.height);
-      const img = entry.ctx.createImageData(payload.width, payload.height);
-      img.data.set(crdt.toRgbaArray());
-      entry.ctx.putImageData(img, 0, 0);
-      touchBuffer(layerId);
-    }
 
     studioEvents.emit('pixibun:request-composite');
     studioEvents.emit('pixibun:remote-change');
@@ -473,6 +506,11 @@ export class CoDrawBridge {
   private emitCursors(): void {
     studioEvents.emit('pixibun:remote-cursors', this.getActiveCursors());
   }
+
+  getEstimatedMemoryBytes(): number {
+    return [...this.crdtBuffers.values()].reduce((sum, buffer) => sum + buffer.estimatedBytes, 0);
+  }
 }
 
 export const coDrawBridge = new CoDrawBridge();
+registerMemoryUsage('collaboration', () => coDrawBridge.getEstimatedMemoryBytes());

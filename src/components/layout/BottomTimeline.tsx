@@ -10,6 +10,7 @@ import { compositeFrame } from '@/lib/render/compositor';
 import { TagManagerModal } from '@/components/modals/TagManagerModal';
 import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
+import { playbackOrder } from '@/lib/export/animationModel';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -253,7 +254,8 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
     let lastTimestamp: number | null = null;
     let accumulator = 0;
     let animFrameId: number;
-    let forward = true;
+    let sequenceKey = '', position = 0;
+    let sequence: number[] = [];
     let publishedIndex = useStudioStore.getState().activeFrameIndex;
 
     const onVisibilityChange = () => {
@@ -272,19 +274,18 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       lastTimestamp = timestamp;
       const state = useStudioStore.getState();
       if (!state.isPlaying) return;
-      if (state.activeFrameIndex !== publishedIndex) {
-        // A scrub or step starts a fresh hold for the frame the artist selected.
-        publishedIndex = state.activeFrameIndex;
-        accumulator = 0;
-      }
       const clip = state.clips.find((item) => item.id === state.activeClipId);
       const first = clip?.startFrame ?? 0;
       const last = Math.min(clip?.endFrame ?? state.frames.length - 1, state.frames.length - 1);
-      let index = publishedIndex;
-      if (index < first || index > last) {
-        index = first;
-        accumulator = 0;
+      const key = `${clip?.id}:${first}:${last}:${clip?.loopMode}:${state.loopMode}`;
+      if (key !== sequenceKey) {
+        sequenceKey = key; sequence = playbackOrder(first, last, clip?.loopMode, state.loopMode);
+        position = 0; accumulator = 0;
+      } else if (state.activeFrameIndex !== publishedIndex) {
+        // An explicit scrub starts a fresh hold on the forward leg.
+        position = Math.max(0, sequence.indexOf(state.activeFrameIndex)); accumulator = 0;
       }
+      let index = sequence[position] ?? first;
       let stopped = false;
       if (first === last && state.loopMode === 'once') {
         const duration = state.frames[index]?.durationMs ?? Math.round(1000 / state.fps);
@@ -296,18 +297,13 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
         const previewDuration = duration / previewSpeedRef.current;
         if (accumulator < previewDuration) break;
         accumulator -= previewDuration;
-        if (state.loopMode === 'once' && index === last) {
+        if (state.loopMode === 'once' && position === sequence.length - 1) {
           stopped = true;
           accumulator = 0;
           break;
         }
-        if (state.loopMode === 'ping-pong') {
-          if (index === last) forward = false;
-          if (index === first) forward = true;
-          index += forward ? 1 : -1;
-        } else {
-          index = index === last ? first : index + 1;
-        }
+        position = (position + 1) % sequence.length;
+        index = sequence[position];
       }
       if (index !== publishedIndex) {
         publishedIndex = index;

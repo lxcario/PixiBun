@@ -1,0 +1,33 @@
+
+Running 24 tests using 2 workers
+
+(node:14484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\studio.spec.ts:337:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › blank canvas workspace passes automated WCAG 2.2 axe scan (3.1s)
+  ok  3 [chromium] › tests\e2e\studio.spec.ts:348:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › open Export modal passes automated WCAG 2.2 axe scan (3.2s)
+  ok  2 [chromium] › tests\e2e\gameDelivery.spec.ts:72:5 › new palette roles and game-kit controls remain accessible without inspector overflow (6.2s)
+  ok  5 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Dark (3.0s)
+  ok  4 [chromium] › tests\e2e\studio.spec.ts:367:7 › Studio Automated Accessibility Audits (axe-core, WCAG 2.2) › RightInspector panels expanded pass automated WCAG 2.2 axe scan (6.7s)
+  ok  6 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Dark (3.9s)
+  ok  8 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Dark (3.3s)
+  ok  7 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › export modal dialog meets WCAG standards under Atelier Dark (3.7s)
+  ok  9 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › toast alert notification meets WCAG standards under Atelier Dark (3.0s)
+  ok 10 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Atelier Light (2.9s)
+  ok 12 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › export modal dialog meets WCAG standards under Atelier Light (3.6s)
+  ok 11 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Light (4.4s)
+  ok 13 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Atelier Light (3.3s)
+  ok 14 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › toast alert notification meets WCAG standards under Atelier Light (3.0s)
+  ok 15 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Dark (2.8s)
+  ok 16 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Dark (4.5s)
+  ok 17 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › export modal dialog meets WCAG standards under Cozy Classic Dark (3.4s)
+  ok 18 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Dark (3.6s)
+  ok 19 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › toast alert notification meets WCAG standards under Cozy Classic Dark (2.8s)
+  ok 20 [chromium] › tests\e2e\themeAccessibility.spec.ts:54:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › shell and blank canvas meet WCAG standards under Cozy Classic Light (3.0s)
+  ok 21 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Light (4.5s)
+  ok 22 [chromium] › tests\e2e\themeAccessibility.spec.ts:109:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › export modal dialog meets WCAG standards under Cozy Classic Light (3.5s)
+  ok 23 [chromium] › tests\e2e\themeAccessibility.spec.ts:130:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › projects gallery modal meets WCAG standards under Cozy Classic Light (3.2s)
+  ok 24 [chromium] › tests\e2e\themeAccessibility.spec.ts:151:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › toast alert notification meets WCAG standards under Cozy Classic Light (2.9s)
+
+  24 passed (45.9s)

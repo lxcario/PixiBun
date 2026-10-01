@@ -14,6 +14,7 @@ export interface SerializedLayer {
   blendMode: BlendMode;
   tag?: string;
   effect?: LayerEffectRecipe;
+  research?: import('@/lib/research/recipes').ResearchRecipe;
   /** Lossless PNG encoding of this layer's pixel buffer, base64-encoded. */
   pngBase64?: string;
 }
@@ -74,6 +75,8 @@ export type SaveResult =
       ok: false;
       reason:
         | 'restore-invalid'
+        | 'conflict'
+        | 'memory-limit'
         | 'lifecycle-suspended'
         | 'invariant-invalid'
         | 'storage-unavailable'

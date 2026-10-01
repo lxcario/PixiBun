@@ -18,6 +18,10 @@ export const StatusBar: React.FC = React.memo(() => {
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const activeLayerId = useStudioStore((s) => s.activeLayerId);
   const selection = useStudioStore((s) => s.selection);
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const saveStatus = useStudioStore((s) => s.saveStatus);
+  const saveLabel = saveStatus === 'saving' ? 'Saving…' : saveStatus === 'error' ? 'Save issue' : isDirty ? 'Unsaved' : 'Saved';
+  const saveTitle = saveStatus === 'saving' ? 'Saving changes to local storage…' : saveStatus === 'error' ? 'Save paused. Your artwork remains safe in memory.' : isDirty ? 'You have unsaved changes' : 'All changes saved to local storage';
 
   /* Derive active layer name */
   const activeLayerName = frames[activeFrameIndex]?.layers.find(
@@ -108,6 +112,25 @@ export const StatusBar: React.FC = React.memo(() => {
         <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-wisteria)]" />
         <span className="capitalize text-[var(--accent-gold)]">
           {activeTool}
+        </span>
+      </span>
+      <span className="w-px h-3 shrink-0 bg-[var(--desk-border)]" />
+      <span data-testid="status-bar-save-indicator" className="shrink-0">
+        <span
+          data-testid="save-status-badge"
+          role="status"
+          aria-live="polite"
+          title={saveTitle}
+          className={`h-5 px-2 flex items-center gap-1.5 whitespace-nowrap rounded-[2px] border ${
+            saveStatus === 'error'
+              ? 'bg-[#2e111a] border-[#eb5a66]/60 text-[#ffb4b9]'
+              : saveStatus === 'saving' || isDirty
+              ? 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--accent-gold)]'
+              : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-muted)]'
+          }`}
+        >
+          <span aria-hidden="true" className={`w-1.5 h-1.5 shrink-0 rounded-full ${saveStatus === 'error' ? 'bg-[#eb5a66]' : saveStatus === 'saving' ? 'bg-[var(--accent-gold)] animate-pulse' : isDirty ? 'bg-[var(--accent-gold)]' : 'bg-[var(--accent-sage,#7d9d7f)]'}`} />
+          <span>{saveLabel}</span>
         </span>
       </span>
     </div>

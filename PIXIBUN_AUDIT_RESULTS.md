@@ -1,5 +1,7 @@
 # PIXIBUN — Deep Code & Documentation Audit Results
 
+> **Subsequent session — 2026-10-01:** The six-phase 2026-09-30 audit implementation is recorded in the [phase report](docs/research/phase-implementation-status.md) and [completion record](docs/research/session-completion-2026-10-01.md). The dated findings and counts below remain historical evidence.
+
 > Historical audit of the 2026-09-14 tree. Current remediation and verification are recorded in [TASKS.md](TASKS.md) Phase 77 and [CHANGELOG.md](CHANGELOG.md); file locations, test counts, and open findings below describe the older snapshot.
 
 > The 2026-09-30 editor UX cleanup is recorded in [PIXIBUN_UX_CHANGELOG.md](PIXIBUN_UX_CHANGELOG.md). Its tool removals and preview workflows do not retroactively change this audit's evidence.
@@ -217,3 +219,9 @@ Date (UTC): 2026-09-14. Status: **100% Remediated & Verified**. All Critical, Hi
 | **15. [Cosmetic] Historical Count Qualification** | Qualified historical phase counts in `TASKS.md` and `LOGS.md` as "at the time" snapshots. | `TASKS.md`, `LOGS.md`. |  **Resolved** |
 | **16. [Cosmetic] Repository Hygiene** | Cleaned up all temporary audit artifacts from workspace; verified git status clean. | Working tree audit. |  **Resolved** |
 | **17. [High] Photometric Live Drag Decoupling & Appendage Normal Stabilization** | Decoupled static EDT geometry from dynamic light azimuth via `applyAppendageStabilization`. Re-stabilizes narrow appendages in <0.01ms per frame from `baseNormalField`. Guarantees 0-pixel discrepancy between live dragging and fresh single-shot recomputation at any azimuth. Ensures explicit commit-time re-render in `usePhotometricEvents.ts`. | `tests/photometricNonDestructive.test.ts` (15 tests pass; live azimuth sweep test passes with 0 pixel difference). |  **Resolved** |
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX verification](docs/research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

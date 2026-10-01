@@ -8,6 +8,7 @@ export interface WorkerRequest {
   frames: RawFrameData[];
   fps: number;
   delays?: number[];
+  repeat?: boolean;
 }
 
 export type WorkerResponse =
@@ -18,19 +19,22 @@ export type WorkerResponse =
 self.onmessage = (e: MessageEvent<WorkerRequest>) => {
   if (e.data?.type === 'encode') {
     try {
-      const { frames, fps, delays } = e.data;
+      const { frames, fps, delays, repeat } = e.data;
       const gifUint8 = encodeGifRawFrames(
         frames,
         fps,
         (current, total) => {
           postWorkerMessage({ type: 'progress', current, total });
         },
-        delays
+        delays,
+        repeat
       );
-      // Send completed GIF array buffer as a transferable object to eliminate copy overhead
+      // The byte writer returns a view into a larger capacity allocation. Transfer
+      // exactly the encoded bytes, excluding unused trailing capacity.
+      const outputBuffer = gifUint8.slice().buffer;
       postWorkerMessage(
-        { type: 'done', buffer: gifUint8.buffer },
-        [gifUint8.buffer]
+        { type: 'done', buffer: outputBuffer },
+        [outputBuffer]
       );
     } catch (err) {
       postWorkerMessage({

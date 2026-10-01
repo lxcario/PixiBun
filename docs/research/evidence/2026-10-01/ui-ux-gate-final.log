@@ -1,0 +1,75 @@
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Validates phase uniqueness, section monotonicity, test counters, and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+✅ TASKS.md phase headers verified (all 72 phases unique)
+✅ ARCHITECTURE.md sections verified (strictly monotonic 1 through 31)
+✅ CHANGELOG.md file paths verified (280/280 verified on disk)
+✅ CenterViewport.tsx obsolete-phrase check passed (current measured count: 876 lines)
+✅ README.md, BENCHMARKS.md, and V2_VISION.md test metrics verified against live runners (1469 unit tests across 143 suites; 145 E2E tests across 32 suites)
+✅ package.json version synchronized with latest CHANGELOG.md release (v1.14.1)
+
+All documentation integrity checks passed successfully.
+
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 33.90s[0m
+
+[1m[35m[2/5] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+[32m✓ Stage 2: Static Type Safety Invariant (0 Errors) PASSED in 3.91s[0m
+
+[1m[35m[3/5] Stage 3: Lint and accessibility rules[0m
+[2m  ↳ Checks source and test lint rules.[0m
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+
+[32m✓ Stage 3: Lint and accessibility rules PASSED in 14.61s[0m
+
+[1m[35m[4/5] Stage 4: Unit & Defensive Invariant Test Suite[0m
+[2m  ↳ Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).[0m
+
+> pixibun@1.14.1 test
+> vitest run
+
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/benchmark.test.ts (6 tests | 1 failed) 8057ms
+     × benchmarks 32-bit LUT remapping and raster pixel remapping for 64x64 to 512x512 palette cycling 217ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/benchmark.test.ts > Performance Benchmarking Suite > benchmarks 32-bit LUT remapping and raster pixel remapping for 64x64 to 512x512 palette cycling
+AssertionError: expected 2.040432000000037 to be less than 2
+ ❯ tests/benchmark.test.ts:234:24
+    232|
+    233|       // Assert that 32-bit LUT remapping consumes well under the 16.6…
+    234|       expect(avgLutMs).toBeLessThan(2.0);
+       |                        ^
+    235|       expect(avgTotalMs).toBeLessThan(16.66);
+    236|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 142 passed (143)
+      Tests  1 failed | 1468 passed (1469)
+   Start at  14:00:54
+   Duration  24.41s (transform 59.02s, setup 8.45s, import 133.12s, tests 78.50s, environment 51.11s)
+
+
+[1m[31m❌ FAILED: Stage 4: Unit & Defensive Invariant Test Suite (exited with code 1) [25.26s][0m
+[33m⚠️  Quality Gate intercepted a failure. Push/Release blocked.[0m
+

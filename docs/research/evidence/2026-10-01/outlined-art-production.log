@@ -1,0 +1,74 @@
+[WebServer] (node:31320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:26424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (6.3s)
+  ok  2 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (10.8s)
+  ok  3 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.0s)
+  ok  4 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (3.7s)
+  ok  5 [chromium] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (5.7s)
+(node:8660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (8.6s)
+  ok  7 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (10.9s)
+  ok  8 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.5s)
+  ok  9 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (4.9s)
+  ok 10 [firefox] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (7.9s)
+(node:19736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (21.1s)
+  x  12 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (16.3s)
+(node:10472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (16.6s)
+  ok 14 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (9.3s)
+  ok 15 [webkit] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (19.2s)
+
+
+  1) [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('img', { name: 'Research result', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('img', { name: 'Research result', exact: true })
+
+
+       at ..\helpers\researchWorkflows.ts:25
+
+      23 |   await expect(action).toBeEnabled();
+      24 |   const worker = page.waitForEvent('worker'); await action.click();
+    > 25 |   expect((await worker).url()).toContain('/_next/'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                                                                                                                    ^
+      26 |   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-busy', 'false');
+      27 | }
+      28 | export async function verifyResearchKeyboardWorkflow(page: Page) {
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:25:132)
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:111:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:5:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\outlined-art-production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\outlined-art-production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\outlined-art-production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\outlined-art-production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+  14 passed (2.6m)

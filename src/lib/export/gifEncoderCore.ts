@@ -284,7 +284,8 @@ export function encodeGifRawFrames(
   frames: RawFrameData[],
   fps: number,
   onProgress?: (current: number, total: number) => void,
-  delays?: number[]
+  delays?: number[],
+  repeat: boolean = true
 ): Uint8Array {
   if (frames.length === 0) {
     throw new Error('encodeGifRawFrames requires at least 1 frame.');
@@ -306,15 +307,17 @@ export function encodeGifRawFrames(
   writer.writeByte(0); // Background Color Index
   writer.writeByte(0); // Pixel Aspect Ratio
 
-  // Netscape Application Extension for looping
-  writer.writeByte(0x21); // Extension Introducer
-  writer.writeByte(0xFF); // Application Extension Label
-  writer.writeByte(11);   // Block Size
-  writer.writeString('NETSCAPE2.0');
-  writer.writeByte(3);    // Sub-block Size
-  writer.writeByte(1);    // Sub-block ID
-  writer.writeShort(0);   // Loop count (0 = infinite)
-  writer.writeByte(0);    // Block Terminator
+  // Absence of this extension means play once; zero in the extension means infinite.
+  if (repeat) {
+    writer.writeByte(0x21); // Extension Introducer
+    writer.writeByte(0xFF); // Application Extension Label
+    writer.writeByte(11);   // Block Size
+    writer.writeString('NETSCAPE2.0');
+    writer.writeByte(3);    // Sub-block Size
+    writer.writeByte(1);    // Sub-block ID
+    writer.writeShort(0);   // Loop count (0 = infinite)
+    writer.writeByte(0);    // Block Terminator
+  }
 
   // Encode each frame
   for (let i = 0; i < frames.length; i++) {

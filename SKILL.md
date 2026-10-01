@@ -36,3 +36,9 @@ Review the implementation as a skeptical senior creative-tools engineer:
 - Does undo/redo properly restore layer states and frame animations?
 - Are all types strictly checked with zero `any` shortcuts?
 - Are all comments strictly technical and devoid of AI boilerplate?
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+Project implementation and verification status is maintained in the [session completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX report](docs/research/session-ui-ux-2026-10-01.md). The six bounded audit phases and later header, footer and lighting-menu improvements are implemented. These project status records do not change the operating instructions above.
+<!-- /session-publication-2026-10-01 -->

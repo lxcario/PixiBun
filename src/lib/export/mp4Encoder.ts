@@ -14,8 +14,11 @@
  * - AbortSignal cancellation support.
  */
 
+import { getVideoRecordingMimeType, recordCanvasVideo } from './videoRecorder';
+import { awaitVideoOperation } from './videoOperation';
 import { muxToMp4Blob, Mp4MuxerSample } from './isobmffWriter';
 import { validateExportGeometry } from './exportGeometryValidation';
+import { withExportMemory } from './exportMemory';
 
 export interface Mp4ExportOptions {
   fps?: number; // Target video frame rate (default: 30)
@@ -28,12 +31,12 @@ export interface Mp4ExportOptions {
 }
 
 interface WebCodecsWindow extends Window {
-  VideoEncoder?: new (init: { output: (chunk: unknown, metadata?: unknown) => void; error: (e: unknown) => void }) => {
+  VideoEncoder?: { isConfigSupported?: (config: unknown) => Promise<{ supported?: boolean }>; new (init: { output: (chunk: unknown, metadata?: unknown) => void; error: (e: unknown) => void }): {
     configure: (config: unknown) => void;
     encode: (frame: unknown, options?: { keyFrame?: boolean }) => void;
     flush: () => Promise<void>;
     close: () => void;
-  };
+  }; };
   VideoFrame?: new (source: CanvasImageSource, init: { timestamp: number; duration: number }) => { close: () => void };
 }
 
@@ -45,7 +48,7 @@ export function isMp4ExportSupported(): boolean {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return false;
   }
-  // 1. Hardware accelerated pure-TS WebCodecs pipeline
+  // Synchronous API-presence hint. UI/export must also probe the exact config.
   if (
     typeof (window as WebCodecsWindow).VideoEncoder === 'function' &&
     typeof (window as WebCodecsWindow).VideoFrame === 'function'
@@ -53,27 +56,21 @@ export function isMp4ExportSupported(): boolean {
     return true;
   }
 
-  // 2. Fallback to MediaRecorder check
-  const hasMediaRecorder = typeof window.MediaRecorder !== 'undefined';
-  if (!hasMediaRecorder) {
-    return false;
+  return getVideoRecordingMimeType('mp4') !== null;
+}
+
+/** Exact configuration probe for export controls; API presence alone is insufficient. */
+export async function probeMp4ExportSupport(width: number, height: number, fps = 30): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  const encoder = (window as WebCodecsWindow).VideoEncoder;
+  if (encoder?.isConfigSupported && (window as WebCodecsWindow).VideoFrame) {
+    try {
+      const config = { codec: 'avc1.42001f', width: (width + 1) & ~1, height: (height + 1) & ~1,
+        bitrate: 2_000_000, framerate: fps, avc: { format: 'avc' } };
+      if ((await awaitVideoOperation(encoder.isConfigSupported(config))).supported) return true;
+    } catch { /* Check recording fallback independently. */ }
   }
-  const hasCaptureStream =
-    typeof HTMLCanvasElement !== 'undefined' &&
-    (typeof HTMLCanvasElement.prototype.captureStream === 'function' ||
-      typeof (HTMLCanvasElement.prototype as HTMLCanvasElement & { mozCaptureStream?: unknown }).mozCaptureStream ===
-        'function');
-  if (!hasCaptureStream) {
-    return false;
-  }
-  try {
-    return (
-      MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
-      MediaRecorder.isTypeSupported('video/mp4')
-    );
-  } catch {
-    return false;
-  }
+  return getVideoRecordingMimeType('mp4') !== null;
 }
 
 async function exportAnimationWithWebCodecsAsync(
@@ -124,15 +121,19 @@ async function exportAnimationWithWebCodecsAsync(
   });
 
   try {
-    const codec = 'avc1.42001f';
-    encoder.configure({
-      codec,
+    const config = {
+      codec: 'avc1.42001f',
       width,
       height,
       bitrate: 2_000_000,
       framerate: fps,
       avc: { format: 'avc' },
-    });
+    };
+    if (!VideoEncoderClass.isConfigSupported || !(await awaitVideoOperation(VideoEncoderClass.isConfigSupported(config), options.signal)).supported) {
+      throw new Error('The requested H.264 configuration is unsupported.');
+    }
+    if (options.signal?.aborted) throw new DOMException('MP4 export aborted', 'AbortError');
+    encoder.configure(config);
 
     let currentTimestampUs = 0;
     let framesProcessed = 0;
@@ -166,12 +167,15 @@ async function exportAnimationWithWebCodecsAsync(
         currentTimestampUs += durationUs;
         framesProcessed++;
         options.onProgress?.(framesProcessed, totalFrames);
+        if (framesProcessed % 16 === 0) await new Promise<void>(resolve => setTimeout(resolve, 0));
       }
     }
 
-    await encoder.flush();
+    await awaitVideoOperation(encoder.flush(), options.signal);
 
+    if (options.signal?.aborted) throw new DOMException('MP4 export aborted', 'AbortError');
     if (encoderError) throw encoderError;
+    if (samples.length === 0) throw new Error('MP4 encoder produced no samples.');
     if (!avcCData) {
       throw new Error('WebCodecs encoder did not emit AVCDecoderConfigurationRecord');
     }
@@ -184,7 +188,7 @@ async function exportAnimationWithWebCodecsAsync(
       samples,
     });
   } finally {
-    encoder.close();
+    try { encoder.close(); } catch { /* A failed encoder may already be closed. */ }
   }
 }
 
@@ -195,7 +199,11 @@ async function exportAnimationWithWebCodecsAsync(
  * @param options Configuration options (fps, scale, durationsMs, loopCount, onProgress, signal)
  * @returns Promise resolving to an MP4 video Blob (MIME type: 'video/mp4')
  */
-export async function exportAnimationToMp4Async(
+export async function exportAnimationToMp4Async(...args: Parameters<typeof encodeMp4>): Promise<Blob> {
+  return withExportMemory(args[0], Math.max(1, Math.min(16, args[1]?.scale ?? 4)), () => encodeMp4(...args), undefined, 'MP4');
+}
+
+async function encodeMp4(
   frameCanvases: HTMLCanvasElement[],
   options: Mp4ExportOptions = {}
 ): Promise<Blob> {
@@ -257,129 +265,8 @@ export async function exportAnimationToMp4Async(
     }
   }
 
-  if (!isMp4ExportSupported()) {
-    throw new Error(
-      'MP4 export is not supported in this browser environment (MediaRecorder with video/mp4 MIME type is unavailable). Please export using WebM, GIF, or APNG instead.'
-    );
-  }
-
-  // Active Browser MediaRecorder Path
-  const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = width;
-  exportCanvas.height = height;
-  const ctx = exportCanvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Failed to acquire 2D canvas context for MP4 recording.');
-  }
-  ctx.imageSmoothingEnabled = false;
-
-  const stream = exportCanvas.captureStream(fps);
-  const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')
-    ? 'video/mp4;codecs=avc1'
-    : 'video/mp4';
-
-  const recorder = new MediaRecorder(stream, { mimeType });
-  const chunks: Blob[] = [];
-
-  recorder.ondataavailable = (e) => {
-    if (e.data && e.data.size > 0) {
-      chunks.push(e.data);
-    }
-  };
-
-  return new Promise<Blob>((resolve, reject) => {
-    let isFinished = false;
-    let timerId: ReturnType<typeof setTimeout> | null = null;
-
-    const cleanup = () => {
-      if (timerId !== null) {
-        clearTimeout(timerId);
-        timerId = null;
-      }
-      if (options.signal) {
-        options.signal.removeEventListener('abort', onAbort);
-      }
-      try {
-        stream.getTracks().forEach((track) => track.stop());
-      } catch {
-        // ignore track stop errors
-      }
-    };
-
-    const onAbort = () => {
-      if (isFinished) return;
-      isFinished = true;
-      cleanup();
-      if (recorder.state !== 'inactive') {
-        recorder.stop();
-      }
-      reject(new DOMException('MP4 export aborted', 'AbortError'));
-    };
-
-    if (options.signal) {
-      options.signal.addEventListener('abort', onAbort);
-    }
-
-    recorder.onstop = () => {
-      if (isFinished) return;
-      isFinished = true;
-      cleanup();
-      const outputBlob = new Blob(chunks, { type: 'video/mp4' });
-      resolve(outputBlob);
-    };
-
-    recorder.onerror = () => {
-      if (isFinished) return;
-      isFinished = true;
-      cleanup();
-      reject(new Error('MediaRecorder encountered an error while encoding MP4.'));
-    };
-
-    try {
-      recorder.start();
-    } catch (err) {
-      cleanup();
-      reject(err);
-      return;
-    }
-
-    // Playback loop pacing frames
-    let currentLoop = 0;
-    let currentFrame = 0;
-    let framesRendered = 0;
-    const totalFramesToRender = frameCanvases.length * loopCount;
-
-    const renderNext = () => {
-      if (isFinished) return;
-
-      if (currentLoop >= loopCount) {
-        // Allow buffered frames to flush before stopping recorder
-        timerId = setTimeout(() => {
-          if (recorder.state !== 'inactive') {
-            recorder.stop();
-          }
-        }, 120);
-        return;
-      }
-
-      const sourceCanvas = frameCanvases[currentFrame];
-      ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(sourceCanvas, 0, 0, drawWidth, drawHeight);
-
-      framesRendered++;
-      options.onProgress?.(framesRendered, totalFramesToRender);
-
-      const delay = frameDelaysMs[currentFrame];
-
-      currentFrame++;
-      if (currentFrame >= frameCanvases.length) {
-        currentFrame = 0;
-        currentLoop++;
-      }
-
-      timerId = setTimeout(renderNext, delay);
-    };
-
-    renderNext();
-  });
+  const mimeType = getVideoRecordingMimeType('mp4');
+  if (!mimeType) throw new Error('MP4 recording is unsupported in this browser. Choose WebM, GIF / APNG instead.');
+  return recordCanvasVideo(frameCanvases, width, height, drawWidth, drawHeight, fps, loopCount,
+    frameDelaysMs, mimeType, options);
 }

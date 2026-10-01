@@ -3,12 +3,13 @@ import { current } from 'immer';
 import { Layer, AnimationFrame } from '@/types/canvas';
 import { AnimationClip } from '@/types/animation';
 import { createId } from '@/lib/engine/id';
-import { cloneBuffers, deleteBuffers } from '@/lib/engine/bufferRegistry';
+import { cloneBuffers, deleteBuffers, getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { clipRangeError, MAX_PROJECT_CLIPS, metadataNameError } from '@/lib/project/metadataAdmission';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
+import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
 
 function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number): AnimationClip | null {
   const startFrame = clip.startFrame - (removedIndex < clip.startFrame ? 1 : 0);
@@ -19,6 +20,15 @@ function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number):
 
 const initialLayerId = 'layer-1';
 const initialFrameId = 'frame-1';
+
+function activateFrame(state: Pick<AnimationSlice, 'frames' | 'activeFrameIndex'> & { activeLayerId: string }, index: number): void {
+  const frame = state.frames[index];
+  if (!Number.isInteger(index) || !frame) return;
+  state.activeFrameIndex = index;
+  if (!frame.layers.some(layer => layer.id === state.activeLayerId)) {
+    state.activeLayerId = frame.layers[0]?.id ?? '';
+  }
+}
 
 const defaultInitialFrame: AnimationFrame = {
   id: initialFrameId,
@@ -128,10 +138,17 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
     });
   },
 
-  duplicateFrame: frameIndex => {
+  duplicateFrame: (frameIndex, rasterizedContent) => {
     const currentStore = get();
     const srcFrame = currentStore.frames[frameIndex];
-    if (!srcFrame) return;
+    if (!srcFrame || !Number.isInteger(frameIndex)) return null;
+    if (rasterizedContent && (rasterizedContent.width !== currentStore.canvasWidth ||
+      rasterizedContent.height !== currentStore.canvasHeight ||
+      rasterizedContent.data.length !== currentStore.canvasWidth * currentStore.canvasHeight * 4 ||
+      !srcFrame.layers.some(layer => !layer.tag))) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Cannot insert invalid rasterized frame content.' });
+      return null;
+    }
 
     const incomingLayerCount = srcFrame.layers.length;
     const capacity = canAddFramesToProject(
@@ -145,13 +162,14 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
         message: capacity.reason || 'Cannot duplicate frame: workspace capacity ceiling reached.',
         type: 'error',
       });
-      return;
+      return null;
     }
 
     if (!pushStructuralHistoryStep('Duplicate Frame', {
       opKind: 'duplicate-frame', affectedLayerIds: [], redoBufferCount: incomingLayerCount,
       addedLayerCount: incomingLayerCount, addedFrameCount: 1,
-    })) return;
+    })) return null;
+    let result: { frameId: string; layerIds: string[] } | null = null;
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
@@ -178,12 +196,35 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
         state.canvasHeight
       );
 
+      // Install generated pixels before publishing the new frame to save/sync subscribers.
+      if (rasterizedContent) {
+        const artworkLayers = duplicatedLayers.filter(layer => !layer.tag);
+        const base = artworkLayers[artworkLayers.length - 1];
+        for (const layer of artworkLayers) {
+          const entry = getOrCreateBuffer(layer.id, state.canvasWidth, state.canvasHeight);
+          if (layer === base) {
+            const image = entry.ctx.createImageData(state.canvasWidth, state.canvasHeight);
+            image.data.set(rasterizedContent.data);
+            entry.ctx.putImageData(image, 0, 0);
+            layer.visible = true;
+            layer.opacity = 1;
+            layer.blendMode = 'source-over';
+            layer.effect = undefined;
+          } else {
+            entry.ctx.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
+          }
+          touchBuffer(layer.id);
+        }
+      }
+
       state.frames.splice(frameIndex + 1, 0, duplicate);
       state.activeFrameIndex = frameIndex + 1;
       state.activeLayerId = duplicatedLayers[0].id;
+      result = { frameId: newFrameId, layerIds: duplicatedLayers.map(layer => layer.id) };
       state.isDirty = true;
       state.editRevision += 1;
     });
+    return result;
   },
 
   deleteFrame: frameIndex => {
@@ -252,7 +293,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       }
       const [removed] = state.frames.splice(startIndex, 1);
       state.frames.splice(endIndex, 0, removed);
-      state.activeFrameIndex = endIndex;
+      activateFrame(state, endIndex);
       state.isDirty = true;
       state.editRevision += 1;
     });
@@ -260,16 +301,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   setActiveFrame: index => {
     set(state => {
-      if (index >= 0 && index < state.frames.length) {
-        state.activeFrameIndex = index;
-        const currentFrame = state.frames[index];
-        if (currentFrame && currentFrame.layers.length > 0) {
-          const existingLayer = currentFrame.layers.find(l => l.id === state.activeLayerId);
-          if (!existingLayer) {
-            state.activeLayerId = currentFrame.layers[0].id;
-          }
-        }
-      }
+      activateFrame(state, index);
     });
   },
 
@@ -318,6 +350,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       studioEvents.emit('pixibun:toast', { type: 'error', message: error });
       return;
     }
+    if (!pushStructuralHistoryStep('Add Clip')) return;
     set(state => {
       const minF = Math.max(0, Math.min(state.frames.length - 1, Math.min(startFrame, endFrame)));
       const maxF = Math.max(0, Math.min(state.frames.length - 1, Math.max(startFrame, endFrame)));
@@ -342,6 +375,11 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
     const current = get();
     const existing = current.clips.find((clip) => clip.id === id);
     if (!existing) return;
+    const review = updates.review === undefined ? undefined : parseAnimationReview(updates.review);
+    if (review === null) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Review regions or exceptions exceed their limits or are invalid.' });
+      return;
+    }
     const startFrame = updates.startFrame ?? updates.fromFrame ?? existing.startFrame;
     const endFrame = updates.endFrame ?? updates.toFrame ?? existing.endFrame;
     const error = metadataNameError(updates.name ?? existing.name, 'clip') ??
@@ -350,10 +388,12 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       studioEvents.emit('pixibun:toast', { type: 'error', message: error });
       return;
     }
+    if (!pushStructuralHistoryStep('Update Clip')) return;
     set(state => {
       const clip = state.clips.find(c => c.id === id);
       if (clip) {
         Object.assign(clip, updates, { startFrame, endFrame, fromFrame: startFrame, toFrame: endFrame });
+        if (review) clip.review = review;
         state.isDirty = true;
         state.editRevision += 1;
       }
@@ -361,6 +401,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   deleteClip: id => {
+    if (!get().clips.some(clip => clip.id === id) || !pushStructuralHistoryStep('Delete Clip')) return;
     set(state => {
       state.clips = state.clips.filter(c => c.id !== id);
       if (state.activeClipId === id) {
@@ -372,6 +413,10 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   reorderClips: (sourceIndex, targetIndex) => {
+    const count = get().clips.length;
+    if (!Number.isInteger(sourceIndex) || !Number.isInteger(targetIndex) || sourceIndex < 0 ||
+      sourceIndex >= count || targetIndex < 0 || targetIndex >= count || sourceIndex === targetIndex) return;
+    if (!pushStructuralHistoryStep('Reorder Clips')) return;
     set(state => {
       if (
         sourceIndex < 0 ||
@@ -389,14 +434,11 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   setActiveClipId: id => {
+    const clip = id ? get().clips.find(c => c.id === id) : undefined;
+    if (id && !clip) return;
     set(state => {
       state.activeClipId = id;
-      if (id) {
-        const clip = state.clips.find(c => c.id === id);
-        if (clip) {
-          state.activeFrameIndex = clip.fromFrame ?? clip.startFrame;
-        }
-      }
+      if (clip) activateFrame(state, clip.fromFrame ?? clip.startFrame);
     });
   },
 

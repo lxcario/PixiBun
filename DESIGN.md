@@ -1,5 +1,7 @@
 #  Design System & Spatial Architecture — PixiBun Atelier
 
+> **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report](docs/research/PHASE6_UX_HARDENING.md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record](docs/research/session-completion-2026-10-01.md).
+
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   D E S I G N   S Y S T E M
@@ -370,4 +372,8 @@ In retro arcade and pixel art styles, surfaces are shaded using controlled, disc
 * **Physical Visibility Gating:** Strict line-of-sight gate ($N_{3D} \cdot L_{3D} > 0$) ensures specular highlights only appear on lit surfaces facing the light source.
 * **Feature Shielding:** Facial features (eyes, mouth) and dark outlines are masked out, ensuring highlights land only on organic surface curves.
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
 
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

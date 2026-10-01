@@ -160,6 +160,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
     const currentFrame = frames[activeFrameIndex];
     const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
+    if (!currentLayer && tools.activeTool !== 'eyedropper') return;
 
     // Prevent edits to locked layers for every pixel-changing tool.
     if (currentLayer?.locked && tools.activeTool !== 'eyedropper') {

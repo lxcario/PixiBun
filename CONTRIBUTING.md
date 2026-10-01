@@ -1,5 +1,7 @@
 # Contributing to PixiBun Atelier 
 
+> **Session verification reference — 2026-10-01:** The supported local runtime is Node 22. Production browser checks use `npm run test:e2e:production`; `PIXIBUN_PRODUCTION_PORT` can select an unused local port, with proxies following that address. Document discovered test counts separately from executed evidence and preserve failed-run/rerun history. For this session, the user chose local verification, without TestSprite uploads or tunnels. See the [session completion record](docs/research/session-completion-2026-10-01.md).
+
 Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is an in-browser pixel art and animation workstation built with a local-first approach and in-repository graphics algorithms. The app uses framework, UI, and storage dependencies listed in `package.json`.
 
 ---
@@ -82,3 +84,9 @@ Before submitting a Pull Request:
 2. Ensure no untyped `any` or `@ts-ignore` flags are introduced.
 3. If new features or phases are added, document them cleanly in `ARCHITECTURE.md` and `CHANGELOG.md`.
 4. Run `npm run verify:docs` to ensure zero documentation drift.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

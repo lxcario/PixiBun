@@ -1,6 +1,12 @@
 # PixiBun UX changelog — 2026-09-29–30
 
-Test counts below are observations made at each step. The current discovered inventory is 1,315 unit tests in 131 suites and 98 Chromium tests in 24 spec files. These are local checkout results, not a new production sign-off.
+Test counts below are observations made at each step. As of 2026-10-01, the discovered inventory is 1,472 unit/integration tests in 143 suites and 146 Chromium tests in 32 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
+
+## Session UI/UX corrections — 2026-10-01
+
+The subsequent outlined-artwork screenshots exposed dark outline colors bleeding through blocks and ineffective direction controls without normals. Keep outlines now starts on, keeps strong boundaries exact and excludes them from sampling. Normal-free lighting uses a labeled rounded estimate built with existing editor functions; authored normals take priority. Older saved recipes keep their prior behavior. The [follow-up evidence](docs/research/session-ui-ux-2026-10-01.md#outlined-artwork-screenshot-follow-up) records current verification separately from the preceding broad runs.
+
+Corrected four browser-reproduced problems: inaccessible preview edges at 4×, incomplete keyboard tabs, stale readiness messages and light-theme game-kit contrast. The research task is now Try a new look, with real fitted Before/After previews, automatic choice updates, a square light compass, equal-size choices and closed advanced settings. Original is byte-exact by default; unrelated palettes are no longer imposed implicitly. Source-color coarsening preserves native transparency and silhouette, and explicit palette remapping remains available. Frame-count feedback and recovery copy match the implemented behavior. Live game-kit readiness refreshes while export remains open. See the [UI/UX report](docs/research/session-ui-ux-2026-10-01.md) for targeted and broader verification; automated checks do not establish measured artist benefit.
 
 ## Follow-up after direct UI feedback — 2026-09-30
 
@@ -53,3 +59,9 @@ The 2026-09-29 entries below record the earlier implementation stage. The direct
 - The optimized production build passed. `git diff --check` found no whitespace errors.
 - The in-app browser loaded `/studio` but its viewport displayed the deliberate `Desk Too Small` gate; desktop screenshots and browser checks were used at 1024px and 1280px.
 - TestSprite verification could not run because the `testsprite` CLI is not installed in this environment. No new TestSprite project was created.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

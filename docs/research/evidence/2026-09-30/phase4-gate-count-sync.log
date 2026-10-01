@@ -1,0 +1,33 @@
+v22.23.3
+
+> pixibun@1.14.1 gate:full
+> node scripts/runQualityGate.mjs --with-build
+
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Validates phase uniqueness, section monotonicity, test counters, and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+✅ TASKS.md phase headers verified (all 72 phases unique)
+✅ ARCHITECTURE.md sections verified (strictly monotonic 1 through 31)
+✅ CHANGELOG.md file paths verified (280/280 verified on disk)
+✅ CenterViewport.tsx obsolete-phrase check passed (current measured count: 876 lines)
+❌ [DOC INTEGRITY ERROR] README.md unit test claim mismatch: claimed 1392 tests across 138 suites, but live Vitest runner reports 1393 tests across 138 suites.
+❌ [DOC INTEGRITY ERROR] README.md unit test claim mismatch: claimed 1392 tests across 138 suites, but live Vitest runner reports 1393 tests across 138 suites.
+❌ [DOC INTEGRITY ERROR] BENCHMARKS.md current suite inventory mismatch: claimed 1392 tests across 138 suites, but Vitest reports 1393 across 138.
+❌ [DOC INTEGRITY ERROR] V2_VISION.md current test inventory mismatch: claimed 1392/138 unit and 113/27 E2E, but live runners report 1393/138 unit and 113/27 E2E.
+✅ package.json version synchronized with latest CHANGELOG.md release (v1.14.1)
+
+Doc integrity audit failed with 4 error(s).
+
+
+[1m[31m❌ FAILED: Stage 1: Documentation & Sync Invariant Audit (exited with code 1) [12.09s][0m
+[33m⚠️  Quality Gate intercepted a failure. Push/Release blocked.[0m
+

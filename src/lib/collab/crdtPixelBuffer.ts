@@ -64,6 +64,8 @@ export class CrdtPixelBuffer {
   private cells: CrdtCell[];
   private hlc: HlcTuple = [0, 0];
   private opLog: PixelOp[] = [];
+  /** Conservative estimate for JS cells, HLC tuples, peer strings and retained ops. */
+  get estimatedBytes(): number { return (this.cells.length + this.opLog.length) * 192; }
 
   constructor(
     width: number,

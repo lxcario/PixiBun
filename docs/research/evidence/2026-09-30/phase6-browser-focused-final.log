@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:22788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\researchWorkbench.spec.ts:6:5 › research simplification preserves marked native pixels and saved source provenance (5.1s)
+  ok 2 [chromium] › tests\e2e\researchWorkbench.spec.ts:7:5 › shared light previews all poses and applies and restores the entire rig (4.2s)
+  ok 3 [chromium] › tests\e2e\researchWorkbench.spec.ts:8:5 › scene rules reject contradictions and reproduce pinned walkable scenes after reload (4.1s)
+  ok 4 [chromium] › tests\e2e\researchWorkbench.spec.ts:9:5 › research controls and native previews fit and remain accessible (3.7s)
+
+  4 passed (18.3s)

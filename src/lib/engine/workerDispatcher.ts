@@ -25,8 +25,39 @@ import {
 } from '@/lib/ai/math/edtNormalMap';
 import { computeMinecraftSkinNormalField } from '@/lib/ai/math/minecraftSkin';
 import type { HeavyWorkerRequest, HeavyWorkerResponse } from '@/workers/heavyCompute.worker';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 
 export const DEFAULT_WORKER_TIMEOUT_MS = 10_000;
+export const MAX_PENDING_WORKER_REQUESTS = 4;
+/** Conservative work-unit admission policy, not a wall-clock latency guarantee. */
+export const MAX_SYNC_FALLBACK_WORK_UNITS = 1_048_576;
+
+function checkAbort(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('This operation was aborted', 'AbortError');
+}
+
+function runBoundedFallback<T>(workUnits: number, signal: AbortSignal | undefined, compute: () => T): T {
+  checkAbort(signal);
+  if (!Number.isFinite(workUnits) || workUnits < 0 || workUnits > MAX_SYNC_FALLBACK_WORK_UNITS) {
+    throw new RangeError('This operation requires a compute worker. Reduce its size or enable Web Workers.');
+  }
+  const result = compute();
+  checkAbort(signal);
+  return result;
+}
+
+function checkAdmission(signal?: AbortSignal): void {
+  checkAbort(signal);
+  if (pendingCallbacks.size >= MAX_PENDING_WORKER_REQUESTS) {
+    throw new Error('Compute worker is busy. Wait for an operation to finish before trying again.');
+  }
+}
+
+function interruptedWorkerError(): Error {
+  const error = new Error('Worker terminated because another operation was cancelled or timed out. Please retry.');
+  error.name = 'WorkerInterruptedError';
+  return error;
+}
 
 export interface WorkerDispatcherOptions {
   timeoutMs?: number;
@@ -192,9 +223,9 @@ function dispatchToWorker<T>(
         const timeoutError = new Error(`Worker request ${req.id} timed out after ${timeoutMs}ms`);
         timeoutError.name = 'WorkerTimeoutError';
         pending.reject(timeoutError);
-        // A lone timed-out request may be stuck in the worker. Dispose it so
-        // the next request starts fresh; peers with their own deadlines remain live.
-        if (pendingCallbacks.size === 0) terminateWorkerAndRejectAll(timeoutError);
+        // Requests share one execution thread. A timed-out job could block every
+        // queued job; interrupt peers explicitly and let the next dispatch recover.
+        terminateWorkerAndRejectAll(interruptedWorkerError());
       }, timeoutMs);
     }
 
@@ -204,9 +235,11 @@ function dispatchToWorker<T>(
         if (pending) {
           if (pending.timerId !== null) clearTimeout(pending.timerId);
           pendingCallbacks.delete(req.id);
+          pending.cleanupAbortListener?.();
           const abortErr = new Error('This operation was aborted');
           abortErr.name = 'AbortError';
           pending.reject(abortErr);
+          terminateWorkerAndRejectAll(interruptedWorkerError());
         }
       };
       signal.addEventListener('abort', onAbort, { once: true });
@@ -239,7 +272,14 @@ export interface RotSpriteWorkerOptions extends WorkerDispatcherOptions {
 /**
  * Offload RotSprite 8x to Web Worker, with fallback to synchronous execution.
  */
-export async function runRotSpriteInWorker(
+export async function runRotSpriteInWorker(...args: Parameters<typeof computeRotSprite>): ReturnType<typeof computeRotSprite> {
+  const options = typeof args[6] === 'object' ? args[6] : undefined;
+  checkAdmission(options?.signal);
+  const release = reserveMemory(args[0].width * args[0].height * 4 * 66 + (args[4] ?? args[0].width) * (args[5] ?? args[0].height) * 8, 'RotSprite compute');
+  try { return await computeRotSprite(...args); } finally { release(); }
+}
+
+async function computeRotSprite(
   src: PixelBuffer,
   angleRad: number,
   pivotX?: number,
@@ -260,9 +300,14 @@ export async function runRotSpriteInWorker(
     outPivotX = outPivotXOrOptions;
   }
 
+  checkAdmission(options?.signal);
+  const runSync = () => runBoundedFallback(src.width * src.height * 64 +
+    (targetW ?? src.width) * (targetH ?? src.height), options?.signal,
+    () => rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY));
+
   const worker = getOrCreateWorker();
   if (!worker) {
-    return rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY);
+    return runSync();
   }
 
   const id = getNextId();
@@ -294,7 +339,7 @@ export async function runRotSpriteInWorker(
     ) {
       throw err;
     }
-    return rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY);
+    return runSync();
   }
 }
 
@@ -303,13 +348,24 @@ export interface WfcWorkerOptions extends WfcOptions, WorkerDispatcherOptions {}
 /**
  * Offload WaveFunctionCollapse synthesis to Web Worker, with fallback to synchronous execution.
  */
-export async function runWfcInWorker(
+export async function runWfcInWorker(...args: Parameters<typeof computeWfc>): ReturnType<typeof computeWfc> {
+  checkAdmission(args[1]?.signal);
+  const release = reserveMemory((args[1]?.maxWorkingSetBytes ?? 64 * 1024 * 1024) + args[0].sampleData.byteLength * 2, 'WFC compute');
+  try { return await computeWfc(...args); } finally { release(); }
+}
+
+async function computeWfc(
   input: WfcInput,
   options?: WfcWorkerOptions
 ): Promise<WfcResult> {
+  checkAdmission(options?.signal);
+  const runSync = () => runBoundedFallback(input.sampleWidth * input.sampleHeight *
+    input.outputWidth * input.outputHeight * (options?.symmetries ?? 8) *
+    (options?.N ?? 2) ** 2 * (options?.maxRetries ?? 10), options?.signal,
+    () => synthesizeWfc(input, options));
   const worker = getOrCreateWorker();
   if (!worker) {
-    return synthesizeWfc(input, options);
+    return runSync();
   }
 
   const id = getNextId();
@@ -336,7 +392,7 @@ export async function runWfcInWorker(
     ) {
       throw err;
     }
-    return synthesizeWfc(input, options);
+    return runSync();
   }
 }
 
@@ -345,19 +401,27 @@ export type MorphWorkerOptions = WorkerDispatcherOptions;
 /**
  * Offload In-Between Frame Morphing to Web Worker, with fallback to synchronous execution.
  */
-export async function runMorphInWorker(
+export async function runMorphInWorker(...args: Parameters<typeof computeMorph>): ReturnType<typeof computeMorph> {
+  checkAdmission(args[4]?.signal);
+  const release = reserveMemory(args[0].width * args[0].height * (128 + 8 * (args[3] !== undefined ? 1 : Math.max(1, args[2] ?? 1))), 'Frame morph compute');
+  try { return await computeMorph(...args); } finally { release(); }
+}
+
+async function computeMorph(
   frameA: { width: number; height: number; data: Uint8ClampedArray },
   frameB: { width: number; height: number; data: Uint8ClampedArray },
   steps: number = 1,
   fraction?: number,
   options?: MorphWorkerOptions
 ): Promise<{ width: number; height: number; data: Uint8ClampedArray }[]> {
+  checkAdmission(options?.signal);
+  const runSync = () => runBoundedFallback(frameA.width * frameA.height * 256 *
+    (fraction !== undefined ? 1 : Math.max(1, steps)), options?.signal,
+    () => fraction !== undefined ? [morphInBetweenFrameAtFraction(frameA, frameB, fraction)]
+      : morphInBetweenFramesSync(frameA, frameB, steps));
   const worker = getOrCreateWorker();
   if (!worker) {
-    if (fraction !== undefined) {
-      return [morphInBetweenFrameAtFraction(frameA, frameB, fraction)];
-    }
-    return morphInBetweenFramesSync(frameA, frameB, steps);
+    return runSync();
   }
 
   const id = getNextId();
@@ -388,10 +452,7 @@ export async function runMorphInWorker(
     ) {
       throw err;
     }
-    if (fraction !== undefined) {
-      return [morphInBetweenFrameAtFraction(frameA, frameB, fraction)];
-    }
-    return morphInBetweenFramesSync(frameA, frameB, steps);
+    return runSync();
   }
 }
 
@@ -404,15 +465,22 @@ export interface EdtNormalMapOptions extends WorkerDispatcherOptions {
  * Offload Euclidean Distance Transform (EDT) and Normal Map baking to Web Worker,
  * with a defensive input copy, Transferable ArrayBuffers, and synchronous fallback.
  */
-export async function runEdtNormalMapInWorker(
+export async function runEdtNormalMapInWorker(...args: Parameters<typeof computeEdt>): ReturnType<typeof computeEdt> {
+  checkAdmission(args[3]?.signal);
+  const release = reserveMemory(args[1] * args[2] * 128, 'Normal map compute');
+  try { return await computeEdt(...args); } finally { release(); }
+}
+
+async function computeEdt(
   rgba: Uint8ClampedArray,
   width: number,
   height: number,
   options: EdtNormalMapOptions = {}
 ): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
+  checkAdmission(options.signal);
   const worker = getOrCreateWorker();
 
-  const runSync = () => {
+  const runSync = () => runBoundedFallback(width * height * 64, options.signal, () => {
     const isOpaque = (x: number, y: number) => {
       if (x < 0 || x >= width || y < 0 || y >= height) return false;
       return rgba[(y * width + x) * 4 + 3] > 10;
@@ -438,7 +506,7 @@ export async function runEdtNormalMapInWorker(
         );
     const data = bakeNormalMapToRgba(normalField, width, height, isOpaque);
     return { width, height, data };
-  };
+  });
 
   if (!worker) {
     return runSync();

@@ -1,0 +1,36 @@
+v22.23.3
+
+> pixibun@1.14.1 test:e2e:production
+> playwright test --config playwright.production.config.ts
+
+[WebServer] (node:16492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 18 tests using 1 worker
+
+(node:10628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (4.4s)
+  ok  2 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (1.6s)
+  ok  3 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (2.6s)
+  ok  4 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (5.3s)
+  ok  5 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2.1s)
+  ok  6 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (3.1s)
+(node:32728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (20.3s)
+  ok  8 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (3.7s)
+  ok  9 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (5.7s)
+  ok 10 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (9.3s)
+  ok 11 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (3.1s)
+  ok 12 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (6.1s)
+(node:10976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (24.0s)
+  ok 14 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (4.8s)
+  ok 15 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (11.7s)
+  ok 16 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (18.0s)
+  ok 17 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (5.0s)
+  ok 18 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (6.7s)
+
+  18 passed (2.4m)

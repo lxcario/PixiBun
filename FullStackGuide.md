@@ -549,3 +549,9 @@ This table verifies that 100% of the rich technical material, case studies, comp
 | **Pre-Launch & Post-Launch Operations** | Gate 7 + Ref §9.1, §9.2 | Launch readiness | Preserved & Linked | **Yes** — OG tags, telemetry, backups intact |
 | **Appendices A–F (Audits, Contract, Templates)** | App A–F | Direct copy-paste artifacts | Preserved & Linked | **Yes** — All checklists, contract, templates intact |
 | **RFC 2119 Normative Levels** | Section 2 | Precision requirement definitions | Added in V2 | **Yes** — `MUST` vs `SHOULD` vs `MAY` codified |
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+Project implementation and verification status is maintained in the [session completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX report](docs/research/session-ui-ux-2026-10-01.md). The six bounded audit phases and later header, footer and lighting-menu improvements are implemented. These project status records do not change the operating instructions above.
+<!-- /session-publication-2026-10-01 -->

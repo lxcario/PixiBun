@@ -1,0 +1,42 @@
+[WebServer] (node:23440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ Slow filesystem detected. The benchmark took 235ms. If \\?\D:\PixiBun\.next\dev is a network drive, consider moving it to a local folder.
+[WebServer] See more: https://nextjs.org/docs/app/guides/local-development
+[WebServer] (node:25288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 2 workers
+
+(node:8068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+  ok 2 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded GIF opens in the native decoder and contains painted pixels (2.7s)
+  ok 1 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded WEBM opens in the native decoder and contains painted pixels (3.0s)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+  ok 3 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.0s)
+  ok 4 [chromium] › tests\e2e\exportBoundaries.spec.ts:79:5 › unsupported WebM is explained and cannot download a placeholder (2.0s)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:588:19)
+[WebServer] [browser] GIF export failed: Error: GIF encoding failed after transferring pixels. Please retry the export.
+[WebServer]     at createAnimatedGifBlobAsync (src/lib/export/gifEncoder.ts:166:15)
+[WebServer]     at async handleExportGIF (src/components/modals/ExportModal.tsx:333:20)
+[WebServer]   164 |         // Source canvases may have changed since dispatch. Never silently re-extract
+[WebServer]   165 |         // a different animation or encode arrays detached by ownership transfer.
+[WebServer] > 166 |         throw new Error('GIF encoding failed after transferring pixels. Please retry the export.', { cause: workerErr });
+[WebServer]       |               ^
+[WebServer]   167 |       }
+[WebServer]   168 |       console.warn('GIF Web Worker unavailable or failed, falling back to main thread encoder:', workerErr);
+[WebServer]   169 |     } (src/components/modals/ExportModal.tsx:356:15)
+  ok 5 [chromium] › tests\e2e\exportBoundaries.spec.ts:86:5 › GIF post-transfer failure tells the artist to retry and never downloads corrupted data (1.9s)
+
+  5 passed (10.4s)

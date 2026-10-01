@@ -91,7 +91,11 @@ export const StudioLayout: React.FC = () => {
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
   const startupRecoveryPromptedRef = useRef<string | null>(null);
 
-  const [activeToast, setActiveToast] = useState<{ message: string; type: 'default' | 'error' | 'success' } | null>(null);
+  const [activeToast, setActiveToast] = useState<{
+    message: string;
+    type: 'default' | 'error' | 'success';
+    action?: { label: string; onClick: () => void };
+  } | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -99,11 +103,15 @@ export const StudioLayout: React.FC = () => {
       if (toastTimerRef.current !== null) {
         window.clearTimeout(toastTimerRef.current);
       }
-      setActiveToast({ message: payload.message, type: payload.type || 'default' });
+      setActiveToast({
+        message: payload.message,
+        type: payload.type || 'default',
+        action: payload.action,
+      });
       toastTimerRef.current = window.setTimeout(() => {
         setActiveToast(null);
         toastTimerRef.current = null;
-      }, 3500);
+      }, payload.action ? 5000 : 3500);
     });
     return () => {
       unsub();
@@ -118,6 +126,8 @@ export const StudioLayout: React.FC = () => {
     runAutosave,
     handleCommitHistory,
     autosaveError,
+    saveConflict,
+    saveConflictCopy,
     setAutosaveError,
     openStoredProject,
     lifecycleState,
@@ -331,36 +341,71 @@ export const StudioLayout: React.FC = () => {
         {getLocalSaveLabel(saveStatus, isDirty)}
       </div>
 
-      {/* Autosave Disk Write Error (Non-Layout-Shifting Toast) */}
+      {/* Autosave Disk Write Error / Save Conflict Notice (Non-Layout-Shifting Toast) */}
       {autosaveError && (
         <div
           role="alert"
-          className="fixed bottom-10 left-16 max-w-sm bg-[#2e111a]/95 border-2 border-[#eb5a66] shadow-2xl p-3 rounded-[3px] flex flex-col gap-1.5 z-40 text-xs font-mono text-[#ffb4b9] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-150"
+          className={`fixed bottom-10 left-16 max-w-md shadow-2xl p-3.5 rounded-[3px] flex flex-col gap-2 z-40 text-xs font-mono backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-150 ${
+            saveConflict
+              ? 'bg-[#251829]/95 border-2 border-[#f0be7c] text-[#ede8f4]'
+              : 'bg-[#2e111a]/95 border-2 border-[#eb5a66] text-[#ffb4b9]'
+          }`}
         >
-          <div className="flex items-center justify-between gap-2 border-b border-[#6b283d] pb-1">
-            <div className="flex items-center gap-1.5 font-bold text-[#eb5a66]">
+          <div
+            className={`flex items-center justify-between gap-2 border-b pb-1.5 ${
+              saveConflict ? 'border-[#5a3a28]' : 'border-[#6b283d]'
+            }`}
+          >
+            <div
+              className={`flex items-center gap-1.5 font-bold ${
+                saveConflict ? 'text-[#f0be7c]' : 'text-[#eb5a66]'
+              }`}
+            >
               <PixelIcon name="warning" size={13} className="shrink-0" />
-              <span>Autosave Error</span>
+              <span>
+                {saveConflict
+                  ? 'This project was changed in another PixiBun tab.'
+                  : 'Storage issue · Artwork safe in tab'}
+              </span>
             </div>
             <button
               onClick={() => setAutosaveError(null)}
-              className="px-1.5 py-0.5 text-xs text-[#ffb4b9] hover:text-white transition-colors cursor-pointer leading-none"
+              className="px-1.5 py-0.5 text-xs text-[#d0c4df] hover:text-white transition-colors cursor-pointer leading-none"
               title="Dismiss warning"
               aria-label="Dismiss error"
             >
               ✕
             </button>
           </div>
-          <p className="text-[11px] leading-relaxed text-[#ffb4b9]">
-            {autosaveError}
-          </p>
-          <div className="flex justify-end pt-1">
+          <div className="text-[11px] leading-relaxed space-y-1">
+            <p className={`font-semibold ${saveConflict ? 'text-[#5cdaac]' : 'text-[#f0be7c]'}`}>
+              {saveConflict
+                ? 'Your current artwork is safe in this tab.'
+                : 'Your current drawing is preserved in memory.'}
+            </p>
+            <p className={saveConflict ? 'text-[#d0c4df]' : 'text-[#ffb4b9]'}>
+              {autosaveError}
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setAutosaveError(null)}
+              className="text-[11px] px-2 py-0.5 text-[#a599b5] hover:text-white transition-colors cursor-pointer"
+            >
+              Keep editing
+            </button>
+            {saveConflict && (
+              <TactileButton size="sm" onClick={() => void saveConflictCopy()}>
+                Save a copy
+              </TactileButton>
+            )}
             <TactileButton
               size="sm"
-              variant="danger"
+              variant={saveConflict ? 'default' : 'danger'}
               onClick={() => openExport()}
               title="Open Export Dialog"
-              className="text-xs px-2.5 py-1 bg-[#eb5a66] hover:bg-[#ff8c94] text-[#140d1f] font-bold border border-[#8c202a]"
+              className={saveConflict ? 'text-xs px-2.5 py-1 font-bold' : 'text-xs px-2.5 py-1 bg-[#eb5a66] hover:bg-[#ff8c94] text-[#140d1f] font-bold border border-[#8c202a]'}
             >
               Export Drawing
             </TactileButton>
@@ -571,18 +616,41 @@ export const StudioLayout: React.FC = () => {
           role={activeToast?.type === 'error' ? 'alert' : 'status'}
           aria-live={activeToast?.type === 'error' ? 'assertive' : 'polite'}
           data-testid={activeToast ? 'studio-toast' : 'save-affirmation-toast'}
-          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 px-4 py-2 font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all ${
+          className={`fixed bottom-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2 font-mono text-xs rounded-lg shadow-xl backdrop-blur-sm transition-all ${
+            activeToast?.action ? 'pointer-events-auto' : 'pointer-events-none'
+          } ${
             activeToast?.type === 'error'
               ? 'bg-[#2e111a]/95 border border-[#eb5a66] text-[#ffb4b9]'
+              : activeToast?.type === 'success'
+              ? 'bg-[#15241b]/95 border border-[#5cdaac] text-[#8ceec5]'
               : 'bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)]'
           }`}
         >
           <PixelIcon
-            name={activeToast?.type === 'error' ? 'warning' : 'save'}
+            name={activeToast?.type === 'error' ? 'warning' : activeToast?.type === 'success' ? 'sparkles' : 'save'}
             size={14}
-            className={activeToast?.type === 'error' ? 'text-[#eb5a66] shrink-0' : 'text-[var(--accent-gold,#f0be7c)] shrink-0'}
+            className={
+              activeToast?.type === 'error'
+                ? 'text-[#eb5a66] shrink-0'
+                : activeToast?.type === 'success'
+                ? 'text-[#5cdaac] shrink-0'
+                : 'text-[var(--accent-gold,#f0be7c)] shrink-0'
+            }
           />
           <span>{activeToast?.message || saveToast}</span>
+          {activeToast?.action && (
+            <button
+              type="button"
+              onClick={() => {
+                activeToast.action?.onClick();
+                setActiveToast(null);
+              }}
+              data-testid="toast-action-button"
+              className="ml-2 px-2 py-0.5 rounded-[2px] bg-[var(--surface-2)] hover:bg-[var(--surface-3)] text-[var(--text-heading)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] cursor-pointer text-[11px] font-sans font-semibold underline transition-colors"
+            >
+              {activeToast.action.label}
+            </button>
+          )}
         </div>
       )}
     </div>

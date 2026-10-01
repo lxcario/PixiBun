@@ -1,0 +1,62 @@
+[WebServer] (node:10960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ Slow filesystem detected. The benchmark took 270ms. If \\?\D:\PixiBun\.next\dev is a network drive, consider moving it to a local folder.
+[WebServer] See more: https://nextjs.org/docs/app/guides/local-development
+
+Running 3 tests using 1 worker
+
+(node:9692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+  x  1 [chromium] › tests\e2e\animationReview.spec.ts:36:5 › native animation review is read-only, undoable, persists exceptions and expires them after drawing (9.5s)
+(node:26604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+  ok 2 [chromium] › tests\e2e\animationReview.spec.ts:64:5 › selected protection survives cleanup across the clip and metadata undo/redo and reload (5.2s)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:621:19)
+  ok 3 [chromium] › tests\e2e\animationReview.spec.ts:93:5 › the animation review remains accessible and fits the inspector at native and enlarged zoom (3.3s)
+
+
+  1) [chromium] › tests\e2e\animationReview.spec.ts:36:5 › native animation review is read-only, undoable, persists exceptions and expires them after drawing 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Reopen this interval' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Reopen this interval' })
+
+
+      53 |   await page.getByRole('combobox', { name: 'Animation review clip' }).selectOption({ label: 'Animation review (1–2)' });
+      54 |   await page.getByRole('button', { name: 'Scan animation', exact: true }).click();
+    > 55 |   await expect(page.getByRole('button', { name: 'Reopen this interval' })).toBeVisible();
+         |                                                                            ^
+      56 |   await page.getByTestId('pen-tool').click();
+      57 |   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+      58 |   await page.mouse.click(box.x + box.width * 0.65, box.y + box.height * 0.65);
+        at D:\PixiBun\tests\e2e\animationReview.spec.ts:55:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\animationReview-native-ani-64882--expires-them-after-drawing-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\animationReview-native-ani-64882--expires-them-after-drawing-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\animationReview.spec.ts:36:5 › native animation review is read-only, undoable, persists exceptions and expires them after drawing 
+  2 passed (22.5s)

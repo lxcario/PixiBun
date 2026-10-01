@@ -1,0 +1,680 @@
+[WebServer] (node:1752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 33 tests using 1 worker
+
+(node:15952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (5.4s)
+  ok  2 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (4.8s)
+  ok  3 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (4.3s)
+  ok  4 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (3.4s)
+  x   5 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (1.0m)
+(node:38040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (6.0s)
+  ok  7 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (1.9s)
+  x   8 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (12.6s)
+(node:22608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   9 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (2.4s)
+(node:5488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  10 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (2.1s)
+(node:40020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  11 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (2.5s)
+(node:30016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 12 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (8.7s)
+  ok 13 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (5.4s)
+  ok 14 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (5.4s)
+  ok 15 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (4.5s)
+  x  16 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (1.0m)
+(node:10460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 17 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (13.5s)
+  ok 18 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2.3s)
+  x  19 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (15.1s)
+(node:5832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  20 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (4.3s)
+(node:18508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  21 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (4.1s)
+(node:9948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  22 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (4.7s)
+(node:24804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 23 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (19.0s)
+  x  24 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (1.0m)
+(node:14116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 25 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (12.5s)
+  ok 26 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (6.5s)
+  x  27 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (1.0m)
+(node:36724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 28 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (18.7s)
+  ok 29 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (8.7s)
+  x  30 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (15.1s)
+(node:17760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  31 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (6.0s)
+(node:3716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  32 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (5.1s)
+(node:20016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  33 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.0s)
+
+
+  1) [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Save now', exact: true })
+
+
+      53 |   await paint(secondTab, 0.5);
+      54 |   const copy = await pixels(secondTab);
+    > 55 |   await secondTab.getByRole('button', { name: 'Save now', exact: true }).click();
+         |                                                                          ^
+      56 |   await expect(secondTab.getByRole('alert').filter({ hasText: /changed in another tab/ })).toBeVisible();
+      57 |   await page.reload(); await expect.poll(() => pixels(page)).toEqual(original);
+      58 |   await secondTab.getByRole('button', { name: 'Save a copy', exact: true }).click();
+        at D:\PixiBun\tests\production\operation.spec.ts:55:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-chromium\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/close all PixiBun tabs/)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText(/close all PixiBun tabs/)
+
+
+      149 |     await expect.poll(() => first.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
+      150 |     await first.getByRole('button', { name: 'Update instructions', exact: true }).click();
+    > 151 |     await expect(first.getByText(/close all PixiBun tabs/)).toBeVisible();
+          |                                                             ^
+      152 |     await expect.poll(() => first.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
+      153 |     await expect.poll(() => pixels(second)).toEqual(artwork);
+      154 |     await first.close();
+        at D:\PixiBun\tests\production\operation.spec.ts:151:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyDetailWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:32:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:4:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:56:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:5:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifySceneWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:78:80)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:6:105
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Save now', exact: true })
+
+
+      53 |   await paint(secondTab, 0.5);
+      54 |   const copy = await pixels(secondTab);
+    > 55 |   await secondTab.getByRole('button', { name: 'Save now', exact: true }).click();
+         |                                                                          ^
+      56 |   await expect(secondTab.getByRole('alert').filter({ hasText: /changed in another tab/ })).toBeVisible();
+      57 |   await page.reload(); await expect.poll(() => pixels(page)).toEqual(original);
+      58 |   await secondTab.getByRole('button', { name: 'Save a copy', exact: true }).click();
+        at D:\PixiBun\tests\production\operation.spec.ts:55:74
+
+    Error: ENOENT: no such file or directory, unlink 'D:\PixiBun\test-results\production\.playwright-artifacts-5\fb76d99e0c668103a91c98489099cd7b.zip'
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-firefox\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-firefox\error-context.md
+
+  7) [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/close all PixiBun tabs/)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText(/close all PixiBun tabs/)
+
+
+      149 |     await expect.poll(() => first.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
+      150 |     await first.getByRole('button', { name: 'Update instructions', exact: true }).click();
+    > 151 |     await expect(first.getByText(/close all PixiBun tabs/)).toBeVisible();
+          |                                                             ^
+      152 |     await expect.poll(() => first.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
+      153 |     await expect.poll(() => pixels(second)).toEqual(artwork);
+      154 |     await first.close();
+        at D:\PixiBun\tests\production\operation.spec.ts:151:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyDetailWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:32:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:4:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:56:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:5:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('research'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifySceneWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:78:80)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:6:105
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /^Select frame 2\./ })
+        - locator resolved to <button type="button" draggable="true" title="Frame #2 (230ms) - Drag to reorder" aria-label="Select frame 2. Duration: 230ms. Drag to reorder." class="relative w-[72px] h-16 shrink-0 rounded-[2px] border-2 cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-between px-1.5 py-1 select-none text-left bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[var(--timeline-frame-hover-bg)] hover:border-[var(--timeline-frame-hover-border)]">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <aside aria-label="Application update notification" class="fixed bottom-4 right-4 z-50 bg-[#201431] border-2 border-[#f0be7c] p-3 rounded-[3px] shadow-[0_8px_20px_rgba(0,0,0,0.6)] flex items-center gap-3 font-mono text-xs text-[#ede8f4]">…</aside> intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <aside aria-label="Application update notification" class="fixed bottom-4 right-4 z-50 bg-[#201431] border-2 border-[#f0be7c] p-3 rounded-[3px] shadow-[0_8px_20px_rgba(0,0,0,0.6)] flex items-center gap-3 font-mono text-xs text-[#ede8f4]">…</aside> intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        85 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <aside aria-label="Application update notification" class="fixed bottom-4 right-4 z-50 bg-[#201431] border-2 border-[#f0be7c] p-3 rounded-[3px] shadow-[0_8px_20px_rgba(0,0,0,0.6)] flex items-center gap-3 font-mono text-xs text-[#ede8f4]">…</aside> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+       at ..\helpers\gameAnimationDownload.ts:44
+
+      42 |   const posePixels: number[][] = [];
+      43 |   for (let i = 1; i <= 3; i++) {
+    > 44 |     await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
+         |                                                                                   ^
+      45 |     const expected = [[255, 0, 0, 255], [0, 0, 255, 255], [0, 255, 0, 255]][i - 1];
+      46 |     // WebKit's native fixture PNG round trip can shift a channel by one byte. Frame identity
+      47 |     // is checked here; downloaded pixels must match the actual source exactly.
+        at verifyAnimatedDownloadOrder (D:\PixiBun\tests\helpers\gameAnimationDownload.ts:44:83)
+        at D:\PixiBun\tests\production\gameDelivery.spec.ts:7:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Save now', exact: true })
+
+
+      53 |   await paint(secondTab, 0.5);
+      54 |   const copy = await pixels(secondTab);
+    > 55 |   await secondTab.getByTestId('save-button').click();
+         |                                                      ^
+      56 |   await expect(secondTab.getByRole('alert').filter({ hasText: /changed in another tab/ })).toBeVisible();
+      57 |   await page.reload(); await expect.poll(() => pixels(page)).toEqual(original);
+      58 |   await secondTab.getByRole('button', { name: 'Save a copy', exact: true }).click();
+        at D:\PixiBun\tests\production\operation.spec.ts:55:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-webkit\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-webkit\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-two-real-tabs-re-3f706-n-independent-conflict-copy-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/close all PixiBun tabs/)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText(/close all PixiBun tabs/)
+
+
+      149 |     await expect.poll(() => first.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
+      150 |     await first.getByRole('button', { name: 'Update instructions', exact: true }).click();
+    > 151 |     await expect(first.getByText(/close all PixiBun tabs/i)).toBeVisible();
+          |                                                             ^
+      152 |     await expect.poll(() => first.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
+      153 |     await expect.poll(() => pixels(second)).toEqual(artwork);
+      154 |     await first.close();
+        at D:\PixiBun\tests\production\operation.spec.ts:151:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-a-real-waiting-u-85809-ivates-after-all-tabs-close-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('/_next/'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByTestId('save-button').click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyDetailWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:32:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:4:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-bea75--persists-source-provenance-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('/_next/'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByTestId('save-button').click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:56:3)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:5:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "research"
+    Received string:    "http://localhost:3100/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js#params=%5B%5B%22%2F_next%2Fstatic%2Fchunks%2Fturbopack-1bi54f6vq0i5x.js%22%2C%22%2F_next%2Fstatic%2Fchunks%2F1n5bvil80md11.js%22%5D%2C%22%22%2C%22%2F_next%2F%22%2Cnull%2Cnull%5D"
+
+       at ..\helpers\researchWorkflows.ts:15
+
+      13 | export async function preview(page: Page) {
+      14 |   const worker = page.waitForEvent('worker'); await page.getByRole('button', { name: 'Create research preview', exact: true }).click();
+    > 15 |   expect((await worker).url()).toContain('/_next/'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+         |                                ^
+      16 | }
+      17 | async function saveReload(page: Page) {
+      18 |   await page.getByTestId('save-button').click();
+        at preview (D:\PixiBun\tests\helpers\researchWorkflows.ts:15:32)
+        at verifySceneWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:78:80)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:6:105
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\researchWorkbench-compiled-ef4cb-ipes-reproduce-after-saving-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16 failed
+    [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+    [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+    [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+    [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+    [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+    [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+    [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+    [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+    [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+    [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+    [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings 
+    [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy 
+    [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close 
+    [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance 
+    [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+    [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving 
+  17 passed (7.9m)

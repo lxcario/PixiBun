@@ -104,6 +104,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const cycleReferenceOverlay = useStudioStore((s) => s.cycleReferenceOverlay);
   const storeCanUndo = useStudioStore((s) => s.canUndo);
   const storeCanRedo = useStudioStore((s) => s.canRedo);
+  const isDirty = useStudioStore((s) => s.isDirty);
+  const saveStatus = useStudioStore((s) => s.saveStatus);
 
   const isUndoEnabled = propCanUndo !== undefined ? propCanUndo : storeCanUndo;
   const isRedoEnabled = propCanRedo !== undefined ? propCanRedo : storeCanRedo;
@@ -235,17 +237,17 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="h-24 2xl:h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] grid grid-cols-[auto_minmax(0,1fr)] grid-rows-[48px_48px] 2xl:flex items-center justify-between px-3 gap-x-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="min-h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex flex-wrap items-center px-3 py-2 gap-x-4 gap-y-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
-      <div className="col-start-1 row-start-1 flex items-center gap-2 shrink-0">
+      <div role="group" aria-label="Project controls" className="flex flex-wrap items-center gap-2">
         {/* Atelier Logo Mark */}
         <a
           href="/"
           title="Return to PixiBun Home"
           className="flex items-center gap-1.5 pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 hover:scale-[1.02] transition-all"
         >
-          <PixiBunLogo className="drop-shadow-sm" />
+          <PixiBunLogo size="sm" className="drop-shadow-sm" />
         </a>
 
         {/* Document actions stay beside the current project. */}
@@ -287,12 +289,24 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               setTempName(projectName);
               setIsEditingName(true);
             }}
-            className="font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate max-w-[120px] cursor-pointer text-left leading-none"
+            className="h-7 font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate max-w-[120px] cursor-pointer text-left leading-none"
+            aria-label={`Rename project ${projectName}`}
             title="Click to rename project"
           >
             {projectName}
           </button>
         )}
+        {/* Canvas Resolution Badge */}
+        <button
+          onClick={onOpenResize}
+          title="Resize / Resample Canvas"
+          aria-label={`Resize canvas ${canvasWidth} by ${canvasHeight} pixels`}
+          data-testid="resize-canvas-button"
+          className="h-7 text-[10px] text-[var(--text-muted)] pixel-tactile-btn hover:text-[var(--text-heading)] px-2 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] cursor-pointer"
+        >
+          {canvasWidth}×{canvasHeight}
+        </button>
+
         <TactileButton
           size="sm" variant="default" onClick={onNewDrawing}
           title="Start a New Blank Drawing" aria-label="Start a New Blank Drawing"
@@ -304,29 +318,65 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         </TactileButton>
 
         <TactileButton
-          size="sm" variant="default" onClick={onSaveNow}
-          title="Save now (Ctrl+S)" aria-label="Save now"
-          className="h-7 min-w-[64px] px-2.5 text-xs flex items-center gap-1.5"
+          size="sm"
+          variant="default"
+          onClick={() => fileInputRef.current?.click()}
+          title="Import Asset, Image or Sprite Sheet"
+          aria-label="Import"
+          data-testid="import-button"
+          className="h-7 px-2 text-xs flex items-center gap-1.5 font-medium"
         >
-          <PixelIcon name="save" size={12} />
-          <span>Save</span>
+          <PixelIcon name="export" size={12} className="rotate-180" />
+          <span>Import</span>
         </TactileButton>
 
-        {/* Canvas Resolution Badge */}
-        <button
-          onClick={onOpenResize}
-          title="Click to Resize / Resample Canvas"
-          className="h-7 text-[10px] text-[var(--text-muted)] pixel-tactile-btn hover:text-[var(--text-heading)] px-2 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] cursor-pointer"
+        <TactileButton
+          size="sm"
+          variant="default"
+          onClick={onSaveNow}
+          title={
+            saveStatus === 'saving'
+              ? 'Saving locally… (Ctrl+S)'
+              : saveStatus === 'error'
+              ? 'Save issue · Click to retry (Ctrl+S)'
+              : isDirty
+              ? 'Unsaved changes · Click to save (Ctrl+S)'
+              : 'All changes saved (Ctrl+S)'
+          }
+          aria-label={
+            saveStatus === 'saving'
+              ? 'Saving locally'
+              : saveStatus === 'error'
+              ? 'Save issue'
+              : isDirty
+              ? 'Save unsaved changes'
+              : 'Save now'
+          }
+          data-testid="save-button"
+          className="h-7 min-w-[64px] px-2.5 text-xs flex items-center gap-1.5"
         >
-          {canvasWidth}×{canvasHeight}
-        </button>
+          <PixelIcon
+            name={saveStatus === 'error' ? 'warning' : 'save'}
+            size={12}
+            className={
+              saveStatus === 'error'
+                ? 'text-[#eb5a66]'
+                : saveStatus === 'saving'
+                ? 'text-[var(--accent-gold)] animate-pulse'
+                : isDirty
+                ? 'text-[var(--accent-gold)]'
+                : 'text-[var(--text-muted)]'
+            }
+          />
+          <span>Save</span>
+        </TactileButton>
 
         {/* Offline Indicator when disconnected */}
         <OfflineIndicator />
 
         {/* Undo / Redo Micro Actions */}
         <div className="h-7 flex items-center gap-1 border-l border-[var(--desk-border)] pl-1.5">
-          <StudioTooltip content="Undo" shortcut="Ctrl+Z">
+          <StudioTooltip content="Undo" shortcut="Ctrl+Z" position="bottom">
             <button
               onClick={onUndo}
               disabled={!isUndoEnabled}
@@ -339,7 +389,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             </button>
           </StudioTooltip>
 
-          <StudioTooltip content="Redo" shortcut="Ctrl+Y">
+          <StudioTooltip content="Redo" shortcut="Ctrl+Y" position="bottom">
             <button
               onClick={onRedo}
               disabled={!isRedoEnabled}
@@ -354,10 +404,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         </div>
       </div>
 
-      {/* ── 2. CENTER ZONE: Contextual Active-Tool Parameters ── */}
-      <div className="col-start-2 row-start-1 flex-1 flex items-center justify-center min-w-0 px-2 h-full">
+      {/* Drawing options wrap together, in document order, without clipping menus. */}
+      <div role="group" aria-label="Drawing controls" className="flex flex-wrap items-center gap-2">
         {hasToolParams ? (
-          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex items-center gap-2 max-w-full">
+          <div data-testid="tool-options-rail" aria-label="Tool options rail" className="min-h-7 px-2.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex flex-wrap items-center gap-2 max-w-full">
             {/* Tool indicator */}
             <span className="text-[10px] font-sans font-medium text-[var(--text-heading)] hidden md:inline shrink-0">
               {tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1)}:
@@ -422,7 +472,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   value={tools.curveTightness}
                   onChange={(e) => setCurveTightness(parseFloat(e.target.value))}
                   aria-label="Curve tightness"
-                  className="w-12 h-1 accent-[var(--accent-gold)] cursor-pointer"
+                  className="w-12 h-6 accent-[var(--accent-gold)] cursor-pointer"
                 />
               </div>
             )}
@@ -432,7 +482,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               <button
                 onClick={() => setBucketContiguous(!tools.bucketContiguous)}
                 title={tools.bucketContiguous ? 'Contiguous Island Fill' : 'Global Color Replace'}
-                className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
+                className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
                   !tools.bucketContiguous
                     ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'
                     : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
@@ -446,7 +496,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   value={tools.fillTolerance}
                   onChange={(event) => setFillTolerance(Number(event.target.value))}
                   aria-label="Bucket fill tolerance"
-                  className="w-20 h-1 accent-[var(--accent-gold)] cursor-pointer" />
+                  className="w-20 h-6 accent-[var(--accent-gold)] cursor-pointer" />
                 <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.fillTolerance}</span>
               </label>
               {tools.bucketContiguous && <button type="button"
@@ -454,7 +504,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 aria-label="Fill enclosed specks"
                 aria-pressed={tools.fillEnclosedSpecks}
                 title="Also fill color islands of up to 8 pixels fully enclosed by the filled area. Can replace small intentional details."
-                className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 ${tools.fillEnclosedSpecks ? 'pixel-primary-btn' : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)]'}`}>
+                className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 ${tools.fillEnclosedSpecks ? 'pixel-primary-btn' : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)]'}`}>
                 Enclosed specks: {tools.fillEnclosedSpecks ? 'On' : 'Off'}
               </button>}
             </>)}
@@ -470,31 +520,31 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   value={tools.bucketTolerance}
                   onChange={(e) => setBucketTolerance(Number(e.target.value))}
                   aria-label="Color Replace tolerance"
-                  className="w-24 h-1 accent-[var(--accent-gold)] cursor-pointer"
+                  className="w-24 h-6 accent-[var(--accent-gold)] cursor-pointer"
                 />
                 <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.bucketTolerance}</span>
               </div>
             )}
 
             {tools.activeTool === 'erase-color' && (
-              <div className="flex items-center gap-1.5 shrink-0 text-[10px]" title="Click a visible color to make matching pixels transparent. All frames edits the same layer position in each frame, skipping locked layers. Undo restores the artwork.">
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px]" title="Click a visible color to make matching pixels transparent. All frames edits the same layer position in each frame, skipping locked layers. Undo restores the artwork.">
                 <span className="text-[var(--text-muted)]">Erase color · Tolerance:</span>
                 <input type="range" min="0" max="255" step="1"
                   value={tools.eraseColorTolerance}
                   onChange={(event) => setEraseColorTolerance(Number(event.target.value))}
                   aria-label="Erase Color tolerance"
-                  className="w-20 h-1 accent-[var(--accent-gold)] cursor-pointer" />
+                  className="w-20 h-6 accent-[var(--accent-gold)] cursor-pointer" />
                 <span className="font-mono text-[var(--text-heading)] min-w-[22px] text-right tabular-nums">{tools.eraseColorTolerance}</span>
                 <button type="button" onClick={() => setEraseColorContiguous(!tools.eraseColorContiguous)}
                   aria-label="Erase Color matching mode"
-                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  className="h-6 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
                   {tools.eraseColorContiguous ? 'Connected' : 'All matches'}
                 </button>
                 <button type="button" onClick={() => setEraseColorFamily(!tools.eraseColorFamily)}
                   aria-label="Erase Color family mode"
                   aria-pressed={tools.eraseColorFamily}
                   title="Remove shades of the clicked color, including dark edge spill. The tolerance slider widens the hue range. Enabling this also searches all matching pixels; neutral outlines are protected."
-                  className="h-5 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
+                  className="h-6 px-1.5 pixel-tactile-btn text-[9px] font-bold cursor-pointer">
                   {tools.eraseColorFamily ? 'Color family: On' : 'Color family: Off'}
                 </button>
                 <button
@@ -504,7 +554,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   aria-pressed={tools.eraseColorAllFrames}
                   data-testid="erase-color-frame-scope"
                   title="Erase Color frame scope: Erase color across all animation frames or active frame only"
-                  className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 transition-all ${
+                  className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 transition-all ${
                     tools.eraseColorAllFrames
                       ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'
                       : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
@@ -522,7 +572,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   value={tools.ditherMatrix}
                   aria-label="Dither matrix algorithm"
                   onChange={(e) => setDitherMatrix(e.target.value as DitherMatrixType)}
-                  className="h-5 bg-[var(--surface-0)] text-[var(--accent-gold)] text-[9px] px-1.5 py-0 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
+                  className="h-6 bg-[var(--surface-0)] text-[var(--accent-gold)] text-[9px] px-1.5 py-0 rounded-[1px] border border-[var(--desk-border)] outline-none cursor-pointer"
                 >
                   <option value="2x2">Bayer 2x2</option>
                   <option value="4x4">Bayer 4x4</option>
@@ -538,7 +588,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   value={tools.ditherDensity}
                   onChange={(e) => setDitherDensity(parseFloat(e.target.value))}
                   aria-label="Dither density"
-                  className="w-12 h-1 accent-[var(--accent-gold)] cursor-pointer"
+                  className="w-12 h-6 accent-[var(--accent-gold)] cursor-pointer"
                 />
               </div>
             )}
@@ -549,7 +599,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 onClick={() => setShapeFilled(!tools.shapeFilled)}
                 aria-label={tools.shapeFilled ? 'Shape: Filled Solid' : 'Shape: Outline Stroke'}
                 data-testid="shape-fill-toggle"
-                className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
+                className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
                   tools.shapeFilled
                     ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'
                     : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
@@ -563,7 +613,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             {tools.activeTool === 'isometric-line' && (
               <button
                 onClick={() => setIsoAngleSnap(!tools.isoAngleSnap)}
-                className={`h-5 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
+                className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
                   tools.isoAngleSnap
                     ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'
                     : 'pixel-tactile-btn border border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
@@ -573,15 +623,49 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               </button>
             )}
           </div>
-        ) : (
-          <div className="h-full" />
-        )}
+        ) : null}
+        {/* Symmetry affects drawing, so keep it beside the active tool. */}
+        <div role="group" aria-label="Mirror drawing" className="h-7 flex items-center gap-0.5 px-1 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px]">
+          <span className="px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
+            <StudioTooltip position="bottom" content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
+              <button
+                onClick={toggleSymmetryH}
+                aria-label="Horizontal symmetry"
+                aria-pressed={tools.symmetryHorizontal}
+                data-testid="toggle-symmetry-h"
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                  tools.symmetryHorizontal
+                    ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
+                }`}
+              >
+                <PixelIcon name="symmetry-h" size={13} />
+              </button>
+            </StudioTooltip>
+
+            <StudioTooltip position="bottom" content={`Vertical symmetry (Shift+V) — ${tools.symmetryVertical ? 'Active' : 'Off'}`}>
+              <button
+                onClick={toggleSymmetryV}
+                aria-label="Vertical symmetry"
+                aria-pressed={tools.symmetryVertical}
+                data-testid="toggle-symmetry-v"
+                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
+                  tools.symmetryVertical
+                    ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
+                }`}
+              >
+                <PixelIcon name="symmetry-v" size={13} />
+              </button>
+            </StudioTooltip>
+          </div>
+
       </div>
 
-      {/* ── 3. RIGHT ZONE: 3 Coherent Semantic Instrument Groups ── */}
-      <div className="col-span-2 row-start-2 flex items-center gap-2 shrink-0 max-2xl:w-full max-2xl:justify-between">
+      {/* Canvas view, studio utilities, then the final Export action. */}
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
         {/* Zoom is a single instrument; display modifiers have their own group. */}
-        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5 text-xs">
+        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
           {/* Zoom Instrument (Connected Cluster) */}
           <div className="flex items-center">
             <button
@@ -639,42 +723,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           </button>
         </div>
 
-        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5 text-xs">
-
-          {/* Symmetry Mirror Controls (Pixel-native icons, tactile state, no radio dots) */}
-          <div className="flex items-center gap-0.5">
-            <StudioTooltip content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
-              <button
-                onClick={toggleSymmetryH}
-                aria-label="Horizontal symmetry"
-                data-testid="toggle-symmetry-h"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
-                  tools.symmetryHorizontal
-                    ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
-                }`}
-              >
-                <PixelIcon name="symmetry-h" size={13} />
-              </button>
-            </StudioTooltip>
-
-            <StudioTooltip content={`Vertical symmetry (Shift+V) — ${tools.symmetryVertical ? 'Active' : 'Off'}`}>
-              <button
-                onClick={toggleSymmetryV}
-                aria-label="Vertical symmetry"
-                data-testid="toggle-symmetry-v"
-                className={`w-6 h-6 rounded-[2px] cursor-pointer flex items-center justify-center transition-all active:translate-y-[1px] ${
-                  tools.symmetryVertical
-                    ? 'bg-[var(--surface-3)] text-[var(--accent-gold)] border border-[var(--accent-gold)]/60 shadow-xs font-bold'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--desk-border)]/50'
-                }`}
-              >
-                <PixelIcon name="symmetry-v" size={13} />
-              </button>
-            </StudioTooltip>
-          </div>
-
-          <div className="w-px h-3.5 bg-[var(--desk-border)] mx-0.5" />
+        <div className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
 
           {/* View Menu Trigger (Recognizable trigger, subtle active count, natural casing) */}
           <div className="relative" ref={viewMenuRef}>
@@ -709,8 +758,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         </div>
 
         {/* Collaboration and help are separate from document and file actions. */}
-        <div className="h-7 hidden md:flex items-center gap-1 text-xs">
-          <AppearancePopover />
+        <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center gap-1 text-xs border-l border-[var(--desk-border)] pl-3">
+          <AppearancePopover label="Theme" />
 
           <TactileButton
             size="sm"
@@ -721,7 +770,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-7 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="sparkles" size={12} />
-            <span className="hidden xl:inline">Co-Draw</span>
+            <span>Co-Draw</span>
           </TactileButton>
 
           <TactileButton
@@ -734,25 +783,12 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             className="h-7 px-2 text-xs flex items-center gap-1.5"
           >
             <PixelIcon name="help" size={12} />
-            <span className="sr-only">Guide</span>
+            <span>Help</span>
           </TactileButton>
         </div>
 
-        {/* File actions: imports enter the studio; exports leave it. */}
+        {/* Export stays at the right edge. */}
         <div className="h-7 flex items-center gap-1 text-xs">
-          <TactileButton
-            size="sm"
-            variant="default"
-            onClick={() => fileInputRef.current?.click()}
-            title="Import Asset, Image or Sprite Sheet"
-            aria-label="Import"
-            data-testid="import-button"
-            className="h-7 px-2 text-xs flex items-center gap-1.5 font-medium"
-          >
-            <PixelIcon name="export" size={12} className="rotate-180" />
-            <span>Import</span>
-          </TactileButton>
-
           <TactileButton
             size="sm"
             variant="primary"

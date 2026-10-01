@@ -9,8 +9,11 @@ import { decodeAndValidateProject } from '@/lib/project/decodeProject';
 import { clearPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { validateProjectFile } from '@/lib/project/schema';
 import { MAX_PROJECT_NAME_LENGTH, projectNameError } from '@/lib/project/metadataAdmission';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 
 export interface StoredProject {
+  /** Opaque storage identity, independent of artwork timestamps and edit revisions. */
+  storageVersion?: string;
   id: string;
   name: string;
   width: number;
@@ -29,6 +32,13 @@ export interface StoredLayerBlob {
   frameIndex: number;
   blob: Blob;
   updatedAt: number;
+}
+
+/** IndexedDB bytes avoid platform Blob/File persistence failures. Legacy Blobs remain readable. */
+export type LayerBlobStorageRecord = Omit<StoredLayerBlob, 'blob'> & { blob: Blob | ArrayBuffer; blobType?: string };
+
+export async function encodeLayerBlobRecord(record: StoredLayerBlob): Promise<LayerBlobStorageRecord> {
+  return { ...record, blob: await record.blob.arrayBuffer(), blobType: record.blob.type };
 }
 
 export interface StoredWorkspace extends StoredProject {
@@ -54,7 +64,7 @@ export interface RecoveryRecord {
 export class PixiBunDatabase extends Dexie {
   projects!: Table<StoredProject, string>;
   diagnostics!: Table<DiagnosticEntry, string>;
-  layerBlobs!: Table<StoredLayerBlob, number>;
+  layerBlobs!: Table<StoredLayerBlob, number, LayerBlobStorageRecord>;
   recoveryRecords!: Table<RecoveryRecord, string>;
 
   constructor() {
@@ -86,6 +96,12 @@ export class PixiBunDatabase extends Dexie {
       diagnostics: 'id, kind, timestamp',
       layerBlobs: '++id, [projectId+layerId+frameIndex], projectId, layerId, [projectId+id]',
       recoveryRecords: 'projectId, classificationState, lastConfirmedAt',
+    });
+    this.layerBlobs.hook('reading', (record) => {
+      const stored = record as LayerBlobStorageRecord;
+      return stored.blob instanceof ArrayBuffer
+        ? { ...stored, blob: new Blob([stored.blob], { type: stored.blobType ?? 'image/png' }) }
+        : record;
     });
   }
 }
@@ -191,16 +207,19 @@ export async function saveLayerBlobs(
   }
 
   // 4. Execute atomic batch writes with purely synchronous Dexie calls inside the transaction
+  const releaseBytes = reserveMemory([...recordsToAdd, ...recordsToPut].reduce((sum, row) => sum + row.blob.size, 0), 'Layer storage bytes');
   try {
+    const encodedAdds = await Promise.all(recordsToAdd.map(encodeLayerBlobRecord));
+    const encodedPuts = await Promise.all(recordsToPut.map(encodeLayerBlobRecord));
     await db.transaction('rw', db.layerBlobs, async () => {
       if (idsToDelete.length > 0) {
         await db.layerBlobs.bulkDelete(idsToDelete);
       }
       if (recordsToAdd.length > 0) {
-        await db.layerBlobs.bulkAdd(recordsToAdd);
+        await db.layerBlobs.bulkAdd(encodedAdds);
       }
       if (recordsToPut.length > 0) {
-        await db.layerBlobs.bulkPut(recordsToPut);
+        await db.layerBlobs.bulkPut(encodedPuts);
       }
     });
   } catch (err: unknown) {
@@ -209,7 +228,7 @@ export async function saveLayerBlobs(
       await StorageResilience.pruneVolatileCaches(db);
     }
     throw err;
-  }
+  } finally { releaseBytes(); }
 }
 
 // Retrieve layer binary blobs for a project
@@ -242,7 +261,9 @@ function isIgnorableDbClosure(err: unknown): boolean {
 }
 
 export type AutoSaveOutcome =
-  | { ok: true; status: 'saved' }
+  | { ok: true; status: 'saved'; storageVersion?: string }
+  | { ok: false; reason: 'conflict'; error: string }
+  | { ok: false; reason: 'memory-limit'; error: string }
   | { ok: false; reason: 'invariant-invalid'; error: string }
   | { ok: false; reason: 'aborted'; error?: string }
   | { ok: false; reason: 'quota-exceeded'; error?: string }
@@ -254,7 +275,8 @@ export async function autoSaveWorkspaceDetailed(
   project: ProjectFile,
   thumbnailDataUrl?: string,
   layerBlobs?: Array<{ layerId: string; frameIndex: number; blob: Blob }>,
-  activeLayerKeys?: Array<{ layerId: string; frameIndex: number }>
+  activeLayerKeys?: Array<{ layerId: string; frameIndex: number }>,
+  expectedStorageVersion?: string | null
 ): Promise<AutoSaveOutcome> {
   // Pre-transaction validation: abort immediately before opening transaction or mutating DB
   const validation = validateProjectFile(project);
@@ -271,11 +293,25 @@ export async function autoSaveWorkspaceDetailed(
   const width = validProject.width;
   const height = validProject.height;
   const fps = validProject.fps;
+  const storageVersion = createId('save');
+  let releaseBytes: (() => void) | undefined;
 
   try {
+    releaseBytes = reserveMemory(layerBlobs?.reduce((sum, row) => sum + row.blob.size, 0) ?? 0, 'Autosave storage bytes');
+    // Native byte conversion completes before the transaction; its version check still
+    // compares against the exact snapshot hydrated by this tab, never a refreshed base.
+    const encodedBlobs = layerBlobs === undefined ? undefined : await Promise.all(layerBlobs.map(async row => ({
+      ...row, blob: await row.blob.arrayBuffer(), blobType: row.blob.type,
+    })));
     if (!db.isOpen()) await db.open();
     await db.transaction('rw', db.projects, db.layerBlobs, async () => {
       const existing = await db.projects.get(projectId);
+      // Compare and write in the same overlapping readwrite transaction across tabs.
+      // undefined is reserved for legacy CRUD callers; the studio always supplies a base.
+      if (expectedStorageVersion !== undefined &&
+          (existing ? getStoredProjectVersion(existing) : null) !== expectedStorageVersion) {
+        throw new ProjectSaveConflict();
+      }
       const createdAt = existing?.createdAt || validProject.createdAt || Date.now();
       const now = Date.now();
       const dataJson = JSON.stringify(validProject);
@@ -289,6 +325,7 @@ export async function autoSaveWorkspaceDetailed(
         updatedAt: now,
         thumbnailDataUrl: thumbnailDataUrl || existing?.thumbnailDataUrl,
         dataJson,
+        storageVersion,
       });
 
       if (layerBlobs !== undefined || activeLayerKeys !== undefined) {
@@ -324,11 +361,11 @@ export async function autoSaveWorkspaceDetailed(
           }
         }
 
-        const recordsToPut: StoredLayerBlob[] = [];
-        const recordsToAdd: StoredLayerBlob[] = [];
+        const recordsToPut: LayerBlobStorageRecord[] = [];
+        const recordsToAdd: LayerBlobStorageRecord[] = [];
 
-        if (layerBlobs && layerBlobs.length > 0) {
-          for (const b of layerBlobs) {
+        if (encodedBlobs && encodedBlobs.length > 0) {
+          for (const b of encodedBlobs) {
             const k = `${b.layerId}::${b.frameIndex}`;
             const existingRec = existingMap.get(k);
             if (existingRec && existingRec.id !== undefined) {
@@ -338,6 +375,7 @@ export async function autoSaveWorkspaceDetailed(
                 layerId: b.layerId,
                 frameIndex: b.frameIndex,
                 blob: b.blob,
+                blobType: b.blobType,
                 updatedAt: now,
               });
             } else {
@@ -346,6 +384,7 @@ export async function autoSaveWorkspaceDetailed(
                 layerId: b.layerId,
                 frameIndex: b.frameIndex,
                 blob: b.blob,
+                blobType: b.blobType,
                 updatedAt: now,
               });
             }
@@ -363,8 +402,12 @@ export async function autoSaveWorkspaceDetailed(
         }
       }
     });
-    return { ok: true, status: 'saved' };
+    return { ok: true, status: 'saved', storageVersion };
   } catch (err: unknown) {
+    if (err instanceof ProjectSaveConflict) {
+      return { ok: false, reason: 'conflict', error: 'This project changed in another tab or was deleted. Your work is still here. Save a copy to keep both versions.' };
+    }
+    if (err instanceof RangeError && err.message.includes('memory budget')) return { ok: false, reason: 'memory-limit', error: err.message };
     if (isIgnorableDbClosure(err)) {
       console.warn('Autosave aborted (database closed or reset in progress)');
       return { ok: false, reason: 'aborted', error: err instanceof Error ? err.message : String(err) };
@@ -376,7 +419,13 @@ export async function autoSaveWorkspaceDetailed(
     }
     console.error('Autosave error:', err);
     return { ok: false, reason: 'error', error: err instanceof Error ? err.message : String(err) };
-  }
+  } finally { releaseBytes?.(); }
+}
+
+class ProjectSaveConflict extends Error {}
+
+export function getStoredProjectVersion(project: StoredProject): string {
+  return project.storageVersion ?? `legacy:${project.updatedAt}`;
 }
 
 // Query only the primary key identifier of the most recently saved project
@@ -487,15 +536,20 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
       };
 
       const sourceBlobs = await db.layerBlobs.where('projectId').equals(id).toArray();
-      await db.projects.put(duplicate);
-      await db.layerBlobs.bulkAdd(sourceBlobs.map((b) => ({
-        projectId: newId,
-        updatedAt: now,
-        layerId: b.layerId,
-        frameIndex: b.frameIndex,
-        blob: b.blob,
-      })));
-      return duplicate;
+      const releaseBytes = reserveMemory(sourceBlobs.reduce((sum, row) => sum + row.blob.size, 0), 'Duplicate storage bytes');
+      try {
+        const encodedBlobs = await Dexie.waitFor(Promise.all(sourceBlobs.map(encodeLayerBlobRecord)));
+        await db.projects.put(duplicate);
+        await db.layerBlobs.bulkAdd(encodedBlobs.map((b) => ({
+          projectId: newId,
+          updatedAt: now,
+          layerId: b.layerId,
+          frameIndex: b.frameIndex,
+          blob: b.blob,
+          blobType: b.blobType,
+        })));
+        return duplicate;
+      } finally { releaseBytes(); }
     });
   } catch (err) {
     console.error(`Duplicate project ${id} error:`, err);
@@ -523,6 +577,7 @@ export async function renameProject(id: string, newName: string): Promise<boolea
       const updatedDataJson = JSON.stringify(renamed.value);
 
       await db.projects.update(id, {
+        storageVersion: createId('save'),
         name: newName,
         updatedAt: now,
         dataJson: updatedDataJson,

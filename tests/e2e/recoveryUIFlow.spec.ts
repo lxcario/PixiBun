@@ -280,7 +280,7 @@ test.describe('Recovery UI, Safe Modes & Repair Wizard (E2E)', () => {
     expect(box).not.toBeNull();
     await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
 
-    await page.getByRole('button', { name: 'Save now', exact: true }).click();
+    await page.getByTestId('save-button').click();
     await expect(page.getByText(/Saved .* to browser storage/)).toBeVisible();
 
     // 2. Seed a damaged project in IndexedDB that is NOT the latest (older timestamp 1000)

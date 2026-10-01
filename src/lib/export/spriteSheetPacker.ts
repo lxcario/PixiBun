@@ -1,6 +1,8 @@
 // Game-ready Sprite Sheet Packer for Godot, Unity, and Phaser
 
 export interface SpriteSheetConfig {
+  animation?: import('./animationModel').ExportAnimationModel;
+  textureFilename?: string;
   layout: 'horizontal' | 'vertical' | 'grid';
   scale: number;
   padding: number;
@@ -24,6 +26,7 @@ import {
   type ExportGeometryValidation,
   type ExportGeometryLimits,
 } from './exportGeometryValidation';
+import { buildAnimationModel, godotSpriteFramesResource } from './animationModel';
 
 export {
   validateExportGeometry,
@@ -119,6 +122,7 @@ export function packSpriteSheet(
   sheetCanvas.width = sheetWidth;
   sheetCanvas.height = sheetHeight;
   const ctx = sheetCanvas.getContext('2d');
+  if (!ctx) throw new Error('The sprite sheet canvas is unavailable.');
   if (ctx) {
     ctx.imageSmoothingEnabled = false;
   }
@@ -144,51 +148,30 @@ export function packSpriteSheet(
     }
   }
 
-  const sanitizedName = projectName.toLowerCase().replace(/\s+/g, '_');
-  const textureFilename = `${sanitizedName}_spritesheet.png`;
+  const sanitizedName = projectName.toLowerCase().replace(/[^a-z0-9_-]+/g, '_').slice(0, 64) || 'sprite';
+  const textureFilename = config.textureFilename ?? `${sanitizedName}_spritesheet.png`;
+  if (!/^[a-zA-Z0-9_.-]+\.png$/.test(textureFilename)) throw new Error('Invalid sprite sheet asset filename.');
+  const animation = config.animation ?? buildAnimationModel(frameRects.map((_, i) => ({
+    id: `frame_${i}`, durationMs: Math.max(1, Math.round(1000 / fps)), layers: [],
+  })), [], 'repeat');
+  if (animation.frames.length !== count) throw new Error('Animation timing does not match the sprite sheet.');
 
   // Generate authentic Godot 4 SpriteFrames .tres resource
-  const godotSubResources = frameRects.map((f, idx) => `[sub_resource type="AtlasTexture" id="AtlasTexture_${idx}"]
-atlas = ExtResource("1_tex")
-region = Rect2(${f.x}, ${f.y}, ${f.w}, ${f.h})`).join('\n\n');
-
-  const godotFramesArray = frameRects.map((_, idx) => `{\n"duration": 1.0,\n"texture": SubResource("AtlasTexture_${idx}")\n}`).join(', ');
-
-  const godotTres = `[gd_resource type="SpriteFrames" load_steps=${count + 2} format=3]
-
-[ext_resource type="Texture2D" path="res://${textureFilename}" id="1_tex"]
-
-${godotSubResources}
-
-[resource]
-animations = [{
-"frames": [${godotFramesArray}],
-"loop": true,
-"name": &"default",
-"speed": ${fps.toFixed(1)}
-}]
-`;
+  const godotTres = godotSpriteFramesResource(animation, frameRects, textureFilename);
 
   // Generate Godot SpriteFrames Metadata (JSON format)
   const godotMetadata = {
     resource_type: 'SpriteFrames',
-    animations: [
-      {
-        name: 'default',
-        speed: fps,
-        loop: true,
-        frames: frameRects.map((f) => ({
-          region: [f.x, f.y, f.w, f.h],
-          duration: 1.0,
-        })),
-      },
-    ],
+    animations: animation.clips.map(clip => ({ name: clip.name, speed: 1000, loop: clip.loop,
+      frames: clip.frames.map(i => ({ region: [frameRects[i].x, frameRects[i].y, frameRects[i].w, frameRects[i].h], duration: animation.frames[i].durationMs })),
+    })),
   };
 
   // Standard TexturePacker Array format (natively supported by Unity, Phaser, PixiJS, Godot TP Importer)
   const texturePackerMetadata = {
     frames: frameRects.map((f, idx) => ({
       filename: `frame_${idx.toString().padStart(3, '0')}.png`,
+      duration: animation.frames[idx].durationMs,
       frame: { x: f.x, y: f.y, w: f.w, h: f.h },
       rotated: false,
       trimmed: false,
@@ -203,6 +186,7 @@ animations = [{
       format: 'RGBA8888',
       size: { w: sheetWidth, h: sheetHeight },
       scale: config.scale.toString(),
+      animations: animation.clips,
     },
   };
 
@@ -218,6 +202,7 @@ animations = [{
       pivot: { x: 0.5, y: 0.5 },
       alignment: 0,
     })),
+    animation,
   };
 
   // Generate Phaser 3 Atlas Metadata
@@ -260,4 +245,3 @@ animations = [{
     },
   };
 }
-

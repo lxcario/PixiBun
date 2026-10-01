@@ -1,0 +1,76 @@
+[WebServer] (node:25512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:17356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (6.3s)
+  ok  2 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (10.6s)
+  ok  3 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (5.5s)
+  ok  4 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (3.7s)
+  ok  5 [chromium] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (7.7s)
+(node:28404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (8.1s)
+  ok  7 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (11.3s)
+  ok  8 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.4s)
+  ok  9 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (4.9s)
+  ok 10 [firefox] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (8.8s)
+(node:24568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (20.5s)
+  x  12 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (6.0s)
+(node:14368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (16.1s)
+  ok 14 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (8.6s)
+  ok 15 [webkit] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (20.0s)
+
+
+  1) [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+
+    Error: locator.check: Clicking the checkbox did not change its state
+    Call log:
+      - waiting for getByRole('checkbox', { name: /Use this rig across/ })
+        - locator resolved to <input type="checkbox"/>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - performing click action
+        - click action done
+        - waiting for scheduled navigations to finish
+        - navigations have finished
+
+
+       at ..\helpers\researchWorkflows.ts:110
+
+      108 |   await page.getByRole('spinbutton', { name: 'Shared light height' }).fill('0');
+      109 |   await page.getByRole('combobox', { name: 'Shared light material' }).selectOption('metal');
+    > 110 |   await page.getByRole('checkbox', { name: /Use this rig across/ }).check();
+          |                                                                     ^
+      111 |   await preview(page); expect(await artwork(page)).toEqual(before);
+      112 |   const first = await viewPixels(page, 'Research result');
+      113 |   await page.getByRole('combobox', { name: 'Research preview pose' }).selectOption('1'); expect(await viewPixels(page, 'Research result')).not.toEqual(first);
+        at verifyLightWorkflow (D:\PixiBun\tests\helpers\researchWorkflows.ts:110:69)
+        at D:\PixiBun\tests\production\researchWorkbench.spec.ts:5:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\outlined-art-production-complete\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\outlined-art-production-complete\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\outlined-art-production-complete\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\outlined-art-production-complete\researchWorkbench-compiled-e8ab7-tores-all-poses-in-one-undo-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo 
+  14 passed (2.5m)

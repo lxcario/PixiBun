@@ -108,6 +108,7 @@ export interface ToolSlice {
   setPaletteCycleSpeedMultiplier: (mult: number) => void;
   addPaletteCycleTrack: (paletteId: string, track: PaletteCycleTrack) => void;
   updatePaletteCycleTrack: (paletteId: string, trackId: string, updates: Partial<PaletteCycleTrack>) => void;
+  setPaletteSemantics: (paletteId: string, semantics: import('@/lib/color/paletteSemantics').PaletteSemantics) => void;
   deletePaletteCycleTrack: (paletteId: string, trackId: string) => void;
   setPrimaryColor: (color: string) => void;
   setSecondaryColor: (color: string) => void;
@@ -149,7 +150,9 @@ export interface AnimationSlice {
   activeClipId: string | null;
 
   addFrame: () => void;
-  duplicateFrame: (frameIndex: number) => void;
+  duplicateFrame: (frameIndex: number, rasterizedContent?: {
+    width: number; height: number; data: Uint8ClampedArray;
+  }) => { frameId: string; layerIds: string[] } | null;
   deleteFrame: (frameIndex: number) => void;
   setFrameDuration: (frameIndex: number, durationMs: number, skipHistory?: boolean) => boolean;
   reorderFrames: (startIndex: number, endIndex: number) => void;

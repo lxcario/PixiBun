@@ -81,3 +81,9 @@ All Critical, High, and Medium audit findings, user-reviewed amendments, and pos
 - Mopped up all remaining legacy references to nonexistent `extractClampedRect` across `TASKS.md` and `docs/plans/audit_remediation_plan.md` in favor of `SafeCanvas.getImageData()`.
 - Synchronized test metrics (**637 unit tests across 90 suites**) across `README.md`, `CONTRIBUTING.md`, `ARCHITECTURE.md`, `BENCHMARKS.md`, `TASKS.md`, `LOGS.md`, `CHANGELOG.md`, `V2_VISION.md`, and `PIXIBUN_AUDIT_RESULTS.md`.
 - Mirrored walkthrough into `docs/plans/audit_remediation_walkthrough.md` for permanent repository version control.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](../research/session-completion-2026-10-01.md) and [UI/UX verification](../research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

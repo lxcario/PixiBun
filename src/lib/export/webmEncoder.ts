@@ -4,10 +4,15 @@
  * Uses HTML5 Canvas captureStream and MediaRecorder with nearest-neighbor integer scaling
  * and variable per-frame duration timing (supporting Richard Williams animation holds).
  *
- * Fully supports AbortSignal cancellation and test environments.
+ * Supports AbortSignal cancellation; unsupported recording is reported explicitly.
  */
 
+import { getVideoRecordingMimeType, recordCanvasVideo } from './videoRecorder';
+
+export const isWebmExportSupported = (): boolean => getVideoRecordingMimeType('webm') !== null;
+
 import { validateExportGeometry } from './exportGeometryValidation';
+import { withExportMemory } from './exportMemory';
 
 export interface WebmExportOptions {
   fps?: number; // Target video frame rate (default: 30)
@@ -22,7 +27,11 @@ export interface WebmExportOptions {
 /**
  * Encodes an array of frame canvases into a WebM video Blob.
  */
-export async function exportAnimationToWebmAsync(
+export async function exportAnimationToWebmAsync(...args: Parameters<typeof encodeWebm>): Promise<Blob> {
+  return withExportMemory(args[0], Math.max(1, Math.min(16, args[1]?.scale ?? 4)), () => encodeWebm(...args), undefined, 'WebM');
+}
+
+async function encodeWebm(
   frameCanvases: HTMLCanvasElement[],
   options: WebmExportOptions = {}
 ): Promise<Blob> {
@@ -57,119 +66,8 @@ export async function exportAnimationToWebmAsync(
     return Math.max(10, Math.round(1000 / fps));
   });
 
-  // Check MediaRecorder and DOM availability in current environment
-  const hasMediaRecorder =
-    typeof window !== 'undefined' &&
-    typeof document !== 'undefined' &&
-    typeof window.MediaRecorder !== 'undefined';
-
-  if (!hasMediaRecorder) {
-    // Node / Vitest fallback: produce a dummy/mock WebM blob for test stability
-    const mockData = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3]); // EBML header bytes
-    options.onProgress?.(frameCanvases.length * loopCount, frameCanvases.length * loopCount);
-    return new Blob([mockData.buffer], { type: 'video/webm' });
-  }
-
-  const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = width;
-  exportCanvas.height = height;
-  const ctx = exportCanvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Failed to acquire 2D canvas context for WebM recording.');
-  }
-  ctx.imageSmoothingEnabled = false;
-
-  const stream = exportCanvas.captureStream(fps);
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9'
-    : MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
-    ? 'video/webm;codecs=vp8'
-    : 'video/webm';
-
-  const recorder = new MediaRecorder(stream, { mimeType });
-  const chunks: Blob[] = [];
-
-  recorder.ondataavailable = (e) => {
-    if (e.data && e.data.size > 0) {
-      chunks.push(e.data);
-    }
-  };
-
-  return new Promise<Blob>((resolve, reject) => {
-    let isFinished = false;
-
-    const cleanup = () => {
-      if (options.signal) {
-        options.signal.removeEventListener('abort', onAbort);
-      }
-      try {
-        stream.getTracks().forEach((track) => track.stop());
-      } catch {
-        // Ignore track stopping errors in mock/headless environments
-      }
-    };
-
-    const onAbort = () => {
-      if (isFinished) return;
-      isFinished = true;
-      cleanup();
-      if (recorder.state !== 'inactive') {
-        recorder.stop();
-      }
-      reject(new DOMException('WebM export aborted', 'AbortError'));
-    };
-
-    if (options.signal) {
-      options.signal.addEventListener('abort', onAbort);
-    }
-
-    recorder.onstop = () => {
-      cleanup();
-      if (isFinished) return;
-      isFinished = true;
-      const finalBlob = new Blob(chunks, { type: 'video/webm' });
-      resolve(finalBlob);
-    };
-
-    recorder.onerror = (errEvent) => {
-      cleanup();
-      if (isFinished) return;
-      isFinished = true;
-      reject(errEvent);
-    };
-
-    recorder.start();
-
-    // Render loop across cycles and frames
-    let totalFramesRendered = 0;
-    const totalFramesToRender = frameCanvases.length * loopCount;
-
-    const playNext = (cycle: number, frameIdx: number) => {
-      if (isFinished || options.signal?.aborted) return;
-
-      if (cycle >= loopCount) {
-        recorder.stop();
-        return;
-      }
-
-      const frame = frameCanvases[frameIdx];
-      ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(frame, 0, 0, width, height);
-
-      totalFramesRendered++;
-      options.onProgress?.(totalFramesRendered, totalFramesToRender);
-
-      const delay = frameDelaysMs[frameIdx];
-      setTimeout(() => {
-        const nextFrameIdx = frameIdx + 1;
-        if (nextFrameIdx >= frameCanvases.length) {
-          playNext(cycle + 1, 0);
-        } else {
-          playNext(cycle, nextFrameIdx);
-        }
-      }, delay);
-    };
-
-    playNext(0, 0);
-  });
+  const mimeType = getVideoRecordingMimeType('webm');
+  if (!mimeType) throw new Error('WebM recording is unsupported in this browser. Choose GIF / APNG instead.');
+  return recordCanvasVideo(frameCanvases, width, height, width, height, fps, loopCount,
+    frameDelaysMs, mimeType, options);
 }

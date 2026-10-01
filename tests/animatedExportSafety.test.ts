@@ -202,11 +202,9 @@ describe('Animated Exporters Output Safety Ceilings (H3 Verification)', () => {
   });
 
   // I. Safe WebM geometry
-  it('I. safe WebM geometry reaches video path and produces valid Blob', async () => {
+  it('I. safe WebM geometry reaches the capability check and refuses unsupported recording', async () => {
     const frames = [createMockCanvas(32, 32), createMockCanvas(32, 32)];
-    const blob = await exportAnimationToWebmAsync(frames, { fps: 30, scale: 2, loopCount: 1 });
-    expect(blob).toBeInstanceOf(Blob);
-    expect(blob.type).toBe('video/webm');
+    await expect(exportAnimationToWebmAsync(frames, { fps: 30, scale: 2, loopCount: 1 })).rejects.toThrow('unsupported');
   });
 
   // J. Oversized WebM geometry

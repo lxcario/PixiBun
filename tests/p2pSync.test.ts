@@ -416,6 +416,7 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
   it('preserves valid activeFrameIndex and prunes deleted layer replicas during adoptStructure', () => {
     installDocumentCanvasMock();
     const bridge = new CoDrawBridge();
+    (bridge as unknown as { role: string }).role = 'guest';
 
     // Seed dummy CRDT buffer for an existing layer
     const buffer = new CrdtPixelBuffer(8, 8, 'peer-host');
@@ -448,6 +449,34 @@ describe('P2P WebRTC Canvas Pairing & State Sync Engine', () => {
     // Guest active frame should be preserved since frame index 1 still exists
     expect(useStudioStore.getState().activeFrameIndex).toBe(1);
     expect(useStudioStore.getState().activeLayerId).toBe('layer-keep');
+  });
+
+  it('enforces host authority after wire validation while accepting host structure on a guest', () => {
+    installDocumentCanvasMock();
+    useStudioStore.getState().resetToNewProject();
+    const bridge = new CoDrawBridge();
+    const receiver = bridge as unknown as {
+      role: 'host' | 'guest'; createSession(options: { lanOnly: boolean }): P2PSyncSession;
+    };
+    receiver.role = 'host';
+    const session = receiver.createSession({ lanOnly: true });
+    const channel = { label: 'pixibun-crdt-sync', readyState: 'open', bufferedAmount: 0,
+      send: vi.fn(), close: vi.fn(), onmessage: null as ((event: { data: string }) => void) | null };
+    (session as unknown as { setupChannel(channel: RTCDataChannel): void }).setupChannel(channel as unknown as RTCDataChannel);
+    const before = useStudioStore.getState();
+    const op = new CrdtPixelBuffer(32, 32, 'remote').setPixel(1, 1, [255, 0, 0, 255])!;
+    channel.onmessage!({ data: JSON.stringify({ type: 'INITIAL_SYNC', peerId: 'remote', layerId: before.activeLayerId, ops: [op] }) });
+    expect(useStudioStore.getState().bufferVersion).toBe(before.bufferVersion);
+    const structure = { width: 32, height: 32,
+      frames: [{ ...before.frames[0], id: 'host-frame', layers: [{ ...before.frames[0].layers[0], id: 'host-layer' }] }] };
+    const message = JSON.stringify({ type: 'STRUCTURE_SYNC', peerId: 'remote', frames: structure });
+    channel.onmessage!({ data: message });
+    expect(useStudioStore.getState().frames).toBe(before.frames);
+    expect(useStudioStore.getState().bufferVersion).toBe(before.bufferVersion);
+    receiver.role = 'guest';
+    channel.onmessage!({ data: message });
+    expect(useStudioStore.getState().frames[0].id).toBe('host-frame');
+    session.disconnect();
   });
 
   it('enforces backpressure when data channel or presence channel bufferedAmount exceeds safety ceilings', () => {

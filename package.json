@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:production": "playwright test --config playwright.production.config.ts",
     "verify:docs": "node scripts/verifyDocIntegrity.mjs",
     "gate": "node scripts/runQualityGate.mjs",
     "gate:full": "node scripts/runQualityGate.mjs --with-build",

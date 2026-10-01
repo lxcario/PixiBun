@@ -10,6 +10,7 @@ import {
   clearAllBuffers,
   getOrCreateBuffer,
   getBufferRevision,
+  getBufferGeneration,
   type BufferEntry,
 } from '@/lib/engine/bufferRegistry';
 import {
@@ -22,6 +23,7 @@ import type { StoredLayerBlob } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 import {
   isLayerDirty,
   getPersistedRevision,
@@ -146,6 +148,10 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
 
           if (dirty) {
             dirtyLayerCount++;
+            // toBlob snapshots synchronously, but its callback may arrive after another edit.
+            const entry = getOrCreateBuffer(layer.id, state.canvasWidth, state.canvasHeight);
+            const encodedRevision = entry.contentRevision;
+            const encodedGeneration = entry.generation;
             const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
             if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
             layerBlobs.push({
@@ -154,7 +160,8 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
               blob,
             });
             capturedRevisions.set(layer.id, {
-              revision: getBufferRevision(layer.id) || 1,
+              revision: encodedRevision,
+              generation: encodedGeneration,
               frameIndex,
             });
           } else {
@@ -173,6 +180,7 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
             blendMode: layer.blendMode,
             tag: layer.tag,
             effect: layer.effect ? structuredClone(layer.effect) : undefined,
+            research: layer.research ? structuredClone(layer.research) : undefined,
             // Omit pngBase64 in metadata payload when storing binary blobs to prevent double-storage
             pngBase64: undefined,
           };
@@ -195,7 +203,7 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
     fps: state.fps,
     loopMode: state.loopMode,
     onionSkin: { ...state.onionSkin },
-    palettes: state.palettes.map(p => ({ ...p, colors: [...p.colors] })),
+    palettes: structuredClone(state.palettes),
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
@@ -221,7 +229,7 @@ export function buildProjectFile(): ProjectFile {
     fps: state.fps,
     loopMode: state.loopMode,
     onionSkin: { ...state.onionSkin },
-    palettes: state.palettes.map(p => ({ ...p, colors: [...p.colors] })),
+    palettes: structuredClone(state.palettes),
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
@@ -237,6 +245,7 @@ export function buildProjectFile(): ProjectFile {
         blendMode: layer.blendMode,
         tag: layer.tag,
         effect: layer.effect ? structuredClone(layer.effect) : undefined,
+            research: layer.research ? structuredClone(layer.research) : undefined,
         pngBase64: rasterizeLayerPng(layer.id, state.canvasWidth, state.canvasHeight),
       })),
     })),
@@ -264,6 +273,7 @@ export async function buildProjectFileAsync(): Promise<ProjectFile> {
             blendMode: layer.blendMode,
             tag: layer.tag,
             effect: layer.effect ? structuredClone(layer.effect) : undefined,
+            research: layer.research ? structuredClone(layer.research) : undefined,
             pngBase64,
           };
         })
@@ -285,7 +295,7 @@ export async function buildProjectFileAsync(): Promise<ProjectFile> {
     fps: state.fps,
     loopMode: state.loopMode,
     onionSkin: { ...state.onionSkin },
-    palettes: state.palettes.map(p => ({ ...p, colors: [...p.colors] })),
+    palettes: structuredClone(state.palettes),
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
@@ -355,93 +365,99 @@ export async function hydrateProject(
   const staged = new Map<string, BufferEntry>();
   const blobMap = new Map((layerBlobs ?? []).map(b => [b.layerId + ':' + b.frameIndex, b.blob]));
   const activeInitialLayerId = file.frames[0]?.layers[0]?.id;
-
-  for (const [frameIndex, frame] of file.frames.entries()) {
-    for (const layer of frame.layers) {
-      const blob = blobMap.get(layer.id + ':' + frameIndex) ??
-        (layer.pngBase64 ? base64ToBlob(layer.pngBase64) : undefined);
-      if (blob) {
-        const entry = createEntry(file.width, file.height);
-        const dimensions = await ImageHeaderProbe.probe(blob);
-        if (dimensions.width !== file.width || dimensions.height !== file.height) {
-          throw new Error('Layer dimensions do not match the project canvas.');
-        }
-        const bitmap = await createImageBitmap(blob);
-        try { entry.ctx.drawImage(bitmap, 0, 0); } finally { bitmap.close(); }
-        staged.set(layer.id, entry);
-      } else if (layer.id === activeInitialLayerId) {
-        // Guarantee active initial layer always has an allocated buffer ready
-        staged.set(layer.id, createEntry(file.width, file.height));
-      }
-    }
-  }
-  if (!canPublish()) throw new Error('The workspace changed while the project was loading.');
-  // Hydration is synchronous from here; validation and every decode already succeeded.
-  // Publish pixels before notifying store subscribers (including co-draw),
-  // Snapshot both buffer registry and store state before publication.
-  // If store publication, subscriber notifications, or event emissions throw,
-  // we roll back both buffers and store state to ensure the workspace never enters
-  // a split-brain state (e.g. Project B store metadata with Project A buffers).
-  const previousBuffers = snapshotBuffers();
-  const prevState = useStudioStore.getState();
-  const previousProjectId = prevState.currentProjectId;
-  const previousProjectSnapshot: Partial<ProjectFile> = {
-    name: prevState.projectName,
-    width: prevState.canvasWidth,
-    height: prevState.canvasHeight,
-    fps: prevState.fps,
-    loopMode: prevState.loopMode,
-    onionSkin: { ...prevState.onionSkin },
-    customRamps: prevState.customRamps ? prevState.customRamps.map(r => ({ ...r, shades: [...r.shades] })) : [],
-    frames: prevState.frames ? prevState.frames.map(f => ({
-      id: f.id,
-      durationMs: f.durationMs,
-      layers: f.layers.map(l => ({ ...l })),
-    })) : [],
-    palettes: prevState.palettes ? prevState.palettes.map(p => ({ ...p, colors: [...p.colors] })) : [],
-    currentPaletteId: prevState.currentPaletteId,
-    clips: prevState.clips ? prevState.clips.map(c => ({ ...c })) : [],
-  };
-  const prevActiveFrameIndex = prevState.activeFrameIndex;
-  const prevActiveLayerId = prevState.activeLayerId;
-
+  const rasterCount = file.frames.reduce((count, frame, index) => count + frame.layers.filter(layer =>
+    blobMap.has(layer.id + ':' + index) || layer.pngBase64 || layer.id === activeInitialLayerId).length, 0);
+  // Include the largest decoded bitmap alongside the staged canvases and old workspace.
+  const release = reserveMemory((rasterCount + 1) * file.width * file.height * 4, 'Project hydration staging');
   try {
-    replaceAllBuffers(staged);
-    useStudioStore.getState().loadProjectState(file, projectId);
-    useStudioStore.getState().bumpBufferVersion();
-    studioEvents.emit('pixibun:history-clear');
-  } catch (publishErr) {
-    // Two-phase consistent rollback: restore both buffer registry and store state
-    replaceAllBuffers(previousBuffers);
-    try {
-      useStudioStore.getState().loadProjectState(previousProjectSnapshot, previousProjectId);
-      useStudioStore.setState(s => {
-        s.activeFrameIndex = prevActiveFrameIndex;
-        s.activeLayerId = prevActiveLayerId;
-      });
-      useStudioStore.getState().bumpBufferVersion();
-    } catch {
-      // If rolling back to previous project state fails, place workspace in a defined safe reset state
-      try {
-        useStudioStore.getState().resetToNewProject();
-      } catch {
-        clearAllBuffers();
-      }
-    }
-    throw publishErr;
-  }
 
-  if (projectId) {
-    const persisted = new Map<string, PersistedLayerRevision>();
     for (const [frameIndex, frame] of file.frames.entries()) {
       for (const layer of frame.layers) {
-        const hasStoredData = blobMap.has(layer.id + ':' + frameIndex) || !!layer.pngBase64;
-        if (hasStoredData) {
-          persisted.set(layer.id, { revision: 1, frameIndex });
+        const blob = blobMap.get(layer.id + ':' + frameIndex) ??
+          (layer.pngBase64 ? base64ToBlob(layer.pngBase64) : undefined);
+        if (blob) {
+          const entry = createEntry(file.width, file.height, 1, true);
+          const dimensions = await ImageHeaderProbe.probe(blob);
+          if (dimensions.width !== file.width || dimensions.height !== file.height) {
+            throw new Error('Layer dimensions do not match the project canvas.');
+          }
+          const bitmap = await createImageBitmap(blob);
+          try { entry.ctx.drawImage(bitmap, 0, 0); } finally { bitmap.close(); }
+          staged.set(layer.id, entry);
+        } else if (layer.id === activeInitialLayerId) {
+          // Guarantee active initial layer always has an allocated buffer ready
+          staged.set(layer.id, createEntry(file.width, file.height, 1, true));
         }
       }
     }
-    initProjectPersistedRevisions(projectId, persisted);
-  }
-  useStudioStore.getState().setSaveStatus(projectId ? 'saved' : 'idle');
+    if (!canPublish()) throw new Error('The workspace changed while the project was loading.');
+    // Hydration is synchronous from here; validation and every decode already succeeded.
+    // Publish pixels before notifying store subscribers (including co-draw),
+    // Snapshot both buffer registry and store state before publication.
+    // If store publication, subscriber notifications, or event emissions throw,
+    // we roll back both buffers and store state to ensure the workspace never enters
+    // a split-brain state (e.g. Project B store metadata with Project A buffers).
+    const previousBuffers = snapshotBuffers();
+    const prevState = useStudioStore.getState();
+    const previousProjectId = prevState.currentProjectId;
+    const previousProjectSnapshot: Partial<ProjectFile> = {
+      name: prevState.projectName,
+      width: prevState.canvasWidth,
+      height: prevState.canvasHeight,
+      fps: prevState.fps,
+      loopMode: prevState.loopMode,
+      onionSkin: { ...prevState.onionSkin },
+      customRamps: prevState.customRamps ? prevState.customRamps.map(r => ({ ...r, shades: [...r.shades] })) : [],
+      frames: prevState.frames ? prevState.frames.map(f => ({
+        id: f.id,
+        durationMs: f.durationMs,
+        layers: f.layers.map(l => ({ ...l })),
+      })) : [],
+      palettes: prevState.palettes ? structuredClone(prevState.palettes) : [],
+      currentPaletteId: prevState.currentPaletteId,
+      clips: prevState.clips ? prevState.clips.map(c => ({ ...c })) : [],
+    };
+    const prevActiveFrameIndex = prevState.activeFrameIndex;
+    const prevActiveLayerId = prevState.activeLayerId;
+
+    try {
+      replaceAllBuffers(staged);
+      useStudioStore.getState().loadProjectState(file, projectId);
+      useStudioStore.getState().bumpBufferVersion();
+      studioEvents.emit('pixibun:history-clear');
+    } catch (publishErr) {
+      // Two-phase consistent rollback: restore both buffer registry and store state
+      replaceAllBuffers(previousBuffers);
+      try {
+        useStudioStore.getState().loadProjectState(previousProjectSnapshot, previousProjectId);
+        useStudioStore.setState(s => {
+          s.activeFrameIndex = prevActiveFrameIndex;
+          s.activeLayerId = prevActiveLayerId;
+        });
+        useStudioStore.getState().bumpBufferVersion();
+      } catch {
+        // If rolling back to previous project state fails, place workspace in a defined safe reset state
+        try {
+          useStudioStore.getState().resetToNewProject();
+        } catch {
+          clearAllBuffers();
+        }
+      }
+      throw publishErr;
+    }
+
+    if (projectId) {
+      const persisted = new Map<string, PersistedLayerRevision>();
+      for (const [frameIndex, frame] of file.frames.entries()) {
+        for (const layer of frame.layers) {
+          const hasStoredData = blobMap.has(layer.id + ':' + frameIndex) || !!layer.pngBase64;
+          if (hasStoredData) {
+            persisted.set(layer.id, { revision: 1, frameIndex, generation: getBufferGeneration(layer.id) });
+          }
+        }
+      }
+      initProjectPersistedRevisions(projectId, persisted);
+    }
+    useStudioStore.getState().setSaveStatus(projectId ? 'saved' : 'idle');
+  } finally { release(); }
 }

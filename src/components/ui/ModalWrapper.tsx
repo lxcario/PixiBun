@@ -34,8 +34,12 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     if (!dialog) return;
 
     if (isOpen) {
-      // Save trigger element for focus restoration
-      if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      // Save trigger element for focus restoration (only if outside dialog)
+      if (
+        typeof document !== 'undefined' &&
+        document.activeElement instanceof HTMLElement &&
+        !dialog.contains(document.activeElement)
+      ) {
         openerRef.current = document.activeElement;
       }
 
@@ -82,7 +86,8 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       }
       // Return focus to previous opener
       if (openerRef.current && typeof openerRef.current.focus === 'function') {
-        openerRef.current.focus();
+        const opener = openerRef.current;
+        setTimeout(() => opener.focus(), 0);
       }
     }
 
@@ -90,6 +95,10 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
+        if (openerRef.current && typeof openerRef.current.focus === 'function') {
+          const opener = openerRef.current;
+          setTimeout(() => opener.focus(), 0);
+        }
         return;
       }
 
@@ -116,6 +125,10 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     const handleDialogClick = (e: MouseEvent) => {
       if (e.target === dialog) {
         onClose();
+        if (openerRef.current && typeof openerRef.current.focus === 'function') {
+          const opener = openerRef.current;
+          setTimeout(() => opener.focus(), 0);
+        }
       }
     };
 
@@ -125,6 +138,10 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     return () => {
       dialog.removeEventListener('keydown', handleDialogKeyDown);
       dialog.removeEventListener('click', handleDialogClick);
+      if (openerRef.current && typeof openerRef.current.focus === 'function') {
+        const opener = openerRef.current;
+        setTimeout(() => opener.focus(), 0);
+      }
     };
   }, [isOpen, onClose, bodyId, titleId]);
 
@@ -154,7 +171,12 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              if (openerRef.current && typeof openerRef.current.focus === 'function') {
+                openerRef.current.focus();
+              }
+            }}
             className="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
             aria-label="Close dialog"
           >

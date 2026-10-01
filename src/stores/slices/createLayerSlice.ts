@@ -12,6 +12,7 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
   activeLayerId: 'layer-1',
 
   setActiveLayer: layerId => {
+    if (!get().frames[get().activeFrameIndex]?.layers.some(layer => layer.id === layerId)) return;
     set(state => {
       state.activeLayerId = layerId;
     });
@@ -285,6 +286,29 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     const upper = frame.layers[layerIndex];
     const lower = frame.layers[layerIndex + 1];
     if (upper.locked || lower.locked) return;
+    const nonNormal = [upper, lower].find(layer => layer.visible && layer.opacity > 0 && layer.blendMode !== 'source-over');
+    if (nonNormal) {
+      const modeLabel = nonNormal.blendMode.charAt(0).toUpperCase() + nonNormal.blendMode.slice(1);
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: `Cannot merge: "${nonNormal.name}" uses ${modeLabel} blending. Merge down requires Normal blending on both visible layers to preserve their appearance.`,
+      });
+      return;
+    }
+    const { canvasWidth: width, canvasHeight: height } = get();
+    const merged = document.createElement('canvas');
+    merged.width = width;
+    merged.height = height;
+    const mergeCtx = merged.getContext('2d', { willReadFrequently: true });
+    if (!mergeCtx) return;
+    mergeCtx.imageSmoothingEnabled = false;
+    mergeCtx.globalCompositeOperation = 'source-over';
+    for (const layer of [lower, upper]) {
+      if (!layer.visible) continue;
+      mergeCtx.globalAlpha = layer.opacity;
+      mergeCtx.drawImage(getOrCreateBuffer(layer.id, width, height).canvas, 0, 0);
+    }
+    const mergedPixels = mergeCtx.getImageData(0, 0, width, height);
     if (!pushStructuralHistoryStep('Merge Down Layer', {
       opKind: 'merge-layer',
       affectedLayerIds: [upper.id, lower.id],
@@ -301,27 +325,34 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       const upper = currentFrame.layers[upperIndex];
       const lower = currentFrame.layers[upperIndex + 1];
 
-      const upperBuffer = getOrCreateBuffer(upper.id, state.canvasWidth, state.canvasHeight);
       const lowerBuffer = getOrCreateBuffer(lower.id, state.canvasWidth, state.canvasHeight);
-
-      if (upper.visible) {
-        lowerBuffer.ctx.save();
-        lowerBuffer.ctx.imageSmoothingEnabled = false;
-        lowerBuffer.ctx.globalAlpha = upper.opacity;
-        lowerBuffer.ctx.globalCompositeOperation = upper.blendMode;
-        lowerBuffer.ctx.drawImage(upperBuffer.canvas, 0, 0);
-        lowerBuffer.ctx.restore();
-        touchBuffer(lower.id);
-      }
+      lowerBuffer.ctx.putImageData(mergedPixels, 0, 0);
+      touchBuffer(lower.id);
+      lower.visible = upper.visible || lower.visible;
+      lower.opacity = 1;
+      lower.blendMode = 'source-over';
+      // A merged raster is baked artwork, no longer the output of a single recipe.
+      lower.tag = undefined;
+      lower.effect = undefined;
+      lower.research = undefined;
 
       currentFrame.layers.splice(upperIndex, 1);
       deleteBuffers([upper.id]);
 
       state.activeLayerId = lower.id;
-      lower.effect = undefined;
       state.bufferVersion += 1;
       state.isDirty = true;
       state.editRevision += 1;
+    });
+    studioEvents.emit('pixibun:toast', {
+      type: 'success',
+      message: `Merged "${upper.name}" into "${lower.name}"`,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          studioEvents.emit('pixibun:undo');
+        },
+      },
     });
   },
 });

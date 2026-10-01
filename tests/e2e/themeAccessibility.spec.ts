@@ -104,6 +104,16 @@ test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
           .analyze();
         blocking = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
         expect(blocking).toEqual([]);
+
+        // Include the open lighting controls, not only the task chooser.
+        await page.getByTestId('pixitools-task-lighting').click();
+        await expect(page.getByRole('button', { name: 'Preview lighting', exact: true })).toBeVisible();
+        results = await new AxeBuilder({ page })
+          .include('[data-testid="right-inspector"]')
+          .withTags(WCAG_TAGS)
+          .analyze();
+        blocking = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
+        expect(blocking).toEqual([]);
       });
 
       test(`export modal dialog meets WCAG standards under ${theme.name}`, async ({ page }) => {

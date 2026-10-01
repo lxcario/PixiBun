@@ -1,3 +1,5 @@
+import type { AnimationClip } from './animation';
+
 export type BlendMode = 'source-over' | 'multiply' | 'screen' | 'overlay' | 'color-dodge';
 
 export type SmartEffectKind =
@@ -54,6 +56,7 @@ export interface Layer {
   tag?: string;
   // Provenance for generated output layers.
   effect?: LayerEffectRecipe;
+  research?: import('@/lib/research/recipes').ResearchRecipe;
   // Canvas pixel buffer stored as an OffscreenCanvas or base64 / ImageData
   dataUrl?: string; 
 }
@@ -134,6 +137,10 @@ export interface StructuralHistoryStep {
   frames: AnimationFrame[];
   activeFrameIndex: number;
   activeLayerId: string;
+  clips?: AnimationClip[];
+  activeClipId?: string | null;
+  palettes?: import('./palette').ColorPalette[];
+  currentPaletteId?: string;
   canvasWidth?: number;
   canvasHeight?: number;
   layerBuffers?: LayerBufferBackup[];

@@ -13,6 +13,7 @@
 
 import type { ProjectFile } from '@/types/project';
 import type { StoredLayerBlob } from '@/lib/storage/db';
+import { getStoredProjectVersion } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import { RECOVERY_INSPECTION_CEILINGS } from './recoveryLimits';
 import {
@@ -73,6 +74,7 @@ export type StoredProjectAdmissionResult =
       readonly project: Readonly<ProjectFile>;
       readonly projectId: string;
       readonly sourceBlobs: readonly Readonly<StoredLayerBlob>[];
+      readonly storageVersion?: string;
     }
   | {
       readonly status: 'recovery-required';
@@ -300,6 +302,7 @@ export async function inspectAndAdmitStoredProject(
         project: frozenProject,
         projectId,
         sourceBlobs: frozenBlobs,
+        storageVersion: getStoredProjectVersion(snapshot.projectRecord),
       };
     }
   }

@@ -27,7 +27,11 @@ export default function StudioTooltip({
 
   const handleMouseEnter = () => {
     if (disabled) return;
+    // Hover followed by focus must share one timer; an older timer could
+    // otherwise reopen a tooltip after the pointer and focus have left.
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
+      timeoutRef.current = null;
       setIsVisible(true);
     }, delay);
   };
@@ -35,6 +39,7 @@ export default function StudioTooltip({
   const handleMouseLeave = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
     setIsVisible(false);
   };

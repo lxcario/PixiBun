@@ -27,11 +27,13 @@ export function useSpriteCleanupEvents({
         layerId: state.activeLayerId,
         editRevision: state.editRevision,
         bufferVersion: state.bufferVersion,
+        reviewKey: JSON.stringify(state.clips.find(clip => clip.id === state.activeClipId) ?? null),
       };
       const candidates = request.allFrames
         ? state.frames.map((frame) => frame.layers[layerIndex]).filter((layer) => Boolean(layer))
         : [currentFrame.layers[layerIndex]];
-      const scanKey = JSON.stringify({ source, options: request.options, allFrames: request.allFrames,
+      const reviewClip = state.clips.find(clip => clip.id === state.activeClipId);
+      const scanKey = JSON.stringify({ source, options: request.options, allFrames: request.allFrames, reviewClip,
         targets: candidates.map((layer) => [layer.id, layer.locked]) });
       if (apply && lastScanKey.current !== scanKey) {
         studioEvents.emit('pixibun:toast', { type: 'error', message: 'Artwork changed since the preview. Scan again before applying cleanup.' });
@@ -83,13 +85,17 @@ export function useSpriteCleanupEvents({
         const ctx = getOrCreateLayerCanvas(layer.id).getContext('2d', { willReadFrequently: true });
         if (!ctx) continue;
         const before = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-        const plan = planSpriteCleanup(before, request.options);
+        const frameIndex = state.frames.findIndex(frame => frame.layers.some(item => item.id === layer.id));
+        const protectedRegions = reviewClip && frameIndex >= reviewClip.startFrame && frameIndex <= reviewClip.endFrame
+          ? reviewClip.review?.regions ?? [] : [];
+        const plan = planSpriteCleanup(before, request.options, protectedRegions);
         stats.removedFaint += plan.stats.removedFaint;
         stats.hardenedAlpha += plan.stats.hardenedAlpha;
         stats.removedSpecks += plan.stats.removedSpecks;
         stats.simplifiedColors += plan.stats.simplifiedColors;
         stats.thinnedLinePixels += plan.stats.thinnedLinePixels;
         stats.changedPixels += plan.stats.changedPixels;
+        stats.protectedPixels = (stats.protectedPixels ?? 0) + (plan.stats.protectedPixels ?? 0);
         stats.sourceColors = Math.max(stats.sourceColors, plan.stats.sourceColors);
         stats.resultColors = Math.max(stats.resultColors, plan.stats.resultColors);
         if (!apply && layer.id === state.activeLayerId && canvasWidth * canvasHeight <= 1_000_000) {

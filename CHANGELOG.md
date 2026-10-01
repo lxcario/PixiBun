@@ -4,6 +4,26 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 
 ## Unreleased
 
+- **2026-10-01 lighting-menu UX:** Replaced technical section headings with Light your sprite, Shape the surface and Add a shadow, using matching icon cards and short outcome descriptions. The task view starts with lighting open and keeps new disclosure preferences separately from old expert-panel state. Preview/apply labels and surface-layer setup are clearer; the menu's surface-paint action requires an unlocked Normal layer. Detected lighting/shadow settings stay behind disclosures, and Space activates focused menu controls without starting playback. See the [menu review](docs/research/session-ui-ux-2026-10-01.md#lighting-menu-follow-up).
+
+- **2026-10-01 header placement review:** Grouped New, Import and Save beside project identity and canvas size; moved Mirror beside the active tool; labeled Theme and Help; kept Export at the right edge. Content-driven wrapping preserves control order without overlaps or clipped menus at desktop widths. Header targets are at least 24px high, and a hover/focus timer correction prevents departed tooltips from reopening. See the [research and local checks](docs/research/session-ui-ux-2026-10-01.md#header-placement-review).
+
+- **2026-10-01 header placement review:** Grouped New, Import and Save beside project identity and canvas size; moved Mirror beside the active tool; labeled Theme and Help; kept Export at the right edge. Content-driven wrapping preserves control order without overlaps or clipped menus at desktop widths. Header targets are at least 24px high, and a hover/focus timer correction prevents departed tooltips from reopening. See the [research and local checks](docs/research/session-ui-ux-2026-10-01.md#header-placement-review).
+
+- **2026-10-01 save-status placement:** Moved the visible Saved/Unsaved/Saving/Save issue badge from the header into the bottom-right status bar. The colored dot, warning tooltip and live status announcement remain; the header Save action still provides retry. The existing save-failure browser check now verifies the badge's footer placement and the absence of a header copy.
+
+- **2026-10-01 outlined-artwork follow-up:** Keep outlines starts on and excludes strong color boundaries from block samples, preventing a dark border from spreading into the fill. Missing Normal layers now use a labeled rounded-shape estimate for directional lighting; authored normals take priority, and new rigs start without a cast shadow. Automatic updates keep settings interactive; Cancel has a separate slot so refresh clicks cannot become accidental cancellation. Optional recipe fields preserve the behavior of older saved settings. Regression coverage includes the outlined-circle screenshots, delayed real-worker interaction, source retention, direction reversal, persistence and Undo/Redo. See the [follow-up evidence and limits](docs/research/session-ui-ux-2026-10-01.md#outlined-artwork-screenshot-follow-up).
+
+- **2026-10-01 beginner interface and artwork-preservation corrections:** Real selected-artwork comparisons replace the artificial sample. Previews fit occupied artwork bounds by default, advanced controls start closed, the light compass is square and choices have equal sizes. Simplification starts with byte-exact Original and requires explicit palette remapping; unrestricted coarsening retains source transparency and cannot erase a block because its sampled center is transparent. Identical results cannot be applied through the panel. See the [current UI/UX report](docs/research/session-ui-ux-2026-10-01.md) for verification and limits.
+
+- **2026-09-30–2026-10-01 six-phase audit implementation:**
+  - Protected asynchronous saves, refused in-between insertion, structural clip history and co-draw host authority; hardened merge publication, export alpha/palette identity, worker failures and bounded admission.
+  - Added local save-conflict copies, warm-offline/update checks and shared estimated memory admission.
+  - Added animation stability review, intentional exceptions, protected cleanup, shared animation ordering/holds, semantic palette roles and a locally verified Godot game kit.
+  - Added Explore variations: protected block simplification, shared stylized light/material rigs and bounded seeded tile scenes, with retained originals, saved source fingerprints and one-step structural undo.
+  - Recorded 1,466 passing unit/integration checks, 134 passing editor checks, and all 33 compiled-browser scenarios with one timeout passing unchanged on rerun. Phase 5 separately recorded 850 Godot assertions. Later shared interface work added three automated walkthroughs, followed by the beginner corrections; the current editor inventory is 146 tests in 32 files. Historical execution totals remain unchanged.
+  - TestSprite CLI/authentication were discovered available during Phase 4; the user chose local verification after the proposed upload was blocked. No TestSprite run, tunnel or deployment is claimed. Artist evaluation and release approval remain open. See the [session completion record](docs/research/session-completion-2026-10-01.md).
+
 - **2026-09-30 studio UX and tool cleanup:**
   - Grouped Projects, project name, New, Save, and canvas size in the header. Removed the duplicate header Back up button and visible “Saved on this device” label; portable `.pixibun` backup remains in Export. Brush size and zoom use compact controls, and the header buttons share a consistent height.
   - Simplified the animation dock and its collapsed playback row, made the scrub preview readable above surrounding panels, and moved frame operations into Frame actions. Layer rows use drag reordering instead of extra skip-style move icons.
@@ -1105,3 +1125,8 @@ All notable changes and architectural enhancements to the PixiBun Atelier codeba
 - PixiBud Smart Studio: Photometric surface normal baking, Blinn-Phong lighting, volumetric sub-surface scattering, and autotiling.
 - Offline-first storage with Dexie IndexedDB and multi-engine export suite (PNG, GIF, Godot, Unity, Phaser 3).
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

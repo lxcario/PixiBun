@@ -31,6 +31,25 @@ function deferred<T>() {
 beforeEach(() => { vi.clearAllMocks(); useStudioStore.getState().resetToNewProject('A'); });
 afterEach(cleanup);
 
+it('stops retrying a conflicting identity and saves a copy under a fresh identity', async () => {
+  vi.mocked(getLatestStoredProjectId).mockResolvedValue(null);
+  vi.mocked(buildAutosavePayloadAsync).mockImplementation(async () => payload(useStudioStore.getState().projectName));
+  vi.mocked(autoSaveWorkspaceDetailed).mockResolvedValueOnce({ ok: false, reason: 'conflict', error: 'changed in another tab' })
+    .mockResolvedValue({ ok: true, status: 'saved', storageVersion: 'copy-version' });
+  useStudioStore.getState().setDirty(true);
+  const { result } = renderHook(useStudioAutosave);
+  await act(async () => { expect(await result.current.runAutosave()).toMatchObject({ ok: false, reason: 'conflict' }); });
+  expect(useStudioStore.getState().isDirty).toBe(true);
+  await act(async () => { await result.current.runAutosave(); });
+  expect(vi.mocked(autoSaveWorkspaceDetailed)).toHaveBeenCalledTimes(1);
+  await act(async () => { await result.current.saveConflictCopy(); });
+  const last = vi.mocked(autoSaveWorkspaceDetailed).mock.calls.at(-1)!;
+  expect(last[0]).not.toBe('A');
+  expect(last[1].name).toContain('(conflict copy)');
+  expect(last[5]).toBeNull();
+  expect(useStudioStore.getState().isDirty).toBe(false);
+});
+
 it('saves A pixels under A identity when a new project opens during encoding', async () => {
   const first = deferred<AutosavePayload>();
   vi.mocked(buildAutosavePayloadAsync).mockReturnValueOnce(first.promise).mockResolvedValue(payload('B'));
@@ -105,4 +124,3 @@ it('preserves corrupt stored project on restore failure and recovers under fresh
   expect(lastCall?.[0]).toBe(activeProjectId);
   expect(lastCall?.[0]).not.toBe(corruptProjectId);
 });
-

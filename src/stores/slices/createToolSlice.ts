@@ -11,6 +11,8 @@ import {
   paletteEntryError,
 } from '@/lib/color/paletteAdmission';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { parsePaletteSemantics } from '@/lib/color/paletteSemantics';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 
 function rejectPaletteEdit(message: string): void {
   studioEvents.emit('pixibun:toast', { type: 'error', message });
@@ -380,6 +382,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
       rejectPaletteEdit(error ?? `A palette can have at most ${MAX_PALETTE_CYCLE_TRACKS} unique cycle tracks.`);
       return;
     }
+    if (!pushStructuralHistoryStep('Add palette cycle track', { includePalettes: true })) return;
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal) {
@@ -401,6 +404,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
       return;
     }
     if (Object.entries(updates).every(([key, value]) => current[key as keyof typeof current] === value)) return;
+    if (!pushStructuralHistoryStep('Edit palette cycle track', { includePalettes: true })) return;
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal?.cycleTracks) {
@@ -415,12 +419,25 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
 
   deletePaletteCycleTrack: (paletteId, trackId) => {
     if (!get().palettes.find((p) => p.id === paletteId)?.cycleTracks?.some((track) => track.id === trackId)) return;
+    if (!pushStructuralHistoryStep('Remove palette cycle track', { includePalettes: true })) return;
     set(state => {
       const pal = state.palettes.find(p => p.id === paletteId);
       if (pal?.cycleTracks) {
         pal.cycleTracks = pal.cycleTracks.filter(t => t.id !== trackId);
       }
     });
+    get().setDirty(true);
+  },
+
+  setPaletteSemantics: (paletteId, input) => {
+    const palette = get().palettes.find(p => p.id === paletteId);
+    if (!palette) return;
+    const semantics = parsePaletteSemantics(input, palette.colors.length);
+    if (!semantics) { rejectPaletteEdit('Palette roles or bindings are invalid or exceed their limits.'); return; }
+    if (JSON.stringify(semantics) === JSON.stringify(palette.semantics)) return;
+    const growth = Math.max(0, JSON.stringify(semantics).length * 2 - JSON.stringify(palette.semantics ?? {}).length * 2);
+    if (!pushStructuralHistoryStep('Edit palette roles and index bindings', { includePalettes: true, addedMetadataBytes: growth })) return;
+    set(state => { state.palettes.find(p => p.id === paletteId)!.semantics = semantics; });
     get().setDirty(true);
   },
 
@@ -526,6 +543,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
       rejectPaletteEdit(error);
       return;
     }
+    if (!pushStructuralHistoryStep('Add palette', { includePalettes: true })) return;
     set(state => {
       const newPalette: ColorPalette = {
         id: createId('palette'),
@@ -548,12 +566,17 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
       rejectPaletteEdit(`A palette can have at most ${MAX_PALETTE_COLORS} colors.`);
       return;
     }
+    if (palette.semantics && palette.colors.length + newColors.length > 256) {
+      rejectPaletteEdit('A palette with index bindings can have at most 256 registers.'); return;
+    }
+    if (!pushStructuralHistoryStep('Add palette ramp', { includePalettes: true })) return;
     set(state => {
       const activePal = state.palettes.find(p => p.id === state.currentPaletteId);
       if (activePal) {
         for (const color of rampColors) {
           if (!activePal.colors.includes(color)) {
             activePal.colors.push(color);
+            activePal.semantics?.entries.push({ id: createId('register'), role: '' });
           }
         }
       }

@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:9292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\importImageAndSheet.spec.ts:40:5 › visible import actions let the user choose a real file (4.1s)
+  ok 2 [chromium] › tests\e2e\importImageAndSheet.spec.ts:59:5 › image import keeps the chosen fit and original-size modes through preview and confirmation (4.0s)
+  ok 3 [chromium] › tests\e2e\importImageAndSheet.spec.ts:92:5 › suggested sprite sheet keeps blank timing cells and creates distinct timeline artwork (3.3s)
+  ok 4 [chromium] › tests\e2e\importImageAndSheet.spec.ts:126:5 › pixel analysis finds opaque gutters and imports clean, separate frames (3.0s)
+  ok 5 [chromium] › tests\e2e\importImageAndSheet.spec.ts:169:5 › large cat-style sheet uses eight full cells and cannot clip them into a small canvas (2.8s)
+  ok 6 [chromium] › tests\e2e\importImageAndSheet.spec.ts:217:5 › replacing frames clears artwork and effects from old layers (3.3s)
+  ok 7 [chromium] › tests\e2e\importImageAndSheet.spec.ts:255:5 › the studio 45-degree RotSprite command preserves its palette and visibly turns a centered motif (3.7s)
+  ok 8 [chromium] › tests\e2e\importImageAndSheet.spec.ts:282:5 › Rotate Cleanly keeps an outlined circle closed at 45 degrees (3.3s)
+  ok 9 [chromium] › tests\e2e\pocketDoodlePad.spec.ts:3:5 › small-screen studio link opens a usable pocket doodle pad (2.5s)
+
+  9 passed (33.3s)

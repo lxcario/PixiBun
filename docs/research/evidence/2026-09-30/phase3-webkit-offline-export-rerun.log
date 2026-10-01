@@ -1,0 +1,101 @@
+
+> pixibun@1.14.1 test:e2e:production
+> playwright test --config playwright.production.config.ts --project=webkit --grep offline|GIF worker
+
+[WebServer] (node:4860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:19696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+Production browser error: []
+  x  1 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (25.6s)
+(node:29948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [webkit] › tests\production\operation.spec.ts:92:5 › production GIF worker produces a downloadable file that the native image decoder can open (6.2s)
+
+
+  1) [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -1185,14 +1185,14 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    -   58,
+    -   46,
+    -   76,
+    -   255,
+    +   0,
+    +   0,
+    +   0,
+    +   0,
+        0,
+        0,
+        0,
+        0,
+        0,
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      83 |   server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
+      84 |   await page.reload();
+    > 85 |   await expect.poll(() => pixels(page)).toEqual(online);
+         |                                         ^
+      86 |   await paint(page, 0.7); await saved(page);
+      87 |   const offline = await pixels(page);
+      88 |   await page.reload(); await expect.poll(() => pixels(page)).toEqual(offline);
+        at D:\PixiBun\tests\production\operation.spec.ts:85:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-warm-production--843cc-work-and-can-save-new-edits-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits 
+  1 passed (35.1s)

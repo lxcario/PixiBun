@@ -14,7 +14,7 @@ import {
   applyZhangSuenThinning,
 } from '@/lib/ai/smartMathEngine';
 import { runMorphInWorker } from '@/lib/engine/workerDispatcher';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import type { ViewportEventContext } from './types';
 
 export function useArtisanEvents({
@@ -152,6 +152,12 @@ export function useArtisanEvents({
 
       const frameA = state.frames[currentIdx];
       if (!frameA) return;
+      const capacity = canAddFramesToProject(state.frames, canvasWidth, canvasHeight,
+        [{ layerCount: frameA.layers.length }]);
+      if (!capacity.ok) {
+        studioEvents.emit('pixibun:toast', { message: capacity.reason || 'Cannot insert an in-between frame.', type: 'error' });
+        return;
+      }
 
       let nextIdx = (currentIdx + 1) % totalFrames;
       if (totalFrames === 1) {
@@ -190,11 +196,24 @@ export function useArtisanEvents({
         revision: preparedState.editRevision,
       };
 
-      const [morphed] = await runMorphInWorker(
-        { width: canvasWidth, height: canvasHeight, data: dataA },
-        { width: canvasWidth, height: canvasHeight, data: dataB },
-        1
-      );
+      let morphed;
+      try {
+        [morphed] = await runMorphInWorker(
+          { width: canvasWidth, height: canvasHeight, data: dataA },
+          { width: canvasWidth, height: canvasHeight, data: dataB },
+          1
+        );
+        if (!morphed || morphed.width !== canvasWidth || morphed.height !== canvasHeight ||
+          morphed.data.length !== canvasWidth * canvasHeight * 4) {
+          throw new Error('In-between generation returned invalid pixels.');
+        }
+      } catch (error) {
+        studioEvents.emit('pixibun:toast', {
+          message: error instanceof Error ? error.message : 'In-between generation failed; artwork was preserved.',
+          type: 'error',
+        });
+        return;
+      }
 
       const latest = useStudioStore.getState();
       if (
@@ -213,32 +232,25 @@ export function useArtisanEvents({
         return;
       }
 
-      latest.duplicateFrame(currentIdx);
-      const updatedState = useStudioStore.getState();
-      const newFrame = updatedState.frames[updatedState.activeFrameIndex];
-
-      if (newFrame && morphed) {
-        const nonTaggedLayers = newFrame.layers.filter((l) => !l.tag);
-        const baseLayer = nonTaggedLayers[nonTaggedLayers.length - 1];
-
-        if (baseLayer) {
-          const targetBuf = getOrCreateBuffer(baseLayer.id, canvasWidth, canvasHeight);
-          const tCtx = targetBuf.canvas.getContext('2d', { willReadFrequently: true });
-          if (tCtx) {
-            tCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-            const imgData = tCtx.createImageData(canvasWidth, canvasHeight);
-            imgData.data.set(morphed.data);
-            tCtx.putImageData(imgData, 0, 0);
-          }
-        }
-
-        for (const l of nonTaggedLayers) {
-          if (l.id !== baseLayer?.id) {
-            const upperBuf = getOrCreateBuffer(l.id, canvasWidth, canvasHeight);
-            upperBuf.canvas.getContext('2d')?.clearRect(0, 0, canvasWidth, canvasHeight);
-          }
-        }
+      const inserted = latest.duplicateFrame(currentIdx, morphed);
+      if (!inserted) {
+        studioEvents.emit('pixibun:toast', {
+          message: 'Could not insert in-between frame: project capacity limit reached.',
+          type: 'error',
+        });
+        return;
       }
+
+      studioEvents.emit('pixibun:toast', {
+        type: 'success',
+        message: 'In-between frame inserted',
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            studioEvents.emit('pixibun:undo');
+          },
+        },
+      });
 
       renderComposite();
       bumpBufferVersion();

@@ -1,5 +1,9 @@
 import type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup } from '@/types/canvas';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { registerMemoryUsage } from '@/lib/safety/memoryBudget';
+import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
+import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
+import { researchBytes } from '@/lib/research/recipes';
 export type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup };
 
 export interface ReplayBaselineLayer {
@@ -79,6 +83,9 @@ export const DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB
 export function calculateStepBytes(step: HistoryStep): number {
   if (step.type === 'structural') {
     let bytes = 1024; // Base object overhead
+    bytes += step.clips?.reduce((total, clip) => total + estimateClipBytes(clip), 0) ?? 0;
+    bytes += step.palettes?.reduce((total, palette) => total + estimatePaletteBytes(palette), 0) ?? 0;
+    bytes += step.frames.reduce((total, frame) => total + frame.layers.reduce((sum, layer) => sum + researchBytes(layer.research), 0), 0);
     if (step.layerBuffers) {
       for (const b of step.layerBuffers) {
         if (b.imageData?.data) {
@@ -520,6 +527,7 @@ export function createHistoryEngine(
 }
 
 let activeGlobalHistoryEngine: HistoryEngine | null = null;
+registerMemoryUsage('history', () => (activeGlobalHistoryEngine?.totalBytes ?? 0) + (activeGlobalHistoryEngine?.getBaseline()?.totalBytes ?? 0));
 
 export function setGlobalHistoryEngine(engine: HistoryEngine | null): void {
   activeGlobalHistoryEngine = engine;

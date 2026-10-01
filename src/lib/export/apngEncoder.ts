@@ -178,6 +178,7 @@ export function createPngChunk(typeStr: string, data: Uint8Array): Uint8Array {
 import { extractScaledCanvasRgba, ScaledRgbaFrame } from '@/lib/canvas/scaleCanvas';
 import { validateExportGeometry } from './exportGeometryValidation';
 import { MAX_EXPORT_AGGREGATE_PIXELS } from '@/config/canvasLimits';
+import { withExportMemory } from './exportMemory';
 
 export { extractScaledCanvasRgba };
 export type { ScaledRgbaFrame };
@@ -189,7 +190,11 @@ export type { ScaledRgbaFrame };
  * @param options Configuration options (fps, scale, durationsMs, loopCount, onProgress, signal)
  * @returns Promise resolving to an APNG image Blob (MIME type: 'image/apng')
  */
-export async function exportAnimationToApngAsync(
+export async function exportAnimationToApngAsync(...args: Parameters<typeof encodeApng>): Promise<Blob> {
+  return withExportMemory(args[0], Math.max(1, Math.min(16, args[1]?.scale ?? 1)), () => encodeApng(...args), MAX_EXPORT_AGGREGATE_PIXELS, 'APNG');
+}
+
+async function encodeApng(
   frameCanvases: HTMLCanvasElement[],
   options: ApngExportOptions = {}
 ): Promise<Blob> {

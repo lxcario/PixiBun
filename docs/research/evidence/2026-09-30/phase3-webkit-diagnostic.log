@@ -1,0 +1,56 @@
+
+> pixibun@1.14.1 test:e2e:production
+> playwright test --config playwright.production.config.ts --project=webkit --grep production drawing
+
+[WebServer] (node:37808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:17388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Production browser error: ["Autosave error:",{"name":"BulkError","message":"layerBlobs.bulkAdd(): 1 of 1 operations failed. Errors: UnknownError: Error preparing Blob/File data to be stored in object store"}]
+Production browser error: ["Autosave error:",{"name":"BulkError","message":"layerBlobs.bulkAdd(): 1 of 1 operations failed. Errors: UnknownError: Error preparing Blob/File data to be stored in object store"}]
+  x  1 [webkit] › tests\production\operation.spec.ts:32:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (12.4s)
+
+
+  1) [webkit] › tests\production\operation.spec.ts:32:5 › production drawing, save, reload, undo and redo preserve pixels without development handles 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[role="status"]').filter({ hasText: /Changes saved/ })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[role="status"]').filter({ hasText: /Changes saved/ })
+
+
+      27 | async function saved(page: Page) {
+      28 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+    > 29 |   await expect(page.locator('[role="status"]').filter({ hasText: /Changes saved/ })).toBeVisible();
+         |                                                                                      ^
+      30 | }
+      31 |
+      32 | test('production drawing, save, reload, undo and redo preserve pixels without development handles', async ({ page }) => {
+        at saved (D:\PixiBun\tests\production\operation.spec.ts:29:86)
+        at D:\PixiBun\tests\production\operation.spec.ts:35:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\production\operation-production-drawi-58694-without-development-handles-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\production\operation-production-drawi-58694-without-development-handles-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\production\operation-production-drawi-58694-without-development-handles-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\production\operation-production-drawi-58694-without-development-handles-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\operation.spec.ts:32:5 › production drawing, save, reload, undo and redo preserve pixels without development handles 

@@ -4,9 +4,45 @@ import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
 import { BottomTimeline } from '@/components/layout/BottomTimeline';
 import { useStudioStore } from '@/stores/studioStore';
 
+describe('Canonical clip playback', () => {
+  let callback: FrameRequestCallback;
+  beforeEach(() => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { callback = cb; return 1; });
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    useStudioStore.setState({ frames: [70, 230, 110].map((durationMs, i) => ({ id: `hold-${i}`, durationMs, layers: [] })),
+      activeFrameIndex: 0, activeClipId: 'test-clip', isPlaying: false, loopMode: 'once', clips: [
+        { id: 'test-clip', name: 'Test', startFrame: 0, endFrame: 2, loopMode: 'reverse' },
+      ] });
+  });
+  afterEach(() => { cleanup(); useStudioStore.setState({ isPlaying: false }); vi.unstubAllGlobals(); });
+  const tick = (time: number) => act(() => callback(time));
+  it('plays reverse holds in order and stops after the final 70ms hold', () => {
+    render(<BottomTimeline />); act(() => useStudioStore.getState().setIsPlaying(true));
+    tick(0); expect(useStudioStore.getState().activeFrameIndex).toBe(2);
+    tick(109); expect(useStudioStore.getState().activeFrameIndex).toBe(2);
+    tick(110); expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    tick(339); expect(useStudioStore.getState().activeFrameIndex).toBe(1);
+    tick(340); expect(useStudioStore.getState().activeFrameIndex).toBe(0); expect(useStudioStore.getState().isPlaying).toBe(true);
+    tick(410); expect(useStudioStore.getState().isPlaying).toBe(false);
+  });
+  it('plays a complete ping-pong period without doubling either endpoint', () => {
+    useStudioStore.setState({ loopMode: 'repeat', clips: [{ id: 'test-clip', name: 'Test', startFrame: 0, endFrame: 2, loopMode: 'ping-pong' }] });
+    render(<BottomTimeline />); act(() => useStudioStore.getState().setIsPlaying(true));
+    const observed: number[] = [];
+    for (const time of [0, 70, 300, 410, 640]) { tick(time); observed.push(useStudioStore.getState().activeFrameIndex); }
+    expect(observed).toEqual([0, 1, 2, 1, 0]);
+  });
+  it('starts a fresh hold after an explicit scrub during playback', () => {
+    render(<BottomTimeline />); act(() => useStudioStore.getState().setIsPlaying(true)); tick(0); tick(50);
+    act(() => useStudioStore.getState().setActiveFrame(1)); tick(70); tick(299);
+    expect(useStudioStore.getState().activeFrameIndex).toBe(1); tick(300); expect(useStudioStore.getState().activeFrameIndex).toBe(0);
+  });
+});
+
 describe('BottomTimeline Drag & Drop Frame Reordering', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useStudioStore.setState({ loopMode: 'repeat', isPlaying: false, clips: [], activeClipId: null });
     const state = useStudioStore.getState();
     // Initialize with 3 frames
     state.frames = [

@@ -81,3 +81,9 @@ Five qualitative participants can reveal problems; they cannot establish a relia
 - [NN/g on five qualitative participants](https://www.nngroup.com/articles/5-test-users-qual-quant/) explains the limit of small studies.
 - [Meta on Trial Reels](https://about.fb.com/news/2024/12/trial-reels-try-content-non-followers-first-see-what-perfoms-best/) and [Meta on Edits insights](https://about.fb.com/news/2025/04/introducing-edits-streamlined-video-creation-app/) document available creator experiments and skip-rate feedback.
 - [Portal development retrospective](https://www.gamedeveloper.com/design/thinking-with-portals-creating-valve-s-new-ip) supports testing learning steps early; it is an analogy, not evidence that the same tutorial format will work in PixiBun.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and screenshot-driven interface fixes are implemented: matching lighting cards, preview/apply labels, explicit surface-layer setup, grouped header controls and a bottom-right save badge. [Current behavior and local verification](../research/session-ui-ux-2026-10-01.md) should be used when preparing tasks; this update does not supply participant observations or comparative usability results. See the [completion record](../research/session-completion-2026-10-01.md) for remaining evaluation work.
+<!-- /session-publication-2026-10-01 -->

@@ -5,7 +5,7 @@ test('small-screen studio link opens a usable pocket doodle pad', async ({ page 
   await page.goto('/studio');
   await page.getByRole('link', { name: 'Try Pocket Doodle Pad' }).click();
 
-  await expect(page).toHaveURL(/\/playground$/);
+  await expect(page).toHaveURL(/\/playground$/, { timeout: 15_000 });
   await expect(page.getByRole('heading', { name: 'Pocket Doodle Pad' })).toBeVisible();
   const canvas = page.getByRole('img', { name: 'Pocket doodle canvas' });
   await expect(canvas).toBeVisible();

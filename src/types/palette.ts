@@ -8,6 +8,7 @@ export interface ColorPalette {
   author?: string;
   colors: string[]; // hex codes
   cycleTracks?: PaletteCycleTrack[];
+  semantics?: import('@/lib/color/paletteSemantics').PaletteSemantics;
 }
 
 export interface ColorRamp {

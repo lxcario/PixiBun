@@ -13,7 +13,7 @@
  * override next.config.ts headers with its default text/plain type for a
  * dynamic route, which causes browsers to reject registration.
  *
- * SKIP_WAITING flow is unchanged (see the message listener below).
+ * Updates wait for open windows to close; an update must not interrupt artwork.
  */
 
 export function buildServiceWorkerScript(version: string = process.env.SW_CACHE_VERSION ?? 'v1'): string {
@@ -30,16 +30,21 @@ const PRECACHE_ASSETS = [
   '/icons/apple-touch-icon.png',
 ];
 const MAX_DYNAMIC_CACHE_ENTRIES = 50;
+const PRECACHE_MANIFEST = '/__pixibun_precache__';
+const MAX_SHELL_DEPENDENCIES = 128;
+let warmQueue = Promise.resolve();
 
 async function trimCache(cacheName, maxEntries) {
   try {
     const cache = await caches.open(cacheName);
     const requests = await cache.keys();
+    const manifest = await cache.match(PRECACHE_MANIFEST);
+    const shellDependencies = manifest ? await manifest.json() : [];
     // Exclude core precached assets so essential offline shell is never evicted
     const evictable = requests.filter((req) => {
       try {
         const pathname = new URL(req.url).pathname;
-        return !PRECACHE_ASSETS.includes(pathname);
+        return pathname !== PRECACHE_MANIFEST && !PRECACHE_ASSETS.includes(pathname) && !shellDependencies.some(path => new URL(path, self.location.origin).pathname === pathname);
       } catch {
         return true;
       }
@@ -54,12 +59,25 @@ async function trimCache(cacheName, maxEntries) {
   }
 }
 
+async function precacheShell() {
+  const cache = await caches.open(CACHE_NAME);
+  await cache.addAll(PRECACHE_ASSETS);
+  const dependencies = new Set();
+  for (const path of ['/', '/studio']) {
+    const shell = await cache.match(path);
+    const html = await shell.text();
+    for (const match of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) {
+      const url = new URL(match[1], self.location.origin);
+      if (url.origin === self.location.origin && url.pathname.startsWith('/_next/static/')) dependencies.add(url.pathname + url.search);
+    }
+  }
+  if (dependencies.size > MAX_SHELL_DEPENDENCIES) throw new Error('Offline shell dependency limit exceeded.');
+  await cache.addAll([...dependencies]);
+  await cache.put(PRECACHE_MANIFEST, new Response(JSON.stringify([...dependencies]), { headers: { 'Content-Type': 'application/json' } }));
+}
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_ASSETS))
-  );
+  event.waitUntil(precacheShell());
 });
 
 self.addEventListener('activate', (event) => {
@@ -78,8 +96,34 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
+  if (event.data?.type === 'CACHE_ASSETS' && Array.isArray(event.data.urls)) {
+    warmQueue = warmQueue.catch(() => {}).then(async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const manifest = await cache.match(PRECACHE_MANIFEST);
+      const paths = new Set(manifest ? await manifest.json() : []);
+      const incoming = [];
+      for (const value of event.data.urls.slice(0, MAX_SHELL_DEPENDENCIES)) {
+        if (typeof value !== 'string') continue;
+        let url;
+        try { url = new URL(value, self.location.origin); } catch { continue; }
+        const path = url.pathname + url.search;
+        if (url.origin === self.location.origin && url.pathname.startsWith('/_next/static/') && !paths.has(path)) {
+          if (paths.size >= MAX_SHELL_DEPENDENCIES) break;
+          paths.add(path); incoming.push(path);
+        }
+      }
+      // Protect these paths before competing dynamic cache writes can trim them.
+      await cache.put(PRECACHE_MANIFEST, new Response(JSON.stringify([...paths]), { headers: { 'Content-Type': 'application/json' } }));
+      await cache.addAll(incoming);
+    });
+    event.waitUntil(warmQueue);
+  }
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // No forced takeover while any window can be editing or loading old chunks.
+      if (clients.length === 0) return self.skipWaiting();
+      event.source?.postMessage({ type: 'UPDATE_DEFERRED' });
+    }));
   }
 });
 
@@ -148,9 +192,16 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           })
-          .catch(() => cachedResponse);
+          .catch(() => cachedResponse || Response.error());
 
-        return cachedResponse || fetchPromise;
+        const response = cachedResponse || await fetchPromise;
+        // A cached response's URL lacks the constructor fragment. Worker bootstraps
+        // use that fragment for configuration; a synthetic response retains the
+        // original worker request URL rather than replacing it with response.url.
+        if ((request.destination === 'worker' || request.destination === 'sharedworker') && response.status === 200) {
+          return new Response(response.body, { status: response.status, statusText: response.statusText, headers: response.headers });
+        }
+        return response;
       })
     );
     return;

@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   exportAnimationToMp4Async,
   isMp4ExportSupported,
+  probeMp4ExportSupport,
 } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import { HistoryStep } from '@/lib/engine/historyEngine';
@@ -91,6 +92,8 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     HTMLCanvasElement.prototype.captureStream = originalCaptureStream as (fps?: number) => MediaStream;
     HTMLCanvasElement.prototype.getContext = originalGetContext;
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   function installMediaRecorderMock() {
@@ -144,6 +147,7 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     const controller = new AbortController();
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
     (window as unknown as { VideoEncoder: unknown }).VideoEncoder = class {
+      static isConfigSupported = async () => ({ supported: true });
       configure() {}
       encode = encode;
       flush = vi.fn(async () => {});
@@ -172,12 +176,51 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     expect(isMp4ExportSupported()).toBe(false);
   });
 
+  it('probes the actual H.264 configuration and rejects it without an independent recorder fallback', async () => {
+    uninstallMediaRecorderMock();
+    const configure = vi.fn(); const close = vi.fn();
+    const probe = vi.fn(async () => ({ supported: false }));
+    vi.stubGlobal('VideoEncoder', class { static isConfigSupported = probe; configure = configure; close = close; });
+    vi.stubGlobal('VideoFrame', class {});
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    expect(await probeMp4ExportSupport(15, 33)).toBe(false);
+    expect(probe).toHaveBeenCalledWith(expect.objectContaining({ width: 16, height: 34, codec: 'avc1.42001f' }));
+    await expect(exportAnimationToMp4Async([createMockCanvas(16, 16)])).rejects.toThrow('unsupported');
+    expect(configure).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledOnce();
+  });
+
+  it('cancels a stalled hardware flush and closes the encoder', async () => {
+    uninstallMediaRecorderMock(); const controller = new AbortController(); const close = vi.fn();
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = async () => ({ supported: true });
+      configure() {} encode() {} close = close;
+      flush() { controller.abort(); return new Promise<void>(() => {}); }
+    });
+    vi.stubGlobal('VideoFrame', class { close() {} });
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    await expect(exportAnimationToMp4Async([createMockCanvas(16, 16)], { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
+    expect(close).toHaveBeenCalledOnce();
+  });
+
+  it('bounds a stalled hardware configuration probe and releases the encoder', async () => {
+    vi.useFakeTimers(); uninstallMediaRecorderMock(); const close = vi.fn();
+    vi.stubGlobal('VideoEncoder', class {
+      static isConfigSupported = () => new Promise<{ supported: boolean }>(() => {});
+      configure() {} close = close;
+    });
+    vi.stubGlobal('VideoFrame', class {});
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    const assertion = expect(exportAnimationToMp4Async([createMockCanvas(16, 16)])).rejects.toThrow('unsupported');
+    await vi.advanceTimersByTimeAsync(10_000); await assertion;
+    expect(close).toHaveBeenCalledOnce(); expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('rejects with descriptive error when MP4 export is unsupported', async () => {
     uninstallMediaRecorderMock();
     const frame = createMockCanvas(16, 16);
 
     await expect(exportAnimationToMp4Async([frame])).rejects.toThrow(
-      /MP4 export is not supported in this browser environment/i
+      /MP4 recording is unsupported/i
     );
   });
 
@@ -242,7 +285,7 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
       controller.abort();
     }, 20);
 
-    await expect(exportPromise).rejects.toThrow('MP4 export aborted');
+    await expect(exportPromise).rejects.toMatchObject({ name: 'AbortError' });
     expect(MockMediaRecorderInstance.lastInstance?.state).toBe('inactive');
   });
 
@@ -260,7 +303,7 @@ describe('In-Browser MP4 (H.264 / ISOBMFF) Video Export Engine', () => {
     }, 20);
 
     await expect(exportPromise).rejects.toThrow(
-      'MediaRecorder encountered an error while encoding MP4.'
+      'MediaRecorder failed while encoding video.'
     );
   });
 

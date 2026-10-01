@@ -16,7 +16,7 @@ const SHADOW_COLOR_PRESETS = [
   { label: 'Teal/Fog', hex: '#062419' },
 ];
 
-export const RaymarchedShadowSection: React.FC = () => {
+export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ taskView = false }) => {
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const tools = useStudioStore((s) => s.tools);
@@ -88,24 +88,24 @@ export const RaymarchedShadowSection: React.FC = () => {
 
   return (
     <PanelSection
-      title="Cast & Ground Shadows"
-      ariaLabel="Cast & Ground Shadows (2.5D Ground Shadows)"
-      storageKey="pixibun:panel:shadows"
+      title="Add a shadow"
+      description="Place a shadow beneath or behind your sprite."
+      icon="sun"
+      storageKey={taskView ? 'pixibun:panel:shadow-task:v2' : 'pixibun:panel:shadows'}
       defaultOpen={false}
-      actions={<span className="text-[9px] font-sans text-[var(--text-muted)]">Floor Shadow</span>}
     >
       <div className="flex flex-col gap-2.5">
         {/* Mode Switch: Auto analysis vs Manual artist control */}
         <div
           className="inline-flex w-full bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-0.5"
           role="group"
-          aria-label="Raymarched soft shadows mode"
+          aria-label="Shadow setup"
         >
           <button
             type="button"
             onClick={() => setMode('auto')}
             aria-pressed={mode === 'auto'}
-            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+            className={`flex-1 min-h-8 py-1 text-[11px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'auto'
                 ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
@@ -118,7 +118,7 @@ export const RaymarchedShadowSection: React.FC = () => {
             type="button"
             onClick={() => setMode('manual')}
             aria-pressed={mode === 'manual'}
-            className={`flex-1 py-1 text-[10px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+            className={`flex-1 min-h-8 py-1 text-[11px] font-sans font-medium text-center rounded-[1px] transition-colors cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'manual'
                 ? 'bg-[var(--surface-3)] text-[var(--text-heading)] font-semibold shadow-xs'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-heading)]'
@@ -130,46 +130,45 @@ export const RaymarchedShadowSection: React.FC = () => {
         </div>
 
         {/* Shadow Style: Directional Cast vs Ground Drop (Classic RPG Oval) */}
-        <div className="flex items-center justify-between text-xs font-mono bg-[var(--desk-surface-raised)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
+        <div className="flex flex-col gap-1.5 text-xs bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)]">
           <span className="text-[10px] text-[var(--text-body)] font-bold">Style:</span>
-          <div className="flex gap-1" role="group" aria-label="Shadow projection style">
+          <div className="grid grid-cols-2 gap-1 w-full" role="group" aria-label="Shadow projection style">
             <button
               type="button"
               onClick={() => setShadowStyle('cast')}
               aria-pressed={shadowStyle === 'cast'}
-              className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+              className={`min-h-8 px-2 py-0.5 text-[10px] font-sans font-medium rounded-[1px] border transition-colors cursor-pointer ${
                 shadowStyle === 'cast'
                   ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
                   : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
               }`}
             >
-              Directional Cast
+              From the light
             </button>
             <button
               type="button"
               onClick={() => setShadowStyle('drop')}
               aria-pressed={shadowStyle === 'drop'}
-              className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
+              className={`min-h-8 px-2 py-0.5 text-[10px] font-sans font-medium rounded-[1px] border transition-colors cursor-pointer ${
                 shadowStyle === 'drop'
                   ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
                   : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
               }`}
             >
-              Ground Drop (Oval)
+              Under sprite
             </button>
           </div>
         </div>
 
         {mode === 'auto' && (
           <div className="bg-[var(--desk-surface-raised)] p-2 rounded-[2px] border border-[var(--desk-border)] flex flex-col gap-2">
-            <span className="text-[10px] font-mono font-bold text-[var(--text-body)] uppercase">
-              Auto Floor Shadow
-            </span>
-            <p className="text-[9px] font-mono text-[var(--text-body)] opacity-80 leading-relaxed">
-              Detects character baseline and lighting angle to automatically cast a soft ground shadow.
+            <p className="text-[10px] text-[var(--text-muted)] leading-4">
+              {shadowStyle === 'cast' ? 'Follows the light direction and your sprite’s outline.' : 'A soft oval anchors your sprite to the ground.'}
             </p>
 
             {/* Inferred Parameters Summary */}
+            {inferredRationale && <details className="border border-[var(--desk-border)] rounded-[2px]">
+            <summary className="min-h-8 px-2 flex items-center text-[11px] text-[var(--text-body)] cursor-pointer">Detected shadow settings</summary>
             <div className="grid grid-cols-2 gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)] text-[9px] font-mono">
               <div className="flex flex-col">
                 <span className="text-[var(--text-body)] opacity-70">Direction:</span>
@@ -200,6 +199,7 @@ export const RaymarchedShadowSection: React.FC = () => {
                 {inferredRationale}
               </div>
             )}
+            </details>}
 
             <TactileButton
               size="sm"
@@ -212,6 +212,7 @@ export const RaymarchedShadowSection: React.FC = () => {
               <PixelIcon name="sun" size={14} />
               <span>Add Floor Shadow</span>
             </TactileButton>
+            <p className="text-[10px] text-center text-[var(--text-muted)]">Uses a shadow layer. Undo restores changes.</p>
           </div>
         )}
 

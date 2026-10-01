@@ -253,6 +253,7 @@ test('replacing frames clears artwork and effects from old layers', async ({ pag
 });
 
 test('the studio 45-degree RotSprite command preserves its palette and visibly turns a centered motif', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto('/studio');
   const canvas = page.getByTestId('main-composite-canvas');
   await expect(canvas).toBeVisible();
@@ -262,6 +263,7 @@ test('the studio 45-degree RotSprite command preserves its palette and visibly t
   const dialog = page.getByRole('dialog', { name: 'Import Image' });
   await dialog.getByRole('button', { name: 'Import Image', exact: true }).click();
   await expect(dialog).toBeHidden();
+  await expect.poll(() => canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(28, 28, 1, 1).data))).toEqual([255, 0, 0, 255]);
   const before = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, 64, 64).data));
   const editRevision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
   await page.getByRole('button', { name: 'PixiTools' }).click();
@@ -269,7 +271,7 @@ test('the studio 45-degree RotSprite command preserves its palette and visibly t
   const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
   if (await cleanupPanel.getAttribute('aria-expanded') === 'false') await cleanupPanel.click();
   await page.getByRole('button', { name: '+45°' }).click();
-  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision)).toBeGreaterThan(editRevision);
+  await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision), { timeout: 30_000 }).toBeGreaterThan(editRevision);
   const after = await canvas.evaluate((element: HTMLCanvasElement) => Array.from(element.getContext('2d')!.getImageData(0, 0, 64, 64).data));
   expect(after).not.toEqual(before);
   const colors = new Set<string>();

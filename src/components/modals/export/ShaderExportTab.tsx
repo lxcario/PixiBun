@@ -133,7 +133,7 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
       </div>
 
       <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-        Hardware-accelerated pixel shader with point-filtering, ping-pong oscillation, and sub-step color interpolation.
+        Shader code only; supply a normalized index texture and palette LUT yourself. Use Godot Kit for a runnable sample with raw register bytes and separate alpha. Unity remains unverified in its engine.
       </p>
     </div>
   );

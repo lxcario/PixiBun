@@ -10,6 +10,7 @@ import {
   _getPendingCallbacksCountForTesting,
 } from '@/lib/engine/workerDispatcher';
 import type { HeavyWorkerRequest } from '@/workers/heavyCompute.worker';
+import { COMBINED_MEMORY_LIMIT_BYTES, getMemoryBudgetUsage, registerMemoryUsage } from '@/lib/safety/memoryBudget';
 
 class MockWorker {
   public onmessage: ((e: MessageEvent) => void) | null = null;
@@ -25,7 +26,19 @@ describe('workerDispatcher sync fallback and execution', () => {
 
   afterEach(() => {
     _resetSharedWorkerForTesting();
+    expect(getMemoryBudgetUsage().reservedBytes).toBe(0);
     vi.useRealTimers();
+  });
+
+  it('refuses combined memory pressure before creating a worker or copying inputs', async () => {
+    const factory = vi.fn(() => new MockWorker() as unknown as Worker);
+    _setWorkerFactoryForTesting(factory);
+    registerMemoryUsage('history', () => COMBINED_MEMORY_LIMIT_BYTES);
+    try {
+      await expect(runRotSpriteInWorker({ width: 1, height: 1, data: new Uint8ClampedArray(4) }, 0)).rejects.toThrow(/combined artwork memory budget/);
+      expect(factory).not.toHaveBeenCalled();
+      expect(_getPendingCallbacksCountForTesting()).toBe(0);
+    } finally { registerMemoryUsage('history', () => 0); }
   });
 
   it('runRotSpriteInWorker successfully executes via sync fallback in node/vitest', async () => {
@@ -95,6 +108,60 @@ describe('workerDispatcher sync fallback and execution', () => {
     expect(result.width).toBe(8);
     expect(result.height).toBe(8);
     expect(result.data.length).toBe(8 * 8 * 4);
+  });
+
+  it('rejects pre-aborted work before worker creation or synchronous allocation on every entry point', async () => {
+    const factory = vi.fn(() => { throw new Error('No worker'); });
+    _setWorkerFactoryForTesting(factory);
+    const controller = new AbortController(); controller.abort();
+    const options = { signal: controller.signal };
+    const frame = { width: 256, height: 256, data: new Uint8ClampedArray() };
+    await expect(runRotSpriteInWorker(frame, 0, undefined, undefined, undefined, undefined, options)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(runWfcInWorker({ sampleData: frame.data, sampleWidth: 256, sampleHeight: 256, outputWidth: 256, outputHeight: 256 }, options)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(runMorphInWorker(frame, frame, 1, undefined, options)).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(runEdtNormalMapInWorker(frame.data, 256, 256, options)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(factory).not.toHaveBeenCalled();
+  });
+
+  it('refuses large main-thread fallbacks before allocating computation buffers', async () => {
+    _setWorkerFactoryForTesting(() => { throw new Error('No worker'); });
+    const frame = { width: 512, height: 512, data: new Uint8ClampedArray() };
+    await expect(runRotSpriteInWorker(frame, 0)).rejects.toThrow('requires a compute worker');
+    await expect(runWfcInWorker({ sampleData: frame.data, sampleWidth: 512, sampleHeight: 512, outputWidth: 512, outputHeight: 512 })).rejects.toThrow('requires a compute worker');
+    await expect(runMorphInWorker(frame, frame)).rejects.toThrow('requires a compute worker');
+    await expect(runEdtNormalMapInWorker(frame.data, 512, 512)).rejects.toThrow('requires a compute worker');
+  });
+
+  it('bounds queued work and admits new work after a job completes', async () => {
+    const worker = new MockWorker(); _setSharedWorkerForTesting(worker as unknown as Worker);
+    const frame = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
+    const jobs = Array.from({ length: 4 }, () => runRotSpriteInWorker(frame, 0));
+    await expect(runRotSpriteInWorker(frame, 0)).rejects.toThrow('busy');
+    expect(worker.postMessage).toHaveBeenCalledTimes(4);
+    for (const [req] of worker.postMessage.mock.calls as [HeavyWorkerRequest][]) {
+      worker.onmessage?.({ data: { id: req.id, type: 'rotSprite', result: frame } } as MessageEvent);
+    }
+    await Promise.all(jobs);
+    const next = runRotSpriteInWorker(frame, 0);
+    const req = worker.postMessage.mock.calls[4][0] as HeavyWorkerRequest;
+    worker.onmessage?.({ data: { id: req.id, type: 'rotSprite', result: frame } } as MessageEvent);
+    expect(await next).toEqual(frame);
+  });
+
+  it('removes cancellation listeners after completion so a late abort cannot kill subsequent work', async () => {
+    const worker = new MockWorker(); _setSharedWorkerForTesting(worker as unknown as Worker);
+    const controller = new AbortController();
+    const frame = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
+    const first = runRotSpriteInWorker(frame, 0, undefined, undefined, undefined, undefined, { signal: controller.signal });
+    const req = worker.postMessage.mock.calls[0][0] as HeavyWorkerRequest;
+    worker.onmessage?.({ data: { id: req.id, type: 'rotSprite', result: frame } } as MessageEvent);
+    await first;
+    const second = runRotSpriteInWorker(frame, 0);
+    controller.abort();
+    expect(worker.terminate).not.toHaveBeenCalled();
+    const next = worker.postMessage.mock.calls[1][0] as HeavyWorkerRequest;
+    worker.onmessage?.({ data: { id: next.id, type: 'rotSprite', result: frame } } as MessageEvent);
+    expect(await second).toEqual(frame);
   });
 });
 
@@ -190,104 +257,42 @@ describe('workerDispatcher lifecycle, timeout, abort, and fatal crash recovery',
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
 
-  it('aborts individual request cleanly on AbortSignal without terminating worker or affecting concurrent requests', async () => {
-    const mockWorker = new MockWorker();
-    _setSharedWorkerForTesting(mockWorker as unknown as Worker);
-
-    const controllerA = new AbortController();
-    const src = { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(255) };
-
-    const promiseA = runRotSpriteInWorker(src, 0, undefined, undefined, undefined, undefined, {
-      signal: controllerA.signal,
-    });
-    const promiseB = runRotSpriteInWorker(src, Math.PI);
-
-    expect(_getPendingCallbacksCountForTesting()).toBe(2);
-    const reqB = mockWorker.postMessage.mock.calls[1][0] as HeavyWorkerRequest;
-
-    // Abort request A only
-    controllerA.abort();
-
-    await expect(promiseA).rejects.toThrow(/aborted/i);
-    expect(mockWorker.terminate).not.toHaveBeenCalled();
-    expect(_getPendingCallbacksCountForTesting()).toBe(1);
-
-    // Request B should still resolve normally
-    mockWorker.onmessage?.({
-      data: {
-        id: reqB.id,
-        type: 'rotSprite',
-        result: { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(42) },
-      },
-    } as MessageEvent);
-
-    const resultB = await promiseB;
-    expect(resultB.data[0]).toBe(42);
+  it('terminates cancelled work and explicitly interrupts queued peers', async () => {
+    const worker = new MockWorker();
+    _setSharedWorkerForTesting(worker as unknown as Worker);
+    const controller = new AbortController();
+    const src = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
+    const a = runRotSpriteInWorker(src, 0, undefined, undefined, undefined, undefined, { signal: controller.signal });
+    const b = runRotSpriteInWorker(src, 0);
+    const assertions = Promise.all([
+      expect(a).rejects.toMatchObject({ name: 'AbortError' }),
+      expect(b).rejects.toMatchObject({ name: 'WorkerInterruptedError' }),
+    ]);
+    controller.abort();
+    await assertions;
+    expect(worker.terminate).toHaveBeenCalledOnce();
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
   });
 
-  it('a timed-out request does not reject a concurrent request that can still finish', async () => {
+  it('terminates a timed-out worker, interrupts peers and recovers on a fresh worker', async () => {
     vi.useFakeTimers();
-
-    const createdWorkers: MockWorker[] = [];
-    _setWorkerFactoryForTesting(() => {
-      const w = new MockWorker();
-      createdWorkers.push(w);
-      return w as unknown as Worker;
-    });
-
-    const src = { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(255) };
-
-    // Request A has 100ms timeout, Request B has 500ms timeout
-    const promiseA = runRotSpriteInWorker(src, 0, undefined, undefined, undefined, undefined, {
-      timeoutMs: 100,
-    });
-    const promiseB = runRotSpriteInWorker(src, Math.PI, undefined, undefined, undefined, undefined, {
-      timeoutMs: 500,
-    });
-
-    expect(createdWorkers.length).toBe(1);
-    const firstWorker = createdWorkers[0];
-    expect(_getPendingCallbacksCountForTesting()).toBe(2);
-
-    // Advance 120ms: Request A times out
-    vi.advanceTimersByTime(120);
-
-    await expect(promiseA).rejects.toThrow(/Worker request .* timed out/i);
-    expect(firstWorker.terminate).not.toHaveBeenCalled();
-    expect(_getPendingCallbacksCountForTesting()).toBe(1);
-
-    const reqA = firstWorker.postMessage.mock.calls[0][0] as HeavyWorkerRequest;
-    const reqB = firstWorker.postMessage.mock.calls[1][0] as HeavyWorkerRequest;
-    firstWorker.onmessage?.({
-      data: { id: reqA.id, type: 'rotSprite', result: { width: 2, height: 2, data: new Uint8ClampedArray(16) } },
-    } as MessageEvent);
-    expect(_getPendingCallbacksCountForTesting()).toBe(1);
-    firstWorker.onmessage?.({
-      data: {
-        id: reqB.id,
-        type: 'rotSprite',
-        result: { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(42) },
-      },
-    } as MessageEvent);
-    expect((await promiseB).data[0]).toBe(42);
+    const workers: MockWorker[] = [];
+    _setWorkerFactoryForTesting(() => { const worker = new MockWorker(); workers.push(worker); return worker as unknown as Worker; });
+    const src = { width: 2, height: 2, data: new Uint8ClampedArray(16) };
+    const a = runRotSpriteInWorker(src, 0, undefined, undefined, undefined, undefined, { timeoutMs: 100 });
+    const b = runRotSpriteInWorker(src, 0);
+    const assertions = Promise.all([
+      expect(a).rejects.toMatchObject({ name: 'WorkerTimeoutError' }),
+      expect(b).rejects.toMatchObject({ name: 'WorkerInterruptedError' }),
+    ]);
+    vi.advanceTimersByTime(100);
+    await assertions;
+    expect(workers[0].terminate).toHaveBeenCalledOnce();
     expect(_getPendingCallbacksCountForTesting()).toBe(0);
-
-    // The healthy worker remains available for a later request.
-    const promiseC = runRotSpriteInWorker(src, Math.PI / 2);
-    expect(createdWorkers.length).toBe(1);
-    const reqC = firstWorker.postMessage.mock.calls[2][0] as HeavyWorkerRequest;
-    firstWorker.onmessage?.({
-      data: {
-        id: reqC.id,
-        type: 'rotSprite',
-        result: { width: 2, height: 2, data: new Uint8ClampedArray(16).fill(99) },
-      },
-    } as MessageEvent);
-
-    const resultC = await promiseC;
-    expect(resultC.data[0]).toBe(99);
-    expect(firstWorker.terminate).not.toHaveBeenCalled();
-    expect(_getPendingCallbacksCountForTesting()).toBe(0);
+    const c = runRotSpriteInWorker(src, 0);
+    expect(workers).toHaveLength(2);
+    const req = workers[1].postMessage.mock.calls[0][0] as HeavyWorkerRequest;
+    workers[1].onmessage?.({ data: { id: req.id, type: 'rotSprite', result: src } } as MessageEvent);
+    expect(await c).toEqual(src);
   });
 });

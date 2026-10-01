@@ -14,7 +14,7 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
   }
 
   return navigator.serviceWorker
-    .register('/sw.js', { scope: '/' })
+    .register('/sw.js', { scope: '/', updateViaCache: 'none' })
     .then((registration) => {
       return registration;
     })
@@ -31,12 +31,30 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
 export function ServiceWorkerRegistrar() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [updateDeferred, setUpdateDeferred] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
     const ac = new AbortController();
     const { signal } = ac;
+    const warmed = new Set<string>();
+    const warmAssets = (entries: PerformanceEntry[]) => {
+      const controller = navigator.serviceWorker.controller;
+      if (!controller) return;
+      const urls = entries.map(entry => entry.name).filter(value => {
+        const url = new URL(value, window.location.origin);
+        return url.origin === window.location.origin && url.pathname.startsWith('/_next/static/') && !warmed.has(value);
+      });
+      urls.forEach(url => warmed.add(url));
+      if (urls.length) controller.postMessage({ type: 'CACHE_ASSETS', urls });
+    };
+    // Initial requests can finish before the first worker claims this page.
+    // Buffer completed resources and also track lazy studio chunks as they arrive.
+    const observer = typeof PerformanceObserver === 'undefined' ? null : new PerformanceObserver(list => warmAssets(list.getEntries()));
+    observer?.observe({ type: 'resource', buffered: true });
+    navigator.serviceWorker.addEventListener('controllerchange', () => warmAssets(performance.getEntriesByType('resource')), { signal });
+    warmAssets(performance.getEntriesByType('resource'));
 
     registerServiceWorker().then((reg) => {
       if (!reg || signal.aborted) return;
@@ -81,24 +99,20 @@ export function ServiceWorkerRegistrar() {
       );
     });
 
-    let refreshing = false;
-    const hadController = Boolean(navigator.serviceWorker?.controller);
-    const handleControllerChange = () => {
-      if (!refreshing && hadController) {
-        refreshing = true;
-        window.location.reload();
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange, { signal });
+    // Never reload artwork because a worker changed (including older deployed workers).
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data?.type === 'UPDATE_DEFERRED') setUpdateDeferred(true);
+    }, { signal });
 
     return () => {
       ac.abort();
+      observer?.disconnect();
     };
   }, []);
 
   const handleUpdate = () => {
     if (waitingWorker) {
+      setUpdateDeferred(true);
       waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     }
   };
@@ -111,5 +125,5 @@ export function ServiceWorkerRegistrar() {
     return null;
   }
 
-  return <PwaUpdateToast onUpdate={handleUpdate} onDismiss={handleDismiss} />;
+  return <PwaUpdateToast onUpdate={handleUpdate} onDismiss={handleDismiss} deferred={updateDeferred} />;
 }

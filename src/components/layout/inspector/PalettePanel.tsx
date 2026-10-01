@@ -21,6 +21,7 @@ import StudioNumberInput from '@/components/ui/StudioNumberInput';
 import StudioToggle from '@/components/ui/StudioToggle';
 import IconButton from '@/components/ui/IconButton';
 import { TactileButton } from '@/components/ui/TactileButton';
+import { PaletteRolesSection } from './PaletteRolesSection';
 
 export const PalettePanel: React.FC = () => {
   const palettes = useStudioStore((s) => s.palettes);
@@ -259,8 +260,9 @@ export const PalettePanel: React.FC = () => {
       </div>
 
       {/* 4. Cycle Engine Section */}
-      <PanelSection 
-        title="Cycle Engine" 
+      <PaletteRolesSection key={currentPalette.id} palette={currentPalette} />
+      <PanelSection
+        title="Cycle Engine"
         defaultOpen={isPaletteCycling}
         storageKey="palette-panel-cycling"
         actions={

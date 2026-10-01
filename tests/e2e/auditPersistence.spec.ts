@@ -12,7 +12,7 @@ test('drawing survives an explicit save and a fresh-page IndexedDB restore', asy
     Array.from(element.getContext('2d')!.getImageData(0, 0, element.width, element.height).data));
   await expect.poll(async () => (await pixels()).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   const before = await pixels();
-  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await page.getByTestId('save-button').click();
   await expect(page.getByText(/Saved .* to browser storage/)).toBeVisible();
   await page.reload();
   await expect(canvas).toBeVisible();
@@ -90,7 +90,7 @@ test('frame deletion keeps clip metadata valid across save and reload', async ({
     };
   });
   expect(before).toMatchObject({ frames: 2, clip: { fromFrame: 0, toFrame: 1 }, rejectedName: true });
-  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await page.getByTestId('save-button').click();
   await expect.poll(() => page.evaluate(() =>
     !(window as Window & { __studioStore?: { getState: () => { isDirty: boolean } } }).__studioStore!.getState().isDirty,
   )).toBe(true);

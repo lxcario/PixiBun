@@ -168,3 +168,9 @@ npm run test
 - Tablet drawing fidelity matches the real Studio canvas (since it's the same engine).
 - Radio playback + equalizer animation; lamp on/off toggle.
 - Smooth scroll fade-ins and hover micro-interactions across feature cards.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](../research/session-completion-2026-10-01.md) and [UI/UX verification](../research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

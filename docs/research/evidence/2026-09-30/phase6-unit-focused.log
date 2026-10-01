@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/researchIntegration.test.tsx (9 tests | 6 failed) 117ms
+   × refuses stale application without adding layers or history and releases retained preview memory 12ms
+   × refuses cancelled and memory-pressured work before reading a source buffer 4ms
+   × checks every source in a shared light scope before allowing any multi-frame publication 3ms
+   × counts bounded recipe metadata in history admission and rejects full layer capacity 6ms
+   × cancels an owned stalled worker, rejects malformed results, and never falls back after failure 2ms
+   × terminates a research worker at its fixed deadline and frees the job slot 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/researchIntegration.test.tsx > refuses stale application without adding layers or history and releases retained preview memory
+AssertionError: expected undefined to be NaN // Object.is equality
+
+- Expected:
+NaN
+
++ Received:
+undefined
+
+ ❯ tests/researchIntegration.test.tsx:60:179
+     58|   hook(); const preview = await createResearchPreview(settings, 'Study…
+     59|   const s = useStudioStore.getState(); s.setFrameDuration(0, 321);
+     60|   expect(() => applyResearchPreview(preview)).toThrow(/changed/); expe…
+       |                                                                                                                                                                                   ^
+     61|   preview.dispose();
+     62| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/researchIntegration.test.tsx > refuses stale application without adding layers or history and releases retained preview memory
+ FAIL  tests/researchIntegration.test.tsx > refuses cancelled and memory-pressured work before reading a source buffer
+ FAIL  tests/researchIntegration.test.tsx > checks every source in a shared light scope before allowing any multi-frame publication
+ FAIL  tests/researchIntegration.test.tsx > counts bounded recipe metadata in history admission and rejects full layer capacity
+ FAIL  tests/researchIntegration.test.tsx > cancels an owned stalled worker, rejects malformed results, and never falls back after failure
+ FAIL  tests/researchIntegration.test.tsx > terminates a research worker at its fixed deadline and frees the job slot
+AssertionError: expected 196608 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 196608
+
+ ❯ tests/researchIntegration.test.tsx:25:189
+     23|   const s = useStudioStore.getState(), buffer = getOrCreateBuffer(s.ac…
+     24| });
+     25| afterEach(() => { cleanup(); setGlobalHistoryEngine(null); clearAllBuf…
+       |                                                                                                                                                                                             ^
+     26| const hook = () => renderHook(() => useViewportDrawing({ canvasWidth: …
+     27| it('keeps original source bytes, applies prepublished pixels, and atom…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  6 failed | 23 passed (29)
+   Start at  20:58:43
+   Duration  2.18s (transform 539ms, setup 47ms, import 1.63s, tests 133ms, environment 351ms)
+

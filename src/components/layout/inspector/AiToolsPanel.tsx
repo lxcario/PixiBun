@@ -8,8 +8,10 @@ import { PhotometricLightingSection } from './PhotometricLightingSection';
 import { RaymarchedShadowSection } from './RaymarchedShadowSection';
 import { TilesetDecomposerSection } from './TilesetDecomposerSection';
 import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
+import { AnimationReviewSection } from './AnimationReviewSection';
+import { ResearchWorkbenchSection } from './ResearchWorkbenchSection';
 
-type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish';
+type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish' | 'animation' | 'research';
 
 const LAST_DOMAIN_KEY = 'pixibun:pixitools:last-domain';
 
@@ -17,19 +19,23 @@ const TASKS: { key: Exclude<DomainKey, 'start' | 'all'>; title: string; descript
   { key: 'lighting', title: 'Add light and depth', description: 'Light, shadows and surface shape.', icon: 'lamp' },
   { key: 'tileset', title: 'Build tiles and patterns', description: 'Preview a repeating tile or export a tilemap.', icon: 'grid' },
   { key: 'polish', title: 'Clean and refine', description: 'Find stray pixels and polish your sprite.', icon: 'sparkles' },
+  { key: 'animation', title: 'Review animation', description: 'Compare frames and protect important details.', icon: 'sparkles' },
+  { key: 'research', title: 'Try a new look', description: 'Simplify pixels, change lighting, or rearrange tiles.', icon: 'grid' },
 ];
 
 const DOMAIN_COPY: Record<Exclude<DomainKey, 'start'>, { title: string; description: string }> = {
   all: { title: 'All PixiTools', description: 'Explore every tool by what it does.' },
-  lighting: { title: 'Add light and depth', description: 'Start with 3D Lighting & Shading to place a light on your sprite. Open the other sections for surface shape and shadows.' },
+  lighting: { title: 'Add light and depth', description: 'Light your sprite, shape its surface, or add a shadow.' },
   tileset: { title: 'Build tiles and patterns', description: 'Select a tile to inspect how it repeats, or split artwork into tiles.' },
   polish: { title: 'Clean and refine', description: 'Scan first to review what cleanup would change, then apply it when you are ready.' },
+  animation: { title: 'Review animation', description: 'Inspect motion, outlines, colors and contact regions. Save intentional changes with the clip.' },
+  research: { title: 'Try a new look', description: 'See the change before you apply it.' },
 };
 
 function initialDomain(): DomainKey {
   try {
     const saved = sessionStorage.getItem(LAST_DOMAIN_KEY);
-    if (saved === 'all' || saved === 'lighting' || saved === 'tileset' || saved === 'polish') return saved;
+    if (saved === 'all' || saved === 'lighting' || saved === 'tileset' || saved === 'polish' || saved === 'animation' || saved === 'research') return saved;
   } catch {
     // Session storage is optional; the task chooser remains available.
   }
@@ -52,7 +58,7 @@ export const AiToolsPanel: React.FC = () => {
   };
 
   return (
-    <div ref={panelRef} className="flex-1 flex flex-col min-h-0 bg-[var(--desk-surface)]">
+    <div ref={panelRef} className="h-full flex-1 flex flex-col min-h-0 bg-[var(--desk-surface)]">
       {activeDomain === 'start' ? (
         <>
           <div className="p-3 border-b border-[var(--desk-border)] bg-[var(--desk-surface-raised)]/30">
@@ -90,7 +96,7 @@ export const AiToolsPanel: React.FC = () => {
         </>
       ) : (
         <>
-          <div className="p-3 border-b border-[var(--desk-border)] bg-[var(--desk-surface-raised)]/30">
+          <div className={`${activeDomain === 'research' ? 'px-3 py-2' : 'p-3'} border-b border-[var(--desk-border)] bg-[var(--desk-surface-raised)]/30`}>
             <button
               type="button"
               onClick={() => chooseDomain('start')}
@@ -99,15 +105,17 @@ export const AiToolsPanel: React.FC = () => {
               ← Choose another task
             </button>
             <h2 className="mt-1 font-display text-sm font-bold text-[var(--text-heading)]">{DOMAIN_COPY[activeDomain].title}</h2>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted)]">{DOMAIN_COPY[activeDomain].description}</p>
+            {activeDomain !== 'research' && <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted)]">{DOMAIN_COPY[activeDomain].description}</p>}
           </div>
           <PixiToolsPreviewLayer>
             <div className="p-3 flex flex-col gap-3">
+              {(activeDomain === 'all' || activeDomain === 'animation') && <AnimationReviewSection />}
+              {(activeDomain === 'all' || activeDomain === 'research') && <ResearchWorkbenchSection />}
               {(activeDomain === 'all' || activeDomain === 'lighting') && (
                 <div className="flex flex-col gap-2">
-                  <PhotometricLightingSection />
-                  <NormalSculptorSection />
-                  <RaymarchedShadowSection />
+                  <PhotometricLightingSection taskView={activeDomain === 'lighting'} />
+                  <NormalSculptorSection taskView={activeDomain === 'lighting'} />
+                  <RaymarchedShadowSection taskView={activeDomain === 'lighting'} />
                 </div>
               )}
               {(activeDomain === 'all' || activeDomain === 'tileset') && (

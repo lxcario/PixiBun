@@ -1,0 +1,10 @@
+{
+  "blendShiftTolerance": 1,
+  "checks": 486,
+  "discreteTolerance": 0,
+  "engine": "4.7.2-stable (official)",
+  "errors": [],
+  "maxRgbError": 1,
+  "palettePixelsCompared": 37632,
+  "renderer": "gl_compatibility"
+}

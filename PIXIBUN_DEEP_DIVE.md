@@ -1,5 +1,7 @@
 # PixiBun: Comprehensive Technical, Mathematical & Architectural Reference
 
+> **Session update — 2026-10-01:** Audit Phases 1–6 are implemented and locally verified within their documented limits. Animation/research artist evaluation, device stress checks and release approval remain open. See the [session completion record](docs/research/session-completion-2026-10-01.md) for results, later UI changes and outstanding work.
+
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   P I X I B U N   D E E P   D I V E
@@ -531,6 +533,8 @@ export interface LayerEffectRecipe {
   - Enforces a physical line-of-sight visibility gate ($\hat{N}_{3D} \cdot \hat{L}_{3D} > 0$), strictly preventing specular glints from leaking onto unlit shadow hemispheres.
   - Uses a hard $I_{\text{spec}} > 0.35$ gate followed by $\alpha = \min(255, \text{round}(I_{\text{spec}} \cdot 255))$, producing masked highlight pills over the lit pixels while protecting eyes and ink lines.
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
 
-
-
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

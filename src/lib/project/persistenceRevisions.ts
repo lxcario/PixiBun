@@ -1,9 +1,11 @@
 // Project-scoped revision tracking for incremental autosave persistence.
 // Maintains per-project, per-layer persisted revision and frameIndex records.
+import { getBufferGeneration } from '@/lib/engine/bufferRegistry';
 
 export interface PersistedLayerRevision {
   revision: number;
   frameIndex: number;
+  generation?: number;
 }
 
 // Scoped by projectId -> layerId -> { revision, frameIndex }
@@ -27,7 +29,7 @@ export function setPersistedRevision(
     projectMap = new Map();
     persistedRevisionsByProject.set(projectId, projectMap);
   }
-  projectMap.set(layerId, { revision, frameIndex });
+  projectMap.set(layerId, { revision, frameIndex, generation: getBufferGeneration(layerId) });
 }
 
 export function commitPersistedRevisions(
@@ -42,7 +44,11 @@ export function commitPersistedRevisions(
   }
   for (const [layerId, entry] of captured) {
     const existing = projectMap.get(layerId);
-    if (!existing || entry.revision >= existing.revision) {
+    const generationChanged = entry.generation !== undefined && existing?.generation !== undefined &&
+      entry.generation !== existing.generation;
+    if (!existing || (generationChanged
+      ? entry.generation! > existing.generation!
+      : entry.revision >= existing.revision)) {
       projectMap.set(layerId, { ...entry });
     }
   }
@@ -75,6 +81,8 @@ export function isLayerDirty(
 ): boolean {
   const persisted = getPersistedRevision(projectId, layerId);
   if (!persisted) return true;
+  const generation = getBufferGeneration(layerId);
+  if (persisted.generation !== undefined && generation !== persisted.generation) return true;
   if (currentRevision > persisted.revision) return true;
   if (currentFrameIndex !== persisted.frameIndex) return true;
   return false;

@@ -1,3 +1,6 @@
+import type { ReviewRegion } from '@/types/animation';
+import { restoreProtectedPixels } from '@/lib/animation/reviewMetadata';
+
 /** Conservative, deterministic cleanup for imported raster sprites. */
 export interface SpriteCleanupOptions {
   alphaCutoff: number;
@@ -14,6 +17,7 @@ export interface SpriteCleanupStats {
   simplifiedColors: number;
   thinnedLinePixels: number;
   changedPixels: number;
+  protectedPixels?: number;
   sourceColors: number;
   resultColors: number;
 }
@@ -36,7 +40,7 @@ function colorCount(data: Uint8ClampedArray): number {
   return colors.size;
 }
 
-export function planSpriteCleanup(image: Raster, options: SpriteCleanupOptions): SpriteCleanupPlan {
+export function planSpriteCleanup(image: Raster, options: SpriteCleanupOptions, protectedRegions: ReviewRegion[] = []): SpriteCleanupPlan {
   const { width, height } = image;
   const pixels = width * height;
   if (width < 1 || height < 1 || image.data.length !== pixels * 4) {
@@ -294,11 +298,11 @@ export function planSpriteCleanup(image: Raster, options: SpriteCleanupOptions):
     }
   }
 
+  stats.protectedPixels = restoreProtectedPixels(source, data, width, height, protectedRegions);
+  stats.changedPixels = 0;
   for (let offset = 0; offset < data.length; offset += 4) {
     if (data[offset] !== source[offset] || data[offset + 1] !== source[offset + 1] ||
-        data[offset + 2] !== source[offset + 2] || data[offset + 3] !== source[offset + 3]) {
-      stats.changedPixels++;
-    }
+        data[offset + 2] !== source[offset + 2] || data[offset + 3] !== source[offset + 3]) stats.changedPixels++;
   }
   stats.resultColors = colorCount(data);
   return { data, stats };

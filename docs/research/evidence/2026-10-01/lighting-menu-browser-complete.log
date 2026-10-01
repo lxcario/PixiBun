@@ -1,0 +1,49 @@
+
+Running 7 tests using 1 worker
+
+(node:28072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\chiselAndPaletteLiveProof.spec.ts:37:7 › Live Studio Integration Proof: Chisel, Preview & Relighting › verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling (9.0s)
+(node:25532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\pixiToolsDiscoverability.spec.ts:3:5 › PixiTools starts with tasks and keeps expert browse available (2.6s)
+  ok 3 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Dark (4.2s)
+  ok 4 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Atelier Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Atelier Light (4.2s)
+  ok 5 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Dark Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Dark (4.2s)
+  ok 6 [chromium] › tests\e2e\themeAccessibility.spec.ts:68:11 › Four-Theme Rendered Browser Accessibility Audits › Cozy Classic Light Theme Accessibility Suite › right inspector tabs meet WCAG standards under Cozy Classic Light (4.3s)
+  ok 7 [chromium] › tests\e2e\toolMotionPreview.spec.ts:107:5 › PixiTools actions preview their effect without changing the project (11.5s)
+
+
+  1) [chromium] › tests\e2e\chiselAndPaletteLiveProof.spec.ts:37:7 › Live Studio Integration Proof: Chisel, Preview & Relighting › verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Paint raised edges')
+    Expected: visible
+    Error: strict mode violation: getByText('Paint raised edges') resolved to 2 elements:
+        1) <span id="_r_4_" class="text-[10px] font-normal leading-4 text-[var(--text-muted)]">Paint raised edges that respond to lighting.</span> aka getByRole('button', { name: 'Shape the surface' })
+        2) <span>Paint raised edges</span> aka getByRole('button', { name: 'Normal Chisel - Chisel Bevel' })
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('Paint raised edges')
+
+
+      130 |     // Verify Paint raised edges section is mounted
+      131 |     await page.getByRole('button', { name: /Shape the surface/ }).click();
+    > 132 |     await expect(page.getByText('Paint raised edges')).toBeVisible();
+          |                                                        ^
+      133 |
+      134 |     // 4. Click "+ Create surface layer"
+      135 |     const addNormalLayerBtn = page.getByRole('button', { name: /Create surface layer/i });
+        at D:\PixiBun\tests\e2e\chiselAndPaletteLiveProof.spec.ts:132:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\chiselAndPaletteLiveProof--0a81e-ighting-and-palette-cycling-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\chiselAndPaletteLiveProof--0a81e-ighting-and-palette-cycling-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\chiselAndPaletteLiveProof.spec.ts:37:7 › Live Studio Integration Proof: Chisel, Preview & Relighting › verifies live UI wiring for chisel tool, normal preview toggle, 3D relighting, and palette cycling 
+  6 passed (42.2s)

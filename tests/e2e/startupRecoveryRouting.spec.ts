@@ -37,7 +37,7 @@ test.describe('Startup Recovery Routing & Controlled Hydration (E2E)', () => {
     const drawnPixels = await getPixelData();
 
     // Explicitly save the project
-    await page.getByRole('button', { name: 'Save now', exact: true }).click();
+    await page.getByTestId('save-button').click();
     await expect(page.getByText(/Saved .* to browser storage/)).toBeVisible();
 
     // Reload page to trigger startup restore flow

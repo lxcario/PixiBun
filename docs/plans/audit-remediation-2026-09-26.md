@@ -85,3 +85,9 @@ Source: `PIXIBUN_AUDIT_RESULTS+DEEP.md`. The audit has 66 finding IDs, despite i
 The original audit's other uncertainty items remain outside the 41-item remediation checklist: U-2 source-file review, U-3 test-quality review, U-4 full historical-document review, U-5 remaining attributions, U-7 old benchmark tables, U-9 genuine IFF fixtures, and U-10 empirical reproduction of the former `stco` bug. U-11 is clarified in current docs: the v1 bridge has one session and supports one host plus one guest; general multi-peer convergence remains unverified and is not claimed as a v1 feature. U-8 now has a two-frame, two-layer browser round trip, though this does not exhaust every possible project shape.
 
 After each phase: run focused tests, TypeScript, lint, and the relevant TestSprite test if the changed build is reachable. Preserve existing uncommitted work throughout.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](../research/session-completion-2026-10-01.md) and [UI/UX verification](../research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

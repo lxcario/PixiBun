@@ -7,16 +7,21 @@
 // store can clone/delete/serialize them deterministically.
 
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
+import { assertMemoryAvailable, registerMemoryUsage } from '@/lib/safety/memoryBudget';
 
 export interface BufferEntry {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   contentRevision: number;
+  /** Monotonic identity for replacements which may restart content revisions. */
+  generation: number;
 }
 
 const buffers = new Map<string, BufferEntry>();
+let nextBufferGeneration = 0;
 
-export function createEntry(width: number, height: number, initialRevision = 1): BufferEntry {
+export function createEntry(width: number, height: number, initialRevision = 1, reserved = false): BufferEntry {
+  if (!reserved) assertMemoryAvailable(width * height * 4, 'Layer allocation');
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -25,7 +30,7 @@ export function createEntry(width: number, height: number, initialRevision = 1):
     throw new Error('Could not acquire a 2D context for a layer buffer.');
   }
   ctx.imageSmoothingEnabled = false;
-  return { canvas, ctx, contentRevision: initialRevision };
+  return { canvas, ctx, contentRevision: initialRevision, generation: ++nextBufferGeneration };
 }
 
 /** Returns the buffer for a layer, creating a blank one (or resizing in place, content preserved top-left) on demand. */
@@ -38,6 +43,7 @@ export function getOrCreateBuffer(layerId: string, width: number, height: number
   }
   const { canvas } = existing;
   if (canvas.width !== width || canvas.height !== height) {
+    assertMemoryAvailable(width * height * 4 + canvas.width * canvas.height * 4, 'Layer resize staging');
     const previous = document.createElement('canvas');
     previous.width = canvas.width;
     previous.height = canvas.height;
@@ -65,6 +71,10 @@ export function getBufferRevision(layerId: string): number {
   return buffers.get(layerId)?.contentRevision ?? 0;
 }
 
+export function getBufferGeneration(layerId: string): number | undefined {
+  return buffers.get(layerId)?.generation;
+}
+
 export function setBufferRevision(layerId: string, revision: number): void {
   const entry = buffers.get(layerId);
   if (entry) {
@@ -83,6 +93,7 @@ export function hasBuffer(layerId: string): boolean {
  */
 export function cloneBuffers(srcLayerIds: string[], dstLayerIds: string[], width: number, height: number): void {
   const count = Math.min(srcLayerIds.length, dstLayerIds.length);
+  assertMemoryAvailable(count * width * height * 4, 'Layer duplication');
   for (let i = 0; i < count; i++) {
     const src = buffers.get(srcLayerIds[i]);
     const dst = getOrCreateBuffer(dstLayerIds[i], width, height);
@@ -117,6 +128,13 @@ export function replaceAllBuffers(entries: Map<string, BufferEntry>): void {
  */
 export function snapshotBuffers(): Map<string, BufferEntry> {
   return new Map(buffers);
+}
+
+/** Resident raster allocation estimate; excludes browser/GPU and temporary copies. */
+export function getBufferRegistryUsage(): { count: number; bytes: number } {
+  let bytes = 0;
+  for (const { canvas } of buffers.values()) bytes += canvas.width * canvas.height * 4;
+  return { count: buffers.size, bytes };
 }
 
 function anchorOffsets(
@@ -237,6 +255,7 @@ export function resizeAllBuffers(
   anchor: AnchorPosition,
   resample: boolean
 ): void {
+  assertMemoryAvailable(buffers.size * newWidth * newHeight * 4, 'Workspace resize staging');
   for (const [layerId, entry] of buffers) {
     const oldWidth = entry.canvas.width;
     const oldHeight = entry.canvas.height;
@@ -260,3 +279,5 @@ export function resizeAllBuffers(
 export function bufferCount(): number {
   return buffers.size;
 }
+
+registerMemoryUsage('rasters', () => getBufferRegistryUsage().bytes);

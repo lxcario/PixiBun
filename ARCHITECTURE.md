@@ -1,5 +1,11 @@
 # Architecture & System Design — PixiBun Atelier
 
+## Audit session architecture update — 2026-10-01
+
+The local implementation adds revision-safe saves and conflict copies; bounded export/worker operations; estimated shared memory admission; animation-review regions and intentional exceptions; shared clip/hold exports, semantic palette registers and a Godot kit; and canonical research recipes for protected simplification, shared stylized lighting and small tile scenes. Research previews use an owned worker, retain source rasters, reject stale publication and publish ready buffers before a single structural history step. Recipes survive project serialization and undo/redo; merging clears single-source research provenance.
+
+Research workflows admit at most 256 pixels per axis, 16 frames and 262,144 source pixels; scenes admit at most 16 tiles and 20,000 search states. These local recipe workflows do not establish general collaboration convergence, physically accurate lighting or large-world generation. See the [phase implementation report](docs/research/phase-implementation-status.md) and [session completion record](docs/research/session-completion-2026-10-01.md). Existing numbered architecture sections remain the broader system reference.
+
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
  ( o.o )   A R C H I T E C T U R E
@@ -921,3 +927,9 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 
 ### 10. Deferred Capabilities (Phase 2+ — Not Started)
 * **Phase 2+ Capabilities:** Long-term enhancements, WebGPU acceleration, and subsequent roadmap items remain strictly not started.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

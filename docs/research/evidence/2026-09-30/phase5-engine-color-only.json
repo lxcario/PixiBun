@@ -1,0 +1,28 @@
+{
+  "blendShiftTolerance": 1,
+  "checks": 49,
+  "discreteTolerance": 0,
+  "engine": "4.7.2-stable (official)",
+  "errors": [],
+  "holdToleranceMs": 40,
+  "maxRgbError": 0,
+  "observedHolds": [
+    {
+      "actualMs": 91,
+      "clipPosition": 1,
+      "expectedMs": 110.0
+    },
+    {
+      "actualMs": 230,
+      "clipPosition": 2,
+      "expectedMs": 230.0
+    },
+    {
+      "actualMs": 73,
+      "clipPosition": 0,
+      "expectedMs": 70.0
+    }
+  ],
+  "palettePixelsCompared": 0,
+  "renderer": "gl_compatibility"
+}

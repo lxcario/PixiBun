@@ -49,3 +49,9 @@ Status: **done** = implemented correctly in the inspected path; **friction** = i
 ## Specific unverified concerns
 
 Color-picker placement, right-panel transition symmetry, delayed close, button scaling, inspector jumping, tool findability, and onboarding effectiveness require desktop runtime observation or user testing. The report cannot prove these defects. Project safety changes need isolated tests with failed/cancelled writes and existing artwork; do not change file format, undo semantics, or storage migrations as part of this UX slice.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](docs/research/session-completion-2026-10-01.md) and [UI/UX verification](docs/research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

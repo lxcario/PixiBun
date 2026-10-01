@@ -1,6 +1,17 @@
 # Build Plan — PixiBun
 
-> **Release sign-off:** v1.14.1 was signed off for production on 2026-09-28 after the live service-worker MIME fix and offline reload verification. See [v1.14.1 sign-off](docs/releases/v1.14.1-signoff.md) for evidence and deferred checks. Phase 2+ remains unstarted.
+## Audit implementation session — 2026-10-01
+
+- [x] Complete the six audit implementation phases: artwork protection, boundary hardening, production operation, animation review, game delivery and bounded research variations.
+- [x] Record local repository, editor, compiled-browser and Godot evidence, including failures and reruns.
+- [x] Preserve original artwork, saved recipes and structural undo/redo in the new workflows.
+- [x] Reconcile session documentation and distinguish live test inventory from recorded execution.
+- [ ] Run formative artist evaluations for animation review and research variations; automated walkthroughs do not close these tasks.
+- [ ] Complete broader collaboration policy, device/memory stress verification and any future release approval.
+
+This audit's six phases are separate from the historical product phase numbering below. See the [session completion record](docs/research/session-completion-2026-10-01.md).
+
+> **Release sign-off:** v1.14.1 was signed off for production on 2026-09-28 after the live service-worker MIME fix and offline reload verification. See [v1.14.1 sign-off](docs/releases/v1.14.1-signoff.md) for evidence and deferred checks. That release excludes later roadmap work and the separate six-phase local audit implementation above.
 
 > **Note on Historical Defect Prevention & Audit Records:** The phases below document progressive adversarial auditing, QA post-mortems, and edge-case resolution across PixiBun's development history. Rather than representing active defects, these records document the exact test assertions, mathematical proofs, and architectural hardening measures introduced to make the codebase reliable against regressions.
 
@@ -1922,3 +1933,9 @@ The following claims from preliminary inspection were investigated and confirmed
 
 ## Phase 8 — Data Integrity, Truthful Exports & Verification Harness
 **Status:** Complete (2026-08-25)
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

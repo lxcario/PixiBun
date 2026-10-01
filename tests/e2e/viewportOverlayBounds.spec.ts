@@ -97,6 +97,7 @@ test('large supported artwork never scales overlay backing stores with zoom', as
 
 test('a three-pixel pen uses the same square footprint as its CSS brush outline', async ({ page }) => {
   await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
   const artwork = page.getByTestId('main-composite-canvas');
   const ghost = page.getByTestId('brush-ghost-overlay');
   await expect(artwork).toBeVisible();
@@ -108,12 +109,14 @@ test('a three-pixel pen uses the same square footprint as its CSS brush outline'
     state.setActiveTool('pen');
     state.setBrushSize(3);
   });
-  const stage = await page.locator('#center-canvas-area').boundingBox();
-  expect(stage).not.toBeNull();
+  await expect(page.getByRole('button', { name: 'Brush size 3 pixels', exact: true })).toBeVisible();
   const zoom = 16;
+  // Hover may scroll the canvas; measure its position after that action.
+  await artwork.hover({ position: { x: 10.5 * zoom, y: 10.5 * zoom } });
+  const stage = await artwork.boundingBox();
+  expect(stage).not.toBeNull();
   const x = stage!.x + 10.5 * zoom;
   const y = stage!.y + 10.5 * zoom;
-  await page.locator('#center-canvas-area').hover({ position: { x: 10.5 * zoom, y: 10.5 * zoom } });
   await page.mouse.move(x + 1, y + 1);
   await expect(ghost).toBeVisible();
   await expect.poll(() => ghost.evaluate((element) => getComputedStyle(element).width)).toBe('48px');

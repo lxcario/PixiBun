@@ -208,6 +208,8 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           state.setBrushSize(Math.min(32, state.tools.brushSize + 1));
           break;
         case ' ':
+          // Space activates a focused menu button; it must not start playback.
+          if (e.target instanceof Element && e.target.closest('button, summary, [role="button"]')) return;
           e.preventDefault();
           state.setIsPlaying(!state.isPlaying);
           break;

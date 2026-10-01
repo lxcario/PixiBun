@@ -18,7 +18,7 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
       render(<PwaUpdateToast onUpdate={onUpdate} onDismiss={onDismiss} />);
 
       expect(screen.getByText(/A fresh atelier build is ready/i)).toBeDefined();
-      const reloadBtn = screen.getByRole('button', { name: /reload/i });
+      const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
       expect(reloadBtn).toBeDefined();
 
       const dismissBtn = screen.getByRole('button', { name: /dismiss update banner/i });
@@ -74,10 +74,11 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
         expect(screen.getByText(/A fresh atelier build is ready/i)).toBeDefined();
       });
 
-      const reloadBtn = screen.getByRole('button', { name: /reload/i });
+      const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
       fireEvent.click(reloadBtn);
 
       expect(mockPostMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
+      expect(screen.getByText(/close all PixiBun tabs/i)).toBeDefined();
     });
 
     it('dismisses toast when dismiss button is clicked', async () => {

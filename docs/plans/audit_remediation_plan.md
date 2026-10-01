@@ -160,3 +160,9 @@ Currently, 5 subsystems maintain diverging canvas boundaries:
    - `npm test` — all Vitest suites pass.
    - `npm run build` — Next.js build succeeds.
    - `npm run gate:full` — full test suite passes.
+
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+This document retains its dated findings, plan or transcript. For subsequent delivered fixes, grouped header controls, the bottom-right save badge and beginner lighting menus, use the [current completion record](../research/session-completion-2026-10-01.md) and [UI/UX verification](../research/session-ui-ux-2026-10-01.md). The latest gate includes 1,472 passing unit tests and a production build; artist evaluation and new release approval remain open.
+<!-- /session-publication-2026-10-01 -->

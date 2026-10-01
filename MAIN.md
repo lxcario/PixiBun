@@ -1,5 +1,7 @@
 # PixiBun
 
+> **Session update — 2026-10-01:** Audit Phases 1–6 are implemented and locally verified within their documented limits. Animation/research artist evaluation, device stress checks and release approval remain open. See the [session completion record](docs/research/session-completion-2026-10-01.md) for results, later UI changes and outstanding work.
+
 ## Problem & Audience
 - **Who this is for:** Indie game developers, pixel artists, animators, and digital creators looking for a desktop-grade, tactile 2D pixel art studio and animation suite in the browser.
 - **What they're trying to do:** Create precision 2D pixel art, build multi-frame animated sprite sheets, manage color ramps and layers, convert reference art to authentic pixel sprites, and work at a peaceful, cozy desk with computer graphics tools.
@@ -62,3 +64,8 @@ The studio canvas is limited to 2,048 pixels on either axis. Projects allow up t
 - Open Source Contribution & Quality Gate → [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - Security Policy & Defensive Invariants → [`SECURITY.md`](./SECURITY.md)
 
+<!-- session-publication-2026-10-01 -->
+## Session checkpoint — 2026-10-01
+
+The six bounded audit phases and later interface fixes are implemented. Current UI groups project/drawing/view actions, keeps save status at the bottom right and offers Light your sprite, Shape the surface and Add a shadow with short descriptions. [Current UI/UX behavior and evidence](docs/research/session-ui-ux-2026-10-01.md) includes the latest 1,472-test gate/build and focused menu/theme checks. The [completion record](docs/research/session-completion-2026-10-01.md) separates delivered work from pending artist evaluation and release approval.
+<!-- /session-publication-2026-10-01 -->

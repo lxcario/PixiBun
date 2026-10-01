@@ -11,7 +11,7 @@ import {
   encodeNormalRGB,
 } from '@/lib/art/normalSculptor';
 
-export const NormalSculptorSection: React.FC = () => {
+export const NormalSculptorSection: React.FC<{ taskView?: boolean }> = ({ taskView = false }) => {
   const tools = useStudioStore((s) => s.tools);
   const setActiveTool = useStudioStore((s) => s.setActiveTool);
   const setChiselAzimuth = useStudioStore((s) => s.setChiselAzimuth);
@@ -22,6 +22,10 @@ export const NormalSculptorSection: React.FC = () => {
   const addLayer = useStudioStore((s) => s.addLayer);
   const toggleNormalMapPreview = useStudioStore((s) => s.toggleNormalMapPreview);
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);
+  const canPaintSurface = useStudioStore((s) => {
+    const layer = s.frames[s.activeFrameIndex]?.layers.find((item) => item.id === s.activeLayerId);
+    return layer?.tag === 'normal' && !layer.locked;
+  });
 
   const gizmoCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDraggingGizmoRef = useRef<boolean>(false);
@@ -166,42 +170,51 @@ export const NormalSculptorSection: React.FC = () => {
 
   return (
     <PanelSection
-      title="Surface Depth & Bevels"
-      ariaLabel="Surface Depth & Bevels (2.5D Normal Sculptor)"
-      storageKey="pixibun:panel:normals"
+      title="Shape the surface"
+      description="Paint raised edges that respond to lighting."
+      icon="chisel"
+      storageKey={taskView ? 'pixibun:panel:surface-task:v2' : 'pixibun:panel:normals'}
       defaultOpen={false}
-      actions={
+    >
+      <div className="flex flex-col gap-2.5">
+        <p className="text-[10px] leading-4 text-[var(--text-muted)]">
+          {canPaintSurface ? 'Paint slopes on the selected surface layer.' : 'Create or select an unlocked surface layer to paint slopes.'}
+        </p>
+        <button
+          onClick={handleCreateNormalLayer}
+          className="w-full min-h-8 flex items-center justify-center gap-1.5 pixel-tactile-btn text-[11px] text-[var(--text-heading)] cursor-pointer"
+          title="Create a separate Normal layer for surface directions"
+          data-testid="create-surface-layer"
+        >
+          <PixelIcon name="plus" size={12} /><span>Create surface layer</span>
+        </button>
         <button
           onClick={toggleNormalMapPreview}
-          className={`text-[9px] font-sans font-medium px-1.5 py-0.5 rounded-[2px] border transition-colors cursor-pointer ${
+          aria-pressed={showNormalMapPreview}
+          className={`w-full min-h-8 text-[11px] font-sans font-medium px-1.5 py-0.5 rounded-[2px] border transition-colors cursor-pointer ${
             showNormalMapPreview
               ? 'bg-[#7ce0be] text-[var(--desk-bg)] border-[#4da88c] font-semibold'
               : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)]'
           }`}
           title="Toggle viewport normal map preview mode"
         >
-          {showNormalMapPreview ? '3D Map: ON' : '3D Map: OFF'}
+          {showNormalMapPreview ? 'Hide surface directions' : 'Show surface directions'}
         </button>
-      }
-    >
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between text-[9px] font-sans text-[var(--text-muted)]">
-          <span>Bevel angles and normal maps</span>
-          <span className="opacity-60">2.5D Normal Sculptor</span>
-        </div>
         {/* Directional normal sculpting stays available for the lighting engine. */}
         <div>
           <button
             onClick={() => setActiveTool('normal-chisel')}
-            aria-label="Normal Chisel - Chisel Bevel"
-            className={`flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-mono font-bold rounded-[2px] border transition-all cursor-pointer ${
+            disabled={!canPaintSurface}
+            aria-label="Paint raised edges"
+            aria-pressed={isChiselActive}
+            className={`w-full min-h-8 flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-sans font-medium rounded-[2px] border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               isChiselActive
                 ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
                 : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
           >
             <PixelIcon name="chisel" size={13} />
-            <span>Chisel Bevel</span>
+            <span>Paint raised edges</span>
           </button>
 
         </div>
@@ -231,11 +244,11 @@ export const NormalSculptorSection: React.FC = () => {
 
               <div className="flex-1 flex flex-col gap-1 text-[10px] font-mono">
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Azimuth:</span>
+                  <span className="text-[var(--text-muted)]">Direction:</span>
                   <span className="font-bold text-[var(--accent-gold)]">{tools.chiselAzimuth}°</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[var(--text-muted)]">Incline:</span>
+                  <span className="text-[var(--text-muted)]">Slope:</span>
                   <span className="font-bold text-[var(--accent-gold)]">{tools.chiselIncline}°</span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -290,7 +303,7 @@ export const NormalSculptorSection: React.FC = () => {
 
             {/* V-Groove Ridge Mode */}
             <StudioToggle
-              label="Dual-Sided V-Groove"
+              label="Raised ridge"
               checked={tools.chiselRidgeMode}
               onChange={(val) => setChiselRidgeMode(val)}
             />
@@ -316,7 +329,7 @@ export const NormalSculptorSection: React.FC = () => {
                         : 'Replace surface angles directly'
                     }
                   >
-                    {mode === 'overwrite' ? 'REPLACE' : mode.toUpperCase()}
+                    {mode === 'overwrite' ? 'Replace' : mode === 'rnm' ? 'Curved' : 'Flat'}
                   </button>
                 ))}
               </div>
@@ -324,15 +337,6 @@ export const NormalSculptorSection: React.FC = () => {
           </div>
         )}
 
-        {/* Quick Action: New Normal Map Layer */}
-        <button
-          onClick={handleCreateNormalLayer}
-          className="w-full mt-1 bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] text-[var(--accent-gold)] font-bold text-[10px] font-mono py-1.5 rounded-[2px] border border-[var(--desk-border)] transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
-          title="Create a new layer dedicated to 3D surface normal maps"
-        >
-          <PixelIcon name="plus" size={12} />
-          <span>+ New 3D Normal Layer</span>
-        </button>
       </div>
     </PanelSection>
   );
