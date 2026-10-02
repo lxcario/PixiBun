@@ -59,12 +59,12 @@ export const VectorSvgExportTab: React.FC<VectorSvgExportTabProps> = ({
       <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
         <span className="font-bold">Output Format:</span>
         <span className="text-[#f0be7c] font-bold">
-          {canvasWidth * scale} × {canvasHeight * scale} px (Lossless Vector SVG)
+          {canvasWidth * scale} × {canvasHeight * scale} px (Vector SVG)
         </span>
       </div>
 
       <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
-        Kopf–Lischinski depixelization resolves diagonal pixel ambiguity and fits smooth cubic Bézier curves for high-DPI merchandise, print, and stickers.
+        An approximate contour conversion inspired by Kopf–Lischinski. Smoothing can change edges and small details. Check the result before printing or sharing.
       </p>
     </div>
   );

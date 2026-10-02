@@ -46,12 +46,12 @@ export const FloatingPreviewWindow: React.FC = () => {
 
   // Render active composite frame to preview canvas whenever frames, activeFrameIndex, or canvas size changes
   useEffect(() => {
-    if (!showFloatingPreview) return;
+    if (!showFloatingPreview || isMinimized) return;
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
 
     compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, {}, canvas);
-  }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, showFloatingPreview]);
+  }, [activeFrameIndex, bufferVersion, canvasHeight, canvasWidth, frames, showFloatingPreview, isMinimized]);
 
   // Robust window-level dragging listener (prevents mouse stickiness bug)
   useEffect(() => {
@@ -161,6 +161,7 @@ export const FloatingPreviewWindow: React.FC = () => {
       role="dialog"
       aria-label="Live Preview Window"
       data-testid="floating-preview-window"
+      onPointerDown={(event) => event.stopPropagation()}
       style={{
         position: 'absolute',
         left: `${position.x}px`,

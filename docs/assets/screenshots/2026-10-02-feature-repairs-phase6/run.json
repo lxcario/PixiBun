@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-10-02T20:18:56.061Z",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "scope": "Actual compiled Chromium UI, localhost:3117, isolated native IndexedDB damaged fixtures; no real artist project damaged. No generated or edited screenshot.",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "captures": [
+    {
+      "file": "archive-overflow-refused.png",
+      "sha256": "057636bfc9b3c03c62b1db05da340454e64d59428f3f83fa0089d7c7dc997b35",
+      "source": "artifacts\\playwright-production-3117\\recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-chromium\\archive-overflow-refused.png",
+      "visuallyReviewed": true
+    },
+    {
+      "file": "archive-source-preserved.png",
+      "sha256": "ec862aa87bf7a716b3cd27d5a5902f7ed66486f3b3c86c7acfc257cf2245cd3a",
+      "source": "artifacts\\playwright-production-3117\\recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium\\archive-source-preserved.png",
+      "visuallyReviewed": true
+    }
+  ]
+}

@@ -49,9 +49,9 @@ export const AtelierHero: React.FC = () => {
 
             {/* Steady Warm Badge Tag */}
             <motion.div
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.5, delay: shouldReduceMotion ? 0 : 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-6 shadow-sm"
             >
               <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
@@ -61,9 +61,9 @@ export const AtelierHero: React.FC = () => {
 
             {/* Headline with Plum Highlight */}
             <motion.h1
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 22 }}
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-4xl sm:text-5xl lg:text-6xl text-[var(--text-heading)] leading-[1.14] tracking-tight drop-shadow-sm"
             >
               THE OFFLINE-FIRST PIXEL ART ATELIER &amp;{' '}
@@ -74,20 +74,20 @@ export const AtelierHero: React.FC = () => {
 
             {/* Warm, Human Body Copy in Thistle */}
             <motion.p
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 text-base sm:text-lg leading-relaxed text-[var(--text-body)] max-w-lg font-sans"
             >
-              Photometric cel-shading, RotSprite geometry, frame-by-frame animation, and native Godot 4 &amp; Unity exports.
+              Draw a little sprite, try a different light, or bring a few frames to life. Share an image or animation, and take a Godot kit into your game.
               An honest, quiet desk in your browser.
             </motion.p>
 
             {/* Honest Feature Pills (Static Non-Clickable Tags) */}
             <motion.div
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 flex items-center gap-2.5 flex-wrap text-xs font-mono text-[var(--text-heading)] select-none"
             >
               <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
@@ -100,15 +100,15 @@ export const AtelierHero: React.FC = () => {
               </span>
               <span className="px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] flex items-center gap-1.5 cursor-default select-none shadow-sm">
                 <span className="text-[var(--accent-gold)]">✦</span>
-                <span>GODOT 4 &amp; UNITY EXPORTS</span>
+                <span>GODOT KIT &amp; UNITY SHADERS</span>
               </span>
             </motion.div>
 
             {/* Action Buttons with 16-bit Tactile Physics */}
             <motion.div
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="mt-8 flex items-center gap-4 flex-wrap"
             >
               <Link
@@ -130,9 +130,9 @@ export const AtelierHero: React.FC = () => {
 
             {/* Craftsperson Trust Row */}
             <motion.div
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.6, delay: shouldReduceMotion ? 0 : 0.6 }}
               className="mt-8 pt-6 border-t border-[var(--desk-border)] w-full max-w-lg flex items-center justify-between gap-4 text-xs font-mono text-[var(--text-body)]"
             >
               <span className="flex items-center gap-1.5">
@@ -148,9 +148,9 @@ export const AtelierHero: React.FC = () => {
 
           {/* Right Column: Interactive Desk Scene with Smooth Scale-In */}
           <motion.div
-            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.96 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.65, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.65, delay: shouldReduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="w-full flex justify-center"
           >
             <AtelierDeskScene />

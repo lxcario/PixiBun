@@ -39,6 +39,7 @@ import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
+  retainHistory?: boolean;
   onOpenImport?: (payload: ImportPayload) => void;
 }
 
@@ -61,6 +62,7 @@ function ScreenGuide({ axis, fraction, color, thickness = 1 }: {
 export const CenterViewport: React.FC<CenterViewportProps> = ({
   onCommitHistory,
   onOpenImport,
+  retainHistory = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -160,6 +162,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     renderComposite: () => renderComposite(),
     getOrCreateLayerCanvas,
     onCommitHistory,
+    retainHistory,
   });
 
   // Hook 3: Viewport selection & clipboard
@@ -868,8 +871,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           </div>
         )}
 
-        {/* Floating Preview Window (Picture-in-Picture) */}
-        <FloatingPreviewWindow />
       </div>
     </main>
   );

@@ -12,9 +12,22 @@ Research workflows admit at most 256 pixels per axis, 16 frames and 262,144 sour
   > ^ <    Technical Blueprint & Engineering Reference
 ```
 
-> **A high-performance, offline-first raster graphics workstation designed for sub-16ms interactive drawing latency and mathematically sound 2.5D computer graphics.**
+> **A browser-based raster and animation studio with local persistence, reversible pixel workflows and stylized 2.5D graphics.** Integrated input-to-display latency is unmeasured; sub-16ms interaction is a design target, not an achieved result.
 
 ---
+
+## How to use this reference
+
+This document describes subsystem ownership and integration. For artist workflows, start with [the README](README.md); for algorithms and their limitations, use [the deep dive](PIXIBUN_DEEP_DIVE.md). The numbered sections retain their existing anchors for linked historical records.
+
+| Question | Canonical reference |
+| --- | --- |
+| What project shapes and sizes are admitted? | [Storage limits](docs/contracts/storage.md#admission-and-optional-metadata) |
+| Who owns buffers, previews and worker results? | [Rendering](docs/contracts/rendering.md) |
+| What do save, backup and recovery mean? | [Artwork safety](docs/guides/artwork-safety.md) |
+| What does each output preserve? | [Exports](docs/contracts/exports.md) |
+| What security assumptions apply? | [Security boundaries](docs/contracts/security-boundaries.md) |
+| Which checks actually ran? | [Current status](docs/current-status.md) |
 
 ## Table of Contents
 
@@ -96,6 +109,10 @@ graph TD
 
 ## 2. Canvas & Rendering Pipeline
 
+![The current Atelier dark studio, showing its single-row header, drawing canvas, palette and three-frame timeline.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+
+*Local studio on 2 October 2026, with PixiBun's own artwork arranged in an imported project. The screenshot documents visible layout, not a frame-rate or accessibility certification. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+
 ### Multi-Canvas Layered Viewport Stack
 To avoid browser layout recalculations and keep editor guides out of color picking, viewport rendering uses five logical-size canvas layers, CSS screen-pixel guides, and a CSS brush cursor. Zoom changes the stage's display size without multiplying any canvas backing store; the interactive SVG selection gizmo supplies the screen-space marquee.
 
@@ -120,6 +137,10 @@ graph TD
     L4 --> L5
     L5 --> L6
 ```
+
+### Iso Line and floating preview controls
+
+Iso ON keeps the projected 2:1 stepper; FREE uses the ordinary clipped line path in both useShapePointerHandler preview and commit. Brush size and symmetry still use the common drawing path. CenterViewport owns one floating preview outside the translated drawing stage. Its pointer controls do not start parent canvas strokes, and expanding a minimized preview recomposites current pixels. [Current instructions and phase 3 evidence](docs/research/2026-10-02-feature-repairs-phase3.md).
 
 ### Overlay-Free Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)
 The `compositeFrame()` module serves as the single visual source of truth for pure pixel compositing:
@@ -242,17 +263,17 @@ graph TD
 
 The application state is managed by Zustand with Immer middleware:
 * **`useStudioStore`:** Single source of truth for tool settings, primary/secondary colors, frame lists, layer hierarchies, zoom/pan parameters, and UI visibility.
-* **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts:36`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
+* **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
-* **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Decoupled completely from `CenterViewport` to eliminate React reconciliation cascades during pen/eraser strokes (0 re-renders during pointer moves).
+* **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Leaf subscriptions separate raster invalidation from parent viewport state and reduce avoidable reconciliation. This is an ownership choice, not a measured guarantee of zero renders for every pointer movement.
 * **Layer Merge Down (`mergeLayerDown`):** Blends active layer onto underlying layer respecting opacity and blend modes, deletes upper buffer memory in $O(1)$, and selects lower layer cleanly.
 
 ---
 
 ## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-The database and portable project formats are separate contracts: Dexie schema v5 versus `.pixibun` format v3. Logical `StoredLayerBlob` APIs expose Blob; current physical records store ArrayBuffer bytes plus `blobType`, reconstructing Blob on reads and retaining legacy Blob support. Metadata and raster commits are atomic with revision checks. Older deployments can lack the binary read path even with the same database version.
+The database and portable project formats are separate contracts: Dexie schema v5 versus `.pixibun` format v3. Logical `StoredLayerBlob` APIs expose Blob; current physical records store ArrayBuffer bytes plus `blobType`, reconstructing Blob on reads and retaining legacy Blob support. ArrayBuffer reads remove the physical MIME field from the logical record; other unknown fields remain subject to strict recovery validation. Metadata and raster commits are atomic with revision checks. Older deployments can lack the binary read path even with the same database version.
 
 `AutoSaveOutcome` is success or `conflict`, `memory-limit`, `invariant-invalid`, `aborted`, `quota-exceeded`, or `error`. A changed/deleted stored revision returns conflict and preserves active work for Save a copy. Debounced saves (800 ms) do not imply instant durability; encoding and commit add time, and newer edits queue another save. Restore/admission/cancellation states are coordinated separately from save outcomes.
 
@@ -375,7 +396,7 @@ The two axes are studio theme (`atelier` / `cozy-classic`) and color scheme (`da
 
 Scratch arrays use exact-size Float32/Int32 buckets. A miss allocates; a reused buffer is cleared on acquire. Release can retain the full buffer without clearing. Each bucket holds at most 16 arrays; all idle buffers share a 32 MiB cap with oldest-idle eviction and empty-bucket removal. Idle retention is registered as `scratchPool` in the estimated combined memory ledger and refused/evicted under admission pressure. Duplicate release, partial backing views, empty and oversized arrays are not retained. `clearBufferPool()` drops idle references without invalidating active callers.
 
-The combined 512 MiB ledger estimates selected rasters/history/collaboration/pool retention plus reservations. It is not total browser/worker/GPU/decoder/codec RAM. Checked-out scratch arrays need their operation's own ownership/reservation policy. Reuse reduces allocation; it does not eliminate all garbage collection or establish a frame rate.
+The combined 512 MiB ledger estimates selected active and suspended rasters/history/collaboration/pool retention plus reservations. It is not total browser/worker/GPU/decoder/codec RAM. Checked-out scratch arrays need their operation's own ownership/reservation policy. Reuse reduces allocation; it does not eliminate all garbage collection or establish a frame rate.
 
 `compositeFrame()` returns a fresh DOM canvas by default; an explicit target takes precedence. `freshCanvas: false` reuses one mutable shared canvas. Retained frame arrays must not use that shared surface. The compositor reads registry/DOM state and excludes editor overlays; it is not a DOM-free pure function. [Rendering/ownership contract](docs/contracts/rendering.md).
 
@@ -414,7 +435,7 @@ The CRDT engine (`src/lib/collab/crdtPixelBuffer.ts`) and WebRTC transport (`src
 * **Delta Propagation:** On every stroke commit, the pre-stroke history snapshot is diffed against the live buffer (`src/lib/sync/strokeDiff.ts`) and each changed pixel becomes an LWW op broadcast per layer. Receivers apply ops through the HLC clock (bounded drift, deterministic peerId tie-break) and repaint layer buffers in one `getImageData`/`putImageData` pass.
 * **Rendering & Persistence Integration:** Applied remote ops dispatch `pixibun:request-composite` (consumed by `CenterViewport.tsx`) and `pixibun:remote-change` (consumed by `StudioLayout.tsx` to schedule the same debounced autosave as local edits).
 * **Presence:** Cursor moves broadcast at ~30fps over the unreliable PR-SCTP channel and render through `src/components/studio/RemoteCursorsOverlay.tsx` with staleness pruning.
-* **P2P Admission Envelopes & Backpressure (`src/lib/sync/p2pSync.ts`):** Enforces canonical workspace envelope boundaries (`WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION = 2048px`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100`, and pixel operation coordinate boundaries $0 \le x, y < 2048$), aligning untrusted WebRTC payloads with `.pixibun` schema guarantees. Enforces a 256KB maximum payload size per message (`MAX_P2P_PAYLOAD_SIZE`) and backpressure thresholds (1MB data channel ceiling / 64KB presence ceiling), using token-bucket traffic shaping on the presence channel and RTCDataChannel.bufferedAmount thresholding on the reliable channel.
+* **P2P Admission Envelopes & Backpressure (`src/lib/sync/p2pSync.ts`):** Enforces canonical workspace envelope boundaries (`WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION = 2048px`, `MAX_CANVAS_FRAMES = 500`, `MAX_CANVAS_LAYERS = 100` per frame, and pixel operation coordinate boundaries $0 \le x, y < 2048$), bounding untrusted peer operations. Per-frame limits are distinct from project-total layer and raster limits; see [the storage contract](docs/contracts/storage.md#admission-and-optional-metadata). Enforces a 256KB maximum payload size per message (`MAX_P2P_PAYLOAD_SIZE`) and backpressure thresholds (1MB data channel ceiling / 64KB presence ceiling), using token-bucket traffic shaping on the presence channel and RTCDataChannel.bufferedAmount thresholding on the reliable channel.
 
 ---
 
@@ -434,6 +455,7 @@ To target responsive drawing and bound admitted operation complexity, PixiBun's 
 
 * **Target Canvas & Project Envelope:** Purpose-engineered for $16\times16$, $32\times32$, $64\times64$, and $128\times128$ pixel art characters, props, tilesets, and animation loops. PixiBun targets browser-based crafting with IndexedDB binary blob persistence (`layerBlobs`), transferable buffers for worker export, and 2.5D photometric cel-shading.
 * **WaveFunctionCollapse (`src/lib/procedural/waveFunctionCollapse.ts`):** Retained as an internal and legacy-project algorithm; the artwork-replacing Generate Seamless Pattern control is retired. The current Patterns & Tilesets panel previews an exact 3×3 repeat of the selected tile and exports that tile unchanged. The retained WFC solver implements an overlapping model with periodic boundaries for small textures ($16\times16$ to $64\times64$ outputs, $N=2$ or $N=3$ kernels). Its modeled working set is admitted against `MAX_WFC_WORKING_SET_BYTES` (64 MiB) before dominant allocations.
+* **Unique-tile delivery (`src/lib/export/tilesetBundle.ts`):** A bounded selected-layer scan exports one PNG/PixiBun JSON/Tiled map ZIP. Hash buckets retain exact-byte deduplication, row-major atlas IDs and native alpha; partial edges, stale buffers/settings, cancellation and PNG timeout refuse publication. The shared memory ledger tracks temporary work and retained results. Godot kits separately admit one neutral manual or baked normal layer through `normalLayers.ts`; SVG labels describe approximate contours. [Export contract](docs/contracts/exports.md), [phase 4 execution](docs/research/2026-10-02-feature-repairs-phase4.md).
 * **Vector Depixelization (`src/lib/export/depixelizeVector.ts`):** Domain-designed planar similarity graph ambiguity solver inspired by Kopf-Lischinski (SIGGRAPH 2011) principles, resolving diagonal crossing ambiguities via local 1-hop parity connectivity heuristics, shifting contour corners by $\pm 0.05$, and smoothing cell boundaries via cubic Bézier paths for scalable SVG export.
 * **Network Boundaries:** After resources are loaded/cached, core drawing, processing, export and persistence run on-device. App loading and service-worker updates still make same-origin requests. LAN co-draw defaults to `LAN_ICE_SERVERS = []`, avoiding configured public STUN requests; peer traffic still uses the network. Public STUN traversal and the diagnostics relay require explicit user activation. This describes application configuration, not a browser-wide zero-egress guarantee.
 
@@ -453,9 +475,9 @@ To target responsive drawing and bound admitted operation complexity, PixiBun's 
 * **Layer Tag Convention (`normal` vs `normal-map`):** Dedicated normal sculptor layers carry the canonical machine identifier `tag = 'normal'` (with `'normal-map'` fully supported as a transparent alias across viewport compositing, photometric shaders, and export pipelines).
 * **Pure Tag-Based Compositing & Diffuse Albedo Exclusion:** `compositeSourceSnapshot` explicitly excludes `tag === 'normal'` and `tag === 'normal-map'` (alongside `tag === 'specular'` and `tag === 'photometric'`). Normal maps store $(N_x, N_y, N_z)$ surface normal vectors mapped to RGB colors (e.g. flat perpendicular baseline at `#8080FF`); including them in the diffuse composite would treat vector data as albedo colors and severely corrupt the base sprite texture. Normal maps are composited independently via `compositeNormalMapSnapshot()` and passed into `photometricLighting.ts` as `normalMapData`. All legacy display-name sniffing (`layer.name.toLowerCase().startsWith(...)`) has been completely purged across `useViewportStudioEvents.ts` in favor of strict machine-tag matching (`l.tag === tag`).
 
-| Live Normal Preview (RNM Blended) | 45° vs 225° Relit Difference (32,558 Modified Px) |
-|:---:|:---:|
-| ![Live Normal Preview](docs/assets/screenshots/proof_20260908_1215_02_normal_preview_on.png) | ![Relit Diff Heatmap](docs/assets/screenshots/proof_20260908_1215_05_diff_heatmap.png) |
+![Current PixiTools lighting preview on Bun, with its movable bulb, light controls and Apply/Cancel actions.](docs/assets/screenshots/2026-10-02-docs/bun-lighting-preview.png)
+
+*Current local lighting workflow, 2 October 2026. This is an unapplied preview, not a normal-map visualization or a new RNM/difference test. The previous September normal/diff images remain historical files; their pixel-count caption no longer describes the current illustration. [Rendering contract](docs/contracts/rendering.md#lighting-and-normals), [capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
 
 The editor's separate one-click Material Shading and Glow & Translucent Materials panel has been removed. Legacy `volumetric-optics` effect layers remain loadable so older projects retain their pixels and metadata. This removal does not change the photometric lighting or relighting pipeline. In PixiTools, raster cleanup and color effects render temporary before/after previews; the scan/apply path rejects a preview when the source revision, buffer, frame, layer, or relevant settings have changed.
 
@@ -473,9 +495,9 @@ The editor's separate one-click Material Shading and Glow & Translucent Material
 * **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM period explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly loop cycles with zero boundary seam pop.
 * **Hardware Shader Generation (`src/lib/export/shaderExporter.ts`):** Produces standalone Godot 4 CanvasItem shaders (`.gdshader`) and Unity URP 2D HLSL shaders with nearest-neighbor point filtering and half-texel LUT sampling.
 
-<p align="center">
-  <img src="docs/assets/screenshots/proof_20260908_1215_08_palette_cycling_active.png" alt="Mark Ferrari Palette Cycling Live in Studio" width="680" />
-</p>
+![Current palette Cycle Engine, with a named six-color palette and First/Last controls selecting indices 2 through 4.](docs/assets/screenshots/2026-10-02-docs/palette-cycle-range.png)
+
+*Current local controls, paused, 2 October 2026. A screenshot illustrates range selection, not shader/CPU parity or a decoded loop. [Artist walkthrough](docs/guides/palettes-and-cycling.md), [capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
 
 ---
 
@@ -499,7 +521,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 * **Signed vs. Unsigned 32-Bit Bitwise Invariant (`src/lib/canvas/floodFill.ts`):** JavaScript bitwise operators coerce values to 32-bit signed integers. When packing RGBA color words via `(a << 24 | b << 16 | g << 8 | r)`, any fully opaque pixel ($a = 255$) sets the sign bit (bit 31), yielding a negative number (e.g. `-16777216`). Direct comparison against values from a `Uint32Array` view (which yields unsigned integers, e.g. `4278190335`) evaluated to `false`, terminating flood fill after a single pixel on opaque regions. All 32-bit color word conversions strictly enforce unsigned casting via the zero-fill right shift operator `>>> 0`. In addition, `Uint32Array` buffer views are constructed with explicit byte offset and aligned byte length parameters `new Uint32Array(data.buffer, data.byteOffset, data.byteLength >> 2)`.
 * **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 24); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
 * **Sampled Color Erasure Engine (`src/lib/canvas/eraseMatchingColor.ts`):** Erases exact or nearby shades to transparent alpha on the active layer or across animation frames. Features default color-family cleanup that removes faint background specks and repairs dark color spill embedded within outlines, respecting selection masks and locked layers with single undoable steps.
-* **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber prevents React re-render cascades on every pointer move event during active brush strokes, preserving sub-16ms interactive latency.
+* **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber isolates cursor updates and reduces avoidable parent rendering. Integrated stroke latency and render counts have not been established by this separation alone.
 * **Deferred Object URL Revocation (`src/components/modals/ExportModal.tsx`):** Synchronously invoking `URL.revokeObjectURL(url)` immediately following `link.click()` creates race conditions in browser download managers (such as Firefox and Safari) where the memory blob is released before the file stream is opened. Revocations are deferred by 1000ms via `setTimeout(() => URL.revokeObjectURL(url), 1000)` across all export codecs.
 * **Video Encoding Dimension Alignment (`src/lib/export/mp4Encoder.ts`):** H.264 macroblock encoders and YUV 4:2:0 chroma subsampling require even-numbered dimensions ($2 \times 2$ pixel blocks). Video export canvases pad odd widths and heights to the nearest even integer `(w + 1) & ~1` and `(h + 1) & ~1`.
 * **Cross-Platform Canvas Safety Ceilings & Scale Isolation (`ExportModal.tsx`, `PngExportTab.tsx`):** Unchecked upscaling of large canvases (e.g. $512\times512$ @ $32\times = 16,384\times16,384\text{ px}$) allocates $>1\text{ GB}$ of raw 32-bit RGBA pixel memory, causing out-of-memory browser tab crashes on mobile WebKit and iOS Safari. PixiBun establishes strict hard bounds (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`). Export tabs dynamically disable scaling factors exceeding these ceilings with explanatory tooltips, while per-tab export scale states are fully isolated (preventing GIF/Spritesheet scales from contaminating PNG/SVG export settings).
@@ -724,7 +746,9 @@ The tool preview architecture (`src/components/ui/ToolMotionPreview.tsx`, `src/c
 
 ## 29. Teaching Animation Board & Playground Education System
 
-The Playground (`/playground`) includes an interactive teaching animation board for beginner-to-advanced pixel art animation education.
+The Playground (`/playground`) includes guided lessons and an interactive Teaching Animation Board. Below 1024 px only Pocket Doodle Pad mounts.
+
+Desktop `PracticeWorkspace` awaits the original Studio save before `practiceSession` detaches its full store snapshot, raster references and native-file association. Practice uses a new project identity and separate history. Return or route cleanup restores the original; Keep confirms a separate save and adopts its version into Studio. The viewport retains one project-keyed history engine across client-route handoffs; project-open history clear still applies. A verified session-storage pointer selects the saved original after refresh, through normal admission. Unkept practice, Undo history and OS file handles are not durable across reload. Co-Draw blocks entry. See [learning custody](docs/contracts/learning.md), [storage handoff](docs/contracts/storage.md) and [phase 2 checks](docs/research/2026-10-02-feature-repairs-phase2.md).
 
 * **TeachingAnimationBoard (`src/components/playground/TeachingAnimationBoard.tsx`):** Interactive visual drafting board with 2 character curricula (Bun and Slime), 10-frame jump cycles demonstrating squash & stretch and anticipation, frame duration pacing, onion-skin ghosting, step-by-step 7-stage sprite construction, and a direct inject-to-timeline action.
 * **TeachingBoardModal (`src/components/playground/TeachingBoardModal.tsx`):** Accessible modal container with backdrop blur, focus trapping, and `Escape` dismiss.
@@ -750,7 +774,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 > **Implementation Boundary Note:** Restricted Recovery Mode is implemented and accepted through Phase 1B.8 (including envelope guards, policy validator, metadata classifier, recovery ledger, stored-project blob assessment, low-level ZIP32 writer, untouched archive assembly, safe export adapters, deterministic recovery plan builder, trusted recovery orchestrator with atomic recovered-copy persistence, startup recovery routing / admission hydration, interactive recovery modal, repair wizard, and bounded safe-mode lifecycle integration). Phase 2+ capabilities remain deferred and not started.
 
 ### 1. Workspace Envelope Guard & Decoupled Import Execution (Phase 1A)
-* **Workspace Envelope Enforcement (`src/lib/project/workspaceEnvelopeGuard.ts`):** Guards runtime mutations against breaching configured complexity limits (`MAX_PROJECT_AGGREGATE_PIXELS = 67,108,864`, `MAX_PROJECT_TOTAL_LAYERS = 2,000`). Pre-evaluates canvas resize dimensions, layer insertions, and frame duplications prior to buffer allocation, preventing browser tab crashes from unbounded resource consumption.
+* **Workspace Envelope Enforcement (`src/lib/project/workspaceEnvelopeGuard.ts`):** Guards runtime mutations against breaching configured complexity limits (`MAX_PROJECT_AGGREGATE_PIXELS = 67,108,864`, `MAX_PROJECT_TOTAL_LAYERS = 2,000`). Pre-evaluates canvas resize dimensions, layer insertions, and frame duplications prior to buffer allocation, reducing admitted allocation complexity. These estimates do not cover total browser/GPU/codec memory or guarantee that a tab cannot exhaust resources.
 * **Bounded Image Import Pipeline (`src/lib/project/imageImportExecution.ts`):** Isolates external raster decodes from core domain logic. Enforces dimension ceilings and pre-allocation checks before creating canvas surfaces.
 
 ### 2. Policy-Driven Schema Validation & Typed SafeJson Defense (Phase 1B.1)
@@ -777,7 +801,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
 * **Responsive Cancellation:** Uses `AbortSignal` with `DOMException('AbortError')` priority to promptly cancel pending stream readers and release reader locks across all terminal paths.
 
 ### 5. Untouched Recovery Archive Assembly & Safe Export Adapters (Phase 1B.4)
-* **Single Read-Only IndexedDB Snapshot (`src/lib/recovery/recoveryBackup.ts`):** `prepareUntouchedRecoveryArchive` reads the project record, stored `layerBlobs`, and optional ledger record in a single read-only transaction. Guarantees zero database mutations and requires zero canvas or image-decoding allocations.
+* **Single Read-Only IndexedDB Snapshot (`src/lib/recovery/recoveryBackup.ts`):** `prepareUntouchedRecoveryArchive` counts the source index before loading raster payloads, refusing more than 10,000 matching records. The count, admitted `layerBlobs` enumeration, project record and optional ledger read share a read-only transaction. No source records are mutated or raster images decoded. The native index count may still inspect the matching range; this is not a total-memory or constant-time guarantee. See [archive admission](docs/contracts/storage.md#untouched-archive-admission).
 * **Bounded Full-Compound-Keyspace Enumeration:** Queries stored blobs through the complete compound-index keyspace `[projectId+id]` from `[projectId, Dexie.minKey]` through `[projectId, Dexie.maxKey]` with `.limit(MAX_INSPECTABLE_STORED_BLOBS + 1)` (10,001 entries) via `.toArray()`, failing closed on oversized databases.
 * **Untouched Data Preservation:** Retains `dataJson` byte-for-byte as exact WHATWG UTF-8 without JSON parsing, formatting, or modification, safely preserving empty strings, whitespace, and malformed syntax.
 * **Closed-Schema Recovery Manifest:** Generates `recovery-manifest.json` under format `'pixibun-recovery-backup'` version 1, mapping deterministic ordinal archive entries (`layers/blob_000001.png`), byte lengths, MIME types, and ledger diagnostic states.
@@ -840,7 +864,7 @@ Phase 1A and Phase 1B establish defensive boundaries against runaway workspace c
   - *Dismiss Recovery Banner:* Explicitly clicking `✕` on the recovery banner invokes `clearPendingRecovery()`, removing the session storage token and clearing in-memory pending recovery state.
   - *Successful Activation:* `clearPendingRecovery()` executes strictly after the recovered copy has passed admission, completed hydration, and published as the active workspace.
 * **Custody & Safe Backup:**
-  Source project records are never repaired in place. At all diagnostic and error stages, users can invoke *"Export Untouched Backup"* to stream a raw ZIP archive via `prepareUntouchedRecoveryArchive` and `writeRecoveryArchiveToFileHandle` / `createRecoveryArchiveBlob`. Where structural corruption exceeds repair ceilings, reconstruction is safely blocked while preserving backup export.
+  Source project records are never repaired in place. The recovery dialog offers *"Export Untouched Backup"* through `prepareUntouchedRecoveryArchive` and `writeRecoveryArchiveToFileHandle` / `createRecoveryArchiveBlob`. Backup admission is separate from repair admission: the source record count, manifest, ZIP32 and transport limits can refuse export even when the action is visible. Failure feedback stays inside the dialog and the source remains intact; an available button or prior diagnosis does not prove an archive was saved.
 
 ### 10. Deferred Capabilities (Phase 2+ — Not Started)
 * **Phase 2+ Capabilities:** Long-term enhancements, WebGPU acceleration, and subsequent roadmap items remain strictly not started.

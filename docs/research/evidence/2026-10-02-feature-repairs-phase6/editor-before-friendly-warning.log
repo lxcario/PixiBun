@@ -1,0 +1,26 @@
+
+Running 14 tests using 1 worker
+
+(node:17344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (9.1s)
+  ok  2 [chromium] › tests\e2e\recoveryArchiveAdmission.spec.ts:7:5 › admitted untouched archive downloads and preserves its damaged source (4.2s)
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 30 modules transformed.
+rendering chunks...
+✓ built in 418ms
+  ok  3 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:113:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › without Dexie.waitFor(), asynchronous Web Crypto digest causes premature auto-commit in real Chromium (1.2s)
+  ok  4 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:168:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › with Dexie.waitFor(), transaction stays alive across asynchronous Web Crypto SHA-256 digests and commits atomically in real Chromium (1.2s)
+  ok  5 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:298:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › atomic rollback in real Chromium: mid-flight failure rolls back all destination writes (1.3s)
+  ok  6 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:363:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › endures sequential multi-blob hashing with deep microtask yielding under Dexie.waitFor() (1.2s)
+  ok  7 [chromium] › tests\e2e\recoveryTransactionLiveness.spec.ts:430:7 › Real Chromium IndexedDB Transaction Liveness & Recovery Persistence › production path: prepareRecoveryPlan and commitRecoveredProject execute atomically in real Chromium (1.3s)
+  ok  8 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:44:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › damaged stored project on startup routes to safe mode, displays recovery modal with deterministic plan, and commits recovered copy (5.0s)
+  ok  9 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:184:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › cancelling recovery modal preserves current safe workspace and presents recovery banner (4.2s)
+  ok 10 [chromium] › tests\e2e\recoveryUIFlow.spec.ts:270:7 › Recovery UI, Safe Modes & Repair Wizard (E2E) › opening damaged project from gallery opens recovery modal while leaving active workspace intact (3.9s)
+  ok 11 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:19:7 › Startup Recovery Routing & Controlled Hydration (E2E) › admits and restores a valid project on startup through authoritative boundary (2.5s)
+  ok 12 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:52:7 › Startup Recovery Routing & Controlled Hydration (E2E) › routes damaged stored project to fresh workspace on startup and protects source in IndexedDB (2.4s)
+  ok 13 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:140:7 › Startup Recovery Routing & Controlled Hydration (E2E) › gallery open of damaged project displays error and preserves current active workspace (2.4s)
+  ok 14 [chromium] › tests\e2e\startupRecoveryRouting.spec.ts:232:7 › Startup Recovery Routing & Controlled Hydration (E2E) › header-valid but decode-invalid PNG blob passes admission probe but safely fails hydration in Chromium (4.2s)
+
+  14 passed (47.1s)

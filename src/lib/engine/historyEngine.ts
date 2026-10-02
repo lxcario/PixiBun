@@ -528,7 +528,21 @@ export function createHistoryEngine(
 }
 
 let activeGlobalHistoryEngine: HistoryEngine | null = null;
-registerMemoryUsage('history', () => (activeGlobalHistoryEngine?.totalBytes ?? 0) + (activeGlobalHistoryEngine?.getBaseline()?.totalBytes ?? 0));
+let retainedViewportHistory: { projectId: string; engine: HistoryEngine } | null = null;
+
+/** One live route handoff; project opens still clear the viewport history. */
+export function rememberViewportHistory(projectId: string, engine: HistoryEngine): void {
+  retainedViewportHistory = { projectId, engine };
+}
+export function readViewportHistory(projectId: string): HistoryEngine {
+  return retainedViewportHistory?.projectId === projectId ? retainedViewportHistory.engine : createHistoryEngine(50);
+}
+export function forgetViewportHistory(): void { retainedViewportHistory = null; }
+registerMemoryUsage('history', () => {
+  const bytes = (engine: HistoryEngine | null) => (engine?.totalBytes ?? 0) + (engine?.getBaseline()?.totalBytes ?? 0);
+  const retained = retainedViewportHistory?.engine ?? null;
+  return bytes(activeGlobalHistoryEngine) + (retained !== activeGlobalHistoryEngine ? bytes(retained) : 0);
+});
 
 export function setGlobalHistoryEngine(engine: HistoryEngine | null): void {
   activeGlobalHistoryEngine = engine;

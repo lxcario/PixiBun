@@ -1,0 +1,303 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: recoveryArchiveAdmission.spec.ts >> admitted untouched archive downloads and preserves its malformed source
+- Location: tests\e2e\recoveryArchiveAdmission.spec.ts:7:5
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: getByText(/Project Recovery & Safe Mode/i)
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for getByText(/Project Recovery & Safe Mode/i)
+
+```
+
+```yaml
+- link "Skip to workspace":
+  - /url: /studio#main-workspace
+- banner:
+  - group "Project controls":
+    - link "PixiBun Home":
+      - /url: /
+      - img "Bun, the PixiBun bunny"
+      - text: PIXIBUN ATELIER
+    - button "File"
+    - button "Rename project Untitled Sprite": Untitled Sprite
+    - text: 32×32
+    - button "Save now":
+      - img
+      - text: Save
+    - button "Undo last action" [disabled]:
+      - img
+    - button "Redo last action" [disabled]:
+      - img
+  - group "Drawing controls":
+    - text: "Pen:"
+    - button "Brush size 1 pixels": Size 1 px
+  - group "Canvas controls":
+    - group "Mirror drawing":
+      - text: Mirror
+      - button "Horizontal symmetry":
+        - img
+      - button "Vertical symmetry":
+        - img
+    - button "Zoom Out": −
+    - button "Zoom 1600 percent. Choose zoom level": 1600%
+    - button "Zoom In": +
+    - button "Fit Canvas to Viewport (Ctrl+0)": Fit
+    - button "View options menu":
+      - img
+      - text: View ▼
+  - group "Studio settings and help":
+    - button "Studio options": Studio
+  - button "Export drawing":
+    - img
+    - text: Export
+- status: Not saved yet
+- alert:
+  - img
+  - text: Storage issue · Artwork safe in tab
+  - button "Dismiss error": ✕
+  - paragraph: Your current drawing is preserved in memory.
+  - paragraph: Saved workspace could not be validated or restored. The original stored project has been preserved for recovery. A fresh workspace has been prepared.
+  - button "Keep editing"
+  - button "Export Drawing"
+- complementary:
+  - button "Pen":
+    - img
+  - button "Bézier Curve":
+    - img
+  - button "Eraser":
+    - img
+  - button "Flood Fill":
+    - img
+  - button "Dither Brush":
+    - img
+  - button "Color Replace":
+    - img
+  - button "Erase Sampled Color":
+    - img
+  - button "Marquee Box":
+    - img
+  - button "Lasso Select":
+    - img
+  - button "Magic Wand":
+    - img
+  - button "Line":
+    - img
+  - button "2:1 Iso Line":
+    - img
+  - button "Rectangle":
+    - img
+  - button "Ellipse":
+    - img
+  - button "Normal Chisel":
+    - img
+  - button "Eyedropper":
+    - img
+  - button "Swap colors (X)": ⇄
+  - button "Reset default black and white colors (Shift+D)"
+  - 'button "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap"'
+  - 'button "Primary color #3A2E4C. Click for quick swatches, double click for picker, right click to swap"'
+  - 'button "#DDDFDF (Click: Primary | Right-click: Secondary)"'
+  - 'button "#DDDDDF (Click: Primary | Right-click: Secondary)"'
+  - 'button "#D0C4DF (Click: Primary | Right-click: Secondary)"'
+  - 'button "#DCABDF (Click: Primary | Right-click: Secondary)"'
+  - button "Quick Swatches Flyout"
+- main "Pixel art canvas workspace":
+  - application "Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan."
+- complementary:
+  - button "Layers":
+    - img
+    - text: Layers
+  - button "Palette":
+    - img
+    - text: Palette
+  - button "PixiTools":
+    - img
+    - text: PixiTools
+  - text: Frame 1 · Layers (1)
+  - button "Add New Layer":
+    - img
+  - button "Duplicate Layer":
+    - img
+  - button "Merge Down" [disabled]:
+    - img
+  - button "Delete Layer" [disabled]:
+    - img
+  - text: Opacity
+  - slider "Layer opacity": "100"
+  - text: 100% Blend
+  - combobox "Layer blend mode":
+    - option "Normal" [selected]
+    - option "Multiply"
+    - option "Screen"
+    - option "Overlay"
+    - option "Color Dodge"
+    - option "On artwork only"
+  - button "Reorder layer Base Layer" [disabled]
+  - button "Select layer Base Layer. Double click to rename": Base Layer
+  - button "Rename layer Base Layer":
+    - img
+  - button "Lock layer Base Layer":
+    - img
+  - button "Hide layer Base Layer":
+    - img
+- contentinfo:
+  - button "Play":
+    - img
+    - text: Play
+  - button "Previous Frame (,)":
+    - img
+  - button "Next Frame (.)":
+    - img
+  - button "Repeat":
+    - img
+    - text: Repeat
+  - button "Preview speed": Preview 1×
+  - text: Frame time
+  - spinbutton "Active frame duration in milliseconds": "125"
+  - text: ms
+  - button "Onion Skin":
+    - img
+    - text: Onion Skin
+  - button "+ Frame":
+    - img
+    - text: Frame
+  - group: Frame actions
+  - button "Collapse Timeline": ▼ Collapse
+  - 'button "Select frame 1. Duration: 125ms. Drag to reorder."': "#1 125ms"
+  - button "Clips":
+    - img
+    - text: Clips
+- text: "X: — Y: — 32×32 1600% Frame 1/1 Base Layer pen"
+- status "All changes saved to local storage": Saved
+- alert
+```
+
+# Test source
+
+```ts
+  1   | import { expect, type Page, type TestInfo } from '@playwright/test';
+  2   | 
+  3   | async function seedArchiveSource(page: Page, count: number) {
+  4   |   await page.addInitScript(() => {
+  5   |     // Exercise the browser-download fallback rather than an OS-native picker.
+  6   |     Reflect.deleteProperty(window, 'showSaveFilePicker');
+  7   |   });
+  8   |   await page.goto('/studio');
+  9   |   await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
+  10  |   await page.evaluate(async (records) => {
+  11  |     const database = await new Promise<IDBDatabase>((resolve, reject) => {
+  12  |       const request = indexedDB.open('PixiBunDB');
+  13  |       request.onsuccess = () => resolve(request.result);
+  14  |       request.onerror = () => reject(request.error);
+  15  |     });
+  16  |     const projectId = 'phase6-archive-source';
+  17  |     const timestamp = Date.now() + 86_400_000;
+  18  |     await new Promise<void>((resolve, reject) => {
+  19  |       const transaction = database.transaction(['projects', 'layerBlobs'], 'readwrite');
+  20  |       transaction.oncomplete = () => resolve();
+  21  |       transaction.onabort = () => reject(transaction.error);
+  22  |       transaction.onerror = () => reject(transaction.error);
+  23  |       transaction.objectStore('projects').put({ id: projectId, name: 'Archive boundary fixture',
+  24  |         width: 32, height: 32, fps: 12, createdAt: timestamp, updatedAt: timestamp,
+  25  |         dataJson: '{malformed source preserved verbatim}' });
+  26  |       const store = transaction.objectStore('layerBlobs');
+  27  |       for (let i = 0; i < records; i++) {
+  28  |         store.add({ projectId, layerId: `source-${i}`, frameIndex: 0, updatedAt: timestamp,
+  29  |           blob: new Uint8Array([i % 256, 17, 239]).buffer, blobType: 'image/png' });
+  30  |       }
+  31  |     });
+  32  |     database.close();
+  33  |   }, count);
+  34  |   await page.reload();
+> 35  |   await expect(page.getByText(/Project Recovery & Safe Mode/i)).toBeVisible();
+      |                                                                 ^ Error: expect(locator).toBeVisible() failed
+  36  |   await expect(page.getByRole('button', { name: 'Export Untouched Backup', exact: true })).toBeEnabled();
+  37  | }
+  38  | 
+  39  | async function readSourceSummary(page: Page) {
+  40  |   return page.evaluate(async () => {
+  41  |     const database = await new Promise<IDBDatabase>((resolve, reject) => {
+  42  |       const request = indexedDB.open('PixiBunDB');
+  43  |       request.onsuccess = () => resolve(request.result);
+  44  |       request.onerror = () => reject(request.error);
+  45  |     });
+  46  |     const transaction = database.transaction(['projects', 'layerBlobs'], 'readonly');
+  47  |     const query = <T>(request: IDBRequest<T>) => new Promise<T>((resolve, reject) => {
+  48  |       request.onsuccess = () => resolve(request.result);
+  49  |       request.onerror = () => reject(request.error);
+  50  |     });
+  51  |     const id = 'phase6-archive-source';
+  52  |     const projectRequest = query(transaction.objectStore('projects').get(id));
+  53  |     const countRequest = query(transaction.objectStore('layerBlobs').index('projectId').count(id));
+  54  |     const firstRequest = query(transaction.objectStore('layerBlobs').index('[projectId+layerId+frameIndex]').get([id, 'source-0', 0]));
+  55  |     const [project, count, first] = await Promise.all([projectRequest, countRequest, firstRequest]);
+  56  |     database.close();
+  57  |     return { project, count, first: { ...first, blob: Array.from(new Uint8Array(first.blob)) } };
+  58  |   });
+  59  | }
+  60  | 
+  61  | export async function verifyArchiveOverflow(page: Page, info: TestInfo) {
+  62  |   await seedArchiveSource(page, 10_001);
+  63  |   const before = await readSourceSummary(page);
+  64  |   await page.evaluate(() => {
+  65  |     const statistics = { counts: 0, payloadQueries: 0 };
+  66  |     Object.assign(window, { __archiveQueryStatistics: statistics });
+  67  |     const count = IDBIndex.prototype.count;
+  68  |     const getAll = IDBIndex.prototype.getAll;
+  69  |     const openCursor = IDBIndex.prototype.openCursor;
+  70  |     IDBIndex.prototype.count = function (...args) {
+  71  |       if (this.name === '[projectId+id]') statistics.counts++;
+  72  |       return count.apply(this, args);
+  73  |     };
+  74  |     IDBIndex.prototype.getAll = function (...args) {
+  75  |       if (this.name === '[projectId+id]') statistics.payloadQueries++;
+  76  |       return getAll.apply(this, args);
+  77  |     };
+  78  |     IDBIndex.prototype.openCursor = function (...args) {
+  79  |       if (this.name === '[projectId+id]') statistics.payloadQueries++;
+  80  |       return openCursor.apply(this, args);
+  81  |     };
+  82  |   });
+  83  |   let downloads = 0;
+  84  |   page.on('download', () => { downloads++; });
+  85  |   await page.getByRole('button', { name: 'Export Untouched Backup', exact: true }).click();
+  86  |   await expect(page.getByText(/exceeds maximum inspectable stored blobs \(10000\)/)).toBeVisible();
+  87  |   await expect(page.getByRole('button', { name: 'Export Untouched Backup', exact: true })).toBeEnabled();
+  88  |   expect(await page.evaluate(() => (window as Window & {
+  89  |     __archiveQueryStatistics: { counts: number; payloadQueries: number };
+  90  |   }).__archiveQueryStatistics)).toEqual({ counts: 1, payloadQueries: 0 });
+  91  |   expect(downloads).toBe(0);
+  92  |   expect(await readSourceSummary(page)).toEqual(before);
+  93  |   await page.screenshot({ path: info.outputPath('archive-overflow-refused.png') });
+  94  | }
+  95  | 
+  96  | export async function verifyAdmittedArchive(page: Page, info: TestInfo) {
+  97  |   await seedArchiveSource(page, 3);
+  98  |   const before = await readSourceSummary(page);
+  99  |   const downloaded = page.waitForEvent('download');
+  100 |   await page.getByRole('button', { name: 'Export Untouched Backup', exact: true }).click();
+  101 |   const download = await downloaded;
+  102 |   expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  103 |   await download.saveAs(info.outputPath('untouched-source.zip'));
+  104 |   await expect(page.getByRole('button', { name: 'Export Untouched Backup', exact: true })).toBeEnabled();
+  105 |   expect(await readSourceSummary(page)).toEqual(before);
+  106 |   await page.screenshot({ path: info.outputPath('archive-source-preserved.png') });
+  107 | }
+  108 | 
+```

@@ -1,0 +1,17 @@
+
+Running 10 tests using 1 worker
+
+(node:20520) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:3:5 › Iso FREE follows steep, shallow, reversed, cardinal and edge drags with exact preview and undo (5.5s)
+  ok  2 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:4:5 › Iso ON retains the established 2:1 projected endpoint and preview (1.6s)
+  ok  3 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:5:5 › one floating preview opens, moves, expands, closes and follows undo/redo without painting artwork (2.1s)
+  ok  4 [chromium] › tests\e2e\toolMotionPreview.spec.ts:3:5 › drawing tools show a short visual preview on hover and keyboard focus (15.8s)
+  ok  5 [chromium] › tests\e2e\toolMotionPreview.spec.ts:107:5 › PixiTools actions preview their effect without changing the project (11.4s)
+  ok  6 [chromium] › tests\e2e\toolMotionPreview.spec.ts:209:5 › user can dismiss preview permanently via "Don't show again" (2.8s)
+  ok  7 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:3:5 › the artwork and grid share exact screen bounds at high zoom (725ms)
+  ok  8 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:30:5 › bucket recolors nearby shades through the visible grid without crossing a contrasting color (1.1s)
+  ok  9 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:67:5 › large supported artwork never scales overlay backing stores with zoom (969ms)
+  ok 10 [chromium] › tests\e2e\viewportOverlayBounds.spec.ts:100:5 › a three-pixel pen uses the same square footprint as its CSS brush outline (957ms)
+
+  10 passed (44.8s)

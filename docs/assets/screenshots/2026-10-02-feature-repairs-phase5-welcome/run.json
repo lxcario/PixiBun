@@ -1,0 +1,33 @@
+{
+  "capturedAt": "2026-10-02T16:46:05.861Z",
+  "timezone": "Europe/Istanbul",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "Uncommitted October repairs; final phase 5 welcome wording and metadata",
+  "command": "node artifacts/feature-repairs/phase5-welcome-capture.mjs",
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "viewport": "1440x960, device scale 1",
+  "verdict": "Three actual UI captures with visible reviewed content, no page errors and no console errors; illustrations only",
+  "artworkSources": [
+    "Built-in welcome sample sprites"
+  ],
+  "captures": [
+    {
+      "path": "welcome-photometric.png",
+      "description": "Current lighting sample with estimated surfaces and qualified detail/color wording.",
+      "sha256": "717731493faab37e91293061eb33e3b8af7d4638e12067b5d7409f3b7cd15567"
+    },
+    {
+      "path": "welcome-rotsprite.png",
+      "description": "Current rotation comparison with source-color sampling and qualified detail/connection wording.",
+      "sha256": "950520e2c769582c9599e6e364ea5092f2df8f3b6c9cf19e1bc53a9ae34d7ff9"
+    },
+    {
+      "path": "welcome-pillars.png",
+      "description": "All four current feature cards: lighting, rotation comparison, reviewed in-betweens and bounded exports.",
+      "sha256": "b29108b4f55b7220de2429f0d095c4c0e871cd2b470e327c6dbd43ea022313f0"
+    }
+  ],
+  "reducedMotion": "reduce",
+  "visuallyReviewed": true
+}

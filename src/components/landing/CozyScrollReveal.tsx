@@ -84,24 +84,16 @@ export const CozyScrollReveal: React.FC<CozyScrollRevealProps> = ({
   const shouldReduceMotion = useReducedMotion();
   const selectedVariants = VARIANTS_MAP[variant] || VARIANTS_MAP['fade-up'];
 
-  if (shouldReduceMotion) {
-    return (
-      <div className={`relative w-full ${className}`}>
-        {showPixelCorners && <PixelCorners />}
-        {children}
-      </div>
-    );
-  }
-
   return (
     <motion.div
       initial="hidden"
+      animate={shouldReduceMotion ? 'visible' : undefined}
       whileInView="visible"
       viewport={{ once, amount, margin: '120px 0px 120px 0px' }}
       variants={selectedVariants}
       transition={{
-        duration: 0.5,
-        delay: delayMs / 1000,
+        duration: shouldReduceMotion ? 0 : 0.5,
+        delay: shouldReduceMotion ? 0 : delayMs / 1000,
         ease: [0.22, 1, 0.36, 1], // Tactile smooth cubic-bezier easing
       }}
       className={`relative w-full ${className}`}

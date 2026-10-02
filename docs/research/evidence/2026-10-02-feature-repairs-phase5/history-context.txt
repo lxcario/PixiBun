@@ -1,0 +1,396 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: studio.spec.ts >> Studio Workbench & Drawing Interactions >> undoes and redoes layer properties and frame timing in order
+- Location: tests\e2e\studio.spec.ts:41:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for getByTitle('Undo (Ctrl+Z)')
+    - locator resolved to <button disabled title="Undo (Ctrl+Z)" data-testid="undo-button" aria-label="Undo last action" class="w-7 h-7 rounded-[2px] flex items-center justify-center pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] disabled:opacity-25 disabled:pointer-events-none cursor-pointer">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not enabled
+  54 × retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is not enabled
+  - retrying click action
+    - waiting 500ms
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to workspace" [ref=e2] [cursor=pointer]:
+    - /url: /studio#main-workspace
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - group "Project controls" [ref=e6]:
+        - link "PixiBun Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]:
+            - img "Bun, the PixiBun bunny" [ref=e10]
+            - generic [ref=e174]:
+              - generic [ref=e175]: PIXIBUN
+              - generic [ref=e176]: ATELIER
+        - button "File" [ref=e177]:
+          - text: File
+          - generic [ref=e178]: ▼
+        - button "Rename project Untitled Sprite" [ref=e179] [cursor=pointer]: Untitled Sprite
+        - generic "Canvas size · change it in File" [ref=e180]: 32×32
+        - button "Save now" [ref=e181]:
+          - generic [ref=e182]: Save
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - button "Undo last action" [disabled]
+            - tooltip "Undo Ctrl+Z":
+              - generic: Undo
+              - generic: Ctrl+Z
+          - button "Redo last action" [ref=e187] [cursor=pointer]
+      - group "Drawing controls" [ref=e188]:
+        - generic "Tool options rail" [ref=e189]:
+          - generic [ref=e190]: "Pen:"
+          - button "Brush size 1 pixels" [ref=e192]:
+            - generic [ref=e193]: Size
+            - generic [ref=e194]: 1 px
+            - generic [ref=e195]: ▾
+      - generic [ref=e196]:
+        - group "Canvas controls" [ref=e197]:
+          - group "Mirror drawing" [ref=e198]:
+            - generic [ref=e199]: Mirror
+            - button "Horizontal symmetry" [ref=e201] [cursor=pointer]
+            - button "Vertical symmetry" [ref=e203] [cursor=pointer]
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - button "Zoom Out" [ref=e207] [cursor=pointer]: −
+              - button "Zoom 1600 percent. Choose zoom level" [ref=e209]: 1600%
+              - button "Zoom In" [ref=e210] [cursor=pointer]: +
+            - button "Fit Canvas to Viewport (Ctrl+0)" [ref=e212] [cursor=pointer]: Fit
+          - button "View options menu" [ref=e216] [cursor=pointer]:
+            - generic [ref=e217]:
+              - generic [ref=e218]: View
+              - generic "1 active view options" [ref=e219]
+            - generic [ref=e220]: ▼
+        - group "Studio settings and help" [ref=e221]:
+          - button "Studio options" [ref=e222] [cursor=pointer]:
+            - generic [ref=e223]: Studio
+            - generic [ref=e224]: ▼
+        - button "Export drawing" [ref=e226]:
+          - generic [ref=e227]: Export
+    - status [ref=e229]: Changes saved
+    - generic [ref=e230]:
+      - complementary [ref=e231]:
+        - generic [ref=e232]:
+          - generic [ref=e233]:
+            - button "Pen" [ref=e235] [cursor=pointer]
+            - button "Bézier Curve" [ref=e237] [cursor=pointer]
+            - button "Eraser" [ref=e239] [cursor=pointer]
+            - button "Flood Fill" [ref=e241] [cursor=pointer]
+            - button "Dither Brush" [ref=e243] [cursor=pointer]
+            - button "Color Replace" [ref=e245] [cursor=pointer]
+            - button "Erase Sampled Color" [ref=e247] [cursor=pointer]
+          - generic [ref=e248]:
+            - button "Marquee Box" [ref=e251] [cursor=pointer]
+            - button "Lasso Select" [ref=e253] [cursor=pointer]
+            - button "Magic Wand" [ref=e255] [cursor=pointer]
+          - generic [ref=e256]:
+            - button "Line" [ref=e259] [cursor=pointer]
+            - button "2:1 Iso Line" [ref=e261] [cursor=pointer]
+            - button "Rectangle" [ref=e263] [cursor=pointer]
+            - button "Ellipse" [ref=e265] [cursor=pointer]
+          - button "Normal Chisel" [ref=e269] [cursor=pointer]
+          - button "Eyedropper" [ref=e273] [cursor=pointer]
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - button "Swap colors (X)" [ref=e276] [cursor=pointer]: ⇄
+            - button "Reset default black and white colors (Shift+D)" [ref=e277] [cursor=pointer]
+            - 'button "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap" [ref=e278] [cursor=pointer]'
+            - 'button "Primary color #3A2E4C. Click for quick swatches, double click for picker, right click to swap" [ref=e279] [cursor=pointer]'
+          - generic [ref=e280]:
+            - generic [ref=e281]:
+              - 'button "#DDDFDF (Click: Primary | Right-click: Secondary)" [ref=e282] [cursor=pointer]'
+              - 'button "#DDDDDF (Click: Primary | Right-click: Secondary)" [ref=e283] [cursor=pointer]'
+              - 'button "#D0C4DF (Click: Primary | Right-click: Secondary)" [ref=e284] [cursor=pointer]'
+              - 'button "#DCABDF (Click: Primary | Right-click: Secondary)" [ref=e285] [cursor=pointer]'
+            - button "Quick Swatches Flyout" [ref=e286] [cursor=pointer]
+      - main "Pixel art canvas workspace" [ref=e290]:
+        - application "Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan." [ref=e291]
+      - complementary [ref=e293]:
+        - generic [ref=e294]:
+          - button "Layers" [ref=e295] [cursor=pointer]
+          - button "Palette" [ref=e297] [cursor=pointer]
+          - button "PixiTools" [ref=e299] [cursor=pointer]
+        - generic [ref=e302]:
+          - generic [ref=e303]:
+            - generic "Each frame has its own layer pixels. A new blank frame keeps the layer names and settings." [ref=e304]:
+              - text: Frame 1 · Layers
+              - generic [ref=e305]: (1)
+            - generic [ref=e306]:
+              - button "Add New Layer" [ref=e307]
+              - button "Duplicate Layer" [ref=e309]
+              - button "Merge Down" [disabled] [ref=e311]
+              - button "Delete Layer" [disabled] [ref=e313]
+          - generic [ref=e315]:
+            - generic [ref=e316]:
+              - generic [ref=e317]: Opacity
+              - slider "Layer opacity" [ref=e318] [cursor=pointer]: "95"
+              - generic [ref=e319]: 95%
+            - generic [ref=e320]:
+              - generic [ref=e321]: Blend
+              - combobox "Layer blend mode" [ref=e322] [cursor=pointer]:
+                - option "Normal" [selected]
+                - option "Multiply"
+                - option "Screen"
+                - option "Overlay"
+                - option "Color Dodge"
+                - option "On artwork only"
+          - generic [ref=e324]:
+            - generic [ref=e325]:
+              - button "Reorder layer Base Layer" [disabled] [ref=e326]:
+                - generic [ref=e327]: ⠿
+              - generic [ref=e328]:
+                - button "Select layer Base Layer. Double click to rename" [ref=e329] [cursor=pointer]: Base Layer
+                - button "Rename layer Base Layer" [ref=e330] [cursor=pointer]
+            - generic [ref=e331]:
+              - button "Lock layer Base Layer" [ref=e332]
+              - button "Hide layer Base Layer" [ref=e333]
+    - contentinfo [ref=e334]:
+      - generic [ref=e335]:
+        - generic [ref=e336]:
+          - generic [ref=e337]:
+            - button "Play" [ref=e338]
+            - button "Previous Frame (,)" [ref=e341]
+            - button "Next Frame (.)" [ref=e343]
+            - button "Repeat" [ref=e345]
+          - generic [ref=e349]:
+            - button "Preview speed" [ref=e351]:
+              - generic [ref=e352]: Preview
+              - generic [ref=e353]: 1×
+              - generic [ref=e354]: ▾
+            - generic [ref=e355]:
+              - generic [ref=e356]: Frame time
+              - spinbutton "Active frame duration in milliseconds" [ref=e357]: "100"
+              - generic [ref=e358]: ms
+            - button "Onion Skin" [ref=e359]
+        - generic [ref=e362]:
+          - button "+ Frame" [ref=e363]:
+            - generic [ref=e364]: Frame
+          - group [ref=e366]:
+            - generic "Frame actions" [ref=e367] [cursor=pointer]:
+              - text: Frame actions
+              - generic [ref=e368]: ▾
+          - button "Collapse Timeline" [ref=e370]:
+            - generic [ref=e371]:
+              - generic [ref=e372]: ▼
+              - generic [ref=e373]: Collapse
+      - generic [ref=e374]:
+        - 'button "Select frame 1. Duration: 100ms. Drag to reorder." [ref=e376]':
+          - generic:
+            - generic: "#1"
+            - generic: 100ms
+        - button "Clips" [ref=e377]
+    - generic [ref=e378]:
+      - generic [ref=e379]: "X: — Y: —"
+      - generic [ref=e382]: 32×32
+      - generic [ref=e385]: 1600%
+      - generic [ref=e387]: Frame 1/1
+      - generic [ref=e389]: Base Layer
+      - generic [ref=e390]: pen
+      - status "All changes saved to local storage" [ref=e395]:
+        - generic [ref=e397]: Saved
+  - alert [ref=e398]
+```
+
+# Test source
+
+```ts
+  1   | import { test, expect } from '@playwright/test';
+  2   | import AxeBuilder from '@axe-core/playwright';
+  3   | 
+  4   | const AXE_WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+  5   | 
+  6   | const scanStudioAccessibility = async (page: import('@playwright/test').Page) => {
+  7   |   return await new AxeBuilder({ page })
+  8   |     .withTags(AXE_WCAG_TAGS)
+  9   |     .analyze();
+  10  | };
+  11  | 
+  12  | test.describe('Studio Workbench & Drawing Interactions', () => {
+  13  |   test('loads Studio workspace, renders canvas stage and panels', async ({ page }) => {
+  14  |     await page.goto('/studio');
+  15  |     await page.waitForLoadState('domcontentloaded');
+  16  | 
+  17  |     // Canvas stage is present with accessibility role
+  18  |     const stage = page.locator('div[role="application"]');
+  19  |     await expect(stage).toBeVisible();
+  20  | 
+  21  |     // Verify key studio UI regions
+  22  |     await expect(page.getByTestId('file-menu-button')).toBeVisible();
+  23  |     await expect(page.getByRole('button', { name: 'Studio options' })).toBeVisible();
+  24  |     await expect(page.getByTitle(/Export PNG, GIF, or Spritesheet/i)).toBeVisible();
+  25  |   });
+  26  | 
+  27  |   test('reorders layers by dragging and has no music control', async ({ page }) => {
+  28  |     await page.goto('/studio');
+  29  |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  30  |     await expect(page.getByRole('region', { name: 'Studio Synthesizer Radio' })).toHaveCount(0);
+  31  | 
+  32  |     await page.getByRole('button', { name: 'Add New Layer' }).click();
+  33  |     const layerNames = page.getByRole('button', { name: /^Select layer / });
+  34  |     await expect(layerNames).toHaveText(['Layer 2', 'Base Layer']);
+  35  |     await page.getByRole('button', { name: 'Reorder layer Base Layer' }).dragTo(layerNames.first());
+  36  |     await expect(layerNames).toHaveText(['Base Layer', 'Layer 2']);
+  37  |     await page.getByRole('button', { name: 'Reorder layer Base Layer' }).press('ArrowDown');
+  38  |     await expect(layerNames).toHaveText(['Layer 2', 'Base Layer']);
+  39  |   });
+  40  | 
+  41  |   test('undoes and redoes layer properties and frame timing in order', async ({ page }) => {
+  42  |     await page.goto('/studio');
+  43  |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  44  |     const undo = page.getByTitle('Undo (Ctrl+Z)');
+  45  |     const redo = page.getByTitle('Redo (Ctrl+Y)');
+  46  |     const opacity = page.getByRole('slider', { name: 'Layer opacity' });
+  47  |     const duration = page.getByRole('spinbutton', { name: 'Active frame duration in milliseconds' });
+  48  |     const blend = page.getByRole('combobox', { name: 'Layer blend mode' });
+  49  | 
+  50  |     await expect(opacity).toHaveValue('100');
+  51  |     const originalDuration = await duration.inputValue();
+  52  |     await opacity.focus();
+  53  |     await opacity.press('ArrowLeft');
+  54  |     await expect(opacity).toHaveValue('95');
+  55  |     await duration.fill('250');
+  56  |     await duration.blur();
+  57  |     await expect(duration).toHaveValue('250');
+  58  |     await blend.selectOption('multiply');
+  59  |     await expect(blend).toHaveValue('multiply');
+  60  | 
+  61  |     await undo.click();
+  62  |     await expect(blend).toHaveValue('source-over');
+  63  |     await undo.click();
+  64  |     await expect(duration).toHaveValue(originalDuration);
+> 65  |     await undo.click();
+      |                ^ Error: locator.click: Test timeout of 30000ms exceeded.
+  66  |     await expect(opacity).toHaveValue('100');
+  67  | 
+  68  |     await redo.click();
+  69  |     await expect(opacity).toHaveValue('95');
+  70  |     await redo.click();
+  71  |     await expect(duration).toHaveValue('250');
+  72  |     await redo.click();
+  73  |     await expect(blend).toHaveValue('multiply');
+  74  |   });
+  75  | 
+  76  |   test('opens Guide and Shortcuts modal via hotkey and button', async ({ page }) => {
+  77  |     await page.goto('/studio');
+  78  |     await page.waitForLoadState('domcontentloaded');
+  79  |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  80  |     await page.waitForTimeout(300);
+  81  | 
+  82  |     await page.getByTestId('appearance-button').click();
+  83  |     const guideBtn = page.getByTestId('shortcuts-guide-button');
+  84  |     await expect(guideBtn).toBeVisible();
+  85  |     await page.waitForTimeout(400);
+  86  |     await guideBtn.click();
+  87  | 
+  88  |     await expect(page.getByText(/Atelier Guide & Shortcuts/i)).toBeVisible();
+  89  | 
+  90  |     // Close dialog using Close dialog button
+  91  |     const closeBtn = page.getByRole('button', { name: 'Close dialog' });
+  92  |     await closeBtn.click();
+  93  |     await expect(page.getByText(/Atelier Guide & Shortcuts/i)).not.toBeVisible();
+  94  | 
+  95  |     // Open via '?' keypress
+  96  |     await page.keyboard.press('?');
+  97  |     await expect(page.getByText(/Atelier Guide & Shortcuts/i)).toBeVisible();
+  98  |   });
+  99  | 
+  100 |   test('handles canvas stroke drawing and undo/redo with pixel verification', async ({ page }) => {
+  101 |     await page.goto('/studio');
+  102 |     await page.waitForLoadState('domcontentloaded');
+  103 |     await expect(page.locator('div[role="application"]')).toBeVisible();
+  104 | 
+  105 |     // Wait for initial Dexie / store hydration to settle
+  106 |     await page.waitForTimeout(500);
+  107 | 
+  108 |     const canvas = page.locator('canvas[data-testid="main-composite-canvas"]');
+  109 |     await expect(canvas).toBeVisible();
+  110 | 
+  111 |     const undoBtn = page.getByTitle(/Undo \(Ctrl\+Z\)/i);
+  112 |     const redoBtn = page.getByTitle(/Redo \(Ctrl\+Y\)/i);
+  113 | 
+  114 |     // Initial state: undo and redo should be disabled on fresh canvas
+  115 |     await expect(undoBtn).toBeDisabled();
+  116 |     await expect(redoBtn).toBeDisabled();
+  117 | 
+  118 |     // Sample baseline pixel at coordinate (16, 16)
+  119 |     const getPixel = async (x: number, y: number): Promise<[number, number, number, number]> => {
+  120 |       return await page.evaluate(({ x, y }) => {
+  121 |         const cvs = document.querySelector('canvas[data-testid="main-composite-canvas"]') as HTMLCanvasElement;
+  122 |         const ctx = cvs?.getContext('2d', { willReadFrequently: true });
+  123 |         if (!ctx) return [0, 0, 0, 0];
+  124 |         const p = ctx.getImageData(x, y, 1, 1).data;
+  125 |         return [p[0], p[1], p[2], p[3]];
+  126 |       }, { x, y });
+  127 |     };
+  128 | 
+  129 |     const baselinePixel = await getPixel(16, 16);
+  130 | 
+  131 |     const box = await canvas.boundingBox();
+  132 |     expect(box).not.toBeNull();
+  133 |     if (box) {
+  134 |       // Draw stroke covering pixel (16, 16)
+  135 |       const targetX = box.x + (box.width / 32) * 16.5;
+  136 |       const targetY = box.y + (box.height / 32) * 16.5;
+  137 | 
+  138 |       await page.mouse.move(targetX, targetY);
+  139 |       await page.mouse.down();
+  140 |       await page.mouse.move(targetX + 5, targetY + 5);
+  141 |       await page.mouse.up();
+  142 |     }
+  143 | 
+  144 |     // Wait for composite render and store updates
+  145 |     await page.waitForTimeout(100);
+  146 | 
+  147 |     // Verify Undo is enabled and Redo is disabled
+  148 |     await expect(undoBtn).toBeEnabled();
+  149 |     await expect(redoBtn).toBeDisabled();
+  150 | 
+  151 |     // Verify pixel has been drawn
+  152 |     const strokedPixel = await getPixel(16, 16);
+  153 |     expect(strokedPixel[3]).toBeGreaterThan(0);
+  154 |     expect(strokedPixel).not.toEqual(baselinePixel);
+  155 | 
+  156 |     // Trigger Undo via Ctrl+Z
+  157 |     await page.keyboard.press('Control+z');
+  158 |     await page.waitForTimeout(100);
+  159 | 
+  160 |     // Verify undo restored baseline pixel and enabled redo
+  161 |     const undonePixel = await getPixel(16, 16);
+  162 |     expect(undonePixel).toEqual(baselinePixel);
+  163 |     await expect(undoBtn).toBeDisabled();
+  164 |     await expect(redoBtn).toBeEnabled();
+  165 | 
+```

@@ -39,7 +39,7 @@ const silkscreen = localFont({
 export const metadata: Metadata = {
   title: 'PixiBun — A cozy pixel art studio that lives in your browser',
   description:
-    'Draw sprites, build animations, and ship game-ready sheets from a warm little desk in your browser tab. 100% offline-capable, no account, nothing leaves your machine.',
+    'Draw sprites and animate a few frames from a warm little desk in your browser. No account needed; offline editing follows your first online load. Projects save locally, with optional sharing and diagnostic reports.',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [

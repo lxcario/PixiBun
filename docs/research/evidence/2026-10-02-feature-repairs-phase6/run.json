@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-10-02T20:18:56.063Z",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "Uncommitted prior remediation/phases 1–5 plus phase 6; nine changed source/test/helper files against phase 5, 542 frozen hashes.",
+  "commands": [
+    {
+      "command": "npm run gate:full (VITEST_MAX_WORKERS absent)",
+      "verdict": "ALL 5 QUALITY GATES PASSED SUCCESSFULLY (147.21s)",
+      "tests": "1575 passed /159 suites",
+      "log": "gate-final.log"
+    },
+    {
+      "command": "playwright test recoveryArchiveAdmission.spec.ts recoveryUIFlow.spec.ts recoveryTransactionLiveness.spec.ts startupRecoveryRouting.spec.ts --workers=1 --retries=0 --trace=retain-on-failure (tests/e2e)",
+      "verdict": "14 passed (59.4s)",
+      "log": "editor-final.log"
+    },
+    {
+      "command": "PIXIBUN_PRODUCTION_PORT=3117 PIXIBUN_ARCHIVE_FIXTURE_DIAGNOSTIC=1 playwright test --config playwright.production.config.ts tests/production/recoveryArchiveAdmission.spec.ts",
+      "verdict": "6 passed (3.1m)",
+      "log": "production-final.log"
+    },
+    {
+      "command": "python artifacts/feature-repairs/phase6-zip-oracle.py artifacts/feature-repairs/phase6-editor-complete artifacts/playwright-production-3117",
+      "verdict": "Four actual downloads checked by independent Python zipfile CRC and original-byte oracle",
+      "log": "zip-final.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "verdict": "Passed after fixture budget/action-step changes",
+      "log": "types-final.log"
+    },
+    {
+      "command": "npm run lint",
+      "verdict": "Passed clean after diagnostic-only log-level cleanup",
+      "log": "lint-final.log"
+    },
+    {
+      "command": "playwright test tests/e2e/recoveryArchiveAdmission.spec.ts --workers=1 --retries=0 --trace=retain-on-failure",
+      "verdict": "Two passed (13.3s), final fixture follow-up before diagnostic-only log-level cleanup",
+      "log": "editor-final-fixture.log"
+    },
+    {
+      "command": "npm run verify:docs",
+      "verdict": "Passed; 1776 local destinations /95 owned Markdown files and selected contracts, not every prose sentence",
+      "log": "docs-final.log"
+    },
+    {
+      "command": "git diff --check",
+      "verdict": "Exit 0; normal CRLF notices retained",
+      "log": "diff-check.log"
+    }
+  ],
+  "scope": "Local Windows; gate/build, 14 scoped editor cases, six scoped compiled cases across Chromium/Firefox/WebKit, one browser worker and zero retries. Dev server 3000 reused; compiled server 3117 owned and torn down. Full browser suites not rerun; inventories are not verdicts. Only the new WebKit overflow case has a 240-second overall fixture budget; its actual export/refusal step has a separate 15-second cap. Real 10001-record fixture and all assertions retained.",
+  "sourceSequence": "Application code unchanged after the 147.21s gate/build. Fixture-only helper/batching/logging and WebKit setup-budget adjustments followed; final type/lint checks and browser checks cover those final test changes. Earlier source snapshots retained.",
+  "diagnosticLogLevel": "The five test-only console levels were changed from info/log to the lint-approved warn method after browser execution; assertions, fixture count, payload bytes, budgets and application source remained unchanged. Both snapshots and lint results retained.",
+  "limitations": "No external upload/tunnel/TestSprite verdict, participant or physical-device/assistive-technology study, peak-memory qualification, engine consumer, coverage/Lighthouse, commit/push/deployment. Passing default-worker gates do not establish the cause of earlier timeouts.",
+  "screenshotCheckpoint": "../../../assets/screenshots/2026-10-02-feature-repairs-phase6/run.json",
+  "sealedAt": "2026-10-02T20:24:28.625Z"
+}

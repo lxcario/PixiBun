@@ -15,7 +15,7 @@ import { CozyAtelierBackground } from '@/components/landing/CozyAtelierBackgroun
 export const metadata: Metadata = {
   title: 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine',
   description:
-    'An offline-first pixel art atelier and game animation suite in your browser. Real-time 2.5D photometric lighting, RotSprite geometry, bounded cast shadows, and native Godot 4 & Unity exports.',
+    'A quiet pixel art studio in your browser. Draw sprites, animate a few frames, try a light, and export images, a Godot kit or Unity shader code. No account needed.',
 };
 
 export default function Home() {

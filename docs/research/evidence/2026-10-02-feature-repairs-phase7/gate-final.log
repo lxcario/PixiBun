@@ -1,0 +1,98 @@
+Started 2026-10-02T20:49:40.247Z
+Node v22.23.3; cache phase7-local-7106f4aa5fa96bc1; CI absent; VITEST_MAX_WORKERS absent
+Command: node scripts/runQualityGate.mjs --with-build
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Checks local links, historical paths, generated discovery, selected source contracts and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 274 existing, 6 approved removed historical references.
+Local links/headings: 1783 destinations across 97 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 23.96s[0m
+
+[1m[35m[2/5] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+[32m✓ Stage 2: Static Type Safety Invariant (0 Errors) PASSED in 8.85s[0m
+
+[1m[35m[3/5] Stage 3: Lint and accessibility rules[0m
+[2m  ↳ Checks source and test lint rules.[0m
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+
+[32m✓ Stage 3: Lint and accessibility rules PASSED in 23.82s[0m
+
+[1m[35m[4/5] Stage 4: Unit & Defensive Invariant Test Suite[0m
+[2m  ↳ Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).[0m
+
+> pixibun@1.14.1 test
+> vitest run
+
+
+ RUN  v4.1.11 D:/PixiBun
+
+
+ Test Files  159 passed (159)
+      Tests  1575 passed (1575)
+   Start at  23:50:37
+   Duration  31.25s (transform 65.42s, setup 10.87s, import 170.14s, tests 94.39s, environment 77.57s)
+
+[32m✓ Stage 4: Unit & Defensive Invariant Test Suite PASSED in 32.43s[0m
+
+[1m[35m[5/5] Stage 5: Next.js Production Compilation & Bundling[0m
+[2m  ↳ Validates complete Next.js static generation, route trees, and bundle chunks.[0m
+
+> pixibun@1.14.1 build
+> next build
+
+▲ Next.js 16.3.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 63ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.5s
+  Running TypeScript ...
+  Finished TypeScript in 4.5s ...
+  Collecting page data using 8 workers ...
+  Generating static pages using 8 workers (0/7) ...
+  Generating static pages using 8 workers (1/7) 
+  Generating static pages using 8 workers (3/7) 
+  Generating static pages using 8 workers (5/7) 
+✓ Generating static pages using 8 workers (7/7) in 1197ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/diagnostics/relay
+├ ƒ /playground
+├ ƒ /studio
+└ ƒ /sw.js
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+
+[32m✓ Stage 5: Next.js Production Compilation & Bundling PASSED in 27.00s[0m
+
+[1m[32m═════════════════════════════════════════════════════════════════════════[0m
+[1m[32m🎉 ALL 5 QUALITY GATES PASSED SUCCESSFULLY (116.07s)[0m
+[2mConfigured checks passed. Browser, accessibility and performance evidence are separate.[0m
+[1m[32m═════════════════════════════════════════════════════════════════════════[0m
+
+
+{"mode":"gate","label":"-final","args":["scripts/runQualityGate.mjs","--with-build"],"cacheVersion":"phase7-local-7106f4aa5fa96bc1","exitCode":0,"signal":null,"elapsedSeconds":116.139,"completedAt":"2026-10-02T20:51:36.387Z"}

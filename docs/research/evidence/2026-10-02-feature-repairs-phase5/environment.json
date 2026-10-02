@@ -1,0 +1,20 @@
+{
+  "os": "win32",
+  "architecture": "x64",
+  "node": "v22.23.3",
+  "next": "16.3.4",
+  "react": "19.2.8",
+  "playwright": "1.62.1",
+  "browsers": {
+    "chromium": "151.0.7922.34",
+    "firefox": "153.0",
+    "webkit": "26.5"
+  },
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "scope": "Temporary local browser contexts; October phase 5 uncommitted checkout; no external upload/tunnel",
+  "productionPorts": {
+    "preVisualRefinement": 3112,
+    "final": 3113
+  },
+  "godotScope": "Version inherited from phase 4 environment; Godot was not invoked in phase 5"
+}

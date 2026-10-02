@@ -1,0 +1,54 @@
+{
+  "capturedAt": "2026-10-02T16:06:31.213Z",
+  "timezone": "Europe/Istanbul",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "uncommitted October feature repairs including phase 5 public copy; current local application",
+  "command": "node artifacts/feature-repairs/phase5-capture-reviewed.mjs — actual project importer, theme/lighting/export controls and welcome tabs in a fresh local context",
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "viewport": "1440x960, device scale 1",
+  "verdict": "seven real UI states captured with assertions and no page errors; illustrations only, full suites recorded separately",
+  "artworkSources": [
+    "src/lib/art/starterTemplates.ts",
+    "src/lib/art/bunSprite.ts"
+  ],
+  "captures": [
+    {
+      "path": "studio-cozy-dark.png",
+      "description": "Cozy Classic dark; built-in starter artwork and Bun poses arranged in an imported three-frame project.",
+      "sha256": "3eb64ee167eccdf1e7fb9356a3d7a7488c324a7bcbb82aacd7ea56006873a4dc"
+    },
+    {
+      "path": "studio-cozy-light.png",
+      "description": "The same project in Cozy Classic light, selected through the actual Studio options.",
+      "sha256": "9edc2ae4977f7a325aa5678d1db8a0dbfc1b9a18b2a3f7031cb3b5bb94b9b3f2"
+    },
+    {
+      "path": "bun-lighting-preview.png",
+      "description": "Actual uncommitted lighting preview on Bun; Apply and Cancel remain visible.",
+      "sha256": "3efc38a46d5d6089d2dfe84eb690b20369cba925db0791ae845efb0e6cf6fd1c"
+    },
+    {
+      "path": "export-apng.png",
+      "description": "Actual APNG controls with full RGBA and file-size/playback qualification; no download verdict.",
+      "sha256": "cea4810b2023327f07cdbbceff2d675a520c4e015b6ee827a3c2b5b88c7c7cfa"
+    },
+    {
+      "path": "export-mp4.png",
+      "description": "Actual browser-dependent MP4 controls and destination/alpha qualification; no decoder verdict.",
+      "sha256": "db3781eb50d894616843b8ea6a0d39f0efb5d931d1f46533f4156d82616677f1"
+    },
+    {
+      "path": "welcome-overview.png",
+      "description": "Welcome page with warm beginning and correctly scoped Godot kit.",
+      "sha256": "58979787c4c6803b085f49193a22a0591773d357a4f26831bd1a81c152997ed0"
+    },
+    {
+      "path": "welcome-pixelize.png",
+      "description": "Image Synthesis sample, actual sampling/palette controls and bounded edge/detail explanation.",
+      "sha256": "58664a510857a56dd1e26603c8152df9496da8904573356af8b8f8b5ba54e1c6"
+    }
+  ],
+  "captureScript": "Recorded separately in phase 5 local evidence",
+  "review": "All seven final images visually reviewed. Current Godot kit/Unity shader pill, RGBA summary, qualified video notes and sampling explanation are visible. Original PixiBun artwork; direct UI images without editing."
+}

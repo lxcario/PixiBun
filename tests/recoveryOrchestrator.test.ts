@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   db,
+  encodeLayerBlobRecord,
   type StoredProject,
   type StoredLayerBlob,
   type RecoveryRecord,
@@ -339,6 +340,47 @@ describe('Phase 1B.6: Trusted Recovery Orchestrator and Atomic Persistence Engin
   // Group 3: Deterministic Plan Preparation (prepareRecoveryPlan)
   // --------------------------------------------------------------------------
   describe('Group 3: Plan Preparation', () => {
+    it.each(['legacy-blob', 'array-buffer'] as const)('offers the same damaged-layer recovery for %s storage', async representation => {
+      const id = 'proj-physical-recovery';
+      await seedProjectInDb(id, baseProjectFixture(id), [
+        { layerId: 'layer-1', frameIndex: 0, blob: createPngBlob(64, 64) },
+        { layerId: 'layer-2', frameIndex: 1, blob: createPngBlob(32, 32) },
+      ]);
+      const before = await db.projects.get(id);
+      if (representation === 'array-buffer') {
+        const records = await db.layerBlobs.where('projectId').equals(id).toArray();
+        await db.layerBlobs.bulkPut(await Promise.all(records.map(encodeLayerBlobRecord)));
+      }
+      const result = await prepareRecoveryPlan(id);
+      expect(result.status).toBe('additional-deletion-required');
+      const prepared = await prepareRecoveryPlan(id, { deleteFrameIndices: [0] });
+      expect(prepared.status).toBe('ready');
+      if (prepared.status !== 'ready') throw new Error('Expected admitted recovery plan');
+      const committed = await commitRecoveredProject(prepared.planToken);
+      expect(committed.status).toBe('persisted-success');
+      if (committed.status !== 'persisted-success') throw new Error('Expected separate recovered copy');
+      expect(committed.recoveredProjectId).not.toBe(id);
+      const recovered = await db.layerBlobs.where('projectId').equals(committed.recoveredProjectId).toArray();
+      expect(recovered).toHaveLength(1);
+      expect(new Uint8Array(await recovered[0].blob.arrayBuffer())).toEqual(
+        new Uint8Array(await createPngBlob(32, 32).arrayBuffer()),
+      );
+      expect(await db.projects.get(id)).toEqual(before);
+      expect(await db.layerBlobs.where('projectId').equals(id).count()).toBe(2);
+    });
+
+    it('still refuses unrelated unknown fields on physical ArrayBuffer records', async () => {
+      const id = 'proj-unknown-physical-field';
+      await seedProjectInDb(id, baseProjectFixture(id), [
+        { layerId: 'layer-1', frameIndex: 0, blob: createPngBlob(64, 64) },
+      ]);
+      const record = (await db.layerBlobs.where('projectId').equals(id).first())!;
+      const encoded = await encodeLayerBlobRecord(record);
+      await db.layerBlobs.put({ ...encoded, unexpectedPhysicalField: 'must not be discarded' } as typeof encoded);
+      const result = await prepareRecoveryPlan(id);
+      expect(result).toMatchObject({ status: 'unrecoverable-blocked', reasonCode: 'MALFORMED_METADATA' });
+    });
+
     it('returns unrecoverable-blocked INVALID_ASSESSMENT when project is healthy and valid', async () => {
       const proj = baseProjectFixture('proj-valid');
       const blob0 = createPngBlob(32, 32);

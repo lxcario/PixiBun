@@ -1,0 +1,426 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: researchWorkbench.spec.ts >> compiled simplification protects details and persists source provenance
+- Location: tests\production\researchWorkbench.spec.ts:4:5
+
+# Error details
+
+```
+Test timeout of 60000ms exceeded.
+```
+
+```
+Error: locator.selectOption: Test timeout of 60000ms exceeded.
+Call log:
+  - waiting for getByRole('combobox', { name: 'Simplification block size' })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - link "Skip to workspace" [ref=e2] [cursor=pointer]:
+    - /url: /studio#main-workspace
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - group "Project controls" [ref=e6]:
+        - link "PixiBun Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e8]:
+            - img "Bun, the PixiBun bunny" [ref=e10]
+            - generic [ref=e174]:
+              - generic [ref=e175]: PIXIBUN
+              - generic [ref=e176]: ATELIER
+        - button "File" [ref=e177]:
+          - text: File
+          - generic [ref=e178]: ▼
+        - button "Rename project Phase 5 original kit" [ref=e179] [cursor=pointer]: Phase 5 original kit
+        - generic "Canvas size · change it in File" [ref=e180]: 32×16
+        - button "Save now" [ref=e181]:
+          - generic [ref=e182]: Save
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - button "Undo last action" [disabled]
+          - generic [ref=e186]:
+            - button "Redo last action" [disabled]
+      - group "Drawing controls" [ref=e187]:
+        - generic "Tool options rail" [ref=e188]:
+          - generic [ref=e189]: "Pen:"
+          - button "Brush size 1 pixels" [ref=e191]:
+            - generic [ref=e192]: Size
+            - generic [ref=e193]: 1 px
+            - generic [ref=e194]: ▾
+      - generic [ref=e195]:
+        - group "Canvas controls" [ref=e196]:
+          - group "Mirror drawing" [ref=e197]:
+            - generic [ref=e198]: Mirror
+            - button "Horizontal symmetry" [ref=e200] [cursor=pointer]
+            - button "Vertical symmetry" [ref=e202] [cursor=pointer]
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - button "Zoom Out" [ref=e206] [cursor=pointer]: −
+              - button "Zoom 1600 percent. Choose zoom level" [ref=e208]: 1600%
+              - button "Zoom In" [ref=e209] [cursor=pointer]: +
+            - button "Fit Canvas to Viewport (Ctrl+0)" [ref=e211] [cursor=pointer]: Fit
+          - button "View options menu" [ref=e215] [cursor=pointer]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: View
+              - generic "1 active view options" [ref=e218]
+            - generic [ref=e219]: ▼
+        - group "Studio settings and help" [ref=e220]:
+          - button "Studio options" [ref=e221] [cursor=pointer]:
+            - generic [ref=e222]: Studio
+            - generic [ref=e223]: ▼
+        - button "Export drawing" [ref=e225]:
+          - generic [ref=e226]: Export
+    - status [ref=e228]: Changes saved
+    - generic [ref=e229]:
+      - complementary [ref=e230]:
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - button "Pen" [ref=e234] [cursor=pointer]
+            - button "Bézier Curve" [ref=e236] [cursor=pointer]
+            - button "Eraser" [ref=e238] [cursor=pointer]
+            - button "Flood Fill" [ref=e240] [cursor=pointer]
+            - button "Dither Brush" [ref=e242] [cursor=pointer]
+            - button "Color Replace" [ref=e244] [cursor=pointer]
+            - button "Erase Sampled Color" [ref=e246] [cursor=pointer]
+          - generic [ref=e247]:
+            - button "Marquee Box" [ref=e250] [cursor=pointer]
+            - button "Lasso Select" [ref=e252] [cursor=pointer]
+            - button "Magic Wand" [ref=e254] [cursor=pointer]
+          - generic [ref=e255]:
+            - button "Line" [ref=e258] [cursor=pointer]
+            - button "2:1 Iso Line" [ref=e260] [cursor=pointer]
+            - button "Rectangle" [ref=e262] [cursor=pointer]
+            - button "Ellipse" [ref=e264] [cursor=pointer]
+          - button "Normal Chisel" [ref=e268] [cursor=pointer]
+          - button "Eyedropper" [ref=e272] [cursor=pointer]
+        - generic [ref=e273]:
+          - generic [ref=e274]:
+            - button "Swap colors (X)" [ref=e275] [cursor=pointer]: ⇄
+            - button "Reset default black and white colors (Shift+D)" [ref=e276] [cursor=pointer]
+            - 'button "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap" [ref=e277] [cursor=pointer]'
+            - 'button "Primary color #3A2E4C. Click for quick swatches, double click for picker, right click to swap" [ref=e278] [cursor=pointer]'
+          - generic [ref=e279]:
+            - generic [ref=e280]:
+              - 'button "#000000 (Click: Primary | Right-click: Secondary)" [ref=e281] [cursor=pointer]'
+              - 'button "#050000 (Click: Primary | Right-click: Secondary)" [ref=e282] [cursor=pointer]'
+              - 'button "#0a0000 (Click: Primary | Right-click: Secondary)" [ref=e283] [cursor=pointer]'
+              - 'button "#0f0000 (Click: Primary | Right-click: Secondary)" [ref=e284] [cursor=pointer]'
+            - button "Quick Swatches Flyout" [ref=e285] [cursor=pointer]
+      - main "Pixel art canvas workspace" [ref=e289]:
+        - application "Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan." [ref=e290]
+      - complementary [ref=e292]:
+        - generic [ref=e293]:
+          - button "Layers" [ref=e294] [cursor=pointer]
+          - button "Palette" [ref=e296] [cursor=pointer]
+          - button "PixiTools" [ref=e298] [cursor=pointer]
+        - generic [ref=e301]:
+          - generic [ref=e302]:
+            - button "← Choose another task" [ref=e303] [cursor=pointer]
+            - heading "Try a new look" [level=2] [ref=e304]
+          - region "Try a new look" [ref=e307]:
+            - tablist "Variation intention selector" [ref=e308]:
+              - tab "Simplify" [selected] [ref=e309] [cursor=pointer]
+              - tab "Light" [ref=e311] [cursor=pointer]
+              - tab "Tiles" [ref=e313] [cursor=pointer]
+            - tabpanel "Simplify" [ref=e315]:
+              - generic [ref=e317]:
+                - generic [ref=e318]:
+                  - paragraph [ref=e319]: Before
+                  - region "Research source pixel view" [ref=e320]:
+                    - img "Research source" [ref=e322]
+                - generic [ref=e323]:
+                  - paragraph [ref=e324]: After
+                  - region "Research result pixel view" [ref=e325]:
+                    - img "Research result" [ref=e327]
+              - group "Simple choices" [ref=e328]:
+                - generic [ref=e330]:
+                  - paragraph [ref=e331]: Pixel blocks
+                  - generic [ref=e332]:
+                    - button "Original" [pressed] [ref=e333] [cursor=pointer]
+                    - button "2px" [ref=e334] [cursor=pointer]
+                    - button "4px" [ref=e335] [cursor=pointer]
+                    - button "8px" [ref=e336] [cursor=pointer]
+                - generic [ref=e337]:
+                  - generic [ref=e338]:
+                    - button "Select an area" [ref=e339] [cursor=pointer]
+                    - button "Keep this detail" [disabled] [ref=e340] [cursor=pointer]
+                  - paragraph [ref=e341]: Drag a box on your artwork.
+                - group [ref=e342]:
+                  - generic "More options" [active] [ref=e343] [cursor=pointer]
+                  - option "Fit artwork" [selected]
+                  - option "1× canvas"
+                  - option "4× canvas"
+                  - option "Frame 1" [selected]
+                  - option "1px" [selected]
+                  - option "2px"
+                  - option "3px"
+                  - option "4px"
+                  - option "5px"
+                  - option "6px"
+                  - option "7px"
+                  - option "8px"
+                  - option "9px"
+                  - option "10px"
+                  - option "11px"
+                  - option "12px"
+                  - option "13px"
+                  - option "14px"
+                  - option "15px"
+                  - option "16px"
+                  - option "Blend"
+                  - option "Strongest"
+                  - option "Sample" [selected]
+                  - option "Keep artwork colors" [selected]
+                  - option "Replace with active palette"
+              - group [ref=e344]:
+                - generic "About this result" [ref=e345] [cursor=pointer]
+              - status [ref=e346]: No change to your pixels.
+              - generic [ref=e347]:
+                - generic [ref=e348]:
+                  - button "Create research preview" [ref=e349] [cursor=pointer]: Update preview
+                  - button "Apply research preview" [disabled] [ref=e350] [cursor=pointer]: No change
+                - paragraph [ref=e351]: Adds an editable layer. Undo restores this change.
+    - contentinfo [ref=e352]:
+      - generic [ref=e353]:
+        - generic [ref=e354]:
+          - generic [ref=e355]:
+            - button "Play" [ref=e356]
+            - button "Previous Frame (,)" [ref=e359]
+            - button "Next Frame (.)" [ref=e361]
+            - button "Repeat" [ref=e363]
+          - generic [ref=e367]:
+            - button "Preview speed" [ref=e369]:
+              - generic [ref=e370]: Preview
+              - generic [ref=e371]: 1×
+              - generic [ref=e372]: ▾
+            - generic [ref=e373]:
+              - generic [ref=e374]: Frame time
+              - spinbutton "Active frame duration in milliseconds" [ref=e375]: "70"
+              - generic [ref=e376]: ms
+            - button "Onion Skin" [ref=e377]
+        - generic [ref=e380]:
+          - button "+ Frame" [ref=e381]:
+            - generic [ref=e382]: Frame
+          - group [ref=e384]:
+            - generic "Frame actions" [ref=e385] [cursor=pointer]:
+              - text: Frame actions
+              - generic [ref=e386]: ▾
+          - button "Collapse Timeline" [ref=e388]:
+            - generic [ref=e389]:
+              - generic [ref=e390]: ▼
+              - generic [ref=e391]: Collapse
+      - generic [ref=e392]:
+        - generic [ref=e393]:
+          - 'button "Filter clips: All frames (3)" [ref=e394] [cursor=pointer]': All Frames (3)
+          - button "Back \"left\" 歩く (1-3)" [ref=e396] [cursor=pointer]
+          - button "Bounce (1-3)" [ref=e398] [cursor=pointer]
+        - generic [ref=e399]:
+          - 'button "Select frame 1. Duration: 70ms. Drag to reorder." [ref=e400]':
+            - generic:
+              - generic: "#1"
+              - generic: 70ms
+          - 'button "Select frame 2. Duration: 230ms. Drag to reorder." [ref=e401]':
+            - generic:
+              - generic: "#2"
+              - generic: 230ms
+          - 'button "Select frame 3. Duration: 110ms. Drag to reorder." [ref=e402]':
+            - generic:
+              - generic: "#3"
+              - generic: 110ms
+        - button "Clips" [ref=e403]
+    - generic [ref=e404]:
+      - generic [ref=e405]: "X: — Y: —"
+      - generic [ref=e408]: 32×16
+      - generic [ref=e411]: 1600%
+      - generic [ref=e413]: Frame 1/3
+      - generic [ref=e415]: Color
+      - generic [ref=e416]: pen
+      - status "All changes saved to local storage" [ref=e421]:
+        - generic [ref=e423]: Saved
+  - alert [ref=e424]
+```
+
+# Test source
+
+```ts
+  1   | import { expect, type Page } from '@playwright/test';
+  2   | import { importGameDeliveryFixture } from './gameDeliveryFixture';
+  3   | 
+  4   | export const artwork = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
+  5   | export const viewPixels = (page: Page, label: string) => page.getByRole('img', { name: label, exact: true }).evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
+  6   | export async function openResearch(page: Page) {
+  7   |   await page.getByTestId('tab-ai').click();
+  8   |   const choose = page.getByRole('button', { name: 'Choose another task' });
+  9   |   await expect(choose.or(page.getByTestId('pixitools-task-research'))).toBeVisible();
+  10  |   if (await choose.isVisible()) await choose.click();
+  11  |   await page.getByTestId('pixitools-task-research').click();
+  12  | }
+  13  | export async function selectResearchWorkflow(page: Page, kind: string) {
+  14  |   const names: Record<string, string> = { pixelize: 'Simplify', light: 'Light', scene: 'Tiles' };
+  15  |   await page.getByRole('tab', { name: names[kind], exact: true }).click();
+  16  | }
+  17  | export async function openResearchOptions(page: Page) {
+  18  |   const summary = page.getByText('More options', { exact: true });
+  19  |   if (!await summary.evaluate(element => (element.parentElement as HTMLDetailsElement).open)) await summary.click();
+  20  | }
+  21  | export async function preview(page: Page) {
+  22  |   const action = page.getByRole('button', { name: 'Create research preview', exact: true });
+  23  |   await expect(action).toBeEnabled();
+  24  |   const worker = page.waitForEvent('worker'); await action.click();
+  25  |   expect((await worker).url()).toContain('/_next/'); await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+  26  |   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-busy', 'false');
+  27  | }
+  28  | export async function verifyResearchKeyboardWorkflow(page: Page) {
+  29  |   await importGameDeliveryFixture(page); await openResearch(page);
+  30  |   const simplify = page.getByRole('tab', { name: 'Simplify', exact: true });
+  31  |   await simplify.focus(); await page.keyboard.press('ArrowRight');
+  32  |   await expect(page.getByRole('tab', { name: 'Light', exact: true })).toBeFocused();
+  33  |   await expect(page.getByRole('tabpanel', { name: 'Light', exact: true })).toBeVisible();
+  34  |   await expect(page.getByRole('button', { name: 'Create research preview', exact: true })).toBeEnabled();
+  35  |   await page.keyboard.press('ArrowRight');
+  36  |   await expect(page.getByRole('tab', { name: 'Tiles', exact: true })).toBeFocused();
+  37  |   await preview(page);
+  38  |   const view = page.getByRole('combobox', { name: 'Scene preview cell' });
+  39  |   await view.focus(); await page.keyboard.press('End');
+  40  |   const count = await view.locator('option').count();
+  41  |   await openResearchOptions(page);
+  42  |   await expect(page.getByRole('combobox', { name: 'Pinned scene cell' })).toHaveValue(String(count - 1));
+  43  |   await expect(page.getByText(`Scene cell ${count} selected.`, { exact: true })).toBeVisible();
+  44  |   await page.getByRole('tab', { name: 'Tiles', exact: true }).focus(); await page.keyboard.press('Home');
+  45  |   await expect(simplify).toBeFocused(); await preview(page);
+  46  |   await openResearchOptions(page);
+  47  |   await page.getByRole('combobox', { name: 'Simplification block size' }).selectOption('3');
+  48  |   await expect(page.getByRole('button', { name: 'Apply research preview' })).toHaveCount(0);
+  49  |   const actions = page.getByTestId('research-actions');
+  50  |   await expect(actions.getByRole('button')).toHaveCount(1);
+  51  |   const actionBox = (await actions.getByRole('button').boundingBox())!, barBox = (await actions.boundingBox())!;
+  52  |   expect(Math.abs(actionBox.width - barBox.width)).toBeLessThan(1);
+  53  |   await preview(page); await expect(page.getByRole('button', { name: 'Apply research preview' })).toBeDisabled();
+  54  |   const outlines = page.getByRole('checkbox', { name: 'Keep outlines', exact: true });
+  55  |   await outlines.focus(); await page.keyboard.press('Space'); await expect(outlines).not.toBeChecked();
+  56  |   await preview(page); await expect(page.getByRole('button', { name: 'Apply research preview' })).toBeEnabled();
+  57  | }
+  58  | async function saveReload(page: Page) {
+  59  |   await page.getByTestId('save-button').click();
+  60  |   await expect(page.locator('[role="status"]').filter({ hasText: /Changes saved/ })).toBeVisible();
+  61  |   await page.reload(); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
+  62  |   await openResearch(page); await expect(page.getByText('Source pixels are current.', { exact: true })).toBeVisible();
+  63  |   await page.getByRole('button', { name: 'Load saved recipe' }).click();
+  64  |   await openResearchOptions(page);
+  65  | }
+  66  | export async function verifyDetailWorkflow(page: Page) {
+  67  |   await importGameDeliveryFixture(page); const before = await artwork(page); await openResearch(page);
+  68  |   await openResearchOptions(page);
+> 69  |   await page.getByRole('combobox', { name: 'Simplification block size' }).selectOption('3');
+      |                                                                           ^ Error: locator.selectOption: Test timeout of 60000ms exceeded.
+  70  |   // This dense palette fixture has strong boundaries at every row. Explicitly opt out
+  71  |   // before testing manual protected rectangles and applying a coarse result.
+  72  |   await page.getByRole('checkbox', { name: 'Keep outlines', exact: true }).uncheck();
+  73  |   await page.getByTestId('select-box-tool').click(); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  74  |   await page.mouse.move(box.x + box.width * 17.5 / 32, box.y + box.height * 2.5 / 16); await page.mouse.down();
+  75  |   await page.mouse.move(box.x + box.width * 20.5 / 32, box.y + box.height * 5.5 / 16, { steps: 3 }); await page.mouse.up();
+  76  |   await page.getByRole('textbox', { name: 'Research detail name' }).fill('Tiny fabric detail');
+  77  |   await page.getByRole('button', { name: 'Protect selected rectangle' }).click();
+  78  |   await expect(page.getByText(/Tiny fabric detail \(/)).toBeVisible();
+  79  |   await preview(page); expect(await artwork(page)).toEqual(before);
+  80  |   const source = await viewPixels(page, 'Research source'), result = await viewPixels(page, 'Research result');
+  81  |   for (let y = 2; y <= 5; y++) for (let x = 17; x <= 20; x++) { const p = (y * 32 + x) * 4; expect(result.slice(p, p + 4)).toEqual(source.slice(p, p + 4)); }
+  82  |   await page.getByRole('combobox', { name: 'Research preview scale' }).selectOption('1');
+  83  |   await expect(page.getByRole('img', { name: 'Research result', exact: true })).toHaveCSS('width', '32px');
+  84  |   await page.getByRole('button', { name: 'Apply research preview' }).click(); await expect(page.getByText('Source pixels are current.', { exact: true })).toBeVisible();
+  85  |   const applied = await artwork(page); expect(applied).not.toEqual(before);
+  86  |   await page.getByTestId('undo-button').click(); await expect.poll(() => artwork(page)).toEqual(before);
+  87  |   await page.getByTestId('redo-button').click(); await expect.poll(() => artwork(page)).toEqual(applied);
+  88  |   await saveReload(page); await expect(page.getByRole('combobox', { name: 'Simplification block size' })).toHaveValue('3');
+  89  |   await preview(page); expect(await viewPixels(page, 'Research result')).toEqual(result);
+  90  |   // Reveal the retained original and verify a real edit before checking its fingerprint.
+  91  |   await page.getByTestId('tab-layers').click(); await page.getByRole('button', { name: 'Select layer Color. Double click to rename', exact: true }).click();
+  92  |   await page.getByRole('button', { name: 'Show layer Color', exact: true }).click();
+  93  |   await page.getByRole('button', { name: 'Hide layer Detail study', exact: true }).click();
+  94  |   await expect.poll(() => artwork(page)).toEqual(before);
+  95  |   await page.keyboard.press('b'); const canvas = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  96  |   await expect(page.getByTestId('pen-tool')).toHaveClass(/pixel-primary-btn/);
+  97  |   await page.mouse.click(canvas.x + canvas.width * 0.1, canvas.y + canvas.height * 0.25);
+  98  |   await expect.poll(() => artwork(page)).not.toEqual(before);
+  99  |   await page.getByRole('button', { name: 'Hide layer Color', exact: true }).click();
+  100 |   await page.getByRole('button', { name: 'Show layer Detail study', exact: true }).click();
+  101 |   await page.getByRole('button', { name: 'Select layer Detail study. Double click to rename', exact: true }).click();
+  102 |   await openResearch(page); await expect(page.getByText('Source changed: recompute this recipe.', { exact: true })).toBeVisible();
+  103 | }
+  104 | export async function verifyLightWorkflow(page: Page) {
+  105 |   await importGameDeliveryFixture(page); const before = await artwork(page); await openResearch(page);
+  106 |   await selectResearchWorkflow(page, 'light'); await openResearchOptions(page);
+  107 |   await page.getByRole('spinbutton', { name: 'Shared light azimuth' }).fill('90');
+  108 |   await page.getByRole('spinbutton', { name: 'Shared light height' }).fill('0');
+  109 |   await page.getByRole('combobox', { name: 'Shared light material' }).selectOption('metal');
+  110 |   await page.getByRole('checkbox', { name: /Use this rig across/ }).check();
+  111 |   await preview(page); expect(await artwork(page)).toEqual(before);
+  112 |   const first = await viewPixels(page, 'Research result');
+  113 |   await page.getByRole('combobox', { name: 'Research preview pose' }).selectOption('1'); expect(await viewPixels(page, 'Research result')).not.toEqual(first);
+  114 |   await page.getByRole('combobox', { name: 'Shared light preview output' }).selectOption('specular');
+  115 |   expect((await viewPixels(page, 'Research result')).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
+  116 |   await page.getByRole('combobox', { name: 'Shared light preview output' }).selectOption('shadow'); expect((await viewPixels(page, 'Research result')).every(v => v === 0)).toBe(true);
+  117 |   await page.getByRole('button', { name: 'Apply research preview' }).click();
+  118 |   await page.getByTestId('undo-button').click(); await expect.poll(() => artwork(page)).toEqual(before);
+  119 |   await page.getByRole('button', { name: /Select frame 3/ }).click(); await page.getByTestId('tab-layers').click(); await expect(page.getByTestId('layers-stack-count')).toContainText('2');
+  120 |   await page.getByTestId('redo-button').click(); await expect(page.getByTestId('layers-stack-count')).toContainText('3');
+  121 |   await page.getByRole('button', { name: /Select frame 1/ }).click(); await openResearch(page);
+  122 |   await saveReload(page); await preview(page); expect(await viewPixels(page, 'Research result')).toEqual(first);
+  123 | }
+  124 | export async function verifyOutlinedArtworkWorkflow(page: Page, screenshot?: (name: string) => Promise<void>) {
+  125 |   await importGameDeliveryFixture(page, false, { outlined: true });
+  126 |   // Hold only the first real worker dispatch to reproduce a click arriving while
+  127 |   // an automatic refresh is pending, without replacing the worker or its results.
+  128 |   await page.evaluate(() => {
+  129 |     const send = Worker.prototype.postMessage;
+  130 |     Worker.prototype.postMessage = function (...args: unknown[]) {
+  131 |       Worker.prototype.postMessage = send;
+  132 |       setTimeout(() => Reflect.apply(send, this, args), 1000);
+  133 |     };
+  134 |   });
+  135 |   const before = await artwork(page); await openResearch(page);
+  136 |   await expect(page.getByRole('button', { name: 'Cancel preview', exact: true })).toBeVisible();
+  137 |   const refreshSlot = (await page.getByTestId('research-actions').getByRole('button').first().boundingBox())!;
+  138 |   await page.mouse.click(refreshSlot.x + refreshSlot.width / 4, refreshSlot.y + refreshSlot.height / 2);
+  139 |   const largeBlocks = page.getByRole('button', { name: '8px', exact: true });
+  140 |   expect(await largeBlocks.evaluate(button => button.matches(':disabled'))).toBe(false);
+  141 |   await largeBlocks.click(); await expect(largeBlocks).toHaveAttribute('aria-pressed', 'true');
+  142 |   await expect(page.getByRole('img', { name: 'Research result', exact: true })).toBeVisible();
+  143 |   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-busy', 'false');
+  144 |   expect(await viewPixels(page, 'Research result')).toEqual(before);
+  145 |   await page.getByRole('button', { name: '8px', exact: true }).click();
+  146 |   await preview(page);
+  147 |   await expect(page.getByRole('checkbox', { name: 'Keep outlines', exact: true })).toBeChecked();
+  148 |   expect(await viewPixels(page, 'Research result')).toEqual(before);
+  149 |   await expect(page.getByRole('button', { name: 'Apply research preview' })).toBeDisabled();
+  150 |   if (screenshot) await screenshot('outlined-simplification.png');
+  151 |   await page.getByRole('checkbox', { name: 'Keep outlines', exact: true }).uncheck(); await preview(page);
+  152 |   expect(await viewPixels(page, 'Research result')).not.toEqual(before);
+  153 |   expect(await artwork(page)).toEqual(before);
+  154 |   await selectResearchWorkflow(page, 'light'); await preview(page);
+  155 |   await expect(page.getByText('Rounded shape estimated from your outline.', { exact: true })).toBeVisible();
+  156 |   await page.getByRole('button', { name: 'Light from right', exact: true }).click(); await preview(page);
+  157 |   const right = await viewPixels(page, 'Research result'), at = (x: number, y: number) => (y * 32 + x) * 4;
+  158 |   expect(right[at(23, 16)]).toBeGreaterThan(right[at(8, 16)]);
+  159 |   await page.getByRole('button', { name: 'Light from left', exact: true }).click(); await preview(page);
+  160 |   const left = await viewPixels(page, 'Research result');
+  161 |   expect(left[at(23, 16)]).toBeLessThan(left[at(8, 16)]);
+  162 |   for (let p = 3; p < before.length; p += 4) expect(left[p]).toBe(before[p]);
+  163 |   expect(await artwork(page)).toEqual(before);
+  164 |   if (screenshot) await screenshot('outlined-directional-light.png');
+  165 |   await page.getByRole('button', { name: 'Apply research preview' }).click();
+  166 |   await expect.poll(() => artwork(page)).toEqual(left);
+  167 |   await page.getByTestId('undo-button').click(); await expect.poll(() => artwork(page)).toEqual(before);
+  168 |   await page.getByTestId('redo-button').click(); await expect.poll(() => artwork(page)).toEqual(left);
+  169 |   await saveReload(page); await expect(page.getByRole('combobox', { name: 'Light fallback shape' })).toHaveValue('rounded');
+```

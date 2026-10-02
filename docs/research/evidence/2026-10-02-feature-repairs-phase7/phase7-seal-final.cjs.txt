@@ -1,0 +1,40 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const cp = require('node:child_process');
+const crypto = require('node:crypto');
+const root = 'docs/research/evidence/2026-10-02-feature-repairs-phase7';
+if (fs.existsSync(`${root}/manifest.json`)) throw new Error('Evidence is already sealed');
+const env = {...process.env, PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH}`};
+const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const commands = [];
+function run(name, executable, args) {
+  const startedAt = new Date().toISOString();
+  const result = cp.spawnSync(executable, args, {env, encoding:'utf8', maxBuffer: 16 * 1024 * 1024});
+  fs.writeFileSync(`${root}/${name}.log`, `${result.stdout || ''}${result.stderr || ''}`);
+  const record = {command:[executable,...args], exitCode:result.status, startedAt, completedAt:new Date().toISOString(), log:`${name}.log`};
+  commands.push(record);
+  if (result.error || result.status !== 0) throw result.error || new Error(`Failed ${name}: ${result.status}`);
+  console.log(`${name} passed.`);
+  return result.stdout;
+}
+const docs = run('docs-final', process.execPath, [path.join(path.dirname(process.execPath),'node_modules/npm/bin/npm-cli.js'),'run','verify:docs']);
+run('diff-check-final', 'git', ['diff','--check']);
+run('zip-copies-final', 'C:/Users/Resque/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe', ['artifacts/feature-repairs/phase6-zip-oracle.py', `${root}/downloads`]);
+for (const file of JSON.parse(fs.readFileSync(`${root}/source-final.json`)).files) if (sha(file.path) !== file.sha256) throw new Error(`Source changed: ${file.path}`);
+const metadata = JSON.parse(fs.readFileSync(`${root}/run.json`));
+metadata.finalDocumentationChecks = {commands, output:docs.trim(), scope:'Selected links/headings, inventory and source contracts; not certification of every prose sentence.'};
+metadata.finalFrozenSourceCheck = {files:542, verdict:'All matching immediately before sealing'};
+metadata.sealedAt = new Date().toISOString();
+fs.writeFileSync(`${root}/run.json`, JSON.stringify(metadata,null,2)+'\n');
+for (const name of ['phase7-publish.cjs','phase7-finalize.cjs','phase7-seal-final.cjs']) fs.copyFileSync(`artifacts/feature-repairs/${name}`,`${root}/${name}.txt`);
+const sealed = cp.spawnSync(process.execPath, ['artifacts/feature-repairs/phase7-publish.cjs','seal'], {env,encoding:'utf8'});
+fs.writeFileSync('artifacts/feature-repairs/phase7/seal-operation.log', `${sealed.stdout || ''}${sealed.stderr || ''}`);
+if (sealed.error || sealed.status !== 0) throw sealed.error || new Error('Sealing failed');
+console.log(sealed.stdout.trim());
+const manifest = JSON.parse(fs.readFileSync(`${root}/manifest.json`));
+for (const file of manifest) if (sha(`${root}/${file.path}`) !== file.sha256) throw new Error(`Sealed mismatch: ${file.path}`);
+let count=0;
+function countFiles(dir) { for (const entry of fs.readdirSync(dir,{withFileTypes:true})) { if(entry.isDirectory()) countFiles(path.join(dir,entry.name)); else count++; } }
+countFiles(root);
+if(count !== manifest.length+1) throw new Error('Unexpected files outside seal');
+console.log(`Final manifest verified: ${manifest.length} files, no extras.`);

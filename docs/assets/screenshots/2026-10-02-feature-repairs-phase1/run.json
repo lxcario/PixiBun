@@ -1,0 +1,20 @@
+{
+  "scope": "Phase 1 local UI illustration; pixels restored by the real Undo control after Clear. Not participant or release evidence.",
+  "capturedAt": "2026-10-02T10:37:23.921Z",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "dirtyWorkingTree": true,
+  "applicationChanges": true,
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "origin": "http://localhost:3000",
+  "viewport": "1600x1000",
+  "deviceScaleFactor": 1,
+  "command": "playwright test tests/e2e/lessonHistory.spec.ts tests/e2e/pocketDoodlePad.spec.ts --workers=1",
+  "verdict": "3 passed; isolated browser profiles; no real artist storage changed",
+  "captures": [
+    {
+      "path": "lesson-trace-restored.png",
+      "sha256": "0dd04a67afbcb3859e2e52abb9e25e92978a018f1f875df8bcc235e8e58927bf"
+    }
+  ]
+}

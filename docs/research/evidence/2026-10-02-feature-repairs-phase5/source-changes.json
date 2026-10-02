@@ -1,0 +1,61 @@
+{
+  "comparedWith": "phase 4 final source snapshot",
+  "changedFiles": [
+    {
+      "path": "src/app/layout.tsx",
+      "sha256": "a98466295c4fac4a5964d2bda51b8358d34346573134ec61e69ef1ffb8322523"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "sha256": "4d4e39d825b730a6d75b8ba366d5a34000493bae53728e5d99a6154f8be4821a"
+    },
+    {
+      "path": "src/components/landing/AtelierEngineShowcase.tsx",
+      "sha256": "1f8b744eade9fad3ebdae4704f7f6fab378abc95896f437447860cc03417ce36"
+    },
+    {
+      "path": "src/components/landing/AtelierHero.tsx",
+      "sha256": "623ca2787daed61c537e0d7cf0f052833343a06af2d439a4916902d84246e2ca"
+    },
+    {
+      "path": "src/components/landing/CozyFeatureGrid.tsx",
+      "sha256": "9512a14a8ce355f8e2672c23409944ae3e5c64991d7d02670b9c014cf4775362"
+    },
+    {
+      "path": "src/components/landing/CozyScrollReveal.tsx",
+      "sha256": "f5be2352b8ca49dcfa0785e257a383123d0feca5e58e2000a796351a5f4b38e3"
+    },
+    {
+      "path": "src/components/landing/showcase/PhotometricShowcase.tsx",
+      "sha256": "86d6533dc2390bc5a2bbc6e71ec08f64947e13f398639125e128c48205839098"
+    },
+    {
+      "path": "src/components/landing/showcase/PixelizeShowcase.tsx",
+      "sha256": "2724ee376584149c0946ca4db130652a0d7d5f984434fdedb666ff6007c2c49d"
+    },
+    {
+      "path": "src/components/landing/showcase/RotSpriteShowcase.tsx",
+      "sha256": "7603e00e0573efaf0d02fc7bfff3d224ba655ed8c96557ced229b79a47d35ecd"
+    },
+    {
+      "path": "src/components/modals/export/AnimatedExportTab.tsx",
+      "sha256": "a02020b26ae2f84c3da8fbba618259844713afb400d7ace64166ba41a7456602"
+    },
+    {
+      "path": "tests/components/AtelierEngineShowcase.test.tsx",
+      "sha256": "01ac7a871c8ed3b117fc60955d67f47993a909184071da705c10d6c908b048e1"
+    },
+    {
+      "path": "tests/e2e/landing.spec.ts",
+      "sha256": "e3d45dae2350588b6b4445e02775ba71738c77213c7a9b33f30ebf14cfe224f7"
+    },
+    {
+      "path": "tests/e2e/studio.spec.ts",
+      "sha256": "6e6b971e404dd7a4e5e0bdef6a9ade678f78ba21f928798a02d11303a98d7f87"
+    },
+    {
+      "path": "tests/helpers/exportCompletenessWorkflows.ts",
+      "sha256": "7aa92b9ff5fe4a39b57ae391d7894e52626879bedee748642011508decd18b24"
+    }
+  ]
+}

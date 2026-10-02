@@ -99,9 +99,11 @@ export class PixiBunDatabase extends Dexie {
     });
     this.layerBlobs.hook('reading', (record) => {
       const stored = record as LayerBlobStorageRecord;
-      return stored.blob instanceof ArrayBuffer
-        ? { ...stored, blob: new Blob([stored.blob], { type: stored.blobType ?? 'image/png' }) }
-        : record;
+      if (!(stored.blob instanceof ArrayBuffer)) return record;
+      // MIME is a physical storage field, not part of the logical raster
+      // record validated by recovery. Preserve all other fields for validation.
+      const { blobType, ...logicalRecord } = stored;
+      return { ...logicalRecord, blob: new Blob([stored.blob], { type: blobType ?? 'image/png' }) };
     });
   }
 }

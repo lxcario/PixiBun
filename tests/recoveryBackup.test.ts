@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { db, type StoredProject, type RecoveryRecord } from '@/lib/storage/db';
+import { db, type StoredProject, type RecoveryRecord, type StoredLayerBlob } from '@/lib/storage/db';
 import {
   prepareUntouchedRecoveryArchive,
   writePreparedRecoveryArchive,
@@ -454,9 +454,66 @@ describe('Phase 1B.4 — Untouched Recovery Archive Assembly & Safe Export Adapt
       }
       await db.layerBlobs.bulkPut(fakeBlobs);
 
-      await expect(prepareUntouchedRecoveryArchive(id)).rejects.toThrowError(
-        expect.objectContaining({ code: 'EXCESSIVE_STORED_BLOBS' })
-      );
+      const readPayload = vi.fn((record: StoredLayerBlob) => record);
+      db.layerBlobs.hook('reading', readPayload);
+      try {
+        await expect(prepareUntouchedRecoveryArchive(id)).rejects.toThrowError(
+          expect.objectContaining({ code: 'EXCESSIVE_STORED_BLOBS' })
+        );
+        expect(readPayload).not.toHaveBeenCalled();
+        expect(await db.layerBlobs.where('projectId').equals(id).count()).toBe(count);
+      } finally {
+        db.layerBlobs.hook('reading').unsubscribe(readPayload);
+      }
+    });
+
+    it.each(['legacy-blob', 'array-buffer'] as const)(
+      'preserves all payloads at the inspection ceiling with %s records and ignores other projects',
+      async (representation) => {
+        const originalCeiling = RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS;
+        (RECOVERY_INSPECTION_CEILINGS as { MAX_INSPECTABLE_STORED_BLOBS: number }).MAX_INSPECTABLE_STORED_BLOBS = 2;
+        try {
+          const projectId = 'proj-at-ceiling';
+          await db.projects.put({ id: projectId, name: 'Boundary', width: 32, height: 32,
+            fps: 12, createdAt: 1000, updatedAt: 1000, dataJson: '{broken but preserved}' });
+          const payload = new Blob(['original bytes'], { type: 'image/png' });
+          const blob = representation === 'legacy-blob' ? payload : await payload.arrayBuffer();
+          await db.layerBlobs.bulkPut([
+            { id: 1, projectId, layerId: 'layer-1', frameIndex: 0, blob, blobType: 'image/png', updatedAt: 1000 },
+            { id: 2, projectId, layerId: 'layer-2', frameIndex: 0, blob, blobType: 'image/png', updatedAt: 1000 },
+            { id: 3, projectId: 'other-project', layerId: 'other', frameIndex: 0, blob, updatedAt: 1000 },
+          ]);
+          const archive = await prepareUntouchedRecoveryArchive(projectId);
+          const sink = new MemoryZipSink();
+          await writePreparedRecoveryArchive(archive, sink);
+          const files = parseStoreOnlyZipArchive(sink.getBuffer());
+          expect(new TextDecoder().decode(files.get('project.json'))).toBe('{broken but preserved}');
+          const rasters = [...files].filter(([name]) => name.endsWith('.png'));
+          expect(rasters).toHaveLength(2);
+          for (const [, bytes] of rasters) {
+            expect(bytes).toEqual(new Uint8Array(await payload.arrayBuffer()));
+          }
+          expect(await db.layerBlobs.count()).toBe(3);
+        } finally {
+          (RECOVERY_INSPECTION_CEILINGS as { MAX_INSPECTABLE_STORED_BLOBS: number }).MAX_INSPECTABLE_STORED_BLOBS = originalCeiling;
+        }
+      },
+    );
+
+    it('keeps missing-project and invalid-JSON-type error precedence when payload count exceeds the ceiling', async () => {
+      const originalCeiling = RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS;
+      (RECOVERY_INSPECTION_CEILINGS as { MAX_INSPECTABLE_STORED_BLOBS: number }).MAX_INSPECTABLE_STORED_BLOBS = 1;
+      try {
+        const projectId = 'proj-overflow-precedence';
+        await db.layerBlobs.bulkPut([1, 2].map(id => ({ id, projectId, layerId: 'layer',
+          frameIndex: id, blob: new Blob(['bytes']), updatedAt: 1000 })));
+        await expect(prepareUntouchedRecoveryArchive(projectId)).rejects.toMatchObject({ code: 'PROJECT_NOT_FOUND' });
+        await db.projects.put({ id: projectId, name: 'Invalid storage', width: 32, height: 32,
+          fps: 12, createdAt: 1000, updatedAt: 1000, dataJson: null as unknown as string });
+        await expect(prepareUntouchedRecoveryArchive(projectId)).rejects.toMatchObject({ code: 'INVALID_DATA_JSON_STORAGE_TYPE' });
+      } finally {
+        (RECOVERY_INSPECTION_CEILINGS as { MAX_INSPECTABLE_STORED_BLOBS: number }).MAX_INSPECTABLE_STORED_BLOBS = originalCeiling;
+      }
     });
 
     it('fails closed when a stored blob record has corrupted fields, invalid keys, or non-blob payload', async () => {

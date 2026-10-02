@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useCallback } from 'react';
+import { usePracticeActions } from '@/components/playground/PracticeActions';
+import { isPracticeActive } from '@/lib/project/practiceSession';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { useStudioStore } from '@/stores/studioStore';
 import { BunMascot } from '@/components/ui/BunMascot';
@@ -16,7 +17,7 @@ interface TargetRect {
 }
 
 export const OnboardingOverlay: React.FC = () => {
-  const router = useRouter();
+  const practice = usePracticeActions();
   const currentStep = useOnboardingStore((state) => state.getCurrentStep());
   const setOnionSkin = useStudioStore((state) => state.setOnionSkin);
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
@@ -69,25 +70,9 @@ export const OnboardingOverlay: React.FC = () => {
     };
   }, [updateTargetBounds]);
 
-  const initialOnionSkinRef = useRef<boolean | null>(null);
-
-  useEffect(() => {
-    // Capture user's existing onion skin setting before tutorial enablement
-    if (initialOnionSkinRef.current === null) {
-      initialOnionSkinRef.current = useStudioStore.getState().onionSkin.enabled;
-    }
-
-    return () => {
-      // Restore user's previous onion skin setting when onboarding completes or unmounts
-      if (initialOnionSkinRef.current !== null) {
-        useStudioStore.getState().setOnionSkin({ enabled: initialOnionSkinRef.current });
-      }
-    };
-  }, []);
-
   // Automatically enable Onion Skinning during animation tutorial step
   useEffect(() => {
-    if (currentStep.stepIndex > 0) {
+    if (isPracticeActive() && currentStep.stepIndex > 0) {
       setOnionSkin({ enabled: true });
     }
   }, [currentStep.stepIndex, setOnionSkin]);
@@ -152,13 +137,11 @@ export const OnboardingOverlay: React.FC = () => {
               <TactileButton
                 size="sm"
                 variant="primary"
-                onClick={() => {
-                  useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
-                  router.push('/studio?fromPlayground=true');
-                }}
+                onClick={practice?.keep}
+                disabled={!practice}
                 className="text-xs font-bold px-5 py-2.5 bg-[#f0be7c] hover:bg-[#f3cb95] text-[#140d1f] border-2 border-[#8c5120] shadow-md flex items-center gap-2"
               >
-                <span>Enter Full Studio</span>
+                <span>Keep practice in Studio</span>
                 <PixelIcon name="export" size={14} />
               </TactileButton>
             </div>

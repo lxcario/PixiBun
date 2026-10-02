@@ -1,0 +1,48 @@
+{
+  "recordedAt": "2026-10-02T21:23:47.861Z",
+  "origin": "http://localhost:3118",
+  "kind": "compiled-local-route-identity-check-not-deployment",
+  "rows": [
+    {
+      "pathname": "/",
+      "status": 200,
+      "sha256": "de3ac7baf7591e35a50702a5548317c29aaf6ca7e03f8aed3193a6efe5bc6f90",
+      "bytes": 365641,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "workerScope": null,
+      "hasCsp": true
+    },
+    {
+      "pathname": "/studio",
+      "status": 200,
+      "sha256": "05e83eff9641868a07f439eda2b43cb8d880493b0e5faf32f3b892c745867777",
+      "bytes": 102956,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "workerScope": null,
+      "hasCsp": true
+    },
+    {
+      "pathname": "/sw.js",
+      "status": 200,
+      "sha256": "6f0a822801fcf482a14754b07bebec22d242783199955734125960030fc18f43",
+      "bytes": 8215,
+      "contentType": "application/javascript; charset=utf-8",
+      "cacheControl": "no-cache, no-store, must-revalidate",
+      "workerScope": "/",
+      "hasCsp": false,
+      "cacheName": "pixibun-phase7-local-7106f4aa5fa96bc1"
+    },
+    {
+      "pathname": "/manifest.webmanifest",
+      "status": 200,
+      "sha256": "4fe80a230f3783f70aa3c6d051aa9f5bd51d53316f249fac7eb8bf547b0caead",
+      "bytes": 985,
+      "contentType": "application/manifest+json; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "workerScope": null,
+      "hasCsp": false
+    }
+  ]
+}

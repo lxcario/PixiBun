@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-02T20:30:36.577Z",
+  "kind": "read-only-public-http-observation-not-build-attestation",
+  "results": [
+    {
+      "requestedUrl": "https://pixibun.art/",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 314
+    },
+    {
+      "requestedUrl": "https://pixibun.art/studio",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 19
+    },
+    {
+      "requestedUrl": "https://pixibun.art/sw.js",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 21
+    },
+    {
+      "requestedUrl": "https://pixibun.art/manifest.webmanifest",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 16
+    },
+    {
+      "requestedUrl": "https://pixibun.vercel.app/",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 103
+    },
+    {
+      "requestedUrl": "https://pixibun.vercel.app/studio",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 22
+    },
+    {
+      "requestedUrl": "https://pixibun.vercel.app/sw.js",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 21
+    },
+    {
+      "requestedUrl": "https://pixibun.vercel.app/manifest.webmanifest",
+      "error": "TypeError: fetch failed",
+      "elapsedMs": 33
+    }
+  ]
+}

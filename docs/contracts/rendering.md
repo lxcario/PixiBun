@@ -13,13 +13,20 @@ Raster artwork supports fractional alpha. The legacy Clean Jaggies operation fil
 | Owner/boundary | Policy and exclusions |
 | --- | --- |
 | Raster registry | Tracks selected detached raster backing estimates |
-| Undo/Redo | Independent 50-step caps; combined 64 MiB retained-step budget; replay baseline accounted separately |
+| Undo/Redo | Independent 50-step caps; combined 64 MiB retained-step budget per engine; replay baseline accounted separately |
 | Collaboration | Tracks application-owned retained sync state/queues |
 | Idle scratch pool | Exact-size Float32/Int32 reuse, up to 16 per bucket and 32 MiB globally; oldest idle buffers evicted on pressure; empty buckets removed; registered in combined ledger |
 | Operations | Reserve before allocation and release on completion/failure/cancellation/deadline in supported paths |
+| Suspended practice original | Original detached raster references count as `suspendedRasters`; active practice and retained original history count once per distinct engine, including each baseline. No extra raster clone is made for route custody |
 | Excluded/estimated | Checked-out scratch arrays outside separately reserved operations, JS object overhead, GPU/browser surfaces, codecs, decoder copies and caches are not a complete measured heap |
 
 The combined ledger has a 512 MiB admission limit for estimated registered owners/reservations. Pool misses allocate; acquire clears reused buffers; release retains without clearing. Duplicate releases, partial backing views, empty and oversized buffers are refused; `clearBufferPool()` drops idle references and does not invalidate active callers. Reuse reduces allocation, not all garbage collection. Pool budgets are per JavaScript realm; a worker's ledger is not a global cross-worker heap measurement.
+
+## Drawing previews and floating view
+
+Iso Line reads isoAngleSnap in both [shape preview and commit](../../src/hooks/viewport/useShapePointerHandler.ts). ON retains the existing projected 2:1 stepper, including cardinal drags; FREE uses the ordinary bounded getClippedLine path. Preview and commit apply the current brush footprint and drawing symmetry. The toggle defaults to ON; a projected endpoint is not the pointer endpoint.
+
+[CenterViewport](../../src/components/layout/CenterViewport.tsx) mounts one [FloatingPreviewWindow](../../src/components/studio/FloatingPreviewWindow.tsx), outside the transformed drawing stage. The window composites artwork without drawing overlays, repaints when re-expanded, and stops its pointer-down events from entering the parent drawing handler. Its scale/backdrop controls change the view; Play/Pause shares Studio playback. This is an in-app preview, not a browser-native Picture-in-Picture API or a separate project. [Phase 3 execution](../research/2026-10-02-feature-repairs-phase3.md).
 
 ## Lighting and normals
 

@@ -1,0 +1,16 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const os = require('node:os');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const folder = 'artifacts/feature-repairs/phase7';
+const additional = cp.execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', 'public', 'tsconfig.json', 'vitest.config.mjs', 'eslint.config.mjs', 'postcss.config.mjs', '.nvmrc', '.github/workflows', '.env.example'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+const files = [...new Set(additional)].sort().filter(p => fs.statSync(p).isFile()).map(path => ({ path, sha256: sha(fs.readFileSync(path)) }));
+fs.writeFileSync(`${folder}/additional-build-inputs.json`, JSON.stringify({ kind: 'additional-frozen-public-config-inputs', files }, null, 2) + '\n');
+const versions = Object.fromEntries(['next', 'react', 'dexie', '@playwright/test', 'vite', '@next/swc-win32-x64-msvc'].map(name => [name, require(`${name}/package.json`).version]));
+const next = JSON.parse(fs.readFileSync('.next/required-server-files.json'));
+const buildFiles = ['.next/BUILD_ID', '.next/build-manifest.json', '.next/server/app/sw.js/route.js'].filter(p => fs.existsSync(p)).map(path => ({ path, sha256: sha(fs.readFileSync(path)) }));
+const result = { recordedAt: new Date().toISOString(), platform: process.platform, arch: process.arch, node: process.version, versions, cpu: os.cpus()[0].model, availableParallelism: os.availableParallelism(), buildId: fs.readFileSync('.next/BUILD_ID', 'utf8').trim(), cacheVersion: next.config.env.SW_CACHE_VERSION, deploymentId: next.config.deploymentId ?? null, productionBuildFiles: buildFiles, limitations: 'Selected public/config and generated-build hashes; no secret/local environment values read or copied, no deployed-source attestation.' };
+fs.writeFileSync(`${folder}/environment-build.json`, JSON.stringify(result, null, 2) + '\n');
+console.log(`Recorded ${files.length} additional inputs and ${buildFiles.length} compiled fingerprints; Next ${versions.next}, cache ${result.cacheVersion}.`);

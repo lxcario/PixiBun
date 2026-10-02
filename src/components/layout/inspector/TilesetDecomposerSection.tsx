@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import PanelSection from '@/components/ui/PanelSection';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { decomposeIntoTileset } from '@/lib/canvas/tileStamp';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { prepareTilesetBundle, tilesetSourceKey, assertTilesetCurrent } from '@/lib/export/tilesetBundle';
 import { compositeFrame } from '@/lib/render/compositor';
 import { generate47BlobEdgeData } from '@/lib/ai/pixelAiEngine';
 
@@ -32,6 +31,7 @@ export const TilesetDecomposerSection: React.FC = () => {
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
+  const activeLayerId = useStudioStore((s) => s.activeLayerId);
   const editRevision = useStudioStore((s) => s.editRevision);
 
   const [tilePreview, setTilePreview] = useState<{ tileUrl: string; repeatUrl: string; width: number; height: number } | null>(null);
@@ -42,8 +42,26 @@ export const TilesetDecomposerSection: React.FC = () => {
     cols: number;
     rows: number;
     json: string;
+    sourceKey: string;
+    ownership: number;
   } | null>(null);
-  const [copiedTilemap, setCopiedTilemap] = useState(false);
+  const [copiedTilemap, setCopiedTilemap] = useState<string | null>(null);
+  const [tileError, setTileError] = useState<string | null>(null);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const tileJob = useRef<AbortController | null>(null);
+  const tileBundle = useRef<Awaited<ReturnType<typeof prepareTilesetBundle>> | null>(null);
+  // Subscribe to source changes so stale results cannot be copied or downloaded.
+  const tileSourceKey = JSON.stringify([currentProjectId, frames[activeFrameIndex]?.id, activeLayerId, canvasWidth, canvasHeight, tilesetSize, editRevision, bufferVersion, tilesetSourceKey(tilesetSize)]);
+  const [ownership, setOwnership] = useState({ key: tileSourceKey, version: 0 });
+  // A → B → A must not revive a result whose download reservation was released at B.
+  if (ownership.key !== tileSourceKey) setOwnership({ key: tileSourceKey, version: ownership.version + 1 });
+  const tileJobKey = JSON.stringify([tileSourceKey, ownership.version]);
+  const resultCurrent = tilesetResult?.sourceKey === tilesetSourceKey(tilesetSize) && tilesetResult?.ownership === ownership.version;
+  const slicing = pendingKey === tileJobKey;
+  useEffect(() => () => {
+    tileJob.current?.abort(); tileJob.current = null;
+    tileBundle.current?.dispose(); tileBundle.current = null;
+  }, [tileJobKey]);
 
   useEffect(() => {
     if (!selection) {
@@ -121,49 +139,41 @@ export const TilesetDecomposerSection: React.FC = () => {
     setContourPreview(null);
   };
 
-  const handleDecomposeTileset = () => {
-    const state = useStudioStore.getState();
-    const activeId = state.activeLayerId;
-    if (!activeId) return;
-
+  const handleDecomposeTileset = async () => {
+    tileJob.current?.abort(); tileBundle.current?.dispose(); tileBundle.current = null;
+    const controller = new AbortController(); tileJob.current = controller;
+    setPendingKey(tileJobKey); setCopiedTilemap(null); setTileError(null); setTilesetResult(null);
     try {
-      const { ctx } = getOrCreateBuffer(activeId, state.canvasWidth, state.canvasHeight);
-      const imgData = ctx.getImageData(0, 0, state.canvasWidth, state.canvasHeight);
-      const { tileset, tilemap } = decomposeIntoTileset(
-        { width: state.canvasWidth, height: state.canvasHeight, data: imgData.data },
-        tilesetSize
-      );
-      const jsonPayload = JSON.stringify(
-        {
-          tileSize: tilesetSize,
-          columns: tilemap[0]?.length || 0,
-          rows: tilemap.length,
-          uniqueTiles: tileset.length,
-          tilemap,
-        },
-        null,
-        2
-      );
-      setTilesetResult({
-        uniqueCount: tileset.length,
-        cols: tilemap[0]?.length || 0,
-        rows: tilemap.length,
-        json: jsonPayload,
-      });
-    } catch (err) {
-      console.error('Failed to decompose tileset:', err);
+      const result = await prepareTilesetBundle(tilesetSize, controller.signal);
+      if (controller.signal.aborted) { result.dispose(); return; }
+      tileBundle.current = result;
+      setTilesetResult({ uniqueCount: result.uniqueCount, cols: result.cols, rows: result.rows, json: result.json, sourceKey: result.sourceKey, ownership: ownership.version });
+    } catch (error) {
+      if (!controller.signal.aborted) setTileError(error instanceof Error ? error.message : 'Tile slicing could not finish. Please try again.');
+    } finally {
+      if (!controller.signal.aborted) setPendingKey(null);
     }
   };
 
   const handleCopyTilemap = async () => {
-    if (!tilesetResult) return;
+    if (!tilesetResult || !resultCurrent) return;
     try {
+      assertTilesetCurrent(tilesetResult.sourceKey, tilesetSize);
       await navigator.clipboard.writeText(tilesetResult.json);
-      setCopiedTilemap(true);
-      setTimeout(() => setCopiedTilemap(false), 2000);
-    } catch (err) {
-      console.error('Clipboard copy failed:', err);
-    }
+      assertTilesetCurrent(tilesetResult.sourceKey, tilesetSize);
+      setCopiedTilemap(tilesetResult.sourceKey); setTileError(null);
+    } catch (error) { setTileError(error instanceof Error ? error.message : 'Copy could not start. Download the bundle instead.'); }
+  };
+
+  const handleDownloadTileset = () => {
+    const result = tileBundle.current;
+    if (!result || !resultCurrent) return;
+    try {
+      assertTilesetCurrent(result.sourceKey, tilesetSize);
+      const url = URL.createObjectURL(result.blob), link = document.createElement('a');
+      link.href = url; link.download = 'pixibun-tileset.zip'; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) { setTileError(error instanceof Error ? error.message : 'Tile download could not start.'); }
   };
 
   return (
@@ -220,7 +230,7 @@ export const TilesetDecomposerSection: React.FC = () => {
           </div>
 
           <p className="text-[10px] text-[var(--text-muted)] font-sans leading-tight">
-            Slice artwork into unique tiles and export a 2D tilemap.
+            Slice the selected layer into unique tiles. Download its PNG and matching maps together. Canvas dimensions must divide evenly by the tile size.
           </p>
 
           <div className="flex items-center justify-between text-[10px] font-sans">
@@ -230,6 +240,7 @@ export const TilesetDecomposerSection: React.FC = () => {
                 <button
                   key={size}
                   onClick={() => setTilesetSize(size)}
+                  aria-pressed={tilesetSize === size}
                   className={`px-2 py-0.5 text-[10px] font-mono font-medium rounded-[1px] transition-colors cursor-pointer ${
                     tilesetSize === size
                       ? 'bg-[var(--surface-3)] text-[var(--text-heading)] shadow-xs'
@@ -246,11 +257,12 @@ export const TilesetDecomposerSection: React.FC = () => {
             size="sm"
             variant="default"
             onClick={handleDecomposeTileset}
+            disabled={slicing}
             title="Break sprite into unique tiles and generate a 2D tilemap"
             className="text-xs py-1.5 font-bold bg-[var(--desk-surface-raised)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)] justify-center"
           >
             <PixelIcon name="layers" size={12} />
-            <span>Slice Into Unique Tiles</span>
+            <span>{slicing ? 'Preparing tiles…' : 'Slice Into Unique Tiles'}</span>
           </TactileButton>
 
           <TactileButton
@@ -285,6 +297,9 @@ export const TilesetDecomposerSection: React.FC = () => {
             </div>
           )}
 
+          {slicing && <TactileButton size="sm" onClick={() => { tileJob.current?.abort(); setPendingKey(null); }}>Cancel tile export</TactileButton>}
+          {pendingKey && !slicing && <p role="status" className="text-[10px] text-[var(--text-body)]">Artwork changed while preparing tiles. Slice again to use the current pixels.</p>}
+          {tileError && <p role="alert" className="text-[10px] text-[var(--text-body)]">{tileError}</p>}
           {tilesetResult && (
             <div className="flex flex-col gap-1.5 p-2 bg-[var(--desk-surface-raised)] rounded-[2px] border border-[var(--desk-border)] text-[10px] font-mono">
               <div className="flex justify-between text-[var(--text-body)]">
@@ -299,13 +314,17 @@ export const TilesetDecomposerSection: React.FC = () => {
               </div>
               <TactileButton
                 size="sm"
-                variant={copiedTilemap ? 'primary' : 'default'}
+                variant={copiedTilemap === tilesetResult.sourceKey && resultCurrent ? 'primary' : 'default'}
                 onClick={handleCopyTilemap}
+                disabled={!resultCurrent}
                 className="text-[10px] py-1 font-bold justify-center"
               >
                 <PixelIcon name="copy" size={10} />
-                <span>{copiedTilemap ? 'Copied to Clipboard!' : 'Copy Tilemap JSON'}</span>
+                <span>{copiedTilemap === tilesetResult.sourceKey && resultCurrent ? 'Copied to Clipboard!' : 'Copy Tilemap JSON'}</span>
               </TactileButton>
+              <TactileButton size="sm" variant="primary" onClick={handleDownloadTileset} disabled={!resultCurrent} className="text-[10px] py-1 font-bold justify-center">Download tile PNG + maps (.zip)</TactileButton>
+              <p className="text-[10px] font-sans text-[var(--text-muted)]">Includes tileset.png, zero-based tilemap.json and Tiled map.tmj. Unpack them into the same folder.</p>
+              {!resultCurrent && <p role="status" className="text-[10px] font-sans text-[var(--accent-gold)]">Artwork or settings changed. Slice again before copying or downloading.</p>}
             </div>
           )}
         </div>

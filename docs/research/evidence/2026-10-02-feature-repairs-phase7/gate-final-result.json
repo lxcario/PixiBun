@@ -1,0 +1,13 @@
+{
+  "mode": "gate",
+  "label": "-final",
+  "args": [
+    "scripts/runQualityGate.mjs",
+    "--with-build"
+  ],
+  "cacheVersion": "phase7-local-7106f4aa5fa96bc1",
+  "exitCode": 0,
+  "signal": null,
+  "elapsedSeconds": 116.139,
+  "completedAt": "2026-10-02T20:51:36.387Z"
+}

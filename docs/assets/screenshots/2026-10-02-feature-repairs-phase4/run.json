@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-02",
+  "command": "playwright test tests/e2e/exportCompleteness.spec.ts --workers=1 --output=artifacts/feature-repairs/phase4-ownership-final",
+  "runtime": "Node 22.23.3; Next 16.3.4 development server",
+  "browser": "Chromium 151.0.7922.34",
+  "viewports": "Studio 1600 × 1000; welcome 1440 × 1000",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770 plus uncommitted prior repairs and phase 4",
+  "verdict": "Seven final phase 4 workflows passed in 24.1 seconds, including return-to-original frame/tile size stale-result refusal; illustrations are not engine qualification",
+  "captures": [
+    {
+      "path": "godot-manual-normals.png",
+      "sha256": "b0f6fcf693682bb6129fb54c3d0d66d2e31524b9cc2b4cc72522b032c92cf4a4"
+    },
+    {
+      "path": "svg-approximation.png",
+      "sha256": "bdc162575d8b1f6012447b8db2c4d8a0d81b115e808d43b19553e227569b75f2"
+    },
+    {
+      "path": "unique-tile-bundle.png",
+      "sha256": "73a508b987190893ca4d27345a1c380cb7818d7e75b0fc136179bda167a26bef"
+    },
+    {
+      "path": "unique-tile-stale.png",
+      "sha256": "fd9950c2d08061ec3ecfaf4f4d1fdb356f228c96ce729ec6308f82c6983c0efd"
+    },
+    {
+      "path": "welcome-apng-notes.png",
+      "sha256": "36488268d7b105373b9bb2031d4952688a8a3da3f904e69ef1017e2cbb0ae15b"
+    },
+    {
+      "path": "welcome-gif-notes.png",
+      "sha256": "ad87263f64b052796a741345618a67e8002b8b6d7a4441f84023075ffca94b7b"
+    }
+  ],
+  "review": "All six final screenshots inspected at full resolution. Labels and current/stale tile actions are visible, with welcome notes wrapping and tool popups dismissed. Real UI only; no generated or edited art."
+}

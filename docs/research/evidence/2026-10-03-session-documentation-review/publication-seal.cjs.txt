@@ -1,0 +1,16 @@
+const fs=require('node:fs');
+const crypto=require('node:crypto');
+const path=require('node:path');
+const root='docs/research/evidence/2026-10-03-session-documentation-review';
+if(fs.existsSync(`${root}/manifest.json`))throw Error('Publication evidence already sealed');
+const file=`${root}/checks.json`;
+const checks=JSON.parse(fs.readFileSync(file));
+checks.reviewBranch='codex/session-docs-and-feature-repairs';
+checks.diagnostics=[{log:'docs-final-initial.log',scope:'First publication docs check caught its own missing checks.json link. The result index was created and subsequent complete checks passed. This was a documentation-staging failure, not an application test failure.'}];
+checks.gitAttributes='New repair/publication evidence directories use -text to preserve exact bytes across Git transport.';
+checks.sealedAt=new Date().toISOString();
+fs.writeFileSync(file,JSON.stringify(checks,null,2)+'\n');
+for(const name of ['publication-md-review.mjs','publication-check.mjs','publication-seal.cjs'])fs.copyFileSync(`artifacts/feature-repairs/${name}`,`${root}/${name}.txt`);
+const files=fs.readdirSync(root).filter(name=>name!=='manifest.json').map(name=>({path:name,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(root,name))).digest('hex')})).sort((a,b)=>a.path.localeCompare(b.path));
+fs.writeFileSync(`${root}/manifest.json`,JSON.stringify(files,null,2)+'\n');
+console.log(`Sealed ${files.length} publication evidence files.`);

@@ -2,6 +2,26 @@
 
 Updated 2 October 2026 against the main checkout. This reference describes implemented contracts, not universal performance or accessibility guarantees. [Current status](docs/current-status.md), [architecture](ARCHITECTURE.md) and [dated evidence](docs/research/phase-implementation-status.md) separate shipped behavior from verification and proposals.
 
+## Contents
+
+- [1. Directory & File Architecture](#1-directory--file-architecture)
+- [2. Memory Architecture & Dual-Layer Drawing Pipeline](#2-memory-architecture--dual-layer-drawing-pipeline)
+- [3. Raster, Geometry & Canvas Algorithms](#3-raster-geometry--canvas-algorithms)
+- [4. PixiBud 2.5D Photometric Studio](#4-pixibud-25d-photometric-studio)
+- [5. 3D Minecraft Skin Recognition & Dedicated Shading](#5-3d-minecraft-skin-recognition--dedicated-shading)
+- [6. Signed Distance Field (SDF) In-Between Animation Morphing](#6-signed-distance-field-sdf-in-between-animation-morphing)
+- [7. Image-to-Pixel Synthesis (`pixelizeEngine.ts`)](#7-image-to-pixel-synthesis-pixelizeenginets)
+- [8. Storage, Serialization & Game Engine Exports](#8-storage-serialization--game-engine-exports)
+- [9. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`)](#9-bounded-25d-sprite-cast-shadows--ground-drop-shadows-shadowraymarcherts)
+- [10. 2.5D Normal Sculptor & Reoriented Normal Mapping (`normalSculptor.ts`)](#10-25d-normal-sculptor--reoriented-normal-mapping-normalsculptorts)
+- [11. Mark Ferrari 8-Bit Dynamic Palette Cycling (`paletteCycling.ts`)](#11-mark-ferrari-8-bit-dynamic-palette-cycling-palettecyclingts)
+- [12. Bitwise Buffer Normalization, Hot-Path Viewport Decoupling & Export Safety](#12-bitwise-buffer-normalization-hot-path-viewport-decoupling--export-safety)
+- [13. RotSprite-Inspired Rotation & Vector Depixelization](#13-rotsprite-inspired-rotation--vector-depixelization)
+- [14. Viewport Lenses, Accessibility & Direct Hotkeys](#14-viewport-lenses-accessibility--direct-hotkeys)
+- [15. Modern Studio Shell & Design System Primitives Architecture](#15-modern-studio-shell--design-system-primitives-architecture)
+- [16. Teaching Animation Board & Discrete Jump Physics Engine](#16-teaching-animation-board--discrete-jump-physics-engine)
+- [17. Smart-Effect Recipe Architecture & Non-Destructive Workflow](#17-smart-effect-recipe-architecture--non-destructive-workflow)
+
 # 1. Directory & File Architecture
 
 Next.js 16 / React 19 provide the shell; Zustand + Immer own reactive metadata, Dexie local persistence, and detached canvas buffers own rasters. `src/app` holds routes and CSP-aware hosting; `src/components` the shell, panels, modals and primitives; `src/hooks/studio` lifecycle and keyboard hooks; `src/hooks/viewport` pointer and command handlers. `src/lib` separates canvas/math, color, rendering, history, storage, project admission, export, recovery, sync, diagnostics and research. `src/workers` and encoder workers own bounded background operations.
@@ -18,7 +38,7 @@ The idle scratch pool allocates on misses, reuses exact-size arrays, clears on a
 
 # 3. Raster, Geometry & Canvas Algorithms
 
-Bresenham stepping and the three-point pixel-perfect filter work on integer coordinates. The 2:1 isometric stepper quantizes dimetric lines. Quadratic Bézier sampling rounds into artwork pixels. Flood fill uses unsigned RGBA words for exact matching and an independent RGBA-distance tolerance for connected fill; its stack is a JavaScript array. Optional enclosed-speck absorption keeps transparent holes and larger/open details.
+Bresenham stepping and the three-point pixel-perfect filter work on integer coordinates. Iso Line ON uses the projected 2:1 stepper; FREE uses the ordinary clipped line. Preview and commit read the same mode and brush/symmetry settings. Quadratic Bézier sampling rounds into artwork pixels. Flood fill uses unsigned RGBA words for exact matching and an independent RGBA-distance tolerance for connected fill; its stack is a JavaScript array. Optional enclosed-speck absorption keeps transparent holes and larger/open details.
 
 Color Replace and Erase Sampled Color use their own matching/scope rules, respect supported selections and locks, and preserve one admitted history action. De-Jaggy deliberately introduces intermediate OKLab colors; it is an explicit smoothing exception. Canvas dithering uses RGB nearest-color comparisons; image conversion uses OKLab.
 
@@ -55,6 +75,10 @@ Project format v3 and database schema v5 are distinct. Logical APIs expose Blob 
 The [export matrix](docs/contracts/exports.md) owns format promises. GIF uses palette quantization and centisecond delays. APNG emits valid uncompressed DEFLATE store blocks with RGBA and rational delays, accumulating a Blob rather than exposing a streaming sink. WebM uses captureStream/MediaRecorder; general alpha retention is not promised. MP4 uses H.264 WebCodecs/custom ISOBMFF where available, with a supported MediaRecorder fallback; odd dimensions are padded to even without scaling, not 16×16 alignment.
 
 Replay reconstructs retained session history plus an eviction baseline; it is not a permanent command recording from blank. Sheets and engine resources use shared animation pose/hold metadata. Target consumer qualification is format/version specific; a named Godot fixture result does not establish every Unity/Phaser importer or shader. Previously damaged GIFs need re-export after the dictionary-reset correction.
+
+Godot normal export shares `normalLayers.ts` admission for exactly one neutral manual Normal Facets or baked Normal Map/effect layer per frame. Hidden sources are accepted; visible normals are excluded from the diffuse atlas. Stored channels are preserved without an automatic convention flip. Ambiguous, faded or non-Normal blended sources refuse export.
+
+`tilesetBundle.ts` snapshots the selected raw layer, deduplicates exact RGBA tiles after hash bucketing and packages a matching PNG/PixiBun JSON/Tiled map ZIP. Source dimensions must divide by 8/16/32 px, with at most four million pixels and 4096 source cells. Publication checks source revisions/generations; component ownership prevents returning to an earlier key from reviving a released bundle. Cancel, missing sources, PNG failure/timeout and stale work release reservations. These are bounded native-layer tiles, without composite baking, flip/rotation merging or a general engine tilemap adapter. [Contract and guide](docs/contracts/exports.md#unique-tile-bundle).
 
 # 9. Bounded 2.5D Sprite Cast Shadows & Ground Drop Shadows (`shadowRayMarcher.ts`)
 
@@ -96,7 +120,9 @@ StudioSlider/Select/Toggle/NumberInput/Tooltip/IconButton/PanelSection provide s
 
 # 16. Teaching Animation Board & Discrete Jump Physics Engine
 
-Playground/Teaching Animation Board provide Bun/Gel Slime construction, staged examples, jump timing and palette variants. Timeline injection is a project action whose safety must be verified; content existence does not establish an isolated lesson sandbox. [Learning contract](docs/contracts/learning.md) separates visited/skipped/verified progress and proposed measurement from completed participant work.
+Desktop Playground uses an isolated `PracticeWorkspace`: checkpoint the original through the save coordinator, detach its pixels/metadata/native association/history, then start practice under a fresh identity. Return restores the in-memory original; Keep confirms a separate save before adopting practice. Refresh restores the saved original through normal admission, without session history or OS handles. Practice has no autosave, and active Co-Draw or failed custody admission blocks entry. Below 1024 px only Pocket mounts.
+
+The Teaching Animation Board provides Bun/Gel Slime construction, staged examples, jump timing and palette variants. In Playground, its timeline injection acts on practice; the Studio entry acts on the current project and uses ordinary admission/history. An outline score or a visited step is not measured learning. [Learning contract](docs/contracts/learning.md), [artist guide](docs/guides/learning-and-playground.md) and dated phase records separate implementation from participant outcomes.
 
 # 17. Smart-Effect Recipe Architecture & Non-Destructive Workflow
 

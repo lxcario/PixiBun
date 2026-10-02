@@ -1,0 +1,19 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const folder = path.resolve('artifacts/feature-repairs/phase7');
+const metadata = JSON.parse(fs.readFileSync(path.join(folder, 'editor-app-source.json')));
+const target = path.resolve(metadata.path);
+const expected = path.join(folder, 'isolated-editor-app');
+if (target !== expected || fs.realpathSync(target) !== fs.realpathSync(expected) || !target.startsWith(folder + path.sep)) throw new Error('Refusing cleanup outside the exact owned editor fixture');
+for (const file of metadata.copiedFiles) {
+  const bytes = fs.readFileSync(path.join(target, file.path));
+  if (crypto.createHash('sha256').update(bytes).digest('hex') !== file.sha256) throw new Error(`Owned copy changed during execution: ${file.path}`);
+}
+const link = path.join(target, 'node_modules');
+if (!fs.lstatSync(link).isSymbolicLink() || fs.realpathSync(link) !== fs.realpathSync('node_modules')) throw new Error('Unexpected dependency junction; refusing cleanup');
+// Remove the junction itself before any recursive cleanup of the owned copy.
+fs.rmdirSync(link);
+fs.rmSync(target, { recursive: true, force: false });
+fs.writeFileSync(path.join(folder, 'editor-cleanup.json'), JSON.stringify({ recordedAt: new Date().toISOString(), verifiedCopiedFilesAfterExecution: metadata.copiedFiles.length, removedOwnedCopy: target, dependencyJunctionRemovedBeforeRecursion: true, originalDependenciesRetained: fs.existsSync('node_modules/next/package.json'), userServer3000: 'Not stopped or deleted' }, null, 2) + '\n');
+console.log('Removed only the verified owned editor copy; original dependencies and development server retained.');

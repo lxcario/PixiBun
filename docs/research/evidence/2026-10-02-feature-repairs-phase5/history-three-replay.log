@@ -1,0 +1,14 @@
+
+Running 3 tests using 1 worker
+
+(node:33536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\studio.spec.ts:41:7 › Studio Workbench & Drawing Interactions › undoes and redoes layer properties and frame timing in order (2.1s)
+(node:3948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\studio.spec.ts:41:7 › Studio Workbench & Drawing Interactions › undoes and redoes layer properties and frame timing in order (2.2s)
+(node:21348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [chromium] › tests\e2e\studio.spec.ts:41:7 › Studio Workbench & Drawing Interactions › undoes and redoes layer properties and frame timing in order (2.0s)
+
+  3 passed (9.6s)

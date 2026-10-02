@@ -1,0 +1,105 @@
+
+Running 5 tests using 1 worker
+
+(node:33788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\exportCompleteness.spec.ts:4:5 › manual normals preserve both atlases (3.4s)
+(node:22536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\exportCompleteness.spec.ts:5:5 › unique tile bundles reconstruct pixels and refuse stale results (4.4s)
+  x  3 [chromium] › tests\e2e\exportCompleteness.spec.ts:6:5 › tile slicing refuses partial edge cells (2.2s)
+(node:14288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [chromium] › tests\e2e\exportCompleteness.spec.ts:7:5 › welcome APNG and GIF downloads are labeled text notes (30.6s)
+(node:32248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [chromium] › tests\e2e\exportCompleteness.spec.ts:8:5 › SVG wording and actual XML agree (2.5s)
+
+
+  1) [chromium] › tests\e2e\exportCompleteness.spec.ts:4:5 › manual normals preserve both atlases ──
+
+    TypeError: Cannot read properties of undefined (reading 'toString')
+
+       at ..\helpers\exportCompletenessWorkflows.ts:37
+
+      35 |   if (capture) await capture('godot-manual-normals.png');
+      36 |   const files = await downloadFiles(page, info, 'Download Godot kit', 'manual-normals.zip');
+    > 37 |   const manifest = JSON.parse(files['manifest.json'].toString()), normal = await rgba(page, files['normals.png'].toString('base64')), diffuse = await rgba(page, files['atlas.png'].toString('base64'));
+         |                                                                                                                  ^
+      38 |   for (let i = 0; i < project.frames.length; i++) {
+      39 |     const color = await rgba(page, project.frames[i].layers[0].pngBase64), expectedNormal = await rgba(page, project.frames[i].layers[1].pngBase64);
+      40 |     const rect = manifest.animation.frames[i].rect;
+        at verifyManualNormalKit (D:\PixiBun\tests\helpers\exportCompletenessWorkflows.ts:37:114)
+        at D:\PixiBun\tests\e2e\exportCompleteness.spec.ts:4:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\feature-repairs\phase4-editor\exportCompleteness-manual-normals-preserve-both-atlases-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\feature-repairs\phase4-editor\exportCompleteness-manual-normals-preserve-both-atlases-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\exportCompleteness.spec.ts:6:5 › tile slicing refuses partial edge cells 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('alert')
+    Expected substring: "would cut off an edge"
+    Error: strict mode violation: getByRole('alert') resolved to 2 elements:
+        1) <p role="alert" class="text-[10px] text-[var(--text-body)]">Choose a tile size that divides both canvas dimen…</p> aka getByText('Choose a tile size that')
+        2) <div role="alert" aria-live="assertive" id="__next-route-announcer__"></div> aka locator('[id="__next-route-announcer__"]')
+
+    Call log:
+      - Expect "toContainText" with timeout 5000ms
+      - waiting for getByRole('alert')
+
+
+       at ..\helpers\exportCompletenessWorkflows.ts:84
+
+      82 |   const downloads: string[] = []; page.on('download', d => downloads.push(d.suggestedFilename()));
+      83 |   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click();
+    > 84 |   await expect(page.getByRole('alert')).toContainText('would cut off an edge'); expect(downloads).toEqual([]);
+         |                                         ^
+      85 |   await expect(page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })).toHaveCount(0);
+      86 | }
+      87 | export async function verifyWelcomeExportNotes(page: Page, info: TestInfo, capture?: Capture) {
+        at verifyTileEdgeRefusal (D:\PixiBun\tests\helpers\exportCompletenessWorkflows.ts:84:41)
+        at D:\PixiBun\tests\e2e\exportCompleteness.spec.ts:6:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\feature-repairs\phase4-editor\exportCompleteness-tile-slicing-refuses-partial-edge-cells-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\feature-repairs\phase4-editor\exportCompleteness-tile-slicing-refuses-partial-edge-cells-chromium\error-context.md
+
+  3) [chromium] › tests\e2e\exportCompleteness.spec.ts:7:5 › welcome APNG and GIF downloads are labeled text notes 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /Game Engine Exports/ })
+
+
+       at ..\helpers\exportCompletenessWorkflows.ts:89
+
+      87 | export async function verifyWelcomeExportNotes(page: Page, info: TestInfo, capture?: Capture) {
+      88 |   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/');
+    > 89 |   await page.getByRole('button', { name: /Game Engine Exports/ }).click();
+         |                                                                   ^
+      90 |   await expect(page.getByRole('heading', { name: 'A little peek at your export options' })).toBeVisible();
+      91 |   for (const format of ['APNG', 'GIF']) {
+      92 |     await page.getByRole('button', { name: format, exact: true }).click();
+        at verifyWelcomeExportNotes (D:\PixiBun\tests\helpers\exportCompletenessWorkflows.ts:89:67)
+        at D:\PixiBun\tests\e2e\exportCompleteness.spec.ts:7:91
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\feature-repairs\phase4-editor\exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\feature-repairs\phase4-editor\exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium\error-context.md
+
+  3 failed
+    [chromium] › tests\e2e\exportCompleteness.spec.ts:4:5 › manual normals preserve both atlases ───
+    [chromium] › tests\e2e\exportCompleteness.spec.ts:6:5 › tile slicing refuses partial edge cells 
+    [chromium] › tests\e2e\exportCompleteness.spec.ts:7:5 › welcome APNG and GIF downloads are labeled text notes 
+  2 passed (46.1s)

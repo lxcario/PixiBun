@@ -1,0 +1,10 @@
+{
+  "changed": [
+    "src/components/layout/PlaygroundLayout.tsx",
+    "tests/helpers/researchWorkflows.ts"
+  ],
+  "explanation": {
+    "src/components/layout/PlaygroundLayout.tsx": "Deleted one unused eslint suppression comment after the final gate/build and full browser runs; no behavior change.",
+    "tests/helpers/researchWorkflows.ts": "Wait for preview aria-busy=false before clicking More options and assert details opened. Follow-up tested in all production engines, then TypeScript/helper lint."
+  }
+}

@@ -4,6 +4,7 @@ import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
 import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
+import Link from 'next/link';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
@@ -255,14 +256,14 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
       <div role="group" aria-label="Project controls" className="flex min-w-0 items-center gap-1.5 xl:gap-2">
         {/* Atelier Logo Mark */}
-        <a
+        <Link
           href="/"
           title="Return to PixiBun Home"
           aria-label="PixiBun Home"
           className="flex shrink-0 items-center pr-1.5 xl:pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 transition-opacity"
         >
           <PixiBunLogo size="sm" wordmarkClassName="hidden xl:flex" className="drop-shadow-sm" />
-        </a>
+        </Link>
 
         <HeaderFileMenu actions={[
           { label: 'Projects', icon: 'layers', testId: 'gallery-button', onSelect: () => onOpenGallery?.() },
@@ -603,6 +604,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             {tools.activeTool === 'isometric-line' && (
               <button
                 onClick={() => setIsoAngleSnap(!tools.isoAngleSnap)}
+                aria-pressed={tools.isoAngleSnap}
+                title="Snap to a 2:1 pixel slope, or choose FREE to follow your drag"
                 className={`h-6 px-1.5 text-[9px] font-bold rounded-[1px] cursor-pointer shrink-0 flex items-center justify-center transition-all ${
                   tools.isoAngleSnap
                     ? 'pixel-primary-btn shadow-[0_1px_0_var(--btn-shadow)]'

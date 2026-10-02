@@ -1,0 +1,11 @@
+npm warn cleanup Failed to remove some directories [
+npm warn cleanup   [
+npm warn cleanup     'D:\\PixiBun\\node_modules\\@next\\.swc-win32-x64-msvc-nCwoCON3',
+npm warn cleanup     [Error: EPERM: operation not permitted, unlink 'D:\PixiBun\node_modules\@next\.swc-win32-x64-msvc-nCwoCON3\next-swc.win32-x64-msvc.node'] {
+npm warn cleanup       errno: -4048,
+npm warn cleanup       code: 'EPERM',
+npm warn cleanup       syscall: 'unlink',
+npm warn cleanup       path: 'D:\\PixiBun\\node_modules\\@next\\.swc-win32-x64-msvc-nCwoCON3\\next-swc.win32-x64-msvc.node'
+npm warn cleanup     }
+npm warn cleanup   ]
+npm warn cleanup ]

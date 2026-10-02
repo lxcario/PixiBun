@@ -123,3 +123,7 @@ Neural inference remains a separate decision gate after an attributable model an
 ## 9. Strategic Engineering Assessment: Is Developing v2 Necessary Right Now?
 
 Prioritize actual user tasks, robust backups, current bounded workloads and missing artist/device qualification before replacing the engine. The present code has substantial local test evidence and explicit limits; neither its tests nor these proposals constitute full mathematical verification. Choose a pillar only when measured benefit exceeds implementation/compatibility cost. [Active issue and research registry](docs/research/issue-registry.md), [historical benchmarks](BENCHMARKS.md).
+
+## 10. Relationship to the local PixiMotion proposal
+
+`PIXIMOTION_ENGINE_MASTER_SPEC.md` is an ignored local research/design document, not a published engine, committed deliverable or approved v2 milestone. It is intentionally separate from the six infrastructure proposals above. Automatic rigging and secondary-motion ideas need their own small artist workflow, ownership/license review, reproducible prototype and correction-time comparison before roadmap promotion. Its presence does not promise v2/v3 delivery. Current frame tools remain documented in [current status](docs/current-status.md) and [rendering](docs/contracts/rendering.md).

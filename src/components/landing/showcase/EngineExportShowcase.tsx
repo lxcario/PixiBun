@@ -143,42 +143,32 @@ const PHASER_SAMPLE = `{
   }
 }`;
 
-const APNG_SPECS = `/* Animated PNG (APNG) Specification Implementation */
-- Official W3C APNG Format Specification (2004)
-- True 24-Bit / 32-Bit RGBA Lossless Color Storage
-- Chunks Generated:
-  • acTL (Animation Control Chunk: num_frames=4, num_plays=0 [loop])
-  • fcTL (Frame Control Chunk: sequence=0..3, delay_num=125, delay_den=1000)
-  • fdAT (Frame Data Chunks with uncompressed DEFLATE store blocks [BTYPE 00])
-  • IEND (Image End Terminator)
+const APNG_SPECS = `PixiBun APNG export notes — text sample, not an animation
 
-/* Comparison vs Legacy GIF: */
-Feature               APNG (PixiBun)           Legacy GIF
---------------------------------------------------------------
-Color Depth           24-bit / 32-bit RGBA     8-bit (Max 256 colors)
-Alpha Transparency    256 levels of alpha      1-bit binary mask (matte halos)
-Color Banding         Zero quantization noise  Severe posterization & dithering
-Browser Support       Chrome, Safari, Firefox  Universal
-Game Engine Import    Godot 4, Raylib, PixiJS  Standard`;
+In Studio, choose Export → APNG to download your animation.
+- RGBA PNG frames preserve color and partial transparency without palette quantization.
+- Animation chunks carry the exported frame holds and loop setting.
+- Integer scaling keeps pixels crisp; geometry and memory limits apply.
+- Check playback in your intended viewer or engine.
 
-const GIF_SPECS = `/* Multi-Threaded Web Worker Animated GIF Pipeline */
-- Zero main-thread UI jank: encodes in Web Worker
-- Octree & NeuQuant high-speed perceptual color quantization
-- Per-frame variable duration delays (100ms - 1000ms)
-- Crisp integer pixel scale multipliers: 1x, 2x, 4x, 8x, 16x
-- Optional Bayer 4x4 or Atkinson error diffusion dithering
+This welcome download describes the format. It contains no artwork.`;
 
-Export Command in Studio:
-const blob = await exportAnimationToGifAsync(frameCanvases, {
-  fps: 12,
-  scale: 4,
-  loop: 0,
-  dither: 'atkinson'
-});`;
+const GIF_SPECS = `PixiBun GIF export notes — text sample, not an animation
+
+In Studio, choose Export → GIF to download your animation.
+- The encoder quantizes colors to a GIF palette; partial alpha is not preserved.
+- Frame holds are rounded to GIF's 10 ms time units.
+- A Web Worker is used when available, with a main-thread fallback.
+- Integer scaling, cancellation and geometry/memory limits apply.
+- Check colors, timing and transparency after exporting.
+
+This welcome download describes the format. It contains no artwork.`;
 
 export const EngineExportShowcase: React.FC = () => {
   const [activeFormat, setActiveFormat] = useState<ExportFormat>('godot');
   const [copied, setCopied] = useState<boolean>(false);
+  const [copyError, setCopyError] = useState(false);
+  const isSpecification = activeFormat === 'apng' || activeFormat === 'gif';
 
   const getCode = () => {
     switch (activeFormat) {
@@ -195,10 +185,12 @@ export const EngineExportShowcase: React.FC = () => {
     }
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(getCode());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(getCode());
+      setCopied(true); setCopyError(false);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { setCopyError(true); }
   };
 
   const handleDownloadSample = () => {
@@ -225,7 +217,7 @@ export const EngineExportShowcase: React.FC = () => {
     a.href = url;
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
@@ -250,13 +242,13 @@ export const EngineExportShowcase: React.FC = () => {
                 onClick={handleCopy}
                 className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
               >
-                {copied ? 'Copied' : 'Copy Code'}
+                {copied ? 'Copied' : isSpecification ? 'Copy notes' : 'Copy sample'}
               </button>
               <button
                 onClick={handleDownloadSample}
                 className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
               >
-                Download
+                {isSpecification ? 'Download notes (.txt)' : 'Download sample'}
               </button>
             </div>
           </div>
@@ -272,7 +264,8 @@ export const EngineExportShowcase: React.FC = () => {
             ].map((fmt) => (
               <button
                 key={fmt.id}
-                onClick={() => setActiveFormat(fmt.id as ExportFormat)}
+                onClick={() => { setActiveFormat(fmt.id as ExportFormat); setCopied(false); setCopyError(false); }}
+                aria-pressed={activeFormat === fmt.id}
                 className={`py-1 text-center rounded-[1px] border transition-colors ${
                   activeFormat === fmt.id
                     ? 'bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold'
@@ -284,18 +277,21 @@ export const EngineExportShowcase: React.FC = () => {
             ))}
           </div>
 
+          <p className="px-3 py-2 text-[11px] text-[var(--text-body)]">{isSpecification ? 'Text notes only. Create your own animation in Studio.' : 'Example resource text only. Export your artwork and matching image in Studio.'}</p>
+          {copyError && <p role="status" className="px-3 text-[11px] text-[var(--text-body)]">Copy could not start. You can select the text or download it instead.</p>}
+
           {/* Syntax Code View */}
           <div className="p-3 bg-[#171124] overflow-x-auto text-[11px] font-mono text-[#dcd4e8] leading-relaxed max-h-[260px] select-text">
-            <pre className="whitespace-pre">{getCode()}</pre>
+            <pre className={isSpecification ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}>{getCode()}</pre>
           </div>
 
           {/* Bottom Feature Badges */}
           <div className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex items-center justify-between text-[10px] font-mono text-[var(--text-muted)]">
             <span className="flex items-center gap-1 text-[var(--accent-gold)]">
               <span>✦</span>
-              <span>Direct Drag-and-Drop</span>
+              <span>Sample files</span>
             </span>
-            <span>Zero Lock-In Standard</span>
+            <span>Your artwork stays yours</span>
           </div>
         </div>
       </div>
@@ -307,12 +303,12 @@ export const EngineExportShowcase: React.FC = () => {
         </div>
 
         <h3 className="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3">
-          Game-Ready Engine Exports: Godot 4, Unity, APNG &amp; GIF
+          A little peek at your export options
         </h3>
 
         <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Your artwork is meant to be played. PixiBun bridges the gap between drawing and shipping games with zero vendor lock-in.
-          Export native engine resources directly into your project folders.
+          Take your pixels into a game or share a little animation. These welcome samples show resource text and format notes.
+          Head to Studio to export your own artwork; check the files in your chosen engine or viewer.
         </p>
 
         {/* Feature Points Card */}
@@ -322,7 +318,7 @@ export const EngineExportShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Godot 4 SpriteFrames (.tres)</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Generates native Godot 4 text resources with AtlasTexture regions and tagged animation loops. Drop right into your filesystem.
+                Studio exports Godot SpriteFrames resources with atlas regions and animation holds. Keep the resource beside its matching PNG.
               </span>
             </div>
           </div>
@@ -332,7 +328,7 @@ export const EngineExportShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">TexturePacker Array JSON (Unity &amp; Phaser)</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Exports universal spritesheet JSON metadata supported natively by Unity 2D, Phaser 3, PixiJS, and Raylib.
+                Studio exports spritesheet metadata. Your engine may need an importer or a small adapter; this sample includes no image.
               </span>
             </div>
           </div>
@@ -340,9 +336,9 @@ export const EngineExportShowcase: React.FC = () => {
           <div className="flex items-start gap-2">
             <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
             <div>
-              <strong className="text-[var(--text-heading)] block font-sans">24-Bit Truecolor APNG (No GIF Banding)</strong>
+              <strong className="text-[var(--text-heading)] block font-sans">APNG & GIF animations in Studio</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Full 32-bit RGBA animated PNG encoding with smooth translucent shadows—no 256-color degradation or dithering noise.
+                APNG keeps RGBA color and soft transparency. GIF uses palette colors and simpler transparency. The welcome downloads are text notes.
               </span>
             </div>
           </div>

@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-02",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "Uncommitted phase 1–4 repairs and prior documentation changes; source files checked unchanged after final gate and compiled run",
+  "commands": [
+    {
+      "command": "npm run gate:full",
+      "verdict": "All five stages passed, 1569 tests / 159 suites, 56.68s",
+      "log": "gate-final.log"
+    },
+    {
+      "command": "playwright test tests/e2e/exportCompleteness.spec.ts --workers=1 --output=artifacts/feature-repairs/phase4-ownership-final",
+      "verdict": "7 passed (24.1s)",
+      "log": "browser-captures-final.log"
+    },
+    {
+      "command": "PIXIBUN_PRODUCTION_PORT=3111 playwright test --config playwright.production.config.ts tests/production/exportCompleteness.spec.ts tests/production/gameDelivery.spec.ts",
+      "verdict": "27 passed (2.2m)",
+      "log": "production-final.log"
+    },
+    {
+      "command": "python artifacts/feature-repairs/phase4-zip-final.py",
+      "verdict": "12 final compiled ZIPs passed CRC/native dimensions/map ID checks",
+      "log": "zip-compiled-final.log"
+    },
+    {
+      "command": "Godot_v4.7.2-stable_win64_console.exe --headless --editor --path artifacts/feature-repairs/phase4-godot-compiled --import --quit; then --headless --path same --script phase4_verify.gd",
+      "verdict": "Final Chromium kit import passed; zero failures, 10 normal pairs and 1536 native frame pixels",
+      "logs": [
+        "godot-compiled-import.log",
+        "godot-compiled-verify.log"
+      ]
+    },
+    {
+      "command": "npm run verify:docs",
+      "verdict": "Passed: 1608 local destinations / 91 owned Markdown files; selected source contracts and test inventory",
+      "log": "docs-final.log"
+    }
+  ],
+  "scope": "Local temporary contexts; no external upload/tunnel, deployment or full browser-suite verdict",
+  "godot": "4.7.2 import and headless resources/holds/native pixels; no rendered-lighting or packaged-game verdict",
+  "nativeOutputs": "compiled-* ZIPs are from final compiled Chromium run. ZIP CRC/native atlas dimensions/map IDs checked for all 12 final compiled browser output ZIPs. Final compiled Chromium manual kit additionally imported and checked with the Godot oracle. Earlier development-kit checks are separately retained.",
+  "tooling": "An additional Godot approval review timed out before execution; one retry completed successfully. No failed engine run is hidden by that tooling timeout. A final docs pre-seal diagnostic recorded the newly linked log before it existed; docs-preseal-diagnostic.log retains that failure, and docs-final.log records the passing verification after the link was resolved."
+}

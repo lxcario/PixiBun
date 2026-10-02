@@ -64,7 +64,7 @@ const SHOWCASE_TABS: ShowcaseTab[] = [
     number: '03',
     icon: IconSynthesis,
     title: 'Image Synthesis',
-    badge: 'Sobel & OKLab Clustering',
+    badge: 'Color & Edge Choices',
   },
   {
     id: 'export',
@@ -261,12 +261,12 @@ export const AtelierEngineShowcase: React.FC = () => {
         <div className="mt-8 text-center text-xs font-mono text-[var(--text-muted)] flex items-center justify-center gap-4 flex-wrap">
           <span className="flex items-center gap-1.5">
             <span className="text-[var(--accent-gold)] text-xs">✦</span>
-            <span>100% Offline in Browser</span>
+            <span>Offline after your first online load</span>
           </span>
           <span className="text-[var(--desk-border)]">•</span>
           <span className="flex items-center gap-1.5">
             <span className="text-[var(--accent-plum)] text-xs">✦</span>
-            <span>Deterministic Math &amp; Zero Cloud Lag</span>
+            <span>Creative tools run on your device</span>
           </span>
           <span className="text-[var(--desk-border)]">•</span>
           <span className="flex items-center gap-1.5">

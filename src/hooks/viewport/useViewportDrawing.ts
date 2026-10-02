@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
-import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
+import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine, getGlobalHistoryEngine, readViewportHistory, rememberViewportHistory } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
 import { deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { captureLayerBuffers, restoreStructuralWorkspace, estimateRestorationAllocation } from '@/lib/engine/structuralHistory';
@@ -18,6 +18,7 @@ interface UseViewportDrawingProps {
   renderComposite: () => void;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   onCommitHistory?: () => void;
+  retainHistory?: boolean;
 }
 
 export function useViewportDrawing({
@@ -26,6 +27,7 @@ export function useViewportDrawing({
   renderComposite,
   getOrCreateLayerCanvas,
   onCommitHistory,
+  retainHistory = false,
 }: UseViewportDrawingProps) {
   const isDrawingRef = useRef(false);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -36,7 +38,8 @@ export function useViewportDrawing({
   const [lockedWarning, setLockedWarning] = useState(false);
   const lockedWarningTimerRef = useRef<number | null>(null);
 
-  const historyEngineRef = useRef<HistoryEngine>(createHistoryEngine(50));
+  const [historyEngine] = useState(() => retainHistory ? readViewportHistory(useStudioStore.getState().currentProjectId) : createHistoryEngine(50));
+  const historyEngineRef = useRef<HistoryEngine>(historyEngine);
   const currentStrokeSnapshotRef = useRef<HistoryStep | null>(null);
   const rafBufferBumpRef = useRef<number | null>(null);
 
@@ -52,12 +55,14 @@ export function useViewportDrawing({
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
 
   useEffect(() => {
-    setGlobalHistoryEngine(historyEngineRef.current);
+    const engine = historyEngineRef.current;
+    setGlobalHistoryEngine(engine);
+    if (retainHistory) rememberViewportHistory(useStudioStore.getState().currentProjectId, engine);
 
     // Event listener: Clear history when project changes or a new drawing is opened
     const handleHistoryClear = () => {
-      if (historyEngineRef.current) {
-        historyEngineRef.current.clear();
+      if (engine) {
+        engine.clear();
       }
       currentStrokeSnapshotRef.current = null;
       setCanUndo(false);
@@ -68,12 +73,13 @@ export function useViewportDrawing({
 
     return () => {
       unsub();
-      setGlobalHistoryEngine(null);
+      if (retainHistory) rememberViewportHistory(useStudioStore.getState().currentProjectId, engine);
+      if (getGlobalHistoryEngine() === engine) setGlobalHistoryEngine(null);
       if (rafBufferBumpRef.current !== null) {
         cancelAnimationFrame(rafBufferBumpRef.current);
       }
     };
-  }, [setCanUndo, setCanRedo]);
+  }, [retainHistory, setCanUndo, setCanRedo]);
 
   // Capture Undo Snapshot
   const captureSnapshot = useCallback(

@@ -1,0 +1,17 @@
+import json
+import sys
+import zipfile
+
+with zipfile.ZipFile(sys.argv[1]) as archive:
+    print(json.dumps({'traceEntries': archive.namelist()}))
+    for name in archive.namelist():
+        if not name.endswith(('.trace', '.network')):
+            continue
+        for line in archive.read(name).decode('utf-8').splitlines():
+            try:
+                item = json.loads(line)
+            except ValueError:
+                continue
+            if item.get('type') in ('before', 'after', 'console', 'event', 'resource-snapshot'):
+                if item.get('method') in ('goto', 'newPage', 'close') or item.get('error') or item.get('type') == 'resource-snapshot':
+                    print(json.dumps({'entry': name, 'event': item}))

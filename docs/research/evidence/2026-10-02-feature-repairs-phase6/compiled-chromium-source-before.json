@@ -1,0 +1,26 @@
+{
+  "project": {
+    "id": "phase6-archive-source",
+    "name": "Archive boundary fixture",
+    "width": 32,
+    "height": 32,
+    "fps": 12,
+    "createdAt": 1791058295735,
+    "updatedAt": 1791058295735,
+    "dataJson": "{\"format\":\"pixibun-project\",\"version\":3,\"name\":\"Archive boundary fixture\",\"width\":32,\"height\":32,\"fps\":12,\"createdAt\":1791058295735,\"updatedAt\":1791058295735,\"loopMode\":\"repeat\",\"onionSkin\":{\"enabled\":false,\"prevFrames\":1,\"nextFrames\":1,\"opacity\":0.35,\"prevColor\":\"#7fae6b\",\"nextColor\":\"#c792df\"},\"customRamps\":[],\"palettes\":[{\"id\":\"palette-default\",\"name\":\"Default\",\"colors\":[\"#000000\",\"#ffffff\"]}],\"currentPaletteId\":\"palette-default\",\"clips\":[],\"frames\":[{\"id\":\"frame-1\",\"durationMs\":83,\"layers\":[{\"id\":\"source-0\",\"name\":\"Source 0\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\"},{\"id\":\"source-1\",\"name\":\"Source 1\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\"},{\"id\":\"source-2\",\"name\":\"Source 2\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\"}]}]}"
+  },
+  "count": 3,
+  "first": {
+    "projectId": "phase6-archive-source",
+    "layerId": "source-0",
+    "frameIndex": 0,
+    "updatedAt": 1791058295735,
+    "blob": [
+      0,
+      17,
+      239
+    ],
+    "blobType": "image/png",
+    "id": 1
+  }
+}

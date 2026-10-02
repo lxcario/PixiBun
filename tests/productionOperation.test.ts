@@ -17,6 +17,7 @@ describe('Atomic storage version admission', () => {
     const layerId = project.frames[0].layers[0].id;
     await autoSaveWorkspaceDetailed('binary', project, undefined, [{ layerId, frameIndex: 0, blob }], undefined, null);
     const record = (await db.layerBlobs.where('projectId').equals('binary').first())!;
+    expect(Object.hasOwn(record, 'blobType')).toBe(false);
     expect(record.blob.type).toBe('image/png');
     expect(new Uint8Array(await record.blob.arrayBuffer())).toEqual(new Uint8Array([0, 255, 17]));
     const raw = await new Promise<{ blob: unknown }>((resolve, reject) => {

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-02",
+  "scope": "Actual local UI illustrations from three passing phase 3 browser workflows, not deployment or artist/device qualification",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": true,
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "origin": "http://localhost:3000",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "procedure": "Temporary browser contexts; real UI tool/menu/drag/undo/preview actions. Screenshots copied unchanged from tests. FREE shows a three-pixel mirrored stroke; ON shows the retained projected stroke; Live Preview shows an outline sketched through one Pen stroke.",
+  "images": [
+    {
+      "file": "single-live-preview.png",
+      "sha256": "b53e82687ee1d4c611d4e6cc980063b2a2429db1c0b29431ccdaeebb0728bc54",
+      "source": "artifacts/playwright-phase3-captures-final/drawingAndPreviewControls--2cabe-do-without-painting-artwork-chromium/single-live-preview.png"
+    },
+    {
+      "file": "iso-snapped.png",
+      "sha256": "a02d88558500c97c47008c815f3691ba5418df941ed994d08c2b985761e21a06",
+      "source": "artifacts/playwright-phase3-captures-final/drawingAndPreviewControls--6b528-jected-endpoint-and-preview-chromium/iso-snapped.png"
+    },
+    {
+      "file": "iso-free-thick-mirrored.png",
+      "sha256": "526df9579c6418544ad896b2a073faf7b2ec4198ab40e352052a1af31a4bca7c",
+      "source": "artifacts/playwright-phase3-captures-final/drawingAndPreviewControls--aa32f-with-exact-preview-and-undo-chromium/iso-free-thick-mirrored.png"
+    }
+  ],
+  "review": "All three screenshots inspected at full resolution. ON/FREE labels and the single Live Preview are visible. No generated art or image editing used."
+}

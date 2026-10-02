@@ -1,0 +1,112 @@
+
+Running 3 tests using 1 worker
+
+(node:18476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:3:5 › Iso FREE follows steep, shallow, reversed, cardinal and edge drags with exact preview and undo (5.9s)
+(node:8316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:4:5 › Iso ON retains the established 2:1 projected endpoint and preview (1.5s)
+  x  3 [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:5:5 › one floating preview opens, moves, expands, closes and follows undo/redo without painting artwork (1.3s)
+
+
+  1) [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:3:5 › Iso FREE follows steep, shallow, reversed, cardinal and edge drags with exact preview and undo 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByRole('button', { name: '2:1 Snap: ON', exact: true })
+    Expected: "true"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for getByRole('button', { name: '2:1 Snap: ON', exact: true })
+
+
+       at ..\helpers\drawingAndPreviewWorkflows.ts:38
+
+      36 |   await blankStudio(page); await page.keyboard.press('j');
+      37 |   const snap = page.getByRole('button', { name: '2:1 Snap: ON', exact: true });
+    > 38 |   await expect(snap).toHaveAttribute('aria-pressed', 'true'); await snap.click();
+         |                      ^
+      39 |   await expect(page.getByRole('button', { name: '2:1 Snap: FREE', exact: true })).toHaveAttribute('aria-pressed', 'false');
+      40 |   const cases: [PixelPoint, PixelPoint][] = [[[2, 2], [20, 8]], [[4, 3], [9, 24]], [[26, 23], [8, 18]], [[20, 4], [5, 21]], [[15, 3], [15, 26]], [[2, 15], [25, 15]], [[0, 0], [5, 23]]];
+      41 |   for (const [start, end] of cases) {
+        at verifyFreeIso (D:\PixiBun\tests\helpers\drawingAndPreviewWorkflows.ts:38:22)
+        at D:\PixiBun\tests\e2e\drawingAndPreviewControls.spec.ts:3:132
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-phase3-initial\drawingAndPreviewControls--aa32f-with-exact-preview-and-undo-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-phase3-initial\drawingAndPreviewControls--aa32f-with-exact-preview-and-undo-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:5:5 › one floating preview opens, moves, expands, closes and follows undo/redo without painting artwork 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 8
+    + Received  + 8
+
+    @@ -3413,18 +3413,14 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+    +   58,
+    +   46,
+    +   76,
+    +   255,
+        0,
+        0,
+        0,
+        0,
+        0,
+    @@ -3437,10 +3433,14 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    +   58,
+    +   46,
+    +   76,
+    +   255,
+        0,
+        0,
+        0,
+        0,
+        0,
+
+       at ..\helpers\drawingAndPreviewWorkflows.ts:83
+
+      81 |   await window.getByRole('button', { name: '4x', exact: true }).click();
+      82 |   await window.getByRole('button', { name: 'Backdrop: alabaster', exact: true }).click();
+    > 83 |   expect(await pixels(page)).toEqual(original);
+         |                              ^
+      84 |   await window.getByRole('button', { name: 'Minimize Preview Window', exact: true }).click();
+      85 |   await expect(preview).toHaveCount(0);
+      86 |   await window.getByRole('button', { name: 'Expand Preview Window', exact: true }).click();
+        at verifyFloatingPreview (D:\PixiBun\tests\helpers\drawingAndPreviewWorkflows.ts:83:30)
+        at D:\PixiBun\tests\e2e\drawingAndPreviewControls.spec.ts:5:135
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-phase3-initial\drawingAndPreviewControls--2cabe-do-without-painting-artwork-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-phase3-initial\drawingAndPreviewControls--2cabe-do-without-painting-artwork-chromium\error-context.md
+
+  2 failed
+    [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:3:5 › Iso FREE follows steep, shallow, reversed, cardinal and edge drags with exact preview and undo 
+    [chromium] › tests\e2e\drawingAndPreviewControls.spec.ts:5:5 › one floating preview opens, moves, expands, closes and follows undo/redo without painting artwork 
+  1 passed (10.6s)

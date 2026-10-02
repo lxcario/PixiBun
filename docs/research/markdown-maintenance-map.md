@@ -2,6 +2,10 @@
 
 This maps all 52 main-project Markdown files at audit intake. It excludes the separate older worktree and generated report, which remain revision-specific history. New canonical guides are indexed in [docs/README.md](../README.md). No original failure/release decision or screenshot was deleted.
 
+The later [feature handbook](../guides/README.md), [feature index](../features.md) and October repair records extend this original intake. [Phase 5 reconciliation](2026-10-02-feature-repairs-phase5.md) inventories the expanded owned Markdown set and reviews affected current claims separately from these historical dispositions.
+
+The [3 October session review](2026-10-03-session-documentation-review.md) covers the final publication set after all seven local phases. This table remains the original intake map; the newer per-file record includes the added guides and execution evidence.
+
 | Original file | Treatment |
 | --- | --- |
 | DESIGN.md | Current reference corrected against source; duplicated checkpoint removed. |

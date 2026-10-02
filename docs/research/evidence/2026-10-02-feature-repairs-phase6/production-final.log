@@ -1,0 +1,145 @@
+[WebServer] (node:29240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:6864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[archive-fixture] opening overflow writer
+[archive-fixture] overflow writer opened
+[archive-fixture] committed 253 records
+[archive-fixture] committed 503 records
+[archive-fixture] committed 753 records
+[archive-fixture] committed 1003 records
+[archive-fixture] committed 1253 records
+[archive-fixture] committed 1503 records
+[archive-fixture] committed 1753 records
+[archive-fixture] committed 2003 records
+[archive-fixture] committed 2253 records
+[archive-fixture] committed 2503 records
+[archive-fixture] committed 2753 records
+[archive-fixture] committed 3003 records
+[archive-fixture] committed 3253 records
+[archive-fixture] committed 3503 records
+[archive-fixture] committed 3753 records
+[archive-fixture] committed 4003 records
+[archive-fixture] committed 4253 records
+[archive-fixture] committed 4503 records
+[archive-fixture] committed 4753 records
+[archive-fixture] committed 5003 records
+[archive-fixture] committed 5253 records
+[archive-fixture] committed 5503 records
+[archive-fixture] committed 5753 records
+[archive-fixture] committed 6003 records
+[archive-fixture] committed 6253 records
+[archive-fixture] committed 6503 records
+[archive-fixture] committed 6753 records
+[archive-fixture] committed 7003 records
+[archive-fixture] committed 7253 records
+[archive-fixture] committed 7503 records
+[archive-fixture] committed 7753 records
+[archive-fixture] committed 8003 records
+[archive-fixture] committed 8253 records
+[archive-fixture] committed 8503 records
+[archive-fixture] committed 8753 records
+[archive-fixture] committed 9003 records
+[archive-fixture] committed 9253 records
+[archive-fixture] committed 9503 records
+[archive-fixture] committed 9753 records
+[archive-fixture] committed 10001 records
+  ok 1 [chromium] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (6.1s)
+  ok 2 [chromium] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (2.8s)
+(node:4996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[archive-fixture] opening overflow writer
+[archive-fixture] overflow writer opened
+[archive-fixture] committed 253 records
+[archive-fixture] committed 503 records
+[archive-fixture] committed 753 records
+[archive-fixture] committed 1003 records
+[archive-fixture] committed 1253 records
+[archive-fixture] committed 1503 records
+[archive-fixture] committed 1753 records
+[archive-fixture] committed 2003 records
+[archive-fixture] committed 2253 records
+[archive-fixture] committed 2503 records
+[archive-fixture] committed 2753 records
+[archive-fixture] committed 3003 records
+[archive-fixture] committed 3253 records
+[archive-fixture] committed 3503 records
+[archive-fixture] committed 3753 records
+[archive-fixture] committed 4003 records
+[archive-fixture] committed 4253 records
+[archive-fixture] committed 4503 records
+[archive-fixture] committed 4753 records
+[archive-fixture] committed 5003 records
+[archive-fixture] committed 5253 records
+[archive-fixture] committed 5503 records
+[archive-fixture] committed 5753 records
+[archive-fixture] committed 6003 records
+[archive-fixture] committed 6253 records
+[archive-fixture] committed 6503 records
+[archive-fixture] committed 6753 records
+[archive-fixture] committed 7003 records
+[archive-fixture] committed 7253 records
+[archive-fixture] committed 7503 records
+[archive-fixture] committed 7753 records
+[archive-fixture] committed 8003 records
+[archive-fixture] committed 8253 records
+[archive-fixture] committed 8503 records
+[archive-fixture] committed 8753 records
+[archive-fixture] committed 9003 records
+[archive-fixture] committed 9253 records
+[archive-fixture] committed 9503 records
+[archive-fixture] committed 9753 records
+[archive-fixture] committed 10001 records
+  ok 3 [firefox] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (6.2s)
+  ok 4 [firefox] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (3.4s)
+(node:22768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[archive-fixture] opening overflow writer
+[archive-fixture] overflow writer opened
+[archive-fixture] committed 253 records
+[archive-fixture] committed 503 records
+[archive-fixture] committed 753 records
+[archive-fixture] committed 1003 records
+[archive-fixture] committed 1253 records
+[archive-fixture] committed 1503 records
+[archive-fixture] committed 1753 records
+[archive-fixture] committed 2003 records
+[archive-fixture] committed 2253 records
+[archive-fixture] committed 2503 records
+[archive-fixture] committed 2753 records
+[archive-fixture] committed 3003 records
+[archive-fixture] committed 3253 records
+[archive-fixture] committed 3503 records
+[archive-fixture] committed 3753 records
+[archive-fixture] committed 4003 records
+[archive-fixture] committed 4253 records
+[archive-fixture] committed 4503 records
+[archive-fixture] committed 4753 records
+[archive-fixture] committed 5003 records
+[archive-fixture] committed 5253 records
+[archive-fixture] committed 5503 records
+[archive-fixture] committed 5753 records
+[archive-fixture] committed 6003 records
+[archive-fixture] committed 6253 records
+[archive-fixture] committed 6503 records
+[archive-fixture] committed 6753 records
+[archive-fixture] committed 7003 records
+[archive-fixture] committed 7253 records
+[archive-fixture] committed 7503 records
+[archive-fixture] committed 7753 records
+[archive-fixture] committed 8003 records
+[archive-fixture] committed 8253 records
+[archive-fixture] committed 8503 records
+[archive-fixture] committed 8753 records
+[archive-fixture] committed 9003 records
+[archive-fixture] committed 9253 records
+[archive-fixture] committed 9503 records
+[archive-fixture] committed 9753 records
+[archive-fixture] committed 10001 records
+  ok 5 [webkit] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (2.6m)
+  ok 6 [webkit] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (4.6s)
+
+  6 passed (3.1m)

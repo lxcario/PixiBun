@@ -1,0 +1,33 @@
+{
+  "comparedWith": "phase 4 final source snapshot",
+  "changedFiles": [
+    {
+      "path": "src/components/landing/AtelierEngineShowcase.tsx",
+      "sha256": "1f8b744eade9fad3ebdae4704f7f6fab378abc95896f437447860cc03417ce36"
+    },
+    {
+      "path": "src/components/landing/AtelierHero.tsx",
+      "sha256": "27f39426fa548aca633c9c34baed3ce9cc56b006549258877053cf8b69100de5"
+    },
+    {
+      "path": "src/components/landing/showcase/PixelizeShowcase.tsx",
+      "sha256": "2724ee376584149c0946ca4db130652a0d7d5f984434fdedb666ff6007c2c49d"
+    },
+    {
+      "path": "src/components/modals/export/AnimatedExportTab.tsx",
+      "sha256": "a02020b26ae2f84c3da8fbba618259844713afb400d7ace64166ba41a7456602"
+    },
+    {
+      "path": "tests/components/AtelierEngineShowcase.test.tsx",
+      "sha256": "01ac7a871c8ed3b117fc60955d67f47993a909184071da705c10d6c908b048e1"
+    },
+    {
+      "path": "tests/e2e/landing.spec.ts",
+      "sha256": "e3d45dae2350588b6b4445e02775ba71738c77213c7a9b33f30ebf14cfe224f7"
+    },
+    {
+      "path": "tests/helpers/exportCompletenessWorkflows.ts",
+      "sha256": "367a8ac1d09478c6d59d92e46d009e1254be3f4399fa49d5d35636d13a7d3244"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "kind": "independent-python-zipfile-crc-and-original-byte-check",
+  "passedArchives": 1,
+  "archives": [
+    "artifacts\\feature-repairs\\phase6-editor-archive-routed\\recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium\\untouched-source.zip"
+  ]
+}

@@ -1,0 +1,42 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const folder = 'artifacts/feature-repairs/phase7';
+const revision = cp.execFileSync('git', ['rev-parse', '771218d^{commit}'], { encoding: 'utf8' }).trim();
+const sources = [];
+function historical(p) {
+  for (const candidate of [p, `${p}.ts`, `${p}.tsx`, `${p}/index.ts`, `${p}/index.tsx`]) {
+    try { return { path: candidate, bytes: cp.execFileSync('git', ['show', `${revision}:${candidate}`], { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 8 * 1024 * 1024 }) }; } catch {}
+  }
+  throw new Error(`Historical import unavailable: ${p}`);
+}
+const entry = `import { db, getLayerBlobsForProject, createBlankProjectFile, autoSaveWorkspaceDetailed } from '@/lib/storage/db';
+import { inspectAndAdmitStoredProject } from '@/lib/recovery/projectAdmission';
+globalThis.phase7Reader = { db, getLayerBlobsForProject, createBlankProjectFile, autoSaveWorkspaceDetailed, inspectAndAdmitStoredProject };`;
+(async () => {
+  const { build } = await import('vite');
+  const virtualRoot = path.resolve(folder, 'historical-source').replaceAll('\\', '/') + '/';
+  const entryPath = path.resolve(folder, 'diagnostic-reader-entry.mts').replaceAll('\\', '/');
+  fs.writeFileSync(entryPath, entry);
+  const plugin = { name: 'exact-historical-git-source', enforce: 'pre',
+    resolveId(id, importer) {
+      if (id.startsWith('@/')) return virtualRoot + historical('src/' + id.slice(2)).path;
+      if (id.startsWith('.') && importer?.startsWith(virtualRoot)) return virtualRoot + historical(path.posix.normalize(path.posix.join(path.posix.dirname(importer.slice(virtualRoot.length)), id))).path;
+    },
+    load(id) {
+      if (!id.startsWith(virtualRoot)) return;
+      const item = historical(id.slice(virtualRoot.length));
+      sources.push({ path: item.path, sha256: crypto.createHash('sha256').update(item.bytes).digest('hex') });
+      return item.bytes.toString('utf8');
+    }
+  };
+  const common = { configFile: false, define: { 'process.env.NODE_ENV': '"production"', 'process.env': '{}' }, build: { write: false, minify: false, lib: { entry: entryPath, name: 'Phase7ReaderDiagnostic', formats: ['iife'] } } };
+  for (const [name, extra] of [['historical', { plugins: [plugin] }], ['current', { resolve: { alias: { '@': path.resolve('src') } } }]]) {
+    const result = await build({ ...common, ...extra });
+    const output = (Array.isArray(result) ? result[0] : result).output[0];
+    fs.writeFileSync(`${folder}/${name}-reader.js`, output.code);
+  }
+  fs.writeFileSync(`${folder}/rollback-bundle-provenance.json`, JSON.stringify({ kind: 'diagnostic-bundles-not-historical-production-build', historicalRevision: revision, historicalSources: sources.sort((a,b) => a.path.localeCompare(b.path)), dependencyVersion: { dexie: require('dexie/package.json').version, vite: require('vite/package.json').version }, limitations: 'Historical application imports resolved from exact git source, with current installed npm dependencies. Native-browser read/admission diagnostic only; not a historical production build, deployment, optional-metadata qualification or rollback approval.' }, null, 2) + '\n');
+  console.log(`Built current and historical diagnostic readers; ${sources.length} exact historical modules.`);
+})().catch(e => { console.error(e); process.exitCode = 1; });

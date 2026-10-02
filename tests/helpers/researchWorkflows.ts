@@ -15,8 +15,13 @@ export async function selectResearchWorkflow(page: Page, kind: string) {
   await page.getByRole('tab', { name: names[kind], exact: true }).click();
 }
 export async function openResearchOptions(page: Page) {
-  const summary = page.getByText('More options', { exact: true });
-  if (!await summary.evaluate(element => (element.parentElement as HTMLDetailsElement).open)) await summary.click();
+  // The initial worker result inserts the comparison above these controls. Wait
+  // for that layout change before clicking, then verify the requested UI state.
+  await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-busy', 'false');
+  const summary = page.locator('summary').filter({ hasText: /^More options$/ });
+  const details = summary.locator('..');
+  if (!await details.evaluate(element => (element as HTMLDetailsElement).open)) await summary.click();
+  await expect(details).toHaveAttribute('open', '');
 }
 export async function preview(page: Page) {
   const action = page.getByRole('button', { name: 'Create research preview', exact: true });

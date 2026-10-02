@@ -1,20 +1,20 @@
 import { expect, type Page } from '@playwright/test';
 
 /** Original color/normal artwork enters through the production project importer. */
-export async function importGameDeliveryFixture(page: Page, duplicate = false, options: { solid?: boolean; once?: boolean; previewOffset?: boolean; unrelatedPalette?: boolean; outlined?: boolean } = {}) {
+export async function importGameDeliveryFixture(page: Page, duplicate = false, options: { solid?: boolean; once?: boolean; previewOffset?: boolean; unrelatedPalette?: boolean; outlined?: boolean; manualNormals?: boolean; canvasSize?: [number, number]; tileAlpha?: boolean; ambiguousNormals?: boolean } = {}) {
   await page.goto('/studio'); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   const project = await page.evaluate(({ duplicate, options }) => {
     // Multiples of five round-trip exactly through a native 20%-alpha canvas.
     const colors = Array.from({ length: 256 }, (_, i) => `#${((i % 52) * 5).toString(16).padStart(2, '0')}${(Math.floor(i / 52) * 5).toString(16).padStart(2, '0')}00`);
     if (duplicate) colors[255] = colors[0];
-    const width = options.previewOffset ? 128 : 32, height = options.previewOffset ? 128 : options.outlined ? 32 : 16;
+    const width = options.canvasSize?.[0] ?? (options.previewOffset ? 128 : 32), height = options.canvasSize?.[1] ?? (options.previewOffset ? 128 : options.outlined ? 32 : 16);
     const png = (normal: boolean, frame: number) => {
       const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
       const ctx = canvas.getContext('2d')!, data = ctx.createImageData(width, height);
       if (options.outlined && !normal) {
         for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
           const radius = Math.hypot(x - 15.5, y - 15.5);
-          if (radius <= 11) data.data.set(radius > 10 ? [57, 45, 76, 255] : [199, 146, 219, 255], (y * width + x) * 4);
+          if (radius <= 11) data.data.set(radius > 10 ? [57, 45, 76, 255] : [199, 146, 219, options.tileAlpha ? 51 : 255], (y * width + x) * 4);
         }
         ctx.putImageData(data, 0, 0); return canvas.toDataURL('image/png').split(',')[1];
       }
@@ -41,7 +41,8 @@ export async function importGameDeliveryFixture(page: Page, duplicate = false, o
         { id: 'bounce', name: 'Bounce', startFrame: 0, endFrame: 2, loopMode: 'ping-pong' }],
       frames: [70, 230, 110].map((durationMs, i) => ({ id: `fixture-frame-${i}`, durationMs, layers: [
         { id: `fixture-color-${i}`, name: 'Color', visible: true, locked: false, opacity: 1, blendMode: 'source-over', pngBase64: png(false, i) },
-        ...(options.outlined ? [] : [{ id: `fixture-normal-${i}`, name: 'Normal', tag: 'normal-map', visible: false, locked: false, opacity: 1, blendMode: 'source-over', pngBase64: png(true, i) }]),
+        ...(options.outlined ? [] : [{ id: `fixture-normal-${i}`, name: options.manualNormals ? 'Normal Facets' : 'Normal', tag: options.manualNormals ? 'normal' : 'normal-map', visible: !!options.manualNormals, locked: false, opacity: 1, blendMode: 'source-over', pngBase64: png(true, i) }]),
+        ...(options.ambiguousNormals ? [{ id: `fixture-baked-${i}`, name: 'Normal Map', tag: 'normal-map', visible: false, locked: false, opacity: 1, blendMode: 'source-over', pngBase64: png(true, i) }] : []),
       ] })), createdAt: 1, updatedAt: 1 };
   }, { duplicate, options });
   await page.locator('input[type=file]').first().setInputFiles({ name: 'phase5-original.pixibun', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(project)) });

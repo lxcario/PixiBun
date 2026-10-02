@@ -183,7 +183,7 @@ const FEATURES: FeatureCardData[] = [
     tag: '01 / LIGHTING',
     title: '2.5D PHOTOMETRIC STUDIO',
     description:
-      'Inflate flat 2D silhouettes into continuous normal fields with Blinn-Phong specular and stepped OKLCH cel-shading.',
+      'Try a light on a small sprite, compare smooth or stepped shading, then decide what to keep. Estimated surfaces are a starting point for your own adjustments.',
     pill: 'REAL-TIME NORMALS',
     linkText: 'OPEN LIGHTING STUDIO →',
     illustration: <BrushVignette />,
@@ -193,8 +193,8 @@ const FEATURES: FeatureCardData[] = [
     tag: '02 / GEOMETRY',
     title: 'ROTSPRITE PRECISION',
     description:
-      '8x Scale2X subpixel rotation preserving 1px contours and single-pixel connectivity without blurry distortion.',
-    pill: 'ZERO PIXEL LOSS',
+      'Compare RotSprite with nearest-neighbor rotation. It uses an 8x working image and keeps source colors; tiny details can still change.',
+    pill: 'COMPARE THE EDGES',
     linkText: 'TEST ROTSPRITE →',
     illustration: <PaletteVignette />,
   },
@@ -203,7 +203,7 @@ const FEATURES: FeatureCardData[] = [
     tag: '03 / TIMELINE',
     title: 'ANIMATION & SDF MORPH',
     description:
-      'Variable holds (+125ms), dual-color onion skinning, tag clips, and automated SDF optical flow in-betweens.',
+      'Give each pose its own hold, use faded onion-skin guides and organize clips. Try generated in-betweens, then review the result before keeping it.',
     pill: 'SDF TWEENING',
     linkText: 'OPEN TIMELINE →',
     illustration: <TimelineVignette />,
@@ -213,8 +213,8 @@ const FEATURES: FeatureCardData[] = [
     tag: '04 / PIPELINES',
     title: 'GAME ENGINE EXPORTS',
     description:
-      'Direct Godot 4 .tres SpriteFrames, Unity & Phaser JSON metadata, 24-bit Truecolor APNG, and Web Worker GIF.',
-    pill: 'GODOT & UNITY',
+      'Share a PNG, GIF or full-RGBA APNG. Export a sprite sheet, a bounded Godot kit or Unity shader code; check the files in your destination.',
+    pill: 'SPRITES & ANIMATION',
     linkText: 'EXPORT PIPELINES →',
     illustration: <ExportVignette />,
   },
@@ -245,7 +245,7 @@ export const CozyFeatureGrid: React.FC = () => {
               <span>CRAFTED FOR ARTISTS &amp; GAME MAKERS</span>
             </h2>
             <p className="mt-3 text-sm sm:text-base font-sans text-[var(--text-body)]">
-              Built from scratch with deterministic computer graphics and zero cloud dependencies.
+              Draw, preview and export on your device, with no account needed.
             </p>
           </div>
         </CozyScrollReveal>

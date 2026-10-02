@@ -1,0 +1,68 @@
+const fs = require('node:fs');
+const http = require('node:http');
+const assert = require('node:assert/strict');
+const { chromium, firefox, webkit } = require('@playwright/test');
+const folder = 'artifacts/feature-repairs/phase7';
+async function rawSummary(page) {
+  return page.evaluate(async () => {
+    const connection = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('PixiBunDB'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+    });
+    try {
+      const tx = connection.transaction(['projects', 'layerBlobs', 'recoveryRecords'], 'readonly');
+      const get = request => new Promise((resolve, reject) => { request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+      const [projects, blobs, recovery] = await Promise.all(['projects', 'layerBlobs', 'recoveryRecords'].map(name => get(tx.objectStore(name).getAll())));
+      return { projects, recovery, blobs: await Promise.all(blobs.map(async r => ({ ...r, blob: { kind: r.blob instanceof ArrayBuffer ? 'ArrayBuffer' : 'Blob', bytes: Array.from(new Uint8Array(r.blob instanceof ArrayBuffer ? r.blob : await r.blob.arrayBuffer())) } }))) };
+    } finally { connection.close(); }
+  });
+}
+(async () => {
+  const records = [];
+  const server = http.createServer((_req, response) => { response.writeHead(200, { 'Content-Type': 'text/html' }); response.end('<!doctype html><title>Isolated rollback-reader diagnostic</title>'); });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  try {
+    for (const [name, engine] of Object.entries({ chromium, firefox, webkit })) {
+      const browser = await engine.launch();
+      try {
+        const context = await browser.newContext(); const page = await context.newPage();
+        await page.goto(`http://127.0.0.1:${server.address().port}/`);
+        await page.addScriptTag({ path: `${folder}/current-reader.js` });
+        const seed = await page.evaluate(async () => {
+          const api = globalThis.phase7Reader;
+          const project = api.createBlankProjectFile('Rollback diagnostic', 32, 32);
+          const canvas = document.createElement('canvas'); canvas.width = canvas.height = 32;
+          const ctx = canvas.getContext('2d'); ctx.fillStyle = '#c792df'; ctx.fillRect(4, 4, 12, 9);
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          const result = await api.autoSaveWorkspaceDetailed('phase7-rollback', project, undefined, [{ layerId: project.frames[0].layers[0].id, frameIndex: 0, blob }], undefined, null);
+          return { save: result, pngBytes: Array.from(new Uint8Array(await blob.arrayBuffer())) };
+        });
+        assert.equal(seed.save.ok, true);
+        const before = await rawSummary(page);
+        assert.equal(before.blobs.length, 1); assert.equal(before.blobs[0].blob.kind, 'ArrayBuffer');
+        assert.deepEqual(before.blobs[0].blob.bytes, seed.pngBytes);
+        const current = await page.evaluate(async () => {
+          const api = globalThis.phase7Reader;
+          const records = await api.getLayerBlobsForProject('phase7-rollback');
+          const admission = await api.inspectAndAdmitStoredProject('phase7-rollback');
+          api.db.close();
+          return { admissionStatus: admission.status, logicalBlob: records[0].blob instanceof Blob, logicalPhysicalField: Object.hasOwn(records[0], 'blobType') };
+        });
+        assert.equal(current.admissionStatus, 'admitted'); assert.equal(current.logicalBlob, true); assert.equal(current.logicalPhysicalField, false);
+        await page.addScriptTag({ path: `${folder}/historical-reader.js` });
+        const historical = await page.evaluate(async () => {
+          const api = globalThis.phase7Reader;
+          const records = await api.getLayerBlobsForProject('phase7-rollback');
+          const admission = await api.inspectAndAdmitStoredProject('phase7-rollback');
+          api.db.close();
+          return { admissionStatus: admission.status, reasonCode: admission.reasonCode, message: admission.message, rawArrayBuffer: records[0].blob instanceof ArrayBuffer, logicalBlob: records[0].blob instanceof Blob, physicalField: Object.hasOwn(records[0], 'blobType') };
+        });
+        assert.equal(historical.rawArrayBuffer, true); assert.equal(historical.logicalBlob, false); assert.notEqual(historical.admissionStatus, 'admitted');
+        const after = await rawSummary(page); assert.deepEqual(after, before);
+        records.push({ engine: name, browserVersion: browser.version(), current, historical, preserved: true, rawSource: before });
+        fs.writeFileSync(`${folder}/rollback-reader-results.json`, JSON.stringify({ recordedAt: new Date().toISOString(), kind: 'native-reader-diagnostic-not-production-rollback-approval', records }, null, 2) + '\n');
+        console.log(`${name}: current admitted; historical ${historical.admissionStatus}; original metadata/PNG/record counts unchanged.`);
+        await context.close();
+      } finally { await browser.close(); }
+    }
+  } finally { await new Promise(resolve => server.close(resolve)); }
+})().catch(e => { console.error(e); process.exitCode = 1; });

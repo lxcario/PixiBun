@@ -2,7 +2,8 @@
 
 import React, { useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePracticeActions } from '@/components/playground/PracticeActions';
+import { isPracticeActive } from '@/lib/project/practiceSession';
 import { useStudioStore } from '@/stores/studioStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
@@ -20,7 +21,7 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';
 
 export const PlaygroundLayout: React.FC = () => {
-  const router = useRouter();
+  const practice = usePracticeActions();
   const [showTeachingBoard, setShowTeachingBoard] = React.useState(false);
   const {
     getCurrentStep,
@@ -44,19 +45,17 @@ export const PlaygroundLayout: React.FC = () => {
 
   const stepConfig = getCurrentStep();
 
-  // Initialize playground state and brush size on mount
+  // Session ownership and initialization happen before the viewport mounts.
   useEffect(() => {
-    useOnboardingStore.getState().startPlayground();
-    setBrushSize(2);
     const unsub = studioEvents.on('pixibun:open-teaching-board', () => {
       setShowTeachingBoard(true);
     });
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Stroke commit detection & rigorous mathematical stencil coverage evaluation
   const handleCommitHistory = useCallback(() => {
+    if (!isPracticeActive()) return;
     const template = getCurrentFrameTemplate();
     if (!template || !activeLayerId) return;
 
@@ -70,6 +69,7 @@ export const PlaygroundLayout: React.FC = () => {
   const prevIsPlayingRef = React.useRef(isPlaying);
 
   useEffect(() => {
+    if (!isPracticeActive()) return;
     // If playback just stopped (pause transition), snap step to the active paused frame
     if (prevIsPlayingRef.current && !isPlaying) {
       const { steps } = useOnboardingStore.getState();
@@ -125,6 +125,7 @@ export const PlaygroundLayout: React.FC = () => {
   // Keyboard shortcuts in playground (Pen, Eraser, Undo, Redo, Play)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPracticeActive()) return;
       if (
         document.activeElement?.tagName === 'INPUT' ||
         document.activeElement?.tagName === 'TEXTAREA' ||
@@ -260,19 +261,27 @@ export const PlaygroundLayout: React.FC = () => {
             <span>Teaching Board</span>
           </button>
 
+          <button type="button" onClick={practice?.keep} disabled={!practice}
+            className="border-2 border-[#8c5120] px-3 py-1.5 text-xs font-mono text-[var(--accent-gold)]">
+            Keep practice in Studio
+          </button>
           <ThemeToggle />
 
           <button
             type="button"
-            onClick={() => router.push('/studio?fromPlayground=true')}
+            onClick={practice?.returnToDrawing}
+            disabled={!practice}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[var(--desk-border)] text-xs font-mono font-bold text-[var(--text-body)] hover:text-[var(--accent-gold)] transition-all cursor-pointer shadow-sm active:translate-y-px"
-            title="Skip onboarding and enter the full studio"
+            title="Restore your original drawing in Studio" aria-label="Return to drawing"
           >
-            <span>Skip to Studio</span>
+            <span>Return to drawing</span>
             <span className="text-[var(--accent-gold)]">➔</span>
           </button>
         </div>
       </header>
+      <p className="shrink-0 px-4 py-1.5 text-center text-xs text-[var(--text-body)] bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)]">
+        A fresh sheet to try things. Keep saves a new project; Return brings your drawing back. Practice is temporary until you keep it.
+      </p>
 
       {/* Main Workspace Area (Left Restricted Toolbar + Center Stage + Right Artisan Handbook) */}
       <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">

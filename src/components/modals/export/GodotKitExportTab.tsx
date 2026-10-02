@@ -20,7 +20,7 @@ export function GodotKitExportTab({ indexed, normals, pivot, onIndexed, onNormal
     <label><input type="checkbox" checked={indexed} onChange={e => onIndexed(e.target.checked)} /> Include indexed palette and runtime cycling</label>
     <p className="text-[11px] text-[var(--text-muted)]">Indexed export needs 1–256 exact palette colors. Set roles and resolve duplicate colors in Palette → Roles and index bindings. Alpha is stored separately.</p>
     <label><input type="checkbox" checked={normals} onChange={e => onNormals(e.target.checked)} /> Include normal-map atlas</label>
-    <p className="text-[11px] text-[var(--text-muted)]">Normal export needs one normal-map layer in every frame, at full opacity with normal blending. Godot expects X+ Y+ Z+ maps; exported values are preserved.</p>
+    <p className="text-[11px] text-[var(--text-muted)]">Normal export needs exactly one Normal Facets or Normal Map layer in every frame, at full opacity with Normal blending. Godot expects X+ Y+ Z+ maps; exported values are preserved.</p>
 
     {/* Preflight Inspection */}
     <div className="border border-[var(--desk-border)] bg-[var(--surface-0)] p-2.5 rounded-[2px] flex flex-col gap-2 mt-1">

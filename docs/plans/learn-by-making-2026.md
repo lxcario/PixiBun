@@ -8,7 +8,9 @@ Help a first-time visitor make a small sprite, animate it, or change its lightin
 
 Do not gate the editor behind lessons. Keep the existing Playground available while the replacement is tested. Ship a path only after it passes the project-safety checks below.
 
-## Current implementation: audit hypotheses
+## Original implementation: audit hypotheses
+
+These observations describe the 28 September baseline, before the October repairs. [Phase 1](../research/2026-10-02-feature-repairs-phase1.md) makes Trace/Clear history-backed; [phase 2](../research/2026-10-02-feature-repairs-phase2.md) isolates desktop practice and preserves the original through save-before-entry, Return and separate Keep. Task-based PixiTools is also implemented. The proposed in-Studio guided paths, verified learning progression, recruitment and measured outcomes below remain proposals; they were not delivered by those repairs. Use the [current learning contract](../contracts/learning.md) for present custody/refresh limits.
 
 | Observation from code | User-facing risk to test | Decision needed |
 | --- | --- | --- |

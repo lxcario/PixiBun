@@ -26,6 +26,8 @@ import type {
   RecoveryPlanBuilderDecisions,
 } from '@/lib/recovery/recoveryTypes';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { RecoveryBackupError } from '@/lib/recovery/recoveryTypes';
+import { RECOVERY_INSPECTION_CEILINGS } from '@/lib/recovery/recoveryLimits';
 
 export interface RecoveryModalProps {
   isOpen: boolean;
@@ -64,6 +66,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [backupError, setBackupError] = useState<{ sourceProjectId: string; message: string } | null>(null);
   const [_recoveredProjectId, setRecoveredProjectId] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -140,6 +143,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 
   useEffect(() => {
     if (isOpen && sourceProjectId) {
+      setBackupError(null);
       setUserConsent(false);
       setClipConsentGranted(false);
       setAdditionalDeletionsAccepted(false);
@@ -220,6 +224,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
   // Export untouched backup archive
   const handleExportBackup = async () => {
     if (!sourceProjectId || isExporting) return;
+    setBackupError(null);
     setIsExporting(true);
 
     try {
@@ -278,6 +283,10 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
       });
     } catch (err: unknown) {
       console.error('Backup export failed:', err);
+      const message = err instanceof RecoveryBackupError && err.code === 'EXCESSIVE_STORED_BLOBS'
+        ? `This source has more than ${RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS.toLocaleString('en-US')} stored image records, which is too many for this backup.`
+        : err instanceof Error ? err.message : 'The backup could not be completed. Please keep your original browser storage intact.';
+      setBackupError({ sourceProjectId, message });
       studioEvents.emit('pixibun:toast', {
         type: 'error',
         message: err instanceof Error ? err.message : 'Failed to export recovery archive.',
@@ -348,6 +357,14 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
             </p>
           </div>
         </div>
+
+        {backupError?.sourceProjectId === sourceProjectId && (
+          <div role="alert" data-testid="recovery-backup-error" className="p-3 rounded-[3px] border border-amber-500/30 bg-amber-500/10 text-[var(--text-body)] leading-relaxed">
+            <p className="font-bold text-[var(--text-heading)] mb-1">Backup wasn&apos;t completed</p>
+            <p>{backupError.message}</p>
+            <p className="mt-1">This export did not change your original stored records.</p>
+          </div>
+        )}
 
         {/* 1. Diagnosing Phase */}
         {phase === 'diagnosing' && (

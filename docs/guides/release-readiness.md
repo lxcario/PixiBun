@@ -1,0 +1,33 @@
+# Preparing a PixiBun release
+
+A local passing build is a candidate for release. Publish a separate dated decision only after checking the actual candidate and host. Use [current status](../current-status.md) for executed local evidence and [deployment](deployment.md) for server configuration.
+
+## Freeze and identify the candidate
+
+Record the full commit, package version, lockfile, Node/npm versions, build time, source fingerprints and service-worker cache identity. A dirty checkout needs its own file hashes; its base commit or package number cannot identify all its changes. Build once from the frozen candidate before compiled-browser checks. Rebuild and qualify again after a meaningful source, dependency or build-configuration change.
+
+Use a deliberate cache identity for the candidate. The default derives from package version and the short Git revision, so two different uncommitted builds on the same base can share that identity. Changing `SW_CACHE_VERSION` produces a different worker/cache name; it does not identify every application asset, migrate artwork or prove deployment compatibility.
+
+Record documentation, type, lint, unit/build and full browser results separately. Preserve failures and interrupted runs with their original commands. Review a fresh production-dependency advisory result and whether each reported path is used. A clean advisory result is a dated registry observation, not a security certification. [Testing and evidence](testing.md).
+
+## Verify the host and update path
+
+Record the intended hostname and final URL, TLS/redirect behavior, deployment identity, worker MIME/scope/cache headers and a clean-browser Studio smoke check. HTTP 200 and a worker's short revision label do not attest the full deployed build. If the intended domain cannot be reached, record that observation and investigate DNS/TLS/host configuration before calling it verified.
+
+Check two distinct application builds on the same staging origin. Save portable fixture backups first. Keep one tab dirty and another saved; observe the new worker waiting, update instructions and dismissal without forced refresh. Verify the artwork and selected project identity in each tab. Save explicitly, close all PixiBun tabs, reopen, then verify activation, current assets, saved pixels, editing and a warm offline reopen. Include a failure to install/cache the new shell and a return to the previous build.
+
+The existing proxy test with two worker scripts exercises a real worker lifecycle over one application build. It is useful regression evidence but cannot replace that deployment transition. Next.js and the host also need a strategy for requests from old tabs to assets/routes of the new build. The repository's worker protection does not prove that every lazy chunk is cached or retained by the host. Inspect actual hosting settings; do not infer platform skew protection from a local configuration file.
+
+## Qualify rollback before using it
+
+A server rollback leaves browser IndexedDB and portable project formats as they are. Test the exact rollback candidate against copies of records written by the new build, including physical ArrayBuffer rasters, legacy Blob rasters and optional project metadata. Check read, render and save-back behavior, metadata preservation, conflicts and source custody. Use isolated fixtures and compare exact bytes/identities before and after.
+
+An old reader that cannot admit current records is an incompatible rollback target. Keep the original stored records; do not clear storage or silently rewrite artwork to make the old build open. Prefer a compatible forward repair, or prepare and independently qualify a compatible rollback candidate. A module-level reader diagnostic can identify a concrete incompatibility; it does not approve a full historical production build.
+
+## Record the decision
+
+Check publication triggers before pushing the candidate. The checked-in [deployment workflow](../../.github/workflows/deploy.yml) follows successful main CI and can publish production when credentials exist; an independently configured hosting integration may deploy on push too. A review-branch push and a main push have different release consequences. See [deployment configuration](deployment.md#published-configuration).
+
+The release record should state candidate/deployed identities, host/runtime/cache settings, executed commands and results, remaining qualification, selected rollback candidate and decision owner. Keep the historical September sign-off unchanged. A draft assessment, local screenshots or a completed repair plan does not approve production publication.
+
+Physical pen/touch devices, manual keyboard/screen-reader testing, low-memory/long-session profiles, participant usefulness and real two-machine collaboration remain their own qualification rows in [the research registry](../research/issue-registry.md). Close them only with actual observations.

@@ -64,7 +64,7 @@ Each modeled pixel history step stores full-canvas single-layer RGBA ($width \ti
 
 To target lower interaction overhead (no end-to-end sub-16ms/no-drop measurement established):
 - **`bufferVersion` Signal:** Decoupled from `CenterViewport`. Atomic integer signal subscribed exclusively by leaf widgets (`BottomTimeline`, `FloatingPreviewWindow`).
-- **`CursorStatusBadge`:** Decoupled from `CenterViewport`. Pointer movements across pixel boundaries broadcast via `updateCursorHUD(coords)` to an isolated subscriber leaf badge, incurring **0** re-renders on `CenterViewport`.
+- **`CursorStatusBadge`:** Decoupled from `CenterViewport`. Pointer movements across pixel boundaries broadcast via `updateCursorHUD(coords)` to an isolated subscriber leaf badge, reducing direct parent-state updates. A complete render-count profile for all pointer states has not been recorded.
 - **Canvas Stack Separation:** Layered multi-canvas architecture ensures tool previews, grid lines, and marching ants redraw independently without dirtying or re-rasterizing base layer bitmaps.
 
 ---
@@ -79,14 +79,14 @@ During interactive selection transforms (corner scaling, edge stretching, transl
 
 ### Empirical Frame Timings (100 Iterations per Resolution)
 
-| Selection Resolution | Total Pixels | Average Frame Time | $p_{95}$ Latency | 60 FPS Budget Consumed | Theoretical Operations/sec (Modeled) |
-|---|---|---|---|---|---|
-| **32 × 32** | 1,024 | **$0.012\text{ ms}$** | $0.014\text{ ms}$ | **0.07%** | $> 80,000\text{ ops/sec}$ |
-| **64 × 64** | 4,096 | **$0.027\text{ ms}$** | $0.046\text{ ms}$ | **0.16%** | $> 36,000\text{ ops/sec}$ |
-| **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** | $> 11,000\text{ ops/sec}$ |
-| **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** | $> 3,000\text{ ops/sec}$ |
+| Selection Resolution | Total Pixels | Average Frame Time | $p_{95}$ Latency | 60 FPS Budget Consumed |
+|---|---|---|---|---|
+| **32 × 32** | 1,024 | **$0.012\text{ ms}$** | $0.014\text{ ms}$ | **0.07%** |
+| **64 × 64** | 4,096 | **$0.027\text{ ms}$** | $0.046\text{ ms}$ | **0.16%** |
+| **128 × 128** | 16,384 | **$0.089\text{ ms}$** | $0.117\text{ ms}$ | **0.53%** |
+| **256 × 256** | 65,536 | **$0.333\text{ ms}$** | $0.383\text{ ms}$ | **2.00%** |
 
-> **Throughput & Budget Note:** Peak throughput values are arithmetic extrapolations ($1000\text{ ms} / \text{latency}$) modeling theoretical operations per second in isolation, not physical browser display frame rates (which are clamped by the display refresh rate and composition pipeline). Across reference benchmark runs, 256 × 256 nearest-neighbor inverse point sampling completes in $\approx 0.33\text{ ms}$ ($\approx 2.0\%$ of the 16.66ms 60 FPS frame budget), remaining within upper-bound latency ceilings enforced by automated CI regression tests.
+> **Historical scope:** These micro-operation timings lack retained hardware/raw samples outside the named §7 run. They do not measure input handling, compositing, browser presentation or sustained interaction. The redundant operations-per-second extrapolation has been removed; CI latency ceilings are regression checks, not reproduction of these values.
 
 ---
 
@@ -141,7 +141,7 @@ By offloading the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), b
 
 **Harness:** `scripts/runQualityGate.mjs`; run `npm run gate` for stages 1–4 and `npm run gate:full` for stages 1–5. Stage times are wall-clock durations printed by that runner.
 
-> **Reference Testbench:** Windows 10 (NT 10.0.26200) x64 • Intel Core i5-12500H (16 logical CPUs) • 31.7 GiB RAM • Node v26.5.1 • npm 11.17.0 (captured 2026-09-26 on checkout `3c77c31`). These measurements are reference observations with warm dependency and build caches, not an empirical guarantee for other host machines.
+> **Reference Testbench:** Windows 11 (NT 10.0.26200) x64 • Intel Core i5-12500H (16 logical CPUs) • 31.7 GiB RAM • Node v26.5.1 • npm 11.17.0 (captured 2026-09-26 on checkout `3c77c31`). The original capture called this Windows 10; build 26200 is [Windows 11](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information). Node 26 was the actual historical runtime, outside the current supported Node 22 range; it is retained rather than relabeled. These warm-cache observations are not current-runtime qualification or a guarantee for other machines.
 
 | Stage | Check | Standard gate | Full gate | Result |
 |---|---|---:|---:|---|

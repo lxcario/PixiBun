@@ -375,7 +375,8 @@ function getAbortError(signal?: AbortSignal, defaultMsg = 'Operation was aborted
  * Guarantees:
  * 1. Single read-only Dexie transaction across projects, layerBlobs, and recoveryRecords.
  * 2. Full compound index keyspace inspection [projectId, Dexie.minKey] to [projectId, Dexie.maxKey].
- * 3. Bound enumeration: limit(MAX_INSPECTABLE_STORED_BLOBS + 1) fails closed without allocating excess records.
+ * 3. Count the compound range before materializing payloads; excessive counts fail closed.
+ *    Admitted enumeration retains limit(MAX_INSPECTABLE_STORED_BLOBS + 1).
  * 4. Transaction is released immediately; zero transaction locks are held during subsequent archive writes.
  * 5. Fail-closed envelope validation (empty string dataJson accepted; non-string rejected; corrupted blobs rejected).
  * 6. Manifest schema closed and bounded (<= 16 MiB).
@@ -429,6 +430,7 @@ export async function prepareUntouchedRecoveryArchive(
   // 1. Snapshot all records in a single read-only transaction
   let projectRecord: StoredProject | undefined;
   let blobRecords: StoredLayerBlob[] = [];
+  let excessiveStoredBlobs = false;
   let ledgerRecord: RecoveryRecord | undefined;
 
   try {
@@ -436,12 +438,18 @@ export async function prepareUntouchedRecoveryArchive(
       projectRecord = await db.projects.get(projectId);
       if (signal?.aborted) return;
 
-      // Bound enumeration before allocating unbounded records
-      blobRecords = await db.layerBlobs
+      // Count index entries without cloning payloads. The count and payload query
+      // share this transaction, so a concurrent writer cannot change admission.
+      const storedBlobs = db.layerBlobs
         .where('[projectId+id]')
         .between([projectId, Dexie.minKey], [projectId, Dexie.maxKey], true, true)
-        .limit(RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS + 1)
-        .toArray();
+        .limit(RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS + 1);
+      excessiveStoredBlobs =
+        (await storedBlobs.count()) > RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS;
+      if (signal?.aborted) return;
+      if (!excessiveStoredBlobs) {
+        blobRecords = await storedBlobs.toArray();
+      }
 
       if (signal?.aborted) return;
 
@@ -476,7 +484,7 @@ export async function prepareUntouchedRecoveryArchive(
 
   const storedDataJson: string = projectRecord.dataJson;
 
-  if (blobRecords.length > RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS) {
+  if (excessiveStoredBlobs) {
     throw new RecoveryBackupError(
       'EXCESSIVE_STORED_BLOBS',
       `Project "${projectId}" exceeds maximum inspectable stored blobs (${RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS}).`

@@ -1,0 +1,34 @@
+
+> pixibun@1.14.1 gate:full
+> node scripts/runQualityGate.mjs --with-build
+
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Checks local links, historical paths, generated discovery, selected source contracts and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 274 existing, 6 approved removed historical references.
+Local links/headings: 1557 destinations across 90 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 13.62s[0m
+
+[1m[35m[2/5] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+tests/helpers/exportCompletenessWorkflows.ts(111,30): error TS2352: Conversion of type 'Window & typeof globalThis' to type 'Window & { releaseTileCodec: () => void; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'releaseTileCodec' is missing in type 'Window & typeof globalThis' but required in type '{ releaseTileCodec: () => void; }'.
+
+[1m[31m❌ FAILED: Stage 2: Static Type Safety Invariant (0 Errors) (exited with code 2) [3.12s][0m
+[33m⚠️  A configured check failed; this runner stopped. Hooks and external release policy are separate.[0m
+

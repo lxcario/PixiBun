@@ -1,0 +1,814 @@
+{
+  "reviewedAt": "2026-10-02T21:58:44.029Z",
+  "localDate": "2026-10-03",
+  "timeZone": "Europe/Istanbul",
+  "ownedMarkdownFiles": 100,
+  "scope": "All publishable Markdown classified and session-affected claims reconciled; not a line-by-line independent certification of all algorithms or workflows.",
+  "exclusions": [
+    "ignored private transcripts/proposals",
+    "node_modules and generated runtimes",
+    "separate checkouts"
+  ],
+  "files": [
+    {
+      "path": ".agents/skills/testsprite-onboard/SKILL.md",
+      "scope": "vendor instruction",
+      "bytes": 12061,
+      "sha256": "630f721defee9ae1aef1753c4d494ab75c97d1c6616a7b72d901891a4ef25421",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved upstream instruction; local-only testing preference remains recorded."
+    },
+    {
+      "path": ".agents/skills/testsprite-verify/SKILL.md",
+      "scope": "vendor instruction",
+      "bytes": 31761,
+      "sha256": "3757039ab63649aff295b98d936a4498b7d0b5e70572fd091a9beb0ecd78ebd6",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved upstream instruction; local-only testing preference remains recorded."
+    },
+    {
+      "path": "AGENTS.md",
+      "scope": "operating reference",
+      "bytes": 868,
+      "sha256": "9fa8179e3412f5269169176567db6b0fc6e612a9924876ee91e56f8456432861",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "scope": "operating reference",
+      "bytes": 113321,
+      "sha256": "81e1bd73db544af8b46ec1fefa954af919efac439060e45c8fdd3624421a400e",
+      "changedDuringFinalReview": true,
+      "disposition": "Added count-before-payload admission, physical/logical MIME boundary and conditional archive availability."
+    },
+    {
+      "path": "BENCHMARKS.md",
+      "scope": "operating reference",
+      "bytes": 18979,
+      "sha256": "0a268d38b52414870db3c2a0270ef2ea031f7fe6c152bf58c5c94745c4fe3a04",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 187999,
+      "sha256": "71c5643221c40730a8acccba8a7180277efb79765ecc4b361a48720fbe4610d2",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "scope": "operating reference",
+      "bytes": 5918,
+      "sha256": "0e45047b64f37f4c355b4cd2fd9572660d13cc6d1399a78e4cb064001b5a4166",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "DESIGN.md",
+      "scope": "operating reference",
+      "bytes": 27063,
+      "sha256": "cdddb51c7cc7ef45a44cd912daa4b9dd3c907aa5d83310de87f7ab73e4742c1d",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "FullStackGuide.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 35168,
+      "sha256": "d87e7b71336fb21f6d1af51fc595c2a6c351ac62e73a13b8fda0c0a60298f2d1",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "LOGS.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 212825,
+      "sha256": "896cb2d9737cdf84aa0bf7280291cf4bc589919a6d2219092989c2b5d141c00d",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "MAIN.md",
+      "scope": "operating reference",
+      "bytes": 5657,
+      "sha256": "1928b292e22b562457993f8aa684c9fbaecc87895ce973e509f2b7ecdcfed9f7",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "PIXIBUN_AUDIT_RESULTS+DEEP.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 89191,
+      "sha256": "46c5387330c7faa108fb410e6e5cc6a9bb53e666cbd23edf921c517fe7b7423a",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "PIXIBUN_AUDIT_RESULTS.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 29892,
+      "sha256": "f7f41026febd5afbdcbdf2306934196254adb635161b10961e523ada398c0467",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "PIXIBUN_DEEP_DIVE.md",
+      "scope": "operating reference",
+      "bytes": 18120,
+      "sha256": "d36d191cead878b94e3e29c2098b47c0ae347366e0d692371b11c50ec5390c8e",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "PIXIBUN_UX_AUDIT.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 15360,
+      "sha256": "e7ac41b68be0bb147477bb913e97d4171fb1420d7211355dec77c8d6573e6623",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "PIXIBUN_UX_CHANGELOG.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 10123,
+      "sha256": "d91f25f1da473e33b6ba802d53e162fd336b0dd5acc7ba16f36d786727fba1c4",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "PIXIBUN_UX_IMPLEMENTATION_PLAN.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 10391,
+      "sha256": "0ddf5932f61cd82fc065f724d79c9d9aef3b05ba35ad212ceda5b0edd227c5d3",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "README.md",
+      "scope": "operating reference",
+      "bytes": 7818,
+      "sha256": "17793a657340c1d89c4f69b0eaae66414c586ed0ab4764ef625b6e4fafc4600d",
+      "changedDuringFinalReview": false,
+      "disposition": "Retained supplied logo, warm beginner wording and current Cozy captures; current features/limits link to canonical guides."
+    },
+    {
+      "path": "SECURITY.md",
+      "scope": "operating reference",
+      "bytes": 4299,
+      "sha256": "6df6ad36d53707f3a918f7ab64c93c63f00d78f678cac332800974085c1cb706",
+      "changedDuringFinalReview": false,
+      "disposition": "Retained user-supplied private reporting address, pinned patch evidence and dated audit limitations."
+    },
+    {
+      "path": "SKILL.md",
+      "scope": "operating reference",
+      "bytes": 4209,
+      "sha256": "5b45fa728fedb424783cdb23a09e64bd658acac69d31a4326ea2fb37e9b4e276",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "TASKS.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 236262,
+      "sha256": "81e247f24581aabf47c5c7a0a5a13b8b32cc4c1d11321a43cf1cc25dda039fe8",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "V2_VISION.md",
+      "scope": "plan or proposal",
+      "bytes": 12061,
+      "sha256": "1dacc6e54473cc25e7ff9a733ca6f2e17f7db44888456e7ff3e93b72dcb4423a",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/README.md",
+      "scope": "operating reference",
+      "bytes": 4237,
+      "sha256": "3f17836495532d1d3da37dc71389ec411d8fd23339994b840c1c835e3895c67f",
+      "changedDuringFinalReview": true,
+      "disposition": "Linked final publication review alongside earlier dated audit/repair records."
+    },
+    {
+      "path": "docs/contracts/exports.md",
+      "scope": "operating reference",
+      "bytes": 7443,
+      "sha256": "8e88a28abd984310e147c49a187d97faaf00090d57747bd99762d36c90c43d83",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/contracts/learning.md",
+      "scope": "operating reference",
+      "bytes": 3295,
+      "sha256": "a6dba262f8769930420fff2e8703ef869aafbac61523b5f5373fd78ab25b0ba1",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/contracts/rendering.md",
+      "scope": "operating reference",
+      "bytes": 8142,
+      "sha256": "5d9b5bc59de31f4895bde8851f8a94040ff1b9e2401834ca48763202518df2d2",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/contracts/security-boundaries.md",
+      "scope": "operating reference",
+      "bytes": 10257,
+      "sha256": "76824601229b5e65dd4be276f0a8e753ad1f86c88a9369ce278d024d2da76e3a",
+      "changedDuringFinalReview": true,
+      "disposition": "Included latest archive-admission and logical-field safeguards with source/evidence links."
+    },
+    {
+      "path": "docs/contracts/shortcuts.md",
+      "scope": "operating reference",
+      "bytes": 2130,
+      "sha256": "0e97c512dac902d01c127a3496b39f77053439eb379c4b84727b37491887c930",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/contracts/storage.md",
+      "scope": "operating reference",
+      "bytes": 6780,
+      "sha256": "ae42f44854084c24f5b842998c9ddad1281839f42f642ae1beac8f693480ea05",
+      "changedDuringFinalReview": true,
+      "disposition": "Removed duplicate archive-admission section, preserving its first anchor and limits."
+    },
+    {
+      "path": "docs/current-status.md",
+      "scope": "operating reference",
+      "bytes": 12975,
+      "sha256": "b1c0c30b26ecda69faefbc9bfa81e3f5155831d6dfbd5fbaeffa4d8bc49c7203",
+      "changedDuringFinalReview": true,
+      "disposition": "Linked final docs-only reconciliation without changing executed application scope."
+    },
+    {
+      "path": "docs/features.md",
+      "scope": "operating reference",
+      "bytes": 35074,
+      "sha256": "a49d0c6b41e322f59adbfeeacfe025d7a448fb911c4b6bc03e7287c927026a6e",
+      "changedDuringFinalReview": true,
+      "disposition": "Reconciled session review date; screenshot capture dates remain2October."
+    },
+    {
+      "path": "docs/guides/README.md",
+      "scope": "operating reference",
+      "bytes": 4368,
+      "sha256": "11ac423e2f397b8f237c6224f3405ee163516b896fcbd54224eaed729fe1f147",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/animation-and-review.md",
+      "scope": "operating reference",
+      "bytes": 7367,
+      "sha256": "7a35a347cd75fc9464cbbb86d1f94302960b407750f508568789ae5298a20a4f",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/artwork-safety.md",
+      "scope": "operating reference",
+      "bytes": 6969,
+      "sha256": "465b2544287002160b75fb3c64cdfe5bca722288feaa04c7e24a28aa4d3dc604",
+      "changedDuringFinalReview": true,
+      "disposition": "Removed repeated overflow paragraph; retained current in-dialog warning and phase6 pictures."
+    },
+    {
+      "path": "docs/guides/collaboration-and-privacy.md",
+      "scope": "operating reference",
+      "bytes": 5508,
+      "sha256": "eeafa5c06bf43ec708f1b557a51e32b6e2b48eed872bf2df0fc5959a7328ee66",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/deployment.md",
+      "scope": "operating reference",
+      "bytes": 3960,
+      "sha256": "7c24bf16e64dbfe599b13a1d7dd52d9526356e776968fb109d6086c049175abf",
+      "changedDuringFinalReview": true,
+      "disposition": "Documented actual conditional main CI/deploy trigger and unverified independent host integration."
+    },
+    {
+      "path": "docs/guides/drawing-tools.md",
+      "scope": "operating reference",
+      "bytes": 10909,
+      "sha256": "d6781d0942cdcd63ce3e97d07c40b6e7f7daf3ed7c135c9f74696e4352dae4bd",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/exporting.md",
+      "scope": "operating reference",
+      "bytes": 10970,
+      "sha256": "9d1dbbc43676b5310f6e70725c7ce90c289eeca7b064e271fab4d476132feedd",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/learning-and-playground.md",
+      "scope": "operating reference",
+      "bytes": 10853,
+      "sha256": "81a29de1518a076f1a99b30f3d9d87668b3eaa12ba4ad951666481a407fa28a1",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/lighting-and-surfaces.md",
+      "scope": "operating reference",
+      "bytes": 8072,
+      "sha256": "745b64dd3656907a0f4b319bb02370e56dfff8e62d2c3aeffa32f954d4118308",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/palettes-and-cycling.md",
+      "scope": "operating reference",
+      "bytes": 6873,
+      "sha256": "c6354baa7edf5c7172115810a9b27573ca0a1d6a2cb82cd4c4fa8d126930fec5",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/pixitools-cleanup-and-tiles.md",
+      "scope": "operating reference",
+      "bytes": 9868,
+      "sha256": "1d93624b6a047209426cfe9542f6eb9297758396556e8d21fe0e9d3fe5c15328",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/release-readiness.md",
+      "scope": "operating reference",
+      "bytes": 4922,
+      "sha256": "e721edc1273909524ae96f36405fbd08ad5c9cfe326f789b56f53c9d7b703f7b",
+      "changedDuringFinalReview": true,
+      "disposition": "Added publication-trigger review before candidate push."
+    },
+    {
+      "path": "docs/guides/studio-workspace.md",
+      "scope": "operating reference",
+      "bytes": 14627,
+      "sha256": "1c2c64d305ff00767b71eeddb72d9af46e185ab2691fb5852f17494b33fc5c1b",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/testing.md",
+      "scope": "operating reference",
+      "bytes": 5136,
+      "sha256": "5fe56bc954efff54f9006d0ff11ba1a897959dc7ed9f4966a26f7d152b1bb13c",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/variations-and-scenes.md",
+      "scope": "operating reference",
+      "bytes": 6863,
+      "sha256": "ecdf113511cc01ce18731fffb873dbdc3af220b0def1f146a8e895a0a161dcf7",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/guides/welcome-and-demos.md",
+      "scope": "operating reference",
+      "bytes": 6498,
+      "sha256": "0006bb0c9534e0f2cae64afe01699fb85ef3999d8711af618030641c4129fec7",
+      "changedDuringFinalReview": false,
+      "disposition": "Reviewed session-affected claims and source/evidence destinations; retained current bounded behavior and qualifications."
+    },
+    {
+      "path": "docs/plans/2026-10-02-feature-repairs.md",
+      "scope": "plan or proposal",
+      "bytes": 3923,
+      "sha256": "f98101ebac9967b08811f180cc7be561e42e5f39fd1ed0ee9858f49f3fc7866f",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/README.md",
+      "scope": "plan or proposal",
+      "bytes": 1863,
+      "sha256": "45f26fea60d77999420c8b14e6d3237daca80607e7805364b901dc518f0647b0",
+      "changedDuringFinalReview": true,
+      "disposition": "Marked seven repair phases complete locally; production approval stays pending."
+    },
+    {
+      "path": "docs/plans/audit-remediation-2026-09-26.md",
+      "scope": "plan or proposal",
+      "bytes": 9902,
+      "sha256": "b0dc862bf39ea3b80dbbb7df781859c63d9acd64185e9891353f04a1c7750279",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/audit_remediation_plan.md",
+      "scope": "plan or proposal",
+      "bytes": 8855,
+      "sha256": "740083ce77d06a0cd68067a8e9fb47ebeb78087e07e7e48919d095a6901f87bb",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/audit_remediation_walkthrough.md",
+      "scope": "plan or proposal",
+      "bytes": 6888,
+      "sha256": "f5483fa62db0998968dea9cb730f423a7aac14fcbb4e7acb44633f3a6ebdac8a",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/implementation_plan.md",
+      "scope": "plan or proposal",
+      "bytes": 13350,
+      "sha256": "864e6c308b0eaf9ea9f6c0e6c62065685a625e1b76d1d3e97f2999a85ad508c8",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/implementation_plan_v2.md",
+      "scope": "plan or proposal",
+      "bytes": 11497,
+      "sha256": "0775f8e3201764f41617d64ac150b6bd2ce9780a47eabda67085357f1a721f39",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/learn-by-making-2026.md",
+      "scope": "plan or proposal",
+      "bytes": 11127,
+      "sha256": "831a01fddf377b32fa1d421a3080dd64ef7c605e4b73bf55cfd911b70075998c",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/plans/research_grounded_product_roadmap.md",
+      "scope": "plan or proposal",
+      "bytes": 15273,
+      "sha256": "51b44a921c030508c540f650f30ba75e8cf7596e589937ef7cb8dd0e17195084",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved proposal/historical phase scope; implementation and remaining qualification stay distinct."
+    },
+    {
+      "path": "docs/releases/2026-10-02-local-candidate-assessment.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 3253,
+      "sha256": "ce0b5768d1bdfa07408266bffdb5fa2c29b3ee542d0afb4c0670514434056b8b",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/releases/v1.14.1-signoff.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 2852,
+      "sha256": "860923bf9210e38a3b466ad65369b3da4a5fbe62eaad8acdfe86d2486eaf323f",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-09-30-codebase-and-pixel-art-audit.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 47014,
+      "sha256": "148ae7989c75362fa988609d83062dfcabea3b95977f9a17ef335ae95975625e",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-audit-remediation.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 6280,
+      "sha256": "52cc0c8bf88f1c898f9e21478fc448dbef4f6017606b76336cfe2955de29c548",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-documentation-codebase-audit.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 76246,
+      "sha256": "23b857e8912e69816167ac1fc1fba4d4ee1b32d6c9522aafd62a5a729fb54e6d",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-documentation-followup.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 4686,
+      "sha256": "7b1be9b0f410b73f641c745c1a3e0192ebec214a7b66f0951c7aa4d30e54937b",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-handbook.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 6198,
+      "sha256": "a0bc801060d8ef9d64f92ca62a0c21c0e15dc4c5537ace3c25efdf04873a0cb1",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase1.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 4415,
+      "sha256": "61adf7cb0de10182cd70e9021e116a3d85d9f919d17a8632947acc4ca9de136b",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase2.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 7857,
+      "sha256": "ecce5524e1e69174db3cdce6f1a04d15970b6a7f3bfe30745757657d8bbf40d9",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase3.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 4946,
+      "sha256": "217cb72b774abe4f3973ffde5a4b38eec341ebf53a33475af1c969817dfa0bf2",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase4.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 9815,
+      "sha256": "b311b8c905f7e85f33aa81d30d4bfdb9e7169940caf444cb860743982f56d75f",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase5.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 12312,
+      "sha256": "30e045b7b59cc557545d37c493b9387d00c41b30089f253735eb70c080be6b67",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase6.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 11081,
+      "sha256": "7272b55488d46bd65d9becbde03f6f1b66009513ae4e5987c194154895a6f7dc",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-02-feature-repairs-phase7.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 6817,
+      "sha256": "d64f56da4bb83243ab8bdcb3a0f81b0cafe8dec2c7b7ab69be6e0ec15509b260",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/2026-10-03-session-documentation-review.md",
+      "scope": "dated publication record",
+      "bytes": 4138,
+      "sha256": "72310ddff0fe9d78952403112f46c2fe085692ab260a4d71349d88372bf09728",
+      "changedDuringFinalReview": true,
+      "disposition": "New final publication review; source publication, deployed identity and production approval distinguished."
+    },
+    {
+      "path": "docs/research/PHASE4_ARTIST_UX_STUDY.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 8569,
+      "sha256": "e4bd92b765b99303eb418462d9d8bb649372b455338e9c99e20e23e55e714865",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/PHASE6_UX_HARDENING.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 18079,
+      "sha256": "064be14144be2781ce674d1ffb6280178454e704aacd14b2462f33a7efc00391",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_HARDENING_AUDIT.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 22301,
+      "sha256": "461780f9efb330a6b8fd1274f6a9c6494e400a46ed8729facf4ce8132e8321b4",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_HARDENING_REPORT.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 39022,
+      "sha256": "e259e79e67efe8405cf83a3b9d5d527224648d50259879fbfab171ab71f19176",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/PIXIBUN_UX_VISUAL_QA.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 20445,
+      "sha256": "0a2c5301627285ee92ad5ce05d2157e489fe8cb2ecbcd5f3cf099508b421c7eb",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-09-30/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 14858,
+      "sha256": "a55d6ce61b08ec61405e7faa05894bab2618677355f5220154e4f99310239ee6",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-01/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 6000,
+      "sha256": "e8d79d78c934f0c3b7c2a505169b437827e0f896694f1970f734c7e2d19d4a5f",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase2/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 2376,
+      "sha256": "796ef4adcaa806471f3ff79c1a4a3befb3ff7023fdaeff7f7b88edd10932780d",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase3/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 2242,
+      "sha256": "9b1e915f33d219e1aa8e2e0e10d005c2b932bb2f32292db0655e24f38a44861c",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase4/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 3517,
+      "sha256": "b3635209989148e2cc2023c1aa4dd84155235bf33d26e51f4aab858600e6d0be",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase5/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 5389,
+      "sha256": "9681c3f4a52fa6e5fa74578bfc163fbf851f7b1f2f1db33383079baa44906562",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase6/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 5339,
+      "sha256": "91e00a96334e5e7f4644921d898a781fe7ecab19877718f143080025a4dbeb47",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-feature-repairs-phase7/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 1876,
+      "sha256": "ac05ff89d25754dc7aa945888626bb19dccc4af8205d6de189b553ab0d6d22cf",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02-remediation/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 1424,
+      "sha256": "640960f2c3cafdec785e712f06b58bb59588b79b16014b494b094564199c2658",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/evidence/2026-10-02/README.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 5539,
+      "sha256": "187814a98f65eb0e3d877b961b1e07a44e069ce0059abb9f2e33992f53f80636",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/gif-8x-corruption-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 3735,
+      "sha256": "b19236168c987add51417199cb9f68751f8eb3c122bd3ce3f6d2371b982dc669",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/issue-registry.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 12918,
+      "sha256": "a4ac6fae2482b1b8bbe69c8b61b2d47388a4dc03fe6bdf2861ca865df0255227",
+      "changedDuringFinalReview": true,
+      "disposition": "Updated session checkpoint/current authority; kept research and release gates open."
+    },
+    {
+      "path": "docs/research/legacy-audit-registry.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 23274,
+      "sha256": "80715be27500cafa1a23eae55509b761c8a37151f03bb0ee6d657782e1b7139a",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/markdown-maintenance-map.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 7953,
+      "sha256": "310eb2888a51fbdd771dc9cc155d8b3948fb5647a06412f276a08b15cc3bf4b4",
+      "changedDuringFinalReview": true,
+      "disposition": "Kept original52-file intake map and linked final expanded publication review."
+    },
+    {
+      "path": "docs/research/palette-creator-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 4531,
+      "sha256": "30e49886f6be4e584e778b059341a34c44706e5fc1992d5ebfbc5ad82a35d657",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/palette-cycle-export-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 7115,
+      "sha256": "555cc1aa1388e41bf5ce197ec4e3187cc637ef1df56dd71d7aefaf9eef1489e7",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/palette-cycle-scope-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 3048,
+      "sha256": "1f2e2c78cd9cc3c26fb297d09f7d678e4f54187b5a13721f034a57a454fc46c2",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/phase-implementation-status.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 66832,
+      "sha256": "64e0d21153ed03c0d023ad18e91270abc3f4e9d62d4bfd20f2223a6b27f39737",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/phase6-artist-evaluation.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 5607,
+      "sha256": "8ef0bbac5f9cb37c47e653e58f1ae61e207d3b76557027e05327473cec257095",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/pixitools-baseline-study.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 4380,
+      "sha256": "0c8a357d7deda96197fe6d7cdf4d49ff0b8350ff2b18a70380b4a86492ef3dd1",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/session-completion-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 18015,
+      "sha256": "dafb98cbd21cd0263f5a4bb2b8653a4afe458acde232677d4d2d82055a62dc1b",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/session-ui-ux-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 34980,
+      "sha256": "18e64454d781fafbe023f7dad8a4cab1fb840eea451b28afd4e38788de1693d7",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/specular-glint-2026-10-01.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 14082,
+      "sha256": "516558d3a334eb654c9765d7fa72adca6858bdff1c34bdbdc88c5714225393c4",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    },
+    {
+      "path": "docs/research/testsprite-plan-registry.md",
+      "scope": "dated record or historical ledger",
+      "bytes": 25873,
+      "sha256": "5c99eb544c4f4e3261b3e4d0ec0e7141ae27580537d261d4f681ebb57f18d0c0",
+      "changedDuringFinalReview": false,
+      "disposition": "Preserved dated revision, counts, failures, captures and stated scope; later evidence is linked from canonical current status."
+    }
+  ]
+}

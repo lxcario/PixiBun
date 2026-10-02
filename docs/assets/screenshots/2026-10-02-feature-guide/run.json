@@ -1,0 +1,1147 @@
+{
+  "scope": "Local artist handbook illustrations, not full-suite or deployment qualification",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "applicationChanges": false,
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "origin": "http://localhost:3000",
+  "deviceScaleFactor": 1,
+  "viewports": [
+    "1440x960 desktop",
+    "390x844 Pocket and Studio gate"
+  ],
+  "screenshots": 91,
+  "procedure": "Separate temporary Playwright contexts; actual UI controls and imports. Isolated recovery fixture with one valid and one unreadable layer. No real artist browser storage touched. Existing development badge hidden through its own session preference. Published PNGs are copied unchanged.",
+  "review": "All 91 images inspected in six temporary contact sheets; selected complex dialogs examined at full size. Lesson captures retaken after Clear Frame, then Trace Stencil, to avoid residual source art.",
+  "limits": "Targeted state assertions with no captured page errors; no fresh complete test suite, export file validation, peer-session qualification, recovery-copy commit, participant evaluation or live-site assertion.",
+  "captureAdjustments": [
+    "Use actual Sunset Mood preview label and lighting details summary.",
+    "Select the first of the two real Teaching Board entry buttons.",
+    "Use 32x32 Bun for the admitted small-scene preview.",
+    "Handle the two existing PiP mounts; document the duplicate.",
+    "Recovery example retains a valid layer so a recoverable plan can be illustrated.",
+    "Clear current lesson layer through UI before tracing its template."
+  ],
+  "sourceHashes": [
+    {
+      "path": "src/config/shortcuts.ts",
+      "sha256": "f035480354bfce89b9a49edebd8180ec6f1069fabaea9e9a309d30c1152a21b8"
+    },
+    {
+      "path": "src/components/modals/export/ExportTabsNav.tsx",
+      "sha256": "2cf881fb0130c601922201126201d45986db3347908fc6462ce41ee070118078"
+    },
+    {
+      "path": "src/components/layout/inspector/AiToolsPanel.tsx",
+      "sha256": "ecc2daaee04f62fd21e00cf6f58f9a08b3d12b4d6d1853b7b445a634ed7bc8a1"
+    },
+    {
+      "path": "src/lib/art/playgroundLessons.ts",
+      "sha256": "040ae6cdb8ea0edaff2b140adee1219ce037ea92dab83a33aa5f6e294a00f051"
+    },
+    {
+      "path": "src/lib/art/starterTemplates.ts",
+      "sha256": "601168347ac35015ae1843fcd096360eec3c4fa2999946f0fb0692c3f0dd17cf"
+    },
+    {
+      "path": "src/lib/art/bunSprite.ts",
+      "sha256": "5d60a0a79f7d0688f3b5001e169ed786cc7a160166201e6034bfaa8a18fb9138"
+    },
+    {
+      "path": "src/components/landing/AtelierEngineShowcase.tsx",
+      "sha256": "648e54ae01a21960a3959aac8e48725a28ee02393123fdaa55f9a181dfbc0656"
+    }
+  ],
+  "runs": [
+    {
+      "group": "animation",
+      "capturedAt": "2026-10-02T09:00:50.575Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": [
+        "export-png",
+        "export-gif",
+        "export-apng",
+        "export-webm",
+        "export-mp4",
+        "export-spritesheet",
+        "export-godot-kit",
+        "export-replay",
+        "export-svg",
+        "export-shader",
+        "export-palette-cycle",
+        "export-project"
+      ]
+    },
+    {
+      "group": "learning",
+      "capturedAt": "2026-10-02T09:39:58.620Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960 desktop; 390x844 pocket",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "navigation",
+      "capturedAt": "2026-10-02T09:35:30.881Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960 desktop; 390x844 Studio gate",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    },
+    {
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": [
+        "research-pixelize",
+        "research-light",
+        "research-scene"
+      ]
+    },
+    {
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": [
+        "tool-pen",
+        "tool-curve",
+        "tool-eraser",
+        "tool-bucket",
+        "tool-dither",
+        "tool-color-replace",
+        "tool-erase-color",
+        "tool-select-box",
+        "tool-select-lasso",
+        "tool-select-wand",
+        "tool-line",
+        "tool-isometric-line",
+        "tool-rectangle",
+        "tool-ellipse",
+        "tool-normal-chisel",
+        "tool-eyedropper"
+      ]
+    },
+    {
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+      "runtime": "v22.23.3",
+      "browser": "Chromium 151.0.7922.34",
+      "viewport": "1440x960",
+      "deviceScaleFactor": 1,
+      "workingTree": "Documentation and images only; current committed application",
+      "verdict": "Actual UI states with targeted assertions; not a full suite, download verification, participant study or live deployment qualification.",
+      "steps": []
+    }
+  ],
+  "captures": [
+    {
+      "path": "animation-timeline.png",
+      "description": "Three-frame timeline with per-frame timing, clip and onion skin enabled; preview speed choices open.",
+      "sha256": "efb4a04f60bf2c8d8ae1836f4c59963952fb79190267dbdc298e85135863dc34",
+      "group": "animation",
+      "capturedAt": "2026-10-02T09:00:50.575Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 71462
+    },
+    {
+      "path": "animation-tags.png",
+      "description": "Actual Animation Tags & Clips range, loop and color controls.",
+      "sha256": "5316ed47100ccdf86108fdf3ffd04968899bde43815823e56fa40725bb96b142",
+      "group": "animation",
+      "capturedAt": "2026-10-02T09:00:50.575Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 103138
+    },
+    {
+      "path": "animation-review.png",
+      "description": "Completed local scan of the original three poses; comparison and findings are review cues, not a defect certification.",
+      "sha256": "9adf3a3f4e49d5cd03c257b2a47a14b389f9d2429e2059e58bf2c4532b4b78b9",
+      "group": "animation",
+      "capturedAt": "2026-10-02T09:00:50.575Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 113996
+    },
+    {
+      "path": "animation-protection.png",
+      "description": "A saved protected rectangular region for Bun in the selected clip; cleanup-specific protection, not a universal drawing lock.",
+      "sha256": "e5b51e9f88badf975302778657a24b2c7c1942c4837c7fb28c0de88d12dec4e6",
+      "group": "animation",
+      "capturedAt": "2026-10-02T09:00:50.575Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 124897
+    },
+    {
+      "path": "lesson-master-bouncing-ball.png",
+      "description": "Actual [Physics 201] The Master Bouncing Ball (12f @ 12fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "8fab785046bd288ddada03a457673eb5d7901bb2361d567504d8201492d15ef8",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87510
+    },
+    {
+      "path": "lesson-subpixel-idle.png",
+      "description": "Actual [Optical 201] Sub-Pixel Character Idle (3f @ 8fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "589915173028e35d84ab4f1c3091e368049d2e435f311c85a6af1023faddcb8e",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 89242
+    },
+    {
+      "path": "lesson-combat-slash-hitstop.png",
+      "description": "Actual [Combat 201] Sword Slash & Combat Hitstop (4f @ 12fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "eaea804ebee2a1c0a2acfde4b3d6d467938f844e063b7fd3d5527f35dcbcac99",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87904
+    },
+    {
+      "path": "lesson-character-hop-shock.png",
+      "description": "Actual [Character 201] Character Hop & Shock Absorption (5f @ 10fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "34a3c71278eead31e0c2898805fe63aa6650dce64766b85a9f20b9fbd32c4033",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 90073
+    },
+    {
+      "path": "lesson-bouncing-mochi.png",
+      "description": "Actual [Physics 101] The Bouncing Mochi (4f @ 10fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "0ed33bbe63f78935773fc6faa0ed46c2ef59f77eee3d4e46e34ca1e85afcb40a",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 88687
+    },
+    {
+      "path": "lesson-hearth-flame.png",
+      "description": "Actual [Fluid FX] The Hearth Flame (3f @ 8fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "7ae10bd25b957d80154baa30ec638e585ecae7dd491c66b8bd31ffa56037430f",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80910
+    },
+    {
+      "path": "lesson-bun-hop.png",
+      "description": "Actual [Character 101] The Character Hop (3f @ 9fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "b424762a32161bc5ade9f4f05ee80bfae2e80928e76b05ed4afc03de163a9ef5",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80013
+    },
+    {
+      "path": "lesson-potion-bubble.png",
+      "description": "Actual [Alchemy FX] Magic Potion Bubbles (4f @ 9fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "27d201a4dcb7dceb64494d69c75618450049569c092c6b281ed748cdd278da37",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 81268
+    },
+    {
+      "path": "lesson-slime-glide.png",
+      "description": "Actual [Creature 101] The Slime Glide (4f @ 8fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "2762d27043bebb2d82fb2b9c687b6273889da45827d699d520e5abb209270b8e",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80341
+    },
+    {
+      "path": "lesson-twinkling-star.png",
+      "description": "Actual [Lighting FX] The Twinkling Star (4f @ 10fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "15adeb93f9df10b26228d485209d460ce765a15d0e3057aa1bce3272ac086e3b",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 78734
+    },
+    {
+      "path": "lesson-water-ripple.png",
+      "description": "Actual [Water FX] The Water Ripple (4f @ 8fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "c29ba8dbdb5a27163327f302cbf435e83d14c2555c7e1279bf3f0271d99ac0d1",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 78297
+    },
+    {
+      "path": "lesson-sword-slash.png",
+      "description": "Actual [Combat 101] The Sword Slash (3f @ 12fps) lesson with its current layer cleared and first template traced through the UI. This is demonstration artwork, not participant skill evidence.",
+      "sha256": "4fce034f84da230bfde0d5f9d6a0e6e37f9eca7eba2ad2ff3ab8b7dd46d72c08",
+      "group": "curriculum",
+      "capturedAt": "2026-10-02T09:40:03.117Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 81585
+    },
+    {
+      "path": "color-picker.png",
+      "description": "Actual primary-color picker with numeric controls; no color change committed.",
+      "sha256": "35a44e24e7a3652d4b5cd14abada5793cae469ef21e7e5e8e41259c81ca0c205",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 176580
+    },
+    {
+      "path": "palette-ramps.png",
+      "description": "A generated five-step OKLCH ramp in the actual palette panel; palette change only.",
+      "sha256": "6783fed14e17167628ed477ee64b29d74a0b3be69f6f7dd6463ee044a4c358d3",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80131
+    },
+    {
+      "path": "palette-roles.png",
+      "description": "Actual named palette-register role and rectangular index-binding controls.",
+      "sha256": "3d7b97ac269790c1d185db5ffa74b22aee6a6d4a7b84d1a703192aa45c4aa89e",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 115410
+    },
+    {
+      "path": "floating-preview.png",
+      "description": "Actual live PiP preview with backdrop and playback controls. The current DOM mounts two matching preview instances; this capture records the visible UI, not unique dialog semantics.",
+      "sha256": "28a9f9e71be0626699b5dcb32d453172e482f9738221f22e48a433cdb764faf0",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 142349
+    },
+    {
+      "path": "recovery-damage.png",
+      "description": "Actual recovery damage-consent screen for deliberately unreadable sample data. The original fixture remains untouched.",
+      "sha256": "44ffaad4de55acbea16ccc661948bcb41452423949379b935957371bb5504058",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 136412
+    },
+    {
+      "path": "recovery-plan.png",
+      "description": "Actual recovery plan for a deliberately unreadable fixture in isolated browser storage. No real user project was damaged; no recovered copy was committed.",
+      "sha256": "3adb165fc66839a1293a10a6ed076f5aebafa330b7a61981051bfc8ff146fa02",
+      "group": "details",
+      "capturedAt": "2026-10-02T09:35:10.680Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 155438
+    },
+    {
+      "path": "export-png.png",
+      "description": "Current png export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "0160733b3c21edb742c1f0361d253c5450d52d45b71ca865ccd8aba3f9807263",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 148820
+    },
+    {
+      "path": "export-gif.png",
+      "description": "Current gif export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "8ee6f489c8884a89fa58920ae6f0a91b530799d4a640fcb73cfee1a46eed2181",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 151765
+    },
+    {
+      "path": "export-apng.png",
+      "description": "Current apng export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "9236df22e2f5129a02cf7a743d0c2171933a623ac33f5fc451598ee01bf463b6",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 160857
+    },
+    {
+      "path": "export-webm.png",
+      "description": "Current webm export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "703f628107c5e4e4d4e4f474e59fa8bc1a22d7c13de6dcdcff3c6962e167df95",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 159706
+    },
+    {
+      "path": "export-mp4.png",
+      "description": "Current mp4 export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "5df472d73b75b0876e814287b9df2f04feaaf65342cd45ea5c2fd56ce1ba5d10",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 161491
+    },
+    {
+      "path": "export-spritesheet.png",
+      "description": "Current spritesheet export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "82259c4b3fbf745f3356d54e2b565049f4b5b00405cb305004ecfaddae3ac8db",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 156353
+    },
+    {
+      "path": "export-godot-kit.png",
+      "description": "Current godot-kit export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "c5c02b5fb41f3127eaff829af31ccde2bfaf543c0605e7f4306a2fe95e845437",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 213330
+    },
+    {
+      "path": "export-replay.png",
+      "description": "Current replay export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "057d3d086359e1c6ce2bda0d5a1adede50df8ddf45884429a6a0550dffb5a6f8",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 167582
+    },
+    {
+      "path": "export-svg.png",
+      "description": "Current svg export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "ed68401f04cec499dc7000e8eea438c4ec5c2346245523fc0451780a2c5743d0",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 162239
+    },
+    {
+      "path": "export-shader.png",
+      "description": "Current shader export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "341657568862fa9f69b7bdb5f191f7411111994a54e89b6b4b51a9148b8844a1",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 158582
+    },
+    {
+      "path": "export-palette-cycle.png",
+      "description": "Current palette-cycle export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "eb1587d58aef458d91abdd09749dc90a0007c93614b55f21223e932ba4df1136",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 164124
+    },
+    {
+      "path": "export-project.png",
+      "description": "Current project export configuration. UI capture only; this run does not certify the resulting download or engine import.",
+      "sha256": "86d89ca738b435d2c11cb07dbb7946fc85dccb13067cd37b0d40a690708d863c",
+      "group": "exports",
+      "capturedAt": "2026-10-02T08:57:41.713Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 144565
+    },
+    {
+      "path": "home.png",
+      "description": "Current welcome page and studio entry; no claim about public deployment availability.",
+      "sha256": "e629e64ac44fe8284bbd64dc9ed0d0839219b09baf6989f50486b6ab17b522e9",
+      "group": "learning",
+      "capturedAt": "2026-10-02T09:39:58.620Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 697101
+    },
+    {
+      "path": "playground-desktop.png",
+      "description": "Current desktop learning playground with guided lesson and simplified drawing timeline.",
+      "sha256": "d53aaf3fb51f123c78429308aa0621b33a65d85da17b2a9dd193f344b0e8f083",
+      "group": "learning",
+      "capturedAt": "2026-10-02T09:39:58.620Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 87424
+    },
+    {
+      "path": "teaching-board.png",
+      "description": "Actual animation teaching board; current illustrative poses and timing controls.",
+      "sha256": "fc250ef6d0ea13990fbb0d86e02e57437507fa61d43cebb0a63dc442856fcb44",
+      "group": "learning",
+      "capturedAt": "2026-10-02T09:39:58.620Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 170226
+    },
+    {
+      "path": "pocket-doodle.png",
+      "description": "Actual 32 by 32 mobile Pocket Doodle Pad with a simple drawn stroke, eraser, clear and PNG save.",
+      "sha256": "1a1bd562d5482cc24b750fab03c0ddd9223f73487d1dad9a0f16520fec2197bd",
+      "group": "learning",
+      "capturedAt": "2026-10-02T09:39:58.620Z",
+      "width": 390,
+      "height": 844,
+      "bytes": 18161
+    },
+    {
+      "path": "lighting-live.png",
+      "description": "Auto lighting on Bun with live bulb, angle and Apply/Cancel controls.",
+      "sha256": "1fb5f2c0a2c663f9f567d2dd8b8efd061657187be25fabea706ede43c128707c",
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 126445
+    },
+    {
+      "path": "lighting-manual.png",
+      "description": "Actual manual lighting controls; no light bake committed.",
+      "sha256": "503c2ac421926b8ec655ea0d780cbf6363a5a98e0236942deec914d4808b24e7",
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 105800
+    },
+    {
+      "path": "lighting-extra-actions.png",
+      "description": "Normal-map bake/preview, glint and selective-outline lighting actions.",
+      "sha256": "008370dbc4390222ebd81a25ec09e7e692aeab1f917d4efa2b1ea287178fe0bd",
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 107668
+    },
+    {
+      "path": "normal-sculpting.png",
+      "description": "A newly created Normal Facets layer with the Normal Chisel controls; source color layer remains separate.",
+      "sha256": "b0f6abb25255621466b7cd9f9f22830e3a6e6a9073ea849d876761127a826cb1",
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 105516
+    },
+    {
+      "path": "shadow-options.png",
+      "description": "Current automatic floor-shadow choices and projection style, before casting.",
+      "sha256": "7240206da7f2add00133d90ebde3fdd4455deb8d915b817fadabd97a95d3ad85",
+      "group": "lighting",
+      "capturedAt": "2026-10-02T09:09:47.364Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 93694
+    },
+    {
+      "path": "radial-menu.png",
+      "description": "Actual right-click quick tools and color swap menu.",
+      "sha256": "a92a94d2e59c6ffe900b760d88542267a96f0f2b36bd76de069b9b9905c2f98b",
+      "group": "navigation",
+      "capturedAt": "2026-10-02T09:35:30.881Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 74633
+    },
+    {
+      "path": "mobile-studio-gate.png",
+      "description": "Actual narrow-screen studio gate offering Home or Pocket Doodle Pad.",
+      "sha256": "df0be93dd876f517391358d353a36d78bfebb3db6eaaf307d5fa06a5d14d1b54",
+      "group": "navigation",
+      "capturedAt": "2026-10-02T09:35:30.881Z",
+      "width": 390,
+      "height": 844,
+      "bytes": 23824
+    },
+    {
+      "path": "pixitools-chooser.png",
+      "description": "All five current PixiTools task choices and Browse all tools.",
+      "sha256": "1014a63b5da4f044b9a221031c74092cfec0619ea0b67c5f6b3d7937a05859c3",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 95073
+    },
+    {
+      "path": "cleanup-scan.png",
+      "description": "Actual non-destructive cleanup scan of the sample layer with counts and before/preview thumbnails.",
+      "sha256": "9488e88eb5948144b32e0124aadae76181e40c863b63c50f5b76b92042dd5f5c",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 108266
+    },
+    {
+      "path": "cleanup-lines-preview.png",
+      "description": "Actual Smooth Jaggies before/after preview; Apply to Layer remains uncommitted.",
+      "sha256": "e507a9afaf93b9e2a9d2347f05329c66a08c1db0957478789ee39c9531ff3656",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 94229
+    },
+    {
+      "path": "color-mood-preview.png",
+      "description": "Actual Sunset color mood preview, before applying.",
+      "sha256": "3021ca5766f3665216cff803943f1e68b6e40226d44ba977afa9f3683bd0fb50",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 99718
+    },
+    {
+      "path": "cleanup-color-actions.png",
+      "description": "Current dithering, palette snap, harmonized accents and in-between frame controls.",
+      "sha256": "327326ff4ec690091ef1fbd97757e48f3ea4de5e4ad8e35693efd91200ddf905",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 99867
+    },
+    {
+      "path": "tiles-repeat.png",
+      "description": "Selected mushroom pixels repeated 3 by 3; repeated imagery is a seam inspection aid.",
+      "sha256": "d2387d220f1aa250ceb786d9f30f0f2c13ed59d8c6203e14a16078d0545aab94",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 109550
+    },
+    {
+      "path": "tiles-decomposition.png",
+      "description": "Actual tile decomposition result and JSON-copy control; a clipboard write was not performed.",
+      "sha256": "7bd76a607e9df79d03816e92ccb4eab9f113cea803f1fc52554edd90d941cbe2",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 107983
+    },
+    {
+      "path": "tiles-contours.png",
+      "description": "Actual 47-blob contour before/after preview, before applying the separate contour layer.",
+      "sha256": "b5d203099b2ee0878ebe3863714528e74bc5051399cc6ed62b86f8a0ea1bddc7",
+      "group": "pixitools",
+      "capturedAt": "2026-10-02T09:10:52.051Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 106147
+    },
+    {
+      "path": "projects-gallery.png",
+      "description": "Local project gallery showing the saved original sample project.",
+      "sha256": "5c8dfe151450b522e25b1fd50e124c7ca2bfc04574a257592d30480d86cc7615",
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 121243
+    },
+    {
+      "path": "canvas-resize.png",
+      "description": "Actual canvas resize dialog, dimensions and anchor choices; no resize committed.",
+      "sha256": "cb96a81b438433df91d3ac86e30501bb8db3e0f956ce5ecc4a1622ba5d387571",
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 143802
+    },
+    {
+      "path": "co-draw.png",
+      "description": "Co-Draw initial routing and host/join controls, before any connection or invite is generated.",
+      "sha256": "acfbc07bb559d0617291c8635d80a639c21004c80fda62d888237e231b30550c",
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 155598
+    },
+    {
+      "path": "import-image.png",
+      "description": "Actual single-image import choices using original built-in artwork.",
+      "sha256": "521dce76778be677488f2e340cec3d6a3b4bc0d217d2a56b5daf3fd800d6e433",
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 155635
+    },
+    {
+      "path": "import-spritesheet.png",
+      "description": "Actual sprite-sheet slicer, 8 by 8 cells over sample artwork; no frames imported in this capture.",
+      "sha256": "2c0c3bd24b4ff294921738aa1895b2e2a3ce7859c79b20385ec4dc5f81cf55d2",
+      "group": "projects",
+      "capturedAt": "2026-10-02T09:00:13.707Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 160943
+    },
+    {
+      "path": "research-pixelize.png",
+      "description": "Actual Simplify preview and controls; originals have not been changed.",
+      "sha256": "2dd926e1e2ca90f8b7b9e2c9420db5da9a2bd05f2aaf22987865e9d0c597af3f",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 91540
+    },
+    {
+      "path": "research-pixelize-options.png",
+      "description": "Actual advanced Simplify settings and source/recipe controls, before applying.",
+      "sha256": "d1b2054e831b6abaefb0ef4b3876c4821ce38ea4e7fbd5c9d9b29875ba7c3015",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 89729
+    },
+    {
+      "path": "research-light.png",
+      "description": "Actual Light preview and controls; originals have not been changed.",
+      "sha256": "3020bf5777248e299b62fd0778ea86a340cb577426a1e7c8cd413052f39bee0c",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 81018
+    },
+    {
+      "path": "research-light-options.png",
+      "description": "Actual advanced Light settings and source/recipe controls, before applying.",
+      "sha256": "ddd52f582256cf44c085b2dac1a914c8a4a10e13e2b76521ee211da1f7a74124",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 88719
+    },
+    {
+      "path": "research-scene.png",
+      "description": "Actual Tiles preview and controls; originals have not been changed.",
+      "sha256": "5aada82c1f2353195419906c3d67c7d88ba08c311f5d137360b624bedb3775f0",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 90261
+    },
+    {
+      "path": "research-scene-options.png",
+      "description": "Actual advanced Tiles settings and source/recipe controls, before applying.",
+      "sha256": "9908adbf9ea0636d48300101c8ab43cd5568a935af9e66730abee1fb9fe6fa03",
+      "group": "research",
+      "capturedAt": "2026-10-02T09:13:42.787Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 92998
+    },
+    {
+      "path": "tool-pen.png",
+      "description": "Pen selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "62747b5198e18532081f83c61587d94bc02add658cc274b14b231e41c8c835ed",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 69316
+    },
+    {
+      "path": "tool-curve.png",
+      "description": "Bézier Curve selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "8c85d15c4ffb54c9f7b1f7eb51c18a0a2135309f5b804e5e49fd287cb534df87",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 72215
+    },
+    {
+      "path": "tool-eraser.png",
+      "description": "Eraser selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "9891700b1e4408429526c41b09018a636d1d034fadc7c1072d45e2e759a425a3",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 69626
+    },
+    {
+      "path": "tool-bucket.png",
+      "description": "Flood Fill selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "2f3cb5ea76242da644b1260064d40199aa6f800f3aa75f3ac476112a98fe1664",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 75202
+    },
+    {
+      "path": "tool-dither.png",
+      "description": "Dither Brush selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "a37b42aef07848bb136061cd1c9f8ef1b91732d9e9f5ae423739b15bf30b100e",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 72792
+    },
+    {
+      "path": "tool-color-replace.png",
+      "description": "Color Replace selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "a0c477c10f852f1b9f94fc9dd0b3f1efa6f51e827298cea13581bba4f0ef4f6d",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 74246
+    },
+    {
+      "path": "tool-erase-color.png",
+      "description": "Erase Sampled Color selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "eadbdfcb3822d9b0fbbd84863d48a46415dbcc89982a2774c95308d786dc1633",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 76879
+    },
+    {
+      "path": "tool-select-box.png",
+      "description": "Marquee Box selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "ad8399a314edf18d8bb2e5ac88152399688c710213166ff05b54bff3d25a48e2",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 68646
+    },
+    {
+      "path": "tool-select-lasso.png",
+      "description": "Lasso Select selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "ac423e99de6f41271a7fc5f98a9625792c0a9cb9f58c291d08906a674535645b",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 68548
+    },
+    {
+      "path": "tool-select-wand.png",
+      "description": "Magic Wand selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "1190c9e0fcfe8ba41f38e0d215498bceb58860d99a52d85f7e7afbd9995970f1",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 68620
+    },
+    {
+      "path": "tool-line.png",
+      "description": "Line selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "40c0d1feadc6a28e6ada98d68bf6bfe2a8afdc3745e56fa9204cb3c3a6207e04",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 70612
+    },
+    {
+      "path": "tool-isometric-line.png",
+      "description": "2:1 Iso Line selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "bf7ee7ec93a57ef54ef47588111cb06bdc6379b06da8d7c6d1bbb273059126eb",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 73835
+    },
+    {
+      "path": "tool-rectangle.png",
+      "description": "Rectangle selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "74a4d18d3f5f9cf5fd920f3d86778f072b97a92bc5d4753b8f7fb83b752d0889",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 73234
+    },
+    {
+      "path": "tool-ellipse.png",
+      "description": "Ellipse selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "2cb7536a28ee6bd7c7843858aff61369d17438067afc2a9a1de0e44849da6406",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 72311
+    },
+    {
+      "path": "tool-normal-chisel.png",
+      "description": "Normal Chisel selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "3baff88113cdfffabec86fbd3851166db67ec15a864821b27dbee12294dfffb9",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 68613
+    },
+    {
+      "path": "tool-eyedropper.png",
+      "description": "Eyedropper selected; actual available tool settings, original three-frame artwork. Normal Chisel requires a surface layer; see the separate surface capture.",
+      "sha256": "e1e8b1401eb8361510b36e28b5defa97e5d1985ae10db6e09a36f8dcf8aa4c0c",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 68371
+    },
+    {
+      "path": "selection-transform.png",
+      "description": "A native rectangular Bun selection with transform handles and HUD; before applying a transform.",
+      "sha256": "86129081a39f895198b247fbfe8bd963d7607dd39c6e54736eed81af23dfa2c5",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 76530
+    },
+    {
+      "path": "view-options.png",
+      "description": "Actual grids, composition overlays, tile/PiP previews, CVD/silhouette lenses and symmetry choices.",
+      "sha256": "0b6164f4c008c3f1b8b31911c3582ac1b8b8351410bb3f418c0c466d0fc2434f",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 94837
+    },
+    {
+      "path": "studio-options.png",
+      "description": "Actual studio theme, color scheme and tool preview preferences.",
+      "sha256": "96cdc2c9dce99961c5adb12a3251f68aac4faa2c7db486475ae603b81405d0ea",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 80262
+    },
+    {
+      "path": "command-palette.png",
+      "description": "Searchable command palette opened with Ctrl+K.",
+      "sha256": "7dfdfcc616e86b73b2747afb9c71cc64ab55c0cd12f2c65b72b94d68efb41efa",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 191866
+    },
+    {
+      "path": "shortcuts-help.png",
+      "description": "The in-app Atelier Guide & Shortcuts; shortcuts for text fields are qualified in the handbook.",
+      "sha256": "0c0456b332fe3e8390c46a9a20430a4e21a00a57ca9bf972e66bf24c217153f3",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 179757
+    },
+    {
+      "path": "privacy-diagnostics.png",
+      "description": "Local diagnostics and disabled-by-default remote crash relay settings; no relay was enabled.",
+      "sha256": "d8b4b7af20101764fd0c524a39a35ff152cd6116c4e32c94800099cc1e1a272d",
+      "group": "tools",
+      "capturedAt": "2026-10-02T09:09:03.593Z",
+      "width": 1440,
+      "height": 960,
+      "bytes": 155144
+    },
+    {
+      "path": "welcome-photometric.png",
+      "description": "Actual welcome-page photometric demonstration, separate from editable studio project state.",
+      "sha256": "c16608047662160bc6170788db9ecee9a16ad580e4f03b2af954684debf5f405",
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "width": 1216,
+      "height": 691,
+      "bytes": 133847
+    },
+    {
+      "path": "welcome-rotsprite.png",
+      "description": "Actual welcome-page rotsprite demonstration, separate from editable studio project state.",
+      "sha256": "f401f031a65fe627a9db14f0ce518e448f1d8b80347d2db76b5ce962d4c7db20",
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "width": 1216,
+      "height": 683,
+      "bytes": 103430
+    },
+    {
+      "path": "welcome-pixelize.png",
+      "description": "Actual welcome-page pixelize demonstration, separate from editable studio project state.",
+      "sha256": "e3ffbec8f4682d02297da2d0c7f86f3817212384d7d9d1c3e0400adfcf413970",
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "width": 1216,
+      "height": 729,
+      "bytes": 117237
+    },
+    {
+      "path": "welcome-export.png",
+      "description": "Actual welcome-page export demonstration, separate from editable studio project state.",
+      "sha256": "013ee4e99f0e3a594d6d485867d6d19010053a09d1f413b15e4ea6892f97a814",
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "width": 1216,
+      "height": 669,
+      "bytes": 115413
+    },
+    {
+      "path": "starter-shelf.png",
+      "description": "Current starter shelf with Hearth Ghost, Little Shroom, Bun and Little Lantern.",
+      "sha256": "c0289e7db0d56f80ea3e5826b7b487df4d9cd19a4b76cb70201bd7d6b047a281",
+      "group": "welcome",
+      "capturedAt": "2026-10-02T09:35:35.163Z",
+      "width": 1440,
+      "height": 954,
+      "bytes": 228059
+    }
+  ]
+}

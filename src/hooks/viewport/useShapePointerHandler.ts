@@ -57,7 +57,9 @@ export function useShapePointerHandler({
           if (tools.activeTool === 'line') {
             previewPoints = getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
           } else if (tools.activeTool === 'isometric-line') {
-            previewPoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y);
+            previewPoints = tools.isoAngleSnap
+              ? getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y)
+              : getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
           } else if (tools.activeTool === 'curve') {
             const controlPoint: Point = {
               x: Math.round(
@@ -127,7 +129,9 @@ export function useShapePointerHandler({
       if (tools.activeTool === 'line') {
         shapePoints = getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
       } else if (tools.activeTool === 'isometric-line') {
-        shapePoints = getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y);
+        shapePoints = tools.isoAngleSnap
+          ? getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y)
+          : getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
       } else if (tools.activeTool === 'curve') {
         const controlPoint: Point = {
           x: Math.round(

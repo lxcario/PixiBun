@@ -1,0 +1,31 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const folder = 'artifacts/feature-repairs/phase7';
+const destination = path.resolve(folder, 'isolated-editor-app');
+if (fs.existsSync(destination)) throw new Error('Refusing to overwrite an existing fixture app');
+fs.mkdirSync(destination);
+for (const name of ['src', 'public']) fs.cpSync(name, path.join(destination, name), { recursive: true });
+for (const name of ['package.json', 'package-lock.json', 'next.config.ts', 'postcss.config.mjs', 'tsconfig.json', 'AGENTS.md']) fs.copyFileSync(name, path.join(destination, name));
+fs.symlinkSync(path.resolve('node_modules'), path.join(destination, 'node_modules'), 'junction');
+const files = [];
+function walk(folderPath) {
+  for (const item of fs.readdirSync(folderPath, { withFileTypes: true })) {
+    if (item.name === 'node_modules') continue;
+    const full = path.join(folderPath, item.name);
+    if (item.isDirectory()) walk(full);
+    else files.push({ path: path.relative(destination, full).replaceAll('\\', '/'), sha256: crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex') });
+  }
+}
+walk(destination);
+for (const file of files) {
+  const original = crypto.createHash('sha256').update(fs.readFileSync(file.path)).digest('hex');
+  if (original !== file.sha256) throw new Error(`Fixture copy differs: ${file.path}`);
+}
+fs.writeFileSync(`${folder}/editor-app-source.json`, JSON.stringify({ kind: 'isolated-development-copy-not-separate-feature-implementation', copiedFiles: files, path: destination, dependencyJunction: path.resolve('node_modules'), port: 3001 }, null, 2) + '\n');
+const command = `"${process.execPath.replaceAll('\\', '/')}" "${path.resolve('node_modules/next/dist/bin/next').replaceAll('\\', '/')}" dev "${destination.replaceAll('\\', '/')}" --turbopack -p 3001`;
+fs.writeFileSync(`${folder}/playwright.editor.config.cjs`, `const base = require('../../../playwright.config.ts').default;
+const path = require('node:path');
+module.exports = { ...base, testDir: path.resolve('tests/e2e'), use: { ...base.use, baseURL: 'http://localhost:3001' }, webServer: { command: ${JSON.stringify(command)}, url: 'http://localhost:3001', reuseExistingServer: false, timeout: 120000 } };
+`);
+console.log(`Copied and verified ${files.length} application/public/config files; owned editor on 3001, original server 3000 untouched.`);

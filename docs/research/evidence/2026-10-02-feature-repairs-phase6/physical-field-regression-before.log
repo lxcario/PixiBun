@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/productionOperation.test.ts (10 tests | 1 failed | 9 skipped) 27ms
+     × stores binary bytes, returns equivalent typed Blobs, and retains legacy Blob readability 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/productionOperation.test.ts > Atomic storage version admission > stores binary bytes, returns equivalent typed Blobs, and retains legacy Blob readability
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/productionOperation.test.ts:20:47
+     18|     await autoSaveWorkspaceDetailed('binary', project, undefined, [{ l…
+     19|     const record = (await db.layerBlobs.where('projectId').equals('bin…
+     20|     expect(Object.hasOwn(record, 'blobType')).toBe(false);
+       |                                               ^
+     21|     expect(record.blob.type).toBe('image/png');
+     22|     expect(new Uint8Array(await record.blob.arrayBuffer())).toEqual(ne…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 skipped (10)
+   Start at  22:47:44
+   Duration  729ms (transform 205ms, setup 31ms, import 495ms, tests 27ms, environment 0ms)
+

@@ -1,0 +1,101 @@
+{
+  "kind": "additional-frozen-public-config-inputs",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "25677bd971e1f3d07e35bf25c3174444e517769894797098bfe72c35c7c8548f"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "cfa3f8aec2d4291d93ee3b4710cb90c281eca6eb122cb5d63e5ae829cde3d6dd"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "sha256": "a281cc95fd0119790695358c9db65167668a0e8cefa121a9b51cb74f17c3a797"
+    },
+    {
+      "path": ".nvmrc",
+      "sha256": "c989649ac5c541692f22f2e41f5fbc34927c02bf1644e5dcca46bb4c88281f87"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "9bff56cd6a054da4d2be13ca2be7d1dc203c18e0a2fc6e2b844651a0da94b939"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde"
+    },
+    {
+      "path": "public/assets/COLORPICKER.webp",
+      "sha256": "d75944bcae0b45e28c1cb614ffa91cc9482852169094bb7f1fb54cb127dd3013"
+    },
+    {
+      "path": "public/assets/DITHERBRUSH.webp",
+      "sha256": "998c3a825b837c9d0827740721da4cd1081b0a7402556ee27a586d099da956c6"
+    },
+    {
+      "path": "public/assets/ELLIPSE.webp",
+      "sha256": "fbe8bb5d7300165daf1b7672a50fdb1d26553ab02c7a3b4ce86981f6349848a4"
+    },
+    {
+      "path": "public/assets/ERASER.webp",
+      "sha256": "cbdfe0bae413dc98446610053613250cb0eabbb82b33c269a520f3885fa4c4e4"
+    },
+    {
+      "path": "public/assets/FILLBUCKET.webp",
+      "sha256": "0ed5ccec00f11ae694a66e62a01c0be2584d4017c32be1b3d8b1de6404dccb36"
+    },
+    {
+      "path": "public/assets/LINE.webp",
+      "sha256": "9c34cfa7e4ac7c634658860bbea1dcbb91fee424164be5c71b28533eaca171d1"
+    },
+    {
+      "path": "public/assets/PEN.webp",
+      "sha256": "c6bf0b6920b87728566a4a15ce704c848885e1c12b8b3135a4491f7c5a6613a2"
+    },
+    {
+      "path": "public/assets/RECTANGLE.webp",
+      "sha256": "673652fa60f0770df23fe16e5d0f3eb63ca611f62b6908b492d23dbdb652a40e"
+    },
+    {
+      "path": "public/assets/RECTANGLESELECT.webp",
+      "sha256": "e1e4ff73006a8a47aec41538eb6f51b309f83408c7f12df58db5cfb95fb7e4af"
+    },
+    {
+      "path": "public/icons/apple-touch-icon.png",
+      "sha256": "f8ff6a3421c1d828c2a310565de40f2965767f1d0f2dd9034c40204340f648aa"
+    },
+    {
+      "path": "public/icons/icon-192.png",
+      "sha256": "1f3c2c9e69570b930852166c95ed9da79f592c0ec6f658ec9c31385a5e3faee5"
+    },
+    {
+      "path": "public/icons/icon-512.png",
+      "sha256": "4f04113e328d7238effb1c7de26f2db7541786f248f69525ce318b2d17453f21"
+    },
+    {
+      "path": "public/icons/maskable-512.png",
+      "sha256": "6af21a0239dd9167d35bc630418b82cf382981562877f417277c12c463d776ec"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "sha256": "4fe80a230f3783f70aa3c6d051aa9f5bd51d53316f249fac7eb8bf547b0caead"
+    },
+    {
+      "path": "public/offline.html",
+      "sha256": "0c34f6ae3fd9bce94b080ce2c9466342e521b90fed3f6143399dd20a99d3c88a"
+    },
+    {
+      "path": "public/theme.js",
+      "sha256": "fb360235fcd8163647ae543529fc439bb49f34155d4a3897587fc65afccd68f0"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "f70b288c3af6635001481b32d8f9d12df250fd446d0943b6ed31294cdafd9428"
+    },
+    {
+      "path": "vitest.config.mjs",
+      "sha256": "de9ee539ad04e89f9cd3d39641be10672a4233d828ea4217154da3448f2a52a8"
+    }
+  ]
+}

@@ -1,3 +1,8 @@
 # Preserve the bytes used by these sealed evidence manifests across platforms.
 docs/research/evidence/2026-10-02/** -text
 docs/research/evidence/2026-10-02-remediation/** -text
+# Captured raw logs retain their original CRLF, spacing and failure output.
+docs/research/evidence/2026-10-02-feature-repairs-*/** -text -whitespace
+docs/research/evidence/2026-10-03-session-documentation-review/** -text -whitespace
+docs/research/evidence/2026-10-02-feature-repairs-*/** -text
+docs/research/evidence/2026-10-03-session-documentation-review/** -text

@@ -18,6 +18,9 @@ test.describe('Landing Page & Accessibility', () => {
     const studioCta = page.getByRole('link', { name: /OPEN THE ATELIER|Enter the Atelier/i }).first();
     await expect(studioCta).toBeVisible();
 
+    await expect(page.getByText(/take a Godot kit into your game/)).toBeVisible();
+    await expect(page.getByText(/native Godot 4 & Unity exports/)).toHaveCount(0);
+
     // Verify no unhandled console errors during landing load
     expect(consoleErrors).toHaveLength(0);
   });

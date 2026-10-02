@@ -207,7 +207,7 @@ export const PixelizeShowcase: React.FC = () => {
                       : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)]'
                   }`}
                 >
-                  ✦ Sobel Salience
+                  ✦ Preserve edges
                 </button>
                 <button
                   onClick={() => setSamplingMode('nearest')}
@@ -217,7 +217,7 @@ export const PixelizeShowcase: React.FC = () => {
                       : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)]'
                   }`}
                 >
-                  Naive Nearest
+                  Nearest neighbor
                 </button>
               </div>
             </div>
@@ -287,12 +287,12 @@ export const PixelizeShowcase: React.FC = () => {
         </div>
 
         <h3 className="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3">
-          Intelligent Image-to-Pixel Art Synthesis
+          A smaller picture, a few chosen colors
         </h3>
 
         <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Converting high-res art into clean pixel art usually fails: thin outlines vanish, shadows turn into dark mud, and colors smear.
-          PixiBun applies optical gamma corrections, Sobel gradient edge preservation, and OKLab perceptual clustering.
+          Try a small pixel version of either sample scene. Compare the sampling, colors and dithering,
+          then choose the look you like. Fine details can change at smaller sizes.
         </p>
 
         {/* Feature Points Card */}
@@ -300,9 +300,9 @@ export const PixelizeShowcase: React.FC = () => {
           <div className="flex items-start gap-2">
             <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
             <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Linear Optical Gamma Downsampling</strong>
+              <strong className="text-[var(--text-heading)] block font-sans">Gentler color averaging</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Transforms sRGB to linear radiative flux before downscaling, preventing dark border halos and preserving luminosity.
+                Colors are averaged in linear light before returning to sRGB. This can reduce dark halos around mixed colors.
               </span>
             </div>
           </div>
@@ -310,9 +310,9 @@ export const PixelizeShowcase: React.FC = () => {
           <div className="flex items-start gap-2">
             <span className="text-[var(--accent-plum)] mt-0.5">✦</span>
             <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Sobel Gradient Salience Weighting</strong>
+              <strong className="text-[var(--text-heading)] block font-sans">Extra weight for edges</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Calculates local gradient magnitude so high-contrast contour lines and eyes remain crisp 1-pixel strokes.
+                A local edge estimate gives higher-contrast pixels more weight while sampling. Small lines can still shrink or disappear.
               </span>
             </div>
           </div>
@@ -320,9 +320,9 @@ export const PixelizeShowcase: React.FC = () => {
           <div className="flex items-start gap-2">
             <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
             <div>
-              <strong className="text-[var(--text-heading)] block font-sans">OKLab Perceptual Clustering</strong>
+              <strong className="text-[var(--text-heading)] block font-sans">A smaller color palette</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Clusters colors in human perceptual color space (Ottosson 2020), preventing color skewing in saturated reds and cyans.
+                Similar colors are grouped in OKLab to make a smaller palette. Compare eight or sixteen colors with the full-color sample.
               </span>
             </div>
           </div>

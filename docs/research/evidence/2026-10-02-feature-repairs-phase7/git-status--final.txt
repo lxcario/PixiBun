@@ -1,0 +1,132 @@
+ M ARCHITECTURE.md
+ M BENCHMARKS.md
+ M CHANGELOG.md
+ M DESIGN.md
+ M MAIN.md
+ M PIXIBUN_DEEP_DIVE.md
+ M README.md
+ M SECURITY.md
+ M V2_VISION.md
+ M docs/README.md
+ M docs/contracts/exports.md
+ M docs/contracts/learning.md
+ M docs/contracts/rendering.md
+ M docs/contracts/storage.md
+ M docs/current-status.md
+ M docs/generated/test-inventory.json
+ M docs/guides/artwork-safety.md
+ M docs/guides/deployment.md
+ M docs/guides/testing.md
+ M docs/plans/README.md
+ M docs/plans/learn-by-making-2026.md
+ M docs/research/issue-registry.md
+ M docs/research/markdown-maintenance-map.md
+ M package-lock.json
+ M package.json
+ M src/app/layout.tsx
+ M src/app/page.tsx
+ M src/app/playground/page.tsx
+ M src/components/landing/AtelierEngineShowcase.tsx
+ M src/components/landing/AtelierHero.tsx
+ M src/components/landing/CozyFeatureGrid.tsx
+ M src/components/landing/CozyScrollReveal.tsx
+ M src/components/landing/showcase/EngineExportShowcase.tsx
+ M src/components/landing/showcase/PhotometricShowcase.tsx
+ M src/components/landing/showcase/PixelizeShowcase.tsx
+ M src/components/landing/showcase/RotSpriteShowcase.tsx
+ M src/components/layout/AtelierRail.tsx
+ M src/components/layout/CenterViewport.tsx
+ M src/components/layout/PlaygroundLayout.tsx
+ M src/components/layout/StudioLayout.tsx
+ M src/components/layout/inspector/TilesetDecomposerSection.tsx
+ M src/components/modals/RecoveryModal.tsx
+ M src/components/modals/export/AnimatedExportTab.tsx
+ M src/components/modals/export/GodotKitExportTab.tsx
+ M src/components/modals/export/VectorSvgExportTab.tsx
+ M src/components/onboarding/ArtisanHandbookPanel.tsx
+ M src/components/onboarding/OnboardingOverlay.tsx
+ M src/components/studio/FloatingPreviewWindow.tsx
+ M src/hooks/studio/useStudioAutosave.ts
+ M src/hooks/viewport/useShapePointerHandler.ts
+ M src/hooks/viewport/useViewportDrawing.ts
+ M src/lib/engine/historyEngine.ts
+ M src/lib/export/godotKit.ts
+ M src/lib/recovery/recoveryBackup.ts
+ M src/lib/safety/memoryBudget.ts
+ M src/lib/storage/db.ts
+ M src/lib/storage/desktopFileSystem.ts
+ M tests/components/AtelierEngineShowcase.test.tsx
+ M tests/components/OnboardingOverlay.test.tsx
+ M tests/e2e/landing.spec.ts
+ M tests/e2e/studio.spec.ts
+ M tests/helpers/gameDeliveryFixture.ts
+ M tests/helpers/researchWorkflows.ts
+ M tests/productionOperation.test.ts
+ M tests/recoveryBackup.test.ts
+ M tests/recoveryOrchestrator.test.ts
+?? docs/assets/screenshots/2026-10-02-docs/
+?? docs/assets/screenshots/2026-10-02-feature-guide/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase1/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase2/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase3/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase4/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase5/
+?? docs/assets/screenshots/2026-10-02-feature-repairs-phase6/
+?? docs/contracts/security-boundaries.md
+?? docs/features.md
+?? docs/guides/README.md
+?? docs/guides/animation-and-review.md
+?? docs/guides/collaboration-and-privacy.md
+?? docs/guides/drawing-tools.md
+?? docs/guides/exporting.md
+?? docs/guides/learning-and-playground.md
+?? docs/guides/lighting-and-surfaces.md
+?? docs/guides/palettes-and-cycling.md
+?? docs/guides/pixitools-cleanup-and-tiles.md
+?? docs/guides/release-readiness.md
+?? docs/guides/studio-workspace.md
+?? docs/guides/variations-and-scenes.md
+?? docs/guides/welcome-and-demos.md
+?? docs/plans/2026-10-02-feature-repairs.md
+?? docs/research/2026-10-02-documentation-followup.md
+?? docs/research/2026-10-02-feature-handbook.md
+?? docs/research/2026-10-02-feature-repairs-phase1.md
+?? docs/research/2026-10-02-feature-repairs-phase2.md
+?? docs/research/2026-10-02-feature-repairs-phase3.md
+?? docs/research/2026-10-02-feature-repairs-phase4.md
+?? docs/research/2026-10-02-feature-repairs-phase5.md
+?? docs/research/2026-10-02-feature-repairs-phase6.md
+?? docs/research/2026-10-02-feature-repairs-phase7.md
+?? docs/research/evidence/2026-10-02-feature-repairs-phase2/
+?? docs/research/evidence/2026-10-02-feature-repairs-phase3/
+?? docs/research/evidence/2026-10-02-feature-repairs-phase4/
+?? docs/research/evidence/2026-10-02-feature-repairs-phase5/
+?? docs/research/evidence/2026-10-02-feature-repairs-phase6/
+?? src/components/playground/PracticeActions.tsx
+?? src/components/playground/PracticeWorkspace.tsx
+?? src/components/playground/ResponsivePlayground.tsx
+?? src/lib/art/applyLessonEdit.ts
+?? src/lib/export/normalLayers.ts
+?? src/lib/export/tilesetBundle.ts
+?? src/lib/project/practiceSession.ts
+?? src/lib/project/studioRouteSession.ts
+?? tests/applyLessonEdit.test.ts
+?? tests/components/ResponsivePlayground.test.tsx
+?? tests/e2e/drawingAndPreviewControls.spec.ts
+?? tests/e2e/exportCompleteness.spec.ts
+?? tests/e2e/lessonHistory.spec.ts
+?? tests/e2e/practiceIsolation.spec.ts
+?? tests/e2e/recoveryArchiveAdmission.spec.ts
+?? tests/helpers/drawingAndPreviewWorkflows.ts
+?? tests/helpers/exportCompletenessWorkflows.ts
+?? tests/helpers/readNativePng.ts
+?? tests/helpers/recoveryArchiveWorkflows.ts
+?? tests/normalLayers.test.ts
+?? tests/practiceSession.test.ts
+?? tests/production/drawingAndPreviewControls.spec.ts
+?? tests/production/exportCompleteness.spec.ts
+?? tests/production/practiceIsolation.spec.ts
+?? tests/production/recoveryArchiveAdmission.spec.ts
+?? tests/readNativePng.test.ts
+?? tests/tilesetBundle.test.ts

@@ -416,7 +416,8 @@ export const StudioLayout: React.FC = () => {
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
       <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
         <LeftToolbar />
-        <CenterViewport 
+        <CenterViewport
+          retainHistory
           onCommitHistory={handleCommitHistory}
           onOpenImport={handleOpenImport}
         />

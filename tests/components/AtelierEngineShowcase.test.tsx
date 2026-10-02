@@ -266,8 +266,8 @@ describe('AtelierEngineShowcase Component', () => {
       fireEvent.click(pixelizeTab);
     });
 
-    expect(screen.getByText(/Sobel Salience/i)).toBeDefined();
-    expect(screen.getByText(/Naive Nearest/i)).toBeDefined();
+    expect(screen.getByText(/Preserve edges/i)).toBeDefined();
+    expect(screen.getByText(/Nearest neighbor/i)).toBeDefined();
 
     // Scene switcher buttons exist
     const mountainBtn = screen.getByRole('button', { name: /Mountain Sunset/i });
@@ -350,13 +350,14 @@ describe('AtelierEngineShowcase Component', () => {
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
-    const downloadBtn = screen.getByRole('button', { name: 'Download' });
+    const downloadBtn = screen.getByRole('button', { name: 'Download sample' });
     await act(async () => {
       fireEvent.click(downloadBtn);
     });
 
     expect(createObjectURLSpy).toHaveBeenCalled();
-    expect(revokeObjectURLSpy).toHaveBeenCalled();
+    expect(revokeObjectURLSpy).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url'), { timeout: 1500 });
   });
 
   it('copies engine export code to clipboard and shows tactile copied confirmation', async () => {
@@ -376,7 +377,7 @@ describe('AtelierEngineShowcase Component', () => {
       configurable: true,
     });
 
-    const copyBtn = screen.getByRole('button', { name: /Copy Code/i });
+    const copyBtn = screen.getByRole('button', { name: /Copy sample/i });
     await act(async () => {
       fireEvent.click(copyBtn);
     });
@@ -385,5 +386,4 @@ describe('AtelierEngineShowcase Component', () => {
     expect(screen.getByText(/Copied/i)).toBeDefined();
   });
 });
-
 

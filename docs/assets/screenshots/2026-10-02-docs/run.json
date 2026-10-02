@@ -1,0 +1,58 @@
+{
+  "capturedAt": "2026-10-02T08:22:17.774Z",
+  "timezone": "Europe/Istanbul",
+  "revision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "documentation follow-up only; current committed application, uncommitted prose",
+  "command": "Local Playwright capture helper using the visible project importer, theme, named palette, cycle-range and export controls; development badge hidden through its own session preference",
+  "runtime": "v22.23.3",
+  "browser": "Chromium 151.0.7922.34",
+  "viewport": "1440x960, device scale 1",
+  "verdict": "Eight actual UI states asserted with no page errors; six screenshots published after visual review. No full application-suite or download-verification verdict.",
+  "artworkSources": [
+    "src/lib/art/starterTemplates.ts",
+    "src/lib/art/bunSprite.ts"
+  ],
+  "captures": [
+    {
+      "path": "studio-atelier-dark.png",
+      "description": "Current Atelier dark studio with the three-frame original starter-art project.",
+      "sha256": "126543dd06f76eb988fea969a2d875324b5e824784a00f96c02dd7f8a1f6ee8a"
+    },
+    {
+      "path": "palette-from-artwork.png",
+      "description": "A named palette draft after scanning the actual visible frame; six swatches, before creation.",
+      "sha256": "f2461582aceab000a0e4300b0146fb9f6a554532c0fbf593c3588d3c7d32623b"
+    },
+    {
+      "path": "palette-cycle-range.png",
+      "description": "Current First/Last cycle range controls, selecting indices 2 through 4 of the scanned palette; paused.",
+      "sha256": "509115ae71609655cda39b764ea3ccac2fa9c96bb02c340222cee149436c8af6"
+    },
+    {
+      "path": "cycle-loop-export.png",
+      "description": "Actual Cycle Loop options: initially 8 FPS, two-second APNG, 16 samples; no download verdict implied.",
+      "sha256": "7089b8b85bf401bfe214a7a92d9835cbf787879de64763836da0a03941e3edd4"
+    },
+    {
+      "path": "project-backup.png",
+      "description": "Actual Project Backup export options for the current three-frame artwork; a screenshot of availability, not proof of a completed backup.",
+      "sha256": "d15f8c5c4ffc1aa7f8e363fc6b1e8fdb256cce983ee79382c28889c7eaa7801a"
+    },
+    {
+      "path": "bun-lighting-preview.png",
+      "description": "Actual uncommitted lighting preview on Bun; Apply and Cancel remain visible.",
+      "sha256": "6fd871ffa4241f75eb75999bf831a8ba0237d0fadbc1ba75bc786d91b1301500"
+    }
+  ],
+  "capturedStates": 8,
+  "artworkSourceHashes": [
+    {
+      "path": "src/lib/art/starterTemplates.ts",
+      "sha256": "601168347ac35015ae1843fcd096360eec3c4fa2999946f0fb0692c3f0dd17cf"
+    },
+    {
+      "path": "src/lib/art/bunSprite.ts",
+      "sha256": "5d60a0a79f7d0688f3b5001e169ed786cc7a160166201e6034bfaa8a18fb9138"
+    }
+  ]
+}

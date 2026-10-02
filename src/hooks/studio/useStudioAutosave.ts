@@ -13,6 +13,8 @@ import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail }
 import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { isPracticeActive } from '@/lib/project/practiceSession';
+import { registerStudioRouteSession, setStudioResume, getStudioResume, getPracticeReturnProject, clearPracticeReturnProject, type StudioResume } from '@/lib/project/studioRouteSession';
 
 import type { SaveResult } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
@@ -157,6 +159,9 @@ export function useStudioAutosave() {
       }
     }
 
+    if (isPracticeActive()) {
+      return { ok: false, reason: 'lifecycle-suspended', error: 'Studio autosave is suspended during practice.' };
+    }
     const currentPhase = lifecycleRef.current.phase;
     if (!isAutosavePermitted(currentPhase)) {
       return {
@@ -195,6 +200,9 @@ export function useStudioAutosave() {
       try {
         do {
           autosavePendingRef.current = false;
+          if (isPracticeActive()) {
+            return { ok: false, reason: 'lifecycle-suspended', error: 'Studio autosave is suspended during practice.' };
+          }
           const state = useStudioStore.getState();
           const expectedVersion = storageVersionsRef.current.get(state.currentProjectId) ?? null;
 
@@ -321,6 +329,27 @@ export function useStudioAutosave() {
     await runAutosave();
   }, [runAutosave, updateLifecycle]);
 
+  // Keep only the latest Studio's save coordinator for the practice route handoff.
+  useEffect(() => {
+    if (lifecycleState.phase !== 'active') return;
+    const projectId = lifecycleState.projectId;
+    const resume = (): StudioResume => ({
+      projectId, storageVersions: new Map(storageVersionsRef.current),
+      lifecycle: lifecycleRef.current, conflictProjectId: conflictRef.current,
+    });
+    registerStudioRouteSession({
+      projectId, resume,
+      checkpoint: async () => {
+        if (useStudioStore.getState().currentProjectId !== projectId) throw new Error('Studio no longer owns this drawing.');
+        const result = await runAutosave();
+        if (!result.ok || useStudioStore.getState().isDirty || useStudioStore.getState().currentProjectId !== projectId) {
+          throw new Error(result.ok ? 'Your drawing changed while saving. Try again from Studio.' : result.error || 'Your drawing could not be saved. Return to Studio and export a backup.');
+        }
+        return resume();
+      },
+    });
+  }, [lifecycleState, runAutosave]);
+
   const scheduleAutosave = useCallback(() => {
     if (autosaveTimerRef.current !== null) {
       window.clearTimeout(autosaveTimerRef.current);
@@ -397,6 +426,10 @@ export function useStudioAutosave() {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      if (autosaveTimerRef.current !== null) {
+        window.clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
       if (openAbortRef.current) {
         openAbortRef.current.abort();
       }
@@ -518,6 +551,7 @@ export function useStudioAutosave() {
         if (isOpenStale(epoch)) return { success: false, reason: 'superseded' };
         if (signal.aborted) return { success: false, reason: 'cancelled' };
         if (admission.storageVersion) storageVersionsRef.current.set(targetProjectId, admission.storageVersion);
+        clearPracticeReturnProject();
         if (isRecoveredCopy) {
           try {
             if (typeof window !== 'undefined') {
@@ -639,20 +673,26 @@ export function useStudioAutosave() {
     // Studio mode must never display playground tracing stencils
     useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
 
-    const isFromPlayground =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).get('fromPlayground') === 'true';
-
-    if (isFromPlayground) {
-      // Abort workspace rehydration so live buffers from playground are not cleared by clearAllBuffers()!
-      // Trigger an immediate autosave of the active session so it gets stored in IndexedDB.
-      const state = useStudioStore.getState();
-      if (state.projectName === 'Untitled Sprite') {
-        state.setProjectName('Playground Animation');
+    const resume = getStudioResume(useStudioStore.getState().currentProjectId);
+    if (resume) {
+      let cancelled = false;
+      const applyResume = (ticket: StudioResume) => {
+        if (cancelled || useStudioStore.getState().currentProjectId !== ticket.projectId) return;
+        storageVersionsRef.current = new Map(ticket.storageVersions);
+        conflictRef.current = ticket.conflictProjectId;
+        setSaveConflict(ticket.conflictProjectId);
+        setAutosaveError(ticket.error ?? null);
+        setStudioResume(ticket);
+        updateLifecycle(ticket.lifecycle);
+        clearPracticeReturnProject();
+      };
+      if (resume.checkpoint) {
+        updateLifecycle({ phase: 'loading', projectId: resume.projectId });
+        restorePromiseRef.current = resume.checkpoint.then(applyResume);
+      } else {
+        applyResume(resume);
       }
-      updateLifecycle({ phase: 'active', projectId: state.currentProjectId });
-      void runAutosave();
-      return;
+      return () => { cancelled = true; };
     }
 
     let unmounted = false;
@@ -661,9 +701,9 @@ export function useStudioAutosave() {
       // 1. Identify latest project ID via bounded metadata query (Correction #1)
       let targetId: string | null = null;
       try {
-        targetId = typeof getLatestStoredProjectId === 'function'
+        targetId = getPracticeReturnProject() ?? (typeof getLatestStoredProjectId === 'function'
           ? await getLatestStoredProjectId()
-          : (await loadLatestSavedWorkspace?.())?.id ?? null;
+          : (await loadLatestSavedWorkspace?.())?.id ?? null);
       } catch (err: unknown) {
         if (unmounted) return;
         console.error('Storage read error on startup:', err);
@@ -739,6 +779,7 @@ export function useStudioAutosave() {
           );
           if (!unmounted && !isOpenStale(epoch)) {
             if (admission.storageVersion) storageVersionsRef.current.set(targetId, admission.storageVersion);
+            clearPracticeReturnProject();
             let pendingRecovery: PendingRecoveryContext | undefined;
             try {
               const pendingSourceId =
@@ -862,6 +903,12 @@ export function useStudioAutosave() {
         });
       } else if (admission.status === 'not-found') {
         if (unmounted || isOpenStale(epoch)) return;
+        if (getPracticeReturnProject() === targetId) {
+          // A missing original cannot be recovered through a permanent pointer.
+          // Release it so new drawings can restore normally after a later save.
+          clearPracticeReturnProject();
+          setAutosaveError('The saved drawing you were returning to is no longer available in this browser. A fresh drawing is open. If you have a Project Backup, import it to restore your artwork.');
+        }
         updateLifecycle({ phase: 'active', projectId: useStudioStore.getState().currentProjectId });
       }
     })();

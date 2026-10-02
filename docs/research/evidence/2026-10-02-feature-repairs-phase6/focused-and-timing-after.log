@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+{"kind":"diagnostic-not-latency-qualification","records":10001,"fixtureBuildMs":34.4366,"seedMs":727.8072999999999,"boundedCountMs":49.70310000000018,"payloadEnumerationMs":173.3354999999999,"archivePrepareMs":44.25870000000009}
+
+ Test Files  2 passed (2)
+      Tests  46 passed (46)
+   Start at  22:31:00
+   Duration  1.89s (transform 401ms, setup 170ms, import 1.03s, tests 2.08s, environment 0ms)
+

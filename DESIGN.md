@@ -25,6 +25,8 @@ graph TD
 ```
 
 ### Material Invariants
+
+These are design rules and targets for new work, not a declaration that every existing animation, marker or component already complies. Current interface states are illustrated below; manual accessibility and artist evaluation remain separately qualified.
 * **The Single Lamp Pool:** There is at most **one** warm amber illumination pool per scene (`.lamp-pool`). It is rendered as a soft, non-interactive radial gradient overlay (`pointer-events: none`) that batches over the viewport without altering pixel export data.
 * **Wood Grain & Dither Inset Textures:**
   * `.texture-dither`: 4px static checkerboard pattern at $\le 6\%$ opacity for inset wells and recessed slider tracks.
@@ -37,6 +39,16 @@ graph TD
 ---
 
 ## 2. Semantic Color Tokens
+
+### Current studio references — 2 October 2026
+
+![Current Atelier dark studio, with amber controls and a restrained modern workspace around the original PixiBun starter artwork.](docs/assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+
+*Atelier dark in the current local studio. [Capture details](docs/assets/screenshots/2026-10-02-docs/run.json).*
+
+![Cozy Classic light, with warm parchment panels, plum borders and the same PixiBun starter characters.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
+
+*Cozy Classic light, captured earlier on the same date. [Original capture details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json). These are visible theme examples, not color-contrast measurements or conformance evidence.*
 
 Our color system is authored in **OKLCH** color space to maintain perceptual uniformity, target WCAG AA contrast ratios (4.5:1 for body copy, 3:1 for large controls); actual compliance requires testing rendered states, and natural directional hue-shifting.
 

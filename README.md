@@ -10,25 +10,26 @@ Make a small character, a flickering flame, or the first tile of a world. PixiBu
 
 Plum shadows, wisteria accents, amber buttons and a few live pixel glints make Cozy Classic feel like a desk with the lamp still on.
 
-![PixiBun in Cozy Classic dark, with the Hearth Ghost, Little Shroom and Bun on the canvas, a palette beside them and three animation frames below.](docs/assets/readme/2026-10-02/studio-cozy-dark.png)
+![PixiBun in Cozy Classic dark, with the Hearth Ghost, Little Shroom and Bun on the canvas, a palette beside them and three animation frames below.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
 
 *A little company at the drawing desk. PixiBun's own starter characters, arranged in a three-frame project.*
 
-[Your first few pixels](#your-first-few-pixels) · [Keep your work safe](#keep-your-work-safe) · [Run locally](#run-locally) · [Explore the docs](docs/README.md)
+[Illustrated artist handbook](docs/guides/README.md) · [Every feature](docs/features.md) · [Your first few pixels](#your-first-few-pixels) · [Keep your work safe](#keep-your-work-safe) · [Run locally](#run-locally) · [Explore the docs](docs/README.md)
 
 ## Small canvas, plenty of room to play
 
 - **Draw something that feels like yours.** Start with a pixel pen, shapes and fills. Add layers, select a detail, move it around, or undo a stroke and try again. Import an image or sprite sheet when you already have a starting point.
+- **Try a gentle first lesson.** Desktop Playground gives you a fresh practice sheet while your Studio drawing stays separate. **Return to drawing** brings it back; **Keep practice in Studio** saves a new project. The [12 illustrated lessons](docs/guides/learning-and-playground.md) help you find a starting point. Practice is temporary until you keep it.
 - **Give it a little life.** Draw frames, use onion skin to see faded guides from the neighboring poses, choose how long each frame stays on screen and play a loop. Group frames into named clips to keep different movements together.
 - **Find your colors.** Create a named palette, rearrange its colors, or scan the canvas for up to six main colors. Choose the First and Last colors you want to cycle; choosing just the fire colors can keep the wood and outlines still.
 - **Try a different light.** PixiTools opens a lighting preview with a movable bulb. Adjust the light, see how your sprite responds, then Apply or Cancel. Cleanup tools also offer before/after previews so you can look before making a change.
-- **Take your pixels somewhere.** Save a still image as PNG, a moving image as GIF or APNG, or a sprite sheet with your frames in one image. Video options depend on your browser. The [export guide](docs/contracts/exports.md) helps you choose a format, including options for games.
+- **Take your pixels somewhere.** Save a still image as PNG, a moving image as GIF or APNG, or a sprite sheet with your frames in one image. Video options depend on your browser. The [illustrated export guide](docs/guides/exporting.md) helps you choose a format, including options for games.
 
 Palette cycling changes colors in the active frame. To make a flame lean or a character hop, draw the changing poses in the timeline.
 
 ## A little light for Bun
 
-![Bun in the current PixiBun lighting preview, with the light controls and Apply and Cancel buttons visible.](docs/assets/readme/2026-10-02/bun-lighting-preview.png)
+![Bun in the current PixiBun lighting preview, with the light controls and Apply and Cancel buttons visible.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/bun-lighting-preview.png)
 
 *An afternoon experiment: turn the light, watch the colors, keep the version you like. This screenshot shows the preview before applying it.*
 
@@ -36,7 +37,7 @@ Palette cycling changes colors in the active frame. To make a flame lean or a ch
 
 Cozy Classic comes in dark and light: deep plum for a late evening, warm parchment for a brighter afternoon. Atelier offers another look, with a more restrained modern palette. Open **Studio** to choose your theme and light or dark scheme.
 
-![The same three-character project in Cozy Classic light, with warm parchment panels, plum outlines and amber controls.](docs/assets/readme/2026-10-02/studio-cozy-light.png)
+![The same three-character project in Cozy Classic light, with warm parchment panels, plum outlines and amber controls.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
 
 *The same little friends, with the curtains open.*
 
@@ -65,7 +66,7 @@ Want to run PixiBun on your own computer or help improve it? The setup is below;
 <details>
 <summary>Set up a local studio</summary>
 
-You'll need **Git**, **Node.js 22** and **npm 10 or newer**. In a terminal, run:
+You'll need **Git**, **Node.js 22** and **npm 10 or newer**, plus access to the GitHub repository. If GitHub asks you to sign in or request access, use an account with permission. In a terminal, run:
 
 ```sh
 git clone https://github.com/lxcario/PixiBun.git
@@ -84,15 +85,16 @@ If you'd like to help tend the studio, start with [Contributing](CONTRIBUTING.md
 
 | When you want to… | Start here |
 | --- | --- |
+| Learn a tool or explore every feature with pictures | [Artist handbook](docs/guides/README.md) and [complete feature index](docs/features.md) |
 | Keep an editable copy of your work | [Artwork safety and backup](docs/guides/artwork-safety.md) |
-| Choose an export format | [Exports and their limits](docs/contracts/exports.md) |
+| Choose an export format | [Illustrated export guide](docs/guides/exporting.md) |
 | Learn the keys | [Keyboard shortcuts](docs/contracts/shortcuts.md) |
 | See what's available and what's been checked | [Current project status](docs/current-status.md) |
 | Understand the engine | [Architecture](ARCHITECTURE.md) and [rendering](docs/contracts/rendering.md) |
 | Explore ideas for the future | [v2 vision](V2_VISION.md), a proposal for future work |
 
-These screenshots show the local studio on **2 October 2026**, using Cozy Classic and PixiBun's own artwork. [About this version](docs/current-status.md) explains which changes are included and how they were checked. [Screenshot details](docs/assets/readme/2026-10-02/run.json) are available too.
+These screenshots show the local studio on **2 October 2026**, using Cozy Classic and PixiBun's own artwork. [About this version](docs/current-status.md) explains which changes are included and how they were checked. [Screenshot details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json) are available too.
 
-PixiBun is open source under the [MIT License](LICENSE).
+PixiBun is licensed under the [MIT License](LICENSE).
 
 *A few colors. A little patience. Something only you could make.*

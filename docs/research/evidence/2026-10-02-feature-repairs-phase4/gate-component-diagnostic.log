@@ -1,0 +1,685 @@
+
+> pixibun@1.14.1 gate:full
+> node scripts/runQualityGate.mjs --with-build
+
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Checks local links, historical paths, generated discovery, selected source contracts and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 274 existing, 6 approved removed historical references.
+Local links/headings: 1557 destinations across 90 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 15.06s[0m
+
+[1m[35m[2/5] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+[32m✓ Stage 2: Static Type Safety Invariant (0 Errors) PASSED in 2.93s[0m
+
+[1m[35m[3/5] Stage 3: Lint and accessibility rules[0m
+[2m  ↳ Checks source and test lint rules.[0m
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+
+[32m✓ Stage 3: Lint and accessibility rules PASSED in 20.27s[0m
+
+[1m[35m[4/5] Stage 4: Unit & Defensive Invariant Test Suite[0m
+[2m  ↳ Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).[0m
+
+> pixibun@1.14.1 test
+> vitest run
+
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/components/AtelierEngineShowcase.test.tsx (8 tests | 2 failed) 1188ms
+     × triggers sample download for Phaser 3 engine export 148ms
+     × copies engine export code to clipboard and shows tactile copied confirmation 132ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/components/AtelierEngineShowcase.test.tsx > AtelierEngineShowcase Component > triggers sample download for Phaser 3 engine export
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Download"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "A REAL COMPUTER GRAPHICS ATELIER IN YOUR BROWSER":
+  <h2
+    class="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text-heading)] drop-shadow-sm tracking-tight"
+  />
+
+  Name "A little peek at your export options":
+  <h3
+    class="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="mt-4 text-sm sm:text-base font-sans text-[var(--text-body)] leading-relaxed"
+  />
+
+  Name "":
+  <p
+    class="px-3 py-2 text-[11px] text-[var(--text-body)]"
+  />
+
+  Name "":
+  <p
+    class="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans"
+  />
+
+  --------------------------------------------------
+  tablist:
+
+  Name "Atelier Engine Features":
+  <div
+    aria-label="Atelier Engine Features"
+    class="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm relative"
+    role="tablist"
+  />
+
+  --------------------------------------------------
+  tab:
+
+  Name "2.5D Lighting & Shadows 01":
+  <button
+    aria-controls="panel-photometric"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-photometric"
+    role="tab"
+  />
+
+  Name "RotSprite Precision 02":
+  <button
+    aria-controls="panel-rotsprite"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-rotsprite"
+    role="tab"
+  />
+
+  Name "Image Synthesis 03":
+  <button
+    aria-controls="panel-pixelize"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-pixelize"
+    role="tab"
+  />
+
+  Name "Game Engine Exports 04":
+  <button
+    aria-controls="panel-export"
+    aria-selected="true"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[#140d1f] font-bold"
+    id="tab-export"
+    role="tab"
+  />
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Game Engine Exports 04":
+  <div
+    aria-labelledby="tab-export"
+    class="bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] p-6 sm:p-8 relative shadow-md transition-all duration-300"
+    id="panel-export"
+    role="tabpanel"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Previous feature":
+  <button
+    aria-label="Previous feature"
+    class="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
+  />
+
+  Name "Next feature":
+  <button
+    aria-label="Next feature"
+    class="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
+  />
+
+  Name "Copy sample":
+  <button
+    class="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+  />
+
+  Name "Download sample":
+  <button
+    class="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+  />
+
+  Name "Godot 4":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "Unity":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "Phaser 3":
+  <button
+    aria-pressed="true"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold"
+  />
+
+  Name "APNG":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "GIF":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  --------------------------------------------------
+  link:
+
+  Name "EXPORT ASSETS IN STUDIO →":
+  <a
+    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+    href="/studio"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <section
+      class="relative py-24 bg-[var(--desk-surface)]/90 border-t-2 border-b-2 border-[var(--desk-border)] overflow-hidden scroll-mt-14"
+      id="engine-showcase"
+    >
+      <div
+        class="relative max-w-7xl mx-auto px-6 sm:px-8"
+      >
+        <div
+          class="relative w-full "
+        >
+          <div
+            class="text-center max-w-3xl mx-auto mb-12"
+          >
+            <div
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-4 shadow-sm"
+            >
+              <span
+                class="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block"
+              >
+                ✦
+              </span>
+              <span
+                class="inline-block font-display font-bold tracking-wider uppercase select-none "
+                style="background-image: linear-gradient(90deg, #d88e28 0%, #f0be7c 20%, #ffffff 48%, #fff8db 52%, #f0be7c 80%, #d88e28 100%); background-size: 200% auto; background-clip: text; color: transparent; animation: goldShimmer 2.6s linear infinite; display: inline-block;"
+              >
+                INTERACTIVE GRAPHICS BENCHMARK
+              </span>
+              <span
+                class="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block"
+              >
+                ✦
+              </span>
+            </div>
+            <h2
+              class="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text-heading)] drop-shadow-sm tracking-tight"
+            >
+              A REAL COMPUTER GRAPHICS ATELIER IN YOUR BROWSER
+            </h2>
+            <p
+              class="mt-4 text-sm sm:text-base font-sans text-[var(--text-body)] leading-relaxed"
+            >
+              PixiBun is not a simplistic 16-color doodle pad. It is an offline-first pixel art studio powered by mathematically rigorous 2.5D photometric lighting, subpixel RotSprite rotation, physical shadow cone-tracing, and game-engine exports. Click below to test every system live.
+            </p>
+          </div>
+        </div>
+        <div
+          class="relative w-full "
+        >
+          <div
+            class="w-full overflow-x-auto pb-3 mb-8 scrollbar-thin"
+          >
+            <div
+              aria-label="Atelier Engine Features"
+              class="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm relative"
+              role="tablist"
+            >
+              <button
+                aria-controls="panel-photometric"
+                aria-selected="false"
+                class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+                id="tab-photometric"
+                role="tab"
+              >
+                <span
+                  class="relative z-10 flex items-center"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="text-[var(--accent-gold)]"
+                    fill="currentColor"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    width="14"
+                  >
+                    <path
+                      d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="relative z-10 font-display text-xs tracking-wide"
+                >
+                  2.5D Lighting & Shadows
+                </span>
+                <span
+                  class="relative z-10 text-[9px] px-1.5 py-0.5 rounded-[1px] transition-colors bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[var(--text-muted)]"
+                >
+                  01
+                </span>
+              </button>
+              <button
+                aria-controls="panel-rotsprite"
+                aria-selected="false"
+                class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+                id="tab-rotsprite"
+                role="tab"
+              >
+                <span
+                  class="relative z-10 flex items-center"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="text-[var(--accent-gold)]"
+                    fill="currentColor"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    width="14"
+                  >
+                    <path
+                      d="M6 1v2H3v3h2v2H1V3h2V1h3zm4 14v-2h3v-3h-2V8h4v5h-2v2h-3zm3-10h-2V3h-2V1h2v2h2v2zM3 11h2v2h2v2H5v-2H3v-2z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="relative z-10 font-disp...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/AtelierEngineShowcase.test.tsx:353:32
+    351|     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockIm…
+    352|
+    353|     const downloadBtn = screen.getByRole('button', { name: 'Download' …
+       |                                ^
+    354|     await act(async () => {
+    355|       fireEvent.click(downloadBtn);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/components/AtelierEngineShowcase.test.tsx > AtelierEngineShowcase Component > copies engine export code to clipboard and shows tactile copied confirmation
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name `/Copy Code/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "A REAL COMPUTER GRAPHICS ATELIER IN YOUR BROWSER":
+  <h2
+    class="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text-heading)] drop-shadow-sm tracking-tight"
+  />
+
+  Name "A little peek at your export options":
+  <h3
+    class="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="mt-4 text-sm sm:text-base font-sans text-[var(--text-body)] leading-relaxed"
+  />
+
+  Name "":
+  <p
+    class="px-3 py-2 text-[11px] text-[var(--text-body)]"
+  />
+
+  Name "":
+  <p
+    class="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans"
+  />
+
+  --------------------------------------------------
+  tablist:
+
+  Name "Atelier Engine Features":
+  <div
+    aria-label="Atelier Engine Features"
+    class="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm relative"
+    role="tablist"
+  />
+
+  --------------------------------------------------
+  tab:
+
+  Name "2.5D Lighting & Shadows 01":
+  <button
+    aria-controls="panel-photometric"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-photometric"
+    role="tab"
+  />
+
+  Name "RotSprite Precision 02":
+  <button
+    aria-controls="panel-rotsprite"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-rotsprite"
+    role="tab"
+  />
+
+  Name "Image Synthesis 03":
+  <button
+    aria-controls="panel-pixelize"
+    aria-selected="false"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+    id="tab-pixelize"
+    role="tab"
+  />
+
+  Name "Game Engine Exports 04":
+  <button
+    aria-controls="panel-export"
+    aria-selected="true"
+    class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[#140d1f] font-bold"
+    id="tab-export"
+    role="tab"
+  />
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Game Engine Exports 04":
+  <div
+    aria-labelledby="tab-export"
+    class="bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] p-6 sm:p-8 relative shadow-md transition-all duration-300"
+    id="panel-export"
+    role="tabpanel"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Previous feature":
+  <button
+    aria-label="Previous feature"
+    class="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
+  />
+
+  Name "Next feature":
+  <button
+    aria-label="Next feature"
+    class="flex items-center gap-1 px-2.5 py-1 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[var(--text-heading)] transition-colors text-xs font-mono font-bold active:translate-y-[1px]"
+  />
+
+  Name "Copy sample":
+  <button
+    class="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+  />
+
+  Name "Download sample":
+  <button
+    class="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+  />
+
+  Name "Godot 4":
+  <button
+    aria-pressed="true"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold"
+  />
+
+  Name "Unity":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "Phaser 3":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "APNG":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  Name "GIF":
+  <button
+    aria-pressed="false"
+    class="py-1 text-center rounded-[1px] border transition-colors bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+  />
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  Name "":
+  <strong
+    class="text-[var(--text-heading)] block font-sans"
+  />
+
+  --------------------------------------------------
+  link:
+
+  Name "EXPORT ASSETS IN STUDIO →":
+  <a
+    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+    href="/studio"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <section
+      class="relative py-24 bg-[var(--desk-surface)]/90 border-t-2 border-b-2 border-[var(--desk-border)] overflow-hidden scroll-mt-14"
+      id="engine-showcase"
+    >
+      <div
+        class="relative max-w-7xl mx-auto px-6 sm:px-8"
+      >
+        <div
+          class="relative w-full "
+        >
+          <div
+            class="text-center max-w-3xl mx-auto mb-12"
+          >
+            <div
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-4 shadow-sm"
+            >
+              <span
+                class="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block"
+              >
+                ✦
+              </span>
+              <span
+                class="inline-block font-display font-bold tracking-wider uppercase select-none "
+                style="background-image: linear-gradient(90deg, #d88e28 0%, #f0be7c 20%, #ffffff 48%, #fff8db 52%, #f0be7c 80%, #d88e28 100%); background-size: 200% auto; background-clip: text; color: transparent; animation: goldShimmer 2.6s linear infinite; display: inline-block;"
+              >
+                INTERACTIVE GRAPHICS BENCHMARK
+              </span>
+              <span
+                class="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block"
+              >
+                ✦
+              </span>
+            </div>
+            <h2
+              class="font-display text-3xl sm:text-4xl lg:text-5xl text-[var(--text-heading)] drop-shadow-sm tracking-tight"
+            >
+              A REAL COMPUTER GRAPHICS ATELIER IN YOUR BROWSER
+            </h2>
+            <p
+              class="mt-4 text-sm sm:text-base font-sans text-[var(--text-body)] leading-relaxed"
+            >
+              PixiBun is not a simplistic 16-color doodle pad. It is an offline-first pixel art studio powered by mathematically rigorous 2.5D photometric lighting, subpixel RotSprite rotation, physical shadow cone-tracing, and game-engine exports. Click below to test every system live.
+            </p>
+          </div>
+        </div>
+        <div
+          class="relative w-full "
+        >
+          <div
+            class="w-full overflow-x-auto pb-3 mb-8 scrollbar-thin"
+          >
+            <div
+              aria-label="Atelier Engine Features"
+              class="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1 bg-[var(--desk-surface-raised)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-sm relative"
+              role="tablist"
+            >
+              <button
+                aria-controls="panel-photometric"
+                aria-selected="false"
+                class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+                id="tab-photometric"
+                role="tab"
+              >
+                <span
+                  class="relative z-10 flex items-center"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="text-[var(--accent-gold)]"
+                    fill="currentColor"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    width="14"
+                  >
+                    <path
+                      d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="relative z-10 font-display text-xs tracking-wide"
+                >
+                  2.5D Lighting & Shadows
+                </span>
+                <span
+                  class="relative z-10 text-[9px] px-1.5 py-0.5 rounded-[1px] transition-colors bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[var(--text-muted)]"
+                >
+                  01
+                </span>
+              </button>
+              <button
+                aria-controls="panel-rotsprite"
+                aria-selected="false"
+                class="relative flex items-center gap-2.5 px-4 py-2.5 rounded-[2px] font-mono text-xs select-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--desk-surface)]/60"
+                id="tab-rotsprite"
+                role="tab"
+              >
+                <span
+                  class="relative z-10 flex items-center"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="text-[var(--accent-gold)]"
+                    fill="currentColor"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    width="14"
+                  >
+                    <path
+                      d="M6 1v2H3v3h2v2H1V3h2V1h3zm4 14v-2h3v-3h-2V8h4v5h-2v2h-3zm3-10h-2V3h-2V1h2v2h2v2zM3 11h2v2h2v2H5v-2H3v-2z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="relative z-10 font-disp...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/AtelierEngineShowcase.test.tsx:379:28
+    377|     });
+    378|
+    379|     const copyBtn = screen.getByRole('button', { name: /Copy Code/i });
+       |                            ^
+    380|     await act(async () => {
+    381|       fireEvent.click(copyBtn);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 157 passed (158)
+      Tests  2 failed | 1565 passed (1567)
+   Start at  17:38:03
+   Duration  17.09s (transform 26.53s, setup 5.81s, import 72.05s, tests 62.15s, environment 43.20s)
+
+
+[1m[31m❌ FAILED: Stage 4: Unit & Defensive Invariant Test Suite (exited with code 1) [17.94s][0m
+[33m⚠️  A configured check failed; this runner stopped. Hooks and external release policy are separate.[0m
+

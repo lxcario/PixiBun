@@ -1,0 +1,20 @@
+First argument must use the object destructuring pattern: page
+
+   at recoveryArchiveAdmission.spec.ts:4
+
+  2 | import { verifyAdmittedArchive, verifyArchiveOverflow } from '../helpers/recoveryArchiveWorkflows';
+  3 |
+> 4 | test('oversized untouched archive refuses before payload loading and preserves its source', verifyArchiveOverflow);
+    |     ^
+  5 | test('admitted untouched archive downloads and preserves its malformed source', verifyAdmittedArchive);
+  6 |
+First argument must use the object destructuring pattern: page
+
+   at recoveryArchiveAdmission.spec.ts:5
+
+  3 |
+  4 | test('oversized untouched archive refuses before payload loading and preserves its source', verifyArchiveOverflow);
+> 5 | test('admitted untouched archive downloads and preserves its malformed source', verifyAdmittedArchive);
+    |     ^
+  6 |
+

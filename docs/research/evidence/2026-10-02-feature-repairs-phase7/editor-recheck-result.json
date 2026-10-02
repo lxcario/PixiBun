@@ -1,0 +1,19 @@
+{
+  "mode": "editor",
+  "label": "-recheck",
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config",
+    "artifacts/feature-repairs/phase7/playwright.editor.config.cjs",
+    "--workers=1",
+    "--retries=0",
+    "--trace=retain-on-failure",
+    "--output=artifacts/feature-repairs/phase7/editor-recheck"
+  ],
+  "cacheVersion": "phase7-local-7106f4aa5fa96bc1",
+  "exitCode": 0,
+  "signal": null,
+  "elapsedSeconds": 697.051,
+  "completedAt": "2026-10-02T21:21:34.645Z"
+}

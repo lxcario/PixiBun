@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-10-02T20:48:15.636Z",
+  "command": [
+    "node",
+    "D:\\PixiBun\\artifacts\\runtime\\node-v22.23.3-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+    "install",
+    "next@16.3.6",
+    "--save-exact",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "elapsedSeconds": 59.947,
+  "npmVersion": "10.9.9"
+}

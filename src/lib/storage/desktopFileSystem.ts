@@ -72,6 +72,16 @@ export class DesktopFileSystem {
     this.activeFilename = filename ?? handle?.name ?? null;
   }
 
+  public static captureAssociation() {
+    return { handle: this.activeHandle, projectId: this.activeProjectId, filename: this.activeFilename };
+  }
+
+  public static restoreAssociation(saved: ReturnType<typeof DesktopFileSystem.captureAssociation>): void {
+    this.activeHandle = saved.handle;
+    this.activeProjectId = saved.projectId;
+    this.activeFilename = saved.filename;
+  }
+
   public static reset(): void {
     this.activeProjectId = undefined;
     this.activeHandle = null;

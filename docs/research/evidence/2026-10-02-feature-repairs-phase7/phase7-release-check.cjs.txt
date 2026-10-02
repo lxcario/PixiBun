@@ -1,0 +1,37 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const crypto = require('node:crypto');
+const folder = 'artifacts/feature-repairs/phase7';
+const sha = b => crypto.createHash('sha256').update(b).digest('hex');
+async function live() {
+  const results = [];
+  for (const origin of ['https://pixibun.art', 'https://pixibun.vercel.app']) {
+    for (const pathname of ['/', '/studio', '/sw.js', '/manifest.webmanifest']) {
+      const start = Date.now();
+      try {
+        const response = await fetch(origin + pathname, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+        const body = Buffer.from(await response.arrayBuffer());
+        const record = { requestedUrl: origin + pathname, finalUrl: response.url, status: response.status, elapsedMs: Date.now() - start, bodySha256: sha(body), bytes: body.length,
+          headers: Object.fromEntries(['content-type', 'cache-control', 'service-worker-allowed', 'content-security-policy', 'x-content-type-options', 'x-frame-options', 'strict-transport-security', 'x-nextjs-deployment-id'].map(name => [name, response.headers.get(name)])) };
+        if (pathname === '/sw.js') record.cacheName = body.toString().match(/const CACHE_NAME\s*=\s*['"]([^'"]+)/)?.[1] ?? null;
+        results.push(record);
+      } catch (error) { results.push({ requestedUrl: origin + pathname, error: String(error), elapsedMs: Date.now() - start }); }
+    }
+  }
+  fs.writeFileSync(`${folder}/${process.argv[3] ?? 'live-http'}.json`, JSON.stringify({ checkedAt: new Date().toISOString(), kind: 'read-only-public-http-observation-not-build-attestation', results }, null, 2) + '\n');
+  console.log(JSON.stringify(results.map(r => ({ url: r.requestedUrl, finalUrl: r.finalUrl, status: r.status, cacheName: r.cacheName, error: r.error })), null, 2));
+}
+function historical() {
+  const revision = '771218d';
+  const paths = ['src/lib/storage/db.ts', 'src/lib/project/schema.ts', 'src/app/sw.js/route.ts'];
+  const result = { kind: 'historical-source-review-not-runtime-rollback-verdict', revision: cp.execFileSync('git', ['rev-parse', `${revision}^{commit}`], { encoding: 'utf8' }).trim(), files: [] };
+  for (const p of paths) {
+    const bytes = cp.execFileSync('git', ['show', `${revision}:${p}`], { maxBuffer: 16 * 1024 * 1024 });
+    const name = 'historical-' + p.replaceAll('/', '_') + '.txt';
+    fs.writeFileSync(`${folder}/${name}`, bytes);
+    result.files.push({ path: p, evidence: name, sha256: sha(bytes) });
+  }
+  fs.writeFileSync(`${folder}/historical-reader.json`, JSON.stringify(result, null, 2) + '\n');
+  console.log(`Recorded exact source bytes for ${result.revision}; no checkout change.`);
+}
+(process.argv[2] === 'live' ? live() : Promise.resolve().then(historical)).catch(e => { console.error(e); process.exitCode = 1; });

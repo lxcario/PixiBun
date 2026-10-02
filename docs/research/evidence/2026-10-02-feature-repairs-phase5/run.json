@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-02",
+  "recordedAt": "2026-10-02T18:59:03.323Z",
+  "timezone": "Europe/Istanbul",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "Prior October remediation and phases 1–4 plus phase 5 remain uncommitted. Fourteen source/test/helper files differ from phase 4; 539 final source/test/config hashes verified unchanged after final runs.",
+  "commands": [
+    {
+      "command": "VITEST_MAX_WORKERS=2 npm run gate:full",
+      "verdict": "All five stages passed; 1569 tests / 159 suites; 122.46s",
+      "log": "gate-final.log"
+    },
+    {
+      "command": "playwright test --workers=1 --retries=0 --trace=retain-on-failure --output artifacts/feature-repairs/phase5-editor-history-ready",
+      "verdict": "181 passed (11.8m)",
+      "log": "editor-final.log"
+    },
+    {
+      "command": "PIXIBUN_PRODUCTION_PORT=3113 playwright test --config playwright.production.config.ts",
+      "verdict": "78 passed (11.6m); Chromium/Firefox/WebKit, one worker, zero retries",
+      "log": "production-final.log"
+    },
+    {
+      "command": "npm run verify:docs",
+      "verdict": "Passed; 1701 destinations across 93 owned Markdown files; selected contracts, not full narrative certification",
+      "log": "docs-final.log"
+    },
+    {
+      "command": "node artifacts/feature-repairs/phase5-integrity.cjs",
+      "verdict": "Passed; 539 frozen source files, 97 tracked PNGs, 127 files in five prior sealed sets and nine capture checkpoints preserved",
+      "log": "integrity-final.log"
+    },
+    {
+      "command": "git diff --check",
+      "verdict": "Exit 0; normal CRLF warnings retained",
+      "log": "diff-check.log"
+    }
+  ],
+  "diagnostics": {
+    "initialEditor": "181 passed (11.4m), before final public copy",
+    "initialGate": "Five stages passed before final pill/RGBA/helper refinements",
+    "interruptedEditor": "Stopped after 55 and 72 passes; both incomplete",
+    "overlappingEditor": "178 passed / three Home-to-Playground navigation failures; cause not established",
+    "overlappingGate": "1568 passed / one 5000ms recovery bulk-fixture timeout",
+    "practiceReplay": "Two passed first; all three passed separate traced replay (20.7s)",
+    "staleBuild": "77 passed / one WebKit expected-new-pill assertion against older compiled wording",
+    "defaultWorkerGate": "1568 passed / one recovery bulk-fixture timeout after final welcome repair",
+    "motion": "Initial hydration/attributes/transparent-content diagnostics retained; strengthened Chromium regression passed (11.2s)",
+    "history": "180 passed / one disabled third Undo; original three traced replays passed (9.6s); final setup waits for active restoration and asserts Undo enabled after first edit, with all prior value assertions retained"
+  },
+  "practiceFailureArtifacts": [
+    {
+      "caseDirectory": "practiceIsolation-failed-K-dee25-eturn-restores-the-original-chromium",
+      "screenshot": "practice-1-failed.png",
+      "context": "practice-1-context.txt"
+    },
+    {
+      "caseDirectory": "practiceIsolation-Home-exi-cee55-when-Studio-is-opened-again-chromium",
+      "screenshot": "practice-2-failed.png",
+      "context": "practice-2-context.txt"
+    },
+    {
+      "caseDirectory": "practiceIsolation-the-old--06a44-s-saved-project-restoration-chromium",
+      "screenshot": "practice-3-failed.png",
+      "context": "practice-3-context.txt"
+    }
+  ],
+  "practiceReplayArtifacts": [
+    {
+      "caseDirectory": "practiceIsolation-failed-K-dee25-eturn-restores-the-original-chromium",
+      "trace": "practice-1-replay-trace.zip"
+    },
+    {
+      "caseDirectory": "practiceIsolation-Home-exi-cee55-when-Studio-is-opened-again-chromium",
+      "trace": "practice-2-replay-trace.zip"
+    },
+    {
+      "caseDirectory": "practiceIsolation-the-old--06a44-s-saved-project-restoration-chromium",
+      "trace": "practice-3-replay-trace.zip"
+    }
+  ],
+  "screenshotCheckpoint": "../../../assets/screenshots/2026-10-02-feature-repairs-phase5/run.json",
+  "scope": "Local Windows temporary browser contexts; development server reused on 3000; compiled server owned on 3113 after frozen-source build. Gate, editor and compiled suites sequential. No external uploads/tunnels or TestSprite terminal verdict.",
+  "notExecuted": "No fresh coverage, Lighthouse, Godot/Tiled desktop/rendered-lighting run, physical-device/pen/assistive-technology study, real two-machine qualification or participant study. No commit, push, deployment or new release approval.",
+  "sealedAt": "2026-10-02T19:03:49.811Z"
+}

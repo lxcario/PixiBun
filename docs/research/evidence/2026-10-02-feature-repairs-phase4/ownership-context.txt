@@ -1,0 +1,186 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: exportCompleteness.spec.ts >> unique tile bundles reconstruct pixels and refuse stale results
+- Location: tests\e2e\exportCompleteness.spec.ts:5:5
+
+# Error details
+
+```
+Error: expect(locator).toBeDisabled() failed
+
+Locator:  getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })
+Expected: disabled
+Received: enabled
+Timeout:  5000ms
+
+Call log:
+  - Expect "toBeDisabled" with timeout 5000ms
+  - waiting for getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })
+    14 × locator resolved to <button tabindex="0" class="group relative select-none rounded-[2px] font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)] border transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden px-2.5 h-7 pixel-primary-btn tactile-motion-btn text-[10px] py-1 font-bold justify-center">…</button>
+       - unexpected value "enabled"
+
+```
+
+```yaml
+- button "Download tile PNG + maps (.zip)"
+```
+
+# Test source
+
+```ts
+  1   | import { expect, type Page, type TestInfo } from '@playwright/test';
+  2   | import { readFile } from 'node:fs/promises';
+  3   | import { importGameDeliveryFixture } from './gameDeliveryFixture';
+  4   | import { readNativePng } from './readNativePng';
+  5   | 
+  6   | type Capture = (name: string) => Promise<void>;
+  7   | function unpack(bytes: Buffer) {
+  8   |   const files: Record<string, Buffer> = {}; let offset = 0;
+  9   |   while (bytes.readUInt32LE(offset) === 0x04034b50) {
+  10  |     expect(bytes.readUInt16LE(offset + 8)).toBe(0);
+  11  |     const size = bytes.readUInt32LE(offset + 18), length = bytes.readUInt16LE(offset + 26), extra = bytes.readUInt16LE(offset + 28), start = offset + 30 + length + extra;
+  12  |     files[bytes.subarray(offset + 30, offset + 30 + length).toString()] = bytes.subarray(start, start + size); offset = start + size;
+  13  |   }
+  14  |   return files;
+  15  | }
+  16  | async function downloadFiles(page: Page, info: TestInfo, button: string, filename: string) {
+  17  |   const next = page.waitForEvent('download'); await page.getByRole('button', { name: button, exact: true }).click();
+  18  |   const download = await next; expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  19  |   const path = info.outputPath(filename); await download.saveAs(path); return unpack(await readFile(path));
+  20  | }
+  21  | async function rgba(page: Page, base64: string) {
+  22  |   return page.evaluate(async src => {
+  23  |     const image = new Image(); image.src = 'data:image/png;base64,' + src; await image.decode();
+  24  |     const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+  25  |     const ctx = canvas.getContext('2d')!; ctx.drawImage(image, 0, 0);
+  26  |     return { width: image.width, height: image.height, data: Array.from(ctx.getImageData(0, 0, image.width, image.height).data) };
+  27  |   }, base64);
+  28  | }
+  29  | export async function verifyManualNormalKit(page: Page, info: TestInfo, capture?: Capture) {
+  30  |   await page.setViewportSize({ width: 1600, height: 1000 });
+  31  |   const project = await importGameDeliveryFixture(page, false, { manualNormals: true, solid: true });
+  32  |   await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-godot-kit').click();
+  33  |   await page.getByRole('checkbox', { name: 'Include normal-map atlas' }).check();
+  34  |   await expect(page.getByText('Normal maps: Verified neutral normal layer on all 3 frames.', { exact: true })).toBeVisible();
+  35  |   await expect(page.getByText(/exactly one Normal Facets or Normal Map layer/)).toBeVisible();
+  36  |   if (capture) await capture('godot-manual-normals.png');
+  37  |   const files = await downloadFiles(page, info, 'Download Godot kit', 'manual-normals.zip');
+  38  |   const manifest = JSON.parse(files['manifest.json'].toString()), normal = readNativePng(files['normal.png']), diffuse = readNativePng(files['atlas.png']);
+  39  |   for (let i = 0; i < project.frames.length; i++) {
+  40  |     const color = await rgba(page, project.frames[i].layers[0].pngBase64), expectedNormal = await rgba(page, project.frames[i].layers[1].pngBase64);
+  41  |     const rect = manifest.rects[i];
+  42  |     // Independent atlas sampling proves a visible manual data layer does not tint diffuse.
+  43  |     for (let y = 0; y < project.height; y++) for (let x = 0; x < project.width; x++) {
+  44  |       const target = ((rect.y + y) * diffuse.width + rect.x + x) * 4, source = (y * project.width + x) * 4;
+  45  |       expect(diffuse.data.slice(target, target + 4)).toEqual(color.data.slice(source, source + 4));
+  46  |       expect(normal.data.slice(target, target + 4)).toEqual(expectedNormal.data.slice(source, source + 4));
+  47  |     }
+  48  |   }
+  49  | }
+  50  | export async function verifyUniqueTileBundle(page: Page, info: TestInfo, capture?: Capture) {
+  51  |   await page.setViewportSize({ width: 1600, height: 1000 });
+  52  |   const project = await importGameDeliveryFixture(page, false, { outlined: true, tileAlpha: true });
+  53  |   const source = await rgba(page, project.frames[0].layers[0].pngBase64);
+  54  |   expect(source.data.some((v, i) => i % 4 === 3 && v === 51)).toBe(true);
+  55  |   await page.getByTestId('tab-ai').click(); await page.getByTestId('pixitools-task-tileset').click();
+  56  |   await page.getByRole('button', { name: 'Patterns & Tilesets', exact: true }).click();
+  57  |   const download = page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true });
+  58  |   for (const size of [8, 16, 32]) {
+  59  |     await page.getByRole('button', { name: `${size}px`, exact: true }).click();
+  60  |     if (size !== 8) { await expect(download).toBeDisabled(); await expect(page.getByText('Artwork or settings changed. Slice again before copying or downloading.')).toBeVisible(); }
+  61  |     await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click(); await expect(download).toBeEnabled();
+  62  |     if (capture && size === 8) { await page.mouse.move(700, 70); await page.keyboard.press('Escape'); await expect(page.getByRole('group', { name: 'Tile Slicer preview' })).toBeHidden(); await capture('unique-tile-bundle.png'); }
+  63  |     const files = await downloadFiles(page, info, 'Download tile PNG + maps (.zip)', `tiles-${size}.zip`);
+  64  |     expect(Object.keys(files).sort()).toEqual(['map.tmj', 'tilemap.json', 'tileset.png']);
+  65  |     const map = JSON.parse(files['tilemap.json'].toString()), tiled = JSON.parse(files['map.tmj'].toString()), atlas = readNativePng(files['tileset.png']);
+  66  |     expect(map.atlas.image).toBe('tileset.png'); expect(atlas.width).toBe(map.atlas.width); expect(atlas.height).toBe(map.atlas.height);
+  67  |     expect(tiled.tilesets[0]).toMatchObject({ firstgid: 1, image: 'tileset.png', imagewidth: atlas.width, imageheight: atlas.height, columns: map.atlas.columns, tilecount: map.uniqueTiles, margin: 0, spacing: 0 });
+  68  |     expect(tiled.layers[0].data).toEqual(map.tilemap.flat().map((id: number) => id + 1));
+  69  |     const restored = Array(source.data.length).fill(0);
+  70  |     for (let y = 0; y < source.height; y++) for (let x = 0; x < source.width; x++) {
+  71  |       const gid = tiled.layers[0].data[Math.floor(y / size) * tiled.width + Math.floor(x / size)], id = gid - tiled.tilesets[0].firstgid;
+  72  |       const at = ((Math.floor(id / tiled.tilesets[0].columns) * size + y % size) * atlas.width + id % tiled.tilesets[0].columns * size + x % size) * 4;
+  73  |       for (let channel = 0; channel < 4; channel++) restored[(y * source.width + x) * 4 + channel] = atlas.data[at + channel];
+  74  |     }
+  75  |     expect(restored).toEqual(source.data);
+  76  |   }
+  77  |   await page.getByRole('button', { name: /Select frame 2/ }).click(); await expect(download).toBeDisabled();
+  78  |   await expect(page.getByRole('button', { name: 'Copy Tilemap JSON', exact: true })).toBeDisabled();
+  79  |   if (capture) { await page.mouse.move(700, 70); await page.keyboard.press('Escape'); await expect(page.getByRole('group', { name: 'Tile Slicer preview' })).toBeHidden(); await capture('unique-tile-stale.png'); }
+> 80  |   await page.getByRole('button', { name: /Select frame 1/ }).click(); await expect(download).toBeDisabled();
+      |                                                                                              ^ Error: expect(locator).toBeDisabled() failed
+  81  |   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click(); await expect(download).toBeEnabled();
+  82  |   await page.getByRole('button', { name: '8px', exact: true }).click(); await expect(download).toBeDisabled();
+  83  |   await page.getByRole('button', { name: '32px', exact: true }).click(); await expect(download).toBeDisabled();
+  84  | }
+  85  | export async function verifyTileEdgeRefusal(page: Page) {
+  86  |   await importGameDeliveryFixture(page, false, { outlined: true, canvasSize: [31, 32] });
+  87  |   await page.getByTestId('tab-ai').click(); await page.getByTestId('pixitools-task-tileset').click(); await page.getByRole('button', { name: 'Patterns & Tilesets', exact: true }).click();
+  88  |   const downloads: string[] = []; page.on('download', d => downloads.push(d.suggestedFilename()));
+  89  |   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click();
+  90  |   await expect(page.getByRole('alert').filter({ hasText: 'would cut off an edge' })).toBeVisible(); expect(downloads).toEqual([]);
+  91  |   await expect(page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })).toHaveCount(0);
+  92  | }
+  93  | export async function verifyAmbiguousNormals(page: Page) {
+  94  |   await importGameDeliveryFixture(page, false, { manualNormals: true, ambiguousNormals: true });
+  95  |   await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-godot-kit').click();
+  96  |   await page.getByRole('checkbox', { name: 'Include normal-map atlas' }).check();
+  97  |   await expect(page.getByText(/Missing or invalid on frame/)).toBeVisible();
+  98  |   const downloads: string[] = []; page.on('download', d => downloads.push(d.suggestedFilename()));
+  99  |   await page.getByRole('button', { name: 'Download Godot kit', exact: true }).click();
+  100 |   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('exactly one full-opacity'); expect(downloads).toEqual([]);
+  101 | }
+  102 | export async function verifyPendingTileEdit(page: Page) {
+  103 |   await importGameDeliveryFixture(page, false, { outlined: true });
+  104 |   await page.getByTestId('tab-ai').click(); await page.getByTestId('pixitools-task-tileset').click(); await page.getByRole('button', { name: 'Patterns & Tilesets', exact: true }).click();
+  105 |   await page.evaluate(() => {
+  106 |     const original = HTMLCanvasElement.prototype.toBlob;
+  107 |     const held: Array<() => void> = [];
+  108 |     Object.assign(window, { releaseTileCodec: () => { HTMLCanvasElement.prototype.toBlob = original; held.forEach(f => f()); } });
+  109 |     HTMLCanvasElement.prototype.toBlob = function (callback, ...args) { held.push(() => original.call(this, callback, ...args)); };
+  110 |   });
+  111 |   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click();
+  112 |   await expect(page.getByRole('button', { name: 'Cancel tile export', exact: true })).toBeVisible();
+  113 |   const canvas = page.getByTestId('main-composite-canvas'), box = (await canvas.boundingBox())!;
+  114 |   await page.keyboard.press('x'); await page.mouse.click(box.x + box.width * 0.1, box.y + box.height * 0.1);
+  115 |   await expect(page.getByText('Artwork changed while preparing tiles. Slice again to use the current pixels.')).toBeVisible();
+  116 |   await page.evaluate(() => (window as Window & { releaseTileCodec?: () => void }).releaseTileCodec?.());
+  117 |   await expect(page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })).toHaveCount(0);
+  118 |   await page.getByRole('button', { name: 'Slice Into Unique Tiles', exact: true }).click();
+  119 |   await expect(page.getByRole('button', { name: 'Download tile PNG + maps (.zip)', exact: true })).toBeEnabled();
+  120 | }
+  121 | export async function verifyWelcomeExportNotes(page: Page, info: TestInfo, capture?: Capture) {
+  122 |   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/');
+  123 |   await page.getByRole('tab', { name: /Game Engine Exports/ }).click();
+  124 |   await expect(page.getByRole('heading', { name: 'A little peek at your export options' })).toBeVisible();
+  125 |   for (const format of ['APNG', 'GIF']) {
+  126 |     await page.getByRole('button', { name: format, exact: true }).click();
+  127 |     await expect(page.getByRole('button', { name: format, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  128 |     await expect(page.getByText('Text notes only. Create your own animation in Studio.')).toBeVisible();
+  129 |     if (capture) {
+  130 |       await page.getByRole('tabpanel', { name: /Game Engine Exports/ }).evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  131 |       await capture(`welcome-${format.toLowerCase()}-notes.png`);
+  132 |     }
+  133 |     const next = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download notes (.txt)', exact: true }).click();
+  134 |     const d = await next; expect(d.suggestedFilename()).toMatch(/\.txt$/); const path = info.outputPath(`${format}.txt`); await d.saveAs(path);
+  135 |     expect(await readFile(path, 'utf8')).toContain(`PixiBun ${format} export notes — text sample, not an animation`);
+  136 |   }
+  137 | }
+  138 | export async function verifySvgApproximation(page: Page, info: TestInfo, capture?: Capture) {
+  139 |   await importGameDeliveryFixture(page, false, { outlined: true }); await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-svg').click();
+  140 |   await expect(page.getByText(/An approximate contour conversion/)).toBeVisible(); await expect(page.getByText(/Lossless Vector SVG/)).toHaveCount(0);
+  141 |   if (capture) await capture('svg-approximation.png');
+  142 |   const next = page.waitForEvent('download'); await page.getByRole('button', { name: /Download SVG/ }).click();
+  143 |   const d = await next; expect(d.suggestedFilename()).toMatch(/\.svg$/); const path = info.outputPath('approximation.svg'); await d.saveAs(path);
+  144 |   const svg = await readFile(path, 'utf8');
+  145 |   const parsed = await page.evaluate(text => { const doc = new DOMParser().parseFromString(text, 'image/svg+xml'); return { root: doc.documentElement.localName, errors: doc.querySelectorAll('parsererror').length, paths: doc.querySelectorAll('path').length }; }, svg);
+  146 |   expect(parsed.root).toBe('svg'); expect(parsed.errors).toBe(0); expect(parsed.paths).toBeGreaterThan(0);
+  147 | }
+  148 | 
+```

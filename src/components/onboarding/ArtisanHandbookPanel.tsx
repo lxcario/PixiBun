@@ -1,20 +1,21 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePracticeActions } from '@/components/playground/PracticeActions';
 import { useOnboardingStore, generateLessonSteps } from '@/stores/onboardingStore';
 import { useStudioStore } from '@/stores/studioStore';
 import { PLAYGROUND_LESSONS, getTemplateRows, getTemplateGridSize } from '@/lib/art/playgroundLessons';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { applyLessonEdit } from '@/lib/art/applyLessonEdit';
 import { TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { evaluateStencilCoverage } from '@/lib/art/stencilEvaluator';
 import { studioEvents } from '@/lib/events/studioEvents';
 
 export const ArtisanHandbookPanel: React.FC = () => {
-  const router = useRouter();
+  const practice = usePracticeActions();
   const {
     currentStepIndex,
     setStepIndex,
@@ -40,7 +41,6 @@ export const ArtisanHandbookPanel: React.FC = () => {
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const addFrame = useStudioStore((s) => s.addFrame);
   const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
-  const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
   const isPlaying = useStudioStore((s) => s.isPlaying);
   const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
 
@@ -51,53 +51,50 @@ export const ArtisanHandbookPanel: React.FC = () => {
   const isComplete = stepConfig.type === 'COMPLETE';
   const isDrawingStep = stepConfig.type === 'DRAW_FRAME';
 
-  // Copy template pixels directly onto active canvas layer and trigger completion
+  // Trace overlays existing pixels; the pre-trace artwork stays in Undo.
   const handleTraceTemplate = useCallback(() => {
     if (!currentTemplate || !activeLayerId) return;
-    const buf = getOrCreateBuffer(activeLayerId, canvasWidth, canvasHeight);
-    const ctx = buf.ctx;
-    ctx.imageSmoothingEnabled = false;
-
     const rows = getTemplateRows(currentTemplate);
     const gridSize = getTemplateGridSize(currentTemplate);
     const cellW = canvasWidth / gridSize;
     const cellH = canvasHeight / gridSize;
 
-    rows.forEach((row, y) => {
-      for (let x = 0; x < row.length; x++) {
-        const char = row[x];
-        if (char === '.') continue;
-        const color = TEMPLATE_PALETTE[char];
-        if (color) {
-          ctx.fillStyle = color;
-          ctx.fillRect(
-            Math.floor(x * cellW),
-            Math.floor(y * cellH),
-            Math.max(1, Math.ceil(cellW)),
-            Math.max(1, Math.ceil(cellH))
-          );
+    const committed = applyLessonEdit('Trace lesson template', (ctx) => {
+      ctx.imageSmoothingEnabled = false;
+      rows.forEach((row, y) => {
+        for (let x = 0; x < row.length; x++) {
+          const char = row[x];
+          if (char === '.') continue;
+          const color = TEMPLATE_PALETTE[char];
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(
+              Math.floor(x * cellW),
+              Math.floor(y * cellH),
+              Math.max(1, Math.ceil(cellW)),
+              Math.max(1, Math.ceil(cellH))
+            );
+          }
         }
-      }
+      });
     });
-
-    touchBuffer(activeLayerId);
-    bumpBufferVersion();
-    const analysis = evaluateStencilCoverage(ctx, canvasWidth, canvasHeight, currentTemplate);
+    if (!committed) return;
+    const buf = getOrCreateBuffer(activeLayerId, canvasWidth, canvasHeight);
+    const analysis = evaluateStencilCoverage(buf.ctx, canvasWidth, canvasHeight, currentTemplate);
     recordAnalysis(analysis);
-  }, [currentTemplate, activeLayerId, canvasWidth, canvasHeight, bumpBufferVersion, recordAnalysis]);
+  }, [currentTemplate, activeLayerId, canvasWidth, canvasHeight, recordAnalysis]);
 
   // Clear current frame layer
   const handleClearFrame = useCallback(() => {
     if (!activeLayerId) return;
+    const committed = applyLessonEdit('Clear lesson layer', ctx => ctx.clearRect(0, 0, canvasWidth, canvasHeight));
+    if (!committed) return;
     const buf = getOrCreateBuffer(activeLayerId, canvasWidth, canvasHeight);
-    buf.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    touchBuffer(activeLayerId);
-    bumpBufferVersion();
     if (currentTemplate) {
       const analysis = evaluateStencilCoverage(buf.ctx, canvasWidth, canvasHeight, currentTemplate);
       recordAnalysis(analysis);
     }
-  }, [activeLayerId, canvasWidth, canvasHeight, bumpBufferVersion, currentTemplate, recordAnalysis]);
+  }, [activeLayerId, canvasWidth, canvasHeight, currentTemplate, recordAnalysis]);
 
   const handleNextAction = useCallback(() => {
     if (stepConfig.type === 'DRAW_FRAME' && stepConfig.frameIndex !== undefined) {
@@ -135,14 +132,12 @@ export const ArtisanHandbookPanel: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => {
-              useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
-              router.push('/studio?fromPlayground=true');
-            }}
+            onClick={practice?.keep}
+            disabled={!practice}
             className="text-[10px] font-mono font-bold text-[var(--text-body)] hover:text-[#f0be7c] transition-colors cursor-pointer bg-transparent border-0"
             title="Skip to full studio"
           >
-            Skip to Studio
+            Keep practice
           </button>
         </div>
 
@@ -391,10 +386,8 @@ export const ArtisanHandbookPanel: React.FC = () => {
           <TactileButton
             size="sm"
             variant="primary"
-            onClick={() => {
-              useOnboardingStore.setState({ isPlaygroundActive: false, showStencilGuide: false });
-              router.push('/studio?fromPlayground=true');
-            }}
+            onClick={practice?.keep}
+            disabled={!practice}
             className="text-xs font-bold px-4 py-2 bg-[#f0be7c] hover:bg-[#f3cb95] text-[#140d1f] border-2 border-[#8c5120] shadow-md flex items-center gap-1.5"
           >
             <span>{stepConfig.nextButtonLabel}</span>

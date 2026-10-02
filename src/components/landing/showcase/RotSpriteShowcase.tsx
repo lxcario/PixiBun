@@ -235,8 +235,8 @@ export const RotSpriteShowcase: React.FC = () => {
         </h3>
 
         <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Standard canvas rotation shears low-resolution art: thin 1-pixel strokes get disconnected, outlines break into jagged clumps, and antialiasing introduces blurry smudges.
-          RotSprite preserves single-pixel silhouette connectivity and palette purity using 8x Scale2X subpixel geometry, while gracefully respecting discrete pixel grid topology.
+          Turn a sample sprite and compare the two results. RotSprite works on an 8x enlarged image before sampling it back onto the pixel grid.
+          It keeps source colors without blending them, but small details and connections can change with the angle.
         </p>
 
         {/* Feature Points Card */}
@@ -256,7 +256,7 @@ export const RotSpriteShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Continuous Inverse Rotation</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Maps destination pixels back into the 8x upscaled domain, preventing unwanted gaps and orphan floating pixels.
+                Maps destination pixels back into the 8x working image. Inspect small gaps and isolated pixels in the result.
               </span>
             </div>
           </div>
@@ -264,7 +264,7 @@ export const RotSpriteShowcase: React.FC = () => {
           <div className="flex items-start gap-2">
             <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
             <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Palette Purity &amp; 1px Conservation</strong>
+              <strong className="text-[var(--text-heading)] block font-sans">Source colors without blending</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
                 Never introduces interpolated intermediary shades. Your hand-picked palette is preserved without color blending at any angle.
               </span>

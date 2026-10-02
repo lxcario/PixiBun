@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: Loaded resource as image file, this will not work on export: 'res://normal.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2780)
+   GDScript backtrace (most recent call first):
+       [0] verify (res://phase4_verify.gd:23)
+WARNING: Loaded resource as image file, this will not work on export: 'res://atlas.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2780)
+   GDScript backtrace (most recent call first):
+       [0] verify (res://phase4_verify.gd:24)
+{"failures":[],"native_frame_pixels":1536.0,"normal_pairs":10,"runtime":"Godot 4.7.2 headless","scope":"Resource wiring, frame holds and native PNG channels; no rendered-lighting verdict"}

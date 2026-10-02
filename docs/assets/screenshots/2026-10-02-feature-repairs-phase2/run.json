@@ -1,0 +1,103 @@
+{
+  "scope": "Phase 2 local UI illustrations and targeted browser workflows; not deployment, device or participant qualification",
+  "date": "2026-10-02",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": true,
+  "runtime": "v22.23.3",
+  "browser": "151.0.7922.34",
+  "origin": "http://localhost:3000",
+  "viewports": [
+    "1440x960 lessons and board",
+    "1600x1000 isolation, adoption and refused checkpoint"
+  ],
+  "deviceScaleFactor": 1,
+  "screenshots": 16,
+  "procedure": "Temporary browser context, real lesson controls. Development badge hidden through its own preference. Three PNGs copied unchanged from passing practiceIsolation tests. No existing artist browser profile touched.",
+  "review": "All sixteen images inspected in a temporary contact sheet; main lesson and Teaching Board examined at full resolution. Injected failure image is diagnostic demonstration, not a naturally observed user failure.",
+  "pageErrors": [],
+  "images": [
+    {
+      "file": "lesson-master-bouncing-ball.png",
+      "description": "[Physics 201] The Master Bouncing Ball (12f @ 12fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "7d1bb466eaab4cd458dce10b2b31f44e7d779bee6bdf6056e61efb51541cef13"
+    },
+    {
+      "file": "lesson-subpixel-idle.png",
+      "description": "[Optical 201] Sub-Pixel Character Idle (3f @ 8fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "433ebfb5a231026502438fc6204176356fee1fb536c487596a5a996e8b5c4393"
+    },
+    {
+      "file": "lesson-combat-slash-hitstop.png",
+      "description": "[Combat 201] Sword Slash & Combat Hitstop (4f @ 12fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "fe4c162d68db6dbd62c446aa8fce8806179662137fb3fb3a04823dcd8a3f96a0"
+    },
+    {
+      "file": "lesson-character-hop-shock.png",
+      "description": "[Character 201] Character Hop & Shock Absorption (5f @ 10fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "3b04ff3db97e671371005d30db241d22d084e732a525f40fa75280d02e0bb596"
+    },
+    {
+      "file": "lesson-bouncing-mochi.png",
+      "description": "[Physics 101] The Bouncing Mochi (4f @ 10fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "667fa31e947823ded4318b59919118f188205be6c6a104597a0d9be79d6f42a1"
+    },
+    {
+      "file": "lesson-hearth-flame.png",
+      "description": "[Fluid FX] The Hearth Flame (3f @ 8fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "36c8231268c869d86fcc4545d7e20d70ccaa4f0859ee840e8da3ed9022d6a9c4"
+    },
+    {
+      "file": "lesson-bun-hop.png",
+      "description": "[Character 101] The Character Hop (3f @ 9fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "3d16774dfcdbd3687399f34103cd391433721f477c91ef794ddaeb75c3c644c5"
+    },
+    {
+      "file": "lesson-potion-bubble.png",
+      "description": "[Alchemy FX] Magic Potion Bubbles (4f @ 9fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "27b10079dd7788cc449c75c34ce7365576194369deb6b5428527154f5af42eaa"
+    },
+    {
+      "file": "lesson-slime-glide.png",
+      "description": "[Creature 101] The Slime Glide (4f @ 8fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "d76a2be8d1a353b51abdcc3adb68c1366b72bcbd8ce469f2df1a3bbd02d8f615"
+    },
+    {
+      "file": "lesson-twinkling-star.png",
+      "description": "[Lighting FX] The Twinkling Star (4f @ 10fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "410a1c9115fcb742a90d275f52b4c8d15639767bb5b4407b57025b04ae5b2f96"
+    },
+    {
+      "file": "lesson-water-ripple.png",
+      "description": "[Water FX] The Water Ripple (4f @ 8fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "23b350241538cee73042e5915b9e09456209cf906eb8861db04cc75be1d8424e"
+    },
+    {
+      "file": "lesson-sword-slash.png",
+      "description": "[Combat 101] The Sword Slash (3f @ 12fps) first frame cleared then traced through the current UI; supplied sample, not participant skill evidence",
+      "sha256": "76259be6f4346d7c34a701fbe5e617802d9adbfc22123459e789b4a00c3bfb32"
+    },
+    {
+      "file": "teaching-board.png",
+      "description": "Current Teaching Board within isolated desktop practice; sample controls, not a completed learning study.",
+      "sha256": "4449edf62be89e8f7af8b12ddee216f5de691f4fac3a4b7228f800e8197db49d"
+    },
+    {
+      "file": "isolated-practice.png",
+      "description": "Teaching Board sample loaded into separate practice; Return and Keep available.",
+      "source": "test-results/practiceIsolation-lesson-c-241f8-pixels-timing-and-undo-redo-chromium/isolated-practice.png",
+      "sha256": "57d48f9265c312198272b3cbb5b7db6da81ff5f4c1ab416d6d0ebc01c0fe65e4"
+    },
+    {
+      "file": "kept-practice-new-project.png",
+      "description": "Practice kept as a new saved Studio project; original stored record asserted unchanged.",
+      "source": "test-results/practiceIsolation-Keep-sav-10c72-e-stored-original-unchanged-chromium/kept-practice-new-project.png",
+      "sha256": "1f5110dbed82d682687fdd499707a676105065ef9394065ecab30389bc7c1d44"
+    },
+    {
+      "file": "checkpoint-refused.png",
+      "description": "Injected local save failure refuses practice before detaching original artwork.",
+      "source": "test-results/practiceIsolation-checkpoi-4c5d1-d-original-pixels-on-return-chromium/checkpoint-refused.png",
+      "sha256": "92f4e4f029eda786c9517f9a6437cdb7c32901e11f252497794ad35d12b1e4a9"
+    }
+  ]
+}

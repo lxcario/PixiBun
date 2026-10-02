@@ -1,79 +1,59 @@
-# PixiBun
+# PixiBun — Product scope
 
-> **Session update — 2026-10-01:** Audit Phases 1–6 are implemented and locally verified within their documented limits. Animation/research artist evaluation, device stress checks and release approval remain open. See the [session completion record](docs/research/session-completion-2026-10-01.md) for results, later UI changes and outstanding work.
+For artists: [illustrated handbook](docs/guides/README.md) and [complete feature index](docs/features.md).
+
+PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a quiet desk: readable tools, restrained motion and warm Cozy Classic colors.
 
 ## Problem & Audience
-- **Who this is for:** Indie game developers, pixel artists, animators, and digital creators looking for a desktop-grade, tactile 2D pixel art studio and animation suite in the browser.
-- **What they're trying to do:** Create precision 2D pixel art, build multi-frame animated sprite sheets, manage color ramps and layers, convert reference art to authentic pixel sprites, and work at a peaceful, cozy desk with computer graphics tools.
-- **What success looks like:** A pixel drawing and animation tool targeting responsive, sub-16ms interaction (measurement pending) with integer zoom/pan, layered compositing, onion skinning, game-ready sprite sheet export (PNG + Godot, Unity & Phaser 3 JSON), 2.5D photometric lighting, intelligent image-to-pixel-art synthesis, and a cozy PixiBud companion that provides previewed reversible shading, palette harmonization, and frame generation.
+
+Artists need to draw, revise colors, compare animation poses and keep editable work without an account or a mandatory cloud service. Success means a usable drawing workflow, understandable previews, reversible edits and exports that preserve the chosen format's supported pixels and timing. Integrated stroke latency, long-session behavior and artist usefulness still need measurement; no sub-16ms result is established.
 
 ## Scope
-### In scope for v1:
-- **High-Performance Canvas Engine:** Five artwork-sized raster layers (onion skin, onboarding stencil, main composite, stroke live preview, and selection tint) with CSS grid and guide overlays and a CSS brush footprint cursor. Supports integer zoom (100%–6400%), pan, pixel grid toggle, symmetry rulers (X/Y), 2:1 isometric guides, 3x3 pattern matrix preview mode, a non-destructive square brush bounding cursor at $\ge 400\%$ zoom, integer keyboard zoom navigation (`Ctrl + + / - / 0 / 1`), and 9-point anchor canvas resizing with aspect-ratio locking and resampling options.
-- **Precision Pixel Tools:** Pixel-perfect pen (Bresenham line smoothing, no jaggies), eraser, dithering brushes (Bayer 2x2, 4x4, 8x8, Atkinson, Riemersma), flood fill (connected/global, independent tolerance, optional enclosed-speck inclusion), Color Replace, Erase Sampled Color, color picker, shape primitives (line, 2:1 iso line, quadratic Bézier curve `C`, rectangle, ellipse), and full selection suite (Marquee `M`, Lasso `Q`, Magic Wand `W`, Shift/Alt Union and Subtract modifiers, floating buffer drag, copy/cut/paste, flip H/V).
-- **Multi-Layer Stack:** Layers with opacity, blend modes (Normal, Multiply, Screen, Overlay, Color Dodge), visibility, locking, reordering, layer merge down (`mergeLayerDown`), and non-destructive tagged output layers.
-- **Animation & Sprite Timeline:** Frame management, per-frame variable duration pacing (`durationMs`), proportional timeline cards ($W_{\text{card}}$), timing hold badges (`+Xms`), FPS scrubber (1–60 FPS), loop/ping-pong playback, customizable onion skinning (prev/next tint & opacity), tag clips (Idle, Walk, Attack), and Signed Distance Field (SDF) in-between frame morphing with multi-source BFS color sampling.
-- **Intelligent Image-to-Pixel-Art Synthesis Suite:** Linear optical gamma-corrected area box downsampling with forward-difference gradient salience edge-preservation, OKLab Median-Cut with Lloyd refinement, Serpentine Floyd-Steinberg and Atkinson dithering, 4-corner auto-background removal, and automatic 32-color swatch extraction. Regular sprite-sheet import analyzes pixel evidence for cell boundaries, margins, and gutters before offering editable cut lines.
-- **PixiBud 2.5D Photometric Studio & Smart Math Engine:** Deep canvas art understanding & anatomical classification (`character` vs `orb` vs `prop`), connected-component facial feature isolation (`isFeature`, `isInkLine` for eyes/mouth/whiskers), neutral macro-form and material-scale heightmap synthesis ($H_{\text{composite}} = 0.70 H_{\text{macro}} + 0.30 H_{\text{micro}}$) keeping base geometry separate from shading; appendage stabilization can depend on direction, source shading normalization (`sourceShadingRemoval` 0%–100%) to conservatively clean baked directional bands, two-sided opposing luminance ink edge filtering, authored ramp hue/chroma clustering, exposure-compensated directional cel shadow terminator, discrete OKLCH cel-shading ramps with Single (1-tone), Dual (2-tone), and Trio (3-tone) shading band modes across all forms, live Off/Soft/Crisp pixel glints with a bright core and stepped shoulder, light-facing masks, painted-normal priority, protected ink/alpha, and cancellable bulb previews, bounded 2.5D sprite cast shadows with 1-to-1 sheared silhouette projection and ground drop shadow ellipses (`shadowStyle: 'drop'`, default `ditherMode: 'none'`), linear-time $O(N)$ Euclidean Distance Transform, Sobel tangent normal vector field generation, 1-click normal map baking $(128, 128, 255)$ for Godot/Unity/Unreal, Laplace cavity AO, 5 physical material presets, and **2.5D Normal Sculptor** (`src/lib/art/normalSculptor.ts`: Directional Normal Chisel with dual-flank ridge tracking and shortest-arc Reoriented Normal Mapping [RNM] without slope flattening).
-- **3D Minecraft Skin Recognition & Dedicated Shading:** Deep 8-connected topological discriminator (`analyzeMinecraftSkinTopology`) with dominant component ratio, bilateral limb verification, and canonical void zone integrity to protect centered character sprites from false-positive Minecraft UV classification. Automatic Java/Bedrock UV layout detection ($64\times64$ and $64\times32$), 12-region 3D normal mapping, Half-Lambert diffuse wrap, anatomical contact AO, sky hemisphere gradients, and OKLCH warm sunlight/cool indigo hue-shifting. Tactile `Skin 3D Shading: [ Auto | On | Off ]` inspector controls for user sovereignty.
-- **Smart Pixel Math Suite:** RotSprite precision rotation (exact lossless 90°/180°/270° orthogonal permutations + 8x Scale2x cascade with parabolic center-weighted majority voting for arbitrary angles), Zhang-Suen 1px line thinning, Smart Sub-Pixel Anti-Aliasing (De-Jaggy), Directional Selective Outlining (Sel-Out), Clean Stray Pixels, previewed Analyze & Crisp Artwork cleanup for imported rasters, Atkinson 75% error-diffusion, and Riemersma Hilbert space-filling dithering. Cleanup, color moods, dithering, palette snap, and 47-blob contours require a before/after preview before application. Selected tiles can be inspected in an exact 3×3 repeat without changing source pixels.
-- **Color & Palette Management:** OKLCH/HSV/HEX color picker, preset palettes (Endesga 32, Pico-8, Solarized, Cozy Hearth 16), custom color ramp generator, scan canvas to palette, snap layer to palette, harmonize OKLCH tones, atmospheric photographic color grading (Sunset, Moonlight, Neon, Game Boy), and **Mark Ferrari 8-Bit Dynamic Palette Cycling** (`src/lib/color/paletteCycling.ts`: Amiga IFF ILBM `CRNG` and Commodore `CCRT` binary chunk parsing/serialization, allocation-free per-pixel 32-bit direct LUT blitting, ping-pong triangle-wave fencepost safety, and harmonic rational retuning for loop export).
-- **Modern Studio Shell & Design System:** Modular `AtelierRail` consolidating project actions, contextual tool options, zoom fit calculations, CVD lenses, and appearance switching; File and Studio menus with direct Save/history/tool/Export controls; adjacent Mirror/Zoom/Fit/View on one 48px desktop row; portable backup under Export; task-based PixiTools entry; 43 action-specific tool preview scenes; persistent 24px `StatusBar` with real-time cursor coordinates; keyboard-driven `CommandPaletteModal` (`Ctrl+K`); responsive `PixiBunLogo` component; and standardized accessible `Studio*` design system primitives (`StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`).
-- **Interactive Animation Education:** `TeachingAnimationBoard` in `/playground` with 10-frame jump curves, squash & stretch physics, 7-stage progressive sprite construction, Bun and Gel Slime curricula, 8 alt palette colorways, and 1-click timeline injection.
-- **Theme System:** Dual-axis first-party theme system (`studioTheme`: 'atelier' vs 'cozy-classic' × `colorScheme`: 'dark' vs 'light') with temporary transition suppression and `AppearancePopover`.
-- **Modular Studio Architecture:** Decomposed lifecycle hooks (`useStudioAutosave`, `useStudioClipboard`, `useStudioFileSystem`, `useStudioKeyboard`) and viewport pointer handlers (`useBrushPointerHandler`, `useChiselPointerHandler`, `useSelectionPointerHandler`, `useShapePointerHandler`).
-- **Export & Storage Pipeline:** Local-first IndexedDB autosave via Dexie.js (Schema v5 binary `layerBlobs` and `recoveryRecords` tables), single-transaction atomic metadata + blob commits, document revision tracking (`state.editRevision`) ensuring metadata persistence, native `.pixibun` format v3 with non-destructive `LayerEffectRecipe` provenance, save revision race prevention (`saveRevision.ts`), bounded admission import pipeline (`importFile.ts`), lossless PNG export (1x–32x, subject to 4096px single-axis and 16.7MP total pixel ceilings in PNG tab), animated GIF export with per-frame centisecond delays, packed sprite sheet export + Godot 4, Unity, and Phaser 3 JSON metadata, **Pure-TS ISOBMFF Fast-Start MP4 Container Muxer** (`isobmffWriter.ts` / `mp4Encoder.ts` for WebCodecs, with MediaRecorder fallback), and **Lossless Animated PNG (APNG) Stream Export** (`apngEncoder.ts`).
-- **P2P Collaboration:** Two-peer (one host, one guest) canvas editing supported via WebRTC (RFC 8831 dual data channels) and per-pixel LWW-CRDT synchronization with Hybrid Logical Clocks, delivery acknowledgments, backpressure queueing, and retry deduplication.
 
-### Explicitly out of scope for v1:
-- Centralized server-hosted WebSockets collaboration (reserved for v2; collaborative canvas editing is supported in v1 via local peer-to-peer WebRTC and per-pixel LWW-CRDT synchronization, with the host owning the layer structure while connected).
-- Native 3D mesh voxel conversions.
-- Music production and sound design tools.
+### In scope for v1
+
+| Workflow | Current capability | Details and limits |
+| --- | --- | --- |
+| Draw and edit | Pixel pen, shapes, fill, selection, layers, history and canvas resizing | [Architecture](ARCHITECTURE.md), [shortcuts](docs/contracts/shortcuts.md) |
+| Animate | Drawn frames, per-frame holds, onion skin, clips, playback and bounded in-between tools | [Exports](docs/contracts/exports.md), [current status](docs/current-status.md) |
+| Choose colors | Named palettes, canvas scans of at most six main colors, ramps and selected color-cycle ranges | [Palette authoring](docs/research/palette-creator-2026-10-01.md), [cycling](docs/contracts/exports.md#scope-holds-and-cycling) |
+| Try a new look | Image conversion, previewed cleanup, stylized lighting, normal sculpting and bounded research previews | [Rendering](docs/contracts/rendering.md); inferred shape/material is heuristic |
+| Rotate artwork | Exact orthogonal pixel permutations and a RotSprite-inspired arbitrary-angle path | [Algorithm scope](PIXIBUN_DEEP_DIVE.md); canonical offset search and detail restoration are not implemented |
+| Make tiles | Repeat previews, exact unique-tile PNG/map bundles, contour review and bounded small tile-scene studies | [Tile guide](docs/guides/pixitools-cleanup-and-tiles.md); exact size/alpha and stale-result checks apply; a complete 47-tile atlas and general world generation are not shipped |
+| Keep and share work | Local saves, portable backups, recovery, image/animation exports and game-delivery formats | [Artwork safety](docs/guides/artwork-safety.md), [exports](docs/contracts/exports.md); named consumer tests do not qualify every engine/version |
+| Draw together | One host and one guest share pixels through WebRTC; the host owns structure | [Current status](docs/current-status.md); real two-machine and stress qualification remain pending |
+| Learn and personalize | Separate desktop practice with save-before-entry, Return and explicit Keep; task-based PixiTools, searchable actions and Atelier/Cozy Classic light/dark themes | [Learning contract](docs/contracts/learning.md), [design](DESIGN.md) |
+
+### Explicitly out of scope for v1
+
+- A hosted account/cloud-sync service or centralized WebSocket collaboration.
+- A native desktop package, shipped neural model or general automatic character rigging.
+- Native 3D mesh/voxel conversion, music production or sound-design tools.
 
 ## Practical Limits
 
-The studio canvas is limited to 2,048 pixels on either axis. Projects allow up to 500 frames, 100 layers per frame, 2,000 layers total, and 67,108,864 aggregate layer pixels (64 Mi pixels). They allow up to 50 palettes, 100 clips, 100 custom ramps, a 256-character project name, and 1–60,000 ms per frame. Imports are limited to 50 MiB per file, including images. Every stored layer PNG must match the canvas dimensions exactly for normal opening.
+The [storage contract](docs/contracts/storage.md#admission-and-optional-metadata) owns the canvas, per-frame, total-layer and aggregate-raster limits. These limits apply together; their maxima cannot all be reached independently. [Rendering](docs/contracts/rendering.md#memory-ownership) explains estimated memory admission, and [exports](docs/contracts/exports.md#resource-boundaries-and-evidence) defines separate output limits.
 
 ## Stack (with rationale)
-| Layer | Choice | Why |
-|---|---|---|
-| Framework | **Next.js 16 (App Router) + React 19 + TypeScript** | Turbopack default bundler, fine-grained leaf subscriptions, modern SSR/client boundaries, and explicit client/server bundle boundaries. |
-| Studio Shell | **AtelierRail + StatusBar + CommandPalette** | Modular workspace chrome: consolidated top rail, 24px bottom coordinate bar, and fuzzy launcher. |
-| Design System | **Studio* Accessible Primitives Library** | Standardized `StudioSlider`, `StudioSelect`, `StudioToggle`, `StudioNumberInput`, `StudioTooltip`, `IconButton`, `PanelSection`. |
-| Viewport & Hooks | **Decomposed Pointer Handlers & Studio Hooks** | Clean separation of concerns: tool-specific pointer handlers and dedicated hooks for autosave, clipboard, filesystem, and keyboard shortcuts. |
-| Canvas & Raster Engine | **Custom HTML5 2D Canvas Compositor** | Detached `HTMLCanvasElement` layer buffers, direct `ImageData` access, nearest-neighbor integer scaling, and custom Bresenham/DDA line interpolation. |
-| State & History | **Zustand + Immer** | Direct raster stroke pipeline with isolated leaf subscriptions, fast undo/redo history snapshotting, and predictable decoupled state for layers and timeline. |
-| Image Synthesis | **Custom OKLab & forward-difference Pipeline (`pixelizeEngine.ts`)** | Gamma-corrected downsampling, salience preservation, OKLab median-cut, Floyd-Steinberg/Atkinson dithering. |
-| Styling & Design Tokens | **Tailwind CSS v4** | CSS-first configuration (`@theme`), OKLCH color space native support, container queries, and custom tactile pixel utility classes. |
-| Tactile Motion | **Motion (`motion/react`)** | Fluid micro-interactions, floating cozy tool dock transitions, dialogs, and drawer animations without layout thrashing. |
-| Storage & Autosave | **Dexie.js (IndexedDB Schema v5)** | Local-first, continuous single-transaction autosave with dedicated binary `layerBlobs` and `recoveryRecords` tables, offline support, and schema-validated project file serialization. |
-| Smart Graphics Intelligence | **Deterministic On-Device Math Engine (`src/lib/ai/math/`)** | 2.5D Felzenszwalb EDT lighting, Sobel normal maps, content-aware heightmaps, OKLCH cel-shading, Minecraft 3D skin shading, and SDF morphing with 0 cloud dependencies, deterministic execution, and offline privacy. |
+
+| Layer | Choice | Purpose |
+| --- | --- | --- |
+| Application shell | Next.js 16, React 19, TypeScript | Routes, hosting and typed UI |
+| Raster work | Browser Canvas, typed arrays and project-authored graphics algorithms | Pixel editing, compositing and conversion |
+| State and history | Zustand, Immer and detached raster buffers | Reactive metadata and bounded reversible edits |
+| Persistence | Dexie / IndexedDB | Local projects, revision checks and recovery records |
+| Interface | Tailwind CSS v4 and Motion | Shared visual tokens and interaction feedback |
+| Background work | Web Workers with operation-specific fallbacks | Bounded heavy processing and owned result publication |
+
+`src/lib/ai/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive](PIXIBUN_DEEP_DIVE.md); ownership and integration belong in [architecture](ARCHITECTURE.md).
 
 ## Repo & Environments
-- **GitHub repo:** Private repository (Planned public release; licensed under [MIT License](./LICENSE))
-- **Environments:** 
-  - `dev`: Local development (`localhost:3000`) and Next.js server build with warm-cache offline capability
-  - `production`: Next.js-capable deployment with operator-controlled server variables; current deployed revision requires a release record
+
+- **Source:** [lxcario/PixiBun](https://github.com/lxcario/PixiBun), licensed under [MIT](LICENSE). Cloning requires access granted by the repository's GitHub settings; the license does not change those access controls. No future public-launch date is promised here.
+- **Development:** Local Next.js server, normally at `localhost:3000`.
+- **Production:** A Next.js-capable runtime with operator-controlled configuration. A Git push or local check is not a deployment receipt; identify the live revision in a [release record](docs/guides/deployment.md).
+- **Offline:** Core editing after a successful online load/cache; browser storage and caches can be evicted.
 
 ## Related Docs
-- Design System & Tokens → [`DESIGN.md`](./DESIGN.md)
-- AI Agent Constraints & Rules → [`SKILL.md`](./SKILL.md)
-- Phased Implementation Plan → [`TASKS.md`](./TASKS.md)
-- Build Logs → [`LOGS.md`](./LOGS.md)
-- v2 Architecture & Strategic Vision → [`V2_VISION.md`](./V2_VISION.md)
-- Open Source Contribution & Quality Gate → [`CONTRIBUTING.md`](./CONTRIBUTING.md)
-- Security Policy & Defensive Invariants → [`SECURITY.md`](./SECURITY.md)
 
-## Palette making follow-up — 2026-10-01
-
-Palette → Create palette builds a named, editable draft from picked colors, the current palette or up to six main artwork colors. Swatches can be reordered and removed before creation. Scan Canvas groups near-duplicate source shades; Remove color works directly on the active palette. These actions preserve raster pixels, save palette data with the project and support Undo/Redo. [Details](docs/research/palette-creator-2026-10-01.md).
-
-### Fire-only palette cycling
-
-First/Last swatch controls let artists exclude brown wood and black outlines from a fire cycle. Excluded source shades keep their exact pixels in playback and generated frames. [Verification](docs/research/palette-cycle-scope-2026-10-01.md).
-
-Cycle Loop exports the active frame’s color animation as APNG/GIF at selectable FPS, including 15 FPS. [Workflow and checks](docs/research/palette-cycle-export-2026-10-01.md).
-
-Cycle export now includes 3/5/8 FPS and starts at 8 FPS. Lower export FPS gives fewer samples; cycle speed remains a separate setting. [Research and checks](docs/research/palette-cycle-export-2026-10-01.md#slower-fps-choices).
-
-8x GIF corruption is corrected in the shared LZW encoder. Previously exported corrupted files need regeneration. [Decoded-pixel proof](docs/research/gif-8x-corruption-2026-10-01.md).
+[Documentation map](docs/README.md) · [Current status](docs/current-status.md) · [Design](DESIGN.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Future proposals](V2_VISION.md)

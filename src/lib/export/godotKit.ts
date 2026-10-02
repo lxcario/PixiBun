@@ -7,6 +7,7 @@ import { buildAnimationModel, godotSpriteFramesResource } from './animationModel
 import { defaultPaletteSemantics, indexSemanticPixels } from '@/lib/color/paletteSemantics';
 import { godotPaletteShader } from './godotPaletteShader';
 import { zipBundle, type BundleFile } from './zipBundle';
+import { isNormalLayer, hasNeutralNormalLayer } from './normalLayers';
 
 export interface GodotKitOptions { clipId: string | 'all'; indexed: boolean; normals: boolean; pivot: 'center' | 'feet'; signal?: AbortSignal }
 const textFile = (name: string, text: string): BundleFile => ({ name, bytes: new TextEncoder().encode(text) });
@@ -72,9 +73,9 @@ export async function buildGodotKit(options: GodotKitOptions) {
     let boundPixels = 0;
     for (let i = 0; i < frames.length; i++) {
       check();
-      const frame = frames[i], normals = frame.layers.filter(l => l.tag === 'normal-map' || l.effect?.kind === 'normal-map');
-      if (options.normals && (normals.length !== 1 || normals[0].opacity !== 1 || normals[0].blendMode !== 'source-over')) {
-        throw new Error('Normal export needs exactly one neutral normal-map layer in every exported frame.');
+      const frame = frames[i], normals = frame.layers.filter(isNormalLayer);
+      if (options.normals && !hasNeutralNormalLayer(frame.layers)) {
+        throw new Error('Normal export needs exactly one full-opacity Normal Facets or Normal Map layer with Normal blending in every exported frame.');
       }
       if (options.normals && !hasBuffer(normals[0].id)) throw new Error('A normal-map buffer is missing. Restore the project before exporting.');
       const diffuse = options.normals ? { ...frame, layers: frame.layers.filter(l => l.id !== normals[0].id) } : frame;
@@ -278,8 +279,7 @@ export function inspectGodotKitPreflight(options: { indexed: boolean; normals: b
   if (options.normals) {
     const invalidFrames: number[] = [];
     frames.forEach((f, idx) => {
-      const normals = f.layers.filter(l => l.tag === 'normal-map' || l.effect?.kind === 'normal-map');
-      if (normals.length !== 1 || normals[0].opacity !== 1 || normals[0].blendMode !== 'source-over') {
+      if (!hasNeutralNormalLayer(f.layers)) {
         invalidFrames.push(idx + 1);
       }
     });
@@ -289,7 +289,7 @@ export function inspectGodotKitPreflight(options: { indexed: boolean; normals: b
       attention.push(`Normal export requires exactly one 100% opacity normal layer per frame. Missing or invalid on frame(s): ${invalidFrames.slice(0, 5).join(', ')}${invalidFrames.length > 5 ? '…' : ''}.`);
     }
   } else {
-    optional.push('Add normal-map layers and enable normal atlas for dynamic 2.5D lighting in Godot.');
+    optional.push('Add Normal Facets or Normal Map layers and enable normal atlas for dynamic 2.5D lighting in Godot.');
   }
 
   // 4. Animation Clips

@@ -27,9 +27,14 @@ export const PhotometricShowcase: React.FC = () => {
   const [celTones, setCelTones] = useState<boolean>(true);
   const [azimuth, setAzimuth] = useState<number>(135);
   const [elevation, setElevation] = useState<number>(45);
-  const [autoOrbit, setAutoOrbit] = useState<boolean>(!shouldReduceMotion);
+  const [autoOrbit, setAutoOrbit] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [baseVersion, setBaseVersion] = useState<number>(0);
+
+  // Start with matching server/client markup, then honor the browser's motion preference.
+  useEffect(() => {
+    setAutoOrbit(shouldReduceMotion === false);
+  }, [shouldReduceMotion]);
 
   const displayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const gizmoContainerRef = useRef<HTMLDivElement | null>(null);
@@ -508,8 +513,8 @@ export const PhotometricShowcase: React.FC = () => {
         </h3>
 
         <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Forget flat, repetitive manual shading. PixiBun treats your 2D artwork as a continuous geometric volume.
-          Drag the glowing pixel bulb around the canvas to dynamically cast realistic highlights, cavity ambient occlusion, and 1-to-1 sheared ground shadows in real time.
+          Move the little bulb and watch the sample's highlights and shadows change.
+          The surface is estimated from the sprite's silhouette; compare the materials and shadow choices to find a look you like.
         </p>
 
         {/* Feature Points Card */}
@@ -529,7 +534,7 @@ export const PhotometricShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Sobel Tangent Normals &amp; Bilateral Smoothing</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Generates smooth surface normal vectors while strictly preserving single-pixel line art edges and silhouetting.
+                Estimates surface directions from the height field and smooths them locally. Fine details need a look of their own.
               </span>
             </div>
           </div>
@@ -539,7 +544,7 @@ export const PhotometricShowcase: React.FC = () => {
             <div>
               <strong className="text-[var(--text-heading)] block font-sans">Stepped OKLCH Cel-Shading</strong>
               <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Uses Ottosson (2020) perceptual color coordinates with warm sunlight highlights and cool lilac shadows—zero muddy 24-bit RGB float degradation.
+                Uses perceptual color coordinates for warm highlights, cool shadows and stepped tones. The final colors depend on your settings.
               </span>
             </div>
           </div>

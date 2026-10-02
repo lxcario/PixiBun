@@ -1,8 +1,34 @@
 # PixiBun Atelier — Changelog
 
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
-
 ## Unreleased
+
+- Updated Next.js to the vendor's 16.3.6 security patch and made practice-test home navigation use the configured local origin. Phase 7 adds full regression and a separate release-readiness guide/assessment; current public-site observations and incompatible September-reader results do not approve deployment or rollback. [Execution and remaining gates](docs/research/2026-10-02-feature-repairs-phase7.md).
+
+- Recovery reads now remove physical MIME metadata when reconstructing ArrayBuffer-backed raster records, allowing ordinary damaged-source recovery without weakening unknown-field checks. Untouched archive export counts before loading oversized payloads and shows readable failure messages inside the dialog. Updated safety guidance includes two fresh captures. [Phase 6 checks, retained diagnostics and fixture budgets](docs/research/2026-10-02-feature-repairs-phase6.md).
+
+- Phase 5 reconciles current practice, tile/normal export references and known limits; replaces affected guide/README pictures with ten warm/current captures; qualifies welcome/animation copy; and fixes reduced-motion welcome hydration/reveal behavior. The final local gate/build and both complete browser suites passed; execution settings and earlier failures remain in the record. [Record and scope](docs/research/2026-10-02-feature-repairs-phase5.md).
+
+- Godot kits now accept neutral manual Normal Facets layers. Unique-tile slicing downloads a matching PNG, PixiBun map and Tiled map in one ZIP, with partial-edge refusal, cancellation and stale-result checks. Welcome APNG/GIF downloads are labeled text notes; SVG describes its approximate contours. Updated guides include six fresh captures. [Phase 4 checks and limits](docs/research/2026-10-02-feature-repairs-phase4.md).
+
+- Added an illustrated artist handbook and source-backed feature index covering all current drawing tools, export tabs, lessons, PixiTools tasks and surrounding workflows; documented interface limitations alongside the instructions. Application code was unchanged by the initial handbook-only update; subsequent repair entries have their own scope.
+
+- Desktop Playground now protects the original drawing with a save checkpoint and separate practice workspace. Return restores the original; Keep saves practice as a new project. Trace/Clear support session Undo/Redo, mobile mounts only Pocket, and practice save failures refuse unsafe transfer. [Phase 2 checks and limits](docs/research/2026-10-02-feature-repairs-phase2.md).
+
+- Iso Line FREE now follows your chosen endpoints in both preview and finished pixels; ON keeps the familiar 2:1 projection. Live PiP opens one window, redraws after expansion, and its pointer controls no longer paint the underlying canvas. [Phase 3 checks and scope](docs/research/2026-10-02-feature-repairs-phase3.md).
+
+### For artists
+
+- A simpler studio header and preview-first lighting/cleanup workflows.
+- Named palettes, smaller canvas color scans and First/Last color-cycle ranges.
+- Cycle Loop exports with more frame-rate choices, plus a correction for damaged larger GIF exports; affected older files need re-export.
+- Save/recovery, selection, color-preview and resource-boundary corrections.
+
+These are repository changes. Their presence here does not identify the live deployed revision or establish a new release. See [current status](docs/current-status.md) and [deployment verification](docs/guides/deployment.md).
+
+### Detailed changes and verification
+
+- **2026-10-02 documentation follow-up:** Clarified repository access, unmeasured performance targets, historical benchmark environment, security reporting/dependency policy and the local PixiMotion proposal. Added current studio/palette/export/backup illustrations and removed older architecture embeds. Documentation and images only; no new application fix, release or deployment is implied. [Scope and capture record](docs/research/2026-10-02-documentation-followup.md).
 
 - **2026-10-02 audit corrections:** Reconciled current references and historical records, added safety/storage/export/rendering/shortcut/operator/testing contracts and generated source/test inventories. Strictly parse saved diagnostic consent, cap/account idle scratch buffers, apply CVD matrices in linear RGB, restore Alt selection subtraction, preserve unrelated/configured Git hooks and isolate routine screenshots from archived evidence. Corrected seven stale editor locators and the Export E hint. [Changes, executed checks and remaining qualification](docs/research/2026-10-02-audit-remediation.md).
 

@@ -1,43 +1,37 @@
 # Security Policy — PixiBun Atelier
 
-> **Audit-session hardening — 2026-10-01:** Revision/generation checks protect asynchronous saves and preview publication; conflicting tabs refuse stale saves; bounded workers validate output and support deadlines/cancellation; shared memory admission estimates retained buffers and history. Research recipe parsing bounds dimensions, palettes, regions, pins and fingerprints. This session used local verification only. These safeguards and their limitations are recorded in the [phase report](docs/research/phase-implementation-status.md) and [session record](docs/research/session-completion-2026-10-01.md); they do not establish a penetration-test certification or measured heap ceiling.
+## Report a vulnerability privately
 
-## 1. Zero-Cloud & Local-First Philosophy
-PixiBun Atelier is architected as an offline-first, client-side application:
-- All canvas manipulation, photometric lighting calculations, and animation exports run on the client device.
-- Artwork and project data persist on-device in browser IndexedDB storage. The `window.__pixibunDb` and `window.__studioStore` debug handles are exposed only in development and test builds, including when those builds run on localhost. Production builds do not expose them on any hostname. Browser E2E tests use a development server to access these handles.
-- No user accounts, credentials, or tracking telemetry are collected.
-- WebRTC P2P co-draw defaults to zero-egress local network collaboration (`LAN_ICE_SERVERS = []`); public STUN requires `lanOnly: false`.
+Email [resquedzn05@gmail.com](mailto:resquedzn05@gmail.com) with the subject **PixiBun security report**. Do not put an exploitable vulnerability, secret or another person's artwork in a public issue.
 
-## 2. Secrets & Secret Hygiene
-- PixiBun requires zero API keys or external authentication tokens for local or production use.
-- **Never commit Personal Access Tokens (PATs) or API keys** to this repository. All environment keys should be configured via environment variables or secret managers (e.g. Vercel Project Settings) and never hardcoded in scripts or configuration files.
-- If a token is ever accidentally exposed in development, immediately revoke and rotate it at [github.com/settings/tokens](https://github.com/settings/tokens).
+Include the affected URL or commit/version, browser and operating system, a minimal reproduction, expected and observed behavior, and the possible impact. Use a small synthetic project instead of personal artwork where possible. Redact credentials, diagnostic text and identifying paths before sending attachments.
 
-## 3. Diagnostics Relay Security Boundaries & Threat Model
-The optional crash and diagnostic relay endpoint (`/api/diagnostics/relay`) acts as a server-side proxy to an operator-configured upstream (`DIAGNOSTICS_RELAY_URL`). Its threat model and defense boundaries include:
-- **Diagnostic Content Privacy:** Local diagnostic capture is enabled by default and records the page pathname (`window.location.pathname`) unless the caller supplies a route. Detail text is capped at 2,048 characters with a truncation marker. Error messages and stack traces are free text and can contain names, file paths, URLs, or browser environment data. Truncation is not redaction. Review diagnostic reports before opting into transmission; a zero-PII guarantee is not established.
-- **Origin admission:** A supplied Origin must match the request URL’s exact scheme, host and port. Missing Origin is accepted. This is browser-origin checking, not authentication or server proof of client consent. Forwarded proxy headers do not replace that comparison.
-- **Trusted Reverse Proxy Assumptions & Client IP Identity:** Client identity is extracted via `X-Forwarded-For` and `X-Real-IP`. Security assumption: In production (e.g. Vercel, Cloudflare, AWS ALB), an operator-trusted edge reverse proxy must sanitize or prepend the client IP. In raw, direct Internet-facing Node.js deployments without an edge proxy, an adversary could spoof `X-Forwarded-For` headers to circumvent per-IP rate limits or exhaust quotas of other IP addresses.
-- **In-Memory Token Bucket Limits & Multi-Instance Serverless Scaling:** Rate limiting (`capacity: 12, refillPerMinute: 12`) is stored in process memory via `TokenBucketStore`. This rate limit is local to the active Node.js / serverless worker container. In horizontally scaled or multi-instance serverless deployments, each container enforces its own rate limit independently; aggregate cluster throughput scales to (N_instances * 12 req/min) rather than an authoritative global ceiling. Enforcing a global cluster limit would require an external distributed cache (e.g. Redis or Upstash).
-- **Payload Streaming Ceilings & DoS Mitigation:** Request bodies are streamed via chunk reader enforcing a strict 64 KB (`MAX_BODY_BYTES`) ceiling before buffering, preventing memory exhaustion and allocation bombs (CWE-400 / CWE-770). Diagnostic event batches are truncated to a maximum of 100 events.
-- **SSRF Defense & Transport Security:** The endpoint ignores any client-supplied destination URLs and strictly proxies to the server-side environment variable `DIAGNOSTICS_RELAY_URL`, requiring HTTPS. Upstream requests enforce a 5-second timeout (`AbortSignal.timeout(5000)`).
-- **Opt-In Transmission:** Diagnostic transmission requires explicit user opt-in; once enabled, captured error events can be sent automatically. Local client-side diagnostic capture in IndexedDB is enabled by default.
+The maintainer will assess reproducibility, affected builds and impact, and coordinate a fix or explanation with the reporter. There is no guaranteed acknowledgement, remediation or disclosure deadline and no published bug-bounty program. Agree on disclosure timing privately; a passing test suite is not a security clearance.
 
-## Current generated-effect safeguards — 2026-10-01
+## Versions and report scope
 
-Live lighting and glint layers use `source-atop` (On artwork only), keeping source coverage intact. The native project schema and Co-Draw structure allowlist accept this blend mode. Pixel history retains the mode and restores it on Undo/Redo, including replay baselines. Locked effects refuse editing; cancelled previews restore earlier pixels, metadata, blending and layer focus. These targeted safeguards do not establish general collaboration convergence or certify every graphics path. [Local evidence and limits](docs/research/specular-glint-2026-10-01.md).
+| Build | Report handling |
+| --- | --- |
+| Current `main` | Include the exact commit and reproduction; this is the current development target |
+| Deployed studio | Include the URL, observation date and deployed revision if known; package `1.14.1` alone cannot distinguish later builds |
+| Older releases/checkouts | Reports are welcome, but separate backports and long-term support windows are not promised; say whether the issue reproduces on current `main` |
 
-## 4. Defense-in-Depth & Quality Gate Invariants
-PixiBun Atelier enforces an automated local Quality Gate (`npm run gate`) wired into a local `.git/hooks/pre-push` gatekeeper. The configured hook runs documentation checks, typecheck, lint and unit tests. Hooks can be bypassed and passing checks are not a security certification. Relevant safeguards include:
-- **CWE-409 Decompression Bomb Defense:** Image imports probe binary headers via `ImageHeaderProbe` (`imageHeaderProbe.ts`), rejecting dimensions $>8192\text{px}$ or pixel counts $>67\text{ MP}$ before memory allocation.
-- **Workspace Envelope & Complexity Defense:** Runtime workspace mutations (canvas resize, layer additions, frame duplications) are pre-evaluated by `WorkspaceEnvelopeGuard` (`workspaceEnvelopeGuard.ts`) against the 64 Mpx / 2,000 layer ceiling before buffer allocation, guarding against heap exhaustion crashes.
-- **CWE-1321 Prototype Pollution & JSON Allocation Bomb Defense:** Project deserialization uses `SafeJson.parse` (`safeJson.ts`), stripping `__proto__`, `constructor`, and `prototype` keys, enforcing a maximum payload size of 50 MB (`50 * 1024 * 1024` bytes), and limiting recursion depth to 32. Emits typed error classes (`SafeJsonPayloadLimitError`, `SafeJsonNestingDepthError`, `SafeJsonTraversalLimitError`, `SafeJsonOptionError`, `SafeJsonSyntaxError`). During recovery inspection, metadata traversal is bounded by a 50,000-node ceiling (`RECOVERY_INSPECTION_CEILINGS.MAX_METADATA_NODES`).
-- **IEEE 754 Floating-Point Invariants:** Viewport transformations enforce `clampZoom` and `safeDivide` (`mathInvariants.ts`), preventing `NaN` propagation, zero-division, and negative coordinate corruption.
-- **Safe Canvas Boundaries:** Selection extraction uses `SafeCanvas` (`safeCanvas.ts`) to bound allocation sizes and pad out-of-bounds reads. Other canvas readback paths use separate input checks and are outside this wrapper's scope.
-- **WebRTC Packet Flood Mitigation:** Reliable co-draw traffic uses a bounded retry queue with acknowledgments and payload validation. Presence traffic uses a single token bucket and may be dropped. This is not a claim of RFC 2212 or RFC 2697 conformance.
-- **Storage Resilience & Multi-Table Atomic Rollback:** IndexedDB operations detect `QuotaExceededError` and prune volatile telemetry caches (`storageResilience.ts`). Destructive project operations (`deleteProject`) run in single-transaction Dexie `readwrite` blocks across `projects`, `layerBlobs`, and `recoveryRecords`, ensuring full rollback consistency upon failure.
-- **Streaming Archive & Forensic Recovery Defense:** Zero-dependency ZIP32 writer (`zipWriter.ts`) rejects path traversal (`..`), leading slashes, drive letters, backslashes, NUL bytes, and lone UTF-16 surrogates; caps payload writes at 64 KiB; snapshots preflight entry sources and binds `sink.write` exactly once to prevent prototype/getter mutation. Stored-project assessment (`assessStoredProject` in `recoveryDiagnosis.ts`) operates read-only via `[projectId+id]` keyset pagination and slices 24-byte headers with `ImageHeaderProbe` without decoding raster images or allocating canvas bitmaps. Untouched archive assembly (`recoveryBackup.ts`) guarantees read-only IndexedDB snapshot isolation with zero mutations; enforces a sealed non-forgeable trust boundary via module-private `WeakSet`/`WeakMap` structures; exposes strictly scalar metadata descriptors without leaking internal Blob handles, byte buffers, or stream factories; defends against multi-pass manifest mutation via fresh byte slices; and guarantees safe export streaming (`recoveryBackupTransport.ts`) with immediate abort capture on file handles and preflight 250 MiB memory ceilings with defensive chunk copying on in-memory fallback.
+Relevant reports include malicious import/recovery files, unintended artwork access or replacement, script injection, prototype pollution, secret exposure, diagnostics privacy or relay abuse, and peer-message validation failures. A UI bug without a security impact belongs in the normal issue process. Dependency reports should identify the affected installed version and a plausible PixiBun exposure; an advisory is useful evidence, not by itself proof of exploitability.
 
-## 5. Reporting a Vulnerability
-If you discover a security vulnerability or secret exposure in this project, please open a private GitHub Security Advisory or report it directly to the maintainers.
+Reproduce against your own projects and local deployment. Do not access another person's data or disrupt the public service to demonstrate a problem.
+
+## Dependency and build security
+
+The repository commits `package-lock.json`; CI uses `npm ci` and the declared Node 22 runtime. Review dependency changes together with their lockfile diff, install scripts, package source, license and compatibility. Workflow actions currently use major-version tags rather than immutable commit pins.
+
+For an explicit dependency review, run `npm audit --json` and record the date, npm version, affected packages and production/development exposure. This command sends dependency information to the configured registry. Review remediations before changing dependencies; the `fix` form can modify the installation and lockfile. [npm's audit documentation](https://docs.npmjs.com/cli/v10/commands/npm-audit/).
+
+The configured project gate has no explicit dependency-advisory stage, and this checkout contains no Dependabot/Renovate configuration. Install-time npm audit output is not a recorded security verdict. Automated advisory scanning and immutable action pinning remain maintenance work; this policy does not claim they were enabled or that dependencies are vulnerability-free.
+
+The [phase 7 dependency review](docs/research/2026-10-02-feature-repairs-phase7.md) records the targeted Next.js patch and dated production-only advisory result. That result does not cover development dependencies, establish an exploitable PixiBun path for every advisory or identify the installed version on a public deployment.
+
+## Privacy and technical safeguards
+
+Artwork is stored locally in browser IndexedDB. Local diagnostics are enabled by default and can contain free-text errors or paths; transmission through the optional relay requires opt-in. Co-draw uses the network, and loading/updating the app makes same-origin requests. There is no browser-wide zero-egress or zero-PII guarantee.
+
+[Security boundaries](docs/contracts/security-boundaries.md) documents the relay threat model, import/workspace limits, recovery and peer defenses. [Artwork safety](docs/guides/artwork-safety.md) explains backups; [deployment](docs/guides/deployment.md) covers proxy trust and rollback. Local checks, scoped browser tests and dated evidence do not establish penetration-test certification or complete protection against resource exhaustion.

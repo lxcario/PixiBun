@@ -206,7 +206,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
         <span className="text-[#f0be7c] font-bold">
           {getOutputDimensions(scale).outW} × {getOutputDimensions(scale).outH} px
           {exportType === 'gif' && `, ${totalFrames} frames at ${fps} FPS`}
-          {exportType === 'apng' && `, ${totalFrames} frames (24-bit Truecolor)`}
+          {exportType === 'apng' && `, ${totalFrames} frames (RGBA)`}
           {exportType === 'webm' && ` WebM (VP9/VP8)`}
           {exportType === 'mp4' && ` MP4 (H.264 / ISOBMFF)`}
         </span>
@@ -216,11 +216,11 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
         {exportType === 'gif' && 'Animated GIF with crisp nearest-neighbor integer scaling.'}
         {exportType === 'apng' &&
-          'Animated PNG (APNG) retains full 24-bit/32-bit RGBA color without GIF palette degradation. Encoded with uncompressed DEFLATE store blocks for instant offline generation.'}
+          'APNG keeps full RGBA color and transparency. Uncompressed image data can make larger files; check that your destination plays animated PNGs.'}
         {exportType === 'webm' &&
           'Records animation with browser-paced frame holds. Use APNG for exact image frame timing.'}
         {exportType === 'mp4' &&
-          'Universal MP4 container optimized for instant video previews across Discord, Twitter/X, and modern video players.'}
+          'MP4 uses the video support available in your browser. Check playback in your destination; transparency is not guaranteed.'}
       </p>
     </div>
   );

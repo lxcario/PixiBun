@@ -41,6 +41,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
   test('undoes and redoes layer properties and frame timing in order', async ({ page }) => {
     await page.goto('/studio');
     await expect(page.locator('div[role="application"]')).toBeVisible();
+    await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
     const undo = page.getByTitle('Undo (Ctrl+Z)');
     const redo = page.getByTitle('Redo (Ctrl+Y)');
     const opacity = page.getByRole('slider', { name: 'Layer opacity' });
@@ -52,6 +53,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await opacity.focus();
     await opacity.press('ArrowLeft');
     await expect(opacity).toHaveValue('95');
+    await expect(undo).toBeEnabled();
     await duration.fill('250');
     await duration.blur();
     await expect(duration).toHaveValue('250');

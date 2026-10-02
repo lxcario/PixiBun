@@ -1,0 +1,19 @@
+const fs = require('node:fs');
+const crypto = require('node:crypto');
+(async () => {
+  const expected = JSON.parse(fs.readFileSync('artifacts/feature-repairs/phase7/environment-build.json'));
+  const rows = [];
+  for (const pathname of ['/', '/studio', '/sw.js', '/manifest.webmanifest']) {
+    const response = await fetch(`http://localhost:3118${pathname}`, { signal: AbortSignal.timeout(15000) });
+    const bytes = Buffer.from(await response.arrayBuffer());
+    const row = { pathname, status: response.status, sha256: crypto.createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length,
+      contentType: response.headers.get('content-type'), cacheControl: response.headers.get('cache-control'), workerScope: response.headers.get('service-worker-allowed'), hasCsp: Boolean(response.headers.get('content-security-policy')) };
+    if (pathname === '/sw.js') row.cacheName = bytes.toString().match(/const CACHE_NAME\s*=\s*['"]([^'"]+)/)?.[1];
+    rows.push(row);
+    if (row.status !== 200) throw new Error(`Unexpected status on ${pathname}: ${row.status}`);
+    if (pathname === '/sw.js' && (row.cacheName !== `pixibun-${expected.cacheVersion}` || !row.contentType.startsWith('application/javascript') || row.workerScope !== '/')) throw new Error('Compiled worker identity/headers differ from the frozen candidate');
+    if ((pathname === '/' || pathname === '/studio') && !row.hasCsp) throw new Error('Compiled page is missing CSP');
+  }
+  fs.writeFileSync('artifacts/feature-repairs/phase7/candidate-http.json', JSON.stringify({ recordedAt: new Date().toISOString(), origin: 'http://localhost:3118', kind: 'compiled-local-route-identity-check-not-deployment', rows }, null, 2) + '\n');
+  console.log(`Four compiled routes returned 200; worker cache identity/MIME/scope and page CSP matched.`);
+})().catch(error => { console.error(error); process.exitCode = 1; });

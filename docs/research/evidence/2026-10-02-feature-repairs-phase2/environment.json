@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-02",
+  "runtime": "v22.23.3",
+  "platform": "win32",
+  "arch": "x64",
+  "next": "16.3.4",
+  "react": "19.2.8",
+  "playwright": "1.62.1",
+  "browsers": {
+    "provenance": "Versions from the installed Playwright browser registry; these engines executed the logs.",
+    "engines": [
+      {
+        "name": "chromium",
+        "version": "151.0.7922.34",
+        "revision": "1234"
+      },
+      {
+        "name": "firefox",
+        "version": "153.0",
+        "revision": "1538"
+      },
+      {
+        "name": "webkit",
+        "version": "26.5",
+        "revision": "2336"
+      }
+    ]
+  },
+  "productionBuildId": "pn8_1kF2ixsC5_jP2SmuS",
+  "baseRevision": "1b13922cdd264d43d97b8b4fae16fca2b3ac0770",
+  "workingTree": "uncommitted; includes earlier documentation remediation and phase 1",
+  "productionOrigins": [
+    "http://localhost:3105",
+    "http://localhost:3106"
+  ],
+  "developmentOrigin": "http://localhost:3000",
+  "workers": 1,
+  "productionRetries": 0,
+  "profiles": "temporary test contexts; no existing artist browser profile used"
+}
