@@ -1,0 +1,38 @@
+[WebServer] (node:24976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+[WebServer]  We detected multiple lockfiles and selected the directory of D:\PixiBun\package-lock.json as the root directory.
+[WebServer]  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+[WebServer]    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+[WebServer]  Detected additional lockfiles: 
+[WebServer]    * D:\PixiBun\artifacts\feature-repairs\ci-followup\candidate-app\package-lock.json
+[WebServer] 
+
+Running 18 tests using 1 worker
+
+(node:28404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (4.7s)
+  ok  2 [chromium] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (2.1s)
+  ok  3 [chromium] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (2.1s)
+  ok  4 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (4.8s)
+  ok  5 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (3.8s)
+  ok  6 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (1.6s)
+(node:20108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [firefox] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (6.5s)
+  ok  8 [firefox] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (3.2s)
+  ok  9 [firefox] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (3.2s)
+  ok 10 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (6.5s)
+  ok 11 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (5.6s)
+  ok 12 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (3.0s)
+(node:8056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [webkit] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (9.8s)
+  ok 14 [webkit] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (6.0s)
+  ok 15 [webkit] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (6.7s)
+  ok 16 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (16.8s)
+  ok 17 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (12.9s)
+  ok 18 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (4.4s)
+
+  18 passed (1.8m)

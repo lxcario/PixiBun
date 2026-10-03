@@ -127,12 +127,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   useEffect(() => {
     let disposed = false;
     setIsMp4Supported(false);
-    setIsWebmSupported(isWebmExportSupported());
-    void probeMp4ExportSupport(canvasWidth * scale, canvasHeight * scale, fps).then(supported => {
-      if (!disposed) setIsMp4Supported(supported);
-    });
+    setIsWebmSupported(false);
+    // Native codec queries can stall a browser's media backend. Image, game-kit
+    // and backup exports must not enter that backend just to open their dialog.
+    if (isOpen && (exportType === 'webm' || exportType === 'mp4')) {
+      setIsWebmSupported(isWebmExportSupported());
+    }
+    if (isOpen && (exportType === 'mp4' || (exportType === 'replay' && replayFormat === 'mp4'))) {
+      const exportFps = exportType === 'replay' ? replayFps : fps;
+      void probeMp4ExportSupport(canvasWidth * scale, canvasHeight * scale, exportFps).then(supported => {
+        if (!disposed) setIsMp4Supported(supported);
+      });
+    }
     return () => { disposed = true; };
-  }, [isOpen, canvasWidth, canvasHeight, scale, fps]);
+  }, [isOpen, exportType, replayFormat, replayFps, canvasWidth, canvasHeight, scale, fps]);
 
   // Compute targeted frames based on selected clip scope with inverted/out-of-bounds safety
   const selectedClip = clips.find((c) => c.id === selectedClipId);

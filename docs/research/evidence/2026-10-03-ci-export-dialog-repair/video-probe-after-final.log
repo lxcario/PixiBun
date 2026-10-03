@@ -1,0 +1,383 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/components/ExportModal.test.tsx (15 tests | 1 failed) 301ms
+     × probes only selected video formats and uses the timelapse frame rate 60ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/components/ExportModal.test.tsx > ExportModal URL.revokeObjectURL deferred cleanup > probes only selected video formats and uses the timelapse frame rate
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "mp4"
+
+Here are the accessible roles:
+
+  dialog:
+
+  Name "✦ Export Studio Assets":
+  <dialog
+    aria-describedby="modal-body-_r_7_"
+    aria-labelledby="modal-title-_r_7_"
+    class="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
+    open=""
+  />
+
+  --------------------------------------------------
+  heading:
+
+  Name "✦ Export Studio Assets":
+  <h2
+    class="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none"
+    id="modal-title-_r_7_"
+    tabindex="-1"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Close dialog":
+  <button
+    aria-label="Close dialog"
+    class="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
+    type="button"
+  />
+
+  Name "PNG":
+  <button
+    aria-label="PNG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-png"
+    type="button"
+  />
+
+  Name "GIF":
+  <button
+    aria-label="GIF"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-gif"
+    type="button"
+  />
+
+  Name "APNG":
+  <button
+    aria-label="APNG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-apng"
+    type="button"
+  />
+
+  Name "WebM Video":
+  <button
+    aria-label="WebM Video"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-webm"
+    type="button"
+  />
+
+  Name "MP4 Video":
+  <button
+    aria-label="MP4 Video"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-mp4"
+    type="button"
+  />
+
+  Name "Vector SVG":
+  <button
+    aria-label="Vector SVG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-svg"
+    type="button"
+  />
+
+  Name "Timelapse":
+  <button
+    aria-label="Timelapse"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer bg-[#f0be7c] text-[#140d1f] shadow-xs "
+    data-testid="export-tab-replay"
+    type="button"
+  />
+
+  Name "Sprite Sheet":
+  <button
+    aria-label="Sprite Sheet"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-spritesheet"
+    type="button"
+  />
+
+  Name "Godot Kit":
+  <button
+    aria-label="Godot Kit"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-godot-kit"
+    type="button"
+  />
+
+  Name "Shaders":
+  <button
+    aria-label="Shaders"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-shader"
+    type="button"
+  />
+
+  Name "Cycle Loop":
+  <button
+    aria-label="Cycle Loop"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-palette-cycle"
+    type="button"
+  />
+
+  Name "Project Backup":
+  <button
+    aria-label="Project Backup"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-project"
+    type="button"
+  />
+
+  Name "Animated GIF":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors uppercase bg-[#f0be7c] text-[#140d1f] border-[#8c5120]"
+    type="button"
+  />
+
+  Name "MP4 Video":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors uppercase bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "1x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "2x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "4x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[#f0be7c] text-[#140d1f] border-[#8c5120]"
+    type="button"
+  />
+
+  Name "8x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "6 FPS":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "12 FPS":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[#f0be7c] text-[#140d1f] border-[#8c5120]"
+    type="button"
+  />
+
+  Name "18 FPS":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "24 FPS":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "0.5s":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "1s":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[#f0be7c] text-[#140d1f] border-[#8c5120]"
+    type="button"
+  />
+
+  Name "2s":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]"
+    type="button"
+  />
+
+  Name "Cancel":
+  <button
+    aria-label="Cancel"
+    class="group relative select-none rounded-[2px] font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)] border transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden px-2.5 py-0.5 text-xs font-medium h-7 pixel-tactile-btn tactile-motion-btn bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+    data-testid="export-cancel-button"
+  />
+
+  Name "Download REPLAY":
+  <button
+    class="group relative select-none rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden px-2.5 py-0.5 text-xs h-7 pixel-primary-btn tactile-motion-btn bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+    disabled=""
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="text-[#e06c75] text-[11px] pt-1"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <dialog
+      aria-describedby="modal-body-_r_7_"
+      aria-labelledby="modal-title-_r_7_"
+      class="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
+      open=""
+    >
+      <div
+        class="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] p-4 rounded-[2px] flex flex-col gap-3 select-none text-[var(--text-heading)] transition-colors duration-150 max-h-[88vh] max-w-[calc(100vw-2rem)] w-[560px] "
+      >
+        <div
+          class="flex items-center justify-between border-b border-[var(--desk-border)] pb-2 shrink-0"
+        >
+          <h2
+            class="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none"
+            id="modal-title-_r_7_"
+            tabindex="-1"
+          >
+            ✦ 
+            Export Studio Assets
+          </h2>
+          <button
+            aria-label="Close dialog"
+            class="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+        <div
+          class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto"
+          data-modal-body="true"
+          id="modal-body-_r_7_"
+        >
+          <div
+            class="flex flex-col gap-2 bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)]"
+          >
+            <div
+              class="flex flex-col gap-1"
+            >
+              <span
+                class="text-[9px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold"
+              >
+                Image & Animation
+              </span>
+              <div
+                class="flex flex-wrap gap-1"
+              >
+                <button
+                  aria-label="PNG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-png"
+                  type="button"
+                >
+                  PNG
+                </button>
+                <button
+                  aria-label="GIF"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-gif"
+                  type="button"
+                >
+                  GIF
+                </button>
+                <button
+                  aria-label="APNG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-apng"
+                  type="button"
+                >
+                  APNG
+                </button>
+                <button
+                  aria-label="WebM Video"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-webm"
+                  type="button"
+                >
+                  WebM Video
+                </button>
+                <button
+                  aria-label="MP4 Video"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-mp4"
+                  type="button"
+                >
+                  MP4 Video
+                </button>
+                <button
+                  aria-label="Vector SVG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-svg"
+                  type="button"
+                >
+                  Vector SVG
+                </button>
+                <button
+                  aria-label="Timelapse"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer bg-[#f0be7c] text-[#140d1f] shadow-xs "
+                  data-testid="export-tab-replay"
+                  type="button"
+                >
+                  Timelapse
+                </button>
+              </div>
+            </div>
+            <div
+              class="flex flex-col gap-1"
+            >
+              <span
+                class="text-[9px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold"
+              >
+                Game Delivery
+              </span>
+              <div
+                class="flex flex-wrap gap-1"
+             ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/ExportModal.test.tsx:145:52
+    143|     await act(async () => { fireEvent.click(screen.getByTestId('export…
+    144|     expect(mp4Probe).toHaveBeenCalledTimes(callsBeforeTimelapse);
+    145|     await act(async () => { fireEvent.click(screen.getByRole('button',…
+       |                                                    ^
+    146|     expect(mp4Probe).toHaveBeenLastCalledWith(32, 32, 12);
+    147|     await act(async () => { fireEvent.click(screen.getByRole('button',…
+ ❯ node_modules/@testing-library/react/dist/act-compat.js:47:24
+ ❯ process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:814:22
+ ❯ Proxy.<anonymous> node_modules/@testing-library/react/dist/act-compat.js:46:25
+ ❯ tests/components/ExportModal.test.tsx:145:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 47 passed (48)
+   Start at  01:50:58
+   Duration  2.27s (transform 684ms, setup 50ms, import 2.01s, tests 647ms, environment 1.03s)
+

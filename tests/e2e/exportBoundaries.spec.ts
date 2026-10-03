@@ -54,10 +54,14 @@ for (const format of ['gif', 'webm', 'mp4']) {
             video.onloadeddata = () => resolve(); video.onerror = () => reject(new Error('Native video decoder failed: ' + video.error?.message));
             video.src = url;
           });
-          await new Promise<void>((resolve, reject) => {
+          // A seek event alone can precede frame presentation under CI load.
+          // Read actual decoded pixels only after both seeking and presentation.
+          const presented = new Promise<void>(resolve => video.requestVideoFrameCallback(() => resolve()));
+          const sought = new Promise<void>((resolve, reject) => {
             video.onseeked = () => resolve(); video.onerror = () => reject(new Error('Native video seek failed'));
             video.currentTime = 0.12;
           });
+          await Promise.all([sought, presented]);
           canvas.width = video.videoWidth; canvas.height = video.videoHeight; ctx.drawImage(video, 0, 0);
         }
         return { width: canvas.width, height: canvas.height,

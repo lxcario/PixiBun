@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, act, within } from '@testing-library/react';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
@@ -114,6 +114,39 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it.each(['png', 'gif', 'apng', 'svg', 'godot-kit', 'project', 'replay'] as const)(
+    'opens %s without entering native video capability APIs',
+    (format) => {
+      const webmProbe = vi.spyOn(webm, 'isWebmExportSupported').mockReturnValue(false);
+      const mp4Probe = vi.spyOn(mp4, 'probeMp4ExportSupport').mockResolvedValue(false);
+      render(<ExportModal isOpen onClose={vi.fn()} initialType={format} />);
+      expect(screen.getByRole('dialog').hasAttribute('open')).toBe(true);
+      expect(webmProbe).not.toHaveBeenCalled();
+      expect(mp4Probe).not.toHaveBeenCalled();
+    }
+  );
+
+  it('probes only selected video formats and uses the timelapse frame rate', async () => {
+    const webmProbe = vi.spyOn(webm, 'isWebmExportSupported').mockReturnValue(true);
+    const mp4Probe = vi.spyOn(mp4, 'probeMp4ExportSupport').mockResolvedValue(true);
+    render(<ExportModal isOpen onClose={vi.fn()} />);
+    expect(webmProbe).not.toHaveBeenCalled();
+    expect(mp4Probe).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByTestId('export-tab-webm')); });
+    expect(webmProbe).toHaveBeenCalledOnce();
+    expect(mp4Probe).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByTestId('export-tab-mp4')); });
+    expect(mp4Probe).toHaveBeenLastCalledWith(32, 32, useStudioStore.getState().fps);
+    const callsBeforeTimelapse = mp4Probe.mock.calls.length;
+    await act(async () => { fireEvent.click(screen.getByTestId('export-tab-replay')); });
+    expect(mp4Probe).toHaveBeenCalledTimes(callsBeforeTimelapse);
+    const timelapseFormats = within(screen.getByText('Timelapse Format:').parentElement!);
+    await act(async () => { fireEvent.click(timelapseFormats.getByRole('button', { name: 'MP4 Video' })); });
+    expect(mp4Probe).toHaveBeenLastCalledWith(32, 32, 12);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '24 FPS' })); });
+    expect(mp4Probe).toHaveBeenLastCalledWith(32, 32, 24);
   });
 
   it.each([

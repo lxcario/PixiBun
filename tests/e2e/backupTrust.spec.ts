@@ -9,6 +9,7 @@ test('project backup explains local storage and stays open after picker cancella
     });
   });
   await page.goto('/studio');
+  await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
   await expect(page.getByTestId('export-button')).toBeInViewport();
   await expect(page.getByText('Saved on this device', { exact: true })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('studio-before-backup.png') });

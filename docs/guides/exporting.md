@@ -4,6 +4,8 @@
 
 Choose **Export** at the upper right. The panel has **12 format choices**, grouped into images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.
 
+Video availability is checked when you choose a video format. You can open image, game-delivery and backup options without waiting for a video codec check. For Timelapse MP4, availability follows your chosen replay frame rate.
+
 When **Export Scope** appears, review **All Frames** versus a named clip. Animated files use the relevant ordered poses and holds. A **PNG** or **Vector SVG** still uses the **active frame**, even when a clip-scope selector is visible; choosing a clip does not turn a still image into a multi-frame file. Timelapse uses retained history, and Project Backup includes the whole admitted project.
 
 ## PNG

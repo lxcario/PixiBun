@@ -1,0 +1,30 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const folder = 'artifacts/feature-repairs/ci-followup';
+const destination = path.resolve(folder, 'candidate-app');
+if (fs.existsSync(destination)) throw new Error('Refusing to overwrite candidate app');
+fs.mkdirSync(destination);
+for (const name of ['src', 'public']) fs.cpSync(name, path.join(destination, name), { recursive: true });
+for (const name of ['package.json', 'package-lock.json', 'next.config.ts', 'postcss.config.mjs', 'tsconfig.json', 'AGENTS.md']) fs.copyFileSync(name, path.join(destination, name));
+fs.symlinkSync(path.resolve('node_modules'), path.join(destination, 'node_modules'), 'junction');
+const files = [];
+function walk(dir) {
+  for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (item.name === 'node_modules') continue;
+    const full = path.join(dir, item.name);
+    if (item.isDirectory()) walk(full);
+    else files.push({ path: path.relative(destination, full).replaceAll('\\', '/'), sha256: crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex') });
+  }
+}
+walk(destination);
+for (const f of files) if (crypto.createHash('sha256').update(fs.readFileSync(f.path)).digest('hex') !== f.sha256) throw new Error('Copy mismatch: '+f.path);
+const cacheVersion = 'ci-export-dialog-'+crypto.createHash('sha256').update(JSON.stringify(files)).digest('hex').slice(0,16);
+fs.writeFileSync(folder+'/candidate-source.json', JSON.stringify({ files, cacheVersion, destination },null,2)+'\n');
+const next = path.resolve('node_modules/next/dist/bin/next').replaceAll('\\','/');
+const app = destination.replaceAll('\\','/');
+for (const [kind, base, port, dev] of [['production','playwright.production.config.ts',3126,false],['editor','playwright.config.ts',3002,true]]) {
+ const command = `"${process.execPath.replaceAll('\\','/')}" "${next}" ${dev?'dev':'start'} "${app}" ${dev?'--turbopack ':''}-p ${port}`;
+ fs.writeFileSync(`${folder}/playwright.${kind}.config.cjs`, `const path = require('node:path'); const base = require('../../../${base}').default; module.exports = {...base, testDir: path.resolve('tests/${dev?'e2e':'production'}'), outputDir: path.resolve('${folder}/${kind}-results'), use: {...base.use, baseURL:'http://localhost:${port}'}, webServer:{command:${JSON.stringify(command)},url:'http://localhost:${port}',reuseExistingServer:false,timeout:120000}};\n`);
+}
+console.log(JSON.stringify({copiedFiles: files.length,cacheVersion,destination}));

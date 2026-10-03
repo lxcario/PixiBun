@@ -20,6 +20,8 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 
 ## Scope, holds and cycling
 
+Opening the panel on an image, game-delivery or backup format does not query native video codec support. WebM is checked when WebM is selected; MP4 also checks WebM for its fallback suggestion. MP4 capability checks run only for MP4 or Timelapse MP4, using the scaled output dimensions and that export's frame rate. Timelapse uses its chosen replay FPS rather than the timeline FPS. Availability remains configuration-dependent; these checks do not qualify every browser's media backend.
+
 ![The current Cycle Loop export panel, with two seconds at 8 FPS producing a settings summary of 16 frames.](../assets/screenshots/2026-10-02-docs/cycle-loop-export.png)
 
 *Local UI on 2 October 2026, before download; the screenshot documents available controls rather than a decoded-file verdict. [Artist walkthrough](../guides/palettes-and-cycling.md), [capture details](../assets/screenshots/2026-10-02-docs/run.json).*

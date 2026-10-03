@@ -1,0 +1,55 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const cp = require('node:child_process');
+const work = 'artifacts/feature-repairs/ci-followup';
+const destination = 'docs/research/evidence/2026-10-03-ci-export-dialog-repair';
+if (fs.existsSync(destination)) throw Error('Refusing to overwrite sealed evidence');
+const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const gitFiles = cp.execFileSync('git', ['ls-files', '-z'], {encoding:'utf8'}).split('\0').filter(Boolean);
+const previousEvidence = gitFiles.filter(file => /^docs\/research\/evidence\/2026-10-0[23]/.test(file));
+const pictures = gitFiles.filter(file => file.endsWith('.png'));
+for (const file of [...previousEvidence, ...pictures]) {
+  const base = cp.execFileSync('git', ['show', 'HEAD:'+file], {maxBuffer:20*1024*1024});
+  if (!base.equals(fs.readFileSync(file))) throw Error('Prior evidence changed: '+file);
+}
+const candidate = JSON.parse(fs.readFileSync(work+'/candidate-source.json', 'utf8'));
+for (const file of candidate.files) {
+  if (hash(file.path) !== file.sha256) throw Error('Application source changed since build: '+file.path);
+  if (file.path !== 'postcss.config.mjs' && hash(path.join(candidate.destination,file.path)) !== file.sha256) throw Error('Editor copy mismatch: '+file.path);
+}
+for (const [name, needle] of [['gate-final.log','ALL 4 QUALITY GATES PASSED'], ['production-targeted.log','18 passed'], ['editor-targeted-source-scan.log','6 passed'], ['editor-mp4-repeat-final.log','8 passed']]) {
+  if (!fs.readFileSync(work+'/'+name,'utf8').includes(needle)) throw Error('Missing verdict: '+name);
+}
+const files = ['audit-current.json','audit-production-current.json','audit-patched.json','build.log','gate-final.log','production-targeted.log','video-probe-before-assertions.log','video-probe-after-final.log','editor-targeted.log','editor-targeted-corrected.log','editor-targeted-final.log','editor-targeted-source-scan.log','editor-mp4-repeat-final.log','decode-ci-mp4.log','candidate-source.json','job-111050613042.log','jobs-37070715797-1790981119659.json'];
+fs.mkdirSync(destination);
+for (const file of files) fs.copyFileSync(work+'/'+file,destination+'/'+file);
+fs.copyFileSync(work+'/8cd1ce844a8b59b8b47e4db26d6fb3880a005dcc.mp4',destination+'/failed-ci-attempt.mp4');
+for (const file of ['playwright.editor.config.cjs','playwright.production.config.cjs','prepare-candidate.cjs','decode-ci-mp4.cjs','seal-ci-followup.cjs']) fs.copyFileSync(work+'/'+file,destination+'/'+file+'.txt');
+fs.copyFileSync(candidate.destination+'/postcss.config.mjs',destination+'/editor-postcss.config.mjs.txt');
+const inputs = gitFiles.filter(file => /^(src\/|tests\/|scripts\/|package(?:-lock)?\.json$|.*\.config\.(?:mjs|ts)$|tsconfig\.json$|\.github\/workflows\/)/.test(file));
+const sourceHashes = inputs.map(file => ({path:file,sha256:hash(file)}));
+fs.writeFileSync(destination+'/source-hashes.json',JSON.stringify(sourceHashes,null,2)+'\n');
+const info = {
+  recordedAt: new Date().toISOString(), localDate:'2026-10-03', timeZone:'Europe/Istanbul',
+  baseRevision:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
+  environment:{platform:process.platform,arch:process.arch,node:process.version,playwright:require('@playwright/test/package.json').version,next:require('next/package.json').version,cacheVersion:candidate.cacheVersion,buildId:fs.readFileSync(candidate.destination+'/.next/BUILD_ID','utf8').trim()},
+  sourceSnapshot:{fileCount:sourceHashes.length,file:'source-hashes.json',copiedApplicationFiles:candidate.files.length,productionCopyMatches:true,editorException:'postcss source base is the copied src directory; copied .gitignore equals the repository file; server cwd is the copied app'},
+  integrity:{previousEvidenceFilesUnchanged:previousEvidence.length,trackedPngFilesUnchanged:pictures.length},
+  previousCI:{run:37070715797,head:'bf75d1e6a103bc10a6b23932f60df69c4256452a',os:'Ubuntu',validate:'success',lighthouse:'success',editor:{passed:182,flaky:1,total:183},production:{passed:78,failed:6,total:84,failedEngine:'webkit'},nativeBackendCause:'inference, not conclusively identified'},
+  checks:[
+    {command:'npm run gate',verdict:'passed',tests:1583,suites:159,unitWorkers:'default',log:'gate-final.log'},
+    {command:'npm --prefix artifacts/feature-repairs/ci-followup/candidate-app run build',verdict:'passed',log:'build.log'},
+    {equivalentCommand:'playwright test --config artifacts/feature-repairs/ci-followup/playwright.production.config.cjs tests/production/exportCompleteness.spec.ts tests/production/gameDelivery.spec.ts tests/production/operation.spec.ts --grep "manual normals|SVG wording|ambiguous normal|animated downloads|Godot kit preserves|GIF worker" --workers=1 --retries=0',commandNote:'Filter reconstructed from the six named cases in the raw result; original shell filter not retained.',verdict:'passed',cases:18,engines:['chromium','firefox','webkit'],log:'production-targeted.log'},
+    {command:'playwright test --config artifacts/feature-repairs/ci-followup/playwright.editor.config.cjs tests/e2e/exportBoundaries.spec.ts tests/e2e/backupTrust.spec.ts --grep "downloaded|unsupported WebM|post-transfer failure|picker cancellation" --workers=1 --retries=0',verdict:'passed',cases:6,engines:['chromium'],log:'editor-targeted-source-scan.log'},
+    {command:'playwright test --config artifacts/feature-repairs/ci-followup/playwright.editor.config.cjs tests/e2e/exportBoundaries.spec.ts --grep "downloaded MP4" --repeat-each=8 --workers=1 --retries=0',verdict:'passed',cases:8,engines:['chromium'],log:'editor-mp4-repeat-final.log'},
+    {command:'npm audit --json',verdict:'zero advisories at checkpoint',scope:'all dependencies',log:'audit-patched.json'}
+  ],
+  diagnostics:{probeBaseline:'Eight newly added cases fail with previous unconditional behavior; remaining seven cases skipped by name filter.',editorSetup:'One invalid-CSS scan failure and two startup-deadline failures preceded constrained source scanning. No tests passed in those setup attempts.',mp4Selection:'An interrupted repeat invocation used incorrect lowercase test name; final invocation uses exact uppercase name.',retainedMp4:'760-byte file from failed CI attempt; native Chromium decoded 128x128 red pixels after seek. Not every MP4 codec/input.'},
+  publication:'Evidence collected before the repair commit/main push. Follow the exact subsequent commit in GitHub Actions for remote results.',
+  exclusions:['full local editor/production rerun','Linux repair CI verdict','deployed-build attestation','physical Safari/devices','every codec/input','two-build rollout/rollback','new TestSprite verdict']
+};
+fs.writeFileSync(destination+'/run.json',JSON.stringify(info,null,2)+'\n');
+const manifest=fs.readdirSync(destination).sort().map(file=>({path:file,sha256:hash(destination+'/'+file)}));
+fs.writeFileSync(destination+'/manifest.json',JSON.stringify(manifest,null,2)+'\n');
+console.log(JSON.stringify({sealedFiles:manifest.length,integrity:info.integrity,sourceFiles:sourceHashes.length}));

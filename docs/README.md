@@ -26,3 +26,5 @@ The subsequent [phase 6 recovery safety work](research/2026-10-02-feature-repair
 The [2 October audit](research/2026-10-02-documentation-codebase-audit.md) remains the pre-fix assessment. Its findings are tracked in the [remediation registry](research/issue-registry.md). Automated documentation checks validate owned local links, headings, generated inventories, selected source contracts and version/section rules; they do not certify every narrative sentence.
 
 The [3 October session review](research/2026-10-03-session-documentation-review.md) records the final per-file reconciliation before Git publication, including duplicate recovery text, archive limits and deployment-trigger corrections. Earlier sealed evidence retains its original scope.
+
+The subsequent [CI export follow-up](research/2026-10-03-ci-export-dialog-repair.md) records the published main build's Linux WebKit failures, the scoped export correction, browser-fixture synchronization and the development dependency patch. Local checks and remote CI results have separate scopes.

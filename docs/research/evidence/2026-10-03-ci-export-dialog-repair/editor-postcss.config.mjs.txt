@@ -1,0 +1,1 @@
+export default { plugins: { "@tailwindcss/postcss": { base: "D:/PixiBun/artifacts/feature-repairs/ci-followup/candidate-app/src" } } };

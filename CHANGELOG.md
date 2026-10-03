@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Export now checks native video capabilities only when a video format is selected, so image, game-kit and backup panels avoid those calls. Timelapse MP4 checks its selected replay FPS. Browser fixtures wait for hydration before the first backup screenshot and for video-frame presentation before reading decoded pixels. Patched all five development-only brace-expansion lock entries; the fresh full dependency audit reports zero advisories. [CI follow-up and verification scope](docs/research/2026-10-03-ci-export-dialog-repair.md).
+
 - Updated Next.js to the vendor's 16.3.6 security patch and made practice-test home navigation use the configured local origin. Phase 7 adds full regression and a separate release-readiness guide/assessment; current public-site observations and incompatible September-reader results do not approve deployment or rollback. [Execution and remaining gates](docs/research/2026-10-02-feature-repairs-phase7.md).
 
 - Recovery reads now remove physical MIME metadata when reconstructing ArrayBuffer-backed raster records, allowing ordinary damaged-source recovery without weakening unknown-field checks. Untouched archive export counts before loading oversized payloads and shows readable failure messages inside the dialog. Updated safety guidance includes two fresh captures. [Phase 6 checks, retained diagnostics and fixture budgets](docs/research/2026-10-02-feature-repairs-phase6.md).

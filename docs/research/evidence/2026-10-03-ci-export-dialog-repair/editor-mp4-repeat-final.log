@@ -1,0 +1,60 @@
+[WebServer] (node:14480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+[WebServer]  We detected multiple lockfiles and selected the directory of D:\PixiBun\package-lock.json as the root directory.
+[WebServer]  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+[WebServer]    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+[WebServer]  Detected additional lockfiles: 
+[WebServer]    * D:\PixiBun\artifacts\feature-repairs\ci-followup\candidate-app\package-lock.json
+[WebServer] 
+[WebServer] (node:6748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:25744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 1 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (4.8s)
+(node:27828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 2 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.3s)
+(node:3316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 3 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.3s)
+(node:33736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 4 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.2s)
+(node:8464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 5 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.1s)
+(node:27064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 6 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.1s)
+(node:19100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 7 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.2s)
+(node:23476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+[WebServer] [browser] Persistent storage request was denied or not granted. Artwork remains saved locally in IndexedDB but may be subject to browser storage eviction under disk pressure. (src/hooks/studio/useStudioAutosave.ts:655:19)
+  ok 8 [chromium] › tests\e2e\exportBoundaries.spec.ts:30:7 › downloaded MP4 opens in the native decoder and contains painted pixels (2.2s)
+
+  8 passed (34.5s)

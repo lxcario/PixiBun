@@ -1,8 +1,12 @@
 # Current checkout status
 
-Updated 3 October 2026. Package `1.14.1`; current local repair base `1b13922cdd264d43d97b8b4fae16fca2b3ac0770`. Documentation remediation and subsequent feature repairs have separate dated local verification records below. Git publication does not imply a new deployment or release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
+Updated 3 October 2026. Package `1.14.1`; CI follow-up base `bf75d1e6a103bc10a6b23932f60df69c4256452a` on main. Documentation remediation and subsequent feature repairs have separate dated verification records below. Git publication does not imply a new deployment or release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
 
-## Latest local work: phase 7 complete locally
+## Latest follow-up: CI export checks
+
+The published main build's [Linux CI run](https://github.com/lxcario/PixiBun/actions/runs/37070715797) passed validation/build and Lighthouse. Its editor step passed with one MP4 pixel case requiring a retry; compiled operation checks failed six WebKit cases while opening export. The [CI export follow-up](research/2026-10-03-ci-export-dialog-repair.md) separates those failures from the earlier passing Windows runs and records the scoped repair and local verification. Export now queries native video support only for selected video formats, with the selected replay FPS for Timelapse MP4. Fixture synchronization preserves the original pixel assertions and timeouts. All five affected development-only brace-expansion lock entries are patched; the fresh full dependency audit reports zero advisories. See the repository's [Actions results](https://github.com/lxcario/PixiBun/actions) for the published repair's remote verdict; local results do not certify Linux CI or the deployed site.
+
+## Earlier local work: phase 7 complete locally
 
 [Phase 7](research/2026-10-02-feature-repairs-phase7.md) completes full local regression and a separate release assessment. A production advisory prompted a scoped Next.js patch to 16.3.6; the patched full gate/build passed 1,575 tests /159 suites with default unit workers and unchanged timeouts. The unchanged full editor rerun passed 183 Chromium cases; the complete compiled suite passed 84 cases across Chromium/Firefox/WebKit, with one worker and zero retries. The initial patched editor run's navigation timeout remains recorded with its cause unresolved. Four practice-test home URL assertions use the configured origin; application source is unchanged in this phase. Four downloaded ZIPs passed independent original-byte/CRC checks; source/build, earlier evidence and screenshot integrity passed. The dated production-only dependency audit reports zero advisories; this is not a security certification.
 
