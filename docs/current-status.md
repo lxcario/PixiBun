@@ -1,8 +1,12 @@
 # Current checkout status
 
-Updated 3 October 2026. Package `1.14.1`; CI follow-up base `bf75d1e6a103bc10a6b23932f60df69c4256452a` on main. Documentation remediation and subsequent feature repairs have separate dated verification records below. Git publication does not imply a new deployment or release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
+Updated 3 October 2026. Package `1.14.1`; latest CI fixture follow-up base `6cf391c717e33cb62e0d1f04cb5454f26ed6887f` on main. Documentation remediation and subsequent feature repairs have separate dated verification records below. Git publication does not imply a new deployment or release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
 
-## Latest follow-up: CI export checks
+## Latest follow-up: independent Iso browser scenarios
+
+[Linux CI for the export repair](https://github.com/lxcario/PixiBun/actions/runs/37113324000) passed validation/build, Lighthouse and all 183 editor cases without retries. All six previously failing WebKit export cases passed. The compiled suite recorded 83 passes /one failure: its combined Iso FREE scenario exhausted the original 60-second budget while approaching its final Redo click. The [Iso fixture follow-up](research/2026-10-03-ci-iso-workflow-repair.md) separates diagonal, cardinal/edge and mirrored-brush checks into independent scenarios, retains every pixel/Undo/Redo check and leaves timeouts/retries unchanged. Application behavior is unchanged by this follow-up. The generated inventory enumerates 185 editor and 90 compiled cases; enumeration alone is not a verdict. Follow the published commit's [Actions results](https://github.com/lxcario/PixiBun/actions) for its Linux result.
+
+## Earlier follow-up: CI export checks
 
 The published main build's [Linux CI run](https://github.com/lxcario/PixiBun/actions/runs/37070715797) passed validation/build and Lighthouse. Its editor step passed with one MP4 pixel case requiring a retry; compiled operation checks failed six WebKit cases while opening export. The [CI export follow-up](research/2026-10-03-ci-export-dialog-repair.md) separates those failures from the earlier passing Windows runs and records the scoped repair and local verification. Export now queries native video support only for selected video formats, with the selected replay FPS for Timelapse MP4. Fixture synchronization preserves the original pixel assertions and timeouts. All five affected development-only brace-expansion lock entries are patched; the fresh full dependency audit reports zero advisories. See the repository's [Actions results](https://github.com/lxcario/PixiBun/actions) for the published repair's remote verdict; local results do not certify Linux CI or the deployed site.
 

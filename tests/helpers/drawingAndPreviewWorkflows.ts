@@ -32,7 +32,7 @@ async function gesture(page: Page, start: PixelPoint, end: PixelPoint) {
   await page.getByTestId('undo-button').click();
   return preview;
 }
-export async function verifyFreeIso(page: Page, capture?: (name: string) => Promise<void>) {
+export async function verifyFreeIso(page: Page, capture?: (name: string) => Promise<void>, scope: 'diagonal' | 'cardinal-edge' | 'mirrored' | 'all' = 'all') {
   await blankStudio(page); await page.keyboard.press('j');
   await page.getByTestId('tool-options-button').click();
   const snap = page.getByRole('button', { name: '2:1 Snap: ON', exact: true });
@@ -40,19 +40,25 @@ export async function verifyFreeIso(page: Page, capture?: (name: string) => Prom
   await expect(page.getByRole('button', { name: '2:1 Snap: FREE', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await page.keyboard.press('Escape');
   const cases: [PixelPoint, PixelPoint][] = [[[2, 2], [20, 8]], [[4, 3], [9, 24]], [[26, 23], [8, 18]], [[20, 4], [5, 21]], [[15, 3], [15, 26]], [[2, 15], [25, 15]], [[0, 0], [5, 23]]];
-  for (const [start, end] of cases) {
+  const selectedCases = scope === 'mirrored' ? [] : scope === 'diagonal' ? cases.slice(0, 4) : scope === 'cardinal-edge' ? cases.slice(4) : cases;
+  for (const [start, end] of selectedCases) {
     const result = await gesture(page, start, end);
     expect(contains(result, start)).toBe(true); expect(contains(result, end)).toBe(true);
     expect(result.filter((v, i) => i % 4 === 3 && v > 0)).toHaveLength(Math.max(Math.abs(end[0] - start[0]), Math.abs(end[1] - start[1])) + 1);
   }
+  if (scope === 'diagonal' || scope === 'cardinal-edge') return;
   await page.getByTestId('tool-options-button').click();
   await page.getByRole('button', { name: 'Brush size 1 pixels', exact: true }).click();
   await page.getByRole('button', { name: '3 pixel brush preset', exact: true }).click();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Horizontal symmetry', exact: true }).click();
   const mirrored = await gesture(page, [2, 3], [9, 24]);
-  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) expect(contains(mirrored, [x, y])).toBe(contains(mirrored, [31 - x, y]));
+  // Keep all 1,024 symmetry comparisons in one structured assertion rather
+  // than emitting a traced Playwright assertion for every canvas pixel.
+  const ink = Array.from({ length: 32 }, (_, y) => Array.from({ length: 32 }, (_, x) => contains(mirrored, [x, y])));
+  expect(ink).toEqual(ink.map(row => [...row].reverse()));
   await page.getByTestId('redo-button').click();
+  await expect.poll(() => pixels(page)).toEqual(mirrored);
   if (capture) { await page.getByTestId('tool-options-button').click(); await capture('iso-free-thick-mirrored.png'); }
 }
 export async function verifySnappedIso(page: Page, capture?: (name: string) => Promise<void>) {

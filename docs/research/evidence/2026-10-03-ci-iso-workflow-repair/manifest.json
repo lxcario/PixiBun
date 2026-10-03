@@ -1,0 +1,46 @@
+[
+  {
+    "path": "error-context.md.txt",
+    "sha256": "2fef7cacd59e4d1c74d8d26c32febab73a764b0abe9d066ad2e5acc3243f2ad4"
+  },
+  {
+    "path": "failed-linux-iso.png",
+    "sha256": "4b823709781d4ad7410bb561428051070913dc44a94570ba53eace961fe95ae0"
+  },
+  {
+    "path": "failed-linux-iso.trace.zip",
+    "sha256": "26de2798fbcda8899c9582bc768e13540b564d305eabfc897e38da0fb1e5d3a6"
+  },
+  {
+    "path": "iso-groups-editor-final.log",
+    "sha256": "d9a468ea2295a1aef741b87f87a11b4800a3649c46bda9fc6b024083bc7d840f"
+  },
+  {
+    "path": "iso-groups-production-final.log",
+    "sha256": "462a23cec2869ab604dfba7ee29ad86774454dfa4cdba481b91f93f7e6e0f9b0"
+  },
+  {
+    "path": "iso-split-production.log",
+    "sha256": "a563cdd28b156c73057427f0621d44c34f2c014af7d7bfd36d8ad075788457a3"
+  },
+  {
+    "path": "job-111175987921.log",
+    "sha256": "fd94f891c2b50ec534e5aead44a26152fbfbae0eea67fef6a62cbd68fcaa6eed"
+  },
+  {
+    "path": "run.json",
+    "sha256": "06cdf75d4dc8f62d7533b5fd302c7a4809d3d529a678d17c202484e8932c6650"
+  },
+  {
+    "path": "seal-iso-followup.py.txt",
+    "sha256": "9b8f75a84e4c0779759017d3edf061e80dfef77ae110bc755098ecb4b7be61cd"
+  },
+  {
+    "path": "source-hashes.json",
+    "sha256": "d2b305946a8526a7f866cdef15c548d1be89013f56b8856714e23931b3c93565"
+  },
+  {
+    "path": "trace-summary.json",
+    "sha256": "150262dffcccd467a30e701560dec08ce8d7f8d2540ee8d1c43b9dfb462c304e"
+  }
+]

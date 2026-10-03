@@ -28,3 +28,5 @@ The [2 October audit](research/2026-10-02-documentation-codebase-audit.md) remai
 The [3 October session review](research/2026-10-03-session-documentation-review.md) records the final per-file reconciliation before Git publication, including duplicate recovery text, archive limits and deployment-trigger corrections. Earlier sealed evidence retains its original scope.
 
 The subsequent [CI export follow-up](research/2026-10-03-ci-export-dialog-repair.md) records the published main build's Linux WebKit failures, the scoped export correction, browser-fixture synchronization and the development dependency patch. Local checks and remote CI results have separate scopes.
+
+The [Iso browser-fixture follow-up](research/2026-10-03-ci-iso-workflow-repair.md) records that repair's actual Linux result and the remaining combined-scenario deadline. Independent drawing scenarios retain the original geometry, symmetry and history checks without increasing timeouts.

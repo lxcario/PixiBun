@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Split the combined Iso FREE browser workflow into independent diagonal, cardinal/edge and thick-symmetry cases. All geometry/pixel and Undo/Redo checks remain, with one structured assertion covering all 1,024 mirrored cells and an added final Redo pixel check. Application source and existing test timeouts/retries are unchanged. [Linux result and fixture follow-up](docs/research/2026-10-03-ci-iso-workflow-repair.md).
+
 - Export now checks native video capabilities only when a video format is selected, so image, game-kit and backup panels avoid those calls. Timelapse MP4 checks its selected replay FPS. Browser fixtures wait for hydration before the first backup screenshot and for video-frame presentation before reading decoded pixels. Patched all five development-only brace-expansion lock entries; the fresh full dependency audit reports zero advisories. [CI follow-up and verification scope](docs/research/2026-10-03-ci-export-dialog-repair.md).
 
 - Updated Next.js to the vendor's 16.3.6 security patch and made practice-test home navigation use the configured local origin. Phase 7 adds full regression and a separate release-readiness guide/assessment; current public-site observations and incompatible September-reader results do not approve deployment or rollback. [Execution and remaining gates](docs/research/2026-10-02-feature-repairs-phase7.md).

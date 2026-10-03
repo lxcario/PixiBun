@@ -1,0 +1,395 @@
+{
+  "testTimeoutMs": 60000,
+  "platform": "linux",
+  "events": [
+    {
+      "type": "before",
+      "callId": "pw:api@31",
+      "stepId": "pw:api@31",
+      "startTime": 411883.165,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Press \"j\"",
+      "params": {
+        "key": "j"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 36,
+          "column": 48,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@32",
+      "stepId": "pw:api@32",
+      "startTime": 411908.36,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByTestId('tool-options-button')",
+      "params": {
+        "selector": "internal:testid=[data-testid=\"tool-options-button\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 37,
+          "column": 49,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@33",
+      "stepId": "expect@33",
+      "startTime": 417727.5,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveAttribute\"",
+      "params": {
+        "expected": "aria-pressed"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 39,
+          "column": 22,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@34",
+      "stepId": "pw:api@34",
+      "startTime": 417758.215,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByRole('button', { name: '2:1 Snap: ON', exact: true })",
+      "params": {
+        "selector": "internal:role=button[name=\"2:1 Snap: ON\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 39,
+          "column": 74,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@35",
+      "stepId": "expect@35",
+      "startTime": 418048.447,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveAttribute\"",
+      "params": {
+        "expected": "aria-pressed"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 40,
+          "column": 83,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@36",
+      "stepId": "pw:api@36",
+      "startTime": 418073.449,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Press \"Escape\"",
+      "params": {
+        "key": "Escape"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 41,
+          "column": 23,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@65",
+      "stepId": "expect@65",
+      "startTime": 424249.116,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "19"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@94",
+      "stepId": "expect@94",
+      "startTime": 430649.297,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "22"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@123",
+      "stepId": "expect@123",
+      "startTime": 436649.143,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "19"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@152",
+      "stepId": "expect@152",
+      "startTime": 442868.409,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "18"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@181",
+      "stepId": "expect@181",
+      "startTime": 448804.511,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "24"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@210",
+      "stepId": "expect@210",
+      "startTime": 454728.615,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "24"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "expect@239",
+      "stepId": "expect@239",
+      "startTime": 460921.749,
+      "class": "Test",
+      "method": "expect",
+      "title": "Expect \"toHaveLength\"",
+      "params": {
+        "expected": "24"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 46,
+          "column": 59,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@240",
+      "stepId": "pw:api@240",
+      "startTime": 460922.768,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByTestId('tool-options-button')",
+      "params": {
+        "selector": "internal:testid=[data-testid=\"tool-options-button\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 48,
+          "column": 49,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@241",
+      "stepId": "pw:api@241",
+      "startTime": 462397.305,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByRole('button', { name: 'Brush size 1 pixels', exact: true })",
+      "params": {
+        "selector": "internal:role=button[name=\"Brush size 1 pixels\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 49,
+          "column": 80,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@242",
+      "stepId": "pw:api@242",
+      "startTime": 462914.599,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByRole('button', { name: '3 pixel brush preset', exact: true })",
+      "params": {
+        "selector": "internal:role=button[name=\"3 pixel brush preset\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 50,
+          "column": 81,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@243",
+      "stepId": "pw:api@243",
+      "startTime": 463088.545,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Press \"Escape\"",
+      "params": {
+        "key": "Escape"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 51,
+          "column": 23,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@244",
+      "stepId": "pw:api@244",
+      "startTime": 463111.523,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByRole('button', { name: 'Horizontal symmetry', exact: true })",
+      "params": {
+        "selector": "internal:role=button[name=\"Horizontal symmetry\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 52,
+          "column": 80,
+          "function": "verifyFreeIso"
+        }
+      ]
+    },
+    {
+      "type": "before",
+      "callId": "pw:api@1295",
+      "stepId": "pw:api@1295",
+      "startTime": 470205.83,
+      "class": "Test",
+      "method": "pw:api",
+      "title": "Click getByTestId('redo-button')",
+      "params": {
+        "selector": "internal:testid=[data-testid=\"redo-button\"s]",
+        "strict": "true"
+      },
+      "stack": [
+        {
+          "file": "/home/runner/work/PixiBun/PixiBun/tests/helpers/drawingAndPreviewWorkflows.ts",
+          "line": 55,
+          "column": 41,
+          "function": "verifyFreeIso"
+        }
+      ]
+    }
+  ],
+  "finalControlState": "Redo enabled; Undo disabled in retained error context",
+  "scope": "Absolute trace timestamps are retained. The overall test timeout expired at the final Redo action; do not infer an isolated Redo timeout or a native backend crash."
+}

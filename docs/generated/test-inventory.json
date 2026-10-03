@@ -5,11 +5,11 @@
     "suites": 159
   },
   "editor": {
-    "tests": 183,
+    "tests": 185,
     "files": 43
   },
   "production": {
-    "tests": 84,
+    "tests": 90,
     "files": 9
   }
 }
