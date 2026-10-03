@@ -61,6 +61,21 @@ function isValidOrigin(request: Request): boolean {
   }
 }
 
+function boundedText(value: unknown, max: number): value is string {
+  return typeof value === 'string' && value.length <= max;
+}
+function validEvent(raw: unknown): raw is Record<string, unknown> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+  const event = raw as Record<string, unknown>;
+  return boundedText(event.id, 128) && event.id.length > 0
+    && ['error', 'web-vital', 'unhandled-rejection'].includes(event.kind as string)
+    && boundedText(event.message, 1024)
+    && (event.timestamp === undefined || (Number.isSafeInteger(event.timestamp) && (event.timestamp as number) >= 0))
+    && (event.detail === undefined || boundedText(event.detail, 2062))
+    && (event.route === undefined || boundedText(event.route, 512))
+    && (event.appVersion === undefined || boundedText(event.appVersion, 128));
+}
+
 export async function POST(request: Request) {
   if (!isValidOrigin(request)) {
     return NextResponse.json(
@@ -130,16 +145,10 @@ export async function POST(request: Request) {
         }
         chunks.push(value);
       }
-      const rawBody = new TextDecoder().decode(
-        chunks.length === 1
-          ? chunks[0]
-          : chunks.reduce((acc, c) => {
-              const merged = new Uint8Array(acc.byteLength + c.byteLength);
-              merged.set(acc);
-              merged.set(c, acc.byteLength);
-              return merged;
-            }, new Uint8Array(0))
-      );
+      const bytes = new Uint8Array(totalBytes);
+      let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+      const rawBody = new TextDecoder().decode(bytes);
       body = JSON.parse(rawBody) as Record<string, unknown>;
     } catch (parseErr) {
       console.error('Failed to parse diagnostics relay request JSON:', parseErr);
@@ -148,13 +157,20 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const { events, app, version } = (body as { events?: unknown[]; app?: string; version?: string }) || {};
-
+    const { events, app, version } = body || {};
+    if (!Array.isArray(events) || events.length > MAX_EVENTS || !events.every(validEvent)
+      || (app !== undefined && !boundedText(app, 128)) || (version !== undefined && !boundedText(version, 128))) {
+      return NextResponse.json({ error: 'Invalid diagnostic batch or event fields.' }, { status: 400 });
+    }
     const upstreamPayload = {
       app: app || 'pixibun',
-      version: version || process.env.npm_package_version || APP_VERSION,
+      version: version || APP_VERSION,
+      serverVersion: APP_VERSION,
       timestamp: Date.now(),
-      events: Array.isArray(events) ? events.slice(0, MAX_EVENTS) : [],
+      events: events.map(event => Object.fromEntries(
+        ['id', 'kind', 'timestamp', 'message', 'detail', 'route', 'appVersion']
+          .filter(key => event[key] !== undefined).map(key => [key, event[key]])
+      )),
     };
 
     const upstreamResponse = await fetch(targetUrl, {
@@ -163,6 +179,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(upstreamPayload),
+      redirect: 'error',
       // 5 second timeout to avoid hanging serverless functions
       signal: AbortSignal.timeout(5000),
     });

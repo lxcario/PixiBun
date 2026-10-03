@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Interrupting a substantial APNG export leaves no partial download and allows a later export",
+  "priority": "p1",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Open File, then Canvas size… and resize to 256 by 256 with Scale Artwork enabled; apply the resize."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Use Frame actions, Duplicate frame repeatedly to produce 24 frames."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify exactly 24 frames exist and the current frame still contains the horizontal stroke."
+    },
+    {
+      "type": "action",
+      "description": "Open Export drawing and select APNG at 2x scale."
+    },
+    {
+      "type": "action",
+      "description": "Click Download APNG and press Escape immediately while Encoding APNG progress is active."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the export dialog closes and no APNG download completes for the cancelled operation. If encoding completed before cancellation could happen, report this case blocked rather than passing it."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify all 24 frames and the original stroke remain intact."
+    },
+    {
+      "type": "action",
+      "description": "Open Export drawing and select PNG at 1x scale."
+    },
+    {
+      "type": "action",
+      "description": "Click Download PNG."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a nonempty PNG downloads and opens as the original 256 by 256 drawing; a filename without a completed file is insufficient."
+    }
+  ]
+}

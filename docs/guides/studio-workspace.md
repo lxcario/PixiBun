@@ -31,7 +31,9 @@ The project path also accepts `.json` files containing valid PixiBun project dat
 
 A `.pixibun` file instead opens a project summary. Review it and **Confirm Import** to restore its admitted layers, frames, palettes and timing. A normal image is not a layered project backup. Import validation can reject malformed or oversized files; [storage limits](../contracts/storage.md) are the detailed reference.
 
-When the browser supplies an image file in a **Paste** event outside a text field, the Studio opens the same image importer. Clipboard contents, browser behavior and the editor's internal selection clipboard affect whether that event is available. If a copied selection pastes instead, or the browser supplies no image file, use File → Import or drop the saved image. Review the destination before confirming either workflow.
+The file is header-checked before decoding. Display previews have a longest dimension of at most 1,024 pixels; that display reduction does not define sprite-sheet cut pixels. Retro Pixelize samples an intermediate source of at most 2,048 pixels per axis before processing. Source decode, sampling, output and display surfaces use memory estimates before allocation; a large source may still be refused even when the desired output is small. These estimates do not measure the browser decoder's actual heap or graphics memory. Invalid JSON and overly complex project files show readable advice while technical errors remain available in diagnostics.
+
+When the browser supplies an image file in a **Paste** event outside a text/editable control and with no dialog open, the Studio opens the same image importer. Clipboard contents, browser behavior and the editor's internal selection clipboard affect whether that event is available. If a copied selection pastes instead, or the browser supplies no image file, use File → Import or drop the saved image. Review the destination before confirming either workflow.
 
 ## Slice a sprite sheet
 
@@ -43,6 +45,8 @@ When the browser supplies an image file in a **Paste** event outside a text fiel
 4. Review the extracted frame count, color-swatches option and target before **Slice & Import Frames**. Existing-frame and resource limits still apply.
 
 Some images open the slicer automatically with a suggested grid. The notice distinguishes a canvas-size guess from cutlines detected through image-pixel analysis. Both still need review: a suggestion is not proof that sprites, empty holds or gutters were interpreted correctly.
+
+Empty-cell filtering checks original image pixels in tiles of at most 256×64 pixels. Up to 4,194,304 source pixels can be checked while displaying the preview; larger sheets display all cell badges and say that the non-empty count will be checked during import. Cancel releases the import's own surfaces and preserves active artwork and history.
 
 ## Resize the canvas
 

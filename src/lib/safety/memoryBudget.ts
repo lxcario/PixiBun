@@ -16,7 +16,7 @@ export function getMemoryBudgetUsage() {
 
 export function assertMemoryAvailable(bytes: number, operation: string): void {
   if (!Number.isSafeInteger(bytes) || bytes < 0 || getMemoryBudgetUsage().totalBytes + bytes > COMBINED_MEMORY_LIMIT_BYTES) {
-    throw new RangeError(`${operation} exceeds the combined artwork memory budget. Try exporting fewer frames, using a smaller scale, or closing other exports before retrying.`);
+    throw new RangeError(`${operation} exceeds the combined artwork memory budget. Reduce the operation size or close other memory-intensive tasks before retrying.`);
   }
 }
 

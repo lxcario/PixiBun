@@ -1,0 +1,30 @@
+{
+  "testId": "418746da-f794-41c7-82d7-b00746a2b1b9",
+  "status": "passed",
+  "startedAt": null,
+  "finishedAt": "2026-10-03T19:46:58.974Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/20261003-194658-4ac84cbc.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_8ab8e6526dc4f6a6",
+  "runIdIfAvailable": "f547c88b-f3f4-46a6-88f6-168fee836d50",
+  "codeVersion": null,
+  "targetUrl": "http://127.0.0.1:3150",
+  "targetUrlSource": null,
+  "environment": {
+    "id": "042c6caa-29f1-4fa5-83e3-e0faa0ae189e",
+    "name": "default"
+  },
+  "failedStepIndex": null,
+  "failureKind": null,
+  "verdict": "passed",
+  "executionStatus": "completed",
+  "summary": "Test passed. Target: environment default (http://127.0.0.1:3150).",
+  "apiOutput": null,
+  "trace": null,
+  "analysis": {
+    "rootCauseHypothesis": null,
+    "recommendedFixTarget": null,
+    "failureKind": null,
+    "snapshotId": "snap_8ab8e6526dc4f6a6"
+  }
+}

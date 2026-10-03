@@ -182,6 +182,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     createBoxMask,
     mergeSelectionMask,
   } = useViewportSelection({
+    ownsTransformShortcuts: false,
     canvasWidth,
     canvasHeight,
     activeLayerId,
@@ -585,7 +586,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       id="main-content"
       tabIndex={-1}
       aria-label="Pixel art canvas workspace"
-      className="relative flex-1 h-full w-full overflow-hidden flex items-center justify-center select-none outline-none"
+      className="relative flex-1 h-full w-full overflow-hidden flex items-center justify-center select-none touch-none outline-none"
       style={{
         backgroundColor: 'var(--canvas-well)',
         boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4), inset 0 0 0 1px var(--canvas-border)'

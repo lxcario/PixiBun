@@ -1,0 +1,94 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Help dialog absorbs destructive shortcuts without moving selection or consuming artwork history",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Select Box Selection and drag a rectangle enclosing the upper-left stroke but excluding the lower-right stroke."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a selection boundary or transform gizmo encloses only the upper-left stroke; remember its bounds."
+    },
+    {
+      "type": "action",
+      "description": "Focus the workspace and press Shift+/ to open Atelier Guide & Shortcuts."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the help dialog is open."
+    },
+    {
+      "type": "action",
+      "description": "Focus Close dialog inside the help dialog."
+    },
+    {
+      "type": "action",
+      "description": "Press Control+z, Control+Shift+z, Control+s, e, Delete, ArrowRight and Shift+h while focus remains inside the dialog."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Help remains open, both strokes and selection bounds remain unchanged, and Box Selection remains selected underneath the dialog."
+    },
+    {
+      "type": "action",
+      "description": "Press Escape once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only Help closes; the original selection and both original strokes remain."
+    },
+    {
+      "type": "action",
+      "description": "Focus the workspace and press Escape to clear the selection."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify selection decoration is gone and both strokes remain unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the lower-right vertical stroke disappears; the upper-left horizontal stroke remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    }
+  ]
+}

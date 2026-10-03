@@ -82,6 +82,9 @@ export class CoDrawBridge {
   private lastSeenWidth = 0;
   private lastSeenHeight = 0;
   private sessionGeneration = 0;
+  private sessionProjectId: string | null = null;
+  private guestWorkspaceReady = true;
+  private unsubscribeProject: (() => void) | null = null;
 
   getRole(): CoDrawRole | null {
     return this.role;
@@ -102,24 +105,70 @@ export class CoDrawBridge {
     this.role = 'host';
     this.peerId = createId('peer');
     this.session = this.createSession(options);
+    this.watchProject();
     return this.session.createHostInvite();
   }
 
-  async startGuest(inviteToken: string, options: CoDrawStartOptions = {}): Promise<string> {
+  /** Publish a checkpointed, separate workspace only after signaling succeeds. */
+  async startGuest(
+    inviteToken: string,
+    activateWorkspace: () => string,
+    options: CoDrawStartOptions = {},
+    signal?: AbortSignal,
+  ): Promise<string> {
+    signal?.throwIfAborted();
     this.reset();
     this.role = 'guest';
+    this.guestWorkspaceReady = false;
     this.peerId = createId('peer');
     this.session = this.createSession(options);
-    return this.session.acceptHostInvite(inviteToken);
+    const generation = this.sessionGeneration;
+    const originalProjectId = this.sessionProjectId;
+    const cancel = () => { if (generation === this.sessionGeneration) this.disconnect(); };
+    signal?.addEventListener('abort', cancel, { once: true });
+    try {
+      const answer = await this.session.acceptHostInvite(inviteToken);
+      signal?.throwIfAborted();
+      if (generation !== this.sessionGeneration || !this.ownsWorkspace()) {
+        throw new Error('The drawing or co-draw session changed. Join again from your current drawing.');
+      }
+      const projectId = activateWorkspace();
+      if (projectId === originalProjectId || projectId !== useStudioStore.getState().currentProjectId) {
+        throw new Error('Co-draw requires a separate saved drawing.');
+      }
+      this.sessionProjectId = projectId;
+      this.guestWorkspaceReady = true;
+      this.watchProject();
+      return answer;
+    } catch (error) {
+      cancel();
+      throw error;
+    } finally {
+      signal?.removeEventListener('abort', cancel);
+    }
   }
 
   disconnect(): void {
     this.reset();
+    studioEvents.emit('pixibun:codraw-state', 'idle');
+    studioEvents.emit('pixibun:remote-cursors', []);
+  }
+
+  private ownsWorkspace(): boolean {
+    return this.sessionProjectId === null || this.sessionProjectId === useStudioStore.getState().currentProjectId;
+  }
+
+  private watchProject(): void {
+    this.unsubscribeProject = useStudioStore.subscribe(() => {
+      if (!this.ownsWorkspace()) this.disconnect();
+    });
   }
 
   private createSession(options: CoDrawStartOptions): P2PSyncSession {
     const generation = this.sessionGeneration;
-    const current = () => generation === this.sessionGeneration;
+    this.sessionProjectId = useStudioStore.getState().currentProjectId;
+    const current = () => generation === this.sessionGeneration && this.ownsWorkspace();
+    const artworkCurrent = () => current() && this.guestWorkspaceReady;
     return new P2PSyncSession({
       peerId: this.peerId,
       peerName: this.role === 'host' ? 'Atelier Host' : 'Atelier Guest',
@@ -130,21 +179,25 @@ export class CoDrawBridge {
           : DEFAULT_ICE_SERVERS,
       lanOnly: options.lanOnly,
       onConnectionStateChange: (state) => { if (current()) this.handleConnectionState(state); },
-      onRemotePixelOps: (ops, layerId) => { if (current()) this.applyRemoteOps(ops, layerId); },
+      onRemotePixelOps: (ops, layerId) => { if (artworkCurrent()) this.applyRemoteOps(ops, layerId); },
       onInitialSync: (ops, layerId) => {
-        if (current() && this.role === 'guest') this.applyRemoteOps(ops, layerId);
+        if (artworkCurrent() && this.role === 'guest') this.applyRemoteOps(ops, layerId);
       },
-      onStructureSync: (payload) => { if (current()) this.adoptStructure(payload); },
-      onRemoteCursor: (cursor) => { if (current()) this.handleRemoteCursor(cursor); },
+      onStructureSync: (payload) => { if (artworkCurrent()) this.adoptStructure(payload); },
+      onRemoteCursor: (cursor) => { if (artworkCurrent()) this.handleRemoteCursor(cursor); },
       onError: (error) => { if (current()) studioEvents.emit('pixibun:codraw-error', error.message); },
     });
   }
 
   private reset(): void {
     this.sessionGeneration += 1;
+    this.unsubscribeProject?.();
+    this.unsubscribeProject = null;
     this.session?.disconnect();
     this.session = null;
     this.role = null;
+    this.sessionProjectId = null;
+    this.guestWorkspaceReady = true;
     this.crdtBuffers.clear();
     this.cursors.clear();
     this.syncedLayerIds.clear();
@@ -348,7 +401,7 @@ export class CoDrawBridge {
    * changed pixels as LWW ops for the given layer.
    */
   notifyStrokeCommitted(layerId: string, before: ImageDataLike | null): void {
-    if (!this.session || this.session.getState() !== 'connected' || !before) return;
+    if (!this.guestWorkspaceReady || !this.ownsWorkspace() || !this.session || this.session.getState() !== 'connected' || !before) return;
     const state = useStudioStore.getState();
     const layerExists = state.frames.some((f) => f.layers.some((l) => l.id === layerId));
     if (!layerExists) return;
@@ -478,7 +531,7 @@ export class CoDrawBridge {
 
   /** Throttled cursor broadcast over the unreliable presence channel. */
   broadcastCursor(x: number, y: number): void {
-    if (!this.session || this.session.getState() !== 'connected') return;
+    if (!this.guestWorkspaceReady || !this.ownsWorkspace() || !this.session || this.session.getState() !== 'connected') return;
     const now = Date.now();
     if (now - this.lastCursorBroadcast < CURSOR_BROADCAST_MIN_INTERVAL_MS) return;
     this.lastCursorBroadcast = now;

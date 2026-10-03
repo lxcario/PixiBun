@@ -30,6 +30,17 @@
 
 export type HlcTuple = [l: number, c: number];
 
+export function isValidHlcTuple(value: unknown): value is HlcTuple {
+  return Array.isArray(value) && value.length === 2 &&
+    Number.isSafeInteger(value[0]) && value[0] > 0 &&
+    Number.isSafeInteger(value[1]) && value[1] >= 0;
+}
+
+/** Carry before addition loses integer precision; the resulting tuple is strictly greater. */
+function incrementHlc(l: number, c: number): HlcTuple {
+  return c === Number.MAX_SAFE_INTEGER ? [l + 1, 0] : [l, c + 1];
+}
+
 export interface PixelOp {
   x: number;
   y: number;
@@ -147,9 +158,23 @@ export class CrdtPixelBuffer {
     const pt = Date.now();
     const lOld = this.hlc[0];
     const lNext = Math.max(lOld, pt);
-    const cNext = lNext === lOld ? this.hlc[1] + 1 : 0;
-    this.hlc = [lNext, cNext];
+    this.hlc = lNext === lOld ? incrementHlc(lNext, this.hlc[1]) : [lNext, 0];
     return this.hlc;
+  }
+
+  private receiveHlc(remote: HlcTuple): void {
+    const [remoteL, remoteC] = remote;
+    const lOld = this.hlc[0];
+    const lNext = Math.max(lOld, Date.now(), remoteL);
+    if (lNext === lOld && lNext === remoteL) {
+      this.hlc = incrementHlc(lNext, Math.max(this.hlc[1], remoteC));
+    } else if (lNext === lOld) {
+      this.hlc = incrementHlc(lNext, this.hlc[1]);
+    } else if (lNext === remoteL) {
+      this.hlc = incrementHlc(lNext, remoteC);
+    } else {
+      this.hlc = [lNext, 0];
+    }
   }
 
   /**
@@ -208,6 +233,8 @@ export class CrdtPixelBuffer {
       typeof op !== 'object' ||
       typeof op.x !== 'number' ||
       typeof op.y !== 'number' ||
+      !Number.isInteger(op.x) ||
+      !Number.isInteger(op.y) ||
       op.x < 0 ||
       op.x >= this.width ||
       op.y < 0 ||
@@ -218,20 +245,11 @@ export class CrdtPixelBuffer {
       return false;
     }
 
-    const remoteL = op.hlc ? op.hlc[0] : op.timestamp;
-    const remoteC = op.hlc ? op.hlc[1] : 0;
-
-    // Reject non-finite, NaN, or non-positive physical timestamps or invalid counters
-    if (
-      typeof remoteL !== 'number' ||
-      !Number.isFinite(remoteL) ||
-      remoteL <= 0 ||
-      typeof remoteC !== 'number' ||
-      !Number.isFinite(remoteC) ||
-      remoteC < 0
-    ) {
+    if (!Number.isSafeInteger(op.timestamp) || op.timestamp <= 0 ||
+      (op.hlc !== undefined && !isValidHlcTuple(op.hlc))) {
       return false;
     }
+    const [remoteL, remoteC] = op.hlc ?? [op.timestamp, 0];
 
     const pt = Date.now();
 
@@ -247,19 +265,7 @@ export class CrdtPixelBuffer {
     // else if (l' == l_old) c' = c_old + 1
     // else if (l' == remote.l) c' = remote.c + 1
     // else c' = 0
-    const lOld = this.hlc[0];
-    const lNext = Math.max(lOld, pt, remoteL);
-    let cNext = 0;
-    if (lNext === lOld && lNext === remoteL) {
-      cNext = Math.max(this.hlc[1], remoteC) + 1;
-    } else if (lNext === lOld) {
-      cNext = this.hlc[1] + 1;
-    } else if (lNext === remoteL) {
-      cNext = remoteC + 1;
-    } else {
-      cNext = 0;
-    }
-    this.hlc = [lNext, cNext];
+    this.receiveHlc([remoteL, remoteC]);
 
     const idx = op.y * this.width + op.x;
     const current = this.cells[idx];
@@ -436,23 +442,7 @@ export class CrdtPixelBuffer {
     }
 
     // Advance local HLC once to subsume the causal frontier of both histories
-    const otherHlc = other.getHlc();
-    const pt = Date.now();
-    const lOld = this.hlc[0];
-    const remoteL = otherHlc[0];
-    const remoteC = otherHlc[1];
-    const lNext = Math.max(lOld, pt, remoteL);
-    let cNext = 0;
-    if (lNext === lOld && lNext === remoteL) {
-      cNext = Math.max(this.hlc[1], remoteC) + 1;
-    } else if (lNext === lOld) {
-      cNext = this.hlc[1] + 1;
-    } else if (lNext === remoteL) {
-      cNext = remoteC + 1;
-    } else {
-      cNext = 0;
-    }
-    this.hlc = [lNext, cNext];
+    this.receiveHlc(other.getHlc());
 
     return mutated;
   }

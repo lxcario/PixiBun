@@ -5,6 +5,7 @@
  * and palette extraction.
  */
 import { MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
+import { isSourceCellEmpty } from '@/lib/project/importRaster';
 
 export interface SliceConfig {
   cellWidth: number;
@@ -87,10 +88,11 @@ export function isCellEmpty(
  * Extracts individual frame cells from an HTMLCanvasElement sprite sheet source.
  */
 export function sliceSpriteSheet(
-  sourceCanvas: HTMLCanvasElement,
+  sourceCanvas: HTMLCanvasElement | HTMLImageElement,
   config: SliceConfig
 ): SliceResult {
-  const { width: imgW, height: imgH } = sourceCanvas;
+  const imgW = 'naturalWidth' in sourceCanvas ? sourceCanvas.naturalWidth || sourceCanvas.width : sourceCanvas.width;
+  const imgH = 'naturalHeight' in sourceCanvas ? sourceCanvas.naturalHeight || sourceCanvas.height : sourceCanvas.height;
   const {
     cellWidth,
     cellHeight,
@@ -118,12 +120,6 @@ export function sliceSpriteSheet(
   }
   if (totalCells === 0) return { frames: [], totalCells: 0, nonEmptyCount: 0, skippedCount: 0 };
 
-  const srcCtx = sourceCanvas.getContext('2d', { willReadFrequently: true });
-  if (!srcCtx) {
-    return { frames: [], totalCells: 0, nonEmptyCount: 0, skippedCount: 0 };
-  }
-
-  const fullImageData = skipEmpty ? srcCtx.getImageData(0, 0, imgW, imgH) : null;
   const frames: HTMLCanvasElement[] = [];
   let skippedCount = 0;
 
@@ -146,37 +142,42 @@ export function sliceSpriteSheet(
     }
   }
 
-  for (const { c, r } of coords) {
-    const x = startX + c * stepX;
-    const y = startY + r * stepY;
+  try {
+    for (const { c, r } of coords) {
+      const x = startX + c * stepX;
+      const y = startY + r * stepY;
 
-    if (x + cellWidth > imgW || y + cellHeight > imgH) {
-      skippedCount++;
-      continue;
+      if (x + cellWidth > imgW || y + cellHeight > imgH) {
+        skippedCount++;
+        continue;
+      }
+
+      if (skipEmpty && isSourceCellEmpty(sourceCanvas, x, y, cellWidth, cellHeight)) {
+        skippedCount++;
+        continue;
+      }
+
+      const frameCanvas = document.createElement('canvas');
+      frameCanvas.width = cellWidth;
+      frameCanvas.height = cellHeight;
+      const fCtx = frameCanvas.getContext('2d');
+      if (!fCtx) { frameCanvas.width = 0; frameCanvas.height = 0; throw new Error('The sprite sheet could not be rendered.'); }
+
+      fCtx.imageSmoothingEnabled = false;
+      frames.push(frameCanvas);
+      fCtx.drawImage(sourceCanvas, x, y, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
     }
 
-    if (fullImageData && isCellEmpty(fullImageData, x, y, cellWidth, cellHeight)) {
-      skippedCount++;
-      continue;
-    }
-
-    const frameCanvas = document.createElement('canvas');
-    frameCanvas.width = cellWidth;
-    frameCanvas.height = cellHeight;
-    const fCtx = frameCanvas.getContext('2d');
-    if (!fCtx) continue;
-
-    fCtx.imageSmoothingEnabled = false;
-    fCtx.drawImage(sourceCanvas, x, y, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
-    frames.push(frameCanvas);
+    return {
+      frames,
+      totalCells,
+      nonEmptyCount: frames.length,
+      skippedCount,
+    };
+  } catch (error) {
+    for (const frame of frames) { frame.width = 0; frame.height = 0; }
+    throw error;
   }
-
-  return {
-    frames,
-    totalCells,
-    nonEmptyCount: frames.length,
-    skippedCount,
-  };
 }
 
 /**

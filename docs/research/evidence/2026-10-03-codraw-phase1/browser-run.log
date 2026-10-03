@@ -1,0 +1,14 @@
+
+Running 3 tests using 3 workers
+
+(node:20420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\coDrawGuestIsolation.spec.ts:111:5 › storage failure refuses the join and preserves unsaved artwork (9.1s)
+  ok 3 [chromium] › tests\e2e\coDrawGuestIsolation.spec.ts:98:5 › invalid invite leaves original pixels and Undo intact (9.3s)
+  ok 2 [chromium] › tests\e2e\coDrawGuestIsolation.spec.ts:44:5 › real LAN peers save shared artwork separately, preserve original bytes and reload the shared copy (16.8s)
+
+  3 passed (18.1s)

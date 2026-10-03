@@ -1,0 +1,118 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Practice Return restores artwork and Redo; Keep creates a separate reloadable project",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Rename the project to Challenge original using the project-name control and confirm with Enter."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the horizontal stroke remains and Redo is enabled."
+    },
+    {
+      "type": "action",
+      "description": "Click Return to PixiBun Home."
+    },
+    {
+      "type": "action",
+      "description": "Click Playground in the home navigation."
+    },
+    {
+      "type": "action",
+      "description": "Click Trace Stencil."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify recognizable stencil artwork appears and differs from the original single horizontal stroke."
+    },
+    {
+      "type": "action",
+      "description": "Click Return to drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Studio project is Challenge original with only its horizontal stroke; Redo remains enabled."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Click Return to PixiBun Home."
+    },
+    {
+      "type": "action",
+      "description": "Click Playground in the home navigation."
+    },
+    {
+      "type": "action",
+      "description": "Click Trace Stencil."
+    },
+    {
+      "type": "action",
+      "description": "Click Keep practice in Studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Studio contains the traced practice artwork under a name different from Challenge original."
+    },
+    {
+      "type": "action",
+      "description": "Reload this page."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the kept practice artwork restores successfully with its separate project name."
+    },
+    {
+      "type": "action",
+      "description": "Open File, then Projects."
+    },
+    {
+      "type": "action",
+      "description": "Open project Challenge original."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both original strokes return unchanged; kept practice has not overwritten the original project."
+    }
+  ]
+}

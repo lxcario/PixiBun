@@ -1,0 +1,74 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Blank frames isolate artwork and frame-duration edits undo independently",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 240 and commit by leaving the field."
+    },
+    {
+      "type": "action",
+      "description": "Click + Frame to add a blank frame."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify two frames exist, frame 2 is active and its drawing canvas is blank rather than a copy of frame 1."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 700 and commit by leaving the field."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify frame 2 reports 700ms and contains only the vertical stroke."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify frame 2 duration returns to its value before 700 was entered while its vertical stroke remains intact."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 1."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify frame 1 retains its horizontal stroke, has no vertical stroke and still reports 240ms."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 2."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the vertical stroke returns; changing frames has not mixed artwork."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "testId": "79ec7660-5e27-4633-af92-e3090890989a",
+  "status": "blocked",
+  "startedAt": null,
+  "finishedAt": "2026-10-03T19:38:49.456Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/20261003-193847-7d07a758.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_7bc416340b907f42",
+  "runIdIfAvailable": "010104c3-8897-44a6-abf3-1e2ec69c2b2f",
+  "codeVersion": null,
+  "targetUrl": "http://127.0.0.1:3150",
+  "targetUrlSource": null,
+  "environment": {
+    "id": "042c6caa-29f1-4fa5-83e3-e0faa0ae189e",
+    "name": "default"
+  },
+  "failedStepIndex": null,
+  "failureKind": null,
+  "verdict": "blocked",
+  "executionStatus": "completed",
+  "summary": "Blocked before a verdict could be produced: The hosting-side UI appears to render the canvas in a way that automated element-only clicks hit the canvas center instead of the intended coordinates, so the test cannot place strokes in different quadrants. This suggests the app or its test environment lacks coordinate-level pointer support for the canvas, likely due to the canvas handling only generic click events, a wrapper intercepting events, or automation limitations combined with a single shar… Target: environment default (http://127.0.0.1:3150).",
+  "apiOutput": null,
+  "trace": null,
+  "analysis": {
+    "rootCauseHypothesis": null,
+    "recommendedFixTarget": null,
+    "failureKind": null,
+    "snapshotId": "snap_7bc416340b907f42"
+  }
+}

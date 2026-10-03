@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState, useCallback, useMemo, useLayoutEffe
 import { useStudioStore } from '@/stores/studioStore';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import { shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 import {
   coordsToLightAngles,
   lightAnglesToCoords,
@@ -219,6 +220,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
   // Global keyboard shortcuts: Enter to apply, Escape to cancel, [-]/[+] to adjust strength, Alt+R to reset focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (shouldIgnoreWorkspaceKey(e, containerRef.current)) return;
       if (e.key === 'Enter' && (e.target as HTMLElement)?.closest?.('button, input, select')) return;
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -236,7 +238,7 @@ export const PixelLightBulbGizmo: React.FC<PixelLightBulbGizmoProps> = ({
         e.preventDefault();
         e.stopPropagation();
         adjustStrength(+0.15);
-      } else if ((e.key === 'r' || e.key === 'R') && e.altKey) {
+      } else if (workspaceShortcutKey(e) === 'r' && e.altKey && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
         resetFocus();

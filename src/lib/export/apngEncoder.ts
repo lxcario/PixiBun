@@ -6,9 +6,7 @@
  * - Reference: https://wiki.mozilla.org/APNG_Specification
  *
  * Compression Architecture:
- * - Employs uncompressed DEFLATE store blocks (BTYPE 00) wrapped in RFC 1950 zlib containers.
- *   This ensures 100% offline, zero-dependency generation in browser and Node test environments
- *   with minimal CPU overhead, though output files will be larger than compressed DEFLATE streams.
+ * - Uses native zlib-framed CompressionStream when available, with offline stored-block fallback.
  *
  * Features:
  * - True 24-bit / 32-bit RGBA color animation without GIF's 256-color palette limitation.
@@ -27,6 +25,25 @@ export interface ApngExportOptions {
   loopCount?: number; // Number of animation plays (0 = infinite loop, default: 0)
   onProgress?: (current: number, total: number) => void;
   signal?: AbortSignal;
+}
+
+export function yieldApngTask(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+export function apngFailureMessage(error: unknown): string {
+  return error instanceof RangeError ? 'This animation exceeds the export size or memory limits. Reduce the frame count or scale.'
+    : 'The animation could not be rendered or encoded. Retry the export or choose another format.';
+}
+
+async function compressApngScanlines(data: Uint8Array, signal?: AbortSignal): Promise<Uint8Array> {
+  if (typeof CompressionStream === 'undefined') return encodeZlibDeflate(data);
+  let compressor: CompressionStream;
+  try { compressor = new CompressionStream('deflate'); }
+  catch (error) { if (error instanceof TypeError) return encodeZlibDeflate(data); throw error; }
+  const input = new ReadableStream({ start(controller) { controller.enqueue(data); controller.close(); } });
+  const compressed = input.pipeThrough(compressor, { signal });
+  return new Uint8Array(await new Response(compressed).arrayBuffer());
 }
 
 // Precomputed CRC-32 lookup table (IEEE 802.3 polynomial: 0xEDB88320)
@@ -289,7 +306,8 @@ async function encodeApng(
 
     // Compress scanlines with Deflate
     const scanlines = createFilteredRgbaScanlines(frame.data, width, height);
-    const compressed = encodeZlibDeflate(scanlines);
+    const compressed = await compressApngScanlines(scanlines, options.signal);
+    if (options.signal?.aborted) throw new DOMException('APNG export aborted', 'AbortError');
 
     if (i === 0) {
       // Frame 0 uses standard IDAT chunk
@@ -303,7 +321,9 @@ async function encodeApng(
     }
 
     options.onProgress?.(i + 1, totalFrames);
+    await yieldApngTask();
   }
+  if (options.signal?.aborted) throw new DOMException('APNG export aborted', 'AbortError');
 
   // 4. IEND Chunk (0 bytes data)
   chunks.push(createPngChunk('IEND', new Uint8Array(0)));

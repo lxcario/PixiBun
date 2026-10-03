@@ -1,0 +1,114 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Rejected co-draw invite preserves saved identity, both strokes and Undo",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Rename the project to Challenge guest original using the project-name control and confirm with Enter."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Click Save drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the save status says Changes saved."
+    },
+    {
+      "type": "action",
+      "description": "Open Studio options, then Co-Draw session."
+    },
+    {
+      "type": "action",
+      "description": "Choose Join Session in the Peer-to-Peer Co-Draw dialog."
+    },
+    {
+      "type": "action",
+      "description": "Enter invalid-invite in Host invite code input."
+    },
+    {
+      "type": "action",
+      "description": "Click Save My Drawing & Join Separately."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a readable invalid-token or invalid-format error appears and no Generated answer token is produced."
+    },
+    {
+      "type": "action",
+      "description": "Click Close in the Co-Draw dialog."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the project is still Challenge guest original, with both original strokes unchanged and no shared artwork substituted."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the lower-right vertical stroke disappears; the upper-left horizontal stroke remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Click Save drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the save status says Changes saved."
+    },
+    {
+      "type": "action",
+      "description": "Reload this page."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration completes and Challenge guest original still contains both strokes in their original positions."
+    },
+    {
+      "type": "action",
+      "description": "Open File, then Projects."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Challenge guest original is available in Projects and the rejected invite has not created a Shared Drawing project."
+    }
+  ]
+}

@@ -22,10 +22,10 @@ import { SafeJson, getUtf8ByteLength } from '@/lib/safety/safeJson';
  *      Transmits 60fps cursor movements and live awareness without head-of-line blocking.
  */
 
-import { PixelOp } from '@/lib/collab/crdtPixelBuffer';
+import { isValidHlcTuple, type PixelOp } from '@/lib/collab/crdtPixelBuffer';
 import { createTokenBucketStore, TokenBucketStore } from '@/lib/server/tokenBucket';
 import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
-import { validateLayerEffect } from '@/lib/project/schema';
+import { PROJECT_LAYER_NAME_MAX_LENGTH, validateLayerEffect } from '@/lib/project/schema';
 import { validateProjectResourceBudget } from '@/lib/project/resourceBudget';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import type { LayerEffectRecipe } from '@/types/canvas';
@@ -171,7 +171,7 @@ export function validateStructurePayload(data: unknown): StructurePayload | null
       const l = rawLayer as Record<string, unknown>;
       if (typeof l.id !== 'string' || l.id.length === 0 || l.id.length > 128 || layerIds.has(l.id)) return null;
       layerIds.add(l.id);
-      if (typeof l.name !== 'string' || l.name.length > 256) return null;
+      if (typeof l.name !== 'string' || l.name.length > PROJECT_LAYER_NAME_MAX_LENGTH) return null;
       if (typeof l.visible !== 'boolean' || typeof l.locked !== 'boolean') return null;
       if (typeof l.opacity !== 'number' || !Number.isFinite(l.opacity) || l.opacity < 0 || l.opacity > 1) return null;
       if (!isStructureBlendMode(l.blendMode)) return null;
@@ -227,28 +227,13 @@ export function isValidPixelOp(op: unknown): op is PixelOp {
   if (typeof o.a !== 'number' || !Number.isFinite(o.a) || Math.floor(o.a) !== o.a || o.a < 0 || o.a > 255) {
     return false;
   }
-  if (typeof o.timestamp !== 'number' || !Number.isFinite(o.timestamp) || o.timestamp <= 0) {
+  if (typeof o.timestamp !== 'number' || !Number.isSafeInteger(o.timestamp) || o.timestamp <= 0) {
     return false;
   }
   if (typeof o.peerId !== 'string' || o.peerId.length === 0 || o.peerId.length > 128) {
     return false;
   }
-  if (o.hlc !== undefined) {
-    if (
-      !Array.isArray(o.hlc) ||
-      o.hlc.length !== 2 ||
-      typeof o.hlc[0] !== 'number' ||
-      !Number.isFinite(o.hlc[0]) ||
-      o.hlc[0] <= 0 ||
-      Math.floor(o.hlc[0]) !== o.hlc[0] ||
-      typeof o.hlc[1] !== 'number' ||
-      !Number.isFinite(o.hlc[1]) ||
-      o.hlc[1] < 0 ||
-      Math.floor(o.hlc[1]) !== o.hlc[1]
-    ) {
-      return false;
-    }
-  }
+  if (o.hlc !== undefined && !isValidHlcTuple(o.hlc)) return false;
 
   return true;
 }
@@ -420,6 +405,25 @@ export function encodeSignalingToken(payload: SignalingPayload): string {
  * Decodes signaling token from a base64 string using modern TextDecoder.
  * Fully supports both standard Base64 and URL-safe Base64 formats.
  */
+// Application workload ceilings, independent of WebRTC's protocol semantics.
+export const MAX_SIGNALING_CANDIDATES = 256;
+function validSignalingPayload(value: unknown): value is SignalingPayload {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const p = value as Record<string, unknown>, sdp = p.sdp as Record<string, unknown> | undefined;
+  if (p.version !== 1 || typeof p.peerId !== 'string' || !p.peerId.length || p.peerId.length > 128
+    || !sdp || typeof sdp !== 'object' || !['offer', 'answer'].includes(sdp.type as string)
+    || typeof sdp.sdp !== 'string' || !sdp.sdp.length || sdp.sdp.length > 262_144
+    || !Array.isArray(p.candidates) || p.candidates.length > MAX_SIGNALING_CANDIDATES) return false;
+  return p.candidates.every(raw => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+    const c = raw as Record<string, unknown>;
+    return typeof c.candidate === 'string' && c.candidate.length <= 4096
+      && (c.sdpMid == null || (typeof c.sdpMid === 'string' && c.sdpMid.length <= 128))
+      && (c.sdpMLineIndex == null || (Number.isInteger(c.sdpMLineIndex) && (c.sdpMLineIndex as number) >= 0 && (c.sdpMLineIndex as number) <= 65535))
+      && (c.usernameFragment == null || (typeof c.usernameFragment === 'string' && c.usernameFragment.length <= 256));
+  });
+}
+
 export function decodeSignalingToken(token: string): SignalingPayload {
   try {
     if (typeof token !== 'string' || token.trim().length === 0) {
@@ -430,8 +434,8 @@ export function decodeSignalingToken(token: string): SignalingPayload {
     const bytes = base64ToBytes(clean);
     const json = new TextDecoder('utf-8').decode(bytes);
 
-    const parsed = SafeJson.parse<SignalingPayload>(json);
-    if (!parsed || parsed.version !== 1 || !parsed.sdp || !Array.isArray(parsed.candidates)) {
+    const parsed = SafeJson.parse<unknown>(json, { maxTraversedNodes: 4096 });
+    if (!validSignalingPayload(parsed)) {
       throw new Error('Invalid PixiBun signaling token format.');
     }
 
@@ -458,42 +462,107 @@ export class P2PSyncSession {
   private options: P2PSyncSessionOptions;
 
   // Defensive Token Bucket Rate Limiters (Turner 1986 / Tanenbaum §5.3)
-  private pendingMessages = new Map<number, { json: string; sentAt: number }>();
+  private pendingMessages = new Map<number, { json: string; sentAt: number | null; queuedAt: number }>();
   private pendingMessageBytes = 0;
   // The reliable channel is ordered. A high-water mark suppresses retries without
   // retaining one ID for every message in a long co-draw session.
   private lastReceivedDeliveryId = 0;
   private deliveryId = 0;
   private retryTimer: ReturnType<typeof setInterval> | null = null;
+  private recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+  private paused = false;
+  private pausedAt: number | null = null;
+  private ended = false;
+
+  // Application recovery/delivery budgets, not WebRTC protocol limits.
+  private static readonly RECOVERY_TIMEOUT_MS = 30_000;
+  private static readonly DELIVERY_TIMEOUT_MS = 30_000;
+
+  private stopRetries(): void {
+    if (this.retryTimer !== null) clearInterval(this.retryTimer);
+    this.retryTimer = null;
+  }
+
+  private startRetries(): void {
+    if (!this.ended && !this.paused && this.pendingMessages.size && this.retryTimer === null) {
+      this.retryTimer = setInterval(() => this.flushReliable(), 250);
+    }
+  }
+
+  private fail(message: string): void {
+    if (this.ended) return;
+    this.closeTransport('failed');
+    this.options.onError?.(new Error(message));
+  }
+
+  private pauseDelivery(): void {
+    if (this.ended || this.paused) return;
+    this.paused = true;
+    this.pausedAt = Date.now();
+    this.stopRetries();
+    this.recoveryTimer = setTimeout(() => {
+      this.fail('Co-draw connection did not recover. Reconnect to resynchronize artwork.');
+    }, P2PSyncSession.RECOVERY_TIMEOUT_MS);
+    this.setState('disconnected');
+  }
+
+  private resumeDelivery(): void {
+    if (this.ended) return;
+    if (this.recoveryTimer !== null) clearTimeout(this.recoveryTimer);
+    this.recoveryTimer = null;
+    if (this.pausedAt !== null) {
+      const now = Date.now();
+      for (const item of this.pendingMessages.values()) {
+        item.queuedAt += Math.max(0, now - Math.max(item.queuedAt, this.pausedAt));
+        item.sentAt = null;
+      }
+    }
+    this.pausedAt = null;
+    this.paused = false;
+    this.startRetries();
+    this.flushReliable();
+    if (!this.ended) this.setState('connected');
+  }
 
   private queueReliable(msg: CrdtSyncMessage): boolean {
+    if (this.ended) return false;
     const id = ++this.deliveryId;
+    if (!Number.isSafeInteger(id)) {
+      this.fail('Co-draw delivery sequence is exhausted. Reconnect to resynchronize artwork.');
+      return false;
+    }
     const json = JSON.stringify({ ...msg, deliveryId: id });
     const bytes = new TextEncoder().encode(json).length;
     if (bytes > MAX_P2P_PAYLOAD_SIZE || this.pendingMessageBytes + bytes > 32 * 1024 * 1024) {
-      this.options.onError?.(new Error('Co-draw queue is full. Reconnect to resynchronize artwork.'));
-      this.setState('failed');
+      this.fail('Co-draw queue is full. Reconnect to resynchronize artwork.');
       return false;
     }
-    this.pendingMessages.set(id, { json, sentAt: 0 });
+    this.pendingMessages.set(id, { json, sentAt: null, queuedAt: Date.now() });
     this.pendingMessageBytes += bytes;
-    if (!this.retryTimer) this.retryTimer = setInterval(() => this.flushReliable(), 250);
+    this.startRetries();
     this.flushReliable();
-    return true;
+    return !this.ended;
   }
 
   private flushReliable(): void {
+    if (this.ended || this.paused) return;
+    if (!this.pendingMessages.size) {
+      this.stopRetries();
+      return;
+    }
+    const now = Date.now();
+    const oldest = this.pendingMessages.values().next().value;
+    if (oldest && now - oldest.queuedAt >= P2PSyncSession.DELIVERY_TIMEOUT_MS) {
+      this.fail('Co-draw artwork delivery timed out. Reconnect to resynchronize artwork.');
+      return;
+    }
     const channel = this.syncChannel;
     if (!channel || channel.readyState !== 'open') return;
     for (const item of this.pendingMessages.values()) {
       if ((channel.bufferedAmount ?? 0) > MAX_DATA_CHANNEL_BUFFERED_AMOUNT) return;
-      if (item.sentAt && Date.now() - item.sentAt < 1500) continue;
-      try { channel.send(item.json); item.sentAt = Date.now(); }
+      if (item.sentAt !== null && now - item.sentAt < 1500) continue;
+      try { channel.send(item.json); item.sentAt = now; }
       catch { return; }
-    }
-    if (!this.pendingMessages.size && this.retryTimer) {
-      clearInterval(this.retryTimer);
-      this.retryTimer = null;
     }
   }
   private presenceRateLimiter: TokenBucketStore = createTokenBucketStore({ capacity: 150, refillPerMinute: 7200 });
@@ -520,6 +589,7 @@ export class P2PSyncSession {
    * Initializes RTCPeerConnection with dual RTCDataChannels.
    */
   private initPeerConnection(): RTCPeerConnection {
+    if (this.ended) throw new Error('Co-draw session has ended. Create a new session to reconnect.');
     if (typeof RTCPeerConnection === 'undefined') {
       throw new Error('WebRTC RTCPeerConnection is not supported in this environment.');
     }
@@ -539,12 +609,15 @@ export class P2PSyncSession {
     };
 
     pc.onconnectionstatechange = () => {
+      if (this.ended || this.pc !== pc) return;
       if (pc.connectionState === 'connected') {
-        this.setState('connected');
-      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
-        this.setState('disconnected');
+        this.resumeDelivery();
+      } else if (pc.connectionState === 'disconnected') {
+        this.pauseDelivery();
+      } else if (pc.connectionState === 'closed') {
+        this.closeTransport('disconnected');
       } else if (pc.connectionState === 'failed') {
-        this.setState('failed');
+        this.fail('Co-draw connection failed. Reconnect to resynchronize artwork.');
       }
     };
 
@@ -561,25 +634,26 @@ export class P2PSyncSession {
    * Hooks data channel event listeners based on channel label.
    */
   private setupChannel(channel: RTCDataChannel): void {
+    if (this.ended) { channel.close(); return; }
     if (channel.label === 'pixibun-crdt-sync') {
       this.lastReceivedDeliveryId = 0;
       this.syncChannel = channel;
       channel.bufferedAmountLowThreshold = MAX_DATA_CHANNEL_BUFFERED_AMOUNT / 2;
       channel.onbufferedamountlow = () => this.flushReliable();
       channel.onopen = () => {
-        this.flushReliable();
-        if (this.pc?.connectionState === 'connected' || channel.readyState === 'open') {
-          this.setState('connected');
-        }
+        if (!this.paused) this.resumeDelivery();
       };
+      channel.onclose = () => this.fail('Co-draw artwork channel closed. Reconnect to resynchronize artwork.');
+      channel.onerror = () => this.fail('Co-draw artwork channel failed. Reconnect to resynchronize artwork.');
       channel.onmessage = (e) => {
+        if (this.ended) return;
         try {
-          if (typeof e.data === 'string' && getUtf8ByteLength(e.data) > MAX_P2P_PAYLOAD_SIZE) {
-            console.warn('P2P payload exceeded 256KB limit. Discarding message.');
+          if (typeof e.data !== 'string' || getUtf8ByteLength(e.data) > MAX_P2P_PAYLOAD_SIZE) {
+            this.fail('Co-draw received unsupported artwork data. Reconnect with compatible PixiBun versions.');
             return;
           }
           const raw = SafeJson.parse<Record<string, unknown>>(e.data);
-          if (raw?.type === 'ACK' && Number.isSafeInteger(raw.deliveryId)) {
+          if (raw?.type === 'ACK' && Number.isSafeInteger(raw.deliveryId) && (raw.deliveryId as number) > 0) {
             const pending = this.pendingMessages.get(raw.deliveryId as number);
             if (pending) {
               this.pendingMessageBytes -= getUtf8ByteLength(pending.json);
@@ -588,21 +662,23 @@ export class P2PSyncSession {
             this.flushReliable();
             return;
           }
-          const deliveryId = Number.isSafeInteger(raw?.deliveryId) && (raw.deliveryId as number) > 0
-            ? raw.deliveryId as number
-            : undefined;
+          if (raw?.deliveryId !== undefined && (!Number.isSafeInteger(raw.deliveryId) || (raw.deliveryId as number) <= 0)) {
+            this.fail('Co-draw received an invalid delivery identifier. Reconnect with compatible PixiBun versions.');
+            return;
+          }
+          const deliveryId = raw?.deliveryId as number | undefined;
           const acknowledge = () => {
             if (deliveryId !== undefined && channel.readyState === 'open') {
               channel.send(JSON.stringify({ type: 'ACK', deliveryId }));
             }
           };
-          if (deliveryId !== undefined && deliveryId <= this.lastReceivedDeliveryId) {
-            acknowledge();
-            return;
-          }
           const msg = validateCrdtSyncMessage(raw);
           if (!msg) {
-            console.warn('P2P CRDT sync message failed validation.');
+            this.fail('Co-draw rejected invalid artwork data. Reconnect with compatible PixiBun versions.');
+            return;
+          }
+          if (deliveryId !== undefined && deliveryId <= this.lastReceivedDeliveryId) {
+            acknowledge();
             return;
           }
           if (msg.type === 'INITIAL_SYNC' && msg.ops) {
@@ -612,10 +688,12 @@ export class P2PSyncSession {
           } else if (msg.type === 'STRUCTURE_SYNC' && msg.frames) {
             this.options.onStructureSync?.(msg.frames);
           }
+          if (this.ended) return;
           if (deliveryId !== undefined) this.lastReceivedDeliveryId = deliveryId;
           acknowledge();
         } catch (err) {
           console.error('Failed to parse CRDT sync message:', err);
+          this.fail('Co-draw could not process artwork data. Reconnect to resynchronize artwork.');
         }
       };
     } else if (channel.label === 'pixibun-presence') {
@@ -743,10 +821,10 @@ export class P2PSyncSession {
    * Guest workflow: accepts host invite token, creates answer, and returns answer token.
    */
   public async acceptHostInvite(inviteToken: string): Promise<string> {
+    const hostPayload = decodeSignalingToken(inviteToken);
+    if (hostPayload.sdp.type !== 'offer') throw new Error('The host invite must contain an offer.');
     this.setState('connecting');
     this.iceCandidates = [];
-
-    const hostPayload = decodeSignalingToken(inviteToken);
     const pc = this.initPeerConnection();
 
     await pc.setRemoteDescription(new RTCSessionDescription(hostPayload.sdp));
@@ -783,8 +861,9 @@ export class P2PSyncSession {
       throw new Error('Host connection has not been initialized.');
     }
 
-    this.setState('connecting');
     const guestPayload = decodeSignalingToken(answerToken);
+    if (guestPayload.sdp.type !== 'answer') throw new Error('The guest reply must contain an answer.');
+    this.setState('connecting');
 
     await this.pc.setRemoteDescription(new RTCSessionDescription(guestPayload.sdp));
 
@@ -915,23 +994,40 @@ export class P2PSyncSession {
    * Closes data channels and peer connection.
    */
   public disconnect(): void {
-    if (this.retryTimer) clearInterval(this.retryTimer);
-    this.retryTimer = null;
+    this.closeTransport('disconnected');
+  }
+
+  private closeTransport(finalState: 'disconnected' | 'failed'): void {
+    this.ended = true;
+    this.paused = false;
+    this.pausedAt = null;
+    this.stopRetries();
+    if (this.recoveryTimer !== null) clearTimeout(this.recoveryTimer);
+    this.recoveryTimer = null;
     this.pendingMessages.clear();
     this.pendingMessageBytes = 0;
     this.lastReceivedDeliveryId = 0;
     if (this.syncChannel) {
+      this.syncChannel.onopen = null;
+      this.syncChannel.onclose = null;
+      this.syncChannel.onerror = null;
+      this.syncChannel.onmessage = null;
+      this.syncChannel.onbufferedamountlow = null;
       this.syncChannel.close();
       this.syncChannel = null;
     }
     if (this.presenceChannel) {
+      this.presenceChannel.onmessage = null;
       this.presenceChannel.close();
       this.presenceChannel = null;
     }
     if (this.pc) {
+      this.pc.onconnectionstatechange = null;
+      this.pc.onicecandidate = null;
+      this.pc.ondatachannel = null;
       this.pc.close();
       this.pc = null;
     }
-    this.setState('disconnected');
+    this.setState(finalState);
   }
 }

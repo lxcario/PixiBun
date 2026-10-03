@@ -339,6 +339,32 @@ describe('Milestone 3 — Viewport Interruption Safety, rAF Coalescing, and Zust
     });
   });
 
+  describe('Single-touch drawing ownership', () => {
+    it('ignores a secondary finger without ending or replacing the primary stroke', () => {
+      const committed = vi.fn();
+      const { container } = render(<CenterViewport onCommitHistory={committed} />);
+      const main = container.querySelector('main')!;
+      const pointer = (type: string, pointerId: number, isPrimary: boolean, x: number) => {
+        act(() => { main.dispatchEvent(new PointerEvent(type, {
+          pointerId, pointerType: 'touch', isPrimary, clientX: x, clientY: 100,
+          button: 0, bubbles: true,
+        })); });
+      };
+      pointer('pointerdown', 1, true, 100);
+      expect(HTMLElement.prototype.setPointerCapture).toHaveBeenCalledTimes(1);
+      pointer('pointerdown', 2, false, 250);
+      pointer('pointermove', 2, false, 260);
+      pointer('pointerup', 2, false, 260);
+      pointer('pointercancel', 2, false, 260);
+      expect(HTMLElement.prototype.setPointerCapture).toHaveBeenCalledTimes(1);
+      expect(HTMLElement.prototype.releasePointerCapture).not.toHaveBeenCalled();
+      expect(committed).not.toHaveBeenCalled();
+      pointer('pointermove', 1, true, 140);
+      pointer('pointerup', 1, true, 140);
+      expect(committed).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Error Message Migration (B22)', () => {
     it('emits error toast on WFC contradiction and preserves AI message backwards compatibility', () => {
       const toastSpy = vi.fn();

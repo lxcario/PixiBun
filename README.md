@@ -51,7 +51,7 @@ Cozy Classic comes in dark and light: deep plum for a late evening, warm parchme
 
 Use **Ctrl** on Windows or Linux, and **Cmd** on a Mac. Looking for a tool? **Ctrl/Cmd+K** opens a searchable list of tools and actions. The [shortcut reference](docs/contracts/shortcuts.md) is there when you want to settle into a rhythm.
 
-PixiBun is happiest with small sprites and tiles, especially around 16–128 pixels. You can use a canvas up to 2,048 pixels per side and import files up to 50 MiB (about 52 MB). For larger projects, check the [project](docs/contracts/storage.md) and [memory limits](docs/contracts/rendering.md).
+PixiBun is happiest with small sprites and tiles, especially around 16–128 pixels. **File → Canvas size…** offers 4–512 pixels per side. Imported projects can admit up to 2,048 pixels per side within the [project](docs/contracts/storage.md) and [memory limits](docs/contracts/rendering.md). Import files are limited to 50 MiB (about 52 MB).
 
 ## Keep your work safe
 

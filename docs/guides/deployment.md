@@ -6,14 +6,19 @@ The root, Studio, Playground, service-worker route and optional relay have serve
 
 ## Published configuration
 
-The repository's [GitHub deploy workflow](../../.github/workflows/deploy.yml) can publish main to Vercel after CI succeeds when its deployment credentials are configured. Its missing-credentials notice also describes a possible independent Vercel GitHub App deployment on push; the actual integration settings are not established by this checkout. Pushing main can therefore initiate production publication. Use a review branch when publishing source without a production decision, and verify host settings before an intended release.
+For the [3 October audit session publication](../research/2026-10-03-audit-session-publication.md), the user explicitly requested a push to main after its deployment implications were stated. That authorization applies to this publication; the workflow's actual CI/deployment outcome still requires its own verification.
+
+The repository's [GitHub deploy workflow](../../.github/workflows/deploy.yml) can publish main to Vercel when CI succeeds for a **push to this repository's main branch** and deployment credentials are configured. Pull-request runs, fork runs, other branches, unsuccessful runs and incomplete event metadata are rejected by the job condition. Checkout and build metadata both use the successful run's full commit SHA. The job has read-only repository permissions, does not persist checkout credentials and has a 30-minute deadline. Its missing-credentials notice also describes a possible independent Vercel GitHub App deployment on push; the actual integration settings are not established by this checkout. Pushing main can therefore initiate production publication. Use a review branch when publishing source without a production decision, and verify host settings before an intended release.
+
+The pinned Vercel CLI receives `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` through step environment variables. Tokens are not embedded in command arguments. All CLI steps are skipped when a required credential is absent. The configured Vercel install command is `npm ci`, preserving the checked-in dependency resolution. Do not add untrusted artifact downloads or pull-request code execution to this privileged workflow.
 
 Copy the safe [environment template](../../.env.example) into local/operator configuration. Do not commit secrets or real upstream credentials.
 
 | Variable | Scope |
 | --- | --- |
 | `DIAGNOSTICS_RELAY_URL` | Optional server-owned HTTPS diagnostic upstream. Leave unset to disable forwarding on the endpoint. Client relay opt-in is separate |
-| `SW_CACHE_VERSION` | Build-time service-worker cache identity. Change deliberately for a new shell; not a database migration or runtime rollback mechanism |
+| `SW_CACHE_VERSION` | Optional build-time service-worker identity override. Use a unique tag for every distinct application build; not a database migration or runtime rollback mechanism |
+| `VERCEL_GIT_COMMIT_SHA` | Full deployment commit used for cache identity when no explicit override is set. The deploy workflow supplies the tested commit |
 | `PIXIBUN_PRODUCTION_PORT` | Local production-test server, default 3100; integer 1024–65535. Non-default output is `artifacts/playwright-production-PORT` |
 
 Preserve request-origin/header behavior through the proxy. A provided Origin must equal the request URL's exact scheme/host/port; absent Origin is accepted. This is browser-origin admission, not authentication. Sanitize forwarded client-IP headers at a trusted proxy; direct clients can otherwise spoof process-local rate-limit keys. The relay limits 64 KiB bodies, 100 events, 12 requests/minute per process/client key, and a five-second upstream deadline. It forwards bounded generic envelopes, not full runtime `DiagnosticEntry` schemas. HTTPS configuration alone is not a universal guarantee against operator error or upstream redirect risk.
@@ -23,6 +28,8 @@ Preserve request-origin/header behavior through the proxy. A provided Origin mus
 Follow the [release-readiness guide](release-readiness.md) for candidate identity, two-build transitions, host checks and rollback qualification. Dated local checks belong in their execution records, not in the historical release sign-off.
 
 Warm-cache offline editing depends on a previous successful online load, service-worker install/cache and stored project. First visits offline cannot fetch the editor. Browser storage/cache can be evicted. API calls remain network-dependent.
+
+Build identity resolves in this order: explicit `SW_CACHE_VERSION`, package version plus full `VERCEL_GIT_COMMIT_SHA`, then package version plus full Git HEAD. An explicit tag must start with a letter or number and contain at most 192 letters, numbers, dots, underscores, plus signs or hyphens. Malformed provider metadata fails configuration. A production source archive without Git or deployment metadata must supply a unique override; it cannot silently reuse a `local` identity. Development without Git receives a fresh session identity. Commit-based identities assume committed build inputs; rebuilds of changed local files or different build settings under the same commit need distinct overrides.
 
 Verify installation, a warm offline reload/edit/save/reopen, update availability, dirty-work protection and the selected refresh path against the deployed build. Cache version changes do not convert stored records. Qualify an old build against new ArrayBuffer-backed raster records and optional metadata before rollback; use portable backups and never clear local artwork automatically.
 

@@ -3,18 +3,13 @@
 import { readImportFile, reportImportError } from '@/lib/project/importFile';
 import { useEffect } from 'react';
 import type { ImportPayload } from '@/components/modals/ImportModal';
+import { shouldIgnoreWorkspaceEvent } from '@/lib/input/workspaceKeyboard';
 
 export function useStudioClipboard(handleOpenImport: (payload: ImportPayload) => void) {
   // Global Clipboard Paste (Ctrl+V) for Image Files
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
+      if (shouldIgnoreWorkspaceEvent(e)) return;
 
       const items = e.clipboardData?.items;
       if (!items) return;

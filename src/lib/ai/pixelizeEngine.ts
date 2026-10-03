@@ -42,6 +42,7 @@ export interface PixelizeOptions {
   cleanAlpha: boolean;     // Binary threshold (alpha >= 128 -> 255, else 0)
   removeBackground?: boolean; // Automatically remove solid corner/background color
   bgTolerance?: number;    // 0.0 to 1.0 (default 0.15)
+  encodePreview?: boolean;
 }
 
 export interface PixelizeResult {
@@ -131,8 +132,6 @@ export function downsampleImage(
 ): ImageData {
   const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
   const dstCanvas = document.createElement('canvas');
-  dstCanvas.width = dstW;
-  dstCanvas.height = dstH;
   const dstCtx = dstCanvas.getContext('2d')!;
   const dstImgData = dstCtx.createImageData(dstW, dstH);
   const dstData = dstImgData.data;
@@ -242,6 +241,7 @@ export function downsampleImage(
     return dstImgData;
   } finally {
     releaseFloat32Buffer(gradientMap);
+    dstCanvas.width = 0; dstCanvas.height = 0;
   }
 }
 
@@ -580,91 +580,98 @@ export function processImageToPixelArt(
   const tempSrc = document.createElement('canvas');
   tempSrc.width = srcW;
   tempSrc.height = srcH;
-  const tCtx = tempSrc.getContext('2d', { willReadFrequently: true })!;
-  tCtx.imageSmoothingEnabled = false;
-  tCtx.drawImage(srcCanvasOrImage, 0, 0);
+  let outCanvas: HTMLCanvasElement | undefined;
+  try {
+    const tCtx = tempSrc.getContext('2d', { willReadFrequently: true })!;
+    tCtx.imageSmoothingEnabled = false;
+    tCtx.drawImage(srcCanvasOrImage, 0, 0);
 
-  // 1. Spatial Downsampling
-  const downsampled = downsampleImage(
-    tCtx,
-    srcW,
-    srcH,
-    options.targetWidth,
-    options.targetHeight,
-    options.fitMode,
-    options.samplingMode
-  );
-
-  // 2. Alpha & Background cleanup
-  cleanAlphaAndBackground(downsampled, options.targetWidth, options.targetHeight, {
-    cleanAlpha: options.cleanAlpha,
-    removeBackground: options.removeBackground,
-    bgTolerance: options.bgTolerance,
-  });
-
-  // 3. Color Quantization Palette Construction
-  let paletteRgb: [number, number, number][] = [];
-  const extractedHexSet = new Set<string>();
-
-  if (options.colorMode === 'active-palette' && options.activePalette && options.activePalette.length > 0) {
-    paletteRgb = options.activePalette.map((hex) => {
-      const { r, g, b } = hexToRgba(hex);
-      return [r, g, b];
-    });
-    options.activePalette.forEach((c) => extractedHexSet.add(c));
-  } else if (
-    options.colorMode === 'reduce-8' ||
-    options.colorMode === 'reduce-16' ||
-    options.colorMode === 'reduce-32'
-  ) {
-    const kColors = options.colorMode === 'reduce-8' ? 8 : options.colorMode === 'reduce-16' ? 16 : 32;
-    const opaquePixels: OklabColor[] = [];
-    const d = downsampled.data;
-
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] > 30) {
-        opaquePixels.push(rgbToOklab(d[i], d[i + 1], d[i + 2]));
-      }
-    }
-
-    const oklabCentroids = extractOklabPalette(opaquePixels, kColors);
-    paletteRgb = oklabCentroids.map((c) => oklabToRgb(c.L, c.a, c.b));
-    paletteRgb.forEach(([r, g, b]) => extractedHexSet.add(rgbaToHex(r, g, b, 255)));
-  }
-
-  // 4. Quantization & Dithering
-  if (paletteRgb.length > 0) {
-    quantizeAndDither(
-      downsampled,
+    // 1. Spatial Downsampling
+    const downsampled = downsampleImage(
+      tCtx,
+      srcW,
+      srcH,
       options.targetWidth,
       options.targetHeight,
-      paletteRgb,
-      options.ditherMode,
-      options.ditherStrength ?? 0.75
+      options.fitMode,
+      options.samplingMode
     );
-  } else {
-    // True color: extract unique colors
-    const d = downsampled.data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] > 30) {
-        extractedHexSet.add(rgbaToHex(d[i], d[i + 1], d[i + 2], 255));
+
+    // 2. Alpha & Background cleanup
+    cleanAlphaAndBackground(downsampled, options.targetWidth, options.targetHeight, {
+      cleanAlpha: options.cleanAlpha,
+      removeBackground: options.removeBackground,
+      bgTolerance: options.bgTolerance,
+    });
+
+    // 3. Color Quantization Palette Construction
+    let paletteRgb: [number, number, number][] = [];
+    const extractedHexSet = new Set<string>();
+
+    if (options.colorMode === 'active-palette' && options.activePalette && options.activePalette.length > 0) {
+      paletteRgb = options.activePalette.map((hex) => {
+        const { r, g, b } = hexToRgba(hex);
+        return [r, g, b];
+      });
+      options.activePalette.forEach((c) => extractedHexSet.add(c));
+    } else if (
+      options.colorMode === 'reduce-8' ||
+      options.colorMode === 'reduce-16' ||
+      options.colorMode === 'reduce-32'
+    ) {
+      const kColors = options.colorMode === 'reduce-8' ? 8 : options.colorMode === 'reduce-16' ? 16 : 32;
+      const opaquePixels: OklabColor[] = [];
+      const d = downsampled.data;
+
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 30) {
+          opaquePixels.push(rgbToOklab(d[i], d[i + 1], d[i + 2]));
+        }
+      }
+
+      const oklabCentroids = extractOklabPalette(opaquePixels, kColors);
+      paletteRgb = oklabCentroids.map((c) => oklabToRgb(c.L, c.a, c.b));
+      paletteRgb.forEach(([r, g, b]) => extractedHexSet.add(rgbaToHex(r, g, b, 255)));
+    }
+
+    // 4. Quantization & Dithering
+    if (paletteRgb.length > 0) {
+      quantizeAndDither(
+        downsampled,
+        options.targetWidth,
+        options.targetHeight,
+        paletteRgb,
+        options.ditherMode,
+        options.ditherStrength ?? 0.75
+      );
+    } else {
+      // True color: extract unique colors
+      const d = downsampled.data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 30) {
+          extractedHexSet.add(rgbaToHex(d[i], d[i + 1], d[i + 2], 255));
+          if (extractedHexSet.size >= 32) break;
+        }
       }
     }
-  }
 
-  // 5. Final Output Canvas
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = options.targetWidth;
-  outCanvas.height = options.targetHeight;
-  const outCtx = outCanvas.getContext('2d')!;
-  outCtx.imageSmoothingEnabled = false;
-  outCtx.putImageData(downsampled, 0, 0);
+    // 5. Final Output Canvas
+    outCanvas = document.createElement('canvas');
+    outCanvas.width = options.targetWidth;
+    outCanvas.height = options.targetHeight;
+    const outCtx = outCanvas.getContext('2d')!;
+    outCtx.imageSmoothingEnabled = false;
+    outCtx.putImageData(downsampled, 0, 0);
 
-  return {
-    canvas: outCanvas,
-    dataUrl: outCanvas.toDataURL('image/png'),
-    extractedPalette: Array.from(extractedHexSet).slice(0, 32),
-    width: options.targetWidth,
-    height: options.targetHeight,
-  };
+    return {
+      canvas: outCanvas,
+      dataUrl: options.encodePreview === false ? '' : outCanvas.toDataURL('image/png'),
+      extractedPalette: Array.from(extractedHexSet).slice(0, 32),
+      width: options.targetWidth,
+      height: options.targetHeight,
+    };
+  } catch (error) {
+    if (outCanvas) { outCanvas.width = 0; outCanvas.height = 0; }
+    throw error;
+  } finally { tempSrc.width = 0; tempSrc.height = 0; }
 }

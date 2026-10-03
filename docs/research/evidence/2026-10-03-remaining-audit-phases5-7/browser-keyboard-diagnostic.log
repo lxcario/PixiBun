@@ -1,0 +1,51 @@
+[WebServer] (node:15052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:27476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [webkit] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content (11.8s)
+
+
+  1) [webkit] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Skip to content', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for getByRole('link', { name: 'Skip to content', exact: true })
+        22 × locator resolved to <a href="#top" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-[99999] px-4 py-2 bg-[var(--desk-surface)] text-[var(--accent-gold)] border-2 border-[var(--accent-gold)] font-mono text-xs rounded shadow-lg">Skip to content</a>
+           - unexpected value "inactive"
+
+
+      28 |   // WebKit's default link navigation uses Option/Alt-Tab; Chromium/Firefox use Tab.
+      29 |   await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
+    > 30 |   await expect(page.getByRole('link', { name: 'Skip to content', exact: true })).toBeFocused();
+         |                                                                                  ^
+      31 |   await page.keyboard.press('Enter');
+      32 |   await expect(page).toHaveURL(/\/#top$/);
+      33 |   await expect(page.locator('main#top')).toBeFocused();
+        at D:\PixiBun\tests\production\remainingAuditSafety.spec.ts:30:82
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3146\remainingAuditSafety-landi-a0ec0-age-and-focuses-its-content-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3146\remainingAuditSafety-landi-a0ec0-age-and-focuses-its-content-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3146\remainingAuditSafety-landi-a0ec0-age-and-focuses-its-content-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3146\remainingAuditSafety-landi-a0ec0-age-and-focuses-its-content-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content 

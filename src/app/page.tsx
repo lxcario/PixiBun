@@ -26,7 +26,7 @@ export default function Home() {
       {/* Cozy Atelier Background (Soft Lamplight Radiance, Candle Follow, Embers, Shelves) */}
       <CozyAtelierBackground />
 
-      <main id="top" className="min-h-screen bg-transparent text-[var(--text-heading)] flex flex-col relative z-10">
+      <main id="top" tabIndex={-1} className="min-h-screen bg-transparent text-[var(--text-heading)] flex flex-col relative z-10">
         <LandingNav />
 
         {/* Hero & Interactive Canvas Showcase with Tactile Cursor & Click Sparks (UX-11) */}

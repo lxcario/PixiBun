@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
+import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 
 import type { SaveResult } from '@/types/project';
 
@@ -24,19 +25,13 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore shortcut if typing in an input or textarea
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
+      if (shouldIgnoreWorkspaceKey(e) || e.altKey) return;
+      const key = workspaceShortcutKey(e);
 
       const state = useStudioStore.getState();
 
       // Save now flushes browser storage. Save As explicitly creates a project file.
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      if ((e.ctrlKey || e.metaKey) && key === 's') {
         e.preventDefault();
         if (optionsRef.current.autosaveTimerRef.current !== null) {
           window.clearTimeout(optionsRef.current.autosaveTimerRef.current);
@@ -59,14 +54,14 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       }
 
       // Command Palette: Ctrl/Cmd + K
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      if ((e.ctrlKey || e.metaKey) && key === 'k') {
         e.preventDefault();
         optionsRef.current.setIsCommandPaletteOpen?.((prev) => !prev);
         return;
       }
 
       // Undo / Redo
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      if ((e.ctrlKey || e.metaKey) && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
           optionsRef.current.handleRedo();
@@ -77,7 +72,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       }
 
       // Redo Alternate (Ctrl/Cmd + Y)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      if ((e.ctrlKey || e.metaKey) && key === 'y') {
         e.preventDefault();
         optionsRef.current.handleRedo();
         return;
@@ -114,7 +109,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       }
 
       // Single Key & Shift Key Shortcuts
-      const key = e.key.toLowerCase();
+      if (e.ctrlKey || e.metaKey) return;
       switch (key) {
         case 'h': {
           if (!e.ctrlKey && !e.metaKey) {
@@ -209,7 +204,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           break;
         case ' ':
           // Space activates a focused menu button; it must not start playback.
-          if (e.target instanceof Element && e.target.closest('button, summary, [role="button"]')) return;
+          if (isWorkspaceControlTarget(e)) return;
           e.preventDefault();
           state.setIsPlaying(!state.isPlaying);
           break;

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Locked layer rejects Pen, Eraser and Fill without adding phantom Undo steps",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Open the Layers tab and lock the active artwork layer."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify its control now offers Unlock layer."
+    },
+    {
+      "type": "action",
+      "description": "Attempt a Pen stroke through the empty middle of the canvas."
+    },
+    {
+      "type": "action",
+      "description": "Select Eraser and attempt to erase the lower-right stroke."
+    },
+    {
+      "type": "action",
+      "description": "Select Bucket and attempt to fill the transparent middle of the canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both original strokes and transparent background remain unchanged after all three blocked tools."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the layer becomes unlocked after this single Undo; blocked editing attempts have not consumed Undo steps."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the lower-right vertical stroke disappears; the upper-left horizontal stroke remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    }
+  ]
+}

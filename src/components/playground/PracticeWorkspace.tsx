@@ -23,7 +23,7 @@ class PracticeBoundary extends React.Component<React.PropsWithChildren, { failed
 }
 
 function PracticeMessage({ message }: { message: string }) {
-  return <main className="min-h-dvh flex flex-col items-center justify-center gap-5 p-6 bg-[var(--desk-bg)] text-[var(--text-heading)] font-mono">
+  return <main id="main-workspace" tabIndex={-1} className="min-h-dvh flex flex-col items-center justify-center gap-5 p-6 bg-[var(--desk-bg)] text-[var(--text-heading)] font-mono">
     <h1 className="text-xl">A little space to practice</h1>
     <p role="status" className="max-w-lg text-center">{message}</p>
     <Link href="/studio" className="border-2 border-[var(--desk-border)] px-4 py-2">Return to drawing</Link>

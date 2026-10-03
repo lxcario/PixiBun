@@ -1,0 +1,32 @@
+{
+  "runId": "7679ad43-6525-4f44-a40f-0dfd62d7ba1a",
+  "testId": "f47d2b54-d4ea-4bfb-88d8-29c4e63b3670",
+  "testTitle": "Challenge: Help dialog absorbs destructive shortcuts without moving selection or consuming artwork history",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "status": "blocked",
+  "source": "cli",
+  "createdAt": "2026-10-03T17:49:41.174Z",
+  "startedAt": null,
+  "finishedAt": "2026-10-03T17:49:41.229Z",
+  "codeVersion": null,
+  "targetUrl": "http://127.0.0.1:3150",
+  "environment": {
+    "id": "042c6caa-29f1-4fa5-83e3-e0faa0ae189e",
+    "name": "default"
+  },
+  "createdFrom": null,
+  "failedStepIndex": null,
+  "failureKind": null,
+  "error": "[Tunnel] Deterministic replay cannot run through a tunnel. Drop --no-auto-heal so the agent can run through your tunnel.",
+  "videoUrl": null,
+  "stepSummary": {
+    "total": 0,
+    "completed": 0,
+    "passedCount": 0,
+    "failedCount": 0
+  },
+  "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/f47d2b54-d4ea-4bfb-88d8-29c4e63b3670",
+  "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/execution/008627d6-e456-47d3-bbd1-c58425631646",
+  "apiOutput": null,
+  "trace": null
+}

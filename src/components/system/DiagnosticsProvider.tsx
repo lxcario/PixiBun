@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { captureDiagnostic } from '@/lib/diagnostics/capture';
 import { initWebVitals } from '@/lib/diagnostics/vitals';
+import { diagnosticReason } from '@/lib/diagnostics/reason';
 
 export function DiagnosticsProvider({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
@@ -14,18 +15,13 @@ export function DiagnosticsProvider({ children }: { children?: React.ReactNode }
       captureDiagnostic({
         kind: 'error',
         message: event.message || 'Window error event',
-        detail: event.error?.stack || `${event.filename}:${event.lineno}:${event.colno}`,
+        detail: event.error ? diagnosticReason(event.error).detail : `${event.filename}:${event.lineno}:${event.colno}`,
       });
     };
 
     // 3. Unhandled promise rejection listener
     const handleRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason;
-      const message =
-        typeof reason === 'string'
-          ? reason
-          : reason?.message || 'Unhandled promise rejection';
-      const detail = reason?.stack || JSON.stringify(reason);
+      const { message, detail } = diagnosticReason(event.reason);
 
       captureDiagnostic({
         kind: 'unhandled-rejection',

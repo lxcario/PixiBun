@@ -124,6 +124,7 @@ export const StudioLayout: React.FC = () => {
   const {
     autosaveTimerRef,
     runAutosave,
+    joinCoDrawGuest,
     handleCommitHistory,
     autosaveError,
     saveConflict,
@@ -533,6 +534,7 @@ export const StudioLayout: React.FC = () => {
       {/* Peer-to-Peer Co-Draw Modal (lazy-loaded) */}
       {isCoDrawOpen && (
         <CoDrawModal
+          onJoinGuest={joinCoDrawGuest}
           isOpen={isCoDrawOpen}
           onClose={() => setIsCoDrawOpen(false)}
         />

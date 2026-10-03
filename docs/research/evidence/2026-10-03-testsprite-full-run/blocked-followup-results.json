@@ -1,0 +1,39 @@
+{
+  "tunnel": {
+    "clientId": "e09d7de2-4a13-4c36-a2b0-1f62c3ae76ca",
+    "adopted": false
+  },
+  "maxConcurrency": 2,
+  "results": [
+    {
+      "testId": "f47d2b54-d4ea-4bfb-88d8-29c4e63b3670",
+      "status": "blocked",
+      "runId": "3c1f1871-cdf4-4e25-91f9-785bd28df788",
+      "testTitle": "Challenge: Help dialog absorbs destructive shortcuts without moving selection or consuming artwork history",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "startedAt": null,
+      "finishedAt": "2026-10-03T19:44:39.484Z",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/f47d2b54-d4ea-4bfb-88d8-29c4e63b3670",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/execution/d2448c5d-b3ec-48dc-9fe3-b8ad3381943d"
+    },
+    {
+      "testId": "418746da-f794-41c7-82d7-b00746a2b1b9",
+      "status": "passed",
+      "runId": "f547c88b-f3f4-46a6-88f6-168fee836d50",
+      "testTitle": "Challenge: Practice Return restores artwork and Redo; Keep creates a separate reloadable project",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "startedAt": null,
+      "finishedAt": "2026-10-03T19:46:58.974Z",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/418746da-f794-41c7-82d7-b00746a2b1b9",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/execution/41bb1659-85c9-4574-a8b3-0fa40bf3fb1c"
+    }
+  ],
+  "skipped": [],
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "timedOut": 0,
+    "notRun": 0
+  }
+}

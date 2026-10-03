@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Extreme resize values remain bounded and Cancel preserves artwork and Undo",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Open File, then Canvas size… to open Resize Canvas & Frame Bounds."
+    },
+    {
+      "type": "action",
+      "description": "Enter 999999 in WIDTH (PX)."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the displayed width is capped at 512 and the height stays in the supported 4–512 range."
+    },
+    {
+      "type": "action",
+      "description": "Enter 0 in HEIGHT (PX)."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the displayed height is at least 4 and both dimensions remain in the supported range."
+    },
+    {
+      "type": "action",
+      "description": "Uncheck Scale Artwork (Resample)."
+    },
+    {
+      "type": "action",
+      "description": "Choose Anchor bottom-right."
+    },
+    {
+      "type": "action",
+      "description": "Click Cancel in the resize dialog."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the original canvas dimensions, both stroke positions and transparent background remain unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the lower-right vertical stroke disappears; the upper-left horizontal stroke remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    }
+  ]
+}

@@ -9,6 +9,30 @@ const SETTINGS_KEY = 'pixibun-diagnostics';
 const MAX_DIAGNOSTICS_ENTRIES = 200;
 const MAX_DETAIL_LENGTH = 2048;
 
+// Per-tab admission: twenty-event burst, sixty events/minute, ten-second duplicate window.
+const recentEvents = new Map<string, number>();
+let tokens = 20, lastRefill = Date.now();
+let storageWrites: Promise<void> = Promise.resolve();
+let pendingWrites = 0;
+let relayQueue: DiagnosticEntry[] = [];
+let relayTimer: ReturnType<typeof setTimeout> | undefined;
+function cancelRelay() {
+  if (relayTimer !== undefined) clearTimeout(relayTimer);
+  relayTimer = undefined; relayQueue = [];
+}
+function queueRelay(entry: DiagnosticEntry) {
+  const settings = getDiagnosticsSettings();
+  if (!settings.enabled || !settings.relayOptIn) return;
+  if (relayQueue.length < 10) relayQueue.push(entry);
+  if (relayTimer !== undefined) return;
+  relayTimer = setTimeout(() => {
+    relayTimer = undefined;
+    const batch = relayQueue; relayQueue = [];
+    const current = getDiagnosticsSettings();
+    if (current.enabled && current.relayOptIn && batch.length) void relayDiagnostics(batch);
+  }, 5000);
+}
+
 let memorySettings: DiagnosticsSettings = { enabled: true, relayOptIn: false };
 
 function getSafeStorage(): Storage | null {
@@ -37,6 +61,7 @@ export function getDiagnosticsSettings(): DiagnosticsSettings {
         };
         return memorySettings;
       }
+      memorySettings = { enabled: true, relayOptIn: false };
     } catch {
       // Invalid persisted consent must never inherit a previous opt-in.
       memorySettings = { enabled: true, relayOptIn: false };
@@ -54,6 +79,7 @@ export function setDiagnosticsSettings(
     relayOptIn: partial.relayOptIn === undefined ? current.relayOptIn : partial.relayOptIn === true,
   };
   memorySettings = updated;
+  if (!updated.enabled || !updated.relayOptIn) cancelRelay();
   const storage = getSafeStorage();
   if (storage) {
     try {
@@ -88,13 +114,23 @@ export async function captureDiagnostic(
         : entry.detail
       : undefined;
 
+    if (pendingWrites >= 20) return null;
+    const message = (entry.message || 'Unknown diagnostic event').slice(0, 1024);
+    const boundedRoute = route.slice(0, 512), now = Date.now();
+    const fingerprint = JSON.stringify([entry.kind, message, detail, boundedRoute]);
+    tokens = Math.min(20, tokens + Math.max(0, now - lastRefill) / 1000); lastRefill = now;
+    const previous = recentEvents.get(fingerprint);
+    if ((previous !== undefined && now - previous < 10_000) || tokens < 1) return null;
+    tokens--;
+    recentEvents.delete(fingerprint); recentEvents.set(fingerprint, now);
+    if (recentEvents.size > 100) recentEvents.delete(recentEvents.keys().next().value!);
     const fullEntry: DiagnosticEntry = {
       id: createId('diag'),
       kind: entry.kind,
       timestamp: Date.now(),
-      message: entry.message || 'Unknown diagnostic event',
+      message,
       detail,
-      route,
+      route: boundedRoute,
       appVersion: APP_VERSION,
     };
 
@@ -104,31 +140,33 @@ export async function captureDiagnostic(
       db?.diagnostics
     ) {
       try {
-        await db.diagnostics.put(fullEntry);
+        pendingWrites++;
+        const write = storageWrites.then(async () => {
+          await db.diagnostics.put(fullEntry);
 
-        // FIFO Prune to keep at most MAX_DIAGNOSTICS_ENTRIES
-        const count = await db.diagnostics.count();
-        if (count > MAX_DIAGNOSTICS_ENTRIES) {
-          const excess = count - MAX_DIAGNOSTICS_ENTRIES;
-          const oldest = await db.diagnostics
-            .orderBy('timestamp')
-            .limit(excess)
-            .primaryKeys();
-          await db.diagnostics.bulkDelete(oldest);
-        }
+          // FIFO Prune to keep at most MAX_DIAGNOSTICS_ENTRIES
+          const count = await db.diagnostics.count();
+          if (count > MAX_DIAGNOSTICS_ENTRIES) {
+            const excess = count - MAX_DIAGNOSTICS_ENTRIES;
+            const oldest = await db.diagnostics
+              .orderBy('timestamp')
+              .limit(excess)
+              .primaryKeys();
+            await db.diagnostics.bulkDelete(oldest);
+          }
+        });
+        storageWrites = write.catch(() => {});
+        await write;
       } catch (storageErr) {
         // IndexedDB storage failed (e.g. quota, private browsing, test env)
         console.warn('Diagnostics storage failed:', storageErr);
+      } finally {
+        pendingWrites--;
       }
     }
 
-    // Strictly opt-in relay
-    if (settings.relayOptIn) {
-      // Fire-and-forget relay
-      relayDiagnostics([fullEntry]).catch(() => {
-        // relay failure must never crash the app
-      });
-    }
+    // Consent is checked again after storage and immediately before a delayed batch sends.
+    queueRelay(fullEntry);
 
     return fullEntry;
   } catch (err) {

@@ -8,16 +8,20 @@
 
 Open **Studio → Co-Draw**. The current workflow connects **one host and one guest** using WebRTC and manually exchanged tokens. There is no account, lobby, multi-person room or cloud-sync service.
 
-1. Both people should back up important work before joining. The host chooses the project that will be shared; the guest should preserve any local artwork before accepting that session's workspace.
+1. The host chooses the project to share. Joining as a guest first saves the current drawing in Gallery and opens a separate **Shared Drawing** with its own autosave. Keep a portable backup of important work as well.
 2. Choose a routing mode. **Internet (STUN)** uses Google STUN to discover connection routes. **Local LAN** omits STUN and is intended for peers on the same reachable local network. Network/browser restrictions can prevent a connection; no general relay/TURN fallback is promised.
 3. The host chooses **Host Session → Generate Invite Code**, then sends the invite to the intended partner through a channel they choose.
-4. The guest chooses **Join Session**, pastes the host invite and generates an **Answer Token**. Send that token back to the host.
+4. The guest chooses **Join Session**, pastes the host invite and selects **Save My Drawing & Join Separately** to generate an **Answer Token**. If saving or invite setup fails, the original stays open. Send the answer back to the host.
 5. The host pastes the answer and completes the connection. Wait for **Connected** rather than treating a generated invite as success. Paint on the available layers; remote pixel updates and cursor indicators appear while the session is connected.
-6. Use **Disconnect Session** to end the connection. Save local work and make a portable backup when you are done.
+6. Use **Disconnect Session** to end the connection. The shared drawing stays open and saves separately; reopen the original from Gallery when you want to return. Opening another project ends the session. Closing the dialog keeps an established session running; closing or cancelling while a guest join is still being prepared cancels that attempt. Make a portable backup when you are done.
 
 The host owns structural changes such as frames and layers; guests paint within the permitted structure. Initial session admission allows **262,144 total layer pixels** and **32,000 painted pixels at join**. This is a smaller workspace limit than ordinary local editing. Collaboration is an implemented protocol/integration; real two-machine, varied-network and long-session stress qualification remains pending. The screenshot shows initial controls, not a completed live connection.
 
 Tokens can contain connection addresses and session information. Share them with the person joining your drawing. The canvas protocol is peer-to-peer; that does not mean visiting the website makes no network requests. Internet STUN contacts an external service, and the site still loads its application assets. “Local LAN (Zero-Egress)” describes the connection mode's STUN choice, not a proof that the whole deployed site is isolated from every external service.
+
+Brief connection interruptions pause sending for up to 30 seconds while retaining queued artwork. If the connection recovers, sending resumes. A failed connection, delivery timeout, or invalid artwork packet ends the session; the drawing stays open. Open Co-Draw to inspect the error, then disconnect and create a new invite to resynchronize. Keep a backup of each peer's drawing before reconnecting if they have diverged. Shared layer names are limited to 128 characters so admitted structure can still be saved as a project.
+
+Invalid or unusually large invite/reply tokens are refused before being applied to the peer connection. Paste a fresh unmodified invite or reply from the other person; the application accepts up to 256 typed candidate entries per token. That limit bounds the manual pairing workload.
 
 ## Local saves and offline drawing
 
@@ -39,6 +43,8 @@ Open **Studio → Help**, or **?** when the canvas owns keyboard input. The guid
 | Opt-in remote crash relay | Enables the optional reporting path; off by default; destination is operator-configured | Enable deliberately only when you want that reporting path |
 | Export Diagnostics JSON | Downloads local records for inspection/sharing | Read the file before sharing it; free-text errors can include paths or context |
 | Clear Stored Logs | Clears retained diagnostic records | This is separate from deleting your artwork/projects |
+
+Repeated diagnostic events are suppressed for ten seconds, and burst/rate and pending-write limits can drop excess entries. Remote reporting sends small delayed batches and rechecks consent before sending; turning it off clears queued batches. Reports are best-effort and may be lost on page close.
 
 “Zero telemetry” in the in-app paragraph means remote reporting is off by default. Local logging does run by default; an opted-in configured relay can send reports. No upstream configuration means no forwarding to an upstream service. These distinctions are documented in the [security boundaries](../contracts/security-boundaries.md).
 

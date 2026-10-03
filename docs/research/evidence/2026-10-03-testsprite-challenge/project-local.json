@@ -1,0 +1,13 @@
+{
+  "id": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "originMode": "local",
+  "name": "PixiBun Local Safety Challenge",
+  "type": "frontend",
+  "createdFrom": "cli",
+  "createdAt": "2026-10-03T17:32:23.032Z",
+  "updatedAt": "2026-10-03T17:32:23.057Z",
+  "targetUrl": "http://127.0.0.1:3150",
+  "testIdAttributes": [
+    "data-testid"
+  ]
+}

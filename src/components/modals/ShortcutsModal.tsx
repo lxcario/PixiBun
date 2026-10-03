@@ -33,6 +33,10 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
     >
       {/* Shortcuts List by Category */}
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-3.5 pr-2">
+        <p className="text-xs text-[var(--text-muted)]">
+          Letter shortcuts use QWERTY key positions. Symbols follow your keyboard.
+          Workspace shortcuts pause while a dialog is open or you’re typing.
+        </p>
         {CATEGORIES.map((cat) => (
           <div key={cat} className="flex flex-col gap-1.5">
             <span className="text-[11px] font-mono font-bold text-[#f0be7c] uppercase border-b border-[var(--desk-border)] pb-0.5 tracking-wider">

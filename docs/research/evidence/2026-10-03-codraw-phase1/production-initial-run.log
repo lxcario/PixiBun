@@ -1,0 +1,65 @@
+[WebServer] (node:31940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:24192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (7.0s)
+  ok 2 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:64:5 › compiled invalid invite preserves the original drawing and its Undo history (1.9s)
+(node:22312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (12.8s)
+  ok 4 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:64:5 › compiled invalid invite preserves the original drawing and its Undo history (3.5s)
+(node:30912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (22.7s)
+(node:20136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:64:5 › compiled invalid invite preserves the original drawing and its Undo history (9.2s)
+
+
+  1) [webkit] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery 
+
+    Error: expect(locator).not.toHaveValue(expected) failed
+
+    Locator: getByRole('textbox', { name: 'Generated invite code' })
+    Expected: not ""
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "not toHaveValue" with timeout 10000ms
+      - waiting for getByRole('textbox', { name: 'Generated invite code' })
+
+
+      35 |     await host.getByRole('button', { name: 'Generate Invite Code' }).click();
+      36 |     const invite = host.getByRole('textbox', { name: 'Generated invite code' });
+    > 37 |     await expect(invite).not.toHaveValue('');
+         |                              ^
+      38 |     await coDraw(page);
+      39 |     await page.getByRole('button', { name: 'Join Session', exact: true }).click();
+      40 |     await page.getByRole('textbox', { name: 'Host invite code input' }).fill(await invite.inputValue());
+        at D:\PixiBun\tests\production\coDrawGuestIsolation.spec.ts:37:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\phase1-codraw-2026-10-03\production-results\coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\phase1-codraw-2026-10-03\production-results\coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\phase1-codraw-2026-10-03\production-results\coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\phase1-codraw-2026-10-03\production-results\coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\phase1-codraw-2026-10-03\production-results\coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery 
+  5 passed (1.0m)

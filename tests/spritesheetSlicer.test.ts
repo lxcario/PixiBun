@@ -5,22 +5,12 @@ import {
   sliceSpriteSheet,
   extractPaletteFromFrames,
 } from '@/lib/canvas/spritesheetSlicer';
+import { makeCanvas } from './helpers/mockCanvas';
 
 function createMockCanvas(width: number, height: number, initialPixels?: Uint8ClampedArray): HTMLCanvasElement {
-  const pixelData = initialPixels ?? new Uint8ClampedArray(width * height * 4);
-  return {
-    width,
-    height,
-    getContext: () => ({
-      imageSmoothingEnabled: false,
-      drawImage: vi.fn(),
-      getImageData: (_x: number, _y: number, w: number, h: number) => ({
-        width: w,
-        height: h,
-        data: new Uint8ClampedArray(pixelData),
-      }),
-    }),
-  } as unknown as HTMLCanvasElement;
+  const canvas = makeCanvas(width, height);
+  if (initialPixels) canvas.getContext('2d')!.putImageData({ data: initialPixels, width, height } as ImageData, 0, 0);
+  return canvas as unknown as HTMLCanvasElement;
 }
 
 if (typeof document === 'undefined') {

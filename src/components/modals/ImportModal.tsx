@@ -10,13 +10,14 @@ import {
   computeGridDimensions,
   sliceSpriteSheet,
   extractPaletteFromFrames,
-  isCellEmpty,
 } from '@/lib/canvas/spritesheetSlicer';
 import { suggestSpriteSheetGrid } from '@/lib/canvas/spriteSheetSuggestion';
 import { analyzeSpriteSheetGrid } from '@/lib/canvas/spriteSheetAnalysis';
 import { MAX_CANVAS_DIMENSION, MAX_CANVAS_FRAMES } from '@/config/canvasLimits';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { readImportFile } from '@/lib/project/importFile';
+import { readImportFile, importErrorMessage } from '@/lib/project/importFile';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
+import { importPreviewSize, IMPORT_PREVIEW_SCAN_PIXELS, isSourceCellEmpty } from '@/lib/project/importRaster';
 
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 export type { ImportPayload, ImageImportConfirmPayload };
@@ -73,7 +74,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     addToPalette,
     setAddToPalette,
     previewResult,
-    setPreviewResult,
+    clearPreview,
+    previewError,
     imgElementRef,
     runPixelization,
   } = usePixelizeEngine({
@@ -99,13 +101,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const [slicerSkipEmpty, setSlicerSkipEmpty] = useState<boolean>(false);
   const [slicerTarget, setSlicerTarget] = useState<'sprite-sheet-append' | 'sprite-sheet-replace'>('sprite-sheet-append');
   const [slicerResizeCanvas, setSlicerResizeCanvas] = useState<boolean>(false);
-  const [nonZeroFramesCount, setNonZeroFramesCount] = useState<number>(1);
+  const [nonZeroFramesCount, setNonZeroFramesCount] = useState<number | null>(1);
+  const [decodedSize, setDecodedSize] = useState<{ width: number; height: number } | null>(null);
   const [loadedImageRevision, setLoadedImageRevision] = useState(0);
   const [sheetSuggestion, setSheetSuggestion] = useState(false);
   const [sheetAnalysisNote, setSheetAnalysisNote] = useState('');
   const [fileError, setFileError] = useState<string | null>(null);
   const effectivePayload = payload;
-  const imageDataUrl = effectivePayload?.type === 'image' ? effectivePayload.dataUrl : undefined;
+  const imageDataUrl = isOpen && effectivePayload?.type === 'image' ? effectivePayload.dataUrl : undefined;
   const imageFilename = effectivePayload?.type === 'image' ? effectivePayload.filename : '';
   const imageWidth = effectivePayload?.type === 'image' ? effectivePayload.imgWidth : undefined;
   const imageHeight = effectivePayload?.type === 'image' ? effectivePayload.imgHeight : undefined;
@@ -118,7 +121,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     try {
       onFileSelected(await readImportFile(file));
     } catch (error) {
-      setFileError(error instanceof Error ? error.message : 'The file could not be imported.');
+      console.error('Import failed:', error);
+      setFileError(importErrorMessage(error));
     }
   };
 
@@ -126,13 +130,19 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   useEffect(() => {
     if (!imageDataUrl) {
       imgElementRef.current = null;
-      setPreviewResult(null);
+      clearPreview();
       return;
     }
 
+    setDecodedSize(null);
     let cancelled = false;
     imgElementRef.current = null;
-    setPreviewResult(null);
+    clearPreview();
+    setFileError(null);
+    let releaseDecode: () => void;
+    try {
+      releaseDecode = reserveMemory((imageWidth ?? 0) * (imageHeight ?? 0) * 4, 'Decoding import image');
+    } catch (error) { setFileError(importErrorMessage(error)); return; }
     setSizeMode((imageWidth ?? 0) <= 512 && (imageHeight ?? 0) <= 512 ? 'match-image' : 'fit-canvas');
     const suggestion = imageDataUrl ? suggestSpriteSheetGrid(imageWidth ?? 0, imageHeight ?? 0, canvasWidth, canvasHeight, imageFilename) : null;
     setImportMode(suggestion ? 'slicer' : 'single');
@@ -149,62 +159,87 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       setSlicerCellW(suggestion.width);
       setSlicerCellH(suggestion.height);
     }
-    const img = new Image();
+    let img: HTMLImageElement;
+    try { img = new Image(); } catch (error) { releaseDecode(); setFileError(importErrorMessage(error)); return; }
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       if (cancelled) return;
       imgElementRef.current = img;
       const width = img.naturalWidth || img.width;
       const height = img.naturalHeight || img.height;
-      if (width * height <= 4_194_304) {
+      // EXIF orientation may swap the decoder dimensions without changing admitted pixel area.
+      if (!((width === imageWidth && height === imageHeight) || (width === imageHeight && height === imageWidth))) {
+        imgElementRef.current = null;
+        setFileError('The decoded image dimensions do not match its header. Choose a valid image.');
+        img.src = ''; releaseDecode(); return;
+      }
+      setDecodedSize({ width, height });
+      if (width * height <= IMPORT_PREVIEW_SCAN_PIXELS) {
         try {
-          const analysisCanvas = document.createElement('canvas');
-          analysisCanvas.width = width;
-          analysisCanvas.height = height;
-          const context = analysisCanvas.getContext('2d', { willReadFrequently: true });
-          if (context) {
-            context.drawImage(img, 0, 0);
-            const detected = analyzeSpriteSheetGrid(context.getImageData(0, 0, width, height), canvasWidth, canvasHeight);
-            if (detected) {
-              setSlicerCellW(detected.width);
-              setSlicerCellH(detected.height);
-              setSlicerStartX(detected.startX);
-              setSlicerStartY(detected.startY);
-              setSlicerSpacingX(detected.spacingX);
-              setSlicerSpacingY(detected.spacingY);
-              setSheetSuggestion(true);
-              setSheetAnalysisNote('Detected repeating artwork and measured the cut lines from image pixels. Review before importing.');
-              setImportMode('slicer');
+          const releaseAnalysis = reserveMemory(width * height * 8, 'Analyzing sprite sheet');
+          let analysisCanvas: HTMLCanvasElement | undefined;
+          try {
+            analysisCanvas = document.createElement('canvas');
+            analysisCanvas.width = width;
+            analysisCanvas.height = height;
+            const context = analysisCanvas.getContext('2d', { willReadFrequently: true });
+            if (context) {
+              context.drawImage(img, 0, 0);
+              const detected = analyzeSpriteSheetGrid(context.getImageData(0, 0, width, height), canvasWidth, canvasHeight);
+              if (detected) {
+                setSlicerCellW(detected.width);
+                setSlicerCellH(detected.height);
+                setSlicerStartX(detected.startX);
+                setSlicerStartY(detected.startY);
+                setSlicerSpacingX(detected.spacingX);
+                setSlicerSpacingY(detected.spacingY);
+                setSheetSuggestion(true);
+                setSheetAnalysisNote('Detected repeating artwork and measured the cut lines from image pixels. Review before importing.');
+                setImportMode('slicer');
+              }
             }
-          }
+          } finally { if (analysisCanvas) { analysisCanvas.width = 0; analysisCanvas.height = 0; } releaseAnalysis(); }
         } catch {
           // Decoding or reading pixels may fail; dimension-based review remains available.
         }
       }
       setLoadedImageRevision((value) => value + 1);
     };
-    img.src = imageDataUrl;
-    return () => { cancelled = true; img.onload = null; };
-  }, [imageDataUrl, imageFilename, imageWidth, imageHeight, canvasWidth, canvasHeight, imgElementRef, setPreviewResult, setSizeMode]);
+    img.onerror = () => { if (!cancelled) setFileError('The image could not be decoded. Choose a valid image.'); releaseDecode(); };
+    try { img.src = imageDataUrl; } catch (error) {
+      img.onload = null; img.onerror = null; releaseDecode(); setFileError(importErrorMessage(error)); return;
+    }
+    return () => { cancelled = true; img.onload = null; img.onerror = null; img.src = ''; imgElementRef.current = null; releaseDecode(); };
+  }, [imageDataUrl, imageFilename, imageWidth, imageHeight, canvasWidth, canvasHeight, imgElementRef, clearPreview, setSizeMode]);
 
   useEffect(() => {
-    if (loadedImageRevision > 0 && imgElementRef.current) {
+    if (importMode === 'single' && loadedImageRevision > 0 && imgElementRef.current) {
       runPixelization();
-    }
-  }, [runPixelization, loadedImageRevision, imgElementRef]);
+    } else { clearPreview(); }
+  }, [runPixelization, loadedImageRevision, imgElementRef, importMode, clearPreview]);
 
   // Render Single Sprite preview canvas
   useEffect(() => {
     if (!previewResult || !previewCanvasRef.current || importMode !== 'single') return;
     const canvas = previewCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const size = importPreviewSize(previewResult.width, previewResult.height);
+    let release: () => void;
+    try { release = reserveMemory(size.width * size.height * 4, 'Displaying image preview'); }
+    catch (error) { setFileError(importErrorMessage(error)); return; }
+    try {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { release(); return; }
 
-    canvas.width = previewResult.width;
-    canvas.height = previewResult.height;
-    ctx.clearRect(0, 0, previewResult.width, previewResult.height);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(previewResult.canvas, 0, 0);
+      canvas.width = size.width;
+      canvas.height = size.height;
+      ctx.clearRect(0, 0, previewResult.width, previewResult.height);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(previewResult.canvas, 0, 0, size.width, size.height);
+      return () => { canvas.width = 0; canvas.height = 0; release(); };
+    } catch (error) {
+      canvas.width = 0; canvas.height = 0; release();
+      setFileError(importErrorMessage(error));
+    }
   }, [previewResult, importMode]);
 
   // Render Sprite Sheet Slicer cutline canvas preview
@@ -213,74 +248,84 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     const img = imgElementRef.current;
     if (!canvas || !img) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
     const imgW = img.naturalWidth || img.width;
     const imgH = img.naturalHeight || img.height;
+    const size = importPreviewSize(imgW, imgH);
+    let release: (() => void) | undefined;
+    try {
+      release = reserveMemory(size.width * size.height * 4, 'Displaying sprite sheet preview');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('The sprite sheet preview could not be rendered.');
 
-    canvas.width = imgW;
-    canvas.height = imgH;
+      canvas.width = size.width;
+      canvas.height = size.height;
 
-    ctx.clearRect(0, 0, imgW, imgH);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img, 0, 0, imgW, imgH);
+      ctx.clearRect(0, 0, imgW, imgH);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, size.width, size.height);
+      ctx.scale(size.width / imgW, size.height / imgH);
 
-    const grid = computeGridDimensions(imgW, imgH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
-    if (grid.totalCells > MAX_CANVAS_FRAMES) {
-      setNonZeroFramesCount(0);
-      return;
-    }
-    const fullImgData = slicerSkipEmpty ? ctx.getImageData(0, 0, imgW, imgH) : null;
-
-    // Draw actual cell boundaries, including offsets and spacing.
-    ctx.strokeStyle = '#f0be7c';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    for (let r = 0; r < grid.rows; r++) {
-      for (let c = 0; c < grid.columns; c++) {
-        ctx.strokeRect(slicerStartX + c * (slicerCellW + slicerSpacingX) + 0.5,
-          slicerStartY + r * (slicerCellH + slicerSpacingY) + 0.5, slicerCellW, slicerCellH);
+      const grid = computeGridDimensions(imgW, imgH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
+      if (grid.totalCells > MAX_CANVAS_FRAMES) {
+        setNonZeroFramesCount(0);
+        return () => { canvas.width = 0; canvas.height = 0; release?.(); };
       }
-    }
-    ctx.setLineDash([]);
+      const scanEmpty = slicerSkipEmpty && imgW * imgH <= IMPORT_PREVIEW_SCAN_PIXELS;
 
-    let frameNum = 1;
-    ctx.font = 'bold 9px monospace';
-    ctx.textBaseline = 'top';
-
-    for (let primary = 0; primary < (slicerOrder === 'row-major' ? grid.rows : grid.columns); primary++) {
-      for (let secondary = 0; secondary < (slicerOrder === 'row-major' ? grid.columns : grid.rows); secondary++) {
-        const c = slicerOrder === 'row-major' ? secondary : primary;
-        const r = slicerOrder === 'row-major' ? primary : secondary;
-        const x = slicerStartX + c * (slicerCellW + slicerSpacingX);
-        const y = slicerStartY + r * (slicerCellH + slicerSpacingY);
-        if (x + slicerCellW > imgW || y + slicerCellH > imgH) continue;
-
-        const empty = fullImgData ? isCellEmpty(fullImgData, x, y, slicerCellW, slicerCellH) : false;
-        if (empty && slicerSkipEmpty) {
-          // Dim empty cell
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-          ctx.fillRect(x, y, slicerCellW, slicerCellH);
-          continue;
+      // Draw actual cell boundaries, including offsets and spacing.
+      ctx.strokeStyle = '#f0be7c';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      for (let r = 0; r < grid.rows; r++) {
+        for (let c = 0; c < grid.columns; c++) {
+          ctx.strokeRect(slicerStartX + c * (slicerCellW + slicerSpacingX) + 0.5,
+            slicerStartY + r * (slicerCellH + slicerSpacingY) + 0.5, slicerCellW, slicerCellH);
         }
-
-        // Frame number badge
-        const badgeText = `#${frameNum++}`;
-        const textWidth = ctx.measureText(badgeText).width;
-        ctx.fillStyle = 'rgba(20, 13, 31, 0.85)';
-        ctx.fillRect(x + 1, y + 1, textWidth + 4, 11);
-        ctx.fillStyle = '#f0be7c';
-        ctx.fillText(badgeText, x + 3, y + 2);
       }
-    }
+      ctx.setLineDash([]);
 
-    setNonZeroFramesCount(slicerSkipEmpty ? frameNum - 1 : grid.totalCells);
+      let frameNum = 1;
+      ctx.font = 'bold 9px monospace';
+      ctx.textBaseline = 'top';
+
+      for (let primary = 0; primary < (slicerOrder === 'row-major' ? grid.rows : grid.columns); primary++) {
+        for (let secondary = 0; secondary < (slicerOrder === 'row-major' ? grid.columns : grid.rows); secondary++) {
+          const c = slicerOrder === 'row-major' ? secondary : primary;
+          const r = slicerOrder === 'row-major' ? primary : secondary;
+          const x = slicerStartX + c * (slicerCellW + slicerSpacingX);
+          const y = slicerStartY + r * (slicerCellH + slicerSpacingY);
+          if (x + slicerCellW > imgW || y + slicerCellH > imgH) continue;
+
+          const empty = scanEmpty ? isSourceCellEmpty(img, x, y, slicerCellW, slicerCellH) : false;
+          if (empty && slicerSkipEmpty) {
+            // Dim empty cell
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.fillRect(x, y, slicerCellW, slicerCellH);
+            continue;
+          }
+
+          // Frame number badge
+          const badgeText = `#${frameNum++}`;
+          const textWidth = ctx.measureText(badgeText).width;
+          ctx.fillStyle = 'rgba(20, 13, 31, 0.85)';
+          ctx.fillRect(x + 1, y + 1, textWidth + 4, 11);
+          ctx.fillStyle = '#f0be7c';
+          ctx.fillText(badgeText, x + 3, y + 2);
+        }
+      }
+
+      setNonZeroFramesCount(slicerSkipEmpty ? scanEmpty ? frameNum - 1 : null : grid.totalCells);
+      return () => { canvas.width = 0; canvas.height = 0; release?.(); };
+    } catch (error) {
+      canvas.width = 0; canvas.height = 0; release?.();
+      setFileError(importErrorMessage(error));
+      setNonZeroFramesCount(0);
+    }
   }, [imgElementRef, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY, slicerOrder, slicerSkipEmpty]);
 
   useEffect(() => {
     if (importMode === 'slicer') {
-      renderSlicerPreview();
+      return renderSlicerPreview();
     }
   }, [importMode, renderSlicerPreview, loadedImageRevision]);
 
@@ -299,13 +344,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     );
   }
 
-  const srcW = effectivePayload.imgWidth || 64;
-  const srcH = effectivePayload.imgHeight || 64;
+  const srcW = decodedSize?.width ?? effectivePayload.imgWidth ?? 64;
+  const srcH = decodedSize?.height ?? effectivePayload.imgHeight ?? 64;
   const isDifferentSize = srcW !== canvasWidth || srcH !== canvasHeight;
   const sourceExceedsCanvasLimit = srcW > MAX_CANVAS_DIMENSION || srcH > MAX_CANVAS_DIMENSION;
   const slicerGrid = computeGridDimensions(srcW, srcH, slicerCellW, slicerCellH, slicerStartX, slicerStartY, slicerSpacingX, slicerSpacingY);
   const slicerWouldClip = !slicerResizeCanvas && (slicerCellW > canvasWidth || slicerCellH > canvasHeight);
-  const slicerInvalid = slicerGrid.totalCells === 0 || slicerGrid.totalCells > MAX_CANVAS_FRAMES ||
+  const slicerInvalid = slicerCellW > MAX_CANVAS_DIMENSION || slicerCellH > MAX_CANVAS_DIMENSION ||
+    slicerGrid.totalCells === 0 || slicerGrid.totalCells > MAX_CANVAS_FRAMES ||
     (slicerSkipEmpty && nonZeroFramesCount === 0) || slicerWouldClip;
 
   return (
@@ -315,6 +361,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       title={effectivePayload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image & Sprite Sheet Slicer'}
       maxWidth={effectivePayload.type === 'image' ? 'w-[680px]' : 'w-[440px]'}
     >
+      {(fileError || previewError) && <p role="alert" className="text-[#ffb4b9]">{fileError || previewError}</p>}
       {/* 1. Project Import View */}
       {effectivePayload.type === 'project' && (
         <div className="flex flex-col gap-3">
@@ -603,6 +650,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 <TactileButton
                   size="sm"
                   variant="primary"
+                  disabled={!previewResult || Boolean(fileError || previewError)}
                   onClick={() => {
                     if (previewResult) {
                       onConfirmImage({
@@ -754,6 +802,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       />
                       <span>Skip Empty (Transparent) Cells — shortens animation</span>
                     </label>
+                    {slicerSkipEmpty && nonZeroFramesCount === null && (
+                      <p className="text-[10px] text-[var(--text-body)]">For large sheets, empty cells are checked during import. This preview shows all cells.</p>
+                    )}
 
                     <label className="flex items-center gap-2 cursor-pointer text-[10px] text-[var(--text-body)]">
                       <input
@@ -858,22 +909,17 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 <TactileButton
                   size="sm"
                   variant="primary"
-                  disabled={slicerInvalid}
+                  disabled={slicerInvalid || Boolean(fileError)}
                   onClick={() => {
                     const img = imgElementRef.current;
                     if (!img) return;
 
-                    const sourceCanvas = document.createElement('canvas');
-                    sourceCanvas.width = img.naturalWidth || img.width;
-                    sourceCanvas.height = img.naturalHeight || img.height;
-                    const sCtx = sourceCanvas.getContext('2d');
-                    if (sCtx) {
-                      sCtx.drawImage(img, 0, 0);
-                    }
-
-                    let sliceRes;
+                    let sliceRes: ReturnType<typeof sliceSpriteSheet> | undefined;
+                    let releaseSlices: (() => void) | undefined;
                     try {
-                      sliceRes = sliceSpriteSheet(sourceCanvas, {
+                      releaseSlices = reserveMemory(slicerGrid.totalCells * slicerCellW * slicerCellH * 4
+                        + slicerCellW * slicerCellH * 4, 'Slicing imported frames');
+                      sliceRes = sliceSpriteSheet(img, {
                         cellWidth: slicerCellW,
                         cellHeight: slicerCellH,
                         startX: slicerStartX,
@@ -883,29 +929,32 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         order: slicerOrder,
                         skipEmpty: slicerSkipEmpty,
                       });
+                      if (sliceRes.frames.length === 0) {
+                        setFileError('No visible frames were found. Disable skipping empty cells or adjust the grid.'); return;
+                      }
+
+                      const extractedColors = addToPalette
+                        ? extractPaletteFromFrames(sliceRes.frames)
+                        : [];
+
+                      onConfirmImage({
+                        canvas: sliceRes.frames[0],
+                        target: slicerTarget,
+                        extractedPalette: extractedColors,
+                        addToPalette,
+                        filename: effectivePayload.filename,
+                        resizeCanvasToMatch: slicerResizeCanvas
+                          ? { width: slicerCellW, height: slicerCellH }
+                          : undefined,
+                        slicedFrames: sliceRes.frames,
+                      });
                     } catch (error) {
-                      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'Sprite sheet could not be sliced.' });
-                      return;
+                      console.error('Sprite sheet import failed:', error);
+                      studioEvents.emit('pixibun:toast', { type: 'error', message: importErrorMessage(error) });
+                    } finally {
+                      for (const frame of sliceRes?.frames ?? []) { frame.width = 0; frame.height = 0; }
+                      releaseSlices?.();
                     }
-
-                    if (sliceRes.frames.length === 0) return;
-
-                    const extractedColors = addToPalette
-                      ? extractPaletteFromFrames(sliceRes.frames)
-                      : [];
-
-                    onConfirmImage({
-                      canvas: sliceRes.frames[0],
-                      target: slicerTarget,
-                      extractedPalette: extractedColors,
-                      addToPalette,
-                      filename: effectivePayload.filename,
-                      resizeCanvasToMatch: slicerResizeCanvas
-                        ? { width: slicerCellW, height: slicerCellH }
-                        : undefined,
-                      slicedFrames: sliceRes.frames,
-                    });
-
                   }}
                   className={`bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4 ${
                     slicerInvalid
@@ -921,7 +970,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 >
                   <PixelIcon name="layers" size={14} />
                   <span>Slice & Import Frames</span>
-                  <span className="text-[10px] opacity-90 font-mono">({nonZeroFramesCount})</span>
+                  <span className="text-[10px] opacity-90 font-mono">({nonZeroFramesCount ?? 'checked on import'})</span>
                 </TactileButton>
               </div>
             </>

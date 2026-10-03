@@ -1,0 +1,78 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: A floating selection moves exactly one pixel per arrow and commits as one undoable edit",
+  "priority": "p1",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify both strokes exist with transparent space between them; remember their positions and shapes for later comparisons."
+    },
+    {
+      "type": "action",
+      "description": "Select Box Selection and enclose only the horizontal stroke in the upper-left quarter."
+    },
+    {
+      "type": "action",
+      "description": "Drag the selected horizontal stroke a small distance to the right to lift it into a floating selection."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the horizontal stroke moves with its gizmo while the vertical stroke stays fixed."
+    },
+    {
+      "type": "action",
+      "description": "Focus the workspace and press ArrowRight once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the floating artwork and its selection bounds both move exactly one native canvas pixel to the right, not two pixels; the vertical stroke remains fixed."
+    },
+    {
+      "type": "action",
+      "description": "Press Enter to commit."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the gizmo disappears and the moved horizontal stroke stays in its committed position."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the horizontal stroke returns to its original position before lifting, and the vertical stroke remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the horizontal stroke returns to the committed position and the vertical stroke remains unchanged."
+    }
+  ]
+}

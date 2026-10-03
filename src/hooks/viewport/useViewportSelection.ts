@@ -4,6 +4,7 @@ import { createBoxMask, mergeSelectionMask } from '@/lib/canvas/selectionUtils';
 import { useStudioStore } from '@/stores/studioStore';
 import { SafeCanvas } from '@/lib/safety/safeCanvas';
 import { FloatingSelection } from './useViewportOverlays';
+import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 
 interface UseViewportSelectionProps {
   canvasWidth: number;
@@ -14,6 +15,7 @@ interface UseViewportSelectionProps {
   renderComposite: () => void;
   captureSnapshot: (description: string) => void;
   commitSnapshot: () => void;
+  ownsTransformShortcuts?: boolean;
 }
 
 export function useViewportSelection({
@@ -25,6 +27,7 @@ export function useViewportSelection({
   renderComposite,
   captureSnapshot,
   commitSnapshot,
+  ownsTransformShortcuts = true,
 }: UseViewportSelectionProps) {
   const selection = useStudioStore((s) => s.selection);
   const selectionMask = useStudioStore((s) => s.selectionMask);
@@ -373,24 +376,29 @@ export function useViewportSelection({
   // Global Keyboard Shortcuts for Selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
-        return;
-      }
+      if (shouldIgnoreWorkspaceKey(e) || e.altKey) return;
+      const key = workspaceShortcutKey(e);
+      // CenterViewport delegates Escape/arrows to its transform hook. One owner
+      // avoids committing then cancelling, or moving a floating selection twice.
+      if (!ownsTransformShortcuts && ['Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+      if ((e.ctrlKey || e.metaKey) && key === 'c') {
         e.preventDefault();
         handleCopy();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
+      } else if ((e.ctrlKey || e.metaKey) && key === 'x') {
         e.preventDefault();
         handleCut();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+      } else if ((e.ctrlKey || e.metaKey) && key === 'v') {
         e.preventDefault();
         handlePaste();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      } else if ((e.ctrlKey || e.metaKey) && key === 'd') {
         e.preventDefault();
         commitFloatingSelection();
         setSelection(null);
+      } else if (e.ctrlKey || e.metaKey) {
+        return;
       } else if (e.key === 'Escape') {
+        e.preventDefault();
         commitFloatingSelection();
         setSelection(null);
         clearPreview();
@@ -401,14 +409,14 @@ export function useViewportSelection({
         } else {
           clearPreview();
         }
-      } else if (e.key.toLowerCase() === 'h' && (selection || floatingSelection)) {
+      } else if (key === 'h' && !e.shiftKey && (selection || floatingSelection)) {
         e.preventDefault();
         handleFlipHorizontal();
-      } else if (e.key.toLowerCase() === 'v' && (selection || floatingSelection) && !e.ctrlKey) {
+      } else if (key === 'v' && !e.shiftKey && (selection || floatingSelection)) {
         e.preventDefault();
         handleFlipVertical();
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        if (floatingSelection) {
+        if (floatingSelection && !isWorkspaceControlTarget(e)) {
           e.preventDefault();
           const step = e.shiftKey ? 5 : 1;
           const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
@@ -436,6 +444,7 @@ export function useViewportSelection({
     handlePaste,
     selection,
     setSelection,
+    ownsTransformShortcuts,
   ]);
 
   return {

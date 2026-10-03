@@ -14,6 +14,7 @@ import { commitPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { isPracticeActive } from '@/lib/project/practiceSession';
+import { coDrawBridge, type CoDrawStartOptions } from '@/lib/sync/coDrawBridge';
 import { registerStudioRouteSession, setStudioResume, getStudioResume, getPracticeReturnProject, clearPracticeReturnProject, type StudioResume } from '@/lib/project/studioRouteSession';
 
 import type { SaveResult } from '@/types/project';
@@ -315,6 +316,40 @@ export function useStudioAutosave() {
     inFlightPromiseRef.current = savePromise;
     return await savePromise;
   }, []);
+
+  const joinCoDrawGuest = useCallback(async (
+    invite: string, options: CoDrawStartOptions, signal: AbortSignal,
+  ): Promise<string> => {
+    signal.throwIfAborted();
+    const originalId = useStudioStore.getState().currentProjectId;
+    const epoch = openEpochRef.current;
+    const saved = await runAutosave();
+    signal.throwIfAborted();
+    const checkpoint = useStudioStore.getState();
+    if (!saved.ok) throw new Error(saved.error || 'Your drawing could not be saved. Export a backup before joining.');
+    if (!isMountedRef.current || epoch !== openEpochRef.current || checkpoint.currentProjectId !== originalId || checkpoint.isDirty) {
+      throw new Error('Your drawing changed while saving. Try joining again.');
+    }
+    return coDrawBridge.startGuest(invite, () => {
+      signal.throwIfAborted();
+      const current = useStudioStore.getState();
+      if (!isMountedRef.current || epoch !== openEpochRef.current || isPracticeActive() ||
+          lifecycleRef.current.phase !== 'active' || current.currentProjectId !== originalId ||
+          current.editRevision !== checkpoint.editRevision || current.isDirty) {
+        throw new Error('Your drawing changed while preparing the connection. Try joining again.');
+      }
+      const projectId = createId('proj');
+      current.resetToNewProject(projectId);
+      updateLifecycle({ phase: 'active', projectId });
+      conflictRef.current = null;
+      setSaveConflict(null);
+      setAutosaveError(null);
+      useStudioStore.setState({ projectName: 'Shared Drawing', selection: null, selectionMask: null, isPlaying: false });
+      studioEvents.emit('pixibun:history-clear');
+      useStudioStore.getState().setDirty(true);
+      return projectId;
+    }, options, signal);
+  }, [runAutosave, updateLifecycle]);
 
   const saveConflictCopy = useCallback(async () => {
     const state = useStudioStore.getState();
@@ -924,6 +959,7 @@ export function useStudioAutosave() {
   return {
     autosaveTimerRef,
     runAutosave,
+    joinCoDrawGuest,
     handleCommitHistory,
     autosaveError,
     saveConflict: lifecycleState.phase === 'active' && saveConflict === lifecycleState.projectId,

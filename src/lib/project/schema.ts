@@ -26,6 +26,8 @@ import {
   type RecoveryReasonCode,
 } from '@/lib/recovery/recoveryTypes';
 
+export const PROJECT_LAYER_NAME_MAX_LENGTH = 128;
+
 const BLEND_MODES = new Set(['source-over', 'multiply', 'screen', 'overlay', 'color-dodge', 'source-atop']);
 const LOOP_MODES = new Set(['repeat', 'ping-pong', 'once']);
 const SMART_EFFECT_KINDS = new Set<SmartEffectKind>([
@@ -224,7 +226,7 @@ function validateFrame(
         reasonCode: 'INVALID_LAYER_STRUCTURE',
       };
     }
-    if (typeof rawLayer.name !== 'string' || rawLayer.name.length > 128) {
+    if (typeof rawLayer.name !== 'string' || rawLayer.name.length > PROJECT_LAYER_NAME_MAX_LENGTH) {
       return {
         error: `Frame ${frameIndex + 1}, layer ${i + 1} has an invalid name.`,
         reasonCode: 'INVALID_LAYER_STRUCTURE',

@@ -15,6 +15,8 @@ The implementation owner for each subsystem owns its contract; there is no separ
 
 Historical material retains original results, failures, fixtures, and release decisions. Add a dated erratum or supersession link; do not change an old failed run into a pass. Separate worktrees and ignored transcripts remain local revision-specific material. Vendor skill instructions are maintained through their upstream mechanism.
 
+The [3 October audit session publication](research/2026-10-03-audit-session-publication.md) reconciles the session's current guides/contracts, seven repair phases and TestSprite execution. Main publication was explicitly requested; historical uncommitted-source and unavailable-run statements retain their at-run scope. Remote CI/deployment and release qualification remain separate.
+
 For practical examples, follow [palette creation and color cycling](guides/palettes-and-cycling.md). Current guides use dated screenshots of the current studio; historical research/release screenshots retain their original bytes and scope. A new UI illustration does not replace the validation evidence of an earlier run.
 
 The [phase 5 reconciliation](research/2026-10-02-feature-repairs-phase5.md) records the final broader local checks, current-guide review, ten refreshed pictures and retained diagnostics. Historical/proposal scopes remain distinct from shipped behavior.
@@ -30,3 +32,15 @@ The [3 October session review](research/2026-10-03-session-documentation-review.
 The subsequent [CI export follow-up](research/2026-10-03-ci-export-dialog-repair.md) records the published main build's Linux WebKit failures, the scoped export correction, browser-fixture synchronization and the development dependency patch. Local checks and remote CI results have separate scopes.
 
 The [Iso browser-fixture follow-up](research/2026-10-03-ci-iso-workflow-repair.md) records that repair's actual Linux result and the remaining combined-scenario deadline. Independent drawing scenarios retain the original geometry, symmetry and history checks without increasing timeouts.
+
+The [co-draw phase 1 repair](research/2026-10-03-codraw-phase1.md) records the guest-original checkpoint, separate shared-project ownership, failure protections and local verification. It preserves the Windows WebKit WebRTC limitation and the unavailable TestSprite check separately from passing local checks.
+
+The [deployment phase 2 repair](research/2026-10-03-deployment-phase2.md) records trusted push admission, environment-based Vercel credentials, the scoped Next.js security patch and explicit production cache identity. Its local gate, compiled browser checks and source/build hashes do not attest a remote deployment or resolve the missing TestSprite runner.
+
+The [input phase 3 repair](research/2026-10-03-input-phase3.md) records dialog/editable/composition boundaries, physical letter bindings, selection keyboard ownership and primary-touch drawing. Its browser evidence distinguishes code/key event fixtures, tablet emulation and physical-device qualification, and preserves the failed practice-button locator run.
+
+The [protocol phase 4 repair](research/2026-10-03-protocol-phase4.md) records safe co-draw ordering, portable layer-name admission, bounded delivery/recovery and visible invalid-artwork failures. It distinguishes controlled lifecycle tests from real local peer traffic and retains the initial browser-fixture type-check failure.
+
+The [remaining audit phases 5–7](research/2026-10-03-remaining-audit-phases5-7.md) record import allocation/cleanup, APNG compression and cancellation, bounded diagnostics, typed manual signaling and same-page skip navigation. Final source/build hashes, passing local checks and the original WebKit focus failures remain distinct from unavailable TestSprite and physical-device/network qualification.
+
+The subsequent [TestSprite challenge](research/2026-10-03-testsprite-challenge.md) records the explicitly authorized CLI 0.13.0 installation, 12 registered workflows, three passing local Python pixel regressions and the service's blocked/under-asserted smoke results. The [full execution follow-up](research/2026-10-03-testsprite-full-run.md) records zero unrun cases, 2 reported passes/7 blocked/3 failed and all 12 executable local workflows passing. Direct cloud Python replay awaits explicit sharing approval. Earlier evidence retains its original scope.

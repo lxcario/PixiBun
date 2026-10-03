@@ -1,0 +1,63 @@
+{
+  "node": "22.23.3",
+  "testSprite": "unavailable: command not found",
+  "editor": {
+    "passed": 3
+  },
+  "productionInitial": {
+    "failed": 1,
+    "reason": "Windows WebKit has no RTCPeerConnection; invite generation refused",
+    "passed": 5
+  },
+  "fullGate": {
+    "unitTests": 1593,
+    "unitSuites": 160,
+    "stagesPassed": 5
+  },
+  "productionFinal": {
+    "skipped": 3,
+    "retries": 0,
+    "passed": 6
+  },
+  "baseCommit": "32c6a940ff4b652afadf93e177ccee46ec708cf7",
+  "buildId": "OeYG2Hm7pbtCP57EtKjnp",
+  "playwright": "1.62.1",
+  "workingTree": "uncommitted",
+  "applicationUnchangedAfterFullGate": true,
+  "dateUtc": "2026-10-03T12:22:17.5336221Z",
+  "files": [
+    {
+      "sha256": "bfe132e021d7133a9c5e1fc1095af8712633e2da34a0082848ee117580519e30",
+      "path": "src/components/layout/StudioLayout.tsx"
+    },
+    {
+      "sha256": "20db4903170dd46149aecda32598fd7e8a999c5aed7eb5f296ce01738a954eef",
+      "path": "src/components/modals/CoDrawModal.tsx"
+    },
+    {
+      "sha256": "121d8a4dc9d8dfd1b5557c699c6c8158aba6a1c5e837ec6409fb3382069a4ff9",
+      "path": "src/hooks/studio/useStudioAutosave.ts"
+    },
+    {
+      "sha256": "ee6c8f9244d10d745da87bb185d59cd2d4fdaedb7ab49668f777dcdcb29bffd1",
+      "path": "src/lib/sync/coDrawBridge.ts"
+    },
+    {
+      "sha256": "141100f9dcfea7af16880fe86fc43710c342d591a1d6eea388a4d1859a27f550",
+      "path": "tsconfig.json"
+    },
+    {
+      "sha256": "9bc9c5e1032cd4995a90e76b04794ecb83733009d21932a8aa793c81c6e87229",
+      "path": "tests/coDrawGuestWorkspace.test.tsx"
+    },
+    {
+      "sha256": "ee79a625a80f605a9e39f6253e59934603a3736b5cb8afb6f3fdc6ad52699915",
+      "path": "tests/e2e/coDrawGuestIsolation.spec.ts"
+    },
+    {
+      "sha256": "ba059d3115aad37940be0b617be7b8e36731e78b9b34b7b145bec5d97d4afae6",
+      "path": "tests/production/coDrawGuestIsolation.spec.ts"
+    }
+  ],
+  "packageVersion": "1.14.1"
+}

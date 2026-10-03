@@ -6,6 +6,8 @@ Pick a tool from the left-hand toolbar. Its controls appear along the top; some 
 
 Work on the intended frame and an unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
 
+Letter shortcut labels name QWERTY key positions, so a different keyboard layout can use the same positions. Symbols such as brackets follow your keyboard. Workspace shortcuts pause while a dialog is open or you are typing. On a landscape tablet wide enough for Studio (1024px+), one finger draws; extra fingers do not join that stroke. Use the zoom controls for the canvas. Browser gestures outside the drawing viewport keep their existing behavior.
+
 The illustrations below show each of the **16 current toolbar tools** selected in the real studio. They show available controls, rather than claiming that every possible gesture was tested in this capture. [Capture record](../assets/screenshots/2026-10-02-feature-guide/run.json).
 
 ## Pen

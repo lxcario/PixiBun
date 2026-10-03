@@ -6,6 +6,8 @@ This is the current web app's feature index, reconciled with this session's chec
 
 ## Welcome and starting points
 
+The [3 October session record](research/2026-10-03-audit-session-publication.md) covers the current safety repairs and documentation reconciliation. Exact browser checks and cloud-run limitations are linked there; this feature index is not an execution verdict.
+
 | Feature | What it does | Guide | Screenshot |
 | --- | --- | --- | --- |
 | Interactive welcome desk | Lamp toggle, pet interaction, temporary mini sketch and clear/color choices | [Desk](guides/welcome-and-demos.md#a-small-moment-at-the-desk) | [Welcome](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png) |

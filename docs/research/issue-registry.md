@@ -42,7 +42,7 @@ Updated 3 October 2026. This registry separates corrections to the [documentatio
 | D34 | [Local/CI/coverage matrix](../guides/testing.md) states actual enforcement | Coverage is optional; no fresh Lighthouse implied |
 | D35 | Safe env template and ignore exception; operator/rollback guide | Audit erratum: template was already tracked, despite broad ignore rule |
 | D36 | Confirmed links fixed; underscore false positive handled in checker regression | External URLs not exhaustively re-fetched |
-| D37 | [Plan-level TestSprite registry](testsprite-plan-registry.md) separates stale plans/verdicts | Prior local-only preference retained; no external run claimed |
+| D37 | [Plan-level TestSprite registry](testsprite-plan-registry.md) separates stale plans/verdicts | The explicitly authorized [3 October challenge](2026-10-03-testsprite-challenge.md) supersedes the prior local-only preference; the [full execution follow-up](2026-10-03-testsprite-full-run.md) runs all remaining cases and passes 12 executable local workflows; cloud artwork coverage remains unqualified |
 | D38 | Seven tracked stale-locator failures corrected; assertions retained; complete final editor suite passed 158/158 | Scope and logs in remediation record |
 | D39 | Routine screenshots use per-test outputs; new-directory publication/hash manifest; 71 tracked PNGs and 32 original audit artifacts verified unchanged | Release evidence ideally commit-pinned |
 | D40 | Live Export E hint removed; current guides use Export button | E remains Eraser |

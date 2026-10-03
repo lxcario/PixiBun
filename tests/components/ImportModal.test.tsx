@@ -9,6 +9,11 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
   beforeEach(() => {
+    vi.stubGlobal('Image', class {
+      width = 64; height = 32; naturalWidth = 64; naturalHeight = 32;
+      onload: (() => void) | null = null; onerror: (() => void) | null = null;
+      set src(value: string) { if (value) queueMicrotask(() => this.onload?.()); }
+    });
     const contextMap = new WeakMap<HTMLCanvasElement, MockCtx>();
     originalGetContext = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, contextId: string) {
@@ -53,6 +58,7 @@ describe('ImportModal Component & Sprite Sheet Slicer', () => {
     HTMLCanvasElement.prototype.getContext = originalGetContext;
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   const mockImagePayload: ImportPayload = {

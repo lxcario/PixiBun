@@ -22,6 +22,8 @@ Reproduce against your own projects and local deployment. Do not access another 
 
 ## Dependency and build security
 
+The 3 October session pins Next.js `16.3.8` and restricts privileged deployment to successful CI for a push to this repository's main, checking out that run's SHA. Credentials are supplied through step environments. [Deployment repair and verification](docs/research/2026-10-03-deployment-phase2.md) and [current operator contract](docs/guides/deployment.md) distinguish source configuration from a verified remote deployment. Peer admission, import allocation and diagnostic-queue changes are documented in [the session record](docs/research/2026-10-03-audit-session-publication.md); local regression results are not a security certification.
+
 The repository commits `package-lock.json`; CI uses `npm ci` and the declared Node 22 runtime. Review dependency changes together with their lockfile diff, install scripts, package source, license and compatibility. Workflow actions currently use major-version tags rather than immutable commit pins.
 
 For an explicit dependency review, run `npm audit --json` and record the date, npm version, affected packages and production/development exposure. This command sends dependency information to the configured registry. Review remediations before changing dependencies; the `fix` form can modify the installation and lockfile. [npm's audit documentation](https://docs.npmjs.com/cli/v10/commands/npm-audit/).

@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { runRotSpriteInWorker } from '@/lib/engine/workerDispatcher';
 import { FloatingSelection } from './useViewportOverlays';
+import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey } from '@/lib/input/workspaceKeyboard';
 
 export type TransformHandleType =
   | 'tl'
@@ -773,9 +774,7 @@ export function useViewportSelectionTransform({
   // Global Keyboard shortcuts: Enter to commit, Escape to cancel, arrows to nudge
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
-        return;
-      }
+      if (shouldIgnoreWorkspaceKey(e) || e.ctrlKey || e.metaKey || e.altKey || isWorkspaceControlTarget(e)) return;
 
       const active = floatingSelection || selection;
       if (!active) return;

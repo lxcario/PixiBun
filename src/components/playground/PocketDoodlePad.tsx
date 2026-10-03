@@ -65,7 +65,7 @@ export function PocketDoodlePad() {
   };
 
   return (
-    <main className="lg:hidden min-h-dvh bg-[var(--desk-bg)] px-4 py-6 text-[var(--text-heading)] font-mono">
+    <main id="main-workspace" tabIndex={-1} className="lg:hidden min-h-dvh bg-[var(--desk-bg)] px-4 py-6 text-[var(--text-heading)] font-mono">
       <div className="mx-auto flex w-full max-w-md flex-col gap-5">
         <header className="flex items-center justify-between gap-3">
           <div>

@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "specIndex": 0,
+      "status": "created",
+      "testId": "cb9f0a1f-bf2f-4ebe-af57-4b9fcc339c39",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/cb9f0a1f-bf2f-4ebe-af57-4b9fcc339c39"
+    },
+    {
+      "specIndex": 1,
+      "status": "created",
+      "testId": "f47d2b54-d4ea-4bfb-88d8-29c4e63b3670",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/f47d2b54-d4ea-4bfb-88d8-29c4e63b3670"
+    },
+    {
+      "specIndex": 2,
+      "status": "created",
+      "testId": "418746da-f794-41c7-82d7-b00746a2b1b9",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/418746da-f794-41c7-82d7-b00746a2b1b9"
+    },
+    {
+      "specIndex": 3,
+      "status": "created",
+      "testId": "b99a9888-2ca0-4353-a3f7-05dbfec14f6d",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/b99a9888-2ca0-4353-a3f7-05dbfec14f6d"
+    },
+    {
+      "specIndex": 4,
+      "status": "created",
+      "testId": "f6f8038d-7255-45b2-b461-3327196db8d7",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/f6f8038d-7255-45b2-b461-3327196db8d7"
+    },
+    {
+      "specIndex": 5,
+      "status": "created",
+      "testId": "13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb"
+    },
+    {
+      "specIndex": 6,
+      "status": "created",
+      "testId": "9717b2e8-1aa7-45c7-9dc7-4cbb5c9cd365",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/9717b2e8-1aa7-45c7-9dc7-4cbb5c9cd365"
+    },
+    {
+      "specIndex": 7,
+      "status": "created",
+      "testId": "79ec7660-5e27-4633-af92-e3090890989a",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/79ec7660-5e27-4633-af92-e3090890989a"
+    },
+    {
+      "specIndex": 8,
+      "status": "created",
+      "testId": "2816abbb-2a1e-4016-b5d9-e52359b60746",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/2816abbb-2a1e-4016-b5d9-e52359b60746"
+    },
+    {
+      "specIndex": 9,
+      "status": "created",
+      "testId": "fb41a04b-2a0c-4340-9cd6-dea694f0c348",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/fb41a04b-2a0c-4340-9cd6-dea694f0c348"
+    },
+    {
+      "specIndex": 10,
+      "status": "created",
+      "testId": "a8ee88ac-c79d-4204-8593-642a4dc3ef0e",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/a8ee88ac-c79d-4204-8593-642a4dc3ef0e"
+    },
+    {
+      "specIndex": 11,
+      "status": "created",
+      "testId": "90e07a52-9dea-44c7-9f54-2b13070e4d1a",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/90e07a52-9dea-44c7-9f54-2b13070e4d1a"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "created": 12,
+    "failed": 0
+  }
+}

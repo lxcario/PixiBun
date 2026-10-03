@@ -1,5 +1,11 @@
 # Architecture & System Design — PixiBun Atelier
 
+## Audit integration update — 3 October 2026
+
+Co-draw checkpoints the original project before adopting a separate shared identity. Peer admission rejects unsafe clock values and malformed typed signaling; reliable delivery distinguishes a transient interruption from terminal cleanup. Workspace input yields to dialogs, editable controls and IME composition, while selection transforms and primary-touch strokes have a single owner. Import previews use bounded display surfaces and source pixels for empty-cell filtering. APNG yields between frames, supports cancellation and prefers native compression with a stored-block fallback. Diagnostics apply bounded write/send queues and recheck consent before transmission.
+
+Deployment uses the successful same-repository main-push CI SHA, environment-based credentials and an explicit service-worker build identity. The [session publication record](docs/research/2026-10-03-audit-session-publication.md) links each repair and its scoped checks. Twelve passing executable local workflows are separate from TestSprite's incomplete cloud artwork coverage; neither establishes a deployed release or broad device/network qualification.
+
 ## Audit session architecture update — 2026-10-01
 
 The local implementation adds revision-safe saves and conflict copies; bounded export/worker operations; estimated shared memory admission; animation-review regions and intentional exceptions; shared clip/hold exports, semantic palette registers and a Godot kit; and canonical research recipes for protected simplification, shared stylized lighting and small tile scenes. Research previews use an owned worker, retain source rasters, reject stale publication and publish ready buffers before a single structural history step. Recipes survive project serialization and undo/redo; merging clears single-source research provenance.

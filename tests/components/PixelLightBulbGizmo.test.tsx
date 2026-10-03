@@ -108,6 +108,29 @@ describe('PixelLightBulbGizmo Component', () => {
     expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
+  it('leaves capture-phase light actions untouched behind an open dialog', () => {
+    const onCommit = vi.fn(); const onCancel = vi.fn(); const onLightChange = vi.fn();
+    render(<PixelLightBulbGizmo canvasWidth={32} canvasHeight={32} zoom={1600} mainCanvasRef={dummyCanvasRef}
+      onCommit={onCommit} onCancel={onCancel} onLightChange={onLightChange} />);
+    const dialog = document.createElement('dialog'); dialog.setAttribute('open', ''); document.body.append(dialog);
+    try {
+      for (const key of ['Enter', 'Escape', '[', ']', '-']) fireEvent.keyDown(window, { key });
+      fireEvent.keyDown(window, { key: 'r', code: 'KeyR', altKey: true });
+      expect(onCommit).not.toHaveBeenCalled(); expect(onCancel).not.toHaveBeenCalled(); expect(onLightChange).not.toHaveBeenCalled();
+    } finally { dialog.remove(); }
+  });
+
+  it('keeps the lighting handle owner able to adjust and apply while its slider is focused', () => {
+    useStudioStore.getState().setLightBrightness(1.15);
+    const onCommit = vi.fn(); const onCancel = vi.fn(); const onLightChange = vi.fn();
+    render(<PixelLightBulbGizmo canvasWidth={32} canvasHeight={32} zoom={1600} mainCanvasRef={dummyCanvasRef}
+      onCommit={onCommit} onCancel={onCancel} onLightChange={onLightChange} />);
+    const handle = screen.getByTestId('pixel-light-bulb-handle'); handle.focus();
+    fireEvent.keyDown(handle, { key: ']' }); fireEvent.keyDown(handle, { key: 'Enter' });
+    expect(onLightChange).toHaveBeenCalledTimes(1); expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(useStudioStore.getState().tools.lightBrightness).toBe(1.3);
+  });
+
   it('triggers onCommit when Enter key is pressed', () => {
     const onCommit = vi.fn();
     const onCancel = vi.fn();

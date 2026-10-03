@@ -1,0 +1,30 @@
+{
+  "testId": "a8ee88ac-c79d-4204-8593-642a4dc3ef0e",
+  "status": "blocked",
+  "startedAt": null,
+  "finishedAt": "2026-10-03T19:36:54.682Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/20261003-193651-c4fc63a8.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_3599a8f41b8dbb8f",
+  "runIdIfAvailable": "4a767f53-3a6d-41a4-901a-e20a46f968f2",
+  "codeVersion": null,
+  "targetUrl": "http://127.0.0.1:3150",
+  "targetUrlSource": null,
+  "environment": {
+    "id": "042c6caa-29f1-4fa5-83e3-e0faa0ae189e",
+    "name": "default"
+  },
+  "failedStepIndex": null,
+  "failureKind": null,
+  "verdict": "blocked",
+  "executionStatus": "completed",
+  "summary": "Blocked before a verdict could be produced: The failure is likely caused by the service relying on pixel-precise canvas pointer interactions (coordinate clicks and click-drag marquee selection) that the current automation host cannot synthesize. In other words, the test environment lacks supported low-level mouse move/drag capabilities for the canvas, so the strokes and selection cannot be placed with the required precision. This is an interaction/automation support gap on the hosting side rath… Target: environment default (http://127.0.0.1:3150).",
+  "apiOutput": null,
+  "trace": null,
+  "analysis": {
+    "rootCauseHypothesis": null,
+    "recommendedFixTarget": null,
+    "failureKind": null,
+    "snapshotId": "snap_3599a8f41b8dbb8f"
+  }
+}

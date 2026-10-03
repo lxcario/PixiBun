@@ -1,0 +1,29 @@
+[WebServer] (node:4188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:10464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (2.1s)
+  ok  2 [chromium] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (1.2s)
+  ok  3 [chromium] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (1.6s)
+  ok  4 [chromium] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (2.8s)
+  ok  5 [chromium] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload (2.3s)
+(node:16156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  6 [firefox] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (6.5s)
+  ok  7 [firefox] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (2.7s)
+  ok  8 [firefox] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (3.8s)
+  ok  9 [firefox] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (6.3s)
+  -  10 [firefox] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload
+(node:28520) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [webkit] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (6.6s)
+  ok 12 [webkit] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (3.8s)
+  ok 13 [webkit] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (6.1s)
+  ok 14 [webkit] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (13.7s)
+  ok 15 [webkit] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload (15.0s)
+
+  1 skipped
+  14 passed (1.3m)

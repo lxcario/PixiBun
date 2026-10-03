@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Resource not found.",
+    "nextAction": "The run completed but the test entity has no associated code (it may have been deleted). Use `testsprite test get <test-id>` to inspect, or re-create the test.",
+    "requestId": "cli_c01c2b90-8e04-43e5-9175-b4b5b231a244",
+    "details": {
+      "resource": "run",
+      "id": "b6f65ab8-41b7-4e22-aff3-61ffbb3a28b2",
+      "reason": "no_code"
+    }
+  }
+}

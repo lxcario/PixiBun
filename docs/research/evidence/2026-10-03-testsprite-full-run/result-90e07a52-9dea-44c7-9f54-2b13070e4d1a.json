@@ -1,0 +1,34 @@
+{
+  "testId": "90e07a52-9dea-44c7-9f54-2b13070e4d1a",
+  "status": "failed",
+  "startedAt": null,
+  "finishedAt": "2026-10-03T19:39:26.310Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/20261003-193923-ed25aade.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_77d595073f05dd74",
+  "runIdIfAvailable": "b6f65ab8-41b7-4e22-aff3-61ffbb3a28b2",
+  "codeVersion": null,
+  "targetUrl": "http://127.0.0.1:3150",
+  "targetUrlSource": null,
+  "environment": {
+    "id": "042c6caa-29f1-4fa5-83e3-e0faa0ae189e",
+    "name": "default"
+  },
+  "failedStepIndex": null,
+  "failureKind": "assertion",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed (assertion): The Studio accessibility failure is most likely caused by a mismatch between the skip-link fragment identifier and the main workspace element id: the skip link points to #main-workspace while the actual main element is id=\"main-content\". Because the browser cannot resolve the fragment to the intended landmark, keyboard activation updates the URL but does not move focus to the workspace. A secondary contributing factor may be that the SPA has custom click handling or lacks ex… Target: environment default (http://127.0.0.1:3150).",
+  "apiOutput": null,
+  "trace": null,
+  "analysis": {
+    "rootCauseHypothesis": "The Studio accessibility failure is most likely caused by a mismatch between the skip-link fragment identifier and the main workspace element id: the skip link points to #main-workspace while the actual main element is id=\"main-content\". Because the browser cannot resolve the fragment to the intended landmark, keyboard activation updates the URL but does not move focus to the workspace. A secondary contributing factor may be that the SPA has custom click handling or lacks explicit focus management for the fragment target, so even pointer clicks change the hash without transferring keyboard focus. Underlying error: TEST FAILURE\n\nThe Studio skip-to-content link does not move keyboard focus to the Studio main workspace as expected.\n\nObservations:\n- The Studio skip link's href is \"#main-workspace\" (URL observed: /studio#main-workspace), but the actual main workspace element id is \"main-content\".\n- Keyboard-only activation (Tab then Enter) on /studio was attempted repeatedly (~9 times) and did not move focus to the main workspace; pointer click changed the URL fragment but focus remained on the Layers palette DIV.\n\nDetails collected during the session (verifiable in page state):\n- Home skip-link keyboard behavior passed earlier (Tab → Skip to content focused; Enter → home URL with #top and focus moved to home main).\n- Studio workspace loaded successfully from the home link (canvas, toolbar, workspace visible).\n- On /studio, anchor/id mismatch prevents the skip link from targeting the main element by id (skip href: #main-workspace vs main element id: main-content).\n\nConclusion: The expected keyboard behavior for the Studio Skip to content link is broken due to an anchor/id mismatch and resulting focus not being moved to the main workspace. This is a functional accessibility failure and the test cannot pass until the anchor is corrected and focusable behavior restored.",
+    "recommendedFixTarget": {
+      "kind": "unknown",
+      "reference": "Skip to content",
+      "rationale": "Align the Studio skip-link target with the actual main workspace element. Update the Studio \"Skip to content\" anchor href from #main-workspace to #main-content (or rename the main workspace element id to match the existing href), and ensure the target is focusable on activation (e.g., main element with tabindex=\"-1\" and focus() on route change/skip-link click if needed). Also verify the SPA/router does not intercept the fragment navigation in a way that prevents focus shifting. After the change, retest keyboard-only Tab→Enter behavior on /studio to confirm focus lands on the main workspace instead of remaining on the Layers palette."
+    },
+    "failureKind": "assertion",
+    "snapshotId": "snap_77d595073f05dd74"
+  }
+}

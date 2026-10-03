@@ -19,6 +19,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { TeachingBoardModal } from '@/components/playground/TeachingBoardModal';
+import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 
 export const PlaygroundLayout: React.FC = () => {
   const practice = usePracticeActions();
@@ -126,15 +127,10 @@ export const PlaygroundLayout: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isPracticeActive()) return;
-      if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        document.activeElement?.tagName === 'SELECT'
-      ) {
-        return;
-      }
+      if (shouldIgnoreWorkspaceKey(e) || e.altKey) return;
+      const key = workspaceShortcutKey(e);
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      if ((e.ctrlKey || e.metaKey) && key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
           handleRedo();
@@ -144,13 +140,13 @@ export const PlaygroundLayout: React.FC = () => {
         return;
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      if ((e.ctrlKey || e.metaKey) && key === 'y') {
         e.preventDefault();
         handleRedo();
         return;
       }
 
-      const key = e.key.toLowerCase();
+      if (e.ctrlKey || e.metaKey) return;
       switch (key) {
         case 'b':
           setActiveTool('pen');
@@ -162,6 +158,7 @@ export const PlaygroundLayout: React.FC = () => {
           swapColors();
           break;
         case ' ':
+          if (isWorkspaceControlTarget(e)) return;
           e.preventDefault();
           setIsPlaying(!isPlaying);
           break;

@@ -1,0 +1,39 @@
+[WebServer] (node:14852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 24 tests using 1 worker
+
+(node:11476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (8.6s)
+  -   2 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork
+  ok  3 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (2.5s)
+  ok  4 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (2.1s)
+  ok  5 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (4.0s)
+  ok  6 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (5.9s)
+  ok  7 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2.5s)
+  ok  8 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (4.0s)
+(node:11172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (29.4s)
+  -  10 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork
+  ok 11 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (5.3s)
+  ok 12 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (5.6s)
+  ok 13 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (9.3s)
+Production browser error: [JavaScript Error: "Failed to load ‘http://127.0.0.1:55559/?_rsc=1xkjR6qovEdN5-_9’. A ServiceWorker passed a promise to FetchEvent.respondWith() that rejected with ‘TypeError: NetworkError when attempting to fetch resource.’." {file: "http://127.0.0.1:55559/sw.js" line: 192}] ["[JavaScript Error: \"Failed to load ‘http://127.0.0.1:55559/?_rsc=1xkjR6qovEdN5-_9’. A ServiceWorker passed a promise to FetchEvent.respondWith() that rejected with ‘TypeError: NetworkError when attempting to fetch resource.’.\" {file: \"http://127.0.0.1:55559/sw.js\" line: 192}]"]
+  ok 14 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (11.9s)
+  ok 15 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (3.8s)
+  ok 16 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (7.3s)
+(node:23288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  17 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery
+  ok 18 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork (10.2s)
+  ok 19 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (9.9s)
+  ok 20 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (6.1s)
+  ok 21 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (15.2s)
+  ok 22 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (18.2s)
+  ok 23 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (11.3s)
+  ok 24 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (7.9s)
+
+  3 skipped
+  21 passed (3.2m)

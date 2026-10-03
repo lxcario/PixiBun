@@ -15,7 +15,8 @@ import { createAnimatedGifBlobAsync } from '@/lib/export/gifEncoder';
 import { exportProcessReplayGifAsync } from '@/lib/export/processReplay';
 import { depixelizeToSvg } from '@/lib/export/depixelizeVector';
 import { exportAnimationToWebmAsync, isWebmExportSupported } from '@/lib/export/webmEncoder';
-import { exportAnimationToApngAsync } from '@/lib/export/apngEncoder';
+import { exportAnimationToApngAsync, yieldApngTask, apngFailureMessage } from '@/lib/export/apngEncoder';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 import { exportAnimationToMp4Async, probeMp4ExportSupport } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import {
@@ -481,26 +482,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     }
 
     const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < animationFrames.length; i++) {
-      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (!composed) {
-        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
-        return;
-      }
-      frameCanvases.push(composed);
-    }
-
-    if (frameCanvases.length === 0) return;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     setIsExporting(true);
-    setExportProgress({ current: 0, total: frameCanvases.length });
+    setExportProgress({ current: 0, total: animationFrames.length });
 
     const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
+    let releaseFrames: (() => void) | undefined;
     try {
+      releaseFrames = reserveMemory(animationFrames.length * canvasWidth * canvasHeight * 4, 'Preparing APNG frames');
+      await yieldApngTask();
+      for (let index = 0; index < animationFrames.length; index++) {
+        if (controller.signal.aborted) throw new DOMException('APNG export aborted', 'AbortError');
+        const composed = compositeFrame(animationFrames, index, canvasWidth, canvasHeight, { freshCanvas: true });
+        if (!composed) throw new Error('An animation frame could not be rendered.');
+        frameCanvases.push(composed);
+        await yieldApngTask();
+      }
       const blob = await exportAnimationToApngAsync(frameCanvases, {
         fps,
         scale: effectiveScale,
@@ -525,10 +526,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       console.error('APNG export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'This animation would be too large to export safely.',
+        message: apngFailureMessage(err),
         type: 'error',
       });
     } finally {
+      for (const canvas of frameCanvases) { canvas.width = 0; canvas.height = 0; }
+      releaseFrames?.();
       setIsExporting(false);
       setExportProgress(null);
       abortControllerRef.current = null;

@@ -24,7 +24,7 @@ Choose **GIF**, review the frame scope and 1×–8× scale, then export. GIF is 
 
 ![APNG export options for the sample animation.](../assets/screenshots/2026-10-02-feature-repairs-phase5/export-apng.png)
 
-Choose **APNG**, scope and an admitted 1×–16× scale, then export. The generated animated PNG uses full RGBA frames and rational frame delays. It downloads with a **`.png` extension**; it can still be animated. Files can be large because the encoder uses uncompressed DEFLATE blocks. Check the destination viewer's animation support rather than mistaking a still preview for a missing animation.
+Choose **APNG**, scope and an admitted 1×–16× scale, then export. The generated animated PNG uses full RGBA frames and rational frame delays. It downloads with a **`.png` extension**; it can still be animated. Native browser compression is used where available, with a stored-block fallback; file size depends on the artwork and browser. Encoding yields between frames. Press **Escape** or close the export dialog to cancel while progress is active; the disabled Cancel button is not available during this operation. Wait for the operation's result before starting another export. Check the destination viewer's animation support rather than mistaking a still preview for a missing animation.
 
 ## WebM Video
 

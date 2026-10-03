@@ -136,6 +136,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   });
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    // The artwork surface owns single-touch drawing, not a second finger's gesture.
+    if (e.pointerType === 'touch' && !e.isPrimary) return;
     // Suppress drawing tools while live photometric lighting bulb is active
     const { photometricGizmoActive } = useStudioStore.getState();
     if (photometricGizmoActive) {
@@ -360,6 +362,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (e.pointerType === 'touch' && !e.isPrimary) return;
     if (props.isPanning) {
       props.setPan(e.clientX - props.panStart.x, e.clientY - props.panStart.y);
       return;
@@ -400,6 +403,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   };
 
   const handlePointerUp = (e?: React.PointerEvent) => {
+    if (e?.pointerType === 'touch' && !e.isPrimary) return;
     if (e) {
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -473,6 +477,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   };
 
   const handlePointerCancel = (e?: React.PointerEvent | PointerEvent | Event) => {
+    if (e && 'pointerType' in e && e.pointerType === 'touch' && 'isPrimary' in e && !e.isPrimary) return;
     if (e && 'pointerId' in e && 'currentTarget' in e && e.currentTarget) {
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);

@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "D:\PixiBun\testsprite_tests\challenge-2026-10-03\safety_cases.py", line 368, in <module>
+    asyncio.run(run_test())
+  File "C:\Users\Resque\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\Resque\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Resque\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "D:\PixiBun\testsprite_tests\challenge-2026-10-03\safety_cases.py", line 360, in run_test
+    await case(await context.new_page())
+  File "D:\PixiBun\testsprite_tests\challenge-2026-10-03\safety_cases.py", line 216, in backup_roundtrip
+    async with page.expect_download() as pending:
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\PixiBun\artifacts\runtime\testsprite-python\playwright\_impl\_async_base.py", line 60, in __aexit__
+    await self._event.value
+  File "D:\PixiBun\artifacts\runtime\testsprite-python\playwright\_impl\_async_base.py", line 35, in value
+    return mapping.from_maybe_impl(await self._future)
+                                   ^^^^^^^^^^^^^^^^^^
+playwright._impl._errors.TimeoutError: Timeout 15000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================

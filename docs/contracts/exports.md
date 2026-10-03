@@ -7,7 +7,7 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 | Output | Actual path | Fidelity and timing limits |
 | --- | --- | --- |
 | PNG / sprite sheet | Canvas PNG + `spriteSheetPacker.ts` | Raster output, alpha; nearest-neighbor admitted scaling. A sheet needs metadata for pose order/holds |
-| APNG | `apngEncoder.ts` | Admitted RGBA and rational frame delays; uncompressed DEFLATE store blocks with valid zlib framing. Builds a Blob from chunks; can be large; no streaming sink contract |
+| APNG | `apngEncoder.ts` | Admitted RGBA and rational frame delays; native zlib-framed compression where available, otherwise stored DEFLATE blocks. Builds a Blob from chunks; can be large; no streaming sink contract |
 | GIF | worker/shared `gifEncoderCore.ts` | Palette quantization, at most 256 table entries including transparency policy; binary rather than arbitrary RGBA alpha. Delays rounded to GIF centiseconds; LZW dictionary reset fixed, old damaged files need re-export |
 | WebM | `webmEncoder.ts` → `videoRecorder.ts` | Canvas captureStream + MediaRecorder (supported VP8/VP9). Real-time scheduling/capability dependent; arbitrary alpha preservation is not promised |
 | MP4 | WebCodecs H.264 + `isobmffWriter.ts`, supported MediaRecorder fallback | Pads odd dimensions to even values without rescaling; not rounding to 16×16. Codec/browser availability applies. Fallback bypasses the custom muxer; no general alpha guarantee |
@@ -32,7 +32,11 @@ Cycle Loop samples the active frame's color animation, not moving silhouettes ac
 
 ## Resource boundaries and evidence
 
+The [3 October challenge execution](../research/2026-10-03-testsprite-full-run.md) observes cancellation during a 24-frame APNG encode with no download, then decodes a later PNG into the exact source pixels. Its backup round-trip restores distinct frames and 240/700 ms holds in Firefox's browser-download flow. The native Chromium Save picker remains outside that automated qualification; the cloud service's failed/blocked statuses are retained separately.
+
 Output dimensions are at most 4096 per axis / 16,777,216 pixels. Animated-image admission additionally bounds aggregate retained raw frames to 67,108,864 pixels; combined memory reservations and operation-specific constraints also apply. Admission reduces resource risk; it is not a cap on total browser RAM or codec internals.
+
+APNG composition and encoding yield to browser tasks between frames and honor cancellation. A single frame's pixel extraction and the fallback compressor remain synchronous; this is not a worker or streaming encoder. Preparing fresh composite frames reserves memory before allocation and releases those exclusively owned surfaces on completion, failure or cancellation. Capacity failures offer frame/scale advice; rendering or codec failures offer a retry or another format. Native compression size depends on the artwork and browser.
 
 See [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [export source](../../src/lib/export), [GIF correction](../research/gif-8x-corruption-2026-10-01.md), [cycle timing evidence](../research/palette-cycle-export-2026-10-01.md), [game-delivery phase](../research/phase-implementation-status.md). The recorded Godot run applies to its named version/backend/fixture; generic Unity/Phaser compatibility requires consumer verification. The production browser suite checks the scenarios in [generated inventory](../generated/test-inventory.json), not every format/codec/input combination.
 

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: Keyboard skip navigation stays on each current route and focuses real main content",
+  "priority": "p1",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /."
+    },
+    {
+      "type": "action",
+      "description": "Press Tab before using any pointer input."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Skip to content is the focused link."
+    },
+    {
+      "type": "action",
+      "description": "Press Enter."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the URL remains the home route with #top and keyboard focus moves to its main content, without opening Studio."
+    },
+    {
+      "type": "action",
+      "description": "Open Studio using the home page entry link."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Studio workspace has loaded."
+    },
+    {
+      "type": "action",
+      "description": "Reload this page and press Tab before using any pointer input."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Skip to content is focused on the Studio route."
+    },
+    {
+      "type": "action",
+      "description": "Press Enter."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the URL remains /studio with #main-workspace and keyboard focus moves to the Studio main content."
+    }
+  ]
+}

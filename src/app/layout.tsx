@@ -4,6 +4,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
+import { SkipToContent } from '@/components/system/SkipToContent';
 
 // Self-hosted via next/font/local: 100% offline-capable, zero external network egress
 // during build or runtime, satisfying CSP and air-gapped environment requirements.
@@ -80,12 +81,7 @@ export default async function RootLayout({
         <script src="/theme.js" nonce={nonce} />
       </head>
       <body className="bg-desk text-text-primary antialiased font-sans">
-        <a
-          href="/studio#main-workspace"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-[99999] px-4 py-2 bg-[var(--desk-surface)] text-[var(--accent-gold)] border-2 border-[var(--accent-gold)] font-mono text-xs rounded shadow-lg"
-        >
-          Skip to workspace
-        </a>
+        <SkipToContent />
         <DiagnosticsProvider>
           <ServiceWorkerRegistrar />
           {children}

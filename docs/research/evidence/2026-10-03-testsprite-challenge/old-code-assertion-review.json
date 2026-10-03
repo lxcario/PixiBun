@@ -1,0 +1,6 @@
+{
+  "testId": "a4f14d2b-c434-4772-b17c-bcf7efe0dcdf",
+  "sourceSha256": "d9f703f87c60f5c9e98a7faafee60abe28144b9521166abdc4f33d654e22ccf0",
+  "observedFinalAssertion": "assert current_url is not None",
+  "conclusion": "Does not verify locked artwork or Undo history; old test untouched"
+}

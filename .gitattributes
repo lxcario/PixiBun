@@ -8,3 +8,5 @@ docs/research/evidence/2026-10-02-feature-repairs-*/** -text
 docs/research/evidence/2026-10-03-session-documentation-review/** -text
 docs/research/evidence/2026-10-03-ci-export-dialog-repair/** -text -whitespace
 docs/research/evidence/2026-10-03-ci-iso-workflow-repair/** -text -whitespace
+# Audit and TestSprite evidence retains its recorded bytes and raw-log spacing.
+docs/research/evidence/2026-10-03-*/** -text -whitespace

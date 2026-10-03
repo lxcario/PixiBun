@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="testsprite:ad7cf58e-3c0f-41d6-96a8-a3a076faf639" tests="2" failures="1" errors="0" skipped="0" time="0">
+    <testcase classname="ad7cf58e-3c0f-41d6-96a8-a3a076faf639" name="Challenge: Help dialog absorbs destructive shortcuts without moving selection or consuming artwork history" testId="f47d2b54-d4ea-4bfb-88d8-29c4e63b3670" runId="3c1f1871-cdf4-4e25-91f9-785bd28df788" time="0">
+      <failure message="blocked" type="blocked">status: blocked
+runId: 3c1f1871-cdf4-4e25-91f9-785bd28df788</failure>
+    </testcase>
+    <testcase classname="ad7cf58e-3c0f-41d6-96a8-a3a076faf639" name="Challenge: Practice Return restores artwork and Redo; Keep creates a separate reloadable project" testId="418746da-f794-41c7-82d7-b00746a2b1b9" runId="f547c88b-f3f4-46a6-88f6-168fee836d50" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>

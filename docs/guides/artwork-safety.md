@@ -6,6 +6,8 @@ Edits schedule autosave after an 800 ms debounce. Encoding and the transaction t
 
 Use **Export → project backup** to save a `.pixibun` project file. That includes admitted raster artwork and supported project metadata. Exporting a PNG or GIF is an artwork output, not an editable-project backup. Picker cancellation is not a successful backup. Reopen a saved project file periodically to check that your backup works.
 
+Some browsers open a native **Save** dialog for the project backup; others download through the browser. Choose a destination and finish the native dialog when shown. If it is cancelled, the drawing remains open but no backup was created. Automated Firefox download/re-import checks do not qualify interaction with Chromium's native OS picker.
+
 ## Practicing without replacing your drawing
 
 Desktop Playground saves a checkpoint of your original before opening separate practice. **Return to drawing** restores it; **Keep practice in Studio** saves a new project first. Practice has no autosave. A refresh loses unkept practice, while Return restores the saved original through normal admission. Session Undo/Redo and native-file handles are not portable. If the checkpoint or Keep fails, stay on the page and read the warning; your original is not replaced by practice. [Step-by-step practice and return](learning-and-playground.md#keep-your-drawing-try-something-new).
@@ -27,6 +29,8 @@ Desktop Playground saves a checkpoint of your original before opening separate p
 | Aborted / superseded restore | A cancelled or older load must not publish over the active workspace |
 
 A conflict copy is a separate save that can itself fail. Do not treat clicking Save a copy as proof that a copy exists; wait for the result. Opening projects is under **File → Projects**. Failed admission or hydration should preserve the existing active artwork rather than blanking it.
+
+When using multiple tabs, reopening a page can restore the most recently opened project, including a conflict copy. Use **File → Projects** and select the original by name to check that specific saved drawing.
 
 ## Damaged stored projects
 

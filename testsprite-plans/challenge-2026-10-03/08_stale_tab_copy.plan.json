@@ -1,0 +1,106 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.13.0/schemas/plan.schema.json",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Challenge: A stale tab refuses overwrite and saves a separate conflict copy",
+  "priority": "p0",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Rename the project to Challenge stale original using the project-name control and confirm with Enter."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Click Save drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the save status says Changes saved."
+    },
+    {
+      "type": "action",
+      "description": "Open /studio in a second browser tab in the SAME browser storage session; keep the first tab open."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the second tab restores Challenge stale original with the same horizontal stroke."
+    },
+    {
+      "type": "action",
+      "description": "Return to the first tab."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "action",
+      "description": "Click Save drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the save status says Changes saved."
+    },
+    {
+      "type": "action",
+      "description": "Return to the second tab without reloading it."
+    },
+    {
+      "type": "action",
+      "description": "Draw a diagonal stroke in the upper-right quarter of the canvas."
+    },
+    {
+      "type": "action",
+      "description": "Click Save drawing."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify an alert reports the project changed in another tab and offers Save a copy; a success save message alone is insufficient."
+    },
+    {
+      "type": "action",
+      "description": "Click Save a copy in the second tab."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the conflict alert disappears."
+    },
+    {
+      "type": "action",
+      "description": "Reload the second tab."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify its independent copy contains the horizontal and diagonal strokes, with no lower-right vertical stroke."
+    },
+    {
+      "type": "action",
+      "description": "Open File, then Projects."
+    },
+    {
+      "type": "action",
+      "description": "Open project Challenge stale original."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the original contains the horizontal and vertical strokes, with no diagonal stroke from the stale tab."
+    }
+  ]
+}

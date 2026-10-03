@@ -23,7 +23,7 @@ Dexie caps the returned count at the query limit; the native index count can sti
 | Canvas | Whole dimensions 1–2048 per axis |
 | Structure | Up to 500 frames, 100 layers per frame, 2,000 total layer records |
 | Aggregate project raster footprint | At most 67,108,864 pixels (256 MiB raw RGBA); limits apply together, not independently attainable maxima |
-| Import | Size, depth, version, structure and decoded-raster checks; see `schema.ts`, header probes and decoding paths |
+| Import | Size, depth, 50,000 metadata-node traversal ceiling, version, structure and decoded-raster checks; see `schema.ts`, header probes and decoding paths |
 | Format version | Non-positive/non-integer versions invalid; newer unsupported versions rejected with an update prompt; supported legacy migrations retained |
 | Effects/research/review/palette registers | Optional metadata is validated by its own contract; old readers may discard optional fields |
 

@@ -1,0 +1,21 @@
+[tunnel] Minted tunnel client e09d7de2-4a13-4c36-a2b0-1f62c3ae76ca; connecting…
+[tunnel] Reaching http://127.0.0.1:3150 through TestSprite (client e09d7de2-4a13-4c36-a2b0-1f62c3ae76ca).
+Running 2 tests through one tunnel, up to 2 at a time.
+idempotency-key: cli-run-bbb06126-07c2-4085-91f4-05846d52b55a
+[1/2] f47d2b54-d4ea-4bfb-88d8-29c4e63b3670 → run 3c1f1871-cdf4-4e25-91f9-785bd28df788
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/f47d2b54-d4ea-4bfb-88d8-29c4e63b3670
+[2/2] 418746da-f794-41c7-82d7-b00746a2b1b9 → run f547c88b-f3f4-46a6-88f6-168fee836d50
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/418746da-f794-41c7-82d7-b00746a2b1b9
+[1/2] f47d2b54-d4ea-4bfb-88d8-29c4e63b3670 blocked (607s)
+[2/2] 418746da-f794-41c7-82d7-b00746a2b1b9 passed (745s)
+Batch run complete: 1/2 passed, 1 failed/blocked, 0 timed out
+testsprite test artifact get 3c1f1871-cdf4-4e25-91f9-785bd28df788
+{
+  "error": {
+    "code": "CLI_ERROR",
+    "message": "1 run failed.",
+    "nextAction": "",
+    "requestId": "local",
+    "details": {}
+  }
+}

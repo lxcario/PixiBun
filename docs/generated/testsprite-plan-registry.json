@@ -1,5 +1,5 @@
 {
-  "kind": "plans-not-executed-coverage",
+  "kind": "plans-and-recorded-execution-not-qualified-cloud-coverage",
   "entries": [
     {
       "file": "testsprite_tests/testsprite_frontend_test_plan.json",
@@ -981,7 +981,139 @@
       "status": "candidate-needs-current-control-review",
       "targetRevision": "historical / not pinned",
       "lastRecordedVerdict": "no terminal verdict established by this plan"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/01_invalid_invite.plan.json",
+      "index": 1,
+      "name": "Challenge: Rejected co-draw invite preserves saved identity, both strokes and Undo",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "reported passed; only readiness/title assertions; pixels/history unverified remotely",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "850ac824-8517-4dc0-8458-9b20ef85884e"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/02_dialog_keyboard.plan.json",
+      "index": 1,
+      "name": "Challenge: Help dialog absorbs destructive shortcuts without moving selection or consuming artwork history",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: pointer/gizmo and pixel limitations; exact local regression passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "3c1f1871-cdf4-4e25-91f9-785bd28df788"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/03_practice_identity.plan.json",
+      "index": 1,
+      "name": "Challenge: Practice Return restores artwork and Redo; Keep creates a separate reloadable project",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "reported passed on retry; only workspace/title assertions; planned identity/Redo/pixels unverified remotely",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "f547c88b-f3f4-46a6-88f6-168fee836d50"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/04_reload_history.plan.json",
+      "index": 1,
+      "name": "Challenge: Reloaded artwork survives new edits, Undo, Redo and a second saved reload",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: precise artwork/pixel prerequisites; exact local regression passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "6848d5a7-466f-46b2-b750-8f83f1554e87"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/05_locked_history.plan.json",
+      "index": 1,
+      "name": "Challenge: Locked layer rejects Pen, Eraser and Fill without adding phantom Undo steps",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: artwork/history prerequisites; exact local regression passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "17f1efd0-ca62-4fc0-b33c-859c562c6016"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/06_frame_isolation.plan.json",
+      "index": 1,
+      "name": "Challenge: Blank frames isolate artwork and frame-duration edits undo independently",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: drawing/frame prerequisites; exact local regression passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "80f619c2-1604-4887-9785-165447ec1e96"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/07_resize_cancel.plan.json",
+      "index": 1,
+      "name": "Challenge: Extreme resize values remain bounded and Cancel preserves artwork and Undo",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: artwork/history prerequisites; exact local regression passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "a15a6e78-809a-48fc-9eb6-092570123c3a"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/08_stale_tab_copy.plan.json",
+      "index": 1,
+      "name": "Challenge: A stale tab refuses overwrite and saves a separate conflict copy",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked: tab/artwork prerequisites; two shared-storage tabs passed locally",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "010104c3-8897-44a6-abf3-1e2ec69c2b2f"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/09_apng_cancel.plan.json",
+      "index": 1,
+      "name": "Challenge: Interrupting a substantial APNG export leaves no partial download and allows a later export",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "failed resize setup remotely; not reproduced locally; encoding cancellation and decoded later PNG passed",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "80d9dd6f-9960-4e36-aec0-8b19f55b1bd2"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/10_backup_roundtrip.plan.json",
+      "index": 1,
+      "name": "Challenge: Downloaded native backup restores project name, two distinct frames and frame holds",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "failed native Save picker remotely; actual Firefox download/re-import passed; Chromium native dialog unqualified",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "eed8d18c-2f3f-4b39-913a-301286307699"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/11_floating_selection.plan.json",
+      "index": 1,
+      "name": "Challenge: A floating selection moves exactly one pixel per arrow and commits as one undoable edit",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "blocked pointer prerequisites; native-pixel displacement and exact Undo/Redo passed locally",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "4a767f53-3a6d-41a4-901a-e20a46f968f2"
+    },
+    {
+      "file": "testsprite-plans/challenge-2026-10-03/12_keyboard_skip.plan.json",
+      "index": 1,
+      "name": "Challenge: Keyboard skip navigation stays on each current route and focuses real main content",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "status": "executed-remote-scope-unqualified-local-python-passed",
+      "targetRevision": "ThnCKdyVuq5dbkvFM8cQE; preceding 585 source/test/config hashes unchanged",
+      "lastRecordedVerdict": "failed skip-focus claim remotely; keyboard-only route/focus check passed locally without product changes",
+      "evidence": "docs/research/evidence/2026-10-03-testsprite-full-run/run.json",
+      "runId": "b6f65ab8-41b7-4e22-aff3-61ffbb3a28b2"
     }
   ],
-  "note": "58 individual plan files plus 51 overlapping plan entries in four aggregate files; not 109 unique workflows or executed tests."
+  "note": "70 individual plan files plus 51 overlapping entries in four old aggregate files; not 121 unique workflows or executed passes. Twelve new cases registered; only three original TestSprite smoke cases ran, with unqualified artwork scope."
 }
