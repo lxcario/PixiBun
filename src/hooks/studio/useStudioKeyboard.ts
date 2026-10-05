@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
@@ -29,6 +30,16 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       const key = workspaceShortcutKey(e);
 
       const state = useStudioStore.getState();
+      if (e.key === 'Tab' && e.shiftKey && !e.ctrlKey && !e.metaKey && !isWorkspaceControlTarget(e)) {
+        e.preventDefault();
+        useWorkspaceStore.getState().toggleFocus();
+        return;
+      }
+      if (e.key === 'F3' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault();
+        state.setOnionSkin({ enabled: !state.onionSkin.enabled });
+        return;
+      }
 
       // Save now flushes browser storage. Save As explicitly creates a project file.
       if ((e.ctrlKey || e.metaKey) && key === 's') {
@@ -141,7 +152,7 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           state.setActiveTool('eraser');
           break;
         case 'g':
-          state.setActiveTool('bucket');
+          state.setActiveTool(e.shiftKey ? 'gradient' : 'bucket');
           break;
         case 'd':
           if (e.shiftKey) {

@@ -1,0 +1,65 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Selection gradients remain clipped and Undo restores the exact original drawing",
+  "description": "A linear foreground/background pixel gradient fills only a marquee selection, uses those two colors, and can be undone as one edit without changing the remaining artwork.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the local PixiBun Studio at a 1440 by 900 desktop viewport."
+    },
+    {
+      "type": "action",
+      "description": "Pin the Color panel."
+    },
+    {
+      "type": "action",
+      "description": "Set the Foreground hex color to #ff0000."
+    },
+    {
+      "type": "action",
+      "description": "Set the Background hex color to #0000ff."
+    },
+    {
+      "type": "action",
+      "description": "Create a small rectangle selection in the middle of the canvas using Marquee Box."
+    },
+    {
+      "type": "action",
+      "description": "Select Pixel Gradient with Shift+G while the drawing canvas has focus."
+    },
+    {
+      "type": "action",
+      "description": "Open Tool settings."
+    },
+    {
+      "type": "action",
+      "description": "Choose Linear gradient shape."
+    },
+    {
+      "type": "action",
+      "description": "Choose Foreground to background colors."
+    },
+    {
+      "type": "action",
+      "description": "Enable Bayer 4 by 4 dithering."
+    },
+    {
+      "type": "action",
+      "description": "Drag horizontally across the selected rectangle."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the selected rectangle contains opaque red/blue pixel patterns; pixels outside it remain transparent and no interpolated colors were painted."
+    },
+    {
+      "type": "action",
+      "description": "Undo the fill."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the entire original transparent artwork is restored after this one Undo."
+    }
+  ]
+}

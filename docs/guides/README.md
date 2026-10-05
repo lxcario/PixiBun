@@ -17,7 +17,8 @@ A little drawing can begin with just one color and a few pixels. Pick the guide 
 | --- | --- |
 | Explore the welcome page, four starters and four demonstrations | [Meet the little studio](welcome-and-demos.md) |
 | Open, import, resize and organize a drawing; use layers, selections and view controls | [Settle into your studio](studio-workspace.md) |
-| Learn every drawing tool and its settings | [All 16 drawing tools](drawing-tools.md) |
+| Learn every drawing tool and its settings | [All 17 drawing tools](drawing-tools.md) |
+| Save layouts, pin the color triangle, browse palette previews or inspect the whole canvas | [Arrange an artist workspace](artist-workspace.md) |
 | Create/import palettes, make ramps, name color roles and animate a color range | [Palettes and color loops](palettes-and-cycling.md) |
 | Draw poses, adjust holds and clips, use onion skin and review a loop | [Animation and review](animation-and-review.md) |
 | Move a light, choose materials, shape normals and add a shadow | [Lighting and surfaces](lighting-and-surfaces.md) |

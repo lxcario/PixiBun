@@ -5,6 +5,7 @@ The generated tool table in [source-contracts.json](../generated/source-contract
 | Action | Shortcut / gesture |
 | --- | --- |
 | Pen / Eraser / Fill / Eyedropper | B / E / G / I |
+| Pixel Gradient | Shift+G |
 | Curve / Dither | C / D; Shift+D resets primary/secondary colors |
 | Marquee / Lasso / Wand | M / Q / W; Shift adds and Alt subtracts selection |
 | Line / Iso line / Rectangle / Ellipse | L / J / U / O |
@@ -13,6 +14,8 @@ The generated tool table in [source-contracts.json](../generated/source-contract
 | Save local / Save As file | Ctrl/Cmd+S / Ctrl/Cmd+Shift+S |
 | Command palette / Help | Ctrl/Cmd+K / ? |
 | Play / Pause; previous / next frame | Space; comma / period |
+| Onion skin toggle | F3; previous/next counts, tints and opacity are in the timeline gear |
+| Canvas only / restore panels | Shift+Tab with canvas focus; focused controls and dialogs retain keyboard navigation |
 | Pan / Zoom / Fit / 100% | Middle or supported Alt+drag; wheel; Ctrl/Cmd+0 / Ctrl/Cmd+1 |
 | Step zoom / brush size | Ctrl/Cmd + plus/minus; left/right square brackets |
 | Squint / CVD / swap colors | S / P / X |

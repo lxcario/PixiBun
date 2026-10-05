@@ -23,6 +23,11 @@
       "shortcut": "G"
     },
     {
+      "id": "gradient",
+      "label": "Pixel Gradient",
+      "shortcut": "Shift + G"
+    },
+    {
       "id": "dither",
       "label": "Dither Brush",
       "shortcut": "D"

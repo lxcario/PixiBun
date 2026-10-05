@@ -16,7 +16,31 @@ Start with two or three poses. A blink or a small bounce is plenty for a first a
 
 Moving or deleting a frame also affects clip ranges. Recheck the clip boundaries after structural edits. Frame/layer/pixel limits can refuse growth; adding a frame does not guarantee unlimited memory. [Storage and history limits](../contracts/storage.md) describe admission and bounded Undo.
 
-For tempo, edit each pose's **Frame time**. The project retains an FPS value for defaults/compatibility, but the current Studio timeline does not offer a separate project-FPS editor. **Onion Skin** toggles the overlay using its stored neighboring-frame count, tint and opacity; there are no separate current timeline controls for those three settings. Pause playback to inspect the onion guides.
+For tempo, edit each pose's **Frame time**. The project retains an FPS value for defaults/compatibility, but the current Studio timeline does not offer a separate project-FPS editor. Open the gear beside **Onion Skin** for independent previous/next counts (0–5), tints, opacity and presets. **F3** toggles ghosts with canvas focus. Pause playback to inspect them; these guides are never exported. See the [artist workspace controls](artist-workspace.md#inspect-poses-with-onion-skin).
+
+## Build a readable walk cycle
+
+Pixel artist Raymond Schlitter starts a small character animation with a simplified dummy, establishes contact/down/passing/up poses and adds detail later. His example walk uses eight frames at 120 ms per frame; those are starting examples for his sprites, not requirements. [SLYNYRD's run-and-gun study](https://www.slynyrd.com/blog/2026/1/26/side-view-run-n-gun).
+
+Try this manual exercise in PixiBun with a simple two- or three-color figure. It adapts that pose-first approach to the current editor:
+
+| Frame | Pose to draw | Check before continuing |
+| --- | --- | --- |
+| 1 | Left foot forward, right foot back; first contact | Keep the floor at one fixed canvas row |
+| 2 | Body lowers into the step | The planted foot stays on the floor |
+| 3 | Free foot passes beneath the body | Preserve torso size; separate overlapping limbs clearly |
+| 4 | Body rises before the opposite contact | Adjust the head and shoulders together |
+| 5–8 | Repeat the four poses with opposite leg positions | Compare corresponding proportions and silhouette |
+
+1. Draw the first contact pose. Use **Duplicate frame** to retain its pixels while making the next pose. **+ Frame** is blank; it does not copy the previous pose.
+2. Use **Previous pose** onion skin at a low opacity while editing. Compare the foot, torso and head separately. Increase the ghost range only when you need to see an arc; too many guides can obscure the current pixels.
+3. Set each hold to 120 ms for an initial inspection, then play at **1×** and inspect the navigator at small scale. Change holds or poses where the weight reads poorly. Preview speed is only an inspection setting.
+4. Step between frames 8 and 1 to check the seam. Onion trails stop at project edges, so inspect those poses manually. Leave out an extra copy of frame 1 at the end unless you intentionally want that longer hold.
+5. Once the motion reads clearly, add clothes, hair and shading. Recheck moving highlights, one-pixel flicker and any foot that slides. Then test the exported loop in its actual game or viewer.
+
+Pixel size limits how much movement can be represented. Schlitter's separate top-down study uses six frames and uneven displacement for a more lively bounce. There is no rule that adding frames makes motion better. [Top-down character study](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation).
+
+For attacks, plan the readable anticipation, action and recovery poses by hand and give them intentional holds. The current editor's in-between heuristic cannot infer anatomy, weapon arcs, foot contact or game responsiveness; inspect and correct its output before keeping it.
 
 ## Tags and clips
 

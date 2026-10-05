@@ -1,0 +1,77 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Triangle colors and palette favorites stay usable without recoloring existing pixels",
+  "description": "Editing the foreground through the pinned triangle changes the next stroke color, while palette previews leave existing artwork intact and a favorite remains available after reload.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the local PixiBun Studio at a 1440 by 900 desktop viewport."
+    },
+    {
+      "type": "action",
+      "description": "Draw a recognizable stroke with the initial Pen color."
+    },
+    {
+      "type": "action",
+      "description": "Pin the color picker using Color in the Workspace row."
+    },
+    {
+      "type": "action",
+      "description": "Choose a green hue on the outer ring."
+    },
+    {
+      "type": "action",
+      "description": "Choose a saturated bright color inside the triangle."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate stroke with the changed foreground color."
+    },
+    {
+      "type": "action",
+      "description": "Open Palette in the inspector."
+    },
+    {
+      "type": "action",
+      "description": "Open Browse palettes."
+    },
+    {
+      "type": "action",
+      "description": "Preview Sweetie 16."
+    },
+    {
+      "type": "action",
+      "description": "Favorite Sweetie 16."
+    },
+    {
+      "type": "action",
+      "description": "Apply Sweetie 16 using Use palette."
+    },
+    {
+      "type": "action",
+      "description": "Save the project."
+    },
+    {
+      "type": "action",
+      "description": "Reload the page."
+    },
+    {
+      "type": "action",
+      "description": "Open Browse palettes from the Palette inspector."
+    },
+    {
+      "type": "action",
+      "description": "Choose the Favorites collection."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Sweetie 16 remains in Favorites with its swatch preview and artist credit."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the saved drawing contains the original stroke and a separately green stroke, with neither recolored by previewing or applying the palette."
+    }
+  ]
+}

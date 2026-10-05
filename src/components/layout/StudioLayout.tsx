@@ -9,6 +9,8 @@ import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
+
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ImportPayload, ImageImportConfirmPayload } from '@/types/import';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
@@ -69,6 +71,10 @@ const RecoveryModal = dynamic(
 );
 
 export const StudioLayout: React.FC = () => {
+  const workspace = useWorkspaceStore(s => s.layout);
+  const focusMode = useWorkspaceStore(s => s.focusMode);
+  const hydrateWorkspace = useWorkspaceStore(s => s.hydrate);
+  useEffect(() => { hydrateWorkspace(); }, [hydrateWorkspace]);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportInitialType, setExportInitialType] = useState<ExportType>('png');
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -76,6 +82,7 @@ export const StudioLayout: React.FC = () => {
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNewConfirmOpen, setIsNewConfirmOpen] = useState(false);
+  const [newDrawingSize, setNewDrawingSize] = useState<number>(32);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCoDrawOpen, setIsCoDrawOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -176,11 +183,14 @@ export const StudioLayout: React.FC = () => {
     void runAutosave();
   }, [resetToNewProject, runAutosave]);
 
-  const handleConfirmNewDrawing = useCallback(async () => {
+  const handleConfirmNewDrawing = useCallback(async (targetSize?: number) => {
     if (!await saveBeforeReplacingWorkspace()) return;
     startNewWorkspace();
+    if (targetSize && targetSize > 0) {
+      setCanvasSize(targetSize, targetSize, 'center', false);
+    }
     setIsNewConfirmOpen(false);
-  }, [saveBeforeReplacingWorkspace, startNewWorkspace]);
+  }, [saveBeforeReplacingWorkspace, startNewWorkspace, setCanvasSize]);
 
   const handleOpenProject = useCallback(async (projectId: string) => {
     const result = await openStoredProject(projectId);
@@ -320,6 +330,7 @@ export const StudioLayout: React.FC = () => {
   return (
     <div data-restoration-phase={lifecycleState.phase} className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
       {/* Unified Atelier Rail (~40px instrument panel) */}
+      <div hidden={focusMode}>
       <AtelierRail
         onOpenExport={() => openExport()}
         onOpenImport={handleOpenImport}
@@ -336,6 +347,9 @@ export const StudioLayout: React.FC = () => {
           void runAutosave().then((res) => { if (res.ok) triggerSaveToast(); });
         }}
       />
+
+      </div>
+      {focusMode && <button type="button" onClick={() => { useWorkspaceStore.getState().toggleFocus(); document.getElementById('center-canvas-area')?.focus({ preventScroll: true }); }} className="fixed top-3 right-3 z-30 text-xs px-3 py-2 bg-[var(--desk-surface)] border border-[var(--desk-border)] shadow-sm">Restore panels <kbd className="ml-2 text-[var(--text-muted)]">⇧ Tab</kbd></button>}
 
       {/* Accessible Status Announcements for Screen Readers (WCAG 4.1.3) */}
       <div className="sr-only" role="status" aria-live="polite">
@@ -416,20 +430,21 @@ export const StudioLayout: React.FC = () => {
 
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
       <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
-        <LeftToolbar />
+        <div hidden={focusMode} className="h-full shrink-0"><LeftToolbar /></div>
+        <div hidden={focusMode || workspace.inspectorSide !== 'left'} className="h-full shrink-0">{workspace.inspectorSide === 'left' && <RightInspector />}</div>
         <CenterViewport
           retainHistory
           onCommitHistory={handleCommitHistory}
           onOpenImport={handleOpenImport}
         />
-        <RightInspector />
+        <div hidden={focusMode || workspace.inspectorSide !== 'right'} className="h-full shrink-0">{workspace.inspectorSide === 'right' && <RightInspector />}</div>
       </div>
 
       {/* Bottom Timeline */}
-      <BottomTimeline />
+      <div hidden={focusMode || !workspace.timeline} className="shrink-0"><BottomTimeline /></div>
 
       {/* Status Bar */}
-      <StatusBar />
+      <div hidden={focusMode}><StatusBar /></div>
 
       {/* New Drawing Confirmation Modal */}
       <ModalWrapper
@@ -441,6 +456,21 @@ export const StudioLayout: React.FC = () => {
           <p className="leading-relaxed">
             Starting a new drawing will clear the current canvas and reset the studio to a fresh blank project.
           </p>
+          <div className="flex flex-col gap-2 p-3 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px]">
+            <span className="text-xs font-semibold text-[var(--text-heading)]">Canvas Size Preset:</span>
+            <div className="flex gap-1.5 flex-wrap">
+              {[16, 24, 32, 48, 64, 128].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setNewDrawingSize(size)}
+                  className={`px-2.5 py-1 text-xs font-mono rounded-[2px] border cursor-pointer transition-colors ${newDrawingSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold border-[var(--accent-gold)]' : 'border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
+                >
+                  {size}×{size}
+                </button>
+              ))}
+            </div>
+          </div>
           <p className="text-xs text-[var(--accent-gold)] font-mono">
             <PixelIcon name="export" size={12} className="inline align-[-2px] mr-1" /> If you want to keep your current artwork, remember to export it as PNG or a .pixibun project file first.
           </p>
@@ -455,7 +485,7 @@ export const StudioLayout: React.FC = () => {
             <TactileButton
               size="sm"
               variant="danger"
-              onClick={handleConfirmNewDrawing}
+              onClick={() => handleConfirmNewDrawing(newDrawingSize)}
             >
               Start New Drawing
             </TactileButton>

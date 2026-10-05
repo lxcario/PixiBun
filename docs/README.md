@@ -19,6 +19,8 @@ The [3 October audit session publication](research/2026-10-03-audit-session-publ
 
 For practical examples, follow [palette creation and color cycling](guides/palettes-and-cycling.md). Current guides use dated screenshots of the current studio; historical research/release screenshots retain their original bytes and scope. A new UI illustration does not replace the validation evidence of an earlier run.
 
+The [4 October artist-workspace report](research/2026-10-04-artist-workspace-feedback.md) connects all supplied feature requests to primary references and actual implementation decisions. The [workspace guide](guides/artist-workspace.md) covers layouts, pinned colors, palette previews, navigator, gradients, onion controls and focus mode; [execution evidence](research/2026-10-04-artist-workspace-verification.md) records local checks and the external TestSprite authorization boundary.
+
 The [phase 5 reconciliation](research/2026-10-02-feature-repairs-phase5.md) records the final broader local checks, current-guide review, ten refreshed pictures and retained diagnostics. Historical/proposal scopes remain distinct from shipped behavior.
 
 The subsequent [phase 6 recovery safety work](research/2026-10-02-feature-repairs-phase6.md) addresses oversized archive admission, physical/logical raster metadata and readable backup failure feedback. Its named checks, WebKit fixture allowance and limitations remain separate from the earlier broad suites and pending artist studies.

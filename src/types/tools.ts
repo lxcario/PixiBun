@@ -2,7 +2,8 @@ export type ToolType =
   | 'pen' 
   | 'curve'
   | 'eraser' 
-  | 'bucket' 
+  | 'bucket'
+  | 'gradient'
   | 'dither' 
   | 'eyedropper' 
   | 'select-box' 
@@ -153,6 +154,5 @@ export interface VolumetricOpticsParams {
   paletteColors: string[];
   ditherModulation: number; // 0.0 to 1.0
 }
-
 
 

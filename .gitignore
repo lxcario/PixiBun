@@ -46,6 +46,11 @@ testsprite_tests/tmp/config.json
 # reels and scratch video generation
 /public/reels/
 /scripts/reels/
+/scripts/public/
+
+# exports and scratch assets
+/export/
+/public/assets/spritesheets/
 
 # testsprite local runs and snapshots
 /.testsprite/
@@ -63,6 +68,9 @@ scripts/capture_*.mjs
 scripts/debug_*.mjs
 scripts/test_*.mjs
 scripts/verify_responsive_and_invariants.mjs
+scripts/createFoxCharacter.ts
+scripts/generateRalseiGodotKit.ts
+scripts/pack_clean_fox_project.py
 
 # local transcripts and uncommitted specs
 chat.md

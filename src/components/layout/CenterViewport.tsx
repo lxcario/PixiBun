@@ -4,6 +4,7 @@ import { readImportFile, reportImportError } from '@/lib/project/importFile';
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
 import type { ImportPayload } from '@/components/modals/ImportModal';
@@ -64,6 +65,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   onOpenImport,
   retainHistory = false,
 }) => {
+  const focusMode = useWorkspaceStore(s => s.focusMode);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const stencilCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -566,7 +568,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const stageHeight = (canvasHeight * zoom) / 100;
   const referenceFractions = referenceOverlay === 'thirds' ? [1 / 3, 2 / 3]
     : referenceOverlay === 'golden' ? [0.382, 0.618]
-    : referenceOverlay === 'center' ? [0.5] : [];
+    : referenceOverlay === 'center' ? [0.5] : referenceOverlay === 'safe' ? [0.1, 0.9] : [];
   const referenceColor = referenceOverlay === 'thirds' ? 'rgba(199, 146, 223, 0.7)'
     : referenceOverlay === 'golden' ? 'rgba(240, 190, 124, 0.75)'
     : 'rgba(220, 171, 223, 0.7)';
@@ -632,7 +634,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       <ViewportLensFilters />
 
       {/* Floating Preview Window (Picture-in-Picture) */}
-      <FloatingPreviewWindow />
+      <div hidden={focusMode}><FloatingPreviewWindow /></div>
 
       {/* Interactive Radial Context Menu */}
       <RadialContextMenu
@@ -768,16 +770,19 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         />
 
         {/* Layer 5: Grid & Marching Ants Selection Overlay */}
+        <div
+          data-testid="grid-selection-overlay"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={showGrid && zoom >= 400 ? {
+            backgroundImage: 'linear-gradient(to right, rgba(58, 46, 76, 0.16) 0 1px, transparent 1px 100%), linear-gradient(to bottom, rgba(58, 46, 76, 0.16) 0 1px, transparent 1px 100%)',
+            backgroundSize: `${zoom / 100}px ${zoom / 100}px`,
+          } : undefined}
+        />
         <canvas
           ref={gridCanvasRef}
-          data-testid="grid-selection-overlay"
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"
-          style={showGrid && zoom >= 400 ? {
-            backgroundImage: 'linear-gradient(to right, rgba(58, 46, 76, 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(58, 46, 76, 0.16) 1px, transparent 1px)',
-            backgroundSize: `${zoom / 100}px ${zoom / 100}px`,
-          } : undefined}
         />
 
         {/* Screen-pixel guides stay thin without zoom-sized canvas buffers. */}
@@ -791,6 +796,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             <ScreenGuide key={`reference-v-${fraction}`} axis="vertical" fraction={fraction} color={referenceColor} />,
             <ScreenGuide key={`reference-h-${fraction}`} axis="horizontal" fraction={fraction} color={referenceColor} />,
           ])}
+          {referenceOverlay === 'diagonals' && <svg data-testid="diagonal-composition-guide" className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L100 100 M100 0 L0 100" fill="none" stroke="rgba(240,190,124,0.75)" strokeWidth="1" vectorEffect="non-scaling-stroke" /></svg>}
           {tools.symmetryHorizontal && <ScreenGuide axis="vertical" fraction={0.5} color="rgba(199, 146, 223, 0.85)" thickness={2} />}
           {tools.symmetryVertical && <ScreenGuide axis="horizontal" fraction={0.5} color="rgba(199, 146, 223, 0.85)" thickness={2} />}
           {hasGroundGuide && <div data-testid="playground-ground-guide" className="absolute left-0 w-full" style={{

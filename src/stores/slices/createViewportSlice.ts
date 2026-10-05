@@ -35,7 +35,7 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
 
   cycleReferenceOverlay: () => {
     set(state => {
-      const modes: ('none' | 'thirds' | 'golden' | 'center')[] = ['none', 'thirds', 'golden', 'center'];
+      const modes: ViewportSlice['referenceOverlay'][] = ['none', 'thirds', 'golden', 'center', 'diagonals', 'safe'];
       const nextIdx = (modes.indexOf(state.referenceOverlay) + 1) % modes.length;
       state.referenceOverlay = modes[nextIdx];
     });

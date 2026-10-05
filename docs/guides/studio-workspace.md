@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Drawing tools](drawing-tools.md) · [All features](../features.md)
 
-The studio has a small shelf of tools on the left, your canvas in the middle, **Layers / Palette / PixiTools** on the right, and animation frames below. Start with a little canvas and a few colors; there is no need to learn every panel at once.
+The studio has a small shelf of tools on the left, your canvas in the middle, **Tools / Layers / Palette / PixiTools** in the inspector, and animation frames below. The **Workspace** row provides Drawing, Animation and Lighting layouts, a left/right inspector, saved arrangements, optional color and navigator panels, and canvas-only mode. Follow [Arrange a desk](artist-workspace.md) for these controls. Start with a little canvas and a few colors; there is no need to learn every panel at once.
 
 ![The current studio with three original little-friend poses.](../assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
 
@@ -80,7 +80,7 @@ Frame/layer capacity and locked destinations can disable actions. Co-Draw guests
 
 ![The color picker opened from a color well.](../assets/screenshots/2026-10-02-feature-guide/color-picker.png)
 
-Click a color well at the lower left for quick swatches; double-click for the picker. Set a precise color with its available numeric/hex controls, then confirm. The quick flyout includes palette and recent colors; selecting them changes your drawing color. **X** swaps primary and secondary; the reset control restores black and white. Palette editing, ramps, roles and cycling have their own [illustrated guide](palettes-and-cycling.md).
+Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **Workspace → Color** pins the same picker in the inspector for immediate drawing-color changes. The quick flyout includes palette and recent colors. **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
 
 ## Selections and transforms
 
@@ -103,7 +103,7 @@ Selection masks matter: a lasso or wand selection does not fill its entire bound
 | Pan | Middle-drag, or Alt-drag when not subtracting a selection; arrows when no selection | View only |
 | Pixel Grid | Turn on View → Pixel Grid for precise placement | Not exported |
 | 2:1 Iso Grid | Use alongside isometric shapes | Not exported |
-| Composition Overlay | Cycle Off / Thirds / Golden / Center | Not exported |
+| Composition Overlay | Choose Off / Thirds / Golden / Center / Diagonals / Safe area (10%) | Not exported |
 | 3×3 Tiling | Repeat the canvas to inspect its outer seams | Does not enlarge the saved canvas |
 | Live PiP | Open a floating preview, then move/resize/minimize it; choose a backdrop or play | Does not create another project |
 | CVD lens | Cycle the color-vision simulation with P or the menu | View filter, not a recoloring operation or accessibility certification |

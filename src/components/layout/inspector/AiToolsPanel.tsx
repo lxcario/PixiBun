@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
 import { PixiToolsPreviewLayer } from '@/components/ui/ToolMotionPreview';
 import { NormalSculptorSection } from './NormalSculptorSection';
@@ -56,6 +56,17 @@ export const AiToolsPanel: React.FC = () => {
       // Navigation still works if storage is unavailable.
     }
   };
+
+  useEffect(() => {
+    const handleSetDomain = (e: Event) => {
+      const custom = e as CustomEvent<DomainKey>;
+      if (custom.detail) {
+        chooseDomain(custom.detail);
+      }
+    };
+    window.addEventListener('pixibun:set-pixitools-domain', handleSetDomain);
+    return () => window.removeEventListener('pixibun:set-pixitools-domain', handleSetDomain);
+  }, []);
 
   return (
     <div ref={panelRef} className="h-full flex-1 flex flex-col min-h-0 bg-[var(--desk-surface)]">

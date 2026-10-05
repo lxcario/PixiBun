@@ -329,8 +329,18 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   },
 
   setOnionSkin: settings => {
+    const previous = get().onionSkin;
+    const next = { ...previous, ...settings };
+    for (const key of ['prevFrames', 'nextFrames'] as const) {
+      if (!Number.isFinite(next[key])) return;
+      next[key] = Math.round(Math.max(0, Math.min(5, next[key])));
+    }
+    if (!Number.isFinite(next.opacity) || typeof next.enabled !== 'boolean') return;
+    next.opacity = Math.max(0, Math.min(1, next.opacity));
+    if (typeof next.prevColor !== 'string' || typeof next.nextColor !== 'string') return;
+    if (Object.keys(next).every(key => next[key as keyof typeof next] === previous[key as keyof typeof previous])) return;
     set(state => {
-      state.onionSkin = { ...state.onionSkin, ...settings };
+      state.onionSkin = next;
       state.isDirty = true;
       state.editRevision += 1;
     });

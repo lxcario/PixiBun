@@ -141,45 +141,59 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   };
 
   return (
-    <aside className="w-14 bg-[var(--desk-surface)] border-r border-[var(--desk-border)] flex flex-col items-center py-2 justify-between select-none z-10 overflow-y-auto transition-colors duration-150">
-      {/* 1. Categorized Tool Groups */}
-      <DrawingToolsPreviewLayer>
-        <div className="flex flex-col gap-2 w-full px-1.5 items-center">
-          {activeToolGroups.map((group, gIdx) => (
-            <div key={group.groupName} className="flex flex-col gap-1 w-full items-center">
-              {gIdx > 0 && <div className="w-7 h-[1px] bg-gradient-to-r from-transparent via-[var(--desk-border-highlight)]/40 to-transparent my-1" />}
-              {group.tools.map((tool) => {
-                const isActive = tools.activeTool === tool.id;
-                return (
-                  <DrawingToolPreview
-                    key={tool.id}
-                    toolId={tool.id}
-                  >
-                    <button
-                      onClick={() => setActiveTool(tool.id)}
-                      aria-label={tool.label}
-                      data-testid={`${tool.id}-tool`}
-                      data-tutorial={`${tool.id}-tool`}
-                      className={`w-8 h-8 rounded-[2px] flex items-center justify-center cursor-pointer ${
-                        isActive
-                          ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)]'
-                          : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
-                      }`}
+    <aside className="w-14 h-full max-h-full bg-[var(--desk-surface)] border-r border-[var(--desk-border)] flex flex-col items-center select-none z-10 transition-colors duration-150 relative overflow-hidden">
+      {/* 1. Categorized Tool Groups: Scrollable Container */}
+      <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center py-2 px-1 custom-scrollbar">
+        <DrawingToolsPreviewLayer>
+          <div className="flex flex-col gap-1 w-full px-0.5 items-center">
+            {activeToolGroups.map((group, gIdx) => (
+              <div
+                key={group.groupName}
+                role="group"
+                aria-label={group.groupName}
+                className="flex flex-col gap-1 w-full items-center"
+              >
+                {gIdx > 0 && (
+                  <div
+                    className="w-8 h-[1px] bg-[var(--desk-border)] my-1 shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
+                {group.tools.map((tool) => {
+                  const isActive = tools.activeTool === tool.id;
+                  return (
+                    <DrawingToolPreview
+                      key={tool.id}
+                      toolId={tool.id}
                     >
-                      <PixelIcon name={tool.icon} size={16} />
-                    </button>
-                  </DrawingToolPreview>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </DrawingToolsPreviewLayer>
+                      <button
+                        onClick={() => setActiveTool(tool.id)}
+                        aria-label={tool.label}
+                        aria-pressed={isActive}
+                        title={`${tool.label}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
+                        data-testid={`${tool.id}-tool`}
+                        data-tutorial={`${tool.id}-tool`}
+                        className={`w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all ${
+                          isActive
+                            ? 'pixel-primary-btn font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_0_var(--btn-shadow)] ring-2 ring-[var(--accent-gold)] ring-offset-1 ring-offset-[var(--desk-surface)] z-10'
+                            : 'pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]'
+                        }`}
+                      >
+                        <PixelIcon name={tool.icon} size={16} />
+                      </button>
+                    </DrawingToolPreview>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </DrawingToolsPreviewLayer>
+      </div>
 
-      {/* 2. Professional Creative Suite Color Dock */}
+      {/* 2. Professional Creative Suite Color Dock: Pinned at bottom */}
       <div
         ref={wellsContainerRef}
-        className="flex flex-col items-center gap-2 w-full px-1.5 pt-2 pb-1 border-t border-[var(--desk-border)] shrink-0"
+        className="flex flex-col items-center gap-2 w-full px-1.5 pt-2 pb-2 border-t border-[var(--desk-border)] shrink-0 bg-[var(--desk-surface)] shadow-sm z-10"
       >
         {/* Overlapping Primary / Secondary Wells Cluster with Integrated Corner Micro-Actions */}
         <div className="relative w-10 h-10 select-none">

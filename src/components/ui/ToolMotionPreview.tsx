@@ -17,6 +17,7 @@ export type Scene =
   | 'erase-color'
   | 'fill'
   | 'dither'
+  | 'gradient'
   | 'recolor'
   | 'select-box'
   | 'select-lasso'
@@ -62,6 +63,7 @@ export interface ToolPreviewDefinition {
 }
 
 export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
+  gradient: { title: 'Pixel Gradient', group: 'Drawing', description: 'Drag a linear or radial ramp inside your selection, or fill the active layer.', scene: 'gradient', shortcut: 'Shift + G', icon: 'gradient', proTip: 'Set shape, palette order and Bayer dithering in Tool settings.' },
   pen: {
     title: 'Pen',
     group: 'Drawing',

@@ -11,6 +11,7 @@ import { TagManagerModal } from '@/components/modals/TagManagerModal';
 import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { playbackOrder } from '@/lib/export/animationModel';
+import { OnionSkinSettings } from './OnionSkinSettings';
 
 interface FrameThumbnailProps {
   frameIndex: number;
@@ -151,6 +152,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   const guestFrameLockTitle = 'Frame structure is managed by the session host.';
 
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [isOnionSettingsOpen, setIsOnionSettingsOpen] = useState(false);
   const [draggedFrameIndex, setDraggedFrameIndex] = useState<number | null>(null);
   const [dragOverFrameIndex, setDragOverFrameIndex] = useState<number | null>(null);
   const [hoveredFrameIndex, setHoveredFrameIndex] = useState<number | null>(null);
@@ -366,57 +368,67 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
           <span className="text-[10px] font-sans text-[var(--text-muted)]">
             Frame <span className="font-mono font-bold text-[var(--text-heading)]">{activeFrameIndex + 1}</span> / <span className="font-mono">{frames.length}</span>
+            {frames.length === 1 && <span className="hidden sm:inline text-[var(--text-muted)]"> · Static Sprite</span>}
           </span>
         </div>
 
-        {/* Center: Compact Playback Controls */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={handleStepBack}
-            title="Previous Frame (,)"
-            className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
-          >
-            <PixelIcon name="step-backward" size={10} />
-          </button>
+        {/* Center: Compact Playback Controls or Static Drawing Hint */}
+        {frames.length > 1 ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleStepBack}
+              title="Previous Frame (,)"
+              className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
+            >
+              <PixelIcon name="step-backward" size={10} />
+            </button>
 
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            title="Play / Pause Animation (Space)"
-            className={`h-7 min-w-[68px] px-2 text-[10px] font-bold rounded-[2px] border cursor-pointer flex items-center justify-center gap-1 ${
-              isPlaying
-                ? 'pixel-primary-btn shadow-[0_2px_0_#8c5120]'
-                : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-heading)] hover:text-[var(--accent-gold)]'
-            }`}
-          >
-            <PixelIcon name={isPlaying ? 'pause' : 'play'} size={10} />
-            <span>{isPlaying ? 'Pause' : 'Play'}</span>
-          </button>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              title="Play / Pause Animation (Space)"
+              className={`h-7 min-w-[68px] px-2 text-[10px] font-bold rounded-[2px] border cursor-pointer flex items-center justify-center gap-1 ${
+                isPlaying
+                  ? 'pixel-primary-btn shadow-[0_2px_0_#8c5120]'
+                  : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-heading)] hover:text-[var(--accent-gold)]'
+              }`}
+            >
+              <PixelIcon name={isPlaying ? 'pause' : 'play'} size={10} />
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </button>
 
-          <button
-            onClick={handleStepForward}
-            title="Next Frame (.)"
-            className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
-          >
-            <PixelIcon name="step-forward" size={10} />
-          </button>
+            <button
+              onClick={handleStepForward}
+              title="Next Frame (.)"
+              className="w-7 h-7 flex items-center justify-center rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--accent-gold)] cursor-pointer"
+            >
+              <PixelIcon name="step-forward" size={10} />
+            </button>
 
-          <span className="text-[10px] font-mono text-[var(--text-muted)] ml-1">
-            {previewSpeed}× preview
-          </span>
-        </div>
+            <span className="text-[10px] font-mono text-[var(--text-muted)] ml-1">
+              {previewSpeed}× preview
+            </span>
+          </div>
+        ) : (
+          <div className="hidden sm:flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
+            <span>Tip: Click &quot;＋ Add Frame&quot; to turn into an animation</span>
+          </div>
+        )}
 
         {/* Right: Quick +Frame and Expand button */}
         <div className="flex items-center gap-2">
           <button
             disabled={isGuest}
-            onClick={addFrame}
-            title={isGuest ? guestFrameLockTitle : 'Add blank frame with the current layer names and settings (no artwork)'}
-            className={`h-7 px-2 text-[10px] font-sans font-medium rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer flex items-center gap-1 ${
-              isGuest ? 'opacity-40 cursor-not-allowed' : ''
+            onClick={() => {
+              addFrame();
+              setIsCollapsed(false);
+            }}
+            title={isGuest ? guestFrameLockTitle : 'Add blank frame to start animating'}
+            className={`h-7 px-2.5 text-[10px] font-sans font-medium rounded-[2px] border border-[var(--desk-border)] pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer flex items-center gap-1.5 ${
+              isGuest ? 'opacity-40 cursor-not-allowed' : 'hover:border-[var(--accent-gold)]'
             }`}
           >
             <PixelIcon name="plus" size={10} />
-            <span>Frame</span>
+            <span>{frames.length === 1 ? 'Add Frame to Animate' : 'Frame'}</span>
           </button>
 
           <button
@@ -562,6 +574,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <PixelIcon name="onion" size={12} />
                   <span>Onion Skin</span>
                 </TactileButton>
+                <button type="button" data-testid="onion-settings" aria-label="Onion skin settings" title="Configure onion skin" onClick={() => setIsOnionSettingsOpen(true)} className="h-7 w-7 border border-[var(--desk-border)] rounded-sm text-sm">⚙</button>
                 <span id="onion-skin-notice" className="w-[94px] shrink-0 text-[9px] leading-tight text-[var(--text-muted)]" aria-live="polite">
                   {onionNotice}
                 </span>
@@ -753,6 +766,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
       </div>
 
       {/* Tag Manager Modal */}
+      {isOnionSettingsOpen && <OnionSkinSettings onClose={() => setIsOnionSettingsOpen(false)} />}
       <TagManagerModal
         isOpen={isTagManagerOpen}
         onClose={() => setIsTagManagerOpen(false)}

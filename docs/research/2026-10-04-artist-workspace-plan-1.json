@@ -1,0 +1,69 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Saved artist layouts restore panel placement and unchanged artwork",
+  "description": "After drawing a recognizable mark, changing panel placement and saving a named layout must restore that layout and the same saved artwork after reload.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the local PixiBun Studio at a 1440 by 900 desktop viewport."
+    },
+    {
+      "type": "action",
+      "description": "Draw a recognizable diagonal mark with Pen on the blank canvas."
+    },
+    {
+      "type": "action",
+      "description": "Choose the Animation workspace preset."
+    },
+    {
+      "type": "action",
+      "description": "Pan the drawing view using the navigator overview."
+    },
+    {
+      "type": "action",
+      "description": "Fit the canvas using the navigator control."
+    },
+    {
+      "type": "action",
+      "description": "Open Arrange workspace."
+    },
+    {
+      "type": "action",
+      "description": "Move the inspector to the left."
+    },
+    {
+      "type": "action",
+      "description": "Save the current layout under the name Animation desk."
+    },
+    {
+      "type": "action",
+      "description": "Close the arrangement dialog."
+    },
+    {
+      "type": "action",
+      "description": "Choose Canvas only."
+    },
+    {
+      "type": "action",
+      "description": "Press Shift+Tab with the drawing canvas focused to restore panels."
+    },
+    {
+      "type": "action",
+      "description": "Save the project."
+    },
+    {
+      "type": "action",
+      "description": "Reload the page."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Workspace list selects Animation desk, the inspector is left of the canvas, and navigator and timeline are visible in their usable layout."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the saved diagonal artwork is unchanged after navigation, canvas-only mode and reload."
+    }
+  ]
+}

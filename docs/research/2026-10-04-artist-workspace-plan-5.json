@@ -1,0 +1,49 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Detailed tool settings affect painting while composition guides leave artwork unchanged",
+  "description": "Choosing a wider Pen brush through the detailed inspector changes its painted footprint, while enabling a composition overlay and hiding panels do not change the saved artwork.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the local PixiBun Studio at a 1440 by 900 desktop viewport."
+    },
+    {
+      "type": "action",
+      "description": "Open Tool settings with Pen active."
+    },
+    {
+      "type": "action",
+      "description": "Set Brush size to four pixels."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke."
+    },
+    {
+      "type": "action",
+      "description": "Choose Diagonals in the Composition selector."
+    },
+    {
+      "type": "action",
+      "description": "Save the project."
+    },
+    {
+      "type": "action",
+      "description": "Choose Canvas only."
+    },
+    {
+      "type": "action",
+      "description": "Restore panels using the visible Restore panels button."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the brush stroke has a visibly four-pixel-wide footprint and the top quick control agrees with the detailed brush size setting."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the canvas pixels are unchanged by the guide and focus controls; diagonals remain a view overlay rather than painted pixels."
+    }
+  ]
+}

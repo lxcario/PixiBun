@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
@@ -17,6 +18,7 @@ import { useBrushPointerHandler } from './useBrushPointerHandler';
 import { useSelectionPointerHandler } from './useSelectionPointerHandler';
 import { useShapePointerHandler } from './useShapePointerHandler';
 import { useChiselPointerHandler } from './useChiselPointerHandler';
+import { useGradientPointerHandler } from './useGradientPointerHandler';
 
 export interface UseViewportPointerEventsProps {
   canvasWidth: number;
@@ -134,6 +136,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     getOrCreateLayerCanvas: props.getOrCreateLayerCanvas,
     renderComposite: props.renderComposite,
   });
+
+  const gradientHandler = useGradientPointerHandler(props);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     // The artwork surface owns single-touch drawing, not a second finger's gesture.
@@ -388,6 +392,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser' || tools.activeTool === 'dither') {
       brushHandler.onPointerMove(e, coords);
+    } else if (tools.activeTool === 'gradient') {
+      gradientHandler.onPointerMove(coords);
     } else if (tools.activeTool === 'normal-chisel') {
       chiselHandler.onPointerMove(e, coords);
     } else if (
@@ -446,15 +452,18 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       } else {
         brushHandler.onPointerUp(e, endCoords);
         shapeHandler.onPointerUp(e, endCoords);
+        const changed = tools.activeTool === 'gradient' ? gradientHandler.onPointerUp(endCoords) : true;
         chiselHandler.onPointerUp(e, endCoords);
 
+        const isGradientNewLayer = tools.activeTool === 'gradient' && useWorkspaceStore.getState().gradient.newLayer;
         if (
           tools.activeTool !== 'select-box' &&
           tools.activeTool !== 'select-lasso' &&
           tools.activeTool !== 'select-wand'
         ) {
-          props.commitSnapshot();
-          bumpBufferVersion();
+          if (changed && !isGradientNewLayer) { props.commitSnapshot(); bumpBufferVersion(); }
+          else if (changed && isGradientNewLayer) { props.discardSnapshot?.(); props.currentStrokeSnapshotRef.current = null; bumpBufferVersion(); }
+          else { props.discardSnapshot?.(); props.currentStrokeSnapshotRef.current = null; }
         }
       }
 
@@ -477,6 +486,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
   };
 
   const handlePointerCancel = (e?: React.PointerEvent | PointerEvent | Event) => {
+    gradientHandler.cancel();
     if (e && 'pointerType' in e && e.pointerType === 'touch' && 'isPrimary' in e && !e.isPrimary) return;
     if (e && 'pointerId' in e && 'currentTarget' in e && e.currentTarget) {
       try {
@@ -508,6 +518,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       props.setIsDrawing(false);
 
       const isShapeTool =
+        tools.activeTool === 'gradient' ||
         tools.activeTool === 'line' ||
         tools.activeTool === 'curve' ||
         tools.activeTool === 'isometric-line' ||

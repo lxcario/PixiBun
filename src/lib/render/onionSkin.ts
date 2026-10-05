@@ -3,7 +3,7 @@ import type { OnionSkinSettings } from '@/types/animation';
 export interface OnionGhostSpec {
   frameIndex: number; // frame whose layers compose this ghost
   tint: string; // hex color applied via 'source-atop' (prevColor / nextColor)
-  alpha: number; // opacity scaled by distance falloff: base * (1 - 0.25 * (dist - 1))
+  alpha: number; // Distance fade retains 10% of base opacity for the fifth ghost.
 }
 
 /** Pure, DOM-free computation of which frames get ghosts, in what tint, at what alpha. */
@@ -21,7 +21,7 @@ export function getOnionSkinSpecs(
   const maxDistance = Math.max(settings.prevFrames, settings.nextFrames);
 
   for (let dist = 1; dist <= maxDistance; dist++) {
-    const falloff = Math.max(0, 1 - 0.25 * (dist - 1));
+    const falloff = Math.max(0.1, 1 - 0.25 * (dist - 1));
     const alpha = Math.min(1, Math.max(0, settings.opacity * falloff));
 
     // Previous ghost

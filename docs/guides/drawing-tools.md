@@ -8,7 +8,7 @@ Work on the intended frame and an unlocked layer. Most drawing tools change that
 
 Letter shortcut labels name QWERTY key positions, so a different keyboard layout can use the same positions. Symbols such as brackets follow your keyboard. Workspace shortcuts pause while a dialog is open or you are typing. On a landscape tablet wide enough for Studio (1024px+), one finger draws; extra fingers do not join that stroke. Use the zoom controls for the canvas. Browser gestures outside the drawing viewport keep their existing behavior.
 
-The illustrations below show each of the **16 current toolbar tools** selected in the real studio. They show available controls, rather than claiming that every possible gesture was tested in this capture. [Capture record](../assets/screenshots/2026-10-02-feature-guide/run.json).
+There are **17 current toolbar tools**. The original sixteen illustrations retain their [2 October capture record](../assets/screenshots/2026-10-02-feature-guide/run.json); Pixel Gradient has a separate 4 October illustration. Choose **Tool settings** in the Workspace row for a dedicated inspector of the selected tool's controls. The pictures show interface states, rather than claiming every possible gesture was tested.
 
 ## Pen
 
@@ -33,6 +33,14 @@ Press **E**, set the brush size, and drag over pixels to make them transparent o
 ![Flood Fill options, including tolerance and enclosed specks.](../assets/screenshots/2026-10-02-feature-guide/tool-bucket.png)
 
 Press **G**, choose the replacement color and click an area. **Contiguous** fills a connected island; **Global Replace** finds matching colors across the active layer. Begin with low **Tolerance**, then increase it to include nearby shades. If the fill crosses an outline, undo and lower tolerance. **Enclosed specks** can fill small color islands of up to eight pixels surrounded by the fill; it can also remove deliberate tiny details.
+
+## Pixel Gradient
+
+Press **Shift+G**, then choose **Tool settings**. Drag a linear or radial gradient using foreground/background colors or the active palette in swatch order. Turn Bayer 4×4 dithering on for a patterned transition, or off for hard bands. The tool paints only the supplied RGB colors at full opacity; it does not introduce interpolated shades. A selection's actual mask constrains the fill. Without a selection it fills the active layer, including transparent pixels. Use an unlocked layer, inspect the preview, release to commit and Undo if needed. A zero-length drag or one-color palette does nothing. Drawing mirrors do not duplicate the fill.
+
+![Pixel Gradient controls and a masked two-color fill.](../assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png)
+
+See [the gradient workflow](artist-workspace.md#draw-a-pixel-gradient) for ramp ordering, whole-layer scope and cancellation.
 
 ## Dither Brush
 

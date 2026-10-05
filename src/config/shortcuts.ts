@@ -25,6 +25,7 @@ export const CANONICAL_TOOLS: ToolMeta[] = [
   { id: 'curve', label: 'Bézier Curve', shortcut: 'C', icon: 'curve', group: 'Drawing' },
   { id: 'eraser', label: 'Eraser', shortcut: 'E', icon: 'eraser', group: 'Drawing' },
   { id: 'bucket', label: 'Flood Fill', shortcut: 'G', icon: 'bucket', group: 'Drawing' },
+  { id: 'gradient', label: 'Pixel Gradient', shortcut: 'Shift + G', icon: 'gradient', group: 'Drawing' },
   { id: 'dither', label: 'Dither Brush', shortcut: 'D', icon: 'dither', group: 'Drawing' },
   { id: 'color-replace', label: 'Color Replace', shortcut: 'R', icon: 'color-replace', group: 'Drawing' },
   { id: 'erase-color', label: 'Erase Sampled Color', shortcut: 'Shift + R', icon: 'erase-color', group: 'Drawing' },
@@ -53,6 +54,7 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'C', description: 'Bézier Curve Tool', category: 'Tools', toolId: 'curve' },
   { key: 'E', description: 'Eraser Tool', category: 'Tools', toolId: 'eraser' },
   { key: 'G', description: 'Flood Fill / Bucket', category: 'Tools', toolId: 'bucket' },
+  { key: 'Shift + G', description: 'Pixel Gradient', category: 'Tools', toolId: 'gradient' },
   { key: 'D', description: 'Dither Brush', category: 'Tools', toolId: 'dither' },
   { key: 'I', description: 'Eyedropper', category: 'Tools', toolId: 'eyedropper' },
   { key: 'M', description: 'Marquee Box Select', category: 'Tools', toolId: 'select-box' },
@@ -78,6 +80,7 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'Alt + Select', description: 'Subtract from Selection', category: 'Editing' },
 
   // Canvas & Viewport
+  { key: 'Shift + Tab', description: 'Canvas only / Restore Panels (canvas focus)', category: 'Canvas & Viewport' },
   { key: 'Middle / Alt + Drag', description: 'Pan Canvas Viewport', category: 'Canvas & Viewport' },
   { key: 'Arrow Keys', description: 'Pan Viewport / Nudge Selection', category: 'Canvas & Viewport' },
   { key: 'Mouse Wheel', description: 'Zoom In / Out Canvas', category: 'Canvas & Viewport' },
@@ -90,6 +93,7 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'S', description: 'Silhouette / Squint Mode', category: 'Canvas & Viewport' },
 
   // Animation
+  { key: 'F3', description: 'Toggle Onion Skin', category: 'Animation' },
   { key: 'Space', description: 'Play / Pause Animation', category: 'Animation' },
   { key: ',', description: 'Step to Previous Frame', category: 'Animation' },
   { key: '.', description: 'Step to Next Frame', category: 'Animation' },

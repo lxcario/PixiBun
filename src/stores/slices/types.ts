@@ -39,9 +39,9 @@ export interface ViewportSlice {
   squintMode: boolean;
   photometricGizmoActive: boolean;
   photometricGlintOnly?: boolean;
-  referenceOverlay: 'none' | 'thirds' | 'golden' | 'center';
+  referenceOverlay: 'none' | 'thirds' | 'golden' | 'center' | 'diagonals' | 'safe';
 
-  setReferenceOverlay: (mode: 'none' | 'thirds' | 'golden' | 'center') => void;
+  setReferenceOverlay: (mode: ViewportSlice['referenceOverlay']) => void;
   cycleReferenceOverlay: () => void;
   setZoom: (zoom: number) => void;
   setPan: (x: number, y: number) => void;
@@ -200,8 +200,8 @@ export interface HistorySlice {
 
   aiMessages: AiMessage[];
   isAiThinking: boolean;
-  activeInspectorTab: 'layers' | 'palette' | 'ai';
-  setActiveInspectorTab: (tab: 'layers' | 'palette' | 'ai') => void;
+  activeInspectorTab: 'layers' | 'palette' | 'ai' | 'tools';
+  setActiveInspectorTab: (tab: 'layers' | 'palette' | 'ai' | 'tools') => void;
   addAiMessage: (message: Omit<AiMessage, 'id' | 'timestamp'>) => void;
   setIsAiThinking: (thinking: boolean) => void;
 

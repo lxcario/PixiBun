@@ -101,7 +101,7 @@ describe('getOnionSkinSpecs', () => {
     expect(specs[1].alpha).toBeCloseTo(1.0 * (1 - 0.25 * 1)); // dist 2: 0.75
     expect(specs[2].alpha).toBeCloseTo(1.0 * (1 - 0.25 * 2)); // dist 3: 0.50
     expect(specs[3].alpha).toBeCloseTo(1.0 * (1 - 0.25 * 3)); // dist 4: 0.25
-    expect(specs[4].alpha).toBeCloseTo(1.0 * (1 - 0.25 * 4)); // dist 5: 0.0
+    expect(specs[4].alpha).toBeCloseTo(0.1); // The fifth requested pose must remain visible.
   });
 
   it('respects different tints for prevColor and nextColor', () => {

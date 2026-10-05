@@ -24,6 +24,9 @@ import { TactileButton } from '@/components/ui/TactileButton';
 import { PaletteRolesSection } from './PaletteRolesSection';
 import { CreatePaletteModal } from '@/components/modals/CreatePaletteModal';
 import { PaletteCycleColors } from './PaletteCycleColors';
+import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
+import dynamic from 'next/dynamic';
+const PaletteLibraryModal = dynamic(() => import('@/components/modals/PaletteLibraryModal').then(m => m.PaletteLibraryModal), { ssr: false });
 
 export const PalettePanel: React.FC = () => {
   const palettes = useStudioStore((s) => s.palettes);
@@ -48,6 +51,7 @@ export const PalettePanel: React.FC = () => {
   const paletteFileInputRef = useRef<HTMLInputElement | null>(null);
   const crngFileInputRef = useRef<HTMLInputElement | null>(null);
   const [creatingPalette, setCreatingPalette] = useState(false);
+  const [browsingPalettes, setBrowsingPalettes] = useState(false);
   const closePaletteCreator = useCallback(() => setCreatingPalette(false), []);
   const [selectedSwatch, setSelectedSwatch] = useState<{ paletteId: string; index: number } | null>(null);
   const selectedIndex = selectedSwatch?.paletteId === currentPalette.id
@@ -139,6 +143,9 @@ export const PalettePanel: React.FC = () => {
       }}
       className="flex flex-col bg-[var(--desk-surface)]"
     >
+      {/* 0. Color Studio: Wheel, HSV Sliders & Hex Controls */}
+      <PinnedColorPanel defaultExpanded={true} />
+
       {/* 1. Flush Partition Header: Title, Preset Dropdown & Swatch Indicators */}
       <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
@@ -180,6 +187,8 @@ export const PalettePanel: React.FC = () => {
       </div>
 
       {/* 2. Direct Swatch Slab */}
+      <button type="button" onClick={() => setBrowsingPalettes(true)} className="mx-3 mt-3 px-3 py-2 text-xs text-left border border-[var(--desk-border)] bg-[var(--surface-0)] hover:border-[var(--accent-gold)]">Browse palettes <span className="float-right text-[var(--text-muted)]">Previews & favorites →</span></button>
+      {browsingPalettes && <PaletteLibraryModal onClose={() => setBrowsingPalettes(false)} />}
       <div className="p-3 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] shrink-0">
         <div className="grid grid-cols-8 gap-1.5 bg-[var(--desk-surface-raised)]/60 p-2 rounded-[var(--radius-sm)] border border-[var(--desk-border)] shadow-xs min-h-[90px] max-h-[220px] overflow-y-auto">
           {currentPalette.colors.map((color, idx) => {

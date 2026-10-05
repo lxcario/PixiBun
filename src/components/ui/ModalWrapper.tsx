@@ -24,10 +24,14 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef(onClose);
   const rawId = React.useId();
   const safeId = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
   const titleId = `modal-title-${safeId}`;
   const bodyId = `modal-body-${safeId}`;
+
+  // Keep event listeners current without re-running opening focus on parent edits.
+  useEffect(() => { closeRef.current = onClose; }, [onClose]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -94,7 +98,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     const handleDialogKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        closeRef.current();
         if (openerRef.current && typeof openerRef.current.focus === 'function') {
           const opener = openerRef.current;
           setTimeout(() => opener.focus(), 0);
@@ -124,7 +128,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
 
     const handleDialogClick = (e: MouseEvent) => {
       if (e.target === dialog) {
-        onClose();
+        closeRef.current();
         if (openerRef.current && typeof openerRef.current.focus === 'function') {
           const opener = openerRef.current;
           setTimeout(() => opener.focus(), 0);
@@ -143,7 +147,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         setTimeout(() => opener.focus(), 0);
       }
     };
-  }, [isOpen, onClose, bodyId, titleId]);
+  }, [isOpen, bodyId, titleId]);
 
   if (!isOpen) {
     return null;

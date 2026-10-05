@@ -18,6 +18,8 @@ import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoo
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { ModalWrapper } from '@/components/ui/ModalWrapper';
 
 const CVD_LENS_BUTTON_LABELS: Record<CvdLensMode, string> = {
   none: 'OFF',
@@ -130,6 +132,18 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [popoverCoords, setPopoverCoords] = useState<{ top: number; right: number } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const workspaceLayout = useWorkspaceStore((s) => s.layout);
+  const activeWorkspace = useWorkspaceStore((s) => s.activeLayout);
+  const savedWorkspaceLayouts = useWorkspaceStore((s) => s.savedLayouts);
+  const updateWorkspaceLayout = useWorkspaceStore((s) => s.updateLayout);
+  const chooseWorkspaceLayout = useWorkspaceStore((s) => s.chooseLayout);
+  const saveWorkspaceLayout = useWorkspaceStore((s) => s.saveLayout);
+  const deleteWorkspaceLayout = useWorkspaceStore((s) => s.deleteLayout);
+  const toggleFocus = useWorkspaceStore((s) => s.toggleFocus);
+  const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
+  const [isArrangeWorkspaceOpen, setIsArrangeWorkspaceOpen] = useState(false);
+  const [newLayoutName, setNewLayoutName] = useState('');
+  const [layoutError, setLayoutError] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
@@ -406,12 +420,38 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               tools.activeTool === 'eraser' ||
               tools.activeTool === 'dither' ||
               isShapeTool) && (
-              <div ref={brushMenuRef} className="relative shrink-0">
+              <div ref={brushMenuRef} className="relative shrink-0 flex items-center gap-1">
                 <button type="button" onClick={() => setIsBrushMenuOpen((open) => !open)}
                   aria-label={`Brush size ${tools.brushSize} pixels`} aria-expanded={isBrushMenuOpen}
                   className="h-6 px-2 flex items-center gap-1.5 rounded-[2px] text-xs text-[var(--text-heading)] hover:bg-[var(--surface-2)]">
                   <span>Size</span><span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
                 </button>
+                <div className="hidden sm:flex items-center gap-0.5" aria-label="Quick brush size presets">
+                  {[1, 2, 3, 4].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => setBrushSize(size)}
+                      aria-label={`${size}px brush preset`}
+                      aria-pressed={tools.brushSize === size}
+                      className={`w-5 h-5 flex items-center justify-center rounded-[2px] text-[10px] font-mono transition-colors ${tools.brushSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold' : 'bg-[var(--surface-1)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'}`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                {(tools.activeTool === 'pen' || tools.activeTool === 'curve') && (
+                  <button
+                    type="button"
+                    onClick={() => setPixelPerfect(!tools.pixelPerfect)}
+                    aria-label={tools.pixelPerfect ? 'Disable clean corners' : 'Enable clean corners'}
+                    aria-pressed={tools.pixelPerfect}
+                    title="Pixel-Perfect: Removes doubled corner pixels when drawing single-pixel lines"
+                    className={`hidden md:flex items-center gap-1 h-5 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
+                  >
+                    <span>Pixel-Perfect</span>
+                  </button>
+                )}
                 {isBrushMenuOpen && (
                   <div role="group" aria-label="Brush size controls"
                     className="absolute top-full left-0 mt-1 z-[100] w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] p-3 shadow-lg space-y-3">
@@ -753,6 +793,39 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
 
         </div>
 
+        <div role="group" aria-label="Workspace presets" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-1.5 xl:pl-2">
+          <select
+            aria-label="Workspace layout"
+            value={activeWorkspace}
+            onChange={(e) => {
+              const val = e.target.value;
+              chooseWorkspaceLayout(val);
+              if (val === 'lighting') {
+                setActiveInspectorTab('ai');
+                try {
+                  sessionStorage.setItem('pixibun:pixitools:last-domain', 'lighting');
+                } catch {
+                  // Ignore sessionStorage error
+                }
+                window.dispatchEvent(new CustomEvent('pixibun:set-pixitools-domain', { detail: 'lighting' }));
+              } else if (val === 'animation') {
+                setActiveInspectorTab('layers');
+              } else if (val === 'drawing') {
+                setActiveInspectorTab('tools');
+              }
+            }}
+            title="Workspace layout preset"
+            className="h-6 px-1.5 bg-[var(--surface-0)] text-[var(--text-heading)] rounded-[2px] border border-[var(--desk-border)] text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)] transition-colors"
+          >
+            <option value="drawing">Drawing</option>
+            <option value="animation">Animation</option>
+            <option value="lighting">Lighting</option>
+            {savedWorkspaceLayouts.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+
         <div role="group" aria-label="Studio settings and help" className="h-7 flex items-center text-xs border-l border-[var(--desk-border)] pl-2 xl:pl-3">
           <AppearancePopover label="Studio" actions={[
             { label: 'Co-Draw', icon: 'sparkles', ariaLabel: 'Co-Draw session', onSelect: onOpenCoDraw },
@@ -859,7 +932,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 <span>Composition Overlay</span>
               </span>
               <span className="text-[9px] text-[var(--text-heading)] font-medium">
-                {referenceOverlay === 'none' ? 'Off' : referenceOverlay === 'thirds' ? 'Thirds' : referenceOverlay === 'golden' ? 'Golden' : 'Center'}
+                {{ none: 'Off', thirds: 'Thirds', golden: 'Golden', center: 'Center', diagonals: 'Diagonals', safe: 'Safe area' }[referenceOverlay]}
               </span>
             </button>
           </div>
@@ -1003,8 +1076,166 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               </select>
             </div>
           </div>
+
+          <div className="h-px bg-[var(--desk-border)]" />
+
+          {/* 5. Panels & Workspace */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-sans font-medium text-[var(--text-muted)]">Panels & Workspace</span>
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                onClick={() => updateWorkspaceLayout({ timeline: !workspaceLayout.timeline })}
+                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
+                  workspaceLayout.timeline
+                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
+                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-[1px] ${workspaceLayout.timeline ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
+                  <span>Timeline</span>
+                </span>
+              </button>
+
+              <button
+                onClick={() => updateWorkspaceLayout({ navigator: !workspaceLayout.navigator })}
+                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
+                  workspaceLayout.navigator
+                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
+                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-[1px] ${workspaceLayout.navigator ? 'bg-[var(--accent-gold)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
+                  <span>Navigator</span>
+                </span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1 mt-0.5">
+              <button
+                onClick={() => {
+                  toggleFocus();
+                  document.getElementById('center-canvas-area')?.focus({ preventScroll: true });
+                }}
+                className="pixel-tactile-btn flex-1 px-2 py-1 text-[10px] font-medium rounded-[2px] border bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--text-heading)] flex items-center justify-between cursor-pointer"
+                title="Canvas only mode (Shift+Tab)"
+              >
+                <span>Canvas Only</span>
+                <span className="text-[8px] font-mono opacity-70">⇧ Tab</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsViewMenuOpen(false);
+                  setIsArrangeWorkspaceOpen(true);
+                }}
+                className="pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--text-heading)] cursor-pointer"
+              >
+                Arrange...
+              </button>
+            </div>
+          </div>
         </div>,
         document.body
+      )}
+      {/* Arrange Workspace Modal */}
+      {isArrangeWorkspaceOpen && (
+        <ModalWrapper isOpen onClose={() => setIsArrangeWorkspaceOpen(false)} title="Arrange workspace" maxWidth="max-w-md">
+          <div className="space-y-4 text-sm text-[var(--text-heading)]">
+            <p className="text-[var(--text-muted)] text-xs">Keep the panels you use close to the canvas. Layouts are saved in this browser.</p>
+            <label className="flex items-center justify-between text-xs">
+              <span>Inspector position</span>
+              <select
+                aria-label="Inspector position"
+                value={workspaceLayout.inspectorSide}
+                onChange={(e) => updateWorkspaceLayout({ inspectorSide: e.target.value as 'left' | 'right' })}
+                className="bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-sm px-2 py-1 text-xs"
+              >
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+            <label className="block text-xs">
+              <div className="flex justify-between">
+                <span>Inspector width</span>
+                <span className="font-mono">{workspaceLayout.inspectorWidth} px</span>
+              </div>
+              <input
+                aria-label="Inspector width"
+                type="range"
+                min={260}
+                max={420}
+                step={10}
+                value={workspaceLayout.inspectorWidth}
+                onChange={(e) => updateWorkspaceLayout({ inspectorWidth: Number(e.target.value) })}
+                className="w-full accent-[var(--accent-gold)] mt-2"
+              />
+            </label>
+            <div className="space-y-2 text-xs">
+              {(['color', 'navigator', 'timeline'] as const).map((key) => (
+                <label key={key} className="flex gap-2 items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={workspaceLayout[key]}
+                    onChange={(e) => updateWorkspaceLayout({ [key]: e.target.checked })}
+                    className="accent-[var(--accent-gold)]"
+                  />
+                  <span>{key === 'color' ? 'Pinned color picker' : key === 'navigator' ? 'Navigator' : 'Timeline'}</span>
+                </label>
+              ))}
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (saveWorkspaceLayout(newLayoutName)) {
+                  setNewLayoutName('');
+                  setLayoutError('');
+                } else {
+                  setLayoutError('Enter a name (up to 32 characters). Keep up to six saved layouts.');
+                }
+              }}
+              className="border-t border-[var(--desk-border)] pt-3 flex flex-wrap gap-2"
+            >
+              <input
+                aria-label="New workspace name"
+                placeholder="Layout name"
+                value={newLayoutName}
+                maxLength={32}
+                onChange={(e) => setNewLayoutName(e.target.value)}
+                className="flex-1 min-w-0 bg-[var(--surface-0)] border border-[var(--desk-border)] px-2 py-1 text-xs"
+              />
+              <button type="submit" className="px-2 py-1 text-xs rounded-sm border border-[var(--desk-border)] hover:bg-[var(--surface-2)] cursor-pointer">
+                Save layout
+              </button>
+              {layoutError && <p role="alert" className="w-full text-xs text-[var(--accent-gold)]">{layoutError}</p>}
+            </form>
+            {savedWorkspaceLayouts.length > 0 && (
+              <ul className="space-y-2 text-xs">
+                {savedWorkspaceLayouts.map((s) => (
+                  <li key={s.id} className="flex items-center justify-between gap-2">
+                    <button className="text-left underline cursor-pointer" onClick={() => chooseWorkspaceLayout(s.id)}>{s.name}</button>
+                    <button
+                      className="px-2 py-0.5 text-xs rounded-sm border border-[var(--desk-border)] hover:bg-[var(--surface-2)] cursor-pointer"
+                      aria-label={`Delete workspace ${s.name}`}
+                      onClick={() => deleteWorkspaceLayout(s.id)}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              className="px-2 py-1 text-xs rounded-sm border border-[var(--desk-border)] hover:bg-[var(--surface-2)] cursor-pointer"
+              onClick={() => {
+                chooseWorkspaceLayout(activeWorkspace.startsWith('user-') ? 'drawing' : activeWorkspace);
+                setLayoutError('');
+              }}
+            >
+              Restore preset
+            </button>
+          </div>
+        </ModalWrapper>
       )}
     </header>
   );

@@ -2,7 +2,7 @@
 
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
-This is the current web app's feature index, reconciled with this session's checkout on **3 October 2026**. The interface pictures retain their actual 2 October capture dates. Each row leads to instructions and a current picture. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
+This is the current web app's feature index, reconciled with this session's checkout on **4 October 2026**. Interface pictures retain their actual capture dates; the artist workspace has separate 4 October illustrations. Each row leads to instructions and a picture. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
 
 ## Welcome and starting points
 
@@ -22,7 +22,7 @@ Source: [welcome desk](../src/components/landing/AtelierDeskScene.tsx), [starter
 
 ## Every drawing tool
 
-All **16** entries come from [the canonical tool list](../src/config/shortcuts.ts). The tool guide explains gestures, relevant settings, selection masks, locks and Undo. Tool screenshots show the selected tool and available controls; they are not before/after demonstrations of every possible stroke.
+All **17** entries come from [the canonical tool list](../src/config/shortcuts.ts). The tool guide explains gestures, relevant settings, selection masks, locks and Undo. Tool screenshots show the selected tool and available controls; they are not before/after demonstrations of every possible stroke.
 
 | Tool | Key | Main use | Detailed guide | Screenshot |
 | --- | --- | --- | --- | --- |
@@ -30,6 +30,7 @@ All **16** entries come from [the canonical tool list](../src/config/shortcuts.t
 | Bézier Curve | C | Drag a curved stroke with tension and brush width | [Curve](guides/drawing-tools.md#bézier-curve) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-curve.png) |
 | Eraser | E | Remove pixels from the selected layer | [Eraser](guides/drawing-tools.md#eraser) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-eraser.png) |
 | Flood Fill | G | Contiguous/global fill, tolerance and bounded gap closure | [Fill](guides/drawing-tools.md#flood-fill) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-bucket.png) |
+| Pixel Gradient | Shift+G | Masked linear/radial fills using exact ramp colors, optional Bayer 4×4 | [Gradient](guides/drawing-tools.md#pixel-gradient) | [Masked fill](assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png) |
 | Dither Brush | D | Patterned primary/secondary color transitions | [Dither](guides/drawing-tools.md#dither-brush) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-dither.png) |
 | Color Replace | R | Replace matching color pixels on the active layer | [Replace](guides/drawing-tools.md#color-replace) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-color-replace.png) |
 | Erase Sampled Color | Shift+R | Remove a sampled family with scope/tolerance choices | [Erase color](guides/drawing-tools.md#erase-sampled-color) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-erase-color.png) |
@@ -54,12 +55,15 @@ All **16** entries come from [the canonical tool list](../src/config/shortcuts.t
 | Canvas resize | Presets/custom dimensions, aspect lock, anchor, optional resampling | [Resize](guides/studio-workspace.md#resize-the-canvas) | [Dialog](assets/screenshots/2026-10-02-feature-guide/canvas-resize.png) |
 | Layer stack | Add/duplicate/rename/reorder/hide/lock/opacity, merge down/delete | [Layers](guides/studio-workspace.md#layers) | [Stack](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
 | Layer blending | Normal, Multiply, Screen, Overlay, Color Dodge, On artwork only | [Blend choices](guides/studio-workspace.md#layers) | [Stack](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
-| Color wells and picker | Primary/secondary, swap/reset, recent/quick swatches, numeric/hex picker | [Colors](guides/studio-workspace.md#colors-close-to-hand) | [Picker](assets/screenshots/2026-10-02-feature-guide/color-picker.png) |
+| Color wells and picker | Primary/secondary, swap/reset, recent/quick swatches, triangle/square, HSV/hex and optional pinned panel | [Colors](guides/artist-workspace.md#keep-colors-and-settings-close) | [Picker](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
+| Artist workspace | Drawing/Animation/Lighting presets, inspector side/width, panel visibility, six browser layouts, Shift+Tab canvas focus | [Layouts](guides/artist-workspace.md#choose-and-save-a-layout) | [Workspace](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
+| Detailed tool inspector | Active-tool brush, fill, selection, dither and chisel controls alongside quick header controls | [Tools](guides/artist-workspace.md#keep-colors-and-settings-close) | [Inspector](assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png) |
+| Canvas navigator | Whole-image overview, view outline, recenter, 1:1/Fit and small-canvas grid | [Navigator](guides/artist-workspace.md#see-the-whole-canvas) | [Overview](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
 | Selection transforms | Mask, move/nudge, eight resize handles, pivot, rotation/snap, flips, 90° turns, commit/cancel | [Transform](guides/studio-workspace.md#selections-and-transforms) | [Gizmo](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
 | Canvas clipboard | Pixel selection copy/cut/paste, floating destination | [Clipboard](guides/studio-workspace.md#selections-and-transforms) | [Selection](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
 | Undo/Redo | Session history with admitted payload and depth bounds | [History safety](guides/artwork-safety.md#damaged-stored-projects) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
 | Zoom, fit and pan | Wheel/steps, fit, 100%, middle/Alt drag and contextual arrows | [Navigation](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
-| Drawing guides | Pixel grid, 2:1 grid, Off/Thirds/Golden/Center composition | [Guides](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
+| Drawing guides | Pixel grid, 2:1 grid, Off/Thirds/Golden/Center/Diagonals/Safe area composition | [Guides](guides/studio-workspace.md#view-and-symmetry) | [Diagonals](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
 | Seam/view previews | 3×3 canvas repetition; movable/resizable/minimizable PiP with backdrop/playback | [Previews](guides/studio-workspace.md#view-and-symmetry) | [PiP](assets/screenshots/2026-10-02-feature-repairs-phase3/single-live-preview.png) |
 | CVD and silhouette lenses | Color-vision simulation and shape inspection; view only | [Lenses](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
 | Drawing symmetry | Horizontal/vertical mirrors; p2, pm, p4, p4m, p6m wallpaper groups | [Symmetry](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
@@ -76,6 +80,7 @@ Sources: [workspace owners](../ARCHITECTURE.md), [rail](../src/components/layout
 | --- | --- | --- | --- |
 | Palette authoring | Named pick/copy/artwork draft; edit/reorder/remove swatches; cancel or create | [Author](guides/palettes-and-cycling.md#gather-your-colors) | [Draft](assets/screenshots/2026-10-02-docs/palette-from-artwork.png) |
 | Presets, import and scan | Palette selector, supported HEX/GPL/text/JSON, up-to-six-color Scan Canvas | [Import/scan](guides/palettes-and-cycling.md#swatches-file-import-and-ramps) | [Palette](assets/screenshots/2026-10-02-feature-guide/palette-ramps.png) |
+| Palette library | All-swatch cards, project/library/favorites and color-count filters, artist/name search, four credited additional palettes; explicit application | [Library](guides/artist-workspace.md#compare-palettes-before-choosing) | [Library](assets/screenshots/2026-10-04-artist-workspace/palette-library.png) |
 | OKLCH ramp | Generate five highlight/shadow swatches from the primary color | [Ramp](guides/palettes-and-cycling.md#swatches-file-import-and-ramps) | [Ramp](assets/screenshots/2026-10-02-feature-guide/palette-ramps.png) |
 | Cycle tracks | Name/enable/delete, inclusive First/Last, rate/direction/BlendShift, play/speed | [Cycle](guides/palettes-and-cycling.md#track-controls) | [Configured track](assets/screenshots/2026-10-02-docs/palette-cycle-range.png) |
 | CRNG exchange | Supported binary cycle-chunk import/export; not a complete IFF movie | [CRNG](guides/palettes-and-cycling.md#track-controls) | [Track](assets/screenshots/2026-10-02-docs/palette-cycle-range.png) |
@@ -88,7 +93,7 @@ Sources: [Palette panel](../src/components/layout/inspector/PalettePanel.tsx), [
 | Feature | What is available | Guide | Screenshot |
 | --- | --- | --- | --- |
 | Timeline editing | Add blank/duplicate/delete frames, reorder, select and edit per-frame holds | [Frames](guides/animation-and-review.md#frames-holds-and-playback) | [Timeline](assets/screenshots/2026-10-02-feature-guide/animation-timeline.png) |
-| Playback and onion skin | Play/pause, step, loop, per-frame holds, preview speed and onion toggle; stored tint/count/opacity have no separate current timeline editors | [Playback](guides/animation-and-review.md#frames-holds-and-playback) | [Timeline](assets/screenshots/2026-10-02-feature-guide/animation-timeline.png) |
+| Playback and onion skin | Play/pause, step, loop, holds, preview speed; 0–5 previous/next ghosts, separate tints, opacity, presets and F3 toggle | [Playback](guides/animation-and-review.md#frames-holds-and-playback) | [Onion controls](assets/screenshots/2026-10-04-artist-workspace/onion-settings.png) |
 | Tags and clips | Named inclusive frame ranges, colors and loop choices | [Clips](guides/animation-and-review.md#tags-and-clips) | [Tag editor](assets/screenshots/2026-10-02-feature-guide/animation-tags.png) |
 | Animation review | Clip scan, bounded alignment, thumbnails/diff, findings and report navigation | [Review](guides/animation-and-review.md#review-animation) | [Report](assets/screenshots/2026-10-02-feature-guide/animation-review.png) |
 | Intentional differences | Record review exceptions without changing pixels | [Review](guides/animation-and-review.md#review-animation) | [Report](assets/screenshots/2026-10-02-feature-guide/animation-review.png) |
@@ -197,6 +202,7 @@ These limits belong beside the feature list so a visible control is not mistaken
 - **Browser and resource boundaries:** full Studio needs a wide viewport; codecs/install/offline availability depend on the browser. Project/history/export admission can refuse operations. [Limits](contracts/storage.md), [export fidelity](contracts/exports.md).
 - **Qualification remains scoped:** real two-machine Co-Draw, broader engine/device/pen/assistive-technology qualification and participant learning/artist studies remain pending. Read [current status](current-status.md) and [the research registry](research/issue-registry.md).
 - **Future and retired work:** v2 neural/native/GPU/SIMD/tree-CRDT/P3 ideas are [proposals](../V2_VISION.md). The retired radio/audio and volumetric/SSAO paths described in old release history are not advertised current features. No cloud account, automatic cloud backup, general AI generation or shipped native package is implied.
+- **Artist requests with larger scope:** arbitrary docking, automatic body-part extraction or idle/attack animation, a particle emitter, liquify and free warp are researched proposals, not shipped controls. [Request-by-request decisions](research/2026-10-04-artist-workspace-feedback.md#decisions-for-every-detailed-request).
 
 ## What the remaining work would involve
 

@@ -1,0 +1,260 @@
+{
+  "kind": "local-executed-evidence",
+  "date": "2026-10-04",
+  "gitHead": "9bccaca9fe01518fee8985336bc6137d85d29e40",
+  "workingTree": "Uncommitted; no push or deployment",
+  "runtime": {
+    "node": "22.23.3",
+    "platform": "Windows",
+    "next": "16.3.8"
+  },
+  "qualityGate": {
+    "unitSuites": 171,
+    "passed": 5,
+    "command": "node scripts/runQualityGate.mjs --with-build",
+    "unitTests": 1759,
+    "log": "artifacts/artist-workspace-final-quality-gate.log",
+    "durationSeconds": 190.21
+  },
+  "developmentBrowsers": {
+    "screenshotFollowUpPassed": 2,
+    "scope": [
+      "tests/e2e/artistWorkspace.spec.ts",
+      "tests/e2e/studioChrome.spec.ts"
+    ],
+    "passed": 7,
+    "accessibility": "Zero scoped axe violations within workspace navigation and inspector",
+    "engine": "Chromium",
+    "scopeRevision": "Before shared dialog-focus repair"
+  },
+  "compiledBrowsers": {
+    "command": "playwright test --config playwright.production.config.ts tests/production/artistWorkspace.spec.ts tests/production/drawingAndPreviewControls.spec.ts tests/production/inputOwnership.spec.ts --grep 'compiled|Help owns' --workers=1 --retries=0",
+    "port": 3170,
+    "passed": 29,
+    "failed": 1,
+    "durationMinutes": 3.8,
+    "engines": [
+      "Chromium",
+      "Firefox",
+      "WebKit"
+    ],
+    "workers": 1,
+    "retries": 0,
+    "failure": "WebKit fixture expected a mouse-clicked button to be the previously focused opener",
+    "diagnostics": "artifacts/playwright-production-3170",
+    "log": "artifacts/artist-workspace-final-compiled-browser.log",
+    "layoutFollowUp": {
+      "port": 3171,
+      "passed": 3,
+      "durationSeconds": 29.5,
+      "change": "Focus the opener and press Enter before testing Escape/focus restoration; all typed-name/reload/pixel checks retained",
+      "log": "artifacts/artist-workspace-final-layout-keyboard.log"
+    },
+    "paletteFollowUp": {
+      "passed": 3,
+      "durationMinutes": 1.3,
+      "scope": "Two independently colored strokes retained byte-for-byte through preview, application, save/reload; favorite restored",
+      "log": "artifacts/artist-workspace-palette-persistence-followup.log"
+    }
+  },
+  "testsprite": {
+    "approvedPlans": 5,
+    "productionBatch": {
+      "reportedPassed": 2,
+      "reportedFailed": 2,
+      "reportedBlocked": 1,
+      "timedOut": 0,
+      "notRun": 0,
+      "log": "artifacts/artist-workspace-testsprite-production-run.log"
+    },
+    "review": "See execution Markdown: the two reported passes omit parts of the planned assertions, and failures were independently inspected",
+    "layoutRepairRun": {
+      "runId": "b2a76ff1-e7cc-4922-9b82-e7407e6a3c4d",
+      "status": "passed",
+      "recordedSteps": 29,
+      "finalAssertions": 4,
+      "connectionClosed": true,
+      "log": "artifacts/artist-workspace-testsprite-layout-repair-run.log"
+    }
+  },
+  "limitations": [
+    "Full browser suites not rerun",
+    "No physical Safari, pen or assistive-technology qualification",
+    "Opera GIF report not reproduced",
+    "Screenshots illustrate local UI; no artist participant study"
+  ],
+  "changedApplicationAndTestInputs": [
+    {
+      "path": "src/components/layout/AtelierRail.tsx",
+      "sha256": "90312aa968f09bec481a5265e6e7b6a5855205d1a289926abcc53ef97e26c241"
+    },
+    {
+      "path": "src/components/layout/BottomTimeline.tsx",
+      "sha256": "12f0dad59ee23f8568ff93c136bdb8fa387b75eaaeabb7cc2c1d8f1e4e0036e4"
+    },
+    {
+      "path": "src/components/layout/CenterViewport.tsx",
+      "sha256": "a9166d958b17ba151632204d9831b9f06b1e919ff85b5cb93bf339a545fdf4ed"
+    },
+    {
+      "path": "src/components/layout/inspector/NavigatorPanel.tsx",
+      "sha256": "f577cb436a12c0d5c399b46d03493dd8b55a45c2b221048f5ba339dc28d38560"
+    },
+    {
+      "path": "src/components/layout/inspector/PalettePanel.tsx",
+      "sha256": "f628d0caa1d7ab697262a11c43c6a40dabdcc779a8a45bd515ef1bbe80d5ba3a"
+    },
+    {
+      "path": "src/components/layout/inspector/ToolSettingsPanel.tsx",
+      "sha256": "35902e5e07a041b0b46be270980a144ae8f9e1da78064f2437ee290eed62732c"
+    },
+    {
+      "path": "src/components/layout/OnionSkinSettings.tsx",
+      "sha256": "88c90d10d7258f841bef2f1d3357ab93ca78cc41549e6414eb7fa1b015a2b82a"
+    },
+    {
+      "path": "src/components/layout/RightInspector.tsx",
+      "sha256": "a25506afa50ff1280faee0763a1d90d78517902daaf8091f7ad619de18eac9c6"
+    },
+    {
+      "path": "src/components/layout/StudioLayout.tsx",
+      "sha256": "f40a6db5252595a5b050d911553c737aa0f9f57c26af5cb316ff552104d93718"
+    },
+    {
+      "path": "src/components/layout/WorkspaceBar.tsx",
+      "sha256": "dcf4e7ea228ebb414b5a0b7224be677097e94e0f9b3b391ff62aff8a41d09b00"
+    },
+    {
+      "path": "src/components/modals/ColorPickerModal.tsx",
+      "sha256": "0a9d17d2f91d357bfa7c5a776855b2845c84a225affa1f7afb58455c8057c168"
+    },
+    {
+      "path": "src/components/modals/PaletteLibraryModal.tsx",
+      "sha256": "f34e2bf44bd62ca60d16ddfc7218e7b1a646a654761c0f775c51aa9a3d120dd7"
+    },
+    {
+      "path": "src/components/ui/ArtistColorPicker.tsx",
+      "sha256": "2c20caf55d9367861903a71cc004c68cb3662459a55e0490e06c390c40d9ddbb"
+    },
+    {
+      "path": "src/components/ui/ModalWrapper.tsx",
+      "sha256": "bdf91936840fc0836766de6a4dc2058539367b74f9879df109f00cfb55baef70"
+    },
+    {
+      "path": "src/components/ui/PixelIcon.tsx",
+      "sha256": "78bacf7e66e07bb3cbd9e92fa4475ed1f4650904e232a02714b962ddf7fc4c1f"
+    },
+    {
+      "path": "src/components/ui/ToolMotionPreview.tsx",
+      "sha256": "c1542a95c78234dccd3b8c2658534b5430d103c9ef4a776c36d2217f821f25e1"
+    },
+    {
+      "path": "src/components/ui/ToolPreviewCanvas.tsx",
+      "sha256": "4e3693956b423157733db62674357d10417ac83ff2ad2779f6fa31b01b98b89c"
+    },
+    {
+      "path": "src/config/artistPalettes.ts",
+      "sha256": "6530f2a5e8ce6e1ae5426b542cf7d46c10d5f2f9380ae118cc3a9720f1023424"
+    },
+    {
+      "path": "src/config/shortcuts.ts",
+      "sha256": "c5438ca501092f1ab008ff2dc8a80d11d28611ae627ff1e4ffeab3aced6a6e46"
+    },
+    {
+      "path": "src/hooks/studio/useStudioKeyboard.ts",
+      "sha256": "dc09aed3ad6d85e08130821cc0e5bece9a1761c8fd6362bffa9b3715a7577339"
+    },
+    {
+      "path": "src/hooks/viewport/useGradientPointerHandler.ts",
+      "sha256": "7a7c64557f61604f16e60808605c6585caf737e2ecc27d4cef5f8badb4e1eef3"
+    },
+    {
+      "path": "src/hooks/viewport/useViewportPointerEvents.ts",
+      "sha256": "17b56efe2c0d953f96a2672398428c508f5e7a4fde62ba542bbccbc2662c9c75"
+    },
+    {
+      "path": "src/lib/canvas/pixelGradient.ts",
+      "sha256": "5f101cc471501fafbee6d55f544ae2de2634d9f4b9b9bb90448198619d867dc9"
+    },
+    {
+      "path": "src/lib/color/hsvPicker.ts",
+      "sha256": "5e8f708c2ef5bbef54a99a674ed43db955249300103dde77250ef7f93363c749"
+    },
+    {
+      "path": "src/lib/render/onionSkin.ts",
+      "sha256": "2f72792ea4cfc3272f0ed3b109072d104bb10f04a6c2e671496974dfa6ee0ab4"
+    },
+    {
+      "path": "src/stores/slices/createAnimationSlice.ts",
+      "sha256": "888257e50afc4d8cae1ee2ba85f434a5194b48b08cbd825d8c446d7e3ba0a543"
+    },
+    {
+      "path": "src/stores/slices/createViewportSlice.ts",
+      "sha256": "9d42be4fb0b5047776cdba85bf2104707af3d9fee69a23d46097b1cc36a18bed"
+    },
+    {
+      "path": "src/stores/slices/types.ts",
+      "sha256": "114c1d2946fb8ff66b7fecfa9e4e704db2caf1864632dcfdd8ccf52b0b5118fa"
+    },
+    {
+      "path": "src/stores/workspaceStore.ts",
+      "sha256": "fea56ef64809c329266ba2a35bc869535ac88f4a63785167a322b7be098fbe2b"
+    },
+    {
+      "path": "src/types/tools.ts",
+      "sha256": "31d16a48c31ad3cf7c37d99b57f53cad81648842e95e8fb34403bbcec014f504"
+    },
+    {
+      "path": "tests/artistWorkspace.test.ts",
+      "sha256": "b9a797c224d8dd6f318fa6c79b2e002a98377520ad47fd4e022461081e5cce3b"
+    },
+    {
+      "path": "tests/e2e/artistWorkspace.spec.ts",
+      "sha256": "6a4cd4036eab14d9d8bb59df62b3aa1ff5bf9b58c1d3f73e2fad63389915b63a"
+    },
+    {
+      "path": "tests/onionSkin.test.ts",
+      "sha256": "ae7d8d09876cf87277741ea3ca3e4e7948a76b6e3ea162f005573aaf7b34900b"
+    },
+    {
+      "path": "tests/production/artistWorkspace.spec.ts",
+      "sha256": "fd84ed05c07f6fe4059b2127174493a3bccc9650a0765b658c65190ddaff1910"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png",
+      "sha256": "15d434288a23cb7397b18cb4091391824e575da3bcf8266c99a61ce06194acb5"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/onion-settings.png",
+      "sha256": "d832833cc4563fe0b19ab046b545632a4c85913ad34ac56561b3cba43db93744"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/palette-library.png",
+      "sha256": "2ed9342222ce88105ea2d247df2fb6405ea4672ba7479db665188cd4a7bfd812"
+    },
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png",
+      "sha256": "7d94c46a81f6492b045b78ec80ca9e0d2da14c98af02dfcf61e7d0b71dee9ec1"
+    }
+  ],
+  "buildFiles": [
+    {
+      "path": ".next/BUILD_ID",
+      "sha256": "946fa7c3004fe27e64b4dcd45e42f2e1a8c9aa9f0acb32eba7a7facc11f5e7e0"
+    },
+    {
+      "path": ".next/routes-manifest.json",
+      "sha256": "268607beb6bf0d8358776b00cf147c18df05abf31b304cdb4d118457024a0f9e"
+    },
+    {
+      "path": ".next/prerender-manifest.json",
+      "sha256": "2e2b620c90d8f2913b5ee3ccb8fc2a0ddda70794cc94246b4e868b78173c76bb"
+    },
+    {
+      "path": ".next/required-server-files.json",
+      "sha256": "45ba2140aab42d4880d70f8396e39c099d14022bc19304bd1b565f171c29373a"
+    }
+  ]
+}

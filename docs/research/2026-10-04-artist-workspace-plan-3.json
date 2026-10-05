@@ -1,0 +1,73 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Onion skin settings compare distinct poses and survive project reload without painting ghosts",
+  "description": "A previous-frame red ghost must be distinct from the active artwork, respond to F3, and retain its configured range and tint after the project is saved and reopened.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the local PixiBun Studio at a 1440 by 900 desktop viewport."
+    },
+    {
+      "type": "action",
+      "description": "Draw a small mark near the left side of frame one."
+    },
+    {
+      "type": "action",
+      "description": "Add a blank frame."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate mark near the right side of frame two."
+    },
+    {
+      "type": "action",
+      "description": "Open Onion skin settings using the timeline gear."
+    },
+    {
+      "type": "action",
+      "description": "Choose the Previous pose preset."
+    },
+    {
+      "type": "action",
+      "description": "Set the previous tint to red."
+    },
+    {
+      "type": "action",
+      "description": "Close the dialog."
+    },
+    {
+      "type": "action",
+      "description": "Save the project."
+    },
+    {
+      "type": "action",
+      "description": "Reload the page."
+    },
+    {
+      "type": "action",
+      "description": "Select frame two, because projects reopen on their first frame."
+    },
+    {
+      "type": "action",
+      "description": "Open Onion skin settings."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify previous count is one, next count is zero and the red tint was restored in the settings dialog."
+    },
+    {
+      "type": "action",
+      "description": "Close the settings dialog."
+    },
+    {
+      "type": "action",
+      "description": "Toggle onion skin off with F3 while the drawing canvas has focus."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the previous-frame red ghost disappears while frame two's painted mark is unchanged; the two frames still contain their own separate marks."
+    }
+  ]
+}

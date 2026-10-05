@@ -9,6 +9,7 @@ export type PixelIconName =
   | 'erase-color'
   | 'bucket' 
   | 'dither' 
+  | 'gradient'
   | 'eyedropper' 
   | 'select-box' 
   | 'select-lasso' 
@@ -112,6 +113,11 @@ export const PixelIcon: React.FC<PixelIconProps> = ({
           </svg>
         );
 
+      case 'gradient':
+        return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+          <path d="M3 5h18v14H3z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M4 6h5v12H4zM10 6h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm3-6h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm4-10h2v2h-2zm0 8h2v2h-2z" />
+        </svg>;
       case 'dither':
         return (
           <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" className={className}>

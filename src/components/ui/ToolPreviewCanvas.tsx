@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import type { Scene } from './ToolMotionPreview';
+import { pixelGradient } from '@/lib/canvas/pixelGradient';
 
 const W = 96;
 const H = 54;
@@ -256,6 +257,22 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
       box(ctx, 24, 17, Math.round(37 * action), 23, RED);
       if (!done) cursor(ctx, 36, 28, action > 0);
       label = done ? 'CONNECTED AREA' : 'CLICK TO FILL';
+      break;
+    }
+    case 'gradient': {
+      const end = 26 + Math.max(1, Math.round(action * 44));
+      if (action > 0) {
+        const ramp = pixelGradient(48, 24, { x: 1, y: 12 }, { x: end - 25, y: 12 }, {
+          shape: 'linear', dither: true, colors: [RED, GOLD, BLUE], selection: null, mask: null,
+        });
+        for (let y = 0; y < 24; y++) for (let x = 0; x < 48; x++) {
+          const i = (y * 48 + x) * 4;
+          pixel(ctx, x + 24, y + 16, `rgb(${ramp[i]},${ramp[i + 1]},${ramp[i + 2]})`);
+        }
+      }
+      outlineRect(ctx, 23, 15, 50, 26, WHITE);
+      if (!done) { line(ctx, 26, 28, end, 28, INK); cursor(ctx, end, 28, action > 0); }
+      label = done ? 'PALETTE COLORS ONLY' : 'DRAG A RAMP';
       break;
     }
     case 'dither': {
