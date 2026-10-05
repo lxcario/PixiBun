@@ -1,0 +1,415 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/desktopFileSystem.test.ts (11 tests | 4 failed) 22ms
+     × does not adopt a denied Save As handle 8ms
+     × aborts a staged native file on write failure and retains the previous association 3ms
+     × aborts a staged native file on close failure and retains the previous association 1ms
+     × does not attach a late save to a workspace that reset while the picker was open 1ms
+ ❯ tests/components/ExportModal.test.tsx (17 tests | 2 failed) 704ms
+     × closing a pending backup prevents a late download and keeps a reopened dialog busy until drain 56ms
+     × closing GIF export suppresses a late encoder result and blocks overlapping preparation 96ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/desktopFileSystem.test.ts > DesktopFileSystem API & Fallbacks > does not adopt a denied Save As handle
+AssertionError: expected { name: 'denied.pixibun', …(2) } to be { name: 'original.pixibun' } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "name": "original.pixibun",
++   "createWritable": [Function Mock],
++   "name": "denied.pixibun",
++   "queryPermission": [Function Mock],
+  }
+
+ ❯ tests/desktopFileSystem.test.ts:170:59
+    168|     g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker…
+    169|     expect((await DesktopFileSystem.saveProject('pixels', denied.name,…
+    170|     expect(DesktopFileSystem.captureAssociation().handle).toBe(origina…
+       |                                                           ^
+    171|   });
+    172|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/desktopFileSystem.test.ts > DesktopFileSystem API & Fallbacks > aborts a staged native file on write failure and retains the previous association
+ FAIL  tests/desktopFileSystem.test.ts > DesktopFileSystem API & Fallbacks > aborts a staged native file on close failure and retains the previous association
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ tests/desktopFileSystem.test.ts:181:26
+    179|     g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker…
+    180|     await expect(DesktopFileSystem.saveProject('pixels', selected.name…
+    181|     expect(stream.abort).toHaveBeenCalledOnce(); expect(DesktopFileSys…
+       |                          ^
+    182|   });
+    183|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/desktopFileSystem.test.ts > DesktopFileSystem API & Fallbacks > does not attach a late save to a workspace that reset while the picker was open
+AssertionError: expected { name: 'old.pixibun', …(2) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "createWritable": [Function Mock],
+  "name": "old.pixibun",
+  "queryPermission": [Function Mock],
+}
+
+ ❯ tests/desktopFileSystem.test.ts:191:106
+    189|     const pending = DesktopFileSystem.saveProject('old pixels', select…
+    190|     DesktopFileSystem.reset(); select(selected); expect((await pending…
+    191|     expect(stream.write).toHaveBeenCalledWith('old pixels'); expect(De…
+       |                                                                                                          ^
+    192|   });
+    193| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/components/ExportModal.test.tsx > ExportModal URL.revokeObjectURL deferred cleanup > closing a pending backup prevents a late download and keeps a reopened dialog busy until drain
+AssertionError: expected "click" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st click call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ tests/components/ExportModal.test.tsx:249:23
+    247|     expect((screen.getByRole('button', { name: 'Preparing backup…' }) …
+    248|     await act(async () => { finish({} as Awaited<ReturnType<typeof bui…
+    249|     expect(click).not.toHaveBeenCalled(); expect(close).toHaveBeenCall…
+       |                       ^
+    250|     expect((screen.getByRole('button', { name: 'Download project backu…
+    251|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/components/ExportModal.test.tsx > ExportModal URL.revokeObjectURL deferred cleanup > closing GIF export suppresses a late encoder result and blocks overlapping preparation
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Preparing export…"
+
+Here are the accessible roles:
+
+  dialog:
+
+  Name "✦ Export Studio Assets":
+  <dialog
+    aria-describedby="modal-body-_r_f_"
+    aria-labelledby="modal-title-_r_f_"
+    class="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
+    open=""
+  />
+
+  --------------------------------------------------
+  heading:
+
+  Name "✦ Export Studio Assets":
+  <h2
+    class="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none"
+    id="modal-title-_r_f_"
+    tabindex="-1"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Close dialog":
+  <button
+    aria-label="Close dialog"
+    class="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
+    type="button"
+  />
+
+  Name "PNG":
+  <button
+    aria-label="PNG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-png"
+    type="button"
+  />
+
+  Name "GIF":
+  <button
+    aria-label="GIF"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer bg-[#f0be7c] text-[#140d1f] shadow-xs "
+    data-testid="export-tab-gif"
+    type="button"
+  />
+
+  Name "APNG":
+  <button
+    aria-label="APNG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-apng"
+    type="button"
+  />
+
+  Name "WebM Video":
+  <button
+    aria-label="WebM Video"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-webm"
+    type="button"
+  />
+
+  Name "MP4 Video":
+  <button
+    aria-label="MP4 Video"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-mp4"
+    type="button"
+  />
+
+  Name "Vector SVG":
+  <button
+    aria-label="Vector SVG"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-svg"
+    type="button"
+  />
+
+  Name "Timelapse":
+  <button
+    aria-label="Timelapse"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-replay"
+    type="button"
+  />
+
+  Name "Sprite Sheet":
+  <button
+    aria-label="Sprite Sheet"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-spritesheet"
+    type="button"
+  />
+
+  Name "Godot Kit":
+  <button
+    aria-label="Godot Kit"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-godot-kit"
+    type="button"
+  />
+
+  Name "Shaders":
+  <button
+    aria-label="Shaders"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-shader"
+    type="button"
+  />
+
+  Name "Cycle Loop":
+  <button
+    aria-label="Cycle Loop"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-palette-cycle"
+    type="button"
+  />
+
+  Name "Project Backup":
+  <button
+    aria-label="Project Backup"
+    class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+    data-testid="export-tab-project"
+    type="button"
+  />
+
+  Name "1x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer"
+    title="1x scale (8×8px)"
+    type="button"
+  />
+
+  Name "2x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer"
+    title="2x scale (16×16px)"
+    type="button"
+  />
+
+  Name "4x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold transition-colors bg-[#f0be7c] text-[#140d1f] border-[#8c5120] cursor-pointer"
+    title="4x scale (32×32px)"
+    type="button"
+  />
+
+  Name "8x":
+  <button
+    class="px-2 py-0.5 rounded-[2px] border font-bold transition-colors bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer"
+    title="8x scale (64×64px)"
+    type="button"
+  />
+
+  Name "Cancel":
+  <button
+    aria-label="Cancel"
+    class="group relative select-none rounded-[2px] font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)] border transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden px-2.5 py-0.5 text-xs font-medium h-7 pixel-tactile-btn tactile-motion-btn bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+    data-testid="export-cancel-button"
+  />
+
+  Name "Download GIF":
+  <button
+    class="group relative select-none rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)] transition-colors duration-100 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden px-2.5 py-0.5 text-xs h-7 pixel-primary-btn tactile-motion-btn bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <dialog
+      aria-describedby="modal-body-_r_f_"
+      aria-labelledby="modal-title-_r_f_"
+      class="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
+      open=""
+    >
+      <div
+        class="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] p-4 rounded-[2px] flex flex-col gap-3 select-none text-[var(--text-heading)] transition-colors duration-150 max-h-[88vh] max-w-[calc(100vw-2rem)] w-[560px] "
+      >
+        <div
+          class="flex items-center justify-between border-b border-[var(--desk-border)] pb-2 shrink-0"
+        >
+          <h2
+            class="font-sans font-semibold text-sm text-[var(--accent-gold)] tracking-normal m-0 outline-none"
+            id="modal-title-_r_f_"
+            tabindex="-1"
+          >
+            ✦ 
+            Export Studio Assets
+          </h2>
+          <button
+            aria-label="Close dialog"
+            class="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+        <div
+          class="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto"
+          data-modal-body="true"
+          id="modal-body-_r_f_"
+        >
+          <div
+            class="flex flex-col gap-2 bg-[var(--desk-surface)] p-2.5 rounded-[2px] border-2 border-[var(--desk-border)]"
+          >
+            <div
+              class="flex flex-col gap-1"
+            >
+              <span
+                class="text-[9px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold"
+              >
+                Image & Animation
+              </span>
+              <div
+                class="flex flex-wrap gap-1"
+              >
+                <button
+                  aria-label="PNG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-png"
+                  type="button"
+                >
+                  PNG
+                </button>
+                <button
+                  aria-label="GIF"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer bg-[#f0be7c] text-[#140d1f] shadow-xs "
+                  data-testid="export-tab-gif"
+                  type="button"
+                >
+                  GIF
+                </button>
+                <button
+                  aria-label="APNG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-apng"
+                  type="button"
+                >
+                  APNG
+                </button>
+                <button
+                  aria-label="WebM Video"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-webm"
+                  type="button"
+                >
+                  WebM Video
+                </button>
+                <button
+                  aria-label="MP4 Video"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-mp4"
+                  type="button"
+                >
+                  MP4 Video
+                </button>
+                <button
+                  aria-label="Vector SVG"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-svg"
+                  type="button"
+                >
+                  Vector SVG
+                </button>
+                <button
+                  aria-label="Timelapse"
+                  class="py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)] "
+                  data-testid="export-tab-replay"
+                  type="button"
+                >
+                  Timelapse
+                </button>
+              </div>
+            </div>
+            <div
+              class="flex flex-col gap-1"
+            >
+              <span
+                class="text-[9px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-semibold"
+              >
+                Game Delivery
+              </span>
+              <div
+                class="flex flex-wrap gap-1"
+             ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/ExportModal.test.tsx:263:20
+    261|     view.rerender(<ExportModal isOpen={false} onClose={close} initialT…
+    262|     view.rerender(<ExportModal isOpen onClose={close} initialType="gif…
+    263|     expect((screen.getByRole('button', { name: 'Preparing export…' }) …
+       |                    ^
+    264|     await act(async () => { finish(new Blob(['late'])); });
+    265|     expect(click).not.toHaveBeenCalled(); expect(close).toHaveBeenCall…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 22 passed (28)
+   Start at  20:54:23
+   Duration  3.37s (transform 771ms, setup 49ms, import 2.16s, tests 725ms, environment 398ms)
+

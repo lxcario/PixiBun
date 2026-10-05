@@ -224,31 +224,36 @@ export function generateLoopAnimationCanvases(
   const canvases: HTMLCanvasElement[] = [];
   const lut32 = new Uint32Array(basePaletteHex.length);
 
-  for (let f = 0; f < totalFrames; f++) {
-    const elapsedSec = f / fps;
-    updateLivePaletteLUT32(basePaletteHex, retunedTracks, elapsedSec, lut32);
+  try {
+    for (let f = 0; f < totalFrames; f++) {
+      const elapsedSec = f / fps;
+      updateLivePaletteLUT32(basePaletteHex, retunedTracks, elapsedSec, lut32);
 
-    const frameCanvas = document.createElement('canvas');
-    frameCanvas.width = width;
-    frameCanvas.height = height;
-    const fCtx = frameCanvas.getContext('2d');
-    if (!fCtx) continue;
+      const frameCanvas = document.createElement('canvas');
+      frameCanvas.width = width;
+      frameCanvas.height = height;
+      canvases.push(frameCanvas);
+      const fCtx = frameCanvas.getContext('2d');
+      if (!fCtx) throw new Error(`Palette cycle frame ${f + 1} could not be rendered.`);
 
-    const frameData = fCtx.createImageData(width, height);
-    const data32 = new Uint32Array(frameData.data.buffer);
+      const frameData = fCtx.createImageData(width, height);
+      const data32 = new Uint32Array(frameData.data.buffer);
 
-    for (let i = 0; i < width * height; i++) {
-      const palIdx = indexMap.indices[i];
-      if (indexMap.alpha[i] === 0 || !cyclingRegisters[palIdx]) {
-        data32[i] = source32[i];
-      } else {
-        data32[i] = ((lut32[palIdx] ?? 0) & 0x00ffffff) | (indexMap.alpha[i] << 24);
+      for (let i = 0; i < width * height; i++) {
+        const palIdx = indexMap.indices[i];
+        if (indexMap.alpha[i] === 0 || !cyclingRegisters[palIdx]) {
+          data32[i] = source32[i];
+        } else {
+          data32[i] = ((lut32[palIdx] ?? 0) & 0x00ffffff) | (indexMap.alpha[i] << 24);
+        }
       }
+
+      fCtx.putImageData(frameData, 0, 0);
     }
 
-    fCtx.putImageData(frameData, 0, 0);
-    canvases.push(frameCanvas);
+    return canvases;
+  } catch (error) {
+    for (const canvas of canvases) { canvas.width = 0; canvas.height = 0; }
+    throw error;
   }
-
-  return canvases;
 }

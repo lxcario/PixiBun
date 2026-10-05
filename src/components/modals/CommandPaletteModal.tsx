@@ -3,18 +3,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useThemeStore } from '@/stores/themeStore';
-import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
-import { CANONICAL_TOOLS } from '@/config/shortcuts';
+import { PixelIcon } from '@/components/ui/PixelIcon';
+import { STUDIO_COMMANDS, type StudioCommand } from '@/config/studioCommands';
+import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 
-interface CommandItem {
-  id: string;
-  title: string;
-  category: 'Tools' | 'View & Guides' | 'Animation' | 'Project & Studio';
-  icon: PixelIconName;
-  shortcut?: string;
-  action: () => void;
-}
+type CommandItem = StudioCommand;
 
 interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -49,17 +43,16 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const listId = React.useId();
+  const canUndo = useStudioStore(s => s.canUndo);
+  const canRedo = useStudioStore(s => s.canRedo);
 
-  const setActiveTool = useStudioStore((s) => s.setActiveTool);
-  const toggleGrid = useStudioStore((s) => s.toggleGrid);
   const toggleIsoGuides = useStudioStore((s) => s.toggleIsoGuides);
   const toggleTilePreview = useStudioStore((s) => s.toggleTilePreview);
   const toggleFloatingPreview = useStudioStore((s) => s.toggleFloatingPreview);
   const toggleSquintMode = useStudioStore((s) => s.toggleSquintMode);
   const setCvdLens = useStudioStore((s) => s.setCvdLens);
   const cvdLens = useStudioStore((s) => s.cvdLens);
-  const setZoom = useStudioStore((s) => s.setZoom);
-  const setPan = useStudioStore((s) => s.setPan);
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const isPlaying = useStudioStore((s) => s.isPlaying);
@@ -69,26 +62,12 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const frames = useStudioStore((s) => s.frames);
   const loopMode = useStudioStore((s) => s.loopMode);
   const setLoopMode = useStudioStore((s) => s.setLoopMode);
-  const onionSkin = useStudioStore((s) => s.onionSkin);
-  const setOnionSkin = useStudioStore((s) => s.setOnionSkin);
   const toggleSymmetryH = useStudioStore((s) => s.toggleSymmetryH);
   const toggleSymmetryV = useStudioStore((s) => s.toggleSymmetryV);
   const swapColors = useStudioStore((s) => s.swapColors);
 
   const commands: CommandItem[] = useMemo(() => {
-    const list: CommandItem[] = [];
-
-    // 1. Tool Commands
-    CANONICAL_TOOLS.forEach((tool) => {
-      list.push({
-        id: `tool-${tool.id}`,
-        title: `${tool.label} Tool`,
-        category: 'Tools',
-        icon: tool.icon,
-        shortcut: tool.shortcut,
-        action: () => setActiveTool(tool.id),
-      });
-    });
+    const list: CommandItem[] = [...STUDIO_COMMANDS];
 
     list.push({
       id: 'tool-swap-colors',
@@ -100,14 +79,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     });
 
     // 2. View & Guides
-    list.push({
-      id: 'view-grid',
-      title: 'Toggle Pixel Grid',
-      category: 'View & Guides',
-      icon: 'grid',
-      shortcut: "Ctrl+'",
-      action: toggleGrid,
-    });
 
     list.push({
       id: 'view-iso-guides',
@@ -149,35 +120,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       icon: 'eye-off',
       shortcut: 'P',
       action: () => setCvdLens(cycleCvdLens(cvdLens)),
-    });
-
-    list.push({
-      id: 'view-fit-screen',
-      title: 'Fit Canvas to Viewport',
-      category: 'View & Guides',
-      icon: 'zoom-in',
-      shortcut: 'Ctrl+0',
-      action: () => {
-        const availableW = window.innerWidth - 380;
-        const availableH = window.innerHeight - 240;
-        const scaleX = (availableW * 0.85) / canvasWidth;
-        const scaleY = (availableH * 0.85) / canvasHeight;
-        const targetZoom = Math.max(100, Math.min(6400, Math.floor(Math.min(scaleX, scaleY) * 100)));
-        setZoom(targetZoom);
-        setPan(0, 0);
-      },
-    });
-
-    list.push({
-      id: 'view-zoom-100',
-      title: 'Zoom to 100% Actual Pixel Scale',
-      category: 'View & Guides',
-      icon: 'zoom-in',
-      shortcut: 'Ctrl+1',
-      action: () => {
-        setZoom(100);
-        setPan(0, 0);
-      },
     });
 
     list.push({
@@ -230,14 +172,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       },
     });
 
-    list.push({
-      id: 'anim-onion-skin',
-      title: onionSkin.enabled ? 'Disable Onion Skin Lightbox' : 'Enable Onion Skin Lightbox',
-      category: 'Animation',
-      icon: 'onion',
-      shortcut: 'O',
-      action: () => setOnionSkin({ enabled: !onionSkin.enabled }),
-    });
 
     list.push({
       id: 'anim-loop-mode',
@@ -270,6 +204,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         icon: 'undo',
         shortcut: 'Ctrl+Z',
         action: onUndo,
+        disabledReason: canUndo ? undefined : 'No action to undo',
       });
     }
 
@@ -281,6 +216,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         icon: 'redo',
         shortcut: 'Ctrl+Y',
         action: onRedo,
+        disabledReason: canRedo ? undefined : 'No action to redo',
       });
     }
 
@@ -381,9 +317,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
     return list;
   }, [
-    setActiveTool,
     swapColors,
-    toggleGrid,
     toggleIsoGuides,
     toggleTilePreview,
     toggleFloatingPreview,
@@ -392,8 +326,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     cvdLens,
     canvasWidth,
     canvasHeight,
-    setZoom,
-    setPan,
     toggleSymmetryH,
     toggleSymmetryV,
     isPlaying,
@@ -401,10 +333,10 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     activeFrameIndex,
     frames.length,
     setActiveFrame,
-    onionSkin,
-    setOnionSkin,
     loopMode,
     setLoopMode,
+    canUndo,
+    canRedo,
     onSaveNow,
     onUndo,
     onRedo,
@@ -438,12 +370,20 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     if (isOpen) {
       setSearch('');
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+
     }
   }, [isOpen]);
 
+  const execute = (command: CommandItem) => {
+    if (command.disabledReason) return;
+    onClose();
+    command.action();
+  };
+
   // Keyboard navigation inside palette
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.nativeEvent.isComposing) return;
+    if (!filteredCommands.length && ['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) { e.preventDefault(); return; }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex((prev) => (prev < filteredCommands.length - 1 ? prev + 1 : 0));
@@ -454,12 +394,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       e.preventDefault();
       const selected = filteredCommands[selectedIndex];
       if (selected) {
-        selected.action();
-        onClose();
+        execute(selected);
       }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
     }
   };
 
@@ -468,30 +404,25 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     if (!listRef.current) return;
     const activeEl = listRef.current.children[selectedIndex] as HTMLElement | undefined;
     if (activeEl) {
-      activeEl.scrollIntoView({ block: 'nearest' });
+      activeEl.scrollIntoView?.({ block: 'nearest' });
     }
-  }, [selectedIndex]);
+  }, [selectedIndex, filteredCommands]);
 
   if (!isOpen) return null;
 
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-100"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        className="w-full max-w-lg bg-[var(--surface-1)] border-2 border-[var(--desk-border)] rounded-[var(--radius-md)] shadow-[0_16px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Command Palette"
-        tabIndex={-1}
-      >
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Command Palette" maxWidth="w-[560px]" bodyClassName="flex flex-col min-h-0 overflow-hidden">
         {/* Search Input Bar */}
         <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-[var(--desk-border)] bg-[var(--surface-2)]">
-          <PixelIcon name="sparkles" size={16} className="text-[var(--accent-gold)]" />
+          <PixelIcon name="help" size={16} className="text-[var(--accent-gold)]" />
           <input
             ref={inputRef}
+            data-autofocus
+            role="combobox"
+            aria-expanded={true}
+            aria-autocomplete="list"
+            aria-controls={listId}
+            aria-activedescendant={filteredCommands[selectedIndex] ? `${listId}-${filteredCommands[selectedIndex].id}` : undefined}
             onKeyDown={handleKeyDown}
             type="text"
             value={search}
@@ -508,6 +439,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         {/* Results List */}
         <div
           ref={listRef}
+          id={listId}
+          aria-label="Studio commands"
           role="listbox"
           className="max-h-72 overflow-y-auto p-1.5 flex flex-col gap-0.5"
         >
@@ -523,14 +456,18 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   key={cmd.id}
                   type="button"
                   role="option"
+                  id={`${listId}-${cmd.id}`}
+                  tabIndex={-1}
+                  aria-disabled={Boolean(cmd.disabledReason)}
+                  title={cmd.disabledReason}
                   aria-selected={isSelected}
                   onClick={() => {
-                    cmd.action();
-                    onClose();
+                    execute(cmd);
                   }}
+                  onMouseDown={(event) => event.preventDefault()}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-[var(--radius-sm)] text-left transition-colors cursor-pointer ${
-                    isSelected
+                    cmd.disabledReason ? 'opacity-50 cursor-default' : isSelected
                       ? 'bg-[var(--surface-2)] text-[var(--accent-gold)] border-l-2 border-[var(--accent-gold)] font-bold'
                       : 'text-[var(--text-heading)] hover:bg-[var(--surface-2)] border-l-2 border-transparent'
                   }`}
@@ -561,7 +498,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           </div>
           <span>PixiBun Atelier Command Hub</span>
         </div>
-      </div>
-    </div>
+    </ModalWrapper>
   );
 };

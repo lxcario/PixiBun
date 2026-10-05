@@ -1,0 +1,51 @@
+[WebServer] (node:9052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:31256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:5 › downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF (15.1s)
+(node:12516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [firefox] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:5 › downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF (21.9s)
+(node:30872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:5 › downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF (1.0m)
+
+
+  1) [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:5 › downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Export Studio Assets' }).getByTestId('export-tab-palette-cycle')
+
+
+      35 |   for (const rate of [3, 5, 8, 15]) for (const format of ['apng', 'gif'] as const) {
+      36 |     await page.getByTestId('export-button').click();
+    > 37 |     await dialog.getByTestId('export-tab-palette-cycle').click();
+         |                                                          ^
+      38 |     await dialog.getByRole('button', { name: `${rate} FPS`, exact: true }).click();
+      39 |     await dialog.getByRole('group', { name: 'Loop length' }).getByRole('button', { name: '2s', exact: true }).click();
+      40 |     await dialog.getByRole('group', { name: 'Cycle file format' }).getByRole('button', { name: format.toUpperCase(), exact: true }).click();
+        at D:\PixiBun\docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:37:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-hardening-followups\palette-cycle-compiled-dow-ca714--and-15-FPS-as-APNG-and-GIF-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-hardening-followups\palette-cycle-compiled-dow-ca714--and-15-FPS-as-APNG-and-GIF-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-hardening-followups\palette-cycle-compiled-dow-ca714--and-15-FPS-as-APNG-and-GIF-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-hardening-followups\palette-cycle-compiled-dow-ca714--and-15-FPS-as-APNG-and-GIF-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:5 › downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF 
+  2 passed (1.7m)

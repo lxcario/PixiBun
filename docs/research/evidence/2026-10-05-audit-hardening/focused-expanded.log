@@ -1,0 +1,63 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/desktopFileSystem.test.ts (13 tests | 1 failed) 92ms
+     × a pre-aborted download request does not create a file or URL 10ms
+ ❯ tests/memoryPaths.test.tsx (13 tests | 1 failed) 248ms
+     × palette loop generation fails rather than dropping a frame and releases partially prepared surfaces 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/desktopFileSystem.test.ts > DesktopFileSystem API & Fallbacks > a pre-aborted download request does not create a file or URL
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Blob {
+        Symbol(kHandle): Blob {},
+        Symbol(kLength): 14,
+        Symbol(kType): "application/json",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/desktopFileSystem.test.ts:211:24
+    209|     const create = vi.spyOn(URL, 'createObjectURL'), controller = new …
+    210|     await expect(DesktopFileSystem.saveProject('pixels', 'cancelled.pi…
+    211|     expect(create).not.toHaveBeenCalled();
+       |                        ^
+    212|   });
+    213| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/memoryPaths.test.tsx > bounded memory paths > palette loop generation fails rather than dropping a frame and releases partially prepared surfaces
+AssertionError: expected 300 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 300
+
+ ❯ tests/memoryPaths.test.tsx:47:55
+     45|     vi.spyOn(second, 'getContext').mockReturnValue(null);
+     46|     expect(() => generateLoopAnimationCanvases(source, ['#000000'], []…
+     47|     expect(first.width).toBe(0); expect(second.width).toBe(0);
+       |                                                       ^
+     48|   });
+     49|   it('drains running jobs and never starts queued jobs after a failure…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 47 passed (49)
+   Start at  20:59:15
+   Duration  2.46s (transform 1.27s, setup 89ms, import 3.38s, tests 831ms, environment 1.45s)
+

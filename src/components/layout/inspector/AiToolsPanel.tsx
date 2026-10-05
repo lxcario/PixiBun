@@ -10,6 +10,7 @@ import { TilesetDecomposerSection } from './TilesetDecomposerSection';
 import { PixiBudAssistanceSection } from './PixiBudAssistanceSection';
 import { AnimationReviewSection } from './AnimationReviewSection';
 import { ResearchWorkbenchSection } from './ResearchWorkbenchSection';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish' | 'animation' | 'research';
 
@@ -33,6 +34,8 @@ const DOMAIN_COPY: Record<Exclude<DomainKey, 'start'>, { title: string; descript
 };
 
 function initialDomain(): DomainKey {
+  const requested = useWorkspaceStore.getState().pixiToolsDomain;
+  if (requested === 'start' || TASKS.some(task => task.key === requested) || requested === 'all') return requested as DomainKey;
   try {
     const saved = sessionStorage.getItem(LAST_DOMAIN_KEY);
     if (saved === 'all' || saved === 'lighting' || saved === 'tileset' || saved === 'polish' || saved === 'animation' || saved === 'research') return saved;
@@ -49,6 +52,7 @@ export const AiToolsPanel: React.FC = () => {
   const chooseDomain = (domain: DomainKey) => {
     panelRef.current?.parentElement?.scrollTo(0, 0);
     setActiveDomain(domain);
+    useWorkspaceStore.setState({ pixiToolsDomain: domain });
     try {
       if (domain === 'start') sessionStorage.removeItem(LAST_DOMAIN_KEY);
       else sessionStorage.setItem(LAST_DOMAIN_KEY, domain);

@@ -1,6 +1,6 @@
 /** Estimated application-owned CPU memory. Excludes browser/GPU/codec internals. */
 export const COMBINED_MEMORY_LIMIT_BYTES = 512 * 1024 * 1024;
-type MemoryOwner = 'rasters' | 'history' | 'collaboration' | 'scratchPool' | 'suspendedRasters';
+type MemoryOwner = 'rasters' | 'history' | 'collaboration' | 'scratchPool' | 'suspendedRasters' | 'previews';
 const providers = new Map<MemoryOwner, () => number>();
 let reservedBytes = 0;
 

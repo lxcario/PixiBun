@@ -160,4 +160,54 @@ describe('DesktopFileSystem API & Fallbacks', () => {
     expect(await DesktopFileSystem.verifyHandlePermission(mockHandlePrompt as unknown as FileSystemFileHandle)).toBe(true);
     expect(mockHandlePrompt.requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
   });
+
+  it('does not adopt a denied Save As handle', async () => {
+    const original = { name: 'original.pixibun' } as FileSystemFileHandle;
+    DesktopFileSystem.restoreAssociation({ handle: original, projectId: 'original', filename: original.name });
+    const denied = { name: 'denied.pixibun', queryPermission: vi.fn(async () => 'denied'), createWritable: vi.fn() };
+    g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker = vi.fn(async () => denied);
+    expect((await DesktopFileSystem.saveProject('pixels', denied.name, true, 'original')).success).toBe(false);
+    expect(DesktopFileSystem.captureAssociation().handle).toBe(original); expect(denied.createWritable).not.toHaveBeenCalled();
+  });
+
+  it.each(['write', 'close'] as const)('aborts a staged native file on %s failure and retains the previous association', async failure => {
+    const original = { name: 'original.pixibun' } as FileSystemFileHandle;
+    DesktopFileSystem.restoreAssociation({ handle: original, projectId: 'original', filename: original.name });
+    const stream = { write: vi.fn(async () => {}), close: vi.fn(async () => {}), abort: vi.fn(async () => {}) };
+    stream[failure].mockRejectedValueOnce(new Error('Disk unavailable'));
+    const selected = { name: 'new.pixibun', queryPermission: vi.fn(async () => 'granted'), createWritable: vi.fn(async () => stream) };
+    g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker = vi.fn(async () => selected);
+    await expect(DesktopFileSystem.saveProject('pixels', selected.name, true, 'original')).rejects.toThrow('Disk unavailable');
+    expect(stream.abort).toHaveBeenCalledOnce(); expect(DesktopFileSystem.getActiveHandle()).toBe(original);
+  });
+
+  it('does not attach a late save to a workspace that reset while the picker was open', async () => {
+    let select!: (handle: unknown) => void;
+    const stream = { write: vi.fn(async () => {}), close: vi.fn(async () => {}) };
+    const selected = { name: 'old.pixibun', queryPermission: vi.fn(async () => 'granted'), createWritable: vi.fn(async () => stream) };
+    g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker = vi.fn(() => new Promise(resolve => { select = resolve; }));
+    const pending = DesktopFileSystem.saveProject('old pixels', selected.name, true, 'old');
+    DesktopFileSystem.reset(); select(selected); expect((await pending).success).toBe(true);
+    expect(stream.write).toHaveBeenCalledWith('old pixels'); expect(DesktopFileSystem.getActiveHandle()).toBeNull();
+  });
+
+  it('cancels a staged write before commit and rejects overlapping file writes until it drains', async () => {
+    let finish!: () => void;
+    const stream = { write: vi.fn(() => new Promise<void>(resolve => { finish = resolve; })), close: vi.fn(async () => {}), abort: vi.fn(async () => {}) };
+    const selected = { name: 'pending.pixibun', queryPermission: vi.fn(async () => 'granted'), createWritable: vi.fn(async () => stream) };
+    const picker = vi.fn(async () => selected); g.window.showOpenFilePicker = vi.fn(); g.window.showSaveFilePicker = picker;
+    const controller = new AbortController(), pending = DesktopFileSystem.saveProject('pixels', selected.name, true, 'original', controller.signal);
+    await vi.waitFor(() => expect(stream.write).toHaveBeenCalledOnce()); controller.abort();
+    expect((await DesktopFileSystem.saveProject('other pixels', 'other.pixibun', true, 'other')).success).toBe(false);
+    expect(picker).toHaveBeenCalledOnce(); finish(); expect((await pending).success).toBe(false);
+    expect(stream.abort).toHaveBeenCalledOnce(); expect(stream.close).not.toHaveBeenCalled(); expect(DesktopFileSystem.getActiveHandle()).toBeNull();
+    stream.write.mockResolvedValue(undefined); expect((await DesktopFileSystem.saveProject('retry pixels', selected.name, true, 'original')).success).toBe(true);
+  });
+
+  it('a pre-aborted download request does not create a file or URL', async () => {
+    delete g.window.showSaveFilePicker; delete g.window.showOpenFilePicker;
+    const create = vi.spyOn(URL, 'createObjectURL').mockClear(), controller = new AbortController(); controller.abort();
+    await expect(DesktopFileSystem.saveProject('pixels', 'cancelled.pixibun', true, undefined, controller.signal)).rejects.toThrow(/abort/i);
+    expect(create).not.toHaveBeenCalled();
+  });
 });

@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
+import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
+import { studioCommandForKey } from '@/config/studioCommands';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
 
@@ -35,11 +36,8 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
         useWorkspaceStore.getState().toggleFocus();
         return;
       }
-      if (e.key === 'F3' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
-        e.preventDefault();
-        state.setOnionSkin({ enabled: !state.onionSkin.enabled });
-        return;
-      }
+      const command = studioCommandForKey(e);
+      if (command) { e.preventDefault(); command.action(); return; }
 
       // Save now flushes browser storage. Save As explicitly creates a project file.
       if ((e.ctrlKey || e.metaKey) && key === 's') {
@@ -103,20 +101,9 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           return;
         }
 
-        if (e.key === '0') {
-          e.preventDefault();
-          const fitZoom = calculateFitZoom(state.canvasWidth, state.canvasHeight);
-          state.setZoom(fitZoom);
-          state.setPan(0, 0);
-          return;
-        }
 
-        if (e.key === '1') {
-          e.preventDefault();
-          state.setZoom(100);
-          state.setPan(0, 0);
-          return;
-        }
+
+
       }
 
       // Single Key & Shift Key Shortcuts
@@ -142,55 +129,8 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           }
           break;
         }
-        case 'b':
-          state.setActiveTool('pen');
-          break;
-        case 'c':
-          state.setActiveTool('curve');
-          break;
-        case 'e':
-          state.setActiveTool('eraser');
-          break;
-        case 'g':
-          state.setActiveTool(e.shiftKey ? 'gradient' : 'bucket');
-          break;
         case 'd':
-          if (e.shiftKey) {
-            state.setPrimaryColor('#000000');
-            state.setSecondaryColor('#ffffff');
-          } else {
-            state.setActiveTool('dither');
-          }
-          break;
-        case 'i':
-          state.setActiveTool('eyedropper');
-          break;
-        case 'm':
-          state.setActiveTool('select-box');
-          break;
-        case 'q':
-          state.setActiveTool('select-lasso');
-          break;
-        case 'w':
-          state.setActiveTool('select-wand');
-          break;
-        case 'l':
-          state.setActiveTool('line');
-          break;
-        case 'j':
-          state.setActiveTool('isometric-line');
-          break;
-        case 'u':
-          state.setActiveTool('rectangle');
-          break;
-        case 'o':
-          state.setActiveTool('ellipse');
-          break;
-        case 'r':
-          state.setActiveTool(e.shiftKey ? 'erase-color' : 'color-replace');
-          break;
-        case 'k':
-          state.setActiveTool('normal-chisel');
+          if (e.shiftKey) { state.setPrimaryColor('#000000'); state.setSecondaryColor('#ffffff'); }
           break;
         case 's': {
           // Silhouette / Squint Mode (DESIGN.md §13) — display-only viewport lens

@@ -1,0 +1,23 @@
+
+Running 12 tests using 1 worker
+
+(node:31904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (8.2s)
+  ok  2 [chromium] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (13.3s)
+  ok  3 [chromium] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (18.0s)
+  ok  4 [chromium] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (17.1s)
+(node:33072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [firefox] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (15.5s)
+  ok  6 [firefox] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (12.1s)
+  ok  7 [firefox] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (13.5s)
+  ok  8 [firefox] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (13.3s)
+(node:34760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [webkit] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (29.3s)
+  ok 10 [webkit] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (26.8s)
+  ok 11 [webkit] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (28.7s)
+  ok 12 [webkit] › tests\e2e\paletteCycleExport.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (26.6s)
+
+  12 passed (3.8m)

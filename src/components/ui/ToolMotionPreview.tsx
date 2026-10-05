@@ -793,7 +793,7 @@ function usePreviewController(side: 'left' | 'right') {
       )
     : null;
 
-  return { requestShow, scheduleHide, popup };
+  return { requestShow, scheduleHide, explicitDismiss, popup };
 }
 
 export const DrawingPreviewContext = React.createContext<ReturnType<typeof usePreviewController> | null>(null);
@@ -826,6 +826,7 @@ export function DrawingToolPreview({
         onMouseLeave={contextController.scheduleHide}
         onFocus={(event) => contextController.requestShow(event.currentTarget, definition, true)}
         onBlur={contextController.scheduleHide}
+        onClickCapture={contextController.explicitDismiss}
       >
         {children}
       </div>
@@ -852,6 +853,7 @@ function StandaloneDrawingToolPreview({
       onMouseLeave={controller.scheduleHide}
       onFocus={(event) => controller.requestShow(event.currentTarget, definition, true)}
       onBlur={controller.scheduleHide}
+      onClickCapture={controller.explicitDismiss}
     >
       {children}
       {controller.popup}

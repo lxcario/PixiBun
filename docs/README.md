@@ -15,6 +15,22 @@ The implementation owner for each subsystem owns its contract; there is no separ
 
 Historical material retains original results, failures, fixtures, and release decisions. Add a dated erratum or supersession link; do not change an old failed run into a pass. Separate worktrees and ignored transcripts remain local revision-specific material. Vendor skill instructions are maintained through their upstream mechanism.
 
+The [5 October deep product/code audit](research/2026-10-05-deep-product-code-audit.md) inventories the source, records targeted diagnostic and compiled-browser findings, and researches distinctive product directions. Its passing local gate, demonstrated defects, unmeasured performance risks, and proposed artist studies have separate scopes; it does not change implementation contracts or attest a deployment.
+
+The [deep audit phase 5 repair](research/2026-10-05-audit-phase5.md) completes the planned implementation phases with preserved creation timestamps, asynchronous clipboard feedback/manual fallback and queued deployment candidate checks. Its record separates local gate/build, 29 passing compiled cases plus one capability skip, retained initial fixture diagnostics, and external TestSprite drafts awaiting review.
+
+The [deep audit phase 1 repair](research/2026-10-05-audit-phase1.md) defines preserved clip membership, conservative batch layer correspondence and copied palette/research identity policies. It separates passing local/build/browser results, the retained header-overlap failure and pending external TestSprite confirmation.
+
+The [deep audit phase 2 repair](research/2026-10-05-audit-phase2.md) implements stroke-level corner correction, interpolated dither and gallery save-version ownership. Its dated record separates the full gate/build, initial preview-obstruction failure, passing three-browser follow-up and pending external tests.
+
+The [deep audit phase 3 repair](research/2026-10-05-audit-phase3.md) aligns command/modal behavior, navigator coordinates and restored workspace tasks, repairs header/preview obstructions and corrects the original Lighting finding. Its record separates passing local/build/browser checks, retained WebKit diagnostics and pending external confirmation.
+
+The [deep audit phase 4 repair](research/2026-10-05-audit-phase4.md) bounds retained timeline previews and async PNG preparation, avoids reading unchanged autosave raster values, and admits/cleans up animation export composites. Its record separates allocation observations, the WebKit native-composite correction, local verification, retained fixture diagnostics and pending external confirmation.
+
+The [final audit hardening](research/2026-10-05-audit-hardening.md) follows all five repair phases with cancellation/write ownership, separate browser/file-save acknowledgement, palette cleanup, hydration and dialog/focus repairs. Its dated record separates terminal local checks from retained failed diagnostics and unqualified devices or deployment. The user selected local verification; this phase does not run or change external TestSprite cases.
+
+The subsequent [5 October publication record](research/2026-10-05-audit-publication.md) records the user's push authorization, included audit/repair work, evidence-byte preservation and normal main-branch publication. Earlier local-only statements retain their at-run scope; publication does not certify remote CI, deployment or untested devices.
+
 The [3 October audit session publication](research/2026-10-03-audit-session-publication.md) reconciles the session's current guides/contracts, seven repair phases and TestSprite execution. Main publication was explicitly requested; historical uncommitted-source and unavailable-run statements retain their at-run scope. Remote CI/deployment and release qualification remain separate.
 
 For practical examples, follow [palette creation and color cycling](guides/palettes-and-cycling.md). Current guides use dated screenshots of the current studio; historical research/release screenshots retain their original bytes and scope. A new UI illustration does not replace the validation evidence of an earlier run.

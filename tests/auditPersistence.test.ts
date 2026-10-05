@@ -124,9 +124,11 @@ describe('audit persistence regressions', () => {
   });
 
   it('rolls back buffer registry to previous buffers if loadProjectState throws during publish', async () => {
+    useStudioStore.setState({ projectCreatedAt: 1000 });
     const initial = useStudioStore.getState();
     const initialBuffer = getOrCreateBuffer(initial.activeLayerId, 32, 32);
     const file = buildProjectFile();
+    file.createdAt = 2000;
     const validPng =
       'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAzCQNq/9CoWfocGBpIknb53BwAAAAAAAAAAAAAAAADgYwGzVwEB8fXh+AAAAABJRU5ErkJggg==';
     file.frames[0].layers[0].id = 'incoming-layer-id';
@@ -151,6 +153,7 @@ describe('audit persistence regressions', () => {
 
       // Live buffers must be restored to previous buffers rather than left with incoming-layer-id
       expect(hasBuffer('incoming-layer-id')).toBe(false);
+      expect(useStudioStore.getState().projectCreatedAt).toBe(1000);
       expect(hasBuffer(initial.activeLayerId)).toBe(true);
       expect(getOrCreateBuffer(initial.activeLayerId, 32, 32)).toBe(initialBuffer);
     } finally {
@@ -843,4 +846,3 @@ describe('audit persistence regressions', () => {
     expect(hasBuffer('layer-b-dbl')).toBe(false);
   });
 });
-

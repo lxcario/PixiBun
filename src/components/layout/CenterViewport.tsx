@@ -156,6 +156,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     performUndo,
     performRedo,
     drawPointsOnActiveLayer,
+    drawProvisionalPoint,
+    finishBrushBatch,
     currentStrokeSnapshotRef,
     setPrimaryColor,
   } = useViewportDrawing({
@@ -448,6 +450,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       cursorCoordsRef,
       currentStrokeSnapshotRef,
       drawPointsOnActiveLayer,
+      drawProvisionalPoint,
+      finishBrushBatch,
       captureSnapshot,
       commitSnapshot,
       discardSnapshot,

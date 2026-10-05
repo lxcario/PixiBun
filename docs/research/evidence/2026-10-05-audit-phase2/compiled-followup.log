@@ -1,0 +1,25 @@
+[WebServer] (node:15560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:8584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (2.2s)
+  ok  2 [chromium] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (2.7s)
+  ok  3 [chromium] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (4.8s)
+  ok  4 [chromium] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (3.7s)
+(node:15204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [firefox] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (5.3s)
+  ok  6 [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (4.6s)
+  ok  7 [firefox] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (7.0s)
+  ok  8 [firefox] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (7.0s)
+(node:29580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [webkit] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (5.6s)
+  ok 10 [webkit] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (7.2s)
+  ok 11 [webkit] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (20.1s)
+  ok 12 [webkit] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (18.0s)
+
+  12 passed (1.5m)

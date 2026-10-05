@@ -36,6 +36,21 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+    const restoreFocus = () => {
+      const opener = openerRef.current;
+      if (!opener) return;
+      setTimeout(() => {
+        if (!opener.isConnected) return;
+        const openDialogs = document.querySelectorAll('dialog[open]');
+        const currentDialog = openDialogs[openDialogs.length - 1];
+        // A command can open another dialog in the same render. Keep its focus.
+        if (currentDialog && !currentDialog.contains(opener)) return;
+        const active = document.activeElement;
+        if (active instanceof HTMLElement && active !== document.body && active !== opener &&
+            active.isConnected && !dialog.contains(active)) return;
+        opener.focus();
+      }, 0);
+    };
 
     if (isOpen) {
       // Save trigger element for focus restoration (only if outside dialog)
@@ -62,7 +77,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         explicitFocus.focus();
       } else {
         const bodyFocusable = dialog.querySelector<HTMLElement>(
-          `#${bodyId} input:not([disabled]), #${bodyId} textarea:not([disabled]), #${bodyId} select:not([disabled]), #${bodyId} button:not([disabled]), #${bodyId} [href], #${bodyId} [tabindex]:not([tabindex="-1"])`
+          `#${bodyId} input:not([disabled]), #${bodyId} textarea:not([disabled]), #${bodyId} select:not([disabled]), #${bodyId} button:not([disabled]):not([tabindex="-1"]), #${bodyId} [href], #${bodyId} [tabindex]:not([tabindex="-1"])`
         );
         if (bodyFocusable) {
           bodyFocusable.focus();
@@ -72,7 +87,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
             titleHeading.focus();
           } else {
             const fallback = dialog.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+              'button:not([disabled]):not([tabindex="-1"]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
             );
             if (fallback.length > 0) {
               fallback[0].focus();
@@ -89,27 +104,20 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
         }
       }
       // Return focus to previous opener
-      if (openerRef.current && typeof openerRef.current.focus === 'function') {
-        const opener = openerRef.current;
-        setTimeout(() => opener.focus(), 0);
-      }
+      restoreFocus();
     }
 
     const handleDialogKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         closeRef.current();
-        if (openerRef.current && typeof openerRef.current.focus === 'function') {
-          const opener = openerRef.current;
-          setTimeout(() => opener.focus(), 0);
-        }
         return;
       }
 
       // Focus trap cycle (Tab / Shift+Tab)
       if (e.key === 'Tab') {
         const focusable = dialog.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]):not([tabindex="-1"]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
 
@@ -129,10 +137,6 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     const handleDialogClick = (e: MouseEvent) => {
       if (e.target === dialog) {
         closeRef.current();
-        if (openerRef.current && typeof openerRef.current.focus === 'function') {
-          const opener = openerRef.current;
-          setTimeout(() => opener.focus(), 0);
-        }
       }
     };
 
@@ -142,10 +146,10 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     return () => {
       dialog.removeEventListener('keydown', handleDialogKeyDown);
       dialog.removeEventListener('click', handleDialogClick);
-      if (openerRef.current && typeof openerRef.current.focus === 'function') {
-        const opener = openerRef.current;
-        setTimeout(() => opener.focus(), 0);
+      if (dialog.open) {
+        try { dialog.close(); } catch { dialog.removeAttribute('open'); }
       }
+      restoreFocus();
     };
   }, [isOpen, bodyId, titleId]);
 
@@ -157,7 +161,11 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
     <dialog
       ref={dialogRef}
       className="bg-transparent p-0 m-0 w-full h-full max-w-full max-h-full backdrop:bg-black/75 backdrop:backdrop-blur-sm fixed inset-0 flex items-center justify-center z-50"
-      onClose={onClose}
+      onClose={event => {
+        // Ignore a queued close from a removed or already reopened dialog.
+        if (event.currentTarget !== dialogRef.current || event.currentTarget.open) return;
+        closeRef.current();
+      }}
       aria-labelledby={titleId}
       aria-describedby={bodyId}
     >
@@ -177,9 +185,6 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
             type="button"
             onClick={() => {
               onClose();
-              if (openerRef.current && typeof openerRef.current.focus === 'function') {
-                openerRef.current.focus();
-              }
             }}
             className="text-[var(--text-muted)] hover:text-[var(--accent-gold)] text-sm font-mono font-bold cursor-pointer transition-colors p-1"
             aria-label="Close dialog"

@@ -7,6 +7,7 @@ import {
   autoSaveWorkspaceDetailed,
   getLatestStoredProjectId,
   loadLatestSavedWorkspace,
+  renameProject,
   type AutoSaveOutcome,
 } from '@/lib/storage/db';
 import { buildAutosavePayloadAsync, hydrateProject, generateCompositeThumbnail } from '@/lib/project/serialize';
@@ -20,6 +21,8 @@ import { registerStudioRouteSession, setStudioResume, getStudioResume, getPracti
 import type { SaveResult } from '@/types/project';
 import { StorageResilience } from '@/lib/safety/storageResilience';
 import { createId } from '@/lib/engine/id';
+import { projectNameError } from '@/lib/project/metadataAdmission';
+import { SerializationSupersededError } from '@/lib/safety/boundedWork';
 import {
   inspectAndAdmitStoredProject,
   isAutosavePermitted,
@@ -198,6 +201,7 @@ export function useStudioAutosave() {
     autosaveInFlightRef.current = true;
     const savePromise = (async (): Promise<SaveResult> => {
       let finalResult: SaveResult = { ok: false, reason: 'unknown' };
+      let supersededRetries = 0;
       try {
         do {
           autosavePendingRef.current = false;
@@ -215,6 +219,10 @@ export function useStudioAutosave() {
             try {
               payload = await buildAutosavePayloadAsync();
             } catch (serErr) {
+              if (serErr instanceof SerializationSupersededError && supersededRetries++ < 2) {
+                autosavePendingRef.current = true;
+                continue;
+              }
               setSaveStatus('error');
               finalResult = {
                 ok: false,
@@ -317,6 +325,18 @@ export function useStudioAutosave() {
     return await savePromise;
   }, []);
 
+  const renameStoredProject = useCallback(async (projectId: string, name: string, expectedVersion: string): Promise<boolean> => {
+    if (projectNameError(name)) return false;
+    const state = useStudioStore.getState();
+    if (projectId !== state.currentProjectId) return renameProject(projectId, name, expectedVersion);
+    if (isPracticeActive() || lifecycleRef.current.phase !== 'active' || conflictRef.current === projectId) return false;
+    // The active identity has one writer; its queued save carries the new title and pixels together.
+    state.setProjectName(name);
+    const saved = await runAutosave();
+    const current = useStudioStore.getState();
+    return saved.ok && current.currentProjectId === projectId && current.projectName === name && !current.isDirty;
+  }, [runAutosave]);
+
   const joinCoDrawGuest = useCallback(async (
     invite: string, options: CoDrawStartOptions, signal: AbortSignal,
   ): Promise<string> => {
@@ -356,7 +376,7 @@ export function useStudioAutosave() {
     if (autosaveInFlightRef.current || conflictRef.current !== state.currentProjectId) return;
     const newId = createId('proj');
     // A new identity makes every raster dirty without clearing the live artwork/history.
-    useStudioStore.setState({ currentProjectId: newId, projectName: `${state.projectName.slice(0, 100)} (conflict copy)` });
+    useStudioStore.setState({ currentProjectId: newId, projectCreatedAt: Date.now(), projectName: `${state.projectName.slice(0, 100)} (conflict copy)` });
     useStudioStore.getState().setDirty(true);
     conflictRef.current = null;
     setSaveConflict(null);
@@ -959,6 +979,7 @@ export function useStudioAutosave() {
   return {
     autosaveTimerRef,
     runAutosave,
+    renameStoredProject,
     joinCoDrawGuest,
     handleCommitHistory,
     autosaveError,

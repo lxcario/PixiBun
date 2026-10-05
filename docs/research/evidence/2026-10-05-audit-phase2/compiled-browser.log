@@ -1,0 +1,69 @@
+[WebServer] (node:30280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 21 tests using 1 worker
+
+(node:2768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (4.4s)
+  ok  2 [chromium] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (2.3s)
+  ok  3 [chromium] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (3.2s)
+  ok  4 [chromium] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (2.1s)
+  ok  5 [chromium] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (2.6s)
+  ok  6 [chromium] › tests\production\strokeAndGallery.spec.ts:73:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (4.8s)
+  ok  7 [chromium] › tests\production\strokeAndGallery.spec.ts:93:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (3.6s)
+(node:19052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  8 [firefox] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (7.5s)
+  ok  9 [firefox] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (3.6s)
+  ok 10 [firefox] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (4.7s)
+  ok 11 [firefox] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (3.7s)
+  x  12 [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (2.1s)
+(node:26980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 13 [firefox] › tests\production\strokeAndGallery.spec.ts:73:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (8.7s)
+  ok 14 [firefox] › tests\production\strokeAndGallery.spec.ts:93:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (7.0s)
+(node:15396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 15 [webkit] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (16.7s)
+  ok 16 [webkit] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (8.2s)
+  ok 17 [webkit] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (13.9s)
+  ok 18 [webkit] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (6.7s)
+  ok 19 [webkit] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (7.1s)
+  ok 20 [webkit] › tests\production\strokeAndGallery.spec.ts:73:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (22.4s)
+  ok 21 [webkit] › tests\production\strokeAndGallery.spec.ts:93:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (17.9s)
+
+
+  1) [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 255
+    Received: 0
+
+      61 |   await ready(page); const blank = await pixels(page); await page.getByTestId('dither-tool').click();
+      62 |   await paint(page, [[0, 8], [20, 8]]);
+    > 63 |   for (let x = 0; x <= 20; x++) expect((await rgba(page, x, 8))[3]).toBe(x % 2 === 0 ? 255 : 0);
+         |                                                                     ^
+      64 |   const coarse = await pixels(page); await history(page, 'z'); await expect.poll(() => pixels(page)).toEqual(blank);
+      65 |   await paint(page, Array.from({ length: 21 }, (_, x) => [x, 8] as [number, number]));
+      66 |   await expect.poll(() => pixels(page)).toEqual(coarse);
+        at D:\PixiBun\tests\production\strokeAndGallery.spec.ts:63:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3113\strokeAndGallery-compiled--b9745-nd-survives-save-and-reload-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3113\strokeAndGallery-compiled--b9745-nd-survives-save-and-reload-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3113\strokeAndGallery-compiled--b9745-nd-survives-save-and-reload-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3113\strokeAndGallery-compiled--b9745-nd-survives-save-and-reload-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload 
+  20 passed (2.7m)

@@ -1,0 +1,147 @@
+{
+  "revision": "f18f4e47d299685d7fdf23de158ae082a883483d",
+  "environment": "local compiled Chromium, isolated browser storage",
+  "checks": [
+    {
+      "name": "onion command shortcut",
+      "displayed": "Enable Onion Skin Lightbox\nANIMATION\nO"
+    },
+    {
+      "name": "command palette focus escape",
+      "tabs": 63,
+      "focus": {
+        "inside": false,
+        "label": "Skip to contentPIXIBUNATELIERDesk Too SmallPixiBun Atelier is a desktop workstat"
+      }
+    },
+    {
+      "name": "navigator coordinate spaces",
+      "data": {
+        "intrinsic": [
+          224,
+          112
+        ],
+        "displayed": [
+          316,
+          118
+        ],
+        "overlayLeft": "-2.1875px",
+        "overlayTop": "-34.5625px",
+        "mainContent": [
+          1044,
+          828
+        ]
+      }
+    },
+    {
+      "name": "small visible buttons",
+      "buttons": [
+        {
+          "name": "1px brush preset",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "2px brush preset",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "3px brush preset",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "4px brush preset",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "Disable clean corners",
+          "width": 77.3125,
+          "height": 20
+        },
+        {
+          "name": "Swap colors (X)",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "Reset default black and white colors (Shift+D)",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "Secondary color #C792DF. Click for quick swatches, double click for picker, right click to swap",
+          "width": 22,
+          "height": 22
+        },
+        {
+          "name": "",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "",
+          "width": 14,
+          "height": 14
+        },
+        {
+          "name": "Quick Swatches Flyout",
+          "width": 36,
+          "height": 14
+        },
+        {
+          "name": "Zoom out",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "Zoom in",
+          "width": 20,
+          "height": 20
+        },
+        {
+          "name": "1:1",
+          "width": 28.28125,
+          "height": 21
+        },
+        {
+          "name": "Fit canvas",
+          "width": 64.71875,
+          "height": 21
+        },
+        {
+          "name": "Center",
+          "width": 50.8125,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "name": "active gallery rename",
+      "text": "Skip to content\nPIXIBUN\nATELIER\nFile\n▼\nUntitled Sprite\n32×32\nSave\nPen:\nSize\n1 px\n▾\n1\n2\n3\n4\nPixel-Perfect\nMirror\n−\n1600%\n+\nFit\nView\n▼\nDrawing\nAnimation\nLighting\nStudio\n▼\nExport\nChanges saved\n⇄\nTools\nLayers\nPalette\nFX\nPen\nB\n\nDrawing Tool Controls\n\nBrush size\n1px\n1\n2\n3\n4\n8\n16\nClean corners\nRemoves doubled corner pixels (L-shapes) when drawing single-pixel lines.\nSymmetry & Composition\nHorizontal mirror (Shift+H)\nVertical mirror (Shift+V)\nComposition Guide\nOff\nRule of thirds\nGolden ratio\nCenter crosshair\nDiagonals\nSafe area (10%)\nPlay\nRepeat\nPreview\n1×\n▾\nFrame time\nms\nOnion Skin\n⚙\nFrame\nFrame actions\n▾\n▼\nCollapse\n#1\n100ms\nClips\nX: — Y: —\n32×32\n1600%\nFrame 1/1\nBase Layer\nPen\nSaved"
+    },
+    {
+      "name": "stored project names after gallery rename",
+      "names": [
+        "Untitled Sprite"
+      ]
+    },
+    {
+      "name": "save after own rename",
+      "text": "Skip to content\nPIXIBUN\nATELIER\nFile\n▼\nUntitled Sprite\n32×32\nSave\nPen:\nSize\n1 px\n▾\n1\n2\n3\n4\nPixel-Perfect\nMirror\n−\n1600%\n+\nFit\nView\n▼\nDrawing\nAnimation\nLighting\nStudio\n▼\nExport\nChanges saved\n⇄\nTools\nLayers\nPalette\nFX\nPen\nB\n\nDrawing Tool Controls\n\nBrush size\n1px\n1\n2\n3\n4\n8\n16\nClean corners\nRemoves doubled corner pixels (L-shapes) when drawing single-pixel lines.\nSymmetry & Composition\nHorizontal mirror (Shift+H)\nVertical mirror (Shift+V)\nComposition Guide\nOff\nRule of thirds\nGolden ratio\nCenter crosshair\nDiagonals\nSafe area (10%)\nPlay\nRepeat\nPreview\n1×\n▾\nFrame time\nms\nOnion Skin\n⚙\nFrame\nFrame actions\n▾\n▼\nCollapse\n#1\n100ms\nClips\nX: — Y: —\n32×32\n1600%\nFrame 1/1\nBase Layer\nPen\nSaved\n✦ Saved \"Untitled Sprite\" to browser storage"
+    }
+  ],
+  "errors": []
+}

@@ -23,7 +23,8 @@ test('compiled layout, palette preview and focus restore the same artwork after 
   await page.getByTestId('tab-palette').click();
   await expect(page.getByRole('region', { name: 'Pinned color panel' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Canvas navigator' })).toBeVisible();
-  await page.getByRole('button', { name: 'Arrange workspace' }).click();
+  await page.getByRole('button', { name: 'View options menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Arrange...', exact: true }).click();
   await page.getByLabel('Inspector position').selectOption('left');
   await page.getByLabel('New workspace name').pressSequentially('Color desk');
   await expect(page.getByLabel('New workspace name')).toHaveValue('Color desk');
@@ -43,7 +44,8 @@ test('compiled layout, palette preview and focus restore the same artwork after 
   await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+Tab');
   await expect(page.getByTestId('right-inspector')).toBeHidden(); expect(await pixels(page)).toEqual(artwork);
   await page.keyboard.press('Shift+Tab'); await expect(page.getByTestId('right-inspector')).toBeVisible();
-  await page.getByRole('button', { name: 'Canvas only ⇧ Tab', exact: true }).click();
+  await page.getByRole('button', { name: 'View options menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Canvas Only ⇧ Tab', exact: true }).click();
   await expect(page.getByTestId('right-inspector')).toBeHidden();
   await expect(page.locator('#center-canvas-area')).toBeFocused();
   await page.keyboard.press('Shift+Tab'); await expect(page.getByTestId('right-inspector')).toBeVisible();
@@ -53,13 +55,14 @@ test('compiled layout, palette preview and focus restore the same artwork after 
   await expect(page.getByLabel('Workspace layout').locator('option:checked')).toHaveText('Color desk');
   expect(await pixels(page)).toEqual(artwork);
   // Establish a keyboard opener; pointer clicks need not focus buttons in WebKit.
-  await page.getByRole('button', { name: 'Arrange workspace', exact: true }).focus();
-  await page.getByRole('button', { name: 'Arrange workspace', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'View options menu', exact: true }).focus();
+  await page.getByRole('button', { name: 'View options menu', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'Arrange...', exact: true }).press('Enter');
   await page.getByLabel('New workspace name').pressSequentially('Temporary name');
   await expect(page.getByLabel('New workspace name')).toBeFocused();
   await page.getByLabel('New workspace name').press('Escape');
   await expect(page.getByRole('dialog', { name: 'Arrange workspace' })).toBeHidden();
-  await expect(page.getByRole('button', { name: 'Arrange workspace', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'View options menu', exact: true })).toBeFocused();
   expect(await pixels(page)).toEqual(artwork);
 });
 test('compiled radial gradient uses the active palette and one undoable layer fill', async ({ page }) => {
@@ -70,10 +73,11 @@ test('compiled radial gradient uses the active palette and one undoable layer fi
   await page.getByRole('button', { name: 'Preview 1bit Monitor Glow', exact: true }).click();
   await page.getByRole('button', { name: 'Use palette', exact: true }).click();
   await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+G');
-  await page.getByRole('button', { name: 'Tool settings', exact: true }).click();
+  await page.getByTestId('tab-tools').click();
   await page.getByLabel('Gradient shape').selectOption('radial');
   await page.getByLabel('Gradient colors').selectOption('palette');
   await page.getByLabel('Bayer 4×4 dithering').uncheck();
+  await page.getByRole('checkbox', { name: /^Draw on new layer/ }).uncheck();
   await draw(page, [16, 16], [24, 16]); const filled = await pixels(page);
   const at = (x: number, y: number) => filled.slice((y * 32 + x) * 4, (y * 32 + x) * 4 + 4);
   expect(at(16, 16)).toEqual([34, 35, 35, 255]); expect(at(24, 16)).toEqual([240, 246, 240, 255]);
@@ -104,7 +108,7 @@ test('compiled onion controls compare distinct poses and persist without paintin
   await expect(page.getByLabel('Previous onion frames', { exact: true })).toHaveValue('1');
   await expect(page.getByLabel('Next onion frames', { exact: true })).toHaveValue('0');
   await expect(page.getByLabel('Previous onion tint', { exact: true })).toHaveValue('#ff0000');
-  if (testInfo.project.name === 'chromium') await page.screenshot({ path: 'docs/assets/screenshots/2026-10-04-artist-workspace/onion-settings.png' });
+  if (testInfo.project.name === 'chromium') await page.screenshot({ path: testInfo.outputPath('onion-settings.png') });
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   await page.locator('#center-canvas-area').focus(); await page.keyboard.press('F3');
   await expect.poll(ghost).toEqual([0, 0, 0, 0]); expect(await pixels(page)).toEqual(artwork);
@@ -112,7 +116,7 @@ test('compiled onion controls compare distinct poses and persist without paintin
 
 test('compiled palette application and reload retain two distinct strokes and a favorite', async ({ page }) => {
   await ready(page);
-  await page.getByRole('navigation', { name: 'Artist workspace' }).getByRole('button', { name: 'Color', exact: true }).click();
+  await page.getByTestId('tab-palette').click();
   await page.getByLabel('Picker hex color').fill('#5d275d');
   await draw(page, [5, 5], [9, 5]);
   await page.getByLabel('Picker hex color').fill('#00e600');

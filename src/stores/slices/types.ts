@@ -18,6 +18,7 @@ import type { ProjectFile } from '@/types/project';
 
 export interface ViewportSlice {
   currentProjectId: string;
+  projectCreatedAt: number;
   canvasWidth: number;
   canvasHeight: number;
   projectName: string;

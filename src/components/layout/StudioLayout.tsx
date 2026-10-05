@@ -76,6 +76,7 @@ export const StudioLayout: React.FC = () => {
   const hydrateWorkspace = useWorkspaceStore(s => s.hydrate);
   useEffect(() => { hydrateWorkspace(); }, [hydrateWorkspace]);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [hasOpenedExport, setHasOpenedExport] = useState(false);
   const [exportInitialType, setExportInitialType] = useState<ExportType>('png');
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
@@ -90,6 +91,7 @@ export const StudioLayout: React.FC = () => {
   const [importError, setImportError] = useState<string | null>(null);
 
   const openExport = (type: ExportType = 'png') => {
+    setHasOpenedExport(true);
     setExportInitialType(type);
     setIsExportOpen(true);
   };
@@ -131,6 +133,7 @@ export const StudioLayout: React.FC = () => {
   const {
     autosaveTimerRef,
     runAutosave,
+    renameStoredProject,
     joinCoDrawGuest,
     handleCommitHistory,
     autosaveError,
@@ -493,8 +496,8 @@ export const StudioLayout: React.FC = () => {
         </div>
       </ModalWrapper>
 
-      {/* Export Modal (lazy-loaded: mounted only while open) */}
-      {isExportOpen && (
+      {/* Load on first open, then retain cancellation ownership through cleanup. */}
+      {hasOpenedExport && (
         <ExportModal
           isOpen={isExportOpen}
           initialType={exportInitialType}
@@ -551,6 +554,7 @@ export const StudioLayout: React.FC = () => {
           isOpen={isGalleryOpen}
           onClose={() => setIsGalleryOpen(false)}
           currentProjectId={currentProjectId}
+          onRenameProject={renameStoredProject}
           onOpenProject={handleOpenProject}
           onNewProject={async (skipCurrentSave = false) => {
             if (!skipCurrentSave && !await saveBeforeReplacingWorkspace()) return false;

@@ -5,6 +5,7 @@ import { readImportFile, reportImportError } from '@/lib/project/importFile';
 import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { executeStudioCommand } from '@/config/studioCommands';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
@@ -14,7 +15,7 @@ import StudioTooltip from '@/components/ui/StudioTooltip';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { OfflineIndicator } from '@/components/system/OfflineIndicator';
 import type { ImportPayload } from '@/components/modals/ImportModal';
-import { getNextZoomStep, getPrevZoomStep, calculateFitZoom } from '@/config/zoom';
+import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
 import { CvdLensMode, cycleCvdLens } from '@/lib/color/cvdLens';
 import { DitherMatrixType, WallpaperGroup } from '@/types/tools';
 import { MAX_PROJECT_NAME_LENGTH } from '@/lib/project/metadataAdmission';
@@ -72,7 +73,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const zoom = useStudioStore((s) => s.zoom);
   const setZoom = useStudioStore((s) => s.setZoom);
-  const setPan = useStudioStore((s) => s.setPan);
   const tools = useStudioStore((s) => s.tools);
   const setBrushSize = useStudioStore((s) => s.setBrushSize);
   const setPixelPerfect = useStudioStore((s) => s.setPixelPerfect);
@@ -140,7 +140,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const saveWorkspaceLayout = useWorkspaceStore((s) => s.saveLayout);
   const deleteWorkspaceLayout = useWorkspaceStore((s) => s.deleteLayout);
   const toggleFocus = useWorkspaceStore((s) => s.toggleFocus);
-  const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
   const [isArrangeWorkspaceOpen, setIsArrangeWorkspaceOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');
   const [layoutError, setLayoutError] = useState('');
@@ -265,10 +264,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-2 xl:px-3 gap-2 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="min-h-12 py-1 flex-wrap bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-2 xl:px-3 gap-2 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
-      <div role="group" aria-label="Project controls" className="flex min-w-0 items-center gap-1.5 xl:gap-2">
+      <div role="group" aria-label="Project controls" className="flex shrink-0 items-center gap-1.5 xl:gap-2">
         {/* Atelier Logo Mark */}
         <Link
           href="/"
@@ -743,9 +742,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           {/* Fit Action (clean text within zoom cluster, NO button-like frame) */}
           <button
             onClick={() => {
-              const targetZoom = calculateFitZoom(canvasWidth, canvasHeight);
-              setZoom(targetZoom);
-              setPan(0, 0);
+              executeStudioCommand('view-fit-screen');
             }}
             aria-label="Fit Canvas to Viewport (Ctrl+0)"
             data-testid="fit-canvas-button"
@@ -800,19 +797,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             onChange={(e) => {
               const val = e.target.value;
               chooseWorkspaceLayout(val);
-              if (val === 'lighting') {
-                setActiveInspectorTab('ai');
-                try {
-                  sessionStorage.setItem('pixibun:pixitools:last-domain', 'lighting');
-                } catch {
-                  // Ignore sessionStorage error
-                }
-                window.dispatchEvent(new CustomEvent('pixibun:set-pixitools-domain', { detail: 'lighting' }));
-              } else if (val === 'animation') {
-                setActiveInspectorTab('layers');
-              } else if (val === 'drawing') {
-                setActiveInspectorTab('tools');
-              }
+
             }}
             title="Workspace layout preset"
             className="h-6 px-1.5 bg-[var(--surface-0)] text-[var(--text-heading)] rounded-[2px] border border-[var(--desk-border)] text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)] transition-colors"
@@ -1127,6 +1112,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               <button
                 onClick={() => {
                   setIsViewMenuOpen(false);
+                  // The menu item disappears; restore to its persistent opener.
+                  viewMenuRef.current?.querySelector('button')?.focus();
                   setIsArrangeWorkspaceOpen(true);
                 }}
                 className="pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--text-heading)] cursor-pointer"

@@ -16,7 +16,7 @@ Open **Clean and refine → Pixel Cleanup & RotSprite**:
 
 1. Select an unlocked artwork layer. Set **Faint alpha**; this threshold concerns transparency, not the brightness of an opaque gray mark.
 2. Choose **Shades: Keep / Crisp** and **Lines: Keep / Thin**. Leave line thinning off for a first scan, especially when tiny eyes or interior outlines matter.
-3. Choose **Current frame only** or **Same layer across all frames**. Across-frame cleanup targets the corresponding layer position and skips locked layers. Inspect the report's frame and skip counts.
+3. Choose **Current frame only** or **Same layer across all frames**. Across-frame cleanup finds a uniquely named counterpart with the same generated tag in every frame, regardless of stack order, and skips locked counterparts. Missing or ambiguous matches refuse the batch; use matching unique layer names or Current frame only. Inspect the report's frame and skip counts.
 4. Choose **Scan Artwork**. Review its counts and the Before / Preview thumbnails. The scan can propose removing faint pixels and isolated specks, hardening alpha, simplifying shades and thinning dark strokes.
 5. Only then choose **Apply Cleanup**. It uses the current analyzed settings and source. If the artwork changed, the stale preview needs a fresh scan. Use Undo to restore the action when retained in history.
 

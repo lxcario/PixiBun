@@ -9,6 +9,11 @@ import { makeCanvas, type MockCtx } from '../helpers/mockCanvas';
 import * as compositor from '@/lib/render/compositor';
 import * as webm from '@/lib/export/webmEncoder';
 import * as mp4 from '@/lib/export/mp4Encoder';
+import { buildProjectFileAsync } from '@/lib/project/serialize';
+import * as gif from '@/lib/export/gifEncoder';
+import * as apng from '@/lib/export/apngEncoder';
+import * as shader from '@/lib/export/shaderExporter';
+import { getMemoryBudgetUsage } from '@/lib/safety/memoryBudget';
 
 vi.mock('@/lib/project/serialize', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/project/serialize')>();
@@ -169,6 +174,7 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     await act(async () => { await Promise.resolve(); });
     fireEvent.change(screen.getByRole('combobox', { name: 'Export frame scope' }), { target: { value: 'direction' } });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: `Download ${format.toUpperCase()}` })); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(order.length); });
     expect(encoder).toHaveBeenCalledOnce();
     expect(encoder.mock.calls[0][0]).toEqual(order.map(i => canvases[i]));
     expect(encoder.mock.calls[0][1]).toEqual(expect.objectContaining({ durationsMs: [...holds], loopCount: 2 }));
@@ -230,6 +236,52 @@ describe('ExportModal URL.revokeObjectURL deferred cleanup', () => {
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-project-url');
     expect(handleClose).toHaveBeenCalled();
+  });
+
+  it('closing a pending backup prevents a late download and keeps a reopened dialog busy until drain', async () => {
+    let finish!: (value: Awaited<ReturnType<typeof buildProjectFileAsync>>) => void;
+    vi.mocked(buildProjectFileAsync).mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {}), close = vi.fn();
+    const view = render(<ExportModal isOpen onClose={close} initialType="project" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Download project backup' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+    view.rerender(<ExportModal isOpen={false} onClose={close} initialType="project" />);
+    view.rerender(<ExportModal isOpen onClose={close} initialType="project" />);
+    expect((screen.getByRole('button', { name: 'Preparing backup…' }) as HTMLButtonElement).disabled).toBe(true);
+    await act(async () => { finish({} as Awaited<ReturnType<typeof buildProjectFileAsync>>); });
+    expect(click).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledTimes(1);
+    expect((screen.getByRole('button', { name: 'Download project backup' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('closing GIF export suppresses a late encoder result and blocks overlapping preparation', async () => {
+    let finish!: (value: Blob) => void;
+    const encode = vi.spyOn(gif, 'createAnimatedGifBlobAsync').mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {}), close = vi.fn();
+    const view = render(<ExportModal isOpen onClose={close} initialType="gif" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Download GIF' })); await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(encode).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+    view.rerender(<ExportModal isOpen={false} onClose={close} initialType="gif" />);
+    view.rerender(<ExportModal isOpen onClose={close} initialType="gif" />);
+    expect((screen.getByRole('button', { name: 'Preparing export…' }) as HTMLButtonElement).disabled).toBe(true);
+    await act(async () => { finish(new Blob(['late'])); });
+    expect(click).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledTimes(1);
+    expect((screen.getByRole('button', { name: 'Download GIF' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('palette cycle cancellation suppresses a late result and releases all admitted surfaces', async () => {
+    useStudioStore.setState({ palettes: [{ id: 'cycle', name: 'Cycle', colors: ['#ff0000', '#00ff00'], cycleTracks: [{ id: 'cycle-track', low: 0, high: 1, rate: 2, direction: 'forward', enabled: true, blendShift: false }] }], currentPaletteId: 'cycle' });
+    const canvases = [makeCanvas(8, 8), makeCanvas(8, 8)], source = makeCanvas(8, 8);
+    vi.spyOn(compositor, 'compositeFrame').mockReturnValue(source); vi.spyOn(shader, 'generateLoopAnimationCanvases').mockReturnValue(canvases);
+    let finish!: (value: Blob) => void; vi.spyOn(apng, 'exportAnimationToApngAsync').mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {}), before = getMemoryBudgetUsage().reservedBytes;
+    render(<ExportModal isOpen onClose={vi.fn()} initialType="palette-cycle" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Download cycle animation' })); await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(getMemoryBudgetUsage().reservedBytes).toBeGreaterThan(before);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await act(async () => { finish(new Blob(['late'])); });
+    expect(click).not.toHaveBeenCalled(); expect(source.width).toBe(0); expect(canvases.every(canvas => canvas.width === 0)).toBe(true);
+    expect(getMemoryBudgetUsage().reservedBytes).toBe(before);
   });
 
   it('defers URL.revokeObjectURL by 1000ms on Vector SVG export', () => {

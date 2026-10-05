@@ -1,0 +1,44 @@
+[WebServer] (node:29212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:24484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (1.0m)
+
+
+  1) [chromium] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Close dialog', exact: true })
+
+
+      65 |     expect(strokeDraws).toBeLessThanOrEqual(4);
+      66 |   }
+    > 67 |   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+         |                                                                         ^
+      68 |   await page.getByRole('button', { name: /Select frame 64\./ }).scrollIntoViewIfNeeded();
+      69 |   await expect(page.getByTestId('frame-thumbnail-63')).toBeVisible();
+      70 |   expect(await page.getByTestId('frame-thumbnail-63').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(Math.floor(c.width * 0.375), Math.floor(c.height * 0.375), 1, 1).data))).toEqual([0, 255, 0, 255]);
+        at D:\PixiBun\tests\production\memoryPaths.spec.ts:67:73
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3123\memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3123\memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3123\memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3123\memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work 

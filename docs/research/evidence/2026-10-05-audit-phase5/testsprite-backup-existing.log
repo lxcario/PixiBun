@@ -1,0 +1,95 @@
+{
+  "id": "fb41a04b-2a0c-4340-9cd6-dea694f0c348",
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "projectName": "PixiBun Local Safety Challenge",
+  "name": "Challenge: Downloaded native backup restores project name, two distinct frames and frame holds",
+  "type": "frontend",
+  "createdFrom": "cli",
+  "status": "failed",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped.",
+  "planStepCount": 19,
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Rename the project to Challenge portable backup using the project-name control and confirm with Enter."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 240 and commit by leaving the field."
+    },
+    {
+      "type": "action",
+      "description": "Click + Frame."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 700 and commit by leaving the field."
+    },
+    {
+      "type": "action",
+      "description": "Open Export drawing, select Project backup, and click Download project backup."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a nonempty native project backup downloads successfully; retain that downloaded file for this same test."
+    },
+    {
+      "type": "action",
+      "description": "Create a new drawing using File and New drawing, confirming any unsaved-change prompt."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the new drawing is blank and differs from the saved backup."
+    },
+    {
+      "type": "action",
+      "description": "Use File Import to upload the exact native backup just downloaded; accept any import confirmation."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the project name is Challenge portable backup and exactly two animation frames are restored."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 1."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the horizontal stroke is present and its duration is 240ms."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 2."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the vertical stroke is present and its duration is 700ms."
+    }
+  ],
+  "priority": "High",
+  "category": null,
+  "produces": null,
+  "consumes": null,
+  "createdAt": "2026-10-03T17:39:18.299Z",
+  "updatedAt": "2026-10-03T19:33:06.337Z"
+}

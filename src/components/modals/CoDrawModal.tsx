@@ -32,12 +32,17 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   const [inviteToken, setInviteToken] = useState<string>('');
   const [guestAnswerToken, setGuestAnswerToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
-  const [copied, setCopied] = useState<boolean>(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'pending' | 'copied' | 'failed'>('idle');
+  const copyRequestRef = useRef(0);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inviteFieldRef = useRef<HTMLTextAreaElement>(null);
+  const answerFieldRef = useRef<HTMLTextAreaElement>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
   const joinAbortRef = useRef<AbortController | null>(null);
 
   const handleClose = () => {
+    copyRequestRef.current += 1;
     joinAbortRef.current?.abort();
     onClose();
   };
@@ -56,6 +61,15 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
   }, []);
 
   useEffect(() => { if (!isOpen) joinAbortRef.current?.abort(); }, [isOpen]);
+
+  useEffect(() => {
+    setCopyStatus('idle');
+    return () => {
+      // A late clipboard promise must not update a different code or reopened modal.
+      copyRequestRef.current += 1;
+      if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
+    };
+  }, [isOpen, tab, inviteToken, guestAnswerToken, connectionState]);
 
   const handleCreateHostSession = async () => {
     setErrorMsg(null);
@@ -101,11 +115,21 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
     }
   };
 
-  const handleCopy = (text: string) => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async (text: string, field: HTMLTextAreaElement | null) => {
+    const request = ++copyRequestRef.current;
+    if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
+    setCopyStatus('pending');
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(text);
+      if (request !== copyRequestRef.current) return;
+      setCopyStatus('copied');
+      copyTimerRef.current = setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch {
+      if (request !== copyRequestRef.current) return;
+      setCopyStatus('failed');
+      field?.focus();
+      field?.select();
     }
   };
 
@@ -276,6 +300,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     <span className="font-bold text-[var(--text-body)]">1. Copy your Invite Code:</span>
                     <div className="flex gap-1.5">
                       <textarea
+                        ref={inviteFieldRef}
                         readOnly
                         aria-label="Generated invite code"
                         value={inviteToken}
@@ -285,12 +310,16 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       <TactileButton
                         size="sm"
                         variant="default"
-                        onClick={() => handleCopy(inviteToken)}
+                        onClick={() => void handleCopy(inviteToken, inviteFieldRef.current)}
+                        disabled={copyStatus === 'pending'}
                         className="self-start px-2 py-1 text-xs"
                       >
-                        {copied ? 'Copied!' : 'Copy'}
+                        {copyStatus === 'copied' ? 'Copied!' : copyStatus === 'pending' ? 'Copying…' : 'Copy'}
                       </TactileButton>
                     </div>
+
+                    {copyStatus === 'failed' && <p role="alert">Couldn’t copy the code. Select the code above and copy it manually.</p>}
+                    {copyStatus === 'copied' && <span role="status" className="sr-only">Invite code copied.</span>}
 
                     <span className="font-bold text-[var(--text-body)] pt-2 border-t border-[var(--desk-border)]">
                       2. Paste Peer&apos;s Answer Token:
@@ -353,6 +382,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     <span className="font-bold text-[var(--text-body)]">2. Send this Answer Token back to Host:</span>
                     <div className="flex gap-1.5">
                       <textarea
+                        ref={answerFieldRef}
                         readOnly
                         aria-label="Generated answer token"
                         value={guestAnswerToken}
@@ -362,12 +392,15 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       <TactileButton
                         size="sm"
                         variant="default"
-                        onClick={() => handleCopy(guestAnswerToken)}
+                        onClick={() => void handleCopy(guestAnswerToken, answerFieldRef.current)}
+                        disabled={copyStatus === 'pending'}
                         className="self-start px-2 py-1 text-xs"
                       >
-                        {copied ? 'Copied!' : 'Copy'}
+                        {copyStatus === 'copied' ? 'Copied!' : copyStatus === 'pending' ? 'Copying…' : 'Copy'}
                       </TactileButton>
                     </div>
+                    {copyStatus === 'failed' && <p role="alert">Couldn’t copy the code. Select the code above and copy it manually.</p>}
+                    {copyStatus === 'copied' && <span role="status" className="sr-only">Answer token copied.</span>}
                     <p className="text-[10px] text-[#ebcb8b] pt-1">
                       Waiting for host to apply your answer token. Your original is saved in Gallery;
                       the shared drawing will receive the host&apos;s artwork and save separately.

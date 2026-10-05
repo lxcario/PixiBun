@@ -46,6 +46,8 @@ Untouched archive preparation also refuses more than 10,000 matching raster reco
 
 Manual co-draw signaling admits version 1, a non-empty peer ID of at most 128 characters, offer/answer SDP of at most 262,144 characters and at most 256 typed ICE candidates. Candidate strings are bounded to 4,096 characters; optional mid, line-index and username fields are type/range checked before WebRTC construction. Parsing keeps the existing 1 MiB encoded-token ceiling and adds a 4,096-node traversal ceiling. An invite must carry an offer and a guest reply an answer. These are application workload policies; WebRTC does not define a universal 256-candidate limit.
 
+Co-draw code copying awaits the Clipboard API's write promise. Denied or unavailable clipboard access selects the read-only code and offers manual copying. Success belongs to the visible code; tab changes, connection changes, closing and unmounting invalidate pending responses and clean up feedback timers. Clipboard permission does not establish peer identity or authenticate the invite.
+
 ## Reporting
 
 Use the private contact and report scope in [the security policy](../../SECURITY.md).

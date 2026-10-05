@@ -1,0 +1,133 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "priority": "p1",
+  "name": "Challenge: Downloaded native backup restores project name, two distinct frames and frame holds",
+  "description": "Exercise the compiled local PixiBun build through user controls. Use a desktop viewport. Compare actual artwork and persistent state, not only element visibility. Missing prerequisites or unobservable cancellation must be reported rather than silently skipped. Also compare downloaded creation timestamps through a saved reload and gallery duplication.",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /studio."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify restoration has finished and the main drawing canvas is editable."
+    },
+    {
+      "type": "action",
+      "description": "Rename the project to Challenge portable backup using the project-name control and confirm with Enter."
+    },
+    {
+      "type": "action",
+      "description": "Select the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Draw a short horizontal stroke in the upper-left quarter of the drawing canvas, away from its borders."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 240 and commit by leaving the field."
+    },
+    {
+      "type": "action",
+      "description": "Click + Frame."
+    },
+    {
+      "type": "action",
+      "description": "Draw a separate short vertical stroke in the lower-right quarter of the drawing canvas."
+    },
+    {
+      "type": "action",
+      "description": "Set Active frame duration in milliseconds to 700 and commit by leaving the field."
+    },
+    {
+      "type": "action",
+      "description": "Open Export drawing, select Project backup, and click Download project backup."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify a nonempty native project backup downloads successfully; retain that downloaded file for this same test."
+    },
+    {
+      "type": "action",
+      "description": "Create a new drawing using File and New drawing, confirming any unsaved-change prompt."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the new drawing is blank and differs from the saved backup."
+    },
+    {
+      "type": "action",
+      "description": "Use File Import to upload the exact native backup just downloaded; accept any import confirmation."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the project name is Challenge portable backup and exactly two animation frames are restored."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 1."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the horizontal stroke is present and its duration is 240ms."
+    },
+    {
+      "type": "action",
+      "description": "Select frame 2."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify only the vertical stroke is present and its duration is 700ms."
+    },
+    {
+      "type": "action",
+      "description": "Read the exact downloaded native backup as JSON. Capture createdAt, name, frame IDs, durations and decoded layer RGBA bytes. If file inspection is unavailable, report BLOCKED."
+    },
+    {
+      "type": "action",
+      "description": "Save the imported project using Save."
+    },
+    {
+      "type": "action",
+      "description": "Reload Studio."
+    },
+    {
+      "type": "action",
+      "description": "Download another project backup using the download fallback."
+    },
+    {
+      "type": "assertion",
+      "description": "The second JSON createdAt equals the first downloaded createdAt; updatedAt is later. Both frames retain their IDs, holds and decoded pixel bytes. Visibility alone cannot pass."
+    },
+    {
+      "type": "action",
+      "description": "Duplicate this project using Gallery. Record the wall-clock time before duplication."
+    },
+    {
+      "type": "action",
+      "description": "Open the gallery duplicate."
+    },
+    {
+      "type": "action",
+      "description": "Download the duplicate as a project backup."
+    },
+    {
+      "type": "assertion",
+      "description": "The duplicate has a fresh createdAt at or after duplication time. Frames, holds and decoded artwork bytes match the original."
+    },
+    {
+      "type": "action",
+      "description": "Reopen the original artwork from Gallery."
+    },
+    {
+      "type": "action",
+      "description": "Download the original project backup again."
+    },
+    {
+      "type": "assertion",
+      "description": "The original still has the first downloaded creation date and unchanged frame holds and artwork bytes."
+    }
+  ]
+}

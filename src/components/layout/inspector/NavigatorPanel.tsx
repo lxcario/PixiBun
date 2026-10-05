@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { compositeFrame } from '@/lib/render/compositor';
 import { PixelIcon } from '@/components/ui/PixelIcon';
-import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
+import { getNextZoomStep, getPrevZoomStep, MIN_ZOOM, MAX_ZOOM } from '@/config/zoom';
+import { executeStudioCommand } from '@/config/studioCommands';
 
 export function NavigatorPanel() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -88,12 +89,7 @@ export function NavigatorPanel() {
   const visibleW = viewport.width / (zoom / 100);
   const visibleH = viewport.height / (zoom / 100);
 
-  const handleFit = () => {
-    const availW = Math.max(1, viewport.width - 48);
-    const availH = Math.max(1, viewport.height - 48);
-    const fitZoom = Math.max(10, Math.floor(Math.min((availW / width) * 100, (availH / height) * 100)));
-    setZoomAndPan(fitZoom, 0, 0);
-  };
+  const handleFit = () => executeStudioCommand('view-fit-screen');
 
   return (
     <section
@@ -124,16 +120,27 @@ export function NavigatorPanel() {
 
       {/* 2. Sleek Screen Bezel */}
       <div className="relative w-full h-[120px] mx-auto rounded-[3px] overflow-hidden bg-[#16141a] border border-[var(--desk-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] flex items-center justify-center">
+        <button type="button" className="relative w-[224px] h-[112px] shrink-0 p-0 outline-offset-2"
+          aria-label="Canvas overview. Click or drag to pan; arrow keys pan, Shift moves eight pixels, Enter centers."
+          onClick={event => { if (event.detail === 0) setPan(0, 0); }}
+          onKeyDown={event => {
+            const direction = { ArrowLeft: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[event.key];
+            if (!direction) return;
+            event.preventDefault(); event.stopPropagation();
+            const step = (event.shiftKey ? 8 : 1) * zoom / 100;
+            setPan(panX + direction[0] * step, panY + direction[1] * step);
+          }}>
         <canvas
           ref={canvas}
           width={224}
           height={112}
           data-testid="navigator-canvas"
-          className="w-full h-full touch-none cursor-crosshair select-none"
-          aria-label="Canvas overview. Click or drag to pan; use arrow keys on the drawing canvas for keyboard navigation."
-          role="img"
+          className="block w-[224px] h-[112px] touch-none cursor-crosshair select-none"
+          aria-hidden="true"
           onPointerDown={(e) => {
             if (e.button !== 0) return;
+            e.preventDefault();
+            e.currentTarget.parentElement?.focus();
             dragging.current = true;
             e.currentTarget.setPointerCapture(e.pointerId);
             move(e);
@@ -156,6 +163,7 @@ export function NavigatorPanel() {
         <div
           className="absolute pointer-events-none border-2 border-[var(--accent-gold)] shadow-[0_0_6px_rgba(240,190,124,0.5)] rounded-[1px]"
           data-testid="navigator-view-bounds"
+          aria-hidden="true"
           style={{
             left: left + (width / 2 - panX / (zoom / 100) - visibleW / 2) * scale,
             top: top + (height / 2 - panY / (zoom / 100) - visibleH / 2) * scale,
@@ -163,6 +171,7 @@ export function NavigatorPanel() {
             height: visibleH * scale,
           }}
         />
+        </button>
       </div>
 
       {/* 3. Interactive Zoom Slider Strip */}
@@ -178,9 +187,9 @@ export function NavigatorPanel() {
         </button>
         <input
           type="range"
-          min="10"
-          max="3200"
-          value={Math.min(3200, Math.max(10, Math.round(zoom)))}
+          min={MIN_ZOOM}
+          max={MAX_ZOOM}
+          value={Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(zoom)))}
           onChange={(e) => setZoom(Number(e.target.value))}
           aria-label="Navigator zoom slider"
           className="flex-1 h-1 accent-[var(--accent-gold)] bg-[var(--surface-0)] rounded cursor-pointer"

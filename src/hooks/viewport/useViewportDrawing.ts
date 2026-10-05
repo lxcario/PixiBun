@@ -532,7 +532,7 @@ export function useViewportDrawing({
 
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
-    (points: Point[], color: string, isErase: boolean = false) => {
+    (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true) => {
       const currentFrame = frames[activeFrameIndex];
       const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
       if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && !layer.locked)) return;
@@ -574,7 +574,7 @@ export function useViewportDrawing({
         });
       }
 
-      renderComposite();
+      if (refresh) renderComposite();
 
       // Throttle bumpBufferVersion via requestAnimationFrame
       if (rafBufferBumpRef.current === null) {
@@ -599,6 +599,27 @@ export function useViewportDrawing({
     ]
   );
 
+  const drawProvisionalPoint = useCallback((point: Point, color: string, isErase: boolean) => {
+    const frame = useStudioStore.getState().frames[activeFrameIndex];
+    const layerId = activeLayerId || frame?.layers[0]?.id;
+    if (!layerId || !frame?.layers.some(layer => layer.id === layerId && !layer.locked)) return;
+    const ctx = getOrCreateLayerCanvas(layerId).getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    const points = applySymmetry([point], canvasWidth, canvasHeight, tools.symmetryHorizontal, tools.symmetryVertical, tools.symmetryGroup);
+    const offset = Math.floor(tools.brushSize / 2);
+    // Capture all footprints before painting, including overlapping symmetry stamps.
+    const originals = points.flatMap(p => {
+      const x = Math.max(0, p.x - offset), y = Math.max(0, p.y - offset);
+      const w = Math.min(canvasWidth, p.x - offset + tools.brushSize) - x;
+      const h = Math.min(canvasHeight, p.y - offset + tools.brushSize) - y;
+      return w > 0 && h > 0 ? [{ x, y, pixels: ctx.getImageData(x, y, w, h) }] : [];
+    });
+    drawPointsOnActiveLayer([point], color, isErase, false);
+    return () => {
+      for (const original of originals) ctx.putImageData(original.pixels, original.x, original.y);
+    };
+  }, [activeFrameIndex, activeLayerId, canvasHeight, canvasWidth, drawPointsOnActiveLayer, getOrCreateLayerCanvas, tools.brushSize, tools.symmetryGroup, tools.symmetryHorizontal, tools.symmetryVertical]);
+
   return {
     isDrawingRef,
     isDrawing,
@@ -620,6 +641,8 @@ export function useViewportDrawing({
     performUndo,
     performRedo,
     drawPointsOnActiveLayer,
+    drawProvisionalPoint,
+    finishBrushBatch: renderComposite,
     primaryColor,
     secondaryColor,
     setPrimaryColor,

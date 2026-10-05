@@ -24,6 +24,7 @@ import { validateProjectFile } from '@/lib/project/schema';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
+import { mapBounded, SerializationSupersededError } from '@/lib/safety/boundedWork';
 import {
   isLayerDirty,
   getPersistedRevision,
@@ -124,6 +125,62 @@ export interface AutosavePayload {
   capturedRevisions: Map<string, PersistedLayerRevision>;
 }
 
+async function encodeProjectLayers(state: ReturnType<typeof useStudioStore.getState>, projectId?: string, signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  const plans = state.frames.flatMap((frame, frameIndex) => frame.layers.map(layer => {
+    const entry = getOrCreateBuffer(layer.id, state.canvasWidth, state.canvasHeight);
+    return { layer, frameIndex, revision: entry.contentRevision, generation: entry.generation,
+      dirty: projectId === undefined || isLayerDirty(projectId, layer.id, entry.contentRevision, frameIndex) };
+  }));
+  const layerBlobs: AutosavePayload['layerBlobs'] = [];
+  const capturedRevisions = new Map<string, PersistedLayerRevision>();
+  const retained: Array<() => void> = [];
+  try {
+    const layers = await mapBounded(plans, async plan => {
+      signal?.throwIfAborted();
+      const { layer, frameIndex, revision, generation, dirty } = plan;
+      let pngBase64: string | undefined;
+      if (dirty) {
+        // A queued layer must still belong to the original snapshot. Already
+        // encoded layers may change: their captured revision keeps them dirty.
+        if (getBufferRevision(layer.id) !== revision || getBufferGeneration(layer.id) !== generation) {
+          throw new SerializationSupersededError();
+        }
+        const release = reserveMemory(state.canvasWidth * state.canvasHeight * 4 * (projectId === undefined ? 4 : 3) + 65536, 'Encoding project layer');
+        try {
+          if (projectId === undefined) {
+            pngBase64 = await rasterizeLayerPngAsync(layer.id, state.canvasWidth, state.canvasHeight);
+            if (!pngBase64) throw new Error('Layer encoding failed; project was not exported.');
+            retained.push(reserveMemory(pngBase64.length * 2, 'Prepared project PNG'));
+          } else {
+            const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
+            if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
+            retained.push(reserveMemory(blob.size, 'Prepared autosave PNG'));
+            layerBlobs.push({ layerId: layer.id, frameIndex, blob });
+            capturedRevisions.set(layer.id, { revision, generation, frameIndex });
+          }
+        } finally { release(); }
+      } else if (projectId !== undefined) {
+        const persisted = getPersistedRevision(projectId, layer.id);
+        if (persisted) capturedRevisions.set(layer.id, { ...persisted });
+      }
+      return { id: layer.id, name: layer.name, visible: layer.visible, locked: layer.locked,
+        opacity: layer.opacity, blendMode: layer.blendMode, tag: layer.tag,
+        effect: layer.effect ? structuredClone(layer.effect) : undefined,
+        research: layer.research ? structuredClone(layer.research) : undefined, pngBase64 } satisfies SerializedLayer;
+    });
+    signal?.throwIfAborted();
+    let offset = 0;
+    const frames = state.frames.map(frame => ({ id: frame.id, durationMs: frame.durationMs,
+      layers: layers.slice(offset, offset += frame.layers.length) }));
+    return { frames, layerBlobs, capturedRevisions, dirtyLayerCount: plans.filter(plan => plan.dirty).length, totalLayerCount: plans.length };
+  } finally {
+    // mapBounded drains native callbacks before releasing preparation ownership.
+    // IndexedDB owns its byte-copy reservation once the payload is handed off.
+    for (const release of retained) release();
+  }
+}
+
 /**
  * Asynchronously snapshots studio metadata without base64 layer duplication,
  * extracting raw binary Blobs for direct IndexedDB layerBlobs storage.
@@ -133,66 +190,7 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
   const state = useStudioStore.getState();
   const projId = projectId || state.currentProjectId;
   const now = Date.now();
-  const layerBlobs: Array<{ layerId: string; frameIndex: number; blob: Blob }> = [];
-  const capturedRevisions = new Map<string, PersistedLayerRevision>();
-  let dirtyLayerCount = 0;
-  let totalLayerCount = 0;
-
-  const frames = await Promise.all(
-    state.frames.map(async (frame, frameIndex) => {
-      const layers = await Promise.all(
-        frame.layers.map(async (layer): Promise<SerializedLayer> => {
-          totalLayerCount++;
-          const currentRev = getBufferRevision(layer.id);
-          const dirty = isLayerDirty(projId, layer.id, currentRev, frameIndex);
-
-          if (dirty) {
-            dirtyLayerCount++;
-            // toBlob snapshots synchronously, but its callback may arrive after another edit.
-            const entry = getOrCreateBuffer(layer.id, state.canvasWidth, state.canvasHeight);
-            const encodedRevision = entry.contentRevision;
-            const encodedGeneration = entry.generation;
-            const blob = await rasterizeLayerBlobAsync(layer.id, state.canvasWidth, state.canvasHeight);
-            if (!blob) throw new Error('Layer encoding failed; workspace was not saved.');
-            layerBlobs.push({
-              layerId: layer.id,
-              frameIndex,
-              blob,
-            });
-            capturedRevisions.set(layer.id, {
-              revision: encodedRevision,
-              generation: encodedGeneration,
-              frameIndex,
-            });
-          } else {
-            const persisted = getPersistedRevision(projId, layer.id);
-            if (persisted) {
-              capturedRevisions.set(layer.id, { ...persisted });
-            }
-          }
-
-          return {
-            id: layer.id,
-            name: layer.name,
-            visible: layer.visible,
-            locked: layer.locked,
-            opacity: layer.opacity,
-            blendMode: layer.blendMode,
-            tag: layer.tag,
-            effect: layer.effect ? structuredClone(layer.effect) : undefined,
-            research: layer.research ? structuredClone(layer.research) : undefined,
-            // Omit pngBase64 in metadata payload when storing binary blobs to prevent double-storage
-            pngBase64: undefined,
-          };
-        })
-      );
-      return {
-        id: frame.id,
-        durationMs: frame.durationMs,
-        layers,
-      };
-    })
-  );
+  const { frames, layerBlobs, capturedRevisions, dirtyLayerCount, totalLayerCount } = await encodeProjectLayers(state, projId);
 
   const project: ProjectFile = {
     format: PROJECT_FORMAT_ID,
@@ -208,7 +206,7 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
     frames,
-    createdAt: now,
+    createdAt: state.projectCreatedAt,
     updatedAt: now,
   };
 
@@ -249,42 +247,17 @@ export function buildProjectFile(): ProjectFile {
         pngBase64: rasterizeLayerPng(layer.id, state.canvasWidth, state.canvasHeight),
       })),
     })),
-    createdAt: now,
+    createdAt: state.projectCreatedAt,
     updatedAt: now,
   };
 }
 
 /** Asynchronously snapshots the entire studio with non-blocking layer rasterization. */
-export async function buildProjectFileAsync(): Promise<ProjectFile> {
+export async function buildProjectFileAsync(signal?: AbortSignal): Promise<ProjectFile> {
   const state = useStudioStore.getState();
   const now = Date.now();
 
-  const frames = await Promise.all(
-    state.frames.map(async (frame) => {
-      const layers = await Promise.all(
-        frame.layers.map(async (layer): Promise<SerializedLayer> => {
-          const pngBase64 = await rasterizeLayerPngAsync(layer.id, state.canvasWidth, state.canvasHeight);
-          return {
-            id: layer.id,
-            name: layer.name,
-            visible: layer.visible,
-            locked: layer.locked,
-            opacity: layer.opacity,
-            blendMode: layer.blendMode,
-            tag: layer.tag,
-            effect: layer.effect ? structuredClone(layer.effect) : undefined,
-            research: layer.research ? structuredClone(layer.research) : undefined,
-            pngBase64,
-          };
-        })
-      );
-      return {
-        id: frame.id,
-        durationMs: frame.durationMs,
-        layers,
-      };
-    })
-  );
+  const { frames } = await encodeProjectLayers(state, undefined, signal);
 
   return {
     format: PROJECT_FORMAT_ID,
@@ -300,7 +273,7 @@ export async function buildProjectFileAsync(): Promise<ProjectFile> {
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
     frames,
-    createdAt: now,
+    createdAt: state.projectCreatedAt,
     updatedAt: now,
   };
 }
@@ -401,6 +374,7 @@ export async function hydrateProject(
     const prevState = useStudioStore.getState();
     const previousProjectId = prevState.currentProjectId;
     const previousProjectSnapshot: Partial<ProjectFile> = {
+      createdAt: prevState.projectCreatedAt,
       name: prevState.projectName,
       width: prevState.canvasWidth,
       height: prevState.canvasHeight,

@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { buildProjectFileAsync } from '@/lib/project/serialize';
-import { isCurrentSaveRevision } from '@/lib/project/saveRevision';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 export function useStudioFileSystem() {
   const projectName = useStudioStore((s) => s.projectName);
@@ -38,17 +38,17 @@ export function useStudioFileSystem() {
         const snapshot = useStudioStore.getState();
         const project = await buildProjectFileAsync();
         const jsonStr = JSON.stringify(project, null, 2);
-        const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
+        const filename = `${(snapshot.projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
         const res = await DesktopFileSystem.saveProject(jsonStr, filename, forceSaveAs, snapshot.currentProjectId);
-        if (res.success && isCurrentSaveRevision(snapshot)) {
-          useStudioStore.getState().setSaveStatus('saved');
-          useStudioStore.getState().markClean();
+        if (!res.success && res.error !== 'Save cancelled by user') {
+          studioEvents.emit('pixibun:toast', { type: 'error', message: res.error || 'The project file could not be written. Your drawing is still open. Try again or download a backup.' });
         }
       } catch (err) {
         console.error('Desktop save error:', err);
+        studioEvents.emit('pixibun:toast', { type: 'error', message: 'The project file could not be written. Your drawing is still open. Try again or download a backup.' });
       }
     },
-    [projectName]
+    []
   );
 
   return {

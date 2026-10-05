@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+const path = 'src/lib/project/serialize.ts';
+let source = fs.readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
+const start = source.indexOf('  const layerBlobs:', source.indexOf('export async function buildAutosavePayloadAsync'));
+const end = source.indexOf('  const project: ProjectFile', start);
+if (start < 0 || end < start) throw new Error('Autosave boundary missing');
+source = source.slice(0, start) + '  const { frames, layerBlobs, capturedRevisions, dirtyLayerCount, totalLayerCount } = await encodeProjectLayers(state, projId);\n\n' + source.slice(end);
+const portableStart = source.indexOf('  const frames = await Promise.all(', source.indexOf('export async function buildProjectFileAsync'));
+const portableEnd = source.indexOf('\n  return {', portableStart);
+if (portableStart < 0 || portableEnd < portableStart) throw new Error('Portable boundary missing');
+source = source.slice(0, portableStart) + '  const { frames } = await encodeProjectLayers(state);\n' + source.slice(portableEnd);
+fs.writeFileSync(path, source);

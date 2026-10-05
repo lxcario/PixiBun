@@ -2,13 +2,29 @@
 
 The portable `.pixibun` **project format v3** is separate from **Dexie schema v5**. Raising or keeping one number does not establish compatibility for the other. [Schema](../../src/lib/project/schema.ts), [serialization](../../src/lib/project/serialize.ts), [database](../../src/lib/storage/db.ts) own these boundaries.
 
+## Document creation dates
+
+The workspace owns its document creation timestamp. Autosave and both portable serializers preserve it; `updatedAt` records snapshot preparation time. Portable import preserves the source date, including zero. New Drawing, gallery duplication, conflict copies and recovery copies create a fresh date. Saving the same document under another desktop filename preserves its date. Creation time is descriptive metadata, not a monotonic clock or authenticated provenance.
+
+Older serializers replaced the date inside saved JSON while the gallery row retained the original. Stored-project admission uses that surviving row date when it is a nonnegative safe integer, and the next autosave writes it into JSON as well. If no original survives in a portable file, its admitted date is retained; the original cannot be reconstructed. Hydration rollback restores the previous document date together with its artwork.
+
+## Browser saves and project files
+
+Browser-storage acknowledgement belongs to the autosave coordinator. Saving/downloading a project file does not clear the browser dirty flag or confirm an IndexedDB write. Native file saves retain the previous association until permission, writing and closing succeed; a workspace reset/open during the operation prevents a late association from replacing it. Overlapping file writes are refused while the active write drains. Failed or pre-commit-cancelled writes attempt to abort the writable stream. Cancellation after close has committed cannot undo that file; download fallbacks confirm an initiated download rather than a physical filesystem write.
+
 ## Logical versus physical raster records
 
 Application APIs expose `StoredLayerBlob.blob: Blob`. New IndexedDB writes encode its bytes as an **ArrayBuffer**, storing MIME information in `blobType`. Reads reconstruct the logical Blob, remove the physical MIME field from that logical record and retain support for older Blob-backed records. Other unknown fields remain visible to strict recovery validation. PNG records remain associated with project, layer and frame. Metadata and raster writes commit atomically, with revision checks against concurrent changes/deletion.
 
 Binary bytes avoid base64 in database records. Portable JSON/image serialization has a different representation and overhead. Do not claim every logical Blob is physically persisted as a browser Blob or a universal percentage saving.
 
+Async autosave and portable preparation admit memory before each native PNG snapshot and encode at most two layers concurrently per job. Prepared PNG sizes count until preparation hands off its result; database byte copies have separate reservations. This does not account for every caller's retained JSON string or browser encoder internals. Queued layers must still match their captured raster revision/generation before encoding; a changed queued layer refuses the mixed snapshot. Started callbacks drain before cleanup. The autosave coordinator retries a superseded preparation at most twice in one invocation, retaining dirty artwork if it still cannot finish.
+
+Incremental autosave scans compound index keys and primary keys to reconcile active layers, duplicates and orphans without loading unchanged PNG values. Dirty Blob-to-byte conversion uses at most two concurrent jobs. Metadata, raster writes/deletes and the expected storage-version check remain one atomic transaction; Dexie schema v5 is unchanged.
+
 The `projects`, `layerBlobs`, `diagnostics` and `recoveryRecords` tables have distinct roles. Diagnostic records are not artwork backups. Recovery records describe assessment/progress; repairing creates a new project rather than replacing the source.
+
+Gallery renaming of the active project uses the studio autosave coordinator: the title and current artwork share its queued write and expected storage version. A failed save leaves the in-memory title dirty with a warning. Inactive-project renaming checks the gallery row's storage version inside the read/write transaction; a stale row is refused. Neither path refreshes an expected version merely to bypass an external conflict.
 
 ## Untouched archive admission
 

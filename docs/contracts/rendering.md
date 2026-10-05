@@ -10,9 +10,12 @@ Raster artwork supports fractional alpha. The legacy Clean Jaggies operation fil
 
 ## Memory ownership
 
+Timeline thumbnail placeholders use the same initial markup on the server and client. Visibility observation and the fallback for browsers without IntersectionObserver begin after mounting; server capability differences must not change hydration markup.
+
 | Owner/boundary | Policy and exclusions |
 | --- | --- |
 | Raster registry | Tracks selected detached raster backing estimates |
+| Timeline previews | Visible/nearby frame cells retain aspect-correct backing surfaces of at most 24 px per axis; hover previews at most 96 px. Offscreen surfaces unmount. Layer order, visibility, opacity, blend and raster revision/generation determine refresh; timing and unrelated frame edits do not redraw a preview. Backing estimates register as `previews` and release on replacement/unmount |
 | Undo/Redo | Independent 50-step caps; combined 64 MiB retained-step budget per engine; replay baseline accounted separately |
 | Collaboration | Tracks application-owned retained sync state/queues |
 | Idle scratch pool | Exact-size Float32/Int32 reuse, up to 16 per bucket and 32 MiB globally; oldest idle buffers evicted on pressure; empty buckets removed; registered in combined ledger |
@@ -45,6 +48,10 @@ The CVD lens uses Machado–Oliveira–Fernandes severity-1 matrices on **linear
 Squint maps every nontransparent pixel to `#140C1E`, preserves alpha and displays it over white. It is a silhouette aid, not thresholded black/white luminance. Squint takes precedence over CVD. Both leave source/export pixels unchanged. See [cvdLens.ts](../../src/lib/color/cvdLens.ts), [SVG definitions](../../src/components/studio/ViewportLensFilters.tsx).
 
 ## Recipes, workers and publication
+
+Batch cleanup and sampled-color erase match the active layer to one uniquely named counterpart with the same generated tag in every frame. They never use stack position as correspondence. Missing or ambiguous counterparts refuse the entire batch before pixel changes; use This frame or give counterparts matching unique names. Locked matching layers remain skipped. Persistent layer tracks are not implemented by this name-based safety policy.
+
+Frame duplication copies semantic palette regions to the new frame with fresh binding IDs, subject to the existing binding limit. History restores these bindings with the frame; deletion prunes frame-bound bindings undoably. Copied research recipes fork references to sources/normals within the duplicated frame, retaining their pixel hashes; references outside that frame retain their original provenance.
 
 Legacy `LayerEffectRecipe` describes provenance with generic bounded parameters; only supported tools reopen/recompute it. Research recipes have their own parser, bounds and source/normal SHA-256 fingerprints. Loading, transforming or merging can detach provenance when it no longer describes one source. Older readers can omit optional fields.
 

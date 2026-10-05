@@ -5,6 +5,7 @@ export interface PaletteSemantics {
   entries: { id: string; role: string }[];
   bindings: { id: string; frameId: string; entryId: string; x: number; y: number; w: number; h: number }[];
 }
+export const MAX_PALETTE_BINDINGS = 128;
 export function defaultPaletteSemantics(palette: ColorPalette): PaletteSemantics {
   // Entry IDs are scoped to their palette; reserve room for the register suffix.
   return { entries: palette.colors.map((_, i) => ({ id: `${palette.id.slice(0, 240)}:register:${i}`, role: '' })), bindings: [] };
@@ -12,7 +13,7 @@ export function defaultPaletteSemantics(palette: ColorPalette): PaletteSemantics
 export function parsePaletteSemantics(input: unknown, colorCount: number): PaletteSemantics | null {
   if (!input || typeof input !== 'object' || colorCount < 1 || colorCount > 256) return null;
   const value = input as PaletteSemantics;
-  if (!Array.isArray(value.entries) || value.entries.length !== colorCount || !Array.isArray(value.bindings) || value.bindings.length > 128) return null;
+  if (!Array.isArray(value.entries) || value.entries.length !== colorCount || !Array.isArray(value.bindings) || value.bindings.length > MAX_PALETTE_BINDINGS) return null;
   const validId = (id: unknown): id is string => typeof id === 'string' && id.length > 0 && id.length <= 256;
   const ids = new Set<string>(), bindings = new Set<string>();
   for (const entry of value.entries) {

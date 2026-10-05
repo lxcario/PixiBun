@@ -1,0 +1,53 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Frame duplication preserves clip artwork and semantic palette bindings through undo and reload",
+  "description": "An original four-frame project retains the Attack clip members and duplicate-red register intent when frame 1 is duplicated, undone, redone and saved/reloaded.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Use a fresh isolated desktop browser context. Write a runner-local file named identity.pixibun containing exactly this synthetic original project JSON, then import it in Studio through the file picker and Confirm Import. Do not access existing personal projects. If runner file upload is unavailable, report BLOCKED rather than skipping the fixture. JSON: {\"format\":\"pixibun-project\",\"version\":3,\"name\":\"Identity fixture\",\"width\":32,\"height\":32,\"fps\":8,\"loopMode\":\"repeat\",\"onionSkin\":{\"enabled\":false,\"prevFrames\":1,\"nextFrames\":1,\"prevColor\":\"#c792df\",\"nextColor\":\"#dcabdf\",\"opacity\":0.45},\"palettes\":[{\"id\":\"roles\",\"name\":\"Roles\",\"colors\":[\"#ff0000\",\"#ff0000\"],\"semantics\":{\"entries\":[{\"id\":\"cloth\",\"role\":\"cloth\"},{\"id\":\"fire\",\"role\":\"fire\"}],\"bindings\":[{\"id\":\"fire-region\",\"frameId\":\"frame-0\",\"entryId\":\"fire\",\"x\":0,\"y\":0,\"w\":32,\"h\":32}]}}],\"currentPaletteId\":\"roles\",\"customRamps\":[],\"clips\":[{\"id\":\"attack\",\"name\":\"Attack\",\"startFrame\":1,\"endFrame\":2,\"loopMode\":\"forward\"}],\"frames\":[{\"id\":\"frame-0\",\"durationMs\":100,\"layers\":[{\"id\":\"body-0\",\"name\":\"Body\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\",\"pngBase64\":\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAJUlEQVR4nO3OsQ0AAAjDsP7/dFngBhZbyp6E1aSXgZcBAAAAvgweZhHvCZkw3wAAAABJRU5ErkJggg==\"}]},{\"id\":\"frame-1\",\"durationMs\":100,\"layers\":[{\"id\":\"light-1\",\"name\":\"Lighting\",\"visible\":false,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\",\"pngBase64\":\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAJ0lEQVR4nO3OMQ0AAAgEsfeEf22wgAaWNrn9ElYndRl4GQAAAODLAL0DCsNcGt03AAAAAElFTkSuQmCC\"},{\"id\":\"body-1\",\"name\":\"Body\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\",\"pngBase64\":\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAJUlEQVR4nO3OsQ0AAAjDsP7/dFngBhZbyp6E1aSXgZcBAAAAvgweZhHvCZkw3wAAAABJRU5ErkJggg==\"}]},{\"id\":\"frame-2\",\"durationMs\":100,\"layers\":[{\"id\":\"body-2\",\"name\":\"Body\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\",\"pngBase64\":\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAJUlEQVR4nO3OsQ0AAAjDsP7/dFngBhZbyp6E1aSXgZcBAAAAvgweZhHvCZkw3wAAAABJRU5ErkJggg==\"}]},{\"id\":\"frame-3\",\"durationMs\":100,\"layers\":[{\"id\":\"body-3\",\"name\":\"Body\",\"visible\":true,\"locked\":false,\"opacity\":1,\"blendMode\":\"source-over\",\"pngBase64\":\"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAJUlEQVR4nO3OsQ0AAAjDsP7/dFngBhZbyp6E1aSXgZcBAAAAvgweZhHvCZkw3wAAAABJRU5ErkJggg==\"}]}],\"createdAt\":1,\"updatedAt\":1}"
+    },
+    {
+      "type": "action",
+      "description": "Select frame 1, open Frame actions, and choose Move frame later."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the editor reports that moving the frame would split the Attack clip, and that the four-frame order remains unchanged."
+    },
+    {
+      "type": "action",
+      "description": "With frame 1 selected, choose Frame actions → Duplicate frame."
+    },
+    {
+      "type": "action",
+      "description": "Use Export → Project Backup → Download project backup. If native file save interferes, use the supported download fallback. Inspect the downloaded JSON, not private application stores."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify there are five frames. Attack selects exactly original frame-1 and frame-2: its startFrame/endFrame are 2/3. The new second frame has a fresh ID and its Roles palette has a new binding with that frameId and entryId fire. Decode its Body PNG and verify pixel (2,2) is [255,0,0,255]."
+    },
+    {
+      "type": "action",
+      "description": "Focus the drawing canvas and use Ctrl+Z. Download another project backup."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify Undo restores four frames, Attack range 1/2, and the original single palette binding."
+    },
+    {
+      "type": "action",
+      "description": "Focus the drawing canvas and use Ctrl+Y. Save to browser storage, wait for Changes saved, and reload the page."
+    },
+    {
+      "type": "action",
+      "description": "Wait for restoration to finish and download the reopened project backup."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the reopened project retains all five frame identities, Attack still selects original frame-1/frame-2, the duplicate retains its fire binding, and its decoded Body pixel (2,2) is [255,0,0,255]. Report inability to inspect downloads as BLOCKED, not a pass based on visible controls."
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # Drawing, one pixel at a time
 
+Animated tool previews appear on hover or focus. Activating a tool dismisses its preview immediately so the first drawing gesture can reach the canvas. The preview's Close and disable controls remain available while browsing tools.
+
 [Handbook](README.md) · [Workspace and layers](studio-workspace.md) · [All features](../features.md)
 
 Pick a tool from the left-hand toolbar. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
@@ -15,6 +17,8 @@ There are **17 current toolbar tools**. The original sixteen illustrations retai
 ![Pen selected with the original little-friends artwork.](../assets/screenshots/2026-10-02-feature-guide/tool-pen.png)
 
 Press **B**, choose a color, then click for a dot or drag for a stroke. Open **Size** to choose a brush preset or enter a size; **[** and **]** adjust it from the canvas. **Clean corners** removes redundant L-corner pixels along a pen stroke. Leave it off when you want every corner you drew to remain. Mirror drawing is available in the top rail and [View options](studio-workspace.md#view-and-symmetry).
+
+Clean corners follows the whole stroke across pointer samples. A trailing stamp can be corrected at the next turn; its original pixels are restored, including mirrored brush footprints. Undo/Redo covers the committed stroke.
 
 ## Bézier Curve
 
@@ -36,7 +40,7 @@ Press **G**, choose the replacement color and click an area. **Contiguous** fill
 
 ## Pixel Gradient
 
-Press **Shift+G**, then choose **Tool settings**. Drag a linear or radial gradient using foreground/background colors or the active palette in swatch order. Turn Bayer 4×4 dithering on for a patterned transition, or off for hard bands. The tool paints only the supplied RGB colors at full opacity; it does not introduce interpolated shades. A selection's actual mask constrains the fill. Without a selection it fills the active layer, including transparent pixels. Use an unlocked layer, inspect the preview, release to commit and Undo if needed. A zero-length drag or one-color palette does nothing. Drawing mirrors do not duplicate the fill.
+Press **Shift+G**, then choose the inspector's **Tools** tab. Drag a linear or radial gradient using foreground/background colors or the active palette in swatch order. Turn Bayer 4×4 dithering on for a patterned transition, or off for hard bands. The tool paints only the supplied RGB colors at full opacity; it does not introduce interpolated shades. A selection's actual mask constrains the fill. Without a selection it fills the active layer, including transparent pixels. Use an unlocked layer, inspect the preview, release to commit and Undo if needed. A zero-length drag or one-color palette does nothing. Drawing mirrors do not duplicate the fill.
 
 ![Pixel Gradient controls and a masked two-color fill.](../assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png)
 
@@ -47,6 +51,8 @@ See [the gradient workflow](artist-workspace.md#draw-a-pixel-gradient) for ramp 
 ![Dither Brush options with pattern and density.](../assets/screenshots/2026-10-02-feature-guide/tool-dither.png)
 
 Press **D**, set your two colors and drag a patterned stroke. Choose **Bayer 2×2, 4×4 or 8×8**, **Blue Noise**, or **Atkinson** in the pattern menu; adjust **Density** and brush size to make the texture gentler or stronger. This paints a brush pattern. Whole-layer Atkinson and Smooth Dither previews live separately in [Clean and refine](pixitools-cleanup-and-tiles.md#color-moods-and-dithering).
+
+Fast drags interpolate brush centers between received points instead of stamping only their endpoints. The pattern tests canvas coordinates, so a one-pixel brush keeps its pattern anchored as you draw. Larger sizes retain square stamp footprints.
 
 ## Color Replace
 
@@ -60,7 +66,7 @@ Press **R**, choose the new primary color, then click the color you want to repl
 
 Press **Shift+R**, choose the matching settings, and click a visible color to remove it. **Connected** targets its connected region; **All matches** searches across the layer. **Color family** includes related shades and dark edge spill, protects neutral outlines, and enables searching all matching pixels. Tolerance widens the match. These are heuristics, so inspect small details after using them.
 
-Keep **This frame** selected for a first attempt. **All frames** edits the same layer position in each frame and skips locked layers; a layer with the same name elsewhere is not automatically the target. Undo restores an admitted action. The tool removes pixels to transparency, rather than painting the background color.
+Keep **This frame** selected for a first attempt. **All frames** finds one uniquely named counterpart with the same generated tag in every frame, regardless of stack order, and skips locked counterparts. A missing or ambiguous match refuses the batch; give counterparts matching unique names or choose This frame. Undo restores an admitted action. The tool removes pixels to transparency, rather than painting the background color.
 
 ## Marquee Box
 

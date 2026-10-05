@@ -50,6 +50,8 @@ export class DesktopFileSystem {
   private static activeHandle: FileSystemFileHandle | null = null;
   private static activeProjectId: string | undefined;
   private static activeFilename: string | null = null;
+  private static associationEpoch = 0;
+  private static saveInFlight = false;
 
   public static isSupported(): boolean {
     return (
@@ -68,6 +70,7 @@ export class DesktopFileSystem {
   }
 
   public static setActiveHandle(handle: FileSystemFileHandle | null, filename?: string | null): void {
+    this.associationEpoch += 1;
     this.activeHandle = handle;
     this.activeFilename = filename ?? handle?.name ?? null;
   }
@@ -77,12 +80,14 @@ export class DesktopFileSystem {
   }
 
   public static restoreAssociation(saved: ReturnType<typeof DesktopFileSystem.captureAssociation>): void {
+    this.associationEpoch += 1;
     this.activeHandle = saved.handle;
     this.activeProjectId = saved.projectId;
     this.activeFilename = saved.filename;
   }
 
   public static reset(): void {
+    this.associationEpoch += 1;
     this.activeProjectId = undefined;
     this.activeHandle = null;
     this.activeFilename = null;
@@ -169,57 +174,80 @@ export class DesktopFileSystem {
     data: string | Blob,
     suggestedName: string = 'project.pixibun',
     forceSaveAs: boolean = false,
-    projectId?: string
+    projectId?: string,
+    signal?: AbortSignal
   ): Promise<{ success: boolean; filename: string; fallbackUsed: boolean; error?: string }> {
-    if (this.isSupported()) {
-      try {
-        let handle = this.activeProjectId === projectId ? this.activeHandle : null;
+    signal?.throwIfAborted();
+    if (this.saveInFlight) return { success: false, filename: suggestedName, fallbackUsed: false, error: 'A project file is still being written. Try again after it finishes.' };
+    this.saveInFlight = true;
+    const associationEpoch = this.associationEpoch;
+    try {
+      if (this.isSupported()) {
+        try {
+          let handle = this.activeProjectId === projectId ? this.activeHandle : null;
 
-        if (!handle || forceSaveAs) {
-          const savePicker = (window as FilePickerWindow).showSaveFilePicker;
-          if (!savePicker) throw new Error('Save picker is unavailable');
+          if (!handle || forceSaveAs) {
+            const savePicker = (window as FilePickerWindow).showSaveFilePicker;
+            if (!savePicker) throw new Error('Save picker is unavailable');
 
-          handle = await savePicker({
-            suggestedName,
-            types: PIXIBUN_FILE_TYPES,
-          });
-          this.setActiveHandle(handle, handle.name);
-          this.activeProjectId = projectId;
+            handle = await savePicker({
+              suggestedName,
+              types: PIXIBUN_FILE_TYPES,
+            });
+          }
+
+          signal?.throwIfAborted();
+          const hasPermission = await verifyHandlePermission(handle, 'readwrite');
+          signal?.throwIfAborted();
+          if (!hasPermission) {
+            return { success: false, filename: handle.name, fallbackUsed: false, error: 'Permission denied' };
+          }
+
+          const writable = await handle.createWritable();
+          try {
+            signal?.throwIfAborted();
+            await writable.write(data);
+            signal?.throwIfAborted();
+            await writable.close();
+          } catch (error) {
+            try { await writable.abort(error); }
+            catch { console.warn('The failed project file write could not be discarded.'); }
+            throw error;
+          }
+
+          // A reset/open during the picker or write owns the current association.
+          // Closing commits the file; cancellation after that cannot undo it.
+          if (!signal?.aborted && this.associationEpoch === associationEpoch) {
+            this.setActiveHandle(handle, handle.name);
+            this.activeProjectId = projectId;
+          }
+
+          return { success: true, filename: handle.name, fallbackUsed: false };
+        } catch (err: unknown) {
+          if ((err as Error).name === 'AbortError') {
+            return { success: false, filename: suggestedName, fallbackUsed: false, error: 'Save cancelled by user' };
+          }
+          throw err;
         }
-
-        const hasPermission = await verifyHandlePermission(handle, 'readwrite');
-        if (!hasPermission) {
-          return { success: false, filename: handle.name, fallbackUsed: false, error: 'Permission denied' };
-        }
-
-        const writable = await handle.createWritable();
-        await writable.write(data);
-        await writable.close();
-
-        return { success: true, filename: handle.name, fallbackUsed: false };
-      } catch (err: unknown) {
-        if ((err as Error).name === 'AbortError') {
-          return { success: false, filename: suggestedName, fallbackUsed: false, error: 'Save cancelled by user' };
-        }
-        throw err;
       }
-    }
 
-    // DOM Fallback: <a download>
-    if (typeof document === 'undefined') {
-      return { success: false, filename: suggestedName, fallbackUsed: true, error: 'Document unavailable' };
-    }
+      // DOM Fallback: <a download>
+      signal?.throwIfAborted();
+      if (typeof document === 'undefined') {
+        return { success: false, filename: suggestedName, fallbackUsed: true, error: 'Document unavailable' };
+      }
 
-    const blob = typeof data === 'string' ? new Blob([data], { type: 'application/json' }) : data;
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = suggestedName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const blob = typeof data === 'string' ? new Blob([data], { type: 'application/json' }) : data;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = suggestedName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    return { success: true, filename: suggestedName, fallbackUsed: true };
+      return { success: true, filename: suggestedName, fallbackUsed: true };
+    } finally { this.saveInFlight = false; }
   }
 }

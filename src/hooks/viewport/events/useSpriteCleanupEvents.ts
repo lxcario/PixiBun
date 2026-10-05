@@ -7,6 +7,7 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { useStudioStore } from '@/stores/studioStore';
 import type { ViewportEventContext } from './types';
+import { resolveFrameLayerTargets } from '@/lib/project/frameLayerTargets';
 
 type CleanupRequest = { options: SpriteCleanupOptions; allFrames: boolean };
 
@@ -29,9 +30,14 @@ export function useSpriteCleanupEvents({
         bufferVersion: state.bufferVersion,
         reviewKey: JSON.stringify(state.clips.find(clip => clip.id === state.activeClipId) ?? null),
       };
-      const candidates = request.allFrames
-        ? state.frames.map((frame) => frame.layers[layerIndex]).filter((layer) => Boolean(layer))
-        : [currentFrame.layers[layerIndex]];
+      const resolved = request.allFrames ? resolveFrameLayerTargets(state.frames, state.activeFrameIndex, state.activeLayerId)
+        : { ok: true as const, layers: [currentFrame.layers[layerIndex]] };
+      if (!resolved.ok) {
+        lastScanKey.current = null;
+        studioEvents.emit('pixibun:toast', { type: 'error', message: resolved.message });
+        return;
+      }
+      const candidates = resolved.layers;
       const reviewClip = state.clips.find(clip => clip.id === state.activeClipId);
       const scanKey = JSON.stringify({ source, options: request.options, allFrames: request.allFrames, reviewClip,
         targets: candidates.map((layer) => [layer.id, layer.locked]) });

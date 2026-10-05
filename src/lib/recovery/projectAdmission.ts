@@ -295,7 +295,12 @@ export async function inspectAndAdmitStoredProject(
       );
 
       // Deep freeze the strict-validated ProjectFile
-      const frozenProject = deepFreeze(structuredClone(strictResult.value));
+      // Earlier serializers replaced the document date on every save, while
+      // the gallery row retained it. Restore that surviving date when valid.
+      const storedCreatedAt = snapshot.projectRecord.createdAt;
+      const createdAt = Number.isSafeInteger(storedCreatedAt) && storedCreatedAt >= 0
+        ? storedCreatedAt : strictResult.value.createdAt;
+      const frozenProject = deepFreeze(structuredClone({ ...strictResult.value, createdAt }));
 
       return {
         status: 'admitted',

@@ -1,0 +1,25 @@
+[WebServer] (node:6892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:15180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (6.2s)
+  ok  2 [chromium] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (6.2s)
+  ok  3 [chromium] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (7.7s)
+  ok  4 [chromium] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (9.0s)
+(node:31496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [firefox] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (19.5s)
+  ok  6 [firefox] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (18.7s)
+  ok  7 [firefox] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (24.7s)
+  ok  8 [firefox] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (26.0s)
+(node:23212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 3 FPS as APNG and GIF (40.1s)
+  ok 10 [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 5 FPS as APNG and GIF (34.2s)
+  ok 11 [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 8 FPS as APNG and GIF (32.6s)
+  ok 12 [webkit] › docs\research\evidence\2026-10-05-audit-hardening\palette-cycle-compiled.spec.ts:6:39 › downloads two-second fire-only cycles at 15 FPS as APNG and GIF (34.8s)
+
+  12 passed (4.5m)

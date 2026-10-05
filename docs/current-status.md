@@ -1,6 +1,34 @@
 # Current checkout status
 
-Updated 4 October 2026. Package `1.14.1`. The [3 October session documentation and publication record](research/2026-10-03-audit-session-publication.md) covers its repairs, executable tests and explicit main-push request. Dated records describe their own revisions and outcomes. Git publication does not establish successful remote CI, deployment or a release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
+Updated 5 October 2026. Package `1.14.1`. The [3 October session documentation and publication record](research/2026-10-03-audit-session-publication.md) covers its repairs, executable tests and explicit main-push request. Dated records describe their own revisions and outcomes. Git publication does not establish successful remote CI, deployment or a release sign-off. The [September release decision](releases/v1.14.1-signoff.md) applies to its own deployed build.
+
+## Latest publication scope: 5 October audit repairs
+
+The [5 October publication record](research/2026-10-05-audit-publication.md) covers the user's subsequent push request for the five audit repair phases and final hardening, targeting the existing `origin/main` through a normal fast-forward push and configured pre-push gate. Its source/evidence publication is separate from the earlier local-only verification choice: no TestSprite service work is added. The actual commit/push result is reported separately; remote CI and deployment remain distinct from the passing local build/browser results below. Dated reports retain their at-run uncommitted-source and qualification scope.
+
+## Latest local repair: final audit hardening
+
+The [final hardening record](research/2026-10-05-audit-hardening.md) completes the five audit repair phases locally. It protects cancelled export/backup ownership, failed native writes and browser-save acknowledgement, releases palette preparation on failure, preserves dialog/focus behavior and aligns initial timeline markup across server/client rendering. The final five-stage gate/build passed **1,862 tests /181 suites**. The entire compiled suite finished with **206 passes /seven capability skips**, and separate compiled/development palette-loop runs passed **24 cases** across Chromium/Firefox/WebKit, with one browser worker and zero retries. Source/build fingerprints and all 108 recorded Phase 2–5 artifacts retain their hashes; failed diagnostics remain preserved. The user selected **local-only verification**; no TestSprite service cases, connections or runs, source publication or deployment are part of this phase. OS file-pickers, physical-device performance, assistive technology, artist studies and remote release qualification remain separate.
+
+## Earlier local repair: deep audit phase 5
+
+The [phase 5 record](research/2026-10-05-audit-phase5.md) preserves document creation dates through import/reopen/backup, reconciles surviving legacy row dates, makes co-draw copy feedback await success with a selected manual fallback, and queues production jobs with main-SHA checks before build and deployment. The five-stage gate/build passed **1,845 tests /180 suites**; a final queue-policy follow-up passed **31 deployment tests**. Compiled checks passed **29 cases with one WebKit WebRTC capability skip**, including six date round trips, two clipboard scenarios and all 21 prior save/pixel regressions. The initial interrupted download-fixture failure is retained. All five planned audit repair phases are implemented locally. TestSprite review drafts, external execution and remote deployment/operator qualification remain pending; no publication or release approval is claimed.
+
+## Earlier local repair: deep audit phase 4
+
+The [phase 4 record](research/2026-10-05-audit-phase4.md) bounds timeline preview retention and per-job PNG encoding, reconciles autosave through index keys without reading clean raster values, and admits/releases animation and sheet preparation. Its 64-frame Chromium fixture reduced retained thumbnail backing from 4 MiB to 34,560 bytes and per-stroke thumbnail draws from 128 to one; these are scoped allocation/work counts, not measured process RAM or a universal speedup. The corrected five-stage gate/build passed **1,819 tests /178 suites**; the final compiled run passed **30/30 across Chromium/Firefox/WebKit**, including all 21 prior save/pixel regressions. WebKit native-composite and fixture/color-profile failures remain preserved with their passing follow-ups. One new TestSprite draft/temporary local connection awaits confirmation; external verification, publication and deployment are not claimed.
+
+## Earlier local repair: deep audit phase 3
+
+The [phase 3 record](research/2026-10-05-audit-phase3.md) repairs command/modal focus and shared gestures, navigator coordinates/zoom/keyboard access, restored workspace tasks, compact header mouse access and activated-tool preview dismissal. The hardened gate/build passed **1,809 tests /177 suites**. The final compiled Phase 3 run passed **21/21 across Chromium/Firefox/WebKit**; the earlier combined run passed all 21 Phase 1/2 regressions and retained two WebKit Phase 3 failures, followed by two passing targeted checks and the passing final run. The record corrects the original A09 claim: header Lighting routing already existed; store/restoration task ownership was the gap. New TestSprite plans/temporary external connection remain awaiting confirmation. No external verification, publication or deployment is claimed.
+
+## Earlier local repair: deep audit phase 2
+
+The [phase 2 record](research/2026-10-05-audit-phase2.md) implements whole-stroke corner correction, interpolated dither and coordinated gallery rename/save ownership. The supported-runtime gate/build passed **1,797 tests /176 suites**. The initial compiled run had **20 passes /one Firefox preview-obstruction failure**, including nine passing Phase 1 regressions; the Phase 2 follow-up passed all twelve checks across Chromium/Firefox/WebKit using the supported D shortcut. The at-run preview obstruction and earlier Pen header overlap were subsequently repaired in Phase 3. Both phases' new TestSprite cases/temporary external connection await the skill-required confirmation. No external verification, publication or deployment is claimed.
+
+## Earlier local repair: deep audit phase 1
+
+The [phase 1 record](research/2026-10-05-audit-phase1.md) repairs clip membership, safe all-frame layer correspondence and duplicated palette/research identities. Local quality/build and compiled three-browser checks passed on the supported Node runtime. New TestSprite cases/temporary external connection await the skill-required confirmation; no external verification, publication or deployment is claimed. The at-run Pen header overlap was subsequently repaired in Phase 3. The earlier [deep audit](research/2026-10-05-deep-product-code-audit.md) retains its original pre-repair evidence.
 
 ## Latest local work: artist workspace feedback
 

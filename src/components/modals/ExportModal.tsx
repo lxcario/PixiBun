@@ -15,8 +15,9 @@ import { createAnimatedGifBlobAsync } from '@/lib/export/gifEncoder';
 import { exportProcessReplayGifAsync } from '@/lib/export/processReplay';
 import { depixelizeToSvg } from '@/lib/export/depixelizeVector';
 import { exportAnimationToWebmAsync, isWebmExportSupported } from '@/lib/export/webmEncoder';
-import { exportAnimationToApngAsync, yieldApngTask, apngFailureMessage } from '@/lib/export/apngEncoder';
+import { exportAnimationToApngAsync, apngFailureMessage } from '@/lib/export/apngEncoder';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
+import { prepareExportFrames, prepareExportFramesAsync } from '@/lib/export/prepareFrames';
 import { exportAnimationToMp4Async, probeMp4ExportSupport } from '@/lib/export/mp4Encoder';
 import { exportProcessReplayMp4Async } from '@/lib/export/speedpaintExporter';
 import {
@@ -124,6 +125,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const [isWebmSupported, setIsWebmSupported] = useState(false);
   const abortControllerRef = React.useRef<AbortController | null>(null);
   useEffect(() => () => abortControllerRef.current?.abort(), []);
+  useEffect(() => { if (!isOpen) abortControllerRef.current?.abort(); }, [isOpen]);
+  const finishExport = (controller: AbortController) => {
+    if (abortControllerRef.current !== controller) return;
+    abortControllerRef.current = null;
+    setIsExporting(false);
+    setExportProgress(null);
+  };
+
+  useEffect(() => {
+    if (isOpen && !abortControllerRef.current) {
+      setExportType(initialType);
+      setProjectExportError(null);
+      setKitError(null);
+    }
+  }, [isOpen, initialType]);
 
   useEffect(() => {
     let disposed = false;
@@ -157,12 +173,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   const scopeSuffix = selectedClip ? `_${selectedClip.name.replace(/\s+/g, '_')}` : '';
 
   const handleCancel = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setIsExporting(false);
-    setExportProgress(null);
+    // Keep the operation's lease until native callbacks and cleanup drain.
+    abortControllerRef.current?.abort();
     onClose();
   };
 
@@ -174,7 +186,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportGodotKit = async () => {
-    if (kitInFlightRef.current) return;
+    if (abortControllerRef.current || kitInFlightRef.current) return;
     kitInFlightRef.current = true;
     const controller = new AbortController(); abortControllerRef.current = controller;
     setIsExporting(true); setKitError(null);
@@ -264,12 +276,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
+    let releaseSheet: (() => void) | undefined;
+    let sheet: HTMLCanvasElement | undefined;
     try {
-      const frameCanvases = targetFrames.map((_, i) => {
-        const composed = compositeFrame(targetFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-        if (!composed) throw new Error(`Frame ${i + 1} could not be rendered. Retry the export.`);
-        return composed;
-      });
+      releaseSheet = reserveMemory(geometry.sheetWidth * geometry.sheetHeight * 4 * 4, 'Preparing sprite sheet and PNG');
+      prepared = prepareExportFrames(targetFrames, canvasWidth, canvasHeight);
+      const frameCanvases = prepared.canvases;
       const baseFilename = `${`${projectName}${scopeSuffix}`.toLowerCase().replace(/[^a-z0-9_-]+/g, '_').slice(0, 64) || 'sprite'}-sheet-${effectiveScale}x`;
       const animation = buildAnimationModel(targetFrames, selectedClip ? [selectedClip] : clips,
         useStudioStore.getState().loopMode, targetFrames.map((_, i) => startIdx + i));
@@ -281,6 +294,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         textureFilename: `${baseFilename}.png`,
       });
 
+      sheet = packed.canvas;
       const dataUrl = packed.canvas.toDataURL('image/png');
       if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 64) {
         throw new Error('toDataURL returned empty or corrupted data.');
@@ -323,11 +337,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         message: err instanceof Error ? err.message : 'Sprite sheet export failed. Retry the export.',
         type: 'error',
       });
+    } finally {
+      prepared?.release();
+      if (sheet) { sheet.width = 0; sheet.height = 0; }
+      releaseSheet?.();
     }
   };
 
   const handleExportGIF = async () => {
-    if (isExporting || animationFrames.length === 0) return;
+    if (abortControllerRef.current || isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 8);
     const outW = canvasWidth * effectiveScale;
@@ -345,24 +363,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const frameCanvases: HTMLCanvasElement[] = [];
-
-    for (let i = 0; i < animationFrames.length; i++) {
-      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (!composed) {
-        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
-        return;
-      }
-      frameCanvases.push(composed);
-    }
-
-    if (frameCanvases.length === 0) return;
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     setIsExporting(true);
-    setExportProgress({ current: 0, total: frameCanvases.length });
+    setExportProgress({ current: 0, total: animationFrames.length });
 
     const delays = animationFrames.map((f) => {
       const ms = f.durationMs || Math.round(1000 / fps);
@@ -370,18 +377,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     });
 
     try {
+      prepared = await prepareExportFramesAsync(animationFrames, canvasWidth, canvasHeight, controller.signal);
+      const frameCanvases = prepared.canvases;
       const blob = await createAnimatedGifBlobAsync(
         frameCanvases,
         fps,
         effectiveScale,
         (current, total) => {
-          setExportProgress({ current, total });
+          if (!controller.signal.aborted) setExportProgress({ current, total });
         },
         controller.signal,
         delays,
         loopMode !== 'once'
       );
 
+      controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.gif`;
@@ -400,15 +410,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         type: 'error',
       });
     } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-      abortControllerRef.current = null;
+      prepared?.release();
+      finishExport(controller);
     }
   };
 
   const handleExportReplay = async () => {
     const history = getGlobalHistory();
-    if (isExporting || history.length === 0) return;
+    if (abortControllerRef.current || isExporting || history.length === 0) return;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -427,7 +436,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
             holdLastFrameMs,
             baseline,
             onProgress: (current, total) => {
-              setExportProgress({ current, total });
+              if (!controller.signal.aborted) setExportProgress({ current, total });
             },
             signal: controller.signal,
           })
@@ -437,12 +446,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
             holdLastFrameMs,
             baseline,
             onProgress: (current, total) => {
-              setExportProgress({ current, total });
+              if (!controller.signal.aborted) setExportProgress({ current, total });
             },
             signal: controller.signal,
           });
 
       const ext = isMp4 ? 'mp4' : 'gif';
+      controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-timelapse-${effectiveScale}x.${ext}`;
@@ -456,14 +466,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       console.error('Process replay export failed:', err);
     } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-      abortControllerRef.current = null;
+      finishExport(controller);
     }
   };
 
   const handleExportApng = async () => {
-    if (isExporting || animationFrames.length === 0) return;
+    if (abortControllerRef.current || isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = canvasWidth * effectiveScale;
@@ -481,7 +489,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const frameCanvases: HTMLCanvasElement[] = [];
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -491,28 +499,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
 
     const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
-    let releaseFrames: (() => void) | undefined;
     try {
-      releaseFrames = reserveMemory(animationFrames.length * canvasWidth * canvasHeight * 4, 'Preparing APNG frames');
-      await yieldApngTask();
-      for (let index = 0; index < animationFrames.length; index++) {
-        if (controller.signal.aborted) throw new DOMException('APNG export aborted', 'AbortError');
-        const composed = compositeFrame(animationFrames, index, canvasWidth, canvasHeight, { freshCanvas: true });
-        if (!composed) throw new Error('An animation frame could not be rendered.');
-        frameCanvases.push(composed);
-        await yieldApngTask();
-      }
+      prepared = await prepareExportFramesAsync(animationFrames, canvasWidth, canvasHeight, controller.signal);
+      const frameCanvases = prepared.canvases;
       const blob = await exportAnimationToApngAsync(frameCanvases, {
         fps,
         scale: effectiveScale,
         durationsMs,
         loopCount: loopMode === 'once' ? 1 : 0,
         onProgress: (current, total) => {
-          setExportProgress({ current, total });
+          if (!controller.signal.aborted) setExportProgress({ current, total });
         },
         signal: controller.signal,
       });
 
+      controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.png`;
@@ -530,16 +531,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         type: 'error',
       });
     } finally {
-      for (const canvas of frameCanvases) { canvas.width = 0; canvas.height = 0; }
-      releaseFrames?.();
-      setIsExporting(false);
-      setExportProgress(null);
-      abortControllerRef.current = null;
+      prepared?.release();
+      finishExport(controller);
     }
   };
 
   const handleExportMp4 = async () => {
-    if (isExporting || animationFrames.length === 0) return;
+    if (abortControllerRef.current || isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = (canvasWidth * effectiveScale + 1) & ~1;
@@ -554,38 +552,31 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < animationFrames.length; i++) {
-      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (!composed) {
-        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
-        return;
-      }
-      frameCanvases.push(composed);
-    }
-
-    if (frameCanvases.length === 0) return;
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     setIsExporting(true);
-    setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
+    setExportProgress({ current: 0, total: animationFrames.length * videoLoopCount });
 
     const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
     try {
+      prepared = await prepareExportFramesAsync(animationFrames, canvasWidth, canvasHeight, controller.signal);
+      const frameCanvases = prepared.canvases;
       const blob = await exportAnimationToMp4Async(frameCanvases, {
         fps,
         scale: effectiveScale,
         durationsMs,
         loopCount: videoLoopCount,
         onProgress: (current, total) => {
-          setExportProgress({ current, total });
+          if (!controller.signal.aborted) setExportProgress({ current, total });
         },
         signal: controller.signal,
       });
 
+      controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.mp4`;
@@ -603,9 +594,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         type: 'error',
       });
     } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-      abortControllerRef.current = null;
+      prepared?.release();
+      finishExport(controller);
     }
   };
 
@@ -631,7 +621,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportWebm = async () => {
-    if (isExporting || animationFrames.length === 0) return;
+    if (abortControllerRef.current || isExporting || animationFrames.length === 0) return;
 
     const effectiveScale = Math.min(scale, 16);
     const outW = canvasWidth * effectiveScale;
@@ -646,38 +636,31 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const frameCanvases: HTMLCanvasElement[] = [];
-    for (let i = 0; i < animationFrames.length; i++) {
-      const composed = compositeFrame(animationFrames, i, canvasWidth, canvasHeight, { freshCanvas: true });
-      if (!composed) {
-        studioEvents.emit('pixibun:toast', { type: 'error', message: 'An animation frame could not be rendered. Retry the export.' });
-        return;
-      }
-      frameCanvases.push(composed);
-    }
-
-    if (frameCanvases.length === 0) return;
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     setIsExporting(true);
-    setExportProgress({ current: 0, total: frameCanvases.length * videoLoopCount });
+    setExportProgress({ current: 0, total: animationFrames.length * videoLoopCount });
 
     const durationsMs = animationFrames.map((f) => f.durationMs || Math.round(1000 / fps));
 
     try {
+      prepared = await prepareExportFramesAsync(animationFrames, canvasWidth, canvasHeight, controller.signal);
+      const frameCanvases = prepared.canvases;
       const blob = await exportAnimationToWebmAsync(frameCanvases, {
         fps,
         scale: effectiveScale,
         durationsMs,
         loopCount: videoLoopCount,
         onProgress: (current, total) => {
-          setExportProgress({ current, total });
+          if (!controller.signal.aborted) setExportProgress({ current, total });
         },
         signal: controller.signal,
       });
 
+      controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}${scopeSuffix}-${effectiveScale}x.webm`;
@@ -695,22 +678,24 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         type: 'error',
       });
     } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-      abortControllerRef.current = null;
+      prepared?.release();
+      finishExport(controller);
     }
   };
 
   const handleExportProjectJson = async () => {
-    if (projectExportInFlightRef.current) return;
+    if (abortControllerRef.current || projectExportInFlightRef.current) return;
+    const controller = new AbortController(); abortControllerRef.current = controller;
     projectExportInFlightRef.current = true;
     setIsProjectExporting(true);
     setProjectExportError(null);
     try {
-      const project = await buildProjectFileAsync();
+      const project = await buildProjectFileAsync(controller.signal);
+      controller.signal.throwIfAborted();
       const projectData = JSON.stringify(project, null, 2);
       const filename = `${(projectName || 'project').toLowerCase().replace(/\s+/g, '-')}.pixibun`;
-      const result = await DesktopFileSystem.saveProject(projectData, filename, true);
+      const result = await DesktopFileSystem.saveProject(projectData, filename, true, undefined, controller.signal);
+      controller.signal.throwIfAborted();
       if (!result.success) {
         setProjectExportError(
           result.error === 'Save cancelled by user'
@@ -721,11 +706,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       }
       onClose();
     } catch (err) {
+      if (controller.signal.aborted) return;
       console.error('Project backup failed:', err);
       setProjectExportError('Couldn’t create the project backup. Try again or choose another location.');
     } finally {
       projectExportInFlightRef.current = false;
       setIsProjectExporting(false);
+      finishExport(controller);
     }
   };
 
@@ -749,7 +736,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
   };
 
   const handleExportCycleLoop = async () => {
-    if (!currentPalette || !activeCycleTracks.length) return;
+    if (abortControllerRef.current || !currentPalette || !activeCycleTracks.length) return;
     const effectiveScale = cycleLoopFormat === 'apng' ? Math.min(scale, 16) : Math.min(scale, 8);
     const outW = canvasWidth * effectiveScale;
     const outH = canvasHeight * effectiveScale;
@@ -768,13 +755,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       return;
     }
 
-    const source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
-    if (!source) return;
-
+    const controller = new AbortController(); abortControllerRef.current = controller;
+    let source: HTMLCanvasElement | null = null;
+    let frameCanvases: HTMLCanvasElement[] = [];
+    let releaseFrames: (() => void) | undefined;
     setIsExporting(true);
     try {
+      releaseFrames = reserveMemory((estimatedFrames + 4) * canvasWidth * canvasHeight * 4, "Preparing palette cycle frames");
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      controller.signal.throwIfAborted();
+      source = compositeFrame(frames, activeFrameIndex, canvasWidth, canvasHeight, { freshCanvas: true });
+      if (!source) throw new Error("The active frame could not be rendered.");
       const loopFps = cycleLoopFps;
-      const frameCanvases = generateLoopAnimationCanvases(
+      frameCanvases = generateLoopAnimationCanvases(
         source,
         currentPalette.colors,
         activeCycleTracks.map(track => ({ ...track, rate: track.rate * paletteCycleSpeedMultiplier })),
@@ -788,10 +781,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           fps: loopFps,
           scale: effectiveScale,
           loopCount: 0,
+          signal: controller.signal,
           onProgress: (current: number, total: number) => {
-            setExportProgress({ current, total });
+            if (!controller.signal.aborted) setExportProgress({ current, total });
           },
         });
+        controller.signal.throwIfAborted();
         const url = URL.createObjectURL(apngBlob);
         const link = document.createElement('a');
         link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${effectiveScale}x.png`;
@@ -809,11 +804,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           loopFps,
           effectiveScale,
           (current: number, total: number) => {
-            setExportProgress({ current, total });
+            if (!controller.signal.aborted) setExportProgress({ current, total });
           },
-          undefined,
+          controller.signal,
           delays
         );
+        controller.signal.throwIfAborted();
         const url = URL.createObjectURL(gifBlob);
         const link = document.createElement('a');
         link.download = `${projectName.toLowerCase().replace(/\s+/g, '-')}-cycle-loop-${effectiveScale}x.gif`;
@@ -821,16 +817,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
+      onClose();
     } catch (err) {
+      if (controller.signal.aborted) return;
       console.error('Palette cycle loop export failed:', err);
       studioEvents.emit('pixibun:toast', {
-        message: 'This animation would be too large to export safely.',
+        message: apngFailureMessage(err),
         type: 'error',
       });
     } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-      onClose();
+      if (source) { source.width = 0; source.height = 0; }
+      for (const canvas of frameCanvases) { canvas.width = 0; canvas.height = 0; }
+      releaseFrames?.();
+      finishExport(controller);
     }
   };
 
@@ -974,7 +973,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         <TactileButton
           size="sm"
           variant="default"
-          disabled={(isExporting && exportType !== 'godot-kit') || isProjectExporting}
           onClick={handleCancel}
           aria-label="Cancel"
           data-testid="export-cancel-button"

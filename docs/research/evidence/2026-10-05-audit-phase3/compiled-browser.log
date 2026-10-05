@@ -1,0 +1,127 @@
+[WebServer] (node:13220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 39 tests using 1 worker
+
+(node:15268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (5.1s)
+  ok  2 [chromium] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (2.5s)
+  ok  3 [chromium] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (3.6s)
+  ok  4 [chromium] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (3.0s)
+  ok  5 [chromium] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (4.0s)
+  ok  6 [chromium] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (6.7s)
+  ok  7 [chromium] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (5.3s)
+  ok  8 [chromium] › tests\production\workspaceConsistency.spec.ts:24:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (3.2s)
+  ok  9 [chromium] › tests\production\workspaceConsistency.spec.ts:46:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (2.6s)
+  ok 10 [chromium] › tests\production\workspaceConsistency.spec.ts:61:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (5.0s)
+  ok 11 [chromium] › tests\production\workspaceConsistency.spec.ts:88:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (2.3s)
+  ok 12 [chromium] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (4.9s)
+  ok 13 [chromium] › tests\production\workspaceConsistency.spec.ts:127:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (4.0s)
+(node:29224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 14 [firefox] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (12.1s)
+  ok 15 [firefox] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (5.0s)
+  ok 16 [firefox] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (6.1s)
+  ok 17 [firefox] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (5.8s)
+  ok 18 [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (7.1s)
+  ok 19 [firefox] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (10.4s)
+  ok 20 [firefox] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (10.6s)
+  ok 21 [firefox] › tests\production\workspaceConsistency.spec.ts:24:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (6.9s)
+  ok 22 [firefox] › tests\production\workspaceConsistency.spec.ts:46:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (4.7s)
+  ok 23 [firefox] › tests\production\workspaceConsistency.spec.ts:61:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (8.5s)
+  ok 24 [firefox] › tests\production\workspaceConsistency.spec.ts:88:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (3.2s)
+  ok 25 [firefox] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (6.8s)
+  ok 26 [firefox] › tests\production\workspaceConsistency.spec.ts:127:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (5.6s)
+(node:21896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 27 [webkit] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (20.5s)
+  ok 28 [webkit] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (9.9s)
+  ok 29 [webkit] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (16.3s)
+  ok 30 [webkit] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (7.9s)
+  ok 31 [webkit] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (8.4s)
+  ok 32 [webkit] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (25.0s)
+  ok 33 [webkit] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (23.8s)
+  ok 34 [webkit] › tests\production\workspaceConsistency.spec.ts:24:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (23.3s)
+  ok 35 [webkit] › tests\production\workspaceConsistency.spec.ts:46:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (14.9s)
+  ok 36 [webkit] › tests\production\workspaceConsistency.spec.ts:61:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (38.1s)
+  x  37 [webkit] › tests\production\workspaceConsistency.spec.ts:88:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (15.0s)
+(node:27568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 38 [webkit] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (14.5s)
+  x  39 [webkit] › tests\production\workspaceConsistency.spec.ts:127:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (25.8s)
+
+
+  1) [webkit] › tests\production\workspaceConsistency.spec.ts:88:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: /^Canvas overview/ })
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for getByRole('button', { name: /^Canvas overview/ })
+        22 × locator resolved to <button type="button" class="relative w-[224px] h-[112px] shrink-0 p-0 outline-offset-2" aria-label="Canvas overview. Click or drag to pan; arrow keys pan, Shift moves eight pixels, Enter centers.">…</button>
+           - unexpected value "inactive"
+
+
+       97 |       if (action === 'palette') await (await palette(page, 'Fit Canvas')).press('Enter');
+       98 |       await expect(headerZoom).toHaveText(fitted!);
+    >  99 |     }
+          |      ^
+      100 |     expect(await png()).toEqual(artwork);
+      101 |   }
+      102 | });
+        at D:\PixiBun\tests\production\workspaceConsistency.spec.ts:99:101
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3116\workspaceConsistency-compi-c2cf8-eyboard-and-full-zoom-range-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3116\workspaceConsistency-compi-c2cf8-eyboard-and-full-zoom-range-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3116\workspaceConsistency-compi-c2cf8-eyboard-and-full-zoom-range-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3116\workspaceConsistency-compi-c2cf8-eyboard-and-full-zoom-range-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [webkit] › tests\production\workspaceConsistency.spec.ts:127:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 255
+    Received: 0
+
+      156 |   await expect(page.getByRole('group', { name: /Dither.*preview/ })).toBeHidden();
+      157 |   await paint(page, [0, 8], [20, 8]);
+    > 158 |   const drawn = await pixels(page); for (let x = 0; x <= 20; x++) expect(drawn[(8 * 32 + x) * 4 + 3]).toBe(x % 2 === 0 ? 255 : 0);
+          |                                                                                                       ^
+      159 |   await page.getByTestId('undo-button').click(); await expect.poll(() => pixels(page)).not.toEqual(drawn);
+      160 | });
+      161 |
+        at D:\PixiBun\tests\production\workspaceConsistency.spec.ts:158:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3116\workspaceConsistency-compi-ae77f-tivation-clears-its-preview-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3116\workspaceConsistency-compi-ae77f-tivation-clears-its-preview-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3116\workspaceConsistency-compi-ae77f-tivation-clears-its-preview-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3116\workspaceConsistency-compi-ae77f-tivation-clears-its-preview-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [webkit] › tests\production\workspaceConsistency.spec.ts:88:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range 
+    [webkit] › tests\production\workspaceConsistency.spec.ts:127:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview 
+  37 passed (6.7m)

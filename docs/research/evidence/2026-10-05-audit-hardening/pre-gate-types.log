@@ -1,0 +1,2 @@
+tests/components/ModalWrapper.test.tsx(13,15): error TS2339: Property 'close' does not exist on type 'FireFunction & FireObject'.
+tests/components/ModalWrapper.test.tsx(16,15): error TS2339: Property 'close' does not exist on type 'FireFunction & FireObject'.

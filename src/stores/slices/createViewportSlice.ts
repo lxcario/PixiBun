@@ -8,6 +8,7 @@ import { studioEvents } from '@/lib/events/studioEvents';
 
 export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get) => ({
   currentProjectId: createId('proj'),
+  projectCreatedAt: Date.now(),
   canvasWidth: 32,
   canvasHeight: 32,
   projectName: 'Untitled Sprite',

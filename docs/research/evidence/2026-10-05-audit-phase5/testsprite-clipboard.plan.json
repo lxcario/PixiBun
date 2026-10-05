@@ -1,0 +1,24 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "priority": "p1",
+  "name": "Co-draw copying awaits completion and selects the code when clipboard access fails",
+  "description": "Controlled Clipboard API outcomes verify application feedback without asserting physical OS clipboard interoperability. Use real LAN invite generation; unsupported WebRTC or unavailable outcome controls must report BLOCKED.",
+  "planSteps": [
+    { "type": "action", "description": "Open Studio in an isolated desktop context." },
+    { "type": "action", "description": "Open the Co-Draw session dialog from Studio options." },
+    { "type": "action", "description": "Generate a Local LAN invite code using real browser WebRTC." },
+    { "type": "assertion", "description": "A nonempty read-only invite code is present. Capture its full value." },
+    { "type": "action", "description": "Configure navigator.clipboard.writeText to reject with NotAllowedError. If outcome controls are unavailable, report BLOCKED." },
+    { "type": "action", "description": "Click Copy." },
+    { "type": "assertion", "description": "Manual-copy feedback appears and Copied success is absent. The code field is focused and selects the full captured value." },
+    { "type": "action", "description": "Configure writeText to return a controlled pending promise that captures its input." },
+    { "type": "action", "description": "Click Copy again." },
+    { "type": "assertion", "description": "Copying remains pending with a disabled button and no success before resolution. The captured input exactly equals the full invite code." },
+    { "type": "action", "description": "Resolve the pending clipboard write." },
+    { "type": "assertion", "description": "Invite code copied is announced only after resolution and the previous error disappears." },
+    { "type": "action", "description": "Close the dialog." },
+    { "type": "action", "description": "Reopen the Co-Draw dialog." },
+    { "type": "assertion", "description": "No stale copied status remains. Existing artwork and saved identity are unchanged." }
+  ]
+}

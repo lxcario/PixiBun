@@ -59,21 +59,15 @@ export function sourceContracts(root) {
   visit(source);
   if (!tools.length) throw Error('No canonical tools found');
   const keyboard = read('src/hooks/studio/useStudioKeyboard.ts');
-  const keyboardAst = ts.createSourceFile('keyboard.ts', keyboard, ts.ScriptTarget.Latest, true);
-  const cases = new Map();
-  function collectCases(node) {
-    if (ts.isCaseClause(node) && ts.isStringLiteral(node.expression)) cases.set(node.expression.text, node.getText(keyboardAst));
-    ts.forEachChild(node, collectCases);
+  const commands = read('src/config/studioCommands.ts');
+  // Tool commands now derive from the inventory rather than a second switch.
+  // Gesture execution is verified by unit and compiled browser tests separately.
+  if (!commands.includes('CANONICAL_TOOLS.map(tool =>') || !commands.includes('shortcut: tool.shortcut') ||
+      !commands.includes('setActiveTool(tool.id)') || !keyboard.includes('studioCommandForKey(e)') ||
+      !keyboard.includes('command.action()') || keyboard.includes('state.setActiveTool(')) {
+    throw Error('Keyboard tool commands must use the canonical command registry');
   }
-  collectCases(keyboardAst);
-  for (const tool of tools) {
-    const key = tool.shortcut.replace(/^Shift\s*\+\s*/i, '').toLowerCase();
-    const clause = cases.get(key);
-    if (!clause?.includes(`'${tool.id}'`) || (tool.shortcut.startsWith('Shift') && !clause.includes('e.shiftKey'))) {
-      throw Error(`Keyboard mapping disagrees with tool inventory: ${tool.id} / ${tool.shortcut}`);
-    }
-  }
-  if (!/case 'e':\s*state\.setActiveTool\('eraser'\)/.test(keyboard) || !/case ' ':/.test(keyboard)) throw Error('E/Space shortcut contract changed');
+  if (!/case ' ':/.test(keyboard)) throw Error('Space shortcut contract changed');
   if (read('src/components/layout/AtelierRail.tsx').includes('Spritesheet (E)')) throw Error('Export must not advertise the Eraser shortcut');
   const exports = [
     { format: 'WebM', source: 'src/lib/export/webmEncoder.ts', implementation: 'recordCanvasVideo', alpha: 'not-guaranteed' },

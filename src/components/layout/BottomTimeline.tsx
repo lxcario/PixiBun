@@ -6,7 +6,8 @@ import { useStudioStore } from '@/stores/studioStore';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { LoopMode } from '@/types/animation';
-import { compositeFrame } from '@/lib/render/compositor';
+import { drawFramePreview, frameVisualKey, previewSize, retainFramePreview } from '@/lib/render/framePreview';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 import { TagManagerModal } from '@/components/modals/TagManagerModal';
 import { useCoDrawStatus } from '@/hooks/useCoDrawStatus';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
@@ -19,46 +20,42 @@ interface FrameThumbnailProps {
 }
 
 const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frameIndex }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const holder = useRef<HTMLDivElement>(null);
+  // Server and first client render must agree before browser capability checks.
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') { setVisible(true); return; }
+    if (!holder.current) return;
+    const observer = new IntersectionObserver(entries => setVisible(entries[0].isIntersecting), { rootMargin: '80px' });
+    observer.observe(holder.current);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={holder} className="w-6 h-6 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center overflow-hidden">
+    {visible && <FramePreviewCanvas frameIndex={frameIndex} maxSize={24} testId={`frame-thumbnail-${frameIndex}`} />}
+  </div>;
+};
+
+const FramePreviewCanvas: React.FC<{ frameIndex: number; maxSize: number; testId?: string }> = ({ frameIndex, maxSize, testId }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasWidth = useStudioStore((state) => state.canvasWidth);
   const canvasHeight = useStudioStore((state) => state.canvasHeight);
-  const frames = useStudioStore((state) => state.frames);
-  const bufferVersion = useStudioStore((state) => state.bufferVersion);
+  const visualKey = useStudioStore((state) => frameVisualKey(state.frames[frameIndex]));
   const currentProjectId = useStudioStore((state) => state.currentProjectId);
-
+  const size = previewSize(canvasWidth, canvasHeight, maxSize);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    ctx.imageSmoothingEnabled = false;
-
-    const comp = compositeFrame(frames, frameIndex, canvasWidth, canvasHeight);
-    if (comp) {
-      ctx.drawImage(comp, 0, 0);
-    }
-  }, [
-    frameIndex,
-    canvasWidth,
-    canvasHeight,
-    frames,
-    currentProjectId,
-    bufferVersion,
-  ]);
-
-  return (
-    <div className="w-6 h-6 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        data-testid={`frame-thumbnail-${frameIndex}`}
-        className="w-full h-full pixelated"
-      />
-    </div>
-  );
+    let release: (() => void) | undefined;
+    try {
+      release = reserveMemory(size.width * size.height * 4, 'Frame preview');
+      canvas.width = size.width; canvas.height = size.height;
+      drawFramePreview(canvas, useStudioStore.getState().frames[frameIndex], canvasWidth, canvasHeight);
+      return retainFramePreview(canvas);
+    } catch {
+      canvas.width = 0; canvas.height = 0;
+    } finally { release?.(); }
+  }, [frameIndex, canvasWidth, canvasHeight, visualKey, currentProjectId, size.width, size.height]);
+  return <canvas ref={canvasRef} width={0} height={0} data-testid={testId} className="max-w-full max-h-full pixelated" />;
 };
 
 interface FrameScrubPreviewProps {
@@ -69,25 +66,6 @@ interface FrameScrubPreviewProps {
 }
 
 const FrameScrubPreview: React.FC<FrameScrubPreviewProps> = ({ frameIndex, duration, layerCount, anchor }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const canvasWidth = useStudioStore((state) => state.canvasWidth);
-  const canvasHeight = useStudioStore((state) => state.canvasHeight);
-  const frames = useStudioStore((state) => state.frames);
-  const bufferVersion = useStudioStore((state) => state.bufferVersion);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    ctx.imageSmoothingEnabled = false;
-    const comp = compositeFrame(frames, frameIndex, canvasWidth, canvasHeight);
-    if (comp) {
-      ctx.drawImage(comp, 0, 0);
-    }
-  }, [frameIndex, canvasWidth, canvasHeight, frames, bufferVersion]);
-
   return (
     <div
       role="tooltip"
@@ -95,12 +73,7 @@ const FrameScrubPreview: React.FC<FrameScrubPreviewProps> = ({ frameIndex, durat
       className="fixed z-[100] pointer-events-none flex flex-col items-center gap-1.5 p-2 bg-[var(--surface-3)] border-2 border-[var(--desk-border)] rounded-[var(--radius-md)] shadow-[0_8px_20px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 duration-100 whitespace-nowrap"
     >
       <div className="w-24 h-24 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] overflow-hidden flex items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          width={canvasWidth}
-          height={canvasHeight}
-          className="w-full h-full object-contain pixelated"
-        />
+        <FramePreviewCanvas frameIndex={frameIndex} maxSize={96} />
       </div>
       <div className="flex items-center justify-between w-full px-0.5 text-[10px] font-mono text-[var(--text-heading)]">
         <span className="text-[var(--accent-gold)] font-bold">Frame #{frameIndex + 1}</span>

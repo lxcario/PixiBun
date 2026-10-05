@@ -1,0 +1,34 @@
+[WebServer] (node:20108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 21 tests using 1 worker
+
+(node:14860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (2.1s)
+  ok  2 [chromium] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (3.3s)
+  ok  3 [chromium] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (2.3s)
+  ok  4 [chromium] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (4.8s)
+  ok  5 [chromium] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (1.9s)
+  ok  6 [chromium] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (4.5s)
+  ok  7 [chromium] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (3.7s)
+(node:17456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  8 [firefox] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (6.2s)
+  ok  9 [firefox] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (5.2s)
+  ok 10 [firefox] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (4.7s)
+  ok 11 [firefox] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (7.5s)
+  ok 12 [firefox] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (4.0s)
+  ok 13 [firefox] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (7.8s)
+  ok 14 [firefox] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (5.8s)
+(node:9536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 15 [webkit] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (5.7s)
+  ok 16 [webkit] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (7.3s)
+  ok 17 [webkit] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (5.8s)
+  ok 18 [webkit] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (12.6s)
+  ok 19 [webkit] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (3.7s)
+  ok 20 [webkit] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (9.9s)
+  ok 21 [webkit] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (16.5s)
+
+  21 passed (2.2m)

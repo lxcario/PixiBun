@@ -1,0 +1,61 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "Gallery rename contains keyboard input and shares artwork save version ownership",
+  "description": "Active/inactive mouse and keyboard renames preserve saved pixels; a real stale tab retains its local work and refuses overwrite.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Use a fresh isolated desktop context. Open Studio, wait for restoration, draw one dot at (4,4), Save and wait for Changes saved. Download/decode a backup and retain its raster bytes and project identity."
+    },
+    {
+      "type": "action",
+      "description": "Open File → Projects, choose Rename artwork on the current project. Type My, Space, sprite. Press Escape in that input."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the input accepted My sprite including its space, the gallery did not open its card, and Escape cancelled only rename while keeping the gallery visible."
+    },
+    {
+      "type": "action",
+      "description": "Choose Rename artwork again, enter My sprite and click Save title. Close the gallery. Draw another dot at (7,7), Save and wait for Changes saved, then reload."
+    },
+    {
+      "type": "action",
+      "description": "Download Export → Project Backup → Download project backup and decode the Body PNG. Use the supported download fallback if needed. Inspect actual downloaded metadata/pixels, not a private application store. Report unavailable file/pixel inspection as BLOCKED or INCONCLUSIVE, never a visibility-only pass."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the reopened name is My sprite, both dots are preserved, original raster bytes outside (7,7) are unchanged, and no conflict warning was manufactured by the local rename."
+    },
+    {
+      "type": "action",
+      "description": "Open Projects, rename My sprite to Keyboard title by pressing Enter in the title input. Verify the gallery stays visible after submission. Choose New Drawing and Save. Reopen Projects, rename the now-inactive Keyboard title to Inactive title with Enter."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify renaming the inactive project leaves the current blank drawing unchanged. Open Inactive title and verify its saved raster bytes include both original dots."
+    },
+    {
+      "type": "action",
+      "description": "Close any dialog. Open a second tab in the SAME isolated browser context and origin, wait for Studio restoration, and verify it has the same stored drawing. Keep this second tab open. In the first tab, rename the active drawing First tab through Projects and wait for the completed rename."
+    },
+    {
+      "type": "action",
+      "description": "In the second tab draw a new dot at (8,8), then attempt gallery rename to Second tab using Save title."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the second tab reports title save failure and retains its local new dot. Closing the gallery exposes the real external-conflict warning with Save a copy. Do not silently refresh its expected storage version or overwrite First tab."
+    },
+    {
+      "type": "action",
+      "description": "Reload the first tab and download/decode its backup."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the stored name is First tab and its raster bytes still contain (4,4)/(7,7) but not the second tab dot (8,8). Missing shared-context tab support must be reported BLOCKED, not skipped."
+    }
+  ]
+}

@@ -10,6 +10,8 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { clipRangeError, MAX_PROJECT_CLIPS, metadataNameError } from '@/lib/project/metadataAdmission';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
+import { clipsAfterFrameDuplication, clipsAfterFrameReorder } from '@/lib/animation/clipFrameMutations';
+import { MAX_PALETTE_BINDINGS } from '@/lib/color/paletteSemantics';
 
 function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number): AnimationClip | null {
   const startFrame = clip.startFrame - (removedIndex < clip.startFrame ? 1 : 0);
@@ -165,16 +167,29 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       return null;
     }
 
+    const newFrameId = createId('frame');
+    let addedPaletteBytes = 0;
+    const duplicatedPalettes = currentStore.palettes.map(palette => {
+      if (!palette.semantics) return palette;
+      const copies = palette.semantics.bindings.filter(binding => binding.frameId === srcFrame.id)
+        .map(binding => ({ ...binding, id: createId('binding'), frameId: newFrameId }));
+      addedPaletteBytes += JSON.stringify(copies).length * 2;
+      return { ...palette, semantics: { ...palette.semantics, bindings: [...palette.semantics.bindings, ...copies] } };
+    });
+    if (duplicatedPalettes.some(palette => (palette.semantics?.bindings.length ?? 0) > MAX_PALETTE_BINDINGS)) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Duplicating this frame would exceed the palette binding limit. Reduce its bindings before duplicating.' });
+      return null;
+    }
     if (!pushStructuralHistoryStep('Duplicate Frame', {
       opKind: 'duplicate-frame', affectedLayerIds: [], redoBufferCount: incomingLayerCount,
       addedLayerCount: incomingLayerCount, addedFrameCount: 1,
+      includePalettes: true, addedMetadataBytes: addedPaletteBytes,
     })) return null;
     let result: { frameId: string; layerIds: string[] } | null = null;
     set(state => {
       const srcFrame = state.frames[frameIndex];
       if (!srcFrame) return;
 
-      const newFrameId = createId('frame');
       const duplicatedLayers = srcFrame.layers.map(l => ({
         ...l,
         id: createId('layer'),
@@ -182,6 +197,18 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
           ? { ...structuredClone(current(l.effect)), id: createId('effect'), updatedAt: Date.now() }
           : undefined,
       }));
+      const layerIds = new Map(srcFrame.layers.map((layer, index) => [layer.id, duplicatedLayers[index].id]));
+      for (const layer of duplicatedLayers) {
+        if (layer.research) {
+          const recipe = structuredClone(current(layer.research));
+          if (recipe.source.frameId === srcFrame.id) {
+            recipe.source.frameId = newFrameId;
+            recipe.source.layerId = layerIds.get(recipe.source.layerId) ?? recipe.source.layerId;
+            if (recipe.source.normalLayerId) recipe.source.normalLayerId = layerIds.get(recipe.source.normalLayerId) ?? recipe.source.normalLayerId;
+          }
+          layer.research = recipe;
+        }
+      }
 
       const duplicate: AnimationFrame = {
         ...srcFrame,
@@ -210,6 +237,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
             layer.opacity = 1;
             layer.blendMode = 'source-over';
             layer.effect = undefined;
+            layer.research = undefined;
           } else {
             entry.ctx.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
           }
@@ -218,6 +246,8 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       }
 
       state.frames.splice(frameIndex + 1, 0, duplicate);
+      state.clips = clipsAfterFrameDuplication(state.clips, frameIndex);
+      state.palettes = duplicatedPalettes;
       state.activeFrameIndex = frameIndex + 1;
       state.activeLayerId = duplicatedLayers[0].id;
       result = { frameId: newFrameId, layerIds: duplicatedLayers.map(layer => layer.id) };
@@ -233,6 +263,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
     if (!pushStructuralHistoryStep('Delete Frame', {
       opKind: 'delete-frame',
       affectedLayerIds: frameToDelete.layers.map(l => l.id),
+      includePalettes: true,
     })) return;
     set(state => {
       if (state.frames.length <= 1) return;
@@ -241,6 +272,9 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       const removedFrame = state.frames[frameIndex];
       deleteBuffers(removedFrame.layers.map(l => l.id));
       state.frames.splice(frameIndex, 1);
+      for (const palette of state.palettes) {
+        if (palette.semantics) palette.semantics.bindings = palette.semantics.bindings.filter(binding => binding.frameId !== removedFrame.id);
+      }
       state.clips = state.clips
         .map((clip) => remapClipAfterFrameDeletion(clip, frameIndex))
         .filter((clip): clip is AnimationClip => clip !== null);
@@ -274,12 +308,17 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
   reorderFrames: (startIndex, endIndex) => {
     const frameCount = get().frames.length;
     if (
-      startIndex < 0 ||
+      !Number.isInteger(startIndex) || !Number.isInteger(endIndex) || startIndex < 0 ||
       startIndex >= frameCount ||
       endIndex < 0 ||
       endIndex >= frameCount ||
       startIndex === endIndex
     ) return;
+    const remapped = clipsAfterFrameReorder(get().clips, startIndex, endIndex);
+    if (!remapped.ok) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: `Moving this frame would split the "${remapped.clipName}" clip. Adjust its range before moving the frame.` });
+      return;
+    }
     if (!pushStructuralHistoryStep('Reorder Frames', { opKind: 'reorder-frames', affectedLayerIds: [] })) return;
     set(state => {
       // Bounds guard: out-of-range indices would splice `undefined` into frames
@@ -293,6 +332,7 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       }
       const [removed] = state.frames.splice(startIndex, 1);
       state.frames.splice(endIndex, 0, removed);
+      state.clips = remapped.clips;
       activateFrame(state, endIndex);
       state.isDirty = true;
       state.editRevision += 1;

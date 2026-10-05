@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/memoryPaths.test.tsx (10 tests | 1 failed) 130ms
+     × bounds portable encoding to two and preserves output order 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/memoryPaths.test.tsx > bounded memory paths > bounds portable encoding to two and preserves output order
+TypeError: Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.
+ ❯ FileReader.readAsDataURL node_modules/happy-dom/src/file/FileReader.ts:81:9
+ ❯ Array.<anonymous> src/lib/project/serialize.ts:87:14
+     85|         reject(new Error('Encoded layer could not be read.'));
+     86|       };
+     87|       reader.readAsDataURL(blob);
+       |              ^
+     88|     }, 'image/png');
+     89|   });
+ ❯ tests/memoryPaths.test.tsx:44:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 82 passed (83)
+   Start at  18:31:58
+   Duration  5.43s (transform 4.19s, setup 258ms, import 10.88s, tests 2.77s, environment 4.64s)
+

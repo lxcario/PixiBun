@@ -5,6 +5,17 @@ import { ModalWrapper } from '@/components/ui/ModalWrapper';
 
 describe('ModalWrapper component accessibility & focus management', () => {
   afterEach(cleanup);
+  it('ignores a queued close after reopening but acknowledges a native close of the current dialog', () => {
+    const close = vi.fn();
+    render(<ModalWrapper isOpen onClose={close} title="Current dialog"><button>Continue</button></ModalWrapper>);
+    const dialog = screen.getByRole('dialog') as HTMLDialogElement;
+    expect(dialog.open).toBe(true);
+    fireEvent(dialog, new Event('close'));
+    expect(close).not.toHaveBeenCalled();
+    dialog.removeAttribute('open');
+    fireEvent(dialog, new Event('close'));
+    expect(close).toHaveBeenCalledOnce();
+  });
   it('renders modal content when open', () => {
     const handleClose = vi.fn();
     render(

@@ -22,6 +22,11 @@ jobs:
           github.event.workflow_run.head_repository.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Queue order is not commit order. The branch checks below decide eligibility.
+    concurrency:
+      group: vercel-production
+      queue: max
+      cancel-in-progress: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,17 +48,25 @@ jobs:
         run: |
           if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "has_creds=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=Vercel CLI Skipped::VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is not configured in GitHub Repository Secrets. Skipping CLI deploy. (If linked via Vercel GitHub App, Vercel automatically deploys on push)."
+            echo "::notice title=Vercel CLI Skipped::Production credentials are incomplete. Skipping this CLI deployment. Any Vercel Git integration is configured separately and is not gated by this workflow."
           else
             echo "has_creds=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install Vercel CLI
+      - name: Verify current production candidate
+        id: candidate
         if: steps.check_creds.outputs.has_creds == 'true'
+        run: node scripts/checkDeploymentCandidate.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOY_CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Install Vercel CLI
+        if: steps.check_creds.outputs.has_creds == 'true' && steps.candidate.outputs.current == 'true'
         run: npm install --global vercel@50.34.0
 
       - name: Pull Vercel Environment Information
-        if: steps.check_creds.outputs.has_creds == 'true'
+        if: steps.check_creds.outputs.has_creds == 'true' && steps.candidate.outputs.current == 'true'
         run: vercel pull --yes --environment=production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -61,7 +74,7 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build Project Artifacts
-        if: steps.check_creds.outputs.has_creds == 'true'
+        if: steps.check_creds.outputs.has_creds == 'true' && steps.candidate.outputs.current == 'true'
         run: vercel build --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -69,8 +82,16 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_GIT_COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
 
+      - name: Recheck candidate before production deployment
+        id: promotion
+        if: steps.check_creds.outputs.has_creds == 'true' && steps.candidate.outputs.current == 'true'
+        run: node scripts/checkDeploymentCandidate.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOY_CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+
       - name: Deploy Project Artifacts to Vercel
-        if: steps.check_creds.outputs.has_creds == 'true'
+        if: steps.check_creds.outputs.has_creds == 'true' && steps.candidate.outputs.current == 'true' && steps.promotion.outputs.current == 'true'
         run: vercel deploy --prebuilt --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

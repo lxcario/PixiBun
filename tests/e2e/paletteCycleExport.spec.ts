@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { inflateSync } from 'node:zlib';
 import { apngTiming, gifHolds } from '../helpers/gameAnimationDownload';
 
-test('downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GIF', async ({ page }, testInfo) => {
+for (const rate of [3, 5, 8, 15]) test(`downloads two-second fire-only cycles at ${rate} FPS as APNG and GIF`, async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.addInitScript(() => localStorage.setItem('pixibun:tool-previews-disabled', 'true'));
   await page.goto('/studio');
@@ -48,7 +48,7 @@ test('downloads two-second fire-only cycles at 3, 5, 8 and 15 FPS as APNG and GI
   });
   const pixels = () => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
   const original = await pixels();
-  for (const rate of [3, 5, 8, 15]) for (const format of ['apng', 'gif'] as const) {
+  for (const format of ['apng', 'gif'] as const) {
     await page.getByTestId('export-button').click();
     await dialog.getByTestId('export-tab-palette-cycle').click();
     await dialog.getByRole('button', { name: `${rate} FPS`, exact: true }).click();

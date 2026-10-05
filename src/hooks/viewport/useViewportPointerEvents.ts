@@ -13,6 +13,7 @@ import { DEFAULT_HISTORY_MAX_BYTES } from '@/lib/engine/historyEngine';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { compositeFrame } from '@/lib/render/compositor';
 import type { HistoryStep } from '@/types/canvas';
+import { resolveFrameLayerTargets } from '@/lib/project/frameLayerTargets';
 
 import { useBrushPointerHandler } from './useBrushPointerHandler';
 import { useSelectionPointerHandler } from './useSelectionPointerHandler';
@@ -41,6 +42,8 @@ export interface UseViewportPointerEventsProps {
   cursorCoordsRef: React.MutableRefObject<Point | null>;
   currentStrokeSnapshotRef: React.MutableRefObject<HistoryStep | null>;
   drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean) => void;
+  drawProvisionalPoint?: (point: Point, color: string, isErase: boolean) => (() => void) | undefined;
+  finishBrushBatch?: () => void;
   captureSnapshot: (desc: string) => void;
   commitSnapshot: () => void;
   discardSnapshot?: () => void;
@@ -86,6 +89,8 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
   const brushHandler = useBrushPointerHandler({
     drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
+    drawProvisionalPoint: props.drawProvisionalPoint,
+    finishBrushBatch: props.finishBrushBatch,
     lastPoint: props.lastPoint,
     setLastPoint: props.setLastPoint,
   });
@@ -203,12 +208,13 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       if (selectionMask && !selectionMask[coords.y * props.canvasWidth + coords.x]) return;
 
       const allFrames = state.tools.eraseColorAllFrames;
-      const layerIndex = currentFrame.layers.findIndex((layer) => layer.id === activeLayerId);
-      const targets = allFrames
-        ? state.frames
-            .map((frame) => frame.layers[layerIndex] || frame.layers.find((layer) => layer.name === currentLayer.name))
-            .filter((layer): layer is import('@/types/canvas').Layer => Boolean(layer && !layer.locked))
-        : [currentLayer];
+      const resolved = allFrames ? resolveFrameLayerTargets(state.frames, state.activeFrameIndex, activeLayerId)
+        : { ok: true as const, layers: [currentLayer] };
+      if (!resolved.ok) {
+        studioEvents.emit('pixibun:toast', { type: 'error', message: resolved.message });
+        return;
+      }
+      const targets = resolved.layers.filter(layer => !layer.locked);
       if (allFrames && targets.length * props.canvasWidth * props.canvasHeight * 4 > DEFAULT_HISTORY_MAX_BYTES / 2) {
         studioEvents.emit('pixibun:toast', { type: 'error', message: 'Too many frame pixels for one undoable color erase. Use This frame.' });
         return;
@@ -250,10 +256,7 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
           draft.isDirty = true;
           draft.editRevision += 1;
         });
-        const lockedCount = state.frames.filter((frame) => {
-          const l = frame.layers[layerIndex] || frame.layers.find((layer) => layer.name === currentLayer.name);
-          return l?.locked;
-        }).length;
+        const lockedCount = resolved.layers.filter(layer => layer.locked).length;
         if (lockedCount > 0) studioEvents.emit('pixibun:toast', {
           type: 'default', message: `Skipped ${lockedCount} locked frame layer${lockedCount === 1 ? '' : 's'}.`,
         });

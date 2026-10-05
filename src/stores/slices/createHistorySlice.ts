@@ -117,6 +117,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
       state.activeClipId = null;
       state.isPlaying = false;
       state.currentProjectId = projectId || createId('proj');
+      state.projectCreatedAt = projectData.createdAt ?? Date.now();
       state.editRevision += 1;
       if (projectData.name) state.projectName = projectData.name;
       if (projectData.width) state.canvasWidth = projectData.width;
@@ -169,6 +170,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
     const initialFrameId = createId('frame');
     set(state => {
       state.currentProjectId = newId || createId('proj');
+      state.projectCreatedAt = Date.now();
       state.projectName = 'Untitled Sprite';
       state.canvasWidth = 32;
       state.canvasHeight = 32;

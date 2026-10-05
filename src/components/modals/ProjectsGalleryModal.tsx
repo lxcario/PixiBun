@@ -7,11 +7,10 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import {
   listAllProjects,
   duplicateProject,
-  renameProject,
+  getStoredProjectVersion,
   deleteProject,
   type StoredProject,
 } from '@/lib/storage/db';
-import { useStudioStore } from '@/stores/studioStore';
 import { MAX_PROJECT_NAME_LENGTH, projectNameError } from '@/lib/project/metadataAdmission';
 import { studioEvents } from '@/lib/events/studioEvents';
 
@@ -20,6 +19,7 @@ interface ProjectsGalleryModalProps {
   onClose: () => void;
   currentProjectId: string;
   onOpenProject: (projectId: string) => Promise<void>;
+  onRenameProject: (projectId: string, name: string, expectedVersion: string) => Promise<boolean>;
   onNewProject: (skipCurrentSave?: boolean) => Promise<boolean>;
   onOpenImport?: () => void;
 }
@@ -29,6 +29,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   onClose,
   currentProjectId,
   onOpenProject,
+  onRenameProject,
   onNewProject,
   onOpenImport,
 }) => {
@@ -39,8 +40,8 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [storageError, setStorageError] = useState<string | null>(null);
-
-  const setProjectName = useStudioStore((s) => s.setProjectName);
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -68,6 +69,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
   const handleStartRename = (project: StoredProject) => {
     setEditingId(project.id);
     setEditingName(project.name);
+    setRenameError(null);
   };
 
   const handleSaveRename = async (id: string) => {
@@ -78,16 +80,24 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
       return;
     }
 
-    const renamed = await renameProject(id, trimmed);
-    if (!renamed) {
-      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Project could not be renamed. Its saved data was left unchanged.' });
-      return;
+    if (renaming) return;
+    const project = projects.find(candidate => candidate.id === id);
+    if (!project) return;
+    setRenaming(true);
+    setRenameError(null);
+    try {
+      const renamed = await onRenameProject(id, trimmed, getStoredProjectVersion(project));
+      if (!renamed) {
+        setRenameError('The title could not be saved. Your drawing is still open; check save warnings or refresh the gallery before trying again.');
+        return;
+      }
+      setEditingId(null);
+      await fetchProjects();
+    } catch (error) {
+      setRenameError(error instanceof Error ? error.message : 'The title could not be saved. Try again or export a backup.');
+    } finally {
+      setRenaming(false);
     }
-    if (id === currentProjectId) {
-      setProjectName(trimmed);
-    }
-    setEditingId(null);
-    void fetchProjects();
   };
 
   const handleDuplicate = async (project: StoredProject, e: React.MouseEvent) => {
@@ -231,8 +241,9 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                   key={project.id}
                   onClick={() => handleSelectProject(project)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleSelectProject(project);
+                    if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      void handleSelectProject(project);
                     }
                   }}
                   role="button"
@@ -273,7 +284,8 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                       <form
                         onSubmit={(e) => {
                           e.preventDefault();
-                          handleSaveRename(project.id);
+                          e.stopPropagation();
+                          void handleSaveRename(project.id);
                         }}
                         className="flex items-center gap-1"
                       >
@@ -281,18 +293,27 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                           type="text"
                           maxLength={MAX_PROJECT_NAME_LENGTH}
                           value={editingName}
+                          disabled={renaming}
+                          aria-label="Artwork title"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDownCapture={(e) => {
+                            if (e.key === 'Escape') {
+                              e.preventDefault(); e.stopPropagation();
+                              if (!renaming) { setEditingId(null); setRenameError(null); }
+                            }
+                          }}
+                          onKeyDown={(e) => e.stopPropagation()}
                           ref={(input) => input?.focus()}
                           onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Escape') setEditingId(null);
-                          }}
                           className="w-full px-1.5 py-0.5 bg-[#140d1f] border border-[#f0be7c] rounded-[2px] text-xs font-mono text-[var(--text-heading)] outline-none"
                         />
                         <button
                           type="submit"
+                          onClick={(e) => e.stopPropagation()}
                           className="px-1.5 py-0.5 text-xs text-[#7fae6b] font-bold"
                           title="Save title"
                           aria-label="Save title"
+                          disabled={renaming}
                         >
                           ✓
                         </button>
@@ -319,6 +340,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                         </button>
                       </div>
                     )}
+                    {editingId === project.id && renameError && <p role="alert" className="text-xs text-[var(--text-body)] mt-1">{renameError}</p>}
                   </div>
 
                   {/* Metadata Chips */}

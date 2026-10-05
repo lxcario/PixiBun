@@ -10,6 +10,7 @@ import { clearPersistedRevisions } from '@/lib/project/persistenceRevisions';
 import { validateProjectFile } from '@/lib/project/schema';
 import { MAX_PROJECT_NAME_LENGTH, projectNameError } from '@/lib/project/metadataAdmission';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
+import { mapBounded } from '@/lib/safety/boundedWork';
 
 export interface StoredProject {
   /** Opaque storage identity, independent of artwork timestamps and edit revisions. */
@@ -81,8 +82,8 @@ export class PixiBunDatabase extends Dexie {
       diagnostics: 'id, kind, timestamp',
     }).upgrade(async (tx) => {
       await tx.table('projects').toCollection().modify((p: StoredProject) => {
-        if (!p.createdAt) {
-          p.createdAt = p.updatedAt || Date.now();
+        if (p.createdAt == null) {
+          p.createdAt = p.updatedAt ?? Date.now();
         }
       });
     });
@@ -302,9 +303,9 @@ export async function autoSaveWorkspaceDetailed(
     releaseBytes = reserveMemory(layerBlobs?.reduce((sum, row) => sum + row.blob.size, 0) ?? 0, 'Autosave storage bytes');
     // Native byte conversion completes before the transaction; its version check still
     // compares against the exact snapshot hydrated by this tab, never a refreshed base.
-    const encodedBlobs = layerBlobs === undefined ? undefined : await Promise.all(layerBlobs.map(async row => ({
+    const encodedBlobs = layerBlobs === undefined ? undefined : await mapBounded(layerBlobs, async row => ({
       ...row, blob: await row.blob.arrayBuffer(), blobType: row.blob.type,
-    })));
+    }));
     if (!db.isOpen()) await db.open();
     await db.transaction('rw', db.projects, db.layerBlobs, async () => {
       const existing = await db.projects.get(projectId);
@@ -314,9 +315,11 @@ export async function autoSaveWorkspaceDetailed(
           (existing ? getStoredProjectVersion(existing) : null) !== expectedStorageVersion) {
         throw new ProjectSaveConflict();
       }
-      const createdAt = existing?.createdAt || validProject.createdAt || Date.now();
+      const storedCreatedAt = existing?.createdAt;
+      const createdAt = storedCreatedAt !== undefined && Number.isSafeInteger(storedCreatedAt) && storedCreatedAt >= 0
+        ? storedCreatedAt : validProject.createdAt;
       const now = Date.now();
-      const dataJson = JSON.stringify(validProject);
+      const dataJson = JSON.stringify({ ...validProject, createdAt });
       await db.projects.put({
         id: projectId,
         name,
@@ -346,12 +349,21 @@ export async function autoSaveWorkspaceDetailed(
           }
         }
 
-        const existingRecords = await db.layerBlobs.where('projectId').equals(projectId).toArray();
-        const existingMap = new Map<string, StoredLayerBlob>();
+        // Read index keys, never unchanged PNG payloads. Both cursors have the same
+        // stable index/primary-key order inside this readwrite transaction.
+        const indexed = db.layerBlobs.where('[projectId+layerId+frameIndex]').between(
+          [projectId], [projectId, []]);
+        const [keys, primaryKeys, allIds] = await Promise.all([
+          indexed.keys(), indexed.primaryKeys(), db.layerBlobs.where('projectId').equals(projectId).primaryKeys(),
+        ]);
+        const indexedIds = new Set(primaryKeys);
+        const existingMap = new Map<string, { id: number }>();
         const idsToDelete: number[] = [];
-
-        for (const rec of existingRecords) {
-          const k = `${rec.layerId}::${rec.frameIndex}`;
+        for (const id of allIds) if (!indexedIds.has(id)) idsToDelete.push(id);
+        for (let index = 0; index < keys.length; index++) {
+          const [, layerId, frameIndex] = keys[index] as unknown as [string, string, number];
+          const rec = { id: primaryKeys[index] };
+          const k = `${layerId}::${frameIndex}`;
           if (!activeKeySet.has(k)) {
             if (rec.id !== undefined) idsToDelete.push(rec.id);
           } else {
@@ -560,13 +572,14 @@ export async function duplicateProject(id: string, newName?: string): Promise<St
 }
 
 // Rename an existing project
-export async function renameProject(id: string, newName: string): Promise<boolean> {
+export async function renameProject(id: string, newName: string, expectedStorageVersion?: string): Promise<boolean> {
   if (projectNameError(newName)) return false;
   try {
     if (!db.isOpen()) await db.open();
     return await db.transaction('rw', db.projects, async () => {
       const project = await db.projects.get(id);
       if (!project) return false;
+      if (expectedStorageVersion !== undefined && getStoredProjectVersion(project) !== expectedStorageVersion) return false;
 
       const now = Date.now();
       const decoded = decodeAndValidateProject(project.dataJson);
