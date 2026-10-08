@@ -1,0 +1,329 @@
+[
+  {
+    "width": 1920,
+    "metrics": [
+      {
+        "text": "Play",
+        "label": null,
+        "height": 28,
+        "left": 16,
+        "right": 94,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 98,
+        "right": 126,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 130,
+        "right": 158,
+        "within": true
+      },
+      {
+        "text": "Repeat",
+        "label": null,
+        "height": 28,
+        "left": 162,
+        "right": 238.625,
+        "within": true
+      },
+      {
+        "text": "Preview1×▾",
+        "label": "Preview speed",
+        "height": 28,
+        "left": 259.625,
+        "right": 361.625,
+        "within": true
+      },
+      {
+        "text": "Onion Skin",
+        "label": null,
+        "height": 28,
+        "left": 503.390625,
+        "right": 600.875,
+        "within": true
+      },
+      {
+        "text": "⚙",
+        "label": "Onion skin settings",
+        "height": 28,
+        "left": 606.875,
+        "right": 634.875,
+        "within": true
+      },
+      {
+        "text": "Frame",
+        "label": "+ Frame",
+        "height": 28,
+        "left": 1607.796875,
+        "right": 1683.859375,
+        "within": true
+      },
+      {
+        "text": "Duplicate frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 1647.375,
+        "right": 1797.375,
+        "within": true
+      },
+      {
+        "text": "Move frame earlier",
+        "label": null,
+        "height": 27.984375,
+        "left": 1647.375,
+        "right": 1797.375,
+        "within": true
+      },
+      {
+        "text": "Move frame later",
+        "label": null,
+        "height": 27.984375,
+        "left": 1647.375,
+        "right": 1797.375,
+        "within": true
+      },
+      {
+        "text": "Delete frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 1647.375,
+        "right": 1797.375,
+        "within": true
+      },
+      {
+        "text": "▼Collapse",
+        "label": "Collapse Timeline",
+        "height": 28,
+        "left": 1819.375,
+        "right": 1904,
+        "within": true
+      }
+    ]
+  },
+  {
+    "width": 1280,
+    "metrics": [
+      {
+        "text": "Play",
+        "label": null,
+        "height": 28,
+        "left": 16,
+        "right": 94,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 98,
+        "right": 126,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 130,
+        "right": 158,
+        "within": true
+      },
+      {
+        "text": "Repeat",
+        "label": null,
+        "height": 28,
+        "left": 162,
+        "right": 238.625,
+        "within": true
+      },
+      {
+        "text": "Preview1×▾",
+        "label": "Preview speed",
+        "height": 28,
+        "left": 259.625,
+        "right": 361.625,
+        "within": true
+      },
+      {
+        "text": "Onion Skin",
+        "label": null,
+        "height": 28,
+        "left": 503.390625,
+        "right": 600.875,
+        "within": true
+      },
+      {
+        "text": "⚙",
+        "label": "Onion skin settings",
+        "height": 28,
+        "left": 606.875,
+        "right": 634.875,
+        "within": true
+      },
+      {
+        "text": "Frame",
+        "label": "+ Frame",
+        "height": 28,
+        "left": 967.796875,
+        "right": 1043.859375,
+        "within": true
+      },
+      {
+        "text": "Duplicate frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 1007.375,
+        "right": 1157.375,
+        "within": true
+      },
+      {
+        "text": "Move frame earlier",
+        "label": null,
+        "height": 27.984375,
+        "left": 1007.375,
+        "right": 1157.375,
+        "within": true
+      },
+      {
+        "text": "Move frame later",
+        "label": null,
+        "height": 27.984375,
+        "left": 1007.375,
+        "right": 1157.375,
+        "within": true
+      },
+      {
+        "text": "Delete frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 1007.375,
+        "right": 1157.375,
+        "within": true
+      },
+      {
+        "text": "▼Collapse",
+        "label": "Collapse Timeline",
+        "height": 28,
+        "left": 1179.375,
+        "right": 1264,
+        "within": true
+      }
+    ]
+  },
+  {
+    "width": 1024,
+    "metrics": [
+      {
+        "text": "Play",
+        "label": null,
+        "height": 28,
+        "left": 16,
+        "right": 94,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 98,
+        "right": 126,
+        "within": true
+      },
+      {
+        "text": "",
+        "label": null,
+        "height": 28,
+        "left": 130,
+        "right": 158,
+        "within": true
+      },
+      {
+        "text": "Repeat",
+        "label": null,
+        "height": 28,
+        "left": 162,
+        "right": 238.625,
+        "within": true
+      },
+      {
+        "text": "Preview1×▾",
+        "label": "Preview speed",
+        "height": 28,
+        "left": 259.625,
+        "right": 361.625,
+        "within": true
+      },
+      {
+        "text": "Onion Skin",
+        "label": null,
+        "height": 28,
+        "left": 503.390625,
+        "right": 600.875,
+        "within": true
+      },
+      {
+        "text": "⚙",
+        "label": "Onion skin settings",
+        "height": 28,
+        "left": 606.875,
+        "right": 634.875,
+        "within": true
+      },
+      {
+        "text": "Frame",
+        "label": "+ Frame",
+        "height": 28,
+        "left": 711.796875,
+        "right": 787.859375,
+        "within": true
+      },
+      {
+        "text": "Duplicate frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 751.375,
+        "right": 901.375,
+        "within": true
+      },
+      {
+        "text": "Move frame earlier",
+        "label": null,
+        "height": 27.984375,
+        "left": 751.375,
+        "right": 901.375,
+        "within": true
+      },
+      {
+        "text": "Move frame later",
+        "label": null,
+        "height": 27.984375,
+        "left": 751.375,
+        "right": 901.375,
+        "within": true
+      },
+      {
+        "text": "Delete frame",
+        "label": null,
+        "height": 27.984375,
+        "left": 751.375,
+        "right": 901.375,
+        "within": true
+      },
+      {
+        "text": "▼Collapse",
+        "label": "Collapse Timeline",
+        "height": 28,
+        "left": 923.375,
+        "right": 1008,
+        "within": true
+      }
+    ]
+  }
+]

@@ -8,6 +8,7 @@ import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { TactileButton } from '@/components/ui/TactileButton';
 import { captureMotionPart } from '@/lib/animation/pixiMotion';
+import { prepareMotionArtwork } from '@/lib/animation/prepareMotionArtwork';
 import { snapshotBuffers } from '@/lib/engine/bufferRegistry';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { isNormalLayer } from '@/lib/export/normalLayers';
@@ -19,7 +20,7 @@ export function ToolSettingsPanel() {
   const gradient = useWorkspaceStore((s) => s.gradient);
   const setGradient = useWorkspaceStore((s) => s.setGradient);
 
-  const handleCreateMotionPart = () => {
+  const handleCreateMotionPart = (wholeArtwork = false) => {
     try {
       const currentStore = useStudioStore.getState();
       const { canvasWidth, canvasHeight, activeFrameIndex, activeLayerId, frames, selection, selectionMask } = currentStore;
@@ -43,8 +44,8 @@ export function ToolSettingsPanel() {
         activeFrameIndex,
         activeLayerId,
         frames,
-        selection,
-        selectionMask,
+        selection: wholeArtwork ? null : selection,
+        selectionMask: wholeArtwork ? null : selectionMask,
         layerCanvas: entry.canvas,
       });
       if (part) {
@@ -130,9 +131,16 @@ export function ToolSettingsPanel() {
         <p className="text-[11px] text-[var(--text-muted)]">{state.selection
           ? 'Animate the selected artwork as one rigid part.'
           : 'Animate the active layer as one rigid part, or select an area first.'}</p>
-        <TactileButton variant="primary" data-testid="create-motion-part-btn" onClick={handleCreateMotionPart} className="w-full justify-center font-bold py-1.5">
+        <TactileButton variant="primary" data-testid="create-motion-part-btn" onClick={() => handleCreateMotionPart()} className="w-full text-xs font-semibold">
           <PixelIcon name="rotate" size={13} /><span>Create Motion Part</span>
         </TactileButton>
+        <p className="text-[11px] text-[var(--text-muted)]">This moves the active layer; other layers remain still.</p>
+        <TactileButton data-testid="create-visible-motion-btn" className="w-full text-xs" onClick={() => {
+          const result = prepareMotionArtwork();
+          if (result.ok) handleCreateMotionPart(true);
+          else studioEvents.emit('pixibun:toast', { type: 'error', message: result.reason });
+        }}>Merge artwork &amp; animate</TactileButton>
+        <p className="text-[11px] text-[var(--text-muted)]">Combines visible color layers first. Cancel, then Undo restores the layers.</p>
       </div>}
       {/* 1. Tool Identity Card */}
       <div className="flex items-center gap-2.5 p-2.5 rounded-[4px] bg-[var(--desk-surface-raised)]/60 border border-[var(--desk-border)] shadow-xs">

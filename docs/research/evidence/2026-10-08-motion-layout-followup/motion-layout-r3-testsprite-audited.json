@@ -1,0 +1,168 @@
+{
+  "recordedAt": "2026-10-08T21:44:59.195Z",
+  "buildId": "KQgdHwpn2U4O69fFYJ_a-",
+  "cacheTag": "pixibun-20261008-motion-layout-r3",
+  "newCasesCreated": 0,
+  "privacy": "Run IDs and synthetic action/assertion descriptions only; account fields, scripts, HTML and media omitted.",
+  "cases": [
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "4986df01-cd76-4ed3-8190-7412c6c0c41f",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow",
+      "qualificationLimit": "Two visual assertions; no native footprint/saved-pixel comparison, hidden-panel state or right-click assertions. Guide assertion names Diagonals while actions select Thirds, Golden and Center.",
+      "startedAt": "2026-10-08T21:24:00.968Z",
+      "finishedAt": "2026-10-08T21:30:43.067Z",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 2,
+          "action": "click",
+          "description": "Click 'OPEN THE ATELIER → link'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 3,
+          "action": "click",
+          "description": "Click '4px brush preset button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 4,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 5,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 6,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 7,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 8,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 9,
+          "action": "click",
+          "description": "Click 'View ▼ button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 10,
+          "action": "click",
+          "description": "Click 'Drawing Animation Lighting dropdown'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 11,
+          "action": "click",
+          "description": "Click 'Composition Overlay Off button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 12,
+          "action": "click",
+          "description": "Click 'Composition Overlay Thirds button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 13,
+          "action": "click",
+          "description": "Click 'Composition Overlay Golden button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 14,
+          "action": "click",
+          "description": "Click 'Composition Overlay Center button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 15,
+          "action": "click",
+          "description": "Click 'Save now button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 16,
+          "action": "click",
+          "description": "Click 'Canvas Only ⇧ Tab button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 17,
+          "action": "click",
+          "description": "Click 'View ▼ button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 18,
+          "action": "click",
+          "description": "Click 'Canvas Only ⇧ Tab button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 19,
+          "action": "click",
+          "description": "Click 'Restore panels ⇧ Tab button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 20,
+          "action": "visible",
+          "description": "The brush size is set to 4 px in both the top quick control and the detailed inspector.",
+          "status": "passed",
+          "stepType": "assertion"
+        },
+        {
+          "stepIndex": 21,
+          "action": "visible",
+          "description": "The Diagonals composition overlay is active and renders as a view-only guide while the painted pixels remain unchanged.",
+          "status": "passed",
+          "stepType": "assertion"
+        }
+      ]
+    }
+  ]
+}

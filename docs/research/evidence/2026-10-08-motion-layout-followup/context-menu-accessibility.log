@@ -1,0 +1,577 @@
+
+Running 12 tests using 1 worker
+
+(node:24112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier dark (1.5s)
+  x   2 [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light (1.7s)
+(node:9192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic dark (1.6s)
+  x   4 [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light (1.9s)
+(node:24948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier dark (3.8s)
+  x   6 [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light (3.7s)
+(node:26664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  7 [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic dark (3.9s)
+  x   8 [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light (3.5s)
+(node:15140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier dark (5.6s)
+  x  10 [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light (6.1s)
+(node:9352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic dark (5.8s)
+  x  12 [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light (6.4s)
+
+
+  1) [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\][aria-label=\"Pen\"][title=\"Pen (B)\"]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\][aria-label=\"Pen\"][title=\"Pen (B)\"] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-cb203-ls-popup-scan-atelier-light-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 58
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    +     "help": "Elements must meet minimum color contrast ratio thresholds",
+    +     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    +     "id": "color-contrast",
+    +     "impact": "serious",
+    +     "nodes": Array [
+    +       Object {
+    +         "all": Array [],
+    +         "any": Array [
+    +           Object {
+    +             "data": Object {
+    +               "bgColor": "#8a4500",
+    +               "contrastRatio": 2.64,
+    +               "expectedContrastRatio": "4.5:1",
+    +               "fgColor": "#140d1f",
+    +               "fontSize": "9.0pt (12px)",
+    +               "fontWeight": "normal",
+    +               "messageKey": null,
+    +             },
+    +             "id": "color-contrast",
+    +             "impact": "serious",
+    +             "message": "Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +             "relatedNodes": Array [
+    +               Object {
+    +                 "html": "<button type=\"button\" aria-label=\"Pen\" aria-pressed=\"true\" title=\"Pen (B)\" class=\"flex h-9 min-w-0 ite...\">",
+    +                 "target": Array [
+    +                   ".text-\\[\\#140d1f\\][aria-label=\"Pen\"][title=\"Pen (B)\"]",
+    +                 ],
+    +               },
+    +             ],
+    +           },
+    +         ],
+    +         "failureSummary": "Fix any of the following:
+    +   Element has insufficient color contrast of 2.64 (foreground color: #140d1f, background color: #8a4500, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+    +         "html": "<span class=\"truncate\">Pen</span>",
+    +         "impact": "serious",
+    +         "none": Array [],
+    +         "target": Array [
+    +           ".text-\\[\\#140d1f\\][aria-label=\"Pen\"][title=\"Pen (B)\"] > .truncate",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.color",
+    +       "wcag2aa",
+    +       "wcag143",
+    +       "TTv5",
+    +       "TT13.c",
+    +       "EN-301-549",
+    +       "EN-9.1.4.3",
+    +       "ACT",
+    +       "RGAAv4",
+    +       "RGAA-3.2.1",
+    +     ],
+    +   },
+    + ]
+
+       8 |  await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+F10'); await expect(page.getByRole('dialog',{name:'Canvas tools',exact:true})).toBeVisible();
+       9 |  const result=await new AxeBuilder({page}).include('[role="dialog"][aria-label="Canvas tools"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
+    > 10 |  await writeFile(info.outputPath('axe-findings.json'),JSON.stringify(result.violations,null,2)); expect(result.violations).toEqual([]);
+         |                                                                                                                            ^
+      11 | });
+      12 |
+      13 |
+        at D:\PixiBun\artifacts\context-menu-accessibility.spec.ts:10:124
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-accessibility\context-menu-accessibility-91628-pup-scan-cozy-classic-light-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+    [chromium] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+    [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+    [firefox] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+    [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan atelier light 
+    [webkit] › artifacts\context-menu-accessibility.spec.ts:4:90 › canvas tools popup scan cozy-classic light 
+  6 passed (53.6s)

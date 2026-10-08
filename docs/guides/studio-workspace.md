@@ -130,9 +130,11 @@ The [new capture record](../assets/screenshots/2026-10-02-feature-repairs-phase3
 
 ## Right-click quick tools
 
-![The canvas's right-click tools and color swap menu.](../assets/screenshots/2026-10-02-feature-guide/radial-menu.png)
+![The canvas's right-click tools and color swap menu.](../assets/screenshots/2026-10-08-motion-layout/canvas-tools.png)
 
-Right-click the drawing surface for quick access to Pen, Eraser, Fill, Eyedropper and color swap. Choose an action, or dismiss with Escape or an outside click. The full left shelf remains available for the other tools. Right-click on a palette swatch has a different job: it selects the secondary color.
+Right-click the drawing surface for **Canvas tools**: Pen, Eraser, Flood Fill, Eyedropper, Marquee Box, Lasso, Magic Wand, Line, Rectangle, Ellipse and color swap. Either mouse button chooses an action. With the canvas focused, **Shift+F10** or the **Context Menu** key also opens it. Arrow keys move between buttons; Enter selects; Tab stays inside the popup. Escape or an outside click closes it and restores the opener when still visible. The popup stays inside the window and closes if Studio switches to its small-screen notice. Its clicks do not paint underneath. The full left shelf remains available for the other tools. Right-click on a palette swatch selects the secondary color.
+
+The picture shows the compiled 8 October follow-up. The earlier four-tool capture remains preserved with its original date.
 
 The bottom status area helps you check cursor coordinates, canvas size, zoom, current frame, layer/tool and selection size. The top save badge tells you about persistence; the cursor readout is not evidence that a project has saved.
 

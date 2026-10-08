@@ -270,7 +270,7 @@ describe('PixiMotion source identity and stale artwork protection', () => {
   it('shows source-change feedback and disables the inspector bake action', () => {
     const part = capture(); useStudioStore.getState().setMotionPart(part); registry.touchBuffer(part.sourceLayerId);
     render(React.createElement(PixiMotionPanel));
-    expect(screen.getByRole('status').textContent).toMatch(/source artwork changed/);
+    expect(screen.getAllByRole('status').some(status => /source artwork changed/.test(status.textContent ?? ''))).toBe(true);
     expect((screen.getByRole('button', { name: 'BAKE TO TIMELINE' }) as HTMLButtonElement).disabled).toBe(true);
   });
 

@@ -3,6 +3,16 @@ import type { MotionPartBounds, MotionPivot, MotionPose } from './pixiMotion';
 
 export interface PlacedMotionRaster extends PixelBuffer { destX: number; destY: number }
 
+/** Count painted samples outside the canvas, ignoring transparent bounding padding. */
+export function countClippedMotionPixels(sprite: PlacedMotionRaster, width: number, height: number): number {
+  if (sprite.destX >= 0 && sprite.destY >= 0 && sprite.destX + sprite.width <= width && sprite.destY + sprite.height <= height) return 0;
+  let clipped = 0;
+  for (let y = 0; y < sprite.height; y++) for (let x = 0; x < sprite.width; x++) {
+    if (sprite.data[(y * sprite.width + x) * 4 + 3] && (x + sprite.destX < 0 || x + sprite.destX >= width || y + sprite.destY < 0 || y + sprite.destY >= height)) clipped++;
+  }
+  return clipped;
+}
+
 /** Keep fractional translation in the sampling phase, with integer canvas placement. */
 export function motionRasterPlacement(bounds: MotionPartBounds, pivot: MotionPivot, pose: MotionPose) {
   const box = computeRotatedBounds(bounds.w, bounds.h, bounds.x, bounds.y, pivot.x, pivot.y, pose.rotation);

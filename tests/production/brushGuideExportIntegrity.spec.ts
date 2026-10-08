@@ -34,7 +34,11 @@ test('compiled four-pixel brush agrees with detailed settings and guides stay ou
   expect(await pixels()).toEqual(drawn);
   await page.getByRole('button', { name: 'View options menu', exact: true }).click();
   await page.getByRole('button', { name: /Canvas Only/i }).click();
+  await expect(page.getByTestId('right-inspector')).toBeHidden();
+  await expect(page.getByTestId('bottom-timeline')).toBeHidden();
+  await expect(page.getByTestId('toolbar-color-dock')).toBeHidden();
   await page.getByRole('button', { name: /^Restore panels/i }).click();
+  await expect(page.getByTestId('right-inspector')).toBeVisible();
   expect(await pixels()).toEqual(drawn);
   await page.getByTestId('save-button').click();
   await page.getByTestId('export-button').click();

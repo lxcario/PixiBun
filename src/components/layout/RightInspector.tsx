@@ -103,7 +103,7 @@ export const RightInspector: React.FC = () => {
       </div>
 
       {/* Main Content Area: Dedicated Panels per Tab */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable]">
         {layout.color && activeInspectorTab !== 'palette' && !motionPart && <PinnedColorPanel />}
         {motionPart ? (
           <PixiMotionPanel />

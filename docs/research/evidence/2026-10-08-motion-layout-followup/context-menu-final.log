@@ -1,0 +1,139 @@
+
+Running 6 tests using 1 worker
+
+(node:25420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\production\canvasContextMenu.spec.ts:15:5 › either mouse button selects every quick tool without painting or stealing the pointer (5.0s)
+  x  2 [chromium] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (12.4s)
+(node:6924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [firefox] › tests\production\canvasContextMenu.spec.ts:15:5 › either mouse button selects every quick tool without painting or stealing the pointer (9.2s)
+  x  4 [firefox] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (14.0s)
+(node:5636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [webkit] › tests\production\canvasContextMenu.spec.ts:15:5 › either mouse button selects every quick tool without painting or stealing the pointer (13.5s)
+  x  6 [webkit] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (15.1s)
+
+
+  1) [chromium] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#center-canvas-area')
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for locator('#center-canvas-area')
+        23 × locator resolved to <div tabindex="0" role="application" data-tutorial="canvas" id="center-canvas-area" class="relative shrink-0 outline outline-1 outline-[var(--desk-border)] focus:ring-2 focus:ring-[var(--accent-gold)]" aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan.">…</div>
+           - unexpected value "inactive"
+
+
+      55 |   await page.keyboard.press('Home'); await page.keyboard.press('Shift+Tab'); await expect(dialog.getByRole('button', { name: 'Swap primary and secondary colors', exact: true })).toBeFocused();
+      56 |   await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Pen', exact: true })).toBeFocused();
+    > 57 |   await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); await expect(canvasFocus).toBeFocused(); expect(await pixels(page)).toEqual(original);
+         |                                                                                                       ^
+      58 |   await page.setViewportSize({ width: 1280, height: 900 }); await open(page);
+      59 |   await page.getByRole('button', { name: 'Close canvas tools', exact: true }).click({ position: { x: 10, y: 300 } });
+      60 |   await expect(dialog).toHaveCount(0); expect(await pixels(page)).toEqual(original);
+        at D:\PixiBun\tests\production\canvasContextMenu.spec.ts:57:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#center-canvas-area')
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for locator('#center-canvas-area')
+        23 × locator resolved to <div tabindex="0" role="application" data-tutorial="canvas" id="center-canvas-area" class="relative shrink-0 outline outline-1 outline-[var(--desk-border)] focus:ring-2 focus:ring-[var(--accent-gold)]" aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan.">…</div>
+           - unexpected value "inactive"
+
+
+      55 |   await page.keyboard.press('Home'); await page.keyboard.press('Shift+Tab'); await expect(dialog.getByRole('button', { name: 'Swap primary and secondary colors', exact: true })).toBeFocused();
+      56 |   await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Pen', exact: true })).toBeFocused();
+    > 57 |   await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); await expect(canvasFocus).toBeFocused(); expect(await pixels(page)).toEqual(original);
+         |                                                                                                       ^
+      58 |   await page.setViewportSize({ width: 1280, height: 900 }); await open(page);
+      59 |   await page.getByRole('button', { name: 'Close canvas tools', exact: true }).click({ position: { x: 10, y: 300 } });
+      60 |   await expect(dialog).toHaveCount(0); expect(await pixels(page)).toEqual(original);
+        at D:\PixiBun\tests\production\canvasContextMenu.spec.ts:57:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  locator('#center-canvas-area')
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for locator('#center-canvas-area')
+        23 × locator resolved to <div tabindex="0" role="application" data-tutorial="canvas" id="center-canvas-area" class="relative shrink-0 outline outline-1 outline-[var(--desk-border)] focus:ring-2 focus:ring-[var(--accent-gold)]" aria-label="Pixel art drawing canvas. Use mouse or stylus to paint, arrow keys to pan viewport or nudge selection, and Alt+drag to pan.">…</div>
+           - unexpected value "inactive"
+
+
+      55 |   await page.keyboard.press('Home'); await page.keyboard.press('Shift+Tab'); await expect(dialog.getByRole('button', { name: 'Swap primary and secondary colors', exact: true })).toBeFocused();
+      56 |   await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Pen', exact: true })).toBeFocused();
+    > 57 |   await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); await expect(canvasFocus).toBeFocused(); expect(await pixels(page)).toEqual(original);
+         |                                                                                                       ^
+      58 |   await page.setViewportSize({ width: 1280, height: 900 }); await open(page);
+      59 |   await page.getByRole('button', { name: 'Close canvas tools', exact: true }).click({ position: { x: 10, y: 300 } });
+      60 |   await expect(dialog).toHaveCount(0); expect(await pixels(page)).toEqual(original);
+        at D:\PixiBun\tests\production\canvasContextMenu.spec.ts:57:103
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-final\canvasContextMenu-the-popu-de57b-s-inside-a-resized-viewport-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+    [firefox] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+    [webkit] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport 
+  3 passed (1.2m)

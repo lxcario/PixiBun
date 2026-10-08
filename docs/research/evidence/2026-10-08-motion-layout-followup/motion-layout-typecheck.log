@@ -1,0 +1,6 @@
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+tests/prepareMotionArtwork.test.ts(32,97): error TS2339: Property 'frames' does not exist on type 'HistoryStep'.
+  Property 'frames' does not exist on type 'PixelHistoryStep'.

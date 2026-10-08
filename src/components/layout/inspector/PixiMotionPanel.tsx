@@ -31,10 +31,17 @@ export const PixiMotionPanel: React.FC = () => {
 
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [isBaking, setIsBaking] = useState(false);
+  const [clippedPixels, setClippedPixels] = useState(0);
+  const previewPendingRef = useRef(false);
   const playTimerRef = useRef<number | null>(null);
   const bakeInProgressRef = useRef(false);
   const resolvedSource = motionPart ? resolveMotionSource(motionPart, sourceState) : null;
   const frameDurationMs = resolvedSource?.ok ? resolvedSource.frame.durationMs : Math.round(1000 / (fps || 8));
+  useEffect(() => studioEvents.on('pixibun:motion-preview-status', status => {
+    if (status.partId !== useStudioStore.getState().motionPart?.id) return;
+    previewPendingRef.current = status.pending;
+    if (status.clippedPixels !== undefined) setClippedPixels(status.clippedPixels);
+  }), []);
 
   // Play/pause preview animation loop
   useEffect(() => {
@@ -49,11 +56,13 @@ export const PixiMotionPanel: React.FC = () => {
     const intervalMs = Math.max(8, Math.min(20, frameDurationMs));
     const startedAt = performance.now();
     const firstIndex = useStudioStore.getState().motionPreviewIndex ?? 0;
-    let lastIndex = -1;
+    let lastIndex = useStudioStore.getState().motionPreviewIndex ?? -1;
 
     playTimerRef.current = window.setInterval(() => {
+      // Let the current pose finish before advancing, so slow workers cannot starve presentation.
+      if (previewPendingRef.current) return;
       const currentIdx = (firstIndex + Math.floor((performance.now() - startedAt) / frameDurationMs)) % motionPart.frameCount;
-      if (currentIdx !== lastIndex) { setMotionPreviewIndex(currentIdx); lastIndex = currentIdx; }
+      if (currentIdx !== lastIndex) { previewPendingRef.current = true; setMotionPreviewIndex(currentIdx); lastIndex = currentIdx; }
     }, intervalMs);
 
     return () => {
@@ -135,11 +144,14 @@ export const PixiMotionPanel: React.FC = () => {
       </div>
 
       <MotionRigLibrary />
+      <p role="status" data-testid="motion-clipping-notice" className="h-12 text-[11px] leading-4 text-[var(--text-muted)]">
+        {clippedPixels > 0 ? `${clippedPixels} painted ${clippedPixels === 1 ? 'pixel leaves' : 'pixels leave'} the canvas. Adjust the pose or enlarge the canvas before baking.` : 'Motion affects the captured layer. Other layers stay in place.'}
+      </p>
       {isBaking && <p role="status">Baking motion… Cancel closes the session without applying unfinished cels.</p>}
-      <div className="flex gap-2">
-        <TactileButton onClick={() => { setIsPlayingPreview(false); undoMotionEdit(); }} disabled={!source.ok || (!motionHistory?.past.length && !motionHistory?.pending)} aria-label="Undo motion edit">Undo pose</TactileButton>
-        <TactileButton onClick={() => { setIsPlayingPreview(false); redoMotionEdit(); }} disabled={!source.ok || !motionHistory?.future.length} aria-label="Redo motion edit">Redo pose</TactileButton>
-        <TactileButton onClick={() => { setIsPlayingPreview(false); updateMotionPose(motionActivePose, { translationX: 0, translationY: 0, rotation: 0 }); }} disabled={!source.ok}>Reset Pose</TactileButton>
+      <div className="grid grid-cols-3 gap-1.5">
+        <TactileButton size="sm" className="min-w-0 px-1" onClick={() => { setIsPlayingPreview(false); undoMotionEdit(); }} disabled={!source.ok || (!motionHistory?.past.length && !motionHistory?.pending)} aria-label="Undo motion edit">Undo pose</TactileButton>
+        <TactileButton size="sm" className="min-w-0 px-1" onClick={() => { setIsPlayingPreview(false); redoMotionEdit(); }} disabled={!source.ok || !motionHistory?.future.length} aria-label="Redo motion edit">Redo pose</TactileButton>
+        <TactileButton size="sm" className="min-w-0 px-1" onClick={() => { setIsPlayingPreview(false); updateMotionPose(motionActivePose, { translationX: 0, translationY: 0, rotation: 0 }); }} disabled={!source.ok}>Reset Pose</TactileButton>
       </div>
       <p className="text-[10px] text-[var(--text-muted)]">Undo/Redo edits this motion session. Cancel returns to drawing; Bake creates editable cels.</p>
       {/* 2. Pose Switcher (START vs END) */}
@@ -157,7 +169,7 @@ export const PixiMotionPanel: React.FC = () => {
             }}
             data-testid="pose-btn-start"
             aria-pressed={motionActivePose === 'start'}
-            className={`py-1.5 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+            className={`h-8 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
               motionActivePose === 'start'
                 ? 'bg-[var(--accent-wisteria)] text-[#140d1f] border-[var(--accent-wisteria)] shadow-xs'
                 : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
@@ -173,7 +185,7 @@ export const PixiMotionPanel: React.FC = () => {
             }}
             data-testid="pose-btn-end"
             aria-pressed={motionActivePose === 'end'}
-            className={`py-1.5 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+            className={`h-8 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
               motionActivePose === 'end'
                 ? 'bg-[var(--accent-gold)] text-[#140d1f] border-[var(--accent-gold)] shadow-xs'
                 : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
@@ -220,7 +232,7 @@ export const PixiMotionPanel: React.FC = () => {
                 key={quickDeg}
                 type="button"
                 onClick={() => handleRotationChange(quickDeg)}
-                className="flex-1 py-0.5 text-[9px] font-mono border border-[var(--desk-border)] rounded-[2px] bg-[var(--surface-1)] hover:border-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                className="flex-1 h-6 text-xs font-mono border border-[var(--desk-border)] rounded-[2px] bg-[var(--surface-1)] hover:border-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[var(--text-heading)]"
               >
                 {quickDeg}°
               </button>
@@ -385,25 +397,24 @@ export const PixiMotionPanel: React.FC = () => {
         </div>
 
         {/* Preview Controls */}
-        <div className="flex gap-1.5 pt-1">
+        <div className="grid grid-cols-2 gap-1.5 pt-1">
           <button
             type="button"
             onClick={() => setIsPlayingPreview(!isPlayingPreview)}
             disabled={!source.ok || isBaking}
-            className="flex-1 py-1 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-[11px] font-bold text-[var(--text-heading)] hover:border-[var(--accent-gold)] flex items-center justify-center gap-1"
+            className="h-7 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-xs font-medium text-[var(--text-heading)] hover:border-[var(--accent-gold)] flex items-center justify-center gap-1 whitespace-nowrap"
           >
             <PixelIcon name={isPlayingPreview ? 'pause' : 'play'} size={12} />
             <span>{isPlayingPreview ? 'Pause' : 'Play Loop'}</span>
           </button>
-          {motionPreviewIndex !== null && (
             <button
               type="button"
+              disabled={motionPreviewIndex === null}
               onClick={() => setMotionPreviewIndex(null)}
-              className="px-2 py-1 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-[11px] text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+              className="h-7 px-2 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-xs text-[var(--text-muted)] hover:text-[var(--text-heading)] flex items-center justify-center whitespace-nowrap disabled:opacity-40"
             >
               Resume Pose
             </button>
-          )}
         </div>
       </div>
 
@@ -413,7 +424,7 @@ export const PixiMotionPanel: React.FC = () => {
           variant="primary"
           onClick={handleBake}
           disabled={!source.ok || isBaking}
-          className="w-full justify-center font-bold tracking-wider py-2"
+          className="w-full text-xs font-semibold"
         >
           <PixelIcon name="layers" size={14} />
           <span>BAKE TO TIMELINE</span>
@@ -422,7 +433,8 @@ export const PixiMotionPanel: React.FC = () => {
         <TactileButton
           variant="ghost"
           onClick={clearMotionPart}
-          className="w-full justify-center text-[var(--text-muted)] py-1.5"
+          size="sm"
+          className="w-full justify-center text-xs text-[var(--text-muted)]"
         >
           <span>Cancel (Escape)</span>
         </TactileButton>

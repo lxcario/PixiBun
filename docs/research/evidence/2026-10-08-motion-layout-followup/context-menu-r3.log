@@ -1,0 +1,14 @@
+
+Running 3 tests using 1 worker
+
+(node:1096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (2.7s)
+(node:33728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 [firefox] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (6.3s)
+(node:17444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [webkit] › tests\production\canvasContextMenu.spec.ts:35:5 › the popup owns keys, swaps colors once, dismisses safely and stays inside a resized viewport (6.3s)
+
+  3 passed (18.1s)

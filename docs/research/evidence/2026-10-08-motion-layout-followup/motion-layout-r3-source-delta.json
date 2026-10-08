@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-08T21:25:05.378Z",
+  "earlierBuild": "-HvBMhgj6Azx7DwkbWZR3",
+  "finalBuild": "KQgdHwpn2U4O69fFYJ_a-",
+  "inputs": 652,
+  "identicalInputs": 651,
+  "changed": [
+    "src/components/studio/RadialContextMenu.tsx"
+  ],
+  "changeScope": "Only selected-tool theme color classes and removal of shortcut opacity; original r2 source hash reconstructed exactly. No logic, geometry, tests or other source/config changes."
+}

@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { unexpectedStudioAccessibilityFindings } from '../helpers/studioAccessibilityFindings';
 
 for (const studio of ['atelier', 'cozy-classic'] as const) {
   for (const scheme of ['dark', 'light'] as const) {
-    test(`compiled ${studio} ${scheme} keeps compact controls reachable and passes scoped accessibility checks`, async ({ page }) => {
+    test(`compiled ${studio} ${scheme} keeps controls reachable and records the requested compact dock accessibility tradeoff`, async ({ page }, info) => {
       await page.setViewportSize({ width: 1920, height: 900 });
       await page.goto('/studio');
       await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
@@ -33,7 +34,7 @@ for (const studio of ['atelier', 'cozy-classic'] as const) {
       await expect(page.getByRole('region', { name: 'Pinned color panel', exact: true })).toBeVisible();
       const result = await new AxeBuilder({ page }).include('header').include('aside').include('[aria-label="Pinned color panel"]')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
-      expect(result.violations.filter(issue => issue.impact === 'serious' || issue.impact === 'critical')).toEqual([]);
+      expect(await unexpectedStudioAccessibilityFindings(page, result.violations, info)).toEqual([]);
       await page.getByTestId('tab-palette').click();
       await expect(page.getByRole('region', { name: 'Pinned color panel', exact: true })).toHaveCount(1);
       await page.getByRole('button', { name: 'Unpin color panel', exact: true }).click();

@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:24336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › artifacts\context-menu-before.spec.ts:2:5 › choosing a right-click tool preserves artwork (6.4s)
+
+
+  1) [chromium] › artifacts\context-menu-before.spec.ts:2:5 › choosing a right-click tool preserves artwork 
+
+    Error: expect(locator).toHaveClass(expected) failed
+
+    Locator: getByTestId('eraser-tool')
+    Expected pattern: /pixel-primary-btn/
+    Received string:  "w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveClass" with timeout 5000ms
+      - waiting for getByTestId('eraser-tool')
+        14 × locator resolved to <button title="Eraser (E)" aria-label="Eraser" aria-pressed="false" data-testid="eraser-tool" data-tutorial="eraser-tool" class="w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]">…</button>
+           - unexpected value "w-9 h-9 rounded-[2px] flex items-center justify-center cursor-pointer transition-all pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)]"
+
+
+       7 |  await page.mouse.click(box.x+box.width/2,box.y+box.height/2,{button:'right'});
+       8 |  await page.getByTitle('Eraser (Click or Right-Click to choose)',{exact:true}).click();
+    >  9 |  await expect(page.getByTestId('eraser-tool')).toHaveClass(/pixel-primary-btn/);
+         |                                                ^
+      10 |  expect(await pixels()).toEqual(before);
+      11 | });
+      12 |
+        at D:\PixiBun\artifacts\context-menu-before.spec.ts:9:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\context-menu-before\context-menu-before-choosi-d07a8-lick-tool-preserves-artwork-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\context-menu-before\context-menu-before-choosi-d07a8-lick-tool-preserves-artwork-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\context-menu-before\context-menu-before-choosi-d07a8-lick-tool-preserves-artwork-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\context-menu-before\context-menu-before-choosi-d07a8-lick-tool-preserves-artwork-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › artifacts\context-menu-before.spec.ts:2:5 › choosing a right-click tool preserves artwork 

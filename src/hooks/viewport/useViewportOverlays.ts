@@ -68,6 +68,7 @@ export function useViewportOverlays({
     ctx.imageSmoothingEnabled = false;
 
     const state = useStudioStore.getState();
+    if (state.motionPart) return;
     const specs = getOnionSkinSpecs(
       state.frames.length,
       state.activeFrameIndex,

@@ -536,7 +536,7 @@ html, body {
 }
 
 .pixel-tactile-btn:hover {
-  transform: translateY(-1px);
+  transform: none;
   background-color: var(--btn-hover);
   border-color: var(--desk-border-highlight);
   box-shadow:
@@ -550,7 +550,7 @@ html, body {
 }
 
 .pixel-tactile-btn:active {
-  transform: translateY(1px);
+  transform: none;
   box-shadow:
     inset 1px 1px 2px rgba(0, 0, 0, 0.45);
   transition: transform 0.05s ease, box-shadow 0.05s ease;
@@ -588,7 +588,7 @@ html, body {
 }
 
 .pixel-tactile-chip:hover {
-  transform: translateY(-1px);
+  transform: none;
   background-color: var(--surface-2);
   border-color: var(--desk-border-highlight);
   color: var(--text-heading);
@@ -600,7 +600,7 @@ html, body {
 }
 
 .pixel-tactile-chip:active {
-  transform: translateY(1px);
+  transform: none;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
@@ -641,7 +641,7 @@ html, body {
 }
 
 .pixel-primary-btn:hover {
-  transform: translateY(-1px);
+  transform: none;
   background-color: #fcd699;
   box-shadow:
     inset 1px 1px 0px #ffffff,
@@ -654,7 +654,7 @@ html, body {
 }
 
 .pixel-primary-btn:active {
-  transform: translateY(1px);
+  transform: none;
   box-shadow:
     inset 1px 1px 2px rgba(140, 81, 32, 0.6);
   transition: transform 0.05s ease, box-shadow 0.05s ease;
@@ -745,7 +745,7 @@ html[data-studio-theme="cozy-classic"] .pixel-tactile-btn:hover {
 }
 
 html[data-studio-theme="cozy-classic"] .pixel-tactile-btn:active {
-  transform: translateY(1px);
+  transform: none;
   box-shadow:
     inset -1px -1px 0px rgba(255, 255, 255, 0.1),
     inset 1px 1px 0px rgba(0, 0, 0, 0.3),
@@ -773,7 +773,7 @@ html[data-studio-theme="cozy-classic"] .pixel-primary-btn:hover {
 }
 
 html[data-studio-theme="cozy-classic"] .pixel-primary-btn:active {
-  transform: translateY(1px);
+  transform: none;
   box-shadow:
     inset -2px -2px 0px #fff8db,
     inset 2px 2px 0px #8c5120,

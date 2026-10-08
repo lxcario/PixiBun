@@ -193,17 +193,18 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
       {/* 2. Professional Creative Suite Color Dock: Pinned at bottom */}
       <div
         ref={wellsContainerRef}
-        className="flex flex-col items-center gap-2 w-full px-0.5 pt-2 pb-2 border-t border-[var(--desk-border)] shrink-0 bg-[var(--desk-surface)] shadow-sm z-10"
+        data-testid="toolbar-color-dock"
+        className="flex flex-col items-center gap-2 w-full px-1.5 pt-2 pb-2 border-t border-[var(--desk-border)] shrink-0 bg-[var(--desk-surface)] shadow-sm z-10"
       >
-        {/* Separate color wells and actions preserve the full 24px hit targets. */}
-        <div className="relative w-12 h-12 select-none">
+        {/* Compact overlapping wells, with swap and reset in the free corners. */}
+        <div className="relative w-10 h-10 select-none">
           {/* Swap Colors Micro-Action (Top-Right) */}
           <button
             type="button"
             onClick={swapColors}
             title="Swap Foreground & Background Colors (X)"
             aria-label="Swap colors (X)"
-            className="absolute top-0 right-0 w-6 h-6 rounded-[1px] border border-[var(--desk-border)] bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] hover:bg-[var(--surface-2)] active:scale-90 flex items-center justify-center cursor-pointer transition-colors z-20 p-0 text-[9px] leading-none"
+            className="absolute top-0 right-0 w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] bg-[var(--surface-0)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:border-[var(--accent-gold)] hover:bg-[var(--surface-2)] flex items-center justify-center cursor-pointer transition-colors z-20 p-0 text-[9px] leading-none"
           >
             ⇄
           </button>
@@ -214,7 +215,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             onClick={resetDefaultColors}
             title="Default Colors: Black & White (Shift+D)"
             aria-label="Reset default black and white colors (Shift+D)"
-            className="absolute bottom-0 left-0 w-6 h-6 rounded-[1px] border border-[var(--desk-border)] bg-[var(--surface-0)] hover:border-[var(--accent-gold)] hover:bg-[var(--surface-2)] active:scale-90 flex items-center justify-center cursor-pointer transition-colors z-20 group p-0"
+            className="absolute bottom-0 left-0 w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] bg-[var(--surface-0)] hover:border-[var(--accent-gold)] hover:bg-[var(--surface-2)] flex items-center justify-center cursor-pointer transition-colors z-20 group p-0"
           >
             {/* Dual black & white micro squares */}
             <span className="relative w-2.5 h-2.5 block pointer-events-none">
@@ -236,7 +237,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               swapColors();
             }}
             style={{ backgroundColor: secondaryColor }}
-            className={`absolute bottom-0 right-0 w-6 h-6 rounded-[2px] border border-black/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.5)] cursor-pointer hover:brightness-110 active:scale-95 transition-transform p-0 ${
+            className={`absolute bottom-0.5 right-0.5 w-[22px] h-[22px] rounded-[2px] border border-black/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.5)] cursor-pointer hover:brightness-110 transition-colors p-0 ${
               isFlyoutOpen && activeFlyoutTarget === 'secondary'
                 ? 'ring-1.5 ring-[var(--accent-plum)] z-15'
                 : 'hover:ring-1 hover:ring-white/40 z-0'
@@ -258,7 +259,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               swapColors();
             }}
             style={{ backgroundColor: primaryColor }}
-            className={`absolute top-0 left-0 w-6 h-6 rounded-[2px] border border-black/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:brightness-110 active:scale-95 transition-transform p-0 z-10 ${
+            className={`absolute top-0.5 left-0.5 w-[24px] h-[24px] rounded-[2px] border border-black/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.6)] cursor-pointer hover:brightness-110 transition-colors p-0 z-10 ${
               isFlyoutOpen && activeFlyoutTarget === 'primary'
                 ? 'ring-1.5 ring-[var(--accent-gold)]'
                 : 'hover:ring-1 hover:ring-white/40'
@@ -270,7 +271,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
 
         {/* Quick Swatches Tray & Flyout Trigger */}
         <div className="flex flex-col items-center gap-1 w-full pt-0.5">
-          <div className="grid grid-cols-2 gap-0.5 bg-[var(--surface-0)]/60 rounded-[2px] border border-[var(--desk-border)]" suppressHydrationWarning>
+          <div className="grid grid-cols-2 gap-1 p-0.5 bg-[var(--surface-0)]/60 rounded-[2px] border border-[var(--desk-border)]" suppressHydrationWarning>
             {(isMounted && recentColors.length >= 4 ? recentColors.slice(0, 4) : currentPalette.colors.slice(0, 4)).map((color, idx) => (
               <button
                 key={`rail-swatch-${color}-${idx}`}
@@ -280,7 +281,8 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                   setSecondaryColor(color);
                 }}
                 style={{ backgroundColor: color }}
-                className="w-6 h-6 rounded-[1px] border border-black/40 hover:border-[var(--accent-gold)] hover:scale-110 transition-transform cursor-pointer"
+                className="w-3.5 h-3.5 rounded-[1px] border border-black/40 hover:border-[var(--accent-gold)] transition-colors cursor-pointer"
+                aria-label={`Quick color ${color}`}
                 title={`${color} (Click: Primary | Right-click: Secondary)`}
               />
             ))}
@@ -291,7 +293,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             onClick={toggleFlyout}
             title="Quick Swatches & Color Access (Click to toggle)"
             aria-label="Quick Swatches Flyout"
-            className={`w-12 h-6 rounded-[2px] border text-[8px] font-mono flex items-center justify-center gap-0.5 cursor-pointer transition-colors pixel-tactile-btn ${
+            className={`w-9 h-3.5 rounded-[2px] border text-[8px] font-mono flex items-center justify-center gap-0.5 cursor-pointer transition-colors pixel-tactile-btn ${
               isFlyoutOpen
                 ? 'bg-[var(--surface-2)] text-[var(--accent-gold)] border-[var(--accent-gold)]/60'
                 : 'text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'

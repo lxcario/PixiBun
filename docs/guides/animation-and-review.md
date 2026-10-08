@@ -4,6 +4,8 @@
 
 Start with two or three poses. A blink or a small bounce is plenty for a first animation. Each frame has independent layer pixels, and **frame time** controls how long that pose stays on screen.
 
+The timeline control row keeps a fixed height. Onion-skin help occupies a reserved slot on wider desks; compact desks expose the same explanation through the button description. Toggling it keeps the canvas and timeline in place. For layered drawings and motion preparation, follow the [rigid-part workflow](artist-workspace.md#save-a-motion-rig).
+
 ## Frames, holds and playback
 
 ![Timeline with three frames, onion skin and preview speed choices.](../assets/screenshots/2026-10-02-feature-guide/animation-timeline.png)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { copyPlacedMotionRaster, renderPlacedMotionRaster, stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
+import { countClippedMotionPixels, copyPlacedMotionRaster, renderPlacedMotionRaster, stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
 import { interpolatePose } from '@/lib/animation/pixiMotion';
 import { rotSprite, rotSpriteV1, rotSpriteV2 } from '@/lib/canvas/rotSprite';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
@@ -15,6 +15,13 @@ function source() {
 }
 const zero = { translationX: 0, translationY: 0, rotation: 0 };
 describe('motion raster placement and compatibility', () => {
+  it('reports actual clipped alpha samples without treating empty rotated bounds as missing artwork', () => {
+    const data = new Uint8ClampedArray(3 * 3 * 4); data[3] = 1; data[(1 * 3 + 1) * 4 + 3] = 255;
+    expect(countClippedMotionPixels({ width: 3, height: 3, data, destX: -1, destY: -1 }, 2, 2)).toBe(1);
+    expect(countClippedMotionPixels({ width: 3, height: 3, data, destX: 0, destY: 0 }, 2, 2)).toBe(0);
+    expect(countClippedMotionPixels({ width: 3, height: 3, data, destX: 5, destY: 5 }, 2, 2)).toBe(2);
+    expect(data.filter(value => value > 0)).toEqual(new Uint8ClampedArray([1, 255]));
+  });
   it.each([0, 37, 90, 180, 270, 359.99])('retains full-canvas interior bytes at %s degrees for fractional pivots and sampling phases', degrees => {
     const src = source(), original = src.data.slice(), bounds = { x: 24, y: 24, w: 16, h: 16 };
     for (const pivot of [{ x: 32, y: 32 }, { x: 27.3, y: 31.7 }, { x: 32.5, y: 32.5 }]) {

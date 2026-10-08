@@ -1,0 +1,7 @@
+{
+  "checkedAt": "2026-10-08T21:46:27.5277017Z",
+  "exitCode": 0,
+  "command": "npm run verify:docs",
+  "priorAttempt": "motion-layout-r2-docs-sandbox-attempt.log",
+  "priorLimitation": "Windows sandbox denied temporary bundler cache rename; full check rerun outside sandbox."
+}

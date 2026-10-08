@@ -17,6 +17,15 @@ export function useRadialContextMenu(containerRef?: React.RefObject<HTMLElement 
     setIsOpen(false);
   }, []);
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key !== 'ContextMenu' && !(e.shiftKey && e.key === 'F10')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const bounds = (e.target instanceof HTMLElement ? e.target : e.currentTarget).getBoundingClientRect();
+    setPosition({ x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 });
+    setIsOpen(true);
+  }, []);
+
   useEffect(() => {
     const target = containerRef?.current ?? document;
     // Also support long-press via touch events
@@ -70,6 +79,7 @@ export function useRadialContextMenu(containerRef?: React.RefObject<HTMLElement 
     isOpen,
     position,
     handleContextMenu,
+    handleKeyDown,
     closeMenu
   };
 }

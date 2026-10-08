@@ -1,0 +1,4 @@
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+

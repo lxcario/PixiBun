@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { unexpectedStudioAccessibilityFindings } from '../helpers/studioAccessibilityFindings';
 
 const AXE_WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -337,7 +338,7 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
 });
 
 test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () => {
-  test('blank canvas workspace passes automated WCAG 2.2 axe scan', async ({ page }) => {
+  test('blank canvas workspace records Axe findings with the requested compact dock limitation', async ({ page }, info) => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('div[role="application"]')).toBeVisible();
@@ -345,7 +346,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     await page.waitForTimeout(1100);
 
     const results = await scanStudioAccessibility(page);
-    expect(results.violations).toEqual([]);
+    expect(await unexpectedStudioAccessibilityFindings(page, results.violations, info, { all: true })).toEqual([]);
   });
 
   test('open Export modal passes automated WCAG 2.2 axe scan', async ({ page }) => {
@@ -367,7 +368,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     expect(results.violations).toEqual([]);
   });
 
-  test('RightInspector panels expanded pass automated WCAG 2.2 axe scan', async ({ page }) => {
+  test('expanded panels record Axe findings with the requested compact dock limitation', async ({ page }, info) => {
     await page.goto('/studio');
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('div[role="application"]')).toBeVisible();
@@ -377,13 +378,13 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     await page.getByRole('button', { name: /^Layers$/i }).click();
     await page.waitForTimeout(300);
     const layersResults = await scanStudioAccessibility(page);
-    expect(layersResults.violations).toEqual([]);
+    expect(await unexpectedStudioAccessibilityFindings(page, layersResults.violations, info, { all: true, label: 'layers-accessibility' })).toEqual([]);
 
     // Tab 2: Palette
     await page.getByRole('button', { name: /^Palette$/i }).click();
     await page.waitForTimeout(300);
     const paletteResults = await scanStudioAccessibility(page);
-    expect(paletteResults.violations).toEqual([]);
+    expect(await unexpectedStudioAccessibilityFindings(page, paletteResults.violations, info, { all: true, label: 'palette-accessibility' })).toEqual([]);
 
     // Tab 3: PixiTools with the available lighting and patterns panels expanded
     await page.getByRole('button', { name: /PixiTools/i }).click();
@@ -395,7 +396,7 @@ test.describe('Studio Automated Accessibility Audits (axe-core, WCAG 2.2)', () =
     }
     await page.waitForTimeout(300);
     const aiResults = await scanStudioAccessibility(page);
-    expect(aiResults.violations).toEqual([]);
+    expect(await unexpectedStudioAccessibilityFindings(page, aiResults.violations, info, { all: true, label: 'pixitools-accessibility' })).toEqual([]);
   });
 });
 

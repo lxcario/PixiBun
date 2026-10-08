@@ -30,6 +30,8 @@ To deliberately publish an approved capture set, use `npm run evidence:publish -
 
 Keep first failed runs and successful reruns with their scope. A screenshot proves visible state at capture, not complete interaction, timing, focus restoration, artist usefulness or cross-browser behavior. Automated Axe checks establish scanned rules/states; WCAG conformance also needs defined scope and manual work. Current participant/device/assistive-technology/long-memory qualification remains pending in [the registry](../research/issue-registry.md).
 
+The explicitly restored compact bottom-left color dock has a known target-size limitation. Studio scans record their findings and accept only `target-size` nodes inside that dock with the documented well/swatch/action labels. Other findings still fail; the rule remains enabled. Record this requested size tradeoff beside scan results rather than claiming an empty scan or WCAG conformance.
+
 ## TestSprite
 
 The [cross-phase PixiMotion hardening](../research/2026-10-07-piximotion-cross-phase-hardening.md) records a blocked existing selection case and the service's artifact refusal; navigation alone did not verify artwork. Earlier authorized Phase 4/5 case results retain their own incomplete assertion scope. Current local unit/build and affected three-engine browser results are linked from [current status](../current-status.md), independently of external verdicts. The [8 October rectangle follow-up](../research/2026-10-08-motion-bounds-hardening.md) records the current worker/clip checks and its separately audited existing TestSprite run.

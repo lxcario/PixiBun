@@ -1,0 +1,106 @@
+{
+  "recordedAt": "2026-10-08T21:44:59.197Z",
+  "buildId": "KQgdHwpn2U4O69fFYJ_a-",
+  "cacheTag": "pixibun-20261008-motion-layout-r3",
+  "runtime": "Node 22.23.3 on Windows; Chromium/Firefox/WebKit; one worker; zero retries",
+  "revisionBeforePublication": "8cc531a0438cb15c53f197cb08a9ac49ace7a949",
+  "dirtyWorkingTree": true,
+  "broadBuildId": "-HvBMhgj6Azx7DwkbWZR3",
+  "broadCacheTag": "pixibun-20261008-motion-layout-r2",
+  "broadGate": {
+    "status": "passed",
+    "stages": 5,
+    "unitTests": 2101,
+    "suites": 200
+  },
+  "broadEditor": {
+    "status": "passed",
+    "passed": 196,
+    "engine": "Chromium",
+    "log": "motion-layout-r2-editor.log"
+  },
+  "broadCompiled": {
+    "status": "passed-with-capability-skip",
+    "passed": 170,
+    "skipped": 1,
+    "discovered": 171,
+    "files": 14,
+    "skip": "Firefox touch-emulation capability",
+    "log": "motion-layout-r2-production.log"
+  },
+  "finalGate": {
+    "status": "passed",
+    "stages": 5,
+    "unitTests": 2101,
+    "suites": 200,
+    "log": "motion-layout-r3-gate-build.log"
+  },
+  "finalCompiled": {
+    "status": "passed",
+    "interactionCases": 6,
+    "popupAccessibilityCases": 12,
+    "popupScannedViolations": 0,
+    "logs": [
+      "context-menu-compiled-qualified.log",
+      "context-menu-accessibility-final.log"
+    ]
+  },
+  "finalFixtureChecks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "applicationAndBuildUnchanged": true
+  },
+  "inventory": {
+    "unitTests": 2101,
+    "unitSuites": 200,
+    "editorCases": 196,
+    "editorFiles": 45,
+    "productionCases": 321,
+    "productionFiles": 30,
+    "scope": "Enumeration; not all production cases executed on final r3"
+  },
+  "external": [
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "af992b24-b270-47fc-8b5b-a3986dd0bbfd",
+      "serviceVerdict": "failed",
+      "auditVerdict": "Failed external assertions; native Canvas Only and artwork checks must be evaluated separately."
+    },
+    {
+      "role": "motion",
+      "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+      "runId": "5bcc446c-78de-4bb5-98a4-2309f1400769",
+      "serviceVerdict": "passed",
+      "auditVerdict": "Pass covers frame counts and session closure; exact numeric history, thirty-frame value and native pixels remain unasserted."
+    },
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "9271ee61-66de-4c3d-8b61-36332701667b",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow"
+    },
+    {
+      "role": "motion",
+      "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+      "runId": "fcd3baca-80ac-40ca-8068-78c9c61df76d",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow"
+    },
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "4986df01-cd76-4ed3-8190-7412c6c0c41f",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow"
+    }
+  ],
+  "limits": [
+    "Broad browser suites ran on r2; final r3 application delta is three color classes in one file, plus a separate test readiness prerequisite. Hash receipts establish scope.",
+    "Compact requested color dock has a documented target-size accessibility tradeoff.",
+    "External service passes do not establish complete planned coverage.",
+    "Real artists, physical devices, assistive technologies, deployment and remote CI not qualified."
+  ],
+  "publication": "Requested normal main commit/push with managed gate; publication receipt is separate from sealed local evidence."
+}

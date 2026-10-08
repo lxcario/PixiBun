@@ -1,0 +1,42 @@
+
+Running 1 test using 1 worker
+
+(node:12796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [firefox] › tests\production\stableStudioGeometry.spec.ts:78:5 › motion preview advances when worker results take longer than a cel duration (7.5s)
+
+
+  1) [firefox] › tests\production\stableStudioGeometry.spec.ts:78:5 › motion preview advances when worker results take longer than a cel duration 
+
+    Error: expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,58,46,76,255,58,46,76,255,58,46,76,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,58,46,76,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,58,46,76,255,58,46,76,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,255,255,255,255,255,255,255,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,255,255,255,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,237,232,244,255,58,46,76,255,58,46,76,255,237,232,244,255,237,232,244,255,58,46,76,255,58,46,76,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,224,140,166,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,224,140,166,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,255,255,255,255,237,232,244,255,237,232,244,255,237,232,244,255,216,154,85,255,240,190,124,255,240,190,124,255,216,154,85,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,255,255,255,255,237,232,244,255,237,232,244,255,216,154,85,255,240,190,124,255,251,233,198,255,251,233,198,255,240,190,124,255,240,190,124,255,216,154,85,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,237,232,244,255,237,232,244,255,216,154,85,255,240,190,124,255,240,190,124,255,216,154,85,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,237,232,244,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,205,191,223,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,237,232,244,255,205,191,223,255,58,46,76,255,237,232,244,255,237,232,244,255,205,191,223,255,58,46,76,255,237,232,244,255,205,191,223,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58,46,76,255,58,46,76,255,0,0,0,0,58,46,76,255,58,46,76,255,0,0,0,0,0,0,0,0,58,46,76,255,58,46,76,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+
+    Call Log:
+    - Timeout 4000ms exceeded while waiting on the predicate
+
+       95 |   const signature = () => preview.evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data).join(','));
+       96 |   const first = await signature(); await page.getByRole('button', { name: 'Play Loop', exact: true }).click();
+    >  97 |   await expect.poll(signature, { timeout: 4000 }).not.toBe(first);
+          |                                                       ^
+       98 |   await page.getByTestId('piximotion-panel').getByRole('button', { name: 'Pause', exact: true }).click(); await expect(preview).toHaveAttribute('aria-busy', 'false');
+       99 |   const paused = await signature(); await page.getByRole('button', { name: 'Play Loop', exact: true }).click(); await expect.poll(signature, { timeout: 4000 }).not.toBe(paused);
+      100 |   await page.getByRole('button', { name: 'Cancel (Escape)', exact: true }).click(); await expect(preview).toHaveCount(0);
+        at D:\PixiBun\tests\production\stableStudioGeometry.spec.ts:97:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\motion-layout-isolated-motion\stableStudioGeometry-motio-8303f--longer-than-a-cel-duration-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\motion-layout-isolated-motion\stableStudioGeometry-motio-8303f--longer-than-a-cel-duration-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\motion-layout-isolated-motion\stableStudioGeometry-motio-8303f--longer-than-a-cel-duration-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\motion-layout-isolated-motion\stableStudioGeometry-motio-8303f--longer-than-a-cel-duration-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [firefox] › tests\production\stableStudioGeometry.spec.ts:78:5 › motion preview advances when worker results take longer than a cel duration 

@@ -419,7 +419,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
   return (
     <footer data-testid="bottom-timeline" className="h-32 bg-[var(--desk-surface)] border-t border-[var(--desk-border)] px-4 py-1.5 flex flex-col justify-between select-none z-20 text-[var(--text-heading)] shadow-sm transition-colors duration-150">
       {/* Top Controls Bar: Play, FPS, Loop Mode, Onion Skin, Frame Actions */}
-      <div className="flex items-center justify-between border-b border-[var(--desk-border)] pb-1.5">
+      <div className="h-9 min-h-9 shrink-0 flex items-center justify-between border-b border-[var(--desk-border)] pb-1.5">
         {/* Left: Unified Playback & Timing Instrument */}
         <div className="flex items-center gap-2.5">
           {/* Playback Controls */}
@@ -503,7 +503,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 </div>
 
                 {/* Active Frame Duration Input */}
-                <div className="h-7 flex items-center gap-1 bg-[var(--surface-0)] px-1.5 rounded-[2px] border border-[var(--desk-border)]">
+                <div className="h-7 shrink-0 whitespace-nowrap flex items-center gap-1 bg-[var(--surface-0)] px-1.5 rounded-[2px] border border-[var(--desk-border)]">
                   <span className="text-[var(--text-muted)] font-sans text-[10px]">Frame time</span>
                   <input
                     type="number"
@@ -548,7 +548,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                   <span>Onion Skin</span>
                 </TactileButton>
                 <button type="button" data-testid="onion-settings" aria-label="Onion skin settings" title="Configure onion skin" onClick={() => setIsOnionSettingsOpen(true)} className="h-7 w-7 border border-[var(--desk-border)] rounded-sm text-sm">⚙</button>
-                <span id="onion-skin-notice" className="w-[94px] shrink-0 text-[9px] leading-tight text-[var(--text-muted)]" aria-live="polite">
+                <span id="onion-skin-notice" className="w-[140px] h-7 shrink-0 hidden xl:flex items-center text-[10px] leading-3 text-[var(--text-muted)]" aria-live="polite">
                   {onionNotice}
                 </span>
               </div>
@@ -557,7 +557,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
         </div>
 
         {/* Right: Frame Actions (Add, Duplicate, Delete, Collapse) */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           <TactileButton
             size="sm"
             variant="default"
@@ -577,7 +577,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
 
           {!isPlaygroundMode && (
             <details className="relative group">
-              <summary className="h-7 px-2 flex items-center gap-1 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer list-none rounded-[2px]">
+              <summary className="h-7 shrink-0 whitespace-nowrap px-2 flex items-center gap-1 text-xs pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] cursor-pointer list-none rounded-[2px]">
                 Frame actions <span aria-hidden="true">▾</span>
               </summary>
               <div className="absolute right-0 bottom-full mb-1 z-40 min-w-40 p-1 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] shadow-lg">

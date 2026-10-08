@@ -41,7 +41,7 @@ import {
   resolveMotionSource,
 } from '@/lib/animation/pixiMotion';
 import { createMotionRenderer } from '@/lib/animation/motionRenderer';
-import { stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
+import { countClippedMotionPixels, stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
 import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
 import { useViewportPointerEvents } from '@/hooks/viewport/useViewportPointerEvents';
 import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvents';
@@ -748,6 +748,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // PixiMotion: Render non-destructive live preview onto motionPreviewCanvasRef
   const motionSessionId = motionPart?.id;
+  useEffect(() => { renderOnionSkin(); }, [motionSessionId, renderOnionSkin]);
   useEffect(() => {
     if (!motionSessionId) return;
     const renderer = createMotionRenderer(); motionRendererRef.current = renderer;
@@ -768,6 +769,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const renderer = motionRendererRef.current ?? createMotionRenderer(); motionRendererRef.current = renderer;
     let live = true;
     canvas.setAttribute('aria-busy', 'true');
+    studioEvents.emit('pixibun:motion-preview-status', { partId: motionPart.id, pending: true });
 
     // 1. Calculate active pose
     // Static endpoints use the same integer translation sampling as playback/bake.
@@ -821,6 +823,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
       canvas.setAttribute('aria-busy', 'false');
+      const clippedPixels = countClippedMotionPixels(transformed, canvasWidth, canvasHeight);
+      canvas.setAttribute('data-clipped-pixels', String(clippedPixels));
+      studioEvents.emit('pixibun:motion-preview-status', { partId: motionPart.id, pending: false, clippedPixels });
       setMotionPreviewOwner(motionPart.id);
     }).catch(error => {
       if (!live || (error instanceof DOMException && error.name === 'AbortError')) return;
@@ -920,6 +925,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         isOpen={radialMenu.isOpen}
         position={radialMenu.position}
         onClose={radialMenu.closeMenu}
+        viewportRef={containerRef}
       />
 
       {/* Locked Layer Warning Toast */}
@@ -935,8 +941,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       )}
 
       {/* Centered Canvas Container Area */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- The focusable drawing application opens its contextual tools with Shift+F10 or the Context Menu key. */}
       <div
         id="center-canvas-area"
+        onKeyDown={radialMenu.handleKeyDown}
         data-tutorial="canvas"
         role="application"
         tabIndex={0}
@@ -1016,7 +1024,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"
-          style={{ filter: cvdFilterCss, imageRendering: 'pixelated' }}
+          style={{ filter: cvdFilterCss, imageRendering: 'pixelated', visibility: motionPart ? 'hidden' : 'visible' }}
         />
 
         {/* Layer 2: Onboarding Playground Tracing Stencil */}

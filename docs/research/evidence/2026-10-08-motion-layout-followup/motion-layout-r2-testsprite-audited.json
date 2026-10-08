@@ -1,0 +1,287 @@
+{
+  "recordedAt": "2026-10-08T20:54:30.976Z",
+  "buildId": "-HvBMhgj6Azx7DwkbWZR3",
+  "cacheTag": "pixibun-20261008-motion-layout-r2",
+  "privacy": "Terminal IDs and synthetic action/assertion descriptions only; raw account, credentials, scripts, HTML, media URLs and tunnel details omitted.",
+  "newCasesCreated": 0,
+  "cases": [
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "9271ee61-66de-4c3d-8b61-36332701667b",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow",
+      "qualificationLimit": "Brush-size settings and visible overlay/artwork asserted; exact brush footprint, unchanged saved pixels and panel-hidden state are not asserted. No right-click assertions in this existing case.",
+      "startedAt": "2026-10-08T20:43:33.209Z",
+      "finishedAt": "2026-10-08T20:47:14.989Z",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 2,
+          "action": "click",
+          "description": "Click 'Studio link'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 3,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 4,
+          "action": "click",
+          "description": "Click '4px brush preset button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 5,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 6,
+          "action": "click",
+          "description": "Click 'Off Rule of thirds Golden ratio Center crosshair... dropdown'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 7,
+          "action": "select",
+          "description": "Select option in 'Off Rule of thirds Golden ratio Center crosshair... dropdown'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 8,
+          "action": "click",
+          "description": "Click 'Save now button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 9,
+          "action": "click",
+          "description": "Click 'View ▼ button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 10,
+          "action": "click",
+          "description": "Click 'Canvas Only ⇧ Tab button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 11,
+          "action": "click",
+          "description": "Click 'Restore panels ⇧ Tab button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 12,
+          "action": "visible",
+          "description": "The brush size is set to 4 px in both the top quick-control and the Pen inspector.",
+          "status": "passed",
+          "stepType": "assertion"
+        },
+        {
+          "stepIndex": 13,
+          "action": "visible",
+          "description": "The Diagonals composition guide is enabled as an overlay and the painted stroke remains visible after saving and toggling view modes.",
+          "status": "passed",
+          "stepType": "assertion"
+        }
+      ],
+      "dashboard": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/2518c15a-345c-471c-a1da-6a432827e453"
+    },
+    {
+      "role": "motion",
+      "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+      "runId": "fcd3baca-80ac-40ca-8068-78c9c61df76d",
+      "serviceVerdict": "passed",
+      "auditVerdict": "inconclusive for the complete planned workflow",
+      "qualificationLimit": "Studio size, three-frame Bake, one-frame Undo and cancelled editor closure/artwork visibility asserted. Exact pose values, the 30-frame setting, Redo frame count and pixel equality remain unasserted.",
+      "startedAt": "2026-10-08T20:43:33.189Z",
+      "finishedAt": "2026-10-08T20:52:39.968Z",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 2,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228/studio?template=hearth-ghost",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 3,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 4,
+          "action": "click",
+          "description": "Click 'Create Motion Part button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 5,
+          "action": "fill",
+          "description": "Fill '12' into number field",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 6,
+          "action": "click",
+          "description": "Click 'Undo pose button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 7,
+          "action": "click",
+          "description": "Click 'Redo pose button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 8,
+          "action": "fill",
+          "description": "Fill '30' into number field",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 9,
+          "action": "click",
+          "description": "Click 'Reset Pose button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 10,
+          "action": "click",
+          "description": "Click 'Undo pose button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 11,
+          "action": "fill",
+          "description": "Fill '3' into number field",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 12,
+          "action": "click",
+          "description": "Click 'BAKE TO TIMELINE button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 13,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 14,
+          "action": "click",
+          "description": "Click 'Redo last action button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 15,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 16,
+          "action": "click",
+          "description": "Click 'Redo last action button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 17,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 18,
+          "action": "click",
+          "description": "Click 'Create Motion Part button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 19,
+          "action": "click",
+          "description": "Click 'Cancel (Escape) button'",
+          "status": "passed",
+          "stepType": "action"
+        },
+        {
+          "stepIndex": 20,
+          "action": "visible",
+          "description": "Studio is open with a 16×16 canvas and one timeline frame.",
+          "status": "passed",
+          "stepType": "assertion"
+        },
+        {
+          "stepIndex": 21,
+          "action": "visible",
+          "description": "BAKE TO TIMELINE produced three timeline frames.",
+          "status": "passed",
+          "stepType": "assertion"
+        },
+        {
+          "stepIndex": 22,
+          "action": "visible",
+          "description": "Workspace Undo reverted the timeline back to exactly one frame.",
+          "status": "passed",
+          "stepType": "assertion"
+        },
+        {
+          "stepIndex": 23,
+          "action": "visible",
+          "description": "The motion editor is closed and the drawing workspace (ghost artwork) is visible after cancelling.",
+          "status": "passed",
+          "stepType": "assertion"
+        }
+      ],
+      "dashboard": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/3e1fe6cb-8136-4403-b9ed-756ce296d1ba"
+    }
+  ]
+}

@@ -207,7 +207,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
               onClick={handleAutoRenderCastShadow}
               title="Analyze artwork baseline and cast a soft ground shadow"
               aria-label="Analyze & Cast Shadow"
-              className="text-xs py-2 font-bold justify-center"
+              className="w-full h-9 text-xs font-semibold"
             >
               <PixelIcon name="sun" size={14} />
               <span>Add Floor Shadow</span>
@@ -333,7 +333,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
               onClick={handleRenderCastShadow}
               title="Generate a soft ground shadow on a new layer"
               aria-label="Render Cast Shadow"
-              className="text-xs py-2 font-bold justify-center"
+              className="w-full h-9 text-xs font-semibold"
             >
               <PixelIcon name="sun" size={14} />
               <span>Cast Ground Shadow</span>

@@ -29,7 +29,7 @@ export function MotionRigLibrary() {
     <h3 className="font-bold">Saved motion rigs</h3>
     {state.motionPart && <form onSubmit={e => { e.preventDefault(); void run(() => saveMotionRig(name)); }} className="space-y-2">
       <label className="block">Rig name <input aria-label="Rig name" value={name} maxLength={80} onChange={e => setName(e.target.value)} className="w-full p-1 bg-[var(--surface-0)] border border-[var(--desk-border)]" /></label>
-      <button type="submit" disabled={busy || !name.trim()} className="pixel-tactile-btn p-2">Save motion rig</button>
+      <button type="submit" disabled={busy || !name.trim()} className="pixel-tactile-btn inline-flex items-center justify-center h-7 px-2 text-xs leading-none whitespace-nowrap">Save motion rig</button>
     </form>}
     <p className="text-[var(--text-muted)]">Each rig keeps one part, its selection, pivot and poses. Opening checks the saved artwork.</p>
     {state.hasFloatingSelection && <p role="status">Commit or cancel the floating selection before opening a rig.</p>}
@@ -46,6 +46,6 @@ export function MotionRigLibrary() {
         </div>
       </div>;
     })}
-    {message && <p role="status">{message}</p>}
+    <p role="status" className="h-10 text-[11px] leading-4">{message}</p>
   </section>;
 }

@@ -83,18 +83,18 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
           },
           hover: { 
             scale: 1,
-            y: shouldReduceMotion ? 0 : -1,
+            y: 0,
             transition: { duration: 0.1, ease: 'easeOut' } 
           },
           tap: { 
             scale: 1, 
-            y: shouldReduceMotion ? 0 : 1, 
+            y: 0,
             transition: { duration: 0.05, ease: 'easeOut' } 
           }
         }}
         className={twMerge(
           clsx(
-            'group relative select-none rounded-[2px] font-sans',
+            'group relative inline-flex items-center justify-center align-middle shrink-0 select-none rounded-[2px] font-sans leading-none whitespace-nowrap',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--desk-surface)]',
             !isImageButton && 'border',
             'transition-colors duration-100',
@@ -126,7 +126,7 @@ export const TactileButton = React.forwardRef<HTMLButtonElement, TactileButtonPr
             )}
           </div>
         ) : (
-          <span className="relative z-0 flex items-center justify-center gap-1.5 leading-none">
+          <span className="relative z-0 flex w-full items-center justify-center gap-1.5 leading-none">
             {children}
           </span>
         )}

@@ -9,6 +9,7 @@ import { getGlobalHistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/his
 import { captureMotionPart } from '@/lib/animation/pixiMotion';
 import { PixiMotionPanel } from '@/components/layout/inspector/PixiMotionPanel';
 import { MOTION_EDIT_LIMITS } from '@/lib/animation/motionEditing';
+import { studioEvents } from '@/lib/events/studioEvents';
 
 let drawing: ReturnType<typeof useViewportDrawing>;
 beforeEach(() => {
@@ -76,9 +77,15 @@ describe('precise motion controls', () => {
   it('preview follows the source cel duration instead of a different project FPS', async () => {
     vi.useFakeTimers(); act(() => useStudioStore.setState(s => { s.frames[0].durationMs = 200; s.fps = 60; }));
     render(<PixiMotionPanel />); fireEvent.click(screen.getByRole('button', { name: 'Play Loop' }));
-    await act(async () => { await vi.advanceTimersByTimeAsync(220); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(state().motionPreviewIndex).toBe(0);
+    act(() => studioEvents.emit('pixibun:motion-preview-status', { partId: state().motionPart!.id, pending: false }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(200); });
     expect(state().motionPreviewIndex).toBe(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(200); });
+    expect(state().motionPreviewIndex).toBe(1); // No viewport completion: retain the in-flight pose.
+    act(() => studioEvents.emit('pixibun:motion-preview-status', { partId: state().motionPart!.id, pending: false }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(state().motionPreviewIndex).toBe(2);
     fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
   });

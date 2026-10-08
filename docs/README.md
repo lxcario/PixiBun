@@ -1,5 +1,7 @@
 # Documentation map
 
+The [8 October playback and interface follow-up](research/2026-10-08-motion-layout-followup.md) tracks the user's animation, button/layout, compact-color-dock and right-click-menu feedback. Its final verification and publication status is recorded there; the earlier session review retains its own build and outcomes.
+
 The [8 October session review and publication](research/2026-10-08-session-review-publication.md) records the fresh Markdown/remaining-work review, fractional-preview and odd-pivot repairs, compact-control and saved-picker fixes, and explicitly requested push. Final local verdicts, external coverage limits, publication and deployment remain distinct.
 
 The [8 October motion rectangle hardening](research/2026-10-08-motion-bounds-hardening.md) tracks the current worker, clipping, sampling and dependent-layer safeguards. It follows the earlier editing checkpoint without changing its historical evidence.

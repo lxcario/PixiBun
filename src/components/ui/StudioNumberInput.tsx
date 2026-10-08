@@ -79,7 +79,7 @@ export default function StudioNumberInput({
 
   return (
     <div className={`flex items-center justify-between h-[28px] w-full gap-[var(--space-3)] ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className}`}>
-      <label htmlFor={inputId} className="font-sans text-[11px] text-[var(--text-body)] shrink-0">
+      <label htmlFor={inputId} className="font-sans text-xs text-[var(--text-body)] min-w-0">
         {label}
       </label>
       <div className="flex items-center h-full bg-[var(--surface-2)] border border-[var(--desk-border)] rounded-[var(--radius-sm)] overflow-hidden focus-within:ring-2 focus-within:ring-[var(--accent-gold)] focus-within:border-[var(--accent-gold)]">
@@ -88,7 +88,7 @@ export default function StudioNumberInput({
           tabIndex={-1}
           disabled={disabled || isAtMin}
           onClick={decrement}
-          className="h-full px-2 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-3)] disabled:opacity-50 transition-colors cursor-pointer"
+          className="h-full w-6 shrink-0 text-xs flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-3)] disabled:opacity-50 transition-colors cursor-pointer"
           aria-label="Decrease value"
         >
           -
@@ -105,7 +105,7 @@ export default function StudioNumberInput({
             min={min}
             max={max}
             step={step}
-            className={`w-[40px] h-full bg-transparent border-none text-center font-mono text-[10px] font-bold text-[var(--text-heading)] focus:outline-none focus:ring-0 p-0 m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield] ${unit ? 'pr-4' : ''}`}
+            className={`w-12 h-full bg-transparent border-none text-center font-mono text-xs font-medium text-[var(--text-heading)] focus:outline-none focus:ring-0 p-0 m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield] ${unit ? 'pr-4' : ''}`}
           />
           {unit && (
             <span className="absolute right-1 pointer-events-none font-mono text-[10px] font-bold text-[var(--text-muted)]">
@@ -118,7 +118,7 @@ export default function StudioNumberInput({
           tabIndex={-1}
           disabled={disabled || isAtMax}
           onClick={increment}
-          className="h-full px-2 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-3)] disabled:opacity-50 transition-colors cursor-pointer"
+          className="h-full w-6 shrink-0 text-xs flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-3)] disabled:opacity-50 transition-colors cursor-pointer"
           aria-label="Increase value"
         >
           +

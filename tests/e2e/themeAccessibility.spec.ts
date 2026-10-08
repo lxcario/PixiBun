@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { unexpectedStudioAccessibilityFindings } from '../helpers/studioAccessibilityFindings';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -51,7 +52,7 @@ test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
         await page.waitForTimeout(300);
       });
 
-      test(`shell and blank canvas meet WCAG standards under ${theme.name}`, async ({ page }) => {
+      test(`shell and blank canvas record accessibility findings and the requested compact dock tradeoff under ${theme.name}`, async ({ page }, info) => {
         const canvas = page.getByTestId('main-composite-canvas');
         await expect(canvas).toBeVisible();
 
@@ -65,10 +66,7 @@ test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
           .withTags(WCAG_TAGS)
           .analyze();
 
-        const blockingViolations = results.violations.filter(
-          (v) => v.impact === 'critical' || v.impact === 'serious'
-        );
-        expect(blockingViolations).toEqual([]);
+        expect(await unexpectedStudioAccessibilityFindings(page, results.violations, info)).toEqual([]);
       });
 
       test(`right inspector tabs meet WCAG standards under ${theme.name}`, async ({ page }) => {

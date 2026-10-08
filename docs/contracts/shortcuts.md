@@ -16,6 +16,7 @@ The generated tool table in [source-contracts.json](../generated/source-contract
 | Play / Pause; previous / next frame | Space; comma / period |
 | Onion skin toggle | F3; previous/next counts, tints and opacity are in the timeline gear |
 | Canvas only / restore panels | Shift+Tab with canvas focus; focused controls and dialogs retain keyboard navigation |
+| Canvas tools popup | Right-click the workspace, or Shift+F10 / Context Menu key with the drawing canvas focused; arrows/Home/End navigate, Enter selects, Tab stays inside, Escape closes |
 | Pan / Zoom / Fit / 100% | Middle or supported Alt+drag; wheel; Ctrl/Cmd+0 / Ctrl/Cmd+1 |
 | Step zoom / brush size | Ctrl/Cmd + plus/minus; left/right square brackets |
 | Pixel grid | Ctrl/Cmd + Quote key; the produced apostrophe is the fallback when a physical code is unavailable |
@@ -24,6 +25,8 @@ The generated tool table in [source-contracts.json](../generated/source-contract
 | Symmetry / selection flip | Shift+H/V toggles mirrors; H/V flip a selection through viewport handlers, or toggle mirrors when no selection |
 
 Letter shortcuts use physical QWERTY key positions, including letter-based Save/Undo/Redo/clipboard commands. Where a keyboard does not report a physical letter code, the produced key provides a fallback. The grid toggle also accepts the physical Quote position. Other punctuation, numbers, Space and navigation retain their character/key meanings. This does not change the interface language or the operating system's keyboard layout.
+
+The canvas popup's scoped opening keys are owned by [useRadialContextMenu](../../src/hooks/useRadialContextMenu.ts); button navigation, focus restoration and pointer isolation are owned by [RadialContextMenu](../../src/components/studio/RadialContextMenu.tsx). Its labeled tools reuse the canonical metadata above.
 
 Command search opens in the shared native modal, with focus on its combobox. Up/Down select a result, Enter runs it, and Escape restores the opener. The highlighted result is exposed through aria-activedescendant; results do not add individual Tab stops. Empty search results do not execute a command. Undo/Redo remain disabled with an explanation when unavailable. A command that opens another dialog gives that dialog focus; restoration cannot steal focus back to a disconnected search input. Tool selection, Fit, actual pixels, grid and onion skin share registry actions and shortcut labels with keyboard dispatch. Fit measures the drawing region, centers pan and uses the canonical zoom limits/ladder.
 

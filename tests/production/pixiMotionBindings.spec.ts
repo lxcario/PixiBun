@@ -57,7 +57,7 @@ test('compiled stale source refuses bake; fresh capture previews, bakes, undoes,
   await page.locator('#center-canvas-area').focus(); await page.keyboard.press('b');
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.click(box.x + box.width * 0.3, box.y + box.height * 0.3);
-  await expect(page.getByTestId('piximotion-panel').getByRole('status')).toHaveText(/source artwork changed/);
+  await expect(page.getByTestId('piximotion-panel').getByRole('status').filter({ hasText: /source artwork changed/ })).toHaveText(/source artwork changed/);
   await expect(page.getByRole('button', { name: 'BAKE TO TIMELINE', exact: true })).toBeDisabled();
   await expect.poll(() => pixels(page)).not.toEqual(original);
   await expect(page.getByTestId('main-composite-canvas')).toHaveCSS('opacity', '1');
