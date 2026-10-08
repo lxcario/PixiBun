@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-10-08T17:14:46.920Z",
+  "strict": true,
+  "activeInputs": 631,
+  "currentSourceInputs": 330,
+  "currentTestInputs": 287,
+  "removed": [
+    "docs/research/evidence/2026-09-30/integrity.probes.ts",
+    "docs/research/evidence/2026-10-05-audit-hardening/gradient-diagnostic.spec.ts",
+    "docs/research/evidence/2026-10-05-audit-hardening/palette-cycle-compiled.spec.ts",
+    "docs/research/evidence/2026-10-05-deep-audit/probes.test.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-brush-guide-export.config.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-brush-guide-export.spec.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-editor-reuse.config.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-editor.config.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-odd-pivot-browser.config.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-odd-pivot-browser.spec.ts",
+    "docs/research/evidence/2026-10-08-session-review-publication/publication-odd-pivot-diagnostic.test.ts"
+  ],
+  "added": [],
+  "priorConfigSHA256": "141100f9dcfea7af16880fe86fc43710c342d591a1d6eea388a4d1859a27f550",
+  "finalConfigSHA256": "ef0e66379d28d0892652e4a480bba0f9cb60d223f1c274c7fc80001640a4631d",
+  "applicationBuildUnchanged": true
+}
