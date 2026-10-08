@@ -21,11 +21,12 @@ Plum shadows, wisteria accents, amber buttons and a few live pixel glints make C
 - **Draw something that feels like yours.** Start with a pixel pen, shapes and fills. Add layers, select a detail, move it around, or undo a stroke and try again. Import an image or sprite sheet when you already have a starting point.
 - **Try a gentle first lesson.** Desktop Playground gives you a fresh practice sheet while your Studio drawing stays separate. **Return to drawing** brings it back; **Keep practice in Studio** saves a new project. The [12 illustrated lessons](docs/guides/learning-and-playground.md) help you find a starting point. Practice is temporary until you keep it.
 - **Give it a little life.** Draw frames, use onion skin to see faded guides from the neighboring poses, choose how long each frame stays on screen and play a loop. Group frames into named clips to keep different movements together.
+- **Move one selected part.** On an unlocked color layer, capture a selection as a rigid part, set Start and End poses with precise controls and session Undo/Redo, preview the arc and bake 2–30 editable cels. Save a named rig to reopen its settings while the source artwork still matches. [Rigid-part workflow](docs/guides/artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion).
 - **Find your colors.** Create a named palette, rearrange its colors, or scan the canvas for up to six main colors. Choose the First and Last colors you want to cycle; choosing just the fire colors can keep the wood and outlines still.
 - **Try a different light.** PixiTools opens a lighting preview with a movable bulb. Adjust the light, see how your sprite responds, then Apply or Cancel. Cleanup tools also offer before/after previews so you can look before making a change.
 - **Take your pixels somewhere.** Save a still image as PNG, a moving image as GIF or APNG, or a sprite sheet with your frames in one image. Video options depend on your browser. The [illustrated export guide](docs/guides/exporting.md) helps you choose a format, including options for games.
 
-Palette cycling changes colors in the active frame. To make a flame lean or a character hop, draw the changing poses in the timeline.
+Palette cycling changes colors in the active frame. Draw changing poses in the timeline, or try rigid-part motion for a selected detail. Rigid motion does not infer anatomy or generate a complete character animation; inspect and refine each result.
 
 ## A little light for Bun
 

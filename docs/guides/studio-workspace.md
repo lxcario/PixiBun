@@ -76,11 +76,13 @@ Choose **Layers**, then select the layer you want to edit. Each animation frame 
 
 Frame/layer capacity and locked destinations can disable actions. Co-Draw guests cannot change project structure. See [animation](animation-and-review.md) and [collaboration](collaboration-and-privacy.md).
 
+Merge Down accepts visible Normal-blend contributions with their opacity and refuses visible non-Normal blending. The result is baked raster artwork; it clears the merged generated-effect identity. Undo restores the admitted original structure and pixels.
+
 ## Colors close to hand
 
 ![The color picker opened from a color well.](../assets/screenshots/2026-10-02-feature-guide/color-picker.png)
 
-Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **Workspace → Color** pins the same picker in the inspector for immediate drawing-color changes. The quick flyout includes palette and recent colors. **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
+Click a color well at the lower left for quick swatches; double-click for the picker. Set a color with the hue ring and triangle (or square), HSV sliders or hex field, then confirm. **View → Arrange... → Color picker** pins the picker in the inspector for immediate drawing-color changes. The Palette tab also offers **Pin color panel** and **Unpin color panel**. The quick flyout includes palette and recent colors. **X** swaps primary and secondary; the reset control restores black and white. [Browse palette previews](artist-workspace.md#compare-palettes-before-choosing), or follow the [palette authoring guide](palettes-and-cycling.md) for ramps, roles and cycling.
 
 ## Selections and transforms
 
@@ -89,9 +91,11 @@ Click a color well at the lower left for quick swatches; double-click for the pi
 1. Use **Marquee Box (M)**, **Lasso (Q)** or **Magic Wand (W)** to select pixels. Shift adds; Alt subtracts. On selection tools, Alt's subtract gesture takes priority over viewport panning.
 2. Drag inside to move, or use arrow keys to nudge. Shift can lock a drag axis. Use the resize handles to scale; the outer rotation zones rotate, with Shift snapping to 15° steps. The pivot sets the rotation center.
 3. The action bar flips horizontally/vertically or rotates 90° in either direction. **H / V** act on a selection; without a selection they change drawing mirrors. **Ctrl+C / X / V** copy, cut and paste canvas selections through the editor clipboard.
-4. Use the action bar's **Commit** or **Cancel** deliberately. **Enter** commits the transform. Escape's behavior depends on the active transform/floating state: the transform cancel control cancels, while ordinary floating-selection exit can commit pixels before clearing the selection. If a commit changed art unexpectedly, use Undo.
+4. Use the action bar's **Commit** or **Cancel** deliberately. **Enter** commits the transform; **Escape** is owned by the viewport transform handler and cancels the float without first committing it. These keys yield to dialogs and focused controls. If a committed edit changed art unexpectedly, use Undo.
 
 Selection masks matter: a lasso or wand selection does not fill its entire bounding rectangle. Ordinary drawing remains constrained by the active mask. Copy/paste is a pixel workflow, not a transfer of the whole frame's layer metadata.
+
+**Tools** also exposes RotSprite/Paeth rotation and one rigid-part motion. [Motion and saved rigs](artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion) explains source requirements, preview, bake and the limits of this first slice. Commit or cancel a floating selection before capturing/opening a motion part.
 
 ## View and symmetry
 

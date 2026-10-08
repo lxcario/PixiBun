@@ -1,0 +1,25 @@
+{
+  "fromBuild": "L5RENupTxw0I-WpwDwymI",
+  "toBuild": "jJUpvYssT5C0_qYh8GuKv",
+  "changed": [
+    "src/components/layout/AtelierRail.tsx",
+    "src/components/layout/CenterViewport.tsx",
+    "src/components/layout/LeftToolbar.tsx",
+    "src/components/layout/RightInspector.tsx",
+    "src/components/layout/inspector/PalettePanel.tsx",
+    "src/components/system/OfflineIndicator.tsx",
+    "src/components/ui/ArtistColorPicker.tsx",
+    "tests/e2e/backupTrust.spec.ts",
+    "tests/e2e/colorReplaceTolerance.spec.ts",
+    "tests/e2e/eraseColor.spec.ts",
+    "tests/e2e/lassoTransformIntegrity.spec.ts",
+    "tests/e2e/studioChrome.spec.ts",
+    "tests/e2e/viewportOverlayBounds.spec.ts",
+    "tests/production/compactControlAccessibility.spec.ts"
+  ],
+  "removed": [],
+  "buildChanged": [
+    ".next/BUILD_ID",
+    ".next/build-manifest.json"
+  ]
+}

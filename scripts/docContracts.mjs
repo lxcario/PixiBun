@@ -38,7 +38,8 @@ export function validateMarkdownLinks(root, docs) {
 }
 export function ownedMarkdown(root) {
   // Git lists tracked and new non-ignored project docs, excluding private scratch/worktrees.
-  return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { cwd: root, encoding: 'utf8' })
+  // Include long paths in retained browser evidence without truncating Git's list.
+  return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { cwd: root, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 })
     .split('\0').filter(p => p.endsWith('.md') && !p.startsWith('.kilo/')).sort();
 }
 export function sourceContracts(root) {

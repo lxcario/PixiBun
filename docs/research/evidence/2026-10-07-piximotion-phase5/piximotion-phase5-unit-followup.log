@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+
+ Test Files  194 passed (194)
+      Tests  2020 passed (2020)
+   Start at  13:39:24
+   Duration  35.98s (transform 47.35s, setup 10.75s, import 157.17s, tests 101.22s, environment 105.16s)
+

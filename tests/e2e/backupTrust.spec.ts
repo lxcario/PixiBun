@@ -115,7 +115,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   await expect(header.getByRole('tooltip')).toHaveCount(0);
   await expect(header.getByTestId('appearance-button')).toContainText('Studio');
   await expect(page.getByTestId('shortcuts-guide-button')).toHaveCount(0);
-  expect(await header.locator('button').count()).toBe(15);
+  expect(await header.locator('button').count()).toBe(20);
 
   // Rename through the real control; a long title must not push actions out of reach.
   await project.getByRole('button', { name: /^Rename project/ }).click();
@@ -227,7 +227,7 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
 
 test('onion skin explains why no ghost is visible', async ({ page }) => {
   await page.goto('/studio');
-  const onion = page.getByRole('button', { name: 'Onion Skin' });
+  const onion = page.getByRole('button', { name: 'Onion Skin', exact: true });
   await expect(onion).toHaveAttribute('aria-pressed', 'false');
   await onion.click();
   await expect(onion).toHaveAttribute('aria-pressed', 'true');

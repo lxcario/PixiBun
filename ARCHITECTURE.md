@@ -1,5 +1,11 @@
 # Architecture & System Design — PixiBun Atelier
 
+## Motion and workspace ownership update — 8 October 2026
+
+The current checkout has one rigid-part motion session, source-bound capture/preview/bake, saved format-v4 rig definitions and atomic saved-rig Open. [pixiMotion.ts](src/lib/animation/pixiMotion.ts) validates the source cel, raster generation/revision, layer state and admission before baking ready cels in one structural history action. [motionRigWorkspace.ts](src/lib/animation/motionRigWorkspace.ts) validates saved fingerprints and opens the source frame/layer with End pose and playback stopped. Floating selections, active Co-Draw and normal-tagged or normal-map-effect sources are refused. Movement also refuses source frames with normal artwork or research siblings that depend on the moving source. Separate bounded pose/pivot/timing Undo/Redo and precise controls are implemented; multi-part rigs and source rebinding remain open; saved rig metadata is separate from the transient retained raster/mask. [Storage](docs/contracts/storage.md), [rendering](docs/contracts/rendering.md) and the [cross-phase review](docs/research/2026-10-07-piximotion-cross-phase-hardening.md) own the limits and evidence.
+
+Workspace transactions stage raster/history/metadata and publish one coherent notification batch, containing subscriber errors after commit. Source-owned asynchronous jobs reject stale output and release reservations on settlement. Selection Cancel also checks the lifted raster's owner before restoring pixels. Motion preview and UI Bake use an isolated, cancellable worker with source/session checks and latest-preview coalescing. Its typed-array output is a rotated rectangle with destination offsets, shared by the worker, bounded fallback and clipped preview/bake stamping; composition and other algorithm previews still have main-thread work. These boundaries cover the named paths, not every editor mutation. Broader device and artist qualification remains pending. [Editing and quality follow-up](docs/research/2026-10-07-editing-quality-release-hardening.md).
+
 ## Audit integration update — 3 October 2026
 
 Co-draw checkpoints the original project before adopting a separate shared identity. Peer admission rejects unsafe clock values and malformed typed signaling; reliable delivery distinguishes a transient interruption from terminal cleanup. Workspace input yields to dialogs, editable controls and IME composition, while selection transforms and primary-touch strokes have a single owner. Import previews use bounded display surfaces and source pixels for empty-cell filtering. APNG yields between frames, supports cancellation and prefers native compression with a stored-block fallback. Diagnostics apply bounded write/send queues and recheck consent before transmission.
@@ -149,10 +155,10 @@ graph TD
 Iso ON keeps the projected 2:1 stepper; FREE uses the ordinary clipped line path in both useShapePointerHandler preview and commit. Brush size and symmetry still use the common drawing path. CenterViewport owns one floating preview outside the translated drawing stage. Its pointer controls do not start parent canvas strokes, and expanding a minimized preview recomposites current pixels. [Current instructions and phase 3 evidence](docs/research/2026-10-02-feature-repairs-phase3.md).
 
 ### Overlay-Free Compositor & Eyedropper Isolation (`src/lib/render/compositor.ts`)
-The `compositeFrame()` module serves as the single visual source of truth for pure pixel compositing:
+The `compositeFrame()` module is the shared overlay-free compositor for its callers. It reads DOM canvases and registry state; the main viewport also has its own display composition path:
 - **Zero Editor Chrome**: Bottom-up compositing honoring layer visibility, opacity, and blend modes without including onion skin ghosts, grid lines, or selection marquees.
 - **Eyedropper & Exporters**: The eyedropper samples directly from `compositeFrame()`, making color picking completely immune to normal-map preview modes, HUD guides, and ghost underlays.
-- **Living Timeline Thumbnails**: Timeline frame cards render `<FrameThumbnail>` elements backed by `compositeFrame()`, with live re-compositing restricted to the active frame on `bufferVersion` updates to limit the number of thumbnail recompositions; raster work still scales with pixel area.
+- **Living Timeline Thumbnails**: Visible/nearby `<FrameThumbnail>` cells use aspect-correct surfaces up to 24 px per axis; hover previews use up to 96 px. [framePreview.ts](src/lib/render/framePreview.ts) invalidates by the frame's layer order, visibility, opacity, blending and raster generations/revisions. It reserves a temporary native-size `compositeFrame()` surface before downsampling once; offscreen retained preview surfaces unmount. Timing or unrelated frame edits do not redraw a preview. Native composition still scales with pixel area.
 
 ### Pure Onion Skinning Engine (`src/lib/render/onionSkin.ts`)
 - Pure, DOM-free `getOnionSkinSpecs()` computes clamped previous/next ghost specifications with distance falloff `base * (1 - 0.25 * (dist - 1))` and `prevColor`/`nextColor` tint mapping.
@@ -161,10 +167,10 @@ The `compositeFrame()` module serves as the single visual source of truth for pu
 ### Direct Buffer Memory Management (`src/lib/engine/bufferRegistry.ts`)
 Layers are maintained as detached `HTMLCanvasElement` objects indexed by layer UUID in memory. When the user resizes the canvas:
 1. `resizeAllBuffers(newWidth, newHeight, anchor, resample)` shifts and re-allocates existing canvas buffers with 9-point anchor alignment and optional nearest-neighbor resampling.
-2. Memory leaks are eliminated by explicitly clearing and discarding dereferenced buffers via `deleteBuffers(layerId)`.
+2. `deleteBuffers(layerIds)` removes registry entries for an array of layer IDs; supported structural teardown/restoration also reconciles live ownership. This controls registry retention, without proving that every browser/GPU/history reference has been released.
 
 ### Pure History Engine (`src/lib/engine/historyEngine.ts`)
-The undo/redo pipeline is fully decoupled from the React rendering tree into a pure, DOM-free `HistoryEngine` module:
+The undo/redo ledger is independent of React rendering in `HistoryEngine`; its mutable stacks, replay baseline and memory accounting are not a mathematically pure function. Integration hooks restore canvas pixels and store metadata:
 - Undo and redo stacks are independently depth-bounded (up to 50 entries each), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Oldest undo steps are evicted when capacity or byte limits are reached, folding evicted steps into the Process Replay baseline checkpoint across both push and redo operations. Oldest redo entries are evicted under combined byte pressure without mutating the baseline.
 - Invalidates the redo tail upon any new drawing action or canvas mutation.
 - Captures pre-stroke and post-stroke layer `ImageData` snapshots for deterministic pixel restoration proportional to copied raster area via `ctx.putImageData`.
@@ -272,14 +278,14 @@ The application state is managed by Zustand with Immer middleware:
 * **50-Step Undo History:** Undo and redo stacks are independently depth-bounded (up to 50 entries each, `createHistoryEngine(50)` matching `src/hooks/viewport/useViewportDrawing.ts`), while their combined retained HistoryStep payload is constrained by the configured 64 MiB history byte envelope. Undo/Redo restores saved pixels with `putImageData`; work scales with the affected pixel region and does not re-run unrelated effect calculations.
 * **History Layer Lifecycle (`createdLayerId`):** When AI operations (`Photometric`, `Specular`, `Cast Shadow`) create a new layer, the history snapshot tracks `createdLayerId`. Undoing the action removes the layer entirely from the frame stack and purges its buffer memory, while redoing cleanly restores it.
 * **Locked Layer Drawing Protection:** `handlePointerDown` checks `currentLayer.locked` prior to dispatching raster strokes. When locked, execution returns immediately and triggers an animated HUD warning toast (`Active layer is locked! Unlock it in the Layers panel to draw.`) with `<PixelIcon name="lock" />`.
-* **`bufferVersion` Signal & Stroke Decoupling:** Atomic counter throttled via `requestAnimationFrame` strictly for external observers (`BottomTimeline`, `FloatingPreviewWindow`). Leaf subscriptions separate raster invalidation from parent viewport state and reduce avoidable reconciliation. This is an ownership choice, not a measured guarantee of zero renders for every pointer movement.
-* **Layer Merge Down (`mergeLayerDown`):** Blends active layer onto underlying layer respecting opacity and blend modes, deletes upper buffer memory in $O(1)$, and selects lower layer cleanly.
+* **`bufferVersion` Signal & Stroke Decoupling:** A raster invalidation counter supports leaf previews and the current viewport's motion-preview subscription. Cursor coordinates remain in a separate HUD subscriber, but artwork changes can render `CenterViewport`. Subscription structure is not a measured guarantee of zero parent renders or sub-16ms interaction.
+* **Layer Merge Down (`mergeLayerDown`):** Admits editable layers, composites their visible Normal (`source-over`) contribution with opacity, and publishes a neutral raster on the lower layer with generated provenance cleared. Visible non-Normal blending is refused because its backdrop-dependent result cannot generally be flattened into an independent layer. Pixel composition/history work scales with affected area; registry deletion alone is not the cost of the whole merge.
 
 ---
 
 ## 5. Local-First Storage & Multi-Project Lifecycle (`src/lib/storage/db.ts`, `src/lib/project/schema.ts`)
 
-The database and portable project formats are separate contracts: Dexie schema v5 versus `.pixibun` format v3. Logical `StoredLayerBlob` APIs expose Blob; current physical records store ArrayBuffer bytes plus `blobType`, reconstructing Blob on reads and retaining legacy Blob support. ArrayBuffer reads remove the physical MIME field from the logical record; other unknown fields remain subject to strict recovery validation. Metadata and raster commits are atomic with revision checks. Older deployments can lack the binary read path even with the same database version.
+The database and portable project formats are separate contracts: Dexie schema v5 versus `.pixibun` format v4. Logical `StoredLayerBlob` APIs expose Blob; current physical records store ArrayBuffer bytes plus `blobType`, reconstructing Blob on reads and retaining legacy Blob support. ArrayBuffer reads remove the physical MIME field from the logical record; other unknown fields remain subject to strict recovery validation. Metadata and raster commits are atomic with revision checks. Older deployments can lack the binary read path even with the same database version.
 
 `AutoSaveOutcome` is success or `conflict`, `memory-limit`, `invariant-invalid`, `aborted`, `quota-exceeded`, or `error`. A changed/deleted stored revision returns conflict and preserves active work for Save a copy. Debounced saves (800 ms) do not imply instant durability; encoding and commit add time, and newer edits queue another save. Restore/admission/cancellation states are coordinated separately from save outcomes.
 
@@ -292,9 +298,9 @@ The schema validates dimensions, frame/layer counts, aggregate footprint, decode
 * **Tag Clip Export Scoping (`ExportModal.tsx`):** Allows artists to select specific named clips (`Walk [1-4]`, `Attack [5-8]`). Frames are sliced to the clip range, output files are dynamically renamed (`hero_Walk-4x.gif`), and SpriteSheet atlas metadata is cleanly $0$-indexed for Godot/Unity/Phaser.
 * **Multi-Threaded Web Worker GIF Encoding (`gifEncoder.worker.ts`):** Offloads CPU-intensive Median-Cut color quantization and variable-length LZW compression to a background Web Worker.
 * **Variable Frame Duration Centisecond Timing:** Passes frame-specific delay arrays ($D_i = \max(2, \text{round}(\text{durationMs}_i / 10))$) directly to GIF Graphic Control Extensions, honoring variable hold and transition speeds authored in `BottomTimeline`.
-* **Zero-Copy Transferable Objects:** Frame pixel buffers are transferred as `ArrayBuffer` transferables (`postMessage(msg, [buffer])`), eliminating memory copying overhead on $128\times128+$ 50-frame animations.
+* **Transferable Objects:** GIF encoding transfers owned pixel snapshots with `ArrayBuffer` lists, avoiding a second structured-clone copy during dispatch. Extraction and scaling still allocate/copy; live project buffers are not transferred.
 * **Live Worker Progress Bar:** Dispatches `{ type: 'progress', current, total }` messages, driving real-time progress percentages in the `ExportModal`.
-* **Transparent Main-Thread Fallback:** Automatically falls back to synchronous execution in environments without Web Worker support or under strict CSP policies.
+* **Main-Thread Fallback:** Missing workers or initialization failure can use the still-owned snapshot within admission bounds. Failure after transfer rejects rather than retrying detached arrays or extracting potentially changed artwork. Cancellation, cleanup and a 30-second deadline bound the worker path.
 * **Sprite-Sheet Geometry Preflight & Dimension Ceilings (`spriteSheetPacker.ts`, `ExportModal.tsx`):** Preflights sheet geometry (`calculateSpriteSheetGeometry`, `validateExportGeometry`) before initiating frame compositing loops, preventing multi-frame bitmap allocation when output bounds exceed `MAX_SAFE_CANVAS_DIMENSION` (4096 px) or `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px). The underlying packer (`packSpriteSheet`) independently enforces these bounds as a defense-in-depth safety ceiling, throwing `RangeError` before canvas allocation.
 * **Animated Export Geometry Preflight & Ceilings (`exportGeometryValidation.ts`, `ExportModal.tsx`, `AnimatedExportTab.tsx`):** Preflights output geometry across all animated formats (GIF, APNG, MP4, WebM) and cycle loops via `validateExportGeometry` before invoking frame compositing loops, rejecting exports when scaled bounds exceed PixiBun's configured safety boundaries `MAX_SAFE_CANVAS_DIMENSION` (4096 px) or `MAX_SAFE_CANVAS_PIXELS` (16,777,216 px). For formats with upfront uncompressed frame retention (GIF and APNG), preflight additionally enforces an aggregate source pixel ceiling (`MAX_EXPORT_AGGREGATE_PIXELS` = 67,108,864 aggregate pixels = 64 MP = 256 MiB of raw RGBA at 4 bytes/pixel), bounding raw-frame export workloads to reduce OOM risk. The encoders (`scaleCanvas.ts`, `gifEncoder.ts`, `apngEncoder.ts`, `mp4Encoder.ts`, `webmEncoder.ts`) independently enforce these ceilings as a defense-in-depth barrier, throwing `RangeError` before allocating buffers, workers, or media encoders.
 
@@ -385,7 +391,7 @@ graph TD
    $$G_x(x, y) = Y(x + 1, y) - Y(x, y), \quad G_y(x, y) = Y(x, y + 1) - Y(x, y), \quad \|\nabla I(x, y)\| = \sqrt{G_x^2 + G_y^2}$$
    During area box downsampling, edge pixels receive boosted accumulation weights:
    $$W_{\text{salience}}(x, y) = W_{\text{box}}(x, y) \cdot \left(1.0 + \min(2.5, 3.0 \cdot \|\nabla I(x, y)\|)\right)$$
-   This prevents delicate 1-pixel line art, silhouettes, and character facial features from blurring away during downscaling.
+   This gives edge pixels more influence. Downscaling can still lose one-pixel details, silhouettes or facial features; inspect the resulting image.
 3. **OKLab Median-Cut & Lloyd K-Means Refinement:**
    Clusters color bounding boxes along the axis of maximal perceptual variance in OKLab space ($L, a, b$), followed by iterative centroid convergence:
    $$\mu_k^{(t+1)} = \frac{1}{|S_k|} \sum_{p \in S_k} p$$
@@ -474,9 +480,9 @@ To target responsive drawing and bound admitted operation complexity, PixiBun's 
   $$N_x = \sin\phi \sin\alpha, \quad N_{y,\text{OpenGL}} = \sin\phi \cos\alpha, \quad N_z = \cos\phi$$
   Dual-flank V-groove carving calculates bilateral ridge facets perpendicular to brush stroke drag vectors.
 * **Rivet Stamp retirement:** The stamp tool, shortcut, and generated-normal operation were removed. Existing normal-map layers still decode and render; the chisel and normal blending paths remain available.
-* **Reoriented Normal Mapping (RNM):** Implements Colin Barré-Brisebois & Stephen Hill (2012) quaternion-based normal blending:
+* **Reoriented Normal Mapping (RNM):** Adapts Colin Barré-Brisebois & Stephen Hill (2012) shortest-arc normal blending:
   $$\mathbf{t} = (B_x, B_y, B_z + 1), \quad \mathbf{u} = (-D_x, -D_y, D_z), \quad \mathbf{r} = \mathbf{t}(\mathbf{t} \cdot \mathbf{u}) - \mathbf{u} \, t_z, \quad \mathbf{N}_{\text{blended}} = \frac{\mathbf{r}}{\|\mathbf{r}\|}$$
-  This rotates the stamped micro-relief into the tangent frame of underlying base normal maps (e.g. generated via Euclidean Distance Transform) without flattening slope angles.
+  The code floors $t_z$ at $10^{-5}$, clamps resulting $r_z$ to nonnegative before normalization, and returns the flat normal for a near-zero vector. This rotates detail toward the base tangent frame; the guards/byte encoding mean the equation alone does not guarantee exact slope preservation for every input.
 * **Intra-Stroke Envelope Buffer (`ChiselStrokeSession`):** Continuous stroke stamping writes normal vectors and coverage alpha into an intra-stroke envelope session, tracking dirty indices in a Set. The composite pass blends the envelope onto the underlying layer snapshot via RNM in a single pass, eliminating intra-stroke angular accumulation artifacts.
 * **Layer Tag Convention (`normal` vs `normal-map`):** Dedicated normal sculptor layers carry the canonical machine identifier `tag = 'normal'` (with `'normal-map'` fully supported as a transparent alias across viewport compositing, photometric shaders, and export pipelines).
 * **Pure Tag-Based Compositing & Diffuse Albedo Exclusion:** `compositeSourceSnapshot` explicitly excludes `tag === 'normal'` and `tag === 'normal-map'` (alongside `tag === 'specular'` and `tag === 'photometric'`). Normal maps store $(N_x, N_y, N_z)$ surface normal vectors mapped to RGB colors (e.g. flat perpendicular baseline at `#8080FF`); including them in the diffuse composite would treat vector data as albedo colors and severely corrupt the base sprite texture. Normal maps are composited independently via `compositeNormalMapSnapshot()` and passed into `photometricLighting.ts` as `normalMapData`. All legacy display-name sniffing (`layer.name.toLowerCase().startsWith(...)`) has been completely purged across `useViewportStudioEvents.ts` in favor of strict machine-tag matching (`l.tag === tag`).
@@ -498,7 +504,7 @@ The editor's separate one-click Material Shading and Glow & Translucent Material
   Guarantees registers visit endpoints once per period without double-dwell glitches.
 * **Sub-Step BlendShift:** Linear interpolation of RGB color components at fractional phase offsets:
   $$\mathbf{C}(t) = (1 - \text{frac}) \cdot \mathbf{C}_{\lfloor p \rfloor} + \text{frac} \cdot \mathbf{C}_{\lfloor p \rfloor + 1}$$
-* **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Solves coprime LCM period explosion when exporting loopable APNG or GIF animations. Given target duration $T$, each track's rate is harmonically snapped to the nearest integer cycle count $k = \operatorname{round}(T \cdot \text{rate} / M)$, producing perfectly loop cycles with zero boundary seam pop.
+* **Harmonic Rational Retuning (`retuneTracksForSeamlessLoop`):** Adjusts supported track rates toward an integral cycle count over the chosen duration. Sampling, GIF timing/color quantization and the artist's track ranges still affect the delivered loop; inspect the decoded seam rather than inferring perfect playback from rate retuning.
 * **Hardware Shader Generation (`src/lib/export/shaderExporter.ts`):** Produces standalone Godot 4 CanvasItem shaders (`.gdshader`) and Unity URP 2D HLSL shaders with nearest-neighbor point filtering and half-texel LUT sampling.
 
 ![Current palette Cycle Engine, with a named six-color palette and First/Last controls selecting indices 2 through 4.](docs/assets/screenshots/2026-10-02-docs/palette-cycle-range.png)
@@ -509,7 +515,7 @@ The editor's separate one-click Material Shading and Glow & Translucent Material
 
 ## 20. Database & Canvas Teardown Lifecycle Invariants (`src/lib/storage/db.ts`, `tests/e2e/chiselAndPaletteLiveProof.spec.ts`)
 
-To ensure sequential test isolation, prevent cross-run state accumulation, and protect multi-tab sessions:
+The following describes the named browser-test fixture's database teardown, not a blanket production reset policy or protection for other tabs:
 * **Explicit Connection Teardown (`db.close()`):** Before initiating database deletion or project resets, active Dexie database instances are explicitly closed via `window.__pixibunDb.close()`. This ensures no hanging locks or open transactions block schema drops.
 * **Fail-Fast Deletion with `onblocked` Rejection:** Deletion requests via `indexedDB.deleteDatabase('PixiBunDB')` are wrapped in an explicit Promise that immediately rejects upon receiving `req.onblocked = () => reject(new Error('Deletion blocked by open connection'))`. This converts silent asynchronous deadlocks into loud, immediate errors.
 * **Post-Reload Store State Assertions:** After browser reload, clean canvas invariants are verified directly against Zustand store state before test execution:
@@ -518,7 +524,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
   - `baseLayerName === 'Base Layer'`
   - `hasNormalLayer === false`
   - `showNormalPreview === false`
-* **Zero State Leakage:** Prevents concentric-circle stamp accumulation or dirty layer retention across consecutive automated test runs, providing fixture isolation checks; restoration/readiness must still be awaited.
+* **Fixture Isolation:** Checks for stamp accumulation or dirty layer retention in the named automated runs; restoration/readiness must still be awaited. No universal zero-leak guarantee follows.
 
 ---
 
@@ -528,7 +534,7 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 * **Imported-Color Bucket Semantics:** The bucket passes its own 0–255 RGBA-distance tolerance to `performFloodFill` (default 24); Color Replace retains a separate exact-match default. Connected fill compares to the clicked source color, stops at nonmatching boundaries, and can optionally absorb visible, fully enclosed islands of at most eight pixels. Transparent holes, larger details, and islands open to the region boundary remain untouched. The optional island pass uses bounded typed buffers and avoids per-pixel neighbor-array allocation.
 * **Sampled Color Erasure Engine (`src/lib/canvas/eraseMatchingColor.ts`):** Erases exact or nearby shades to transparent alpha on the active layer or across animation frames. Features default color-family cleanup that removes faint background specks and repairs dark color spill embedded within outlines, respecting selection masks and locked layers with single undoable steps.
 * **Viewport Hot-Path Decoupling (`src/components/layout/CursorStatusBadge.tsx`):** Moving high-frequency cursor coordinates (`cursorCoords`) out of parent `CenterViewport.tsx` state into a standalone `CursorStatusBadge` subscriber isolates cursor updates and reduces avoidable parent rendering. Integrated stroke latency and render counts have not been established by this separation alone.
-* **Deferred Object URL Revocation (`src/components/modals/ExportModal.tsx`):** Synchronously invoking `URL.revokeObjectURL(url)` immediately following `link.click()` creates race conditions in browser download managers (such as Firefox and Safari) where the memory blob is released before the file stream is opened. Revocations are deferred by 1000ms via `setTimeout(() => URL.revokeObjectURL(url), 1000)` across all export codecs.
+* **Object URL Lifetime (`src/components/modals/ExportModal.tsx`):** The modal's anchor-download helper delays revocation by 1,000 ms so the browser can begin consuming the Blob. Native file writes and other export/backup adapters own different lifetimes. This is a lifetime policy, not proof that every codec or browser uses the same path.
 * **Video Encoding Dimension Alignment (`src/lib/export/mp4Encoder.ts`):** H.264 macroblock encoders and YUV 4:2:0 chroma subsampling require even-numbered dimensions ($2 \times 2$ pixel blocks). Video export canvases pad odd widths and heights to the nearest even integer `(w + 1) & ~1` and `(h + 1) & ~1`.
 * **Cross-Platform Canvas Safety Ceilings & Scale Isolation (`ExportModal.tsx`, `PngExportTab.tsx`):** Unchecked upscaling of large canvases (e.g. $512\times512$ @ $32\times = 16,384\times16,384\text{ px}$) allocates $>1\text{ GB}$ of raw 32-bit RGBA pixel memory, causing out-of-memory browser tab crashes on mobile WebKit and iOS Safari. PixiBun establishes strict hard bounds (`MAX_SAFE_CANVAS_DIMENSION = 4096`, `MAX_SAFE_CANVAS_PIXELS = 16_777_216`). Export tabs dynamically disable scaling factors exceeding these ceilings with explanatory tooltips, while per-tab export scale states are fully isolated (preventing GIF/Spritesheet scales from contaminating PNG/SVG export settings).
 * **Dynamic WebRTC Layer Antientropy (`src/lib/sync/coDrawBridge.ts`):** Layer tracking (`syncedLayerIds`) detects newly added layers and dimension changes post-connection, dynamically pushing initial state snapshots to peers and pruning obsolete CRDT replicas.
@@ -537,12 +543,13 @@ To ensure sequential test isolation, prevent cross-run state accumulation, and p
 
 ## 22. Selection Free-Transform Gizmo, Sprite Sheet Slicer & Web Worker Offloading Engine
 
-* **RotSprite-Inspired Rotation (`src/lib/canvas/rotSprite.ts`):** Uses ideas from Xenowhirl's 2007 pixel-art rotation algorithm, with a PixiBun-specific voting downscaler. It does not implement the canonical rotation-offset search or single-pixel detail-restoration pass. The implementation has four stages:
+* **RotSprite v2 (`src/lib/canvas/rotSprite.ts`):** A PixiBun-specific adaptation with voting, bounded candidate search and restoration heuristics; it is not a claim of canonical RotSprite equivalence. Quarter turns use direct pixel-center mapping within requested bounds. Arbitrary angles follow these stages:
   1. **Scale8x Cascade:** Three sequential passes of the Scale2x (EPX / AdvMAME2x) corner-connectivity operator expand the original sprite by $8\times$ ($2\times \to 4\times \to 8\times$). Scale2x interpolates diagonal slopes using 4-neighborhood comparison without introducing new intermediate color values:
      Neighbor similarity is decided by a Manhattan RGBA distance threshold rather than exact color equality.
   2. **Subpixel Inverse Affine Rotation:** The $8\times$ supersampled buffer is rotated onto a destination grid via backward mapping around the chosen pivot crosshair $(p_x, p_y)$, utilizing nearest-neighbor sampling on the dense grid.
-  3. **Parabolic Center-Weighted Majority Voting Filter:** The rotated $8\times$ grid is downscaled back to $1\times$ by analyzing each $8 \times 8$ superpixel block. Rather than arithmetic averaging (which corrupts palette integrity by introducing blended colors), a radially symmetric parabolic center-weighted kernel $w(u, v) = 1.0 + 0.01 \cdot (25 - (u^2 + v^2))$ for $(u, v) \in \{-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5\}^2$ weights votes for each distinct 32-bit color present in the block. The candidate color with the highest aggregated weight is assigned to the output pixel. Feature conservation thresholds preserve 1px thin lines when the center core touches solid pixels, otherwise requiring a solid majority (38%) to prevent outline dilation while preserving palette purity without interpolating artificial intermediate colors.
-  4. **Contour Color Restoration:** Source colors confined to the sprite boundary or interior are classified before rotation. If voting places one on the opposite side of the output silhouette, the nearest source pixel from the correct region supplies its RGB color; output alpha stays unchanged. This closes outline leaks without changing the source palette or the selected silhouette. Classification stops above 4096 distinct source colors to bound auxiliary memory for photo-like inputs.
+  3. **Weighted Voting:** Each $8\times8$ block votes for sampled packed RGBA values rather than averaged colors. Solid thresholds depend on pixel-perfect mode and whether the center core is occupied: 0.40/0.46 in pixel-perfect mode and 0.38/0.45 otherwise. These thresholds are heuristics, not guaranteed thin-line preservation.
+  4. **Candidate Search and Detail Restoration:** Fractional offsets (0, ±0.25 source px) produce nine candidates for sources up to 1,024 pixels, five up to 4,096, and one above that. Candidate penalties consider competing claims, enclosed holes, eight-connected alpha silhouettes and visible area. Small color-component restoration and boundary/interior color restoration address observed fixtures; they do not prove semantic feature or topology preservation. Contour restoration uses source RGB with retained output alpha, which can form a new RGBA combination; classification stops above 4,096 distinct source colors.
+  - **Paeth option:** [paethRotation.ts](src/lib/canvas/paethRotation.ts) provides an integer-sampled three-shear variant with fractional pivots and separate quarter-turn handling. Its name or UI label does not establish universal bijection or preservation of a dither pattern. Normal data uses [normalMapRotation.ts](src/lib/canvas/normalMapRotation.ts). Source fractional alpha, clipping and later alpha-over composition have separate semantics. [Current contract](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v2).
 * **Selection Free-Transform Gizmo & Marching Ants (`src/lib/canvas/selectionUtils.ts`, `src/hooks/viewport/useViewportSelectionTransform.ts`, `src/components/studio/SelectionTransformGizmo.tsx`):**
   - **Orthogonal Boundary Extraction (`extractSelectionBoundarySegments`):** Traverses arbitrary 1-bit binary selection masks and extracts pixel boundary segments along cell edges $(x, y) \to (x+1, y)$ and $(x, y) \to (x, y+1)$ where selection state transitions $0 \leftrightarrow 1$. Converts contiguous edge segments into SVG path strings (`boundarySegmentsToSvgPath`) rendered with dual-pass contrasting strokes (white on black) and animated CSS dashoffset marching ants.
   - **Screen-Space Hitbox Invariance:** 8 transformation handles (4 corners, 4 midpoints) maintain a constant 18x18px screen-space hit area regardless of canvas zoom factor ($100\% - 6400\%$).
@@ -602,7 +609,7 @@ To reduce risk from browser anomalies, memory exhaustion, floating-point singula
 * **CWE-409 Decompression Bomb & Pixel Bomb Mitigation (`src/lib/safety/imageHeaderProbe.ts`):**
   - Pre-flight parses raw binary file headers (streaming window paging up to 256KB+) for PNG (`IHDR`), JPEG (`SOF0`/`SOF2`), GIF, and BMP formats. Rejects dimensions $>8192\text{px}$ or pixel areas $>67\text{ MP}$ before memory buffer allocation or `createImageBitmap` invocation.
 * **CWE-1321 Prototype Pollution Defense & Safe JSON Parsing (`src/lib/safety/safeJson.ts`, `src/lib/project/schema.ts`):**
-  - Recursive JSON sanitizer stripping `__proto__`, `constructor`, and `prototype` keys based on Arteau (2018), enforcing a maximum nesting recursion depth of 32. Hardened project schema asserts explicit ceilings (256 char names, 50 palettes, 100 clips, 500 frames, 100 layers).
+  - Recursive JSON sanitizer stripping `__proto__`, `constructor`, and `prototype` keys, enforcing a maximum nesting recursion depth of 32. Project admission applies field-specific name bounds (project name 256 characters, layer name 128) and structural ceilings of 50 palettes, 100 clips, 500 frames, 100 layers per frame and 2,000 total layers; aggregate pixels impose another combined limit. [Storage admission](docs/contracts/storage.md#admission-and-optional-metadata).
 * **Storage Resilience & Quota Exhaustion Recovery (`src/lib/safety/storageResilience.ts`, `src/lib/storage/db.ts`):**
   - Standardized cross-engine detection of WHATWG `QuotaExceededError`. Automatically prunes volatile diagnostic telemetry logs during disk pressure, safeguarding active user project data.
 * **WebRTC Backpressure & Traffic Shaping (`src/lib/sync/p2pSync.ts`):**
@@ -622,15 +629,15 @@ The convenience pre-push hook checks the current working tree, which may differ 
 
 ## 26. Studio Workstation Ergonomics, Focus Trapping & Unsaved Invariants
 
-To elevate PixiBun to sovereign desktop-class ergonomics while adhering to WCAG 2.2 accessibility:
+The workstation implements dirty-state and focus behavior; WCAG targets still require rendered-state and manual assistive-technology qualification:
 
 * **Unsaved Dirty Invariants & Native Exit Guards (`src/components/layout/StudioLayout.tsx`, `src/stores/slices/createHistorySlice.ts`):**
   - Synchronizes active document title with unsaved dirty status (`● Project — PixiBun`), automatically clearing upon save.
-  - Implements `beforeunload` browser event trapping whenever `isDirty === true`, preventing accidental tab closure and loss of in-flight artwork.
+  - Requests a `beforeunload` prompt while dirty. Browsers can suppress prompts; this cannot guarantee preservation on tab closure, crash or device loss.
 * **Affirmative Save Toast Notification (`src/components/layout/StudioLayout.tsx`):**
   - Triggers transient, non-modal confirmation toasts (`* Saved "project" to browser storage`) on `Ctrl+S` desktop saves and toolbar clicks.
 * **Modal Accessibility & Focus Restoration (`src/components/ui/ModalWrapper.tsx`, `tests/components/ModalWrapper.test.tsx`):**
-  - Conforms to WCAG 2.4.3 (Focus Order) and WCAG 2.4.11 (Focus Not Obscured).
+  - Supports focus-order/visibility goals relevant to WCAG 2.4.3 and 2.4.11; unit/browser checks are not a full conformance determination.
   - Enforces programmatic initial focus on modal title or first focusable interactable.
   - Implements circular Tab / Shift+Tab keyboard focus containment, preventing focus leakage to obscured background layers.
   - Restores focus to the triggering opener button upon modal dismissal.
@@ -723,9 +730,9 @@ The monolithic pointer event architecture has been decomposed into dedicated per
 | `useShapePointerHandler` | Line, 2:1 iso line, quadratic Bézier, rect, ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
 | `usePhotometricEvents` | On-canvas light gizmo drag, preview sessions, cancel tokens | `src/hooks/viewport/events/usePhotometricEvents.ts` |
 | `useArtisanEvents` | Freehand drawing event dispatch and Bresenham raster loops | `src/hooks/viewport/events/useArtisanEvents.ts` |
-| `useGeometricEvents` | Interactive vector shape preview and anchor point commits | `src/hooks/viewport/events/useGeometricEvents.ts` |
+| `useGeometricEvents` | Generated shading, normals, shadows, outlines and source-owned layer rotation | `src/hooks/viewport/events/useGeometricEvents.ts` |
 | `useViewportStudioEvents` | Central event coordinator orchestrating pointer capture and tools | `src/hooks/viewport/useViewportStudioEvents.ts` |
-| `useViewportDrawing` | Hardware-accelerated canvas redraw loop and dirty rect blits | `src/hooks/viewport/useViewportDrawing.ts` |
+| `useViewportDrawing` | Pixel snapshots, history binding, Undo/Redo and structural restoration | `src/hooks/viewport/useViewportDrawing.ts` |
 
 
 ### Dual-Axis Theme Architecture

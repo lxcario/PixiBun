@@ -74,6 +74,7 @@ export interface UseViewportPointerEventsProps {
   ) => { box: { x: number; y: number; w: number; h: number } | null; mask: Uint8Array | null };
   lockedWarningTimerRef: React.MutableRefObject<number | null>;
   setLockedWarning: (warning: boolean) => void;
+  cancelSelection?: () => void;
 }
 
 export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
@@ -163,7 +164,15 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (e.button !== 0) return;
 
     const coords = props.clientToCanvasCoords(e.clientX, e.clientY);
-    if (!coords) return;
+    if (!coords) {
+      if (!e.altKey) {
+        const state = useStudioStore.getState();
+        if (state.selection || state.selectionMask || props.floatingSelection || tools.activeTool.startsWith('select-')) {
+          props.cancelSelection?.();
+        }
+      }
+      return;
+    }
 
     if (selectionHandler.onPointerDown(e, coords)) {
       return;
@@ -291,6 +300,12 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     // Commit floating selection before starting standard drawing tools
     if (props.floatingSelection) {
       props.commitFloatingSelection();
+    }
+    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
+      const curState = useStudioStore.getState();
+      if (curState.selection || curState.selectionMask) {
+        curState.setSelection(null, null);
+      }
     }
 
     // Prevent drawing on locked layers

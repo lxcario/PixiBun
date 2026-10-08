@@ -1,0 +1,8 @@
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 279 existing, 6 approved removed historical references.
+Local links/headings: 2335 destinations across 192 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.

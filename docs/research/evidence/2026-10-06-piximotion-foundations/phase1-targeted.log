@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/workspaceTransaction.test.tsx (9 tests | 1 failed) 99ms
+   × restores metadata, buffers, redo and byte accounting after a real updater failure following history publication 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/workspaceTransaction.test.tsx > restores metadata, buffers, redo and byte accounting after a real updater failure following history publication
+AssertionError: expected { …(165) } to be { …(165) } // Object.is equality
+
+- Expected
++ Received
+
+@@ -27,11 +27,11 @@
+      },
+    ],
+    "bufferVersion": 4,
+    "bumpBufferVersion": [Function bumpBufferVersion],
+    "canRedo": false,
+-   "canUndo": false,
++   "canUndo": true,
+    "canvasHeight": 32,
+    "canvasWidth": 32,
+    "clips": [
+      {
+        "color": "#F0BE7C",
+
+ ❯ tests/workspaceTransaction.test.tsx:89:37
+     87|     useStudioStore.setState(() => { throw new Error('Preparation faile…
+     88|   })).toThrow('Preparation failed');
+     89|   expect(useStudioStore.getState()).toBe(before);
+       |                                     ^
+     90|   expect(snapshotBuffers()).toEqual(buffers);
+     91|   expect(engine.depth).toBe(0); expect(engine.redoDepth).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 61 passed (62)
+   Start at  13:40:32
+   Duration  2.86s (transform 837ms, setup 72ms, import 2.48s, tests 401ms, environment 1.26s)
+

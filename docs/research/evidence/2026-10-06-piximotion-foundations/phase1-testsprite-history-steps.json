@@ -1,0 +1,135 @@
+[
+  {
+    "stepIndex": 1,
+    "status": "passed",
+    "description": "Navigate to http://127.0.0.1:3191",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 2,
+    "status": "passed",
+    "description": "Click 'Studio link'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 3,
+    "status": "passed",
+    "description": "Click 'Untitled Sprite button'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 4,
+    "status": "passed",
+    "description": "Fill 'Challenge reload' into text field",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 5,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 6,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 7,
+    "status": "passed",
+    "description": "Click 'Save now button'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 8,
+    "status": "passed",
+    "description": "Scroll down on the page",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 9,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 10,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 11,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 12,
+    "status": "passed",
+    "description": "Click 'Save now button'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 13,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 14,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 15,
+    "status": "passed",
+    "description": "Click 'Pixel art canvas workspace'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 16,
+    "status": "passed",
+    "description": "Click 'Save now button'",
+    "error": null,
+    "stepType": "action"
+  },
+  {
+    "stepIndex": 17,
+    "status": "failed",
+    "description": "Restoration finished and the main drawing canvas is visible and editable.",
+    "error": null,
+    "stepType": "assertion"
+  },
+  {
+    "stepIndex": 18,
+    "status": "failed",
+    "description": "The project name remains Challenge reload.",
+    "error": null,
+    "stepType": "assertion"
+  },
+  {
+    "stepIndex": 19,
+    "status": "failed",
+    "description": "Unable to perform coordinate-specific drawing so the expected saved strokes could not be created or verified.",
+    "error": null,
+    "stepType": "assertion"
+  }
+]

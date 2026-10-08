@@ -1,0 +1,6 @@
+idempotency-key: cli-run-83fdfb10-c184-47f9-bc90-f6573c036ca0
+[tunnel] Minted tunnel client bb9a1d28-7821-4933-a1a6-94ac2f18c42f; connecting…
+[tunnel] Reaching http://127.0.0.1:3203 through TestSprite (client bb9a1d28-7821-4933-a1a6-94ac2f18c42f).
+Run 7424f831-8d3f-48f8-9eaf-fa2b665ace47
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/5c9fd256-a475-4391-84ab-b2f4353963c1
+requestId: cli_071d1d20-d502-4450-b214-0ad4ee3ae1d2

@@ -4,6 +4,10 @@ This document records empirical benchmarks, algorithmic execution budgets, and h
 
 Current discovery is in [generated/test-inventory.json](docs/generated/test-inventory.json); actual execution is in [current status](docs/current-status.md). Historical measurements retain their original counts and timings.
 
+The [7 October editing follow-up](docs/research/2026-10-07-editing-quality-release-hardening.md) records compiled-browser drawing, rotation preview, playback, bake, timeline, save and project-export measurements at 64/128/256 pixels. Wall-clock automation spans and >50 ms browser tasks are separate measures; neither is a population INP or physical-device result.
+
+The [8 October rectangle measurement](docs/research/2026-10-08-motion-bounds-hardening.md) separates a small-part isolated rotation improvement from essentially unchanged five-frame browser bake timing. The 689→5.3 ms result is for a 16×16 part on an interior 512×512 target in Node; it excludes browser scheduling, worker transfer and full bake/history.
+
 Recorded glint checkpoint — 1 October 2026: the full gate passed in 59.18s, including all 1,482 tests (14.30s Vitest duration) and production compilation (7.74s gate stage). Three focused Chromium scenarios passed in 12.8s. These are local run observations, not a general performance guarantee. [Gate log](docs/research/evidence/2026-10-01/pixel-glint-gate.log), [browser log](docs/research/evidence/2026-10-01/pixel-glint-browser.log).
 
 **Audit session — 2026-10-01:** The recorded Phase 6 five-stage gate passed in 45.50 seconds on the supported workspace-local Node 22.23.3 runtime. Its 134-test editor run passed in 2.1 minutes. Research previews admit at most 256 pixels per axis, 16 frames and 262,144 source pixels, with a 30-second worker deadline; tile search admits at most 16 tiles and 20,000 states. These bounds and estimated reservations do not establish a measured heap peak, 60 fps or long-duration device behavior. See the [session record](docs/research/session-completion-2026-10-01.md) for execution scope and later UI additions.
@@ -63,7 +67,7 @@ Each modeled pixel history step stores full-canvas single-layer RGBA ($width \ti
 ## 3. Viewport Decoupling & React Render Performance
 
 To target lower interaction overhead (no end-to-end sub-16ms/no-drop measurement established):
-- **`bufferVersion` Signal:** Decoupled from `CenterViewport`. Atomic integer signal subscribed exclusively by leaf widgets (`BottomTimeline`, `FloatingPreviewWindow`).
+- **`bufferVersion` Signal:** Leaf previews use raster invalidation, and the current `CenterViewport` subscribes to this signal for motion preview refresh. It is not exclusively a leaf-widget subscription or proof that the parent never renders on artwork changes.
 - **`CursorStatusBadge`:** Decoupled from `CenterViewport`. Pointer movements across pixel boundaries broadcast via `updateCursorHUD(coords)` to an isolated subscriber leaf badge, reducing direct parent-state updates. A complete render-count profile for all pointer states has not been recorded.
 - **Canvas Stack Separation:** Layered multi-canvas architecture ensures tool previews, grid lines, and marching ants redraw independently without dirtying or re-rasterizing base layer bitmaps.
 
@@ -71,13 +75,14 @@ To target lower interaction overhead (no end-to-end sub-16ms/no-drop measurement
 
 ## 4. Interactive Selection Transform & Inverse Affine Sampling Performance
 
-**Function:** `rotateNearest` (nearest-neighbor inverse affine point sampling) & `drawImage` (uncapped hardware blit with `imageSmoothingEnabled = false`)  
-**File:** [`src/lib/canvas/rotSprite.ts`](src/lib/canvas/rotSprite.ts), [`src/hooks/viewport/useViewportSelectionTransform.ts`](src/hooks/viewport/useViewportSelectionTransform.ts)  
+**Historical measured operations:** `rotateNearest` (nearest-neighbor inverse affine point sampling) and `drawImage` with `imageSmoothingEnabled = false`.
+
+**Current integration:** [`CenterViewport.tsx`](src/components/layout/CenterViewport.tsx), [`rotSprite.ts`](src/lib/canvas/rotSprite.ts), [`useViewportSelectionTransform.ts`](src/hooks/viewport/useViewportSelectionTransform.ts).
 **Target Budget:** $\le 16.66\text{ ms}$ (60 FPS continuous pointer drag)
 
-During interactive selection transforms (corner scaling, edge stretching, translation, and rotation), PixiBun executes a fast nearest-neighbor inverse affine point sampling pass per pointer movement. This provides nearest-neighbor feedback scheduled for interaction; it avoids bilinear smoothing and defers the heavier RotSprite-inspired pass until commit. Achieved refresh rate is unmeasured.
+Translation and resizing use unsmoothed floating canvases. Rotated selection preview now evaluates the chosen RotSprite or Paeth raster synchronously and caches it by floating canvas identity and exact transform settings; commit evaluates through the worker. The heavier rotation is therefore not deferred exclusively until commit. Achieved sustained refresh rate is unmeasured. The historical micro-operation table below does not benchmark this current preview workflow; [current synthetic renderer samples](docs/research/2026-10-07-piximotion-cross-phase-hardening.md#current-renderer-measurements) have their own narrow scope.
 
-### Empirical Frame Timings (100 Iterations per Resolution)
+### Historical nearest-neighbor timings (100 iterations per resolution)
 
 | Selection Resolution | Total Pixels | Average Frame Time | $p_{95}$ Latency | 60 FPS Budget Consumed |
 |---|---|---|---|---|

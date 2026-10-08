@@ -1,0 +1,53 @@
+[WebServer] (node:29232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:8980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\production\pixiMotionBindings.spec.ts:41:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels (12.5s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests\production\pixiMotionBindings.spec.ts:41:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('piximotion-panel')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByTestId('piximotion-panel')
+
+
+      28 |   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 }); await page.mouse.up();
+      29 |   await page.getByTestId('tab-tools').click();
+    > 30 |   await page.getByTestId('create-motion-part-btn').click(); await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+         |                                                                                                                ^
+      31 | }
+      32 | async function setArc(page: Page) {
+      33 |   const translation = page.getByRole('slider', { name: 'Pose translation X', exact: true }); await translation.focus();
+        at capture (D:\PixiBun\tests\production\pixiMotionBindings.spec.ts:30:112)
+        at D:\PixiBun\tests\production\pixiMotionBindings.spec.ts:50:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3196\pixiMotionBindings-compile-79df0-ads-exact-translated-pixels-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3196\pixiMotionBindings-compile-79df0-ads-exact-translated-pixels-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3196\pixiMotionBindings-compile-79df0-ads-exact-translated-pixels-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3196\pixiMotionBindings-compile-79df0-ads-exact-translated-pixels-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\production\pixiMotionBindings.spec.ts:41:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels 
+  5 did not run
+  1 error was not a part of any test, see above for details

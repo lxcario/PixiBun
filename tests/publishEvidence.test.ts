@@ -8,6 +8,19 @@ import { execFileSync, spawnSync } from 'node:child_process';
 
 const publisher = path.resolve('scripts/publishEvidence.mjs');
 const fixtures: string[] = [];
+
+it('routine browser screenshots do not overwrite historical documentation captures', () => {
+  const unsafe: string[] = [];
+  for (const folder of ['tests/e2e', 'tests/production']) {
+    for (const file of fs.readdirSync(folder)) {
+      if (!file.endsWith('.spec.ts')) continue;
+      const source = fs.readFileSync(path.join(folder, file), 'utf8');
+      if (/\.screenshot\s*\(\s*\{[^}]*\bpath\s*:\s*['"`]docs[\\/](?:assets|research)[\\/]/.test(source)) unsafe.push(path.join(folder, file));
+    }
+  }
+  expect(unsafe).toEqual([]);
+});
+
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pixibun-evidence-'));
   fixtures.push(root);

@@ -1,0 +1,10 @@
+PixiBun GIF export notes — text sample, not an animation
+
+In Studio, choose Export → GIF to download your animation.
+- The encoder quantizes colors to a GIF palette; partial alpha is not preserved.
+- Frame holds are rounded to GIF's 10 ms time units.
+- A Web Worker is used when available, with a main-thread fallback.
+- Integer scaling, cancellation and geometry/memory limits apply.
+- Check colors, timing and transparency after exporting.
+
+This welcome download describes the format. It contains no artwork.

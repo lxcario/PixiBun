@@ -1,0 +1,17 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
+const root = 'docs/research/evidence/2026-10-08-session-review-publication';
+const manifestPath = path.join(root, 'manifest.json');
+const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+if (m.status !== 'pending-final-documentation-check') throw Error('Archive is not awaiting closure');
+const log = fs.readFileSync('artifacts/publication-final-docs.log');
+if (!log.toString('utf8').includes('Selected documentation checks passed.')) throw Error('Successful final documentation verdict required');
+const digest = b => crypto.createHash('sha256').update(b).digest('hex');
+for (const entry of m.files) if (digest(fs.readFileSync(path.join(root, entry.path))) !== entry.sha256) throw Error('Archive changed before closure: ' + entry.path);
+const file = 'publication-final-docs.log';
+if (fs.existsSync(path.join(root, file))) throw Error('Final documentation log already exists');
+fs.writeFileSync(path.join(root, file), log);
+m.files.push({ path: file, source: 'artifacts/' + file, bytes: log.length, sha256: digest(log) });
+m.status = 'sealed'; m.sealedAt = new Date().toISOString();
+m.documentation = { passed: true, details: log.toString('utf8').split(/\r?\n/).filter(x => /Changelog paths:|Local links\/headings:/.test(x)) };
+fs.writeFileSync(manifestPath, JSON.stringify(m, null, 2) + '\n');
+console.log(JSON.stringify({ status: m.status, files: m.files.length, documentation: m.documentation }));

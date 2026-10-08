@@ -2,7 +2,7 @@
 
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
-This is the current web app's feature index, reconciled with this session's checkout on **4 October 2026**. Interface pictures retain their actual capture dates; the artist workspace has separate 4 October illustrations. Each row leads to instructions and a picture. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
+This is the current web app's feature index, reconciled with this session's checkout on **8 October 2026**. Interface pictures retain their actual capture dates; new motion and rotation controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
 
 ## Welcome and starting points
 
@@ -60,6 +60,7 @@ All **17** entries come from [the canonical tool list](../src/config/shortcuts.t
 | Detailed tool inspector | Active-tool brush, fill, selection, dither and chisel controls alongside quick header controls | [Tools](guides/artist-workspace.md#keep-colors-and-settings-close) | [Inspector](assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png) |
 | Canvas navigator | Whole-image overview, view outline, recenter, 1:1/Fit and small-canvas grid | [Navigator](guides/artist-workspace.md#see-the-whole-canvas) | [Overview](assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png) |
 | Selection transforms | Mask, move/nudge, eight resize handles, pivot, rotation/snap, flips, 90° turns, commit/cancel | [Transform](guides/studio-workspace.md#selections-and-transforms) | [Gizmo](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
+| Rotation algorithm | RotSprite v2 or integer-sampled Paeth, with separate normal-vector handling where applicable | [Rotation](guides/artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion) | The older gizmo capture predates these choices |
 | Canvas clipboard | Pixel selection copy/cut/paste, floating destination | [Clipboard](guides/studio-workspace.md#selections-and-transforms) | [Selection](assets/screenshots/2026-10-02-feature-guide/selection-transform.png) |
 | Undo/Redo | Session history with admitted payload and depth bounds | [History safety](guides/artwork-safety.md#damaged-stored-projects) | [Studio](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
 | Zoom, fit and pan | Wheel/steps, fit, 100%, middle/Alt drag and contextual arrows | [Navigation](guides/studio-workspace.md#view-and-symmetry) | [View](assets/screenshots/2026-10-02-feature-guide/view-options.png) |
@@ -99,8 +100,9 @@ Sources: [Palette panel](../src/components/layout/inspector/PalettePanel.tsx), [
 | Intentional differences | Record review exceptions without changing pixels | [Review](guides/animation-and-review.md#review-animation) | [Report](assets/screenshots/2026-10-02-feature-guide/animation-review.png) |
 | Regions and protection | Named clip rectangles, protection and cleanup scope | [Protection](guides/animation-and-review.md#regions-and-protection) | [Region](assets/screenshots/2026-10-02-feature-guide/animation-protection.png) |
 | In-between pose | Insert a heuristic intermediate frame for admitted neighbors | [In-between](guides/animation-and-review.md#add-an-in-between-pose) | [Action](assets/screenshots/2026-10-02-feature-guide/cleanup-color-actions.png) |
+| Rigid-part motion and saved rigs | Capture one color-layer selection, Start/End/pivot/easing, preview and bake; shared 2–30-pose limits, precise controls and session parameter Undo/Redo; named rig Save/Open/Rename/Delete; stale sources are refused | [Motion](guides/artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion) | No new handbook capture; [source controls](../src/components/layout/inspector/PixiMotionPanel.tsx) |
 
-Sources: [timeline](../src/components/layout/BottomTimeline.tsx), [review](../src/components/layout/inspector/AnimationReviewSection.tsx), [cleanup/in-between](../src/components/layout/inspector/PixiBudAssistanceSection.tsx). A review finding is an inspection cue, not proof that a deliberate animation choice is wrong.
+Sources: [timeline](../src/components/layout/BottomTimeline.tsx), [review](../src/components/layout/inspector/AnimationReviewSection.tsx), [cleanup/in-between](../src/components/layout/inspector/PixiBudAssistanceSection.tsx), [motion adapter](../src/lib/animation/pixiMotion.ts), [saved rig library](../src/components/layout/inspector/MotionRigLibrary.tsx). A review finding is an inspection cue, not proof that a deliberate animation choice is wrong.
 
 ## All five PixiTools tasks
 
@@ -203,6 +205,7 @@ These limits belong beside the feature list so a visible control is not mistaken
 - **Qualification remains scoped:** real two-machine Co-Draw, broader engine/device/pen/assistive-technology qualification and participant learning/artist studies remain pending. Read [current status](current-status.md) and [the research registry](research/issue-registry.md).
 - **Future and retired work:** v2 neural/native/GPU/SIMD/tree-CRDT/P3 ideas are [proposals](../V2_VISION.md). The retired radio/audio and volumetric/SSAO paths described in old release history are not advertised current features. No cloud account, automatic cloud backup, general AI generation or shipped native package is implied.
 - **Artist requests with larger scope:** arbitrary docking, automatic body-part extraction or idle/attack animation, a particle emitter, liquify and free warp are researched proposals, not shipped controls. [Request-by-request decisions](research/2026-10-04-artist-workspace-feedback.md#decisions-for-every-detailed-request).
+- **Motion is a bounded first slice:** one rigid color part in a solo workspace; finish a floating selection first. Normal-tagged or normal-map-effect sources and active Co-Draw are refused. Moving parts also refuse normal artwork or dependent research siblings in the source frame. Rotated parts render within their own bounds and clip at canvas edges. Pose/pivot edits remain temporary until saved or baked, with bounded session parameter Undo/Redo. Cancel the session to use artwork/library history. Bake copies palette-binding rectangles at fixed coordinates; it does not move semantic regions with the part. Multi-part rigs, source rebinding, large-canvas responsiveness and artist qualification remain open. [Current evidence and remaining work](research/2026-10-08-session-review-publication.md).
 
 ## What the remaining work would involve
 

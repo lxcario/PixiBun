@@ -3,8 +3,21 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point } from '@/lib/canvas/rasterMath';
 import { runRotSpriteInWorker } from '@/lib/engine/workerDispatcher';
+import { computeRotatedBounds } from '@/lib/canvas/rotSprite';
 import { FloatingSelection } from './useViewportOverlays';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey } from '@/lib/input/workspaceKeyboard';
+import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
+import { studioEvents } from '@/lib/events/studioEvents';
+import { useStudioStore } from '@/stores/studioStore';
+import { isNormalLayer } from '@/lib/export/normalLayers';
+import { getBufferGeneration, getBufferRevision, snapshotBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
+
+function transformSourceKey(layerId: string): string {
+  const state = useStudioStore.getState();
+  return JSON.stringify([state.currentProjectId, state.canvasWidth, state.canvasHeight,
+    state.frames.find(frame => frame.layers.some(layer => layer.id === layerId))?.id,
+    getBufferGeneration(layerId), getBufferRevision(layerId)]);
+}
 
 export type TransformHandleType =
   | 'tl'
@@ -76,6 +89,7 @@ export function useViewportSelectionTransform({
     h: number;
     mask: Uint8Array | null;
     layerId: string;
+    ownership: WorkspaceJob;
   } | null>(null);
 
   // Active transform state
@@ -101,6 +115,8 @@ export function useViewportSelectionTransform({
   } | null>(null);
 
   const lastActiveBoxRef = useRef<string | null>(null);
+  const commitJobRef = useRef<WorkspaceJob | null>(null);
+  useEffect(() => () => { commitJobRef.current?.cancel(); originalSourceRef.current?.ownership.dispose(); }, []);
 
   // Sync transform state when a new selection box is created
   useEffect(() => {
@@ -170,6 +186,8 @@ export function useViewportSelectionTransform({
       }
     }
 
+    originalSourceRef.current?.ownership.dispose();
+    liftSelectionToFloating();
     originalSourceRef.current = {
       canvas: backup,
       x: selection.x,
@@ -178,9 +196,8 @@ export function useViewportSelectionTransform({
       h: selection.h,
       mask: selectionMask ? new Uint8Array(selectionMask) : null,
       layerId: activeLayerId,
+      ownership: beginWorkspaceJob([activeLayerId], undefined, () => transformSourceKey(activeLayerId)),
     };
-
-    liftSelectionToFloating();
 
     const floatCanvas = document.createElement('canvas');
     floatCanvas.width = selection.w;
@@ -225,6 +242,7 @@ export function useViewportSelectionTransform({
           h: floatingSelection.h,
           mask: null,
           layerId: activeLayerId,
+          ownership: beginWorkspaceJob([activeLayerId], undefined, () => transformSourceKey(activeLayerId)),
         };
       }
 
@@ -524,131 +542,138 @@ export function useViewportSelectionTransform({
 
   // Commit transform: RotSprite 8x if rotated, bake back to active layer with undo
   const commitTransform = useCallback(async () => {
-    if (!originalSourceRef.current) {
-      captureSnapshot('Commit Free Transform');
-    }
-
-    const source = floatingSelection?.canvas || originalSourceRef.current?.canvas;
-    if (!source) {
-      setTransform((prev) => ({ ...prev, isTransforming: false, activeHandle: null }));
-      return;
-    }
-
-    const curW = transform.w;
-    const curH = transform.h;
-    const curX = transform.x;
-    const curY = transform.y;
-    const rotation = transform.rotation;
-
-    let finalCanvas = source;
-
-    // If scaled or stretched, perform nearest neighbor resample first
-    if (source.width !== curW || source.height !== curH) {
-      const scaledCanvas = document.createElement('canvas');
-      scaledCanvas.width = curW;
-      scaledCanvas.height = curH;
-      const sCtx = scaledCanvas.getContext('2d');
-      if (sCtx) {
-        sCtx.imageSmoothingEnabled = false;
-        sCtx.drawImage(source, 0, 0, curW, curH);
-        finalCanvas = scaledCanvas;
+    if (commitJobRef.current) return;
+    let job: WorkspaceJob | undefined;
+    try {
+      originalSourceRef.current?.ownership.check();
+      const current = useStudioStore.getState();
+      if (current.activeLayerId !== activeLayerId || !current.frames[current.activeFrameIndex]?.layers.some(layer => layer.id === activeLayerId && !layer.locked)) {
+        throw new Error('The transform source is no longer the active unlocked layer. Cancel this transform.');
       }
-    }
+      if (!originalSourceRef.current) {
+        captureSnapshot('Commit Free Transform');
+      }
 
-    let destX = curX;
-    let destY = curY;
+      const source = floatingSelection?.canvas || originalSourceRef.current?.canvas;
+      if (!source) {
+        setTransform((prev) => ({ ...prev, isTransforming: false, activeHandle: null }));
+        return;
+      }
+      // Snapshot capture may materialize a lazy source canvas. Bind after that
+      // preparation so the operation cannot invalidate its own source generation.
+      job = beginWorkspaceJob([activeLayerId]);
+      commitJobRef.current = job;
 
-    // If rotated, run RotSprite algorithm with unclipped bounding box and user pivot
-    if (Math.abs(rotation) > 1e-4) {
-      const fCtx = finalCanvas.getContext('2d', { willReadFrequently: true });
-      if (fCtx) {
-        const imgData = fCtx.getImageData(0, 0, curW, curH);
+      const curW = transform.w;
+      const curH = transform.h;
+      const curX = transform.x;
+      const curY = transform.y;
+      const rotation = transform.rotation;
 
-        const localPivotX = transform.pivot.x - curX;
-        const localPivotY = transform.pivot.y - curY;
+      let finalCanvas = source;
 
-        const cos = Math.cos(rotation);
-        const sin = Math.sin(rotation);
-
-        const corners = [
-          { x: 0, y: 0 },
-          { x: curW, y: 0 },
-          { x: curW, y: curH },
-          { x: 0, y: curH },
-        ].map((pt) => {
-          const dx = pt.x - localPivotX;
-          const dy = pt.y - localPivotY;
-          return {
-            x: localPivotX + cos * dx - sin * dy,
-            y: localPivotY + sin * dx + cos * dy,
-          };
-        });
-
-        const minX = Math.floor(Math.min(...corners.map((c) => c.x)));
-        const maxX = Math.ceil(Math.max(...corners.map((c) => c.x)));
-        const minY = Math.floor(Math.min(...corners.map((c) => c.y)));
-        const maxY = Math.ceil(Math.max(...corners.map((c) => c.y)));
-
-        const targetW = Math.max(1, maxX - minX);
-        const targetH = Math.max(1, maxY - minY);
-        destX = Math.round(curX + minX);
-        destY = Math.round(curY + minY);
-        const outPivotX = localPivotX - minX;
-        const outPivotY = localPivotY - minY;
-
-        const rotResult = await runRotSpriteInWorker(
-          { width: curW, height: curH, data: imgData.data },
-          rotation,
-          localPivotX,
-          localPivotY,
-          targetW,
-          targetH,
-          outPivotX,
-          outPivotY
-        );
-
-        const rotatedCanvas = document.createElement('canvas');
-        rotatedCanvas.width = rotResult.width;
-        rotatedCanvas.height = rotResult.height;
-        const rCtx = rotatedCanvas.getContext('2d');
-        if (rCtx) {
-          const outImg = rCtx.createImageData(rotResult.width, rotResult.height);
-          outImg.data.set(rotResult.data);
-          rCtx.putImageData(outImg, 0, 0);
-          finalCanvas = rotatedCanvas;
+      // If scaled or stretched, perform nearest neighbor resample first
+      if (source.width !== curW || source.height !== curH) {
+        const scaledCanvas = document.createElement('canvas');
+        scaledCanvas.width = curW;
+        scaledCanvas.height = curH;
+        const sCtx = scaledCanvas.getContext('2d');
+        if (sCtx) {
+          sCtx.imageSmoothingEnabled = false;
+          sCtx.drawImage(source, 0, 0, curW, curH);
+          finalCanvas = scaledCanvas;
         }
       }
+
+      let destX = curX;
+      let destY = curY;
+
+      // If rotated, run RotSprite algorithm with unclipped bounding box and user pivot
+      if (Math.abs(rotation) > 1e-4) {
+        const fCtx = finalCanvas.getContext('2d', { willReadFrequently: true });
+        if (fCtx) {
+          const imgData = fCtx.getImageData(0, 0, curW, curH);
+
+          const bounds = computeRotatedBounds(curW, curH, curX, curY, transform.pivot.x, transform.pivot.y, rotation);
+          destX = bounds.destX;
+          destY = bounds.destY;
+
+          const studioState = useStudioStore.getState();
+          const curFrame = studioState.frames[studioState.activeFrameIndex];
+          const activeLayerObj = curFrame?.layers.find((l) => l.id === activeLayerId);
+          const isNormal = activeLayerObj ? isNormalLayer(activeLayerObj) : false;
+          const algorithm = studioState.tools.rotationAlgorithm ?? 'rotsprite';
+
+          const rotResult = await runRotSpriteInWorker(
+            { width: curW, height: curH, data: imgData.data },
+            rotation,
+            bounds.localPivotX,
+            bounds.localPivotY,
+            bounds.targetW,
+            bounds.targetH,
+            {
+              outPivotX: bounds.outPivotX,
+              outPivotY: bounds.outPivotY,
+              pixelPerfect: true,
+              algorithm,
+              isNormalMap: isNormal,
+              signal: job.signal,
+            }
+          );
+
+          const rotatedCanvas = document.createElement('canvas');
+          rotatedCanvas.width = rotResult.width;
+          rotatedCanvas.height = rotResult.height;
+          const rCtx = rotatedCanvas.getContext('2d');
+          if (rCtx) {
+            const outImg = rCtx.createImageData(rotResult.width, rotResult.height);
+            outImg.data.set(rotResult.data);
+            rCtx.putImageData(outImg, 0, 0);
+            finalCanvas = rotatedCanvas;
+          }
+        }
+      }
+
+      // Bake into active layer
+      job.check();
+      const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
+      const layerCtx = layerCanvas.getContext('2d', { willReadFrequently: true });
+      if (layerCtx) {
+        layerCtx.imageSmoothingEnabled = false;
+        layerCtx.drawImage(finalCanvas, destX, destY);
+      }
+
+      // Reset states
+      touchBuffer(activeLayerId);
+      originalSourceRef.current?.ownership.dispose();
+      originalSourceRef.current = null;
+      lastActiveBoxRef.current = null;
+      setFloatingSelection(null);
+      setSelection(null);
+      setTransform({
+        x: 0,
+        y: 0,
+        w: 0,
+        h: 0,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+        pivot: { x: 0, y: 0 },
+        isTransforming: false,
+        activeHandle: null,
+      });
+
+      commitSnapshot();
+      renderComposite();
+      bumpBufferVersion();
+    } catch (error) {
+      if (!job?.signal.aborted) studioEvents.emit('pixibun:toast', {
+        type: 'error', message: error instanceof Error ? error.message : 'Transform failed.',
+      });
+    } finally {
+      job?.dispose();
+      if (commitJobRef.current === job) commitJobRef.current = null;
     }
-
-    // Bake into active layer
-    const layerCanvas = getOrCreateLayerCanvas(activeLayerId);
-    const layerCtx = layerCanvas.getContext('2d', { willReadFrequently: true });
-    if (layerCtx) {
-      layerCtx.imageSmoothingEnabled = false;
-      layerCtx.drawImage(finalCanvas, destX, destY);
-    }
-
-    // Reset states
-    originalSourceRef.current = null;
-    lastActiveBoxRef.current = null;
-    setFloatingSelection(null);
-    setSelection(null);
-    setTransform({
-      x: 0,
-      y: 0,
-      w: 0,
-      h: 0,
-      rotation: 0,
-      scaleX: 1,
-      scaleY: 1,
-      pivot: { x: 0, y: 0 },
-      isTransforming: false,
-      activeHandle: null,
-    });
-
-    commitSnapshot();
-    renderComposite();
-    bumpBufferVersion();
   }, [
     activeLayerId,
     bumpBufferVersion,
@@ -664,20 +689,28 @@ export function useViewportSelectionTransform({
 
   // Cancel transform: restore original pixels and clear floating selection
   const cancelTransform = useCallback(() => {
+    commitJobRef.current?.cancel();
+    let restoreAllowed = true;
     if (originalSourceRef.current) {
-      const { canvas, x, y, layerId } = originalSourceRef.current;
-      const targetLayer = getOrCreateLayerCanvas(layerId);
-      const ctx = targetLayer.getContext('2d');
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(canvas, x, y);
-      }
+      const { canvas, x, y, layerId, ownership } = originalSourceRef.current;
+      try {
+        ownership.check();
+        // A cancellation may restore only its still-owned raster, never allocate
+        // an old layer in a replacement project or overwrite a newer edit.
+        const entry = snapshotBuffers().get(layerId);
+        if (entry) {
+          entry.ctx.imageSmoothingEnabled = false;
+          entry.ctx.drawImage(canvas, x, y);
+          touchBuffer(layerId);
+        }
+      } catch { restoreAllowed = false; /* Stale backing pixels belong to the newer workspace. */ }
+      finally { ownership.dispose(); }
       originalSourceRef.current = null;
     }
 
     lastActiveBoxRef.current = null;
     setFloatingSelection(null);
-    setSelection(null);
+    if (restoreAllowed) setSelection(null);
     setTransform({
       x: 0,
       y: 0,
@@ -692,8 +725,8 @@ export function useViewportSelectionTransform({
     });
 
     renderComposite();
-    bumpBufferVersion();
-  }, [bumpBufferVersion, getOrCreateLayerCanvas, renderComposite, setFloatingSelection, setSelection]);
+    if (restoreAllowed) bumpBufferVersion();
+  }, [bumpBufferVersion, renderComposite, setFloatingSelection, setSelection]);
 
   // Quick Action: Flip Horizontal
   const handleFlipH = useCallback(() => {
@@ -773,8 +806,9 @@ export function useViewportSelectionTransform({
 
   // Global Keyboard shortcuts: Enter to commit, Escape to cancel, arrows to nudge
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (shouldIgnoreWorkspaceKey(e) || e.ctrlKey || e.metaKey || e.altKey || isWorkspaceControlTarget(e)) return;
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (useStudioStore.getState().motionPart) return;
+        if (shouldIgnoreWorkspaceKey(e) || e.ctrlKey || e.metaKey || e.altKey || isWorkspaceControlTarget(e)) return;
 
       const active = floatingSelection || selection;
       if (!active) return;

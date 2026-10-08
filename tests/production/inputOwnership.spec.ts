@@ -83,6 +83,22 @@ test('a floating selection and its gizmo nudge together once and commit remains 
   await page.keyboard.press('Control+z'); await expect.poll(() => pixels(page)).toEqual(original);
 });
 
+test('a rotated floating preview updates after a flip and its committed pixels match the preview', async ({ page }) => {
+  await ready(page); const box = await paint(page);
+  await page.mouse.click(box.x + box.width * 0.3, box.y + box.height * 0.6);
+  const original = await pixels(page); await select(page, box);
+  await page.getByTitle('Rotate 90° CW', { exact: true }).click();
+  await expect.poll(() => pixels(page)).not.toEqual(original);
+  const rotated = await pixels(page);
+  await page.getByTitle('Flip Horizontal (H)', { exact: true }).click();
+  await expect.poll(() => pixels(page)).not.toEqual(rotated);
+  const flipped = await pixels(page);
+  await page.getByTestId('gizmo-commit-btn').click();
+  await expect(page.getByTestId('selection-transform-gizmo')).toBeHidden();
+  await expect.poll(() => pixels(page)).toEqual(flipped);
+  await page.getByTestId('undo-button').click(); await expect.poll(() => pixels(page)).toEqual(original);
+});
+
 test('the practice Teaching Board owns its dialog keys and retains separate artwork on return', async ({ page }) => {
   await ready(page); await paint(page); const original = await pixels(page);
   await page.getByTestId('save-button').click();

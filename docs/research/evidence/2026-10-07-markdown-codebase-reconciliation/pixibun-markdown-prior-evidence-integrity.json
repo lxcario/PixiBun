@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-07T15:16:49.532Z",
+  "checkedFiles": 163,
+  "archives": [
+    {
+      "archive": "docs/research/evidence/2026-10-06-piximotion-foundations",
+      "checked": 26,
+      "changed": [],
+      "manifestSha256": "da0430546ec3c4a771a6dee5784c6bf8a04829fc2601967aa791892e5b03aa8c"
+    },
+    {
+      "archive": "docs/research/evidence/2026-10-06-piximotion-readiness",
+      "checked": 9,
+      "changed": [],
+      "manifestSha256": "00ae3722928860bdcc28002c89ce1b9942f840c7fe3181b251fa373dd905297c"
+    },
+    {
+      "archive": "docs/research/evidence/2026-10-07-piximotion-phase4",
+      "checked": 50,
+      "changed": [],
+      "manifestSha256": "5a8ca917c0beb110c8ba45bbdc5e6a9765095d5191f33bb51271ca53306e470b"
+    },
+    {
+      "archive": "docs/research/evidence/2026-10-07-piximotion-phase5",
+      "checked": 38,
+      "changed": [],
+      "manifestSha256": "2d90b7094f5efa357e91b1c6836365cd053ba510ce1b4aafca814df405389424"
+    },
+    {
+      "archive": "docs/research/evidence/2026-10-07-piximotion-cross-phase-hardening",
+      "checked": 40,
+      "changed": [],
+      "manifestSha256": "f31162cc9bcbeaaab99b70611382ece88fc7484fc2a4b72269dcc27a93c08233"
+    }
+  ]
+}

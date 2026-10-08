@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Drawing tools](drawing-tools.md) · [Animation](animation-and-review.md)
 
-Use the **Workspace** list in the project rail to keep the panels you need nearby. These are desktop Studio controls; the phone's Pocket interface has its own layout. At compact desktop widths, control groups wrap onto another row so project actions remain reachable.
+Use the **Workspace** list in the project rail to keep the panels you need nearby. These are desktop Studio controls; the phone's Pocket interface has its own layout. At compact desktop widths, shorter labels keep project and drawing actions together. Open **Size** (or the pixel-size button) for presets and **Clean corners**; the extra inline presets appear on wider desks. The offline badge uses a disconnected-network icon at compact widths, with its full status available to assistive technology and in the hover description.
 
 ## Choose and save a layout
 
@@ -20,7 +20,9 @@ Layouts, color-picker shape and palette favorites belong to this browser and sit
 
 ![Pinned triangle, detailed settings and the whole-canvas navigator.](../assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png)
 
-Choose **Color** to pin the picker. **Foreground / Background** chooses which drawing color you edit. The outer ring sets hue; the triangle mixes that hue with white and black. Choose **Square** if you prefer independent saturation and value axes. The Hue, Saturation and Value sliders also support keyboard input; the hex field accepts `#rrggbb`, or `#rgb` when you leave the field. Changing a drawing color does not recolor existing pixels.
+Choose **View → Arrange... → Color picker** to pin the picker. **Foreground / Background** chooses which drawing color you edit. The outer ring sets hue; the triangle mixes that hue with white and black. Choose **Square** if you prefer independent saturation and value axes. The Hue, Saturation and Value sliders also support keyboard input; the hex field accepts `#rrggbb`, or `#rgb` when you leave the field. Changing a drawing color does not recolor existing pixels.
+
+The Palette tab always offers a picker and its **Pin color panel / Unpin color panel** action. Pinning keeps one picker available when you switch inspector tabs; its layout choice survives reload. The active motion editor temporarily occupies the inspector instead. Unpinning hides the shared picker on other tabs while keeping color editing available in Palette.
 
 Choose the inspector's **Tools** tab for the selected tool's controls: brush size, clean corners, shape fill, fill tolerance, selection tolerance, dither pattern or chisel settings as applicable. The top bar retains quick controls. The settings panel scrolls when several optional panels are open.
 
@@ -56,6 +58,22 @@ Only supplied ramp RGB colors are painted, at full opacity. No interpolated RGB 
 Open the gear beside **Onion Skin** in the expanded timeline. Set **Previous / Next** counts independently from 0 to 5, choose each tint and adjust opacity. **Previous pose** isolates the last pose; **Either side** compares both neighbors; **Motion trail** shows three on each side. Distant ghosts fade. Trails stop at the project's first and last frame; they do not wrap or stop at a clip tag boundary. Memory admission can reduce available previews.
 
 Ghosts appear while paused, and remain separate from artwork and exports. **F3** toggles them with canvas focus. These settings travel with the saved project. Try one previous pose first: compare the planted foot, torso size and highlight placement; use playback at 1× to judge timing. The [walk-cycle exercise](animation-and-review.md#build-a-readable-walk-cycle) gives a concrete sequence.
+
+## Rotate a detail or try rigid-part motion
+
+With a selection active, open **Tools** to choose RotSprite or Paeth for rotation. Move the pivot and inspect thin features, outline and dither at the intended angle. Paeth's three-shear sampling is an alternative look, not a guarantee that every pattern survives. Normal layers use a separate vector-aware rotation path. The older selection screenshots predate these choices; see the [rotation contract](../contracts/rendering.md#pixel-art-rotation-rotsprite-v2).
+
+## Save a motion rig
+
+Commit or cancel any floating selection first. On one unlocked color layer, open **Tools**, then choose **Create Motion Part**. Select an area first to capture that detail, or leave it unselected to capture the whole layer. Close co-draw before starting; normal-map layers use the separate layer-rotation workflow. Adjust its pivot, Start/End poses, frame count and easing. Give it a **Rig name** and choose **Save motion rig**, then save the project with the workspace Save button. Each saved rig currently contains one rigid part. Pose adjustments remain temporary until Save or Bake, with their own bounded session Undo/Redo.
+
+**Generated Frames** and **Motion frames** both offer 2–30 poses, matching the engine and saved-rig format. New captures and **Center Pivot** use the geometric center of the captured bounds, including half-pixel coordinates for odd sizes. Opening a saved rig retains its authored pivot. Position controls enter whole pixels; rotation and pivot controls retain finite fractions. Saved rigs can also retain fractional positions until edited. Raster translations round to whole pixels using the same rule in static preview, playback and bake. **Reset Pose** resets the selected Start or End pose. **Undo pose / Redo pose**, keyboard Undo/Redo and the workspace buttons edit motion parameters while this session is open. One drag or held range-key gesture is one step; cancelled gestures do not consume an Undo step. Cancel the session to return to artwork/library history. The last 50 parameter steps are session-local and are not portable backups.
+
+Preview and baked cels use the source cel's duration. Motion rendering runs in a separate worker; a slow preview can skip displayed poses. Cancel during Bake leaves unfinished cels unapplied. Parts crossing a canvas edge are clipped. If the source frame has normal artwork or a derived layer that depends on the moving source, motion refuses movement until you remove or separate those layers; this version cannot keep them aligned with a moved part. Rotating a rigid part does not keep feet on a ground plane automatically—inspect contact and small details, then repair baked cels as needed.
+
+**Cancel** closes the motion session while keeping saved rigs. After reopening the project, return to **Tools** and choose **Open** beside the saved rig. Opening checks its source artwork, selects its source frame/layer and shows its End pose with playback stopped. If you changed the source pixels, resized the canvas or deleted its source, capture and save a new rig. A saved rig never guesses a replacement from layer names. Close co-draw before opening or editing rigs.
+
+**Bake to timeline** creates editable cels as one Undo action. It copies existing palette regions to the new frames at their original canvas positions; review these regions before indexed export because they do not automatically follow moving artwork. Saved definitions stay in the project; opening them again checks the source. **Delete** removes a saved rig and Undo restores it. Portable project backups include the definitions, but these new format-v4 files require a reader that supports that format.
 
 ## Work with only the canvas
 

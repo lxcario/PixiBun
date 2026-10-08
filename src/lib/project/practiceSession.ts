@@ -9,6 +9,7 @@ import { buildAutosavePayloadAsync, generateCompositeThumbnail } from './seriali
 import { commitPersistedRevisions, clearPersistedRevisions } from './persistenceRevisions';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { registerMemoryUsage } from '@/lib/safety/memoryBudget';
+import { motionHistoryBytes } from '@/lib/animation/motionEditing';
 import {
   getStudioRouteSession, setStudioResume, PRACTICE_RETURN_KEY, clearPracticeReturnProject, getPracticeReturnProject,
   type StudioResume,
@@ -45,6 +46,9 @@ export const isPracticeActive = () => active !== null;
 registerMemoryUsage('suspendedRasters', () => {
   let bytes = 0;
   for (const entry of suspended?.buffers.values() ?? []) bytes += entry.canvas.width * entry.canvas.height * 4;
+  const part = suspended?.state.motionPart;
+  if (part && part !== useStudioStore.getState().motionPart) bytes += part.raster.data.byteLength + (part.mask?.byteLength ?? 0);
+  if (suspended?.state.motionHistory !== useStudioStore.getState().motionHistory) bytes += motionHistoryBytes(suspended?.state.motionHistory ?? null);
   return bytes;
 });
 

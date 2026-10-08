@@ -16,6 +16,7 @@ import {
 import { runMorphInWorker } from '@/lib/engine/workerDispatcher';
 import { canAddFramesToProject } from '@/lib/project/workspaceEnvelopeGuard';
 import type { ViewportEventContext } from './types';
+import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 
 export function useArtisanEvents({
   canvasWidth,
@@ -30,6 +31,7 @@ export function useArtisanEvents({
   updateTaggedLayer,
 }: ViewportEventContext) {
   useEffect(() => {
+    const jobs = new Set<WorkspaceJob>();
     const handleCleanJaggiesEvent = () => {
       captureSnapshot('AI Clean Jaggies');
       const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
@@ -196,18 +198,23 @@ export function useArtisanEvents({
         revision: preparedState.editRevision,
       };
 
+      const job = beginWorkspaceJob([...frameA.layers, ...frameB.layers].map(layer => layer.id));
+      jobs.add(job);
+      try {
       let morphed;
       try {
         [morphed] = await runMorphInWorker(
           { width: canvasWidth, height: canvasHeight, data: dataA },
           { width: canvasWidth, height: canvasHeight, data: dataB },
-          1
+          1, undefined, { signal: job.signal }
         );
+        job.check();
         if (!morphed || morphed.width !== canvasWidth || morphed.height !== canvasHeight ||
           morphed.data.length !== canvasWidth * canvasHeight * 4) {
           throw new Error('In-between generation returned invalid pixels.');
         }
       } catch (error) {
+        if (job.signal.aborted) return;
         studioEvents.emit('pixibun:toast', {
           message: error instanceof Error ? error.message : 'In-between generation failed; artwork was preserved.',
           type: 'error',
@@ -261,6 +268,7 @@ export function useArtisanEvents({
       if (frameA.layers.some((l) => l.tag === 'cast-shadow')) {
         studioEvents.emit('pixibun:render-cast-shadow', {});
       }
+      } finally { job.dispose(); jobs.delete(job); }
     };
 
     const unsubs = [
@@ -284,6 +292,7 @@ export function useArtisanEvents({
     ];
 
     return () => {
+      jobs.forEach(job => job.cancel()); jobs.clear();
       unsubs.forEach((unsub) => unsub());
     };
   }, [

@@ -33,6 +33,8 @@ test('project controls, pen size, zoom, and timeline work at desktop widths', as
   await page.getByRole('button', { name: '2× preview speed' }).click();
   await expect(page.getByRole('button', { name: 'Preview speed' })).toContainText('2×');
 
+  await page.getByTestId('add-frame-button').click();
+  await expect(page.getByRole('button', { name: /Select frame 2/ })).toBeVisible();
   await page.getByRole('button', { name: 'Collapse Timeline' }).click();
   const compact = page.getByTestId('bottom-timeline-collapsed');
   await expect(compact).toBeVisible();

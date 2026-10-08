@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+(node:27192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths (9.0s)
+
+
+  1) [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+
+    Error: header control bounds and overlap at 1024px with pen
+
+    header control bounds and overlap at 1024px with pen
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      138 |         return bounds.height === 48 && controls.every((box) => box.left >= bounds.left && box.right <= bounds.right && box.top >= bounds.top && box.bottom <= bounds.bottom && box.width >= 24 && box.height >= 24 && Math.abs((box.top + box.bottom) / 2 - (bounds.top + bounds.bottom) / 2) <= 1)
+      139 |           && controls.every((box, index) => controls.slice(index + 1).every((other) => Math.min(box.right, other.right) - Math.max(box.left, other.left) <= 1 || Math.min(box.bottom, other.bottom) - Math.max(box.top, other.top) <= 1));
+    > 140 |       }), `header control bounds and overlap at ${width}px with ${tool}`).toBe(true);
+          |                                                                           ^
+      141 |       expect(await canvasControls.evaluate((element) => {
+      142 |         const mirror = element.querySelector('[aria-label="Mirror drawing"]')!.getBoundingClientRect();
+      143 |         const zoom = element.querySelector('[aria-label="Zoom Out"]')!.getBoundingClientRect();
+        at D:\PixiBun\tests\e2e\backupTrust.spec.ts:140:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\publication-editor-final\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\publication-editor-final\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths 

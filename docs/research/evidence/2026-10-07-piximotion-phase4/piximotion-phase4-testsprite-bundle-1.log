@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Resource not found.",
+    "nextAction": "The run's stored script was withheld: its environment was edited or deleted after the run started, so environment values in it can no longer be scrubbed. Re-run with `testsprite test rerun <test-id>` and fetch the new run's failure bundle.",
+    "requestId": "cli_6447da90-f7f9-4c27-80b4-cf92f0c0120a",
+    "details": {
+      "resource": "run",
+      "id": "86bb05d8-2d45-48fd-adfe-91825a5ad73d",
+      "reason": "environment_changed"
+    }
+  }
+}

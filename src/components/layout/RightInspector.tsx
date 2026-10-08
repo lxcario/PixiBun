@@ -9,6 +9,10 @@ import { PalettePanel } from './inspector/PalettePanel';
 import { ToolSettingsPanel } from './inspector/ToolSettingsPanel';
 import { NavigatorPanel } from './inspector/NavigatorPanel';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
+
+import { PixiMotionPanel } from './inspector/PixiMotionPanel';
+import { MotionRigLibrary } from './inspector/MotionRigLibrary';
 
 const AiToolsPanel = dynamic(
   () => import('./inspector/AiToolsPanel').then((m) => m.AiToolsPanel),
@@ -18,6 +22,7 @@ const AiToolsPanel = dynamic(
 export const RightInspector: React.FC = () => {
   const activeInspectorTab = useStudioStore((s) => s.activeInspectorTab);
   const setActiveInspectorTab = useStudioStore((s) => s.setActiveInspectorTab);
+  const motionPart = useStudioStore((s) => s.motionPart);
   const layout = useWorkspaceStore(s => s.layout);
 
   return (
@@ -99,10 +104,17 @@ export const RightInspector: React.FC = () => {
 
       {/* Main Content Area: Dedicated Panels per Tab */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {activeInspectorTab === 'tools' && <ToolSettingsPanel />}
-        {activeInspectorTab === 'layers' && <LayersPanel />}
-        {activeInspectorTab === 'palette' && <PalettePanel />}
-        {activeInspectorTab === 'ai' && <AiToolsPanel />}
+        {layout.color && activeInspectorTab !== 'palette' && !motionPart && <PinnedColorPanel />}
+        {motionPart ? (
+          <PixiMotionPanel />
+        ) : (
+          <>
+            {activeInspectorTab === 'tools' && <><MotionRigLibrary /><ToolSettingsPanel /></>}
+            {activeInspectorTab === 'layers' && <LayersPanel />}
+            {activeInspectorTab === 'palette' && <PalettePanel />}
+            {activeInspectorTab === 'ai' && <AiToolsPanel />}
+          </>
+        )}
       </div>
       {layout.navigator && <NavigatorPanel />}
     </aside>

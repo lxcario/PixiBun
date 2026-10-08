@@ -1,0 +1,6 @@
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 279 existing, 6 approved removed historical references.
+spawnSync git ENOBUFS

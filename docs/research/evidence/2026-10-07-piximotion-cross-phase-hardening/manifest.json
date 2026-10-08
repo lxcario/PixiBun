@@ -1,0 +1,271 @@
+{
+  "recordedAt": "2026-10-07T14:40:25.1265495+00:00",
+  "revision": "dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+  "dirtyWorkingTree": true,
+  "runtime": "Node 22.23.3",
+  "buildId": "UJQHvlgbuEjzZMXnqAYvk",
+  "sourceIntegrity": {
+    "checkedAt": "2026-10-07T17:39:27.5600513+03:00",
+    "checkedInputs": 682,
+    "changedInputs": [],
+    "checkedBuildFiles": 4,
+    "changedBuildFiles": [],
+    "buildId": "UJQHvlgbuEjzZMXnqAYvk"
+  },
+  "localVerdicts": {
+    "finalGate": "all five stages passed: 2040 tests /194 suites and build",
+    "initialFullCompiled": "224 passes /7 capability skips /3 new-fixture prerequisite failures",
+    "previewCacheBefore": "1 reproduced Chromium failure",
+    "finalAffectedCompiled": "80 passes /1 WebKit touch-capability skip; Chromium/Firefox/WebKit; one worker; zero retries",
+    "testsprite": "blocked, initial hardening build; no artwork assertions executed; artifact fetch refused"
+  },
+  "verificationCommands": [
+    "node scripts/runQualityGate.mjs --with-build",
+    "playwright test --config playwright.production.config.ts",
+    "playwright test --config playwright.production.config.ts [six affected files]",
+    "testsprite test run a8ee88ac-c79d-4204-8593-642a4dc3ef0e --local 3207 --local-host 127.0.0.1 --timeout 1200 --output json"
+  ],
+  "privacy": "Only sanitized TestSprite summary retained; no signed media links or raw service payloads.",
+  "files": [
+    {
+      "path": "piximotion-hardening-analysis-before.log",
+      "source": "artifacts/piximotion-hardening-analysis-before.log",
+      "bytes": 1183,
+      "sha256": "51d857df7c861a4cccb391e67b6e630d8a3427aa55f5e59eecd052050550c60a"
+    },
+    {
+      "path": "piximotion-hardening-baseline-final.json",
+      "source": "artifacts/piximotion-hardening-baseline-final.json",
+      "bytes": 10646,
+      "sha256": "13ad6bea05dca97f9bdde57213c115eb83222038a78f1be6d83b885c101d5bf6"
+    },
+    {
+      "path": "piximotion-hardening-baseline.json",
+      "source": "artifacts/piximotion-hardening-baseline.json",
+      "bytes": 10643,
+      "sha256": "c9e06948171aae6da5e7af49ec7e856cabd1b2d8e78ca6c8cd5d0890e38f32e5"
+    },
+    {
+      "path": "piximotion-hardening-before-local.log",
+      "source": "artifacts/piximotion-hardening-before-local.log",
+      "bytes": 9125,
+      "sha256": "dbcffb2dddf5cb6ee96d47bf7f4afc756313995ee725584da679e0f23c8da66a"
+    },
+    {
+      "path": "piximotion-hardening-before.log",
+      "source": "artifacts/piximotion-hardening-before.log",
+      "bytes": 1968,
+      "sha256": "c650ce496b5330c5df7d59c628c946bc9ecc70c3ca7de532ef6f87556e31ddce"
+    },
+    {
+      "path": "piximotion-hardening-compiled-inputs-final.json",
+      "source": "artifacts/piximotion-hardening-compiled-inputs-final.json",
+      "bytes": 77976,
+      "sha256": "054e657f0cff985399e92b25f529d642b9dbfe6920614b24fc7d792b2119c6b2"
+    },
+    {
+      "path": "piximotion-hardening-compiled-inputs.json",
+      "source": "artifacts/piximotion-hardening-compiled-inputs.json",
+      "bytes": 77644,
+      "sha256": "4b4590338f2292e08869a0cc7fda7df12a28916c062a65be8fcaa79a381cf85e"
+    },
+    {
+      "path": "piximotion-hardening-diff-check-final.log",
+      "source": "artifacts/piximotion-hardening-diff-check-final.log",
+      "bytes": 3967,
+      "sha256": "eb5619144c6eb2d9c8d2fd505cbccbc816bdd303e760dd757bb98d4384e62751"
+    },
+    {
+      "path": "piximotion-hardening-diff-check.log",
+      "source": "artifacts/piximotion-hardening-diff-check.log",
+      "bytes": 3967,
+      "sha256": "eb5619144c6eb2d9c8d2fd505cbccbc816bdd303e760dd757bb98d4384e62751"
+    },
+    {
+      "path": "piximotion-hardening-diff-warnings.log",
+      "source": "artifacts/piximotion-hardening-diff-warnings.log",
+      "bytes": 4514,
+      "sha256": "1fa49e988d9f51ef347c35284cf20ffc24974c6d3a8fcafe13fc55ac660cef30"
+    },
+    {
+      "path": "piximotion-hardening-docs-final.log",
+      "source": "artifacts/piximotion-hardening-docs-final.log",
+      "bytes": 343,
+      "sha256": "515b484704a8c7542c67dfeede560f1da452c922c40096a2cfcbfb5d00d0e8b9"
+    },
+    {
+      "path": "piximotion-hardening-final-integrity.json",
+      "source": "artifacts/piximotion-hardening-final-integrity.json",
+      "bytes": 201,
+      "sha256": "02ef046cc8357de4d1f8a2406f57cba85b592ec9c9ea9d59117ed6ed8a14f325"
+    },
+    {
+      "path": "piximotion-hardening-focused-followup.log",
+      "source": "artifacts/piximotion-hardening-focused-followup.log",
+      "bytes": 215,
+      "sha256": "4655b756f1f860f32754b2635c8ace3b7178d06fbb1d79e94a2af6a56d8a0189"
+    },
+    {
+      "path": "piximotion-hardening-focused.log",
+      "source": "artifacts/piximotion-hardening-focused.log",
+      "bytes": 2093,
+      "sha256": "a02a87eac066dbd62885631f338857aec3b4e93b6fe9cca427218a5662c75c0b"
+    },
+    {
+      "path": "piximotion-hardening-gate-final.log",
+      "source": "artifacts/piximotion-hardening-gate-final.log",
+      "bytes": 4111,
+      "sha256": "7ada8cdeca829f1d7e615c806e17116af67593dda757e1b4f7042ff2af60fd86"
+    },
+    {
+      "path": "piximotion-hardening-gate.log",
+      "source": "artifacts/piximotion-hardening-gate.log",
+      "bytes": 4112,
+      "sha256": "5f2443314f6c3444d00eabc507643a9bd109075c45a7316ed92f68a931d0f49c"
+    },
+    {
+      "path": "piximotion-hardening-inventory.log",
+      "source": "artifacts/piximotion-hardening-inventory.log",
+      "bytes": 87,
+      "sha256": "bb8c56c7e8d18be6a07a20d7520418db1b2f965bfc35f5f001243d3643e16d14"
+    },
+    {
+      "path": "piximotion-hardening-lifecycle-followup.log",
+      "source": "artifacts/piximotion-hardening-lifecycle-followup.log",
+      "bytes": 341,
+      "sha256": "60783ff7c0792bab3fa4bc864993717d8d2117a78d445b5097a165603282ad08"
+    },
+    {
+      "path": "piximotion-hardening-lint.log",
+      "source": "artifacts/piximotion-hardening-lint.log",
+      "bytes": 330,
+      "sha256": "a96f95fe885e0f2d2ccf91272e6d92a458bf1c10da1917b7ef9ea7fb72853904"
+    },
+    {
+      "path": "piximotion-hardening-preview-cache-before.log",
+      "source": "artifacts/piximotion-hardening-preview-cache-before.log",
+      "bytes": 3245,
+      "sha256": "302bfd8760936f243b83695fc9bf8209fdcae00cd98b498d71787aead17e422a"
+    },
+    {
+      "path": "piximotion-hardening-prior-evidence-integrity.json",
+      "source": "artifacts/piximotion-hardening-prior-evidence-integrity.json",
+      "bytes": 496,
+      "sha256": "26162c66af9c11b363449edd7796b1d9aad7fa79f7fea1efe7b8d4f0046ba0a0"
+    },
+    {
+      "path": "piximotion-hardening-production-final.log",
+      "source": "artifacts/piximotion-hardening-production-final.log",
+      "bytes": 14931,
+      "sha256": "1a8bdf7e6378b9e5bb58148ae62369af1025ff4da19d3d9c45118f4ab59db0ea"
+    },
+    {
+      "path": "piximotion-hardening-production.log",
+      "source": "artifacts/piximotion-hardening-production.log",
+      "bytes": 50890,
+      "sha256": "5326fab55e74da22f57749d90dd9d31e5796f7cd62c69917cadaba613473fc22"
+    },
+    {
+      "path": "piximotion-hardening-renderer-final.log",
+      "source": "artifacts/piximotion-hardening-renderer-final.log",
+      "bytes": 211,
+      "sha256": "81f5eb88d1984e77e45c9417ecdc1c00e7308c32bc15b21ed780ca293d0f197b"
+    },
+    {
+      "path": "piximotion-hardening-renderer.log",
+      "source": "artifacts/piximotion-hardening-renderer.log",
+      "bytes": 209,
+      "sha256": "06979b5c8d79ef3c6a48fd19e1452dbb7d13b448655016971e8827ae5136ccea"
+    },
+    {
+      "path": "piximotion-hardening-same-document-before.log",
+      "source": "artifacts/piximotion-hardening-same-document-before.log",
+      "bytes": 1241,
+      "sha256": "6d1ea51cebfdb25c2e80e93990174ac3e56bf587dd067177beb09f7515031c71"
+    },
+    {
+      "path": "piximotion-hardening-testsprite-summary.json",
+      "source": "artifacts/piximotion-hardening-testsprite-summary.json",
+      "bytes": 2318,
+      "sha256": "2c7f5d35ce75280020bedbb36423a531291f82903258ad929325231f5df6eed8"
+    },
+    {
+      "path": "piximotion-hardening-typecheck.log",
+      "source": "artifacts/piximotion-hardening-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/error-context.md",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/error-context.md",
+      "bytes": 12528,
+      "sha256": "892040873b3964b5689226c0d9019058c0b6ec988361779275a011d95298a25a"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/test-failed-1.png",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/test-failed-1.png",
+      "bytes": 125448,
+      "sha256": "33aa91d906a06defe89441c0ba058a6b398f0c4458de2fe4bea89f651d418de5"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/trace.zip",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-chromium/trace.zip",
+      "bytes": 4803276,
+      "sha256": "76f536927f0a4e9f0c039e78afdcdff547ff963489c00e2fd0eb7baddc77988c"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/error-context.md",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/error-context.md",
+      "bytes": 12528,
+      "sha256": "13007dbbedff976563f3a81a3963a987cba14e7703f4fe3ed16da7d4d3f4da23"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/test-failed-1.png",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/test-failed-1.png",
+      "bytes": 133099,
+      "sha256": "4908d05cb90a39d026572a3125deb0f5b14e87fcc32831f5b89c33ec3167e0d7"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/trace.zip",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-firefox/trace.zip",
+      "bytes": 2286647,
+      "sha256": "72c37ca7d147f7021d5ebf166e476c44b791752d2c31f7d1c64787ad503980b8"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/error-context.md",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/error-context.md",
+      "bytes": 12528,
+      "sha256": "2d48918199a9edf98fb486c07ddb2613b307fb10ad4a281554e9b4dbf7dfd979"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/test-failed-1.png",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/test-failed-1.png",
+      "bytes": 239580,
+      "sha256": "7667f6c34389627d4132ba59bb71ba97283ec14800fc56efb6643680970ad4c2"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/trace.zip",
+      "source": "artifacts/playwright-production-3206/motionRigPersistence-float-20653--source-pixels-are-restored-webkit/trace.zip",
+      "bytes": 2883231,
+      "sha256": "fd84daf827d5acfd77e46dbeff58d6232e25f894c3a2e4ded589b5e9ba72f54d"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/error-context.md",
+      "source": "artifacts/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/error-context.md",
+      "bytes": 24469,
+      "sha256": "b0379113842265736f09cdf671843875d5dadd48cebcb1790f7a1b9f6afea8e4"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/test-failed-1.png",
+      "source": "artifacts/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/test-failed-1.png",
+      "bytes": 71286,
+      "sha256": "559905978253615fad40af388e3e993ab4408dcd4191e0a56e76e3bd81c5c0ee"
+    },
+    {
+      "path": "browser-diagnostics/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/trace.zip",
+      "source": "artifacts/playwright-production-3209/inputOwnership-a-rotated-f-fb989-ed-pixels-match-the-preview-chromium/trace.zip",
+      "bytes": 9815195,
+      "sha256": "6af67367d84635cb7eac785fe6e28bf7e7540f6102ee55f31058e7466768eaba"
+    }
+  ]
+}

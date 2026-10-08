@@ -135,6 +135,19 @@ function createValidAssessment(
 }
 
 describe('recoveryPlanBuilder', () => {
+  it('preserves dormant motion definitions without retargeting missing source IDs', async () => {
+    const project = createValidProject({ motionRigs: [{ version: 1, id: 'rig-1', name: 'Saved wave', part: {
+      id: 'part-1', sourceFrameId: 'deleted-frame', sourceLayerId: 'deleted-layer', width: 64, height: 64,
+      sourceSha256: 'a'.repeat(64), bounds: { x: 0, y: 0, w: 8, h: 8 }, pivot: { x: 4, y: 4 },
+      startPose: { translationX: 0, translationY: 0, rotation: 0 }, endPose: { translationX: 4, translationY: 0, rotation: 0 },
+      frameCount: 3, easing: 'linear', maskRuns: null,
+    } }] });
+    const result = await buildRecoveryPlan({ assessment: createValidAssessment(project), sourceBlobs: [] });
+    expect(result.status).toBe('ready');
+    if (result.status !== 'ready') throw new Error('Expected a recoverable transparent workspace');
+    expect(result.candidatePlan.candidateProject.motionRigs).toEqual(project.motionRigs);
+    expect(result.candidatePlan.candidateProject.motionRigs).not.toBe(project.motionRigs);
+  });
   // ---------------------------------------------------------------------------
   // 1. Unusual Layer IDs (colons, slashes, Unicode, null, delimiter-like)
   // ---------------------------------------------------------------------------

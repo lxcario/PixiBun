@@ -1,0 +1,9 @@
+{
+  "recordedAt": "2026-10-08T14:52:17.594Z",
+  "initialBuild": "3pJJLX6DWBqRevkRmH8t7",
+  "finalBuild": "3pJJLX6DWBqRevkRmH8t7",
+  "changes": [
+    "tests/production/motionFractionalTranslation.spec.ts"
+  ],
+  "scope": "After the completed gate/build, only the saved-fraction browser fixture changed. Application/build inputs remain identical. Fresh type/lint plus final full browser execution follow that correction."
+}

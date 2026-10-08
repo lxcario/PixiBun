@@ -12,6 +12,8 @@ import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
 import { clipsAfterFrameDuplication, clipsAfterFrameReorder } from '@/lib/animation/clipFrameMutations';
 import { MAX_PALETTE_BINDINGS } from '@/lib/color/paletteSemantics';
+import { resolveMotionSource } from '@/lib/animation/pixiMotion';
+import { motionEditSnapshot, motionHistoryFor, pushMotionEdit, restoreMotionEdit, sameMotionEdit, validMotionSettings } from '@/lib/animation/motionEditing';
 
 function remapClipAfterFrameDeletion(clip: AnimationClip, removedIndex: number): AnimationClip | null {
   const startFrame = clip.startFrame - (removedIndex < clip.startFrame ? 1 : 0);
@@ -283,6 +285,11 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
       }
       state.activeFrameIndex = Math.min(state.activeFrameIndex, state.frames.length - 1);
       state.activeLayerId = state.frames[state.activeFrameIndex].layers[0].id;
+      if (state.motionPart?.sourceFrameId === removedFrame.id) {
+        state.motionPart = null;
+        state.motionHistory = null;
+        state.motionPreviewIndex = null;
+      }
       state.isDirty = true;
       state.editRevision += 1;
     });
@@ -510,5 +517,123 @@ export const createAnimationSlice: StudioSliceCreator<AnimationSlice> = (set, ge
 
   setActiveTagId: id => {
     get().setActiveClipId(id);
+  },
+
+  // PixiMotion Slice 1: Temporary Session State
+  motionRigs: [],
+  motionPart: null,
+  motionActivePose: 'end',
+  motionPreviewIndex: null,
+  motionHistory: null,
+
+  beginMotionEdit: () => {
+    const state = get();
+    if (!state.motionPart || !resolveMotionSource(state.motionPart, state).ok) return;
+    set(draft => {
+      const history = motionHistoryFor(draft);
+      history.pending ??= motionEditSnapshot(draft);
+    });
+  },
+  finishMotionEdit: (cancel = false) => {
+    const state = get();
+    if (!state.motionPart || !state.motionHistory?.pending) return;
+    if (!resolveMotionSource(state.motionPart, state).ok) { set({ motionHistory: null }); return; }
+    set(draft => {
+      const history = motionHistoryFor(draft), before = history.pending;
+      if (!before) return;
+      if (cancel) restoreMotionEdit(draft, before);
+      else if (!sameMotionEdit(before, motionEditSnapshot(draft))) pushMotionEdit(history, before);
+      history.pending = null;
+    });
+  },
+  undoMotionEdit: () => {
+    get().finishMotionEdit();
+    const state = get();
+    if (!state.motionPart || !resolveMotionSource(state.motionPart, state).ok ||
+      state.motionHistory?.partId !== state.motionPart.id || !state.motionHistory.past.length) return false;
+    set(draft => {
+      const history = motionHistoryFor(draft);
+      history.future.push(motionEditSnapshot(draft));
+      restoreMotionEdit(draft, history.past.pop()!);
+    });
+    return true;
+  },
+  redoMotionEdit: () => {
+    get().finishMotionEdit();
+    const state = get();
+    if (!state.motionPart || !resolveMotionSource(state.motionPart, state).ok ||
+      state.motionHistory?.partId !== state.motionPart.id || !state.motionHistory.future.length) return false;
+    set(draft => {
+      const history = motionHistoryFor(draft);
+      history.past.push(motionEditSnapshot(draft));
+      restoreMotionEdit(draft, history.future.pop()!);
+    });
+    return true;
+  },
+
+  setMotionPart: part => {
+    set(state => {
+      state.motionPart = part;
+      state.motionHistory = null;
+      state.motionPreviewIndex = null;
+    });
+  },
+
+  setMotionActivePose: pose => {
+    get().finishMotionEdit();
+    set(state => {
+      state.motionActivePose = pose;
+      state.motionPreviewIndex = null;
+    });
+  },
+
+  setMotionPreviewIndex: index => {
+    set(state => {
+      state.motionPreviewIndex = index;
+    });
+  },
+
+  updateMotionPose: (target, updates) => {
+    const live = get();
+    if (!live.motionPart || !resolveMotionSource(live.motionPart, live).ok ||
+      !validMotionSettings({ ...live.motionPart, [target === 'start' ? 'startPose' : 'endPose']: { ...(target === 'start' ? live.motionPart.startPose : live.motionPart.endPose), ...updates } })) return;
+    set(state => {
+      if (!state.motionPart) return;
+      const before = motionEditSnapshot(state), history = motionHistoryFor(state);
+      if (target === 'start') {
+        state.motionPart.startPose = { ...state.motionPart.startPose, ...updates };
+      } else {
+        state.motionPart.endPose = { ...state.motionPart.endPose, ...updates };
+      }
+      if (!sameMotionEdit(before, motionEditSnapshot(state))) {
+        if (!history.pending) pushMotionEdit(history, before);
+        state.motionPreviewIndex = null;
+      }
+    });
+  },
+
+  updateMotionPart: updates => {
+    const live = get();
+    if (!live.motionPart || !resolveMotionSource(live.motionPart, live).ok || !validMotionSettings({ ...live.motionPart, ...updates })) return;
+    set(state => {
+      if (!state.motionPart) return;
+      const before = motionEditSnapshot(state), history = motionHistoryFor(state);
+      if (updates.pivot !== undefined) state.motionPart.pivot = { ...updates.pivot };
+      if (updates.frameCount !== undefined) state.motionPart.frameCount = updates.frameCount;
+      if (updates.easing !== undefined) state.motionPart.easing = updates.easing;
+      if (!sameMotionEdit(before, motionEditSnapshot(state))) {
+        if (!history.pending) pushMotionEdit(history, before);
+        state.motionPreviewIndex = null;
+      }
+    });
+  },
+
+  clearMotionPart: () => {
+    set(state => {
+      state.motionPart = null;
+      state.motionHistory = null;
+      state.motionActivePose = 'end';
+      state.motionPreviewIndex = null;
+    });
   },
 });

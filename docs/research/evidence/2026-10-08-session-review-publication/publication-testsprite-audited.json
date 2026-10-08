@@ -1,0 +1,214 @@
+{
+  "privacy": "Only test/run IDs, public dashboard link, verdict and textual synthetic steps. Credentials, account fields, signed media URLs and raw HTML omitted.",
+  "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+  "name": "Motion pose Undo restores precise edits and supports thirty frames",
+  "runId": "b8aa5379-cfde-44b7-8fc9-2790cb2e3069",
+  "serviceVerdict": "passed",
+  "startedAt": "2026-10-08T14:37:34.560Z",
+  "finishedAt": "2026-10-08T14:46:59.556Z",
+  "stepSummary": {
+    "total": 28,
+    "completed": 28,
+    "passedCount": 28,
+    "failedCount": 0
+  },
+  "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+  "steps": [
+    {
+      "stepIndex": 1,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:3228",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 2,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:3228/studio?template=hearth-ghost",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 3,
+      "action": "click",
+      "description": "Click 'Tools button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 4,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 5,
+      "action": "click",
+      "description": "Click '16 × 16'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 6,
+      "action": "click",
+      "description": "Click '# 1 125 ms button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 7,
+      "action": "click",
+      "description": "Click '16 × 16'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 8,
+      "action": "fill",
+      "description": "Fill '12' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 9,
+      "action": "click",
+      "description": "Click 'Undo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 10,
+      "action": "click",
+      "description": "Click 'Redo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 11,
+      "action": "fill",
+      "description": "Fill '30' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 12,
+      "action": "fill",
+      "description": "Fill '30' into Motion frame count range field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 13,
+      "action": "click",
+      "description": "Click 'Reset Pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 14,
+      "action": "click",
+      "description": "Click 'Undo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 15,
+      "action": "fill",
+      "description": "Fill '3' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 16,
+      "action": "click",
+      "description": "Click 'BAKE TO TIMELINE button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 17,
+      "action": "click",
+      "description": "Click 'Undo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 18,
+      "action": "click",
+      "description": "Click 'Redo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 19,
+      "action": "click",
+      "description": "Click 'Undo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 20,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 21,
+      "action": "click",
+      "description": "Click 'Cancel (Escape) button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 22,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 23,
+      "action": "click",
+      "description": "Click 'Cancel (Escape) button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 24,
+      "action": "visible",
+      "description": "Studio is open with a 16×16 canvas and the timeline shows a single frame (Frame #1).",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 25,
+      "action": "visible",
+      "description": "Baking to timeline produced three frames and the motion editor closed after the bake.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 26,
+      "action": "visible",
+      "description": "Using the workspace Undo last action returned the timeline to exactly one frame.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 27,
+      "action": "visible",
+      "description": "Using the workspace Redo last action returned the timeline to exactly three frames.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 28,
+      "action": "visible",
+      "description": "After cancelling the restored motion session, the motion editor closed, the timeline shows one frame, and the artwork SVG is visible.",
+      "status": "passed",
+      "error": null
+    }
+  ]
+}

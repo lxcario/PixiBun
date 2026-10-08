@@ -1,0 +1,60 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/pixiMotionBindings.test.tsx (26 tests | 1 failed) 262ms
+     × copies source-frame palette bindings to generated frame IDs and restores them with Undo/Redo 40ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/pixiMotionBindings.test.tsx > PixiMotion source identity and stale artwork protection > copies source-frame palette bindings to generated frame IDs and restores them with Undo/Redo
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+@@ -33,10 +33,28 @@
+            "id": "region",
+            "w": 2,
+            "x": 20,
+            "y": 20,
+          },
++         {
++           "entryId": "alabaster-wisteria-8:register:0",
++           "frameId": "frame-muy0izx2-6-won3ms",
++           "h": 2,
++           "id": "binding-muy0izx2-7-13o864r",
++           "w": 2,
++           "x": 20,
++           "y": 20,
++         },
++         {
++           "entryId": "alabaster-wisteria-8:register:0",
++           "frameId": "frame-muy0izx2-9-wndfsg",
++           "h": 2,
++           "id": "binding-muy0izx2-a-1sgotig",
++           "w": 2,
++           "x": 20,
++           "y": 20,
++         },
+        ],
+        "entries": [
+          {
+            "id": "alabaster-wisteria-8:register:0",
+            "role": "",
+
+ ❯ tests/pixiMotionBindings.test.tsx:58:48
+     56|     const after = structuredClone(baked.palettes);
+     57|     act(() => { studioEvents.emit('pixibun:undo'); });
+     58|     expect(useStudioStore.getState().palettes).toEqual(before);
+       |                                                ^
+     59|     act(() => { studioEvents.emit('pixibun:redo'); });
+     60|     expect(useStudioStore.getState().palettes).toEqual(after);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 106 passed (107)
+   Start at  14:16:53
+   Duration  6.94s (transform 1.07s, setup 80ms, import 3.74s, tests 836ms, environment 1.39s)
+

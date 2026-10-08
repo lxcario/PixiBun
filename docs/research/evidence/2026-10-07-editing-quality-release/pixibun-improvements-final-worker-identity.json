@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "type": [
+    "application/javascript; charset=utf-8"
+  ],
+  "cache": [
+    "no-store, must-revalidate, no-cache"
+  ],
+  "scope": [
+    "/"
+  ],
+  "expectedTag": "pixibun-20261007-motion-quality-r6",
+  "hasFinalTag": true
+}

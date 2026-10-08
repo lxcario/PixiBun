@@ -1,8 +1,9 @@
 import type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup } from '@/types/canvas';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { registerMemoryUsage } from '@/lib/safety/memoryBudget';
+import { registerMemoryUsage, reserveMemory } from '@/lib/safety/memoryBudget';
 import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
+import { motionRigBytes } from '@/lib/animation/motionRigDocument';
 import { researchBytes } from '@/lib/research/recipes';
 export type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup };
 
@@ -36,6 +37,8 @@ export interface HistoryEngineOptions {
 }
 
 export interface HistoryEngine {
+  /** Roll back stacks, accounting and replay baseline if a synchronous commit fails. */
+  transaction<T>(operation: () => T): T;
   /** Push a completed stroke snapshot; drops redo tail, prunes to maxDepth and maxBytes, returns new undo depth. */
   push(step: HistoryStep): number;
   /** Pop undo stack; if currentState is provided, pushes it to redo stack; returns the step to restore, or null if nothing to undo. */
@@ -83,6 +86,7 @@ export const DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB
 export function calculateStepBytes(step: HistoryStep): number {
   if (step.type === 'structural') {
     let bytes = 1024; // Base object overhead
+    bytes += motionRigBytes(step.motionRigs);
     bytes += step.clips?.reduce((total, clip) => total + estimateClipBytes(clip), 0) ?? 0;
     bytes += step.palettes?.reduce((total, palette) => total + estimatePaletteBytes(palette), 0) ?? 0;
     bytes += step.frames.reduce((total, frame) => total + frame.layers.reduce((sum, layer) => sum + researchBytes(layer.research), 0), 0);
@@ -336,6 +340,25 @@ export function createHistoryEngine(
   }
 
   return {
+    transaction<T>(operation: () => T): T {
+      // Escrow retains evicted steps/baseline until the commit succeeds. Pixels are
+      // immutable snapshots: clone only the metadata that baseline eviction mutates.
+      const release = reserveMemory(undoBytes + redoBytes + (baselineCheckpoint?.totalBytes ?? 0), 'History transaction rollback');
+      const saved = { undoStack, redoStack, undoBytes, redoBytes, isTruncated, evictionCount, baselineCheckpoint };
+      try {
+        undoStack = undoStack.slice();
+        redoStack = redoStack.slice();
+        if (baselineCheckpoint) baselineCheckpoint = {
+          ...baselineCheckpoint,
+          frames: baselineCheckpoint.frames.map(frame => ({ ...frame, layers: frame.layers.map(layer => ({ ...layer })) })),
+        };
+        return operation();
+      }
+      catch (error) {
+        ({ undoStack, redoStack, undoBytes, redoBytes, isTruncated, evictionCount, baselineCheckpoint } = saved);
+        throw error;
+      } finally { release(); }
+    },
     push(step: HistoryStep): number {
       const stepBytes = calculateStepBytes(step);
 

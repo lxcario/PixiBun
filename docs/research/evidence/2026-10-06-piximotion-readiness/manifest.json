@@ -1,0 +1,133 @@
+{
+  "date": "2026-10-06",
+  "head": "dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+  "dirty": [
+    "M docs/README.md",
+    "?? docs/research/2026-10-06-pixibun-piximotion-readiness.md",
+    "?? docs/research/2026-10-06-piximotion-amendment-review.md",
+    "?? docs/research/2026-10-06-piximotion-spec-amendments.md",
+    "?? docs/research/evidence/2026-10-06-piximotion-readiness/"
+  ],
+  "runtime": "v22.23.3",
+  "buildId": "5wtPM03wdeRhH7jxdFPMK",
+  "sourceDigest": "8f1fad806166f108effb0d4146b521dc5cce5d122008aae2b1cb48ad7c672f4e",
+  "sourceComparison": {
+    "path": "docs/research/evidence/2026-10-05-audit-hardening/manifest.json",
+    "sha256": "3a0f64d453170027dfd7d55971543c2767213b7059bb971c01c1c78354f26cf1",
+    "checked": 716,
+    "changed": [
+      "docs/current-status.md",
+      "docs/README.md"
+    ]
+  },
+  "checks": {
+    "gate": {
+      "exitCode": 0,
+      "stages": 4,
+      "unitTests": 1862,
+      "suites": 181,
+      "maxUnitWorkers": 2,
+      "seconds": 130.47,
+      "buildRerun": false
+    },
+    "compiled": {
+      "exitCode": 0,
+      "tests": 27,
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "workflows": 9,
+      "workers": 1,
+      "retries": 0,
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "port": 3189
+    },
+    "finalDocs": {
+      "exitCode": 0
+    }
+  },
+  "commands": {
+    "gate": "node scripts/runQualityGate.mjs",
+    "docs": "node scripts/verifyDocIntegrity.mjs",
+    "browsers": "node node_modules/@playwright/test/cli.js test --config playwright.production.config.ts tests/production/artworkIdentity.spec.ts tests/production/artistWorkspace.spec.ts tests/production/memoryPaths.spec.ts tests/production/researchWorkbench.spec.ts tests/production/operation.spec.ts --grep \"compiled duplication|compiled frame move|compiled all-frame|compiled onion controls|compiled timeline and backup|compiled small previews|compiled shared light|compiled research tabs|production drawing, save\""
+  },
+  "environment": {
+    "nodeDirectory": "D:/PixiBun/artifacts/runtime/node-v22.23.3-win-x64",
+    "os": "Windows",
+    "browserOrigin": "http://localhost:3189",
+    "viewport": "Desktop Chrome/Firefox/Safari presets in playwright.production.config.ts"
+  },
+  "diagnostics": [
+    {
+      "log": "compiled.log",
+      "port": 3187,
+      "verdict": "27 recorded launch failures (spawn EPERM); no artwork workflows executed; no terminal summary retained",
+      "outputs": "artifacts/playwright-production-3187"
+    },
+    {
+      "log": "compiled-enabled.log",
+      "port": 3188,
+      "verdict": "Interrupted; 18 recorded passes in Chromium/Firefox, no terminal suite verdict; not aggregated into final result",
+      "outputs": "artifacts/playwright-production-3188"
+    }
+  ],
+  "finalOutputs": "artifacts/playwright-production-3189",
+  "limits": [
+    "No application implementation changed",
+    "No PixiMotion prototype tested",
+    "No fresh production compilation",
+    "Selected browser workflows only",
+    "No device latency/total-memory/artist/deployment qualification"
+  ],
+  "artifacts": [
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/gate.log",
+      "bytes": 3036,
+      "sha256": "ebffca30c76ed28cb067dc74f0a977cfcbe85b92ffc35b8ea19602454c75498b"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/compiled.log",
+      "bytes": 9268,
+      "sha256": "da9b619c01a602e99409171f4bb0fd58f7c77b4ce6bca8f5df7e82a4bcb79b6b"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/compiled-enabled.log",
+      "bytes": 3630,
+      "sha256": "4c4d3a5f2e6eb47e39621cd56e6494aba87682690407bc594f3221f56f06dd68"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/compiled-final.log",
+      "bytes": 5344,
+      "sha256": "386b2dd89d56a7ad225aee94e5444a95d1e25cd5cb33c44cf8924dae65b40376"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/docs-final.log",
+      "bytes": 343,
+      "sha256": "746ba6d2235d761bea06f2ac92d8d9c4d498dcbb1d59c37120f1a516abf08a87"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/source-analysis.json",
+      "bytes": 64064,
+      "sha256": "2e2daeeb02a1b4657aff44cb0f2622c283c7621bfd1c6867f82602f1205c7e11"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/after-chromium.json",
+      "bytes": 988,
+      "sha256": "638b7b3d65bad73e20110779dba5573be164148bbd65a1732520c4119a362e7a"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/after-firefox.json",
+      "bytes": 975,
+      "sha256": "3ab1c6b03d0f1455784f9953e90590b0b20571693c2a7919b5238998cf8a74c6"
+    },
+    {
+      "path": "docs/research/evidence/2026-10-06-piximotion-readiness/after-webkit.json",
+      "bytes": 976,
+      "sha256": "a6a8effdcdb457e30fee92019d4e874c9b7922c7ec715216e387871016dcf153"
+    }
+  ]
+}

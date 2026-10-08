@@ -1,0 +1,330 @@
+[
+  {
+    "stepIndex": 1,
+    "action": "navigate",
+    "description": "Navigate to http://127.0.0.1:3199",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 2,
+    "action": "navigate",
+    "description": "Navigate to http://127.0.0.1:3199/studio",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 3,
+    "action": "click",
+    "description": "Click 'Pixel art canvas workspace'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 4,
+    "action": "click",
+    "description": "Click 'Marquee Box button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 5,
+    "action": "click",
+    "description": "Click 'Pixel art canvas workspace'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 6,
+    "action": "click",
+    "description": "Click 'Tools button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 7,
+    "action": "click",
+    "description": "Click 'Create Motion Part button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 8,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 9,
+    "action": "click",
+    "description": "Click 'Cancel (Escape) button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 10,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 11,
+    "action": "fill",
+    "description": "Fill '4' into Pose translation X range field",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 12,
+    "action": "fill",
+    "description": "Fill '3' into Motion frame count range field",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 13,
+    "action": "click",
+    "description": "Click 'BAKE TO TIMELINE button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 14,
+    "action": "click",
+    "description": "Click 'Create Motion Part button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 15,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 16,
+    "action": "click",
+    "description": "Click 'Cancel (Escape) button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 17,
+    "action": "click",
+    "description": "Click 'Create Motion Part button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 18,
+    "action": "click",
+    "description": "Click 'Pen button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 19,
+    "action": "click",
+    "description": "Click '@keyframes marching-ants { 0% {...'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 20,
+    "action": "click",
+    "description": "Click 'Marquee Box button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 21,
+    "action": "click",
+    "description": "Click '@keyframes marching-ants { 0% {...'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 22,
+    "action": "click",
+    "description": "Click 'Create Motion Part button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 23,
+    "action": "click",
+    "description": "Click 'Create Motion Part button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 24,
+    "action": "fill",
+    "description": "Fill '4' into Pose translation X range field",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 25,
+    "action": "fill",
+    "description": "Fill '3' into Motion frame count range field",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 26,
+    "action": "click",
+    "description": "Click 'BAKE TO TIMELINE button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 27,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 28,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 29,
+    "action": "click",
+    "description": "Click '# 3 100 ms button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 30,
+    "action": "click",
+    "description": "Click '# 1 100 ms button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 31,
+    "action": "click",
+    "description": "Click '# 3 100 ms button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 32,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 33,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 34,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 35,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 36,
+    "action": "click",
+    "description": "Click '# 1 100 ms button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 37,
+    "action": "click",
+    "description": "Click '# 3 100 ms button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 38,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 39,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 40,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 41,
+    "action": "click",
+    "description": "Click 'Redo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  }
+]

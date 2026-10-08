@@ -1,6 +1,6 @@
 # PixiBun: Technical, Mathematical & Architectural Reference
 
-Updated 2 October 2026 against the main checkout. This reference describes implemented contracts, not universal performance or accessibility guarantees. [Current status](docs/current-status.md), [architecture](ARCHITECTURE.md) and [dated evidence](docs/research/phase-implementation-status.md) separate shipped behavior from verification and proposals.
+Reconciled 7 October 2026 against the local checkout. This reference describes implemented contracts, not universal performance or accessibility guarantees. [Current status](docs/current-status.md), [architecture](ARCHITECTURE.md) and [dated evidence](docs/research/phase-implementation-status.md) separate implemented behavior from verification and proposals.
 
 ## Contents
 
@@ -70,9 +70,9 @@ This is different from palette authoring's at-most-six representative source-col
 
 # 8. Storage, Serialization & Game Engine Exports
 
-Project format v3 and database schema v5 are distinct. Logical APIs expose Blob rasters; current physical IndexedDB records store ArrayBuffer bytes and `blobType`. Legacy Blob records remain readable. Saves atomically commit metadata/rasters with revision conflict checks. Optional metadata compatibility and rollback limits are in [storage](docs/contracts/storage.md).
+Project format v4 and database schema v5 are distinct. Logical APIs expose Blob rasters; current physical IndexedDB records store ArrayBuffer bytes and `blobType`. Legacy Blob records remain readable. Saves atomically commit metadata/rasters with revision conflict checks. Optional metadata compatibility and rollback limits are in [storage](docs/contracts/storage.md).
 
-The [export matrix](docs/contracts/exports.md) owns format promises. GIF uses palette quantization and centisecond delays. APNG emits valid uncompressed DEFLATE store blocks with RGBA and rational delays, accumulating a Blob rather than exposing a streaming sink. WebM uses captureStream/MediaRecorder; general alpha retention is not promised. MP4 uses H.264 WebCodecs/custom ISOBMFF where available, with a supported MediaRecorder fallback; odd dimensions are padded to even without scaling, not 16×16 alignment.
+The [export matrix](docs/contracts/exports.md) owns format promises. GIF uses palette quantization and centisecond delays. APNG uses native deflate compression where supported and falls back to uncompressed DEFLATE store blocks, with RGBA and rational delays. Preparation/encoding yield between frames and support cancellation; the result is accumulated into a Blob rather than exposed as a streaming sink. WebM uses captureStream/MediaRecorder; general alpha retention is not promised. MP4 uses H.264 WebCodecs/custom ISOBMFF where available, with a supported MediaRecorder fallback; odd dimensions are padded to even without scaling, not 16×16 alignment.
 
 Replay reconstructs retained session history plus an eviction baseline; it is not a permanent command recording from blank. Sheets and engine resources use shared animation pose/hold metadata. Target consumer qualification is format/version specific; a named Godot fixture result does not establish every Unity/Phaser importer or shader. Previously damaged GIFs need re-export after the dictionary-reset correction.
 
@@ -102,9 +102,11 @@ Export geometry admits at most 4096 per axis / 16,777,216 pixels, with additiona
 
 # 13. RotSprite-Inspired Rotation & Vector Depixelization
 
-Exact quarter turns permute source RGBA. Arbitrary turns combine an 8× Scale2x cascade, inverse sampling and PixiBun's parabolic majority vote; the canonical offset-search/detail-restoration stages are not implemented. Arbitrary raster turns can lose details and are operation-bounded.
+Quarter turns use direct pixel-center mappings within requested output bounds. RotSprite v2 arbitrary turns combine an 8× Scale2x cascade, inverse sampling, weighted voting, bounded fractional-offset candidate search, structural scoring and small color-component/contour restoration heuristics. The source-size-dependent search evaluates nine, five or one candidate; its penalties are not proofs of semantic feature or topology preservation. Paeth is a separate integer-sampled three-shear variant. Fractional source alpha is supported; this is not a universal binary-alpha renderer. See the [current rotation contract](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v2) and [measured scope](docs/research/2026-10-07-piximotion-cross-phase-hardening.md).
 
 Vector depixelization uses local graph/diagonal resolution, shifted contour points and Bézier output inspired by Kopf–Lischinski. It is not the full published algorithm or guaranteed pixel-identical export. Attribution distinguishes Johnston's EPX from Mazzoleni's Scale2x implementation.
+
+One selected detail or whole color layer can retain Start/End/pivot settings, preview a rigid arc in a dedicated worker and asynchronously stage cels for one admitted structural Undo action. The engine, saved-rig format and panel share 2–30-pose limits; precise numeric controls and separate bounded session Undo/Redo edit parameters without copying raster data. Saved format-v4 rigs retain bounded settings/mask runs and a source fingerprint; Open validates the original source, selects its frame/layer and End pose, and stops playback atomically. Floating selection, normal-tagged or normal-map-effect sources and active Co-Draw are refused. Multi-part motion and source rebinding remain open. [Current rig contract](docs/contracts/storage.md), [phase review](docs/research/2026-10-07-piximotion-cross-phase-hardening.md).
 
 # 14. Viewport Lenses, Accessibility & Direct Hotkeys
 

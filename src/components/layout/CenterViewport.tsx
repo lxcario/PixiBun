@@ -6,7 +6,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { getOrCreateBuffer } from '@/lib/engine/bufferRegistry';
+import { getOrCreateBuffer, snapshotBuffers } from '@/lib/engine/bufferRegistry';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
 import { ViewportLensFilters } from '@/components/studio/ViewportLensFilters';
@@ -30,6 +30,18 @@ import { useViewportOverlays } from '@/hooks/viewport/useViewportOverlays';
 import { useViewportSelection } from '@/hooks/viewport/useViewportSelection';
 import { useViewportSelectionTransform } from '@/hooks/viewport/useViewportSelectionTransform';
 import { SelectionTransformGizmo } from '@/components/studio/SelectionTransformGizmo';
+import { rotSprite, computeRotatedBounds } from '@/lib/canvas/rotSprite';
+import { paethRotate } from '@/lib/canvas/paethRotation';
+import { rotateNormalVectors } from '@/lib/canvas/normalMapRotation';
+import { isNormalLayer } from '@/lib/export/normalLayers';
+import { PixiMotionGizmo } from '@/components/studio/PixiMotionGizmo';
+import {
+  interpolatePose,
+  clearSelectionFromImageData,
+  resolveMotionSource,
+} from '@/lib/animation/pixiMotion';
+import { createMotionRenderer } from '@/lib/animation/motionRenderer';
+import { stampPlacedMotionRaster } from '@/lib/animation/motionRaster';
 import { useViewportDrawing } from '@/hooks/viewport/useViewportDrawing';
 import { useViewportPointerEvents } from '@/hooks/viewport/useViewportPointerEvents';
 import { useViewportStudioEvents } from '@/hooks/viewport/useViewportStudioEvents';
@@ -73,6 +85,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const cursorCanvasRef = useRef<HTMLDivElement>(null);
+  const motionPreviewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const motionRendererRef = useRef<ReturnType<typeof createMotionRenderer> | null>(null);
+  const [motionPreviewOwner, setMotionPreviewOwner] = useState<string | null>(null);
 
   // Store atomic subscriptions
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
@@ -105,6 +120,17 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
   const selection = useStudioStore((s) => s.selection);
   const selectionMask = useStudioStore((s) => s.selectionMask);
+
+  // PixiMotion session state
+  const motionPart = useStudioStore((s) => s.motionPart);
+  const motionBufferVersion = useStudioStore((s) => s.bufferVersion);
+  const motionActivePose = useStudioStore((s) => s.motionActivePose);
+  const motionPreviewIndex = useStudioStore((s) => s.motionPreviewIndex);
+  const updateMotionPose = useStudioStore((s) => s.updateMotionPose);
+  const updateMotionPart = useStudioStore((s) => s.updateMotionPart);
+  const setMotionActivePose = useStudioStore((s) => s.setMotionActivePose);
+  const clearMotionPart = useStudioStore((s) => s.clearMotionPart);
+  const motionSource = motionPart ? resolveMotionSource(motionPart) : null;
 
   const [isDragOver, setIsDragOver] = useState(false);
   const radialMenu = useRadialContextMenu(containerRef);
@@ -226,7 +252,14 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     commitFloatingSelection,
   });
 
-  const normalMapCacheRef = useRef<{ cacheKey: string; canvas: HTMLCanvasElement } | null>(null);
+  const normalMapCacheRef = useRef<{ cacheKey: string; floatingCanvas: HTMLCanvasElement | null; canvas: HTMLCanvasElement } | null>(null);
+  const rotatedSelectionCacheRef = useRef<{
+    cacheKey: string;
+    sourceCanvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement;
+    destX: number;
+    destY: number;
+  } | null>(null);
 
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
@@ -250,25 +283,110 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       ctx.imageSmoothingEnabled = false;
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
+
       if (selectionTransform && Math.abs(selectionTransform.rotation) > 1e-4) {
-        ctx.translate(selectionTransform.pivot.x, selectionTransform.pivot.y);
-        ctx.rotate(selectionTransform.rotation);
-        ctx.translate(-selectionTransform.pivot.x, -selectionTransform.pivot.y);
+        const curW = floatingSelection.w;
+        const curH = floatingSelection.h;
+        const curX = floatingSelection.x;
+        const curY = floatingSelection.y;
+        const rotation = selectionTransform.rotation;
+        const pivotX = selectionTransform.pivot.x;
+        const pivotY = selectionTransform.pivot.y;
+
+        const algorithm = state.tools.rotationAlgorithm ?? 'rotsprite';
+        const curFrame = state.frames[state.activeFrameIndex];
+        const activeLayerObj = curFrame?.layers.find((l) => l.id === state.activeLayerId);
+        const isNormal = activeLayerObj ? isNormalLayer(activeLayerObj) : false;
+
+        const bounds = computeRotatedBounds(curW, curH, curX, curY, pivotX, pivotY, rotation);
+        const cacheKey = JSON.stringify([curW, curH, curX, curY, rotation, pivotX, pivotY, algorithm, isNormal]);
+
+        let rotatedCanvas: HTMLCanvasElement;
+        let destX: number;
+        let destY: number;
+
+        if (rotatedSelectionCacheRef.current && rotatedSelectionCacheRef.current.cacheKey === cacheKey &&
+          rotatedSelectionCacheRef.current.sourceCanvas === floatingSelection.canvas) {
+          rotatedCanvas = rotatedSelectionCacheRef.current.canvas;
+          destX = rotatedSelectionCacheRef.current.destX;
+          destY = rotatedSelectionCacheRef.current.destY;
+        } else {
+          const fCtx = floatingSelection.canvas.getContext('2d', { willReadFrequently: true });
+          const imgData = fCtx?.getImageData(0, 0, curW, curH);
+
+          if (imgData) {
+            let rotResult = algorithm === 'paeth'
+              ? paethRotate(
+                  { width: curW, height: curH, data: imgData.data },
+                  rotation,
+                  bounds.localPivotX,
+                  bounds.localPivotY,
+                  bounds.targetW,
+                  bounds.targetH,
+                  bounds.outPivotX,
+                  bounds.outPivotY
+                )
+              : rotSprite(
+                  { width: curW, height: curH, data: imgData.data },
+                  rotation,
+                  bounds.localPivotX,
+                  bounds.localPivotY,
+                  bounds.targetW,
+                  bounds.targetH,
+                  bounds.outPivotX,
+                  bounds.outPivotY,
+                  true
+                );
+
+            if (isNormal) {
+              rotResult = rotateNormalVectors(rotResult, rotation);
+            }
+
+            rotatedCanvas = document.createElement('canvas');
+            rotatedCanvas.width = rotResult.width;
+            rotatedCanvas.height = rotResult.height;
+            const rCtx = rotatedCanvas.getContext('2d');
+            if (rCtx) {
+              const outImg = rCtx.createImageData(rotResult.width, rotResult.height);
+              outImg.data.set(rotResult.data);
+              rCtx.putImageData(outImg, 0, 0);
+            }
+            destX = bounds.destX;
+            destY = bounds.destY;
+            rotatedSelectionCacheRef.current = {
+              cacheKey,
+              sourceCanvas: floatingSelection.canvas,
+              canvas: rotatedCanvas,
+              destX,
+              destY,
+            };
+          } else {
+            rotatedCanvas = floatingSelection.canvas;
+            destX = curX;
+            destY = curY;
+          }
+        }
+
+        ctx.drawImage(rotatedCanvas, destX, destY);
+      } else {
+        ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
       }
-      ctx.drawImage(floatingSelection.canvas, floatingSelection.x, floatingSelection.y);
+
       ctx.restore();
     }
 
     // 3. Tangent-Space Normal Map Live Viewport Mode
     if (state.showNormalMapPreview) {
-      const layersSig = currentFrame
-        ? currentFrame.layers.map((l) => `${l.id}:${l.visible ? 1 : 0}:${l.opacity}:${l.blendMode}`).join(';')
-        : '';
-      const floatKey = floatingSelection ? `${floatingSelection.x}_${floatingSelection.y}` : 'none';
-      const cacheKey = `${state.bufferVersion}_${state.activeFrameIndex}_${canvasWidth}_${canvasHeight}_${layersSig}_${floatKey}`;
+      const buffers = snapshotBuffers();
+      const layersSig = currentFrame?.layers.map(l => [l.id, l.visible, l.opacity, l.blendMode, l.tag,
+        buffers.get(l.id)?.generation, buffers.get(l.id)?.contentRevision]);
+      const floatingCanvas = floatingSelection?.canvas ?? null;
+      const floatKey = floatingSelection ? [floatingSelection.x, floatingSelection.y, floatingSelection.w, floatingSelection.h,
+        selectionTransform.rotation, selectionTransform.pivot.x, selectionTransform.pivot.y] : null;
+      const cacheKey = JSON.stringify([state.currentProjectId, state.bufferVersion, currentFrame?.id, canvasWidth, canvasHeight, layersSig, floatKey]);
       let normalCanvas: HTMLCanvasElement;
 
-      if (normalMapCacheRef.current && normalMapCacheRef.current.cacheKey === cacheKey) {
+      if (normalMapCacheRef.current && normalMapCacheRef.current.cacheKey === cacheKey && normalMapCacheRef.current.floatingCanvas === floatingCanvas) {
         normalCanvas = normalMapCacheRef.current.canvas;
       } else {
         const data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
@@ -314,7 +432,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }
 
         normalCanvas = bakeNormalMapToCanvas(normalField, canvasWidth, canvasHeight, isOpaque);
-        normalMapCacheRef.current = { cacheKey, canvas: normalCanvas };
+        normalMapCacheRef.current = { cacheKey, floatingCanvas, canvas: normalCanvas };
       }
 
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -427,6 +545,17 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     performRedo,
   });
 
+  const cancelSelection = useCallback(() => {
+    cancelGizmoTransform();
+    setLassoPoints([]);
+    const previewCanvas = previewCanvasRef.current;
+    if (previewCanvas) {
+      const pCtx = previewCanvas.getContext('2d');
+      pCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
+    }
+    useStudioStore.getState().setSelection(null, null);
+  }, [cancelGizmoTransform, canvasHeight, canvasWidth, previewCanvasRef, setLassoPoints]);
+
   // Hook 6: Pointer event routing and drawing dispatch
   const { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel } =
     useViewportPointerEvents({
@@ -471,12 +600,61 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       selectionModifierRef,
       baseSelectionMaskRef,
       liftSelectionToFloating,
-      commitFloatingSelection,
+      commitFloatingSelection: () => {
+        if (
+          selectionTransform &&
+          (Math.abs(selectionTransform.rotation) > 1e-4 ||
+            selectionTransform.scaleX !== 1 ||
+            selectionTransform.scaleY !== 1)
+        ) {
+          void commitGizmoTransform();
+        } else {
+          commitFloatingSelection();
+        }
+      },
       createBoxMask,
       mergeSelectionMask,
       lockedWarningTimerRef,
       setLockedWarning,
+      cancelSelection,
     });
+
+  // When switching away from selection tools to drawing tools (e.g. Pen, Eraser),
+  // commit any floating selection and clear the active selection marquee.
+  const prevToolRef = useRef(tools.activeTool);
+  useEffect(() => {
+    const prevTool = prevToolRef.current;
+    const currentTool = tools.activeTool;
+    prevToolRef.current = currentTool;
+
+    if (prevTool !== currentTool) {
+      const toolsPreservingSelection = [
+        'select-box',
+        'select-lasso',
+        'select-wand',
+        'gradient',
+        'erase-color',
+      ];
+      if (!toolsPreservingSelection.includes(currentTool)) {
+        if (floatingSelection) {
+          if (
+            selectionTransform &&
+            (Math.abs(selectionTransform.rotation) > 1e-4 ||
+              selectionTransform.scaleX !== 1 ||
+              selectionTransform.scaleY !== 1)
+          ) {
+            void commitGizmoTransform();
+          } else {
+            commitFloatingSelection();
+          }
+        }
+        const state = useStudioStore.getState();
+        if (state.selection || state.selectionMask) {
+          state.setSelection(null, null);
+        }
+      }
+    }
+  }, [tools.activeTool, floatingSelection, selectionTransform, commitGizmoTransform, commitFloatingSelection]);
 
   // Live Composite & Onion Skin Rendering
   useEffect(() => {
@@ -567,6 +745,103 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       el.removeEventListener('wheel', onNativeWheel);
     };
   }, [handleWheel]);
+
+  // PixiMotion: Render non-destructive live preview onto motionPreviewCanvasRef
+  const motionSessionId = motionPart?.id;
+  useEffect(() => {
+    if (!motionSessionId) return;
+    const renderer = createMotionRenderer(); motionRendererRef.current = renderer;
+    return () => { motionRendererRef.current?.dispose(); motionRendererRef.current = null; };
+  }, [motionSessionId]);
+  useEffect(() => {
+    if (!motionPart || !motionPreviewCanvasRef.current) return;
+    const canvas = motionPreviewCanvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    ctx.imageSmoothingEnabled = false;
+    const source = resolveMotionSource(motionPart);
+    if (!source.ok) {
+      motionRendererRef.current?.dispose(); motionRendererRef.current = null;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight); canvas.setAttribute('aria-busy', 'false'); return;
+    }
+    const renderer = motionRendererRef.current ?? createMotionRenderer(); motionRendererRef.current = renderer;
+    let live = true;
+    canvas.setAttribute('aria-busy', 'true');
+
+    // 1. Calculate active pose
+    // Static endpoints use the same integer translation sampling as playback/bake.
+    // Keep fractional authored settings and pivots; do not mutate the saved pose.
+    const progress = motionPreviewIndex !== null
+      ? (motionPart.frameCount > 1 ? motionPreviewIndex / (motionPart.frameCount - 1) : 0)
+      : motionActivePose === 'start' ? 0 : 1;
+    const activePose = interpolatePose(motionPart.startPose, motionPart.endPose, progress, motionPart.easing);
+
+    // 2. Compute transformed raster
+    void renderer.render(motionPart, activePose, canvasWidth, canvasHeight).then(transformed => {
+      if (!live || useStudioStore.getState().motionPart !== motionPart || !resolveMotionSource(motionPart).ok) return;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      // 3. Composite layers bottom to top from source frame
+      const currentFrame = source.frame;
+      const entries = snapshotBuffers();
+
+      for (const layer of currentFrame.layers.slice().reverse()) {
+        if (!layer.visible) continue;
+        const entry = entries.get(layer.id);
+        if (!entry) continue; // A preview must not materialize unpainted layers.
+        if (entry.canvas.width !== canvasWidth || entry.canvas.height !== canvasHeight) throw new Error('The preview layer dimensions changed. Capture a fresh motion part.');
+        ctx.globalAlpha = layer.opacity;
+        ctx.globalCompositeOperation = layer.blendMode;
+
+        if (layer.id === motionPart.sourceLayerId) {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvasWidth;
+          tempCanvas.height = canvasHeight;
+          const tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+          if (tCtx) {
+            tCtx.imageSmoothingEnabled = false;
+            tCtx.drawImage(entry.canvas, 0, 0);
+            const imgData = tCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            clearSelectionFromImageData(
+              imgData,
+              motionPart.bounds,
+              motionPart.mask,
+              canvasWidth,
+              canvasHeight
+            );
+            stampPlacedMotionRaster(imgData, transformed);
+            tCtx.putImageData(imgData, 0, 0);
+            ctx.drawImage(tempCanvas, 0, 0);
+          }
+        } else {
+          ctx.drawImage(entry.canvas, 0, 0);
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+      canvas.setAttribute('aria-busy', 'false');
+      setMotionPreviewOwner(motionPart.id);
+    }).catch(error => {
+      if (!live || (error instanceof DOMException && error.name === 'AbortError')) return;
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      clearMotionPart();
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'Could not preview this motion part.' });
+    });
+    return () => { live = false; };
+  }, [
+    motionPart,
+    motionBufferVersion,
+    motionActivePose,
+    motionPreviewIndex,
+    canvasWidth,
+    canvasHeight,
+    frames,
+    activeFrameIndex,
+    clearMotionPart,
+  ]);
 
   const stageWidth = (canvasWidth * zoom) / 100;
   const stageHeight = (canvasHeight * zoom) / 100;
@@ -760,7 +1035,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pixelated shadow-pixel-frame cursor-crosshair"
-          style={{ filter: mainFilterCss, imageRendering: 'pixelated' }}
+          style={{ filter: mainFilterCss, imageRendering: 'pixelated', opacity: motionSource?.ok && motionPreviewOwner === motionPart?.id ? 0 : 1 }}
         />
 
         {/* Layer 4: Interactive Stroke & Shape Live Preview Canvas */}
@@ -773,6 +1048,18 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           style={{ filter: cvdFilterCss, imageRendering: 'pixelated' }}
         />
 
+        {/* Layer 4.8: PixiMotion Live Preview Canvas */}
+        {motionPart && (
+          <canvas
+            ref={motionPreviewCanvasRef}
+            data-testid="piximotion-preview-canvas"
+            width={canvasWidth}
+            height={canvasHeight}
+            className="absolute inset-0 w-full h-full pointer-events-none pixelated"
+            style={{ filter: mainFilterCss, imageRendering: 'pixelated', zIndex: 12, opacity: motionSource?.ok && motionPreviewOwner === motionPart.id ? 1 : 0 }}
+          />
+        )}
+
         {/* Layer 5: Grid & Marching Ants Selection Overlay */}
         <div
           data-testid="grid-selection-overlay"
@@ -784,6 +1071,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         />
         <canvas
           ref={gridCanvasRef}
+          data-testid="selection-overlay-canvas"
           width={canvasWidth}
           height={canvasHeight}
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"
@@ -828,7 +1116,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         />
 
         {/* Layer 6.5: Selection Free-Transform Gizmo & Marching Ants */}
-        {(selection || floatingSelection) && (
+        {(selection || floatingSelection) && !motionPart && (
           <SelectionTransformGizmo
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
@@ -849,6 +1137,25 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
             onFlipV={handleGizmoFlipV}
             onRotate90CW={handleGizmoRotate90CW}
             onRotate90CCW={handleGizmoRotate90CCW}
+          />
+        )}
+
+        {/* Layer 6.6: PixiMotion Rigid Part Transform Gizmo */}
+        {motionPart && (
+          <PixiMotionGizmo
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            zoom={zoom}
+            motionPart={motionPart}
+            motionActivePose={motionActivePose}
+            motionPreviewIndex={motionPreviewIndex}
+            onUpdatePivot={(pivot) => updateMotionPart({ pivot })}
+            onUpdatePose={(target, updates) => updateMotionPose(target, updates)}
+            onTogglePose={() =>
+              setMotionActivePose(motionActivePose === 'start' ? 'end' : 'start')
+            }
+            onBake={() => studioEvents.emit('pixibun:motion-bake')}
+            onCancel={clearMotionPart}
           />
         )}
 

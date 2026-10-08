@@ -1,0 +1,40 @@
+[WebServer] (node:8744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:5236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (8.7s)
+  ok  2 [chromium] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (8.4s)
+  ok  3 [chromium] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (2.5s)
+  ok  4 [chromium] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (3.7s)
+  ok  5 [chromium] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (6.2s)
+  ok  6 [chromium] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (1.4s)
+  ok  7 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (2.0s)
+  ok  8 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (12.3s)
+  ok  9 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (4.1s)
+(node:8060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 10 [firefox] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (20.1s)
+  ok 11 [firefox] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (23.5s)
+  ok 12 [firefox] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (3.6s)
+  ok 13 [firefox] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (7.4s)
+  ok 14 [firefox] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (4.4s)
+  ok 15 [firefox] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (3.3s)
+  ok 16 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (7.8s)
+  ok 17 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (16.4s)
+  ok 18 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (6.5s)
+(node:29812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 19 [webkit] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (17.2s)
+  ok 20 [webkit] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (19.5s)
+  ok 21 [webkit] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (8.2s)
+  ok 22 [webkit] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (13.9s)
+  ok 23 [webkit] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (16.4s)
+  ok 24 [webkit] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (3.5s)
+  ok 25 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (5.9s)
+  ok 26 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (30.3s)
+  ok 27 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (11.4s)
+
+  27 passed (5.1m)

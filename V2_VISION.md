@@ -127,3 +127,5 @@ Prioritize actual user tasks, robust backups, current bounded workloads and miss
 ## 10. Relationship to the local PixiMotion proposal
 
 `PIXIMOTION_ENGINE_MASTER_SPEC.md` is an ignored local research/design document, not a published engine, committed deliverable or approved v2 milestone. It is intentionally separate from the six infrastructure proposals above. Automatic rigging and secondary-motion ideas need their own small artist workflow, ownership/license review, reproducible prototype and correction-time comparison before roadmap promotion. Its presence does not promise v2/v3 delivery. Current frame tools remain documented in [current status](docs/current-status.md) and [rendering](docs/contracts/rendering.md).
+
+As of 8 October, the local checkout implements a bounded one-rigid-part pose/preview/bake workflow and saved format-v4 rig definitions. This is progress toward PixiMotion, without requiring or completing any of the six v2 pillars. [Current subset and open work](docs/current-status.md), including later parameter Undo, worker/cancellation and rectangle rendering.

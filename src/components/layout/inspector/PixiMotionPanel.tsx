@@ -1,0 +1,432 @@
+'use client';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useStudioStore } from '@/stores/studioStore';
+import { TactileButton } from '@/components/ui/TactileButton';
+import { PixelIcon } from '@/components/ui/PixelIcon';
+import { bakeMotionToTimelineAsync, getMotionBoundsCenter, resolveMotionSource, type MotionEasing } from '@/lib/animation/pixiMotion';
+import { studioEvents } from '@/lib/events/studioEvents';
+import { MotionRigLibrary } from './MotionRigLibrary';
+import StudioNumberInput from '@/components/ui/StudioNumberInput';
+import { MOTION_EDIT_LIMITS } from '@/lib/animation/motionEditing';
+import { useShallow } from 'zustand/react/shallow';
+
+export const PixiMotionPanel: React.FC = () => {
+  const sourceState = useStudioStore(useShallow(s => ({ currentProjectId: s.currentProjectId,
+    canvasWidth: s.canvasWidth, canvasHeight: s.canvasHeight, frames: s.frames, bufferVersion: s.bufferVersion })));
+  const motionPart = useStudioStore((s) => s.motionPart);
+  const motionActivePose = useStudioStore((s) => s.motionActivePose);
+  const motionPreviewIndex = useStudioStore((s) => s.motionPreviewIndex);
+  const setMotionActivePose = useStudioStore((s) => s.setMotionActivePose);
+  const setMotionPreviewIndex = useStudioStore((s) => s.setMotionPreviewIndex);
+  const updateMotionPose = useStudioStore((s) => s.updateMotionPose);
+  const updateMotionPart = useStudioStore((s) => s.updateMotionPart);
+  const clearMotionPart = useStudioStore((s) => s.clearMotionPart);
+  const fps = useStudioStore((s) => s.fps);
+  const motionHistory = useStudioStore(s => s.motionHistory);
+  const beginMotionEdit = useStudioStore(s => s.beginMotionEdit);
+  const finishMotionEdit = useStudioStore(s => s.finishMotionEdit);
+  const undoMotionEdit = useStudioStore(s => s.undoMotionEdit);
+  const redoMotionEdit = useStudioStore(s => s.redoMotionEdit);
+
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [isBaking, setIsBaking] = useState(false);
+  const playTimerRef = useRef<number | null>(null);
+  const bakeInProgressRef = useRef(false);
+  const resolvedSource = motionPart ? resolveMotionSource(motionPart, sourceState) : null;
+  const frameDurationMs = resolvedSource?.ok ? resolvedSource.frame.durationMs : Math.round(1000 / (fps || 8));
+
+  // Play/pause preview animation loop
+  useEffect(() => {
+    if (!isPlayingPreview || !motionPart) {
+      if (playTimerRef.current !== null) {
+        clearInterval(playTimerRef.current);
+        playTimerRef.current = null;
+      }
+      return;
+    }
+
+    const intervalMs = Math.max(8, Math.min(20, frameDurationMs));
+    const startedAt = performance.now();
+    const firstIndex = useStudioStore.getState().motionPreviewIndex ?? 0;
+    let lastIndex = -1;
+
+    playTimerRef.current = window.setInterval(() => {
+      const currentIdx = (firstIndex + Math.floor((performance.now() - startedAt) / frameDurationMs)) % motionPart.frameCount;
+      if (currentIdx !== lastIndex) { setMotionPreviewIndex(currentIdx); lastIndex = currentIdx; }
+    }, intervalMs);
+
+    return () => {
+      if (playTimerRef.current !== null) {
+        clearInterval(playTimerRef.current);
+        playTimerRef.current = null;
+      }
+    };
+  }, [frameDurationMs, isPlayingPreview, motionPart, setMotionPreviewIndex]);
+
+  const handleBake = useCallback(async () => {
+    if (bakeInProgressRef.current) return;
+    const initialPart = useStudioStore.getState().motionPart;
+    if (!initialPart) return;
+    bakeInProgressRef.current = true;
+    if (playTimerRef.current !== null) { clearInterval(playTimerRef.current); playTimerRef.current = null; }
+    setIsPlayingPreview(false); finishMotionEdit(); setIsBaking(true);
+    const part = useStudioStore.getState().motionPart;
+    try {
+      const result = part ? await bakeMotionToTimelineAsync(part) : { ok: false, reason: 'The motion session closed.' };
+      studioEvents.emit('pixibun:toast', result.ok
+        ? { type: 'success', message: `PixiMotion: Baked ${result.addedFrameCount! + 1} frames to timeline!` }
+        : { type: 'error', message: result.reason || 'Failed to bake motion to timeline.' });
+    } finally { bakeInProgressRef.current = false; setIsBaking(false); }
+  }, [finishMotionEdit]);
+  useEffect(() => studioEvents.on('pixibun:motion-bake', () => { void handleBake(); }), [handleBake]);
+
+  if (!motionPart) return null;
+  const source = resolvedSource!;
+
+  const currentPose =
+    motionActivePose === 'start' ? motionPart.startPose : motionPart.endPose;
+
+  const rotationDeg = Math.round((currentPose.rotation * 180) / Math.PI);
+  const rangeGesture = {
+    onPointerDown: () => { setIsPlayingPreview(false); beginMotionEdit(); },
+    onPointerUp: () => finishMotionEdit(),
+    onPointerCancel: () => finishMotionEdit(true),
+    onBlur: () => finishMotionEdit(),
+    onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+        setIsPlayingPreview(false); beginMotionEdit();
+      } else if (event.key === 'Escape') { event.preventDefault(); finishMotionEdit(true); }
+    },
+    onKeyUp: () => finishMotionEdit(),
+  };
+
+  const handleRotationChange = (deg: number) => {
+    setIsPlayingPreview(false);
+    const rad = (deg * Math.PI) / 180;
+    updateMotionPose(motionActivePose, { rotation: rad });
+  };
+
+  const handleCenterPivot = () => {
+    updateMotionPart({
+      pivot: getMotionBoundsCenter(motionPart.bounds),
+    });
+  };
+
+  return (
+    <div
+      data-testid="piximotion-panel"
+      aria-busy={isBaking}
+      className="p-3 space-y-3 select-none text-[var(--text-heading)] font-sans text-xs"
+    >
+      {/* 1. Panel Header */}
+      <div className="flex items-center gap-2.5 p-2.5 rounded-[4px] bg-[var(--desk-surface-raised)]/70 border border-[var(--desk-border)] shadow-xs">
+        <div className="w-8 h-8 rounded-[3px] bg-[var(--surface-0)] border border-[var(--accent-gold)] flex items-center justify-center shrink-0 shadow-xs text-[var(--accent-gold)]">
+          <PixelIcon name="rotate" size={16} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xs font-bold text-[var(--text-heading)] truncate">
+            PixiMotion: Rigid Part
+          </h2>
+          <p className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">
+            Arc Pose Transform → Cel Bake
+          </p>
+        </div>
+      </div>
+
+      <MotionRigLibrary />
+      {isBaking && <p role="status">Baking motion… Cancel closes the session without applying unfinished cels.</p>}
+      <div className="flex gap-2">
+        <TactileButton onClick={() => { setIsPlayingPreview(false); undoMotionEdit(); }} disabled={!source.ok || (!motionHistory?.past.length && !motionHistory?.pending)} aria-label="Undo motion edit">Undo pose</TactileButton>
+        <TactileButton onClick={() => { setIsPlayingPreview(false); redoMotionEdit(); }} disabled={!source.ok || !motionHistory?.future.length} aria-label="Redo motion edit">Redo pose</TactileButton>
+        <TactileButton onClick={() => { setIsPlayingPreview(false); updateMotionPose(motionActivePose, { translationX: 0, translationY: 0, rotation: 0 }); }} disabled={!source.ok}>Reset Pose</TactileButton>
+      </div>
+      <p className="text-[10px] text-[var(--text-muted)]">Undo/Redo edits this motion session. Cancel returns to drawing; Bake creates editable cels.</p>
+      {/* 2. Pose Switcher (START vs END) */}
+      {!source.ok && <p role="status" className="text-[var(--state-danger)]">{source.reason}</p>}
+      <div className="p-2 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2">
+        <div className="text-[11px] font-bold text-[var(--text-heading)] block">
+          Target Pose
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setIsPlayingPreview(false);
+              setMotionActivePose('start');
+            }}
+            data-testid="pose-btn-start"
+            aria-pressed={motionActivePose === 'start'}
+            className={`py-1.5 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+              motionActivePose === 'start'
+                ? 'bg-[var(--accent-wisteria)] text-[#140d1f] border-[var(--accent-wisteria)] shadow-xs'
+                : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+            }`}
+          >
+            <span>● START</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsPlayingPreview(false);
+              setMotionActivePose('end');
+            }}
+            data-testid="pose-btn-end"
+            aria-pressed={motionActivePose === 'end'}
+            className={`py-1.5 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+              motionActivePose === 'end'
+                ? 'bg-[var(--accent-gold)] text-[#140d1f] border-[var(--accent-gold)] shadow-xs'
+                : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+            }`}
+          >
+            <span>● END</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Active Pose Transform Controls */}
+      <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-[11px] text-[var(--text-heading)]">
+            {motionActivePose === 'start' ? 'Start Pose Transform' : 'End Pose Transform'}
+          </span>
+          <span className="font-mono text-[10px] text-[var(--text-muted)]">
+            {motionActivePose.toUpperCase()}
+          </span>
+        </div>
+
+        {/* Rotation */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-medium text-[var(--text-body)]">Rotation</span>
+            <span className="font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] font-bold text-[var(--accent-gold)]">
+              {rotationDeg}°
+            </span>
+          </div>
+          <input
+            aria-label="Pose rotation"
+            type="range"
+            min={-360}
+            max={360}
+            step={1}
+            value={rotationDeg}
+            {...rangeGesture}
+            onChange={(e) => handleRotationChange(Number(e.target.value))}
+            className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-1)] rounded-full"
+          />
+          <div className="flex gap-1 pt-1">
+            {[-90, -45, 0, 45, 90].map((quickDeg) => (
+              <button
+                key={quickDeg}
+                type="button"
+                onClick={() => handleRotationChange(quickDeg)}
+                className="flex-1 py-0.5 text-[9px] font-mono border border-[var(--desk-border)] rounded-[2px] bg-[var(--surface-1)] hover:border-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+              >
+                {quickDeg}°
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Translation X */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-medium text-[var(--text-body)]">Translation X</span>
+            <span className="font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] font-bold">
+              {currentPose.translationX}px
+            </span>
+          </div>
+          <input
+            aria-label="Pose translation X"
+            type="range"
+            min={-Math.max(64, sourceState.canvasWidth, Math.abs(currentPose.translationX))}
+            max={Math.max(64, sourceState.canvasWidth, Math.abs(currentPose.translationX))}
+            step={1}
+            value={currentPose.translationX}
+            {...rangeGesture}
+            onChange={(e) =>
+              updateMotionPose(motionActivePose, {
+                translationX: Number(e.target.value),
+              })
+            }
+            className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-1)] rounded-full"
+          />
+        </div>
+
+        {/* Translation Y */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-medium text-[var(--text-body)]">Translation Y</span>
+            <span className="font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] font-bold">
+              {currentPose.translationY}px
+            </span>
+          </div>
+          <input
+            aria-label="Pose translation Y"
+            type="range"
+            min={-Math.max(64, sourceState.canvasHeight, Math.abs(currentPose.translationY))}
+            max={Math.max(64, sourceState.canvasHeight, Math.abs(currentPose.translationY))}
+            step={1}
+            value={currentPose.translationY}
+            {...rangeGesture}
+            onChange={(e) =>
+              updateMotionPose(motionActivePose, {
+                translationY: Number(e.target.value),
+              })
+            }
+            className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-1)] rounded-full"
+          />
+        </div>
+
+        <StudioNumberInput label="Rotation degrees" value={Number((currentPose.rotation * 180 / Math.PI).toFixed(3))} min={-360} max={360} step={0.1} onChange={handleRotationChange} disabled={!source.ok} />
+        <StudioNumberInput label="Position X pixels" value={currentPose.translationX} min={-MOTION_EDIT_LIMITS.coordinate} max={MOTION_EDIT_LIMITS.coordinate} onChange={value => { setIsPlayingPreview(false); updateMotionPose(motionActivePose, { translationX: Math.round(value) }); }} disabled={!source.ok} />
+        <StudioNumberInput label="Position Y pixels" value={currentPose.translationY} min={-MOTION_EDIT_LIMITS.coordinate} max={MOTION_EDIT_LIMITS.coordinate} onChange={value => { setIsPlayingPreview(false); updateMotionPose(motionActivePose, { translationY: Math.round(value) }); }} disabled={!source.ok} />
+        <StudioNumberInput label="Pivot X pixels" value={motionPart.pivot.x} min={-MOTION_EDIT_LIMITS.coordinate} max={MOTION_EDIT_LIMITS.coordinate} step={0.5} onChange={x => { setIsPlayingPreview(false); updateMotionPart({ pivot: { ...motionPart.pivot, x } }); }} disabled={!source.ok} />
+        <StudioNumberInput label="Pivot Y pixels" value={motionPart.pivot.y} min={-MOTION_EDIT_LIMITS.coordinate} max={MOTION_EDIT_LIMITS.coordinate} step={0.5} onChange={y => { setIsPlayingPreview(false); updateMotionPart({ pivot: { ...motionPart.pivot, y } }); }} disabled={!source.ok} />
+        {/* Pivot Coordinates */}
+        <div className="pt-2 border-t border-[var(--desk-border)] flex items-center justify-between text-[11px]">
+          <div>
+            <span className="text-[var(--text-muted)]">Pivot: </span>
+            <span className="font-mono font-bold text-[var(--accent-gold)]">
+              {motionPart.pivot.x}, {motionPart.pivot.y}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleCenterPivot}
+            title="Reset pivot to center of selection"
+            className="px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-[10px] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--accent-gold)] cursor-pointer"
+          >
+            Center Pivot
+          </button>
+        </div>
+      </div>
+
+      {/* 4. Animation Arc Settings */}
+      <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2.5">
+        <h3 className="font-bold text-[11px] text-[var(--text-heading)]">Arc Interpolation</h3>
+        <p className="text-[10px] text-[var(--text-muted)]">Each baked cel keeps the source duration: {frameDurationMs} ms. Preview follows the same timing.</p>
+
+        {/* Frame Count */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-medium text-[var(--text-body)]">Generated Frames</span>
+            <span className="font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] font-bold text-[var(--accent-gold)]">
+              {motionPart.frameCount}
+            </span>
+          </div>
+          <input
+            aria-label="Motion frame count"
+            type="range"
+            min={MOTION_EDIT_LIMITS.minFrames}
+            max={MOTION_EDIT_LIMITS.maxFrames}
+            step={1}
+            value={motionPart.frameCount}
+            {...rangeGesture}
+            onChange={(e) => updateMotionPart({ frameCount: Number(e.target.value) })}
+            className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-1)] rounded-full"
+          />
+        </div>
+        <StudioNumberInput label="Motion frames" value={motionPart.frameCount} min={MOTION_EDIT_LIMITS.minFrames} max={MOTION_EDIT_LIMITS.maxFrames} onChange={frameCount => { setIsPlayingPreview(false); updateMotionPart({ frameCount: Math.round(frameCount) }); }} disabled={!source.ok} />
+
+        {/* Easing */}
+        <label className="block text-xs space-y-1">
+          <span className="font-medium text-[var(--text-body)]">Easing Curve</span>
+          <select
+            aria-label="Motion easing"
+            value={motionPart.easing}
+            onChange={(e) => updateMotionPart({ easing: e.target.value as MotionEasing })}
+            className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
+          >
+            <option value="linear">Linear (Constant speed)</option>
+            <option value="ease-in">Ease In (Accelerate)</option>
+            <option value="ease-out">Ease Out (Decelerate)</option>
+            <option value="ease-in-out">Ease In-Out (Natural arc)</option>
+          </select>
+        </label>
+      </div>
+
+      {/* 5. Live Scrubbing Preview */}
+      <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-[11px] text-[var(--text-heading)]">Arc Preview</span>
+          <span className="font-mono text-[10px] text-[var(--accent-gold)] font-bold">
+            {motionPreviewIndex !== null
+              ? `Pose ${motionPreviewIndex + 1} / ${motionPart.frameCount}`
+              : `Editing ${motionActivePose.toUpperCase()}`}
+          </span>
+        </div>
+
+        {/* Scrub Slider */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-[10px] text-[var(--text-muted)] font-mono">
+            <span>[START]</span>
+            <span>[END]</span>
+          </div>
+          <input
+            aria-label="Arc preview scrub"
+            type="range"
+            min={0}
+            max={motionPart.frameCount - 1}
+            step={1}
+            value={
+              motionPreviewIndex !== null
+                ? motionPreviewIndex
+                : motionActivePose === 'start'
+                ? 0
+                : motionPart.frameCount - 1
+            }
+            onChange={(e) => {
+              setIsPlayingPreview(false);
+              setMotionPreviewIndex(Number(e.target.value));
+            }}
+            className="w-full h-2 accent-[var(--accent-gold)] cursor-pointer bg-[var(--surface-1)] rounded-full"
+          />
+        </div>
+
+        {/* Preview Controls */}
+        <div className="flex gap-1.5 pt-1">
+          <button
+            type="button"
+            onClick={() => setIsPlayingPreview(!isPlayingPreview)}
+            disabled={!source.ok || isBaking}
+            className="flex-1 py-1 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-[11px] font-bold text-[var(--text-heading)] hover:border-[var(--accent-gold)] flex items-center justify-center gap-1"
+          >
+            <PixelIcon name={isPlayingPreview ? 'pause' : 'play'} size={12} />
+            <span>{isPlayingPreview ? 'Pause' : 'Play Loop'}</span>
+          </button>
+          {motionPreviewIndex !== null && (
+            <button
+              type="button"
+              onClick={() => setMotionPreviewIndex(null)}
+              className="px-2 py-1 rounded-[2px] bg-[var(--surface-1)] border border-[var(--desk-border)] text-[11px] text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+            >
+              Resume Pose
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 6. Primary Action Buttons */}
+      <div className="space-y-2 pt-1">
+        <TactileButton
+          variant="primary"
+          onClick={handleBake}
+          disabled={!source.ok || isBaking}
+          className="w-full justify-center font-bold tracking-wider py-2"
+        >
+          <PixelIcon name="layers" size={14} />
+          <span>BAKE TO TIMELINE</span>
+        </TactileButton>
+
+        <TactileButton
+          variant="ghost"
+          onClick={clearMotionPart}
+          className="w-full justify-center text-[var(--text-muted)] py-1.5"
+        >
+          <span>Cancel (Escape)</span>
+        </TactileButton>
+      </div>
+    </div>
+  );
+};

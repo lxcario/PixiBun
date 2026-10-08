@@ -8,6 +8,7 @@ import {
   WallpaperGroup,
   ShadingBandMode,
   GlintStyle,
+  RotationAlgorithm,
 } from '@/types/tools';
 import { ColorPalette, ColorRamp, PaletteCycleTrack } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
@@ -15,6 +16,7 @@ import { AiMessage } from '@/types/ai';
 import type { CvdLensMode } from '@/lib/color/cvdLens';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ProjectFile } from '@/types/project';
+import type { MotionPart, MotionPose, MotionPartSettings } from '@/lib/animation/pixiMotion';
 
 export interface ViewportSlice {
   currentProjectId: string;
@@ -104,6 +106,7 @@ export interface ToolSlice {
   setChiselWidth: (width: number) => void;
   setChiselRidgeMode: (ridge: boolean) => void;
   setNormalBlendMode: (mode: 'rnm' | 'udn' | 'overwrite') => void;
+  setRotationAlgorithm: (algorithm: RotationAlgorithm) => void;
 
   isPaletteCycling: boolean;
   paletteCycleSpeedMultiplier: number;
@@ -177,6 +180,23 @@ export interface AnimationSlice {
   deleteTag: (id: string) => void;
   reorderTags: (sourceIndex: number, targetIndex: number) => void;
   setActiveTagId: (id: string | null) => void;
+
+  // PixiMotion Slice 1: Temporary Session State
+  motionRigs: import('@/lib/animation/motionRigDocument').MotionRig[];
+  motionPart: MotionPart | null;
+  motionActivePose: 'start' | 'end';
+  motionPreviewIndex: number | null;
+  motionHistory: import('@/lib/animation/motionEditing').MotionEditHistory | null;
+  beginMotionEdit: () => void;
+  finishMotionEdit: (cancel?: boolean) => void;
+  undoMotionEdit: () => boolean;
+  redoMotionEdit: () => boolean;
+  setMotionPart: (part: MotionPart | null) => void;
+  setMotionActivePose: (pose: 'start' | 'end') => void;
+  setMotionPreviewIndex: (index: number | null) => void;
+  updateMotionPose: (target: 'start' | 'end', updates: Partial<MotionPose>) => void;
+  updateMotionPart: (updates: Partial<MotionPartSettings>) => void;
+  clearMotionPart: () => void;
 }
 
 export interface HistorySlice {
@@ -197,6 +217,8 @@ export interface HistorySlice {
 
   selection: { x: number; y: number; w: number; h: number } | null;
   selectionMask: Uint8Array | null;
+  /** Transient viewport ownership; never serialized as project data. */
+  hasFloatingSelection: boolean;
   setSelection: (sel: { x: number; y: number; w: number; h: number } | null, mask?: Uint8Array | null) => void;
 
   aiMessages: AiMessage[];

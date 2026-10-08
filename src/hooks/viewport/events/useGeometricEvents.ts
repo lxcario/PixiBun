@@ -16,7 +16,9 @@ import type { ViewportEventContext } from './types';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
 import { planLayerRotation } from '@/lib/canvas/rotSpriteLayer';
 import { runRotSpriteInWorker } from '@/lib/engine/workerDispatcher';
+import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 import { getBufferRevision, touchBuffer } from '@/lib/engine/bufferRegistry';
+import { isNormalLayer } from '@/lib/export/normalLayers';
 
 export function useGeometricEvents({
   canvasWidth,
@@ -33,6 +35,7 @@ export function useGeometricEvents({
   const rotationInFlightRef = useRef(false);
   useEffect(() => {
     let disposed = false;
+    let rotationJob: WorkspaceJob | undefined;
     const handleAutoShadeEvent = (e: Event) => {
       const customEvent = e as CustomEvent;
       const tools = useStudioStore.getState().tools;
@@ -283,19 +286,24 @@ export function useGeometricEvents({
       const originalBufferRevisions = new Map(affectedLayerIds.map((id) => [id, getBufferRevision(id)]));
 
       rotationInFlightRef.current = true;
+      const job = beginWorkspaceJob(affectedLayerIds);
+      rotationJob = job;
       try {
         const rotated = [] as Array<{ id: string; canvas: HTMLCanvasElement; plan: (typeof prepared)[number]['plan']; data: Uint8ClampedArray }>;
         for (const item of prepared) {
           const plan = item.plan;
+          const layer = currentFrame?.layers.find((l) => l.id === item.id);
+          const isNormal = layer ? isNormalLayer(layer) : false;
           const output = await runRotSpriteInWorker(
             plan.source, angleRad, plan.sourcePivotX, plan.sourcePivotY,
             plan.targetWidth, plan.targetHeight,
-            { outPivotX: plan.outputPivotX, outPivotY: plan.outputPivotY, timeoutMs: 30_000 }
+            { outPivotX: plan.outputPivotX, outPivotY: plan.outputPivotY, pixelPerfect: true, isNormalMap: isNormal, timeoutMs: 30_000, signal: job.signal }
           );
           rotated.push({ ...item, data: output.data });
         }
         const latest = useStudioStore.getState();
         if (disposed) return;
+        job.check();
         if (latest.editRevision !== originalRevision || latest.activeFrameIndex !== originalFrameIndex ||
             affectedLayerIds.some((id) => getBufferRevision(id) !== originalBufferRevisions.get(id)) ||
             latest.canvasWidth !== canvasWidth || latest.canvasHeight !== canvasHeight) {
@@ -329,11 +337,14 @@ export function useGeometricEvents({
         renderComposite();
         bumpBufferVersion();
       } catch (error) {
+        if (job.signal.aborted) return;
         studioEvents.emit('pixibun:toast', {
           type: 'error',
           message: error instanceof Error ? `Rotation failed: ${error.message}` : 'Rotation failed.',
         });
       } finally {
+        job.dispose();
+        if (rotationJob === job) rotationJob = undefined;
         rotationInFlightRef.current = false;
       }
     };
@@ -361,6 +372,7 @@ export function useGeometricEvents({
 
     return () => {
       disposed = true;
+      rotationJob?.cancel();
       unsubs.forEach((unsub) => unsub());
     };
   }, [

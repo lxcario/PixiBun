@@ -1,0 +1,32 @@
+
+Running 1 test using 1 worker
+
+(node:31140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths (6.9s)
+
+
+  1) [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      222 |       return box.left >= bounds.left && box.right <= bounds.right && Math.abs((box.top + box.bottom) / 2 - (bounds.top + bounds.bottom) / 2) <= 1;
+      223 |     });
+    > 224 |   })).toBe(true);
+          |       ^
+      225 |   await page.context().setOffline(false);
+      226 | });
+      227 |
+        at D:\PixiBun\tests\e2e\backupTrust.spec.ts:224:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\publication-editor-final\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\publication-editor-final\backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium\error-context.md
+
+  1 failed
+    [chromium] › tests\e2e\backupTrust.spec.ts:78:5 › project and drawing controls stay grouped, visible and usable at desktop widths 

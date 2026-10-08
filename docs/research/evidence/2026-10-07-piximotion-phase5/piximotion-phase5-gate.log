@@ -1,0 +1,43 @@
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/5] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Checks local links, historical paths, generated discovery, selected source contracts and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 279 existing, 6 approved removed historical references.
+Local links/headings: 2206 destinations across 169 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 21.43s[0m
+
+[1m[35m[2/5] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+[32m✓ Stage 2: Static Type Safety Invariant (0 Errors) PASSED in 3.43s[0m
+
+[1m[35m[3/5] Stage 3: Lint and accessibility rules[0m
+[2m  ↳ Checks source and test lint rules.[0m
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+
+
+D:\PixiBun\src\lib\animation\motionRigWorkspace.ts
+  10:106  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+
+✖ 1 problem (1 error, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+
+
+[1m[31m❌ FAILED: Stage 3: Lint and accessibility rules (exited with code 1) [15.75s][0m
+[33m⚠️  A configured check failed; this runner stopped. Hooks and external release policy are separate.[0m
+

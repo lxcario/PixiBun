@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-07T15:18:28.812Z",
+  "status": "sealed",
+  "revision": "dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+  "dirtyWorkingTree": true,
+  "runtime": "Node 22.23.3",
+  "buildId": "UJQHvlgbuEjzZMXnqAYvk",
+  "scope": "Main-workspace narrative Markdown, including local ignored proposal, vendor skills and metadata-only private/generated records; dependencies/builds/artifacts/separate worktrees/sealed evidence excluded and handled separately.",
+  "method": "Full-text path/role/claim screening for non-private narrative files, semantic source-owner review of current guidance and identified mismatches; not proof of every sentence or future specification.",
+  "verdicts": {
+    "markdownFiles": 126,
+    "localDestinations": 2295,
+    "ownedMarkdownFiles": 175,
+    "docs": "passed",
+    "sourceInputsUnchanged": 682,
+    "buildFilesUnchanged": 4,
+    "previousMotionEvidenceFilesUnchanged": 163,
+    "codeAndBrowserRuns": "not repeated for documentation-only pass; preceding hardening scope retained",
+    "testsprite": "preceding hardening blocked; no new external run"
+  },
+  "privacy": "Private/generated records inventoried by metadata only; no transcript content or signed service media included.",
+  "files": [
+    {
+      "path": "pixibun-markdown-census.json",
+      "source": "artifacts/pixibun-markdown-census.json",
+      "bytes": 199964,
+      "sha256": "0b64293bda6dbb32053bfdd0b1a4f68c42fad0ae4364f10b373abebf1a7bcf8d"
+    },
+    {
+      "path": "pixibun-markdown-reconciliation.json",
+      "source": "artifacts/pixibun-markdown-reconciliation.json",
+      "bytes": 181769,
+      "sha256": "7c6366f194612b9b57ad1d063462379ebcba696641e63d0fcb968084d4a1776d"
+    },
+    {
+      "path": "pixibun-markdown-source-integrity.json",
+      "source": "artifacts/pixibun-markdown-source-integrity.json",
+      "bytes": 184,
+      "sha256": "c6ec1476db56bc093130600538039948306b7f8c297a76fb74bbef92bfa090df"
+    },
+    {
+      "path": "pixibun-markdown-prior-evidence-integrity.json",
+      "source": "artifacts/pixibun-markdown-prior-evidence-integrity.json",
+      "bytes": 1201,
+      "sha256": "d9b0baad4dfc4c3c60c1cfd3d804ee440d9be236b2dd475cd423c10d163058f0"
+    },
+    {
+      "path": "pixibun-markdown-reconciliation-docs.log",
+      "source": "artifacts/pixibun-markdown-reconciliation-docs.log",
+      "bytes": 343,
+      "sha256": "085789938788e9b10502332011db90d5e40d1a44257de0ba60f295df2c8f0427"
+    },
+    {
+      "path": "pixibun-markdown-reconciliation-diff.log",
+      "source": "artifacts/pixibun-markdown-reconciliation-diff.log",
+      "bytes": 470,
+      "sha256": "b957e18c5ff902254fe4745f47e7e82c49048b1bf4cbeeadf9d98907c75beb57"
+    },
+    {
+      "path": "pixibun-markdown-reconciliation-docs-sandbox-failure.log",
+      "source": "artifacts/pixibun-markdown-reconciliation-docs-sandbox-failure.log",
+      "bytes": 71654,
+      "sha256": "f56c75ae3698a20b4835034a1bd594a792541bf4b9e063281f704041711987bc"
+    },
+    {
+      "path": "pixibun-markdown-reconciliation-diff-before.log",
+      "source": "artifacts/pixibun-markdown-reconciliation-diff-before.log",
+      "bytes": 470,
+      "sha256": "b957e18c5ff902254fe4745f47e7e82c49048b1bf4cbeeadf9d98907c75beb57"
+    },
+    {
+      "path": "markdown-reconciliation.cjs",
+      "source": "artifacts/markdown-reconciliation.cjs",
+      "bytes": 7025,
+      "sha256": "1d0761a676c17f8557042463af5185dd830e7169396628848d2e60e427c12f14"
+    },
+    {
+      "path": "markdown-closure-integrity.cjs",
+      "source": "artifacts/markdown-closure-integrity.cjs",
+      "bytes": 2524,
+      "sha256": "cc66c59d4438810e2d7f792fe1db466d16076b5433416c311c56335056b137bc"
+    },
+    {
+      "path": "seal-markdown-reconciliation.cjs",
+      "source": "artifacts/seal-markdown-reconciliation.cjs",
+      "bytes": 3366,
+      "sha256": "7eff2c2194fdc0b45b38eed03274b69cb1c7739282bffbd9c37f40716cadb723"
+    }
+  ]
+}

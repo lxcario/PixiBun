@@ -1,0 +1,106 @@
+{
+  "recordedAt": "2026-10-07T19:55:08.248Z",
+  "scope": "Local uncommitted R6 candidate; no publication or deployment",
+  "revision": "dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+  "buildId": "NRr0V9YHiuzCg-10a6Eq_",
+  "cacheTag": "pixibun-20261007-motion-quality-r6",
+  "gate": {
+    "passed": true,
+    "stages": 5,
+    "unitIntegrationTests": 2071,
+    "suites": 198,
+    "defaultUnitWorkers": true,
+    "unchangedUnitTimeouts": true
+  },
+  "compiled": {
+    "total": 270,
+    "passed": 263,
+    "skipped": 7,
+    "failed": 0,
+    "duration": "29.1m",
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "workers": 1,
+    "retries": 0,
+    "skips": [
+      "-   10 [chromium] › tests\\production\\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "-  100 [firefox] › tests\\production\\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "-  125 [firefox] › tests\\production\\inputOwnership.spec.ts:128:5 › tablet touch drawing uses the artwork policy and survives save/reload",
+      "-  189 [webkit] › tests\\production\\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery",
+      "-  192 [webkit] › tests\\production\\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork",
+      "-  193 [webkit] › tests\\production\\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork",
+      "-  246 [webkit] › tests\\production\\projectDatesAndClipboard.spec.ts:53:5 › compiled co-draw denied clipboard selects the full code and a successful retry reports copied"
+    ],
+    "diagnostic": "Firefox emitted a failed uncached RSC request while the offline test intentionally stopped its origin. Exact artwork reload and subsequent offline save/reload assertions passed. Original log retained."
+  },
+  "focusedWelcomeArtist": {
+    "passed": 18,
+    "failed": 0,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "workers": 1,
+    "retries": 0
+  },
+  "developmentEditor": {
+    "rerun": false,
+    "enumeratedCases": 196,
+    "inventoryIsNotVerdict": true
+  },
+  "performance": {
+    "beforeScenarios": 9,
+    "afterScenarios": 9,
+    "widths": [
+      64,
+      128,
+      256
+    ],
+    "physicalPen": false,
+    "INP": false,
+    "heapMeasurement": false,
+    "slowerBakeCompletion": true
+  },
+  "testsprite": {
+    "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+    "name": "Motion pose Undo restores precise edits and supports thirty frames",
+    "runId": "3f330cd9-f235-41dc-8924-4155c0776dea",
+    "serviceVerdict": "passed",
+    "auditedVerdict": "inconclusive",
+    "reason": "37 steps but only two assertions; numeric history values, frame limit, bake/history frame counts and source pixels omitted",
+    "connectionClosed": true
+  },
+  "dependencyAudit": {
+    "productionAdvisories": 0,
+    "scopedLockfilePatches": [
+      "sharp 0.35.5",
+      "source-map-js 1.2.2"
+    ]
+  },
+  "rollbackReader": {
+    "exactBaseReader": true,
+    "maximumFormat": 3,
+    "actualCandidateInputFormat": 4,
+    "verdict": "refused",
+    "inputUnchanged": true,
+    "completeHistoricalApplicationQualified": false
+  },
+  "suppliedHost": {
+    "url": "https://pixibun.vercel.app",
+    "readOnly": true,
+    "observedWorkerLabel": "pixibun-v1.14.1-dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+    "differsFromLocal": true,
+    "candidateDeployed": false
+  },
+  "pending": [
+    "Artist participants and usefulness observations",
+    "Physical pen/touch and assistive technology",
+    "Long-session and broader project performance",
+    "Real two-build deployed update transition",
+    "Compatible full-application storage/save-back and rollback qualification"
+  ]
+}

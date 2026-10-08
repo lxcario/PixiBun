@@ -1,0 +1,22 @@
+[WebServer] (node:21000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:33900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (3.1s)
+  ok 2 [chromium] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (1.7s)
+  ok 3 [chromium] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (2.2s)
+(node:14600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 [firefox] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (9.4s)
+  ok 5 [firefox] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (3.9s)
+  ok 6 [firefox] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (5.0s)
+(node:13004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 7 [webkit] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (9.0s)
+  ok 8 [webkit] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (5.7s)
+  ok 9 [webkit] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (8.9s)
+
+  9 passed (55.7s)

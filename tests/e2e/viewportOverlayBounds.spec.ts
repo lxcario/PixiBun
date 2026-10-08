@@ -39,14 +39,16 @@ test('bucket recolors nearby shades through the visible grid without crossing a 
     state.setZoom(1600);
   });
   await expect(artwork).toHaveAttribute('width', '32');
-  const stage = await page.locator('#center-canvas-area').boundingBox();
-  expect(stage).not.toBeNull();
-  const at = (x: number, y: number) => ({ x: stage!.x + (x + 0.5) * 16, y: stage!.y + (y + 0.5) * 16 });
+  const clickPixel = async (x: number, y: number) => {
+    const stage = await artwork.boundingBox();
+    expect(stage).not.toBeNull();
+    await page.mouse.click(stage!.x + (x + 0.5) * stage!.width / 32, stage!.y + (y + 0.5) * stage!.height / 32);
+  };
   const pixel = (x: number, y: number) => artwork.evaluate((canvas: HTMLCanvasElement, point: [number, number]) =>
     Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
   for (const [x, color] of [[8, '#f0c080'], [9, '#eabc7d'], [10, '#ffa000']] as const) {
     await page.evaluate((next) => (window as Window & { __studioStore?: { getState: () => { setPrimaryColor: (color: string) => void } } }).__studioStore!.getState().setPrimaryColor(next), color);
-    await page.mouse.click(at(x, 8).x, at(x, 8).y);
+    await clickPixel(x, 8);
   }
   await page.evaluate(() => {
     const state = (window as Window & { __studioStore?: { getState: () => {
@@ -58,7 +60,7 @@ test('bucket recolors nearby shades through the visible grid without crossing a 
   await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Bucket fill tolerance' })).toHaveValue('24');
   await page.keyboard.press('Escape');
-  await page.mouse.click(at(8, 8).x, at(8, 8).y);
+  await clickPixel(8, 8);
   await expect.poll(() => pixel(8, 8)).toEqual([144, 170, 255, 255]);
   await expect.poll(() => pixel(9, 8)).toEqual([144, 170, 255, 255]);
   expect(await pixel(10, 8)).toEqual([255, 160, 0, 255]);
@@ -67,6 +69,7 @@ test('bucket recolors nearby shades through the visible grid without crossing a 
 test('large supported artwork never scales overlay backing stores with zoom', async ({ page }) => {
   await page.goto('/studio');
   const grid = page.getByTestId('grid-selection-overlay');
+  const selection = page.getByTestId('selection-overlay-canvas');
   const brushGhost = page.getByTestId('brush-ghost-overlay');
   await expect(grid).toBeVisible();
   await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
@@ -74,8 +77,9 @@ test('large supported artwork never scales overlay backing stores with zoom', as
     const store = (window as Window & { __studioStore?: { getState: () => { setCanvasSize: (w: number, h: number) => void } } }).__studioStore!.getState();
     store.setCanvasSize(2048, 2048);
   });
-  await expect(grid).toHaveAttribute('width', '2048');
-  await expect(grid).toHaveAttribute('height', '2048');
+  await expect(grid).toHaveJSProperty('tagName', 'DIV');
+  await expect(selection).toHaveAttribute('width', '2048');
+  await expect(selection).toHaveAttribute('height', '2048');
   await expect.poll(() => grid.evaluate((element) => getComputedStyle(element).backgroundSize)).toContain('16px 16px');
   await expect(brushGhost).toHaveJSProperty('tagName', 'DIV');
 
@@ -86,15 +90,15 @@ test('large supported artwork never scales overlay backing stores with zoom', as
   await expect.poll(() => brushGhost.evaluate((element) => getComputedStyle(element).width)).toBe('16px');
 
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setZoom: (zoom: number) => void } } }).__studioStore!.getState().setZoom(6400));
-  await expect(grid).toHaveAttribute('width', '2048');
-  await expect(grid).toHaveAttribute('height', '2048');
+  await expect(selection).toHaveAttribute('width', '2048');
+  await expect(selection).toHaveAttribute('height', '2048');
   await expect.poll(() => grid.evaluate((element) => getComputedStyle(element).backgroundSize)).toContain('64px 64px');
   await expect(brushGhost).toHaveJSProperty('tagName', 'DIV');
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { toggleIsoGuides: () => void } } }).__studioStore!.getState().toggleIsoGuides());
   const iso = page.getByTestId('isometric-guide-overlay');
   await expect(iso).toBeVisible();
   await expect.poll(() => iso.evaluate((element) => getComputedStyle(element).backgroundImage)).toContain('repeating-linear-gradient');
-  expect(await grid.evaluate((element: HTMLCanvasElement) => element.getContext('2d')!.getImageData(0, 0, 1, 1).data[3])).toBe(0);
+  expect(await selection.evaluate((element: HTMLCanvasElement) => element.getContext('2d')!.getImageData(0, 0, 1, 1).data[3])).toBe(0);
 });
 
 test('a three-pixel pen uses the same square footprint as its CSS brush outline', async ({ page }) => {

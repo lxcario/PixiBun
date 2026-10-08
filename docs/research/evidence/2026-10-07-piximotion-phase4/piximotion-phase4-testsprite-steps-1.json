@@ -1,0 +1,130 @@
+[
+  {
+    "stepIndex": 1,
+    "action": "navigate",
+    "description": "Navigate to http://127.0.0.1:3194",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 2,
+    "action": "click",
+    "description": "Click 'OPEN THE ATELIER \u2192 link'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 3,
+    "action": "click",
+    "description": "Click 'Pixel art canvas workspace'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 4,
+    "action": "click",
+    "description": "Click 'Marquee Box button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 5,
+    "action": "click",
+    "description": "Click 'Pixel art canvas workspace'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 6,
+    "action": "click",
+    "description": "Click an element",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 7,
+    "action": "click",
+    "description": "Click 'Frame actions \u25be'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 8,
+    "action": "click",
+    "description": "Click '\u21bb'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 9,
+    "action": "click",
+    "description": "Click 'Drawing Animation Lighting dropdown'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 10,
+    "action": "select",
+    "description": "Select option in 'Drawing Animation Lighting dropdown'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 11,
+    "action": "click",
+    "description": "Click '\u21bb'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 12,
+    "action": "click",
+    "description": "Click '\u21bb'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 13,
+    "action": "click",
+    "description": "Click 'Undo last action button'",
+    "status": "passed",
+    "stepType": "action",
+    "error": null
+  },
+  {
+    "stepIndex": 14,
+    "action": "visible",
+    "description": "After undoing the painted stroke, the canvas was cleared and the Undo button became disabled.",
+    "status": "failed",
+    "stepType": "assertion",
+    "error": null
+  },
+  {
+    "stepIndex": 15,
+    "action": "visible",
+    "description": "The motion UI did not show a 'source changed' warning and no 'Bake to Timeline' control was found after the undo.",
+    "status": "failed",
+    "stepType": "assertion",
+    "error": null
+  },
+  {
+    "stepIndex": 16,
+    "action": "visible",
+    "description": "Expected three timeline frames after baking, but the timeline shows only one frame.",
+    "status": "failed",
+    "stepType": "assertion",
+    "error": null
+  }
+]

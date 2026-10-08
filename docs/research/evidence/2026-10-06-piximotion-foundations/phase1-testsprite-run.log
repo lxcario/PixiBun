@@ -1,0 +1,60 @@
+[tunnel] Minted tunnel client 7ec658bb-ef7f-4cda-928e-4b886c2a711e; connecting…
+[tunnel] Reaching http://127.0.0.1:3191 through TestSprite (client 7ec658bb-ef7f-4cda-928e-4b886c2a711e).
+Running 2 tests through one tunnel, up to 5 at a time.
+idempotency-key: cli-run-8e1a7c67-df8b-4723-bee1-c50deab7edfe
+[2/2] 13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb → run 69d76cdf-89cd-4308-ab21-6d9f44cc1327
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb
+[1/2] b99a9888-2ca0-4353-a3f7-05dbfec14f6d → run b62f42a6-bfc7-488d-92d8-9dc68478fd0a
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/b99a9888-2ca0-4353-a3f7-05dbfec14f6d
+[1/2] b99a9888-2ca0-4353-a3f7-05dbfec14f6d blocked (395s)
+[2/2] 13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb passed (755s)
+Batch run complete: 1/2 passed, 1 failed/blocked, 0 timed out
+{
+  "tunnel": {
+    "clientId": "7ec658bb-ef7f-4cda-928e-4b886c2a711e",
+    "adopted": false
+  },
+  "maxConcurrency": 5,
+  "results": [
+    {
+      "testId": "b99a9888-2ca0-4353-a3f7-05dbfec14f6d",
+      "status": "blocked",
+      "runId": "b62f42a6-bfc7-488d-92d8-9dc68478fd0a",
+      "testTitle": "Challenge: Reloaded artwork survives new edits, Undo, Redo and a second saved reload",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "startedAt": "2026-10-06T10:48:10.588Z",
+      "finishedAt": "2026-10-06T10:54:45.277Z",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/b99a9888-2ca0-4353-a3f7-05dbfec14f6d",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/execution/8a9a2940-7f4a-49c6-b981-b7ccc03c5748"
+    },
+    {
+      "testId": "13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb",
+testsprite test artifact get b62f42a6-bfc7-488d-92d8-9dc68478fd0a
+      "status": "passed",
+      "runId": "69d76cdf-89cd-4308-ab21-6d9f44cc1327",
+      "testTitle": "Challenge: Blank frames isolate artwork and frame-duration edits undo independently",
+      "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+      "startedAt": "2026-10-06T10:48:10.552Z",
+      "finishedAt": "2026-10-06T11:00:45.104Z",
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/13fe3809-e45b-4b5e-9ed1-50a5dfa4a6bb",
+      "executionUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/execution/d6dd4d7f-98f2-4c54-a3fe-fc3c3c6b9f08"
+    }
+  ],
+  "skipped": [],
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "timedOut": 0,
+    "notRun": 0
+  }
+}
+{
+  "error": {
+    "code": "CLI_ERROR",
+    "message": "1 run failed.",
+    "nextAction": "",
+    "requestId": "local",
+    "details": {}
+  }
+}

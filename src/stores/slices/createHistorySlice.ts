@@ -4,6 +4,7 @@ import { clearAllBuffers } from '@/lib/engine/bufferRegistry';
 import { ProjectFile } from '@/types/project';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { assertWorkspaceDimensions } from '@/config/canvasLimits';
+import { parseMotionRigs } from '@/lib/animation/motionRigDocument';
 import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
 
 /**
@@ -64,6 +65,7 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
 
   selection: null,
   selectionMask: null,
+  hasFloatingSelection: false,
   setSelection: (sel, mask = null) => {
     set(state => {
       state.selection = sel;
@@ -107,13 +109,21 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
 
   loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => {
     assertWorkspaceDimensions(projectData.width ?? get().canvasWidth, projectData.height ?? get().canvasHeight);
+    const motionRigs = parseMotionRigs(projectData.motionRigs);
+    if (motionRigs === null) throw new Error('Invalid or unsupported motion rig data.');
     DesktopFileSystem.reset();
     set(state => {
+      state.motionRigs = motionRigs;
       // Cross-project boundary: viewport-local state that cannot be carried
       // meaningfully into the restored document must be reset, or a stale
       // selection / clip reference survives into an unrelated project.
       state.selection = null;
       state.selectionMask = null;
+      state.motionPart = null;
+      state.motionHistory = null;
+      state.hasFloatingSelection = false;
+      state.motionActivePose = 'end';
+      state.motionPreviewIndex = null;
       state.activeClipId = null;
       state.isPlaying = false;
       state.currentProjectId = projectId || createId('proj');
@@ -212,6 +222,12 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
         },
       ];
       state.activeClipId = null;
+      state.motionRigs = [];
+      state.hasFloatingSelection = false;
+      state.motionPart = null;
+      state.motionHistory = null;
+      state.motionActivePose = 'end';
+      state.motionPreviewIndex = null;
       state.bufferVersion += 1;
     });
   },

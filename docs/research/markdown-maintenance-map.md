@@ -1,10 +1,14 @@
 # Original Markdown maintenance dispositions
 
+The [8 October review](2026-10-08-session-review-publication.md) provides a new corpus/source-reference census, active-registry corrections and current publication/verification status. This table retains its original intake scope.
+
 This maps all 52 main-project Markdown files at audit intake. It excludes the separate older worktree and generated report, which remain revision-specific history. New canonical guides are indexed in [docs/README.md](../README.md). No original failure/release decision or screenshot was deleted.
 
 The later [feature handbook](../guides/README.md), [feature index](../features.md) and October repair records extend this original intake. [Phase 5 reconciliation](2026-10-02-feature-repairs-phase5.md) inventories the expanded owned Markdown set and reviews affected current claims separately from these historical dispositions.
 
 The [3 October session review](2026-10-03-session-documentation-review.md) covers the final publication set after all seven local phases. This table remains the original intake map; the newer per-file record includes the added guides and execution evidence.
+
+The [7 October Markdown reconciliation](2026-10-07-markdown-codebase-reconciliation.md) provides the later main-workspace census and current source-owner corrections. The 52-file table below remains the original intake.
 
 | Original file | Treatment |
 | --- | --- |

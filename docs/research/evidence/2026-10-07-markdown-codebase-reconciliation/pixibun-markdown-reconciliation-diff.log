@@ -1,0 +1,4 @@
+BENCHMARKS.md:74: trailing whitespace.
++**Historical measured operations:** `rotateNearest` (nearest-neighbor inverse affine point sampling) and `drawImage` with `imageSmoothingEnabled = false`  
+BENCHMARKS.md:75: trailing whitespace.
++**Current integration:** [`CenterViewport.tsx`](src/components/layout/CenterViewport.tsx), [`rotSprite.ts`](src/lib/canvas/rotSprite.ts), [`useViewportSelectionTransform.ts`](src/hooks/viewport/useViewportSelectionTransform.ts)  

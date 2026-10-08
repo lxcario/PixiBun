@@ -809,6 +809,9 @@ export async function buildRecoveryPlan(
     currentPaletteId: safeSourceProject.currentPaletteId,
     customRamps: structuredClone(safeSourceProject.customRamps),
     clips: survivingClips,
+    // Retain dormant recipes even when recovery removes their source cels.
+    // Opening checks IDs and pixels; never infer replacement sources by position.
+    motionRigs: structuredClone(safeSourceProject.motionRigs ?? []),
     frames: candidateFrames,
     createdAt: safeSourceProject.createdAt,
     updatedAt: safeSourceProject.updatedAt,

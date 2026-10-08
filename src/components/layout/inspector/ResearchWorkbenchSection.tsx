@@ -394,10 +394,11 @@ export function ResearchWorkbenchSection() {
   const apply = () => {
     if (!preview || !fresh || busy || !hasChanges) return;
     try {
-      applyResearchPreview(preview); previewRef.current = null; setPreview(null);
+      applyResearchPreview(preview);
       setStatus(`Added to ${preview.frames.length} frame${preview.frames.length === 1 ? '' : 's'}. Your original pixels are retained.`);
       studioEvents.emit('pixibun:toast', { type: 'success', message: 'New look added. Originals retained.', action: { label: 'Undo', onClick: () => studioEvents.emit('pixibun:undo') } });
     } catch (error) { setStatus((error as Error).message); }
+    finally { previewRef.current = null; setPreview(null); }
   };
   const setPaletteRole = (next: string) => {
     setRole(next);

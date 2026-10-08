@@ -8,7 +8,7 @@ describe('Historical Project Fixtures and Migration Verification', () => {
   const v113Path = path.resolve(__dirname, 'fixtures/project-v1.13.json');
   const v114Path = path.resolve(__dirname, 'fixtures/project-v1.14.0.json');
 
-  it('correctly decodes, validates, and migrates v1.13 (format v2) to current format v3', () => {
+  it('correctly decodes, validates, and migrates v1.13 (format v2) to the current format', () => {
     const rawContent = fs.readFileSync(v113Path, 'utf-8');
     const result = decodeAndValidateProject(rawContent);
 
@@ -17,7 +17,8 @@ describe('Historical Project Fixtures and Migration Verification', () => {
 
     const project = result.value;
     expect(project.format).toBe(PROJECT_FORMAT_ID);
-    expect(project.version).toBe(PROJECT_FORMAT_VERSION); // Migrated to 3
+    expect(project.version).toBe(PROJECT_FORMAT_VERSION);
+    expect(project.motionRigs).toEqual([]);
     expect(project.name).toBe('Historical v1.13 Artwork');
     expect(project.width).toBe(16);
     expect(project.height).toBe(16);
@@ -49,7 +50,8 @@ describe('Historical Project Fixtures and Migration Verification', () => {
     if (!result.ok) return;
 
     const project = result.value;
-    expect(project.version).toBe(3);
+    expect(project.version).toBe(PROJECT_FORMAT_VERSION);
+    expect(project.motionRigs).toEqual([]);
     expect(project.name).toBe('Historical v1.14.0 Artwork');
     expect(project.frames).toHaveLength(1);
 
@@ -60,7 +62,7 @@ describe('Historical Project Fixtures and Migration Verification', () => {
     expect(fxLayer?.effect?.params.material).toBe('skin');
   });
 
-  it('preserves fields across re-serialization with format version 3', () => {
+  it('preserves fields across re-serialization with the current format version', () => {
     const rawContent = fs.readFileSync(v113Path, 'utf-8');
     const result = decodeAndValidateProject(rawContent);
     expect(result.ok).toBe(true);
@@ -72,7 +74,7 @@ describe('Historical Project Fixtures and Migration Verification', () => {
 
     expect(roundtrip.ok).toBe(true);
     if (!roundtrip.ok) return;
-    expect(roundtrip.value.version).toBe(3);
+    expect(roundtrip.value.version).toBe(PROJECT_FORMAT_VERSION);
     expect(roundtrip.value.name).toBe(result.value.name);
     expect(roundtrip.value.frames.length).toBe(result.value.frames.length);
   });

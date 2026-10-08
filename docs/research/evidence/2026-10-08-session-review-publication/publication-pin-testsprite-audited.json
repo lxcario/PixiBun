@@ -1,0 +1,318 @@
+{
+  "recordedAt": "2026-10-08T16:53:55.342Z",
+  "buildId": "jJUpvYssT5C0_qYh8GuKv",
+  "cacheTag": "pixibun-20261008-publication-r4",
+  "sourceFingerprint": "publication-pin-fingerprint.json",
+  "privacy": "Only pinned IDs, terminal verdicts, public dashboard links and textual synthetic steps retained. Signed media, external scripts, credentials, account fields and raw HTML omitted.",
+  "artifactRetrieval": {
+    "attempted": true,
+    "result": "Service withheld tools failure bundle because its temporary environment was changed/deleted after the run; original receipt retained locally.",
+    "productInference": "Tools summary speculates about download timing, but its recorded actions click Export repeatedly without a recorded Download PNG click. No product defect is inferred from that speculation; native browser checks are independent."
+  },
+  "cases": [
+    {
+      "role": "tools",
+      "testId": "2518c15a-345c-471c-a1da-6a432827e453",
+      "runId": "7e772727-f37c-4fae-91da-ede8c5e55b46",
+      "auditVerdict": "blocked; full workflow remains unqualified",
+      "serviceVerdict": "blocked",
+      "startedAt": "2026-10-08T16:42:39.018Z",
+      "finishedAt": "2026-10-08T16:48:52.615Z",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 2,
+          "action": "click",
+          "description": "Click 'START DRAWING ✦ link'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 3,
+          "action": "click",
+          "description": "Click '4px brush preset button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 4,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 5,
+          "action": "click",
+          "description": "Click 'Pixel art canvas workspace'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 6,
+          "action": "click",
+          "description": "Click 'View ▼ button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 7,
+          "action": "click",
+          "description": "Click 'Drawing Animation Lighting dropdown'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 8,
+          "action": "select",
+          "description": "Select option in 'Off Rule of thirds Golden ratio Center crosshair... dropdown'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 9,
+          "action": "click",
+          "description": "Click 'Save now button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 10,
+          "action": "click",
+          "description": "Click 'Canvas Only ⇧ Tab button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 11,
+          "action": "click",
+          "description": "Click 'Canvas Only ⇧ Tab button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 12,
+          "action": "click",
+          "description": "Click 'Save now button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 13,
+          "action": "click",
+          "description": "Click 'Export button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 14,
+          "action": "click",
+          "description": "Click 'Export button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 15,
+          "action": "click",
+          "description": "Click 'Export button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 16,
+          "action": "visible",
+          "description": "Top quick control and the detailed Tool inspector both show the brush size as 4 px.",
+          "status": "failed"
+        },
+        {
+          "stepIndex": 17,
+          "action": "visible",
+          "description": "A four-pixel-wide brush stroke is visible on the canvas.",
+          "status": "failed"
+        },
+        {
+          "stepIndex": 18,
+          "action": "visible",
+          "description": "Could not verify that the composition diagonals overlay is absent from the saved PNG because the exported PNG could not be downloaded.",
+          "status": "failed"
+        }
+      ],
+      "assertions": [
+        {
+          "stepIndex": 16,
+          "action": "visible",
+          "description": "Top quick control and the detailed Tool inspector both show the brush size as 4 px.",
+          "status": "failed"
+        },
+        {
+          "stepIndex": 17,
+          "action": "visible",
+          "description": "A four-pixel-wide brush stroke is visible on the canvas.",
+          "status": "failed"
+        },
+        {
+          "stepIndex": 18,
+          "action": "visible",
+          "description": "Could not verify that the composition diagonals overlay is absent from the saved PNG because the exported PNG could not be downloaded.",
+          "status": "failed"
+        }
+      ],
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/2518c15a-345c-471c-a1da-6a432827e453"
+    },
+    {
+      "role": "motion",
+      "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+      "runId": "0f77dd6b-0b50-404e-b924-d95ec4e84295",
+      "auditVerdict": "inconclusive for the complete planned workflow",
+      "serviceVerdict": "passed",
+      "startedAt": "2026-10-08T16:42:39.069Z",
+      "finishedAt": "2026-10-08T16:49:14.263Z",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 2,
+          "action": "navigate",
+          "description": "Navigate to http://127.0.0.1:3228/studio?template=hearth-ghost",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 3,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 4,
+          "action": "click",
+          "description": "Click 'Create Motion Part button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 5,
+          "action": "fill",
+          "description": "Fill '12' into number field",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 6,
+          "action": "click",
+          "description": "Click 'Undo pose button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 7,
+          "action": "click",
+          "description": "Click 'Redo pose button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 8,
+          "action": "fill",
+          "description": "Fill '30' into number field",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 9,
+          "action": "click",
+          "description": "Click 'Reset Pose button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 10,
+          "action": "click",
+          "description": "Click 'Undo pose button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 11,
+          "action": "fill",
+          "description": "Fill '3' into number field",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 12,
+          "action": "click",
+          "description": "Click 'BAKE TO TIMELINE button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 13,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 14,
+          "action": "click",
+          "description": "Click 'Redo last action button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 15,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 16,
+          "action": "click",
+          "description": "Click 'Tools button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 17,
+          "action": "click",
+          "description": "Click 'Create Motion Part button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 18,
+          "action": "click",
+          "description": "Click 'Undo last action button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 19,
+          "action": "click",
+          "description": "Click 'Cancel (Escape) button'",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 20,
+          "action": "visible",
+          "description": "Studio is open and the canvas size indicator shows 16 × 16.",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 21,
+          "action": "visible",
+          "description": "The timeline contains exactly one frame.",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 22,
+          "action": "visible",
+          "description": "The main canvas workspace is visible (the ghost artwork remains on the canvas).",
+          "status": "passed"
+        }
+      ],
+      "assertions": [
+        {
+          "stepIndex": 20,
+          "action": "visible",
+          "description": "Studio is open and the canvas size indicator shows 16 × 16.",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 21,
+          "action": "visible",
+          "description": "The timeline contains exactly one frame.",
+          "status": "passed"
+        },
+        {
+          "stepIndex": 22,
+          "action": "visible",
+          "description": "The main canvas workspace is visible (the ghost artwork remains on the canvas).",
+          "status": "passed"
+        }
+      ],
+      "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/3e1fe6cb-8136-4403-b9ed-756ce296d1ba"
+    }
+  ]
+}

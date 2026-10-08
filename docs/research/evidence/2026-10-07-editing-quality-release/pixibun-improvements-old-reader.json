@@ -1,0 +1,68 @@
+{
+  "checkedAt": "2026-10-07T19:29:05.508Z",
+  "scope": "Exact Git HEAD schema graph, isolated Node TypeScript transpilation. Portable-file admission diagnostic only; not a historical production browser/storage/update qualification.",
+  "historicalRevision": "dcf9f5c303cdbaa6a533e3315de947c261c1e3ac",
+  "historicalSupportedVersion": 3,
+  "sourceArchiveSha256": "6cd2b0881557a9d7ac87fe770abbd045457ef8f0949ad80505f7017bf12fd539",
+  "candidateBuildId": "NRr0V9YHiuzCg-10a6Eq_",
+  "input": {
+    "path": "artifacts/playwright-production-3238\\motionRigPersistence-a-por-5da0b-with-matching-source-pixels-chromium\\saved-rig.pixibun",
+    "sha256": "1e383716137e4d89d0b9504bd314872e690beed74862db85e74b8a0afa19a6ba",
+    "version": 4,
+    "motionRigs": 1
+  },
+  "verdict": "refused",
+  "error": "This project was saved in format v4, but this version of PixiBun only supports up to v3. Please update PixiBun to open this file.",
+  "inputObjectUnchanged": true,
+  "inputFileUnchanged": true,
+  "loadedSourceFiles": [
+    {
+      "path": "lib/project/schema.ts",
+      "sha256": "21dbc750762cc651e279c02cd7d6bf5d58a8c78546575d745b973d0ad255f61a"
+    },
+    {
+      "path": "types/project.ts",
+      "sha256": "b56f74d4117d3d96609634789b41810de245fcbe332bd2c7347e0dd9e69950d1"
+    },
+    {
+      "path": "lib/safety/safeJson.ts",
+      "sha256": "ecc305adc1c2720dd30521e5ea56b8c33db4ce0108c6acab527a53c753ee7664"
+    },
+    {
+      "path": "config/canvasLimits.ts",
+      "sha256": "94c4588c6f86ce7ed4eb5ccea231a7e26a253077d422064568b8fc707dfc91fb"
+    },
+    {
+      "path": "lib/project/resourceBudget.ts",
+      "sha256": "7ee03e84e70ba115871c88298fce4f1549c771ac8958c01f619eadceeecc6e46"
+    },
+    {
+      "path": "lib/recovery/recoveryLimits.ts",
+      "sha256": "a8e9fc5f57941e2e3413fa1ffe119452fe6a4526fa4b06b308aa27af8b35d082"
+    },
+    {
+      "path": "lib/color/paletteAdmission.ts",
+      "sha256": "c93bda04c8cad36dbfcdcb258406ed13d81b9458b1c57c189fe13cd1767dac5c"
+    },
+    {
+      "path": "lib/project/animationTiming.ts",
+      "sha256": "9a4038446b6a322f85f3d4a106fc81a534453d39bc4555f2a41ba09610ca0a92"
+    },
+    {
+      "path": "lib/animation/reviewMetadata.ts",
+      "sha256": "ef212888cc968ab0953de15cd8c23956f234d7141284f34065d3345c44d4efd2"
+    },
+    {
+      "path": "lib/color/paletteSemantics.ts",
+      "sha256": "0d3b978df42998bce69dd87a1927479784aab95b9be61d6207e3e1fd1c4430f3"
+    },
+    {
+      "path": "lib/color/paletteCycling.ts",
+      "sha256": "60f8a2c41766f41add46300f43457b3dd572f32e0e711890003986922461464d"
+    },
+    {
+      "path": "lib/research/recipes.ts",
+      "sha256": "dbdba6062ccd4e4ce2a739d46f244799da982e9adc7d486a772bf2c4dc5113df"
+    }
+  ]
+}

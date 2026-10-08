@@ -1,0 +1,16 @@
+idempotency-key: cli-run-3158f38b-9b6e-4a39-8911-56701891db2d
+[tunnel] Minted tunnel client 086b2341-91d1-4403-a24d-52ab68afac1b; connecting…
+[tunnel] Reaching http://127.0.0.1:3194 through TestSprite (client 086b2341-91d1-4403-a24d-52ab68afac1b).
+Run 86bb05d8-2d45-48fd-adfe-91825a5ad73d
+Dashboard: https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/e7c723bb-ff61-4c64-b8bb-e12d78251686
+requestId: cli_6f98a495-6fb2-43ec-89bf-765c21fc836e
+Run finished with status: failed. Use 'testsprite test artifact get 86bb05d8-2d45-48fd-adfe-91825a5ad73d' to download the failure bundle.
+{
+  "error": {
+    "code": "CLI_ERROR",
+    "message": "Run 86bb05d8-2d45-48fd-adfe-91825a5ad73d finished with status: failed",
+    "nextAction": "",
+    "requestId": "local",
+    "details": {}
+  }
+}

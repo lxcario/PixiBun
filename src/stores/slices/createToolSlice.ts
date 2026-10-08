@@ -132,6 +132,7 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
     chiselWidth: 4,
     chiselRidgeMode: false,
     normalBlendMode: 'rnm',
+    rotationAlgorithm: 'rotsprite',
   },
 
   primaryColor: '#3A2E4C',
@@ -357,6 +358,12 @@ export const createToolSlice: StudioSliceCreator<ToolSlice> = (set, get) => ({
   setNormalBlendMode: mode => {
     set(state => {
       state.tools.normalBlendMode = mode;
+    });
+  },
+
+  setRotationAlgorithm: algorithm => {
+    set(state => {
+      state.tools.rotationAlgorithm = algorithm;
     });
   },
 

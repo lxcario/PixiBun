@@ -1,0 +1,109 @@
+{
+  "projectId": "ad7cf58e-3c0f-41d6-96a8-a3a076faf639",
+  "type": "frontend",
+  "name": "PixiMotion refuses a stale source and a fresh capture bakes as one reversible edit",
+  "description": "Undoing source artwork after capturing a motion part must disable baking; recapturing the restored artwork allows a three-frame translation whose pixels and timeline Undo and Redo together.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open /studio on the local target with a new 32 by 32 drawing."
+    },
+    {
+      "type": "action",
+      "description": "Choose the Pen tool."
+    },
+    {
+      "type": "action",
+      "description": "Paint a recognizable small mark in the middle of the canvas as one stroke."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the painted mark is visible in the actual drawing canvas and Undo is enabled. If this prerequisite cannot be produced with available pointer controls, report blocked; do not continue with an empty canvas."
+    },
+    {
+      "type": "action",
+      "description": "Choose the box selection tool."
+    },
+    {
+      "type": "action",
+      "description": "Drag a box selection from above-left to below-right of the painted mark, without dragging inside an existing selection."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the selection marquee surrounds the painted mark. If pointer drag is unavailable, report blocked; unrelated rotation controls cannot substitute for creating this selection."
+    },
+    {
+      "type": "action",
+      "description": "Open the Tools tab in the right inspector."
+    },
+    {
+      "type": "action",
+      "description": "Click Create Motion Part."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the PixiMotion Rigid Part panel is visible with START and END pose controls and an enabled Bake to Timeline button before Undo."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo once to undo the painted source stroke."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the original canvas is blank, the motion panel explains that the source artwork changed, and Bake to Timeline is disabled. Creating a part must not add an Undo step."
+    },
+    {
+      "type": "action",
+      "description": "Cancel the motion session."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo once to restore the original mark."
+    },
+    {
+      "type": "action",
+      "description": "Reuse the selection surrounding the restored mark, or clear it with Escape before drawing a fresh box. Do not drag inside the existing selection."
+    },
+    {
+      "type": "action",
+      "description": "Open the Tools tab in the right inspector."
+    },
+    {
+      "type": "action",
+      "description": "Click Create Motion Part for a fresh capture."
+    },
+    {
+      "type": "action",
+      "description": "Set END pose translation X to four pixels using the labeled slider and keyboard arrows."
+    },
+    {
+      "type": "action",
+      "description": "Set the motion frame count to three using its labeled slider."
+    },
+    {
+      "type": "action",
+      "description": "Click Bake to Timeline."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify three timeline frames exist, the last frame is selected, the last mark is displaced four canvas pixels right of its original coordinates, and the motion session closes."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline returns to one frame and its raster exactly matches the original painted mark, including transparent pixels."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify all three baked frames and their exact translated pixels return, with the last frame selected."
+    }
+  ]
+}

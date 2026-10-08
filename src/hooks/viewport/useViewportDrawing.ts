@@ -9,8 +9,10 @@ import { useStudioStore } from '@/stores/studioStore';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { assertMemoryAvailable } from '@/lib/safety/memoryBudget';
+import { motionRigBytes } from '@/lib/animation/motionRigDocument';
 import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
+import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -184,7 +186,10 @@ export function useViewportDrawing({
             if (!prevIds.has(l.id)) newIds.push(l.id);
           }
         }
-        return newIds;
+        return [
+          ...(step.affectedLayerIds ?? []),
+          ...newIds,
+        ];
       }
       case 'merge-layer':
         return step.affectedLayerIds && step.affectedLayerIds.length > 1
@@ -202,7 +207,7 @@ export function useViewportDrawing({
     const state = useStudioStore.getState();
     const inverseBytes = (step.type === 'structural' ? new Set(inverseIds).size : 1) * state.canvasWidth * state.canvasHeight * 4;
     const metadataBytes = state.frames.reduce((sum, frame) => sum + 256 + frame.layers.length * 256, 1024) +
-      state.clips.reduce((sum, clip) => sum + estimateClipBytes(clip), 0) +
+      motionRigBytes(state.motionRigs) + state.clips.reduce((sum, clip) => sum + estimateClipBytes(clip), 0) +
       (step.type === 'structural' && step.palettes ? state.palettes.reduce((sum, palette) => sum + estimatePaletteBytes(palette), 0) : 0);
     const stagingBytes = step.type === 'structural' ? estimateRestorationAllocation({
       canvasWidth: step.canvasWidth ?? state.canvasWidth, canvasHeight: step.canvasHeight ?? state.canvasHeight,
@@ -213,6 +218,8 @@ export function useViewportDrawing({
   }, []);
 
   const performUndo = useCallback(() => {
+    const motionState = useStudioStore.getState();
+    if (motionState.motionPart) { motionState.undoMotionEdit(); return; }
     const previousStep = historyEngineRef.current.peekUndo();
     if (!previousStep) return;
     if (!admitHistoryTransition(previousStep, previousStep.type === 'structural' ? getRedoCaptureLayerIds(previousStep, useStudioStore.getState()) : [])) return;
@@ -244,6 +251,7 @@ export function useViewportDrawing({
         frameIndex: state.activeFrameIndex,
         frames: structuredClone(state.frames),
         clips: structuredClone(state.clips),
+        motionRigs: structuredClone(state.motionRigs),
         activeClipId: state.activeClipId,
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
@@ -286,7 +294,7 @@ export function useViewportDrawing({
       };
     }
 
-    const stepToRestore = historyEngineRef.current.undo(currentStep);
+    const stepToRestore = previousStep.type === 'structural' ? previousStep : historyEngineRef.current.undo(currentStep);
     if (!stepToRestore) return;
 
     if (stepToRestore.type === 'structural') {
@@ -295,18 +303,28 @@ export function useViewportDrawing({
       const targetHeight = stepToRestore.canvasHeight ?? state.canvasHeight;
       const targetFrames = stepToRestore.frames;
 
-      restoreStructuralWorkspace({
+      commitWorkspace(() => {
+        restoreStructuralWorkspace({
         canvasWidth: targetWidth,
         canvasHeight: targetHeight,
         frames: targetFrames,
         clips: stepToRestore.clips,
+        motionRigs: stepToRestore.motionRigs,
         palettes: stepToRestore.palettes,
         currentPaletteId: stepToRestore.currentPaletteId,
         activeClipId: stepToRestore.activeClipId,
         activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
         layerBuffers: stepToRestore.layerBuffers,
+        });
+        historyEngineRef.current.undo(currentStep);
+        setCanUndo(historyEngineRef.current.canUndo);
+        setCanRedo(historyEngineRef.current.canRedo);
+        bumpBufferVersion();
+        useStudioStore.getState().setDirty(true);
       });
+      renderComposite();
+      return;
     } else {
       if (previousStep.type !== 'structural' && previousStep.createdLayerId) {
         const state = useStudioStore.getState();
@@ -347,6 +365,8 @@ export function useViewportDrawing({
 
   // Redo Action (Supports both Pixel and Structural steps)
   const performRedo = useCallback(() => {
+    const motionState = useStudioStore.getState();
+    if (motionState.motionPart) { motionState.redoMotionEdit(); return; }
     const nextStep = historyEngineRef.current.peekRedo();
     if (!nextStep) return;
     if (!admitHistoryTransition(nextStep, nextStep.type === 'structural' ? nextStep.affectedLayerIds ?? [] : [])) return;
@@ -377,6 +397,7 @@ export function useViewportDrawing({
         frameIndex: state.activeFrameIndex,
         frames: structuredClone(state.frames),
         clips: structuredClone(state.clips),
+        motionRigs: structuredClone(state.motionRigs),
         activeClipId: state.activeClipId,
         activeFrameIndex: state.activeFrameIndex,
         activeLayerId: state.activeLayerId,
@@ -444,7 +465,7 @@ export function useViewportDrawing({
       };
     }
 
-    const stepToRestore = historyEngineRef.current.redo(currentStep);
+    const stepToRestore = nextStep.type === 'structural' ? nextStep : historyEngineRef.current.redo(currentStep);
     if (!stepToRestore) return;
 
     if (stepToRestore.type === 'structural') {
@@ -453,18 +474,28 @@ export function useViewportDrawing({
       const targetHeight = stepToRestore.canvasHeight ?? state.canvasHeight;
       const targetFrames = stepToRestore.frames;
 
-      restoreStructuralWorkspace({
+      commitWorkspace(() => {
+        restoreStructuralWorkspace({
         canvasWidth: targetWidth,
         canvasHeight: targetHeight,
         frames: targetFrames,
         clips: stepToRestore.clips,
+        motionRigs: stepToRestore.motionRigs,
         palettes: stepToRestore.palettes,
         currentPaletteId: stepToRestore.currentPaletteId,
         activeClipId: stepToRestore.activeClipId,
         activeFrameIndex: stepToRestore.activeFrameIndex,
         activeLayerId: stepToRestore.activeLayerId,
         layerBuffers: stepToRestore.layerBuffers,
+        });
+        historyEngineRef.current.redo(currentStep);
+        setCanUndo(historyEngineRef.current.canUndo);
+        setCanRedo(historyEngineRef.current.canRedo);
+        bumpBufferVersion();
+        useStudioStore.getState().setDirty(true);
       });
+      renderComposite();
+      return;
     } else {
       if (stepToRestore.createdLayerId) {
         const currentFrame = useStudioStore.getState().frames[stepToRestore.frameIndex];

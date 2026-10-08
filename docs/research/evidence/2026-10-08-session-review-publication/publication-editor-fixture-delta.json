@@ -1,0 +1,8 @@
+{
+  "changed": [
+    "tests/e2e/artistWorkspace.spec.ts",
+    "tests/publishEvidence.test.ts"
+  ],
+  "removed": [],
+  "buildChanged": []
+}

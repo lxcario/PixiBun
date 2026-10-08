@@ -14,6 +14,8 @@
  */
 
 import { rotSprite, PixelBuffer } from '@/lib/canvas/rotSprite';
+import { paethRotate } from '@/lib/canvas/paethRotation';
+import { rotateNormalVectors } from '@/lib/canvas/normalMapRotation';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
 import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
 import {
@@ -267,6 +269,9 @@ function dispatchToWorker<T>(
 export interface RotSpriteWorkerOptions extends WorkerDispatcherOptions {
   outPivotX?: number;
   outPivotY?: number;
+  pixelPerfect?: boolean;
+  algorithm?: 'rotsprite' | 'paeth';
+  isNormalMap?: boolean;
 }
 
 /**
@@ -303,7 +308,15 @@ async function computeRotSprite(
   checkAdmission(options?.signal);
   const runSync = () => runBoundedFallback(src.width * src.height * 64 +
     (targetW ?? src.width) * (targetH ?? src.height), options?.signal,
-    () => rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY));
+    () => {
+      let res = options?.algorithm === 'paeth'
+        ? paethRotate(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY)
+        : rotSprite(src, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY, options?.pixelPerfect);
+      if (options?.isNormalMap) {
+        res = rotateNormalVectors(res, angleRad);
+      }
+      return res;
+    });
 
   const worker = getOrCreateWorker();
   if (!worker) {
@@ -325,6 +338,9 @@ async function computeRotSprite(
     targetH,
     outPivotX,
     outPivotY,
+    pixelPerfect: options?.pixelPerfect,
+    algorithm: options?.algorithm,
+    isNormalMap: options?.isNormalMap,
   };
 
   try {

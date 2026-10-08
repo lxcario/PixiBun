@@ -1,0 +1,56 @@
+{
+  "recordedAt": "2026-10-08T17:04:33.907Z",
+  "buildId": "jJUpvYssT5C0_qYh8GuKv",
+  "cacheTag": "pixibun-20261008-publication-r4",
+  "finalEditor": {
+    "passed": 196,
+    "failed": 0,
+    "skipped": 0,
+    "engines": [
+      "chromium"
+    ],
+    "workers": 1,
+    "retries": 0,
+    "completeSuite": true,
+    "server": "Existing user development server on port 3000; fresh browser contexts"
+  },
+  "finalCompiled": {
+    "passed": 131,
+    "failed": 0,
+    "skipped": 1,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "workers": 1,
+    "retries": 0,
+    "files": 10,
+    "completeSuite": false
+  },
+  "brushGuideExport": {
+    "passed": 3,
+    "failed": 0,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "copiedIntoPermanentRegressionWithoutByteChanges": true
+  },
+  "gateBuild": {
+    "unitTests": 2092,
+    "unitSuites": 199,
+    "stagesPassed": 5
+  },
+  "sourceInputsAtBrowserCompletion": 644,
+  "sourceInputsAtPublication": 645,
+  "recordedBuildFiles": 3,
+  "fullProductionInventoryCases": 297,
+  "fullProductionInventoryFiles": 28,
+  "external": {
+    "tools": "blocked; failure bundle withheld by service",
+    "motion": "service passed; audited inconclusive for complete plan"
+  },
+  "publication": "Exact commit containing this record identifies source; remote push/CI/deployment verdicts are separate"
+}

@@ -11,7 +11,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 ## Core Engineering Principles
 
 1. **Zero Third-Party Algorithmic Dependencies:**
-   All core pixel art and computer graphics algorithms—including the 2D Euclidean Distance Transform (Felzenszwalb-Huttenlocher), photometric normal map generation, 47-blob Wang autotiling, APNG/GIF encoders, and ISOBMFF Fast-Start MP4 muxing—are authored from scratch in pure TypeScript using TypedArrays and Web Platform standards (framework dependencies like React, Next.js, Zustand, Immer, and Dexie handle UI and storage plumbing). We do not accept PRs introducing third-party algorithmic bloat or unnecessary math packages.
+   Core pixel art and graphics algorithms—including the Felzenszwalb-Huttenlocher distance transform, normal-map generation, 47-blob autotiling, APNG/GIF encoders and ISOBMFF MP4 muxing—are implemented in the repository in TypeScript, using published algorithms, TypedArrays and Web Platform APIs. Native compression and media APIs perform supported platform work; React, Next.js, Zustand, Immer and Dexie handle framework, UI and storage concerns. Prefer the existing implementations and evaluate a concrete need before adding an algorithm package.
 
 2. **Defensive Invariant Hardening:**
    All canvas operations, viewport transformations, and file deserialization routines must strictly respect mathematical invariants:

@@ -1,0 +1,210 @@
+
+Running 3 tests using 1 worker
+
+(node:14360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center (11.3s)
+(node:10196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [firefox] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center (15.4s)
+(node:18424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [webkit] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center (18.0s)
+
+
+  1) [chromium] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -521,14 +521,10 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+        58,
+        46,
+        76,
+        255,
+        58,
+    @@ -793,10 +789,14 @@
+        255,
+        58,
+        46,
+        76,
+        255,
+    +   0,
+    +   0,
+    +   0,
+    +   0,
+        0,
+        0,
+        0,
+        0,
+        0,
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      11 |   await page.getByTestId('tab-tools').click();await page.getByTestId('create-motion-part-btn').click();await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+      12 |   await numeric(page,'Rotation degrees','90');await expect(page.getByTestId('piximotion-preview-canvas')).toHaveAttribute('aria-busy','false');
+    > 13 |   await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+         |                                                                   ^
+      14 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect(page.getByRole('spinbutton',{name:'Pivot Y pixels',exact:true})).toHaveValue('5.5');
+      15 |   await numeric(page,'Pivot X pixels','0');await page.getByRole('button',{name:'Center Pivot',exact:true}).click();
+      16 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+        at D:\PixiBun\artifacts\publication-odd-pivot-browser.spec.ts:13:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -521,14 +521,10 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+        58,
+        46,
+        76,
+        255,
+        58,
+    @@ -793,10 +789,14 @@
+        255,
+        58,
+        46,
+        76,
+        255,
+    +   0,
+    +   0,
+    +   0,
+    +   0,
+        0,
+        0,
+        0,
+        0,
+        0,
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      11 |   await page.getByTestId('tab-tools').click();await page.getByTestId('create-motion-part-btn').click();await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+      12 |   await numeric(page,'Rotation degrees','90');await expect(page.getByTestId('piximotion-preview-canvas')).toHaveAttribute('aria-busy','false');
+    > 13 |   await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+         |                                                                   ^
+      14 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect(page.getByRole('spinbutton',{name:'Pivot Y pixels',exact:true})).toHaveValue('5.5');
+      15 |   await numeric(page,'Pivot X pixels','0');await page.getByRole('button',{name:'Center Pivot',exact:true}).click();
+      16 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+        at D:\PixiBun\artifacts\publication-odd-pivot-browser.spec.ts:13:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -521,14 +521,10 @@
+        0,
+        0,
+        0,
+        0,
+        0,
+    -   0,
+    -   0,
+    -   0,
+    -   0,
+        58,
+        46,
+        76,
+        255,
+        58,
+    @@ -793,10 +789,14 @@
+        255,
+        58,
+        46,
+        76,
+        255,
+    +   0,
+    +   0,
+    +   0,
+    +   0,
+        0,
+        0,
+        0,
+        0,
+        0,
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      11 |   await page.getByTestId('tab-tools').click();await page.getByTestId('create-motion-part-btn').click();await expect(page.getByTestId('piximotion-panel')).toBeVisible();
+      12 |   await numeric(page,'Rotation degrees','90');await expect(page.getByTestId('piximotion-preview-canvas')).toHaveAttribute('aria-busy','false');
+    > 13 |   await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+         |                                                                   ^
+      14 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect(page.getByRole('spinbutton',{name:'Pivot Y pixels',exact:true})).toHaveValue('5.5');
+      15 |   await numeric(page,'Pivot X pixels','0');await page.getByRole('button',{name:'Center Pivot',exact:true}).click();
+      16 |   await expect(page.getByRole('spinbutton',{name:'Pivot X pixels',exact:true})).toHaveValue('5.5');await expect.poll(()=>pixels(page,'piximotion-preview-canvas')).toEqual(original);
+        at D:\PixiBun\artifacts\publication-odd-pivot-browser.spec.ts:13:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\publication-odd-pivot-browser-before\publication-odd-pivot-brow-bab7a--Pivot-restores-that-center-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 
+    [firefox] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 
+    [webkit] › artifacts\publication-odd-pivot-browser.spec.ts:4:5 › odd-sized centered motion preserves a square on a quarter turn and Center Pivot restores that center 

@@ -264,10 +264,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="min-h-12 py-1 flex-wrap bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-2 xl:px-3 gap-2 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="min-h-12 py-1 flex-wrap bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-1 xl:px-3 gap-1 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
-      <div role="group" aria-label="Project controls" className="flex shrink-0 items-center gap-1.5 xl:gap-2">
+      <div role="group" aria-label="Project controls" className="flex shrink-0 items-center gap-1 xl:gap-2">
         {/* Atelier Logo Mark */}
         <Link
           href="/"
@@ -275,7 +275,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           aria-label="PixiBun Home"
           className="flex shrink-0 items-center pr-1.5 xl:pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 transition-opacity"
         >
-          <PixiBunLogo size="sm" wordmarkClassName="hidden xl:flex" className="drop-shadow-sm" />
+          <PixiBunLogo size="sm" wordmarkClassName="hidden 2xl:flex" className="drop-shadow-sm" />
         </Link>
 
         <HeaderFileMenu actions={[
@@ -305,7 +305,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               }
             }}
             ref={(el) => el?.focus()}
-            className="h-7 min-w-6 w-20 xl:w-[120px] bg-[var(--surface-0)] text-[var(--text-heading)] px-2 rounded-[2px] border border-[var(--accent-gold)] outline-none text-xs font-mono font-medium"
+            className="h-7 min-w-6 w-12 xl:w-[120px] bg-[var(--surface-0)] text-[var(--text-heading)] px-2 rounded-[2px] border border-[var(--accent-gold)] outline-none text-xs font-mono font-medium"
           />
         ) : (
           <button
@@ -313,7 +313,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               setTempName(projectName);
               setIsEditingName(true);
             }}
-            className="h-7 min-w-6 max-w-20 xl:max-w-[120px] font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate cursor-pointer text-left leading-none"
+            className="h-7 min-w-6 max-w-12 xl:max-w-[120px] font-medium text-xs text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors truncate cursor-pointer text-left leading-none"
             aria-label={`Rename project ${projectName}`}
             title={`${projectName} · ${canvasWidth}×${canvasHeight}px · Click to rename`}
           >
@@ -403,8 +403,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         {hasExpandedToolParams && <button type="button" data-testid="tool-options-button"
           aria-label={`${toolLabel} tool options`} aria-expanded={isToolMenuOpen} aria-controls={toolOptionsId}
           onClick={() => setToolMenuFor(isToolMenuOpen ? null : tools.activeTool)}
-          className="h-7 px-2 flex items-center gap-1.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] text-[var(--text-heading)]">
-          {toolLabel}<span aria-hidden="true" className="text-[8px]">▼</span>
+          className="h-7 max-w-24 px-2 flex items-center gap-1.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] text-[var(--text-heading)]">
+          <span className="truncate">{toolLabel}</span><span aria-hidden="true" className="shrink-0 text-[8px]">▼</span>
         </button>}
         {hasToolParams ? (
           <div id={toolOptionsId} role={hasExpandedToolParams ? 'group' : undefined} data-testid="tool-options-rail" aria-label={hasExpandedToolParams ? `${toolLabel} settings` : 'Tool options rail'} className={`${hasExpandedToolParams ? `${isToolMenuOpen ? 'flex' : 'hidden'} absolute top-full left-0 mt-1 z-[100] w-[360px] max-w-[calc(100vw-16px)] p-3 shadow-xl` : 'flex h-7 px-2 xl:px-2.5'} bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex-wrap items-center gap-2`}>
@@ -423,9 +423,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                 <button type="button" onClick={() => setIsBrushMenuOpen((open) => !open)}
                   aria-label={`Brush size ${tools.brushSize} pixels`} aria-expanded={isBrushMenuOpen}
                   className="h-6 px-2 flex items-center gap-1.5 rounded-[2px] text-xs text-[var(--text-heading)] hover:bg-[var(--surface-2)]">
-                  <span>Size</span><span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
+                  <span className="hidden xl:inline">Size</span><span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
                 </button>
-                <div className="hidden sm:flex items-center gap-0.5" aria-label="Quick brush size presets">
+                <div className="hidden 2xl:flex items-center gap-0.5" aria-label="Quick brush size presets">
                   {[1, 2, 3, 4].map((size) => (
                     <button
                       key={size}
@@ -433,7 +433,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                       onClick={() => setBrushSize(size)}
                       aria-label={`${size}px brush preset`}
                       aria-pressed={tools.brushSize === size}
-                      className={`w-5 h-5 flex items-center justify-center rounded-[2px] text-[10px] font-mono transition-colors ${tools.brushSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold' : 'bg-[var(--surface-1)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'}`}
+                      className={`w-6 h-6 flex items-center justify-center rounded-[2px] text-[10px] font-mono transition-colors ${tools.brushSize === size ? 'bg-[var(--accent-gold)] text-[var(--surface-0)] font-bold' : 'bg-[var(--surface-1)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)]'}`}
                     >
                       {size}
                     </button>
@@ -446,7 +446,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                     aria-label={tools.pixelPerfect ? 'Disable clean corners' : 'Enable clean corners'}
                     aria-pressed={tools.pixelPerfect}
                     title="Pixel-Perfect: Removes doubled corner pixels when drawing single-pixel lines"
-                    className={`hidden md:flex items-center gap-1 h-5 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--accent-gold)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
+                    className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} items-center gap-1 h-6 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--text-heading)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
                   >
                     <span>Pixel-Perfect</span>
                   </button>
@@ -659,10 +659,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
       </div>
 
       {/* Canvas controls stay on the same row as the project and active tool. */}
-      <div className="ml-auto flex shrink-0 items-center gap-2 xl:gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-1 xl:gap-3">
         <div role="group" aria-label="Canvas controls" className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
         <div role="group" aria-label="Mirror drawing" className="h-6 flex items-center gap-0.5 px-1">
-          <span className="px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
+          <span className="hidden xl:inline px-1 text-[10px] text-[var(--text-body)]">Mirror</span>
             <StudioTooltip position="bottom" content={`Horizontal symmetry (Shift+H) — ${tools.symmetryHorizontal ? 'Active' : 'Off'}`}>
               <button
                 onClick={toggleSymmetryH}

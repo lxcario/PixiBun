@@ -19,8 +19,10 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { assertMemoryAvailable, reserveMemory } from '@/lib/safety/memoryBudget';
 import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
+import { motionRigBytes, type MotionRig } from '@/lib/animation/motionRigDocument';
 import { researchBytes } from '@/lib/research/recipes';
 import type { ColorPalette } from '@/types/palette';
+import { commitWorkspace } from './workspaceTransaction';
 
 /**
  * Captures pixel buffers ONLY for the specified layer IDs.
@@ -80,7 +82,7 @@ export function pushStructuralHistoryStep(
   const uniqueAffectedIds = [...new Set(affectedIds)].filter(hasBuffer);
   const width = options?.canvasWidth ?? state.canvasWidth;
   const height = options?.canvasHeight ?? state.canvasHeight;
-  const metadataBytes = state.frames.reduce((bytes, frame) => bytes + 256 + frame.layers.length * 256, 1024) +
+  const metadataBytes = motionRigBytes(state.motionRigs) + state.frames.reduce((bytes, frame) => bytes + 256 + frame.layers.length * 256, 1024) +
     state.frames.reduce((bytes, frame) => bytes + frame.layers.reduce((sum, layer) => sum + researchBytes(layer.research), 0), 0) +
     state.clips.reduce((bytes, clip) => bytes + estimateClipBytes(clip), 0) +
     (options?.includePalettes ? state.palettes.reduce((bytes, palette) => bytes + estimatePaletteBytes(palette), 0) : 0);
@@ -113,6 +115,7 @@ export function pushStructuralHistoryStep(
     activeFrameIndex: state.activeFrameIndex,
     activeLayerId: state.activeLayerId,
     clips: structuredClone(state.clips),
+    motionRigs: structuredClone(state.motionRigs),
     activeClipId: state.activeClipId,
     ...(options?.includePalettes ? { palettes: structuredClone(state.palettes), currentPaletteId: state.currentPaletteId } : {}),
     canvasWidth: width,
@@ -136,6 +139,7 @@ export interface StructuralRestorationTarget {
   activeFrameIndex: number;
   activeLayerId?: string;
   clips?: AnimationClip[];
+  motionRigs?: MotionRig[];
   activeClipId?: string | null;
   layerBuffers?: LayerBufferBackup[];
 }
@@ -184,22 +188,19 @@ export function restoreStructuralWorkspace(target: StructuralRestorationTarget):
     }
     // Publish pixels before metadata subscribers (autosave/co-draw) see the target tree.
     // History owns redo pixel copies, so removed live canvases need not stay resident.
-    replaceAllBuffers(staged);
-
-    try {
+    commitWorkspace(() => {
+      replaceAllBuffers(staged);
       useStudioStore.setState({
         canvasWidth: target.canvasWidth,
         canvasHeight: target.canvasHeight,
         frames: target.frames,
+        ...(target.motionRigs !== undefined ? { motionRigs: structuredClone(target.motionRigs) } : {}),
         ...(target.clips !== undefined ? { clips: structuredClone(target.clips) } : {}),
         ...(target.activeClipId !== undefined ? { activeClipId: target.activeClipId } : {}),
         ...(target.palettes !== undefined ? { palettes: structuredClone(target.palettes), currentPaletteId: target.currentPaletteId } : {}),
         activeFrameIndex: Math.min(target.activeFrameIndex, Math.max(0, target.frames.length - 1)),
         activeLayerId: target.activeLayerId,
       });
-    } catch (error) {
-      replaceAllBuffers(previous);
-      throw error;
-    }
+    });
   } finally { release(); }
 }

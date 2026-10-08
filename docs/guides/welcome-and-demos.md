@@ -10,7 +10,7 @@ The welcome page gives you a few gentle ways to begin: a blank canvas, a little 
 
 Try the desk lamp, pet the sleeping friend, or draw on the tiny sketchpad. Choose a sketchpad color and use **Clear** to start again. These details belong to the welcome scene; the sketchpad is temporary and **Open studio** does not carry its pixels into an editable project. Use the full Studio, or [Pocket Doodle Pad](learning-and-playground.md#pocket-doodle-pad), for a drawing you can export.
 
-Use the welcome-page theme control to change the scheme. Its navigation leads to Studio, Playground, the engine demonstrations, starter shelf and project story. Blank-canvas size choices offer 16, 24, 32 and 48 px starting points; Studio's canvas-size dialog offers more sizes.
+Use the welcome-page theme control to change the scheme. Its navigation leads to Studio, Playground, the engine demonstrations, starter shelf and project story. Blank-canvas size choices create separate 16, 24, 32 and 48 px drawings after the current workspace can be checkpointed. The requested size is consumed from the URL so reload retains your saved edits. Studio's canvas-size dialog offers more sizes.
 
 ![The current four feature cards, with drawing, rotation, animation and export explanations.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-pillars.png)
 
@@ -20,7 +20,7 @@ If your device prefers reduced motion, the welcome panels reveal without timed m
 
 ![The current four-character starter shelf.](../assets/screenshots/2026-10-02-feature-guide/starter-shelf.png)
 
-Choose **Open in studio** beneath **Hearth Ghost**, **Little Shroom**, **Bun** or **Little Lantern**. Each provides a small raster starting point that you can edit with the same tools as a blank drawing. Save and back up important open work before changing projects or routes. A starter is not a layered production game kit or a finished lesson.
+Choose **Give it a try** beneath **Hearth Ghost**, **Little Shroom**, **Bun** or **Little Lantern**. Each opens its 16×16 raster artwork in a separate drawing after Studio restores and checkpoints the current project. Failed saving or unfinished recovery, motion, floating artwork or Co-Draw prevents replacement. The starter parameter is removed after opening, so saving and reloading retains your edits. Existing saved projects remain available in Gallery. Save and back up important work before changing projects or routes. A starter is not a layered production game kit or a finished lesson.
 
 ## Four demonstrations to explore
 

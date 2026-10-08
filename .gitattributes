@@ -13,6 +13,11 @@ docs/research/evidence/2026-10-03-*/** -text -whitespace
 # Preserve the raw bytes of the 5 October audit's sealed evidence and reports.
 docs/research/evidence/2026-10-05-*/** -text -whitespace
 docs/research/2026-10-05-*.md -text
-# Preserve the raw bytes of the 5 October audit's sealed evidence and reports.
-docs/research/evidence/2026-10-05-*/** -text -whitespace
-docs/research/2026-10-05-*.md -text
+# Preserve the motion-session evidence, including failures and binary fixtures.
+docs/research/evidence/2026-10-06-*/** -text -whitespace
+docs/research/evidence/2026-10-07-*/** -text -whitespace
+docs/research/evidence/2026-10-08-*/** -text -whitespace
+# Dated reports retain their recorded line endings and formatting too.
+docs/research/2026-10-06-*.md -text -whitespace
+docs/research/2026-10-07-*.md -text -whitespace
+docs/research/2026-10-08-*.md -text -whitespace

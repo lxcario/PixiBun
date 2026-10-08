@@ -1,0 +1,19 @@
+[WebServer] (node:26628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:8616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\production\motionRigPersistence.spec.ts:55:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (3.0s)
+  ok 2 [chromium] › tests\production\motionRigPersistence.spec.ts:73:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (3.1s)
+(node:27528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [firefox] › tests\production\motionRigPersistence.spec.ts:55:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (7.8s)
+  ok 4 [firefox] › tests\production\motionRigPersistence.spec.ts:73:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (6.0s)
+(node:5420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 [webkit] › tests\production\motionRigPersistence.spec.ts:55:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (22.1s)
+  ok 6 [webkit] › tests\production\motionRigPersistence.spec.ts:73:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (28.0s)
+
+  6 passed (1.2m)

@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-10-08T15:45:20.659Z",
+  "scope": "Restored only the routine runner overwrite of a previously unchanged staged historical image; fresh capture retained separately.",
+  "records": [
+    {
+      "path": "docs/assets/screenshots/2026-10-04-artist-workspace/palette-library.png",
+      "accidentalCapture": "artifacts/publication-accidental-capture/palette-library.png",
+      "capturedSha256": "d5e6a7bd0d96c05cc0a8589adde8c874d4a20dc016c607582d11fcd9df7b879e",
+      "originalSha256": "2ed9342222ce88105ea2d247df2fb6405ea4672ba7479db665188cd4a7bfd812",
+      "restoredSha256": "2ed9342222ce88105ea2d247df2fb6405ea4672ba7479db665188cd4a7bfd812"
+    }
+  ]
+}

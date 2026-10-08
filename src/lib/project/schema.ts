@@ -18,6 +18,7 @@ import { MAX_PALETTE_CYCLE_TRACKS } from '@/lib/color/paletteAdmission';
 import { ANIMATION_TIMING_LIMITS } from '@/lib/project/animationTiming';
 import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
 import { parsePaletteSemantics } from '@/lib/color/paletteSemantics';
+import { parseMotionRigs } from '@/lib/animation/motionRigDocument';
 import { parseResearchRecipe } from '@/lib/research/recipes';
 import {
   type EnvelopeViolation,
@@ -934,6 +935,9 @@ function validateSanitizedProjectCore(
   const validatedCreatedAt: number = normalized.createdAt;
   const validatedUpdatedAt: number = normalized.updatedAt;
 
+  const motionRigs = parseMotionRigs(normalized.motionRigs);
+  if (motionRigs === null) return { ok: false, error: 'This project has invalid or unsupported motion rig data.' };
+
   // Fully typed construction of ProjectFile without any 'as ProjectFile' assertions
   const validatedProject: ProjectFile = {
     format: PROJECT_FORMAT_ID,
@@ -948,6 +952,7 @@ function validateSanitizedProjectCore(
     currentPaletteId: validatedCurrentPaletteId,
     customRamps: validatedCustomRamps,
     clips: validatedClips,
+    motionRigs,
     frames,
     createdAt: validatedCreatedAt,
     updatedAt: validatedUpdatedAt,

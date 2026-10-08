@@ -12,6 +12,7 @@ export type StudioEventMap = {
   'pixibun:undo': void;
   'pixibun:redo': void;
   'pixibun:history-clear': void;
+  'pixibun:motion-bake': void;
   'pixibun:extract-palette': void;
   'pixibun:clean-jaggies': void;
   'pixibun:auto-shade': { lightAzimuth?: number; lightElevation?: number; material?: string };

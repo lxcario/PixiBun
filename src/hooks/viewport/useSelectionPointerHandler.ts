@@ -300,6 +300,12 @@ export function useSelectionPointerHandler({
       const by = Math.min(strokeStart.y, endCoords.y);
       const bw = Math.abs(endCoords.x - strokeStart.x) + 1;
       const bh = Math.abs(endCoords.y - strokeStart.y) + 1;
+      if (bw === 1 && bh === 1 && selectionModifierRef.current === 'replace' && baseSelectionMaskRef.current) {
+        setSelection(null, null);
+        baseSelectionMaskRef.current = null;
+        selectionModifierRef.current = 'replace';
+        return true;
+      }
       const boxMask = createBoxMask({ x: bx, y: by, w: bw, h: bh });
       const { box, mask } = mergeSelectionMask(
         baseSelectionMaskRef.current,
@@ -351,6 +357,9 @@ export function useSelectionPointerHandler({
           baseSelectionMaskRef.current = null;
           selectionModifierRef.current = 'replace';
         }
+      } else if (selectionModifierRef.current === 'replace' && baseSelectionMaskRef.current) {
+        setSelection(null, null);
+        baseSelectionMaskRef.current = null;
       }
       setLassoPoints([]);
       return true;

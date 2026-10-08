@@ -1,0 +1,11 @@
+{
+  "testId": "e7c723bb-ff61-4c64-b8bb-e12d78251686",
+  "runId": "86bb05d8-2d45-48fd-adfe-91825a5ad73d",
+  "status": "failed",
+  "failureKind": "unknown",
+  "failedStepIndex": 14,
+  "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/e7c723bb-ff61-4c64-b8bb-e12d78251686",
+  "startedAt": "2026-10-07T09:01:52.156Z",
+  "finishedAt": "2026-10-07T09:14:32.492Z",
+  "codeVersion": null
+}

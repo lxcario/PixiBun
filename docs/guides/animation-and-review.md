@@ -89,4 +89,8 @@ Open **PixiTools → Clean and refine**, scroll to **Generate In-Between Frame**
 
 To share the result, choose [APNG/GIF/video](exporting.md) or a sprite sheet. To preserve editable frames and layers, choose **Project Backup** instead.
 
+## Move one rigid part
+
+For a selected detail or a whole unlocked color layer, **Tools → Create Motion Part** offers Start/End poses, a pivot, easing and 2–30 poses. Numeric controls and session Undo/Redo help adjust parameters precisely; one gesture is one step. Cancel the session to return to artwork/library history. Preview uses the source cel hold time, and baked cels copy that hold. Inspect the preview, then **Bake to timeline** for editable cels in one Undo action. Rendering runs in a dedicated background worker; slow previews can skip poses, and rigid rotation does not lock feet to the ground. Named saved rigs retain settings and reopen only while their source artwork matches. Finish a floating selection and close Co-Draw first. Normal-tagged or normal-map-effect sources are refused. Parameter edits remain temporary until saved or baked; body-part extraction and multi-part character animation remain future work. Follow the [motion and saved-rig guide](artist-workspace.md#save-a-motion-rig).
+
 Sources: [timeline](../../src/components/layout/BottomTimeline.tsx), [tags](../../src/components/modals/TagManagerModal.tsx), [review panel](../../src/components/layout/inspector/AnimationReviewSection.tsx), [scan](../../src/lib/animation/scanClip.ts), [in-between action](../../src/components/layout/inspector/PixiBudAssistanceSection.tsx).

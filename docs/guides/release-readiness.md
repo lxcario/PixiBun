@@ -6,7 +6,7 @@ A local passing build is a candidate for release. Publish a separate dated decis
 
 Record the full commit, package version, lockfile, Node/npm versions, build time, source fingerprints and service-worker cache identity. A dirty checkout needs its own file hashes; its base commit or package number cannot identify all its changes. Build once from the frozen candidate before compiled-browser checks. Rebuild and qualify again after a meaningful source, dependency or build-configuration change.
 
-Use a deliberate cache identity for the candidate. The default derives from package version and the short Git revision, so two different uncommitted builds on the same base can share that identity. Changing `SW_CACHE_VERSION` produces a different worker/cache name; it does not identify every application asset, migrate artwork or prove deployment compatibility.
+Use a deliberate cache identity for the candidate. The default derives from package version and the full deployment SHA or Git HEAD, so two different uncommitted builds on the same base can share that identity. Changing `SW_CACHE_VERSION` produces a different worker/cache name; it does not identify every application asset, migrate artwork or prove deployment compatibility. Source archives without Git or deployment metadata require a unique override. See [identity precedence](deployment.md#offline-updates-and-rollback).
 
 Record documentation, type, lint, unit/build and full browser results separately. Preserve failures and interrupted runs with their original commands. Review a fresh production-dependency advisory result and whether each reported path is used. A clean advisory result is a dated registry observation, not a security certification. [Testing and evidence](testing.md).
 
@@ -23,6 +23,8 @@ The existing proxy test with two worker scripts exercises a real worker lifecycl
 A server rollback leaves browser IndexedDB and portable project formats as they are. Test the exact rollback candidate against copies of records written by the new build, including physical ArrayBuffer rasters, legacy Blob rasters and optional project metadata. Check read, render and save-back behavior, metadata preservation, conflicts and source custody. Use isolated fixtures and compare exact bytes/identities before and after.
 
 An old reader that cannot admit current records is an incompatible rollback target. Keep the original stored records; do not clear storage or silently rewrite artwork to make the old build open. Prefer a compatible forward repair, or prepare and independently qualify a compatible rollback candidate. A module-level reader diagnostic can identify a concrete incompatibility; it does not approve a full historical production build.
+
+The current format-v4 candidate needs a rollback reader that admits v4 and preserves motion definitions. The former `dcf9f5c` schema rejects a real current-written backup in the [7 October diagnostic](../research/2026-10-07-editing-quality-release-hardening.md); returning to that reader after v4 saves is not a qualified recovery path. Qualify a compatible forward repair or rollback candidate against copied data before choosing it.
 
 ## Record the decision
 

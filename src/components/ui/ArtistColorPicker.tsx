@@ -44,7 +44,7 @@ export function ArtistColorPicker({ color, onChange }: { color: string; onChange
     onPointerUp: () => { dragging.current = false; }, onPointerCancel: () => { dragging.current = false; }, onLostPointerCapture: () => { dragging.current = false; },
   };
   const point = trianglePoint(s, v);
-  const inputClass = 'w-full accent-[var(--accent-gold)]';
+  const inputClass = 'w-full h-6 accent-[var(--accent-gold)]';
   return <div className="space-y-2 text-xs" data-testid="artist-color-picker">
     <div className="flex items-center justify-between gap-2">
       <span className="font-semibold">Color picker</span>
@@ -78,7 +78,7 @@ export function ArtistColorPicker({ color, onChange }: { color: string; onChange
   </div>;
 }
 
-export function PinnedColorPanel({ defaultExpanded = true }: { defaultExpanded?: boolean } = {}) {
+export function PinnedColorPanel({ defaultExpanded = true, pinned = true }: { defaultExpanded?: boolean; pinned?: boolean } = {}) {
   const [target, setTarget] = useState<'primary' | 'secondary'>('primary');
   const [isCollapsed, setIsCollapsed] = useState(!defaultExpanded);
   const color = useStudioStore(s => target === 'primary' ? s.primaryColor : s.secondaryColor);
@@ -87,7 +87,7 @@ export function PinnedColorPanel({ defaultExpanded = true }: { defaultExpanded?:
   const updateLayout = useWorkspaceStore(s => s.updateLayout);
 
   return (
-    <section aria-label="Pinned color panel" className="border-b border-[var(--desk-border)] bg-[var(--desk-surface)]">
+    <section aria-label={pinned ? 'Pinned color panel' : 'Palette color picker'} className="border-b border-[var(--desk-border)] bg-[var(--desk-surface)]">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)]/50 text-xs">
         <div className="flex items-center gap-1.5">
           <span className="font-semibold text-[11px] text-[var(--text-heading)]">Color Wheel</span>
@@ -98,7 +98,7 @@ export function PinnedColorPanel({ defaultExpanded = true }: { defaultExpanded?:
                 key={t}
                 aria-pressed={target === t}
                 onClick={() => setTarget(t)}
-                className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-[2px] border transition-colors ${
+                className={`flex items-center gap-1 min-h-6 text-[11px] px-1.5 py-0.5 rounded-[2px] border transition-colors ${
                   target === t
                     ? 'border-[var(--accent-gold)] bg-[var(--surface-0)] font-bold text-[var(--text-heading)]'
                     : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]'
@@ -117,18 +117,18 @@ export function PinnedColorPanel({ defaultExpanded = true }: { defaultExpanded?:
             onClick={() => setIsCollapsed(!isCollapsed)}
             aria-label={isCollapsed ? 'Expand pinned color panel' : 'Collapse pinned color panel'}
             title={isCollapsed ? 'Expand color picker' : 'Collapse color picker'}
-            className="w-5 h-5 flex items-center justify-center rounded-[2px] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-0)]"
+            className="w-6 h-6 flex items-center justify-center rounded-[2px] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-0)]"
           >
             {isCollapsed ? '▼' : '▲'}
           </button>
           <button
             type="button"
-            onClick={() => updateLayout({ color: false })}
-            aria-label="Unpin color panel"
-            title="Unpin color panel"
-            className="w-5 h-5 flex items-center justify-center rounded-[2px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:bg-[var(--surface-0)]"
+            onClick={() => updateLayout({ color: !pinned })}
+            aria-label={pinned ? 'Unpin color panel' : 'Pin color panel'}
+            title={pinned ? 'Unpin color panel' : 'Keep color picker visible in other tabs'}
+            className="w-6 h-6 flex items-center justify-center rounded-[2px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:bg-[var(--surface-0)]"
           >
-            ✕
+            {pinned ? '✕' : '+'}
           </button>
         </div>
       </div>

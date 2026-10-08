@@ -1,0 +1,211 @@
+{
+  "privacy": "Only test/run IDs, public dashboard link, verdict and textual synthetic steps. Credentials, account fields, signed media URLs and raw HTML omitted.",
+  "testId": "3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+  "name": "Motion pose Undo restores precise edits and supports thirty frames",
+  "runId": "4475d036-2de7-4fee-8d81-a58f19bd9e16",
+  "serviceVerdict": "passed",
+  "startedAt": "2026-10-07T21:10:25.320Z",
+  "finishedAt": "2026-10-07T21:20:05.843Z",
+  "stepSummary": {
+    "total": 25,
+    "completed": 25,
+    "passedCount": 25,
+    "failedCount": 0
+  },
+  "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/3e1fe6cb-8136-4403-b9ed-756ce296d1ba",
+  "steps": [
+    {
+      "stepIndex": 1,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:3228",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 2,
+      "action": "navigate",
+      "description": "Navigate to http://127.0.0.1:3228/studio?template=hearth-ghost",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 3,
+      "action": "click",
+      "description": "Click 'Tools button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 4,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 5,
+      "action": "fill",
+      "description": "Fill '12' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 6,
+      "action": "click",
+      "description": "Click 'Undo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 7,
+      "action": "click",
+      "description": "Click 'Redo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 8,
+      "action": "fill",
+      "description": "Fill '30' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 9,
+      "action": "click",
+      "description": "Click 'Reset Pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 10,
+      "action": "click",
+      "description": "Click 'Undo pose button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 11,
+      "action": "fill",
+      "description": "Fill '3' into number field",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 12,
+      "action": "click",
+      "description": "Click 'BAKE TO TIMELINE button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 13,
+      "action": "click",
+      "description": "Click 'Undo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 14,
+      "action": "click",
+      "description": "Click 'Redo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 15,
+      "action": "click",
+      "description": "Click 'Undo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 16,
+      "action": "click",
+      "description": "Click 'Redo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 17,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 18,
+      "action": "click",
+      "description": "Click 'Cancel (Escape) button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 19,
+      "action": "click",
+      "description": "Click 'Undo last action button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 20,
+      "action": "click",
+      "description": "Click 'Create Motion Part button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 21,
+      "action": "click",
+      "description": "Click 'Cancel (Escape) button'",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 22,
+      "action": "visible",
+      "description": "Studio opened on the Hearth Ghost project and the UI shows a 16 × 16 canvas.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 23,
+      "action": "visible",
+      "description": "Baking the motion produced three timeline frames and the rigid-part editor closed.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 24,
+      "action": "visible",
+      "description": "Using the workspace Undo reverted the baked frames and the timeline returned to exactly one frame.",
+      "status": "passed",
+      "error": null
+    },
+    {
+      "stepIndex": 25,
+      "action": "visible",
+      "description": "Using the workspace Redo restored the three-frame timeline.",
+      "status": "passed",
+      "error": null
+    }
+  ],
+  "auditedVerdict": "inconclusive for the complete planned case; partial workflow coverage",
+  "reason": "The service passed 25 steps, including four visible assertions for 16x16 Studio, three baked frames/editor closed, one frame after workspace Undo, and three after Redo. Numeric pose actions and setting 30 frames were recorded without assertions of their values, and source-pixel preservation was not asserted. These assertions are improved over R6 but do not establish the complete planned behavior or canvas quality.",
+  "coverage": {
+    "recordedSteps": 25,
+    "recordedAssertions": 4,
+    "covered": [
+      "16x16 starter UI",
+      "three-frame bake and closed motion editor",
+      "one frame after document Undo",
+      "three frames after document Redo"
+    ],
+    "notAsserted": [
+      "exact pose Undo/Redo values",
+      "30-frame setting",
+      "source-pixel preservation",
+      "pixel correctness"
+    ]
+  }
+}

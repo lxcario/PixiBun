@@ -31,7 +31,7 @@ This plan treats PixiBun as a pixel-art workstation, not a collection of one-cli
 Status: foundation implemented.
 
 - Add versioned smart-effect recipes to generated layers.
-- Persist recipes in `.pixibun` schema v3, autosave, duplicate, undo/redo, and co-draw structure synchronization.
+- Persist recipes in portable projects, autosave, duplicate, undo/redo, and supported co-draw structure synchronization. The foundation used project format v3; the current serializer writes v4 for the motion library. Rig definitions are not synchronized by co-draw. [Current storage contract](../contracts/storage.md).
 - Show recipe provenance and key parameters in the Layers panel.
 - Reopen photometric recipes with their saved bulb, material, form interpretation, cavity, and dither settings.
 - Expose automatic photometric detection: form, material, inferred source light, directional-cue strength, and rationale.

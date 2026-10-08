@@ -5,6 +5,8 @@
  */
 
 import { rotSprite } from '@/lib/canvas/rotSprite';
+import { paethRotate } from '@/lib/canvas/paethRotation';
+import { rotateNormalVectors } from '@/lib/canvas/normalMapRotation';
 import { synthesizeWfc, WfcInput, WfcOptions, WfcResult } from '@/lib/procedural/waveFunctionCollapse';
 import { morphInBetweenFramesSync, morphInBetweenFrameAtFraction } from '@/lib/ai/pixelAiEngine';
 import {
@@ -33,6 +35,9 @@ export type HeavyWorkerRequest =
       targetH?: number;
       outPivotX?: number;
       outPivotY?: number;
+      pixelPerfect?: boolean;
+      algorithm?: 'rotsprite' | 'paeth';
+      isNormalMap?: boolean;
     }
   | {
       id: string;
@@ -92,17 +97,32 @@ self.onmessage = (e: MessageEvent<HeavyWorkerRequest>) => {
   try {
     switch (req.type) {
       case 'rotSprite': {
-        const { id, data, width, height, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY } = req;
-        const res = rotSprite(
-          { data, width, height },
-          angleRad,
-          pivotX,
-          pivotY,
-          targetW,
-          targetH,
-          outPivotX,
-          outPivotY
-        );
+        const { id, data, width, height, angleRad, pivotX, pivotY, targetW, targetH, outPivotX, outPivotY, pixelPerfect, algorithm, isNormalMap } = req;
+        let res = algorithm === 'paeth'
+          ? paethRotate(
+              { data, width, height },
+              angleRad,
+              pivotX,
+              pivotY,
+              targetW,
+              targetH,
+              outPivotX,
+              outPivotY
+            )
+          : rotSprite(
+              { data, width, height },
+              angleRad,
+              pivotX,
+              pivotY,
+              targetW,
+              targetH,
+              outPivotX,
+              outPivotY,
+              pixelPerfect
+            );
+        if (isNormalMap) {
+          res = rotateNormalVectors(res, angleRad);
+        }
         const transfer = [res.data.buffer];
         postWorkerMessage(
           { id, type: 'rotSprite:done', result: res },

@@ -32,7 +32,7 @@ test('scaling and rotating a lasso does not pick up excluded pixels or leave a t
   await page.goto('/studio');
   await expect(page.locator('[data-restoration-phase]')).toHaveAttribute('data-restoration-phase', 'active');
   const artwork = page.getByTestId('main-composite-canvas');
-  const tint = page.getByTestId('grid-selection-overlay');
+  const tint = page.getByTestId('selection-overlay-canvas');
   await expect(artwork).toBeVisible();
   await page.evaluate(() => {
     const state = (window as Window & { __studioStore?: { getState: () => StudioState } }).__studioStore!.getState();

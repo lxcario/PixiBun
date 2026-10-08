@@ -16,6 +16,7 @@ import type { LayerEffectRecipe } from '@/types/canvas';
 import { deleteBuffers } from '@/lib/engine/bufferRegistry';
 import { renderPixelGlints } from '@/lib/ai/math/pixelGlint';
 import { canAddLayersToFrame } from '@/lib/project/workspaceEnvelopeGuard';
+import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 
 function renderLightPreview(
   srcCtx: CanvasRenderingContext2D, width: number, height: number,
@@ -73,6 +74,7 @@ export function usePhotometricEvents({
   } | null>(null);
 
   useEffect(() => {
+    const jobs = new Set<WorkspaceJob>();
     const handlePhotometricGizmoStartEvent = (detail?: { auto?: boolean; layerId?: string; glintOnly?: boolean }) => {
       if (photometricSessionRef.current) return;
       const srcCtx = compositeSourceSnapshot('photometric');
@@ -694,10 +696,15 @@ export function usePhotometricEvents({
         }
       }
 
+      const job = beginWorkspaceJob(state.frames[state.activeFrameIndex].layers.map(layer => layer.id));
+      jobs.add(job);
+      try {
       const res = await runEdtNormalMapInWorker(data, canvasWidth, canvasHeight, {
         isMinecraftSkin: isMcSkin,
         depthScale: 2.0,
+        signal: job.signal,
       });
+      job.check();
 
       const latest = useStudioStore.getState();
       if (
@@ -734,6 +741,10 @@ export function usePhotometricEvents({
           minecraftSkinDetected: isMcSkin,
         },
       });
+      } catch (error) {
+        if (!job.signal.aborted) studioEvents.emit('pixibun:toast', { type: 'error',
+          message: error instanceof Error ? error.message : 'Normal-map generation failed.' });
+      } finally { job.dispose(); jobs.delete(job); }
     };
 
     const unsubs = [
@@ -753,6 +764,7 @@ export function usePhotometricEvents({
     ];
 
     return () => {
+      jobs.forEach(job => job.cancel()); jobs.clear();
       unsubs.forEach((unsub) => unsub());
     };
   }, [

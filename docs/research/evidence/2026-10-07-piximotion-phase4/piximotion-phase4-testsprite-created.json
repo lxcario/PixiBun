@@ -1,0 +1,85 @@
+{
+  "testId": "e7c723bb-ff61-4c64-b8bb-e12d78251686",
+  "type": "frontend",
+  "codeVersion": "v1",
+  "createdAt": "2026-10-07T08:51:14.823Z",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open the local studio with a new 32 by 32 drawing."
+    },
+    {
+      "type": "action",
+      "description": "Paint a recognizable small mark in the middle of the canvas as one stroke."
+    },
+    {
+      "type": "action",
+      "description": "Choose the box selection tool."
+    },
+    {
+      "type": "action",
+      "description": "Select the mark without moving its pixels."
+    },
+    {
+      "type": "action",
+      "description": "Click Create Motion Part."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo once to undo the painted source stroke."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the original canvas is blank, the motion panel explains that the source artwork changed, and Bake to Timeline is disabled. Creating a part must not add an Undo step."
+    },
+    {
+      "type": "action",
+      "description": "Cancel the motion session."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo once to restore the original mark."
+    },
+    {
+      "type": "action",
+      "description": "Select the restored mark with the box selection tool."
+    },
+    {
+      "type": "action",
+      "description": "Click Create Motion Part for a fresh capture."
+    },
+    {
+      "type": "action",
+      "description": "Set END pose translation X to four pixels using the labeled slider and keyboard arrows."
+    },
+    {
+      "type": "action",
+      "description": "Set the motion frame count to three using its labeled slider."
+    },
+    {
+      "type": "action",
+      "description": "Click Bake to Timeline."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify three timeline frames exist, the last frame is selected, the last mark is displaced four canvas pixels right of its original coordinates, and the motion session closes."
+    },
+    {
+      "type": "action",
+      "description": "Click Undo once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the timeline returns to one frame and its raster exactly matches the original painted mark, including transparent pixels."
+    },
+    {
+      "type": "action",
+      "description": "Click Redo once."
+    },
+    {
+      "type": "assertion",
+      "description": "Verify all three baked frames and their exact translated pixels return, with the last frame selected."
+    }
+  ],
+  "dashboardUrl": "https://www.testsprite.com/dashboard-v3/o/8da317b3-5f3e-506d-b110-a2ae9c2af7b8/projects/ad7cf58e-3c0f-41d6-96a8-a3a076faf639/test-cases/e7c723bb-ff61-4c64-b8bb-e12d78251686"
+}

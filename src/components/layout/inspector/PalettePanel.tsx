@@ -25,10 +25,12 @@ import { PaletteRolesSection } from './PaletteRolesSection';
 import { CreatePaletteModal } from '@/components/modals/CreatePaletteModal';
 import { PaletteCycleColors } from './PaletteCycleColors';
 import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import dynamic from 'next/dynamic';
 const PaletteLibraryModal = dynamic(() => import('@/components/modals/PaletteLibraryModal').then(m => m.PaletteLibraryModal), { ssr: false });
 
 export const PalettePanel: React.FC = () => {
+  const colorPinned = useWorkspaceStore(s => s.layout.color);
   const palettes = useStudioStore((s) => s.palettes);
   const currentPaletteId = useStudioStore((s) => s.currentPaletteId);
   const selectPalette = useStudioStore((s) => s.selectPalette);
@@ -144,7 +146,7 @@ export const PalettePanel: React.FC = () => {
       className="flex flex-col bg-[var(--desk-surface)]"
     >
       {/* 0. Color Studio: Wheel, HSV Sliders & Hex Controls */}
-      <PinnedColorPanel defaultExpanded={true} />
+      <PinnedColorPanel defaultExpanded={true} pinned={colorPinned} />
 
       {/* 1. Flush Partition Header: Title, Preset Dropdown & Swatch Indicators */}
       <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">

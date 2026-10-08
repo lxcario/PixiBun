@@ -64,7 +64,7 @@ async function clickPixel(page: Page, x: number, y: number) {
 
 async function thumbnailPixel(page: Page, frameIndex: number, x: number, y: number) {
   return page.getByTestId(`frame-thumbnail-${frameIndex}`).evaluate((canvas: HTMLCanvasElement, point: [number, number]) =>
-    Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y] as [number, number]);
+    Array.from(canvas.getContext('2d')!.getImageData(Math.floor((point[0] + 0.5) * canvas.width / 32), Math.floor((point[1] + 0.5) * canvas.height / 32), 1, 1).data), [x, y] as [number, number]);
 }
 
 test('Erase Sampled Color removes green across animation frames and undo restores both', async ({ page }) => {
@@ -82,8 +82,9 @@ test('Erase Sampled Color removes green across animation frames and undo restore
   expect(await pixel(page, 15, 15)).toEqual([255, 48, 48, 255]);
 
   // Both timeline thumbnails must update immediately without switching frames
-  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([0, 0, 0, 0]);
-  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([0, 0, 0, 0]);
+  // Sample a uniform region: reduced thumbnails may discard isolated outline pixels.
+  await expect.poll(() => thumbnailPixel(page, 0, 6, 6)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 1, 6, 6)).toEqual([0, 0, 0, 0]);
 
   await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { setActiveFrame: (index: number) => void } } }).__studioStore!.getState().setActiveFrame(1));
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
@@ -96,13 +97,13 @@ test('Erase Sampled Color removes green across animation frames and undo restore
   await expect.poll(() => pixel(page, 2, 2)).toEqual([25, 205, 44, 255]);
 
   // Both thumbnails must be restored after undo
-  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([20, 210, 40, 255]);
-  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([25, 205, 44, 255]);
+  await expect.poll(() => thumbnailPixel(page, 0, 6, 6)).toEqual([20, 210, 40, 255]);
+  await expect.poll(() => thumbnailPixel(page, 1, 6, 6)).toEqual([25, 205, 44, 255]);
 
   await page.getByTestId('redo-button').click();
   await expect.poll(() => pixel(page, 2, 2)).toEqual([0, 0, 0, 0]);
-  await expect.poll(() => thumbnailPixel(page, 0, 2, 2)).toEqual([0, 0, 0, 0]);
-  await expect.poll(() => thumbnailPixel(page, 1, 2, 2)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 0, 6, 6)).toEqual([0, 0, 0, 0]);
+  await expect.poll(() => thumbnailPixel(page, 1, 6, 6)).toEqual([0, 0, 0, 0]);
 });
 
 test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {

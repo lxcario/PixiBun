@@ -1,6 +1,8 @@
 import { useStudioStore } from '@/stores/studioStore';
 import { createEntry, getBufferGeneration, getBufferRevision, hasBuffer, replaceAllBuffers, snapshotBuffers } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
+import { beginWorkspaceJob } from '@/lib/engine/workspaceJob';
 import { validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
 import { createId } from '@/lib/engine/id';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
@@ -93,7 +95,8 @@ export async function createResearchPreview(settings: ResearchSettings, name: st
   const indices = allClip && settings.kind === 'light' ? Array.from({ length: (clip?.endFrame ?? s.frames.length - 1) - (clip?.startFrame ?? 0) + 1 }, (_, i) => i + (clip?.startFrame ?? 0)) : [s.activeFrameIndex];
   if (!indices.length || indices.length > 16 || width * height * indices.length > 262144) throw new Error('Preview supports up to 16 frames and 262,144 source pixels.');
   const key = researchWorkspaceKey(), dispose = reserveMemory(width * height * indices.length * 128 + 65536, 'Research preview');
-  const check = () => { if (signal?.aborted) throw new Error('Preview cancelled.'); if (key !== researchWorkspaceKey()) throw new Error('Artwork or layer settings changed. Create a fresh preview.'); };
+  const job = beginWorkspaceJob([], signal, researchWorkspaceKey);
+  const check = () => job.check();
   try {
     const inputs: ResearchInput[] = [], frames: ResearchPreview['frames'] = [];
     for (const index of indices) {
@@ -110,12 +113,17 @@ export async function createResearchPreview(settings: ResearchSettings, name: st
       const replaced = frame.layers.find(l => l.research?.source.layerId === source.id && l.id === selected.id);
       frames.push({ index, sourceId: source.id, replacedId: replaced?.id ?? source.id, before: data, recipe, result: { data: new Uint8ClampedArray(), notes: [] } });
     }
-    const results = await runResearchWorker(inputs, signal); check();
+    const results = await runResearchWorker(inputs, job.signal); check();
     frames.forEach((f, i) => { f.result = results[i]; });
     return { key, name, width, height, frames, dispose };
   } catch (error) { dispose(); throw error; }
+  finally { job.dispose(); }
 }
 export function applyResearchPreview(preview: ResearchPreview): void {
+  try { applyPreparedResearchPreview(preview); }
+  finally { preview.dispose(); }
+}
+function applyPreparedResearchPreview(preview: ResearchPreview): void {
   if (preview.key !== researchWorkspaceKey()) throw new Error('Artwork changed. Create a fresh preview.');
   const s = useStudioStore.getState(), next = structuredClone(s.frames), entries = snapshotBuffers(), added: Layer[] = [];
   for (const frame of preview.frames) {
@@ -128,11 +136,12 @@ export function applyResearchPreview(preview: ResearchPreview): void {
   const release = reserveMemory(preview.width * preview.height * added.length * 8, 'Research layer staging');
   try {
     preview.frames.forEach((f, i) => { const entry = createEntry(preview.width, preview.height, 1, true); entry.ctx.putImageData(new ImageData(f.result.data.slice(), preview.width, preview.height), 0, 0); entries.set(added[i].id, entry); });
-    if (!pushStructuralHistoryStep(`Apply ${preview.name}`, { opKind: 'add-layer', affectedLayerIds: [], addedLayerCount: added.length, redoBufferCount: added.length, addedMetadataBytes: added.reduce((n, l) => n + researchBytes(l.research), 0) })) throw new Error('Undo memory refused this edit. Source artwork is unchanged.');
-    replaceAllBuffers(entries);
-    const position = Math.max(0, preview.frames.findIndex(f => f.index === s.activeFrameIndex));
-    useStudioStore.setState({ frames: next, activeFrameIndex: preview.frames[position].index, activeLayerId: added[position].id, bufferVersion: s.bufferVersion + 1, editRevision: s.editRevision + 1, isDirty: true });
-    preview.dispose();
+    commitWorkspace(() => {
+      if (!pushStructuralHistoryStep(`Apply ${preview.name}`, { opKind: 'add-layer', affectedLayerIds: [], addedLayerCount: added.length, redoBufferCount: added.length, addedMetadataBytes: added.reduce((n, l) => n + researchBytes(l.research), 0) })) throw new Error('Undo memory refused this edit. Source artwork is unchanged.');
+      replaceAllBuffers(entries);
+      const position = Math.max(0, preview.frames.findIndex(f => f.index === s.activeFrameIndex));
+      useStudioStore.setState({ frames: next, activeFrameIndex: preview.frames[position].index, activeLayerId: added[position].id, bufferVersion: s.bufferVersion + 1, editRevision: s.editRevision + 1, isDirty: true });
+    });
   } finally { release(); }
 }
 export async function researchSourceStatus(recipe: ResearchRecipe): Promise<'current' | 'stale' | 'missing'> {

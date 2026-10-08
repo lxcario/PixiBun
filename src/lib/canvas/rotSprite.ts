@@ -1,6 +1,7 @@
 /**
- * RotSprite-inspired pixel-art rotation. The canonical rotation-offset search
- * and single-pixel detail-restoration pass are not implemented here.
+ * src/lib/canvas/rotSprite.ts
+ *
+ * PixiBun RotSprite v2 — Deterministic Feature-Preserving Pixel-Art Rotation
  *
  * Academic & Historical Reference:
  * - Xenowhirl (2007), "RotSprite: An algorithm for rotating pixel art" (as popularized in Aseprite).
@@ -11,9 +12,18 @@
  * Architecture:
  * 1. Lossless integer fast-paths for 0°, 90°, 180°, 270°.
  * 2. 3-pass Scale2x / EPX expansion (1x -> 2x -> 4x -> 8x) respecting color similarity thresholds.
- * 3. Inverse affine point sampling on the 8x raster with subpixel center alignment.
- * 4. Parabolic center-weighted majority voting downscaler (8x -> 1x) that strictly preserves
- *    original palette colors (0 new color artifacts) and preserves single-pixel line continuity.
+ * 3. RotSprite v2 Multi-Candidate Rotation Search:
+ *    Generates fractional source-space candidate offsets (0, ±0.25 px) evaluated against
+ *    Scale8x raster with subpixel inverse sampling.
+ * 4. Structural & Semantic Candidate Scoring:
+ *    Evaluates silhouette occupancy, small component survival (distinct pixel claiming),
+ *    tiny hole topology, and palette integrity.
+ * 5. Conservative Semantic Restoration Pass:
+ *    Recovers lost small authored features (eyes, mouths, highlights, 1-3px accents)
+ *    and tiny enclosed holes into geometrically plausible interior context cells
+ *    without silhouette distortion or invented colors.
+ * 6. Contour Color Restoration:
+ *    Keeps source-only border colors on the rotated silhouette boundary.
  */
 
 export interface PixelBuffer {
@@ -146,6 +156,7 @@ export function rotateNearest(
 
 /**
  * Downscales an 8x upscaled buffer back to 1x using Gaussian center-weighted majority voting.
+ * Supports optional fractional source-space candidate offsets (candOffX, candOffY).
  */
 export function downscale8xMajorityVote(
   src8x: PixelBuffer,
@@ -155,7 +166,10 @@ export function downscale8xMajorityVote(
   srcPivotX: number,
   srcPivotY: number,
   outPivotX: number = srcPivotX,
-  outPivotY: number = srcPivotY
+  outPivotY: number = srcPivotY,
+  candOffX: number = 0,
+  candOffY: number = 0,
+  pixelPerfect: boolean = false
 ): PixelBuffer {
   const outBytes = new Uint8ClampedArray(targetW * targetH * 4);
   const out32 = new Uint32Array(outBytes.buffer, outBytes.byteOffset, targetW * targetH);
@@ -188,8 +202,8 @@ export function downscale8xMajorityVote(
           // Continuous inverse rotation from output canvas to 1x source coordinates
           const dx = px + u / 8 - outPivotX;
           const dy = py + v / 8 - outPivotY;
-          const sx = cos * dx - sin * dy + srcPivotX;
-          const sy = sin * dx + cos * dy + srcPivotY;
+          const sx = cos * dx - sin * dy + srcPivotX + candOffX;
+          const sy = sin * dx + cos * dy + srcPivotY + candOffY;
 
           // Map to 8x scale raster with epsilon
           const sx8 = Math.floor(sx * 8 + 1e-9);
@@ -216,9 +230,11 @@ export function downscale8xMajorityVote(
       }
 
       // Feature conservation threshold:
-      // Preserves 1px thin lines if center core touches solid pixels,
+      // Preserves 1px thin lines and closed contours if 2x2 central core touches solid pixels,
       // otherwise requires solid majority to prevent border dilation.
-      const dynamicThreshold = centerCoreWeight > 0 ? 0.20 : 0.38;
+      const dynamicThreshold = pixelPerfect
+        ? (centerCoreWeight > 0 ? 0.40 : 0.46)
+        : (centerCoreWeight > 0 ? 0.38 : 0.45);
       if (nonTransparentWeight >= totalWeight * dynamicThreshold && votes.size > 0) {
         let bestColor = 0;
         let maxVote = -1;
@@ -241,7 +257,7 @@ export function downscale8xMajorityVote(
 }
 
 /** Keep source-only border colors on the rotated silhouette boundary. */
-function restoreRotatedContourColors(
+export function restoreRotatedContourColors(
   source: PixelBuffer,
   output: PixelBuffer,
   angleRad: number,
@@ -311,11 +327,254 @@ function restoreRotatedContourColors(
   return output;
 }
 
+// ---------------------------------------------------------------------------
+// RotSprite v2 — Component Analysis & Semantic Detail Preservation
+// ---------------------------------------------------------------------------
+
+export interface SourceComponent {
+  id: number;
+  color: number; // packed 32-bit uint
+  isTransparent: boolean;
+  pixels: Array<{ x: number; y: number }>;
+  pixelCount: number;
+  centroidX: number;
+  centroidY: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  isSmall: boolean; // pixelCount <= 3
+  isHole: boolean; // tiny transparent hole surrounded by solid pixels
+  isInterior: boolean; // 0 neighbors touch canvas border or transparency
+  neighborColors: Set<number>;
+}
+
+export interface SpriteAnalysis {
+  components: SourceComponent[];
+  smallComponents: SourceComponent[];
+  holes: SourceComponent[];
+  hasEnclosedHoles: boolean;
+  enclosedHoleCount: number;
+  enclosedHolePixelCount: number;
+  solidPixelCount: number;
+  solidComponentCount: number;
+  uniqueSolidColors: Set<number>;
+  hasAnyHolesOrSmallFeatures: boolean;
+}
+
 /**
- * Main RotSprite-inspired rotation entry point.
- * Rotates pixel art with Scale8x, parabolic majority voting, and contour color restoration.
+ * Deterministically analyzes authored color components and enclosed holes in a source sprite.
+ * Uses 8-connectivity per color for solid features, and checks interior enclosure.
  */
-export function rotSprite(
+export function analyzeSourceComponents(src: PixelBuffer): SpriteAnalysis {
+  const { width: w, height: h, data } = src;
+  const src32 = new Uint32Array(data.buffer, data.byteOffset, w * h);
+  const visited = new Uint8Array(w * h);
+  const components: SourceComponent[] = [];
+  const holes: SourceComponent[] = [];
+  const uniqueSolidColors = new Set<number>();
+  let solidPixelCount = 0;
+
+  let nextId = 1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      if (visited[idx]) continue;
+      const col = src32[idx];
+      if ((col >>> 24) === 0) continue;
+
+      uniqueSolidColors.add(col);
+
+      const compPixels: Array<{ x: number; y: number }> = [];
+      const neighborColors = new Set<number>();
+      const q = [idx];
+      visited[idx] = 1;
+      let sumX = 0, sumY = 0;
+      let minX = x, maxX = x, minY = y, maxY = y;
+      let touchesTransparency = false;
+
+      while (q.length > 0) {
+        const cur = q.pop()!;
+        const cx = cur % w;
+        const cy = Math.floor(cur / w);
+        compPixels.push({ x: cx, y: cy });
+        sumX += cx + 0.5;
+        sumY += cy + 0.5;
+        if (cx < minX) minX = cx;
+        if (cx > maxX) maxX = cx;
+        if (cy < minY) minY = cy;
+        if (cy > maxY) maxY = cy;
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = cx + dx, ny = cy + dy;
+            if (nx < 0 || nx >= w || ny < 0 || ny >= h) {
+              touchesTransparency = true;
+            } else {
+              const nidx = ny * w + nx;
+              const ncol = src32[nidx];
+              if ((ncol >>> 24) === 0) {
+                touchesTransparency = true;
+              } else if (ncol === col && !visited[nidx]) {
+                visited[nidx] = 1;
+                q.push(nidx);
+              } else if (ncol !== col) {
+                neighborColors.add(ncol);
+              }
+            }
+          }
+        }
+      }
+
+      const count = compPixels.length;
+      solidPixelCount += count;
+      components.push({
+        id: nextId++,
+        color: col,
+        isTransparent: false,
+        pixels: compPixels,
+        pixelCount: count,
+        centroidX: sumX / count,
+        centroidY: sumY / count,
+        minX,
+        minY,
+        maxX,
+        maxY,
+        isSmall: count <= 3,
+        isHole: false,
+        isInterior: !touchesTransparency,
+        neighborColors,
+      });
+    }
+  }
+
+  // Hole detection: transparent regions that do not touch canvas borders
+  let hasEnclosedHoles = false;
+  let enclosedHoleCount = 0;
+  let enclosedHolePixelCount = 0;
+  const transVisited = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      if (transVisited[idx] || (src32[idx] >>> 24) !== 0) continue;
+
+      const holePixels: Array<{ x: number; y: number }> = [];
+      const q = [idx];
+      transVisited[idx] = 1;
+      let touchesBorder = false;
+      let sumX = 0, sumY = 0;
+
+      while (q.length > 0) {
+        const cur = q.pop()!;
+        const cx = cur % w;
+        const cy = Math.floor(cur / w);
+        holePixels.push({ x: cx, y: cy });
+        sumX += cx + 0.5;
+        sumY += cy + 0.5;
+        if (cx === 0 || cx === w - 1 || cy === 0 || cy === h - 1) touchesBorder = true;
+
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx + dx, ny = cy + dy;
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+            const nidx = ny * w + nx;
+            if ((src32[nidx] >>> 24) === 0 && !transVisited[nidx]) {
+              transVisited[nidx] = 1;
+              q.push(nidx);
+            }
+          }
+        }
+      }
+
+      if (!touchesBorder) {
+        hasEnclosedHoles = true;
+        enclosedHoleCount++;
+        enclosedHolePixelCount += holePixels.length;
+        if (holePixels.length <= 8) {
+          const count = holePixels.length;
+          holes.push({
+            id: nextId++,
+            color: 0,
+            isTransparent: true,
+            pixels: holePixels,
+            pixelCount: count,
+            centroidX: sumX / count,
+            centroidY: sumY / count,
+            minX: 0,
+            minY: 0,
+            maxX: 0,
+            maxY: 0,
+            isSmall: true,
+            isHole: true,
+            isInterior: true,
+            neighborColors: new Set(),
+          });
+        }
+      }
+    }
+  }
+
+  const smallComponents = components.filter(c => c.isSmall);
+  const hasAnyHolesOrSmallFeatures = smallComponents.length > 0 || holes.length > 0 || hasEnclosedHoles;
+
+  return {
+    components,
+    smallComponents,
+    holes,
+    hasEnclosedHoles,
+    enclosedHoleCount,
+    enclosedHolePixelCount,
+    solidPixelCount,
+    solidComponentCount: countSolidComponents(src32, w, h),
+    uniqueSolidColors,
+    hasAnyHolesOrSmallFeatures,
+  };
+}
+
+/** Silhouette connectivity ignores color boundaries; semantic components do not. */
+function countSolidComponents(pixels: Uint32Array, width: number, height: number): number {
+  let count = 0;
+  const visited = new Uint8Array(width * height);
+  for (let i = 0; i < pixels.length; i++) {
+    if ((pixels[i] >>> 24) === 0 || visited[i]) continue;
+    count++;
+    const queue = [i];
+    visited[i] = 1;
+    while (queue.length) {
+      const current = queue.pop()!, x = current % width, y = Math.floor(current / width);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if ((dx === 0 && dy === 0) || nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const next = ny * width + nx;
+        if ((pixels[next] >>> 24) !== 0 && !visited[next]) { visited[next] = 1; queue.push(next); }
+      }
+    }
+  }
+  return count;
+}
+
+/** Checks whether a pixel at (x, y) touches canvas boundaries or a transparent neighbor. */
+function touchesTransparencyOrBorder(
+  buf32: Uint32Array,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): boolean {
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= width || ny < 0 || ny >= height) return true;
+      if ((buf32[ny * width + nx] >>> 24) === 0) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * RotSprite v1 implementation frozen for regression testing and comparative benchmarks.
+ */
+export function rotSpriteV1(
   src: PixelBuffer,
   angleRad: number,
   pivotX?: number,
@@ -329,7 +588,600 @@ export function rotSprite(
   const EPSILON = 1e-5;
   const TWO_PI = Math.PI * 2;
   const normAngle = ((angleRad % TWO_PI) + TWO_PI) % TWO_PI;
-  const isNear = (target: number) => Math.abs(normAngle - target) < EPSILON;
+  const isNear = (target: number) => {
+    const distance = Math.abs(normAngle - target);
+    return Math.min(distance, TWO_PI - distance) < EPSILON;
+  };
+  const isQuarterTurn = isNear(Math.PI / 2) || isNear((3 * Math.PI) / 2);
+
+  const outW = targetW ?? (isQuarterTurn ? h : w);
+  const outH = targetH ?? (isQuarterTurn ? w : h);
+
+  if (w <= 0 || h <= 0 || data.length === 0) {
+    const safeW = Math.max(1, outW);
+    const safeH = Math.max(1, outH);
+    return { width: safeW, height: safeH, data: new Uint8ClampedArray(safeW * safeH * 4) };
+  }
+
+  const cx = pivotX ?? w / 2;
+  const cy = pivotY ?? h / 2;
+  const ocx = outPivotX ?? cx;
+  const ocy = outPivotY ?? cy;
+
+  const src8x = scale8x(src);
+  const rotated = downscale8xMajorityVote(src8x, outW, outH, angleRad, cx, cy, ocx, ocy);
+  return restoreRotatedContourColors(src, rotated, angleRad, cx, cy, ocx, ocy);
+}
+
+/**
+ * Refines rotated pixel art by pruning redundant 2x2 L-corner elbow pixels (double pixels / staircase jaggies)
+ * on 1-pixel strokes and contours while strictly preserving 8-connectivity and authored details.
+ *
+ * Topological Invariants:
+ * 1. An L-cluster is identified in a 2x2 window where exactly 3 pixels are solid and 1 is transparent.
+ * 2. The corner pixel P sharing orthogonal neighbors with both arms is evaluated for pruning.
+ * 3. Pruning is ONLY permitted if:
+ *    - P is not marked in protectedCells (authored eyes, mouth, 1px features, hole boundaries).
+ *    - P is not an interior pixel of a solid fill (has < 4 solid orthogonal neighbors).
+ *    - P has >= 2 solid 8-neighbors (isolated pixels and stroke endpoints are protected).
+ *    - Local 8-connectivity: all solid 8-neighbors of P remain connected within a 5x5 window without P.
+ *    - Global connectivity: component count remains invariant (no severed contours or broken rings).
+ */
+export function refinePixelPerfectContour(
+  buffer: PixelBuffer,
+  protectedCells?: Uint8Array
+): PixelBuffer {
+  const { width: w, height: h, data } = buffer;
+  const outData = new Uint8ClampedArray(data);
+  const buf32 = new Uint32Array(outData.buffer, outData.byteOffset, w * h);
+
+  const isSolid = (x: number, y: number): boolean => {
+    if (x < 0 || x >= w || y < 0 || y >= h) return false;
+    return (buf32[y * w + x] >>> 24) > 0;
+  };
+
+  const countComponents = (): number => {
+    let comps = 0;
+    const visited = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      if ((buf32[i] >>> 24) !== 0 && !visited[i]) {
+        comps++;
+        const q = [i];
+        visited[i] = 1;
+        while (q.length > 0) {
+          const cur = q.pop()!;
+          const cy = Math.floor(cur / w);
+          const cx = cur % w;
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              const nx = cx + dx, ny = cy + dy;
+              if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                const ni = ny * w + nx;
+                if ((buf32[ni] >>> 24) !== 0 && !visited[ni]) {
+                  visited[ni] = 1;
+                  q.push(ni);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return comps;
+  };
+
+  const baseComponents = countComponents();
+
+  for (let pass = 0; pass < 1; pass++) {
+    let prunedInPass = 0;
+    const candidates: Array<{ x: number; y: number }> = [];
+
+    for (let y = 0; y < h - 1; y++) {
+      for (let x = 0; x < w - 1; x++) {
+        const s00 = isSolid(x, y);
+        const s10 = isSolid(x + 1, y);
+        const s01 = isSolid(x, y + 1);
+        const s11 = isSolid(x + 1, y + 1);
+        const sum = (s00 ? 1 : 0) + (s10 ? 1 : 0) + (s01 ? 1 : 0) + (s11 ? 1 : 0);
+
+        if (sum === 3) {
+          let cx = -1, cy = -1;
+          if (!s11 && s00 && s10 && s01) { cx = x; cy = y; }
+          else if (!s01 && s00 && s10 && s11) { cx = x + 1; cy = y; }
+          else if (!s10 && s00 && s01 && s11) { cx = x; cy = y + 1; }
+          else if (!s00 && s10 && s01 && s11) { cx = x + 1; cy = y + 1; }
+
+          if (cx !== -1) {
+            candidates.push({ x: cx, y: cy });
+          }
+        }
+      }
+    }
+
+    for (const { x, y } of candidates) {
+      const idx = y * w + x;
+      if ((buf32[idx] >>> 24) === 0) continue;
+      if (protectedCells && protectedCells[idx]) continue;
+
+      const solidNeighbors: Array<{ x: number; y: number }> = [];
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          if (isSolid(x + dx, y + dy)) {
+            solidNeighbors.push({ x: x + dx, y: y + dy });
+          }
+        }
+      }
+
+      if (solidNeighbors.length <= 1) continue;
+
+      const hasTop = isSolid(x, y - 1);
+      const hasBottom = isSolid(x, y + 1);
+      const hasLeft = isSolid(x - 1, y);
+      const hasRight = isSolid(x + 1, y);
+      if (hasTop && hasBottom && hasLeft && hasRight) continue;
+
+      const start = solidNeighbors[0];
+      const visited = new Set<number>();
+      visited.add(start.y * w + start.x);
+      const q = [start];
+
+      while (q.length > 0) {
+        const cur = q.pop()!;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = cur.x + dx, ny = cur.y + dy;
+            if (nx === x && ny === y) continue;
+            if (Math.abs(nx - x) <= 2 && Math.abs(ny - y) <= 2 && isSolid(nx, ny)) {
+              const nidx = ny * w + nx;
+              if (!visited.has(nidx)) {
+                visited.add(nidx);
+                q.push({ x: nx, y: ny });
+              }
+            }
+          }
+        }
+      }
+
+      let allConnected = true;
+      for (const sn of solidNeighbors) {
+        if (!visited.has(sn.y * w + sn.x)) {
+          allConnected = false;
+          break;
+        }
+      }
+      if (!allConnected) continue;
+
+      const savedColor = buf32[idx];
+      buf32[idx] = 0;
+      if (countComponents() === baseComponents) {
+        prunedInPass++;
+      } else {
+        buf32[idx] = savedColor;
+      }
+    }
+
+    if (prunedInPass === 0) break;
+  }
+
+  return { width: w, height: h, data: outData };
+}
+
+/**
+ * RotSprite v2 — Feature-preserving arbitrary-angle pixel art rotation.
+ * Executes multi-candidate subpixel search, structural scoring, and conservative detail restoration.
+ */
+export function rotSpriteV2(
+  src: PixelBuffer,
+  angleRad: number,
+  pivotX?: number,
+  pivotY?: number,
+  targetW?: number,
+  targetH?: number,
+  outPivotX?: number,
+  outPivotY?: number,
+  pixelPerfect?: boolean
+): PixelBuffer {
+  const { width: w, height: h, data } = src;
+  const EPSILON = 1e-5;
+  const TWO_PI = Math.PI * 2;
+  const normAngle = ((angleRad % TWO_PI) + TWO_PI) % TWO_PI;
+  const isNear = (target: number) => {
+    const distance = Math.abs(normAngle - target);
+    return Math.min(distance, TWO_PI - distance) < EPSILON;
+  };
+  const isQuarterTurn = isNear(Math.PI / 2) || isNear((3 * Math.PI) / 2);
+
+  const outW = targetW ?? (isQuarterTurn ? h : w);
+  const outH = targetH ?? (isQuarterTurn ? w : h);
+
+  if (w <= 0 || h <= 0 || data.length === 0) {
+    const safeW = Math.max(1, outW);
+    const safeH = Math.max(1, outH);
+    return { width: safeW, height: safeH, data: new Uint8ClampedArray(safeW * safeH * 4) };
+  }
+
+  const cx = pivotX ?? w / 2;
+  const cy = pivotY ?? h / 2;
+  const ocx = outPivotX ?? cx;
+  const ocy = outPivotY ?? cy;
+
+  const analysis = analyzeSourceComponents(src);
+  const src8x = scale8x(src);
+
+  // Multi-candidate rotation search for small to medium sprites
+  const area = w * h;
+  let candidateOffsets: Array<[number, number]>;
+  if (area > 4096) {
+    // Large sprites (>64x64) evaluate candidate 0
+    candidateOffsets = [[0, 0]];
+  } else if (area <= 1024) {
+    // Small sprites (<=32x32): full 9-candidate grid for maximum semantic preservation
+    candidateOffsets = [
+      [0, 0],
+      [0.25, 0],
+      [-0.25, 0],
+      [0, 0.25],
+      [0, -0.25],
+      [0.25, 0.25],
+      [0.25, -0.25],
+      [-0.25, 0.25],
+      [-0.25, -0.25],
+    ];
+  } else {
+    // Medium sprites (32x32 to 64x64): 5-candidate cross
+    candidateOffsets = [
+      [0, 0],
+      [0.25, 0],
+      [-0.25, 0],
+      [0, 0.25],
+      [0, -0.25],
+    ];
+  }
+
+  const C = Math.cos(angleRad);
+  const S = Math.sin(angleRad);
+
+  const shouldPixelPerfect = pixelPerfect ?? false;
+
+  let bestCandBuf: PixelBuffer | null = null;
+  let bestScore = Infinity;
+  let bestOffset: [number, number] = [0, 0];
+
+  for (let ci = 0; ci < candidateOffsets.length; ci++) {
+    const [ox, oy] = candidateOffsets[ci];
+    const cand = downscale8xMajorityVote(
+      src8x,
+      outW,
+      outH,
+      angleRad,
+      cx,
+      cy,
+      ocx,
+      ocy,
+      ox,
+      oy,
+      shouldPixelPerfect
+    );
+
+    const c32 = new Uint32Array(cand.data.buffer, cand.data.byteOffset, outW * outH);
+    let score = 0;
+    let hardViolations = 0;
+
+    // 0. Topological connectivity preservation (prevents fragmented outlines and severed limbs)
+    const candComponents = countSolidComponents(c32, outW, outH);
+    if (candComponents > analysis.solidComponentCount) {
+      const extra = candComponents - analysis.solidComponentCount;
+      hardViolations += extra;
+      score += extra * 1500;
+    }
+
+    // 0b. Hole topology & leakage preservation (prevents broken contours from spilling interior holes)
+    if (analysis.hasEnclosedHoles) {
+      const extVisited = new Uint8Array(outW * outH);
+      const extQueue: number[] = [];
+      for (let x = 0; x < outW; x++) {
+        const top = x;
+        const btm = (outH - 1) * outW + x;
+        if ((c32[top] >>> 24) === 0 && !extVisited[top]) { extVisited[top] = 1; extQueue.push(top); }
+        if ((c32[btm] >>> 24) === 0 && !extVisited[btm]) { extVisited[btm] = 1; extQueue.push(btm); }
+      }
+      for (let y = 0; y < outH; y++) {
+        const left = y * outW;
+        const right = y * outW + (outW - 1);
+        if ((c32[left] >>> 24) === 0 && !extVisited[left]) { extVisited[left] = 1; extQueue.push(left); }
+        if ((c32[right] >>> 24) === 0 && !extVisited[right]) { extVisited[right] = 1; extQueue.push(right); }
+      }
+      while (extQueue.length > 0) {
+        const cur = extQueue.pop()!;
+        const cy2 = Math.floor(cur / outW);
+        const cx2 = cur % outW;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx2 + dx, ny = cy2 + dy;
+          if (nx >= 0 && nx < outW && ny >= 0 && ny < outH) {
+            const nidx = ny * outW + nx;
+            if ((c32[nidx] >>> 24) === 0 && !extVisited[nidx]) {
+              extVisited[nidx] = 1;
+              extQueue.push(nidx);
+            }
+          }
+        }
+      }
+      let enclosedHolePixels = 0;
+      for (let i = 0; i < outW * outH; i++) {
+        if ((c32[i] >>> 24) === 0 && !extVisited[i]) {
+          enclosedHolePixels++;
+        }
+      }
+      if (enclosedHolePixels === 0) {
+        hardViolations++;
+        score += 2500;
+      }
+    }
+
+    // 1. Small component preservation with distinct pixel claiming
+    const claimedInCand = new Set<number>();
+    for (const comp of analysis.smallComponents) {
+      const relSx = comp.centroidX - cx - ox;
+      const relSy = comp.centroidY - cy - oy;
+      const expX = C * relSx - S * relSy + ocx;
+      const expY = S * relSx + C * relSy + ocy;
+
+      let found = false;
+      const minX = Math.max(0, Math.floor(expX - 1.5));
+      const maxX = Math.min(outW - 1, Math.ceil(expX + 1.5));
+      const minY = Math.max(0, Math.floor(expY - 1.5));
+      const maxY = Math.min(outH - 1, Math.ceil(expY + 1.5));
+
+      for (let y = minY; y <= maxY && !found; y++) {
+        for (let x = minX; x <= maxX && !found; x++) {
+          const idx = y * outW + x;
+          if (c32[idx] === comp.color && !claimedInCand.has(idx)) {
+            if (comp.isInterior && touchesTransparencyOrBorder(c32, x, y, outW, outH)) continue;
+            found = true;
+            claimedInCand.add(idx);
+          }
+        }
+      }
+      if (!found) {
+        hardViolations++;
+        score += 1000;
+      }
+    }
+
+    // 2. Hole preservation
+    for (const hole of analysis.holes) {
+      const relSx = hole.centroidX - cx - ox;
+      const relSy = hole.centroidY - cy - oy;
+      const expX = C * relSx - S * relSy + ocx;
+      const expY = S * relSx + C * relSy + ocy;
+
+      let found = false;
+      const minX = Math.max(0, Math.floor(expX - 1.5));
+      const maxX = Math.min(outW - 1, Math.ceil(expX + 1.5));
+      const minY = Math.max(0, Math.floor(expY - 1.5));
+      const maxY = Math.min(outH - 1, Math.ceil(expY + 1.5));
+
+      for (let y = minY; y <= maxY && !found; y++) {
+        for (let x = minX; x <= maxX && !found; x++) {
+          if ((c32[y * outW + x] >>> 24) === 0) {
+            if (hole.isInterior) {
+              const isEnclosed =
+                x > 0 && x < outW - 1 && y > 0 && y < outH - 1 &&
+                (c32[(y - 1) * outW + x] >>> 24) !== 0 &&
+                (c32[(y + 1) * outW + x] >>> 24) !== 0 &&
+                (c32[y * outW + (x - 1)] >>> 24) !== 0 &&
+                (c32[y * outW + (x + 1)] >>> 24) !== 0;
+              if (isEnclosed) found = true;
+            } else {
+              found = true;
+            }
+          }
+        }
+      }
+      if (!found) {
+        hardViolations++;
+        score += 800;
+      }
+    }
+
+    // 3. Unique color retention
+    const candColors = new Set(c32);
+    for (const col of analysis.uniqueSolidColors) {
+      if (!candColors.has(col)) {
+        hardViolations++;
+        score += 2000;
+      }
+    }
+
+    // 4. Area distortion penalty
+    let solidCount = 0;
+    for (let i = 0; i < c32.length; i++) {
+      if ((c32[i] >>> 24) !== 0) solidCount++;
+    }
+    score += Math.abs(solidCount - analysis.solidPixelCount) * 2;
+
+    // 5. Offset Euclidean norm penalty (bias toward 0,0 when tied)
+    score += Math.hypot(ox, oy) * 10;
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestCandBuf = cand;
+      bestOffset = [ox, oy];
+    }
+
+    // Candidate 0 early exit: if the centered unshifted rotation has 0 hard semantic/topological
+    // violations, it preserves symmetry and artwork fidelity without need for subpixel shifting.
+    if (ci === 0 && hardViolations === 0) {
+      bestScore = score;
+      bestCandBuf = cand;
+      bestOffset = [0, 0];
+      break;
+    }
+  }
+
+  // Conservative Semantic Restoration Pass on winning candidate
+  const resultData = new Uint8ClampedArray(bestCandBuf!.data);
+  const res32 = new Uint32Array(resultData.buffer, resultData.byteOffset, outW * outH);
+  const [ox, oy] = bestOffset;
+
+  const protectedCells = new Uint8Array(outW * outH);
+  const claimedCells = new Set<number>();
+
+  // Restore any missing small components into geometrically plausible context cells
+  for (const comp of analysis.smallComponents) {
+    const relSx = comp.centroidX - cx - ox;
+    const relSy = comp.centroidY - cy - oy;
+    const expX = C * relSx - S * relSy + ocx;
+    const expY = S * relSx + C * relSy + ocy;
+    const minX = Math.max(0, Math.floor(expX - 1.5));
+    const maxX = Math.min(outW - 1, Math.ceil(expX + 1.5));
+    const minY = Math.max(0, Math.floor(expY - 1.5));
+    const maxY = Math.min(outH - 1, Math.ceil(expY + 1.5));
+
+    let foundIdx = -1;
+    for (let y = minY; y <= maxY && foundIdx === -1; y++) {
+      for (let x = minX; x <= maxX && foundIdx === -1; x++) {
+        const idx = y * outW + x;
+        if (res32[idx] === comp.color && !claimedCells.has(idx)) {
+          if (comp.isInterior && touchesTransparencyOrBorder(res32, x, y, outW, outH)) continue;
+          foundIdx = idx;
+        }
+      }
+    }
+
+    if (foundIdx >= 0) {
+      claimedCells.add(foundIdx);
+      protectedCells[foundIdx] = 1;
+    } else {
+      type CandidateCell = { x: number; y: number; distSq: number; isContextMatch: boolean };
+      const candidates: CandidateCell[] = [];
+
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const idx = y * outW + x;
+          if (protectedCells[idx] || claimedCells.has(idx)) continue;
+          const curCol = res32[idx];
+          const isSolid = (curCol >>> 24) !== 0;
+
+          if (comp.isInterior) {
+            if (!isSolid) continue;
+            if (touchesTransparencyOrBorder(res32, x, y, outW, outH)) continue;
+          } else if (comp.neighborColors.size > 0) {
+            if (!isSolid) continue;
+          } else {
+            // Isolated feature in empty space: preserve onto transparent cell, never overwrite solid art
+            if (isSolid) continue;
+          }
+
+          const isContextMatch = comp.neighborColors.has(curCol);
+          const distSq = (x + 0.5 - expX) ** 2 + (y + 0.5 - expY) ** 2;
+          candidates.push({ x, y, distSq, isContextMatch });
+        }
+      }
+
+      candidates.sort((a, b) => {
+        if (a.isContextMatch !== b.isContextMatch) return a.isContextMatch ? -1 : 1;
+        return a.distSq - b.distSq;
+      });
+
+      if (candidates.length > 0) {
+        const best = candidates[0];
+        const bidx = best.y * outW + best.x;
+        res32[bidx] = comp.color;
+        protectedCells[bidx] = 1;
+        claimedCells.add(bidx);
+      }
+    }
+  }
+
+  // Restore any missing holes into enclosed interior cells
+  for (const hole of analysis.holes) {
+    const relSx = hole.centroidX - cx - ox;
+    const relSy = hole.centroidY - cy - oy;
+    const expX = C * relSx - S * relSy + ocx;
+    const expY = S * relSx + C * relSy + ocy;
+
+    let found = false;
+    const minX = Math.max(0, Math.floor(expX - 1.5));
+    const maxX = Math.min(outW - 1, Math.ceil(expX + 1.5));
+    const minY = Math.max(0, Math.floor(expY - 1.5));
+    const maxY = Math.min(outH - 1, Math.ceil(expY + 1.5));
+
+    for (let y = minY; y <= maxY && !found; y++) {
+      for (let x = minX; x <= maxX && !found; x++) {
+        if ((res32[y * outW + x] >>> 24) === 0) {
+          if (hole.isInterior) {
+            const isEnclosed =
+              x > 0 && x < outW - 1 && y > 0 && y < outH - 1 &&
+              (res32[(y - 1) * outW + x] >>> 24) !== 0 &&
+              (res32[(y + 1) * outW + x] >>> 24) !== 0 &&
+              (res32[y * outW + (x - 1)] >>> 24) !== 0 &&
+              (res32[y * outW + (x + 1)] >>> 24) !== 0;
+            if (isEnclosed) found = true;
+          } else {
+            found = true;
+          }
+        }
+      }
+    }
+
+    if (!found) {
+      let bestDist = Infinity;
+      let bestX = -1, bestY = -1;
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const idx = y * outW + x;
+          if (protectedCells[idx] || (res32[idx] >>> 24) === 0) continue;
+          if (touchesTransparencyOrBorder(res32, x, y, outW, outH)) continue;
+          const d = (x + 0.5 - expX) ** 2 + (y + 0.5 - expY) ** 2;
+          if (d < bestDist) {
+            bestDist = d;
+            bestX = x;
+            bestY = y;
+          }
+        }
+      }
+      if (bestX >= 0) {
+        res32[bestY * outW + bestX] = 0;
+        protectedCells[bestY * outW + bestX] = 1;
+      }
+    }
+  }
+
+  let resultBuf: PixelBuffer = { width: outW, height: outH, data: resultData };
+  if (shouldPixelPerfect) {
+    resultBuf = refinePixelPerfectContour(resultBuf, protectedCells);
+  }
+  return restoreRotatedContourColors(src, resultBuf, angleRad, cx, cy, ocx, ocy);
+}
+
+/**
+ * Main RotSprite rotation entry point for PixiBun Atelier.
+ * Handles exact orthogonal fast paths, then delegates arbitrary-angle rotations
+ * to the feature-preserving RotSprite v2 engine.
+ */
+export function rotSprite(
+  src: PixelBuffer,
+  angleRad: number,
+  pivotX?: number,
+  pivotY?: number,
+  targetW?: number,
+  targetH?: number,
+  outPivotX?: number,
+  outPivotY?: number,
+  pixelPerfect?: boolean
+): PixelBuffer {
+  const { width: w, height: h, data } = src;
+  const EPSILON = 1e-5;
+  const TWO_PI = Math.PI * 2;
+  const normAngle = ((angleRad % TWO_PI) + TWO_PI) % TWO_PI;
+  const isNear = (target: number) => {
+    const distance = Math.abs(normAngle - target);
+    return Math.min(distance, TWO_PI - distance) < EPSILON;
+  };
   const isQuarterTurn = isNear(Math.PI / 2) || isNear((3 * Math.PI) / 2);
 
   const outW = targetW ?? (isQuarterTurn ? h : w);
@@ -474,10 +1326,72 @@ export function rotSprite(
     return { width: w, height: h, data: outBytes };
   }
 
-  // 2. Perform 3-pass Scale2x cascade to 8x
-  const src8x = scale8x(src);
+  // 2. Delegate arbitrary-angle rotations to feature-preserving RotSprite v2
+  return rotSpriteV2(src, angleRad, cx, cy, outW, outH, ocx, ocy, pixelPerfect ?? (targetW !== undefined));
+}
 
-  // 3. Downscale using subpixel inverse rotation and center-weighted Gaussian majority voting
-  const rotated = downscale8xMajorityVote(src8x, outW, outH, angleRad, cx, cy, ocx, ocy);
-  return restoreRotatedContourColors(src, rotated, angleRad, cx, cy, ocx, ocy);
+export interface RotatedBoundingBox {
+  targetW: number;
+  targetH: number;
+  destX: number;
+  destY: number;
+  localPivotX: number;
+  localPivotY: number;
+  outPivotX: number;
+  outPivotY: number;
+}
+
+/**
+ * Computes destination integer bounding box and pivot alignments for a rotated sprite region.
+ */
+export function computeRotatedBounds(
+  w: number,
+  h: number,
+  x: number,
+  y: number,
+  pivotX: number,
+  pivotY: number,
+  rotationRad: number
+): RotatedBoundingBox {
+  const localPivotX = pivotX - x;
+  const localPivotY = pivotY - y;
+  const cos = Math.cos(rotationRad);
+  const sin = Math.sin(rotationRad);
+
+  const corners = [
+    { x: 0, y: 0 },
+    { x: w, y: 0 },
+    { x: w, y: h },
+    { x: 0, y: h },
+  ].map((pt) => {
+    const dx = pt.x - localPivotX;
+    const dy = pt.y - localPivotY;
+    return {
+      x: localPivotX + cos * dx - sin * dy,
+      y: localPivotY + sin * dx + cos * dy,
+    };
+  });
+
+  const minX = Math.floor(Math.min(...corners.map((c) => c.x)));
+  const maxX = Math.ceil(Math.max(...corners.map((c) => c.x)));
+  const minY = Math.floor(Math.min(...corners.map((c) => c.y)));
+  const maxY = Math.ceil(Math.max(...corners.map((c) => c.y)));
+
+  const targetW = Math.max(1, maxX - minX);
+  const targetH = Math.max(1, maxY - minY);
+  const destX = Math.round(x + minX);
+  const destY = Math.round(y + minY);
+  const outPivotX = localPivotX - minX;
+  const outPivotY = localPivotY - minY;
+
+  return {
+    targetW,
+    targetH,
+    destX,
+    destY,
+    localPivotX,
+    localPivotY,
+    outPivotX,
+    outPivotY,
+  };
 }

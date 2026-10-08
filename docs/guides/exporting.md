@@ -97,6 +97,8 @@ This samples **color motion in the active frame**, not changing drawn poses acro
 
 Choose **Project Backup → Download project backup**. Keep the `.pixibun` file outside the browser, then use **File → Import…** and **Confirm Import** to check that it restores the expected artwork. It contains admitted frames, layers, palettes, timing and supported metadata, including saved effects/recipes. It does not contain a durable complete Undo session or a cloud account.
 
+Current backups use project format v4 and include saved single-part motion rigs. Readers limited to format v3 refuse them. Save the rig explicitly before the project backup; a temporary motion preview or unsaved pose adjustment is not a saved definition. See [compatibility](../contracts/storage.md).
+
 **Ctrl/Cmd+Shift+S** also invokes the desktop file-save path where supported, with a download fallback. Picker cancellation is not success. An untouched **recovery ZIP** is a separate archive of damaged source records, described in [artwork safety](artwork-safety.md#damaged-stored-projects); it is not this editable project file.
 
 ## If an export cannot start

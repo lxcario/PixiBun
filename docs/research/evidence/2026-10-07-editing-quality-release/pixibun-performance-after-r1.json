@@ -1,0 +1,457 @@
+{
+  "recordedAt": "2026-10-07T18:47:59.292Z",
+  "origin": "http://localhost:3228",
+  "browser": "151.0.7922.34",
+  "cpuModel": "12th Gen Intel(R) Core(TM) i5-12500H",
+  "logicalCpus": 16,
+  "physicalMemoryBytes": 34055118848,
+  "headless": true,
+  "viewport": {
+    "width": 1600,
+    "height": 1100
+  },
+  "repeats": 3,
+  "scenarios": [
+    {
+      "canvasSize": 64,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 409,
+          "browserSpanMs": 408.80000001192093,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 207,
+          "browserSpanMs": 207,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 173,
+          "browserSpanMs": 173.5,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 177,
+          "browserSpanMs": 176.90000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2104,
+          "browserSpanMs": 2103.9000000059605,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 301,
+          "browserSpanMs": 300.90000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1534,
+          "browserSpanMs": 1534.5,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 128,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 406,
+          "browserSpanMs": 406,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 201,
+          "browserSpanMs": 201.2000000178814,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 115,
+          "browserSpanMs": 115.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 183,
+          "browserSpanMs": 183.2000000178814,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2111,
+          "browserSpanMs": 2110.5999999940395,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 410,
+          "browserSpanMs": 410.19999998807907,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1238,
+          "browserSpanMs": 1238.3999999761581,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 256,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 404,
+          "browserSpanMs": 404.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 198,
+          "browserSpanMs": 197.7000000178814,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 126,
+          "browserSpanMs": 126.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 173,
+          "browserSpanMs": 173.40000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2119,
+          "browserSpanMs": 2118.7000000178814,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 900,
+          "browserSpanMs": 900,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1450,
+          "browserSpanMs": 1450.699999988079,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 64,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 379,
+          "browserSpanMs": 379.30000001192093,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 191,
+          "browserSpanMs": 191.39999997615814,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 108,
+          "browserSpanMs": 107.10000002384186,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 171,
+          "browserSpanMs": 170.60000002384186,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2100,
+          "browserSpanMs": 2100.5999999940395,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 288,
+          "browserSpanMs": 288.40000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1255,
+          "browserSpanMs": 1255.1000000238419,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 128,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 402,
+          "browserSpanMs": 402.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 199,
+          "browserSpanMs": 198.40000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 94,
+          "browserSpanMs": 94.69999998807907,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 171,
+          "browserSpanMs": 171.59999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2102,
+          "browserSpanMs": 2101.699999988079,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 408,
+          "browserSpanMs": 407.80000001192093,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1322,
+          "browserSpanMs": 1321.4000000059605,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 256,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 395,
+          "browserSpanMs": 394.90000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 208,
+          "browserSpanMs": 208.59999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 109,
+          "browserSpanMs": 108.19999998807907,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 157,
+          "browserSpanMs": 156.40000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2101,
+          "browserSpanMs": 2100.0999999940395,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 909,
+          "browserSpanMs": 908.6000000238419,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1317,
+          "browserSpanMs": 1317.699999988079,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 64,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 378,
+          "browserSpanMs": 378.5,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 204,
+          "browserSpanMs": 203.30000001192093,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 124,
+          "browserSpanMs": 123.80000001192093,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 169,
+          "browserSpanMs": 168.2999999821186,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2115,
+          "browserSpanMs": 2114.399999976158,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 288,
+          "browserSpanMs": 288.2999999821186,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1254,
+          "browserSpanMs": 1254.199999988079,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 128,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 386,
+          "browserSpanMs": 385.90000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 199,
+          "browserSpanMs": 199.59999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 131,
+          "browserSpanMs": 131.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 169,
+          "browserSpanMs": 169,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2098,
+          "browserSpanMs": 2098.0999999940395,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 408,
+          "browserSpanMs": 407.89999997615814,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1345,
+          "browserSpanMs": 1344.699999988079,
+          "longTasks": []
+        }
+      ]
+    },
+    {
+      "canvasSize": 256,
+      "initialFrames": 4,
+      "layersPerFrame": 1,
+      "measures": [
+        {
+          "name": "drawing",
+          "elapsedMs": 393,
+          "browserSpanMs": 392.59999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "timeline",
+          "elapsedMs": 200,
+          "browserSpanMs": 200.09999999403954,
+          "longTasks": []
+        },
+        {
+          "name": "save",
+          "elapsedMs": 131,
+          "browserSpanMs": 130.5,
+          "longTasks": []
+        },
+        {
+          "name": "rotation-preview",
+          "elapsedMs": 161,
+          "browserSpanMs": 161.40000000596046,
+          "longTasks": []
+        },
+        {
+          "name": "motion-playback-2s",
+          "elapsedMs": 2122,
+          "browserSpanMs": 2122.199999988079,
+          "longTasks": []
+        },
+        {
+          "name": "bake-8-frames",
+          "elapsedMs": 912,
+          "browserSpanMs": 911.7999999821186,
+          "longTasks": []
+        },
+        {
+          "name": "project-export",
+          "elapsedMs": 1224,
+          "browserSpanMs": 1224.300000011921,
+          "longTasks": []
+        }
+      ]
+    }
+  ]
+}

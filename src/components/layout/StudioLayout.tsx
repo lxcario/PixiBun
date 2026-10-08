@@ -24,6 +24,8 @@ import { executeImageImport } from '@/lib/project/imageImportExecution';
 import type { PendingRecoveryContext } from '@/lib/recovery/projectAdmission';
 import { getLocalSaveLabel } from '@/lib/project/localSaveLabel';
 import type { ExportType } from '@/components/modals/export/ExportTabsNav';
+import { openBlankWorkspace, openStarterWorkspace } from '@/lib/project/starterWorkspace';
+import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 
 import { useStudioAutosave } from '@/hooks/studio/useStudioAutosave';
 import { useStudioClipboard } from '@/hooks/studio/useStudioClipboard';
@@ -148,6 +150,30 @@ export const StudioLayout: React.FC = () => {
   const pendingRecovery =
     lifecycleState.phase === 'active' ? lifecycleState.pendingRecovery : undefined;
 
+  useEffect(() => {
+    if (lifecycleState.phase !== 'active') return;
+    const url = new URL(window.location.href), templateId = url.searchParams.get('template');
+    const blankSize = [16, 24, 32, 48].find(size => url.searchParams.get('width') === String(size) && url.searchParams.get('height') === String(size));
+    if (templateId ? !STARTER_TEMPLATES.some(template => template.id === templateId) : !blankSize) return;
+    if (lifecycleState.pendingRecovery || lifecycleState.startupIssue) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: 'Resolve the current drawing recovery or storage problem before opening a new drawing.' });
+      return;
+    }
+    const controller = new AbortController();
+    const opening = templateId ? openStarterWorkspace(templateId, runAutosave, controller.signal) : openBlankWorkspace(blankSize!, runAutosave, controller.signal);
+    void opening.then(opened => {
+      if (!opened || controller.signal.aborted) return;
+      // Reload must restore the edited/saved starter, rather than create another copy.
+      if (templateId) url.searchParams.delete('template');
+      else { url.searchParams.delete('width'); url.searchParams.delete('height'); }
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    }).catch((error: unknown) => {
+      if (controller.signal.aborted) return;
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'The new drawing could not be opened. Your current drawing is unchanged.' });
+    });
+    return () => controller.abort();
+  }, [lifecycleState, runAutosave]);
+
   // Auto-prompt Recovery Modal on startup when pending recovery is detected
   useEffect(() => {
     if (pendingRecovery) {
@@ -161,8 +187,8 @@ export const StudioLayout: React.FC = () => {
 
   const { saveToast, triggerSaveToast, handleSaveDesktopProject } = useStudioFileSystem();
 
-  const canUndo = useStudioStore((s) => s.canUndo);
-  const canRedo = useStudioStore((s) => s.canRedo);
+  const canUndo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.past.length || !!s.motionHistory?.pending : s.canUndo);
+  const canRedo = useStudioStore((s) => s.motionPart ? !!s.motionHistory?.future.length : s.canRedo);
   const setCanvasSize = useStudioStore((s) => s.setCanvasSize);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
   const projectName = useStudioStore((s) => s.projectName);

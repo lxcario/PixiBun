@@ -1,0 +1,70 @@
+
+[1m[36m╔═════════════════════════════════════════════════════════════════════════╗[0m
+[1m[36m║             🛡️  PIXIBUN ATELIER — LOCAL CI/CD QUALITY GATE              ║[0m
+[1m[36m╚═════════════════════════════════════════════════════════════════════════╝[0m
+[2mRunning zero-cost local verification suite before release / push...[0m
+
+[1m[35m[1/4] Stage 1: Documentation & Sync Invariant Audit[0m
+[2m  ↳ Checks local links, historical paths, generated discovery, selected source contracts and version parity.[0m
+
+> pixibun@1.14.1 verify:docs
+> node scripts/verifyDocIntegrity.mjs
+
+Changelog paths: 279 existing, 6 approved removed historical references.
+Local links/headings: 2206 destinations across 169 owned Markdown files.
+Runner enumeration and selected tool/encoder/runtime contracts checked; enumeration is not a verdict.
+Selected documentation checks passed. Narrative accuracy and qualification require review.
+[32m✓ Stage 1: Documentation & Sync Invariant Audit PASSED in 38.39s[0m
+
+[1m[35m[2/4] Stage 2: Static Type Safety Invariant (0 Errors)[0m
+[2m  ↳ Enforces strict TypeScript compilation without type-stripping.[0m
+
+> pixibun@1.14.1 typecheck
+> tsc --noEmit
+
+[32m✓ Stage 2: Static Type Safety Invariant (0 Errors) PASSED in 3.84s[0m
+
+[1m[35m[3/4] Stage 3: Lint and accessibility rules[0m
+[2m  ↳ Checks source and test lint rules.[0m
+
+> pixibun@1.14.1 lint
+> eslint src tests scripts *.config.mjs *.config.ts
+
+[32m✓ Stage 3: Lint and accessibility rules PASSED in 24.75s[0m
+
+[1m[35m[4/4] Stage 4: Unit & Defensive Invariant Test Suite[0m
+[2m  ↳ Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).[0m
+
+> pixibun@1.14.1 test
+> vitest run
+
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/rotSpriteContourPreservation.test.ts (4 tests | 1 failed) 882ms
+     × rotates sub-millisecond on micro-sprites 537ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/rotSpriteContourPreservation.test.ts > RotSprite Contour & 1px Outline Preservation > rotates sub-millisecond on micro-sprites
+AssertionError: expected 10.494641999999999 to be less than 10
+ ❯ tests/rotSpriteContourPreservation.test.ts:197:22
+    195|     const t1 = performance.now();
+    196|     const msPerRot = (t1 - t0) / 50;
+    197|     expect(msPerRot).toBeLessThan(10);
+       |                      ^
+    198|   });
+    199|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 193 passed (194)
+      Tests  1 failed | 2019 passed (2020)
+   Start at  13:37:41
+   Duration  39.95s (transform 63.94s, setup 11.36s, import 181.46s, tests 122.60s, environment 113.14s)
+
+
+[1m[31m❌ FAILED: Stage 4: Unit & Defensive Invariant Test Suite (exited with code 1) [40.93s][0m
+[33m⚠️  A configured check failed; this runner stopped. Hooks and external release policy are separate.[0m
+

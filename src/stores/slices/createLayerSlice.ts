@@ -85,6 +85,10 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
       if (state.activeLayerId === layerId) {
         state.activeLayerId = currentFrame.layers[0].id;
       }
+      if (state.motionPart?.sourceLayerId === layerId) {
+        state.motionPart = null;
+        state.motionPreviewIndex = null;
+      }
       state.isDirty = true;
       state.editRevision += 1;
     });

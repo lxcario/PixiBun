@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/motionRigPersistence.test.tsx (25 tests | 3 failed) 198ms
+     × reconstructs an exact masked part with stable IDs and fresh registered source versions 63ms
+     × updates a saved part in place and library edits undo/redo without touching pixels 12ms
+     × retains definitions through database validation, rename and gallery duplication 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/motionRigPersistence.test.tsx > saved motion source restoration and persistence > reconstructs an exact masked part with stable IDs and fresh registered source versions
+AssertionError: expected { ok: false, …(1) } to deeply equal { ok: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
++   "reason": "The saved source artwork changed. Capture and save a new rig.",
+  }
+
+ ❯ tests/motionRigPersistence.test.tsx:85:41
+     83|     const replacement = registry.createEntry(32, 32); replacement.ctx.…
+     84|     useStudioStore.getState().loadProjectState({ ...createBlankProject…
+     85|     expect(await openMotionRig(rig.id)).toEqual({ ok: true });
+       |                                         ^
+     86|     const part = useStudioStore.getState().motionPart!;
+     87|     expect(part.id).toBe(rig.part.id); expect(part.sourceVersion.proje…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/motionRigPersistence.test.tsx > saved motion source restoration and persistence > updates a saved part in place and library edits undo/redo without touching pixels
+TypeError: Cannot read properties of undefined (reading 'name')
+ ❯ tests/motionRigPersistence.test.tsx:114:51
+    112|     act(() => { deleteMotionRig(rig.id); }); expect(useStudioStore.get…
+    113|     act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { …
+    114|     expect(useStudioStore.getState().motionRigs[0].name).toBe('Revised…
+       |                                                   ^
+    115|     act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { …
+    116|     expect(useStudioStore.getState().motionRigs).toHaveLength(0); expe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/motionRigPersistence.test.tsx > saved motion source restoration and persistence > retains definitions through database validation, rename and gallery duplication
+DatabaseClosedError: MissingAPIError IndexedDB API missing. Please visit https://tinyurl.com/y2uuvskb
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 49 passed (52)
+   Start at  13:19:49
+   Duration  3.73s (transform 1.65s, setup 165ms, import 4.26s, tests 292ms, environment 730ms)
+

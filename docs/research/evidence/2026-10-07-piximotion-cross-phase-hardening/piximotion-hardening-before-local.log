@@ -1,0 +1,390 @@
+
+ RUN  v4.1.11 D:/PixiBun
+
+ ❯ tests/paethRotation.test.ts (7 tests | 3 failed) 28ms
+     × uses the same pixel centers as rigid motion at 90 degrees 9ms
+     × uses the same pixel centers as rigid motion at 180 degrees 4ms
+     × uses the same pixel centers as rigid motion at 270 degrees 3ms
+ ❯ tests/pixiMotionBindings.test.tsx (26 tests | 2 failed) 264ms
+     × copies source-frame palette bindings to generated frame IDs and restores them with Undo/Redo 32ms
+     × refuses binding overflow before rendering or changing the workspace 10ms
+ ❯ tests/workspaceJob.test.tsx (14 tests | 1 failed) 134ms
+   × does not recreate a deleted source when cancelling a lifted transform after a project switch 27ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/paethRotation.test.ts > Alan Paeth 3-Shear Rotation Engine > uses the same pixel centers as rigid motion at 90 degrees
+AssertionError: expected Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ] to deeply equal Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ]
+
+- Expected
++ Received
+
+@@ -173,10 +173,14 @@
+    0,
+    0,
+    0,
+    0,
+    0,
++   0,
++   0,
++   0,
++   0,
+    4,
+    30,
+    40,
+    255,
+    1,
+@@ -261,14 +265,10 @@
+    255,
+    3,
+    30,
+    40,
+    255,
+-   0,
+-   0,
+-   0,
+-   0,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+ ❯ tests/paethRotation.test.ts:11:8
+      9|     const src = { width: 3, height: 2, data }, angle = deg * Math.PI /…
+     10|     expect(paethRotate(src, angle, 1.5, 1, 10, 10, 5, 5).data)
+     11|       .toEqual(rotSprite(src, angle, 1.5, 1, 10, 10, 5, 5).data);
+       |        ^
+     12|   });
+     13|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/paethRotation.test.ts > Alan Paeth 3-Shear Rotation Engine > uses the same pixel centers as rigid motion at 180 degrees
+AssertionError: expected Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ] to deeply equal Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ]
+
+- Expected
++ Received
+
+@@ -173,22 +173,10 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   6,
+-   30,
+-   40,
+-   255,
+-   5,
+-   30,
+-   40,
+-   255,
+-   4,
+-   30,
+-   40,
+-   255,
+    0,
+    0,
+    0,
+    0,
+    0,
+@@ -213,22 +201,10 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   3,
+-   30,
+-   40,
+-   255,
+-   2,
+-   30,
+-   40,
+-   255,
+-   1,
+-   30,
+-   40,
+-   255,
+    0,
+    0,
+    0,
+    0,
+    0,
+@@ -241,10 +217,22 @@
+    0,
+    0,
+    0,
+    0,
+    0,
++   6,
++   30,
++   40,
++   255,
++   5,
++   30,
++   40,
++   255,
++   4,
++   30,
++   40,
++   255,
+    0,
+    0,
+    0,
+    0,
+    0,
+@@ -269,10 +257,22 @@
+    0,
+    0,
+    0,
+    0,
+    0,
++   3,
++   30,
++   40,
++   255,
++   2,
++   30,
++   40,
++   255,
++   1,
++   30,
++   40,
++   255,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+ ❯ tests/paethRotation.test.ts:11:8
+      9|     const src = { width: 3, height: 2, data }, angle = deg * Math.PI /…
+     10|     expect(paethRotate(src, angle, 1.5, 1, 10, 10, 5, 5).data)
+     11|       .toEqual(rotSprite(src, angle, 1.5, 1, 10, 10, 5, 5).data);
+       |        ^
+     12|   });
+     13|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/paethRotation.test.ts > Alan Paeth 3-Shear Rotation Engine > uses the same pixel centers as rigid motion at 270 degrees
+AssertionError: expected Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ] to deeply equal Uint8ClampedArray[ 0, 0, 0, 0, 0, …(401) ]
+
+- Expected
++ Received
+
+@@ -173,18 +173,11 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   3,
+-   30,
+-   40,
+-   255,
+-   6,
+-   30,
+-   40,
+-   255,
++   0,
+    0,
+    0,
+    0,
+    0,
+    0,
+@@ -213,15 +206,22 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   2,
++   0,
++   0,
++   0,
++   0,
++   0,
++   0,
++   0,
++   3,
+    30,
+    40,
+    255,
+-   5,
++   6,
+    30,
+    40,
+    255,
+    0,
+    0,
+@@ -253,24 +253,18 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   1,
++   2,
+    30,
+    40,
+    255,
+-   4,
++   5,
+    30,
+    40,
+    255,
+-   0,
+-   0,
+-   0,
+-   0,
+-   0,
+-   0,
+    0,
+    0,
+    0,
+    0,
+    0,
+@@ -299,12 +293,18 @@
+    0,
+    0,
+    0,
+    0,
+    0,
+-   0,
+-   0,
++   1,
++   30,
++   40,
++   255,
++   4,
++   30,
++   40,
++   255,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+ ❯ tests/paethRotation.test.ts:11:8
+      9|     const src = { width: 3, height: 2, data }, angle = deg * Math.PI /…
+     10|     expect(paethRotate(src, angle, 1.5, 1, 10, 10, 5, 5).data)
+     11|       .toEqual(rotSprite(src, angle, 1.5, 1, 10, 10, 5, 5).data);
+       |        ^
+     12|   });
+     13|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/pixiMotionBindings.test.tsx > PixiMotion source identity and stale artwork protection > copies source-frame palette bindings to generated frame IDs and restores them with Undo/Redo
+AssertionError: expected [ 'frame-muy0fcny-4-1xv1wr5' ] to deeply equal [ 'frame-muy0fcny-4-1xv1wr5', …(2) ]
+
+- Expected
++ Received
+
+  [
+    "frame-muy0fcny-4-1xv1wr5",
+-   "frame-muy0fcog-6-vg4acg",
+-   "frame-muy0fcog-8-1fc2sz8",
+  ]
+
+ ❯ tests/pixiMotionBindings.test.tsx:54:71
+     52|     expect(bakeMotionToTimeline(part).ok).toBe(true);
+     53|     const baked = useStudioStore.getState();
+     54|     expect(baked.palettes[0].semantics!.bindings.map(b => b.frameId)).…
+       |                                                                       ^
+     55|     expect(new Set(baked.palettes[0].semantics!.bindings.map(b => b.id…
+     56|     const after = structuredClone(baked.palettes);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/pixiMotionBindings.test.tsx > PixiMotion source identity and stale artwork protection > refuses binding overflow before rendering or changing the workspace
+AssertionError: expected { ok: true, addedFrameCount: 2 } to match object { Object (ok, reason) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": StringMatching /palette binding limit/,
++   "ok": true,
+  }
+
+ ❯ tests/pixiMotionBindings.test.tsx:69:40
+     67|     useStudioStore.setState({ palettes: [{ ...palette, semantics }] });
+     68|     const before = checkpoint(), renderer = vi.spyOn(rotation, 'rotSpr…
+     69|     expect(bakeMotionToTimeline(part)).toMatchObject({ ok: false, reas…
+       |                                        ^
+     70|     expect(renderer).not.toHaveBeenCalled(); expectUnchanged(before);
+     71|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/workspaceJob.test.tsx > does not recreate a deleted source when cancelling a lifted transform after a project switch
+AssertionError: expected Map{ …(1) } to deeply equal Map{}
+
+- Expected
++ Received
+
+- Map {}
++ Map {
++   "layer-muy0fdpd-m-9iar01" => {
++     "canvas": <canvas
++       height="32"
++       width="32"
++     />,
++     "contentRevision": 1,
++     "ctx": {
++       "arc": [Function arc],
++       "beginPath": [Function beginPath],
++       "clearRect": [Function clearRect],
++       "closePath": [Function closePath],
++       "createImageData": [Function createImageData],
++       "createLinearGradient": [Function createLinearGradient],
++       "createRadialGradient": [Function createRadialGradient],
++       "drawImage": [Function drawImage],
++       "fill": [Function fill],
++       "fillRect": [Function fillRect],
++       "fillStyle": "#000000",
++       "getImageData": [Function getImageData],
++       "globalAlpha": 1,
++       "globalCompositeOperation": "source-over",
++       "imageSmoothingEnabled": false,
++       "lineTo": [Function lineTo],
++       "moveTo": [Function moveTo],
++       "putImageData": [Function putImageData],
++       "resetTransform": [Function resetTransform],
++       "restore": [Function restore],
++       "rotate": [Function rotate],
++       "save": [Function save],
++       "scale": [Function scale],
++       "setLineDash": [Function setLineDash],
++       "setTransform": [Function setTransform],
++       "stroke": [Function stroke],
++       "strokeRect": [Function strokeRect],
++       "translate": [Function translate],
++     },
++     "generation": 10,
++   },
++ }
+
+ ❯ tests/workspaceJob.test.tsx:121:29
+    119|   const before = snapshotBuffers();
+    120|   act(() => drawing.result.current.cancelTransform());
+    121|   expect(snapshotBuffers()).toEqual(before);
+       |                             ^
+    122| });
+    123| it('rejects an uncooperative late free-transform result after changing…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  6 failed | 41 passed (47)
+   Start at  14:14:03
+   Duration  4.81s (transform 987ms, setup 58ms, import 2.97s, tests 426ms, environment 705ms)
+

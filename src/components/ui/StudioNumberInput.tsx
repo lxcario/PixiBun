@@ -41,7 +41,7 @@ export default function StudioNumberInput({
       return;
     }
     let parsed = parseFloat(valStr);
-    if (isNaN(parsed)) {
+    if (!Number.isFinite(parsed)) {
       setLocalValue(value.toString());
       return;
     }

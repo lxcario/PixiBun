@@ -6,6 +6,8 @@ All seven phases in the [2 October repair plan](2026-10-02-feature-repairs.md) a
 
 ## Active proposals and evaluation
 
+The local PixiMotion work has delivered scoped host foundations and one rigid-part capture/pose/preview/bake workflow with saved definitions. [Cross-phase status](../research/2026-10-07-piximotion-cross-phase-hardening.md) distinguishes these five foundation phases from the master proposal's delivery order: cel baking is already present. The later [editing/quality follow-up](2026-10-07-editing-quality-and-release.md) implements compact parameter history and precise controls; its final qualification is tracked separately. Multi-part rigs, deformation and automatic animation are still proposals. This does not complete the v2 infrastructure roadmap.
+
 - [Research-grounded roadmap](research_grounded_product_roadmap.md): delivered bounded foundations, broader Effect Inspector/depth/structure collaboration still proposed.
 - [Learn by Making](learn-by-making-2026.md): experiment with safety gates; recruitment and measured outcomes not established.
 - [v2 vision](../../V2_VISION.md): GPU/SIMD/tree/P3/native/neural proposals with decision gates.

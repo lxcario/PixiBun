@@ -7,12 +7,63 @@ import type { DitherMatrixType } from '@/types/tools';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { TactileButton } from '@/components/ui/TactileButton';
+import { captureMotionPart } from '@/lib/animation/pixiMotion';
+import { snapshotBuffers } from '@/lib/engine/bufferRegistry';
+import { studioEvents } from '@/lib/events/studioEvents';
+import { isNormalLayer } from '@/lib/export/normalLayers';
+import { coDrawBridge } from '@/lib/sync/coDrawBridge';
 
 export function ToolSettingsPanel() {
   const t = useStudioStore((s) => s.tools);
   const state = useStudioStore();
   const gradient = useWorkspaceStore((s) => s.gradient);
   const setGradient = useWorkspaceStore((s) => s.setGradient);
+
+  const handleCreateMotionPart = () => {
+    try {
+      const currentStore = useStudioStore.getState();
+      const { canvasWidth, canvasHeight, activeFrameIndex, activeLayerId, frames, selection, selectionMask } = currentStore;
+      const currentFrame = frames[activeFrameIndex];
+      const layer = currentFrame?.layers.find(l => l.id === activeLayerId);
+      if (!layer || layer.locked) {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: 'Cannot create motion part on a locked layer.',
+        });
+        return;
+      }
+      if (currentStore.hasFloatingSelection) throw new Error('Commit or cancel the floating selection before creating a motion part.');
+      if (coDrawBridge.getRole() !== null) throw new Error('Close co-draw before creating motion parts.');
+      if (isNormalLayer(layer)) throw new Error('Motion parts currently support color artwork. Use layer rotation for normal maps.');
+      const entry = snapshotBuffers().get(activeLayerId);
+      if (!entry) throw new Error('Paint some artwork before creating a motion part.');
+      const part = captureMotionPart({
+        canvasWidth,
+        canvasHeight,
+        activeFrameIndex,
+        activeLayerId,
+        frames,
+        selection,
+        selectionMask,
+        layerCanvas: entry.canvas,
+      });
+      if (part) {
+        currentStore.setMotionPart(part);
+        currentStore.setMotionActivePose('end');
+        studioEvents.emit('pixibun:toast', {
+          type: 'default',
+          message: 'Motion Part created! Drag pivot or pose END frame, then scrub or bake.',
+        });
+      } else {
+        studioEvents.emit('pixibun:toast', {
+          type: 'error',
+          message: 'Selection is empty or has no visible pixels.',
+        });
+      }
+    } catch (error) {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'Could not capture this motion part.' });
+    }
+  };
 
   const meta = CANONICAL_TOOLS.find((tool) => tool.id === t.activeTool);
   const isBrushTool = ['pen', 'eraser', 'curve', 'dither', 'line', 'isometric-line', 'rectangle', 'ellipse'].includes(t.activeTool);
@@ -74,6 +125,15 @@ export function ToolSettingsPanel() {
 
   return (
     <section aria-label="Detailed tool settings" className="p-3 space-y-3 text-[var(--text-heading)] select-none">
+      {!state.motionPart && <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2">
+        <h3 className="font-bold text-xs">PixiMotion</h3>
+        <p className="text-[11px] text-[var(--text-muted)]">{state.selection
+          ? 'Animate the selected artwork as one rigid part.'
+          : 'Animate the active layer as one rigid part, or select an area first.'}</p>
+        <TactileButton variant="primary" data-testid="create-motion-part-btn" onClick={handleCreateMotionPart} className="w-full justify-center font-bold py-1.5">
+          <PixelIcon name="rotate" size={13} /><span>Create Motion Part</span>
+        </TactileButton>
+      </div>}
       {/* 1. Tool Identity Card */}
       <div className="flex items-center gap-2.5 p-2.5 rounded-[4px] bg-[var(--desk-surface-raised)]/60 border border-[var(--desk-border)] shadow-xs">
         <div className="w-8 h-8 rounded-[3px] bg-[var(--surface-0)] border border-[var(--accent-gold)] flex items-center justify-center shrink-0 shadow-xs text-[var(--accent-gold)]">
@@ -265,16 +325,36 @@ export function ToolSettingsPanel() {
       )}
 
       {t.activeTool.startsWith('select-') && (
-        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-1.5 text-xs shadow-xs">
-          <p className="font-medium text-[var(--text-heading)]">Selection Shortcuts</p>
-          <ul className="text-[11px] text-[var(--text-muted)] space-y-1 list-disc list-inside">
-            <li><kbd className="font-mono text-[var(--accent-gold)]">Shift</kbd> + drag: Add to selection</li>
-            <li><kbd className="font-mono text-[var(--accent-gold)]">Alt</kbd> + drag: Subtract from selection</li>
-            <li>Drag handles to resize, rotate, or move</li>
-            <li><kbd className="font-mono text-[var(--accent-gold)]">Enter</kbd>: Commit transform</li>
-            <li><kbd className="font-mono text-[var(--accent-gold)]">Esc</kbd>: Cancel / deselect</li>
-          </ul>
-        </div>
+        <>
+          <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
+            <span className="font-bold text-xs text-[var(--text-heading)]">Rotation Engine</span>
+            <select
+              aria-label="Rotation algorithm"
+              value={t.rotationAlgorithm ?? 'rotsprite'}
+              onChange={(e) => state.setRotationAlgorithm(e.target.value as 'rotsprite' | 'paeth')}
+              className="block w-full p-1.5 bg-[var(--surface-1)] border border-[var(--desk-border)] rounded-[2px] text-xs text-[var(--text-heading)] cursor-pointer"
+            >
+              <option value="rotsprite">RotSprite v2 (Contours & Outlines)</option>
+              <option value="paeth">Paeth 3-Shear (Dither & Textures)</option>
+            </select>
+            <p className="text-[10px] leading-relaxed text-[var(--text-muted)]">
+              {(t.rotationAlgorithm ?? 'rotsprite') === 'rotsprite'
+                ? '8× subpixel majority voting & contour refinement. Best for clean character outlines and cel shapes.'
+                : 'Area-preserving 1D shear decomposition. Strictly preserves pixel count and dither without Moiré clumping.'}
+            </p>
+          </div>
+
+          <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-1.5 text-xs shadow-xs">
+            <p className="font-medium text-[var(--text-heading)]">Selection Shortcuts</p>
+            <ul className="text-[11px] text-[var(--text-muted)] space-y-1 list-disc list-inside">
+              <li><kbd className="font-mono text-[var(--accent-gold)]">Shift</kbd> + drag: Add to selection</li>
+              <li><kbd className="font-mono text-[var(--accent-gold)]">Alt</kbd> + drag: Subtract from selection</li>
+              <li>Drag handles to resize, rotate, or move</li>
+              <li><kbd className="font-mono text-[var(--accent-gold)]">Enter</kbd>: Commit transform</li>
+              <li><kbd className="font-mono text-[var(--accent-gold)]">Esc</kbd>: Cancel / deselect</li>
+            </ul>
+          </div>
+        </>
       )}
 
       {t.activeTool === 'eyedropper' && (

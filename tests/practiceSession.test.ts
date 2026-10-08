@@ -43,6 +43,11 @@ describe('isolated practice sessions', () => {
     originalId = 'original-' + ++sequence;
     useStudioStore.setState({ ...useStudioStore.getInitialState(), currentProjectId: originalId,
       projectName: 'My warm drawing', canvasWidth: 2, canvasHeight: 2, fps: 17,
+      motionRigs: [{ version: 1, id: 'original-rig', name: 'Original motion', part: {
+        id: 'original-part', sourceFrameId: 'original-frame', sourceLayerId: 'original-layer', width: 2, height: 2, sourceSha256: 'a'.repeat(64),
+        bounds: { x: 0, y: 0, w: 1, h: 1 }, pivot: { x: 0, y: 0 }, startPose: { translationX: 0, translationY: 0, rotation: 0 },
+        endPose: { translationX: 1, translationY: 0, rotation: 0 }, frameCount: 3, easing: 'linear', maskRuns: null,
+      } }],
       frames: [{ id: 'original-frame', durationMs: 213, layers: [{
         id: 'original-layer', name: 'Eye details', visible: true, locked: true, opacity: 0.75, blendMode: 'multiply',
       }] }], activeLayerId: 'original-layer', activeFrameIndex: 0, canUndo: true, canRedo: true, isDirty: true,
@@ -80,6 +85,7 @@ describe('isolated practice sessions', () => {
     const file = DesktopFileSystem.captureAssociation();
     const session = beginPractice(prepared);
     expect(useStudioStore.getState().currentProjectId).not.toBe(originalId);
+    expect(useStudioStore.getState().motionRigs).toEqual([]);
     expect(mocks.start).toHaveBeenCalledTimes(1);
     expect(snapshotBuffers().has('original-layer')).toBe(false);
     expect(DesktopFileSystem.getActiveHandle()).toBeNull();

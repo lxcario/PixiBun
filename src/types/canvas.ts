@@ -139,6 +139,7 @@ export interface StructuralHistoryStep {
   activeFrameIndex: number;
   activeLayerId: string;
   clips?: AnimationClip[];
+  motionRigs?: import('@/lib/animation/motionRigDocument').MotionRig[];
   activeClipId?: string | null;
   palettes?: import('./palette').ColorPalette[];
   currentPaletteId?: string;

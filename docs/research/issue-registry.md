@@ -1,6 +1,6 @@
 # Issue and research registry
 
-Updated 3 October 2026. This registry separates corrections to the [documentation audit](2026-10-02-documentation-codebase-audit.md) from research that cannot be completed by rewriting Markdown. The [current status](../current-status.md) links the completed local phases and remaining production gates; the earlier [remediation record](2026-10-02-audit-remediation.md) retains its own execution scope. Git history identifies publication; no deployed revision or production release approval is established here.
+Updated 8 October 2026. This registry separates corrections to the [documentation audit](2026-10-02-documentation-codebase-audit.md) from research that cannot be completed by rewriting Markdown. The [current status](../current-status.md) links the completed local phases and remaining production gates; the earlier [remediation record](2026-10-02-audit-remediation.md) retains its own execution scope. Git history identifies publication; no deployed revision or production release approval is established here.
 
 ## Documentation audit corrections
 
@@ -15,7 +15,7 @@ Updated 3 October 2026. This registry separates corrections to the [documentatio
 | D07 | Compositor ownership/default and completed source comments corrected | Fresh outputs retained for independent frames |
 | D08 | Tracked/excluded memory table and admission-estimate scope | Peak and long-duration device profile pending |
 | D09 | WebM MediaRecorder path and alpha limitations corrected | Additional codec/viewer qualification pending |
-| D10 | APNG store-block/Blob behavior documented | Compression/streaming sink is future optimization |
+| D10 | APNG now prefers native compression with stored-block fallback and yields between frames | Output is still an accumulated Blob; a streaming sink/worker encoder and broad device profiling remain separate |
 | D11 | MP4 even padding described accurately | Browser codec availability varies |
 | D12 | Actual replay filename, bounded retained-history/baseline scope | Durable full-session recorder not shipped |
 | D13 | Forward-difference/median-cut/Lloyd names corrected | Summary and converter stay distinct |
@@ -74,6 +74,8 @@ Phase 5 also found **H08: reduced-motion welcome startup**. Auto-orbit initializ
 Visual review also found physical `blobType` leaking onto logical ArrayBuffer-backed records, causing strict recovery to refuse them, and failure toasts blurred behind the dialog. Phase 6 removes that physical field during conversion, retains unknown-field rejection and shows backup failures inside the dialog. Storage/read regressions and both legacy/current recovery-copy paths cover the conversion; named browser checks cover the dialog. Physical-device and assistive-technology qualification remains separate.
 
 ## Outstanding research and qualification
+
+The [7 October cross-phase review](2026-10-07-piximotion-cross-phase-hardening.md) repairs the verified motion ownership, preview-cache, palette-copy, activation and memory/measurement gaps. The bounded rigid-part subset now has local regression evidence. The [editing follow-up](2026-10-07-editing-quality-release-hardening.md) implements bounded pose/pivot parameter Undo and dedicated asynchronous preview/bake with cancellation. The [rectangle hardening](2026-10-08-motion-bounds-hardening.md) reduces small-part raster work and refuses dependent-layer misalignment. The [publication review](2026-10-08-session-review-publication.md) aligns saved fractional-position preview sampling and uses geometric centers for newly captured or explicitly centered odd-size parts. Existing saved pivots remain accepted. Multi-part/source-rebinding formats, large-part/device responsiveness, temporal/artwork evaluation and complete external TestSprite assertions remain open. These are motion-specific follow-ups in addition to the qualification rows below.
 
 [Phase 7](2026-10-02-feature-repairs-phase7.md) records broader regression and a separate [local candidate assessment](../releases/2026-10-02-local-candidate-assessment.md). The Next.js dependency advisory is patched locally; production approval remains open. The isolated September reader diagnostic establishes a specific incompatible rollback target, not a qualified replacement. Public Vercel smoke and a worker label do not identify the full deployed candidate; the custom-domain lookup failed from the test environment. None of these observations closes the rows below.
 

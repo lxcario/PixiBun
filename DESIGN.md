@@ -116,7 +116,7 @@ graph LR
 | `--text-heading` | `#221233` | Crisp legible ink headings |
 | `--text-body` | `#4a3559` | Legible morning body text |
 | `--text-muted` | `#685179` | High-contrast muted metadata |
-| `--accent-gold` | `#d97818` | Morning sunlight buttons |
+| `--accent-gold` | `#8a4500` | Morning sunlight buttons |
 | `--accent-wisteria` | `#9940b5` | Active tool indicator & wisteria accents |
 | `--accent-plum` | `#7e2b96` | Deep plum active tool accents |
 
@@ -147,7 +147,7 @@ stateDiagram-v2
 
 ## 4. Tactile Physics & Button Mechanical Standard
 
-All interactive buttons and tool wells in PixiBun adhere to a strict 4-state physical mechanics protocol:
+The following is a design target for tactile buttons, not a claim that every existing control has identical border, scale, motion or focus styles. Current primitives also use the quiet mechanical tokens in `globals.css`:
 
 ```mermaid
 stateDiagram-v2
@@ -230,7 +230,7 @@ The Bucket toolbar exposes Connected/Global, a separately labeled tolerance slid
 
 ### Viewport Fit & Scale Navigation Standards
 Keyboard conventions for rapid drafting ergonomics:
-* **`Ctrl + 0` (Fit to Screen):** Recomputes zoom and offsets so the entire canvas fills the viewport with at least 32px padding on all sides, aligned to integer zoom steps ($100\%, 200\%, \dots$).
+* **`Ctrl + 0` (Fit to Screen):** `calculateFitZoom` subtracts 48 px from the available width/height, selects a fitting zoom-ladder value at or above 100%, and uses integer percentages below 100% for large canvases. The configured minimum can limit fitting on very small viewports; this is not a fixed 32px margin on every side or an exclusively whole-multiple zoom policy.
 * **`Ctrl + 1` (100% Real Scale):** Resets viewport zoom to exactly 100% with the canvas centered in the drafting desk.
 
 ### Accessible Form Controls & Screen Reader Semantics
@@ -243,9 +243,7 @@ Keyboard conventions for rapid drafting ergonomics:
 
 ### Classical Timing vs. Spacing Principles
 Grounded in Richard Williams (*The Animator's Survival Kit*) and Disney's 12 Principles of Animation:
-* **Proportional Timeline Frame Cards:** Rather than uniform-width cards, timeline frame cards scale their horizontal width proportionally when `durationMs` deviates from the baseline frame duration ($T_{\text{base}} = 1000 / \text{fps}$):
-  $$W_{\text{card}} = \text{clamp}\left(48\text{px}, \; 48\text{px} \times \frac{\text{durationMs}}{T_{\text{base}}}, \; 160\text{px}\right)$$
-* **Timing Hold Badge:** Frames with $\text{durationMs} \ge 2 \times T_{\text{base}}$ display an understated amber duration pill (`+125ms`) on the top-right corner of the card.
+* **Current Timeline Frame Cards:** [BottomTimeline](src/components/layout/BottomTimeline.tsx) uses fixed 72px-wide cards. Each displays its frame number and duration in milliseconds; an absent explicit hold falls back to `round(1000 / fps)`. Duration-proportional card widths and a special long-hold badge are not implemented controls.
 * **Ghost Frame Spacing Falloff:** Onion skin ghost opacity scales down progressively with frame distance ($1 - 0.25 \times (\text{dist} - 1)$) so distant poses do not overwhelm adjacent in-betweens.
 
 ---
@@ -262,6 +260,8 @@ Grounded in Ben Shneiderman's 1983 direct-manipulation paradigm:
 ---
 
 ## 11. Tileset Palette & Stamping Workflow
+
+The stamp interaction below is a design proposal. The canonical 17-tool list has no tile-stamp tool. Current tile controls provide selected-tile repeat/export, unique-tile bundles and contour previews, documented in [cleanup and tiles](docs/guides/pixitools-cleanup-and-tiles.md); the sprite-sheet importer has its own cell-size choices.
 
 ### Grid Partitioning & Slicing Viewport
 * **Tile Grid Geometry:** Strict integer grid overlay supporting $16\times16$, $24\times24$, and $32\times32$ pixel tiles.
@@ -295,25 +295,25 @@ When squint preview and a CVD lens are both selected, squint takes precedence.
 
 ## 14. Studio Design System Primitives
 
-Phase 62 introduces a standardized component library for all studio controls, replacing ad-hoc inline HTML with tactile, accessible primitives that inherit from the Lamplit Desk design language.
+The shared component library supplies tactile, labeled primitives. Current controls also include direct HTML and feature-specific forms; using a primitive alone is not accessibility conformance.
 
 ### Control Inventory
 
 | Primitive | Visual Behavior | Accessibility |
 |---|---|---|
-| **StudioSlider** | Real-time percentage fill gradient track with numeric badge and golden accent thumb | `role="slider"`, `aria-valuemin/max/now`, keyboard arrow control |
-| **StudioSelect** | Native `<select>` wrapper matching studio surface and border tokens | `role="listbox"` via native element, `focus-visible` highlight |
-| **StudioToggle** | Sliding pill switch with hidden checkbox input and gold indicator thumb | `role="switch"`, `aria-checked`, keyboard `Space` toggle |
-| **StudioNumberInput** | Labeled numeric input with min/max bounds, step increments, and unit suffix | `role="spinbutton"`, `aria-valuemin/max`, blur/Enter commit |
-| **StudioTooltip** | Delay-activated (300ms) tooltip with position anchors (top/bottom/left/right) | Keyboard focus trigger, shortcut badge display |
+| **StudioSlider** | Real-time percentage fill gradient track with numeric badge and golden accent thumb | Labeled native range, implicit slider semantics and native min/max/value; keyboard arrows |
+| **StudioSelect** | Native `<select>` wrapper matching studio surface and border tokens | Labeled native single-select, implicit combobox semantics; focus-visible highlight |
+| **StudioToggle** | Sliding pill visual with a hidden checkbox input and gold indicator thumb | Labeled native checkbox, checked state and keyboard Space; the visual button is hidden from accessibility and tab order |
+| **StudioNumberInput** | Labeled numeric input with min/max bounds, step increments, and unit suffix | Native number/spinbutton semantics; blur/Enter commit |
+| **StudioTooltip** | Delay-activated (400ms default) tooltip with position anchors (top/bottom/left/right) | Keyboard focus trigger, shortcut badge display |
 | **IconButton** | 24–32px square tactile button with ghost/surface/danger variants and translation depression | `focus-visible:ring-2`, `aria-label` required, disabled state |
 | **PanelSection** | Collapsible accordion with chevron indicator and action header slot | `aria-expanded`, persistent `localStorage` open/closed state |
 
 ### Token Integration
 All primitives consume the v2 design token scale defined in `globals.css`:
-* **Spacing:** `--space-0` (0px) through `--space-8` (32px) in 4px increments.
+* **Spacing:** `--space-0` through `--space-8` are 0, 2, 4, 6, 8, 12, 16, 24 and 32 px.
 * **Radii:** `--radius-sm` (2px) through `--radius-pill` (9999px).
-* **Motion:** `--motion-press` (40ms) to `--motion-timeline` (180ms) for mechanical interactions.
+* **Motion:** press 50ms, tool 90ms, popover 120ms, deck 160ms, timeline 180ms and modal 150ms.
 * **Surfaces:** `--surface-0` through `--surface-3` for layered elevation.
 
 ### Appearance Popover
@@ -363,7 +363,7 @@ Photometric lighting layers include a tactile `Edit FX` button:
 `PhotometricLightingSection.tsx` mounts a live heuristic analysis readout card listening to `pixibun:photometric-analysis`:
 * **Detected Form:** Upper-case badge indicating detected geometry (`CHARACTER`, `PROP`, `ORB`).
 * **Material & Source Light:** Reports inferred material preset and existing light coordinates ($\theta^\circ / \phi^\circ$).
-* **Directional Shading Cue:** Continuous heuristic strength rating (`Weak` $< 0.25$, `Medium` $< 0.65$, `Strong` $\ge 0.65$) describing the confidence of directional shading already present in the artwork.
+* **Directional Shading Cue:** Continuous heuristic strength rating (`Weak` $< 0.25$, `Medium` $< 0.65$, `Strong` $\ge 0.65$) describing the detected directional-shading cue, not a calibrated probability of correct interpretation.
 * **Surface Interpretation Overrides:** Tactical segmented buttons (`[ Auto | Character | Prop | Orb ]`) allowing the artist to override morphology heuristics when working on stylized or ambiguous subjects.
 
 ---

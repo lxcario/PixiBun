@@ -1,5 +1,21 @@
 # Documentation map
 
+The [8 October session review and publication](research/2026-10-08-session-review-publication.md) records the fresh Markdown/remaining-work review, fractional-preview and odd-pivot repairs, compact-control and saved-picker fixes, and explicitly requested push. Final local verdicts, external coverage limits, publication and deployment remain distinct.
+
+The [8 October motion rectangle hardening](research/2026-10-08-motion-bounds-hardening.md) tracks the current worker, clipping, sampling and dependent-layer safeguards. It follows the earlier editing checkpoint without changing its historical evidence.
+
+The [editing and quality follow-up](plans/2026-10-07-editing-quality-and-release.md) tracks the authorized five-area improvement pass. Its [dated execution record](research/2026-10-07-editing-quality-release-hardening.md) and [artist study kit](guides/artist-study.md) distinguish engineering checks from human/device/deployment qualification.
+
+The [7 October Markdown reconciliation](research/2026-10-07-markdown-codebase-reconciliation.md) inventories the main-workspace Markdown, corrects current renderer, motion, export and interface claims against their source owners, and preserves dated records and proposals with their original scope. Its per-file evidence separates link validation from semantic review.
+
+The [7 October cross-phase hardening](research/2026-10-07-piximotion-cross-phase-hardening.md) reviews all five PixiMotion foundation phases and the current renderer, repairs source ownership, palette copying, rig activation and raster measurements, and states the remaining pose-history and qualification work. It supersedes broad completion claims while preserving the earlier dated results.
+
+The [PixiMotion Phase 4 record](research/2026-10-07-piximotion-foundation-phase4.md) tracks stable temporary part IDs, captured source versions, stale-artwork refusal and staged cel baking. The [Phase 5 record](research/2026-10-07-piximotion-foundation-phase5.md) follows with persistent single-part definitions, portable backups and safe reopen. It separates local verification from inconclusive full-plan TestSprite results.
+
+The [PixiMotion foundation Phase 1 record](research/2026-10-06-piximotion-foundation-phase1.md) tracks the new local atomic-publication repair and its verification status.
+
+The [Phases 2–3 record](research/2026-10-06-piximotion-foundation-phases2-3.md) tracks source-owned computation and quality fixtures, including observed small-detail losses.
+
 Current contracts describe the main checkout. Dated release, audit, study, and execution records describe their stated revision and environment. A passing runner inventory or automated accessibility scan is not release approval or participant evaluation.
 
 | Reader | Canonical reference | Maintainer responsibility |
@@ -14,6 +30,10 @@ Current contracts describe the main checkout. Dated release, audit, study, and e
 The implementation owner for each subsystem owns its contract; there is no separate prose authority overriding source. Update claims where they occur instead of appending a universal status block to every file. Put stable behavior here; link dated measurements rather than copying counters.
 
 Historical material retains original results, failures, fixtures, and release decisions. Add a dated erratum or supersession link; do not change an old failed run into a pass. Separate worktrees and ignored transcripts remain local revision-specific material. Vendor skill instructions are maintained through their upstream mechanism.
+
+The [6 October PixiMotion review](research/2026-10-06-piximotion-amendment-review.md) assesses the supplied audit against the local proposal and primary sources. The subsequent [authorized spec amendments](research/2026-10-06-piximotion-spec-amendments.md) record the revised delivery slices, integration boundaries, academic basis and verification scope. The ignored master remains a design proposal; those dated records do not claim a shipped engine or measured animation quality. The subsequent local rigid-part subset is tracked separately in the Phase 4 record above.
+
+The [PixiBun readiness assessment](research/2026-10-06-pixibun-piximotion-readiness.md) inspects the actual editor foundations for that proposal, records fresh supported-runtime checks and separates reusable infrastructure, required motion integration work and later qualification. Its recommendation to begin a bounded first slice is not approval of the full engine or a deployed release.
 
 The [5 October deep product/code audit](research/2026-10-05-deep-product-code-audit.md) inventories the source, records targeted diagnostic and compiled-browser findings, and researches distinctive product directions. Its passing local gate, demonstrated defects, unmeasured performance risks, and proposed artist studies have separate scopes; it does not change implementation contracts or attest a deployment.
 
@@ -33,7 +53,7 @@ The subsequent [5 October publication record](research/2026-10-05-audit-publicat
 
 The [3 October audit session publication](research/2026-10-03-audit-session-publication.md) reconciles the session's current guides/contracts, seven repair phases and TestSprite execution. Main publication was explicitly requested; historical uncommitted-source and unavailable-run statements retain their at-run scope. Remote CI/deployment and release qualification remain separate.
 
-For practical examples, follow [palette creation and color cycling](guides/palettes-and-cycling.md). Current guides use dated screenshots of the current studio; historical research/release screenshots retain their original bytes and scope. A new UI illustration does not replace the validation evidence of an earlier run.
+For practical examples, follow [palette creation and color cycling](guides/palettes-and-cycling.md). Guide screenshots depict their dated studio captures; newer motion and rotation controls are described in text where no refreshed picture exists. Historical research/release screenshots retain their original bytes and scope. A new UI illustration does not replace the validation evidence of an earlier run.
 
 The [4 October artist-workspace report](research/2026-10-04-artist-workspace-feedback.md) connects all supplied feature requests to primary references and actual implementation decisions. The [workspace guide](guides/artist-workspace.md) covers layouts, pinned colors, palette previews, navigator, gradients, onion controls and focus mode; [execution evidence](research/2026-10-04-artist-workspace-verification.md) records local checks and the external TestSprite authorization boundary.
 

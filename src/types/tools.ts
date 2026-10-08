@@ -132,7 +132,10 @@ export interface ToolSettings {
   chiselWidth: number; // 1 to 32px
   chiselRidgeMode: boolean;
   normalBlendMode: 'rnm' | 'udn' | 'overwrite';
+  rotationAlgorithm: RotationAlgorithm;
 }
+
+export type RotationAlgorithm = 'rotsprite' | 'paeth';
 
 export type WallpaperGroup = 'none' | 'pm' | 'p2' | 'p4' | 'p4m' | 'p6m';
 

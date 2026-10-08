@@ -1,0 +1,377 @@
+[WebServer] (node:18956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 234 tests using 1 worker
+
+(node:22000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok   1 [chromium] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (4.6s)
+  ok   2 [chromium] › tests\production\artistWorkspace.spec.ts:18:5 › compiled layout, palette preview and focus restore the same artwork after reload (2.7s)
+  ok   3 [chromium] › tests\production\artistWorkspace.spec.ts:68:5 › compiled radial gradient uses the active palette and one undoable layer fill (2.4s)
+  ok   4 [chromium] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (3.0s)
+  ok   5 [chromium] › tests\production\artistWorkspace.spec.ts:117:5 › compiled palette application and reload retain two distinct strokes and a favorite (2.8s)
+  ok   6 [chromium] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (4.5s)
+  ok   7 [chromium] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (2.0s)
+  ok   8 [chromium] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (2.8s)
+  ok   9 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (5.8s)
+  -   10 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork
+  ok  11 [chromium] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (1.6s)
+  ok  12 [chromium] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork (4.4s)
+  ok  13 [chromium] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork (4.5s)
+  ok  14 [chromium] › tests\production\drawingAndPreviewControls.spec.ts:3:5 › compiled Iso FREE preserves steep, shallow and reversed slopes through preview and undo (2.3s)
+  ok  15 [chromium] › tests\production\drawingAndPreviewControls.spec.ts:4:5 › compiled Iso FREE preserves cardinal and edge slopes through preview and undo (1.9s)
+  ok  16 [chromium] › tests\production\drawingAndPreviewControls.spec.ts:5:5 › compiled Iso FREE preserves thick mirrored pixels through preview, undo and redo (1.3s)
+  ok  17 [chromium] › tests\production\drawingAndPreviewControls.spec.ts:6:5 › compiled Iso ON retains 2:1 projected strokes (1.0s)
+  ok  18 [chromium] › tests\production\drawingAndPreviewControls.spec.ts:7:5 › compiled floating preview has one window and preserves artwork through its controls (2.2s)
+  ok  19 [chromium] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (3.3s)
+  ok  20 [chromium] › tests\production\exportCompleteness.spec.ts:4:5 › compiled unique tile bundles reconstruct pixels and refuse stale results (3.7s)
+  ok  21 [chromium] › tests\production\exportCompleteness.spec.ts:5:5 › compiled tile slicing refuses partial edge cells (1.7s)
+  ok  22 [chromium] › tests\production\exportCompleteness.spec.ts:6:5 › compiled welcome APNG and GIF downloads are labeled text notes (4.0s)
+  ok  23 [chromium] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (1.9s)
+  ok  24 [chromium] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (1.7s)
+  ok  25 [chromium] › tests\production\exportCompleteness.spec.ts:10:5 › editing during tile encoding discards the pending result (2.0s)
+  ok  26 [chromium] › tests\production\exportHardening.spec.ts:24:5 › compiled cancelled backup drains two native snapshots, starts no queued layers and can export the same artwork afterward (2.5s)
+  ok  27 [chromium] › tests\production\exportHardening.spec.ts:49:5 › compiled native write failure aborts the staged adapter and reports failure; retry writes the preserved editable backup (1.6s)
+  ok  28 [chromium] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (3.8s)
+  ok  29 [chromium] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (3.3s)
+  ok  30 [chromium] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (1.5s)
+  ok  31 [chromium] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (809ms)
+  ok  32 [chromium] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (1.2s)
+  ok  33 [chromium] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (2.7s)
+  ok  34 [chromium] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload (2.5s)
+  ok  35 [chromium] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (5.6s)
+  ok  36 [chromium] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (1.9s)
+  ok  37 [chromium] › tests\production\memoryPaths.spec.ts:117:5 › compiled GIF preparation cancels before download and a later PNG export still works (5.9s)
+  ok  38 [chromium] › tests\production\motionRigPersistence.spec.ts:56:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (3.2s)
+  ok  39 [chromium] › tests\production\motionRigPersistence.spec.ts:74:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (2.5s)
+  ok  40 [chromium] › tests\production\motionRigPersistence.spec.ts:95:5 › opening a saved rig selects its source cel after a frame copy and cancellation restores that source display (1.6s)
+  x   41 [chromium] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored (11.5s)
+(node:4332) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  42 [chromium] › tests\production\motionRigPersistence.spec.ts:124:5 › a portable backup preserves editable rig IDs and poses and imports with matching source pixels (3.6s)
+  ok  43 [chromium] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (1.7s)
+  ok  44 [chromium] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (2.3s)
+  ok  45 [chromium] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (5.0s)
+  ok  46 [chromium] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (1.4s)
+  ok  47 [chromium] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (2.9s)
+  ok  48 [chromium] › tests\production\pixiMotionBindings.spec.ts:42:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels (3.2s)
+  ok  49 [chromium] › tests\production\pixiMotionBindings.spec.ts:80:5 › compiled frame duplication never retargets a captured part and bake Undo restores the previously active copy (1.7s)
+  ok  50 [chromium] › tests\production\practiceIsolation.spec.ts:29:5 › compiled practice returns original pixels and redo, then keeps a separate reloadable drawing (2.6s)
+  ok  51 [chromium] › tests\production\practiceIsolation.spec.ts:48:5 › compiled practice refresh returns to the saved original instead of traced samples (1.8s)
+  ok  52 [chromium] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 0 survives import, edits, reload and backup while duplicates get a new date (5.4s)
+  ok  53 [chromium] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 946684800000 survives import, edits, reload and backup while duplicates get a new date (5.2s)
+  ok  54 [chromium] › tests\production\projectDatesAndClipboard.spec.ts:53:5 › compiled co-draw denied clipboard selects the full code and a successful retry reports copied (1.8s)
+  ok  55 [chromium] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (3.3s)
+  ok  56 [chromium] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (1.7s)
+  ok  57 [chromium] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content (845ms)
+  ok  58 [chromium] › tests\production\remainingAuditSafety.spec.ts:35:5 › large source uses a bounded slicer preview and cancellation preserves artwork and undo (1.5s)
+  ok  59 [chromium] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=false) (2.5s)
+  ok  60 [chromium] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=true) (2.7s)
+  ok  61 [chromium] › tests\production\remainingAuditSafety.spec.ts:96:5 › invalid project JSON gives a readable error and preserves active pixels (581ms)
+  ok  62 [chromium] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (6.5s)
+  ok  63 [chromium] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (10.5s)
+  ok  64 [chromium] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.0s)
+  ok  65 [chromium] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (3.1s)
+  ok  66 [chromium] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (6.6s)
+  ok  67 [chromium] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (1.8s)
+  ok  68 [chromium] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (2.0s)
+  ok  69 [chromium] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (3.8s)
+  ok  70 [chromium] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (3.1s)
+  ok  71 [chromium] › tests\production\viewportLenses.spec.ts:3:5 › native lens filters use linear color for CVD, encoded ink for squint and preserve source pixels (601ms)
+  ok  72 [chromium] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (1.1s)
+  ok  73 [chromium] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (2.0s)
+  ok  74 [chromium] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (1.4s)
+  ok  75 [chromium] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (2.7s)
+  ok  76 [chromium] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (1.1s)
+  ok  77 [chromium] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (2.4s)
+  ok  78 [chromium] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (2.3s)
+(node:24260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  79 [firefox] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (14.8s)
+  ok  80 [firefox] › tests\production\artistWorkspace.spec.ts:18:5 › compiled layout, palette preview and focus restore the same artwork after reload (6.4s)
+  ok  81 [firefox] › tests\production\artistWorkspace.spec.ts:68:5 › compiled radial gradient uses the active palette and one undoable layer fill (3.1s)
+  ok  82 [firefox] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (4.1s)
+  ok  83 [firefox] › tests\production\artistWorkspace.spec.ts:117:5 › compiled palette application and reload retain two distinct strokes and a favorite (4.9s)
+  ok  84 [firefox] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (4.8s)
+  ok  85 [firefox] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (2.6s)
+  ok  86 [firefox] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (3.6s)
+  ok  87 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery (9.6s)
+  -   88 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork
+  ok  89 [firefox] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (2.7s)
+  ok  90 [firefox] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork (7.6s)
+  ok  91 [firefox] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork (6.3s)
+  ok  92 [firefox] › tests\production\drawingAndPreviewControls.spec.ts:3:5 › compiled Iso FREE preserves steep, shallow and reversed slopes through preview and undo (2.9s)
+  ok  93 [firefox] › tests\production\drawingAndPreviewControls.spec.ts:4:5 › compiled Iso FREE preserves cardinal and edge slopes through preview and undo (2.5s)
+  ok  94 [firefox] › tests\production\drawingAndPreviewControls.spec.ts:5:5 › compiled Iso FREE preserves thick mirrored pixels through preview, undo and redo (1.9s)
+  ok  95 [firefox] › tests\production\drawingAndPreviewControls.spec.ts:6:5 › compiled Iso ON retains 2:1 projected strokes (1.8s)
+  ok  96 [firefox] › tests\production\drawingAndPreviewControls.spec.ts:7:5 › compiled floating preview has one window and preserves artwork through its controls (2.6s)
+  ok  97 [firefox] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (3.5s)
+  ok  98 [firefox] › tests\production\exportCompleteness.spec.ts:4:5 › compiled unique tile bundles reconstruct pixels and refuse stale results (3.7s)
+  ok  99 [firefox] › tests\production\exportCompleteness.spec.ts:5:5 › compiled tile slicing refuses partial edge cells (2.0s)
+  ok 100 [firefox] › tests\production\exportCompleteness.spec.ts:6:5 › compiled welcome APNG and GIF downloads are labeled text notes (7.1s)
+  ok 101 [firefox] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (2.2s)
+  ok 102 [firefox] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (2.3s)
+  ok 103 [firefox] › tests\production\exportCompleteness.spec.ts:10:5 › editing during tile encoding discards the pending result (2.3s)
+  ok 104 [firefox] › tests\production\exportHardening.spec.ts:24:5 › compiled cancelled backup drains two native snapshots, starts no queued layers and can export the same artwork afterward (2.6s)
+  ok 105 [firefox] › tests\production\exportHardening.spec.ts:49:5 › compiled native write failure aborts the staged adapter and reports failure; retry writes the preserved editable backup (2.2s)
+  ok 106 [firefox] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (4.7s)
+  ok 107 [firefox] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (4.0s)
+  ok 108 [firefox] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (2.1s)
+  ok 109 [firefox] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (1.3s)
+  ok 110 [firefox] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (1.7s)
+  ok 111 [firefox] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (2.8s)
+  -  112 [firefox] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload
+  ok 113 [firefox] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (3.0s)
+  ok 114 [firefox] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (1.5s)
+  ok 115 [firefox] › tests\production\memoryPaths.spec.ts:117:5 › compiled GIF preparation cancels before download and a later PNG export still works (3.5s)
+  ok 116 [firefox] › tests\production\motionRigPersistence.spec.ts:56:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (2.9s)
+  ok 117 [firefox] › tests\production\motionRigPersistence.spec.ts:74:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (3.3s)
+  ok 118 [firefox] › tests\production\motionRigPersistence.spec.ts:95:5 › opening a saved rig selects its source cel after a frame copy and cancellation restores that source display (2.3s)
+  x  119 [firefox] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored (11.9s)
+(node:920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 120 [firefox] › tests\production\motionRigPersistence.spec.ts:124:5 › a portable backup preserves editable rig IDs and poses and imports with matching source pixels (5.7s)
+  ok 121 [firefox] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (3.0s)
+  ok 122 [firefox] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (4.8s)
+Production browser error: [JavaScript Error: "Failed to load ‘http://127.0.0.1:59722/?_rsc=1xkjR6qovEdN5-_9’. A ServiceWorker passed a promise to FetchEvent.respondWith() that rejected with ‘TypeError: NetworkError when attempting to fetch resource.’." {file: "http://127.0.0.1:59722/sw.js" line: 192}] ["[JavaScript Error: \"Failed to load ‘http://127.0.0.1:59722/?_rsc=1xkjR6qovEdN5-_9’. A ServiceWorker passed a promise to FetchEvent.respondWith() that rejected with ‘TypeError: NetworkError when attempting to fetch resource.’.\" {file: \"http://127.0.0.1:59722/sw.js\" line: 192}]"]
+  ok 123 [firefox] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (8.8s)
+  ok 124 [firefox] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (2.2s)
+  ok 125 [firefox] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (4.7s)
+  ok 126 [firefox] › tests\production\pixiMotionBindings.spec.ts:42:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels (5.0s)
+  ok 127 [firefox] › tests\production\pixiMotionBindings.spec.ts:80:5 › compiled frame duplication never retargets a captured part and bake Undo restores the previously active copy (2.8s)
+  ok 128 [firefox] › tests\production\practiceIsolation.spec.ts:29:5 › compiled practice returns original pixels and redo, then keeps a separate reloadable drawing (4.5s)
+  ok 129 [firefox] › tests\production\practiceIsolation.spec.ts:48:5 › compiled practice refresh returns to the saved original instead of traced samples (4.1s)
+  ok 130 [firefox] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 0 survives import, edits, reload and backup while duplicates get a new date (6.4s)
+  ok 131 [firefox] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 946684800000 survives import, edits, reload and backup while duplicates get a new date (6.1s)
+  ok 132 [firefox] › tests\production\projectDatesAndClipboard.spec.ts:53:5 › compiled co-draw denied clipboard selects the full code and a successful retry reports copied (3.8s)
+  ok 133 [firefox] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (3.3s)
+  ok 134 [firefox] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (2.0s)
+  ok 135 [firefox] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content (998ms)
+  ok 136 [firefox] › tests\production\remainingAuditSafety.spec.ts:35:5 › large source uses a bounded slicer preview and cancellation preserves artwork and undo (2.0s)
+  ok 137 [firefox] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=false) (3.0s)
+  ok 138 [firefox] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=true) (3.0s)
+  ok 139 [firefox] › tests\production\remainingAuditSafety.spec.ts:96:5 › invalid project JSON gives a readable error and preserves active pixels (1.3s)
+  ok 140 [firefox] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (7.6s)
+  ok 141 [firefox] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (10.8s)
+  ok 142 [firefox] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (6.9s)
+  ok 143 [firefox] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (4.5s)
+  ok 144 [firefox] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (8.4s)
+  ok 145 [firefox] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (2.5s)
+  ok 146 [firefox] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (3.0s)
+  ok 147 [firefox] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (5.1s)
+  ok 148 [firefox] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (4.5s)
+  ok 149 [firefox] › tests\production\viewportLenses.spec.ts:3:5 › native lens filters use linear color for CVD, encoded ink for squint and preserve source pixels (1.4s)
+  ok 150 [firefox] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (1.4s)
+  ok 151 [firefox] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (2.5s)
+  ok 152 [firefox] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (1.8s)
+  ok 153 [firefox] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (4.3s)
+  ok 154 [firefox] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (1.7s)
+  ok 155 [firefox] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (4.6s)
+  ok 156 [firefox] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (3.1s)
+(node:12852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 157 [webkit] › tests\production\animationReview.spec.ts:7:5 › compiled animation worker, saved exceptions and protected cleanup preserve native artwork (21.3s)
+  ok 158 [webkit] › tests\production\artistWorkspace.spec.ts:18:5 › compiled layout, palette preview and focus restore the same artwork after reload (16.9s)
+  ok 159 [webkit] › tests\production\artistWorkspace.spec.ts:68:5 › compiled radial gradient uses the active palette and one undoable layer fill (12.2s)
+  ok 160 [webkit] › tests\production\artistWorkspace.spec.ts:91:5 › compiled onion controls compare distinct poses and persist without painting ghosts (9.8s)
+  ok 161 [webkit] › tests\production\artistWorkspace.spec.ts:117:5 › compiled palette application and reload retain two distinct strokes and a favorite (13.5s)
+  ok 162 [webkit] › tests\production\artworkIdentity.spec.ts:54:5 › compiled duplication preserves later clips and palette roles through undo, redo, save and reload (12.9s)
+  ok 163 [webkit] › tests\production\artworkIdentity.spec.ts:71:5 › compiled frame move refuses to split a clip without changing the exported artwork order (7.5s)
+  ok 164 [webkit] › tests\production\artworkIdentity.spec.ts:79:5 › compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting (13.5s)
+  -  165 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:28:5 › compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery
+  ok 166 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:67:5 › compiled browser without WebRTC refuses a valid guest invite and preserves original artwork (10.4s)
+  ok 167 [webkit] › tests\production\coDrawGuestIsolation.spec.ts:87:5 › compiled invalid invite preserves the original drawing and its Undo history (9.8s)
+  -  168 [webkit] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork
+  -  169 [webkit] › tests\production\coDrawProtocolSafety.spec.ts:13:7 › compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork
+  ok 170 [webkit] › tests\production\drawingAndPreviewControls.spec.ts:3:5 › compiled Iso FREE preserves steep, shallow and reversed slopes through preview and undo (22.5s)
+  ok 171 [webkit] › tests\production\drawingAndPreviewControls.spec.ts:4:5 › compiled Iso FREE preserves cardinal and edge slopes through preview and undo (14.4s)
+  ok 172 [webkit] › tests\production\drawingAndPreviewControls.spec.ts:5:5 › compiled Iso FREE preserves thick mirrored pixels through preview, undo and redo (8.5s)
+  ok 173 [webkit] › tests\production\drawingAndPreviewControls.spec.ts:6:5 › compiled Iso ON retains 2:1 projected strokes (6.5s)
+  ok 174 [webkit] › tests\production\drawingAndPreviewControls.spec.ts:7:5 › compiled floating preview has one window and preserves artwork through its controls (13.7s)
+  ok 175 [webkit] › tests\production\exportCompleteness.spec.ts:3:5 › compiled manual normals preserve both atlases (7.9s)
+  ok 176 [webkit] › tests\production\exportCompleteness.spec.ts:4:5 › compiled unique tile bundles reconstruct pixels and refuse stale results (22.8s)
+  ok 177 [webkit] › tests\production\exportCompleteness.spec.ts:5:5 › compiled tile slicing refuses partial edge cells (5.6s)
+  ok 178 [webkit] › tests\production\exportCompleteness.spec.ts:6:5 › compiled welcome APNG and GIF downloads are labeled text notes (24.3s)
+  ok 179 [webkit] › tests\production\exportCompleteness.spec.ts:7:5 › compiled SVG wording and actual XML agree (5.8s)
+  ok 180 [webkit] › tests\production\exportCompleteness.spec.ts:9:5 › ambiguous normal sources refuse a kit download (5.9s)
+  ok 181 [webkit] › tests\production\exportCompleteness.spec.ts:10:5 › editing during tile encoding discards the pending result (7.5s)
+  ok 182 [webkit] › tests\production\exportHardening.spec.ts:24:5 › compiled cancelled backup drains two native snapshots, starts no queued layers and can export the same artwork afterward (7.0s)
+  ok 183 [webkit] › tests\production\exportHardening.spec.ts:49:5 › compiled native write failure aborts the staged adapter and reports failure; retry writes the preserved editable backup (4.5s)
+  ok 184 [webkit] › tests\production\gameDelivery.spec.ts:6:5 › compiled animated downloads preserve reverse and bounce pose holds and play-once settings (13.5s)
+  ok 185 [webkit] › tests\production\gameDelivery.spec.ts:10:5 › production Godot kit preserves holds, raw register 255, alpha and roles through undo and reload (13.2s)
+  ok 186 [webkit] › tests\production\inputOwnership.spec.ts:30:5 › Help owns keyboard input and closing it preserves artwork, selection and Undo (5.8s)
+  ok 187 [webkit] › tests\production\inputOwnership.spec.ts:50:5 › physical letter events work across layouts while editable input keeps its native commands (3.8s)
+  ok 188 [webkit] › tests\production\inputOwnership.spec.ts:70:5 › a floating selection and its gizmo nudge together once and commit remains undoable (5.8s)
+  ok 189 [webkit] › tests\production\inputOwnership.spec.ts:86:5 › the practice Teaching Board owns its dialog keys and retains separate artwork on return (13.4s)
+  ok 190 [webkit] › tests\production\inputOwnership.spec.ts:112:5 › tablet touch drawing uses the artwork policy and survives save/reload (12.8s)
+  ok 191 [webkit] › tests\production\memoryPaths.spec.ts:4:5 › compiled timeline and backup retain exact pixels with bounded preview and encoding work (14.8s)
+  ok 192 [webkit] › tests\production\memoryPaths.spec.ts:91:5 › compiled small previews match native composites with alpha, blends, hidden layers and rectangular artwork (3.4s)
+  ok 193 [webkit] › tests\production\memoryPaths.spec.ts:117:5 › compiled GIF preparation cancels before download and a later PNG export still works (10.8s)
+  ok 194 [webkit] › tests\production\motionRigPersistence.spec.ts:56:5 › saved rigid-part poses survive a real project reload and reopen with exact source and translated pixels (17.7s)
+  ok 195 [webkit] › tests\production\motionRigPersistence.spec.ts:74:5 › saved rig deletion is reversible and edited source is refused after save and reload without changing artwork (22.7s)
+  ok 196 [webkit] › tests\production\motionRigPersistence.spec.ts:95:5 › opening a saved rig selects its source cel after a frame copy and cancellation restores that source display (16.8s)
+  x  197 [webkit] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored (21.4s)
+(node:11864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 198 [webkit] › tests\production\motionRigPersistence.spec.ts:124:5 › a portable backup preserves editable rig IDs and poses and imports with matching source pixels (21.6s)
+  ok 199 [webkit] › tests\production\operation.spec.ts:33:5 › production drawing, save, reload, undo and redo preserve pixels without development handles (5.2s)
+  ok 200 [webkit] › tests\production\operation.spec.ts:47:5 › two real tabs refuse stale saves and save an independent conflict copy (11.1s)
+  ok 201 [webkit] › tests\production\operation.spec.ts:66:5 › warm production offline reload retains exact artwork and can save new edits (17.8s)
+  ok 202 [webkit] › tests\production\operation.spec.ts:96:5 › production GIF worker produces a downloadable file that the native image decoder can open (11.0s)
+  ok 203 [webkit] › tests\production\operation.spec.ts:124:5 › a real waiting update preserves both open tabs and activates after all tabs close (5.8s)
+  ok 204 [webkit] › tests\production\pixiMotionBindings.spec.ts:42:5 › compiled stale source refuses bake; fresh capture previews, bakes, undoes, redoes and reloads exact translated pixels (38.0s)
+  ok 205 [webkit] › tests\production\pixiMotionBindings.spec.ts:80:5 › compiled frame duplication never retargets a captured part and bake Undo restores the previously active copy (20.7s)
+  ok 206 [webkit] › tests\production\practiceIsolation.spec.ts:29:5 › compiled practice returns original pixels and redo, then keeps a separate reloadable drawing (19.2s)
+  ok 207 [webkit] › tests\production\practiceIsolation.spec.ts:48:5 › compiled practice refresh returns to the saved original instead of traced samples (10.7s)
+  ok 208 [webkit] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 0 survives import, edits, reload and backup while duplicates get a new date (19.3s)
+  ok 209 [webkit] › tests\production\projectDatesAndClipboard.spec.ts:20:48 › compiled creation date 946684800000 survives import, edits, reload and backup while duplicates get a new date (19.1s)
+  -  210 [webkit] › tests\production\projectDatesAndClipboard.spec.ts:53:5 › compiled co-draw denied clipboard selects the full code and a successful retry reports copied
+  ok 211 [webkit] › tests\production\recoveryArchiveAdmission.spec.ts:4:5 › oversized untouched archive refuses before payload loading and preserves its source (2.6m)
+  ok 212 [webkit] › tests\production\recoveryArchiveAdmission.spec.ts:10:5 › admitted untouched archive downloads and preserves its damaged source (4.0s)
+  ok 213 [webkit] › tests\production\remainingAuditSafety.spec.ts:26:5 › landing skip link stays on the landing page and focuses its content (1.9s)
+  ok 214 [webkit] › tests\production\remainingAuditSafety.spec.ts:35:5 › large source uses a bounded slicer preview and cancellation preserves artwork and undo (4.9s)
+  ok 215 [webkit] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=false) (10.2s)
+  ok 216 [webkit] › tests\production\remainingAuditSafety.spec.ts:53:43 › thin source details survive empty-cell filtering and APNG download (fallback=true) (9.9s)
+  ok 217 [webkit] › tests\production\remainingAuditSafety.spec.ts:96:5 › invalid project JSON gives a readable error and preserves active pixels (1.5s)
+  ok 218 [webkit] › tests\production\researchWorkbench.spec.ts:4:5 › compiled simplification protects details and persists source provenance (27.6s)
+  ok 219 [webkit] › tests\production\researchWorkbench.spec.ts:5:5 › compiled shared light previews normal maps and restores all poses in one undo (25.5s)
+  ok 220 [webkit] › tests\production\researchWorkbench.spec.ts:6:5 › compiled scene constraints and pinned path recipes reproduce after saving (22.0s)
+  ok 221 [webkit] › tests\production\researchWorkbench.spec.ts:7:5 › compiled research tabs, scene selection and stale-preview recovery support the keyboard (10.9s)
+  ok 222 [webkit] › tests\production\researchWorkbench.spec.ts:8:5 › compiled outlined artwork retains its fill and lights directionally without a Normal layer (22.0s)
+  ok 223 [webkit] › tests\production\strokeAndGallery.spec.ts:37:5 › compiled clean corners restore underlying artwork through undo, redo and saved reload (6.5s)
+  ok 224 [webkit] › tests\production\strokeAndGallery.spec.ts:60:5 › compiled dither fills a coarse path identically to fine samples and survives save and reload (6.6s)
+  ok 225 [webkit] › tests\production\strokeAndGallery.spec.ts:75:5 › compiled gallery contains input keys, saves mouse and keyboard renames, and preserves active and inactive drawings (22.6s)
+  ok 226 [webkit] › tests\production\strokeAndGallery.spec.ts:95:5 › compiled rename refuses a real second-tab conflict while retaining both drawings (15.0s)
+  ok 227 [webkit] › tests\production\viewportLenses.spec.ts:3:5 › native lens filters use linear color for CVD, encoded ink for squint and preserve source pixels (2.2s)
+  ok 228 [webkit] › tests\production\workspaceConsistency.spec.ts:3:5 › compiled Lighting opens its task even when session storage rejects writes (4.0s)
+  ok 229 [webkit] › tests\production\workspaceConsistency.spec.ts:44:5 › compiled command search contains focus, empty results and unavailable history, and hands focus to the next dialog (5.2s)
+  ok 230 [webkit] › tests\production\workspaceConsistency.spec.ts:66:5 › compiled onion and grid commands match their advertised gestures and leave artwork intact (3.6s)
+  ok 231 [webkit] › tests\production\workspaceConsistency.spec.ts:81:5 › compiled Fit is identical through header, keyboard, navigator and palette, including large artwork (9.4s)
+  ok 232 [webkit] › tests\production\workspaceConsistency.spec.ts:108:5 › compiled navigator keeps square pixels and aligns clicks, drag, keyboard and full zoom range (3.2s)
+  ok 233 [webkit] › tests\production\workspaceConsistency.spec.ts:128:5 › compiled Lighting and custom task layouts restore across sessions without modifying artwork (8.8s)
+  ok 234 [webkit] › tests\production\workspaceConsistency.spec.ts:147:5 › compiled header keeps mouse history accessible at compact widths and tool activation clears its preview (15.6s)
+
+
+  1) [chromium] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Open rig Wave', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeDisabled" with timeout 10000ms
+      - waiting for getByRole('button', { name: 'Open rig Wave', exact: true })
+        24 × locator resolved to <button type="button" aria-label="Open rig Wave" class="pixel-tactile-btn p-1">Open</button>
+           - unexpected value "enabled"
+
+
+      112 |   await expect(page.getByTestId('gizmo-commit-btn')).toBeVisible();
+      113 |   const open = page.getByRole('button', { name: 'Open rig Wave', exact: true });
+    > 114 |   await expect(open).toBeDisabled();
+          |                      ^
+      115 |   await page.getByTestId('create-motion-part-btn').click();
+      116 |   await expect(page.getByText('Commit or cancel the floating selection before creating a motion part.', { exact: true })).toBeVisible();
+      117 |   await expect(page.getByTestId('piximotion-panel')).toHaveCount(0);
+        at D:\PixiBun\tests\production\motionRigPersistence.spec.ts:114:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Open rig Wave', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeDisabled" with timeout 10000ms
+      - waiting for getByRole('button', { name: 'Open rig Wave', exact: true })
+        23 × locator resolved to <button type="button" aria-label="Open rig Wave" class="pixel-tactile-btn p-1">Open</button>
+           - unexpected value "enabled"
+
+
+      112 |   await expect(page.getByTestId('gizmo-commit-btn')).toBeVisible();
+      113 |   const open = page.getByRole('button', { name: 'Open rig Wave', exact: true });
+    > 114 |   await expect(open).toBeDisabled();
+          |                      ^
+      115 |   await page.getByTestId('create-motion-part-btn').click();
+      116 |   await expect(page.getByText('Commit or cancel the floating selection before creating a motion part.', { exact: true })).toBeVisible();
+      117 |   await expect(page.getByTestId('piximotion-panel')).toHaveCount(0);
+        at D:\PixiBun\tests\production\motionRigPersistence.spec.ts:114:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-firefox\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Open rig Wave', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeDisabled" with timeout 10000ms
+      - waiting for getByRole('button', { name: 'Open rig Wave', exact: true })
+        22 × locator resolved to <button type="button" aria-label="Open rig Wave" class="pixel-tactile-btn p-1">Open</button>
+           - unexpected value "enabled"
+
+
+      112 |   await expect(page.getByTestId('gizmo-commit-btn')).toBeVisible();
+      113 |   const open = page.getByRole('button', { name: 'Open rig Wave', exact: true });
+    > 114 |   await expect(open).toBeDisabled();
+          |                      ^
+      115 |   await page.getByTestId('create-motion-part-btn').click();
+      116 |   await expect(page.getByText('Commit or cancel the floating selection before creating a motion part.', { exact: true })).toBeVisible();
+      117 |   await expect(page.getByTestId('piximotion-panel')).toHaveCount(0);
+        at D:\PixiBun\tests\production\motionRigPersistence.spec.ts:114:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-webkit\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-webkit\trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts\playwright-production-3206\motionRigPersistence-float-20653--source-pixels-are-restored-webkit\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+    [firefox] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+    [webkit] › tests\production\motionRigPersistence.spec.ts:109:5 › floating artwork blocks saved-rig opening and fresh capture until its source pixels are restored 
+  7 skipped
+  224 passed (26.9m)

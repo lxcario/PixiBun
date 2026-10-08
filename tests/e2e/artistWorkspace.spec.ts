@@ -23,7 +23,8 @@ test('named layouts, left inspector, focus and reload preserve artwork', async (
   expect(before.some(value => value !== 0)).toBe(true);
   await page.getByLabel('Workspace layout').selectOption('animation');
   await expect(page.getByRole('region', { name: 'Canvas navigator' })).toBeVisible();
-  await page.getByRole('button', { name: 'Arrange workspace' }).click();
+  await page.getByRole('button', { name: 'View options menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Arrange...', exact: true }).click();
   await page.getByLabel('Inspector position').selectOption('left');
   await page.getByLabel('Inspector width').press('Home');
   for (let i = 0; i < 10; i++) await page.getByLabel('Inspector width').press('ArrowRight');
@@ -49,7 +50,7 @@ test('palette previews are nondestructive, favorites persist, and applying adds 
   const initial = await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().currentPaletteId);
   await page.getByRole('button', { name: /Browse palettes/ }).click();
   await expect(page.getByRole('dialog', { name: 'Palette library' })).toBeVisible();
-  await page.screenshot({ path: 'docs/assets/screenshots/2026-10-04-artist-workspace/palette-library.png' });
+  await page.screenshot({ path: test.info().outputPath('palette-library.png') });
   await page.getByLabel('Search palettes').fill('Sweetie'); await page.getByRole('button', { name: 'Preview Sweetie 16', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Selected palette preview' })).toContainText('GrafxKid');
   expect(await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().currentPaletteId)).toBe(initial);
@@ -62,16 +63,19 @@ test('palette previews are nondestructive, favorites persist, and applying adds 
   await page.getByLabel('Palette collection').selectOption('favorites'); await expect(page.getByRole('button', { name: 'Preview Sweetie 16' })).toBeVisible();
 });
 test('pinned triangle, tool controls and navigator are usable at desktop widths', async ({ page }) => {
-  await openStudio(page); await drag(page, 8, 8, 14, 12); await page.getByRole('navigation', { name: 'Artist workspace' }).getByRole('button', { name: 'Color', exact: true }).click();
+  await openStudio(page); await drag(page, 8, 8, 14, 12); await page.getByTestId('tab-palette').click();
   await page.getByLabel('Picker hex color').fill('#ff0000'); await page.getByLabel('Picker hue').press('Home');
   for (let i = 0; i < 120; i++) await page.getByLabel('Picker hue').press('ArrowRight');
   expect(await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().primaryColor)).toBe('#00ff00');
   await page.getByLabel('Color picker shape').selectOption('square'); await page.getByLabel('Color picker shape').selectOption('triangle');
-  await page.getByRole('button', { name: 'Tool settings', exact: true }).click();
+  await page.getByTestId('tab-tools').click();
   await page.getByLabel('Tool panel brush size').press('Home'); await page.getByLabel('Tool panel brush size').press('ArrowRight');
   expect(await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().tools.brushSize)).toBe(2);
   await page.getByLabel('Composition guide').selectOption('diagonals'); await expect(page.getByTestId('diagonal-composition-guide')).toBeVisible();
-  await page.getByRole('navigation', { name: 'Artist workspace' }).getByRole('button', { name: 'Navigator', exact: true }).click();
+  await page.getByRole('button', { name: 'View options menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Arrange...', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Navigator', exact: true }).check();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   const panBefore = await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().panX);
   await page.getByTestId('navigator-canvas').click({ position: { x: 180, y: 56 } });
   expect(await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().panX)).not.toBe(panBefore);
@@ -81,8 +85,8 @@ test('pinned triangle, tool controls and navigator are usable at desktop widths'
     await expect(page.getByTestId('navigator-canvas')).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
   }
-  await page.screenshot({ path: 'docs/assets/screenshots/2026-10-04-artist-workspace/color-tools-navigator.png' });
-  const scan = await new AxeBuilder({ page }).include('[aria-label="Artist workspace"]').include('[data-testid="right-inspector"]').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  await page.screenshot({ path: test.info().outputPath('color-tools-navigator.png') });
+  const scan = await new AxeBuilder({ page }).include('header').include('[data-testid="right-inspector"]').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(scan.violations).toEqual([]);
 });
 test('onion settings render selected ghost ranges, keep artwork intact and survive reload', async ({ page }) => {
@@ -108,13 +112,13 @@ test('gradient respects lasso-shaped masks, Undo/Redo, cancel, zero-length and l
     s.setSelection({ x: 8, y: 8, w: 8, h: 8 }, mask); s.setPrimaryColor('#ff0000'); s.setSecondaryColor('#0000ff');
   });
   await page.locator('#center-canvas-area').focus(); await page.keyboard.press('Shift+G');
-  await page.getByRole('button', { name: 'Tool settings', exact: true }).click(); await expect(page.getByLabel('Gradient shape')).toBeVisible();
+  await page.getByTestId('tab-tools').click(); await expect(page.getByLabel('Gradient shape')).toBeVisible();
   await drag(page, 8, 8, 15, 8); const drawn = await pixels(page);
   let changed = 0; for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) { const rgba = drawn.slice((y * 32 + x) * 4, (y * 32 + x) * 4 + 4); if (y >= 8 && y < 16 && x >= 8 && x <= y) { expect([[255, 0, 0, 255], [0, 0, 255, 255]]).toContainEqual(rgba); changed++; } else expect(rgba).toEqual([0, 0, 0, 0]); }
   expect(changed).toBe(36);
   await page.getByTestId('undo-button').click(); expect((await pixels(page)).every(v => v === 0)).toBe(true);
   await page.getByTestId('redo-button').click(); expect(await pixels(page)).toEqual(drawn);
-  await page.screenshot({ path: 'docs/assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png' });
+  await page.screenshot({ path: test.info().outputPath('selection-gradient.png') });
   await page.evaluate(() => (window as unknown as ArtistTestWindow).__studioStore.getState().setPrimaryColor('#00ff00'));
   const box = (await page.locator('#center-canvas-area').boundingBox())!;
   await page.mouse.move(box.x + 8.5 * box.width / 32, box.y + 8.5 * box.height / 32); await page.mouse.down(); await page.mouse.move(box.x + 15.5 * box.width / 32, box.y + 8.5 * box.height / 32);

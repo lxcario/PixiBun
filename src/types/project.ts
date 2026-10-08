@@ -2,7 +2,7 @@ import type { BlendMode, LayerEffectRecipe } from './canvas';
 import type { ColorPalette, ColorRamp } from './palette';
 import type { AnimationClip, LoopMode, OnionSkinSettings } from './animation';
 
-export const PROJECT_FORMAT_VERSION = 3;
+export const PROJECT_FORMAT_VERSION = 4;
 export const PROJECT_FORMAT_ID = 'pixibun-project' as const;
 
 export interface SerializedLayer {
@@ -43,6 +43,7 @@ export interface ProjectFile {
   customRamps: ColorRamp[];
   clips: AnimationClip[];
   frames: SerializedFrame[];
+  motionRigs?: import('@/lib/animation/motionRigDocument').MotionRig[];
   createdAt: number;
   updatedAt: number;
 }

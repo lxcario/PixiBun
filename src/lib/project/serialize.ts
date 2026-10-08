@@ -205,6 +205,7 @@ export async function buildAutosavePayloadAsync(projectId?: string): Promise<Aut
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
+    motionRigs: structuredClone(state.motionRigs),
     frames,
     createdAt: state.projectCreatedAt,
     updatedAt: now,
@@ -231,6 +232,7 @@ export function buildProjectFile(): ProjectFile {
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
+    motionRigs: structuredClone(state.motionRigs),
     frames: state.frames.map(frame => ({
       id: frame.id,
       durationMs: frame.durationMs,
@@ -272,6 +274,7 @@ export async function buildProjectFileAsync(signal?: AbortSignal): Promise<Proje
     currentPaletteId: state.currentPaletteId,
     customRamps: state.customRamps.map(r => ({ ...r, shades: [...r.shades] })),
     clips: state.clips.map(c => ({ ...c })),
+    motionRigs: structuredClone(state.motionRigs),
     frames,
     createdAt: state.projectCreatedAt,
     updatedAt: now,
@@ -390,6 +393,7 @@ export async function hydrateProject(
       palettes: prevState.palettes ? structuredClone(prevState.palettes) : [],
       currentPaletteId: prevState.currentPaletteId,
       clips: prevState.clips ? prevState.clips.map(c => ({ ...c })) : [],
+      motionRigs: structuredClone(prevState.motionRigs),
     };
     const prevActiveFrameIndex = prevState.activeFrameIndex;
     const prevActiveLayerId = prevState.activeLayerId;

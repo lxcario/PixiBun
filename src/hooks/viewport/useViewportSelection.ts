@@ -35,6 +35,19 @@ export function useViewportSelection({
   const bumpBufferVersion = useStudioStore((s) => s.bumpBufferVersion);
 
   const [floatingSelection, setFloatingSelection] = useState<FloatingSelection | null>(null);
+  useEffect(() => {
+    useStudioStore.setState({ hasFloatingSelection: !!floatingSelection });
+  }, [floatingSelection]);
+  useEffect(() => {
+    let state = useStudioStore.getState();
+    const unsubscribe = useStudioStore.subscribe(next => {
+      const reset = next.currentProjectId !== state.currentProjectId || next.canvasWidth !== state.canvasWidth || next.canvasHeight !== state.canvasHeight ||
+        (state.hasFloatingSelection && !next.hasFloatingSelection);
+      state = next;
+      if (reset) setFloatingSelection(null);
+    });
+    return () => { unsubscribe(); useStudioStore.setState({ hasFloatingSelection: false }); };
+  }, []);
   const clipboardRef = useRef<{ canvas: HTMLCanvasElement; w: number; h: number } | null>(null);
   const [isDraggingSelection, setIsDraggingSelection] = useState(false);
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
@@ -376,6 +389,7 @@ export function useViewportSelection({
   // Global Keyboard Shortcuts for Selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (useStudioStore.getState().motionPart) return;
       if (shouldIgnoreWorkspaceKey(e) || e.altKey) return;
       const key = workspaceShortcutKey(e);
       // CenterViewport delegates Escape/arrows to its transform hook. One owner
