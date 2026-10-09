@@ -1,5 +1,61 @@
 import { describe, it, expect } from 'vitest';
-import { GET } from '@/app/sw.js/route';
+import { GET, buildServiceWorkerScript } from '@/app/sw.js/route';
+import { runInNewContext } from 'node:vm';
+
+type WorkerEvent = { request?: { url: string; method: string; mode: string; destination: string }; waitUntil(promise: Promise<unknown>): void; respondWith(promise: Promise<Response>): void };
+
+for (const [mode, pathname] of [['navigate', '/studio'], ['cors', '/_next/static/retirement.js'], ['cors', '/other.txt']]) {
+  it(`a delayed old ${mode} ${pathname} response cannot recreate its retired cache`, async () => {
+    // Cache objects survive deletion detached from CacheStorage; reopening by name
+    // creates a new bucket. Model that distinction, then execute the emitted script.
+    const buckets = new Map<string, ReturnType<typeof makeCache>>();
+    function makeCache() {
+      const entries = new Map<string, Response>();
+      return {
+        match: async (request: string | { url: string }) => entries.get(typeof request === 'string' ? request : request.url),
+        put: async (request: string | { url: string }, response: Response) => { entries.set(typeof request === 'string' ? request : request.url, response); },
+        keys: async () => [...entries.keys()].map(url => ({ url })),
+        delete: async (request: { url: string }) => entries.delete(request.url),
+      };
+    }
+    const cacheStorage = {
+      open: async (name: string) => { if (!buckets.has(name)) buckets.set(name, makeCache()); return buckets.get(name)!; },
+      keys: async () => [...buckets.keys()],
+      delete: async (name: string) => buckets.delete(name),
+      match: async () => undefined,
+    };
+    await cacheStorage.open('pixibun-old'); await cacheStorage.open('pixibun-new');
+    let releaseFetch!: (response: Response) => void;
+    let startedFetch!: () => void;
+    const started = new Promise<void>(resolve => { startedFetch = resolve; });
+    const network = new Promise<Response>(resolve => { releaseFetch = resolve; });
+    const listeners = (version: string) => {
+      const callbacks = new Map<string, (event: WorkerEvent) => void>();
+      runInNewContext(buildServiceWorkerScript(version), {
+        self: { location: { origin: 'https://example.test' }, clients: { claim: async () => {} }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
+        caches: cacheStorage, URL, Response, fetch: () => { startedFetch(); return network; },
+      });
+      return callbacks;
+    };
+    const pending: Promise<unknown>[] = [];
+    let response!: Promise<Response>;
+    const event: WorkerEvent = {
+      request: { url: `https://example.test${pathname}`, method: 'GET', mode, destination: '' },
+      waitUntil: promise => { pending.push(promise); }, respondWith: promise => { response = promise; },
+    };
+    listeners('old').get('fetch')!(event);
+    await started;
+    const activation: Promise<unknown>[] = [];
+    listeners('new').get('activate')!({ ...event, waitUntil: promise => { activation.push(promise); } });
+    await Promise.all(activation);
+    expect(await cacheStorage.keys()).toEqual(['pixibun-new']);
+    const fetched = new Response('old response', { status: 200 });
+    Object.defineProperty(fetched, 'type', { value: 'basic' });
+    releaseFetch(fetched);
+    await response; await Promise.all(pending);
+    expect(await cacheStorage.keys()).toEqual(['pixibun-new']);
+  });
+}
 
 describe('Service Worker Route Handler (sw.js/route.ts)', () => {
   it('returns status 200 with complete JavaScript service worker script', async () => {

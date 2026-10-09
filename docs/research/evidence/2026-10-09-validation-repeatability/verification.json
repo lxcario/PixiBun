@@ -1,0 +1,324 @@
+{
+  "date": "2026-10-09",
+  "phase": "local checkpoint before publication, remote CI and new external verification",
+  "parentRevision": "ad957550f6656b82f5f35162c8eabc19a45a1473",
+  "runtime": "v22.23.3",
+  "source": {
+    "production": "84b387ab1f6da21016d77aea952a4ff4a7ae7f86008d3611d6d52610535a53cd",
+    "final": "daa72a965265f7b418f04ed9e4c77494c3235ca624ae46118e57bbe25445a49a",
+    "count": 694,
+    "changedAfterProduction": [
+      "tests/release/updateRollback.spec.ts"
+    ],
+    "changedApplicationInputs": 0,
+    "changedProductionSuiteInputs": 0
+  },
+  "build": {
+    "id": "vRByH4JDPWpOHZ6RE4Czj",
+    "cache": "pixibun-l09-candidate-20261009",
+    "count": 259,
+    "sha256": "f16646639214a1b16cd1938aa429d98876dc51eaffab06353579a6509b8be36f",
+    "recheckedUnchanged": true
+  },
+  "previousBuild": {
+    "id": "kbrD0Z2xKkmvlgI2y3Dd7",
+    "count": 259,
+    "sha256": "5ce717ef19a90897b4c14459f6d48100de11f803b95689454fce92afc0b41a30",
+    "recheckedUnchanged": true
+  },
+  "gates": [
+    {
+      "invocation": 2,
+      "status": "passed",
+      "stages": 6,
+      "tests": 2122,
+      "suites": 201,
+      "seconds": 296.5,
+      "p90Ms": 3.319112
+    },
+    {
+      "invocation": 3,
+      "status": "passed",
+      "stages": 6,
+      "tests": 2122,
+      "suites": 201,
+      "seconds": 235.75,
+      "p90Ms": 3.171918,
+      "coverage": {
+        "statements": 69.18,
+        "branches": 62.39,
+        "functions": 61.49,
+        "lines": 70.46
+      }
+    }
+  ],
+  "benchmark": {
+    "algorithmSha256": "e8362bc38a1006cc9d69871e9b5f061b4d860b52aacfa13099edfd6bab3062a2",
+    "algorithmChanged": false,
+    "host": {
+      "platform": "win32",
+      "arch": "x64",
+      "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+      "logicalCpus": 16
+    },
+    "typescript": "5.9.3",
+    "limitMs": 10,
+    "metric": "p90 of 15 warmed 50-call batch means; milliseconds per rotation",
+    "baseline": [
+      {
+        "medianMs": 2.932902000000004,
+        "p90Ms": 3.166656000000003,
+        "checksum": 35000
+      },
+      {
+        "medianMs": 2.560634,
+        "p90Ms": 3.1249439999999957,
+        "checksum": 35000
+      },
+      {
+        "medianMs": 2.3035320000000046,
+        "p90Ms": 3.227007999999996,
+        "checksum": 35000
+      }
+    ]
+  },
+  "production": {
+    "startTime": "2026-10-09T13:28:27.590Z",
+    "duration": 2450098.273,
+    "expected": 338,
+    "skipped": 7,
+    "unexpected": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "byBrowser": {
+      "chromium": {
+        "passed": 114,
+        "skipped": 1
+      },
+      "firefox": {
+        "passed": 113,
+        "skipped": 2
+      },
+      "webkit": {
+        "passed": 111,
+        "skipped": 4
+      }
+    }
+  },
+  "development": {
+    "startTime": "2026-10-09T14:22:08.260Z",
+    "duration": 748697.0360000001,
+    "expected": 196,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "bundler": "configured Turbopack"
+  },
+  "twoBuild": {
+    "startTime": "2026-10-09T14:18:37.723Z",
+    "duration": 87825.649,
+    "expected": 5,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0,
+    "workers": 1,
+    "retries": 0,
+    "legacyBlobWindowsWebKit": "fixture refused with native UnknownError; atomic refusal verified; rollback unqualified"
+  },
+  "startup": {
+    "emptyDevelopmentCache": true,
+    "readyMs": 458,
+    "firstObservedStudioServerMs": 4400,
+    "laterHttpProbe": {
+      "runtime": "v22.23.3",
+      "path": "/studio",
+      "status": 200,
+      "milliseconds": 180.0143,
+      "bytes": 115428,
+      "hasApplicationScripts": true
+    },
+    "drawingSaveReload": "passed"
+  },
+  "failedRunsPreserved": [
+    "instrumented independent RotSprite replay",
+    "original broad Firefox worker failure",
+    "gate-full-1: two existing fixture signature mismatches",
+    "turbopack-startup-before: first Studio request exceeded 30 seconds",
+    "two-build-1: timestamp expectations and WebKit Blob fixture",
+    "two-build-2: WebKit Blob fixture",
+    "two-build-blob-diagnostic: native Blob preparation error"
+  ],
+  "custody": {
+    "futureCIArtifactRetentionDays": 90,
+    "indexSmokePassed": true,
+    "remoteCandidateUploadAndRetrieval": "pending at this local checkpoint",
+    "permanentArchive": false
+  },
+  "external": "New layout check pending; previous artwork case remains blocked/inconclusive",
+  "releaseApproved": false,
+  "remaining": [
+    "real Safari legacy Blob rollback",
+    "physical pen/touch",
+    "manual assistive technology",
+    "long-session/low-memory and two-machine network",
+    "actual production host deployment/skew/rollback",
+    "remote CI and artifact retrieval at this checkpoint"
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/benchmark-baseline-1.json",
+      "sha256": "be205dc684f8110285a141b1ab6df490ec1d5c9aa386ae8e83a85acbe823dee9"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/benchmark-baseline-2.json",
+      "sha256": "1d9a63269c53c0c7fe1e3aacb6ce0a86316da7ca98de0393a0f19eeccd9d3a3d"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/benchmark-baseline-3.json",
+      "sha256": "e629e712f3337bebcbb205076a24c5de175562136e37fca7e6a2cabb1f145529"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/cache-race-before.log",
+      "sha256": "9ef7a54db8de59ee275c81a74f9c719d85fce75dcb1078595704e051b6481484"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/cache-race-after.log",
+      "sha256": "d4b30dc87e202043bda1179816dd44fbc38aaa3eb80d21d10d2a2abed16b2b55"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/worker-focused-final.log",
+      "sha256": "2b767fe38bdacd0e2a9508e60d51037d844e2a95ea44a6761b8d9afb2acc0cc2"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/gate-full-1.log",
+      "sha256": "e1272967436bd0f92b92103c3e28559e4a618a7fa8951b631e399615f67795e8"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/gate-full-2.log",
+      "sha256": "80c946078da00e35caff6cce5a19dda4f6ec263a96d4659eb308f9bd9914628b"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/gate-full-3.log",
+      "sha256": "fa7c5315b83be64074c4f4a4d99f23470674fe82b601d4f884a62de371fb068f"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/candidate-inputs.json",
+      "sha256": "1f1b723c75be6b6f129a85b8f827fb74ed3f94102bd84017ddb7c0bc3a277c3a"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/candidate-build.json",
+      "sha256": "e38e4d6eb085a990ae4de8a51556615e86eadadd37cd06fd75fa5feeff51b4a2"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/final-inputs.json",
+      "sha256": "2e87ceeeea59dfd5fa2ecca5b6109cb1ace21f681e764834800b518a61a98f66"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/full-production-1.json",
+      "sha256": "9ddba6da8b2c4f25f046348e505790037fdc1afc322ed4b5a4cc0b2de93e1d35"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/full-production-1.log",
+      "sha256": "95170ba987f19c726534d5a99714b18e73c3c88908d25fc01bf24704205f816c"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/frozen-after-production.log",
+      "sha256": "04ed979d5f46a07605ea7706a061abaad445736f293e58bb4d2baf41254ea389"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-1.json",
+      "sha256": "104983eda4f5ff42a0433ec02ac440b7e6d48178a1f10bdbdce0a68150b4a87d"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-1.log",
+      "sha256": "e5e0ddeb0b06d29325b0f2748b24da289084a9ca2f183ae3818ee494c30c88c3"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-2.json",
+      "sha256": "03dd40d78779a0254bcdf1890d351d2fcca62830267f1e2d09dff88d5ac91725"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-2.log",
+      "sha256": "d1594b21ad1826e3ee0d923f09ed459daa64a28747e97fe67b451625688c5ef5"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-blob-diagnostic.json",
+      "sha256": "840e28bb2deec8c955cc2f9604dba7fa49c8e461465d544329f97b2c361a0710"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-blob-diagnostic.log",
+      "sha256": "7c4ca24be94dbfa554115e3b0d77d1fccef2b8eaf09196c48a234005b23d2f9a"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-final.json",
+      "sha256": "d060f104f1b4fc7b46f4ca21c710930ad5b89d1caf3d9f7d4d0fd7c8ea98ede0"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/two-build-final.log",
+      "sha256": "c5d225adbfb9c9c6ca9fea5e1ab9e5afbc5feb62660e59154f723f50d9b85fa1"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/release-final-types.log",
+      "sha256": "5f2bb1b52b93ecda505bbe52c3470fb3ba89a943d156701d1d69f04b248cfda0"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/release-final-lint.log",
+      "sha256": "5f2bb1b52b93ecda505bbe52c3470fb3ba89a943d156701d1d69f04b248cfda0"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/full-development-1.json",
+      "sha256": "e2d59cc0d1715983e8f809123d8cd4307a5a8f42b9a83ef08e33978fac8f407c"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/full-development-1.log",
+      "sha256": "dbda0cd8f7269b4d14b55c5a2b6a7ba999f5429522e003ae2b08bcda0e305d30"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/turbopack-startup-before.log",
+      "sha256": "58d01fdbd81182eedf7abba56e17a8b0337be56108bac8963c8a9689ba92bf45"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/turbopack-startup-after.log",
+      "sha256": "6e22e79db31dcc005e6912a96c0cc915e76dc2cbe87a4e74b1138ce1d42905c9"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/turbopack-startup-cold.log",
+      "sha256": "58068ce703048c273137047d8482a1efd45dc0da8c5224170de7b2ccc09d2acc"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/turbopack-http-after.json",
+      "sha256": "97c208ddccc1142cfe5719a58479266e897c9fb15dfac0bbbc38c7e87ab6197c"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/turbopack-http-cold.json",
+      "sha256": "93cc9938300449955577a22a54acdeb31c6b482c09980606beadf3b92158da0a"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/cold-start-smoke.json",
+      "sha256": "040b8d819f26d37202f419e7f02ec4db31accc9a29e306010ee2b04d42890954"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/cold-start-smoke.log",
+      "sha256": "754854fc028ec740156fe8adbcf3d7fdc121e5ea138fdd4ba1969ce2a3073038"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/frozen-after-development.log",
+      "sha256": "640d390a5870d59de748274eccc31232f71c1568697943d663b4443be3c223bb"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/retained-cache-observations.json",
+      "sha256": "f8dbff8fd1c9b2e04b1a7848d25eb482968c80c38555dc2a3ef9a7d7bb6b2622"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/retained-test.trace",
+      "sha256": "d0cf0de65222cf0c318a7f74abe1e70390e24d1dc91d99c1b016ef576d4f3d53"
+    },
+    {
+      "path": "artifacts/l09-repeatability-2026-10-09/retained-0-trace.trace",
+      "sha256": "f162fca6bbb80242b8ff39d13c769812cc664cd1eeebe67420add8b3c5e33d94"
+    }
+  ]
+}

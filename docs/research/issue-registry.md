@@ -4,6 +4,8 @@ Updated 9 October 2026. This registry separates corrections to the [documentatio
 
 ## Documentation audit corrections
 
+The independent 9 October revalidation supports C01, H02–H04, M05–M07 and L10 within the [import artwork-safety repair's reviewed scope](2026-10-09-import-artwork-safety.md#independent-revalidation--9-october-2026); M08 is mitigated by explicit mock limits and native canaries. Its 21 native import cases, types and documentation pass. Its failed coverage-instrumented timing replay remains unchanged. The subsequent [L09 execution](2026-10-09-validation-repeatability.md) separates warmed RotSprite speed with the original 10 ms limit, passes two complete coverage gates and the full production suite (338 passes /7 capability skips /zero failures), and repairs/checks delayed old-cache ownership. Development, device/host and universal lifecycle qualification retain their stated limits. I11 now has future immutable CI artifact names, hash indexes and explicit 90-day retention; actual candidate upload/retrieval verification is pending, and this is not a permanent release archive. This does not certify unreviewed source or every feature.
+
 | ID | Correction / current authority | Remaining qualification |
 | --- | --- | --- |
 | D01 | Removed current Audio Engine row; old audio plans scoped historical | Retired feature is not reintroduced |
@@ -39,7 +41,7 @@ Updated 9 October 2026. This registry separates corrections to the [documentatio
 | D31 | UX journeys called engineering walkthroughs; confidence/pixel-pulse claims corrected | Participant studies remain pending |
 | D32 | Encoder terminology/typechecking/checker scope corrected | Static compilation is not runtime validation |
 | D33 | Git-resolved hook paths; unrelated hooks preserved; worktree/core.hooksPath regressions | Hook is bypassable, tests current working tree |
-| D34 | [Local/CI/coverage matrix](../guides/testing.md) states actual enforcement | Coverage is optional; no fresh Lighthouse implied |
+| D34 | [Local/CI/coverage matrix](../guides/testing.md) states actual enforcement | Both gates enforce coverage outside `src/types/**` with two workers and a separate warmed RotSprite limit; independent replay retains its timing failure; no fresh Lighthouse implied |
 | D35 | Safe env template and ignore exception; operator/rollback guide | Audit erratum: template was already tracked, despite broad ignore rule |
 | D36 | Confirmed links fixed; underscore false positive handled in checker regression | External URLs not exhaustively re-fetched |
 | D37 | [Plan-level TestSprite registry](testsprite-plan-registry.md) separates stale plans/verdicts | The explicitly authorized [3 October challenge](2026-10-03-testsprite-challenge.md) supersedes the prior local-only preference; the [full execution follow-up](2026-10-03-testsprite-full-run.md) runs all remaining cases and passes 12 executable local workflows; cloud artwork coverage remains unqualified |

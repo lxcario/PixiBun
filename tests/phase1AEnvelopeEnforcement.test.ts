@@ -1196,6 +1196,8 @@ describe('Phase 1A: Prevention & Safe Persistence (Workspace Envelope Enforcemen
         canvasWidth: 32,
         canvasHeight: 32,
         frames: [createDummyFrame('f0', Array.from({ length: 50 }, (_, i) => createDummyLayer(`l${i}`)))],
+        activeFrameIndex: 0,
+        activeLayerId: 'l0',
         editRevision: 20,
         isDirty: false,
       });

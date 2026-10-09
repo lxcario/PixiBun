@@ -13,7 +13,7 @@ async function ready(page: Page, url = '/studio') {
       value instanceof Error ? { name: value.name, message: value.message } : typeof value === 'string' ? value : String(value)).catch(() => message.text())));
     console.error('Production browser error:', message.text(), JSON.stringify(details));
   });
-  await page.goto(url);
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await expect(page.getByTestId('main-composite-canvas')).toBeVisible();
 }
@@ -35,13 +35,13 @@ test('production drawing, save, reload, undo and redo preserve pixels without de
   expect(await page.evaluate(() => Object.keys(window).filter(key => /__studioStore|__pixibunDb/.test(key)))).toEqual([]);
   await paint(page, 0.3); await saved(page);
   const first = await pixels(page);
-  await page.reload();
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect.poll(() => pixels(page)).toEqual(first);
   await paint(page, 0.7);
   const second = await pixels(page);
   await page.keyboard.press('Control+z'); await expect.poll(() => pixels(page)).toEqual(first);
   await page.keyboard.press('Control+Shift+z'); await expect.poll(() => pixels(page)).toEqual(second);
-  await saved(page); await page.reload(); await expect.poll(() => pixels(page)).toEqual(second);
+  await saved(page); await page.reload({ waitUntil: 'domcontentloaded' }); await expect.poll(() => pixels(page)).toEqual(second);
 });
 
 test('two real tabs refuse stale saves and save an independent conflict copy', async ({ page, context }) => {
@@ -121,8 +121,13 @@ test('production GIF worker produces a downloadable file that the native image d
   expect(paintedPixels).toBeGreaterThan(0);
 });
 
-test('a real waiting update preserves both open tabs and activates after all tabs close', async ({ context, baseURL }) => {
+for (const delayed of [false, true]) test(`a real waiting update preserves both open tabs and activates after all tabs close${delayed ? ' with a delayed old cache write' : ''}`, async ({ context, baseURL }, testInfo) => {
   let version = 'phase3-old';
+  let hold = false;
+  let releaseResponse!: () => void;
+  let backgroundStarted!: () => void;
+  const background = new Promise<void>(resolve => { backgroundStarted = resolve; });
+  const released = new Promise<void>(resolve => { releaseResponse = resolve; });
   // Two release scripts through a local proxy; the UI and assets are the actual production build.
   const server = createServer(async (request, response) => {
     try {
@@ -130,8 +135,11 @@ test('a real waiting update preserves both open tabs and activates after all tab
         response.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store', 'Service-Worker-Allowed': '/' });
         response.end(buildServiceWorkerScript(version)); return;
       }
+      if (hold && request.url?.includes('retirement-race=1')) { backgroundStarted(); await released; }
       const upstream = await fetch(`${baseURL}${request.url}`);
-      response.writeHead(upstream.status, Object.fromEntries([...upstream.headers].filter(([key]) => !['content-encoding', 'content-length', 'transfer-encoding'].includes(key))));
+      const headers = Object.fromEntries([...upstream.headers].filter(([key]) => !['content-encoding', 'content-length', 'transfer-encoding'].includes(key)));
+      if (request.url?.includes('retirement-race=1')) headers['cache-control'] = 'no-store';
+      response.writeHead(upstream.status, headers);
       response.end(Buffer.from(await upstream.arrayBuffer()));
     } catch { response.writeHead(502); response.end(); }
   });
@@ -144,6 +152,13 @@ test('a real waiting update preserves both open tabs and activates after all tab
     await expect.poll(() => first.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
     const second = await context.newPage(); await ready(second, url);
     const artwork = await pixels(second);
+    if (delayed) {
+      await first.evaluate(async () => { await fetch('/theme.js?retirement-race=1'); });
+      await expect.poll(() => first.evaluate(async () => Boolean(await caches.match('/theme.js?retirement-race=1')))).toBe(true);
+      hold = true;
+      await first.evaluate(async () => { await fetch('/theme.js?retirement-race=1'); });
+      await background;
+    }
     version = 'phase3-new';
     await first.evaluate(async () => { await (await navigator.serviceWorker.getRegistration())!.update(); });
     await expect.poll(() => first.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
@@ -154,11 +169,17 @@ test('a real waiting update preserves both open tabs and activates after all tab
     await first.close();
     expect(await second.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
     await second.close();
+    hold = false; releaseResponse();
     const reopened = await context.newPage(); await ready(reopened, url);
+    await testInfo.attach('worker-transition-state.json', { body: Buffer.from(JSON.stringify(await reopened.evaluate(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      return { caches: await caches.keys(), active: registration?.active?.state, waiting: registration?.waiting?.state, controlled: Boolean(navigator.serviceWorker.controller) };
+    }))), contentType: 'application/json' });
     await expect.poll(() => reopened.evaluate(() => caches.keys())).toEqual(['pixibun-phase3-new']);
     await expect.poll(() => pixels(reopened)).toEqual(artwork);
     await reopened.close();
   } finally {
+    hold = false; releaseResponse();
     server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
   }
 });

@@ -1,5 +1,9 @@
 # Documentation map
 
+The [9 October validation-repeatability record](research/2026-10-09-validation-repeatability.md) separates warmed RotSprite speed from coverage, preserves original timing/worker failures, and records two passing full gates plus the complete three-engine production verdict. Actual two-build update/rollback, development startup, remote custody and remaining release limits have their own explicit scope.
+
+The [9 October import artwork-safety repair](research/2026-10-09-import-artwork-safety.md) follows the independent partial audit with transactional replacement, grouped Undo/Redo, protected destinations, complete hydration rollback and clean-checkout link enforcement. Its [independent revalidation](research/2026-10-09-import-artwork-safety.md#independent-revalidation--9-october-2026) supports the nine repairs within reviewed scope and passes 21 native import cases, types and documentation, while retaining the failed coverage-instrumented timing assertion. Earlier passing runs and remaining qualification stay separate.
+
 The [8 October playback and interface follow-up](research/2026-10-08-motion-layout-followup.md) tracks the user's animation, button/layout, compact-color-dock and right-click-menu feedback. Its final verification and publication status is recorded there; the earlier session review retains its own build and outcomes.
 
 The [8 October session review and publication](research/2026-10-08-session-review-publication.md) records the fresh Markdown/remaining-work review, fractional-preview and odd-pivot repairs, compact-control and saved-picker fixes, and explicitly requested push. Final local verdicts, external coverage limits, publication and deployment remain distinct.

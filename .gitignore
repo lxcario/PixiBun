@@ -60,6 +60,7 @@ testsprite_tests/tmp/config.json
 /artifacts/
 
 # audit reports (kept locally, not committed)
+/audit/
 AUDIT_REMEDIATION_*.md
 PIXIBUN_AUDIT_RESULTS.md
 

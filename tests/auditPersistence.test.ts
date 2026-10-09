@@ -25,6 +25,7 @@ import { readImportFile } from '@/lib/project/importFile';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { validateStructurePayload } from '@/lib/sync/p2pSync';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { createHistoryEngine, getGlobalHistoryEngine, setGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 
 beforeEach(async () => {
   vi.stubGlobal('Blob', NodeBlob);
@@ -704,6 +705,11 @@ describe('audit persistence regressions', () => {
     bufA.ctx.fillStyle = '#ff0000';
     bufA.ctx.fillRect(0, 0, 10, 10);
     touchBuffer('layer-a-1');
+    const handle = { name: 'original.pixibun' } as FileSystemFileHandle;
+    DesktopFileSystem.setActiveHandle(handle);
+    useStudioStore.setState({ isDirty: true, editRevision: 42, saveStatus: 'saving', selection: { x: 1, y: 2, w: 3, h: 4 }, selectionMask: new Uint8Array([1, 0, 1]) });
+    const originalSession = useStudioStore.getState();
+    const originalAssociation = DesktopFileSystem.captureAssociation();
 
     expect(useStudioStore.getState().currentProjectId).toBe('proj-alpha');
     expect(useStudioStore.getState().projectName).toBe('Project Alpha');
@@ -744,6 +750,8 @@ describe('audit persistence regressions', () => {
     // 5. Invariant: The workspace must NOT be in a split-brain state!
     // Store must be rolled back to Project A
     const state = useStudioStore.getState();
+    expect(state).toBe(originalSession);
+    expect(DesktopFileSystem.captureAssociation()).toEqual(originalAssociation);
     expect(state.currentProjectId).toBe('proj-alpha');
     expect(state.projectName).toBe('Project Alpha');
     expect(state.frames[0].layers[0].id).toBe('layer-a-1');
@@ -811,11 +819,12 @@ describe('audit persistence regressions', () => {
     expect(hasBuffer('layer-b-ev')).toBe(false);
   });
 
-  it('falls back to safe reset when rollback to previous project also encounters an error', async () => {
+  it('preserves the original session even when its rollback observer also throws', async () => {
     // 1. Establish active Project A
     const projA = createProjectFileFixture('proj-alpha-double', 'Project Alpha Double', 'layer-a-dbl');
     useStudioStore.getState().loadProjectState(projA, 'proj-alpha-double');
     getOrCreateBuffer('layer-a-dbl', 32, 32);
+    const originalSession = useStudioStore.getState();
 
     const projB = createProjectFileFixture('proj-beta-double', 'Project Beta Double', 'layer-b-dbl');
 
@@ -839,10 +848,34 @@ describe('audit persistence regressions', () => {
     await expect(hydrateProject(projB, 'proj-beta-double', [])).rejects.toThrow();
     unsubscribe();
 
-    // 3. Workspace must be in safe reset state (resetToNewProject), NOT split brain
+    // State installation precedes observer delivery; a second observer exception
+    // must not discard the restored artwork or mask the original failure.
     const state = useStudioStore.getState();
-    expect(state.currentProjectId).not.toBe('proj-beta-double');
-    expect(state.projectName).toBe('Untitled Sprite');
+    expect(state).toBe(originalSession);
+    expect(hasBuffer('layer-a-dbl')).toBe(true);
     expect(hasBuffer('layer-b-dbl')).toBe(false);
+  });
+
+  it('restores Undo/Redo and native-file ownership when history clearing fails after clearing the engine', async () => {
+    const project = createProjectFileFixture('old-history', 'Unsaved history', 'old-layer');
+    useStudioStore.getState().loadProjectState(project, 'old-history');
+    const buffer = getOrCreateBuffer('old-layer', 32, 32);
+    const previousEngine = getGlobalHistoryEngine();
+    const engine = createHistoryEngine(); setGlobalHistoryEngine(engine);
+    const step = { type: 'pixel' as const, description: 'Prior edit', layerId: 'old-layer', frameIndex: 0, imageData: buffer.ctx.getImageData(0, 0, 32, 32) };
+    engine.push(step); engine.undo(step);
+    useStudioStore.setState({ isDirty: true, editRevision: 42, canRedo: true });
+    DesktopFileSystem.setActiveHandle({ name: 'unsaved-history.pixibun' } as FileSystemFileHandle);
+    const session = useStudioStore.getState(), association = DesktopFileSystem.captureAssociation();
+    vi.spyOn(studioEvents, 'emit').mockImplementation(event => {
+      if (event === 'pixibun:history-clear') { engine.clear(); throw new Error('clear notification failure'); }
+    });
+    try {
+      await expect(hydrateProject(createProjectFileFixture('incoming-history', 'Incoming', 'incoming-layer'), 'incoming-history')).rejects.toThrow('clear notification failure');
+      expect(useStudioStore.getState()).toBe(session);
+      expect(DesktopFileSystem.captureAssociation()).toEqual(association);
+      expect(engine.redoDepth).toBe(1); expect(engine.peekRedo()).toBe(step);
+      expect(hasBuffer('old-layer')).toBe(true); expect(hasBuffer('incoming-layer')).toBe(false);
+    } finally { setGlobalHistoryEngine(previousEngine); }
   });
 });

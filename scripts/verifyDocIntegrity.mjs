@@ -1,7 +1,7 @@
 /** Selected structural/source contracts and local links; not prose truth certification. */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ownedMarkdown, validateMarkdownLinks, sourceContracts, testInventory } from './docContracts.mjs';
+import { ownedMarkdown, publishableProjectFiles, validateMarkdownLinks, sourceContracts, testInventory } from './docContracts.mjs';
 const root = process.cwd();
 const errors = [];
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -25,7 +25,7 @@ try {
   const version = read('CHANGELOG.md').match(/^##\s+\[v?(\d+\.\d+\.\d+)\]/m)?.[1];
   if (version !== pkg.version) fail('Package/changelog version mismatch');
   const docs = ownedMarkdown(root);
-  const links = validateMarkdownLinks(root, docs);
+  const links = validateMarkdownLinks(root, docs, new Set(publishableProjectFiles(root)));
   errors.push(...links.errors);
   console.log('Local links/headings: ' + links.checked + ' destinations across ' + docs.length + ' owned Markdown files.');
   for (const [file, actual] of [['docs/generated/test-inventory.json', testInventory(root)], ['docs/generated/source-contracts.json', sourceContracts(root)]]) {

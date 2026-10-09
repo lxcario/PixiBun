@@ -18,7 +18,7 @@ export function headingIds(markdown) {
 export function withoutFences(s) {
   return s.replace(/^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1\s*$/gm, '');
 }
-export function validateMarkdownLinks(root, docs) {
+export function validateMarkdownLinks(root, docs, publishableFiles) {
   const errors = []; let checked = 0;
   for (const doc of docs) {
     const content = withoutFences(fs.readFileSync(path.join(root, doc), 'utf8'));
@@ -28,7 +28,12 @@ export function validateMarkdownLinks(root, docs) {
       const [file, fragment] = target.split('#');
       const dest = file ? path.resolve(root, path.dirname(doc), decodeURIComponent(file)) : path.resolve(root, doc);
       checked++;
+      const relative = path.relative(root, dest).replaceAll('\\', '/');
       if (!fs.existsSync(dest)) errors.push(`${doc}: missing ${target}`);
+      else if (publishableFiles && !publishableFiles.has(relative) &&
+        !(fs.statSync(dest).isDirectory() && [...publishableFiles].some(file => file.startsWith(relative.replace(/\/$/, '') + '/')))) {
+        errors.push(`${doc}: local-only link is absent from a clean checkout: ${target}`);
+      }
       else if (fragment && dest.endsWith('.md') && !headingIds(fs.readFileSync(dest, 'utf8')).has(decodeURIComponent(fragment))) {
         errors.push(`${doc}: missing heading ${target}`);
       }
@@ -39,8 +44,11 @@ export function validateMarkdownLinks(root, docs) {
 export function ownedMarkdown(root) {
   // Git lists tracked and new non-ignored project docs, excluding private scratch/worktrees.
   // Include long paths in retained browser evidence without truncating Git's list.
-  return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { cwd: root, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 })
-    .split('\0').filter(p => p.endsWith('.md') && !p.startsWith('.kilo/')).sort();
+  return publishableProjectFiles(root).filter(p => p.endsWith('.md')).sort();
+}
+export function publishableProjectFiles(root) {
+  return execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '.', ':!:audit', ':!:.kilo'], { cwd: root, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 })
+    .split('\0').filter(Boolean);
 }
 export function sourceContracts(root) {
   const read = p => fs.readFileSync(path.join(root, p), 'utf8');

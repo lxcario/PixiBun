@@ -35,7 +35,7 @@ describe('Service Worker Route & Lifecycle Script (Milestone C1)', () => {
   it('bounds dynamic cache entries to prevent unbounded storage growth', () => {
     const script = buildServiceWorkerScript('v1.14.1');
     expect(script).toContain('const MAX_DYNAMIC_CACHE_ENTRIES = 50;');
-    expect(script).toContain('async function trimCache(cacheName, maxEntries)');
+    expect(script).toContain('async function trimCache(cache, maxEntries)');
   });
 
   it('serves GET route with status 200 and JavaScript body', async () => {

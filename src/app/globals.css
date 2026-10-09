@@ -1,4 +1,5 @@
-@import "tailwindcss";
+/* Application classes only; local evidence and copied checkouts are not CSS inputs. */
+@import "tailwindcss" source("../");
 
 @theme {
   /* PixiBun Semantic Design Tokens (DESIGN.md & FullStackGuide.md) */

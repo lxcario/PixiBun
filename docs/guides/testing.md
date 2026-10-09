@@ -4,17 +4,20 @@ Use Node 22. Runner enumeration is in [generated inventory](../generated/test-in
 
 | Check | Local command | Enforced scope |
 | --- | --- | --- |
-| Documentation | `npm run verify:docs` | Owned links/headings, live inventory, selected source contracts, sections/version; not prose truth certification |
+| Documentation | `npm run verify:docs` | Owned links/headings and clean-checkout target availability, live inventory, selected source contracts, sections/version; not prose truth certification |
 | Static types | `npm run typecheck` | Strict project compilation with `skipLibCheck`; not all runtime inputs/dependencies |
 | Lint | `npm run lint` | Configured code/accessibility rules; not assistive-technology qualification |
 | Unit/integration | `npm test` | Existing Vitest assertions; no coverage instrumentation by default |
-| Full gate | `npm run gate:full` | Docs, types, lint, units and production build; browser/coverage/Lighthouse separate |
-| Editor workflows | `npm run test:e2e` | Chromium development server on 3000; some tests use development-only store/database handles. CI retries twice |
+| Full gate | `npm run gate:full` | Docs, types, lint, units with coverage thresholds, separate warmed performance benchmark and production build; browser/Lighthouse separate |
+| Performance | `npm run test:performance` | Serial Node 22 benchmark without coverage/profiling/debugging; same 23×12 outline and 50 angles, five warmup batches and 15 measured batches; p90 batch mean must remain below 10 ms |
+| Editor workflows | `npm run test:e2e` | Chromium configured Turbopack development server on 3000; some tests use development-only store/database handles. Qualification and CI explicitly use one worker and zero retries |
 | Production workflows | `npm run test:e2e:production` | Separate compiled server in Chromium/Firefox/WebKit; counts in generated inventory; one worker, zero retries |
-| Coverage | `npm run test:coverage` | Configured thresholds 60% statements/lines, 50% branches, 55% functions; optional, not part of gate/CI |
+| Coverage | `npm run test:coverage` | All application `.ts`/`.tsx` sources, excluding `src/types`; thresholds 60% statements/lines, 50% branches, 55% functions; enforced by both gates and CI |
 | Lighthouse | `npx @lhci/cli@0.15.1 autorun` | Separate configured budgets and fixture/routes; dated environment evidence |
 
 GitHub CI runs gate/build, Chromium editor checks, three-engine production checks and Lighthouse. GitLab runs the standard gate plus its main-branch build; it does not provide the same browser/Lighthouse matrix. Do not equate configured thresholds with executed coverage. The pre-push hook is a bypassable convenience check of the working tree, which can differ from the commits pushed.
+
+Vitest defaults to two workers for bounded coverage concurrency. RotSprite contour, pivot and connectivity correctness stays in the coverage suite; timing runs afterward in a separate uninstrumented process. The benchmark keeps the original 10 ms budget and applies it to p90 of warmed 50-call batch means. It records every batch, runtime, CPU and algorithm hash; host baselines describe results without recalibrating the limit. Run heavy suites sequentially and retain slow results rather than raising the threshold. This desktop workload does not establish physical-device latency or large-sprite performance. The [9 October independent replay](../research/2026-10-09-import-artwork-safety.md#independent-revalidation--9-october-2026) retains its original instrumented timing failures. Coverage excludes all of `src/types/**`, including its two runtime project-format constants. The canvas unit fixture copies bytes rather than implementing native compositing. Import acceptance therefore includes native three-browser transparency, lock/refusal, grouped Undo/Redo and saved-reload checks in `tests/production/imageImportSafety.spec.ts`.
 
 For a final local reconciliation, freeze the source and finish the gate/build before starting the compiled-browser suite. Avoid changing test expectations or rebuilding while that suite is running: it must exercise the same source as its build. Run resource-heavy gate/editor/production suites sequentially on one machine; preserve any earlier failed or interrupted runs with their actual scope. The [phase 5 record](../research/2026-10-02-feature-repairs-phase5.md) separates these diagnostics from final verdicts.
 
@@ -23,6 +26,10 @@ When verifying a dependency change, a still-running development process may reta
 When a local machine cannot sustain the default unit-worker concurrency, the installed Vitest runner accepts `VITEST_MAX_WORKERS`. Record any override with the verdict. It changes concurrency, not assertion coverage or timeouts, and does not establish that CI's default-worker run passed.
 
 ## Preserve evidence
+
+Future GitHub CI validation and browser evidence uses immutable artifact names containing the revision, run ID and attempt, with explicit 90-day retention. `npm run evidence:index -- --source <verification-output> --output artifacts/<new-index>.json` records file hashes and bytes; it refuses existing indexes, symlinks and credential directories. CI uploads logs, coverage, browser reports and failure traces even after failed checks. A generated index does not prove remote upload or retrieval, and 90-day storage is not a permanent release archive. Keep the artifact ID, download digest and retrieval verification in the dated execution record before accepting custody. Historical tracked evidence stays unchanged.
+
+Preserve selected release-candidate logs, failed traces, source/build manifests and verdict receipts in a separate draft verification archive in the existing GitHub repository before routine artifacts expire. Include a file/byte/hash manifest and verify the downloaded archive against it. Exclude credentials, environment files, browser profiles and signed recording links. Keep the archive/asset IDs, archive digest and retrieval receipt. Draft archive assets have no configured automatic expiry; deletion and repository/account continuity still affect custody. This archive stores verification evidence and does not approve or publish an application release.
 
 Routine screenshots use `test.info().outputPath('captures', filename)` beneath ignored Playwright output. They must not write into `docs/research/evidence/`. Retries and test/browser names have separate paths.
 

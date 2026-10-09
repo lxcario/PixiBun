@@ -10,6 +10,12 @@ Some browsers open a native **Save** dialog for the project backup; others downl
 
 Creating a project file does not confirm a browser-storage save. If browser saving failed, that warning remains even after downloading a backup. A failed file write reports an error and leaves the drawing open for retry. Closing an export stops pending work; reopening waits for its cleanup. Cancellation cannot retract a file write or download that already completed.
 
+## Importing over existing artwork
+
+Image **Replace** clears the entire destination layer, including pixels beneath transparent input. **Replace Frames** replaces the sheet as one operation and clears prior layer artwork in those frames. Unlock protected layers before either replacement; sheet replacement also refuses removal of locked frames. **New Layer**, **New Frame** and sheet append preserve existing pixels.
+
+An admitted image import records one Undo step for its pixels, layer/frame changes, canvas resize and optional palette. If capacity, metadata, Undo memory or staging fails, the import stays open and the existing drawing is preserved. Successful imports repaint and schedule autosave; wait for Saved before closing. Undo is a session aid, not a portable backup.
+
 ## Practicing without replacing your drawing
 
 Desktop Playground saves a checkpoint of your original before opening separate practice. **Return to drawing** restores it; **Keep practice in Studio** saves a new project first. Practice has no autosave. A refresh loses unkept practice, while Return restores the saved original through normal admission. Session Undo/Redo and native-file handles are not portable. If the checkpoint or Keep fails, stay on the page and read the warning; your original is not replaced by practice. [Step-by-step practice and return](learning-and-playground.md#keep-your-drawing-try-something-new).

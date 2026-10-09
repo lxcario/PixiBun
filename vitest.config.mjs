@@ -30,10 +30,13 @@ const rootDirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   test: {
     environment: 'node',
+    maxWorkers: 2,
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/types/**'],
       reporter: ['text', 'json', 'html'],
       thresholds: {
         statements: 60,

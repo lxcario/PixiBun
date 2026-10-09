@@ -62,8 +62,12 @@ export interface PushStructuralOptions {
   canvasWidth?: number;
   canvasHeight?: number;
   redoBufferCount?: number;
+  redoCanvasWidth?: number;
+  redoCanvasHeight?: number;
   addedLayerCount?: number;
   addedFrameCount?: number;
+  /** Capture transparent originals for affected, existing layers with no live raster. */
+  includeEmptyBuffers?: boolean;
 }
 
 /**
@@ -80,6 +84,9 @@ export function pushStructuralHistoryStep(
   const state = useStudioStore.getState();
   const affectedIds = options?.affectedLayerIds ?? [];
   const uniqueAffectedIds = [...new Set(affectedIds)].filter(hasBuffer);
+  const ownedIds = new Set(state.frames.flatMap(frame => frame.layers.map(layer => layer.id)));
+  const emptyAffectedIds = options?.includeEmptyBuffers
+    ? [...new Set(affectedIds)].filter(id => ownedIds.has(id) && !hasBuffer(id)) : [];
   const width = options?.canvasWidth ?? state.canvasWidth;
   const height = options?.canvasHeight ?? state.canvasHeight;
   const metadataBytes = motionRigBytes(state.motionRigs) + state.frames.reduce((bytes, frame) => bytes + 256 + frame.layers.length * 256, 1024) +
@@ -87,10 +94,11 @@ export function pushStructuralHistoryStep(
     state.clips.reduce((bytes, clip) => bytes + estimateClipBytes(clip), 0) +
     (options?.includePalettes ? state.palettes.reduce((bytes, palette) => bytes + estimatePaletteBytes(palette), 0) : 0);
   const rasterBytes = width * height * 4;
-  const undoBytes = metadataBytes + uniqueAffectedIds.length * rasterBytes;
+  const redoRasterBytes = (options?.redoCanvasWidth ?? width) * (options?.redoCanvasHeight ?? height) * 4;
+  const undoBytes = metadataBytes + (uniqueAffectedIds.length + emptyAffectedIds.length) * rasterBytes;
   const redoBytes = metadataBytes + (options?.addedMetadataBytes ?? 0) + (options?.addedLayerCount ?? 0) * 256 +
     (options?.addedFrameCount ?? 0) * 256 +
-    (options?.redoBufferCount ?? uniqueAffectedIds.length) * rasterBytes;
+    (options?.redoBufferCount ?? uniqueAffectedIds.length) * redoRasterBytes;
   const estimatedBytes = Math.max(undoBytes, redoBytes);
   if (estimatedBytes > engine.maxBytes) {
     studioEvents.emit('pixibun:toast', {
@@ -106,6 +114,13 @@ export function pushStructuralHistoryStep(
     return false;
   }
 
+  const layerBuffers = captureLayerBuffers(uniqueAffectedIds);
+  if (emptyAffectedIds.length) {
+    // createImageData allocates zero RGBA without publishing a live buffer for
+    // a previously lazy layer. Its retained bytes were admitted above.
+    const context = createEntry(1, 1).ctx;
+    for (const layerId of emptyAffectedIds) layerBuffers.push({ layerId, imageData: context.createImageData(width, height) });
+  }
   const step: StructuralHistoryStep = {
     type: 'structural',
     opKind: options?.opKind ?? 'generic-structural',
@@ -120,7 +135,7 @@ export function pushStructuralHistoryStep(
     ...(options?.includePalettes ? { palettes: structuredClone(state.palettes), currentPaletteId: state.currentPaletteId } : {}),
     canvasWidth: width,
     canvasHeight: height,
-    layerBuffers: captureLayerBuffers(uniqueAffectedIds),
+    layerBuffers,
     affectedLayerIds: affectedIds,
   };
 

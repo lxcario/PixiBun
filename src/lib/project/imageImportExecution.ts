@@ -1,294 +1,157 @@
-/**
- * imageImportExecution.ts
- *
- * Encapsulates the complete execution pipeline for image imports:
- * - prospective capacity checks before any state changes, buffer allocations, or history clears;
- * - atomic dimension matching if requested;
- * - layer/frame creation, pixel drawing, palette integration, and notification.
- */
-
+/** Stage an entire import before publishing pixels, metadata and one Undo step. */
 import type { ImageImportConfirmPayload } from '@/types/import';
+import type { AnimationFrame, Layer } from '@/types/canvas';
+import type { ColorPalette } from '@/types/palette';
 import { useStudioStore } from '@/stores/studioStore';
-import { WORKSPACE_ENVELOPE } from '@/config/canvasLimits';
-import {
-  canAddLayersToFrame,
-  canAddFramesToProject,
-  canReplaceFrames,
-  validateWorkspaceStructure,
-} from '@/lib/project/workspaceEnvelopeGuard';
+import { validateWorkspaceStructure } from '@/lib/project/workspaceEnvelopeGuard';
 import { studioEvents } from '@/lib/events/studioEvents';
-import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
-import { MAX_METADATA_NAME_LENGTH } from '@/lib/project/metadataAdmission';
+import { createEntry, snapshotBuffers, replaceAllBuffers } from '@/lib/engine/bufferRegistry';
+import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
+import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
+import { createId } from '@/lib/engine/id';
+import { MAX_METADATA_NAME_LENGTH, metadataNameError } from '@/lib/project/metadataAdmission';
+import { MAX_PROJECT_PALETTES, paletteEntryError } from '@/lib/color/paletteAdmission';
+import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
+import { reserveMemory } from '@/lib/safety/memoryBudget';
 
-export interface ImageImportExecutionResult {
-  ok: boolean;
-  reason?: string;
-}
+export interface ImageImportExecutionResult { ok: boolean; reason?: string }
 
-export function executeImageImport(confirmData: ImageImportConfirmPayload): ImageImportExecutionResult {
-  const { canvas, target, extractedPalette, addToPalette, filename, resizeCanvasToMatch, slicedFrames } = confirmData;
-  const store = useStudioStore.getState();
-
-  const targetWidth = resizeCanvasToMatch ? resizeCanvasToMatch.width : store.canvasWidth;
-  const targetHeight = resizeCanvasToMatch ? resizeCanvasToMatch.height : store.canvasHeight;
-
-  if (resizeCanvasToMatch) {
-    if (
-      !Number.isInteger(targetWidth) ||
-      !Number.isInteger(targetHeight) ||
-      targetWidth < 1 ||
-      targetWidth > WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION ||
-      targetHeight < 1 ||
-      targetHeight > WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION
-    ) {
-      const message = `Canvas dimensions must be whole numbers between 1 and ${WORKSPACE_ENVELOPE.MAX_CANVAS_DIMENSION}.`;
-      studioEvents.emit('pixibun:toast', {
-        message,
-        type: 'error',
-      });
-      return { ok: false, reason: message };
+export function executeImageImport(data: ImageImportConfirmPayload): ImageImportExecutionResult {
+  let release: (() => void) | undefined;
+  try {
+    const state = useStudioStore.getState();
+    const { target, filename, canvas, slicedFrames } = data;
+    const sheet = target === 'sprite-sheet-append' || target === 'sprite-sheet-replace';
+    if (sheet !== Boolean(slicedFrames?.length)) throw new Error('The import destination does not match the supplied image frames.');
+    const width = data.resizeCanvasToMatch?.width ?? state.canvasWidth;
+    const height = data.resizeCanvasToMatch?.height ?? state.canvasHeight;
+    const resized = width !== state.canvasWidth || height !== state.canvasHeight;
+    const sources = sheet ? slicedFrames! : [canvas];
+    if (sources.some(source => !source || source.width < 1 || source.height < 1)) throw new Error('The imported image is empty.');
+    if (sheet && sources.some(source => source.width > width || source.height > height)) {
+      throw new Error('Sprite sheet cells exceed the canvas. Resize the canvas to the cell size before importing.');
     }
-  }
 
-  if (slicedFrames?.some((frame) => frame.width > targetWidth || frame.height > targetHeight)) {
-    const message = 'Sprite sheet cells exceed the canvas. Resize the canvas to the cell size before importing.';
-    studioEvents.emit('pixibun:toast', { message, type: 'error' });
-    return { ok: false, reason: message };
-  }
-
-  // Prospective capacity validation BEFORE any state mutation, buffer allocation, or history clearing:
-  if (slicedFrames && slicedFrames.length > 0) {
-    if (target === 'sprite-sheet-replace') {
-      const existingCount = store.frames.length;
-      const newCount = slicedFrames.length;
-      const activeFrame = store.frames[store.activeFrameIndex] || store.frames[0];
-      const untaggedLayerCount = activeFrame ? activeFrame.layers.filter((l) => !l.tag).length : 1;
-      const incomingLayerCount = Math.max(1, untaggedLayerCount);
-
-      const replacementFrames: Array<{ layerCount: number }> = [];
-      for (let i = 0; i < newCount; i++) {
-        if (i < existingCount) {
-          replacementFrames.push({ layerCount: store.frames[i]?.layers?.length ?? 1 });
-        } else {
-          replacementFrames.push({ layerCount: incomingLayerCount });
-        }
-      }
-
-      const capacity = canReplaceFrames(targetWidth, targetHeight, replacementFrames);
-      if (!capacity.ok) {
-        const message = capacity.reason || 'Import exceeds workspace capacity limits.';
-        studioEvents.emit('pixibun:toast', {
-          message,
-          type: 'error',
-        });
-        return { ok: false, reason: message };
-      }
-    } else {
-      // sprite-sheet-append
-      const activeFrame = store.frames[store.activeFrameIndex] || store.frames[0];
-      const untaggedLayerCount = activeFrame ? activeFrame.layers.filter((l) => !l.tag).length : 1;
-      const incomingLayerCount = Math.max(1, untaggedLayerCount);
-      const incomingFrames = Array.from({ length: slicedFrames.length }, () => ({
-        layerCount: incomingLayerCount,
-      }));
-
-      const capacity = canAddFramesToProject(store.frames, targetWidth, targetHeight, incomingFrames);
-      if (!capacity.ok) {
-        const message = capacity.reason || 'Import exceeds workspace capacity limits.';
-        studioEvents.emit('pixibun:toast', {
-          message,
-          type: 'error',
-        });
-        return { ok: false, reason: message };
-      }
-    }
-  } else {
+    const frames = structuredClone(state.frames);
+    const activeFrame = frames[state.activeFrameIndex];
+    if (!activeFrame) throw new Error('The import destination frame is unavailable.');
+    const stem = filename ? filename.replace(/\.[^/.]+$/, '') : 'Imported';
+    const layerName = sheet ? `Sprite Sheet: ${stem}`.slice(0, MAX_METADATA_NAME_LENGTH) : stem;
     if (target === 'new-layer') {
-      const capacity = canAddLayersToFrame(store.frames, store.activeFrameIndex, targetWidth, targetHeight, 1);
-      if (!capacity.ok) {
-        const message = capacity.reason || 'Import exceeds workspace capacity limits.';
-        studioEvents.emit('pixibun:toast', {
-          message,
-          type: 'error',
-        });
-        return { ok: false, reason: message };
-      }
-    } else if (target === 'new-frame') {
-      const activeFrame = store.frames[store.activeFrameIndex] || store.frames[0];
-      const untaggedLayerCount = activeFrame ? activeFrame.layers.filter((l) => !l.tag).length : 1;
-      const incomingLayerCount = Math.max(1, untaggedLayerCount);
-      const capacity = canAddFramesToProject(store.frames, targetWidth, targetHeight, [{ layerCount: incomingLayerCount }]);
-      if (!capacity.ok) {
-        const message = capacity.reason || 'Import exceeds workspace capacity limits.';
-        studioEvents.emit('pixibun:toast', {
-          message,
-          type: 'error',
-        });
-        return { ok: false, reason: message };
-      }
-    } else if (resizeCanvasToMatch) {
-      const budget = validateWorkspaceStructure(targetWidth, targetHeight, store.frames);
-      if (!budget.ok) {
-        const message = budget.reason || 'Import exceeds workspace capacity limits.';
-        studioEvents.emit('pixibun:toast', {
-          message,
-          type: 'error',
-        });
-        return { ok: false, reason: message };
-      }
+      const error = metadataNameError(layerName, 'layer');
+      if (error) throw new Error(error);
     }
-  }
-
-  // 1. If user chose to match image dimensions, resize canvas first!
-  //    History is invalidated because undo snapshots hold old-dimension ImageData.
-  if (resizeCanvasToMatch) {
-    try {
-      store.setCanvasSize(resizeCanvasToMatch.width, resizeCanvasToMatch.height, 'top-left', false);
-      studioEvents.emit('pixibun:history-clear');
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Failed to resize canvas';
-      studioEvents.emit('pixibun:toast', { message, type: 'error' });
-      return { ok: false, reason: message };
+    const blankLayer = (): Layer => ({ id: createId('layer'), name: 'Base Layer', visible: true, locked: false, opacity: 1, blendMode: 'source-over' });
+    const newFrame = (): AnimationFrame => {
+      const layers = activeFrame.layers.filter(layer => !layer.tag).map(layer => ({
+        ...structuredClone(layer), id: createId('layer'), effect: undefined,
+      }));
+      return { id: createId('frame'), durationMs: 100, layers: layers.length ? layers : [blankLayer()] };
+    };
+    const writes = new Map<string, HTMLCanvasElement>();
+    const cleared = new Set<string>();
+    let activeFrameIndex = state.activeFrameIndex;
+    let activeLayerId = state.activeLayerId;
+    if (sheet) {
+      const start = target === 'sprite-sheet-replace' ? 0 : frames.length;
+      if (target === 'sprite-sheet-replace') {
+        // Deleted frames are protected too; replacement must not discard locked artwork.
+        if (frames.some(frame => frame.layers.some(layer => layer.locked))) throw new Error('Unlock the layers before replacing sprite-sheet frames.');
+        frames.splice(sources.length);
+      }
+      for (let i = 0; i < sources.length; i++) {
+        const frame = frames[start + i] ?? newFrame();
+        frames[start + i] = frame;
+        for (const layer of frame.layers) { cleared.add(layer.id); layer.effect = undefined; }
+        const layer = frame.layers[0];
+        if (!layer) throw new Error('The import destination layer is unavailable.');
+        Object.assign(layer, { name: layerName, visible: true, opacity: 1, blendMode: 'source-over' });
+        writes.set(layer.id, sources[i]);
+      }
+      activeFrameIndex = target === 'sprite-sheet-replace' ? 0 : frames.length - 1;
+      activeLayerId = frames[activeFrameIndex].layers[0].id;
+    } else {
+      let layer: Layer | undefined;
+      if (target === 'new-layer') {
+        layer = { ...blankLayer(), name: layerName };
+        activeFrame.layers.unshift(layer);
+      } else if (target === 'new-frame') {
+        const frame = newFrame(); frames.push(frame);
+        activeFrameIndex = frames.length - 1;
+        layer = frame.layers[0];
+      } else {
+        layer = activeFrame.layers.find(layer => layer.id === activeLayerId);
+        if (layer?.locked) throw new Error('Unlock the layer before replacing its image.');
+      }
+      if (!layer) throw new Error('The import destination layer is unavailable.');
+      layer.effect = undefined;
+      activeLayerId = layer.id;
+      writes.set(layer.id, canvas);
+      cleared.add(layer.id);
     }
-  }
+    const capacity = validateWorkspaceStructure(width, height, frames);
+    if (!capacity.ok) throw new Error(capacity.reason || 'Import exceeds workspace capacity limits.');
 
-  const currentStore = useStudioStore.getState();
-  const width = currentStore.canvasWidth;
-  const height = currentStore.canvasHeight;
+    let palette: ColorPalette | undefined;
+    if (data.addToPalette && data.extractedPalette.length) {
+      const name = filename ? `Palette: ${stem}` : 'Imported Palette';
+      const error = paletteEntryError(name, data.extractedPalette);
+      if (error) throw new Error(error);
+      if (state.palettes.length >= MAX_PROJECT_PALETTES) throw new Error(`A project can have at most ${MAX_PROJECT_PALETTES} palettes.`);
+      palette = { id: createId('palette'), name, colors: [...data.extractedPalette] };
+    }
 
-  if (slicedFrames && slicedFrames.length > 0) {
-    const sheetLayerName = `Sprite Sheet: ${filename.replace(/\.[^/.]+$/, '')}`.slice(0, MAX_METADATA_NAME_LENGTH);
-    const originalFrameCount = currentStore.frames.length;
-    if (target === 'sprite-sheet-replace') {
-      const existingCount = currentStore.frames.length;
-      const newCount = slicedFrames.length;
-
-      // 1. Clear every existing layer in each replaced frame. Otherwise old
-      // artwork can remain visible beneath the imported sheet frame.
-      for (let i = 0; i < Math.min(existingCount, newCount); i++) {
-        for (const layer of currentStore.frames[i].layers) {
-          const buffer = getOrCreateBuffer(layer.id, width, height);
-          buffer.canvas.getContext('2d')?.clearRect(0, 0, width, height);
-          touchBuffer(layer.id);
-        }
-      }
-
-      // 2. Draw frame 0 into frame 0, regardless of the previously active frame.
-      const targetLayerId = currentStore.frames[0]?.layers[0]?.id;
-      if (targetLayerId) {
-        const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
-        const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
-        if (ctx) {
-          ctx.clearRect(0, 0, width, height);
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(slicedFrames[0], 0, 0);
-          touchBuffer(targetLayerId);
-        }
-      }
-
-      // 3. Overwrite existing frames 1..min(existingCount, newCount) - 1
-      const overwriteCount = Math.min(existingCount, newCount);
-      for (let i = 1; i < overwriteCount; i++) {
-        const frame = currentStore.frames[i];
-        const lId = frame?.layers[0]?.id;
-        if (lId) {
-          const buf = getOrCreateBuffer(lId, width, height);
-          const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-          if (fCtx) {
-            fCtx.clearRect(0, 0, width, height);
-            fCtx.imageSmoothingEnabled = false;
-            fCtx.drawImage(slicedFrames[i], 0, 0);
-            touchBuffer(lId);
+    const previous = snapshotBuffers();
+    const removedFrameIds = new Set(state.frames.filter(frame => !frames.some(next => next.id === frame.id)).map(frame => frame.id));
+    const finalIds = new Set(frames.flatMap(frame => frame.layers.map(layer => layer.id)));
+    const affected = new Set(cleared);
+    for (const id of previous.keys()) if (resized || !finalIds.has(id)) affected.add(id);
+    const stagedIds = [...finalIds].filter(id => cleared.has(id) || (resized && previous.has(id)));
+    release = reserveMemory(stagedIds.length * width * height * 4, 'Image import staging');
+    const staged = new Map([...previous].filter(([id]) => finalIds.has(id)));
+    for (const id of stagedIds) {
+      const existing = previous.get(id);
+      const entry = createEntry(width, height, (existing?.contentRevision ?? 0) + 1, true);
+      // A fresh transparent surface implements Replace, including smaller input images.
+      if (writes.has(id)) entry.ctx.drawImage(writes.get(id)!, 0, 0);
+      else if (!cleared.has(id) && existing) entry.ctx.drawImage(existing.canvas, 0, 0);
+      staged.set(id, entry);
+    }
+    commitWorkspace(() => {
+      if (!pushStructuralHistoryStep(sheet ? 'Import Sprite Sheet' : 'Import Image', {
+        affectedLayerIds: [...affected], includePalettes: Boolean(palette) || removedFrameIds.size > 0, includeEmptyBuffers: true,
+        redoBufferCount: [...affected].filter(id => staged.has(id)).length,
+        redoCanvasWidth: width, redoCanvasHeight: height,
+        addedLayerCount: Math.max(0, frames.reduce((count, frame) => count + frame.layers.length, 0) - state.frames.reduce((count, frame) => count + frame.layers.length, 0)),
+        addedFrameCount: Math.max(0, frames.length - state.frames.length),
+        addedMetadataBytes: palette ? estimatePaletteBytes(palette) : 0,
+      })) throw new Error('Import was refused because its Undo snapshot could not be admitted.');
+      replaceAllBuffers(staged);
+      useStudioStore.setState(current => {
+        current.frames = frames;
+        current.canvasWidth = width; current.canvasHeight = height;
+        current.activeFrameIndex = activeFrameIndex; current.activeLayerId = activeLayerId;
+        if (target === 'sprite-sheet-replace') {
+          for (const palette of current.palettes) if (palette.semantics) {
+            palette.semantics.bindings = palette.semantics.bindings.filter(binding => !removedFrameIds.has(binding.frameId));
+          }
+          current.clips = current.clips.filter(clip => clip.startFrame < frames.length).map(clip => ({
+            ...clip, endFrame: Math.min(clip.endFrame, frames.length - 1), toFrame: Math.min(clip.toFrame ?? clip.endFrame, frames.length - 1),
+          }));
+          if (!current.clips.some(clip => clip.id === current.activeClipId)) current.activeClipId = null;
+          if (current.motionPart && removedFrameIds.has(current.motionPart.sourceFrameId)) {
+            current.motionPart = null; current.motionHistory = null; current.motionPreviewIndex = null;
           }
         }
-      }
-
-      // 4. If new frames > existing frames, add new frames for the remainder
-      for (let i = existingCount; i < newCount; i++) {
-        currentStore.addFrame();
-        const st = useStudioStore.getState();
-        const frame = st.frames[st.activeFrameIndex];
-        const lId = frame?.layers[0]?.id || st.activeLayerId;
-        const buf = getOrCreateBuffer(lId, width, height);
-        const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-        if (fCtx) {
-          fCtx.clearRect(0, 0, width, height);
-          fCtx.imageSmoothingEnabled = false;
-          fCtx.drawImage(slicedFrames[i], 0, 0);
-          touchBuffer(lId);
-        }
-      }
-
-      // 5. If existing frames > new frames, delete excess frames from the end
-      for (let i = existingCount - 1; i >= newCount; i--) {
-        currentStore.deleteFrame(i);
-      }
-
-      currentStore.setActiveFrame(0);
-    } else {
-      // sprite-sheet-append (or default)
-      for (let i = 0; i < slicedFrames.length; i++) {
-        currentStore.addFrame();
-        const st = useStudioStore.getState();
-        const frame = st.frames[st.activeFrameIndex];
-        const lId = frame?.layers[0]?.id || st.activeLayerId;
-        const buf = getOrCreateBuffer(lId, width, height);
-        const fCtx = buf.canvas.getContext('2d', { willReadFrequently: true });
-        if (fCtx) {
-          fCtx.clearRect(0, 0, width, height);
-          fCtx.imageSmoothingEnabled = false;
-          fCtx.drawImage(slicedFrames[i], 0, 0);
-          touchBuffer(lId);
-        }
-      }
-    }
-    const firstImportedFrame = target === 'sprite-sheet-replace' ? 0 : originalFrameCount;
-    useStudioStore.setState((state) => {
-      for (let i = firstImportedFrame; i < firstImportedFrame + slicedFrames.length; i++) {
-        const frame = state.frames[i];
-        if (!frame) continue;
-        for (const layer of frame.layers) layer.effect = undefined;
-        const firstLayer = frame.layers[0];
-        if (firstLayer) {
-          firstLayer.name = sheetLayerName;
-          firstLayer.visible = true;
-          firstLayer.opacity = 1;
-          firstLayer.blendMode = 'source-over';
-        }
-      }
-      state.isDirty = true;
-      state.editRevision += 1;
+        if (palette) { current.palettes.push(palette); current.currentPaletteId = palette.id; }
+        if (resized) { current.selection = null; current.selectionMask = null; }
+        current.isDirty = true; current.editRevision += 1; current.bufferVersion += 1;
+      });
     });
-  } else {
-    let targetLayerId = currentStore.activeLayerId;
-
-    if (target === 'new-layer') {
-      const layerName = filename ? filename.replace(/\.[^/.]+$/, '') : 'Imported';
-      currentStore.addLayer(layerName);
-      targetLayerId = useStudioStore.getState().activeLayerId;
-    } else if (target === 'new-frame') {
-      currentStore.addFrame();
-      const frame = useStudioStore.getState().frames[useStudioStore.getState().activeFrameIndex];
-      targetLayerId = frame?.layers[0]?.id || currentStore.activeLayerId;
-    }
-
-    if (targetLayerId) {
-      const layerBuf = getOrCreateBuffer(targetLayerId, width, height);
-      const ctx = layerBuf.canvas.getContext('2d', { willReadFrequently: true });
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(canvas, 0, 0);
-        touchBuffer(targetLayerId);
-      }
-    }
-  }
-
-  // Palette integration
-  if (addToPalette && extractedPalette && extractedPalette.length > 0) {
-    const paletteName = filename ? `Palette: ${filename.replace(/\.[^/.]+$/, '')}` : 'Imported Palette';
-    store.addExtractedPalette(paletteName, extractedPalette);
-  }
-
-  currentStore.bumpBufferVersion();
-  return { ok: true };
+    return { ok: true };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'Failed to import image.';
+    studioEvents.emit('pixibun:toast', { type: 'error', message: reason });
+    return { ok: false, reason };
+  } finally { release?.(); }
 }

@@ -186,16 +186,8 @@ describe('RotSprite Contour & 1px Outline Preservation', () => {
     expect(compCount).toBe(1);
   });
 
-  it('rotates sub-millisecond on micro-sprites', () => {
-    const potato = makePotato();
-    const t0 = performance.now();
-    for (let i = 0; i < 50; i++) {
-      rotSprite(potato, ((i * 7) * Math.PI) / 180);
-    }
-    const t1 = performance.now();
-    const msPerRot = (t1 - t0) / 50;
-    expect(msPerRot).toBeLessThan(10);
-  });
+  // Wall-clock admission lives in scripts/benchmarkRotSprite.mjs, outside coverage.
+  // Functional contour/pivot/ring assertions remain instrumented in this suite.
 
   it('preserves continuity and enclosed hole of 1px hollow circle/ring across arbitrary angles', () => {
     const width = 32, height = 32;

@@ -7,7 +7,6 @@ import {
   createEntry,
   replaceAllBuffers,
   snapshotBuffers,
-  clearAllBuffers,
   getOrCreateBuffer,
   getBufferRevision,
   getBufferGeneration,
@@ -23,6 +22,8 @@ import type { StoredLayerBlob } from '@/lib/storage/db';
 import { validateProjectFile } from '@/lib/project/schema';
 import { ImageHeaderProbe } from '@/lib/safety/imageHeaderProbe';
 import { studioEvents } from '@/lib/events/studioEvents';
+import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
+import { getGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
 import { mapBounded, SerializationSupersededError } from '@/lib/safety/boundedWork';
 import {
@@ -375,52 +376,28 @@ export async function hydrateProject(
     // a split-brain state (e.g. Project B store metadata with Project A buffers).
     const previousBuffers = snapshotBuffers();
     const prevState = useStudioStore.getState();
-    const previousProjectId = prevState.currentProjectId;
-    const previousProjectSnapshot: Partial<ProjectFile> = {
-      createdAt: prevState.projectCreatedAt,
-      name: prevState.projectName,
-      width: prevState.canvasWidth,
-      height: prevState.canvasHeight,
-      fps: prevState.fps,
-      loopMode: prevState.loopMode,
-      onionSkin: { ...prevState.onionSkin },
-      customRamps: prevState.customRamps ? prevState.customRamps.map(r => ({ ...r, shades: [...r.shades] })) : [],
-      frames: prevState.frames ? prevState.frames.map(f => ({
-        id: f.id,
-        durationMs: f.durationMs,
-        layers: f.layers.map(l => ({ ...l })),
-      })) : [],
-      palettes: prevState.palettes ? structuredClone(prevState.palettes) : [],
-      currentPaletteId: prevState.currentPaletteId,
-      clips: prevState.clips ? prevState.clips.map(c => ({ ...c })) : [],
-      motionRigs: structuredClone(prevState.motionRigs),
-    };
-    const prevActiveFrameIndex = prevState.activeFrameIndex;
-    const prevActiveLayerId = prevState.activeLayerId;
+    const previousAssociation = DesktopFileSystem.captureAssociation();
 
     try {
-      replaceAllBuffers(staged);
-      useStudioStore.getState().loadProjectState(file, projectId);
-      useStudioStore.getState().bumpBufferVersion();
-      studioEvents.emit('pixibun:history-clear');
+      const publish = () => {
+        replaceAllBuffers(staged);
+        useStudioStore.getState().loadProjectState(file, projectId);
+        useStudioStore.getState().bumpBufferVersion();
+        useStudioStore.getState().setSaveStatus(projectId ? 'saved' : 'idle');
+        studioEvents.emit('pixibun:history-clear');
+      };
+      const history = getGlobalHistoryEngine();
+      if (history) history.transaction(publish);
+      else publish();
     } catch (publishErr) {
       // Two-phase consistent rollback: restore both buffer registry and store state
       replaceAllBuffers(previousBuffers);
-      try {
-        useStudioStore.getState().loadProjectState(previousProjectSnapshot, previousProjectId);
-        useStudioStore.setState(s => {
-          s.activeFrameIndex = prevActiveFrameIndex;
-          s.activeLayerId = prevActiveLayerId;
-        });
-        useStudioStore.getState().bumpBufferVersion();
-      } catch {
-        // If rolling back to previous project state fails, place workspace in a defined safe reset state
-        try {
-          useStudioStore.getState().resetToNewProject();
-        } catch {
-          clearAllBuffers();
-        }
-      }
+      DesktopFileSystem.restoreAssociation(previousAssociation);
+      // Restore the immutable session itself. Loading a portable document would
+      // reset dirty state, selections, motion ownership and the native file handle.
+      // Zustand installs state before notifying; a failing rollback observer must
+      // not cause an unrelated workspace reset or replace the original exception.
+      try { useStudioStore.setState(prevState, true); } catch { /* State is already restored. */ }
       throw publishErr;
     }
 
@@ -436,6 +413,5 @@ export async function hydrateProject(
       }
       initProjectPersistedRevisions(projectId, persisted);
     }
-    useStudioStore.getState().setSaveStatus(projectId ? 'saved' : 'idle');
   } finally { release(); }
 }

@@ -34,9 +34,8 @@ const PRECACHE_MANIFEST = '/__pixibun_precache__';
 const MAX_SHELL_DEPENDENCIES = 128;
 let warmQueue = Promise.resolve();
 
-async function trimCache(cacheName, maxEntries) {
+async function trimCache(cache, maxEntries) {
   try {
-    const cache = await caches.open(cacheName);
     const requests = await cache.keys();
     const manifest = await cache.match(PRECACHE_MANIFEST);
     const shellDependencies = manifest ? await manifest.json() : [];
@@ -97,8 +96,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'CACHE_ASSETS' && Array.isArray(event.data.urls)) {
+    // Capture ownership at event arrival, before queued work can outlive activation.
+    const ownedCache = caches.open(CACHE_NAME);
     warmQueue = warmQueue.catch(() => {}).then(async () => {
-      const cache = await caches.open(CACHE_NAME);
+      const cache = await ownedCache;
       const manifest = await cache.match(PRECACHE_MANIFEST);
       const paths = new Set(manifest ? await manifest.json() : []);
       const incoming = [];
@@ -139,19 +140,19 @@ self.addEventListener('fetch', (event) => {
   // 2. Navigation requests: Network-first with cache fallback, then offline.html
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      caches.open(CACHE_NAME).then((cache) => fetch(request)
         .then((response) => {
           if (response.status === 200) {
             const copy = response.clone();
             event.waitUntil(
-              caches.open(CACHE_NAME).then(async (cache) => {
+              (async () => {
                 await cache.put(request, copy);
-                await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
-              })
+                await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
+              })()
             );
           }
           return response;
-        })
+        }))
         .catch(async () => {
           const cached = await caches.match(request);
           if (cached) return cached;
@@ -184,15 +185,18 @@ self.addEventListener('fetch', (event) => {
             if (networkResponse.status === 200) {
               const copy = networkResponse.clone();
               event.waitUntil(
-                caches.open(CACHE_NAME).then(async (c) => {
-                  await c.put(request, copy);
-                  await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
-                })
+                (async () => {
+                  await cache.put(request, copy);
+                  await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
+                })()
               );
             }
             return networkResponse;
           })
           .catch(() => cachedResponse || Response.error());
+
+        // Register background work while respondWith is still pending, even on a hit.
+        event.waitUntil(fetchPromise.then(() => {}));
 
         const response = cachedResponse || await fetchPromise;
         // A cached response's URL lacks the constructor fragment. Worker bootstraps
@@ -209,11 +213,11 @@ self.addEventListener('fetch', (event) => {
 
   // 4. Default: Cache-first with network fallback and bounded dynamic storage (touch-on-hit LRU)
   event.respondWith(
-    caches.match(request).then((cached) => {
+    caches.open(CACHE_NAME).then((cache) => cache.match(request).then((cached) => {
       if (cached) {
         // Touch on hit to promote entry to the newest position in CacheStorage (true LRU)
         event.waitUntil(
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, cached.clone()))
+          cache.put(request, cached.clone())
         );
         return cached;
       }
@@ -221,15 +225,15 @@ self.addEventListener('fetch', (event) => {
         if (response.status === 200 && response.type === 'basic') {
           const copy = response.clone();
           event.waitUntil(
-            caches.open(CACHE_NAME).then(async (cache) => {
+            (async () => {
               await cache.put(request, copy);
-              await trimCache(CACHE_NAME, MAX_DYNAMIC_CACHE_ENTRIES);
-            })
+              await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
+            })()
           );
         }
         return response;
       });
-    })
+    }))
   );
 });
 `;

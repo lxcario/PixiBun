@@ -5,7 +5,7 @@ import { inflateSync } from 'node:zlib';
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
 async function ready(page: Page) {
-  await page.goto('/studio');
+  await page.goto('/studio', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
 }
 async function image(page: Page, width: number, height: number) {

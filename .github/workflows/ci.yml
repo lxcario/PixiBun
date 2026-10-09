@@ -22,8 +22,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Canonical Quality Gate (Docs, Typecheck, Lint, Tests, Production Build)
-        run: npm run gate:full
+      - name: Canonical Quality Gate (Docs, Types, Lint, Coverage, Performance, Build)
+        run: |
+          mkdir -p artifacts/validation
+          set -o pipefail
+          npm run gate:full 2>&1 | tee artifacts/validation/gate.log
+
+      - name: Index validation evidence
+        if: always()
+        run: node scripts/indexVerificationEvidence.mjs --source artifacts/validation --source coverage --output artifacts/validation-index.json
+
+      - name: Preserve validation evidence
+        id: validation-evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/validation/
+            artifacts/validation-index.json
+            coverage/
+          retention-days: 90
 
   e2e:
     needs: validate
@@ -45,23 +64,38 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Build Next.js
+        id: production-build
         run: npm run build
 
       - name: Run Playwright E2E & Axe WCAG 2.2 Tests
-        run: npm run test:e2e
+        run: |
+          mkdir -p artifacts/browser
+          set -o pipefail
+          npm run test:e2e -- --workers=1 --retries=0 2>&1 | tee artifacts/browser/development.log
 
       - name: Run production operation checks in Chromium, Firefox and WebKit
-        run: npm run test:e2e:production
+        if: ${{ !cancelled() && steps.production-build.outcome == 'success' }}
+        run: |
+          mkdir -p artifacts/browser
+          set -o pipefail
+          npm run test:e2e:production -- --workers=1 --retries=0 2>&1 | tee artifacts/browser/production.log
 
-      - name: Upload Playwright Report
+      - name: Index browser evidence
+        if: always()
+        run: node scripts/indexVerificationEvidence.mjs --source artifacts/browser --source playwright-report --source test-results --output artifacts/browser-index.json
+
+      - name: Preserve browser evidence
+        id: browser-evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: browsers-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             playwright-report/
-            test-results/production/
-          retention-days: 7
+            test-results/
+            artifacts/browser/
+            artifacts/browser-index.json
+          retention-days: 90
 
   lighthouse:
     needs: validate

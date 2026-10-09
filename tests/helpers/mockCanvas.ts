@@ -2,6 +2,11 @@
  * Minimal DOM + Canvas mock shared by unit tests that exercise the compositor
  * or buffer registry in the node environment (pattern established in
  * photometricNonDestructive.test.ts).
+ *
+ * This is a byte-copy fixture, not a browser graphics implementation: drawImage
+ * does not model source-over alpha, scaling, transforms or arbitrary blend modes.
+ * Pixel workflows depending on those semantics must also run native browser tests
+ * (including tests/production/imageImportSafety.spec.ts).
  */
 
 export interface ImageDataShim {

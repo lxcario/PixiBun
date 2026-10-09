@@ -8,8 +8,9 @@
  *   Stage 1: Documentation Integrity & Invariant Audit (verify:docs)
  *   Stage 2: Strict Static Typecheck (tsc --noEmit)
  *   Stage 3: Lint and accessibility rules (eslint)
- *   Stage 4: Comprehensive Unit & Invariant Test Suite (vitest run)
- *   Stage 5: [Optional / --with-build] Production Bundle Verification (next build)
+ *   Stage 4: Unit & Invariant Test Suite with configured-source coverage
+ *   Stage 5: Serial warmed performance budget without coverage instrumentation
+ *   Stage 6: [Optional / --with-build] Production Bundle Verification (next build)
  * 
  * Runtime depends on hardware and suite size. Passing these checks is not
  * proof that every feature, browser or deployment works.
@@ -63,14 +64,20 @@ const stages = [
   {
     name: 'Stage 4: Unit & Defensive Invariant Test Suite',
     command: 'npm',
-    args: ['test'],
-    description: 'Executes all Vitest test suites (pure TS algorithms, safety invariants, ISOBMFF, Wang autotile).',
+    args: ['run', 'test:coverage'],
+    description: 'Executes Vitest with two workers and enforces coverage thresholds across application sources outside src/types.',
+  },
+  {
+    name: 'Stage 5: Uninstrumented warmed performance budget',
+    command: 'npm',
+    args: ['run', 'test:performance'],
+    description: 'Measures the original RotSprite workload serially after warmup, retaining the <10ms budget for p90 batch means.',
   },
 ];
 
 if (withBuild) {
   stages.push({
-    name: 'Stage 5: Next.js Production Compilation & Bundling',
+    name: 'Stage 6: Next.js Production Compilation & Bundling',
     command: 'npm',
     args: ['run', 'build'],
     description: 'Validates complete Next.js static generation, route trees, and bundle chunks.',

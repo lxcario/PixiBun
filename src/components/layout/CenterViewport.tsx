@@ -137,9 +137,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // Initialize or fetch the offscreen canvas for a layer
   const getOrCreateLayerCanvas = useCallback(
-    (layerId: string): HTMLCanvasElement =>
-      getOrCreateBuffer(layerId, canvasWidth, canvasHeight).canvas,
-    [canvasWidth, canvasHeight]
+    (layerId: string): HTMLCanvasElement => {
+      const state = useStudioStore.getState();
+      return getOrCreateBuffer(layerId, state.canvasWidth, state.canvasHeight).canvas;
+    },
+    []
   );
 
   // Hook 1: Viewport transform & pan/zoom
@@ -263,6 +265,11 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // Pure composite of all visible layers onto the main viewport canvas
   const renderComposite = useCallback(() => {
+    // Undo/Redo can publish new dimensions before React replaces this callback.
+    // Imperative painting must use the committed size to avoid resizing restored
+    // layer buffers back to the previous dimensions and cropping their pixels.
+    const state = useStudioStore.getState();
+    const { canvasWidth, canvasHeight } = state;
     const mainCanvas = mainCanvasRef.current;
     if (!mainCanvas) return;
     const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
@@ -271,7 +278,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     ctx.imageSmoothingEnabled = false;
 
-    const state = useStudioStore.getState();
     const currentFrame = state.frames[state.activeFrameIndex];
 
     // 1. Main Active Frame Layers (Unified Bottom-to-Top Compositing)
@@ -442,8 +448,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     ctx.globalAlpha = 1.0;
     ctx.globalCompositeOperation = 'source-over';
   }, [
-    canvasHeight,
-    canvasWidth,
     floatingSelection,
     getOrCreateLayerCanvas,
     selectionTransform,
@@ -666,6 +670,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   }, [
     renderComposite,
     renderOnionSkin,
+    canvasWidth,
+    canvasHeight,
     frames,
     activeFrameIndex,
     activeLayerId,

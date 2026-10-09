@@ -149,7 +149,7 @@ it('precaches same-origin shell dependencies and retains them while bounding dyn
   await warmed;
   expect(cache.addAll.mock.calls.at(-1)![0]).toEqual(['/_next/static/lazy.js?dpl=release']);
   for (let i = 0; i < 80; i++) records.set('/dynamic/' + i, new Response('dynamic'));
-  await runtime.trimCache('pixibun-test', 50);
+  await runtime.trimCache(cache, 50);
   expect(records.has('/_next/static/studio.js')).toBe(true);
   expect(records.has('/_next/static/font.woff2')).toBe(true);
   expect(records.has('/_next/static/lazy.js?dpl=release')).toBe(true);
