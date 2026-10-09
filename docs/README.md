@@ -1,5 +1,7 @@
 # Documentation map
 
+The [9 October recovery follow-up](research/2026-10-09-l09-recovery-followup.md) records the navigation repair, controlled Linux WebKit diagnosis, passing local/remote gates and complete browser verdicts, automatic evidence retrieval and remaining release limits. Earlier checkpoints below retain their own revisions and outcomes.
+
 The [9 October validation-repeatability record](research/2026-10-09-validation-repeatability.md) separates warmed RotSprite speed from coverage, preserves original timing/worker failures, and records two passing full gates plus the complete three-engine production verdict. Actual two-build update/rollback, development startup, remote custody and remaining release limits have their own explicit scope.
 
 The [9 October import artwork-safety repair](research/2026-10-09-import-artwork-safety.md) follows the independent partial audit with transactional replacement, grouped Undo/Redo, protected destinations, complete hydration rollback and clean-checkout link enforcement. Its [independent revalidation](research/2026-10-09-import-artwork-safety.md#independent-revalidation--9-october-2026) supports the nine repairs within reviewed scope and passes 21 native import cases, types and documentation, while retaining the failed coverage-instrumented timing assertion. Earlier passing runs and remaining qualification stay separate.

@@ -4,9 +4,15 @@ Updated 9 October 2026. This registry separates corrections to the [documentatio
 
 ## Documentation audit corrections
 
+The [9 October recovery follow-up](2026-10-09-l09-recovery-followup.md) supersedes the pending qualification status of the checkpoints below: both six-stage coverage gates pass 2,200 tests, complete production has 344 passes /7 local capability skips and 347 passes /4 Linux CI capability skips with zero failures, and Node 22 Turbopack development passes 196/196 locally and remotely. Linux WebKit executes all three formerly blocked preservation cases. The navigation regression is repaired; original native Chromium crash evidence remains unexplained. Automated original-index retrieval comparison and a retrieved draft build archive address I11 custody evidence. Seven compact-target scan findings, manual accessibility, physical devices, real networks/hosting, Safari legacy rollback and release approval remain open.
+
+### Earlier L09 checkpoints
+
 The completed [L09 remote supplement](2026-10-09-l09-remote-verdict.md) updates the local checkpoint below: remote validation passed, but development had one Chromium setup crash and production had three Linux WebKit pairing failures. One-time draft-archive and hidden-witness retrieval/hash verification is complete. The original upload workflow did not automatically retrieve; the recovery follow-up requires its own verification. Navigation recovery, accessibility, browser stability, physical-device/host qualification and release approval remain open.
 
 The independent 9 October revalidation supports C01, H02–H04, M05–M07 and L10 within the [import artwork-safety repair's reviewed scope](2026-10-09-import-artwork-safety.md#independent-revalidation--9-october-2026); M08 is mitigated by explicit mock limits and native canaries. Its 21 native import cases, types and documentation pass. Its failed coverage-instrumented timing replay remains unchanged. The subsequent [L09 execution](2026-10-09-validation-repeatability.md) separates warmed RotSprite speed with the original 10 ms limit, passes two complete coverage gates and the full production suite (338 passes /7 capability skips /zero failures), and repairs/checks delayed old-cache ownership. Development, device/host and universal lifecycle qualification retain their stated limits. I11 now has future immutable CI artifact names, hash indexes and explicit 90-day retention; actual candidate upload/retrieval verification is pending, and this is not a permanent release archive. This does not certify unreviewed source or every feature.
+
+### Documentation correction ledger
 
 | ID | Correction / current authority | Remaining qualification |
 | --- | --- | --- |
