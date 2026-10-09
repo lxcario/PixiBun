@@ -93,22 +93,40 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
 
+      - name: Enable native Linux WebRTC address resolution
+        run: |
+          mkdir -p artifacts/browser
+          sudo apt-get update
+          sudo apt-get install -y avahi-daemon libnss-mdns
+          sudo systemctl start avahi-daemon
+          systemctl status avahi-daemon --no-pager | tee artifacts/browser/mdns-service.log
+          dpkg-query -W avahi-daemon libnss-mdns | tee -a artifacts/browser/mdns-service.log
+
       - name: Build Next.js
         id: production-build
         run: npm run build
+
+      - name: Seal the production build used by every engine
+        id: production-seal
+        run: node scripts/checkProductionBuild.mjs --seal artifacts/browser/frozen-build.json
 
       - name: Run Playwright E2E & Axe WCAG 2.2 Tests
         run: |
           mkdir -p artifacts/browser
           set -o pipefail
-          npm run test:e2e -- --workers=1 --retries=0 2>&1 | tee artifacts/browser/development.log
+          PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/browser/development.json npm run test:e2e -- --workers=1 --retries=0 --reporter=list,json 2>&1 | tee artifacts/browser/development.log
 
       - name: Run production operation checks in Chromium, Firefox and WebKit
         if: ${{ !cancelled() && steps.production-build.outcome == 'success' }}
         run: |
           mkdir -p artifacts/browser
           set -o pipefail
-          npm run test:e2e:production -- --workers=1 --retries=0 2>&1 | tee artifacts/browser/production.log
+          node scripts/checkProductionBuild.mjs --verify artifacts/browser/frozen-build.json --receipt artifacts/browser/build-before-production.json
+          PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/browser/production.json npm run test:e2e:production -- --workers=1 --retries=0 --reporter=list,json 2>&1 | tee artifacts/browser/production.log
+
+      - name: Verify the production build remained frozen
+        if: ${{ always() && steps.production-seal.outcome == 'success' }}
+        run: node scripts/checkProductionBuild.mjs --verify artifacts/browser/frozen-build.json --receipt artifacts/browser/build-after-production.json
 
       - name: Index browser evidence
         if: always()
@@ -158,11 +176,29 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps webkit
       - run: npm run build
-      - name: Observe Linux WebKit native pairing
+      - run: node scripts/checkProductionBuild.mjs --seal artifacts/browser-diagnostics/frozen-build.json
+      - name: Retain native resolver baseline
         run: |
           mkdir -p artifacts/browser-diagnostics
+          { systemctl status avahi-daemon --no-pager || true; dpkg-query -W avahi-daemon libnss-mdns || true; cat /etc/nsswitch.conf; } > artifacts/browser-diagnostics/resolver-before.log 2>&1
+      - name: Observe pairing before resolver setup
+        continue-on-error: true
+        run: |
           set -o pipefail
-          npm run test:e2e:production -- coDrawGuestIsolation coDrawProtocolSafety --project=webkit --workers=1 --retries=0 2>&1 | tee artifacts/browser-diagnostics/pairing.log
+          PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/browser-diagnostics/pairing-before.json npm run test:e2e:production -- coDrawGuestIsolation coDrawProtocolSafety --project=webkit --workers=1 --retries=0 --reporter=list,json --output=artifacts/browser-diagnostics/before 2>&1 | tee artifacts/browser-diagnostics/pairing-before.log
+      - name: Enable native resolver without changing application or browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y avahi-daemon libnss-mdns
+          sudo systemctl start avahi-daemon
+          { systemctl status avahi-daemon --no-pager; dpkg-query -W avahi-daemon libnss-mdns; cat /etc/nsswitch.conf; } > artifacts/browser-diagnostics/resolver-after.log 2>&1
+      - name: Observe pairing after resolver setup
+        run: |
+          set -o pipefail
+          PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/browser-diagnostics/pairing-after.json npm run test:e2e:production -- coDrawGuestIsolation coDrawProtocolSafety --project=webkit --workers=1 --retries=0 --reporter=list,json --output=artifacts/browser-diagnostics/after 2>&1 | tee artifacts/browser-diagnostics/pairing-after.log
+      - name: Verify both diagnostic runs used the same compiled build
+        if: always()
+        run: node scripts/checkProductionBuild.mjs --verify artifacts/browser-diagnostics/frozen-build.json --receipt artifacts/browser-diagnostics/build-after-pairing.json
       - name: Preserve diagnosis and original failure traces
         if: always()
         uses: actions/upload-artifact@v4

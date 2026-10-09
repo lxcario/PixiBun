@@ -427,44 +427,49 @@ describe('Phase 1B.4 — Untouched Recovery Archive Assembly & Safe Export Adapt
       }
     });
 
-    it('fails closed when stored blob records exceed MAX_INSPECTABLE_STORED_BLOBS via MAX+1 bounding', async () => {
+    describe('actual MAX+1 stored-blob boundary', () => {
       const id = 'proj-excessive-blobs';
-      await db.projects.put({
-        id,
-        name: 'Excessive Project',
-        width: 32,
-        height: 32,
-        fps: 12,
-        createdAt: 1000,
-        updatedAt: 1000,
-        dataJson: '{}',
-      });
-
       const count = RECOVERY_INSPECTION_CEILINGS.MAX_INSPECTABLE_STORED_BLOBS + 1;
-      const fakeBlobs = [];
-      for (let i = 1; i <= count; i++) {
-        fakeBlobs.push({
-          id: i,
-          projectId: id,
-          layerId: `layer-${i}`,
-          frameIndex: 0,
-          blob: new Blob(['png'], { type: 'image/png' }),
+      // Database population is setup, not the timed refusal operation. Keep all
+      // 10,001 real records and the default hook/test deadlines.
+      beforeEach(async () => {
+        await db.projects.put({
+          id,
+          name: 'Excessive Project',
+          width: 32,
+          height: 32,
+          fps: 12,
+          createdAt: 1000,
           updatedAt: 1000,
+          dataJson: '{}',
         });
-      }
-      await db.layerBlobs.bulkPut(fakeBlobs);
 
-      const readPayload = vi.fn((record: StoredLayerBlob) => record);
-      db.layerBlobs.hook('reading', readPayload);
-      try {
-        await expect(prepareUntouchedRecoveryArchive(id)).rejects.toThrowError(
-          expect.objectContaining({ code: 'EXCESSIVE_STORED_BLOBS' })
-        );
-        expect(readPayload).not.toHaveBeenCalled();
-        expect(await db.layerBlobs.where('projectId').equals(id).count()).toBe(count);
-      } finally {
-        db.layerBlobs.hook('reading').unsubscribe(readPayload);
-      }
+        const fakeBlobs = [];
+        for (let i = 1; i <= count; i++) {
+          fakeBlobs.push({
+            id: i,
+            projectId: id,
+            layerId: `layer-${i}`,
+            frameIndex: 0,
+            blob: new Blob(['png'], { type: 'image/png' }),
+            updatedAt: 1000,
+          });
+        }
+        await db.layerBlobs.bulkPut(fakeBlobs);
+      });
+      it('fails closed before reading payloads and preserves all stored records', async () => {
+        const readPayload = vi.fn((record: StoredLayerBlob) => record);
+        db.layerBlobs.hook('reading', readPayload);
+        try {
+          await expect(prepareUntouchedRecoveryArchive(id)).rejects.toThrowError(
+            expect.objectContaining({ code: 'EXCESSIVE_STORED_BLOBS' })
+          );
+          expect(readPayload).not.toHaveBeenCalled();
+          expect(await db.layerBlobs.where('projectId').equals(id).count()).toBe(count);
+        } finally {
+          db.layerBlobs.hook('reading').unsubscribe(readPayload);
+        }
+      });
     });
 
     it.each(['legacy-blob', 'array-buffer'] as const)(

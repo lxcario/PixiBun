@@ -22,19 +22,20 @@ describe('motion raster placement and compatibility', () => {
     expect(countClippedMotionPixels({ width: 3, height: 3, data, destX: 5, destY: 5 }, 2, 2)).toBe(2);
     expect(data.filter(value => value > 0)).toEqual(new Uint8ClampedArray([1, 255]));
   });
-  it.each([0, 37, 90, 180, 270, 359.99])('retains full-canvas interior bytes at %s degrees for fractional pivots and sampling phases', degrees => {
+  const placementCases = [0, 37, 90, 180, 270, 359.99].flatMap(degrees =>
+    [{ x: 32, y: 32 }, { x: 27.3, y: 31.7 }, { x: 32.5, y: 32.5 }].flatMap(pivot =>
+      [0, 3, -1.5, .3].map(shift => ({ degrees, pivot, shift }))));
+  // Each of the original 72 comparisons gets the same default deadline. Coverage
+  // overhead must not make twelve independent correctness cases share one timer.
+  it.each(placementCases)('retains interior bytes at $degrees degrees, pivot $pivot, shift $shift', ({ degrees, pivot, shift }) => {
     const src = source(), original = src.data.slice(), bounds = { x: 24, y: 24, w: 16, h: 16 };
-    for (const pivot of [{ x: 32, y: 32 }, { x: 27.3, y: 31.7 }, { x: 32.5, y: 32.5 }]) {
-      for (const shift of [0, 3, -1.5, .3]) {
-        const pose = { translationX: shift, translationY: -shift, rotation: degrees * Math.PI / 180 };
-        const sprite = renderPlacedMotionRaster(src, bounds, pivot, pose);
-        const actual = { width: 64, height: 64, data: new Uint8ClampedArray(64 * 64 * 4) };
-        copyPlacedMotionRaster(actual, sprite);
-        const expected = rotSprite(src, pose.rotation, pivot.x - bounds.x, pivot.y - bounds.y,
-          64, 64, pivot.x + shift, pivot.y - shift, true);
-        expect(actual.data, `${degrees} degrees; shift ${shift}; pivot ${pivot.x},${pivot.y}`).toEqual(expected.data);
-      }
-    }
+    const pose = { translationX: shift, translationY: -shift, rotation: degrees * Math.PI / 180 };
+    const sprite = renderPlacedMotionRaster(src, bounds, pivot, pose);
+    const actual = { width: 64, height: 64, data: new Uint8ClampedArray(64 * 64 * 4) };
+    copyPlacedMotionRaster(actual, sprite);
+    const expected = rotSprite(src, pose.rotation, pivot.x - bounds.x, pivot.y - bounds.y,
+      64, 64, pivot.x + shift, pivot.y - shift, true);
+    expect(actual.data, `${degrees} degrees; shift ${shift}; pivot ${pivot.x},${pivot.y}`).toEqual(expected.data);
     expect(src.data).toEqual(original);
   });
   it('clips all four edges and off-canvas parts without wrapping or altering distant pixels', () => {

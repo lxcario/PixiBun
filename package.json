@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:performance": "node scripts/benchmarkRotSprite.mjs",
+    "test:performance": "node scripts/runPerformanceChecks.mjs",
     "test:e2e": "playwright test",
     "test:e2e:production": "playwright test --config playwright.production.config.ts",
     "verify:docs": "node scripts/verifyDocIntegrity.mjs",

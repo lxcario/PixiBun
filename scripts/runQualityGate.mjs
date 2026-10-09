@@ -71,7 +71,7 @@ const stages = [
     name: 'Stage 5: Uninstrumented warmed performance budget',
     command: 'npm',
     args: ['run', 'test:performance'],
-    description: 'Measures the original RotSprite workload serially after warmup, retaining the <10ms budget for p90 batch means.',
+    description: 'Serial warmed RotSprite, nearest-neighbor and palette measurements without coverage; original 10ms, 16.66ms and 2ms budgets remain enforced.',
   },
 ];
 
