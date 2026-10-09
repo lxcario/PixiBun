@@ -32,7 +32,7 @@ test('compiled animation worker, saved exceptions and protected cleanup preserve
   await expect(page.getByText(/Kept 2 protected pixels/)).toBeVisible();
   await page.getByRole('button', { name: 'Apply analyzed artwork cleanup' }).click();
   expect(await pixel(page, 2, 2)).toEqual([120, 120, 120, 51]); await expect.poll(() => pixel(page, 6, 6)).toEqual([0, 0, 0, 0]);
-  await page.getByRole('button', { name: 'Select frame 2. Duration: 100ms. Drag to reorder.', exact: true }).click();
+  await page.getByRole('button', { name: 'Select frame 2. #2 100ms. Drag to reorder.', exact: true }).click();
   expect(await pixel(page, 2, 2)).toEqual([120, 120, 120, 51]); await expect.poll(() => pixel(page, 6, 6)).toEqual([0, 0, 0, 0]);
   await page.getByTestId('undo-button').click(); await expect.poll(() => pixel(page, 6, 6)).toEqual([120, 120, 120, 51]);
 });

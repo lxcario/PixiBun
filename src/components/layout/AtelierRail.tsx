@@ -272,7 +272,6 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         <Link
           href="/"
           title="Return to PixiBun Home"
-          aria-label="PixiBun Home"
           className="flex shrink-0 items-center pr-1.5 xl:pr-2.5 border-r border-[var(--desk-border)] hover:opacity-90 transition-opacity"
         >
           <PixiBunLogo size="sm" wordmarkClassName="hidden 2xl:flex" className="drop-shadow-sm" />
@@ -421,9 +420,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
               isShapeTool) && (
               <div ref={brushMenuRef} className="relative shrink-0 flex items-center gap-1">
                 <button type="button" onClick={() => setIsBrushMenuOpen((open) => !open)}
-                  aria-label={`Brush size ${tools.brushSize} pixels`} aria-expanded={isBrushMenuOpen}
+                  aria-label={`Brush size ${tools.brushSize} pixels. Size ${tools.brushSize} px`} aria-expanded={isBrushMenuOpen}
                   className="h-6 px-2 flex items-center gap-1.5 rounded-[2px] text-xs text-[var(--text-heading)] hover:bg-[var(--surface-2)]">
-                  <span className="hidden xl:inline">Size</span><span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
+                  <span className="hidden xl:inline">Size</span>{' '}<span className="font-mono tabular-nums">{tools.brushSize} px</span><span aria-hidden="true">▾</span>
                 </button>
                 <div className="hidden 2xl:flex items-center gap-0.5" aria-label="Quick brush size presets">
                   {[1, 2, 3, 4].map((size) => (
@@ -443,7 +442,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   <button
                     type="button"
                     onClick={() => setPixelPerfect(!tools.pixelPerfect)}
-                    aria-label={tools.pixelPerfect ? 'Disable clean corners' : 'Enable clean corners'}
+                    aria-label={tools.pixelPerfect ? 'Disable clean corners. Pixel-Perfect' : 'Enable clean corners. Pixel-Perfect'}
                     aria-pressed={tools.pixelPerfect}
                     title="Pixel-Perfect: Removes doubled corner pixels when drawing single-pixel lines"
                     className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} items-center gap-1 h-6 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--text-heading)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}

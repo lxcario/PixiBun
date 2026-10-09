@@ -161,7 +161,7 @@ describe('BottomTimeline Drag & Drop Frame Reordering', () => {
     });
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
     render(<BottomTimeline />);
-    fireEvent.click(screen.getByRole('button', { name: 'Preview speed' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Preview 1× speed' }));
     fireEvent.click(screen.getByRole('button', { name: '2× preview speed' }));
     act(() => useStudioStore.getState().setIsPlaying(true));
     act(() => callbacks.shift()?.(1000));

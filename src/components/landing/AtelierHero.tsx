@@ -166,13 +166,14 @@ export const AtelierHero: React.FC = () => {
         <a
           href="#engine-showcase"
           className="flex flex-col items-center gap-1.5 text-xs font-mono text-[var(--accent-plum)] hover:text-[var(--accent-gold)] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] px-3 py-1 rounded-[2px]"
-          aria-label="Scroll down to engine showcase"
+          aria-label="Scroll a little to engine showcase"
         >
           <span className="text-[10px] font-bold tracking-widest uppercase flex items-center gap-1">
             <span>SCROLL A LITTLE</span>
-            <span className="text-[var(--accent-gold)]">✦</span>
+            <span aria-hidden="true" className="text-[var(--accent-gold)]">✦</span>
           </span>
           <motion.span
+            aria-hidden="true"
             animate={shouldReduceMotion ? {} : { y: [0, 4, 0] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             className="text-xs text-[var(--accent-gold)] block"

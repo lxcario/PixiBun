@@ -115,7 +115,7 @@ test('a three-pixel pen uses the same square footprint as its CSS brush outline'
     state.setActiveTool('pen');
     state.setBrushSize(3);
   });
-  await expect(page.getByRole('button', { name: 'Brush size 3 pixels', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Brush size 3 pixels. Size 3 px', exact: true })).toBeVisible();
   const zoom = 16;
   // Hover may scroll the canvas; measure its position after that action.
   await artwork.hover({ position: { x: 10.5 * zoom, y: 10.5 * zoom } });

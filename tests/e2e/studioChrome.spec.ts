@@ -27,11 +27,11 @@ test('project controls, pen size, zoom, and timeline work at desktop widths', as
   const fittedZoom = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { zoom: number } } }).__studioStore!.getState().zoom);
   expect(fittedZoom).toBeLessThan(100);
 
-  await page.getByRole('button', { name: 'Preview speed' }).click();
+  await page.getByRole('button', { name: 'Preview 1× speed' }).click();
   await expect(page.getByRole('group', { name: 'Preview speeds' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('preview-speed-menu.png') });
   await page.getByRole('button', { name: '2× preview speed' }).click();
-  await expect(page.getByRole('button', { name: 'Preview speed' })).toContainText('2×');
+  await expect(page.getByRole('button', { name: 'Preview 2× speed' })).toContainText('2×');
 
   await page.getByTestId('add-frame-button').click();
   await expect(page.getByRole('button', { name: /Select frame 2/ })).toBeVisible();

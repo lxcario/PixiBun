@@ -482,9 +482,9 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
               <div className="flex items-center gap-1.5 text-xs">
                 <div ref={previewMenuRef} className="relative">
                   <button type="button" onClick={() => setIsPreviewMenuOpen((open) => !open)}
-                    aria-label="Preview speed" aria-expanded={isPreviewMenuOpen}
+                    aria-label={`Preview ${previewSpeed}× speed`} aria-expanded={isPreviewMenuOpen}
                     className="h-7 min-w-[102px] flex items-center justify-between gap-2 bg-[var(--surface-0)] px-2 rounded-[2px] border border-[var(--desk-border)] text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]">
-                    <span className="text-[var(--text-muted)] text-[10px]">Preview</span>
+                    <span className="text-[var(--text-muted)] text-[10px]">Preview</span>{' '}
                     <span className="font-mono text-[11px]">{previewSpeed}×</span>
                     <span aria-hidden="true" className="text-[var(--text-muted)]">▾</span>
                   </button>
@@ -682,7 +682,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 }}
                 onMouseLeave={() => setHoveredFrameIndex((cur) => (cur === index ? null : cur))}
                 onClick={() => setActiveFrame(index)}
-                aria-label={`Select frame ${index + 1}. Duration: ${duration}ms. Drag to reorder.`}
+                aria-label={`Select frame ${index + 1}. #${index + 1} ${duration}ms. Drag to reorder.`}
                 title={
                   isGuest
                     ? `Frame #${index + 1} (${duration}ms) - ${guestFrameLockTitle}`
@@ -715,7 +715,7 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 <div className="w-full flex justify-between items-center text-[9px] font-mono leading-none pointer-events-none">
                   <span className={isActive ? 'text-[var(--accent-gold)] font-bold' : 'text-[var(--text-heading)] font-bold'}>
                     #{index + 1}
-                  </span>
+                  </span>{' '}
                   <span className={isActive ? 'text-[var(--accent-gold)] font-medium' : 'text-[var(--text-body)] font-medium'}>
                     {duration}ms
                   </span>

@@ -148,7 +148,7 @@ export const PixelDitherCurtain: React.FC = () => {
           dismiss();
         }
       }}
-      aria-label="Skip introductory pixel curtain animation"
+      aria-label="Skip introductory pixel curtain animation. Click or Esc to skip ✦"
       title="Click or press ESC to skip"
     >
       <canvas

@@ -11,10 +11,14 @@ on:
         description: 'Check indexed artifact upload and retrieval without running application validation'
         type: boolean
         default: false
+      browser_diagnostics:
+        description: 'Retain native Linux WebKit pairing diagnostics without claiming complete qualification'
+        type: boolean
+        default: false
 
 jobs:
   validate:
-    if: ${{ !inputs.evidence_only }}
+    if: ${{ !inputs.evidence_only && !inputs.browser_diagnostics }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -45,10 +49,29 @@ jobs:
         if: always()
         with:
           name: validation-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
           path: |
             artifacts/validation/
             artifacts/validation-index.json
             coverage/
+          retention-days: 90
+
+      - name: Download validation evidence independently
+        if: ${{ always() && steps.validation-evidence.outputs.artifact-id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.validation-evidence.outputs.artifact-id }}
+          path: artifacts/validation-download
+          merge-multiple: true
+      - name: Verify downloaded validation evidence
+        if: ${{ always() && steps.validation-evidence.outputs.artifact-id != '' }}
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/validation-index.json --download artifacts/validation-download --downloaded-index artifacts/validation-index.json --receipt artifacts/validation-retrieval.json
+      - name: Preserve validation retrieval verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/validation-retrieval.json
           retention-days: 90
 
   e2e:
@@ -105,6 +128,52 @@ jobs:
             artifacts/browser-index.json
           retention-days: 90
 
+      - name: Download browser evidence independently
+        if: ${{ always() && steps.browser-evidence.outputs.artifact-id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.browser-evidence.outputs.artifact-id }}
+          path: artifacts/browser-download
+          merge-multiple: true
+      - name: Verify downloaded browser evidence
+        if: ${{ always() && steps.browser-evidence.outputs.artifact-id != '' }}
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/browser-index.json --download artifacts/browser-download --downloaded-index artifacts/browser-index.json --receipt artifacts/browser-retrieval.json
+      - name: Preserve browser retrieval verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/browser-retrieval.json
+          retention-days: 90
+
+  browser-diagnostics:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.browser_diagnostics && !inputs.evidence_only }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - run: npm run build
+      - name: Observe Linux WebKit native pairing
+        run: |
+          mkdir -p artifacts/browser-diagnostics
+          set -o pipefail
+          npm run test:e2e:production -- coDrawGuestIsolation coDrawProtocolSafety --project=webkit --workers=1 --retries=0 2>&1 | tee artifacts/browser-diagnostics/pairing.log
+      - name: Preserve diagnosis and original failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: peer-diagnostics-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            artifacts/browser-diagnostics/
+            test-results/
+          retention-days: 90
+
   evidence-custody:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.evidence_only }}
     runs-on: ubuntu-latest
@@ -122,6 +191,7 @@ jobs:
           cp docs/research/2026-10-09-validation-repeatability.md artifacts/custody-witness/execution.md
           node scripts/indexVerificationEvidence.mjs --source artifacts/custody-witness --output artifacts/custody-witness-index.json
       - name: Preserve visible and hidden indexed evidence
+        id: custody-upload
         uses: actions/upload-artifact@v4
         with:
           name: custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -129,6 +199,24 @@ jobs:
           path: |
             artifacts/custody-witness/
             artifacts/custody-witness-index.json
+          retention-days: 90
+
+      - name: Download custody witness into an isolated directory
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.custody-upload.outputs.artifact-id }}
+          path: artifacts/custody-download
+          merge-multiple: true
+
+      - name: Compare downloaded bytes with the original upload index
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/custody-witness-index.json --download artifacts/custody-download --downloaded-index custody-witness-index.json --strip-prefix artifacts/ --receipt artifacts/custody-retrieval.json
+
+      - name: Preserve automated retrieval verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custody-verdict-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/custody-retrieval.json
           retention-days: 90
 
   lighthouse:

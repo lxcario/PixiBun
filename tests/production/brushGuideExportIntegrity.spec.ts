@@ -9,9 +9,9 @@ test('compiled four-pixel brush agrees with detailed settings and guides stay ou
   const pixels = () => artwork.evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
   const original = await pixels();
   expect(original.some((value, i) => i % 4 === 3 && value !== 0)).toBe(false);
-  await page.getByRole('button', { name: 'Brush size 1 pixels', exact: true }).click();
+  await page.getByRole('button', { name: 'Brush size 1 pixels. Size 1 px', exact: true }).click();
   await page.getByRole('button', { name: '4 pixel brush preset', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Brush size 4 pixels', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Brush size 4 pixels. Size 4 px', exact: true })).toBeVisible();
   await page.getByTestId('tab-tools').click();
   await expect(page.getByRole('slider', { name: 'Tool panel brush size', exact: true })).toHaveValue('4');
   const box = (await artwork.boundingBox())!;

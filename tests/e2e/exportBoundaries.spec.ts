@@ -13,7 +13,7 @@ async function prepareArtwork(page: Page) {
     const state = (window as unknown as StudioWindow).__studioStore.getState();
     state.setPrimaryColor('#ff0000'); state.setBrushSize(16); state.setFrameDuration(0, 300);
   });
-  await expect(page.getByRole('button', { name: 'Brush size 16 pixels', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Brush size 16 pixels. Size 16 px', exact: true })).toBeVisible();
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   const box = (await canvas.boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);

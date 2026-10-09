@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { installPeerDiagnostics, retainPeerDiagnostics } from '../helpers/peerDiagnostics';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -29,6 +30,7 @@ test('compiled LAN guest reloads the shared copy and reopens its untouched origi
   const hostContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL });
   const host = await hostContext.newPage();
   try {
+    await installPeerDiagnostics(host, page);
     await host.goto('/studio');
     test.skip(!await host.evaluate(() => typeof RTCPeerConnection === 'function'),
       'This browser runtime has no WebRTC; live pairing cannot be qualified here. See the separate guest-refusal scenario.');
@@ -61,7 +63,7 @@ test('compiled LAN guest reloads the shared copy and reopens its untouched origi
     await expect(projects).not.toBeVisible();
     await expect.poll(() => pixels(page)).toEqual(originalArt);
     await page.screenshot({ path: testInfo.outputPath('original-reopened.png'), fullPage: true });
-  } finally { await hostContext.close(); }
+  } finally { await retainPeerDiagnostics(testInfo, host, page); await hostContext.close(); }
 });
 
 test('compiled browser without WebRTC refuses a valid guest invite and preserves original artwork', async ({ page }) => {

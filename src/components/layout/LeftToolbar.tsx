@@ -194,7 +194,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
       <div
         ref={wellsContainerRef}
         data-testid="toolbar-color-dock"
-        className="flex flex-col items-center gap-2 w-full px-1.5 pt-2 pb-2 border-t border-[var(--desk-border)] shrink-0 bg-[var(--desk-surface)] shadow-sm z-10"
+        className="flex flex-col items-center gap-1 w-full px-1.5 pt-1 pb-1 border-t border-[var(--desk-border)] shrink-0 bg-[var(--desk-surface)] shadow-sm z-10"
       >
         {/* Compact overlapping wells, with swap and reset in the free corners. */}
         <div className="relative w-10 h-10 select-none">
@@ -293,7 +293,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             onClick={toggleFlyout}
             title="Quick Swatches & Color Access (Click to toggle)"
             aria-label="Quick Swatches Flyout"
-            className={`w-9 h-3.5 rounded-[2px] border text-[8px] font-mono flex items-center justify-center gap-0.5 cursor-pointer transition-colors pixel-tactile-btn ${
+            className={`w-9 h-6 rounded-[2px] border text-[8px] font-mono flex items-center justify-center gap-0.5 cursor-pointer transition-colors pixel-tactile-btn ${
               isFlyoutOpen
                 ? 'bg-[var(--surface-2)] text-[var(--accent-gold)] border-[var(--accent-gold)]/60'
                 : 'text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
@@ -338,7 +338,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
           <div className="flex items-center justify-between gap-1 p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
             <button
               onClick={() => setActiveFlyoutTarget('primary')}
-              className={`flex-1 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+              className={`flex-1 min-h-11 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
                 activeFlyoutTarget === 'primary'
                   ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-gold)]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
@@ -358,15 +358,16 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
 
             <button
               onClick={swapColors}
+              aria-label="Swap colors"
               title="Swap Colors (X)"
-              className="px-1 py-0.5 text-[10px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] cursor-pointer"
+              className="w-11 h-11 shrink-0 text-[10px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] cursor-pointer"
             >
               ⇄
             </button>
 
             <button
               onClick={() => setActiveFlyoutTarget('secondary')}
-              className={`flex-1 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+              className={`flex-1 min-h-11 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
                 activeFlyoutTarget === 'secondary'
                   ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-plum)]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
@@ -391,7 +392,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               <span className="truncate max-w-[120px] font-medium font-sans">{currentPalette.name}</span>
               <span className="font-mono text-[8px]">{currentPalette.colors.length}c</span>
             </div>
-            <div className="grid grid-cols-8 gap-1">
+            <div className="grid grid-cols-4 gap-1">
               {currentPalette.colors.slice(0, 16).map((color, idx) => {
                 const isSelected =
                   (activeFlyoutTarget === 'primary' ? primaryColor : secondaryColor).toLowerCase() ===
@@ -405,7 +406,8 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                       handleApplyColor(color, activeFlyoutTarget === 'primary' ? 'secondary' : 'primary');
                     }}
                     style={{ backgroundColor: color }}
-                    className={`w-[21px] h-[21px] rounded-[1px] border transition-transform hover:scale-110 active:scale-95 cursor-pointer relative ${
+                    aria-label={`Palette color ${color}`}
+                    className={`w-11 h-11 rounded-[1px] border transition-transform hover:scale-110 active:scale-95 cursor-pointer relative ${
                       isSelected
                         ? 'border-white ring-1 ring-[var(--accent-gold)] z-10'
                         : 'border-[var(--desk-border)]'
@@ -431,7 +433,8 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                       handleApplyColor(color, activeFlyoutTarget === 'primary' ? 'secondary' : 'primary');
                     }}
                     style={{ backgroundColor: color }}
-                    className="w-4 h-4 rounded-[1px] border border-[var(--desk-border)] hover:scale-110 cursor-pointer"
+                    aria-label={`Recent color ${color}`}
+                    className="w-11 h-11 rounded-[1px] border border-[var(--desk-border)] hover:scale-110 cursor-pointer"
                     title={`${color} (Recent)`}
                   />
                 ))}
@@ -441,12 +444,16 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
 
           {/* Progressive Actions: Spectrum Picker & Full Palette Tab */}
           <div className="flex flex-col gap-1 pt-1 border-t border-[var(--desk-border)]">
+            <button type="button" onClick={resetDefaultColors}
+              className="min-h-11 w-full px-2 text-[10px] border border-[var(--desk-border)] rounded-[2px] cursor-pointer">
+              Reset default black and white colors
+            </button>
             <button
               onClick={() => {
                 setIsFlyoutOpen(false);
                 setColorPickerTarget(activeFlyoutTarget);
               }}
-              className="w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between"
+              className="min-h-11 w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between"
             >
               <span>Custom Spectrum Picker...</span>
               <span className="text-[10px] text-[var(--accent-gold)] font-mono">+</span>
@@ -456,7 +463,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                 setIsFlyoutOpen(false);
                 setActiveInspectorTab('palette');
               }}
-              className="w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--accent-gold)] hover:bg-[var(--surface-3)] border border-transparent hover:border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
+              className="min-h-11 w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--accent-gold)] hover:bg-[var(--surface-3)] border border-transparent hover:border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
             >
               <span>Open Full Palette Tab</span>
               <span className="text-[10px]">▸</span>

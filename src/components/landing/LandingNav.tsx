@@ -79,7 +79,6 @@ export const LandingNav: React.FC = () => {
             }
           }}
           className="flex items-center text-[var(--text-heading)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c] rounded-[2px]"
-          aria-label="PixiBun Home"
           title="Click to replay opening intro"
         >
           <PixiBunLogo />

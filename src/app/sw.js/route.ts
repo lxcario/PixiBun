@@ -139,27 +139,34 @@ self.addEventListener('fetch', (event) => {
 
   // 2. Navigation requests: Network-first with cache fallback, then offline.html
   if (request.mode === 'navigate') {
+    // Capture this cache's ownership now, but storage is optional for navigation.
+    // Never reopen its name after a newer worker may have retired the bucket.
+    const ownedCache = caches.open(CACHE_NAME).catch(() => null);
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => fetch(request)
+      fetch(request)
         .then((response) => {
           if (response.status === 200) {
             const copy = response.clone();
             event.waitUntil(
               (async () => {
+                const cache = await ownedCache;
+                if (!cache) return;
                 await cache.put(request, copy);
                 await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
-              })()
+              })().catch(() => {})
             );
           }
           return response;
-        }))
+        })
         .catch(async () => {
-          const cached = await caches.match(request);
-          if (cached) return cached;
-          const studioCached = await caches.match('/studio');
-          if (studioCached) return studioCached;
-          const offlinePage = await caches.match('/offline.html');
-          if (offlinePage) return offlinePage;
+          for (const fallback of [request, '/studio', '/offline.html']) {
+            try {
+              const cached = await caches.match(fallback);
+              if (cached) return cached;
+            } catch {
+              // Unavailable storage must still yield a controlled offline response.
+            }
+          }
           return new Response('Offline and no cached shell available.', {
             status: 503,
             statusText: 'Service Unavailable',

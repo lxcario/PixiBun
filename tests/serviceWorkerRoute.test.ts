@@ -4,6 +4,59 @@ import { runInNewContext } from 'node:vm';
 
 type WorkerEvent = { request?: { url: string; method: string; mode: string; destination: string }; waitUntil(promise: Promise<unknown>): void; respondWith(promise: Promise<Response>): void };
 
+describe('navigation with unavailable cache storage', () => {
+  async function navigate(cacheStorage: object, network: () => Promise<Response>) {
+    const callbacks = new Map<string, (event: WorkerEvent) => void>();
+    const pending: Promise<unknown>[] = [];
+    let response!: Promise<Response>;
+    runInNewContext(buildServiceWorkerScript('cache-fault'), {
+      self: { location: { origin: 'https://example.test' }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
+      caches: cacheStorage, fetch: network, URL, Response,
+    });
+    callbacks.get('fetch')!({
+      request: { url: 'https://example.test/studio', method: 'GET', mode: 'navigate', destination: '' },
+      respondWith: promise => { response = promise; },
+      waitUntil: promise => { pending.push(promise); promise.catch(() => {}); },
+    });
+    return { response: await response, pending };
+  }
+
+  it('delivers the healthy network shell when opening the cache rejects', async () => {
+    let networkCalls = 0;
+    const result = await navigate({ open: async () => { throw Error('Cache unavailable'); }, match: async () => undefined },
+      async () => { networkCalls++; return new Response('online Studio'); });
+    expect(networkCalls).toBe(1);
+    expect(result.response.status).toBe(200);
+    expect(await result.response.text()).toBe('online Studio');
+    expect((await Promise.allSettled(result.pending)).every(item => item.status === 'fulfilled')).toBe(true);
+  });
+
+  it('delivers the network shell without waiting for a stalled cache open', async () => {
+    let releaseCache!: (cache: object) => void;
+    const stalled = new Promise<object>(resolve => { releaseCache = resolve; });
+    const result = await navigate({ open: () => stalled }, async () => new Response('online Studio'));
+    expect(await result.response.text()).toBe('online Studio');
+    releaseCache({ put: async () => {}, keys: async () => [], match: async () => undefined });
+    await Promise.all(result.pending);
+  });
+
+  it('does not turn a cache write failure into a failed online navigation', async () => {
+    const result = await navigate({ open: async () => ({ put: async () => { throw Error('Quota exceeded'); } }) },
+      async () => new Response('online Studio'));
+    expect(result.response.status).toBe(200);
+    expect(await result.response.text()).toBe('online Studio');
+    expect((await Promise.allSettled(result.pending)).every(item => item.status === 'fulfilled')).toBe(true);
+  });
+
+  it('returns a controlled offline response when the network and cache reads both fail', async () => {
+    const result = await navigate({ open: async () => { throw Error('Cache unavailable'); }, match: async () => { throw Error('Cache unavailable'); } },
+      async () => { throw Error('Network unavailable'); });
+    expect(result.response.status).toBe(503);
+    expect(await result.response.text()).toBe('Offline and no cached shell available.');
+    await Promise.all(result.pending);
+  });
+});
+
 for (const [mode, pathname] of [['navigate', '/studio'], ['cors', '/_next/static/retirement.js'], ['cors', '/other.txt']]) {
   it(`a delayed old ${mode} ${pathname} response cannot recreate its retired cache`, async () => {
     // Cache objects survive deletion detached from CacheStorage; reopening by name

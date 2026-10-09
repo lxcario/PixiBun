@@ -48,7 +48,7 @@ export async function verifyFreeIso(page: Page, capture?: (name: string) => Prom
   }
   if (scope === 'diagonal' || scope === 'cardinal-edge') return;
   await page.getByTestId('tool-options-button').click();
-  await page.getByRole('button', { name: 'Brush size 1 pixels', exact: true }).click();
+  await page.getByRole('button', { name: 'Brush size 1 pixels. Size 1 px', exact: true }).click();
   await page.getByRole('button', { name: '3 pixel brush preset', exact: true }).click();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Horizontal symmetry', exact: true }).click();

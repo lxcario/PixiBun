@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { installPeerDiagnostics, retainPeerDiagnostics } from '../helpers/peerDiagnostics';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -14,6 +15,7 @@ for (const fault of ['unsafe clock', 'unserializable layer name'] as const) {
     const hostContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: { width: 1600, height: 1000 } });
     const host = await hostContext.newPage();
     try {
+      await installPeerDiagnostics(host, page);
       // Observe real host-created channels; application source exposes no test transport handle.
       await host.addInitScript(() => {
         if (typeof RTCPeerConnection !== 'function') return;
@@ -77,6 +79,6 @@ for (const fault of ['unsafe clock', 'unserializable layer name'] as const) {
       await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Rename project Shared Drawing', exact: true })).toBeVisible();
       await expect.poll(() => pixels(page)).toEqual(shared);
-    } finally { await hostContext.close(); }
+    } finally { await retainPeerDiagnostics(testInfo, host, page); await hostContext.close(); }
   });
 }
