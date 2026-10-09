@@ -1,15 +1,15 @@
 {
   "kind": "runner-enumeration-not-execution",
   "unit": {
-    "tests": 2200,
-    "suites": 202
+    "tests": 2226,
+    "suites": 203
   },
   "editor": {
     "tests": 196,
     "files": 45
   },
   "production": {
-    "tests": 351,
-    "files": 32
+    "tests": 363,
+    "files": 33
   }
 }

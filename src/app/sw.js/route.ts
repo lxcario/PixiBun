@@ -33,6 +33,40 @@ const MAX_DYNAMIC_CACHE_ENTRIES = 50;
 const PRECACHE_MANIFEST = '/__pixibun_precache__';
 const MAX_SHELL_DEPENDENCIES = 128;
 let warmQueue = Promise.resolve();
+const CACHE_ACCESS_TIMEOUT_MS = 250;
+
+// Optional storage cannot hold an online response or an event lifetime forever.
+// Call the operation immediately: never reopen a retired bucket after a timeout.
+function optionalCacheAccess(operation) {
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = (value) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      resolve(value);
+    };
+    const timer = setTimeout(() => finish(null), CACHE_ACCESS_TIMEOUT_MS);
+    try { Promise.resolve(operation()).then(finish, () => finish(null)); }
+    catch { finish(null); }
+  });
+}
+
+function openOwnedCache() {
+  return optionalCacheAccess(() => caches.open(CACHE_NAME));
+}
+
+function readOwnedCache(cache, request) {
+  return cache ? optionalCacheAccess(() => cache.match(request)) : Promise.resolve(null);
+}
+
+function storeResponse(cache, request, response) {
+  if (!cache) return Promise.resolve();
+  return optionalCacheAccess(async () => {
+    await cache.put(request, response);
+    await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
+  });
+}
 
 async function trimCache(cache, maxEntries) {
   try {
@@ -97,9 +131,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'CACHE_ASSETS' && Array.isArray(event.data.urls)) {
     // Capture ownership at event arrival, before queued work can outlive activation.
-    const ownedCache = caches.open(CACHE_NAME);
-    warmQueue = warmQueue.catch(() => {}).then(async () => {
+    const ownedCache = openOwnedCache();
+    warmQueue = warmQueue.catch(() => {}).then(() => optionalCacheAccess(async () => {
       const cache = await ownedCache;
+      if (!cache) return;
       const manifest = await cache.match(PRECACHE_MANIFEST);
       const paths = new Set(manifest ? await manifest.json() : []);
       const incoming = [];
@@ -116,8 +151,8 @@ self.addEventListener('message', (event) => {
       // Protect these paths before competing dynamic cache writes can trim them.
       await cache.put(PRECACHE_MANIFEST, new Response(JSON.stringify([...paths]), { headers: { 'Content-Type': 'application/json' } }));
       await cache.addAll(incoming);
-    });
-    event.waitUntil(warmQueue);
+    }));
+    event.waitUntil(warmQueue.catch(() => {}));
   }
   if (event.data && event.data.type === 'SKIP_WAITING') {
     event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
@@ -141,7 +176,7 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     // Capture this cache's ownership now, but storage is optional for navigation.
     // Never reopen its name after a newer worker may have retired the bucket.
-    const ownedCache = caches.open(CACHE_NAME).catch(() => null);
+    const ownedCache = openOwnedCache();
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -150,9 +185,7 @@ self.addEventListener('fetch', (event) => {
             event.waitUntil(
               (async () => {
                 const cache = await ownedCache;
-                if (!cache) return;
-                await cache.put(request, copy);
-                await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
+                await storeResponse(cache, request, copy);
               })().catch(() => {})
             );
           }
@@ -161,7 +194,7 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           for (const fallback of [request, '/studio', '/offline.html']) {
             try {
-              const cached = await caches.match(fallback);
+              const cached = await optionalCacheAccess(() => caches.match(fallback));
               if (cached) return cached;
             } catch {
               // Unavailable storage must still yield a controlled offline response.
@@ -177,35 +210,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Next.js static bundles, fonts, theme and images: Stale-While-Revalidate
+  // 3. Static resources: immediate network, bounded cache fallback and refresh.
   if (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/assets/') ||
     url.pathname === '/theme.js'
   ) {
+    const ownedCache = openOwnedCache();
+    const cachedResponse = ownedCache.then(cache => readOwnedCache(cache, request));
+    // Fetch immediately, even if cache opening or reading never settles.
+    const fetchPromise = fetch(request)
+      .then(async (networkResponse) => {
+        if (networkResponse.status === 200) {
+          const copy = networkResponse.clone();
+          event.waitUntil(ownedCache.then(cache => storeResponse(cache, request, copy)));
+        }
+        return networkResponse.status === 200 ? networkResponse : (await cachedResponse) || networkResponse;
+      })
+      .catch(async () => (await cachedResponse) || Response.error());
+    // Keep refresh/write registration legal after a fast cached response.
+    event.waitUntil(fetchPromise.then(() => {}));
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(request);
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              const copy = networkResponse.clone();
-              event.waitUntil(
-                (async () => {
-                  await cache.put(request, copy);
-                  await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
-                })()
-              );
-            }
-            return networkResponse;
-          })
-          .catch(() => cachedResponse || Response.error());
-
-        // Register background work while respondWith is still pending, even on a hit.
-        event.waitUntil(fetchPromise.then(() => {}));
-
-        const response = cachedResponse || await fetchPromise;
+      Promise.race([cachedResponse.then(cached => cached || fetchPromise), fetchPromise]).then((response) => {
         // A cached response's URL lacks the constructor fragment. Worker bootstraps
         // use that fragment for configuration; a synthetic response retains the
         // original worker request URL rather than replacing it with response.url.
@@ -219,28 +246,29 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 4. Default: Cache-first with network fallback and bounded dynamic storage (touch-on-hit LRU)
+  const ownedCache = openOwnedCache();
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => cache.match(request).then((cached) => {
+    (async () => {
+      const cache = await ownedCache;
+      const cached = await readOwnedCache(cache, request);
       if (cached) {
         // Touch on hit to promote entry to the newest position in CacheStorage (true LRU)
         event.waitUntil(
-          cache.put(request, cached.clone())
+          optionalCacheAccess(() => cache.put(request, cached.clone()))
         );
         return cached;
       }
-      return fetch(request).then((response) => {
+      try {
+        const response = await fetch(request);
         if (response.status === 200 && response.type === 'basic') {
-          const copy = response.clone();
-          event.waitUntil(
-            (async () => {
-              await cache.put(request, copy);
-              await trimCache(cache, MAX_DYNAMIC_CACHE_ENTRIES);
-            })()
-          );
+          event.waitUntil(storeResponse(cache, request, response.clone()));
         }
         return response;
-      });
-    }))
+      } catch {
+        // A missing resource is an explicit fetch error, never an HTML substitute.
+        return Response.error();
+      }
+    })()
   );
 });
 `;

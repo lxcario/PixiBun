@@ -11,7 +11,7 @@ describe('navigation with unavailable cache storage', () => {
     let response!: Promise<Response>;
     runInNewContext(buildServiceWorkerScript('cache-fault'), {
       self: { location: { origin: 'https://example.test' }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
-      caches: cacheStorage, fetch: network, URL, Response,
+      caches: cacheStorage, fetch: network, URL, Response, setTimeout, clearTimeout,
     });
     callbacks.get('fetch')!({
       request: { url: 'https://example.test/studio', method: 'GET', mode: 'navigate', destination: '' },
@@ -86,7 +86,7 @@ for (const [mode, pathname] of [['navigate', '/studio'], ['cors', '/_next/static
       const callbacks = new Map<string, (event: WorkerEvent) => void>();
       runInNewContext(buildServiceWorkerScript(version), {
         self: { location: { origin: 'https://example.test' }, clients: { claim: async () => {} }, addEventListener: (name: string, callback: (event: WorkerEvent) => void) => callbacks.set(name, callback) },
-        caches: cacheStorage, URL, Response, fetch: () => { startedFetch(); return network; },
+        caches: cacheStorage, URL, Response, setTimeout, clearTimeout, fetch: () => { startedFetch(); return network; },
       });
       return callbacks;
     };
