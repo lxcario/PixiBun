@@ -144,8 +144,13 @@ describe('Performance Benchmarking Suite', () => {
       const identity = rotateNearest(buffer, 0);
       expect(identity.width).toBe(res);
       expect(identity.height).toBe(res);
-      expect(identity.data).toEqual(original);
-      expect(data).toEqual(original);
+      // Compare every byte natively, as in the palette correctness cases below.
+      // Recursive typed-array assertions can time out under coverage; raster
+      // speed is measured separately with unchanged warmed performance limits.
+      expect(Buffer.from(identity.data.buffer, identity.data.byteOffset, identity.data.byteLength)
+        .equals(Buffer.from(original.buffer))).toBe(true);
+      expect(Buffer.from(data.buffer, data.byteOffset, data.byteLength)
+        .equals(Buffer.from(original.buffer))).toBe(true);
     }
   });
 
