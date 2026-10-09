@@ -5,9 +5,16 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      evidence_only:
+        description: 'Check indexed artifact upload and retrieval without running application validation'
+        type: boolean
+        default: false
 
 jobs:
   validate:
+    if: ${{ !inputs.evidence_only }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -90,11 +97,38 @@ jobs:
         if: always()
         with:
           name: browsers-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
           path: |
             playwright-report/
             test-results/
             artifacts/browser/
             artifacts/browser-index.json
+          retention-days: 90
+
+  evidence-custody:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.evidence_only }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Prepare real receipt transfer witness
+        run: |
+          mkdir -p artifacts/custody-witness
+          cp docs/research/evidence/2026-10-09-validation-repeatability/verification.json artifacts/custody-witness/.last-run.json
+          cp docs/research/2026-10-09-validation-repeatability.md artifacts/custody-witness/execution.md
+          node scripts/indexVerificationEvidence.mjs --source artifacts/custody-witness --output artifacts/custody-witness-index.json
+      - name: Preserve visible and hidden indexed evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            artifacts/custody-witness/
+            artifacts/custody-witness-index.json
           retention-days: 90
 
   lighthouse:
