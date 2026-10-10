@@ -64,19 +64,33 @@ test('palette role saves undo, redo and reload without changing artwork', async 
 });
 
 test('visible selection bindings resolve duplicate register identity on every exported frame', async ({ page }) => {
-  await importGameDeliveryFixture(page, true); const before = await pixels(page);
+  await importGameDeliveryFixture(page, true);
+  const before: number[][] = [];
+  for (let i = 1; i <= 3; i++) {
+    await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    before.push(await pixels(page));
+  }
   await page.getByTestId('tab-palette').click(); await page.getByText('Roles and index bindings', { exact: true }).click();
   await page.getByRole('combobox', { name: 'Semantic palette register' }).selectOption('255');
   await page.getByTestId('select-box-tool').click();
   for (let i = 1; i <= 3; i++) {
     await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
+    // A drag inside the previous marquee moves artwork. Start a new selection.
+    await page.keyboard.press('Control+d');
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __studioStore: { getState(): import('../../src/stores/studioStore').StudioState } }).__studioStore.getState().selection)).toBeNull();
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
     await page.mouse.move(box.x + 1, box.y + 1); await page.mouse.down();
     await page.mouse.move(box.x + box.width - 1, box.y + box.height - 1, { steps: 3 }); await page.mouse.up();
     await page.getByRole('button', { name: 'Bind selection to register' }).click();
+    await expect.poll(() => pixels(page)).toEqual(before[i - 1]);
   }
   await expect(page.getByText('3 saved index bindings')).toBeVisible();
-  await page.getByRole('button', { name: /^Select frame 1\./ }).click(); expect(await pixels(page)).toEqual(before);
+  for (let i = 1; i <= 3; i++) {
+    await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
+    await expect.poll(() => pixels(page)).toEqual(before[i - 1]);
+  }
+  await page.getByRole('button', { name: /^Select frame 1\./ }).click();
   const dialog = await openKit(page); await dialog.getByRole('checkbox', { name: 'Include indexed palette and runtime cycling' }).check();
   const downloaded = page.waitForEvent('download'); await dialog.getByRole('button', { name: 'Download Godot kit' }).click();
   await (await downloaded).saveAs('artifacts/phase5/duplicate-bound-kit.zip');

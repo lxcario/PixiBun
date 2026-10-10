@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { startTransition, useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useReducedMotion } from 'motion/react';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
@@ -200,7 +200,10 @@ export const PhotometricShowcase: React.FC = () => {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
 
-      setAzimuth((prev) => (prev + dt * 45) % 360);
+      // Decorative frames must not repeatedly interrupt a pending route transition.
+      startTransition(() => {
+        setAzimuth((prev) => (prev + dt * 45) % 360);
+      });
       animFrameRef.current = requestAnimationFrame(loop);
     };
 

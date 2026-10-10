@@ -21,7 +21,31 @@ test.describe('Landing Page & Accessibility', () => {
     await expect(page.getByText(/take a Godot kit into your game/)).toBeVisible();
     await expect(page.getByText(/native Godot 4 & Unity exports/)).toHaveCount(0);
 
-    // Verify no unhandled console errors during landing load
+    // Navigation must remain responsive while the default lighting demo animates.
+    const orbit = page.getByTitle('Toggle automatic orbital rotation', { exact: true });
+    const light = page.getByRole('slider', { name: /Interactive 2.5D Light Direction Gizmo/ });
+    const preview = page.locator('canvas[aria-label^="2.5D Photometrically shaded"]');
+    const pixels = () => preview.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
+    await expect(orbit).toHaveText('⏸ Orbit');
+    const initialPixels = await pixels();
+    await expect.poll(pixels).not.toBe(initialPixels);
+
+    await orbit.click();
+    await expect(orbit).toHaveText('▶ Auto-Orbit');
+    await light.press('Home');
+    await expect(light).toHaveAttribute('aria-valuenow', '0');
+    await light.press('ArrowRight');
+    await expect(light).toHaveAttribute('aria-valuenow', '15');
+    await orbit.click();
+    await expect(orbit).toHaveText('⏸ Orbit');
+    const resumedPixels = await pixels();
+    await expect.poll(pixels).not.toBe(resumedPixels);
+
+    await page.getByRole('link', { name: 'Playground', exact: true }).click();
+    await expect(page).toHaveURL(/\/playground$/, { timeout: 15000 });
+    await expect(page.getByRole('button', { name: 'Return to drawing', exact: true })).toBeVisible();
+
+    // Verify no unhandled console errors during landing and the route transition.
     expect(consoleErrors).toHaveLength(0);
   });
 

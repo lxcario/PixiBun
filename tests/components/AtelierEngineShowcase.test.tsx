@@ -171,6 +171,42 @@ describe('AtelierEngineShowcase Component', () => {
     });
   });
 
+  it('preserves orbital speed, manual direction and frame cleanup through pause and resume', async () => {
+    const frames = new Map<number, FrameRequestCallback>();
+    let frameId = 0;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
+      frames.set(++frameId, callback);
+      return frameId;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(id => { frames.delete(id); });
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
+    const view = render(<AtelierEngineShowcase />);
+    const orbit = screen.getByTitle('Toggle automatic orbital rotation');
+    const light = screen.getByRole('slider', { name: /Interactive 2.5D Light Direction Gizmo/ });
+    expect(frames.size).toBe(0); // Reduced-motion preference is respected.
+
+    await act(async () => { fireEvent.click(orbit); });
+    async function advanceFrame(now: number) {
+      clock.mockReturnValue(now);
+      expect(frames.size).toBe(1);
+      const [id, callback] = [...frames][0];
+      frames.delete(id);
+      await act(async () => { callback(now); });
+    }
+    await advanceFrame(2000);
+    expect(light.getAttribute('aria-valuenow')).toBe('180'); // 135 + 45 degrees/second.
+
+    await act(async () => { fireEvent.click(orbit); });
+    expect(frames.size).toBe(0);
+    await act(async () => { fireEvent.keyDown(light, { key: 'ArrowRight' }); });
+    expect(light.getAttribute('aria-valuenow')).toBe('195');
+    await act(async () => { fireEvent.click(orbit); });
+    await advanceFrame(3000);
+    expect(light.getAttribute('aria-valuenow')).toBe('240');
+    view.unmount();
+    expect(frames.size).toBe(0);
+  });
+
   it('switches between tabs via direct tab clicks', async () => {
     render(<AtelierEngineShowcase />);
 
