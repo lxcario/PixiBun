@@ -31,7 +31,10 @@ test('the landing starter creates a separate saved drawing and Gallery retains t
   await page.mouse.click(box.x + box.width * .4, box.y + box.height * .4);
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   const original = await pixels(page); await saveReload(page);
-  await page.goto('/'); await page.getByTitle('Open Hearth Ghost in studio', { exact: true }).click();
+  await page.goto('/');
+  const starterLink = page.getByTitle('Open Hearth Ghost in studio', { exact: true });
+  await starterLink.scrollIntoViewIfNeeded();
+  await starterLink.click();
   await expect.poll(() => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBe(16);
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   await saveReload(page); const starter = await pixels(page); expect(starter).not.toEqual(original);

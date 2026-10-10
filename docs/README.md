@@ -1,6 +1,6 @@
 # Documentation map
 
-The [10 October resource-cache recovery record](research/2026-10-10-resource-cache-recovery.md) records the controlled Windows Home animation/navigation repair (48/48 scoped native passes; complete final-input qualification pending), online resource recovery, passing local/CI full gates and complete frozen production verdicts, the failed local development replay and controlled fixture diagnostics, independently retrieved evidence and remaining release limits. It preserves the earlier checkpoints below.
+The [10 October resource-cache recovery record](research/2026-10-10-resource-cache-recovery.md) records the controlled Windows Home animation/navigation repair, passing complete development qualification, retained local/CI production failures, the pointer-scroll comparison and the next application/browser-mode qualification, online resource recovery, passing local/CI full gates and complete frozen production verdicts, the failed local development replay and controlled fixture diagnostics, independently retrieved evidence and remaining release limits. It preserves the earlier checkpoints below.
 
 The [9 October recovery follow-up](research/2026-10-09-l09-recovery-followup.md) records the navigation repair, controlled Linux WebKit diagnosis, passing local/remote gates and complete browser verdicts, automatic evidence retrieval and remaining release limits. Earlier checkpoints below retain their own revisions and outcomes.
 

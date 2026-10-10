@@ -13,7 +13,8 @@ export default defineConfig({
   reporter: [['list']],
   outputDir: productionPort === 3100 ? 'test-results/production' : `artifacts/playwright-production-${productionPort}`,
   use: { baseURL: productionOrigin, colorScheme: 'dark', screenshot: 'only-on-failure', trace: 'retain-on-failure' },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+  // Match development qualification with the full browser; shell crash traces remain retained.
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chromium' } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } }],
   webServer: { command: `node node_modules/next/dist/bin/next start -p ${productionPort}`, url: productionOrigin, reuseExistingServer: false, timeout: 60_000 },

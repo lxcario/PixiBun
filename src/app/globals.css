@@ -425,7 +425,8 @@ html[data-studio-theme="cozy-classic"][data-color-scheme="light"] {
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Pending smooth viewport scrolling can move a control between press and release. */
+  scroll-behavior: auto;
   scroll-padding-top: 4.5rem;
 }
 

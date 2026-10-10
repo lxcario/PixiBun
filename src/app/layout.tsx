@@ -76,7 +76,7 @@ export default async function RootLayout({
   // manually declared <Script> components (nonce props are not auto-injected).
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${jetbrainsMono.variable} ${silkscreen.variable}`}>
       <head>
         <script src="/theme.js" nonce={nonce} />
       </head>
