@@ -114,6 +114,16 @@ The actual two-compatible-build replay is **failed**: four passes, one measured 
 
 Evidence: `navigation-final-*`, `minimal-starter-pointer.*`, `minimal-starter-scroll.*`, `minimal-starter-centered.*`, `remote-navigation-*`, original failed traces and independent archive/custody receipts under the session evidence base. Native checks only; no TestSprite run or upload is performed.
 
+## Immediate-scroll-only replay and Gallery recovery
+
+The local `2742e1aa1f1539e589bb027aeaf735320644fd48` candidate passes all six gate stages: **2,227 tests /203 suites**, unchanged coverage and a warmed RotSprite p90 of **1.62 ms against 10 ms**. Its 32-case application comparison uses the exact original diagnostic source, without an inline CSS override. It records **31 passes /one failure**: all sixteen explicit-scroll cases pass, but one direct original-click case misses the link. The guarded qualification stops before publication, complete development or complete production; no passing complete-browser verdict is claimed for this candidate.
+
+The remaining pointer witness captures the second mechanism: the link is 155.33 pixels wide at press (the reveal's 0.95 scale), then about 163.18 pixels wide at release. Its top moves from 567.94 to 536.94 pixels while the pointer stays at (484, 585), and the native release/click reaches the card figure. The press lasts 743 ms. No starter-template navigation is sent. These coordinates match the missed-click location in the original complete local failure; that earlier trace still lacks its own pointer-target witness.
+
+The 259 compiled files remain unchanged after this failed probe. Before changing source again, its 706 selected inputs and compiled build `ZtrDwxPa0NA6bpl9-hePj` are copied into a guarded 996-file local stage, checking every expected source/build hash. This stage preserves the partial candidate for final evidence custody. It has not been published as an application release.
+
+The next application repair changes only the starter collection and card reveals from translation/scaling to **opacity fades**. Decorative motion remains, while interactive hit areas stay in place during the reveal. Immediate automatic viewport scrolling is retained for the separate 492–493-pixel viewport-movement failure. The additional pre-scroll in the repository's starter test is reverted: the permanent test again uses its original native click and every original artwork assertion and deadline. The unchanged 32-case diagnostic still tests both click preparations. A fresh complete gate, application comparison, Node 22 development, frozen production and CI verdict are pending on this combined repair.
+
 ## Qualification boundaries
 
 Native storage-fault injection runs only after a healthy install. It models CacheStorage failures with healthy network and IndexedDB; it does not measure real incident frequency or simultaneous persistence failures. Local Windows WebKit lacks the native API used by three co-draw pairing cases; Linux coverage must remain separately counted. A passing replay does not establish the cause of the retained earlier Chromium SIGSEGV or Firefox cleanup failure.

@@ -211,7 +211,8 @@ export const AtelierGallery: React.FC = () => {
         </CozyScrollReveal>
 
         {/* Master Wooden Workshop Display Unit */}
-        <CozyScrollReveal variant="scale-up" delayMs={100}>
+        {/* Keep starter hit areas fixed while the collection appears. */}
+        <CozyScrollReveal variant="fade" delayMs={100}>
           <div className="relative max-w-6xl mx-auto bg-[var(--desk-surface)] border-3 border-[var(--desk-border)] rounded-[2px] p-6 sm:p-8 shadow-sm transition-colors duration-300">
             <PixelCorners />
             <PixelGoldenAccents />
@@ -244,7 +245,7 @@ export const AtelierGallery: React.FC = () => {
                 {STARTER_TEMPLATES.map((template, i) => {
                   const meta = SPRITE_METADATA[i];
                   return (
-                    <CozyScrollReveal key={template.id} variant="fade-up" delayMs={180 + i * 80} className="h-full">
+                    <CozyScrollReveal key={template.id} variant="fade" delayMs={180 + i * 80} className="h-full">
                       <SpotlightCard
                         spotlightColor="rgba(240, 190, 124, 0.12)"
                         className="rounded-[2px] h-full"
