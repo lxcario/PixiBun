@@ -1,6 +1,6 @@
 # Documentation map
 
-The [10 October resource-cache recovery record](research/2026-10-10-resource-cache-recovery.md) separates the passing local navigation/browser milestone from the retained failed CI co-draw cleanup run, records the controlled cleanup-lifecycle comparison and pending fixture qualification, and preserves earlier failures, evidence custody and release limits.
+The [10 October resource-cache recovery record](research/2026-10-10-resource-cache-recovery.md) records the passing local/CI full-gate and complete browser milestone at `bfc1c5c`, preserves earlier failures and capability differences, and separates the actual two-build rollback fixture correction, evidence custody and remaining release qualification.
 
 The [9 October recovery follow-up](research/2026-10-09-l09-recovery-followup.md) records the navigation repair, controlled Linux WebKit diagnosis, passing local/remote gates and complete browser verdicts, automatic evidence retrieval and remaining release limits. Earlier checkpoints below retain their own revisions and outcomes.
 

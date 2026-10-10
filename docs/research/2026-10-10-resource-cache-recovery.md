@@ -149,6 +149,26 @@ The independently retrieved CI gate archive verifies 379 indexed files and brows
 
 Evidence: `gallery-recovery-*`, `minimal-starter-gallery.*`, `remote-gallery-*`, `rollback-activation-*`, `peer-cleanup-deadline.*` and `peer-cleanup-error.*` under the session evidence base. Negative controls and all earlier failed runs retain their original status. Native checks only; no TestSprite run or upload.
 
+## Passing peer-cleanup qualification and separate rollback follow-up
+
+Revision `bfc1c5c22d2d68b2a3942ae5b9f97577d3998f95` preserves the application from `e47132c` and completes the peer-fixture qualification. Both the local six-stage gate and normal pre-push gate pass **2,227 tests /203 suites**. Coverage remains 69.23% statements, 62.41% branches, 61.65% functions and 70.52% lines. The separate warmed, uninstrumented RotSprite p90 is **1.772446 ms locally** and **2.2911156 ms in CI**, against the unchanged 10 ms limit.
+
+| Complete check | Local Windows | Linux CI |
+| --- | --- | --- |
+| Full gate | 2,227 passed /203 suites | 2,227 passed /203 suites |
+| Node 22 Turbopack development | 196 passed | 196 passed |
+| Frozen production, three engines | 356 passed /7 capability skips | 359 passed /4 capability skips |
+
+Both complete browser runs have zero failures, retries or flaky verdicts, one worker and unchanged deadlines. All three Linux WebKit pairing, artwork-preservation and invalid-message cases execute and pass; Windows WebKit skips them because its native WebRTC capability is absent. The [complete CI run](https://github.com/lxcario/PixiBun/actions/runs/38072858740) tests a merge tree identical to the candidate tree. All 707 selected local inputs and all 259 local compiled files remain unchanged after both local suites. CI's own build guard records all 259 files unchanged; the downloaded browser archive contains those manifests, not the compiled bytes themselves.
+
+Independent retrieval checks match API ZIP digests, original CI custody receipts, all **379 validation files** and **279 browser files**, with no missing, changed or extra files. The original archives and extracted payloads are retained locally. The configured Lighthouse threshold passes, but its raw Studio reports still contain seven compact-target findings. Native keyboard alternatives do not certify manual accessibility or physical devices. The preview redirects Studio, the worker and manifest to authentication; candidate production-host qualification remains pending.
+
+A separate actual compatible-build replay against `ad957550f6656b82f5f35162c8eabc19a45a1473` and the frozen `bfc1c5c` application records **four passes, one Windows WebKit legacy-Blob capability skip and one Windows WebKit cache assertion failure**. Original pixels restore, but the later rollback identity/metadata/edit/offline assertions are not reached in that failure. This failed execution remains retained as `peer-cleanup-two-build.*` and its trace. It does not change the complete development/production verdicts above.
+
+Four counterbalanced Windows WebKit current-format controls retain both actual builds and every original assertion, with identical test-only native activation observation. The immediate-reopen case with a three-second pending cached refresh fails: the rollback worker is still `installed`/waiting, its activation count stays at the initial baseline, and the newer worker controls the reopened tab. Waiting for native activation passes with the same delayed refresh; both natural-request cases also pass. The negative outcome and all traces remain retained; `rollback-order-control-verdict.json` verifies the intended comparison rather than relabeling its failed case as a suite pass. Neither compiled build nor the 707 original inputs changed during this control.
+
+The release fixture now waits for the actual emitted worker's native activation before reopening each update/rollback window. It does not force takeover, mutate caches or change either build. All 82 original expectation call expressions remain; body and assertion deadlines remain 120 and 10 seconds, one worker and zero retries. The observer appends a test-only activation listener, with original/served worker hashes and activation counts retained separately. A new CI job builds the pinned compatible revision with its own locked dependencies, builds the candidate independently, runs all six release cases, checks both frozen builds and automatically retrieves/hash-verifies its evidence. The fixture and new job require their own recorded terminal verdicts; the earlier CI run does not validate these new files.
+
 ## Qualification boundaries
 
 Native storage-fault injection runs only after a healthy install. It models CacheStorage failures with healthy network and IndexedDB; it does not measure real incident frequency or simultaneous persistence failures. Local Windows WebKit lacks the native API used by three co-draw pairing cases; Linux coverage must remain separately counted. A passing replay does not establish the cause of the retained earlier Chromium SIGSEGV or Firefox cleanup failure.

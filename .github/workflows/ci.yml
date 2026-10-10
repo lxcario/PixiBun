@@ -164,6 +164,82 @@ jobs:
           path: artifacts/browser-retrieval.json
           retention-days: 90
 
+  compatible-rollback:
+    needs: validate
+    if: ${{ !cancelled() && needs.validate.result == 'success' && !inputs.evidence_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Checkout the pinned compatible application
+        uses: actions/checkout@v4
+        with:
+          ref: ad957550f6656b82f5f35162c8eabc19a45a1473
+          path: artifacts/compatible-previous
+      - name: Retain both pinned dependency inputs
+        run: |
+          mkdir -p artifacts/release
+          sha256sum package-lock.json artifacts/compatible-previous/package-lock.json > artifacts/release/dependency-inputs.sha256
+      - name: Build and seal the compatible application
+        working-directory: artifacts/compatible-previous
+        run: |
+          npm ci
+          npm run build
+          node "$GITHUB_WORKSPACE/scripts/checkProductionBuild.mjs" --seal artifacts/frozen-build.json
+      - name: Build and seal the candidate application
+        run: |
+          npm run build
+          node scripts/checkProductionBuild.mjs --seal artifacts/release/frozen-build.json
+          cp artifacts/compatible-previous/artifacts/frozen-build.json artifacts/release/previous-frozen-build.json
+      - name: Run actual two-build update and rollback checks
+        run: |
+          set -o pipefail
+          PIXIBUN_ROLLBACK_DIRECTORY="$GITHUB_WORKSPACE/artifacts/compatible-previous" PLAYWRIGHT_JSON_OUTPUT_FILE=artifacts/release/results.json node node_modules/@playwright/test/cli.js test --config playwright.release.config.ts --workers=1 --retries=0 --reporter=list,json --output=artifacts/release/results 2>&1 | tee artifacts/release/run.log
+      - name: Verify both compiled builds remained frozen
+        if: always()
+        run: |
+          node scripts/checkProductionBuild.mjs --verify artifacts/release/frozen-build.json --receipt artifacts/release/build-after.json
+          cd artifacts/compatible-previous
+          node "$GITHUB_WORKSPACE/scripts/checkProductionBuild.mjs" --verify artifacts/frozen-build.json --receipt artifacts/build-after.json
+          cp artifacts/build-after.json "$GITHUB_WORKSPACE/artifacts/release/previous-build-after.json"
+      - name: Index rollback evidence
+        if: always()
+        run: node scripts/indexVerificationEvidence.mjs --source artifacts/release --output artifacts/release-index.json
+      - name: Preserve rollback evidence
+        id: rollback-evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            artifacts/release/
+            artifacts/release-index.json
+          retention-days: 90
+      - name: Download rollback evidence independently
+        if: ${{ always() && steps.rollback-evidence.outputs.artifact-id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.rollback-evidence.outputs.artifact-id }}
+          path: artifacts/release-download
+          merge-multiple: true
+      - name: Verify downloaded rollback evidence
+        if: ${{ always() && steps.rollback-evidence.outputs.artifact-id != '' }}
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/release-index.json --download artifacts/release-download --downloaded-index artifacts/release-index.json --receipt artifacts/release-retrieval.json
+      - name: Preserve rollback retrieval verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-retrieval.json
+          retention-days: 90
+
   browser-diagnostics:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.browser_diagnostics && !inputs.evidence_only }}
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
 import type { ProjectFile } from '../../src/types/project';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -38,9 +39,16 @@ async function stored(page: Page) {
 for (const legacyBlob of [false, true]) test(`two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=${legacyBlob})`, async ({ context }, info) => {
   let current = 'http://localhost:3162';
   let refuseInstall = false, refusedShell = false;
+  const activations = new Map<string, number>();
+  const servedScripts: { cache: string; originalSha256: string; servedSha256: string }[] = [];
   // This local host retains both builds' static assets; actual hosting skew protection is separate.
   const server = createServer(async (request, response) => {
     try {
+      if (request.url?.startsWith('/__rollback_native_activation?')) {
+        const cache = new URL(request.url, 'http://localhost').searchParams.get('cache')!;
+        activations.set(cache, (activations.get(cache) ?? 0) + 1);
+        response.writeHead(204); response.end(); return;
+      }
       if (refuseInstall && request.url === '/manifest.webmanifest') {
         refusedShell = true;
         response.writeHead(503); response.end('controlled network failure'); return;
@@ -48,7 +56,17 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
       let upstream = await fetch(current + request.url);
       if (upstream.status === 404 && request.url?.startsWith('/_next/static/')) upstream = await fetch((current.endsWith('3162') ? 'http://localhost:3163' : 'http://localhost:3162') + request.url);
       response.writeHead(upstream.status, Object.fromEntries([...upstream.headers].filter(([key]) => !['content-encoding', 'content-length', 'transfer-encoding'].includes(key))));
-      response.end(Buffer.from(await upstream.arrayBuffer()));
+      let bytes = Buffer.from(await upstream.arrayBuffer());
+      if (request.url?.split('?')[0] === '/sw.js') {
+        const original = bytes;
+        const cache = bytes.toString().match(/const CACHE_NAME = '([^']+)'/)?.[1];
+        if (!cache) throw new Error('Native activation observer requires actual emitted cache identity');
+        // Observe native activation without forcing takeover or changing either emitted build.
+        const observer = '\nself.addEventListener("activate", event => { event.waitUntil(fetch("/__rollback_native_activation?cache=" + encodeURIComponent(' + JSON.stringify(cache) + '), { cache: "no-store" })); });\n';
+        bytes = Buffer.concat([bytes, Buffer.from(observer)]);
+        servedScripts.push({ cache, originalSha256: createHash('sha256').update(original).digest('hex'), servedSha256: createHash('sha256').update(bytes).digest('hex') });
+      }
+      response.end(bytes);
     } catch { response.writeHead(502); response.end(); }
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -135,16 +153,21 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
     await expect(first.getByText(/close all PixiBun tabs/i)).toBeVisible();
     expect(await pixels(first)).toEqual(edited); expect(await pixels(second)).toEqual(original);
     await saved(first); await first.close(); await second.close();
+    // Pending fetches can delay activation after the last tab closes. Reopening early
+    // creates another client of the old worker and legitimately keeps the update waiting.
+    await expect.poll(() => activations.get(candidateCache!) ?? 0).toBe(1);
     const updated = await context.newPage(); await ready(updated, url); await expect.poll(() => pixels(updated)).toEqual(edited);
     await expect.poll(() => updated.evaluate(() => caches.keys())).toEqual([candidateCache]);
     const candidateRecord = await stored(updated);
     expect(candidateRecord.id).toBe(seeded.id); expect(candidateRecord.document.motionRigs).toEqual(seeded.document.motionRigs); expect(candidateRecord.document.customRamps).toEqual(seeded.document.customRamps);
     await paint(updated, 0.85); await saved(updated); const candidatePixels = await pixels(updated), candidateWritten = await stored(updated);
     expect(candidateWritten.layers.every(layer => layer.representation === 'ArrayBuffer')).toBe(true);
+    const oldActivationBaseline = activations.get(oldCache!) ?? 0;
     current = 'http://localhost:3162';
     await updated.evaluate(async () => { await (await navigator.serviceWorker.getRegistration())!.update(); });
     await expect.poll(() => updated.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
     await updated.close();
+    await expect.poll(() => activations.get(oldCache!) ?? 0).toBe(oldActivationBaseline + 1);
     const rolledBack = await context.newPage(); await ready(rolledBack, url); await expect.poll(() => pixels(rolledBack)).toEqual(candidatePixels);
     await expect.poll(() => rolledBack.evaluate(() => caches.keys())).toEqual([oldCache]);
     const readBack = await stored(rolledBack);
@@ -161,5 +184,8 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
     await rolledBack.reload({ waitUntil: 'domcontentloaded' }); await expect.poll(() => pixels(rolledBack)).toEqual(rollbackPixels);
     await info.attach('two-build-custody.json', { body: Buffer.from(JSON.stringify({ legacyBlob, oldCache, candidateCache, oldIdentity: seeded.id, candidateIdentity: candidateWritten.id, rollbackIdentity: rewritten.id, format: rewritten.document.version, closeSaveTimes: { beforeCloseTime, afterCloseTime }, metadata: { motionRigs: rewritten.document.motionRigs, customRamps: rewritten.document.customRamps } }, null, 2)), contentType: 'application/json' });
     await rolledBack.close();
-  } finally { if (server.listening) { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); } }
+  } finally {
+    await info.attach('native-activation-custody.json', { body: Buffer.from(JSON.stringify({ activations: Object.fromEntries(activations), servedScripts }, null, 2)), contentType: 'application/json' });
+    if (server.listening) { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
+  }
 });
