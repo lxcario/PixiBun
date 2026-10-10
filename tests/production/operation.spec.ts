@@ -128,12 +128,20 @@ for (const delayed of [false, true]) test(`a real waiting update preserves both 
   let backgroundStarted!: () => void;
   const background = new Promise<void>(resolve => { backgroundStarted = resolve; });
   const released = new Promise<void>(resolve => { releaseResponse = resolve; });
+  const activations = new Set<string>();
   // Two release scripts through a local proxy; the UI and assets are the actual production build.
   const server = createServer(async (request, response) => {
     try {
+      if (request.url?.startsWith('/__activation_probe?')) {
+        activations.add(new URL(request.url, 'http://localhost').searchParams.get('version')!);
+        response.writeHead(204); response.end(); return;
+      }
       if (request.url?.startsWith('/sw.js')) {
         response.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store', 'Service-Worker-Allowed': '/' });
-        response.end(buildServiceWorkerScript(version)); return;
+        // Observe native activation without creating a window or forcing takeover.
+        response.end(buildServiceWorkerScript(version) + `\nself.addEventListener('activate', event => {
+          event.waitUntil(fetch('/__activation_probe?version=${version}', { cache: 'no-store' }));
+        });`); return;
       }
       if (hold && request.url?.includes('retirement-race=1')) { backgroundStarted(); await released; }
       const upstream = await fetch(`${baseURL}${request.url}`);
@@ -170,6 +178,11 @@ for (const delayed of [false, true]) test(`a real waiting update preserves both 
     expect(await second.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
     await second.close();
     hold = false; releaseResponse();
+    // Pending fetch events can delay activation after the last window closes.
+    // Reopening immediately can legitimately retain the old worker indefinitely.
+    // Require native activation before opening another client; cleanup and pixels
+    // still use their original assertions and deadlines below.
+    await expect.poll(() => activations.has('phase3-new')).toBe(true);
     const reopened = await context.newPage(); await ready(reopened, url);
     await testInfo.attach('worker-transition-state.json', { body: Buffer.from(JSON.stringify(await reopened.evaluate(async () => {
       const registration = await navigator.serviceWorker.getRegistration();
