@@ -78,6 +78,11 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
     const candidateCache = candidateScript.match(/const CACHE_NAME = '([^']+)'/)?.[1];
     expect(oldCache).toBeTruthy(); expect(candidateCache).toBeTruthy(); expect(candidateCache).not.toBe(oldCache);
     const first = await context.newPage(); await ready(first, url); await paint(first, 0.25); await saved(first);
+    // Establish a controlled older-build baseline before the fixture reload.
+    // serviceWorker.ready alone does not prove that the current document is controlled.
+    await expect.poll(() => activations.get(oldCache!) ?? 0).toBe(1);
+    await first.evaluate(async () => { await navigator.serviceWorker.ready; });
+    await expect.poll(() => first.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
     const original = await pixels(first);
     const beforeFixture = await stored(first);
     try { await first.evaluate(async ({ legacyBlob, rgba }) => {
@@ -121,7 +126,7 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
       }); database.close();
     }, { legacyBlob, rgba: original }); } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (legacyBlob && info.project.name === 'webkit' && process.platform === 'win32' &&
+      if (legacyBlob && info.project.name === 'webkit' &&
           /UnknownError: Error preparing Blob\/File data to be stored in object store/.test(message)) {
         const afterRefusal = await stored(first);
         expect(afterRefusal.id).toBe(beforeFixture.id); expect(afterRefusal.layers).toEqual(beforeFixture.layers);
@@ -130,7 +135,7 @@ for (const legacyBlob of [false, true]) test(`two actual compatible builds updat
         expect(afterTime).toBeGreaterThanOrEqual(beforeTime); expect(afterDocument).toEqual(beforeDocument);
         expect(await pixels(first)).toEqual(original);
         await info.attach('legacy-blob-capability.json', { body: Buffer.from(JSON.stringify({ message, platform: process.platform, browser: info.project.name, fixtureRefusedAtomically: true, legacyRollbackQualified: false }, null, 2)), contentType: 'application/json' });
-        test.skip(true, 'Windows WebKit cannot create the native legacy Blob fixture; legacy rollback remains unqualified.');
+        test.skip(true, `Native ${process.platform} WebKit cannot create the legacy Blob fixture; legacy rollback remains unqualified.`);
       }
       throw error;
     }

@@ -231,7 +231,7 @@ jobs:
           merge-multiple: true
       - name: Verify downloaded rollback evidence
         if: ${{ always() && steps.rollback-evidence.outputs.artifact-id != '' }}
-        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/release-index.json --download artifacts/release-download --downloaded-index artifacts/release-index.json --receipt artifacts/release-retrieval.json
+        run: node scripts/verifyEvidenceDownload.mjs --index artifacts/release-index.json --download artifacts/release-download --strip-prefix artifacts/ --downloaded-index release-index.json --receipt artifacts/release-retrieval.json
       - name: Preserve rollback retrieval verdict
         if: always()
         uses: actions/upload-artifact@v4
