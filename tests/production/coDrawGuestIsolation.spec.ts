@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from '../helpers/peerTest';
 import { installPeerDiagnostics, retainPeerDiagnostics } from '../helpers/peerDiagnostics';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
@@ -26,9 +27,7 @@ async function gallery(page: Page) {
   return page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
 }
 
-test('compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery', async ({ browser, page }, testInfo) => {
-  const hostContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL });
-  const host = await hostContext.newPage();
+test('compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery', async ({ peerHost: host, page }, testInfo) => {
   try {
     await installPeerDiagnostics(host, page);
     await host.goto('/studio');
@@ -63,7 +62,7 @@ test('compiled LAN guest reloads the shared copy and reopens its untouched origi
     await expect(projects).not.toBeVisible();
     await expect.poll(() => pixels(page)).toEqual(originalArt);
     await page.screenshot({ path: testInfo.outputPath('original-reopened.png'), fullPage: true });
-  } finally { await retainPeerDiagnostics(testInfo, host, page); await hostContext.close(); }
+  } finally { await retainPeerDiagnostics(testInfo, host, page); }
 });
 
 test('compiled browser without WebRTC refuses a valid guest invite and preserves original artwork', async ({ page }) => {

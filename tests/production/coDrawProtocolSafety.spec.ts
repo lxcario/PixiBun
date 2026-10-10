@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from '../helpers/peerTest';
 import { installPeerDiagnostics, retainPeerDiagnostics } from '../helpers/peerDiagnostics';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
@@ -10,10 +11,10 @@ async function coDraw(page: Page) {
 }
 type CapturedWindow = Window & { phase4Channels: RTCDataChannel[]; phase4Replies: string[] };
 
+test.use({ peerContextOptions: { viewport: { width: 1600, height: 1000 } } });
+
 for (const fault of ['unsafe clock', 'unserializable layer name'] as const) {
-  test(`compiled LAN receiver rejects ${fault} without acknowledging or replacing artwork`, async ({ browser, page }, testInfo) => {
-    const hostContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: { width: 1600, height: 1000 } });
-    const host = await hostContext.newPage();
+  test(`compiled LAN receiver rejects ${fault} without acknowledging or replacing artwork`, async ({ peerHost: host, page }, testInfo) => {
     try {
       await installPeerDiagnostics(host, page);
       // Observe real host-created channels; application source exposes no test transport handle.
@@ -79,6 +80,6 @@ for (const fault of ['unsafe clock', 'unserializable layer name'] as const) {
       await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Rename project Shared Drawing', exact: true })).toBeVisible();
       await expect.poll(() => pixels(page)).toEqual(shared);
-    } finally { await retainPeerDiagnostics(testInfo, host, page); await hostContext.close(); }
+    } finally { await retainPeerDiagnostics(testInfo, host, page); }
   });
 }

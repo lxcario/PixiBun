@@ -124,6 +124,31 @@ The 259 compiled files remain unchanged after this failed probe. Before changing
 
 The next application repair changes only the starter collection and card reveals from translation/scaling to **opacity fades**. Decorative motion remains, while interactive hit areas stay in place during the reveal. Immediate automatic viewport scrolling is retained for the separate 492–493-pixel viewport-movement failure. The additional pre-scroll in the repository's starter test is reverted: the permanent test again uses its original native click and every original artwork assertion and deadline. The unchanged 32-case diagnostic still tests both click preparations. A fresh complete gate, application comparison, Node 22 development, frozen production and CI verdict are pending on this combined repair.
 
+## Combined Gallery verdict and peer cleanup
+
+Frozen revision `e47132c512337d5ead480ec8d5a81d71159c2413` completes the following checks. All configured browser runs use one worker and zero retries; no result is retried or promoted from a scoped pass.
+
+| Check | Local Windows / Node 22.23.3 | CI Linux / Node 22.14.0 |
+| --- | --- | --- |
+| Six-stage gate | 2,227 tests /203 suites passed | 2,227 tests /203 suites passed |
+| Warmed uncovered RotSprite p90 /unchanged 10 ms limit | 1.71 ms passed | 1.24 ms passed |
+| Complete Turbopack development | 196 passed | 196 passed |
+| Complete frozen production | 356 passed /seven capability skips | **358 passed /four skips /one failure** |
+
+The unchanged 32-case native pointer comparison passes all cases, including all 32 actual anchor clicks. The local production build `Qzc278Qoy-QrEtF4VWwuJ` retains all 259 compiled hashes and all 706 selected input hashes after the full 45.6-minute run. The CI merge tree equals the candidate tree; its separate build `fcB7-MQdk-whVh6y8g4i9` retains all 259 compiled hashes through its failed complete run. The CI failure is in Linux WebKit’s guest-reload/Gallery case; the matching capability is skipped locally. Chromium and Firefox pass in both environments, and the two Linux WebKit invalid-message cases pass. This is a passing local milestone, not a completely passing remote milestone.
+
+The retained WebKit trace shows native pairing, exact shared pixels, saved reload and reopening the untouched original all completing. The screenshot and peer-diagnostic attachment finish about 57.7 seconds after the test begins. The body’s 60-second timeout then occurs while manually disposing its extra host context; the channel-close event starts after the timeout. The installed runner disposes requests, invokes before-close instrumentation and exports HARs before that channel event. The trace does not establish which internal cleanup operation consumed the intervening time, or a native WebKit defect.
+
+Extra peer contexts now have test-scoped fixture ownership in the three production peer cases. The test body remains limited to 60 seconds and assertions to 10 seconds, with all artwork, reload, identity, packet and rejection assertions unchanged. Cleanup is awaited and reported in [Playwright’s standard fixture teardown phase](https://playwright.dev/docs/test-timeouts), whose existing configured budget is also 60 seconds; total test duration can therefore exceed the body deadline during teardown. No timeout value, retry, transport candidate or application code is changed by this fixture repair. Strict types and scoped lint pass. New complete qualification remains pending.
+
+A blank native Chromium control deliberately adds a four-second close delay after the same two-second body workload and the same five-second body deadline. Manual cleanup times out after its assertion succeeds; fixture cleanup passes with a 6.3-second total duration and retained cleanup timing. A second negative control throws after actual native disposal: its body assertions pass, but the fixture still fails and retains the cleanup error. These controls demonstrate lifecycle ownership and visible cleanup failures; they are not application or speed qualification.
+
+All three native keyboard-alternative cases pass again on the frozen candidate and preserve nonempty exact pixels. Fresh CI Lighthouse reports still have seven compact-target findings in each Studio scan and zero label/name mismatches. The sixteen older-worker ordering cases pass across shell/full Chromium, both with and without awaiting control before reload. That comparison does not reproduce the earlier initial-controller failure and therefore does not establish its cause; the original failed actual-build replay remains retained.
+
+The independently retrieved CI gate archive verifies 379 indexed files and browser archive verifies 283, including original pre-upload index custody receipts. The source/build candidate is prepared in a 996-file local stage. Creation of its new GitHub draft evidence archive was rejected by automatic approval review for missing explicit destination/payload authorization; no workaround publication was attempted. Final local packaging and upload authorization remain pending. The earlier independently verified archives remain separate historical evidence.
+
+Evidence: `gallery-recovery-*`, `minimal-starter-gallery.*`, `remote-gallery-*`, `rollback-activation-*`, `peer-cleanup-deadline.*` and `peer-cleanup-error.*` under the session evidence base. Negative controls and all earlier failed runs retain their original status. Native checks only; no TestSprite run or upload.
+
 ## Qualification boundaries
 
 Native storage-fault injection runs only after a healthy install. It models CacheStorage failures with healthy network and IndexedDB; it does not measure real incident frequency or simultaneous persistence failures. Local Windows WebKit lacks the native API used by three co-draw pairing cases; Linux coverage must remain separately counted. A passing replay does not establish the cause of the retained earlier Chromium SIGSEGV or Firefox cleanup failure.
