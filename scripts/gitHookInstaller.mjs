@@ -6,6 +6,9 @@ const marker = '# pixibun-managed-pre-push-v1';
 const hook = `#!/bin/sh
 ${marker}
 # Checks the current working tree; bypassable with git push --no-verify.
+# Nested test repositories must not inherit this checkout's Git context.
+# https://git-scm.com/docs/githooks#_description
+unset $(git rev-parse --local-env-vars)
 npm run gate
 exit $?
 `;
