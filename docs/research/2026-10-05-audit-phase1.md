@@ -1,5 +1,7 @@
 # Deep audit phase 1: artwork identities
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 5 October 2026. Working-tree repairs for A01–A03 from [the deep audit](2026-10-05-deep-product-code-audit.md), base revision `f18f4e47d299685d7fdf23de158ae082a883483d`, package 1.14.1. No publication/deployment is claimed. Local verification passed; new TestSprite cases and the temporary external connection await the confirmation required by the repository skill.
 
 ## Resulting behavior

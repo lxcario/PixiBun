@@ -1,5 +1,7 @@
 # Legacy audit finding registry
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Updated 2 October 2026. Original universe: **66 IDs**, not the early summary’s 60. L13 was never assigned. The original [deep report](../../PIXIBUN_AUDIT_RESULTS+DEEP.md) audited PixiBun-main.zip without Git metadata on 21 September; it does not establish a commit hash. This remediation’s base is 277dc0b.
 
 The table separates recorded historical resolutions from present contract corrections. A recorded resolution is evidence at its named phase, not proof of every current path. Missing closure evidence is explicit. This remediation addresses the 40 documentation-audit findings; it does not silently declare all older engineering concerns independently revalidated. Current behavior and limits are in [architecture](../../ARCHITECTURE.md), [storage](../contracts/storage.md), [rendering](../contracts/rendering.md), [exports](../contracts/exports.md) and the [active research registry](issue-registry.md).

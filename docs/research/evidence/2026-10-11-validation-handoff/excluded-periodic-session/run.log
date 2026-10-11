@@ -1,0 +1,80 @@
+[WebServer] (node:12692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:29580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chromium","cycle":1,"elapsedMs":4523,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"479868ae96eab232d122f6ff095e853692d852b81b73639e86060b7977035136","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":2,"elapsedMs":51344,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"199f57bfaecb4fa18605f7ec391e13ac6f5b07fe45f3d337ed0a348923fb56e0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":3,"elapsedMs":98257,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"3cff9e8ed6c82c4de3c94498c93ce45c18de603579abe3459176716d0d019143","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":4,"elapsedMs":144202,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"9af78a32a049c5a4d69a7f38c322e389fb86167a547e06ab07443134fe9e3009","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":5,"elapsedMs":190392,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"a5275b71c20192ab7e572d4ca6f4762544f9cbbed663538d7ae40a89afa16fc0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":6,"elapsedMs":236639,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"1b2babec8e82f0a63ae3f9dad3e55e0e2f199b4116430514945011600f92a0b8","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":7,"elapsedMs":282836,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"6a35cc4d02bba4b6ae8b1aef8c12540d6bae7498f3ce369b0cbb2215c5ff898b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":8,"elapsedMs":329043,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"143fa6f30ae93799832fe3fe43ba1c5b36c425d5353add857b67c18876bc4391","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":9,"elapsedMs":375284,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"4a0ecc878c9a677959da8bd3b9d36b782d578960642447a1b43790f783d1d45b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":10,"elapsedMs":421437,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"25889eb49e5e3a87a94aa20564cd74d4ae93cd1f5fca32f54677a09ebd0ac8c6","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":11,"elapsedMs":467665,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"7ad1f1d17eea955addfddb59f45dbfd9fe37eae0b7faa0a30f12beabc8e7ade3","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":12,"elapsedMs":513834,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"a2498d3297918da96efdb6a14c1be1182b07189e43d28565201d2bbb40a9b5cc","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":13,"elapsedMs":560050,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"60326fd36b9777df09241115dc5a7f43c207acb7c49d6fdafc88a17b274d005d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":14,"elapsedMs":606231,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"3c2d5b598edb44244461d88a9f39cb6ebfeda89a68174d8a283ceac259a3326c","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":15,"elapsedMs":652404,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"c91c779b6820498feadd839ad1e3eb1ade62f3d767731bed1c7ec688d16d1ef5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":16,"elapsedMs":698525,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"bab5cc1bdbbfeefac8b90a034caf7eabf4d3b18e878a98ff4f596cbf86528bb5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":17,"elapsedMs":744725,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"4a13bd97b5c7edeffb1c972566f381994b8f35db69c63efd4ef304dfca827f49","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":18,"elapsedMs":790904,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"c0e25ed1a963aba85c01405cc225066dea543b921d642184c10bebc8055ab37d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":19,"elapsedMs":837047,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"29402da3b7eaa2aa1532eeed37f312e804df5dfc56b9582b1877e933888d029e","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"chromium","cycle":20,"elapsedMs":883212,"projectIds":["proj-mv2te57e-2-bxl5pf"],"pixelSha256":"8245c899695e3eb356838629dfc0ee57074823c67df04450c2b23dbd2b1a8b4e","undoRedoExact":true,"savedReloadExact":true}
+  ok 1 [chromium] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts:4:5 ΓÇ║ fifteen-minute periodic edit, Undo/Redo, save and reload durability (15.5m)
+(node:7840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"firefox","cycle":1,"elapsedMs":8447,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"479868ae96eab232d122f6ff095e853692d852b81b73639e86060b7977035136","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":2,"elapsedMs":55077,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"199f57bfaecb4fa18605f7ec391e13ac6f5b07fe45f3d337ed0a348923fb56e0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":3,"elapsedMs":101975,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"3cff9e8ed6c82c4de3c94498c93ce45c18de603579abe3459176716d0d019143","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":4,"elapsedMs":148772,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"9af78a32a049c5a4d69a7f38c322e389fb86167a547e06ab07443134fe9e3009","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":5,"elapsedMs":195306,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"a5275b71c20192ab7e572d4ca6f4762544f9cbbed663538d7ae40a89afa16fc0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":6,"elapsedMs":242158,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"1b2babec8e82f0a63ae3f9dad3e55e0e2f199b4116430514945011600f92a0b8","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":7,"elapsedMs":288716,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"6a35cc4d02bba4b6ae8b1aef8c12540d6bae7498f3ce369b0cbb2215c5ff898b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":8,"elapsedMs":336309,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"143fa6f30ae93799832fe3fe43ba1c5b36c425d5353add857b67c18876bc4391","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":9,"elapsedMs":383226,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"4a0ecc878c9a677959da8bd3b9d36b782d578960642447a1b43790f783d1d45b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":10,"elapsedMs":429884,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"25889eb49e5e3a87a94aa20564cd74d4ae93cd1f5fca32f54677a09ebd0ac8c6","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":11,"elapsedMs":476621,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"7ad1f1d17eea955addfddb59f45dbfd9fe37eae0b7faa0a30f12beabc8e7ade3","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":12,"elapsedMs":522997,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"a2498d3297918da96efdb6a14c1be1182b07189e43d28565201d2bbb40a9b5cc","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":13,"elapsedMs":569290,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"60326fd36b9777df09241115dc5a7f43c207acb7c49d6fdafc88a17b274d005d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":14,"elapsedMs":615891,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"3c2d5b598edb44244461d88a9f39cb6ebfeda89a68174d8a283ceac259a3326c","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":15,"elapsedMs":662254,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"c91c779b6820498feadd839ad1e3eb1ade62f3d767731bed1c7ec688d16d1ef5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":16,"elapsedMs":708604,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"bab5cc1bdbbfeefac8b90a034caf7eabf4d3b18e878a98ff4f596cbf86528bb5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":17,"elapsedMs":755034,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"4a13bd97b5c7edeffb1c972566f381994b8f35db69c63efd4ef304dfca827f49","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":18,"elapsedMs":801302,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"c0e25ed1a963aba85c01405cc225066dea543b921d642184c10bebc8055ab37d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":19,"elapsedMs":848495,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"29402da3b7eaa2aa1532eeed37f312e804df5dfc56b9582b1877e933888d029e","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"firefox","cycle":20,"elapsedMs":895825,"projectIds":["proj-mv2ty73u-2-7p74ls"],"pixelSha256":"8245c899695e3eb356838629dfc0ee57074823c67df04450c2b23dbd2b1a8b4e","undoRedoExact":true,"savedReloadExact":true}
+  ok 2 [firefox] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts:4:5 ΓÇ║ fifteen-minute periodic edit, Undo/Redo, save and reload durability (15.7m)
+(node:19116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"webkit","cycle":1,"elapsedMs":4958,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"479868ae96eab232d122f6ff095e853692d852b81b73639e86060b7977035136","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":2,"elapsedMs":54290,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"199f57bfaecb4fa18605f7ec391e13ac6f5b07fe45f3d337ed0a348923fb56e0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":3,"elapsedMs":103448,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"3cff9e8ed6c82c4de3c94498c93ce45c18de603579abe3459176716d0d019143","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":4,"elapsedMs":152754,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"9af78a32a049c5a4d69a7f38c322e389fb86167a547e06ab07443134fe9e3009","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":5,"elapsedMs":203106,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"a5275b71c20192ab7e572d4ca6f4762544f9cbbed663538d7ae40a89afa16fc0","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":6,"elapsedMs":253192,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"1b2babec8e82f0a63ae3f9dad3e55e0e2f199b4116430514945011600f92a0b8","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":7,"elapsedMs":304340,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"6a35cc4d02bba4b6ae8b1aef8c12540d6bae7498f3ce369b0cbb2215c5ff898b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":8,"elapsedMs":355754,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"143fa6f30ae93799832fe3fe43ba1c5b36c425d5353add857b67c18876bc4391","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":9,"elapsedMs":405031,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"4a0ecc878c9a677959da8bd3b9d36b782d578960642447a1b43790f783d1d45b","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":10,"elapsedMs":454668,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"25889eb49e5e3a87a94aa20564cd74d4ae93cd1f5fca32f54677a09ebd0ac8c6","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":11,"elapsedMs":504892,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"7ad1f1d17eea955addfddb59f45dbfd9fe37eae0b7faa0a30f12beabc8e7ade3","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":12,"elapsedMs":554682,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"a2498d3297918da96efdb6a14c1be1182b07189e43d28565201d2bbb40a9b5cc","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":13,"elapsedMs":604632,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"60326fd36b9777df09241115dc5a7f43c207acb7c49d6fdafc88a17b274d005d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":14,"elapsedMs":654212,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"3c2d5b598edb44244461d88a9f39cb6ebfeda89a68174d8a283ceac259a3326c","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":15,"elapsedMs":703814,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"c91c779b6820498feadd839ad1e3eb1ade62f3d767731bed1c7ec688d16d1ef5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":16,"elapsedMs":753823,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"bab5cc1bdbbfeefac8b90a034caf7eabf4d3b18e878a98ff4f596cbf86528bb5","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":17,"elapsedMs":802865,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"4a13bd97b5c7edeffb1c972566f381994b8f35db69c63efd4ef304dfca827f49","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":18,"elapsedMs":852045,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"c0e25ed1a963aba85c01405cc225066dea543b921d642184c10bebc8055ab37d","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":19,"elapsedMs":901251,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"29402da3b7eaa2aa1532eeed37f312e804df5dfc56b9582b1877e933888d029e","undoRedoExact":true,"savedReloadExact":true}
+{"browser":"webkit","cycle":20,"elapsedMs":950412,"projectIds":["proj-mv2uic9x-2-ol78ew"],"pixelSha256":"8245c899695e3eb356838629dfc0ee57074823c67df04450c2b23dbd2b1a8b4e","undoRedoExact":true,"savedReloadExact":true}
+  ok 3 [webkit] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts:4:5 ΓÇ║ fifteen-minute periodic edit, Undo/Redo, save and reload durability (16.6m)
+
+  Slow test file: [webkit] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts (16.6m)
+  Slow test file: [firefox] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts (15.7m)
+  Slow test file: [chromium] ΓÇ║ artifacts\l09-resource-recovery-2026-10-09\rollback-baseline-periodic-session.spec.ts (15.5m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  3 passed (48.0m)

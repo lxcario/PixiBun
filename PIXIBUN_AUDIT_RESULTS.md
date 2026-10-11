@@ -1,5 +1,7 @@
 # PIXIBUN — Deep Code & Documentation Audit Results
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
 
 > **Subsequent session — 2026-10-01:** The six-phase 2026-09-30 audit implementation is recorded in the [phase report](docs/research/phase-implementation-status.md) and [completion record](docs/research/session-completion-2026-10-01.md). The dated findings and counts below remain historical evidence.

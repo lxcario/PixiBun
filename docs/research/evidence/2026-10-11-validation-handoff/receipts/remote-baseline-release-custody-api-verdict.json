@@ -1,0 +1,8 @@
+{
+  "archive": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-release-custody.zip",
+  "verifiedAt": "2026-10-10T20:08:18.068Z",
+  "bytes": 365,
+  "expectedApiDigest": "sha256:b7dee018724fd132f0b268c566bdfac7b7d4a0aae031e2d1a13aa0fe37d0758c",
+  "actualDigest": "sha256:b7dee018724fd132f0b268c566bdfac7b7d4a0aae031e2d1a13aa0fe37d0758c",
+  "passed": true
+}

@@ -1,5 +1,7 @@
 # PixiMotion foundation Phase 5: persistent rigid-part definitions
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 7 October 2026. Scope: the local uncommitted working tree following [Phase 4](2026-10-07-piximotion-foundation-phase4.md). Source publication, deployment and whole-engine qualification are separate.
 
 ## Implemented boundary

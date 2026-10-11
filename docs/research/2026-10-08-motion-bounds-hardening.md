@@ -1,5 +1,7 @@
 # PixiMotion rectangle rendering and ownership hardening
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 8 October 2026. Local working tree based on commit dcf9f5c303cdbaa6a533e3315de947c261c1e3ac. This follows the [editing follow-up](2026-10-07-editing-quality-release-hardening.md) and review of the supplied replacement files. The local implementation and verification are complete within the scope below. No deployment is claimed.
 
 The replacement was based on an older synchronous implementation. Its real-type overlay produced three TypeScript errors, including the missing async bake export. The current pipeline is retained: dedicated workers, cancellation, bounded preview ownership, source validation and atomic publication/history rollback.

@@ -1,5 +1,7 @@
 # The PixiBun artist handbook
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 A little drawing can begin with just one color and a few pixels. Pick the guide you need today; the other shelves will still be here when you're ready.
 
 For a facilitated observation session, use the [artist workflow study kit](artist-study.md). It separates complete automated journeys from real participant and device observations.

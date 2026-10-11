@@ -1,5 +1,7 @@
 # Deep audit — final local hardening
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 5 October 2026. Uncommitted work on the five audit repair phases. Base Git revision `f18f4e47d299685d7fdf23de158ae082a883483d`, package `1.14.1`, Node `22.23.3`. The user explicitly selected **“Keep this phase local.”** This record concerns the local checkout, not publication, remote CI or a deployed release.
 
 ## Confirmed gaps and repairs

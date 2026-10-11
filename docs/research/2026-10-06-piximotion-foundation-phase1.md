@@ -1,5 +1,7 @@
 # PixiMotion foundation repairs — Phase 1
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 6 October 2026. Local checkout based on `dcf9f5c303cdbaa6a533e3315de947c261c1e3ac`; changes are uncommitted. This record follows the [readiness audit](2026-10-06-pixibun-piximotion-readiness.md). Its original failure-injection probes/logs are preserved; this is a separate repair record.
 
 ## Implemented scope

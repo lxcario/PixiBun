@@ -1,5 +1,7 @@
 # What you can make with PixiBun
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](research/2026-10-11-validation-handoff.md).
+
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
 This is the current web app's feature index, reconciled with this session's checkout on **8 October 2026**. Interface pictures retain their actual capture dates; new motion and rotation controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.

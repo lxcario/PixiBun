@@ -21,3 +21,5 @@ docs/research/evidence/2026-10-08-*/** -text -whitespace
 docs/research/2026-10-06-*.md -text -whitespace
 docs/research/2026-10-07-*.md -text -whitespace
 docs/research/2026-10-08-*.md -text -whitespace
+# Final CI handoff evidence retains the original indexed bytes on every checkout.
+docs/research/evidence/2026-10-11-validation-handoff/** -text -whitespace

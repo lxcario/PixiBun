@@ -1,5 +1,7 @@
 # Fire-only palette cycling
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 2026-10-01. Follow-up to palette creation and compact scans, included in the user-requested Git publication. Verification used local checks without an external testing service or tunnel.
 
 ## Artist workflow

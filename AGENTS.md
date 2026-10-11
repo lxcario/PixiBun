@@ -9,3 +9,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <!-- END:nextjs-agent-rules -->
 
 Project status and documentation contracts: [docs/current-status.md](docs/current-status.md) and [docs/README.md](docs/README.md). Keep dated evidence separate from operating instructions.
+
+Current publication evidence: [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.

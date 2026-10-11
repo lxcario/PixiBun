@@ -2,6 +2,8 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
+The [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) records final RotSprite p90 **2.146894 ms locally /2.27146516 ms in CI** against the unchanged **10 ms** limit. This is a serial uninstrumented Node 22 benchmark with five warmup and fifteen measured 50-call batches; p90 describes batch means, not individual-operation latency. Correctness and required coverage stay in the full gate. Earlier instrumented timing failures remain historical evidence.
+
 Current discovery is in [generated/test-inventory.json](docs/generated/test-inventory.json); actual execution is in [current status](docs/current-status.md). Historical measurements retain their original counts and timings.
 
 The [7 October editing follow-up](docs/research/2026-10-07-editing-quality-release-hardening.md) records compiled-browser drawing, rotation preview, playback, bake, timeline, save and project-export measurements at 64/128/256 pixels. Wall-clock automation spans and >50 ms browser tasks are separate measures; neither is a population INP or physical-device result.

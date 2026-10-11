@@ -1,0 +1,8 @@
+{
+  "archive": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-validation.zip",
+  "verifiedAt": "2026-10-10T20:01:18.471Z",
+  "bytes": 3434151,
+  "expectedApiDigest": "sha256:fdfc67f739220ea5e1c0de1a50518cf15d932e98696cecf08f1d32d342a19e82",
+  "actualDigest": "sha256:fdfc67f739220ea5e1c0de1a50518cf15d932e98696cecf08f1d32d342a19e82",
+  "passed": true
+}

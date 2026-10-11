@@ -1,5 +1,7 @@
 # PixiMotion cross-phase review and hardening
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 7 October 2026. Review baseline: `dcf9f5c303cdbaa6a533e3315de947c261c1e3ac`, with the existing uncommitted Phases 1–5, rigid-part slice and RotSprite v2 work. This review inspects the current source, integration boundaries, changed tests and prior evidence. It does not publish, deploy or qualify the complete engine proposal. Existing unrelated workspace edits are preserved.
 
 ## Decision and phase coverage

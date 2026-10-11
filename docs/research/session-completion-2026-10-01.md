@@ -1,5 +1,7 @@
 # Audit session completion — 2026-10-01
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Status: **The six bounded audit implementation phases are delivered and locally verified within the recorded scope. Artist evaluation and broader validation remain open.** Repository publication is authorized by the user; Git history records the committed state. No deployment or release sign-off was performed.
 
 This record reconciles the 2026-09-30 engineering session with later shared interface work and the documentation update on 2026-10-01. The [phase report](phase-implementation-status.md) contains implementation details, academic/book/studio sources and limitations. The [original audit](2026-09-30-codebase-and-pixel-art-audit.md) remains a pre-fix record.

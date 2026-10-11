@@ -1,5 +1,7 @@
 # Pixel glints and the live light bulb
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 2026-10-01. Scope: the studio's Specular Glint action and reflected highlights in the live lighting bulb. Verification is local, following the user's instruction not to upload repository workflows to TestSprite.
 
 ## What was wrong

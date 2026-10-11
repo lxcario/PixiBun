@@ -1,5 +1,7 @@
 # PixiBun UX changelog — 2026-09-29–30
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Test counts below are observations made at each step. At the glint checkpoint on 2026-10-01, the discovered inventory was 1,482 unit/integration tests in 144 suites and 149 Chromium tests in 33 spec files, plus 39 separate compiled-production scenarios across three engines. The [session completion record](docs/research/session-completion-2026-10-01.md) distinguishes executed results from later additions and documents the six audit phases. These are local checkout results, not a new production sign-off. The earlier TestSprite-absence conclusion below was corrected during Phase 4; the user chose local verification after a proposed upload was blocked.
 
 ## Single-row header and visible glints — 2026-10-01

@@ -1,5 +1,7 @@
 # PixiBun — Learn by Making
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 **Working plan · 28 September–8 November 2026.** This is a product experiment, not a release promise or a TestSprite milestone. The first decision comes from observing new users; the findings below are code-review hypotheses, not user-test results.
 
 ## Outcome and boundaries

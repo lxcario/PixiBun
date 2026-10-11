@@ -1,5 +1,7 @@
 # TestSprite full execution follow-up — 3 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user requested execution of the remaining challenge cases and resolution of the blocked checks. All nine previously planned cases were dispatched, and the two blocked smoke cases were retried against the same compiled local build. There are now **zero unrun cases** in this 12-case project. Eleven new runs consumed **5.5 credits**, reducing the balance from 80.4 to 74.9. The earlier invite run was retained rather than repeated without a changed execution method.
 
 ## Cloud results and accepted scope

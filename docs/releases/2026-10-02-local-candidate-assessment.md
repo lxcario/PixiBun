@@ -1,5 +1,7 @@
 # Local release-candidate assessment — 2 October 2026
 
+Later evidence — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) does not revise this historical release decision or approve a newer deployed build.
+
 **Decision: production release is not approved.** Phase 7 completed locally on 3 October 2026, Europe/Istanbul; machine timestamps are UTC. This is a local candidate assessment, separate from the [historical v1.14.1 sign-off](v1.14.1-signoff.md). No deployment, rollback, commit or push is implied.
 
 The candidate contains the prior documentation remediation and phases 1–6, a Next.js security patch to 16.3.6, and four practice-test URL assertions made portable. Its package remains 1.14.1. Base commit `1b13922cdd264d43d97b8b4fae16fca2b3ac0770` plus uncommitted changes does not identify a published release. Final commands, hashes and results belong in the [phase 7 execution record](../research/2026-10-02-feature-repairs-phase7.md).

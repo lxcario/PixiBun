@@ -1,5 +1,7 @@
 # Meet the little studio
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Studio workspace](studio-workspace.md) · [All features](../features.md)
 
 The welcome page gives you a few gentle ways to begin: a blank canvas, a little starter friend, or a guided lesson. Its interactive demonstrations are a place to explore before opening your own drawing.

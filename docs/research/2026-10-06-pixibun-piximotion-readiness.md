@@ -1,5 +1,7 @@
 # PixiBun readiness for PixiMotion
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 6 October 2026. Assessment of the main checkout at `dcf9f5c303cdbaa6a533e3315de947c261c1e3ac`, package `1.14.1`, with the authorized documentation amendments still uncommitted. This is a local engineering assessment, not a deployed release or artist-study verdict.
 
 ## Decision

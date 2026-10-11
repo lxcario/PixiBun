@@ -1,5 +1,7 @@
 # Remaining audit repairs: phases 5–7
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 3 October 2026. Local Windows checkout based on `32c6a940ff4b652afadf93e177ccee46ec708cf7`, package 1.14.1, Next.js 16.3.8, Node 22.23.3. These uncommitted repairs follow [protocol phase 4](2026-10-03-protocol-phase4.md) and preserve the earlier co-draw, deployment and input work. They are maintenance cohorts from the independently checked audit findings; the pasted list did not supply a numbered execution plan. No remote CI, deployment, merge or release sign-off is claimed.
 
 ## Phase 5: import allocation and readable failures

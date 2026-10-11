@@ -1,5 +1,7 @@
 # PixiMotion specification amendments — 6 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user authorized improving the local master specification with real academic sources and requested an assessment of its fit and feasibility for PixiBun. This record concerns documentation changes, not implementation, benchmark execution, publication or deployment.
 
 ## Changed artifact and scope

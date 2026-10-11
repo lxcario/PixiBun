@@ -1,5 +1,7 @@
 # L09 validation repeatability — 9 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The local milestone is supported by two passing full gates and a complete production-browser verdict: **338 passed /7 capability skips /zero failures**, Chromium, Firefox and WebKit, one worker and zero retries. The [earlier import repair and independent replay](2026-10-09-import-artwork-safety.md) retain their original passing and failing outcomes. This record does not certify every source file or approve a release.
 
 ## Timing policy and baseline

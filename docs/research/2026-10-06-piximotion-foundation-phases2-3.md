@@ -1,5 +1,7 @@
 # PixiMotion foundation repairs — Phases 2–3
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 6 October 2026. Local uncommitted changes based on `dcf9f5c303cdbaa6a533e3315de947c261c1e3ac`, following [Phase 1](2026-10-06-piximotion-foundation-phase1.md).
 
 ## Phase 2: source ownership

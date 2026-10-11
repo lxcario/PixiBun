@@ -1,5 +1,7 @@
 # Give your little sprite a moment to move
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Exports](exporting.md) · [All features](../features.md)
 
 Start with two or three poses. A blink or a small bounce is plenty for a first animation. Each frame has independent layer pixels, and **frame time** controls how long that pose stays on screen.

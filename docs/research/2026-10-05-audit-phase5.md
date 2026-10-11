@@ -1,5 +1,7 @@
 # Deep audit repair — Phase 5
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 5 October 2026. Local, uncommitted work on top of Phases 1–4. Base Git revision `f18f4e47d299685d7fdf23de158ae082a883483d`, package `1.14.1`, Node `22.23.3`. Scope: original findings A12–A14. This record describes local verification; it does not attest published source, remote CI or a deployed release.
 
 ## A12: creation dates belong to the document

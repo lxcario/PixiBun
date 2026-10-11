@@ -1,5 +1,7 @@
 # Protocol phase 4: safe ordering and bounded co-draw delivery
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 3 October 2026. Base: `32c6a940ff4b652afadf93e177ccee46ec708cf7`; package `1.14.1`, Next.js `16.3.8`. This continues the validated pasted-audit repairs after [input phase 3](2026-10-03-input-phase3.md), with phases 1–3 still present and uncommitted. No remote CI, deployment or release is attested.
 
 ## Confirmed problems and repairs

@@ -1,5 +1,7 @@
 # TestSprite installation and safety challenge — 3 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user explicitly requested the latest TestSprite CLI and challenging tests, authorizing this external testing pass. The official npm `latest` tag resolved to **0.13.0**, which was installed and verified. Existing authentication has frontend V3 and local-tunnel access. GitHub's `releases/latest` pointed to an older 0.10.0 tag during research; the live npm distribution determined the installed version. [Official CLI installation and execution reference](https://github.com/TestSprite/testsprite-cli/blob/main/DOCUMENTATION.md).
 
 ## Delivered suite

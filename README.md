@@ -4,6 +4,8 @@
 
 # PixiBun Atelier
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 **A quiet little studio for pixel art and animation.**
 
 Make a small character, a flickering flame, or the first tile of a world. PixiBun gives you a place to draw, try colors and bring those little things to life, right in your browser. No account needed.

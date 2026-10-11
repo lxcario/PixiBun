@@ -1,5 +1,7 @@
 # PixiMotion playback, canvas tools and stable Studio controls
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 8–9 October 2026. This follow-up implements the user's screenshot feedback after the [session publication](2026-10-08-session-review-publication.md) and [compiler boundary](2026-10-08-publication-typecheck-boundary.md). The user also explicitly requested restoring the old compact color dock. Main publication remains authorized; publication does not establish remote CI, deployment or a release sign-off.
 
 ## Findings and changes

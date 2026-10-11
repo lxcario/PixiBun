@@ -1,5 +1,7 @@
 # Contributing to PixiBun Atelier 
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 Current execution guidance is in [testing and evidence](docs/guides/testing.md). The [3 October audit session](docs/research/2026-10-03-audit-session-publication.md) includes explicitly authorized TestSprite CLI runs and 12 executable local browser checks. A service pass without the planned artwork/history assertions remains unqualified. Native OS save dialogs and unsupported pointer/tab/file interactions must be reported with their actual execution scope. Earlier dated session preferences below retain their original scope.
 
 > **Session verification reference — 2026-10-01:** The supported local runtime is Node 22. Production browser checks use `npm run test:e2e:production`; `PIXIBUN_PRODUCTION_PORT` can select an unused local port, with proxies following that address. Document discovered test counts separately from executed evidence and preserve failed-run/rerun history. For this session, the user chose local verification, without TestSprite uploads or tunnels. See the [session completion record](docs/research/session-completion-2026-10-01.md).

@@ -1,5 +1,7 @@
 # Audit Remediation Walkthrough: PIXIBUN_AUDIT_RESULTS.md
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 > **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
 
 > **Historical Artifact Notice:** This walkthrough documents the historical Phase 1A remediation pass completed at version `v1.13.1` (637 unit tests / 90 suites, 20 E2E tests). It does not reflect later developments (Phases 1B.1–1B.7, v1.14.1, 1085 unit tests / 116 suites, 52 E2E tests) or the full scope of `PIXIBUN_AUDIT_RESULTS+DEEP.md`. It is preserved here unaltered as an immutable engineering milestone record.

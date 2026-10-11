@@ -1,5 +1,7 @@
 # Plans and experiments
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 ## Completed local feature repairs
 
 All seven phases in the [2 October repair plan](2026-10-02-feature-repairs.md) are complete locally: practice safety/isolation, drawing/preview controls, export completeness, documentation reconciliation, recovery archive admission and full regression/release assessment. Production approval remains pending in the [candidate assessment](../releases/2026-10-02-local-candidate-assessment.md). These phases are separate from the older phase 6 artist study and earlier engine/research phases. Use the plan and [current status](../current-status.md) for executed scope.

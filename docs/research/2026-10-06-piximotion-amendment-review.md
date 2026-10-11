@@ -1,5 +1,7 @@
 # PixiMotion amendment review — 6 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 This is dated research and design advice, not an implementation contract or an executed engine test. The user requested a deep web review of the supplied improvement plan against the existing master specification. No engine code or master-spec content was changed during this review.
 
 ## Verdict and scope

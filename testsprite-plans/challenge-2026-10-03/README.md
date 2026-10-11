@@ -1,5 +1,7 @@
 # PixiBun safety challenge
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](../../docs/research/2026-10-11-validation-handoff.md).
+
 Twelve independent TestSprite 0.13.0 plans target the compiled local application. The [registered test manifest](../../testsprite_tests/challenge-2026-10-03/manifest.json) maps every plan to its remote test ID. The [full execution report](../../docs/research/2026-10-03-testsprite-full-run.md) records every case executed and distinguishes service statuses from qualified local coverage. The initial registration record remains historical.
 
 | Plan | Failure being challenged |

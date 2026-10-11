@@ -1,5 +1,7 @@
 # Build Plan — PixiBun
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
 ## Studio publication follow-up — 2026-10-01

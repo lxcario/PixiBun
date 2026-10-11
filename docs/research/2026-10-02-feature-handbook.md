@@ -1,5 +1,7 @@
 # Illustrated feature handbook — 2 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 ## Scope
 
 Documentation and new screenshots for the main checkout at `1b13922cdd264d43d97b8b4fae16fca2b3ac0770`, package `1.14.1`. Application code, tests, dependencies and configuration were not changed. This builds on the [documentation follow-up](2026-10-02-documentation-followup.md); it is not a release/deployment decision or a new complete application test run.

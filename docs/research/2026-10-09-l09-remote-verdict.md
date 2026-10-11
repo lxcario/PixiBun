@@ -1,5 +1,7 @@
 # L09 remote verdict and custody — 9 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 This supplement follows the immutable [local checkpoint](2026-10-09-validation-repeatability.md). Historical receipts remain unchanged. The independent review subsequently found a controlled cache-storage navigation regression and accessibility defects; their repair requires a new candidate and new verification.
 
 [Complete CI run 37947363853](https://github.com/lxcario/PixiBun/actions/runs/37947363853) **failed**. Its merge revision `371044074cdb0ba2fb016d2a142dcfad650c4f4f` has tree `649e49b5c5c3f8e0a1666213bb95d7a1e7c045b3`, equal to candidate `65894be8172996923ff5fc7894b7a3111d4bd952`.

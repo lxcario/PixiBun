@@ -1,5 +1,7 @@
 # Learning workflow contract
 
+The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+
 The [illustrated learning guide](../guides/learning-and-playground.md) lists all current lessons, the Teaching Board and Pocket Doodle Pad, including separate practice custody, saving and session-memory limits.
 
 The shipped `/playground`, onboarding content and Teaching Animation Board provide lessons, starter artwork, jump-cycle construction and timeline injection. Desktop practice now has a separate route workspace; that implementation does not establish measured learning gains.

@@ -1,5 +1,7 @@
 # Rendering, recipes and resource ownership
 
+The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+
 ## Source, display and generated output
 
 Raster canvases live in [bufferRegistry.ts](../../src/lib/engine/bufferRegistry.ts). Store metadata, history and raster ownership must move together on supported structural actions. [compositor.ts](../../src/lib/render/compositor.ts) reads DOM canvases and registry state; it excludes grid, onion skin and selection chrome. It is overlay-free, not DOM-free or mathematically pure.

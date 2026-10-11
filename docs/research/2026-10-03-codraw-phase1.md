@@ -1,5 +1,7 @@
 # Co-draw phase 1: protect the guest's original drawing
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 3 October 2026. Base: `32c6a940ff4b652afadf93e177ccee46ec708cf7`; package `1.14.1`. This is the first repair phase following validation of the pasted audit, separate from the earlier feature-repair phase numbering. Changes remain local and uncommitted. No deployment or production release is attested.
 
 ## Problem and resulting behavior

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "timestamp": "2026-10-10T20:02:45.550Z",
+  "originalCiCustodyPassed": true,
+  "independentDownloadPassed": true,
+  "indexSha256": "3e80667dc33268e4fe17c225cbb4da525d0fb1ad8ca3baa91747fd73723a4c96",
+  "files": 379,
+  "fileManifestSha256": "f6bb30d009d5ba530855426346e7337a919f14ee82891cbed9c79755eb783480",
+  "apiArchiveVerified": true,
+  "apiCustodyArchiveVerified": true
+}

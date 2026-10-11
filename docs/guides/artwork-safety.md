@@ -1,5 +1,7 @@
 # Artwork safety and backup
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 PixiBun saves projects in this browser's IndexedDB. **Saved** means the latest completed local save, not a cloud copy or a downloaded project file. Clearing site data, browser eviction, private browsing and device loss can remove local projects. Persistent-storage requests can be refused.
 
 Edits schedule autosave after an 800 ms debounce. Encoding and the transaction take additional time. Closing during that window can lose recent changes. Use the direct **Save** button or **Ctrl/Cmd+S**, wait for Saved, then create a portable backup for work you need to keep.

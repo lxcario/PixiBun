@@ -1,5 +1,7 @@
 # Phase 4: matching exports and honest labels
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Implemented and checked locally on 2 October 2026, based on 1b13922cdd264d43d97b8b4fae16fca2b3ac0770 plus earlier uncommitted documentation and phase 1–3 repairs. [Plan](../plans/2026-10-02-feature-repairs.md). No commit, push, deployment or release approval is implied.
 
 ## Behavior

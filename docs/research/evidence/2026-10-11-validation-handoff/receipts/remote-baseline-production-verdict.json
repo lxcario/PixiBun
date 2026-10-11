@@ -1,0 +1,730 @@
+{
+  "source": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-browser/artifacts/browser/production.json",
+  "stats": {
+    "startTime": "2026-10-10T20:25:12.024Z",
+    "duration": 3426346.5100000002,
+    "expected": 359,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "projectsConfigured": [
+    {
+      "name": "chromium",
+      "retries": 0
+    },
+    {
+      "name": "firefox",
+      "retries": 0
+    },
+    {
+      "name": "webkit",
+      "retries": 0
+    }
+  ],
+  "projects": {
+    "chromium": {
+      "passed": 120,
+      "skipped": 1,
+      "failed": 0,
+      "flaky": 0
+    },
+    "firefox": {
+      "passed": 119,
+      "skipped": 2,
+      "failed": 0,
+      "flaky": 0
+    },
+    "webkit": {
+      "passed": 120,
+      "skipped": 1,
+      "failed": 0,
+      "flaky": 0
+    }
+  },
+  "skips": [
+    {
+      "file": "coDrawGuestIsolation.spec.ts",
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "chromium"
+    },
+    {
+      "file": "coDrawGuestIsolation.spec.ts",
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "firefox"
+    },
+    {
+      "file": "coDrawGuestIsolation.spec.ts",
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "webkit"
+    },
+    {
+      "file": "inputOwnership.spec.ts",
+      "title": "tablet touch drawing uses the artwork policy and survives save/reload",
+      "project": "firefox"
+    }
+  ],
+  "failures": [],
+  "multipleAttempts": [],
+  "workerLifecycle": [
+    {
+      "title": "production drawing, save, reload, undo and redo preserve pixels without development handles",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "two real tabs refuse stale saves and save an independent conflict copy",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "warm production offline reload retains exact artwork and can save new edits",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "production GIF worker produces a downloadable file that the native image decoder can open",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "production-export.gif",
+              "contentType": "image/gif",
+              "body": "R0lGODlhgACAAHAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCgABACwAAAAAgACAAIE6LkwAAAAAAAAAAAACo4yPqcvtD6OctNqLs968+w+G4kiW5omm6sq27gvH8kzX9o3n+s73/g8MCofEovGITCqXzKbzCY1Kp9Sq9YrNarfcrvcLDovH5LL5jE6r1+y2+w2Py+f0uv2Oz+v3/L7/DxgoOEgIYAgAeIj4p5h4SAgZKTlJWWl5iZmpucnZ6fkJGio6SlpqeoqaqrrK2ur6ChsrO0tba3uLm6u7y9vr+wt8VwAAOw=="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close with a delayed old cache write",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "production drawing, save, reload, undo and redo preserve pixels without development handles",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "two real tabs refuse stale saves and save an independent conflict copy",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "warm production offline reload retains exact artwork and can save new edits",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "production GIF worker produces a downloadable file that the native image decoder can open",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "production-export.gif",
+              "contentType": "image/gif",
+              "body": "R0lGODlhgACAAHAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCgABACwAAAAAgACAAIE6LkwAAAAAAAAAAAACo4yPqcvtD6OctNqLs968+w+G4kiW5omm6sq27gvH8kzX9o3n+s73/g8MCofEovGITCqXzKbzCY1Kp9Sq9YrNarfcrvcLDovH5LL5jE6r1+y2+w2Py+f0uv2Oz+v3/L7/DxgoOEgIYAgAeIj4p5h4SAgZKTlJWWl5iZmpucnZ6fkJGio6SlpqeoqaqrrK2ur6ChsrO0tba3uLm6u7y9vr+wt8VwAAOw=="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close with a delayed old cache write",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "production drawing, save, reload, undo and redo preserve pixels without development handles",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "two real tabs refuse stale saves and save an independent conflict copy",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "warm production offline reload retains exact artwork and can save new edits",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "production GIF worker produces a downloadable file that the native image decoder can open",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "production-export.gif",
+              "contentType": "image/gif",
+              "body": "R0lGODlhgACAAHAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCgABACwAAAAAgACAAIE6LkwAAAAAAAAAAAACo4yPqcvtD6OctNqLs968+w+G4kiW5omm6sq27gvH8kzX9o3n+s73/g8MCofEovGITCqXzKbzCY1Kp9Sq9YrNarfcrvcLDovH5LL5jE6r1+y2+w2Py+f0uv2Oz+v3/L7/DxgoOEgIYAgAeIj4p5h4SAgZKTlJWWl5iZmpucnZ6fkJGio6SlpqeoqaqrrK2ur6ChsrO0tba3uLm6u7y9vr+wt8VwAAOw=="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "a real waiting update preserves both open tabs and activates after all tabs close with a delayed old cache write",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "worker-transition-state.json",
+              "contentType": "application/json",
+              "body": "eyJjYWNoZXMiOlsicGl4aWJ1bi1waGFzZTMtbmV3Il0sImFjdGl2ZSI6ImFjdGl2YXRlZCIsImNvbnRyb2xsZWQiOnRydWV9"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "importSafety": [
+    {
+      "title": "Replace repaints transparent pixels, restores one Undo/Redo step and autosaves for reload",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "Replace alone autosaves on an already saved project without a repaint helper",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "refused New Layer keeps existing pixels, layer count and Undo state intact",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "locked Replace refuses the import and preserves saved artwork",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "a smaller replacement clears the full destination and restores the original pixels with Undo",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "Replace Frames restores every erased layer with one Undo and replays the entire sheet with Redo",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "import resize Undo restores edge pixels before repaint can crop the restored buffers",
+      "project": "chromium",
+      "status": "expected"
+    },
+    {
+      "title": "Replace repaints transparent pixels, restores one Undo/Redo step and autosaves for reload",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "Replace alone autosaves on an already saved project without a repaint helper",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "refused New Layer keeps existing pixels, layer count and Undo state intact",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "locked Replace refuses the import and preserves saved artwork",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "a smaller replacement clears the full destination and restores the original pixels with Undo",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "Replace Frames restores every erased layer with one Undo and replays the entire sheet with Redo",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "import resize Undo restores edge pixels before repaint can crop the restored buffers",
+      "project": "firefox",
+      "status": "expected"
+    },
+    {
+      "title": "Replace repaints transparent pixels, restores one Undo/Redo step and autosaves for reload",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "Replace alone autosaves on an already saved project without a repaint helper",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "refused New Layer keeps existing pixels, layer count and Undo state intact",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "locked Replace refuses the import and preserves saved artwork",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "a smaller replacement clears the full destination and restores the original pixels with Undo",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "Replace Frames restores every erased layer with one Undo and replays the entire sheet with Redo",
+      "project": "webkit",
+      "status": "expected"
+    },
+    {
+      "title": "import resize Undo restores edge pixels before repaint can crop the restored buffers",
+      "project": "webkit",
+      "status": "expected"
+    }
+  ],
+  "nativeCoDraw": [
+    {
+      "title": "compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNDI0MS43MDAwMDAwMDAxODYsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJuZXciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA0MjQxLjgwMDAwMDAwMDA0NywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImdhdGhlcmluZyIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2VnYXRoZXJpbmdzdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDQzNTQuOTAwMDAwMDAwMTQsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2Vjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA1OTkwLjQwMDAwMDAwMDE0LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA1OTkwLjQwMDAwMDAwMDE0LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjaGVja2luZyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNjQzMS4zMDAwMDAwMDAwNDcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAic2lnbmFsaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA2NDMxLjQwMDAwMDAwMDE0LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNjQzOS45MDAwMDAwMDAxNCwKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiY29ubmVjdGlvbiI6ICJjbG9zZWQiLAogICAgICAgICJpY2UiOiAiY2xvc2VkIiwKICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAibG9jYWxTZHAiOiAidj0wXHJcbm89LSA4OTUwODUzMzM0MTQyNDYzMDgyIDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZToyODI1OTU4Nzk5IDEgdWRwIDIxMTM5MzcxNTEgM2JkMDIyNGQtMGRmOC00ZTY4LWJlMjAtNWQ0ZDk0ZjliZTViLmxvY2FsIDQ1OTA5IHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOlhScVRcclxuYT1pY2UtcHdkOlVUQ3VGYmtGUzhZb013TmRsWDB4d0tscFxyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IDM0OjlFOkY5OkU3OjQ0OjMzOkJCOjM3OkE1OjEzOjI1OjQ3OjNFOjgyOjc5OjAwOjJBOkMyOjdGOjBCOkM1OjM2OkUxOjJGOkJDOkU5OjVEOkREOjA3OjJBOjhEOkQ0XHJcbmE9c2V0dXA6YWN0cGFzc1xyXG5hPW1pZDowXHJcbmE9c2N0cC1wb3J0OjUwMDBcclxuYT1tYXgtbWVzc2FnZS1zaXplOjI2MjE0NFxyXG4iLAogICAgICAgICJyZW1vdGVTZHAiOiAidj0wXHJcbm89LSA2NTI2MjY5NDk3OTkyNzA4NjE4IDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZToyMDc4NTI3ODgzIDEgdWRwIDIxMTM5MzcxNTEgZGNiY2IxMGItYmJlNS00MzZkLWI5N2EtYjZhODZhOGJiNmE5LmxvY2FsIDQxMzA3IHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOm1uVTdcclxuYT1pY2UtcHdkOjV4aytCblltY0sxRXl5SUZmZmUwNTdaM1xyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IEE4OjUyOkRFOkI1OjA3OjA0OjRGOjU4OjdFOjc1OkU3OjZEOjYyOkI4OkM2OjRCOjNCOkQ5OjI0OjI4Ojk3OjZEOkVEOkFEOkQyOjREOkFGOjUwOjlFOjM2OkYxOjM3XHJcbmE9c2V0dXA6YWN0aXZlXHJcbmE9bWlkOjBcclxuYT1zY3RwLXBvcnQ6NTAwMFxyXG5hPW1heC1tZXNzYWdlLXNpemU6MjYyMTQ0XHJcbiIsCiAgICAgICAgInN0YXRzIjogWwogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiUCIsCiAgICAgICAgICAgICJ0aW1lc3RhbXAiOiAxNzkxNjYzOTkwNzI0Ljk5MywKICAgICAgICAgICAgInR5cGUiOiAicGVlci1jb25uZWN0aW9uIiwKICAgICAgICAgICAgImRhdGFDaGFubmVsc0Nsb3NlZCI6IDIsCiAgICAgICAgICAgICJkYXRhQ2hhbm5lbHNPcGVuZWQiOiAyCiAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiY2hhbm5lbHMiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJsYWJlbCI6ICJwaXhpYnVuLWNyZHQtc3luYyIsCiAgICAgICAgICAgICJzdGF0ZSI6ICJjbG9zZWQiLAogICAgICAgICAgICAiYnVmZmVyZWRBbW91bnQiOiAwCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAibGFiZWwiOiAicGl4aWJ1bi1wcmVzZW5jZSIsCiAgICAgICAgICAgICJzdGF0ZSI6ICJjbG9zZWQiLAogICAgICAgICAgICAiYnVmZmVyZWRBbW91bnQiOiAwCiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9CiAgICBdCiAgfSwKICB7CiAgICAicGFnZSI6IDEsCiAgICAidHJhbnNwb3J0cyI6IFtdCiAgfQpd"
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxNzUuMTc3MTkyOTk5OTk1OX0="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "chromium",
+      "status": "skipped",
+      "results": [
+        {
+          "status": "skipped",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled invalid invite preserves the original drawing and its Undo history",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ1bmF2YWlsYWJsZSI6ICJFcnJvcjogcGFnZS5ldmFsdWF0ZTogUGVlciBjb25uZWN0aW9uIGlzIGNsb3NlZFxuQGRlYnVnZ2VyIGV2YWwgY29kZSBsaW5lIDMxMSA+IGV2YWw6MTk6MTVcbkFzeW5jKkBkZWJ1Z2dlciBldmFsIGNvZGUgbGluZSAzMTEgPiBldmFsOjQ6MzhcbmV2YWx1YXRlQGRlYnVnZ2VyIGV2YWwgY29kZTozMTM6MTZcbkBkZWJ1Z2dlciBldmFsIGNvZGU6MTo0NFxuQGRlYnVnZ2VyIGV2YWwgY29kZToxOjYyXG4iCiAgfSwKICB7CiAgICAicGFnZSI6IDEsCiAgICAidHJhbnNwb3J0cyI6IFtdCiAgfQpd"
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxMjcuOTI3MDE0MDAwMDAwNzh9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "firefox",
+      "status": "skipped",
+      "results": [
+        {
+          "status": "skipped",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled invalid invite preserves the original drawing and its Undo history",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMTcyMjgsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJuZXciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAxNzIzNSwKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImdhdGhlcmluZyIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2VnYXRoZXJpbmdzdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDE3MzQ1LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogIm5ldyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjk0MTcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAyOTQxNywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGluZyIsCiAgICAgICAgICAgICJpY2UiOiAiY2hlY2tpbmciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMzE1MDEsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWNvbm5lY3Rpb25zdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDMxNTAxLAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMzE1MjAsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJpY2UiOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgImNvbm5lY3Rpb24iOiAiY2xvc2VkIiwKICAgICAgICAiaWNlIjogImNsb3NlZCIsCiAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgImxvY2FsU2RwIjogInY9MFxyXG5vPS0gMzU5MzIyOTQ2MzIzMzEwNDk3MiAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MjcyMDA5OTQ0IDEgdWRwIDIxMTM5MzcxNTEgMWFiNmM4ZmYtYTIwYi00NDBjLWI1MWYtMzUzZTJmZDBkYzhmLmxvY2FsIDU3NzYwIHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOkFPMC9cclxuYT1pY2UtcHdkOnp5bSs1Z1VyZEcrUmk4NTJmOGhkUG1jelxyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IDU3OjYwOjVBOkE0OjJGOjMyOkEwOjgyOjE5OjczOjhCOjAwOjk0OjU2OjA2OkZDOjBCOkJCOkJGOkRFOjQ3OjBGOjE5OkY1Ojg4OjdGOkE0OjAyOkY5OkNBOjBBOjY5XHJcbmE9c2V0dXA6YWN0cGFzc1xyXG5hPW1pZDowXHJcbmE9c2N0cC1wb3J0OjUwMDBcclxuYT1tYXgtbWVzc2FnZS1zaXplOjI2MjE0NFxyXG4iLAogICAgICAgICJyZW1vdGVTZHAiOiAidj0wXHJcbm89LSAyMDgyMTE5ODg2NTE1OTE5Njc0IDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZToyNTg4MzYyNTk5IDEgdWRwIDIxMTM5MzcxNTEgOTEwMmRlNDQtZGIzMS00NTEyLTkxNzEtMjY3OTdhZDdhODQ5LmxvY2FsIDQxNDM0IHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOmE3N2hcclxuYT1pY2UtcHdkOm53aElqM0ZpVm5jNVdJRDBORFAxeUFMZFxyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IDQ3OjZEOkNBOkI5OkZCOjJFOjk3Ojk3OkVEOkU1OjRCOjM0OjRFOjMxOjM5OjY0OkI4OjMzOkZFOkZGOjMxOjQ1OjUyOkUzOjM2OkEwOjhBOkQ2OjE4OjNFOkUyOjBEXHJcbmE9c2V0dXA6YWN0aXZlXHJcbmE9bWlkOjBcclxuYT1zY3RwLXBvcnQ6NTAwMFxyXG5hPW1heC1tZXNzYWdlLXNpemU6MjYyMTQ0XHJcbiIsCiAgICAgICAgInN0YXRzIjogWwogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiUCIsCiAgICAgICAgICAgICJ0aW1lc3RhbXAiOiAxNzkxNjY1NjA1MDUzLAogICAgICAgICAgICAidHlwZSI6ICJwZWVyLWNvbm5lY3Rpb24iLAogICAgICAgICAgICAiZGF0YUNoYW5uZWxzQ2xvc2VkIjogMSwKICAgICAgICAgICAgImRhdGFDaGFubmVsc09wZW5lZCI6IDIKICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJjaGFubmVscyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImxhYmVsIjogInBpeGlidW4tY3JkdC1zeW5jIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJsYWJlbCI6ICJwaXhpYnVuLXByZXNlbmNlIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0KICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9LAogIHsKICAgICJwYWdlIjogMSwKICAgICJ0cmFuc3BvcnRzIjogW10KICB9Cl0="
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxNTE5Ljg1NzQyNjAwMDAwMjN9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled browser without WebRTC refuses a valid guest invite and preserves original artwork",
+      "project": "webkit",
+      "status": "skipped",
+      "results": [
+        {
+          "status": "skipped",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled invalid invite preserves the original drawing and its Undo history",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": []
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMzcwOS44MDAwMDAwMDAwNDY2LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogIm5ldyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAibmV3IiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWdhdGhlcmluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMzczMywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImdhdGhlcmluZyIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2VnYXRoZXJpbmdzdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDM4MjQuNjk5OTk5OTk5OTUzNCwKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWNvbm5lY3Rpb25zdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDU1NDUuODAwMDAwMDAwMDQ3LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA1NTQ1Ljg5OTk5OTk5OTkwNywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGluZyIsCiAgICAgICAgICAgICJpY2UiOiAiY2hlY2tpbmciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNjAzNi4zMDAwMDAwMDAwNDcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWNvbm5lY3Rpb25zdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDYwMzYuODAwMDAwMDAwMDQ3LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNjA0My4xOTk5OTk5OTk5NTMsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJpY2UiOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgImNvbm5lY3Rpb24iOiAiY2xvc2VkIiwKICAgICAgICAiaWNlIjogImNsb3NlZCIsCiAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgImxvY2FsU2RwIjogInY9MFxyXG5vPS0gODEzNzA1NDIzMjEzMjAyOTc5OCAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MzQxMDQ1MDU3MyAxIHVkcCAyMTEzOTM3MTUxIDQyNDlhOWYyLWQ2NjAtNDdjYi1iZGUxLWMzNjliMTI2ZDJlZC5sb2NhbCA1Mzg2OSB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1jb3N0IDk5OVxyXG5hPWljZS11ZnJhZzp3cnd3XHJcbmE9aWNlLXB3ZDpwb2U1TThoQXZHU3NLVzJzMDhiVm5LYTlcclxuYT1pY2Utb3B0aW9uczp0cmlja2xlXHJcbmE9ZmluZ2VycHJpbnQ6c2hhLTI1NiAxMDo1NDpDMzpDMDoyRjpFNjo0MDpDMjo0MzowMjozNzpBRDo5RTo5MDo5RTo3NzowMTpCMDpCNToyMTo0RDo2QjpCNjo4NDo5MTo3NjowNzpBRjo2MjpFRjo1MjoxRFxyXG5hPXNldHVwOmFjdHBhc3NcclxuYT1taWQ6MFxyXG5hPXNjdHAtcG9ydDo1MDAwXHJcbmE9bWF4LW1lc3NhZ2Utc2l6ZToyNjIxNDRcclxuIiwKICAgICAgICAicmVtb3RlU2RwIjogInY9MFxyXG5vPS0gNjg0MDI4MzcwNzg1MDUzMDcyNSAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MTQ1MzA5OTE5OCAxIHVkcCAyMTEzOTM3MTUxIGI2NmE4OTE2LTgyM2QtNDU3YS04MmZkLTQzYjI0NjJiZmE1Ni5sb2NhbCA1NzcxMyB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1jb3N0IDk5OVxyXG5hPWljZS11ZnJhZzpjZXRaXHJcbmE9aWNlLXB3ZDpSVGxUSW12NUxlNUhxNzh6dWVHYnYxMnRcclxuYT1pY2Utb3B0aW9uczp0cmlja2xlXHJcbmE9ZmluZ2VycHJpbnQ6c2hhLTI1NiA2ODpBNjpGNjoyNTpGMDpFRTpCMzpGOToxMTo5NDo5Rjo5OTo3QjpGQjoyQzoxRjoxNjpDRjpFNDoyODpBQjo2NDpGODpBNTo2MDo2RjpFQjo1RTo2RDoyMjozMDpENlxyXG5hPXNldHVwOmFjdGl2ZVxyXG5hPW1pZDowXHJcbmE9c2N0cC1wb3J0OjUwMDBcclxuYT1tYXgtbWVzc2FnZS1zaXplOjI2MjE0NFxyXG4iLAogICAgICAgICJzdGF0cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogIlAiLAogICAgICAgICAgICAidGltZXN0YW1wIjogMTc5MTY2NDAwNDI5MS40ODQsCiAgICAgICAgICAgICJ0eXBlIjogInBlZXItY29ubmVjdGlvbiIsCiAgICAgICAgICAgICJkYXRhQ2hhbm5lbHNDbG9zZWQiOiAyLAogICAgICAgICAgICAiZGF0YUNoYW5uZWxzT3BlbmVkIjogMgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgImNoYW5uZWxzIjogWwogICAgICAgICAgewogICAgICAgICAgICAibGFiZWwiOiAicGl4aWJ1bi1jcmR0LXN5bmMiLAogICAgICAgICAgICAic3RhdGUiOiAiY2xvc2VkIiwKICAgICAgICAgICAgImJ1ZmZlcmVkQW1vdW50IjogMAogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImxhYmVsIjogInBpeGlidW4tcHJlc2VuY2UiLAogICAgICAgICAgICAic3RhdGUiOiAiY2xvc2VkIiwKICAgICAgICAgICAgImJ1ZmZlcmVkQW1vdW50IjogMAogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgXQogIH0sCiAgewogICAgInBhZ2UiOiAxLAogICAgInRyYW5zcG9ydHMiOiBbXQogIH0KXQ=="
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxNzIuMTI0NTM0MDAwMDAyM30="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork",
+      "project": "chromium",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMzY4NS42MDAwMDAwMDAwOTMsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJuZXciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAzNjg1LjkwMDAwMDAwMDEzOTcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJnYXRoZXJpbmciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAzODI1LjgwMDAwMDAwMDA0NjYsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2Vjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA1NjYzLjQwMDAwMDAwMDE0LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA1NjYzLjQwMDAwMDAwMDE0LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjaGVja2luZyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAic2lnbmFsaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA2MjExLjMwMDAwMDAwMDA0NywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGluZyIsCiAgICAgICAgICAgICJpY2UiOiAiY2hlY2tpbmciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogNjIxMS44MDAwMDAwMDAwNDcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogInN0YWJsZSIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiA2MjE1LjYwMDAwMDAwMDA5MywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiY29ubmVjdGlvbiI6ICJjbG9zZWQiLAogICAgICAgICJpY2UiOiAiY2xvc2VkIiwKICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAibG9jYWxTZHAiOiAidj0wXHJcbm89LSAyNjg2NjQwMzkyMTI1MzIyNTU1IDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZToyOTQzODA3Mzc1IDEgdWRwIDIxMTM5MzcxNTEgNmExYjViN2ItZmM3Mi00NGI1LTkyNTMtOTA5ZGM3MzJkODU2LmxvY2FsIDM2MDA3IHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOmxoK3FcclxuYT1pY2UtcHdkOkNxOSsxTXdub0JkUWkrK3NwYlZyUGJmYVxyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IEU3OkRGOjRBOjIyOkY1OjBGOkNGOjI4OjFBOkNEOjIzOjhBOkIyOkE4OjU4OkM4OkRDOjZFOjg4OkJBOkE4OjNFOkVFOkRFOkU1Ojc0OjZEOjA2OjI4OjA3OjQ2OkYyXHJcbmE9c2V0dXA6YWN0cGFzc1xyXG5hPW1pZDowXHJcbmE9c2N0cC1wb3J0OjUwMDBcclxuYT1tYXgtbWVzc2FnZS1zaXplOjI2MjE0NFxyXG4iLAogICAgICAgICJyZW1vdGVTZHAiOiAidj0wXHJcbm89LSA0ODMwMjE1ODA0Mzk0Nzk1OTU0IDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZTo1NzQ2NDI5NjQgMSB1ZHAgMjExMzkzNzE1MSBlZThmZjNkYS0wM2U5LTQwMDEtOTNiYy01OTA5ZTlhMTFhMGEubG9jYWwgNDAyNjQgdHlwIGhvc3QgZ2VuZXJhdGlvbiAwIG5ldHdvcmstY29zdCA5OTlcclxuYT1pY2UtdWZyYWc6cC8xTlxyXG5hPWljZS1wd2Q6RlBOd2RCZUxzTGMwMDRYRUNnUnlLTXpWXHJcbmE9aWNlLW9wdGlvbnM6dHJpY2tsZVxyXG5hPWZpbmdlcnByaW50OnNoYS0yNTYgQ0Y6Qzk6MzA6NEU6OUE6MEQ6MjI6M0Y6ODA6MTE6MTU6OTQ6QUY6OTk6QUU6NTY6MUI6QkM6MEU6RDg6QjM6QTg6NDA6Q0U6MDk6NjA6NzA6QUQ6NDc6RTg6REU6RDhcclxuYT1zZXR1cDphY3RpdmVcclxuYT1taWQ6MFxyXG5hPXNjdHAtcG9ydDo1MDAwXHJcbmE9bWF4LW1lc3NhZ2Utc2l6ZToyNjIxNDRcclxuIiwKICAgICAgICAic3RhdHMiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJpZCI6ICJQIiwKICAgICAgICAgICAgInRpbWVzdGFtcCI6IDE3OTE2NjQwMTMyNzEuMzM1LAogICAgICAgICAgICAidHlwZSI6ICJwZWVyLWNvbm5lY3Rpb24iLAogICAgICAgICAgICAiZGF0YUNoYW5uZWxzQ2xvc2VkIjogMSwKICAgICAgICAgICAgImRhdGFDaGFubmVsc09wZW5lZCI6IDIKICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJjaGFubmVscyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImxhYmVsIjogInBpeGlidW4tY3JkdC1zeW5jIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJsYWJlbCI6ICJwaXhpYnVuLXByZXNlbmNlIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0KICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9LAogIHsKICAgICJwYWdlIjogMSwKICAgICJ0cmFuc3BvcnRzIjogW10KICB9Cl0="
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxNzEuODA4MTc2OTk5OTk4OTh9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ1bmF2YWlsYWJsZSI6ICJFcnJvcjogcGFnZS5ldmFsdWF0ZTogUGVlciBjb25uZWN0aW9uIGlzIGNsb3NlZFxuQGRlYnVnZ2VyIGV2YWwgY29kZSBsaW5lIDMxMSA+IGV2YWw6MTk6MTVcbkFzeW5jKkBkZWJ1Z2dlciBldmFsIGNvZGUgbGluZSAzMTEgPiBldmFsOjQ6MzhcbmV2YWx1YXRlQGRlYnVnZ2VyIGV2YWwgY29kZTozMTM6MTZcbkBkZWJ1Z2dlciBldmFsIGNvZGU6MTo0NFxuQGRlYnVnZ2VyIGV2YWwgY29kZToxOjYyXG4iCiAgfSwKICB7CiAgICAicGFnZSI6IDEsCiAgICAidHJhbnNwb3J0cyI6IFtdCiAgfQpd"
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxMzMuNzU1MjY2MDAwMDA3NH0="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ1bmF2YWlsYWJsZSI6ICJFcnJvcjogcGFnZS5ldmFsdWF0ZTogUGVlciBjb25uZWN0aW9uIGlzIGNsb3NlZFxuQGRlYnVnZ2VyIGV2YWwgY29kZSBsaW5lIDMxMSA+IGV2YWw6MTk6MTVcbkFzeW5jKkBkZWJ1Z2dlciBldmFsIGNvZGUgbGluZSAzMTEgPiBldmFsOjQ6MzhcbmV2YWx1YXRlQGRlYnVnZ2VyIGV2YWwgY29kZTozMTM6MTZcbkBkZWJ1Z2dlciBldmFsIGNvZGU6MTo0NFxuQGRlYnVnZ2VyIGV2YWwgY29kZToxOjYyXG4iCiAgfSwKICB7CiAgICAicGFnZSI6IDEsCiAgICAidHJhbnNwb3J0cyI6IFtdCiAgfQpd"
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoyNTEuMTM2NTkwMDAwMDA5MTZ9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unsafe clock without acknowledging or replacing artwork",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMTI0MTAsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJuZXciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAxMjQxNSwKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImdhdGhlcmluZyIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2VnYXRoZXJpbmdzdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDEyNTE4LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogIm5ldyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjQ2NzIsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAyNDY3MiwKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGluZyIsCiAgICAgICAgICAgICJpY2UiOiAiY2hlY2tpbmciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjcwODQsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWNvbm5lY3Rpb25zdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDI3MDg1LAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjcwOTIsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJpY2UiOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgImNvbm5lY3Rpb24iOiAiY2xvc2VkIiwKICAgICAgICAiaWNlIjogImNsb3NlZCIsCiAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgImxvY2FsU2RwIjogInY9MFxyXG5vPS0gNjc1MTcxNzc3NzU3MDM1NDQ2NCAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MzAwODcxMjA5OCAxIHVkcCAyMTEzOTM3MTUxIDk3ZTBjYTA3LWYwZGQtNDU5YS1hMDIwLTZjZWM0NTAwMTQzNS5sb2NhbCA0MjgxMSB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1jb3N0IDk5OVxyXG5hPWljZS11ZnJhZzpWVHliXHJcbmE9aWNlLXB3ZDpSUkp0ek5VdVlPR1h4OS9qS3NNaXlVMGRcclxuYT1pY2Utb3B0aW9uczp0cmlja2xlXHJcbmE9ZmluZ2VycHJpbnQ6c2hhLTI1NiA0MTozOTowMTo5NTo2MDo0NDoxNTo5OTowQzo3MjoxNDowNDo0NzpBRDo1MTpCNDo1MDoxQzozQzpFRjo2OToxNDpGNzo1Njo2NzoyMTo0RjpEMjpERTpGRTo3RTo2QVxyXG5hPXNldHVwOmFjdHBhc3NcclxuYT1taWQ6MFxyXG5hPXNjdHAtcG9ydDo1MDAwXHJcbmE9bWF4LW1lc3NhZ2Utc2l6ZToyNjIxNDRcclxuIiwKICAgICAgICAicmVtb3RlU2RwIjogInY9MFxyXG5vPS0gMTU0NTQ1MDkyNzA5OTA2MDcwIDIgSU4gSVA0IDEyNy4wLjAuMVxyXG5zPS1cclxudD0wIDBcclxuYT1ncm91cDpCVU5ETEUgMFxyXG5hPWV4dG1hcC1hbGxvdy1taXhlZFxyXG5hPW1zaWQtc2VtYW50aWM6IFdNU1xyXG5tPWFwcGxpY2F0aW9uIDkgVURQL0RUTFMvU0NUUCB3ZWJydGMtZGF0YWNoYW5uZWxcclxuYz1JTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZToyOTYzMjM5MzU4IDEgdWRwIDIxMTM5MzcxNTEgMjM4NmJiNWYtYTU5NS00YmFlLTg5ZWUtZjU2YzMyMGUyMjRjLmxvY2FsIDU4NzkzIHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWNvc3QgOTk5XHJcbmE9aWNlLXVmcmFnOlFJRXhcclxuYT1pY2UtcHdkOk1KbHNoY1p5THh4M2RVZWZFTGZGMURwN1xyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IEU3OkM0OkVCOkM0OjlFOjI1OkY4OkREOjU1Ojk4OkI1OkQyOjI5OjBEOkY4OjE2OkQxOkY1OkVFOkY2OjU5OkFGOjI3OkQ2OkQyOkZDOkYwOjk3OjhBOjBGOjdDOjIzXHJcbmE9c2V0dXA6YWN0aXZlXHJcbmE9bWlkOjBcclxuYT1zY3RwLXBvcnQ6NTAwMFxyXG5hPW1heC1tZXNzYWdlLXNpemU6MjYyMTQ0XHJcbiIsCiAgICAgICAgInN0YXRzIjogWwogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiUCIsCiAgICAgICAgICAgICJ0aW1lc3RhbXAiOiAxNzkxNjY1NjY0MzQ5LAogICAgICAgICAgICAidHlwZSI6ICJwZWVyLWNvbm5lY3Rpb24iLAogICAgICAgICAgICAiZGF0YUNoYW5uZWxzQ2xvc2VkIjogMiwKICAgICAgICAgICAgImRhdGFDaGFubmVsc09wZW5lZCI6IDIKICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJjaGFubmVscyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImxhYmVsIjogInBpeGlidW4tY3JkdC1zeW5jIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJsYWJlbCI6ICJwaXhpYnVuLXByZXNlbmNlIiwKICAgICAgICAgICAgInN0YXRlIjogImNsb3NlZCIsCiAgICAgICAgICAgICJidWZmZXJlZEFtb3VudCI6IDAKICAgICAgICAgIH0KICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9LAogIHsKICAgICJwYWdlIjogMSwKICAgICJ0cmFuc3BvcnRzIjogW10KICB9Cl0="
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoxMTI3Ljc4MjU3MzAwMDAwNH0="
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "compiled LAN receiver rejects unserializable layer name without acknowledging or replacing artwork",
+      "project": "webkit",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "attachments": [
+            {
+              "name": "native-peer-diagnostics",
+              "contentType": "application/json",
+              "body": "WwogIHsKICAgICJwYWdlIjogMCwKICAgICJ0cmFuc3BvcnRzIjogWwogICAgICB7CiAgICAgICAgImV2ZW50cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMTI4NjMsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogIm5ldyIsCiAgICAgICAgICAgICJpY2UiOiAibmV3IiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJuZXciLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlZ2F0aGVyaW5nc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAxMjg2MywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAibmV3IiwKICAgICAgICAgICAgImljZSI6ICJuZXciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImdhdGhlcmluZyIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJpY2VnYXRoZXJpbmdzdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDEyOTkwLAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJuZXciLAogICAgICAgICAgICAiaWNlIjogIm5ldyIsCiAgICAgICAgICAgICJnYXRoZXJpbmciOiAiY29tcGxldGUiLAogICAgICAgICAgICAic2lnbmFsaW5nIjogImhhdmUtbG9jYWwtb2ZmZXIiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiaWNlY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjUwMTcsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAiaGF2ZS1sb2NhbC1vZmZlciIKICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJldmVudCI6ICJjb25uZWN0aW9uc3RhdGVjaGFuZ2UiLAogICAgICAgICAgICAiYXQiOiAyNTAxNywKICAgICAgICAgICAgImNvbm5lY3Rpb24iOiAiY29ubmVjdGluZyIsCiAgICAgICAgICAgICJpY2UiOiAiY2hlY2tpbmciLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJoYXZlLWxvY2FsLW9mZmVyIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogInNpZ25hbGluZ3N0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjc2MDEsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RpbmciLAogICAgICAgICAgICAiaWNlIjogImNoZWNraW5nIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImV2ZW50IjogImljZWNvbm5lY3Rpb25zdGF0ZWNoYW5nZSIsCiAgICAgICAgICAgICJhdCI6IDI3NjAyLAogICAgICAgICAgICAiY29ubmVjdGlvbiI6ICJjb25uZWN0aW5nIiwKICAgICAgICAgICAgImljZSI6ICJjb25uZWN0ZWQiLAogICAgICAgICAgICAiZ2F0aGVyaW5nIjogImNvbXBsZXRlIiwKICAgICAgICAgICAgInNpZ25hbGluZyI6ICJzdGFibGUiCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiZXZlbnQiOiAiY29ubmVjdGlvbnN0YXRlY2hhbmdlIiwKICAgICAgICAgICAgImF0IjogMjc2MDMsCiAgICAgICAgICAgICJjb25uZWN0aW9uIjogImNvbm5lY3RlZCIsCiAgICAgICAgICAgICJpY2UiOiAiY29ubmVjdGVkIiwKICAgICAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgICAgICJzaWduYWxpbmciOiAic3RhYmxlIgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgImNvbm5lY3Rpb24iOiAiY2xvc2VkIiwKICAgICAgICAiaWNlIjogImNsb3NlZCIsCiAgICAgICAgImdhdGhlcmluZyI6ICJjb21wbGV0ZSIsCiAgICAgICAgImxvY2FsU2RwIjogInY9MFxyXG5vPS0gNDA3MzY4MjcxNzQ5MDI3Mjg4NyAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MTk1ODY4NjA2MyAxIHVkcCAyMTEzOTM3MTUxIGVhOWM5YWQ2LTVmMjEtNGE5YS1iZTIwLWRmZjllZjM5OGE0My5sb2NhbCA0NjU2OCB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1jb3N0IDk5OVxyXG5hPWljZS11ZnJhZzpCdCtHXHJcbmE9aWNlLXB3ZDp2WXloT0hDd0h5TDBXbEVUUnJLSG9uNm5cclxuYT1pY2Utb3B0aW9uczp0cmlja2xlXHJcbmE9ZmluZ2VycHJpbnQ6c2hhLTI1NiA5ODowNzpEMzozMjpGQzo4MTpBMTpFOTo3OTpFQTo1Rjo0RTo0NToxMDo4NjozQTo4ODoxRjo4QjoyMzo3QjozNTozNjpGNTozNzo3QjoxNzpFQjo0RTpEMzpCMDo5QVxyXG5hPXNldHVwOmFjdHBhc3NcclxuYT1taWQ6MFxyXG5hPXNjdHAtcG9ydDo1MDAwXHJcbmE9bWF4LW1lc3NhZ2Utc2l6ZToyNjIxNDRcclxuIiwKICAgICAgICAicmVtb3RlU2RwIjogInY9MFxyXG5vPS0gNjM1MjM1MjEwNjgzOTA0MTE4NiAyIElOIElQNCAxMjcuMC4wLjFcclxucz0tXHJcbnQ9MCAwXHJcbmE9Z3JvdXA6QlVORExFIDBcclxuYT1leHRtYXAtYWxsb3ctbWl4ZWRcclxuYT1tc2lkLXNlbWFudGljOiBXTVNcclxubT1hcHBsaWNhdGlvbiA5IFVEUC9EVExTL1NDVFAgd2VicnRjLWRhdGFjaGFubmVsXHJcbmM9SU4gSVA0IDAuMC4wLjBcclxuYT1jYW5kaWRhdGU6MTE0NDkxNTQ0MyAxIHVkcCAyMTEzOTM3MTUxIGFlODMyMDE4LTdmYWEtNGRmNi1iN2JiLTA0OWMxODlkODU0Mi5sb2NhbCA1MTUyMSB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1jb3N0IDk5OVxyXG5hPWljZS11ZnJhZzpmZmZzXHJcbmE9aWNlLXB3ZDpMYzJrZnh3ZWZkK3VHdUd0MFJ1dHB6aEZcclxuYT1pY2Utb3B0aW9uczp0cmlja2xlXHJcbmE9ZmluZ2VycHJpbnQ6c2hhLTI1NiBDNzo5RjpBNTo0OTpGRTpGRDo5NTpGRTo5RTpCMjowQzo1MjpBRTo4NTowMjpEMjoxQjpBQTpCRjpBQTpEMToxNzozNjozNDpDNTo4OTpBQzoxMzozMzo0Rjo1MjowNlxyXG5hPXNldHVwOmFjdGl2ZVxyXG5hPW1pZDowXHJcbmE9c2N0cC1wb3J0OjUwMDBcclxuYT1tYXgtbWVzc2FnZS1zaXplOjI2MjE0NFxyXG4iLAogICAgICAgICJzdGF0cyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogIlAiLAogICAgICAgICAgICAidGltZXN0YW1wIjogMTc5MTY2NTcwNTQ1NSwKICAgICAgICAgICAgInR5cGUiOiAicGVlci1jb25uZWN0aW9uIiwKICAgICAgICAgICAgImRhdGFDaGFubmVsc0Nsb3NlZCI6IDIsCiAgICAgICAgICAgICJkYXRhQ2hhbm5lbHNPcGVuZWQiOiAyCiAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiY2hhbm5lbHMiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJsYWJlbCI6ICJwaXhpYnVuLWNyZHQtc3luYyIsCiAgICAgICAgICAgICJzdGF0ZSI6ICJjbG9zZWQiLAogICAgICAgICAgICAiYnVmZmVyZWRBbW91bnQiOiAwCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAibGFiZWwiOiAicGl4aWJ1bi1wcmVzZW5jZSIsCiAgICAgICAgICAgICJzdGF0ZSI6ICJjbG9zZWQiLAogICAgICAgICAgICAiYnVmZmVyZWRBbW91bnQiOiAwCiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9CiAgICBdCiAgfSwKICB7CiAgICAicGFnZSI6IDEsCiAgICAidHJhbnNwb3J0cyI6IFtdCiAgfQpd"
+            },
+            {
+              "name": "peer-host-cleanup",
+              "contentType": "application/json",
+              "body": "eyJwaGFzZSI6ImZpeHR1cmUtdGVhcmRvd24iLCJkdXJhdGlvbk1zIjoyMDYxLjU2MTc5MDAwMDAwN30="
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

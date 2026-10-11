@@ -1,5 +1,7 @@
 # Phase 6 artist evaluation guide
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Status: **Prepared; no participants or results recorded.** This is a small formative evaluation plan, not a claim that the tools improve pixel art. The [implementation report](phase-implementation-status.md) records the engineering evidence and limits.
 
 **Session reconciliation — 2026-10-01:** Three automated workflow dry-runs and later controls are described in the [Phase 6 UX report](PHASE6_UX_HARDENING.md). They help prepare the interface; they do not replace the counterbalanced participant study, collect artist ratings or establish measured benefit. The [session completion record](session-completion-2026-10-01.md) retains this evaluation as open.

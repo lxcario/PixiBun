@@ -1,5 +1,7 @@
 # Redesign PixiBun Home Page into a Cozy Interactive Pixel Atelier (v2)
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 > **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
 
 > Historical implementation plan. The live website no longer includes the proposed music or radio feature; see the current [architecture](../../ARCHITECTURE.md) and [changelog](../../CHANGELOG.md).

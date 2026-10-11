@@ -1,5 +1,7 @@
 # Editing, quality and release follow-up — 7 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Status: engineering and local qualification complete; artist/device and deployed release qualification remain pending. This dated record follows the [authorized five-area plan](../plans/2026-10-07-editing-quality-and-release.md). Changes are local and uncommitted.
 
 ## Engineering changes

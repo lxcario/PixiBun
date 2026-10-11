@@ -1,5 +1,7 @@
 # Settle into your studio
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Drawing tools](drawing-tools.md) · [All features](../features.md)
 
 The studio has a small shelf of tools on the left, your canvas in the middle, **Tools / Layers / Palette / PixiTools** in the inspector, and animation frames below. The **Workspace** row provides Drawing, Animation and Lighting layouts, a left/right inspector, saved arrangements, optional color and navigator panels, and canvas-only mode. Follow [Arrange a desk](artist-workspace.md) for these controls. Start with a little canvas and a few colors; there is no need to learn every panel at once.

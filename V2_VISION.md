@@ -1,5 +1,7 @@
 # PixiBun Atelier — v2 Architecture & Strategic Vision
 
+Planning status — 11 October 2026: the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 **Proposal, reconciled 2 October 2026.** None of the GPU/SIMD/tree-CRDT/wide-gamut/native/neural systems below is established as shipped by this document. Current TypeScript/browser functionality is described in [architecture](ARCHITECTURE.md), [current status](docs/current-status.md) and [the export contract](docs/contracts/exports.md). Historical benchmark numbers without reproducible artifacts were removed from future acceptance claims.
 
 ## 1. Executive Summary & North Star

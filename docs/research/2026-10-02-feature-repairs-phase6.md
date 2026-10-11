@@ -1,5 +1,7 @@
 # Phase 6: recovery archive admission
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Completed locally on 2 October 2026 after the five original repair phases. Based on `1b13922cdd264d43d97b8b4fae16fca2b3ac0770` plus the uncommitted phase 5 checkout. This extension addresses recovery payload loading, physical/logical record conversion and visible backup failure feedback; it is separate from the older phase 6 artist study and does not close participant, physical-device or release qualification.
 
 ## Change and reasoning

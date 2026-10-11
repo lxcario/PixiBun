@@ -1,5 +1,7 @@
 # Security boundaries and implementation defenses
 
+The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+
 > **Audit-session hardening — 2026-10-01:** Revision/generation checks protect asynchronous saves and preview publication; conflicting tabs refuse stale saves; bounded workers validate output and support deadlines/cancellation; shared memory admission estimates retained buffers and history. Research recipe parsing bounds dimensions, palettes, regions, pins and fingerprints. This session used local verification only. These safeguards and their limitations are recorded in the [phase report](../research/phase-implementation-status.md) and [session record](../research/session-completion-2026-10-01.md); they do not establish a penetration-test certification or measured heap ceiling.
 
 ## 1. Zero-Cloud & Local-First Philosophy

@@ -1,5 +1,7 @@
 # Independent Iso browser scenarios
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 3 October 2026, Europe/Istanbul. Fixture repair base: main `6cf391c717e33cb62e0d1f04cb5454f26ed6887f`. This follow-up changes browser fixtures and their generated inventory/documentation; application source, dependencies, browser workers, retries and timeout settings are unchanged.
 
 [Linux CI run 37113324000](https://github.com/lxcario/PixiBun/actions/runs/37113324000) passed all five validation/build stages, 1,583 unit tests /159 suites and Lighthouse. Its full editor step passed all 183 cases without retries or a flaky summary. All six previously failing compiled WebKit export workflows passed, supporting the [export-dialog repair](2026-10-03-ci-export-dialog-repair.md). That outcome does not conclusively identify the earlier upstream native-media failure mechanism.

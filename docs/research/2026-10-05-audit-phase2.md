@@ -1,5 +1,7 @@
 # Deep audit phase 2: strokes and gallery saves
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 5 October 2026. Local working-tree implementation for A04–A06 from [the deep audit](2026-10-05-deep-product-code-audit.md), following [Phase 1](2026-10-05-audit-phase1.md). Base revision remains `f18f4e47d299685d7fdf23de158ae082a883483d`; package 1.14.1. The user requested Phase 2 without approving Phase 1's external test registration/connection. Both phases' TestSprite checks remain pending; no publication or deployment is claimed.
 
 ## Changes and their boundaries

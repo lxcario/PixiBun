@@ -1,5 +1,7 @@
 # CI export dialog follow-up
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 3 October 2026, Europe/Istanbul. Repair base: main `bf75d1e6a103bc10a6b23932f60df69c4256452a`, package 1.14.1, Next.js 16.3.6. This record describes the published build's failed Linux checks and the subsequent local repair. The earlier phase 7 Windows results retain their original scope. The obsolete session branch was deleted locally and remotely after publishing the preceding work to main.
 
 ## What actually failed

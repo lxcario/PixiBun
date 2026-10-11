@@ -1,5 +1,7 @@
 # PixiBun: codebase audit and pixel art research
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Implementation follow-up — 2026-10-01:** The eleven reproduced findings were addressed in the subsequent six-phase local implementation. Its verification, research extensions and remaining artist/device/collaboration questions are recorded in the [phase report](phase-implementation-status.md) and [session completion record](session-completion-2026-10-01.md). The pre-fix observations below are preserved.
 
 Date: 30 September 2026. Reviewed commit: `23eaa10e662db349b20ae9c7f6a2e93a2f328cbb`. Package version: 1.14.1.

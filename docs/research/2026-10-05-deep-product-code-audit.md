@@ -1,5 +1,7 @@
 # PixiBun: code, product, and creative direction audit
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 **Date:** 5 October 2026. **Audited revision:** `f18f4e47d299685d7fdf23de158ae082a883483d` (package 1.14.1). This is a dated assessment, not a replacement for [current status](../current-status.md), [the documentation map](../README.md), or subsystem contracts. Findings refer to this revision; proposals are not shipped features.
 
 ## 1. Assessment

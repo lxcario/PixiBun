@@ -6,6 +6,8 @@ The root, Studio, Playground, service-worker route and optional relay have serve
 
 ## Published configuration
 
+The user requested main publication on 11 October after the [final validation handoff](../research/2026-10-11-validation-handoff.md). That request publishes reviewed repairs and documentation through the existing main pipeline. The qualifying branch CI result is not the result of the new main build, and publication does not close physical-device, Safari, accessibility or host/asset-retention qualification.
+
 For the [3 October audit session publication](../research/2026-10-03-audit-session-publication.md), the user explicitly requested a push to main after its deployment implications were stated. That authorization applies to this publication; the workflow's actual CI/deployment outcome still requires its own verification.
 
 The repository's [GitHub deploy workflow](../../.github/workflows/deploy.yml) can publish main to Vercel when CI succeeds for a **push to this repository's main branch** and deployment credentials are configured. Pull-request runs, fork runs, other branches, unsuccessful runs and incomplete event metadata are rejected by the job condition. Checkout and build metadata both use the successful run's full commit SHA. The job has read-only repository permissions, does not persist checkout credentials and has a 30-minute deadline. Its missing-credentials notice also describes a possible independent Vercel GitHub App deployment on push; the actual integration settings are not established by this checkout. Pushing main can therefore initiate production publication. Use a review branch when publishing source without a production decision, and verify host settings before an intended release.

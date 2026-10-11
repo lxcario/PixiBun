@@ -1,5 +1,7 @@
 # PixiBun UX Hardening Audit: Engineering Maturity to Artist Flow
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](issue-registry.md). This file is not a live backlog or current UI instruction.
 
 > **Follow-up — 2026-10-01:** Implemented UX changes are recorded in the [UX report](PIXIBUN_UX_HARDENING_REPORT.md) and [Phase 6 UX report](PHASE6_UX_HARDENING.md). The [session completion record](session-completion-2026-10-01.md) distinguishes verified behavior from artist hypotheses that still require participant evaluation.

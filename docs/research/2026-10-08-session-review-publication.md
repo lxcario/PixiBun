@@ -1,5 +1,7 @@
 # PixiBun session review and publication
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 8 October 2026. The user explicitly requested a new deep repository/Markdown review, justified optimization and a push. This record follows the [rectangle hardening](2026-10-08-motion-bounds-hardening.md). Local verification is complete within the scopes below; the commit containing this record identifies the requested publication. Earlier records retain their actual at-run uncommitted and qualification scope.
 
 ## Review and repairs

@@ -1,5 +1,7 @@
 # Feature repairs, one phase at a time
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 Started 2 October 2026 following the illustrated handbook review. This is an implementation plan, not a release sign-off. Existing dated evidence stays unchanged. Completion requires executed checks and an updated guide; a screenshot alone is not a verdict.
 
 | Phase | Work | Acceptance | Status |

@@ -1,0 +1,58 @@
+{
+  "source": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-release/release/results.json",
+  "stats": {
+    "startTime": "2026-10-10T20:01:31.661Z",
+    "duration": 107830.475,
+    "expected": 5,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "workers": 1,
+  "projectsConfigured": [
+    {
+      "name": "chromium",
+      "retries": 0
+    },
+    {
+      "name": "firefox",
+      "retries": 0
+    },
+    {
+      "name": "webkit",
+      "retries": 0
+    }
+  ],
+  "projects": {
+    "chromium": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0,
+      "flaky": 0
+    },
+    "firefox": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0,
+      "flaky": 0
+    },
+    "webkit": {
+      "passed": 1,
+      "skipped": 1,
+      "failed": 0,
+      "flaky": 0
+    }
+  },
+  "skips": [
+    {
+      "file": "updateRollback.spec.ts",
+      "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=true)",
+      "project": "webkit"
+    }
+  ],
+  "failures": [],
+  "multipleAttempts": [],
+  "workerLifecycle": [],
+  "importSafety": [],
+  "nativeCoDraw": []
+}

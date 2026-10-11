@@ -1,5 +1,7 @@
 # PixiBun UX Verification, Visual QA & Regression Hardening Pass
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Scope clarification — 2 October 2026:** The journeys/captures below are engineering walkthroughs and automated checks of the named historical UI. No participant confidence, measured benefit, full WCAG conformance or universal timing is established. Current File/Studio menus and compact Offline label supersede old selectors; palette location uses a selection bounding box, not a per-pixel pulsing overlay. [Current contracts and evidence](../current-status.md).
 
 > **Evidence scope update — 2026-10-01:** The checks below are automated and visual QA, not a study of artists' subjective trust, speed or usefulness. The [session completion record](session-completion-2026-10-01.md) records the later test inventory and separates these interface checks from the six-phase engineering evidence. Human evaluation remains pending.

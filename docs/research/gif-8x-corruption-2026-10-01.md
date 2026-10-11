@@ -1,5 +1,7 @@
 # Large GIF raster corruption
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 2026-10-01. The user reported stripes and a black lower block in an 8x cycle GIF. This correction is included in the user-requested Git publication; verification used local checks without an external test service or tunnel.
 
 ## Cause and correction

@@ -1,5 +1,7 @@
 # Take your pixels with you
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Backup safety](artwork-safety.md) · [Format contract](../contracts/exports.md) · [All features](../features.md)
 
 Choose **Export** at the upper right. The panel has **12 format choices**, grouped into images/animation, game delivery and backup. Choose the kind of file you need, review its settings, then use the download action. Opening this panel does not mean a file has been saved: check your browser's downloads and open the result.

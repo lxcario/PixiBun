@@ -1,0 +1,9 @@
+PixiBun APNG export notes — text sample, not an animation
+
+In Studio, choose Export → APNG to download your animation.
+- RGBA PNG frames preserve color and partial transparency without palette quantization.
+- Animation chunks carry the exported frame holds and loop setting.
+- Integer scaling keeps pixels crisp; geometry and memory limits apply.
+- Check playback in your intended viewer or engine.
+
+This welcome download describes the format. It contains no artwork.

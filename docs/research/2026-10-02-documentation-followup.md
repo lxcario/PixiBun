@@ -1,5 +1,7 @@
 # Documentation review follow-up — 2 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user requested corrections to the confirmed findings of a nine-document, prose-only audit and fresh screenshots where current documentation still showed older UI. This follow-up changes documentation and image assets only, based on `1b13922`. It does not add a security scanner, change application code or dependencies, cut a release or establish a deployed revision.
 
 ## Corrections and scope

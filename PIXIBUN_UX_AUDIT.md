@@ -1,5 +1,7 @@
 # PixiBun UX audit — 2026-09-29
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
 
 > **Current-status note (2026-09-30):** The findings and code locations below are the 2026-09-29 audit snapshot. Later feedback removed the direct header Backup button and visible “Saved on this device” label while keeping `.pixibun` backup under Export and autosave failure feedback. New, Save, and project identity now sit together; layers reorder by dragging; the timeline controls and scrub preview were refined. Rivet Stamp, one-click Material Shading, and artwork-changing Seamless Pattern generation were retired. PixiTools cleanup, color effects, and 47-blob contours now require a before/after review before Apply. See [the current UX changelog](PIXIBUN_UX_CHANGELOG.md).

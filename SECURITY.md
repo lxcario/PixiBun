@@ -1,5 +1,7 @@
 # Security Policy — PixiBun Atelier
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 ## Report a vulnerability privately
 
 Email [resquedzn05@gmail.com](mailto:resquedzn05@gmail.com) with the subject **PixiBun security report**. Do not put an exploitable vulnerability, secret or another person's artwork in a public issue.

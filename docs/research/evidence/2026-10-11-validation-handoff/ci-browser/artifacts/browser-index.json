@@ -1,0 +1,1411 @@
+{
+  "schema": 1,
+  "createdAt": "2026-10-10T21:22:18.664Z",
+  "revision": "6f57c93f5e206149f82c431df43d612f0fb47ad0",
+  "runId": "38081448403",
+  "runtime": "v22.14.0",
+  "storage": {
+    "provider": "GitHub Actions immutable artifact",
+    "retentionDays": 90,
+    "permanentArchive": false
+  },
+  "files": [
+    {
+      "path": "artifacts/browser/build-after-production.json",
+      "bytes": 231,
+      "sha256": "50be9c9244770f4d8615f05e1fc9d08d5fe5d08f96f9c0f02218f26b55e48f59"
+    },
+    {
+      "path": "artifacts/browser/build-before-production.json",
+      "bytes": 231,
+      "sha256": "24594123d4b106bba02202c7590f7216fb8fb858b5b104a115ad4f08046ee2d5"
+    },
+    {
+      "path": "artifacts/browser/development.json",
+      "bytes": 446340,
+      "sha256": "a4c7ff7e5837fe012a2611510c81596979ec33a57a3314153311d1b0b8d59f7b"
+    },
+    {
+      "path": "artifacts/browser/development.log",
+      "bytes": 158208,
+      "sha256": "b242cfcbe91f028bbac9311fda402695ae7e10127c72964fb1caedd3d82ea05e"
+    },
+    {
+      "path": "artifacts/browser/frozen-build.json",
+      "bytes": 46515,
+      "sha256": "993011375830ec610b4986fed861c8cd892edb48f294d4e159fd760f661f2039"
+    },
+    {
+      "path": "artifacts/browser/mdns-service.log",
+      "bytes": 1731,
+      "sha256": "d1e2fc9e414406c94dc6822b725df26b23b28405eaee292206c6119bd27de181"
+    },
+    {
+      "path": "artifacts/browser/production.json",
+      "bytes": 929214,
+      "sha256": "c81a713c2ab72a51cfeb21e02584137955e627f5e1e583af7d4461d6e7f823ba"
+    },
+    {
+      "path": "artifacts/browser/production.log",
+      "bytes": 64186,
+      "sha256": "bb60c4ac31ac1849df1711bbcefaaaf831bc47f86b1d3ad0d4d97bdd2ebc9081"
+    },
+    {
+      "path": "test-results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "test-results/animationReview-the-animat-ac23f-at-native-and-enlarged-zoom-chromium/animation-review-1024.png",
+      "bytes": 92006,
+      "sha256": "d452c04941daa1d9421d424859b3ca62e42476048ff49c9a93caff31e269df16"
+    },
+    {
+      "path": "test-results/artistWorkspace-gradient-r-a8da7-ro-length-and-locked-layers-chromium/selection-gradient.png",
+      "bytes": 108951,
+      "sha256": "53fb01d755e003e2bda4ed9db9e539e9ed2b72a2a4335284694efc3973b6c212"
+    },
+    {
+      "path": "test-results/artistWorkspace-palette-pr-7ed4b-ying-adds-one-exact-palette-chromium/palette-library.png",
+      "bytes": 156012,
+      "sha256": "4fa8cc7467ee9047a462d85fb696a669b09d6ca32eba4d7909eedd1a6bf162df"
+    },
+    {
+      "path": "test-results/artistWorkspace-pinned-tri-8a337-re-usable-at-desktop-widths-chromium/color-tools-navigator.png",
+      "bytes": 92994,
+      "sha256": "86788214da8d907ab3c53bceb34745c2caa034c9d0aee3f9cdeaba1951179431"
+    },
+    {
+      "path": "test-results/auditPersistence-repeat-pr-55b90-ithout-changing-the-artwork-chromium/repeat-preview.png",
+      "bytes": 73768,
+      "sha256": "5ded3a6b9fb5f7d1c21df74dfbba5163b19f78fb13ed9d8a13c06bca75d36e9d"
+    },
+    {
+      "path": "test-results/backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium/captures/header-file-menu.png",
+      "bytes": 5050,
+      "sha256": "5964c1cf3bc041c9e86013383c790ca0daca5b42685b7878333b4ca08c0acfdf"
+    },
+    {
+      "path": "test-results/backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium/captures/header-one-row-1024.png",
+      "bytes": 10075,
+      "sha256": "ab083bd48a6cb9a9ad63902cf1f85776a55a0f858a57ee5d1363c7c489c9b6a1"
+    },
+    {
+      "path": "test-results/backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium/captures/header-one-row-1920.png",
+      "bytes": 16627,
+      "sha256": "ff68ccf12a8073f4d578571b78c0fbde1ff5b156cb3c5d320d8dab6ed79a0019"
+    },
+    {
+      "path": "test-results/backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium/captures/header-one-row-erase-color-1024.png",
+      "bytes": 10993,
+      "sha256": "4b11412ac65cc7e221553c8b6d2837150489d2f977f2898594489aa6e44f56b0"
+    },
+    {
+      "path": "test-results/backupTrust-project-and-dr-183cf-nd-usable-at-desktop-widths-chromium/captures/header-studio-options.png",
+      "bytes": 14921,
+      "sha256": "8624f0500837d7a4a163bbceb22d873d39342b54bf407323dad723a5102d41bf"
+    },
+    {
+      "path": "test-results/backupTrust-project-backup-1b542-n-after-picker-cancellation-chromium/project-backup.png",
+      "bytes": 92446,
+      "sha256": "fb434f8a4ca13a1273bdce866d43d4651a7201dc9fbba6e6210517e04d003614"
+    },
+    {
+      "path": "test-results/backupTrust-project-backup-1b542-n-after-picker-cancellation-chromium/studio-1024-before-backup.png",
+      "bytes": 54198,
+      "sha256": "60c43b42a5d7540b25a8f62c5c36f6fef337e408bc83de9de4b538500e4aa01d"
+    },
+    {
+      "path": "test-results/backupTrust-project-backup-1b542-n-after-picker-cancellation-chromium/studio-before-backup.png",
+      "bytes": 55808,
+      "sha256": "587c71e6f6d33e9fcb9b26fcb204ae5955780602c0e2ce7d169d97680fe4e379"
+    },
+    {
+      "path": "test-results/coDrawGuestIsolation-real--8442a--and-reload-the-shared-copy-chromium/separate-shared-drawing.png",
+      "bytes": 100103,
+      "sha256": "25adb925bbf2930535232878f702131584eb40b80f271c5a89f080194112bbf5"
+    },
+    {
+      "path": "test-results/createPalette-builds-a-nam-105e0-twork-undoes-and-reloads-it-chromium/create-palette-1024.png",
+      "bytes": 132143,
+      "sha256": "2b80381f68888fe295955998364c2c195a2e95509ae087b49ed2ea925d17551f"
+    },
+    {
+      "path": "test-results/createPalette-copies-or-co-5b6da-rs-into-a-cancellable-draft-chromium/create-palette-from-artwork.png",
+      "bytes": 117140,
+      "sha256": "511c1c074d1f7e08f2a7a5c99e56593bc4a933b6c3c86d58f41c75a848fcdd29"
+    },
+    {
+      "path": "test-results/createPalette-scan-groups--f2702--a-swatch-preserves-the-art-chromium/compact-scan-and-remove.png",
+      "bytes": 84815,
+      "sha256": "8f94306f70c1cc2b0cbe7b3a4611b15daf2e8466d7c2b89d2e2cf5b9fe4bdc7d"
+    },
+    {
+      "path": "test-results/drawingAndPreviewControls--2cabe-do-without-painting-artwork-chromium/single-live-preview.png",
+      "bytes": 80969,
+      "sha256": "8e409f7927040ff32d3764a88fd55af482c554f6ae44b3f98bb79d36596b3dd5"
+    },
+    {
+      "path": "test-results/drawingAndPreviewControls--6b528-jected-endpoint-and-preview-chromium/iso-snapped.png",
+      "bytes": 71051,
+      "sha256": "b759af67339a9ddde0bad5e514b2fa7498d4f6e81a856d675c326364297a4435"
+    },
+    {
+      "path": "test-results/drawingAndPreviewControls--ad256-rough-preview-undo-and-redo-chromium/iso-free-thick-mirrored.png",
+      "bytes": 75257,
+      "sha256": "914705026a57fa8e9f7216056c6a5107f4b32d5f47ae98642e14033a7ece2458"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_01_chisel_carved.png",
+      "bytes": 73629,
+      "sha256": "c3b4415b5b12864b039c11b5eaa604d10ef16d4e00c7622db5b57eb8182aed89"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_02_normal_preview_on.png",
+      "bytes": 96095,
+      "sha256": "71074f1b0211ae1c663c9b06b5ef78b70d94ba7d83c5aa700d8285a6b3f438c5"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_03_relit_45deg.png",
+      "bytes": 78295,
+      "sha256": "63b8b3935460798bc8dbdde6947a594c8ef286defd16583a1b9115cca0de5bf3"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_04_relit_225deg.png",
+      "bytes": 78304,
+      "sha256": "defed0eb439db8b73cc53a8b2a9975c3621e9d6619cb95c80c15dd20d1681f9f"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_05_diff_heatmap.png",
+      "bytes": 49682,
+      "sha256": "61183948013cfc07ce13fccdfeb2ac151b95a6578a293b24020bbdd3e08bc56d"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_08_palette_cycling_active.png",
+      "bytes": 74117,
+      "sha256": "38c59976f4f421d70d1254842d1b67ff2b23ae7161237cf478e75eaaf39cbed7"
+    },
+    {
+      "path": "test-results/e2e-artifacts/proof_20260908_1215_manifest.json",
+      "bytes": 1205,
+      "sha256": "a31ff81ee07d12933187f3710ce3c92745b1135869aefadb49f1c285faba14c2"
+    },
+    {
+      "path": "test-results/e2e-artifacts/selection_gizmo_committed.png",
+      "bytes": 3265,
+      "sha256": "49f7cfaeda7001e219ff700ea7fbeb2900557799c9b1a06949fa3d2cd39cbd67"
+    },
+    {
+      "path": "test-results/exportCompleteness-manual-normals-preserve-both-atlases-chromium/godot-manual-normals.png",
+      "bytes": 174476,
+      "sha256": "b8762a13e5ee72e590c3e8c5ae8e01bd7bb8ef2ad54c7eb7ffec6ebb35270100"
+    },
+    {
+      "path": "test-results/exportCompleteness-manual-normals-preserve-both-atlases-chromium/manual-normals.zip",
+      "bytes": 39296,
+      "sha256": "91bbc0ec06ac364f14cbdb3e5e21a3b1f03d062c954a84bf07e9c2c3069195ce"
+    },
+    {
+      "path": "test-results/exportCompleteness-SVG-wording-and-actual-XML-agree-chromium/approximation.svg",
+      "bytes": 10643,
+      "sha256": "87c4e7acf538bd800c3edf225364f9a6e5195183e95244116184c063e6194b29"
+    },
+    {
+      "path": "test-results/exportCompleteness-SVG-wording-and-actual-XML-agree-chromium/svg-approximation.png",
+      "bytes": 116214,
+      "sha256": "316535201a8047b85e97915826ae132a74b1730b20f350e7bc03bfd483be1117"
+    },
+    {
+      "path": "test-results/exportCompleteness-unique--00ef5-ls-and-refuse-stale-results-chromium/tiles-16.zip",
+      "bytes": 1878,
+      "sha256": "43d26440180183a4def4cc2616c1846dbf13f58d89c6a1265ef4c2a2a535e419"
+    },
+    {
+      "path": "test-results/exportCompleteness-unique--00ef5-ls-and-refuse-stale-results-chromium/tiles-32.zip",
+      "bytes": 1806,
+      "sha256": "4bb1cfe5c45662e72b8f0cd4e07ce7f434c2cd9de644c46039e9630df8911276"
+    },
+    {
+      "path": "test-results/exportCompleteness-unique--00ef5-ls-and-refuse-stale-results-chromium/tiles-8.zip",
+      "bytes": 2180,
+      "sha256": "389d6a908927a15299a950104a0ec951d106b5ca5d63c4ca08b9cef5ff4942b7"
+    },
+    {
+      "path": "test-results/exportCompleteness-unique--00ef5-ls-and-refuse-stale-results-chromium/unique-tile-bundle.png",
+      "bytes": 120462,
+      "sha256": "c786d2b097aa08b6c00356fad6194ad1b3a9ef800051e858cc91cf408a2727bb"
+    },
+    {
+      "path": "test-results/exportCompleteness-unique--00ef5-ls-and-refuse-stale-results-chromium/unique-tile-stale.png",
+      "bytes": 124806,
+      "sha256": "d423cc16ddb753c8d5c32c356786c0ef729c09f9cbe5c53382ae42fc017e1bd8"
+    },
+    {
+      "path": "test-results/exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium/APNG.txt",
+      "bytes": 471,
+      "sha256": "5ff71f386ca371dd1cbe24742f699bedaa9ad345d25a9da133337cc3543bc4db"
+    },
+    {
+      "path": "test-results/exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium/GIF.txt",
+      "bytes": 514,
+      "sha256": "386a8910f32705391147251ad1c6d64ef9bda3dad427951b5b6052457ac2a118"
+    },
+    {
+      "path": "test-results/exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium/welcome-apng-notes.png",
+      "bytes": 250277,
+      "sha256": "2e7ff3120fe2748ad2e40ee751bd358b7e54f0af88f8b10e3a54f452ea0601a9"
+    },
+    {
+      "path": "test-results/exportCompleteness-welcome-04a93-oads-are-labeled-text-notes-chromium/welcome-gif-notes.png",
+      "bytes": 245280,
+      "sha256": "1848112a722a4b58ca1ef4107b34807674004af70bd63f6b77f27cd7edb3c8bc"
+    },
+    {
+      "path": "test-results/gameDelivery-animated-down-8cc50-olds-and-play-once-settings-chromium/back.gif",
+      "bytes": 173,
+      "sha256": "bd5011db189a117464c611b62d7abd26c1f6a0385893d979f88bbb66f5eaf447"
+    },
+    {
+      "path": "test-results/gameDelivery-animated-down-8cc50-olds-and-play-once-settings-chromium/back.png",
+      "bytes": 324,
+      "sha256": "56fbea2f0269e328d75ed2395beeb346e31d57568fa5236c1c2a1b87786c9bc0"
+    },
+    {
+      "path": "test-results/gameDelivery-animated-down-8cc50-olds-and-play-once-settings-chromium/bounce.gif",
+      "bytes": 226,
+      "sha256": "53e88808cf0c2b919f35a287dfd4de1085c53faa9a625154a7c9f4a7b87f2acb"
+    },
+    {
+      "path": "test-results/gameDelivery-animated-down-8cc50-olds-and-play-once-settings-chromium/bounce.png",
+      "bytes": 412,
+      "sha256": "9f59583f03021369a63e3b5a7b8202f62fdaab5fd5a64db6286cc4e64a30a557"
+    },
+    {
+      "path": "test-results/gifScaleIntegrity-an-8x-cy-2ee29-rent-pixel-in-all-16-frames-chromium/decoded-8x-gif.png",
+      "bytes": 15844,
+      "sha256": "d79d7478c0533e3f4eb97fec1e5fd62f6e2a4928517a614f9a39372d1f1d6e99"
+    },
+    {
+      "path": "test-results/gifScaleIntegrity-an-8x-cy-2ee29-rent-pixel-in-all-16-frames-chromium/fire-cycle-8x.gif",
+      "bytes": 238417,
+      "sha256": "ecde126c2278fbb2db6dc6cc56eaabbd1446a1088943aa27e4a19836d0ebaf03"
+    },
+    {
+      "path": "test-results/lessonHistory-lesson-Trace-078d7-s-through-the-real-viewport-chromium/lesson-trace-restored.png",
+      "bytes": 104701,
+      "sha256": "fd029fe4455a659eabc3d96620dd019cd0ee264ec629e371cf1bd4e1f283338f"
+    },
+    {
+      "path": "test-results/liveGlint-glints-follow-th-84666-thout-repainting-the-source-chromium/live-glint-crisp-1024.png",
+      "bytes": 119253,
+      "sha256": "3bb069cf2c4b70eff5ded5bcd1d91f8a424042203c12f6b39480b3c631ddeef8"
+    },
+    {
+      "path": "test-results/liveGlint-glints-follow-th-84666-thout-repainting-the-source-chromium/live-glint-crisp-1280.png",
+      "bytes": 126321,
+      "sha256": "eb1fc958a91bd0c77ac99da8fb78ec8642c7d49d04b0051a6fe060e80d1b845f"
+    },
+    {
+      "path": "test-results/liveGlint-glints-follow-th-84666-thout-repainting-the-source-chromium/live-glint-soft-1920.png",
+      "bytes": 141899,
+      "sha256": "1ef7fd54f50427cb89dcccf73c6c50cf9ebaf839f906661cd08436f8c7d7e181"
+    },
+    {
+      "path": "test-results/liveGlint-Soft-glints-are--43c5d-n-the-full-lighting-preview-chromium/pixel-glint-character-applied.png",
+      "bytes": 5532,
+      "sha256": "730d7b371faec1df47bd7123836aa0471e23b7e792e90e090e92708277d27c6e"
+    },
+    {
+      "path": "test-results/liveGlint-Soft-glints-are--43c5d-n-the-full-lighting-preview-chromium/pixel-glint-character-crisp.png",
+      "bytes": 145461,
+      "sha256": "a5a64dc04840feeee3da646fa45c56b340a08d8eed4b873309d24e59aee3b09c"
+    },
+    {
+      "path": "test-results/liveGlint-Soft-glints-are--43c5d-n-the-full-lighting-preview-chromium/pixel-glint-character-live.png",
+      "bytes": 145611,
+      "sha256": "38f1d29efc0e7bb364c961202d19efb554b5a1332b694702f9e59061f7dd023a"
+    },
+    {
+      "path": "test-results/liveGlint-the-lighting-bul-b4246-d-previews-them-immediately-chromium/light-bulb-glint-option-1024.png",
+      "bytes": 118407,
+      "sha256": "350c984fcd0c9dafd3c3497f1cae56b4d533586c233ff8460b089827074924f1"
+    },
+    {
+      "path": "test-results/liveGlint-the-lighting-bul-b4246-d-previews-them-immediately-chromium/light-bulb-glint-option.png",
+      "bytes": 152102,
+      "sha256": "9ffb895fa33c925f144d3aed42f2001045e7fd8ebae9f645982da19eba82d151"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-00f00-es-at-3-FPS-as-APNG-and-GIF-chromium/fire-3fps.gif",
+      "bytes": 1149,
+      "sha256": "9d64aa4fc125cf02cc3139d59fdc8d2eed382c599d54b0b1d6a73a8d0ce594dd"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-00f00-es-at-3-FPS-as-APNG-and-GIF-chromium/fire-3fps.png",
+      "bytes": 925,
+      "sha256": "abbd50643467edf6c5cc5cdab3b5c2e8dd560f901e7b70ac597bfc2a83b00a1c"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-23f8f-es-at-5-FPS-as-APNG-and-GIF-chromium/fire-5fps.gif",
+      "bytes": 1893,
+      "sha256": "e10960b20a40b3651d5993d31dfe5c20ec03cbc72f47dd672c3e7a7fc89240a7"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-23f8f-es-at-5-FPS-as-APNG-and-GIF-chromium/fire-5fps.png",
+      "bytes": 1497,
+      "sha256": "88ced91bf93c2f0d346befa2e48f46f07ed474476adc273ab183c7e9ee3957be"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-2921b-es-at-8-FPS-as-APNG-and-GIF-chromium/cycle-export-low-fps.png",
+      "bytes": 119617,
+      "sha256": "65289a82819d502ab2be7633cb5f41b5667ce337e6352e518db4dfddcceb6843"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-2921b-es-at-8-FPS-as-APNG-and-GIF-chromium/fire-8fps.gif",
+      "bytes": 3009,
+      "sha256": "daa0db394c0b835ccbcc38ebbd4a0bf2d8df2274910c779e56d0acbb5cf96a84"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-2921b-es-at-8-FPS-as-APNG-and-GIF-chromium/fire-8fps.png",
+      "bytes": 2361,
+      "sha256": "1ebf54937c525eb49f9927db34727b8c9b6f9796da63398a92edbfa2fbe0354f"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-45588-s-at-15-FPS-as-APNG-and-GIF-chromium/fire-15fps.gif",
+      "bytes": 5613,
+      "sha256": "5361a050f9fe001d256e9caf1aee6c640b9b76f37a5d89b1ee41cad3cba8879d"
+    },
+    {
+      "path": "test-results/paletteCycleExport-downloa-45588-s-at-15-FPS-as-APNG-and-GIF-chromium/fire-15fps.png",
+      "bytes": 4375,
+      "sha256": "1f070989960cafc09f01fde86af2f9499121582f19a02a49fa044361f5770636"
+    },
+    {
+      "path": "test-results/paletteCycleScope-cycles-o-677f4-p-their-exact-source-pixels-chromium/fire-only-cycle.png",
+      "bytes": 96117,
+      "sha256": "eb0eacbce80861d7138f201de5bce8f17ae27afa589ced937ebf573d5b5b8c01"
+    },
+    {
+      "path": "test-results/phase6ArtistStudyDryRun-Ph-3b7d6-te-comparison-and-safe-undo-chromium/captures/23-simplification-preview.png",
+      "bytes": 101847,
+      "sha256": "4a1833b7402624120fdbbeffc0c357dba7de85f8f822a428e8b2ea558249af78"
+    },
+    {
+      "path": "test-results/phase6ArtistStudyDryRun-Ph-42388-ction-D-pad-and-diagnostics-chromium/captures/25-tile-scene-interactive.png",
+      "bytes": 95142,
+      "sha256": "21654e4d1313f71551de38335469e1698ee424cfd425fd3feba598858d7dcd8a"
+    },
+    {
+      "path": "test-results/phase6ArtistStudyDryRun-Ph-7242d-passes-and-clip-propagation-chromium/captures/24-lighting-passes.png",
+      "bytes": 103723,
+      "sha256": "1e864ccc24acdb757e48cf29e58c9674238ae4a6f32c925d5098a2b81b297180"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/captures/lighting-menu-choices.png",
+      "bytes": 25604,
+      "sha256": "b0cb6785d025af111c67be6b19acf4f01817a2dcf37f30ce1967d201cc3a5440"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/captures/lighting-menu-ready.png",
+      "bytes": 34135,
+      "sha256": "43aeb119c40f5b8e35bf42238d49788f2608828555fe9ffbbc1d3b26a85a5b29"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/captures/lighting-menu-shadow.png",
+      "bytes": 33817,
+      "sha256": "6a244499123548c9d538f9b5790c47e8c0aa49297dd829108a1e5cf7e2818ab3"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/captures/lighting-menu-surface.png",
+      "bytes": 33125,
+      "sha256": "2ea998bdcf0b8e6c500b4eb65a8df98f941bcdbe38f36a270a905addc07d8cb4"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/pixitools-lighting-1024.png",
+      "bytes": 78963,
+      "sha256": "b947084524a0066cac8ec1c762e2369020fbcda1d89c64227c94dc780ed0a829"
+    },
+    {
+      "path": "test-results/pixiToolsDiscoverability-P-230f8-eps-expert-browse-available-chromium/pixitools-start.png",
+      "bytes": 81717,
+      "sha256": "c15005d0489593e90b8bbd7d6bf57e332f8396942fa61bbbe93692160662de76"
+    },
+    {
+      "path": "test-results/practiceIsolation-checkpoi-4c5d1-d-original-pixels-on-return-chromium/checkpoint-refused.png",
+      "bytes": 20705,
+      "sha256": "b39e5597583f7b4f41848815afc601e14abf776368ff651441b3cbcd724fa8c4"
+    },
+    {
+      "path": "test-results/practiceIsolation-Keep-sav-10c72-e-stored-original-unchanged-chromium/kept-practice-new-project.png",
+      "bytes": 72298,
+      "sha256": "fbceeacba4c33d6c21c93800c49b7d80f690b89fa69ca7a5c430bc514cc3d69a"
+    },
+    {
+      "path": "test-results/practiceIsolation-lesson-c-241f8-pixels-timing-and-undo-redo-chromium/isolated-practice.png",
+      "bytes": 98943,
+      "sha256": "48718f52fe886c60830aed047acfa0db43f4427e0d745754ffe4b8c5c5b6a62f"
+    },
+    {
+      "path": "test-results/production/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "test-results/production/artistWorkspace-compiled-o-376b2-ist-without-painting-ghosts-chromium/onion-settings.png",
+      "bytes": 116016,
+      "sha256": "015be0391e973d82f08afb584afca908d56299fb92b52a1d44c425413c5904a6"
+    },
+    {
+      "path": "test-results/production/canvasContextMenu-either-m-b1ef0-ing-or-stealing-the-pointer-chromium/canvas-tools.png",
+      "bytes": 20854,
+      "sha256": "f31e2cee3f464fa6f2e73b4753d531a82881e31ab201f0d5d02c8308521ee2fc"
+    },
+    {
+      "path": "test-results/production/canvasContextMenu-either-m-b1ef0-ing-or-stealing-the-pointer-firefox/canvas-tools.png",
+      "bytes": 24614,
+      "sha256": "84102e7bc4193e931684b52745ee91d32914cff7d80ee1529f90282b5df826e9"
+    },
+    {
+      "path": "test-results/production/canvasContextMenu-either-m-b1ef0-ing-or-stealing-the-pointer-webkit/canvas-tools.png",
+      "bytes": 62321,
+      "sha256": "c5959578531f478a698978bb4044933b782a4cb810c6475c0093f434d0a418ff"
+    },
+    {
+      "path": "test-results/production/coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-chromium/original-reopened.png",
+      "bytes": 65416,
+      "sha256": "365926cbb4506418883f5c42b9b05725a83960a3ad5a923060ab2abfc2034556"
+    },
+    {
+      "path": "test-results/production/coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-firefox/original-reopened.png",
+      "bytes": 90275,
+      "sha256": "5053be15513f55ef2ca17dcaa61133b7ac83b06e91bfe645031597839da7710e"
+    },
+    {
+      "path": "test-results/production/coDrawGuestIsolation-compi-c5a5c-uched-original-from-Gallery-webkit/original-reopened.png",
+      "bytes": 172930,
+      "sha256": "5df29b65b040dbfcc9a71b3e76dfbae0890efca5d2a4533c1c9ba7604f27667d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-908e2-dock-accessibility-tradeoff-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-908e2-dock-accessibility-tradeoff-firefox/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-908e2-dock-accessibility-tradeoff-webkit/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-b519b-dock-accessibility-tradeoff-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-b519b-dock-accessibility-tradeoff-firefox/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-b519b-dock-accessibility-tradeoff-webkit/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-d9709-dock-accessibility-tradeoff-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-d9709-dock-accessibility-tradeoff-firefox/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-d9709-dock-accessibility-tradeoff-webkit/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-de4c5-dock-accessibility-tradeoff-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-de4c5-dock-accessibility-tradeoff-firefox/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/compactControlAccessibilit-de4c5-dock-accessibility-tradeoff-webkit/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-chromium/APNG.txt",
+      "bytes": 471,
+      "sha256": "5ff71f386ca371dd1cbe24742f699bedaa9ad345d25a9da133337cc3543bc4db"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-chromium/GIF.txt",
+      "bytes": 514,
+      "sha256": "386a8910f32705391147251ad1c6d64ef9bda3dad427951b5b6052457ac2a118"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-firefox/APNG.txt",
+      "bytes": 471,
+      "sha256": "5ff71f386ca371dd1cbe24742f699bedaa9ad345d25a9da133337cc3543bc4db"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-firefox/GIF.txt",
+      "bytes": 514,
+      "sha256": "386a8910f32705391147251ad1c6d64ef9bda3dad427951b5b6052457ac2a118"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-webkit/APNG.txt",
+      "bytes": 471,
+      "sha256": "5ff71f386ca371dd1cbe24742f699bedaa9ad345d25a9da133337cc3543bc4db"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-00ce0-oads-are-labeled-text-notes-webkit/GIF.txt",
+      "bytes": 514,
+      "sha256": "386a8910f32705391147251ad1c6d64ef9bda3dad427951b5b6052457ac2a118"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-chromium/tiles-16.zip",
+      "bytes": 1878,
+      "sha256": "43d26440180183a4def4cc2616c1846dbf13f58d89c6a1265ef4c2a2a535e419"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-chromium/tiles-32.zip",
+      "bytes": 1806,
+      "sha256": "4bb1cfe5c45662e72b8f0cd4e07ce7f434c2cd9de644c46039e9630df8911276"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-chromium/tiles-8.zip",
+      "bytes": 2180,
+      "sha256": "389d6a908927a15299a950104a0ec951d106b5ca5d63c4ca08b9cef5ff4942b7"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-firefox/tiles-16.zip",
+      "bytes": 1820,
+      "sha256": "8b1d0e9d85844ac7ca4c8b7b9e6e914c1fba81eed663079636ce716f18294926"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-firefox/tiles-32.zip",
+      "bytes": 1748,
+      "sha256": "f2e953ccac33d8e8f44d30e7889a7c907858cdee90aaeb2721b6520eea4642a2"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-firefox/tiles-8.zip",
+      "bytes": 2098,
+      "sha256": "972b627ac4222aacc35b8a5a395788688428cfe4cfe4a0f3a423451a7307e3ad"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-webkit/tiles-16.zip",
+      "bytes": 1795,
+      "sha256": "5cf2cf8c391219d49b2477918f33bfdf45f1831f7044c5c281796b88c7a6646b"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-webkit/tiles-32.zip",
+      "bytes": 1723,
+      "sha256": "7c76431987279a91ade29e37c4719c2de0dbbe0292c178e231ce36bd1f850e68"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-64ccf-ls-and-refuse-stale-results-webkit/tiles-8.zip",
+      "bytes": 2127,
+      "sha256": "654d9542860e50e4cd3483e83cb96fd42191d4b453cb9f9643d21639c404de59"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-e5644-rmals-preserve-both-atlases-chromium/manual-normals.zip",
+      "bytes": 39296,
+      "sha256": "91bbc0ec06ac364f14cbdb3e5e21a3b1f03d062c954a84bf07e9c2c3069195ce"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-e5644-rmals-preserve-both-atlases-firefox/manual-normals.zip",
+      "bytes": 39185,
+      "sha256": "630dd8b4e58fb950ef51299637812f28f9cbd02f24a1374ba7a2f7039c010254"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compile-e5644-rmals-preserve-both-atlases-webkit/manual-normals.zip",
+      "bytes": 39183,
+      "sha256": "48e63e156d9ef0daee8a4018c9ae21a01e836064165bf7d19e26924a26d018f1"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compiled-SVG-wording-and-actual-XML-agree-chromium/approximation.svg",
+      "bytes": 10643,
+      "sha256": "87c4e7acf538bd800c3edf225364f9a6e5195183e95244116184c063e6194b29"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compiled-SVG-wording-and-actual-XML-agree-firefox/approximation.svg",
+      "bytes": 10643,
+      "sha256": "87c4e7acf538bd800c3edf225364f9a6e5195183e95244116184c063e6194b29"
+    },
+    {
+      "path": "test-results/production/exportCompleteness-compiled-SVG-wording-and-actual-XML-agree-webkit/approximation.svg",
+      "bytes": 10643,
+      "sha256": "87c4e7acf538bd800c3edf225364f9a6e5195183e95244116184c063e6194b29"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-chromium/back.gif",
+      "bytes": 173,
+      "sha256": "bd5011db189a117464c611b62d7abd26c1f6a0385893d979f88bbb66f5eaf447"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-chromium/back.png",
+      "bytes": 324,
+      "sha256": "56fbea2f0269e328d75ed2395beeb346e31d57568fa5236c1c2a1b87786c9bc0"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-chromium/bounce.gif",
+      "bytes": 226,
+      "sha256": "53e88808cf0c2b919f35a287dfd4de1085c53faa9a625154a7c9f4a7b87f2acb"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-chromium/bounce.png",
+      "bytes": 412,
+      "sha256": "9f59583f03021369a63e3b5a7b8202f62fdaab5fd5a64db6286cc4e64a30a557"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-firefox/back.gif",
+      "bytes": 173,
+      "sha256": "bd5011db189a117464c611b62d7abd26c1f6a0385893d979f88bbb66f5eaf447"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-firefox/back.png",
+      "bytes": 333,
+      "sha256": "a11608d0c63f16a9145df2827aa35b48bdf55724f46a2812f4dfe93b804ef8bf"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-firefox/bounce.gif",
+      "bytes": 226,
+      "sha256": "53e88808cf0c2b919f35a287dfd4de1085c53faa9a625154a7c9f4a7b87f2acb"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-firefox/bounce.png",
+      "bytes": 424,
+      "sha256": "aef196dc15761db2ebe41094d93280772f3917a8f823a437fc7fd942cc1f73ef"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit/back.gif",
+      "bytes": 173,
+      "sha256": "bd5011db189a117464c611b62d7abd26c1f6a0385893d979f88bbb66f5eaf447"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit/back.png",
+      "bytes": 372,
+      "sha256": "599ab6f219eb021bf71db08fc5e0283fe832d5afce35bfa26ab4fede0c9b5175"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit/bounce.gif",
+      "bytes": 226,
+      "sha256": "53e88808cf0c2b919f35a287dfd4de1085c53faa9a625154a7c9f4a7b87f2acb"
+    },
+    {
+      "path": "test-results/production/gameDelivery-compiled-anim-02ef4-olds-and-play-once-settings-webkit/bounce.png",
+      "bytes": 483,
+      "sha256": "f6a69dac6a2349ba8afcc8fbe6addf3ff5f7a4ed40c5caf691d0cb05e00ab641"
+    },
+    {
+      "path": "test-results/production/gameDelivery-production-Go-0a78e-les-through-undo-and-reload-chromium/production-godot-kit.zip",
+      "bytes": 45161,
+      "sha256": "d223e25c3bf333f4ce5f806302b2e9c0e7288e1058950a35adf425f6c8fa7c71"
+    },
+    {
+      "path": "test-results/production/gameDelivery-production-Go-0a78e-les-through-undo-and-reload-firefox/production-godot-kit.zip",
+      "bytes": 44636,
+      "sha256": "8d5997dd7a466348805a5e0d73b74c0ad3691639bbbd6b68fb8b715cbae8b849"
+    },
+    {
+      "path": "test-results/production/gameDelivery-production-Go-0a78e-les-through-undo-and-reload-webkit/production-godot-kit.zip",
+      "bytes": 44160,
+      "sha256": "75f6d08da7acd480c351c89cc35a996adc328fa010820ac27fa0273dbac9d46c"
+    },
+    {
+      "path": "test-results/production/inputOwnership-tablet-touc-fcf58-cy-and-survives-save-reload-chromium/tablet-artwork-reloaded.png",
+      "bytes": 57829,
+      "sha256": "3674b1d031c83a377550e047e0796a1f9b365809a01fa1cc354940bce741513f"
+    },
+    {
+      "path": "test-results/production/inputOwnership-tablet-touc-fcf58-cy-and-survives-save-reload-webkit/tablet-artwork-reloaded.png",
+      "bytes": 153658,
+      "sha256": "d541fe6e9d11e2f39b2bcd0a83cb3983011938099f32be5957bd4e6d959b9682"
+    },
+    {
+      "path": "test-results/production/memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-chromium/after-chromium.json",
+      "bytes": 990,
+      "sha256": "09e14a0ca58bf90aea6222bdd882561544a08456a5982029c0000d38b6584596"
+    },
+    {
+      "path": "test-results/production/memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-firefox/after-firefox.json",
+      "bytes": 976,
+      "sha256": "57888621cbf80cd795add6fe17968254802db70b94aa9edd020b37440a87a1a8"
+    },
+    {
+      "path": "test-results/production/memoryPaths-compiled-timel-374db-d-preview-and-encoding-work-webkit/after-webkit.json",
+      "bytes": 976,
+      "sha256": "c55e1507dac317d21ab847fc889f456d2b8ccbad2db7971235abeef025db3bd9"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-29a82-ixels-as-bake-and-Undo-Redo-chromium/fractional-rig.pixibun",
+      "bytes": 1965,
+      "sha256": "816ee7694996880ea8ccdbba59f00fc447a34d680093dc6e3b26a91c1a3df57c"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-29a82-ixels-as-bake-and-Undo-Redo-firefox/fractional-rig.pixibun",
+      "bytes": 1894,
+      "sha256": "2d1c16e90b8d9bad23c0b5088c06b49d8eff98155f4d90df03313403198e05c3"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-29a82-ixels-as-bake-and-Undo-Redo-webkit/fractional-rig.pixibun",
+      "bytes": 1925,
+      "sha256": "4e59cb0b018d206edd4ad571d98442e44c40da24a8afd87f5c23cb42c11be527"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-53eba-ixels-as-bake-and-Undo-Redo-chromium/fractional-rig.pixibun",
+      "bytes": 1966,
+      "sha256": "123c86d1f511089335ba1c96b552e088aa26b204091d57d923c629548befe1b9"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-53eba-ixels-as-bake-and-Undo-Redo-firefox/fractional-rig.pixibun",
+      "bytes": 1891,
+      "sha256": "b1147f7a9e39cc5fc6eedb88920e4818ff082307948df62cf85164a10777f84a"
+    },
+    {
+      "path": "test-results/production/motionFractionalTranslatio-53eba-ixels-as-bake-and-Undo-Redo-webkit/fractional-rig.pixibun",
+      "bytes": 1922,
+      "sha256": "da6cbb438c9ae46cae725054719270233de40ddab04675f6a23601de8c3ea9f3"
+    },
+    {
+      "path": "test-results/production/motionRigPersistence-a-por-5da0b-with-matching-source-pixels-chromium/saved-rig.pixibun",
+      "bytes": 4721,
+      "sha256": "914b061027f47bd66970febd33dea1a414aed6a41bb01d8620459d9e7f2cfa47"
+    },
+    {
+      "path": "test-results/production/motionRigPersistence-a-por-5da0b-with-matching-source-pixels-firefox/saved-rig.pixibun",
+      "bytes": 4714,
+      "sha256": "af13c204e26fbc2e22c035677a8bf17cf1359f0c9b2227c0ae85a233477dc7d3"
+    },
+    {
+      "path": "test-results/production/motionRigPersistence-a-por-5da0b-with-matching-source-pixels-webkit/saved-rig.pixibun",
+      "bytes": 4685,
+      "sha256": "7ad312e8a92e412a89a7ef1731bfa745141bf06172029a989156ed7cb32c78e0"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-97774-e-duplicates-get-a-new-date-chromium/dates-946684800000-chromium.json",
+      "bytes": 164,
+      "sha256": "a48d45f41539d07ae0fa671ac3007e59f3ab74e5a39337976412e1f174312497"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-97774-e-duplicates-get-a-new-date-firefox/dates-946684800000-firefox.json",
+      "bytes": 164,
+      "sha256": "b52faed3d62c4c3634c2c73b9eebce3cba94ce0b3e69971028ff72d12a322c97"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-97774-e-duplicates-get-a-new-date-webkit/dates-946684800000-webkit.json",
+      "bytes": 164,
+      "sha256": "2cd57a46f72b907f6f989566b4a628d13dd700111986d2926680836f034f4c62"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-dbcb3-e-duplicates-get-a-new-date-chromium/dates-0-chromium.json",
+      "bytes": 120,
+      "sha256": "b6085cca2c67345dd3b368279cd0a959354b8d475688442d38028710f55ff4ea"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-dbcb3-e-duplicates-get-a-new-date-firefox/dates-0-firefox.json",
+      "bytes": 120,
+      "sha256": "1849af931ae870b0c1a4f4d2551208852d17e3412e3cf631a32530e4a983603a"
+    },
+    {
+      "path": "test-results/production/projectDatesAndClipboard-c-dbcb3-e-duplicates-get-a-new-date-webkit/dates-0-webkit.json",
+      "bytes": 120,
+      "sha256": "086e98b7e0d5c3eb5ed071fd6b52c001665778f3d6393c3bae1edcc46021cca9"
+    },
+    {
+      "path": "test-results/production/recoveryAccessibility-larg-a2a58-hout-changing-canvas-pixels-chromium/large-color-controls.png",
+      "bytes": 13800,
+      "sha256": "7655b93fd03def086126ef148cb568f17d7d05fc1580a63d52ebec39aff7949a"
+    },
+    {
+      "path": "test-results/production/recoveryAccessibility-larg-a2a58-hout-changing-canvas-pixels-firefox/large-color-controls.png",
+      "bytes": 16654,
+      "sha256": "0e0ef5cd167fc4c4e0d501f8ac06a69591f9e8511e23b461f4a6d56f5c34df39"
+    },
+    {
+      "path": "test-results/production/recoveryAccessibility-larg-a2a58-hout-changing-canvas-pixels-webkit/large-color-controls.png",
+      "bytes": 40804,
+      "sha256": "30b28a6144f3a5043cbcb0a6575cebc8a5e90575bc234d1cfcde189e1affec92"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/archive-source-preserved.png",
+      "bytes": 129600,
+      "sha256": "edb11f01d7c1e9aed9dff773d62bcbae58c5fbe01867f592cea165c0ef97b425"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/source-before.json",
+      "bytes": 1420,
+      "sha256": "e1630914bc9298ef59e0f49e11089046d6bcead091b6644db07ce107164f76a6"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/untouched-source.zip",
+      "bytes": 2626,
+      "sha256": "e6cebf00599cb3cacbf496cfb1c696a891776fda2ab8cbedfe95b2e5f0ccfaa5"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-firefox/archive-source-preserved.png",
+      "bytes": 152986,
+      "sha256": "7a32eda2b6956c8836a33f90e0566a5b639fe00cb7ffca7e450a4b993f9196f5"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-firefox/source-before.json",
+      "bytes": 1420,
+      "sha256": "f8d49b49f79909d3a1f322cd770863dc9ac0e2329132bc5ca6e4409d90625301"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-firefox/untouched-source.zip",
+      "bytes": 2626,
+      "sha256": "7d2abce87cc2aed1bb772e77dc02df71777628fc7eff4fddfee477611612a760"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-webkit/archive-source-preserved.png",
+      "bytes": 340851,
+      "sha256": "f0e5ffa3eeda1b3ed65c5d78f9ae03cade2be6bf3d5f67fe40bbcde4b99b9c99"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-webkit/source-before.json",
+      "bytes": 1420,
+      "sha256": "7db281742324a3f4c20a65f9dc11bad073066448b9c2b95799bece92811248c4"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-webkit/untouched-source.zip",
+      "bytes": 2626,
+      "sha256": "38879b6618f7569d489f25e4d9333ad70db7289c7ec55091dde20f96e40adc89"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-chromium/archive-overflow-refused.png",
+      "bytes": 137987,
+      "sha256": "0bf6fa47f8245b1f411de4d81e887389d5378703ad2e5759dc8aadbf7afd199c"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-chromium/source-before.json",
+      "bytes": 1424,
+      "sha256": "1bf697ad1fd31668fe539cbe780d75a8e70d2ceb4451cee77d30bc44eed33ed7"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-firefox/archive-overflow-refused.png",
+      "bytes": 160448,
+      "sha256": "e6e1acf628ddd272fbbd7c8153c411643ae162c7f8226606de9192845e76b051"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-firefox/source-before.json",
+      "bytes": 1424,
+      "sha256": "c92971bac23ebe44cfcfeb916e716295acaa4b29a4b702e379016a11a3827048"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-webkit/archive-overflow-refused.png",
+      "bytes": 361936,
+      "sha256": "126e0c972ab606883129d4d7112c2ea5fb51437fc2b90c85b5882976c360a3bb"
+    },
+    {
+      "path": "test-results/production/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-webkit/source-before.json",
+      "bytes": 1424,
+      "sha256": "aee95f53ff45ca409571611d3034390d5f7ceb641a2bb697980e83ce1ce05732"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--1cfb2-PNG-download-fallback-true--chromium/thin-details.apng",
+      "bytes": 8447,
+      "sha256": "cfbd2ad6a0cfa3ab51001dadaff0a24587130e38c6964981a8429ee41de6169a"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--1cfb2-PNG-download-fallback-true--firefox/thin-details.apng",
+      "bytes": 8447,
+      "sha256": "cfbd2ad6a0cfa3ab51001dadaff0a24587130e38c6964981a8429ee41de6169a"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--1cfb2-PNG-download-fallback-true--webkit/thin-details.apng",
+      "bytes": 8447,
+      "sha256": "cfbd2ad6a0cfa3ab51001dadaff0a24587130e38c6964981a8429ee41de6169a"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--d99bc-NG-download-fallback-false--chromium/thin-details.apng",
+      "bytes": 227,
+      "sha256": "95390f9fe11ad1be95b658817eb2810ecc10ffc6563ec72546763ee3638cce49"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--d99bc-NG-download-fallback-false--firefox/thin-details.apng",
+      "bytes": 229,
+      "sha256": "6486dc8d69e5938291322a4ef6e8961f930871e4f4591e625c99237847eabcfe"
+    },
+    {
+      "path": "test-results/production/remainingAuditSafety-thin--d99bc-NG-download-fallback-false--webkit/thin-details.apng",
+      "bytes": 227,
+      "sha256": "1b2ce4d4f2b1dc14b41753fa259ebad81ac4ba5b5f8f975c8b1c5d28147056a7"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-chromium/motion-atelier-1024-bottom.png",
+      "bytes": 108775,
+      "sha256": "577e5958309c447c98496639b0c81c5e2f39285ba18fb204833cd489e3d5a8f8"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-chromium/motion-atelier-1024-top.png",
+      "bytes": 115255,
+      "sha256": "762ead60109e432d8de98a085405a824578369c0950bfbee3e2563e172bd940b"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-firefox/motion-atelier-1024-bottom.png",
+      "bytes": 142805,
+      "sha256": "3f3811470c40138bdcbc665f9e618b473ba0273ef06b1d0c864b92cf8a73ff8e"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-firefox/motion-atelier-1024-top.png",
+      "bytes": 148492,
+      "sha256": "b1d06d3a38bb2e315733eac19e0ca2c92f2dc51cfbea58bb3f38b448fb79f863"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-webkit/motion-atelier-1024-bottom.png",
+      "bytes": 265887,
+      "sha256": "743777d95ca9140bdc84d07f2ff6048127feb65c39e46d85129602aa9f54f030"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-ateli-b51b3-lp-and-motion-states-change-webkit/motion-atelier-1024-top.png",
+      "bytes": 282000,
+      "sha256": "5dc7c669f54a3e89a2508f6289eee4f7a89bc7034d4ec6182b65d41890ed0662"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-chromium/motion-cozy-classic-1024-bottom.png",
+      "bytes": 110045,
+      "sha256": "bc49772c981750764352891ad79b426b08a26429379d172574a3676d0df89fd5"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-chromium/motion-cozy-classic-1024-top.png",
+      "bytes": 116589,
+      "sha256": "0920048fcea022cd25656946af8d0cf62db9bda07e39d1b3c29cd5caf7a29cbe"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-firefox/motion-cozy-classic-1024-bottom.png",
+      "bytes": 143761,
+      "sha256": "d0ea28d32d726a0e6bc86ba58277fbf61465e0f777a4a8ee1e92c1bdcaa40a52"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-firefox/motion-cozy-classic-1024-top.png",
+      "bytes": 149548,
+      "sha256": "85d63259fc69abd37ff85111216fac49201ef7ca1d197535efdbfe6947a53807"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-webkit/motion-cozy-classic-1024-bottom.png",
+      "bytes": 268301,
+      "sha256": "e9d90bd38959f1dad3844c30ed2509613461a36f99c244146b763a0aab703ae3"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-cozy--6f515-lp-and-motion-states-change-webkit/motion-cozy-classic-1024-top.png",
+      "bytes": 284756,
+      "sha256": "cd735f444f55939b64e70b8580ba088697231016763651b1954546897dc698b9"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-the-o-b1a99-watches-swap-and-reset-work-chromium/compact-color-dock.png",
+      "bytes": 2050,
+      "sha256": "a1b327ef4ba7332b533188395751c22e7e1c4007792e4d09da5813cf14c01cc1"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-the-o-b1a99-watches-swap-and-reset-work-firefox/compact-color-dock.png",
+      "bytes": 1984,
+      "sha256": "c63960a6038a37ec63e78b31aa942cc9d6b39460a303d5eaf13b2c258e223c5f"
+    },
+    {
+      "path": "test-results/production/stableStudioGeometry-the-o-b1a99-watches-swap-and-reset-work-webkit/compact-color-dock.png",
+      "bytes": 4706,
+      "sha256": "71c754fbeabb5c1d5645f38a53e70d96ffd426c94edb371c3ea9e77407b1cfd9"
+    },
+    {
+      "path": "test-results/production/workspaceConsistency-compi-ae77f-tivation-clears-its-preview-chromium/header-1280.png",
+      "bytes": 12443,
+      "sha256": "eafac56f1c41d4f65fdf91eeb2aef7446d7902f8077816d8bc493c6cc54543a9"
+    },
+    {
+      "path": "test-results/production/workspaceConsistency-compi-c2cf8-eyboard-and-full-zoom-range-chromium/navigator.png",
+      "bytes": 7770,
+      "sha256": "49112d131f3291522547a866421822f9bd266cd205f2203575ab553c202fd4b2"
+    },
+    {
+      "path": "test-results/production/workspaceConsistency-compi-dea67-s-without-modifying-artwork-chromium/lighting-workspace.png",
+      "bytes": 89459,
+      "sha256": "872b2f91c9fa106171babdc85ec4927b37f85915a48d8e6f90f9b9df267cae82"
+    },
+    {
+      "path": "test-results/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/archive-source-preserved.png",
+      "bytes": 129876,
+      "sha256": "b0d666e9ee30d185dd9dc62885e6f570f908d6367ec501e98dd736d8cc197370"
+    },
+    {
+      "path": "test-results/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/source-before.json",
+      "bytes": 1420,
+      "sha256": "183f4410e69adc6596cfd3205afb4761a00c07882ae88bddc2d98581ed4ffe19"
+    },
+    {
+      "path": "test-results/recoveryArchiveAdmission-a-d1c1a-reserves-its-damaged-source-chromium/untouched-source.zip",
+      "bytes": 2626,
+      "sha256": "8dce831a633b611e41a0eebaabb8c6a9af120e1908d43bcef9e8a1355ddb2b7b"
+    },
+    {
+      "path": "test-results/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-chromium/archive-overflow-refused.png",
+      "bytes": 140898,
+      "sha256": "719fb1094aad9d94987a7c578b9702df2a0ca9035627cddde0dec47deaa80b5f"
+    },
+    {
+      "path": "test-results/recoveryArchiveAdmission-o-421ac-ng-and-preserves-its-source-chromium/source-before.json",
+      "bytes": 1424,
+      "sha256": "f11800b667f36c5b51472cae403fe7c988daff04b9b31ab7a60fe9d8703abb13"
+    },
+    {
+      "path": "test-results/researchWorkbench-atelier--15ee8-it-warnings-remain-readable-chromium/game-kit-atelier-light.png",
+      "bytes": 196454,
+      "sha256": "ef0ed9967789889eb831bc01bce339ac37c10f688896e1d82cd2083c988f0e39"
+    },
+    {
+      "path": "test-results/researchWorkbench-atelier--15ee8-it-warnings-remain-readable-chromium/research-atelier-light.png",
+      "bytes": 88305,
+      "sha256": "8e2014db4877ce31b3e7eac9fc56cea03346c82273e7114b2c9242607bb1ab76"
+    },
+    {
+      "path": "test-results/researchWorkbench-atelier--efa32-it-warnings-remain-readable-chromium/game-kit-atelier-dark.png",
+      "bytes": 165875,
+      "sha256": "27342e6caeb39feb55ea86f52813f76345fe2fc651cb12c55573cc10fbcfd283"
+    },
+    {
+      "path": "test-results/researchWorkbench-atelier--efa32-it-warnings-remain-readable-chromium/research-atelier-dark.png",
+      "bytes": 85575,
+      "sha256": "3961eb12df2f4cd0ac425056c5303c0c815e176139fe35d73a3c8791328a1330"
+    },
+    {
+      "path": "test-results/researchWorkbench-corner-a-387db--scale-and-accessible-edges-chromium/corner-artwork-fit.png",
+      "bytes": 28790,
+      "sha256": "15cf94238963e1e25104ca4fa05843216268b5971dfc8aa2cd42ff1c06ad251a"
+    },
+    {
+      "path": "test-results/researchWorkbench-cozy-cla-30b72-it-warnings-remain-readable-chromium/game-kit-cozy-classic-dark.png",
+      "bytes": 167938,
+      "sha256": "001c072a4906dd0a72f9bf2f7bc945dda8f1fb69b172e4c3862e119df6bbb707"
+    },
+    {
+      "path": "test-results/researchWorkbench-cozy-cla-30b72-it-warnings-remain-readable-chromium/research-cozy-classic-dark.png",
+      "bytes": 86419,
+      "sha256": "57a8b42dca9af9981991f979a4e87d4462d85c4e86d940bd7559730831622e50"
+    },
+    {
+      "path": "test-results/researchWorkbench-cozy-cla-e6d70-it-warnings-remain-readable-chromium/game-kit-cozy-classic-light.png",
+      "bytes": 194411,
+      "sha256": "3f102f2d306a432eb7118b5f7cb871dd2d4845381bce97c608e85bea3a6c4147"
+    },
+    {
+      "path": "test-results/researchWorkbench-cozy-cla-e6d70-it-warnings-remain-readable-chromium/research-cozy-classic-light.png",
+      "bytes": 87523,
+      "sha256": "c84e9e3eec387d1bc7ff1dcc08dd44b7070be8ba48458249b36df24a5f59f4db"
+    },
+    {
+      "path": "test-results/researchWorkbench-outlined-7237f-ting-without-a-Normal-layer-chromium/outlined-directional-light.png",
+      "bytes": 21882,
+      "sha256": "74fdd6fb5c5c69173b93e5db11aa03f1409be50d06cb0778c169d13dad62715f"
+    },
+    {
+      "path": "test-results/researchWorkbench-outlined-7237f-ting-without-a-Normal-layer-chromium/outlined-simplification.png",
+      "bytes": 28241,
+      "sha256": "cda22481efb55dcbffec05c453db55e6bbc5124fdce3a1ff34ec68eb41a15a25"
+    },
+    {
+      "path": "test-results/researchWorkbench-real-art-d18e5-trols-in-a-narrow-inspector-chromium/beginner-light.png",
+      "bytes": 23571,
+      "sha256": "d029bfd254b20bd2fad879fca102f411166d66f0ee946e7a1235cd6e12772068"
+    },
+    {
+      "path": "test-results/researchWorkbench-real-art-d18e5-trols-in-a-narrow-inspector-chromium/beginner-pixelize.png",
+      "bytes": 33172,
+      "sha256": "f64e6cd2231fd71b230721f890c5b0d60691b7b40b56a075ebe22287127bb40c"
+    },
+    {
+      "path": "test-results/researchWorkbench-real-art-d18e5-trols-in-a-narrow-inspector-chromium/beginner-scene.png",
+      "bytes": 31137,
+      "sha256": "410db6dd8ffd2c5a40139c7e6dda080288be858c57f6b45410ae8b7b0b782f1b"
+    },
+    {
+      "path": "test-results/researchWorkbench-real-art-d18e5-trols-in-a-narrow-inspector-chromium/original-no-change.png",
+      "bytes": 29372,
+      "sha256": "784ba2dd1164932c044e4c34b1a0f88defe9ee3c32758d48e75bacab6e8736e0"
+    },
+    {
+      "path": "test-results/researchWorkbench-research-00850-s-fit-and-remain-accessible-chromium/research-workbench-1024.png",
+      "bytes": 82338,
+      "sha256": "7af8591656e6282e38cf1d50592d2634e895123d4a38a587b2e8003e9cc0ff70"
+    },
+    {
+      "path": "test-results/studio-Studio-Automated-Ac-0e527-ted-compact-dock-limitation-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/studio-Studio-Automated-Ac-4c19b-ted-compact-dock-limitation-chromium/layers-accessibility.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/studio-Studio-Automated-Ac-4c19b-ted-compact-dock-limitation-chromium/palette-accessibility.json",
+      "bytes": 16739,
+      "sha256": "49b1637859ee94c488872a5d33ef669cf8efbe0d8eab1f86ab40e849755b3c58"
+    },
+    {
+      "path": "test-results/studio-Studio-Automated-Ac-4c19b-ted-compact-dock-limitation-chromium/pixitools-accessibility.json",
+      "bytes": 16754,
+      "sha256": "246ed3aee4ea0f267f2979368c636f2e8b5ec31d784091bb50f4a69132e1ad0a"
+    },
+    {
+      "path": "test-results/studioChrome-project-contr-b63ec-line-work-at-desktop-widths-chromium/preview-speed-menu.png",
+      "bytes": 52941,
+      "sha256": "617f3a30eace78f63d7039d71a49efd98367ad0c95bb2cf8899a44b014bc2ef6"
+    },
+    {
+      "path": "test-results/studioChrome-project-contr-b63ec-line-work-at-desktop-widths-chromium/studio-wide.png",
+      "bytes": 66992,
+      "sha256": "4d8bef31d218bdb0daa3823f51adc493732b2d7656043ee3d3f3c1a5c9e925c6"
+    },
+    {
+      "path": "test-results/themeAccessibility-Four-Th-115b8-ff-under-Cozy-Classic-Light-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/themeAccessibility-Four-Th-303e8-tradeoff-under-Atelier-Dark-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/themeAccessibility-Four-Th-601cd-off-under-Cozy-Classic-Dark-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/themeAccessibility-Four-Th-ca47a-radeoff-under-Atelier-Light-chromium/accessibility-findings.json",
+      "bytes": 16754,
+      "sha256": "bc7d80e67be5a533144f810d0489c4acfdf09aa21c9d15f62b1c3f4998dbb58d"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/bucket-preview.png",
+      "bytes": 10519,
+      "sha256": "7a0400783c8d4dc208bec05a089e41757cf2908929ff32e76b9ed48c5b5f2a03"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/chisel-preview.png",
+      "bytes": 14336,
+      "sha256": "b6ff30dbced1310c0c70c2161f6c64c456b4b2f630462dd6131575553fe0c75e"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/curve-preview.png",
+      "bytes": 12595,
+      "sha256": "57fbc2d381a92430868fbf9e83cdbe6f2fb439bf555991e3e6bf443f9cee9c3e"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/dither-preview.png",
+      "bytes": 12134,
+      "sha256": "02d59d9b99fe73b41897e766986f7f379b0dfeec8390b7ee74b16f3ee9746ece"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/ellipse-preview.png",
+      "bytes": 8833,
+      "sha256": "e349a0890fedc6bb09276334d3c7c861a00916a6606a483a20df4a4269a522a1"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/eraser-preview.png",
+      "bytes": 11508,
+      "sha256": "1da39e0892f617ba929c3ac41e3cd7faa709f3bcd6cb869918a32330375af5aa"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/iso-preview.png",
+      "bytes": 10105,
+      "sha256": "c32a7ebec7f17040c18f4660930cc68a575ef42f445298ea1caa8cd0ec7a045d"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/lasso-preview.png",
+      "bytes": 11182,
+      "sha256": "7a061a6ee92b25fe13016696265aafe3d566b6d08d66a45bda06fca94c06895b"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/pen-preview.png",
+      "bytes": 10150,
+      "sha256": "0f85549776fedb18cca2700cc2c680427347c6cd49dc675a484f8e12ed388183"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/recolor-preview.png",
+      "bytes": 12880,
+      "sha256": "236e8e34c3d523e4c0fe1fc066ec50cb6447e53158953740f5d6f66a7dca5595"
+    },
+    {
+      "path": "test-results/toolMotionPreview-drawing--fca0e-on-hover-and-keyboard-focus-chromium/wand-preview.png",
+      "bytes": 12187,
+      "sha256": "e7279bb70c268f0d36e5229ec4d9f8bae63fc2b75c2a12704c35a840affb0829"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/apply-preview.png",
+      "bytes": 12613,
+      "sha256": "6ab07fc136f5c0c9f72c02cd4a1ab839b7edb8c32154cea85631f936eabdff84"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/jaggies-preview.png",
+      "bytes": 12412,
+      "sha256": "b5301109a768f3554855f1515446725d4ee7474feab3cba0ce4abe6837015b60"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/lighting-preview-result.png",
+      "bytes": 9888,
+      "sha256": "f1d20adbee0bda94b7ee8ff4b979c99ea438e3e3a8585f205204e3e8531234af"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/lighting-preview.png",
+      "bytes": 9688,
+      "sha256": "344e7513ba5a019ac647407ff85e8254aae4bca12ecd55c949ba26a4d70b8fdb"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/rotate-preview.png",
+      "bytes": 13637,
+      "sha256": "01e2a1b9e4580c160fa93b2dd360fc143df50db224a0b50014efa870a9a7127c"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/scan-preview.png",
+      "bytes": 13094,
+      "sha256": "884f9d5e4f5ad89982f0c013923177ae9e8a016a2ec7fcb3da055c373035fbfa"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/selout-preview.png",
+      "bytes": 12797,
+      "sha256": "c64d82045a3a87761a2c1432b359aa17bd2e85c87e56fe3f9129187758296324"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/shadow-preview.png",
+      "bytes": 10968,
+      "sha256": "0839be1b41bb586e498c26e57ec5e7657d044f6e3b897bfb3d3db8db82735d90"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/specular-preview.png",
+      "bytes": 13196,
+      "sha256": "d15a744b8fec0c581b83a499b3324245f790c87e23cb565fad34807a6643b013"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/strays-preview.png",
+      "bytes": 13127,
+      "sha256": "0879c1295d85eaf9d3ee2214469dd9615fcd421025217568ed7f48a74de78416"
+    },
+    {
+      "path": "test-results/toolMotionPreview-PixiTool-17782-ithout-changing-the-project-chromium/thin-preview.png",
+      "bytes": 10733,
+      "sha256": "76474eae491a907d7f2f6812d8b0455bcb482f1cd7e1c41f0983229f81609d2c"
+    },
+    {
+      "path": "test-results/uxHardeningClosure-PixiBun-167cc-nd-instant-fallback-buttons-chromium/captures/21-unsupported-codec-recovery.png",
+      "bytes": 124566,
+      "sha256": "d57494e736670739637d0e6d51db116774759bdd57fb021c8dac18f1c1a9d650"
+    },
+    {
+      "path": "test-results/uxHardeningClosure-PixiBun-5b614-assurance-and-recovery-path-chromium/captures/20-save-issue-state.png",
+      "bytes": 61387,
+      "sha256": "b14dc1596ff591f4511a58461155506d416d6ec633dc1e730697b466da849ed4"
+    },
+    {
+      "path": "test-results/uxHardeningClosure-PixiBun-b7ce8--Review-and-Godot-preflight-chromium/captures/18-viewport-1280x720-animation-review.png",
+      "bytes": 88812,
+      "sha256": "ee8ff0f9b3f7d48cec9688ddab0dd99194b803c65ec99e47529c6b0c111642cc"
+    },
+    {
+      "path": "test-results/uxHardeningClosure-PixiBun-b7ce8--Review-and-Godot-preflight-chromium/captures/19-viewport-1280x720-godot-preflight.png",
+      "bytes": 145912,
+      "sha256": "94eb715ce780d7e776807db991c9ae2e965e821468e6e0a73e856e33371675e3"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--67b58-details-regions-and-cleanup-chromium/captures/09-animation-review-before-scan.png",
+      "bytes": 94653,
+      "sha256": "12aa543ef59bbd4488a880401bfd4deaf8d4306c568ac46c899a1785d65c3a7c"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--67b58-details-regions-and-cleanup-chromium/captures/10-animation-review-findings.png",
+      "bytes": 107102,
+      "sha256": "6ea70fc362c99c1e625a9d04c20b39f398e30d5940717e9563bbaf23c4ee6a28"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--67b58-details-regions-and-cleanup-chromium/captures/11-animation-review-details-expanded.png",
+      "bytes": 99569,
+      "sha256": "9aae0425c2efe730433df00dc8c53c725b26714711968b6cc2a23bb3f6aadd4d"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--67b58-details-regions-and-cleanup-chromium/captures/12-region-creation-active-selection.png",
+      "bytes": 112664,
+      "sha256": "047c6c235333d8fcebf4a87b7117d8885c132f83cee44e603615cb914fd9a503"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--67b58-details-regions-and-cleanup-chromium/captures/13-cleanup-preview-protected-badge.png",
+      "bytes": 130395,
+      "sha256": "4ae6918cc7d64cd3c8c594d60a52466ae33c1b9ef717f9be4ac39ca48f4ac1a6"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--6add4-nd-1024px-responsive-layout-chromium/captures/14-palette-duplicate-conflict.png",
+      "bytes": 81908,
+      "sha256": "6f6cdf35f4fb6db9413625483973377def03a398c4cede9248648803463a5403"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--6add4-nd-1024px-responsive-layout-chromium/captures/15-palette-locate-on-canvas.png",
+      "bytes": 112553,
+      "sha256": "79ffb32b3bbc0de622735822938c18e3eecf998bfbb7e96a22811ea247ae546b"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--6add4-nd-1024px-responsive-layout-chromium/captures/16-godot-preflight-attention.png",
+      "bytes": 155224,
+      "sha256": "c63c64d412ba324c19e5b539dc3e8f7d22d35473b7cc5e679f73b4d360720738"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--6add4-nd-1024px-responsive-layout-chromium/captures/17-responsive-1024x768.png",
+      "bytes": 117873,
+      "sha256": "93d3c27896b66de0697990947df10498321723a4f41142f28557305e60cfe746"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--75aaf-nflict-in-real-browser-tabs-chromium/captures/08-two-tab-save-conflict.png",
+      "bytes": 81514,
+      "sha256": "9e81f086b154152d26298252ce3b84c24218d25d6e70e0a30c06d9af8a911026"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--db13c-ne-and-update-notifications-chromium/captures/01-default-studio.png",
+      "bytes": 69563,
+      "sha256": "7edef03073778dc8dd616c90c0cd26d5eb4dfe1fa9c0922176a2cc2230f4279a"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--db13c-ne-and-update-notifications-chromium/captures/02-dirty-project.png",
+      "bytes": 69633,
+      "sha256": "7d46ce950687f48460a91e22ebc78fba7bdb4f0f56394d208c3d815cae53aaad"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--db13c-ne-and-update-notifications-chromium/captures/03-saved-state.png",
+      "bytes": 74970,
+      "sha256": "2389b9a6f99a497bde5a10b1005c65543ffa5986c262eac2b001d272509876e4"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--db13c-ne-and-update-notifications-chromium/captures/04-offline-state.png",
+      "bytes": 76013,
+      "sha256": "f725796ef21cd8f08a7ca0b17822a5f8bd3ad4f7cce53f7d0b3ced970b051fbb"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--f4628-unsupported-codec-fallbacks-chromium/captures/05-export-modal-grouped.png",
+      "bytes": 103486,
+      "sha256": "718352b8ad3e0dfe7bc53fcf4557440725108e270e4a4de4f4963ca83a7c6373"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--f4628-unsupported-codec-fallbacks-chromium/captures/06-export-webm-tab.png",
+      "bytes": 114988,
+      "sha256": "60d442e5f191f17ea5a2e8756d00002066629285158466de43650982082b07de"
+    },
+    {
+      "path": "test-results/uxVisualQa-PixiBun-Visual--f4628-unsupported-codec-fallbacks-chromium/captures/07-godot-preflight-ready.png",
+      "bytes": 159252,
+      "sha256": "ce888b5a475b6b731371614d02d0217d44d377f9f47bb345a83f3f8bddefa749"
+    }
+  ],
+  "totalBytes": 16241831,
+  "fileManifestSha256": "0e67c582f58969e437d90450131168c4f84b942c8fbf41130d3b010e027dd392"
+}

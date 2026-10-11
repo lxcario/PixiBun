@@ -1,6 +1,6 @@
 # Documentation map
 
-The [10 October resource-cache recovery record](research/2026-10-10-resource-cache-recovery.md) records the passing local/CI full-gate and complete browser milestone at `bfc1c5c`, preserves earlier failures and capability differences, and separates the actual two-build rollback fixture correction, evidence custody and remaining release qualification.
+The [11 October validation handoff](research/2026-10-11-validation-handoff.md) records final `a176d86` gate, independently retrieved complete CI browser and actual rollback verdicts, the complete preserved browser evidence, the excluded longer-session result and requested main publication. The [10 October recovery record](research/2026-10-10-resource-cache-recovery.md) preserves the diagnosis and earlier failed/passing checkpoints. Accessibility, physical devices, actual Safari and production hosting remain separate release obligations.
 
 The [9 October recovery follow-up](research/2026-10-09-l09-recovery-followup.md) records the navigation repair, controlled Linux WebKit diagnosis, passing local/remote gates and complete browser verdicts, automatic evidence retrieval and remaining release limits. Earlier checkpoints below retain their own revisions and outcomes.
 

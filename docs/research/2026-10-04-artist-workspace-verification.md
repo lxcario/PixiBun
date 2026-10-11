@@ -1,5 +1,7 @@
 # Artist workspace execution record
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 4 October 2026. Local working tree, package 1.14.1, Next.js 16.3.8, Node.js 22.23.3, Windows. This record accompanies [the UX research decisions](2026-10-04-artist-workspace-feedback.md) and [artist guide](../guides/artist-workspace.md). No commit, push or deployment has been requested or performed.
 
 ## Implemented scope

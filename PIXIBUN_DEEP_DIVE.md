@@ -1,5 +1,7 @@
 # PixiBun: Technical, Mathematical & Architectural Reference
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 Reconciled 7 October 2026 against the local checkout. This reference describes implemented contracts, not universal performance or accessibility guarantees. [Current status](docs/current-status.md), [architecture](ARCHITECTURE.md) and [dated evidence](docs/research/phase-implementation-status.md) separate implemented behavior from verification and proposals.
 
 ## Contents

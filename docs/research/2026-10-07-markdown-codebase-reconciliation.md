@@ -1,5 +1,7 @@
 # Markdown and codebase reconciliation — 7 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The current documentation had factual mismatches with PixiBun. This pass corrected the identified implementation claims in the guides and reference files after the [cross-phase code hardening](2026-10-07-piximotion-cross-phase-hardening.md). The corrected guidance describes the local working tree based on `dcf9f5c303cdbaa6a533e3315de947c261c1e3ac`, package `1.14.1`, Next.js `16.3.8`, React 19 and project format v4. Changes remain local and uncommitted.
 
 “All Markdown matches current code 1:1” would be an inaccurate description of this repository. Historical reports intentionally describe earlier revisions and failed runs; engine plans describe future work; vendor instructions and private transcripts have separate roles. The maintained implementation references should describe current behavior, while those other files should state their scope. This review aligns the confirmed current claims and records the limits of that assessment.

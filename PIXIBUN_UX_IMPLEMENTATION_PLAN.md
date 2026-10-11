@@ -1,5 +1,7 @@
 # PixiBun UX implementation plan — 2026-09-29
 
+Planning status — 11 October 2026: the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 > **Historical snapshot:** Findings, selectors, counts and OPEN/RESOLVED notes below describe their original checkpoint. Later closures and current contracts are tracked in the [issue registry](docs/research/issue-registry.md). This file is not a live backlog or current UI instruction.
 
 > **Status update (2026-09-30):** This document records the original 2026-09-29 plan and its then-current acceptance wording. Direct user feedback changed the header: portable project backup is reached through Export, while the duplicate Back up button and visible “Saved on this device” text were removed. New sits beside the project name and Save. The tool cleanup, preview-first PixiTools actions, layer drag reordering, and timeline refinements are implemented. See [the session changelog](PIXIBUN_UX_CHANGELOG.md) for the current behavior. Artist task studies and larger responsive-workspace work remain proposals.

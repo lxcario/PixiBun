@@ -1,5 +1,7 @@
 # PixiBun code and documentation audit — 2 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 ## Verdict
 
 **The codebase and the Markdown are not 1:1.** The application has substantial, freshly verified functionality. The documentation contains correct descriptions and unusually useful dated evidence, but also obsolete features, contradictory current-status statements, inaccurate implementation details, incorrect research material, and guarantees that the evidence does not establish.

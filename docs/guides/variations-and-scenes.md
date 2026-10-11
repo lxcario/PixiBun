@@ -1,5 +1,7 @@
 # Try a new look, keep your original
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Lighting](lighting-and-surfaces.md) · [Patterns](pixitools-cleanup-and-tiles.md) · [All features](../features.md)
 
 Open **PixiTools → Try a new look**. Three tabs—**Simplify**, **Light**, and **Tiles**—offer bounded studies of your own artwork. The source/result panes compare actual pixels. Previews can update after a brief pause when settings change; **Preview my artwork / Update preview** asks for a fresh result. A preview alone does not apply it.

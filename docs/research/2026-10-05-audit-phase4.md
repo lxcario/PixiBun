@@ -1,5 +1,7 @@
 # Deep audit repair phase 4 — preview and save/export memory
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 5 October 2026. Local uncommitted work on the Phase 1–3 checkout, package 1.14.1, supported Node 22.23.3. Findings A10/A11 originate in the [deep audit](2026-10-05-deep-product-code-audit.md). The original source trace identified risks; it did not establish an out-of-memory failure. This phase measures a controlled workload and repairs its preparation/retention paths. No publication, deployment or external TestSprite execution is implied.
 
 ## Implemented behavior

@@ -1,5 +1,7 @@
 # Audit implementation: phase status
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Publication/availability erratum — 2 October 2026:** The six-phase work and later palette/UI checkpoint were published in base revision 277dc0b. Earlier “uncommitted” and “CLI absent” statements describe their phase environment, not the current host/repository. Phase 4 corrected native CLI discovery and recorded the user’s local-only verification choice. No new deployment, TestSprite verdict or participant study follows from publication. See [current status](../current-status.md).
 
 Updated: 1 October 2026. Based on the [codebase audit](2026-09-30-codebase-and-pixel-art-audit.md). The six bounded implementation phases are delivered; artist evaluation and the wider follow-ups below remain open. The [session completion record](session-completion-2026-10-01.md) reconciles this recorded engineering evidence with later shared interface updates and the current test inventory.

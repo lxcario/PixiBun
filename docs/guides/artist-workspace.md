@@ -1,5 +1,7 @@
 # Arrange a desk for drawing and animation
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Drawing tools](drawing-tools.md) · [Animation](animation-and-review.md)
 
 Use the **Workspace** list in the project rail to keep the panels you need nearby. These are desktop Studio controls; the phone's Pocket interface has its own layout. At compact desktop widths, shorter labels keep project and drawing actions together. Open **Size** (or the pixel-size button) for presets and **Clean corners**; the extra inline presets appear on wider desks. The offline badge uses a disconnected-network icon at compact widths, with its full status available to assistive technology and in the hover description.

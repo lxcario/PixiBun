@@ -1,5 +1,7 @@
 # L09 navigation recovery and validation follow-up — 9 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Candidate application repair: d4daddffc99326655126b7b06e57c1d809c1ff29. Validation and runner revision: 94bd345f023837d4beacc28f4b9699f4401ef95d. The latter changes no application source. Remote merge ee593d1fdf51e816bc960138e362e37c0e5d9bc6 has the same Git tree, 3f093aea6ef85a533cb95f17f75709728917e5e0.
 
 ## Executed results

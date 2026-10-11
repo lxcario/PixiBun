@@ -1,5 +1,7 @@
 # Phase 3: Iso drawing and one floating preview
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Implemented 2 October 2026 on an uncommitted checkout based on 1b13922cdd264d43d97b8b4fae16fca2b3ac0770. Earlier documentation remediation and phase 1/2 changes remain in the tree. [Repair plan](../plans/2026-10-02-feature-repairs.md). This is local implementation and execution evidence, not a push, deployment or release approval.
 
 ## Behavior

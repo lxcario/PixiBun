@@ -1,5 +1,7 @@
 # Session UI/UX improvements — 2026-10-01
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Status: **Implemented and locally verified.** This follows the [six-phase implementation](phase-implementation-status.md) and [earlier interface pass](PHASE6_UX_HARDENING.md). Repository publication is authorized by the user; Git history records the committed state. Artist evaluation remains open.
 
 ## Artist feedback and corrections

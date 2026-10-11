@@ -1,5 +1,7 @@
 # Implementation Plan: Fix All Audit Findings from PIXIBUN_AUDIT_RESULTS.md (Amended)
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 > **Historical plan / checkpoint:** This preserves the earlier design and recorded verification. Current controls, resources, storage and testing are in [the documentation map](../README.md). Retired audio/Rivet/optics plans, old server config and timing/conformance language are not current requirements.
 
 Resolve all Critical, High, and Medium findings identified in [`PIXIBUN_AUDIT_RESULTS.md`](../../PIXIBUN_AUDIT_RESULTS.md), establishing strict invariant boundaries across the canvas envelope, hardening safety routines against edge cases, synchronizing runtime versions, and updating documentation metrics.

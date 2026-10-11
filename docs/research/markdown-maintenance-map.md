@@ -1,5 +1,7 @@
 # Original Markdown maintenance dispositions
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The [8 October review](2026-10-08-session-review-publication.md) provides a new corpus/source-reference census, active-registry corrections and current publication/verification status. This table retains its original intake scope.
 
 This maps all 52 main-project Markdown files at audit intake. It excludes the separate older worktree and generated report, which remain revision-specific history. New canonical guides are indexed in [docs/README.md](../README.md). No original failure/release decision or screenshot was deleted.

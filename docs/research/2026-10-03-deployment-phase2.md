@@ -1,5 +1,7 @@
 # Deployment phase 2: trust and build identity
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 3 October 2026. Base: `32c6a940ff4b652afadf93e177ccee46ec708cf7`; package `1.14.1`. This follows the [co-draw phase 1 repair](2026-10-03-codraw-phase1.md) after validation of the pasted audit, separate from the earlier feature-repair numbering. Both phases remain local and uncommitted. This record does not attest a GitHub Actions run, a Vercel deployment or a release.
 
 ## Confirmed problem and repair

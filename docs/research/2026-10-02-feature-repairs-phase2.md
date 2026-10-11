@@ -1,5 +1,7 @@
 # Phase 2: separate desktop practice from artwork
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Implemented 2 October 2026 on a dirty local checkout based on revision 1b13922cdd264d43d97b8b4fae16fca2b3ac0770. Earlier audit and phase 1 changes remain in this tree. This record is local execution, not a commit, push, deployment or release decision. [Repair plan](../plans/2026-10-02-feature-repairs.md).
 
 ## Behavior and boundaries

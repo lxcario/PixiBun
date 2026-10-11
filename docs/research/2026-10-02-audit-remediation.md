@@ -1,5 +1,7 @@
 # Audit remediation — 2 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user requested all corrections after the [code/documentation audit](2026-10-02-documentation-codebase-audit.md). The [40-finding registry](issue-registry.md) records current fixes and remaining qualification. Recorded validation applies to the working tree based on `277dc0b`. Subsequent Git publication is separate from deployment and release sign-off.
 
 ## Changes

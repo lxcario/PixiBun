@@ -1,5 +1,7 @@
 # Palette creation, compact scans and swatch removal
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 2026-10-01. These changes follow the published header/glint checkpoint; the user has requested Git publication of this follow-up. Verification follows the user's local-only instruction; no TestSprite upload or tunnel was used.
 
 ## Behavior

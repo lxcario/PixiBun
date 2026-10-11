@@ -1,5 +1,7 @@
 # Deep audit — Phase 3: command and workspace consistency
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 5 October 2026. Base checkout: `f18f4e47d299685d7fdf23de158ae082a883483d`, package `1.14.1`. This record covers local, uncommitted Phase 3 repairs layered on Phases 1 and 2. The original [audit](2026-10-05-deep-product-code-audit.md) and its diagnostic evidence retain their original scope. No commit, publication or deployment is implied.
 
 ## Repairs

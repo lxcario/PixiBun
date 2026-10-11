@@ -1,5 +1,7 @@
 # PixiBun Phase 6 UX Hardening: Research Workbench
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 > **Scope clarification — 2 October 2026:** The journeys/captures below are engineering walkthroughs and automated checks of the named historical UI. No participant confidence, measured benefit, full WCAG conformance or universal timing is established. Current File/Studio menus and compact Offline label supersede old selectors; palette location uses a selection bounding box, not a per-pixel pulsing overlay. [Current contracts and evidence](../current-status.md).
 
 Status: **Scoped workflow verification**

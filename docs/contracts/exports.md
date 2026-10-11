@@ -1,5 +1,7 @@
 # Export capability matrix
 
+The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+
 For step-by-step format choices and current screenshots, use the [artist export guide](../guides/exporting.md).
 
 The direct **Export** button opens format choices. **E selects Eraser**; there is no E shortcut for Export. Normal timeline export and **Cycle Loop** are different inputs.

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "originalQualifiedRevision": "bfc1c5c22d2d68b2a3942ae5b9f97577d3998f95",
+  "candidateRevision": "a176d8629c64b1c73c74631454eeff54f838f3d7",
+  "selectedInputsCompared": 707,
+  "changedSelectedInputs": [
+    ".github/workflows/ci.yml",
+    "tests/release/updateRollback.spec.ts"
+  ],
+  "changedTrackedFiles": [
+    ".github/workflows/ci.yml",
+    "docs/README.md",
+    "docs/current-status.md",
+    "docs/research/2026-10-10-resource-cache-recovery.md",
+    "docs/research/issue-registry.md",
+    "tests/release/updateRollback.spec.ts"
+  ],
+  "scope": "Application, complete development/production fixtures, their configurations and performance workloads are unchanged from the complete local and CI qualification at bfc1c5c. The new compiled build has a new worker identity and its own release qualification; the earlier complete local browser verdict remains scoped to its original build."
+}

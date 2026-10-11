@@ -1,5 +1,7 @@
 # Polish pixels and explore patterns
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 [Handbook](README.md) · [Animation review](animation-and-review.md) · [Variations](variations-and-scenes.md) · [All features](../features.md)
 
 ![The five task choices in the current PixiTools panel.](../assets/screenshots/2026-10-02-feature-guide/pixitools-chooser.png)

@@ -1,5 +1,7 @@
 # Import artwork safety — 9 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 This local repair follows the independent partial audit at `ad957550f6656b82f5f35162c8eabc19a45a1473`. The original audit and its failed reproductions remain unchanged under the local `audit/` directory. This record does not certify every feature, a deployed release or the full compiled suite.
 
 ## Repair scope

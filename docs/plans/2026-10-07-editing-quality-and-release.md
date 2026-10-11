@@ -1,5 +1,7 @@
 # Editing, responsiveness and release qualification — 7 October 2026
 
+Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
 This is the user's authorized five-area follow-up to the [cross-phase hardening](../research/2026-10-07-piximotion-cross-phase-hardening.md). It applies to the local working tree; completed engineering checks and pending human/operator checks are separate.
 
 | Area | Deliverable and acceptance | Status |

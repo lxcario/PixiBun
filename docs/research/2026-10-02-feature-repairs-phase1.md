@@ -1,5 +1,7 @@
 # Phase 1: safer practice actions
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Executed 2 October 2026 on a dirty local checkout based on revision 1b13922cdd264d43d97b8b4fae16fca2b3ac0770. These changes follow the [repair plan](../plans/2026-10-02-feature-repairs.md). Earlier documentation edits are still present; this record does not claim a commit, push, deployment or release sign-off.
 
 ## What changed

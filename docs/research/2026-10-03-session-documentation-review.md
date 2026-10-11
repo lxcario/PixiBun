@@ -1,5 +1,7 @@
 # Session documentation reconciliation — 3 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user requested a final Markdown review and Git publication of this session's work. The review covers every tracked or new, non-ignored project Markdown file, including this record. [Per-file scopes and dispositions](evidence/2026-10-03-session-documentation-review/markdown-review.json) distinguish current instructions, proposals, dated evidence and vendor skills. Ignored private transcripts, dependencies, generated runtime output and separate checkouts are outside the publication set.
 
 ## Corrections before publication

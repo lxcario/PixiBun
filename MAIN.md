@@ -1,5 +1,7 @@
 # PixiBun — Product scope
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 For artists: [illustrated handbook](docs/guides/README.md) and [complete feature index](docs/features.md).
 
 PixiBun is a browser studio for small pixel-art drawings, sprites, tiles and animation loops. Its audience includes pixel artists, beginners and people making art for games. The visual direction is a quiet desk: readable tools, restrained motion and warm Cozy Classic colors.

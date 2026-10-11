@@ -1,0 +1,8 @@
+{
+  "archive": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-browser-custody.zip",
+  "verifiedAt": "2026-10-11T06:17:34.043Z",
+  "bytes": 361,
+  "expectedApiDigest": "sha256:f4c6fd800112c8a0a90f1131acd37c465007591aadba3dc19863acb3b5bb6da8",
+  "actualDigest": "sha256:f4c6fd800112c8a0a90f1131acd37c465007591aadba3dc19863acb3b5bb6da8",
+  "passed": true
+}

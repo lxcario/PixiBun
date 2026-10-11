@@ -1,0 +1,32 @@
+{
+  "proof_20260908_1215_01_chisel_carved.png": {
+    "sha256": "c3b4415b5b12864b039c11b5eaa604d10ef16d4e00c7622db5b57eb8182aed89",
+    "sizeBytes": 73629,
+    "mtime": "2026-10-10T20:04:13.240Z"
+  },
+  "proof_20260908_1215_02_normal_preview_on.png": {
+    "sha256": "71074f1b0211ae1c663c9b06b5ef78b70d94ba7d83c5aa700d8285a6b3f438c5",
+    "sizeBytes": 96095,
+    "mtime": "2026-10-10T20:04:13.974Z"
+  },
+  "proof_20260908_1215_03_relit_45deg.png": {
+    "sha256": "63b8b3935460798bc8dbdde6947a594c8ef286defd16583a1b9115cca0de5bf3",
+    "sizeBytes": 78295,
+    "mtime": "2026-10-10T20:04:15.687Z"
+  },
+  "proof_20260908_1215_04_relit_225deg.png": {
+    "sha256": "defed0eb439db8b73cc53a8b2a9975c3621e9d6619cb95c80c15dd20d1681f9f",
+    "sizeBytes": 78304,
+    "mtime": "2026-10-10T20:04:16.459Z"
+  },
+  "proof_20260908_1215_05_diff_heatmap.png": {
+    "sha256": "61183948013cfc07ce13fccdfeb2ac151b95a6578a293b24020bbdd3e08bc56d",
+    "sizeBytes": 49682,
+    "mtime": "2026-10-10T20:04:18.956Z"
+  },
+  "proof_20260908_1215_08_palette_cycling_active.png": {
+    "sha256": "38c59976f4f421d70d1254842d1b67ff2b23ae7161237cf478e75eaaf39cbed7",
+    "sizeBytes": 74117,
+    "mtime": "2026-10-10T20:04:18.745Z"
+  }
+}

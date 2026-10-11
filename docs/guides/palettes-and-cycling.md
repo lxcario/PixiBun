@@ -1,5 +1,7 @@
 # Make a palette and a little color loop
 
+For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+
 A small palette makes it easier to keep a drawing together. You can build one by picking colors or borrow a few shades from artwork you've already made.
 
 [Handbook](README.md) · [Colors and workspace](studio-workspace.md#colors-close-to-hand) · [All features](../features.md)

@@ -1,5 +1,7 @@
 # Input phase 3: workspace keyboard and touch ownership
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 3 October 2026. Base: `32c6a940ff4b652afadf93e177ccee46ec708cf7`; package `1.14.1`, Next.js `16.3.8`. This follows the [co-draw phase 1](2026-10-03-codraw-phase1.md) and [deployment phase 2](2026-10-03-deployment-phase2.md) repairs of the validated pasted audit, separate from earlier feature-repair numbering. The candidate includes those uncommitted repairs. No remote CI, deployment or release is attested.
 
 ## Problem and resulting behavior

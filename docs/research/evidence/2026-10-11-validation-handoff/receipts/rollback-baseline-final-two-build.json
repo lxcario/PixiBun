@@ -1,0 +1,409 @@
+{
+  "config": {
+    "argv": [
+      "D:\\PixiBun\\audit\\runtime\\node_modules\\node\\bin\\node.exe",
+      "D:\\PixiBun\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "playwright.release.config.ts",
+      "--workers=1",
+      "--retries=0",
+      "--reporter=list,json",
+      "--output=artifacts/l09-resource-recovery-2026-10-09/rollback-baseline-final-two-build-output"
+    ],
+    "configFile": "D:\\PixiBun\\playwright.release.config.ts",
+    "rootDir": "D:/PixiBun/tests/release",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/PixiBun/artifacts/l09-resource-recovery-2026-10-09/rollback-baseline-final-two-build-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/PixiBun/tests/release",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "D:/PixiBun/artifacts/l09-resource-recovery-2026-10-09/rollback-baseline-final-two-build-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "D:/PixiBun/tests/release",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "D:/PixiBun/artifacts/l09-resource-recovery-2026-10-09/rollback-baseline-final-two-build-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "D:/PixiBun/tests/release",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "updateRollback.spec.ts",
+      "file": "updateRollback.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14046,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:51:24.977Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "two-build-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJsZWdhY3lCbG9iIjogZmFsc2UsCiAgIm9sZENhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAiY2FuZGlkYXRlQ2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICJvbGRJZGVudGl0eSI6ICJwcm9qLW12MnQ4NzJiLTItMXA1Zjd5eSIsCiAgImNhbmRpZGF0ZUlkZW50aXR5IjogInByb2otbXYydDg3MmItMi0xcDVmN3l5IiwKICAicm9sbGJhY2tJZGVudGl0eSI6ICJwcm9qLW12MnQ4NzJiLTItMXA1Zjd5eSIsCiAgImZvcm1hdCI6IDQsCiAgImNsb3NlU2F2ZVRpbWVzIjogewogICAgImJlZm9yZUNsb3NlVGltZSI6IDE3OTE2NjE4OTM1NjIsCiAgICAiYWZ0ZXJDbG9zZVRpbWUiOiAxNzkxNjYxODkzNTYyCiAgfSwKICAibWV0YWRhdGEiOiB7CiAgICAibW90aW9uUmlncyI6IFsKICAgICAgewogICAgICAgICJ2ZXJzaW9uIjogMSwKICAgICAgICAiaWQiOiAicm9sbGJhY2stcmlnIiwKICAgICAgICAibmFtZSI6ICJDdXN0b2R5IGZpeHR1cmUiLAogICAgICAgICJwYXJ0IjogewogICAgICAgICAgImlkIjogInJvbGxiYWNrLXBhcnQiLAogICAgICAgICAgInNvdXJjZUZyYW1lSWQiOiAiZnJhbWUtMSIsCiAgICAgICAgICAic291cmNlTGF5ZXJJZCI6ICJsYXllci0xIiwKICAgICAgICAgICJ3aWR0aCI6IDMyLAogICAgICAgICAgImhlaWdodCI6IDMyLAogICAgICAgICAgInNvdXJjZVNoYTI1NiI6ICI2YmE1M2ExMmY1NzhkYzdhZTY5ZGM0OTdmODRjZDkwMWYzN2FjMTAyMGIwNjJiY2IwOThhMjdiMzFmOWFlODU1IiwKICAgICAgICAgICJib3VuZHMiOiB7CiAgICAgICAgICAgICJ4IjogMCwKICAgICAgICAgICAgInkiOiAwLAogICAgICAgICAgICAidyI6IDMyLAogICAgICAgICAgICAiaCI6IDMyCiAgICAgICAgICB9LAogICAgICAgICAgInBpdm90IjogewogICAgICAgICAgICAieCI6IDE2LAogICAgICAgICAgICAieSI6IDE2CiAgICAgICAgICB9LAogICAgICAgICAgInN0YXJ0UG9zZSI6IHsKICAgICAgICAgICAgInRyYW5zbGF0aW9uWCI6IDAsCiAgICAgICAgICAgICJ0cmFuc2xhdGlvblkiOiAwLAogICAgICAgICAgICAicm90YXRpb24iOiAwCiAgICAgICAgICB9LAogICAgICAgICAgImVuZFBvc2UiOiB7CiAgICAgICAgICAgICJ0cmFuc2xhdGlvblgiOiAyLAogICAgICAgICAgICAidHJhbnNsYXRpb25ZIjogMCwKICAgICAgICAgICAgInJvdGF0aW9uIjogMAogICAgICAgICAgfSwKICAgICAgICAgICJmcmFtZUNvdW50IjogNCwKICAgICAgICAgICJlYXNpbmciOiAibGluZWFyIiwKICAgICAgICAgICJtYXNrUnVucyI6IG51bGwKICAgICAgICB9CiAgICAgIH0KICAgIF0sCiAgICAiY3VzdG9tUmFtcHMiOiBbCiAgICAgIHsKICAgICAgICAiYmFzZUNvbG9yIjogIiNmZjAwMDAiLAogICAgICAgICJzaGFkZXMiOiBbCiAgICAgICAgICAiIzgwMDAwMCIsCiAgICAgICAgICAiI2ZmMDAwMCIsCiAgICAgICAgICAiI2ZmODA4MCIKICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9Cn0="
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDIsCiAgICAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciOiAxCiAgfSwKICAic2VydmVkU2NyaXB0cyI6IFsKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiZjc1OTdlODAxZjllZWJiZDI1OGRiNThlMjI3Y2E3MTE4NTUzMDM5YzI0ODhhMzdlZjM3M2E0NTFiNzllNjE5MyIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiM2M4NDA5MWQwN2YyZGRlOWYyZTgxMTVjZTkxOTRhNTA2OWE0ZmViODRhZjg5OGIwMTk4ZWViODY2OGUxM2Q1ZSIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICJmNzU5N2U4MDFmOWVlYmJkMjU4ZGI1OGUyMjdjYTcxMTg1NTMwMzljMjQ4OGEzN2VmMzczYTQ1MWI3OWU2MTkzIiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICIzYzg0MDkxZDA3ZjJkZGU5ZjJlODExNWNlOTE5NGE1MDY5YTRmZWI4NGFmODk4YjAxOThlZWI4NjY4ZTEzZDVlIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hMTc2ZDg2MjljNjRiMWM3M2M3NDYzMTQ1NGVlZmY1NGY4MzhmM2Q3IiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogImY3NTk3ZTgwMWY5ZWViYmQyNThkYjU4ZTIyN2NhNzExODU1MzAzOWMyNDg4YTM3ZWYzNzNhNDUxYjc5ZTYxOTMiLAogICAgICAic2VydmVkU2hhMjU2IjogIjNjODQwOTFkMDdmMmRkZTlmMmU4MTE1Y2U5MTk0YTUwNjlhNGZlYjg0YWY4OThiMDE5OGVlYjg2NjhlMTNkNWUiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-276368ad162f5618c9e8",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        },
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11823,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:51:39.220Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "two-build-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJsZWdhY3lCbG9iIjogdHJ1ZSwKICAib2xkQ2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICJjYW5kaWRhdGVDYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgIm9sZElkZW50aXR5IjogInByb2otbXYydDhoaHMtMi14dmtkM28iLAogICJjYW5kaWRhdGVJZGVudGl0eSI6ICJwcm9qLW12MnQ4aGhzLTIteHZrZDNvIiwKICAicm9sbGJhY2tJZGVudGl0eSI6ICJwcm9qLW12MnQ4aGhzLTIteHZrZDNvIiwKICAiZm9ybWF0IjogNCwKICAiY2xvc2VTYXZlVGltZXMiOiB7CiAgICAiYmVmb3JlQ2xvc2VUaW1lIjogMTc5MTY2MTkwNTYzOSwKICAgICJhZnRlckNsb3NlVGltZSI6IDE3OTE2NjE5MDU2MzkKICB9LAogICJtZXRhZGF0YSI6IHsKICAgICJtb3Rpb25SaWdzIjogWwogICAgICB7CiAgICAgICAgInZlcnNpb24iOiAxLAogICAgICAgICJpZCI6ICJyb2xsYmFjay1yaWciLAogICAgICAgICJuYW1lIjogIkN1c3RvZHkgZml4dHVyZSIsCiAgICAgICAgInBhcnQiOiB7CiAgICAgICAgICAiaWQiOiAicm9sbGJhY2stcGFydCIsCiAgICAgICAgICAic291cmNlRnJhbWVJZCI6ICJmcmFtZS0xIiwKICAgICAgICAgICJzb3VyY2VMYXllcklkIjogImxheWVyLTEiLAogICAgICAgICAgIndpZHRoIjogMzIsCiAgICAgICAgICAiaGVpZ2h0IjogMzIsCiAgICAgICAgICAic291cmNlU2hhMjU2IjogIjZiYTUzYTEyZjU3OGRjN2FlNjlkYzQ5N2Y4NGNkOTAxZjM3YWMxMDIwYjA2MmJjYjA5OGEyN2IzMWY5YWU4NTUiLAogICAgICAgICAgImJvdW5kcyI6IHsKICAgICAgICAgICAgIngiOiAwLAogICAgICAgICAgICAieSI6IDAsCiAgICAgICAgICAgICJ3IjogMzIsCiAgICAgICAgICAgICJoIjogMzIKICAgICAgICAgIH0sCiAgICAgICAgICAicGl2b3QiOiB7CiAgICAgICAgICAgICJ4IjogMTYsCiAgICAgICAgICAgICJ5IjogMTYKICAgICAgICAgIH0sCiAgICAgICAgICAic3RhcnRQb3NlIjogewogICAgICAgICAgICAidHJhbnNsYXRpb25YIjogMCwKICAgICAgICAgICAgInRyYW5zbGF0aW9uWSI6IDAsCiAgICAgICAgICAgICJyb3RhdGlvbiI6IDAKICAgICAgICAgIH0sCiAgICAgICAgICAiZW5kUG9zZSI6IHsKICAgICAgICAgICAgInRyYW5zbGF0aW9uWCI6IDIsCiAgICAgICAgICAgICJ0cmFuc2xhdGlvblkiOiAwLAogICAgICAgICAgICAicm90YXRpb24iOiAwCiAgICAgICAgICB9LAogICAgICAgICAgImZyYW1lQ291bnQiOiA0LAogICAgICAgICAgImVhc2luZyI6ICJsaW5lYXIiLAogICAgICAgICAgIm1hc2tSdW5zIjogbnVsbAogICAgICAgIH0KICAgICAgfQogICAgXSwKICAgICJjdXN0b21SYW1wcyI6IFsKICAgICAgewogICAgICAgICJiYXNlQ29sb3IiOiAiI2ZmMDAwMCIsCiAgICAgICAgInNoYWRlcyI6IFsKICAgICAgICAgICIjODAwMDAwIiwKICAgICAgICAgICIjZmYwMDAwIiwKICAgICAgICAgICIjZmY4MDgwIgogICAgICAgIF0KICAgICAgfQogICAgXQogIH0KfQ=="
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDIsCiAgICAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciOiAxCiAgfSwKICAic2VydmVkU2NyaXB0cyI6IFsKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiZjc1OTdlODAxZjllZWJiZDI1OGRiNThlMjI3Y2E3MTE4NTUzMDM5YzI0ODhhMzdlZjM3M2E0NTFiNzllNjE5MyIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiM2M4NDA5MWQwN2YyZGRlOWYyZTgxMTVjZTkxOTRhNTA2OWE0ZmViODRhZjg5OGIwMTk4ZWViODY2OGUxM2Q1ZSIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICJmNzU5N2U4MDFmOWVlYmJkMjU4ZGI1OGUyMjdjYTcxMTg1NTMwMzljMjQ4OGEzN2VmMzczYTQ1MWI3OWU2MTkzIiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICIzYzg0MDkxZDA3ZjJkZGU5ZjJlODExNWNlOTE5NGE1MDY5YTRmZWI4NGFmODk4YjAxOThlZWI4NjY4ZTEzZDVlIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-f974202a99581ae76daa",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        },
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25055,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:51:51.674Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "two-build-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJsZWdhY3lCbG9iIjogZmFsc2UsCiAgIm9sZENhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAiY2FuZGlkYXRlQ2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICJvbGRJZGVudGl0eSI6ICJwcm9qLW12MnQ4dmZ2LTItMWRvMXNlaiIsCiAgImNhbmRpZGF0ZUlkZW50aXR5IjogInByb2otbXYydDh2ZnYtMi0xZG8xc2VqIiwKICAicm9sbGJhY2tJZGVudGl0eSI6ICJwcm9qLW12MnQ4dmZ2LTItMWRvMXNlaiIsCiAgImZvcm1hdCI6IDQsCiAgImNsb3NlU2F2ZVRpbWVzIjogewogICAgImJlZm9yZUNsb3NlVGltZSI6IDE3OTE2NjE5MjkwMzksCiAgICAiYWZ0ZXJDbG9zZVRpbWUiOiAxNzkxNjYxOTI5NzIyCiAgfSwKICAibWV0YWRhdGEiOiB7CiAgICAibW90aW9uUmlncyI6IFtdLAogICAgImN1c3RvbVJhbXBzIjogW10KICB9Cn0="
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDIsCiAgICAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciOiAxCiAgfSwKICAic2VydmVkU2NyaXB0cyI6IFsKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICI3YjZmZGQ3NTgxYTdiOTFmYzNmMzQ4MzQzYTI5Njk5ODQ4MDFjNzg4OTlhNzYyMmEwMjY1OWZiMDk5YjdhMWE2IiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICJiNGQ1YWY2MmQxYzU4M2Y0Mzg0NGM1NWQ3ZTlkYjY3ZmZlYTA4NGEzZjgxMzBmZGI4ZDVkZTZiZmQ3N2UwODkwIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hMTc2ZDg2MjljNjRiMWM3M2M3NDYzMTQ1NGVlZmY1NGY4MzhmM2Q3IiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogImY3NTk3ZTgwMWY5ZWViYmQyNThkYjU4ZTIyN2NhNzExODU1MzAzOWMyNDg4YTM3ZWYzNzNhNDUxYjc5ZTYxOTMiLAogICAgICAic2VydmVkU2hhMjU2IjogIjNjODQwOTFkMDdmMmRkZTlmMmU4MTE1Y2U5MTk0YTUwNjlhNGZlYjg0YWY4OThiMDE5OGVlYjg2NjhlMTNkNWUiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiZjc1OTdlODAxZjllZWJiZDI1OGRiNThlMjI3Y2E3MTE4NTUzMDM5YzI0ODhhMzdlZjM3M2E0NTFiNzllNjE5MyIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiM2M4NDA5MWQwN2YyZGRlOWYyZTgxMTVjZTkxOTRhNTA2OWE0ZmViODRhZjg5OGIwMTk4ZWViODY2OGUxM2Q1ZSIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICJmNzU5N2U4MDFmOWVlYmJkMjU4ZGI1OGUyMjdjYTcxMTg1NTMwMzljMjQ4OGEzN2VmMzczYTQ1MWI3OWU2MTkzIiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICIzYzg0MDkxZDA3ZjJkZGU5ZjJlODExNWNlOTE5NGE1MDY5YTRmZWI4NGFmODk4YjAxOThlZWI4NjY4ZTEzZDVlIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-b132ea283f7f4df3f49a",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        },
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:52:17.819Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "two-build-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJsZWdhY3lCbG9iIjogdHJ1ZSwKICAib2xkQ2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICJjYW5kaWRhdGVDYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgIm9sZElkZW50aXR5IjogInByb2otbXYydDlienAtMi1sN2xjNmgiLAogICJjYW5kaWRhdGVJZGVudGl0eSI6ICJwcm9qLW12MnQ5YnpwLTItbDdsYzZoIiwKICAicm9sbGJhY2tJZGVudGl0eSI6ICJwcm9qLW12MnQ5YnpwLTItbDdsYzZoIiwKICAiZm9ybWF0IjogNCwKICAiY2xvc2VTYXZlVGltZXMiOiB7CiAgICAiYmVmb3JlQ2xvc2VUaW1lIjogMTc5MTY2MTk1MDc3NywKICAgICJhZnRlckNsb3NlVGltZSI6IDE3OTE2NjE5NTE0NjUKICB9LAogICJtZXRhZGF0YSI6IHsKICAgICJtb3Rpb25SaWdzIjogWwogICAgICB7CiAgICAgICAgInZlcnNpb24iOiAxLAogICAgICAgICJpZCI6ICJyb2xsYmFjay1yaWciLAogICAgICAgICJuYW1lIjogIkN1c3RvZHkgZml4dHVyZSIsCiAgICAgICAgInBhcnQiOiB7CiAgICAgICAgICAiaWQiOiAicm9sbGJhY2stcGFydCIsCiAgICAgICAgICAic291cmNlRnJhbWVJZCI6ICJmcmFtZS0xIiwKICAgICAgICAgICJzb3VyY2VMYXllcklkIjogImxheWVyLTEiLAogICAgICAgICAgIndpZHRoIjogMzIsCiAgICAgICAgICAiaGVpZ2h0IjogMzIsCiAgICAgICAgICAic291cmNlU2hhMjU2IjogIjZiYTUzYTEyZjU3OGRjN2FlNjlkYzQ5N2Y4NGNkOTAxZjM3YWMxMDIwYjA2MmJjYjA5OGEyN2IzMWY5YWU4NTUiLAogICAgICAgICAgImJvdW5kcyI6IHsKICAgICAgICAgICAgIngiOiAwLAogICAgICAgICAgICAieSI6IDAsCiAgICAgICAgICAgICJ3IjogMzIsCiAgICAgICAgICAgICJoIjogMzIKICAgICAgICAgIH0sCiAgICAgICAgICAicGl2b3QiOiB7CiAgICAgICAgICAgICJ4IjogMTYsCiAgICAgICAgICAgICJ5IjogMTYKICAgICAgICAgIH0sCiAgICAgICAgICAic3RhcnRQb3NlIjogewogICAgICAgICAgICAidHJhbnNsYXRpb25YIjogMCwKICAgICAgICAgICAgInRyYW5zbGF0aW9uWSI6IDAsCiAgICAgICAgICAgICJyb3RhdGlvbiI6IDAKICAgICAgICAgIH0sCiAgICAgICAgICAiZW5kUG9zZSI6IHsKICAgICAgICAgICAgInRyYW5zbGF0aW9uWCI6IDIsCiAgICAgICAgICAgICJ0cmFuc2xhdGlvblkiOiAwLAogICAgICAgICAgICAicm90YXRpb24iOiAwCiAgICAgICAgICB9LAogICAgICAgICAgImZyYW1lQ291bnQiOiA0LAogICAgICAgICAgImVhc2luZyI6ICJsaW5lYXIiLAogICAgICAgICAgIm1hc2tSdW5zIjogbnVsbAogICAgICAgIH0KICAgICAgfQogICAgXSwKICAgICJjdXN0b21SYW1wcyI6IFsKICAgICAgewogICAgICAgICJiYXNlQ29sb3IiOiAiI2ZmMDAwMCIsCiAgICAgICAgInNoYWRlcyI6IFsKICAgICAgICAgICIjODAwMDAwIiwKICAgICAgICAgICIjZmYwMDAwIiwKICAgICAgICAgICIjZmY4MDgwIgogICAgICAgIF0KICAgICAgfQogICAgXQogIH0KfQ=="
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDIsCiAgICAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciOiAxCiAgfSwKICAic2VydmVkU2NyaXB0cyI6IFsKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICI3YjZmZGQ3NTgxYTdiOTFmYzNmMzQ4MzQzYTI5Njk5ODQ4MDFjNzg4OTlhNzYyMmEwMjY1OWZiMDk5YjdhMWE2IiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICJiNGQ1YWY2MmQxYzU4M2Y0Mzg0NGM1NWQ3ZTlkYjY3ZmZlYTA4NGEzZjgxMzBmZGI4ZDVkZTZiZmQ3N2UwODkwIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hMTc2ZDg2MjljNjRiMWM3M2M3NDYzMTQ1NGVlZmY1NGY4MzhmM2Q3IiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogImY3NTk3ZTgwMWY5ZWViYmQyNThkYjU4ZTIyN2NhNzExODU1MzAzOWMyNDg4YTM3ZWYzNzNhNDUxYjc5ZTYxOTMiLAogICAgICAic2VydmVkU2hhMjU2IjogIjNjODQwOTFkMDdmMmRkZTlmMmU4MTE1Y2U5MTk0YTUwNjlhNGZlYjg0YWY4OThiMDE5OGVlYjg2NjhlMTNkNWUiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiZjc1OTdlODAxZjllZWJiZDI1OGRiNThlMjI3Y2E3MTE4NTUzMDM5YzI0ODhhMzdlZjM3M2E0NTFiNzllNjE5MyIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiM2M4NDA5MWQwN2YyZGRlOWYyZTgxMTVjZTkxOTRhNTA2OWE0ZmViODRhZjg5OGIwMTk4ZWViODY2OGUxM2Q1ZSIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICJmNzU5N2U4MDFmOWVlYmJkMjU4ZGI1OGUyMjdjYTcxMTg1NTMwMzljMjQ4OGEzN2VmMzczYTQ1MWI3OWU2MTkzIiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICIzYzg0MDkxZDA3ZjJkZGU5ZjJlODExNWNlOTE5NGE1MDY5YTRmZWI4NGFmODk4YjAxOThlZWI4NjY4ZTEzZDVlIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-f0cecea9b835ef865e70",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        },
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=false)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18331,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:52:43.039Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "two-build-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJsZWdhY3lCbG9iIjogZmFsc2UsCiAgIm9sZENhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAiY2FuZGlkYXRlQ2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICJvbGRJZGVudGl0eSI6ICJwcm9qLW12MnQ5dXhhLTItMTV4bWFjbCIsCiAgImNhbmRpZGF0ZUlkZW50aXR5IjogInByb2otbXYydDl1eGEtMi0xNXhtYWNsIiwKICAicm9sbGJhY2tJZGVudGl0eSI6ICJwcm9qLW12MnQ5dXhhLTItMTV4bWFjbCIsCiAgImZvcm1hdCI6IDQsCiAgImNsb3NlU2F2ZVRpbWVzIjogewogICAgImJlZm9yZUNsb3NlVGltZSI6IDE3OTE2NjE5NzU1NTksCiAgICAiYWZ0ZXJDbG9zZVRpbWUiOiAxNzkxNjYxOTc2MDQ0CiAgfSwKICAibWV0YWRhdGEiOiB7CiAgICAibW90aW9uUmlncyI6IFsKICAgICAgewogICAgICAgICJ2ZXJzaW9uIjogMSwKICAgICAgICAiaWQiOiAicm9sbGJhY2stcmlnIiwKICAgICAgICAibmFtZSI6ICJDdXN0b2R5IGZpeHR1cmUiLAogICAgICAgICJwYXJ0IjogewogICAgICAgICAgImlkIjogInJvbGxiYWNrLXBhcnQiLAogICAgICAgICAgInNvdXJjZUZyYW1lSWQiOiAiZnJhbWUtMSIsCiAgICAgICAgICAic291cmNlTGF5ZXJJZCI6ICJsYXllci0xIiwKICAgICAgICAgICJ3aWR0aCI6IDMyLAogICAgICAgICAgImhlaWdodCI6IDMyLAogICAgICAgICAgInNvdXJjZVNoYTI1NiI6ICI2YmE1M2ExMmY1NzhkYzdhZTY5ZGM0OTdmODRjZDkwMWYzN2FjMTAyMGIwNjJiY2IwOThhMjdiMzFmOWFlODU1IiwKICAgICAgICAgICJib3VuZHMiOiB7CiAgICAgICAgICAgICJ4IjogMCwKICAgICAgICAgICAgInkiOiAwLAogICAgICAgICAgICAidyI6IDMyLAogICAgICAgICAgICAiaCI6IDMyCiAgICAgICAgICB9LAogICAgICAgICAgInBpdm90IjogewogICAgICAgICAgICAieCI6IDE2LAogICAgICAgICAgICAieSI6IDE2CiAgICAgICAgICB9LAogICAgICAgICAgInN0YXJ0UG9zZSI6IHsKICAgICAgICAgICAgInRyYW5zbGF0aW9uWCI6IDAsCiAgICAgICAgICAgICJ0cmFuc2xhdGlvblkiOiAwLAogICAgICAgICAgICAicm90YXRpb24iOiAwCiAgICAgICAgICB9LAogICAgICAgICAgImVuZFBvc2UiOiB7CiAgICAgICAgICAgICJ0cmFuc2xhdGlvblgiOiAyLAogICAgICAgICAgICAidHJhbnNsYXRpb25ZIjogMCwKICAgICAgICAgICAgInJvdGF0aW9uIjogMAogICAgICAgICAgfSwKICAgICAgICAgICJmcmFtZUNvdW50IjogNCwKICAgICAgICAgICJlYXNpbmciOiAibGluZWFyIiwKICAgICAgICAgICJtYXNrUnVucyI6IG51bGwKICAgICAgICB9CiAgICAgIH0KICAgIF0sCiAgICAiY3VzdG9tUmFtcHMiOiBbCiAgICAgIHsKICAgICAgICAiYmFzZUNvbG9yIjogIiNmZjAwMDAiLAogICAgICAgICJzaGFkZXMiOiBbCiAgICAgICAgICAiIzgwMDAwMCIsCiAgICAgICAgICAiI2ZmMDAwMCIsCiAgICAgICAgICAiI2ZmODA4MCIKICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9Cn0="
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDIsCiAgICAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciOiAxCiAgfSwKICAic2VydmVkU2NyaXB0cyI6IFsKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICI3YjZmZGQ3NTgxYTdiOTFmYzNmMzQ4MzQzYTI5Njk5ODQ4MDFjNzg4OTlhNzYyMmEwMjY1OWZiMDk5YjdhMWE2IiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICJiNGQ1YWY2MmQxYzU4M2Y0Mzg0NGM1NWQ3ZTlkYjY3ZmZlYTA4NGEzZjgxMzBmZGI4ZDVkZTZiZmQ3N2UwODkwIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hMTc2ZDg2MjljNjRiMWM3M2M3NDYzMTQ1NGVlZmY1NGY4MzhmM2Q3IiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogImY3NTk3ZTgwMWY5ZWViYmQyNThkYjU4ZTIyN2NhNzExODU1MzAzOWMyNDg4YTM3ZWYzNzNhNDUxYjc5ZTYxOTMiLAogICAgICAic2VydmVkU2hhMjU2IjogIjNjODQwOTFkMDdmMmRkZTlmMmU4MTE1Y2U5MTk0YTUwNjlhNGZlYjg0YWY4OThiMDE5OGVlYjg2NjhlMTNkNWUiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWExNzZkODYyOWM2NGIxYzczYzc0NjMxNDU0ZWVmZjU0ZjgzOGYzZDciLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiZjc1OTdlODAxZjllZWJiZDI1OGRiNThlMjI3Y2E3MTE4NTUzMDM5YzI0ODhhMzdlZjM3M2E0NTFiNzllNjE5MyIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiM2M4NDA5MWQwN2YyZGRlOWYyZTgxMTVjZTkxOTRhNTA2OWE0ZmViODRhZjg5OGIwMTk4ZWViODY2OGUxM2Q1ZSIKICAgIH0sCiAgICB7CiAgICAgICJjYWNoZSI6ICJwaXhpYnVuLXYxLjE0LjEtYTE3NmQ4NjI5YzY0YjFjNzNjNzQ2MzE0NTRlZWZmNTRmODM4ZjNkNyIsCiAgICAgICJvcmlnaW5hbFNoYTI1NiI6ICJmNzU5N2U4MDFmOWVlYmJkMjU4ZGI1OGUyMjdjYTcxMTg1NTMwMzljMjQ4OGEzN2VmMzczYTQ1MWI3OWU2MTkzIiwKICAgICAgInNlcnZlZFNoYTI1NiI6ICIzYzg0MDkxZDA3ZjJkZGU5ZjJlODExNWNlOTE5NGE1MDY5YTRmZWI4NGFmODk4YjAxOThlZWI4NjY4ZTEzZDVlIgogICAgfSwKICAgIHsKICAgICAgImNhY2hlIjogInBpeGlidW4tdjEuMTQuMS1hZDk1NzU1MGY2NjU2YjgyZjVmMzUxNjJjOGVhYmMxOWE0NWExNDczIiwKICAgICAgIm9yaWdpbmFsU2hhMjU2IjogIjdiNmZkZDc1ODFhN2I5MWZjM2YzNDgzNDNhMjk2OTk4NDgwMWM3ODg5OWE3NjIyYTAyNjU5ZmIwOTliN2ExYTYiLAogICAgICAic2VydmVkU2hhMjU2IjogImI0ZDVhZjYyZDFjNTgzZjQzODQ0YzU1ZDdlOWRiNjdmZmVhMDg0YTNmODEzMGZkYjhkNWRlNmJmZDc3ZTA4OTAiCiAgICB9LAogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-3c562af4c2701e689358",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        },
+        {
+          "title": "two actual compatible builds update and roll back while preserving artwork and optional metadata (legacyBlob=true)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "Native win32 WebKit cannot create the legacy Blob fixture; legacy rollback remains unqualified.",
+                  "location": {
+                    "file": "D:\\PixiBun\\tests\\release\\updateRollback.spec.ts",
+                    "line": 138,
+                    "column": 14
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 4382,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T19:53:01.458Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Native win32 WebKit cannot create the legacy Blob fixture; legacy rollback remains unqualified.",
+                      "location": {
+                        "file": "D:\\PixiBun\\tests\\release\\updateRollback.spec.ts",
+                        "line": 138,
+                        "column": 14
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "legacy-blob-capability.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJtZXNzYWdlIjogInBhZ2UuZXZhbHVhdGU6IEVycm9yOiBGaXh0dXJlIHRyYW5zYWN0aW9uIFVua25vd25FcnJvcjogRXJyb3IgcHJlcGFyaW5nIEJsb2IvRmlsZSBkYXRhIHRvIGJlIHN0b3JlZCBpbiBvYmplY3Qgc3RvcmUiLAogICJwbGF0Zm9ybSI6ICJ3aW4zMiIsCiAgImJyb3dzZXIiOiAid2Via2l0IiwKICAiZml4dHVyZVJlZnVzZWRBdG9taWNhbGx5IjogdHJ1ZSwKICAibGVnYWN5Um9sbGJhY2tRdWFsaWZpZWQiOiBmYWxzZQp9"
+                    },
+                    {
+                      "name": "native-activation-custody.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJhY3RpdmF0aW9ucyI6IHsKICAgICJwaXhpYnVuLXYxLjE0LjEtYWQ5NTc1NTBmNjY1NmI4MmY1ZjM1MTYyYzhlYWJjMTlhNDVhMTQ3MyI6IDEKICB9LAogICJzZXJ2ZWRTY3JpcHRzIjogWwogICAgewogICAgICAiY2FjaGUiOiAicGl4aWJ1bi12MS4xNC4xLWFkOTU3NTUwZjY2NTZiODJmNWYzNTE2MmM4ZWFiYzE5YTQ1YTE0NzMiLAogICAgICAib3JpZ2luYWxTaGEyNTYiOiAiN2I2ZmRkNzU4MWE3YjkxZmMzZjM0ODM0M2EyOTY5OTg0ODAxYzc4ODk5YTc2MjJhMDI2NTlmYjA5OWI3YTFhNiIsCiAgICAgICJzZXJ2ZWRTaGEyNTYiOiAiYjRkNWFmNjJkMWM1ODNmNDM4NDRjNTVkN2U5ZGI2N2ZmZWEwODRhM2Y4MTMwZmRiOGQ1ZGU2YmZkNzdlMDg5MCIKICAgIH0KICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "9ef50960bb4537d8e84f-0495302ba9f65cf640d9",
+          "file": "updateRollback.spec.ts",
+          "line": 39,
+          "column": 45
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-10T19:51:20.890Z",
+    "duration": 105487.22499999999,
+    "expected": 5,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,5 +1,7 @@
 # Phase 5: final reconciliation
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Completed locally on 2 October 2026, based on `1b13922cdd264d43d97b8b4fae16fca2b3ac0770` plus earlier uncommitted repairs. [Plan](../plans/2026-10-02-feature-repairs.md). This record does not approve a release or identify a newly deployed build.
 
 ## What changed

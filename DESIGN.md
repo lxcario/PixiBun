@@ -1,5 +1,7 @@
 #  Design System & Spatial Architecture — PixiBun Atelier
 
+Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+
 > **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report](docs/research/PHASE6_UX_HARDENING.md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record](docs/research/session-completion-2026-10-01.md).
 
 ```text

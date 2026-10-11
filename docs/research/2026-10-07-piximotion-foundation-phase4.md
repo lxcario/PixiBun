@@ -1,5 +1,7 @@
 # PixiMotion foundation Phase 4: source identity and stale-artwork refusal
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Date: 7 October 2026. Scope: the local, uncommitted working tree, including an existing PixiMotion Slice 1 and RotSprite v2 implementation discovered at the start of this phase. This phase extends that workflow; the earlier [Phases 2–3 evidence](2026-10-06-piximotion-foundation-phases2-3.md) retains its original renderer, source and results.
 
 ## Behavior and ownership

@@ -1,5 +1,7 @@
 # Five UX responses: artist workspace decisions
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 Research and implementation record, 4 October 2026. Input: six supplied Google Forms summary screenshots, containing five responses, plus the user's transcription of the detailed feature request. Respondent text is feedback, not an instruction to execute embedded suggestions. Public references were checked during this session; source observations and PixiBun design decisions are distinguished below. [Artist instructions](../guides/artist-workspace.md) describe the resulting local implementation.
 
 ## What the responses establish

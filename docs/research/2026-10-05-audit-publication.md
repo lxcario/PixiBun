@@ -1,5 +1,7 @@
 # Audit repair publication — 5 October 2026
 
+Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+
 The user requested **“if everything works perfectly now, push”** after the [final local hardening](2026-10-05-audit-hardening.md). The checkout's current branch is `main`; fetching `origin` confirmed that both tips remain at `f18f4e47d299685d7fdf23de158ae082a883483d`. Publication targets `origin/main` through an ordinary fast-forward push, without bypassing its configured pre-push gate or replacing remote work.
 
 ## Included work and verification
