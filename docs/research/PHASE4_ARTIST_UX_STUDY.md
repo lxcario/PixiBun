@@ -1,10 +1,10 @@
 # Phase 4 Artist Usability Study: Animation Stability & Review Protocol
 
-Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+Maintenance update — 11 October 2026: see the [current status](../current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 **Status:** Ready-to-run study protocol.  
 
-**Session update — 2026-10-01:** No participant study results are recorded by this engineering session. Animation-review functionality has local test evidence, but artist usefulness remains pending. See the [session completion record](session-completion-2026-10-01.md) and [phase implementation report](phase-implementation-status.md).
+**Session update — 2026-10-01:** No participant study results are recorded by this engineering session. Animation-review functionality has local test evidence, but artist usefulness remains pending. See the [session completion record (local archive)](../archives.md#record-docs-research-session-completion-2026-10-01-md) and [phase implementation report (local archive)](../archives.md#record-docs-research-phase-implementation-status-md).
 
 **Focus:** Validating human-centered animation review, protected pixel cleanup, intentional motion triage, and loop seam verification in PixiBun Atelier.
 

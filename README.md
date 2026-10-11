@@ -4,7 +4,7 @@
 
 # PixiBun Atelier
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
 **A quiet little studio for pixel art and animation.**
 
@@ -72,7 +72,7 @@ Want to run PixiBun on your own computer or help improve it? The setup is below;
 You'll need **Git**, **Node.js 22** and **npm 10 or newer**, plus access to the GitHub repository. If GitHub asks you to sign in or request access, use an account with permission. In a terminal, run:
 
 ```sh
-git clone https://github.com/lxcario/PixiBun.git
+git clone --depth 1 https://github.com/lxcario/PixiBun.git
 cd PixiBun
 npm ci
 npm run dev

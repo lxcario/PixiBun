@@ -1,25 +1,2 @@
-# Preserve the bytes used by these sealed evidence manifests across platforms.
-docs/research/evidence/2026-10-02/** -text
-docs/research/evidence/2026-10-02-remediation/** -text
-# Captured raw logs retain their original CRLF, spacing and failure output.
-docs/research/evidence/2026-10-02-feature-repairs-*/** -text -whitespace
-docs/research/evidence/2026-10-03-session-documentation-review/** -text -whitespace
-docs/research/evidence/2026-10-02-feature-repairs-*/** -text
-docs/research/evidence/2026-10-03-session-documentation-review/** -text
-docs/research/evidence/2026-10-03-ci-export-dialog-repair/** -text -whitespace
-docs/research/evidence/2026-10-03-ci-iso-workflow-repair/** -text -whitespace
-# Audit and TestSprite evidence retains its recorded bytes and raw-log spacing.
-docs/research/evidence/2026-10-03-*/** -text -whitespace
-# Preserve the raw bytes of the 5 October audit's sealed evidence and reports.
-docs/research/evidence/2026-10-05-*/** -text -whitespace
-docs/research/2026-10-05-*.md -text
-# Preserve the motion-session evidence, including failures and binary fixtures.
-docs/research/evidence/2026-10-06-*/** -text -whitespace
-docs/research/evidence/2026-10-07-*/** -text -whitespace
-docs/research/evidence/2026-10-08-*/** -text -whitespace
-# Dated reports retain their recorded line endings and formatting too.
-docs/research/2026-10-06-*.md -text -whitespace
-docs/research/2026-10-07-*.md -text -whitespace
-docs/research/2026-10-08-*.md -text -whitespace
-# Final CI handoff evidence retains the original indexed bytes on every checkout.
-docs/research/evidence/2026-10-11-validation-handoff/** -text -whitespace
+# Keep the intentionally retained CI transport receipt byte-exact on all platforms.
+docs/verification/custody-witness.json -text -whitespace

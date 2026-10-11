@@ -1,10 +1,10 @@
 # Contributing to PixiBun Atelier 
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
-Current execution guidance is in [testing and evidence](docs/guides/testing.md). The [3 October audit session](docs/research/2026-10-03-audit-session-publication.md) includes explicitly authorized TestSprite CLI runs and 12 executable local browser checks. A service pass without the planned artwork/history assertions remains unqualified. Native OS save dialogs and unsupported pointer/tab/file interactions must be reported with their actual execution scope. Earlier dated session preferences below retain their original scope.
+Current execution guidance is in [testing and evidence](docs/guides/testing.md). The [3 October audit session (local archive)](docs/archives.md#record-docs-research-2026-10-03-audit-session-publication-md) includes explicitly authorized TestSprite CLI runs and 12 executable local browser checks. A service pass without the planned artwork/history assertions remains unqualified. Native OS save dialogs and unsupported pointer/tab/file interactions must be reported with their actual execution scope. Earlier dated session preferences below retain their original scope.
 
-> **Session verification reference — 2026-10-01:** The supported local runtime is Node 22. Production browser checks use `npm run test:e2e:production`; `PIXIBUN_PRODUCTION_PORT` can select an unused local port, with proxies following that address. Document discovered test counts separately from executed evidence and preserve failed-run/rerun history. For this session, the user chose local verification, without TestSprite uploads or tunnels. See the [session completion record](docs/research/session-completion-2026-10-01.md).
+> **Session verification reference — 2026-10-01:** The supported local runtime is Node 22. Production browser checks use `npm run test:e2e:production`; `PIXIBUN_PRODUCTION_PORT` can select an unused local port, with proxies following that address. Document discovered test counts separately from executed evidence and preserve failed-run/rerun history. For this session, the user chose local verification, without TestSprite uploads or tunnels. See the [session completion record (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md).
 
 Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is an in-browser pixel art and animation workstation built with a local-first approach and in-repository graphics algorithms. The app uses framework, UI, and storage dependencies listed in `package.json`.
 
@@ -30,7 +30,7 @@ Thank you for your interest in contributing to **PixiBun Atelier**! PixiBun is a
 
 ## Interface and graphics regression evidence
 
-For lighting changes, compare real canvas pixels in the full preview workflow, check ink/alpha and source preservation, and verify Apply/Cancel/Undo/Redo. The matte-character glint regression requires visible contrast, rather than merely different bytes. For toolbar changes, check the complete row and workspace bounds at compact and wide desktop widths, plus keyboard focus and affected real-artwork actions. Save screenshots with the precise run scope; a focused pass is not a full-browser sign-off. [Current examples](docs/research/specular-glint-2026-10-01.md).
+For lighting changes, compare real canvas pixels in the full preview workflow, check ink/alpha and source preservation, and verify Apply/Cancel/Undo/Redo. The matte-character glint regression requires visible contrast, rather than merely different bytes. For toolbar changes, check the complete row and workspace bounds at compact and wide desktop widths, plus keyboard focus and affected real-artwork actions. Save screenshots with the precise run scope; a focused pass is not a full-browser sign-off. [Current examples (local archive)](docs/archives.md#record-docs-research-specular-glint-2026-10-01-md).
 
 ## The Local Quality Gate
 

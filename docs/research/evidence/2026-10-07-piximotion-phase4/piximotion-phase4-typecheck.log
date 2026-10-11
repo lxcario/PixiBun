@@ -1,9 +1,0 @@
-src/lib/canvas/rotSprite.ts(1155,5): error TS2322: Type 'PixelBuffer' is not assignable to type '{ width: number; height: number; data: Uint8ClampedArray<ArrayBuffer>; }'.
-  Types of property 'data' are incompatible.
-    Type 'Uint8ClampedArray<ArrayBufferLike>' is not assignable to type 'Uint8ClampedArray<ArrayBuffer>'.
-      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
-        Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
-tests/pixiMotionBindings.test.tsx(179,55): error TS2339: Property 'activeFrameIndex' does not exist on type 'HistoryStep'.
-  Property 'activeFrameIndex' does not exist on type 'PixelHistoryStep'.
-tests/pixiMotionBindings.test.tsx(180,17): error TS2339: Property 'activeLayerId' does not exist on type 'HistoryStep'.
-  Property 'activeLayerId' does not exist on type 'PixelHistoryStep'.

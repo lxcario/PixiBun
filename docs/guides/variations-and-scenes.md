@@ -1,6 +1,6 @@
 # Try a new look, keep your original
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 [Handbook](README.md) · [Lighting](lighting-and-surfaces.md) · [Patterns](pixitools-cleanup-and-tiles.md) · [All features](../features.md)
 

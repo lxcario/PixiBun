@@ -1,9 +1,0 @@
-
- RUN  v4.1.11 D:/PixiBun
-
-
- Test Files  3 passed (3)
-      Tests  38 passed (38)
-   Start at  13:59:09
-   Duration  2.90s (transform 1.08s, setup 73ms, import 3.27s, tests 342ms, environment 942ms)
-

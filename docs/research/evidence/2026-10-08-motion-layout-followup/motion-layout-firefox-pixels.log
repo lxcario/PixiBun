@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ok 1 [firefox] › artifacts\motion-layout-firefox-pixels.spec.ts:3:5 › motion preview advances when worker results take longer than a cel duration (9.8s)
-
-  1 passed (11.6s)

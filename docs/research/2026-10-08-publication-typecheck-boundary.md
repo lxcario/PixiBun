@@ -1,9 +1,0 @@
-# Publication typecheck boundary
-
-Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
-
-8 October 2026. This follows the [session review](2026-10-08-session-review-publication.md). The first normal push of `c1b146b33b84d81fd36cc5a5d04fcfacb97785b4` stops in the managed hook after documentation passes. Strict typechecking reports seven errors in preserved diagnostic/configuration snapshots under the new evidence archive: their original relative imports refer to their artifact execution directory, not their archived location.
-
-The root TypeScript glob previously admitted every `.ts`/`.tsx` snapshot. `tsconfig.json` now excludes `docs/research/evidence`, retaining those immutable source captures while strictly checking current `src`, `tests`, root configuration and generated Next types. No current source error is suppressed, archived bytes are unchanged, and the browser-tested application/build remains identical. This configuration-only repair does not claim a new production build or browser verdict.
-
-The [boundary evidence manifest](evidence/2026-10-08-publication-typecheck-boundary/manifest.json) retains the original blocked push, successful corrected typecheck, compiler-input admission check and unchanged application/build fingerprint. The normal pre-push gate is required again for the final publication; its push receipt and remote equality are reported separately. Remote CI, deployment and the earlier review's artist/device/rollback/external limits remain separate.

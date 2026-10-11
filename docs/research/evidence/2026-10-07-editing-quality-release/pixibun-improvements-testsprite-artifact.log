@@ -1,3 +1,0 @@
-Error: Resource not found.
-The run's stored script was withheld: its environment was edited or deleted after the run started, so environment values in it can no longer be scrubbed. Re-run with `testsprite test rerun <test-id>` and fetch the new run's failure bundle.
-requestId: cli_62d02348-f679-40d4-8e42-b974a673968c

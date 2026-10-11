@@ -1,6 +1,6 @@
 # Artwork safety and backup
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 PixiBun saves projects in this browser's IndexedDB. **Saved** means the latest completed local save, not a cloud copy or a downloaded project file. Clearing site data, browser eviction, private browsing and device loss can remove local projects. Persistent-storage requests can be refused.
 
@@ -66,7 +66,7 @@ If **Export Untouched Backup** reports too many stored records, no archive has b
 
 ![Readable backup refusal inside the recovery dialog, with the original records still preserved.](../assets/screenshots/2026-10-02-feature-repairs-phase6/archive-overflow-refused.png)
 
-*These two current recovery captures use temporary damaged fixtures in the compiled Chromium app. The first has an independently checked untouched ZIP download; neither depicts a completed repair. [Capture details](../assets/screenshots/2026-10-02-feature-repairs-phase6/run.json), [verification and limits](../research/2026-10-02-feature-repairs-phase6.md).*
+*These two current recovery captures use temporary damaged fixtures in the compiled Chromium app. The first has an independently checked untouched ZIP download; neither depicts a completed repair. [Capture details](../assets/screenshots/2026-10-02-feature-repairs-phase6/run.json), [verification and limits (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase6-md).*
 
 Undo is session-local, bounded by independent depth caps and a combined 64 MiB payload budget. An oversized history-backed edit is refused before mutation. Process Replay reconstructs retained history and its eviction baseline; it is not a durable complete recording of every earlier stroke.
 

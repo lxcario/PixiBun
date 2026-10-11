@@ -1,6 +1,6 @@
 # Security Policy — PixiBun Atelier
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
 ## Report a vulnerability privately
 
@@ -24,7 +24,7 @@ Reproduce against your own projects and local deployment. Do not access another 
 
 ## Dependency and build security
 
-The 3 October session pins Next.js `16.3.8` and restricts privileged deployment to successful CI for a push to this repository's main, checking out that run's SHA. Credentials are supplied through step environments. [Deployment repair and verification](docs/research/2026-10-03-deployment-phase2.md) and [current operator contract](docs/guides/deployment.md) distinguish source configuration from a verified remote deployment. Peer admission, import allocation and diagnostic-queue changes are documented in [the session record](docs/research/2026-10-03-audit-session-publication.md); local regression results are not a security certification.
+The 3 October session pins Next.js `16.3.8` and restricts privileged deployment to successful CI for a push to this repository's main, checking out that run's SHA. Credentials are supplied through step environments. [Deployment repair and verification (local archive)](docs/archives.md#record-docs-research-2026-10-03-deployment-phase2-md) and [current operator contract](docs/guides/deployment.md) distinguish source configuration from a verified remote deployment. Peer admission, import allocation and diagnostic-queue changes are documented in [the session record (local archive)](docs/archives.md#record-docs-research-2026-10-03-audit-session-publication-md); local regression results are not a security certification.
 
 The repository commits `package-lock.json`; CI uses `npm ci` and the declared Node 22 runtime. Review dependency changes together with their lockfile diff, install scripts, package source, license and compatibility. Workflow actions currently use major-version tags rather than immutable commit pins.
 
@@ -32,7 +32,7 @@ For an explicit dependency review, run `npm audit --json` and record the date, n
 
 The configured project gate has no explicit dependency-advisory stage, and this checkout contains no Dependabot/Renovate configuration. Install-time npm audit output is not a recorded security verdict. Automated advisory scanning and immutable action pinning remain maintenance work; this policy does not claim they were enabled or that dependencies are vulnerability-free.
 
-The [phase 7 dependency review](docs/research/2026-10-02-feature-repairs-phase7.md) records the targeted Next.js patch and dated production-only advisory result. That result does not cover development dependencies, establish an exploitable PixiBun path for every advisory or identify the installed version on a public deployment.
+The [phase 7 dependency review (local archive)](docs/archives.md#record-docs-research-2026-10-02-feature-repairs-phase7-md) records the targeted Next.js patch and dated production-only advisory result. That result does not cover development dependencies, establish an exploitable PixiBun path for every advisory or identify the installed version on a public deployment.
 
 ## Privacy and technical safeguards
 

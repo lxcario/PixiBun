@@ -1,14 +1,14 @@
 # Learning workflow contract
 
-The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+The [current status](../current-status.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
 
 The [illustrated learning guide](../guides/learning-and-playground.md) lists all current lessons, the Teaching Board and Pocket Doodle Pad, including separate practice custody, saving and session-memory limits.
 
 The shipped `/playground`, onboarding content and Teaching Animation Board provide lessons, starter artwork, jump-cycle construction and timeline injection. Desktop practice now has a separate route workspace; that implementation does not establish measured learning gains.
 
-[Phase 1 repairs](../research/2026-10-02-feature-repairs-phase1.md) make desktop Trace/Clear pixel edits history-backed, dirty-tracked and explicitly redrawn, with locked-layer/playback/history admission. Mobile mounts only Pocket rather than a CSS-hidden desktop lesson.
+[Phase 1 repairs (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase1-md) make desktop Trace/Clear pixel edits history-backed, dirty-tracked and explicitly redrawn, with locked-layer/playback/history admission. Mobile mounts only Pocket rather than a CSS-hidden desktop lesson.
 
-[Phase 2 custody](../research/2026-10-02-feature-repairs-phase2.md) checkpoints the original through its existing save coordinator, then detaches its store snapshot, raster references, file association and retained history. Lessons use a fresh identity and buffers. Return/unmount restores the original in memory; explicit Keep saves a separate project before adoption. Entry is refused on failed checkpoint, changed ownership, blocked return-pointer storage or active Co-Draw. A full reload returns through a session-storage project pointer and normal stored-project admission: it restores saved artwork, not session history or OS handles. Practice is not autosaved. Concurrent changes during encoding/writing and cancelled Keep cannot publish over the original.
+[Phase 2 custody (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase2-md) checkpoints the original through its existing save coordinator, then detaches its store snapshot, raster references, file association and retained history. Lessons use a fresh identity and buffers. Return/unmount restores the original in memory; explicit Keep saves a separate project before adoption. Entry is refused on failed checkpoint, changed ownership, blocked return-pointer storage or active Co-Draw. A full reload returns through a session-storage project pointer and normal stored-project admission: it restores saved artwork, not session history or OS handles. Practice is not autosaved. Concurrent changes during encoding/writing and cancelled Keep cannot publish over the original.
 
 Returning while the initial checkpoint is pending resumes the live original and awaits that save before restoring an active lifecycle; it never hydrates older pixels over unsaved RAM. A missing original record is reported, and its stale return pointer is released so a replacement can save and restore normally.
 

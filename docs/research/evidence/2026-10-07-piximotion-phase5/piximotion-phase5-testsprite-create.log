@@ -1,2 +1,0 @@
-warning: --plan-from supplies the test definition; ignoring --project. Edit the plan JSON to change these fields.
-idempotency-key: cli-create-plan-7c971c13-1343-4b5c-9951-d1b4a50b68d2

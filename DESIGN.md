@@ -1,8 +1,8 @@
 #  Design System & Spatial Architecture — PixiBun Atelier
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
-> **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report](docs/research/PHASE6_UX_HARDENING.md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record](docs/research/session-completion-2026-10-01.md).
+> **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report (local archive)](docs/archives.md#record-docs-research-phase6-ux-hardening-md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md).
 
 ```text
   /\_/\   *  .  *  .  *  *  .  *  *  .  *  *
@@ -384,7 +384,7 @@ In retro arcade and pixel art styles, surfaces are shaded using controlled, disc
 
 Off/Soft/Crisp sits beside Shade in the bulb bar. The reflection uses a bright core and a stepped shoulder at native resolution; Soft is wider and Crisp tighter. Matte and fabric retain visible highlights. A smaller bulb without a glow, quiet idle guides and an interaction-only angle badge expose more artwork. Equal-height choices stay on one toolbar row within the workspace at tested compact desktop widths. Apply commits the exact preview and Cancel restores prior artwork.
 
-The [current glint report](docs/research/specular-glint-2026-10-01.md) records painted-normal priority, ink/alpha protection and real-character contrast checks.
+The [current glint report (local archive)](docs/archives.md#record-docs-research-specular-glint-2026-10-01-md) records painted-normal priority, ink/alpha protection and real-character contrast checks.
 
 ### 3. Legacy continuous highlight pill
 

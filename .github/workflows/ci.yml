@@ -299,8 +299,8 @@ jobs:
       - name: Prepare real receipt transfer witness
         run: |
           mkdir -p artifacts/custody-witness
-          cp docs/research/evidence/2026-10-09-validation-repeatability/verification.json artifacts/custody-witness/.last-run.json
-          cp docs/research/2026-10-09-validation-repeatability.md artifacts/custody-witness/execution.md
+          cp docs/verification/custody-witness.json artifacts/custody-witness/.last-run.json
+          cp docs/verification/README.md artifacts/custody-witness/execution.md
           node scripts/indexVerificationEvidence.mjs --source artifacts/custody-witness --output artifacts/custody-witness-index.json
       - name: Preserve visible and hidden indexed evidence
         id: custody-upload

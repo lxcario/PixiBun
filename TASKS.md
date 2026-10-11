@@ -1,6 +1,6 @@
 # Build Plan — PixiBun
 
-Maintenance update — 11 October 2026: see the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+Maintenance update — 11 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
 
@@ -12,7 +12,7 @@ Maintenance update — 11 October 2026: see the [11 October validation handoff](
 - [x] Verify 1,482 unit/integration tests, three focused Chromium glint scenarios and the production build; retain screenshot evidence.
 - [x] Reconcile all project Markdown checkpoints and prepare the authorized Git publication. Git history and the remote identify the published commit.
 
-[Current behavior and precise verification scope](docs/research/session-completion-2026-10-01.md). Artist evaluation and broader release checks remain open.
+[Current behavior and precise verification scope (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md). Artist evaluation and broader release checks remain open.
 
 ## Audit implementation session — 2026-10-01
 
@@ -23,7 +23,7 @@ Maintenance update — 11 October 2026: see the [11 October validation handoff](
 - [ ] Run formative artist evaluations for animation review and research variations; automated walkthroughs do not close these tasks.
 - [ ] Complete broader collaboration policy, device/memory stress verification and any future release approval.
 
-This audit's six phases are separate from the historical product phase numbering below. See the [session completion record](docs/research/session-completion-2026-10-01.md).
+This audit's six phases are separate from the historical product phase numbering below. See the [session completion record (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md).
 
 > **Release sign-off:** v1.14.1 was signed off for production on 2026-09-28 after the live service-worker MIME fix and offline reload verification. See [v1.14.1 sign-off](docs/releases/v1.14.1-signoff.md) for evidence and deferred checks. That release excludes later roadmap work and the separate six-phase local audit implementation above.
 

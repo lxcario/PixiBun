@@ -1,7 +1,0 @@
-{
-  "version": "50.34.0",
-  "archiveSha256": "4affa0b913ca20885fc3edc1ff5b58bd39a336e8e47e35ed130f579b085e5773",
-  "sourceSha256": "0fafe5185494669376632c49ffec2131c9829485c23cbde3e072a089cb2d7fb2",
-  "firstLine": 23763,
-  "excerpt": "  } else if (process.env.VERCEL_TOKEN) {\n    parsedArgs.flags[\"--token\"] = process.env.VERCEL_TOKEN;\n    tokenSource = \"env\";"
-}

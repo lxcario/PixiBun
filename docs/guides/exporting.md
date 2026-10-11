@@ -1,6 +1,6 @@
 # Take your pixels with you
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 [Handbook](README.md) · [Backup safety](artwork-safety.md) · [Format contract](../contracts/exports.md) · [All features](../features.md)
 
@@ -61,7 +61,7 @@ For indexed export, every visible source RGB must have an exact admitted palette
 
 Normal export accepts exactly one **Normal Facets**, baked **Normal Map**, or matching normal-map effect layer per exported frame, at full opacity with Normal blending. A hidden data layer is accepted too. If a frame has both manual and baked normals, choose which to keep before exporting; the kit refuses ambiguous sources. The chosen normal layer is kept out of the diffuse image. Godot expects X+ Y+ Z+ data. Stored values are preserved; the exporter does not automatically flip an imported green channel. Check the source convention before export. Guessed/generated lighting is not guaranteed correct.
 
-Download, unpack and open `project.godot` in the intended Godot version. Compare the original and runtime views. This guide's screenshot shows preflight controls, not a fresh Godot execution. [Earlier engine evidence](../research/phase-implementation-status.md) and the [manual-normal import/resource/pixel checks](../research/2026-10-02-feature-repairs-phase4.md) apply only to their named builds, versions and fixtures. Rendered manual-normal lighting remains unverified. Unity/Phaser are not included as runnable kits here.
+Download, unpack and open `project.godot` in the intended Godot version. Compare the original and runtime views. This guide's screenshot shows preflight controls, not a fresh Godot execution. [Earlier engine evidence (local archive)](../archives.md#record-docs-research-phase-implementation-status-md) and the [manual-normal import/resource/pixel checks (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase4-md) apply only to their named builds, versions and fixtures. Rendered manual-normal lighting remains unverified. Unity/Phaser are not included as runnable kits here.
 
 ## Timelapse
 

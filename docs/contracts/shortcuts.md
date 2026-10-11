@@ -1,6 +1,6 @@
 # Studio shortcuts and focus policy
 
-The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+The [current status](../current-status.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
 
 The generated tool table in [source-contracts.json](../generated/source-contracts.json) is checked against [shortcuts.ts](../../src/config/shortcuts.ts), the shared [command registry](../../src/config/studioCommands.ts) and its keyboard dispatch in [useStudioKeyboard.ts](../../src/hooks/studio/useStudioKeyboard.ts). It is a source-backed inventory, not proof of every input-device interaction.
 

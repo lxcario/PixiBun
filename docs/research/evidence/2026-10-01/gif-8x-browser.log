@@ -1,8 +1,0 @@
-
-Running 1 test using 1 worker
-
-(node:30076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ok 1 [chromium] › tests\e2e\gifScaleIntegrity.spec.ts:5:5 › an 8x cycle GIF decodes every flame, wood and transparent pixel in all 16 frames (6.8s)
-
-  1 passed (8.5s)

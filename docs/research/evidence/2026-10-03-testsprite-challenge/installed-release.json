@@ -1,8 +1,0 @@
-{
-  "version": "0.13.0",
-  "dist-tags": {
-    "latest": "0.13.0"
-  },
-  "dist.integrity": "sha512-PdYyD3IIA0NZuJfKkag+k5iOo4boBGZAwnUhLstVdCnx8RJAyMlb3uY+enbctDltm7wy5TCf9pHhZTeBhBqcTg==",
-  "dist.tarball": "https://registry.npmjs.org/@testsprite/testsprite-cli/-/testsprite-cli-0.13.0.tgz"
-}

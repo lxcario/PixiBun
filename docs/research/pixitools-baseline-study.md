@@ -1,6 +1,6 @@
 # PixiTools baseline usability study — ready-to-run kit
 
-Maintenance update — 11 October 2026: see the [11 October validation handoff](2026-10-11-validation-handoff.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+Maintenance update — 11 October 2026: see the [current status](../current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 **Status:** planned; no participant sessions have been run. Use this to establish evidence before selecting tutorial content or the first four tool previews.
 

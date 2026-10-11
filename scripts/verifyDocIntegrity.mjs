@@ -25,7 +25,18 @@ try {
   const version = read('CHANGELOG.md').match(/^##\s+\[v?(\d+\.\d+\.\d+)\]/m)?.[1];
   if (version !== pkg.version) fail('Package/changelog version mismatch');
   const docs = ownedMarkdown(root);
-  const links = validateMarkdownLinks(root, docs, new Set(publishableProjectFiles(root)));
+  const publishable = publishableProjectFiles(root);
+  const archivedRoots = ['docs/research/evidence/', 'artifacts/', 'audit/'];
+  const archivedReports = new Set(['LOGS.md', 'PIXIBUN_AUDIT_RESULTS+DEEP.md', 'PIXIBUN_AUDIT_RESULTS.md', 'PIXIBUN_DEEP_DIVE.md', 'PIXIBUN_UX_AUDIT.md', 'PIXIBUN_UX_CHANGELOG.md', 'PIXIBUN_UX_IMPLEMENTATION_PLAN.md']);
+  let sourceBytes = 0;
+  for (const file of publishable) {
+    if (archivedRoots.some(folder => file.startsWith(folder)) || archivedReports.has(file)) fail('Local archive must not be published in the source checkout: ' + file);
+    sourceBytes += fs.statSync(path.join(root, file)).size;
+  }
+  const sourceBudget = 40 * 1024 * 1024;
+  if (sourceBytes > sourceBudget) fail('Source checkout exceeds the 40 MiB budget; archive generated evidence or review intentional assets before changing the budget.');
+  console.log('Source checkout: ' + (sourceBytes / 1024 / 1024).toFixed(2) + ' MiB / 40 MiB budget, ' + publishable.length + ' publishable files.');
+  const links = validateMarkdownLinks(root, docs, new Set(publishable));
   errors.push(...links.errors);
   console.log('Local links/headings: ' + links.checked + ' destinations across ' + docs.length + ' owned Markdown files.');
   for (const [file, actual] of [['docs/generated/test-inventory.json', testInventory(root)], ['docs/generated/source-contracts.json', sourceContracts(root)]]) {

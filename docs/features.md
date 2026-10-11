@@ -1,6 +1,6 @@
 # What you can make with PixiBun
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](current-status.md).
 
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
@@ -8,7 +8,7 @@ This is the current web app's feature index, reconciled with this session's chec
 
 ## Welcome and starting points
 
-The [3 October session record](research/2026-10-03-audit-session-publication.md) covers the current safety repairs and documentation reconciliation. Exact browser checks and cloud-run limitations are linked there; this feature index is not an execution verdict.
+The [3 October session record (local archive)](archives.md#record-docs-research-2026-10-03-audit-session-publication-md) covers the current safety repairs and documentation reconciliation. Exact browser checks and cloud-run limitations are linked there; this feature index is not an execution verdict.
 
 | Feature | What it does | Guide | Screenshot |
 | --- | --- | --- | --- |
@@ -206,8 +206,8 @@ These limits belong beside the feature list so a visible control is not mistaken
 - **Browser and resource boundaries:** full Studio needs a wide viewport; codecs/install/offline availability depend on the browser. Project/history/export admission can refuse operations. [Limits](contracts/storage.md), [export fidelity](contracts/exports.md).
 - **Qualification remains scoped:** real two-machine Co-Draw, broader engine/device/pen/assistive-technology qualification and participant learning/artist studies remain pending. Read [current status](current-status.md) and [the research registry](research/issue-registry.md).
 - **Future and retired work:** v2 neural/native/GPU/SIMD/tree-CRDT/P3 ideas are [proposals](../V2_VISION.md). The retired radio/audio and volumetric/SSAO paths described in old release history are not advertised current features. No cloud account, automatic cloud backup, general AI generation or shipped native package is implied.
-- **Artist requests with larger scope:** arbitrary docking, automatic body-part extraction or idle/attack animation, a particle emitter, liquify and free warp are researched proposals, not shipped controls. [Request-by-request decisions](research/2026-10-04-artist-workspace-feedback.md#decisions-for-every-detailed-request).
-- **Motion is a bounded first slice:** one rigid color part in a solo workspace; finish a floating selection first. Normal-tagged or normal-map-effect sources and active Co-Draw are refused. Moving parts also refuse normal artwork or dependent research siblings in the source frame. Rotated parts render within their own bounds and clip at canvas edges. Pose/pivot edits remain temporary until saved or baked, with bounded session parameter Undo/Redo. Cancel the session to use artwork/library history. Bake copies palette-binding rectangles at fixed coordinates; it does not move semantic regions with the part. Multi-part rigs, source rebinding, large-canvas responsiveness and artist qualification remain open. [Current evidence and remaining work](research/2026-10-08-session-review-publication.md).
+- **Artist requests with larger scope:** arbitrary docking, automatic body-part extraction or idle/attack animation, a particle emitter, liquify and free warp are researched proposals, not shipped controls. [Request-by-request decisions (local archive)](archives.md#record-docs-research-2026-10-04-artist-workspace-feedback-md).
+- **Motion is a bounded first slice:** one rigid color part in a solo workspace; finish a floating selection first. Normal-tagged or normal-map-effect sources and active Co-Draw are refused. Moving parts also refuse normal artwork or dependent research siblings in the source frame. Rotated parts render within their own bounds and clip at canvas edges. Pose/pivot edits remain temporary until saved or baked, with bounded session parameter Undo/Redo. Cancel the session to use artwork/library history. Bake copies palette-binding rectangles at fixed coordinates; it does not move semantic regions with the part. Multi-part rigs, source rebinding, large-canvas responsiveness and artist qualification remain open. [Current evidence and remaining work (local archive)](archives.md#record-docs-research-2026-10-08-session-review-publication-md).
 
 ## What the remaining work would involve
 
@@ -227,4 +227,4 @@ These are concrete follow-ups, not a claim that improvement is impossible. [Curr
 
 When adding/removing a user-facing action, update its guide, feature row, source link and affected screenshot together. The coverage check for this revision compared canonical tools, export tabs, PixiTools tasks, curriculum, starters and showcase tabs to their source lists, then reviewed remaining menus and workflows. It does not claim that each internal function deserves its own screenshot or that every sentence is automatically certified.
 
-[Capture provenance](assets/screenshots/2026-10-02-feature-guide/run.json) records the new illustrations; [the dated handbook review](research/2026-10-02-feature-handbook.md) records checks and limitations. Keep operating instructions here and dated executions in research/evidence.
+[Capture provenance](assets/screenshots/2026-10-02-feature-guide/run.json) records the new illustrations; [the dated handbook review (local archive)](archives.md#record-docs-research-2026-10-02-feature-handbook-md) records checks and limitations. Keep operating instructions here and dated executions in research/evidence.

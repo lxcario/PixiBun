@@ -1,6 +1,6 @@
 # Meet the little studio
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 [Handbook](README.md) · [Studio workspace](studio-workspace.md) · [All features](../features.md)
 

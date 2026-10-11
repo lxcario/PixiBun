@@ -1,3 +1,0 @@
-{"case": "invalid_invite", "verdict": "passed", "comparedRgbaBytes": 4096, "savedIdentity": "Challenge guest original"}
-{"case": "help_keyboard", "verdict": "passed", "modalKeys": 7, "comparedRgbaBytes": 4096}
-{"case": "practice_identity", "verdict": "passed", "comparedRgbaBytes": 4096, "keptIdentity": "Rename project Practice Drawing", "redoPreserved": true}

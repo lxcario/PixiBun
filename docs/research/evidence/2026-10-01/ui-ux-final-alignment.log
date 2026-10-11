@@ -1,9 +1,0 @@
-
-Running 2 tests using 1 worker
-
-(node:26688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  ok 1 [chromium] › tests\e2e\researchWorkbench.spec.ts:24:5 › workflow tabs, scene selection and stale-preview recovery work from the keyboard (4.4s)
-  ok 2 [chromium] › tests\e2e\researchWorkbench.spec.ts:28:5 › real artwork previews update without applying changes and keep equal-size controls in a narrow inspector (8.5s)
-
-  2 passed (14.2s)

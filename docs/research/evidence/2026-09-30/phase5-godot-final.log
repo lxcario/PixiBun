@@ -1,6 +1,0 @@
-{"archive": "D:\\PixiBun\\artifacts\\phase5\\indexed-normal-kit.zip", "assets": 17, "crc": "pass", "sha256": "pass", "destination": "D:\\PixiBun\\artifacts\\phase5\\indexed-normal"}
-indexed-normal : 486 engine checks passed; 37632 palette pixels compared.
-{"archive": "D:\\PixiBun\\artifacts\\phase5\\color-only-kit.zip", "assets": 8, "crc": "pass", "sha256": "pass", "destination": "D:\\PixiBun\\artifacts\\phase5\\color-only"}
-color-only : 49 engine checks passed; 0 palette pixels compared.
-{"archive": "D:\\PixiBun\\artifacts\\phase5\\duplicate-bound-kit.zip", "assets": 15, "crc": "pass", "sha256": "pass", "destination": "D:\\PixiBun\\artifacts\\phase5\\duplicate-bound"}
-duplicate-bound : 315 engine checks passed; 0 palette pixels compared.

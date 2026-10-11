@@ -1,6 +1,6 @@
 # PixiBun — Product scope
 
-Current engineering verification and remaining release checks are recorded in the [11 October validation handoff](docs/research/2026-10-11-validation-handoff.md).
+Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
 For artists: [illustrated handbook](docs/guides/README.md) and [complete feature index](docs/features.md).
 
@@ -18,7 +18,7 @@ Artists need to draw, revise colors, compare animation poses and keep editable w
 | --- | --- | --- |
 | Draw and edit | Pixel pen, shapes, fill, selection, layers, history and canvas resizing | [Architecture](ARCHITECTURE.md), [shortcuts](docs/contracts/shortcuts.md) |
 | Animate | Drawn frames, per-frame holds, onion skin, clips, playback, bounded in-between tools and one rigid-part motion workflow | [Motion rigs](docs/guides/artist-workspace.md#save-a-motion-rig), [exports](docs/contracts/exports.md), [current status](docs/current-status.md); motion supports solo color artwork, saved poses and reversible cel baking |
-| Choose colors | Named palettes, canvas scans of at most six main colors, ramps and selected color-cycle ranges | [Palette authoring](docs/research/palette-creator-2026-10-01.md), [cycling](docs/contracts/exports.md#scope-holds-and-cycling) |
+| Choose colors | Named palettes, canvas scans of at most six main colors, ramps and selected color-cycle ranges | [Palette authoring (local archive)](docs/archives.md#record-docs-research-palette-creator-2026-10-01-md), [cycling](docs/contracts/exports.md#scope-holds-and-cycling) |
 | Try a new look | Image conversion, previewed cleanup, stylized lighting, normal sculpting and bounded research previews | [Rendering](docs/contracts/rendering.md); inferred shape/material is heuristic |
 | Rotate artwork | Direct quarter-turn mappings, RotSprite v2 candidate/scoring/restoration heuristics and integer-sampled Paeth rotation | [Algorithm scope](docs/contracts/rendering.md#pixel-art-rotation-rotsprite-v2); clipping and arbitrary-angle quality remain operation/fixture specific |
 | Make tiles | Repeat previews, exact unique-tile PNG/map bundles, contour review and bounded small tile-scene studies | [Tile guide](docs/guides/pixitools-cleanup-and-tiles.md); exact size/alpha and stale-result checks apply; a complete 47-tile atlas and general world generation are not shipped |
@@ -47,7 +47,7 @@ The [storage contract](docs/contracts/storage.md#admission-and-optional-metadata
 | Interface | Tailwind CSS v4 and Motion | Shared visual tokens and interaction feedback |
 | Background work | Web Workers with operation-specific fallbacks | Bounded heavy processing and owned result publication |
 
-`src/lib/ai/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive](PIXIBUN_DEEP_DIVE.md); ownership and integration belong in [architecture](ARCHITECTURE.md).
+`src/lib/ai/` is a legacy directory name for predominantly deterministic graphics code. It does not establish a shipped learned model. Detailed algorithms belong in [the deep dive (local archive)](docs/archives.md#record-pixibun-deep-dive-md); ownership and integration belong in [architecture](ARCHITECTURE.md).
 
 ## Repo & Environments
 

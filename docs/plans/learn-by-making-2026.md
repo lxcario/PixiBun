@@ -1,6 +1,6 @@
 # PixiBun — Learn by Making
 
-Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+Planning status — 11 October 2026: the [current status](../current-status.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
 
 **Working plan · 28 September–8 November 2026.** This is a product experiment, not a release promise or a TestSprite milestone. The first decision comes from observing new users; the findings below are code-review hypotheses, not user-test results.
 
@@ -12,7 +12,7 @@ Do not gate the editor behind lessons. Keep the existing Playground available wh
 
 ## Original implementation: audit hypotheses
 
-These observations describe the 28 September baseline, before the October repairs. [Phase 1](../research/2026-10-02-feature-repairs-phase1.md) makes Trace/Clear history-backed; [phase 2](../research/2026-10-02-feature-repairs-phase2.md) isolates desktop practice and preserves the original through save-before-entry, Return and separate Keep. Task-based PixiTools is also implemented. The proposed in-Studio guided paths, verified learning progression, recruitment and measured outcomes below remain proposals; they were not delivered by those repairs. Use the [current learning contract](../contracts/learning.md) for present custody/refresh limits.
+These observations describe the 28 September baseline, before the October repairs. [Phase 1 (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase1-md) makes Trace/Clear history-backed; [phase 2 (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase2-md) isolates desktop practice and preserves the original through save-before-entry, Return and separate Keep. Task-based PixiTools is also implemented. The proposed in-Studio guided paths, verified learning progression, recruitment and measured outcomes below remain proposals; they were not delivered by those repairs. Use the [current learning contract](../contracts/learning.md) for present custody/refresh limits.
 
 | Observation from code | User-facing risk to test | Decision needed |
 | --- | --- | --- |

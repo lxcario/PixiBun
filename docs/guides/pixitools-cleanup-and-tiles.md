@@ -1,6 +1,6 @@
 # Polish pixels and explore patterns
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 [Handbook](README.md) · [Animation review](animation-and-review.md) · [Variations](variations-and-scenes.md) · [All features](../features.md)
 

@@ -1,6 +1,6 @@
 # Export capability matrix
 
-The [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
+The [current status](../current-status.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
 
 For step-by-step format choices and current screenshots, use the [artist export guide](../guides/exporting.md).
 
@@ -38,7 +38,7 @@ Cancel, dialog close, external close and unmount abort active asynchronous expor
 
 APNG shares revision-checked, cancellable source preparation with GIF/video exports. Palette-cycle export admits its source, unrolled frames and scratch estimate before allocation, passes cancellation to both image encoders and releases surfaces on success/failure/cancellation. Its unrolling remains synchronous after an initial yield; it is not a measured latency guarantee. A failed frame context rejects the loop rather than silently dropping that pose.
 
-The [3 October challenge execution](../research/2026-10-03-testsprite-full-run.md) observes cancellation during a 24-frame APNG encode with no download, then decodes a later PNG into the exact source pixels. Its backup round-trip restores distinct frames and 240/700 ms holds in Firefox's browser-download flow. The native Chromium Save picker remains outside that automated qualification; the cloud service's failed/blocked statuses are retained separately.
+The [3 October challenge execution (local archive)](../archives.md#record-docs-research-2026-10-03-testsprite-full-run-md) observes cancellation during a 24-frame APNG encode with no download, then decodes a later PNG into the exact source pixels. Its backup round-trip restores distinct frames and 240/700 ms holds in Firefox's browser-download flow. The native Chromium Save picker remains outside that automated qualification; the cloud service's failed/blocked statuses are retained separately.
 
 Output dimensions are at most 4096 per axis / 16,777,216 pixels. Animated-image admission additionally bounds aggregate retained raw frames to 67,108,864 pixels; combined memory reservations and operation-specific constraints also apply. Admission reduces resource risk; it is not a cap on total browser RAM or codec internals.
 
@@ -46,7 +46,7 @@ APNG composition and encoding yield to browser tasks between frames and honor ca
 
 GIF, MP4 and WebM source preparation also reserves before compositing, yields between frames and honors cancellation before entering the encoder. Queued frame raster changes refuse a mixed export. Source composites release on success, failure and cancellation; codec reservations remain separate. Sprite-sheet preparation reserves source composites plus estimated sheet/PNG work and releases its canvases. These paths retain whole admitted frame batches; they are not streaming encoders or measured browser-RAM limits.
 
-See [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [export source](../../src/lib/export), [GIF correction](../research/gif-8x-corruption-2026-10-01.md), [cycle timing evidence](../research/palette-cycle-export-2026-10-01.md), [game-delivery phase](../research/phase-implementation-status.md). The recorded Godot run applies to its named version/backend/fixture; generic Unity/Phaser compatibility requires consumer verification. The production browser suite checks the scenarios in [generated inventory](../generated/test-inventory.json), not every format/codec/input combination.
+See [geometry validation](../../src/lib/export/exportGeometryValidation.ts), [export source](../../src/lib/export), [GIF correction (local archive)](../archives.md#record-docs-research-gif-8x-corruption-2026-10-01-md), [cycle timing evidence (local archive)](../archives.md#record-docs-research-palette-cycle-export-2026-10-01-md), [game-delivery phase (local archive)](../archives.md#record-docs-research-phase-implementation-status-md). The recorded Godot run applies to its named version/backend/fixture; generic Unity/Phaser compatibility requires consumer verification. The production browser suite checks the scenarios in [generated inventory](../generated/test-inventory.json), not every format/codec/input combination.
 
 ## Unique-tile bundle
 
@@ -58,4 +58,4 @@ Preparation reserves estimated CPU allocations against the shared ledger, snapsh
 
 ## Normal sources and demonstration labels
 
-Godot normal admission accepts tags normal and normal-map, or a normal-map effect. Preflight and export share the exactly-one/full-opacity/source-over rule. A selected hidden normal is allowed; a visible normal is excluded from the diffuse atlas when normal export is enabled. Stored convention is preserved, as required by [Godot CanvasTexture](https://docs.godotengine.org/en/stable/classes/class_canvastexture.html). Welcome APNG/GIF downloads are explicitly labeled text notes; actual encoders remain in Studio. SVG UI describes an approximation. [Phase 4 execution scope](../research/2026-10-02-feature-repairs-phase4.md).
+Godot normal admission accepts tags normal and normal-map, or a normal-map effect. Preflight and export share the exactly-one/full-opacity/source-over rule. A selected hidden normal is allowed; a visible normal is excluded from the diffuse atlas when normal export is enabled. Stored convention is preserved, as required by [Godot CanvasTexture](https://docs.godotengine.org/en/stable/classes/class_canvastexture.html). Welcome APNG/GIF downloads are explicitly labeled text notes; actual encoders remain in Studio. SVG UI describes an approximation. [Phase 4 execution scope (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase4-md).

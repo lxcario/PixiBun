@@ -1,6 +1,0 @@
-
-D:\PixiBun\src\components\layout\CenterViewport.tsx
-  944:7  error  Non-interactive elements should not be assigned mouse or keyboard event listeners  jsx-a11y/no-noninteractive-element-interactions
-
-✖ 1 problem (1 error, 0 warnings)
-

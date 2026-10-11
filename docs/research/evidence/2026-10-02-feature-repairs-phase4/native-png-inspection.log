@@ -1,3 +1,0 @@
-exportCompleteness-compile-e5644-rmals-preserve-both-atlases-chromium diffuse= [(255, 0, 0, 255), (0, 0, 255, 255), (0, 255, 0, 255)] normals= [(240, 128, 190, 255), (15, 128, 190, 255), (128, 240, 190, 255), (128, 15, 190, 255)] profile keys dict_keys([])
-exportCompleteness-compile-e5644-rmals-preserve-both-atlases-firefox diffuse= [(255, 0, 0, 255), (0, 0, 255, 255), (0, 255, 0, 255)] normals= [(240, 128, 190, 255), (15, 128, 190, 255), (128, 240, 190, 255), (128, 15, 190, 255)] profile keys dict_keys([])
-exportCompleteness-compile-e5644-rmals-preserve-both-atlases-webkit diffuse= [(255, 0, 0, 255), (0, 0, 255, 255), (1, 255, 0, 255)] normals= [(240, 128, 190, 255), (15, 128, 190, 255), (128, 240, 190, 255), (128, 15, 190, 255)] profile keys dict_keys(['icc_profile'])

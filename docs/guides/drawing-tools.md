@@ -1,6 +1,6 @@
 # Drawing, one pixel at a time
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 Animated tool previews appear on hover or focus. Activating a tool dismisses its preview immediately so the first drawing gesture can reach the canvas. The preview's Close and disable controls remain available while browsing tools.
 

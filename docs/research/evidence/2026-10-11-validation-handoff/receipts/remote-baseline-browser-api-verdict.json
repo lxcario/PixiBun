@@ -1,8 +1,0 @@
-{
-  "archive": "artifacts/l09-resource-recovery-2026-10-09/remote-baseline-browser.zip",
-  "verifiedAt": "2026-10-11T06:17:33.962Z",
-  "bytes": 13369038,
-  "expectedApiDigest": "sha256:940fab060026e5249ceab6b71e53dd932fa9afc79a3129cc95e7a6156268d84d",
-  "actualDigest": "sha256:940fab060026e5249ceab6b71e53dd932fa9afc79a3129cc95e7a6156268d84d",
-  "passed": true
-}

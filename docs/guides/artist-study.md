@@ -1,6 +1,6 @@
 # Observe the complete artist workflow
 
-For the tested revision and remaining accessibility, device and host checks, see the [11 October validation handoff](../research/2026-10-11-validation-handoff.md).
+For the tested revision and remaining accessibility, device and host checks, see the [current status](../current-status.md).
 
 Use a named, frozen candidate and isolated study projects. This is an executable study kit; it contains no participant results. Automated browser journeys check pixels and persistence, while this session checks whether artists can discover and use the workflow.
 

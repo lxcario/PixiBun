@@ -1,7 +1,0 @@
-const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
-const names=['2026-10-06-piximotion-foundations','2026-10-06-piximotion-readiness','2026-10-07-piximotion-phase4','2026-10-07-piximotion-phase5','2026-10-07-piximotion-cross-phase-hardening','2026-10-07-markdown-codebase-reconciliation'];
-const archives=names.map(name=>{const root='docs/research/evidence/'+name,m=JSON.parse(fs.readFileSync(root+'/manifest.json'));const entries=m.files||m.artifacts;const changed=entries.filter(e=>{const p=e.path.replaceAll('\\','/'),file=p.startsWith(root+'/')?p:path.join(root,p);if(!path.resolve(file).startsWith(path.resolve(root)+path.sep))throw Error('Path escape');return !fs.existsSync(file)||hash(file)!==e.sha256});return {name,checked:entries.length,changed,manifestSha256:hash(root+'/manifest.json')}});
-const baseline='artifacts/pixibun-improvements-prior-evidence-before.json';
-const manifestChanges=fs.existsSync(baseline)?archives.filter(a=>JSON.parse(fs.readFileSync(baseline)).archives.find(b=>b.name===a.name)?.manifestSha256!==a.manifestSha256):[];
-const result={recordedAt:new Date().toISOString(),checked:archives.reduce((n,a)=>n+a.checked,0),manifestChanges,archives};fs.writeFileSync('artifacts/pixibun-improvements-prior-evidence.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));if(manifestChanges.length||archives.some(a=>a.changed.length))process.exitCode=1;

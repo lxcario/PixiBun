@@ -1,10 +1,10 @@
 # PixiBun research-grounded product roadmap
 
-Planning status — 11 October 2026: the [11 October validation handoff](../research/2026-10-11-validation-handoff.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+Planning status — 11 October 2026: the [current status](../current-status.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
 
 > **Current capability map — 2 October 2026:** Recipe provenance/photometric reopening is implemented for supported tools; a universal Effect Inspector is deferred. Protected bounded simplification/shared-light/tile scenes, animation review and palette/game delivery are implemented subsets. General intrinsic depth inference, multi-user structure CRDTs and large-world generation are deferred. Artist evaluation remains pending. See [rendering](../contracts/rendering.md), [status](../current-status.md) and [research registry](../research/issue-registry.md) for contracts and limitations. Per-operation worker fallback differs; synchronous fallback can block.
 
-> **Implementation reconciliation — 2026-10-01:** The separate six-phase codebase audit implemented protected previews and source-change detection, animation review, semantic palette/game delivery and small shared-light/tile research workflows. This is partial progress toward the roadmap below, not completion of its broader Effect Inspector, depth inference, collaboration or world-generation requirements. See the [phase report](../research/phase-implementation-status.md) and [session completion record](../research/session-completion-2026-10-01.md).
+> **Implementation reconciliation — 2026-10-01:** The separate six-phase codebase audit implemented protected previews and source-change detection, animation review, semantic palette/game delivery and small shared-light/tile research workflows. This is partial progress toward the roadmap below, not completion of its broader Effect Inspector, depth inference, collaboration or world-generation requirements. See the [phase report (local archive)](../archives.md#record-docs-research-phase-implementation-status-md) and [session completion record (local archive)](../archives.md#record-docs-research-session-completion-2026-10-01-md).
 
 This plan treats PixiBun as a pixel-art workstation, not a collection of one-click filters. Every generated result should be understandable, editable, repeatable, and portable with the project.
 

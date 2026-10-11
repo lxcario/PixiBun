@@ -1,9 +1,0 @@
-{"case":"reload_history","exitCode":1}
-{"case":"locked_history","exitCode":1}
-{"case":"frame_isolation","exitCode":1}
-{"case":"resize_cancel","exitCode":1}
-{"case":"stale_tab_copy","exitCode":1}
-{"case":"apng_cancel","exitCode":1}
-{"case":"backup_roundtrip","exitCode":1}
-{"case":"floating_selection","exitCode":1}
-{"case":"keyboard_skip","exitCode":1}

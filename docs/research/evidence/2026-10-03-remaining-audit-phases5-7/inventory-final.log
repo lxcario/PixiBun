@@ -1,5 +1,0 @@
-
-> pixibun@1.14.1 docs:inventory
-> node scripts/generateDocInventory.mjs
-
-Generated test discovery and selected source contracts; no execution verdict implied.
