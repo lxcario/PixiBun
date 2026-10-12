@@ -4,7 +4,7 @@ Current engineering verification and remaining release checks are recorded in th
 
 [Artist handbook](guides/README.md) · [Documentation map](README.md) · [Current status](current-status.md)
 
-This is the current web app's feature index, reconciled with this session's checkout on **8 October 2026**. Interface pictures retain their actual capture dates; new motion and rotation controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
+This is the current web app's feature index, reconciled with the published Studio/Nibbli source on **13 October 2026**. Interface pictures retain their actual capture dates; new motion, rotation and Curve adjustment controls have source-backed instructions but no new handbook illustration. Rows distinguish those controls from older captures. A picture shows a real interface state; it does not prove every browser, exported file or artist workflow has been qualified. The guides explain destinations, previews, actions that change pixels immediately and the limits to keep in mind.
 
 ## Welcome and starting points
 
@@ -29,7 +29,7 @@ All **17** entries come from [the canonical tool list](../src/config/shortcuts.t
 | Tool | Key | Main use | Detailed guide | Screenshot |
 | --- | --- | --- | --- | --- |
 | Pen | B | Freehand pixels, size and pixel-perfect cleanup | [Pen](guides/drawing-tools.md#pen) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-pen.png) |
-| Bézier Curve | C | Drag a curved stroke with tension and brush width | [Curve](guides/drawing-tools.md#bézier-curve) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-curve.png) |
+| Bézier Curve | C | Draft a quadratic curve, adjust start/end/bend handles and Apply/Cancel; source/history-bound re-edit | [Curve and current limits](guides/drawing-tools.md#bézier-curve) | [Earlier controls](assets/screenshots/2026-10-02-feature-guide/tool-curve.png) |
 | Eraser | E | Remove pixels from the selected layer | [Eraser](guides/drawing-tools.md#eraser) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-eraser.png) |
 | Flood Fill | G | Contiguous/global fill, tolerance and bounded gap closure | [Fill](guides/drawing-tools.md#flood-fill) | [Controls](assets/screenshots/2026-10-02-feature-guide/tool-bucket.png) |
 | Pixel Gradient | Shift+G | Masked linear/radial fills using exact ramp colors, optional Bayer 4×4 | [Gradient](guides/drawing-tools.md#pixel-gradient) | [Masked fill](assets/screenshots/2026-10-04-artist-workspace/selection-gradient.png) |

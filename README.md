@@ -82,6 +82,8 @@ Then open [localhost:3000/studio](http://localhost:3000/studio).
 
 If you'd like to help tend the studio, start with [Contributing](CONTRIBUTING.md). Before sharing a change, run `npm run gate:full` to check the documentation and code and make sure the app builds. Tests that open the app in a browser run separately; the [testing guide](docs/guides/testing.md) walks through them.
 
+For agent developers, **Nibbli** is a repository companion that uses the real Studio controls, checks pixels and exported files, and retains failed attempts. Tester journeys are scripted; Artist accepts plans and critiques from your existing conversation or deterministic mocks. The current Hands workflow supports bounded 32×32 edits. No additional model API key is required for these adapters. Start with the [Nibbli guide](docs/guides/nibbli.md) and [agent contract](docs/guides/nibbli-agent.md); this is developer tooling rather than an assistant panel inside the Studio.
+
 </details>
 
 ## A few useful shelves
@@ -94,6 +96,7 @@ If you'd like to help tend the studio, start with [Contributing](CONTRIBUTING.md
 | Learn the keys | [Keyboard shortcuts](docs/contracts/shortcuts.md) |
 | See what's available and what's been checked | [Current project status](docs/current-status.md) |
 | Understand the engine | [Architecture](ARCHITECTURE.md) and [rendering](docs/contracts/rendering.md) |
+| Run agent-driven drawing, editing or verification | [Nibbli](docs/guides/nibbli.md), [agent contract](docs/guides/nibbli-agent.md) and [milestones](docs/plans/nibbli.md) |
 | Explore ideas for the future | [v2 vision](V2_VISION.md), a proposal for future work |
 
 These screenshots show the local studio on **2 October 2026**, using Cozy Classic and PixiBun's own artwork. [About this version](docs/current-status.md) explains which changes are included and how they were checked. [Screenshot details](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/run.json) are available too.

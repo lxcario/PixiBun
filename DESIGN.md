@@ -2,6 +2,10 @@
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
+**Studio interaction update — 13 October 2026:** The header/tool-option layout, color flyout with explicit Close control, pinned picker, palette/layer strips and compact tool-help cards have been refined. Curve exposes start/end/bend handles with Apply/Cancel and guarded re-edit; context switches cancel pending curves. Tool illustrations use a handcrafted pixel heart and explanatory shading/normal/light examples. They are tutorial demonstrations, not measured physical-lighting results. The [drawing guide](docs/guides/drawing-tools.md#bézier-curve) documents current behavior; older pictures retain their actual capture dates.
+
+The canvas surround uses bounded outlines and a small gradient in place of large blurred decorations. Frame-card transitions and active decorative shadows are disabled during playback. These changes reduce decorative paint work while retaining the existing animation clock; intermittent WebKit visible-pose stability remains open. They do not change the photometric cast-shadow engine or globally prohibit tactile button shadows. The [source change record](docs/releases/2026-10-13-studio-and-nibbli.md) separates functional checks, visual observations and remaining manual/device qualification.
+
 > **Audit-session interaction update — 2026-10-01:** PixiTools includes animation review and Try a new look (previously Explore variations), with native before/after previews, protected rectangles, common light settings and tile border/path diagnostics. Later interface refinements are described in the [Phase 6 UX report (local archive)](docs/archives.md#record-docs-research-phase6-ux-hardening-md). Automated accessibility/layout checks establish their tested scope; artist usefulness remains unmeasured. See the [session record (local archive)](docs/archives.md#record-docs-research-session-completion-2026-10-01-md).
 
 ```text

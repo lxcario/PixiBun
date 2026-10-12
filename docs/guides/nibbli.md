@@ -30,7 +30,7 @@ Reports separate functional pass/fail from an artistic review rubric covering si
 - **Vision:** Screenshots plus native RGBA observations and independently decoded downloaded files. Expected fixtures belong to the test, not to an agent's visual opinion or the production renderer. Functional correctness and artistic quality remain separate.
 - **Memory:** Append-only events for actions, failures, checks, corrections and evidence-linked candidate observations. Captures cannot overwrite earlier files. A manifest hashes the retained payloads. Candidate strategies need review before reuse; recording experience does not train model weights.
 - **Tester:** The current workflow is scripted and reproducible. An exploratory agent can author additional journeys through the controller, with reviewed expectations. The existing [feature index](../features.md), [drawing guide](drawing-tools.md) and [test helpers](../../tests/helpers/drawingAndPreviewWorkflows.ts) remain the knowledge sources.
-- **Artist:** Later planners can reuse these operations to produce artwork. Evaluate silhouette, palette, pose, timing and correction separately. Four-frame animation supplements the preserved core pen/fill/Undo journey.
+- **Artist:** The bounded v0.1 loop already reuses these operations for conversation or mock drawing plans, observations, critiques and corrections. Hands adds qualified Move, Copy/Paste, Flip H/V and exact quarter turns on 32×32 artwork; read the [agent contract](nibbli-agent.md) for strict boundaries and commands. Evaluate silhouette, palette, pose, timing and correction separately. The scripted four-frame Tester animation does not establish autonomous creative motion planning.
 
 ## Failure and repair policy
 

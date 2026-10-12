@@ -2,6 +2,12 @@
 
 The [current status](../current-status.md) records the qualifying revision and observed limits for this contract; production-host and device qualification remain separate.
 
+## Nibbli developer tooling
+
+Nibbli's [protocol](../../scripts/nibbli/artist/protocol.ts) validates plan/critique fields and bounds actions, points, calls, tokens, time and reported cost. Hands binds edits to an observation and rechecks saved project/source content before real UI execution. Coordinates, frame/layer identity, locks, supported geometry and protected content are checked before a batch changes artwork. The controller does not accept model-supplied code or inject application state/raster bytes. Independent pixels/files remain the functional oracle; a critique cannot change test expectations.
+
+The mock and conversation adapters need no extra provider API key and make no provider API calls. The surrounding chat is a separate service with its own privacy terms, and protocol validation does not sandbox the host agent/Node process. A future adapter requires external configuration, bounded usage and a sharing decision for its observations; reported-cost checks do not guarantee a provider's bill. Screenshots, project payloads, traces and paths remain in ignored local evidence archives. Review them before sharing; recording memory neither trains weights nor approves reuse. [Agent contract](../guides/nibbli-agent.md), [archive policy](../archives.md) and [security policy](../../SECURITY.md) own the operational guidance.
+
 > **Audit-session hardening — 2026-10-01:** Revision/generation checks protect asynchronous saves and preview publication; conflicting tabs refuse stale saves; bounded workers validate output and support deadlines/cancellation; shared memory admission estimates retained buffers and history. Research recipe parsing bounds dimensions, palettes, regions, pins and fingerprints. This session used local verification only. These safeguards and their limitations are recorded in the [phase report (local archive)](../archives.md#record-docs-research-phase-implementation-status-md) and [session record (local archive)](../archives.md#record-docs-research-session-completion-2026-10-01-md); they do not establish a penetration-test certification or measured heap ceiling.
 
 ## 1. Zero-Cloud & Local-First Philosophy

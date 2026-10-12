@@ -131,3 +131,32 @@ Source inspection also found an open secondary-color Curve issue: a Shift gestur
 ## Local-only material
 
 The browser `debug.log`, original working-source snapshot, detailed review notes, failed challenges, native browser traces/screenshots and qualification receipts remain local and ignored. Existing historical reports and artwork images are preserved. The [archive policy](../archives.md) keeps completed audits/raw payloads out of Git and measures publishable source separately from local evidence storage. The original 68-file working inventory included one runtime log; all 67 source/document/test entries are covered above, together with this publication's documentation and regression additions.
+
+## Documentation entrypoint follow-up
+
+The 73-file source publication is [commit 8c207b22](https://github.com/lxcario/PixiBun/commit/8c207b22cae6a1a2f4a7f299ee42f64f65a1c665), including 14 Markdown files. Most of its documentation lived under `docs/`; the root entrypoints still lacked Nibbli and some current Curve/gate details. This English documentation-only follow-up fixes those omissions without altering application, asset, controller, test, config or dependency files.
+
+| Document | Maintenance change |
+| --- | --- |
+| [README](../../README.md) | Adds the developer companion entrypoint and links supported workflows without promising a Studio assistant panel. |
+| [Product scope](../../MAIN.md) | Distinguishes Nibbli developer tooling, conversation/mock planning and qualified Hands operations from future model services. |
+| [Architecture](../../ARCHITECTURE.md) | Defines planner/controller/vision/memory boundaries and corrects Curve's ownership in the pointer-handler table. |
+| [Contributing](../../CONTRIBUTING.md) | Corrects the gate to five stages plus optional build, separates coverage from timing, and explains Nibbli verification/independent expectations. |
+| [Agent rules](../../SKILL.md) | Routes Nibbli work to its skill/contract and separates deterministic graphics from conversation planning. |
+| [Design](../../DESIGN.md) | Records Curve/color/tool-help changes and reduced decorative paint work, without claiming M3 closure or physical-lighting accuracy. |
+| [Benchmarks](../../BENCHMARKS.md) | Labels earlier local/CI numbers as historical and links the separate 13 October candidate; preserves original tables. |
+| [Security policy](../../SECURITY.md) | Describes bounded plans, host-process limitations, evidence privacy and future provider configuration. |
+| [Tasks](../../TASKS.md) | Adds the published checkpoint and current open work; leaves earlier phase entries intact. |
+| [v2 vision](../../V2_VISION.md) | Places current Nibbli work before unmeasured infrastructure proposals; preserves proposal status. |
+| [Feature index](../features.md) | Describes adjustable Curve controls and labels the older screenshot accurately. |
+| [Artist handbook](../guides/README.md) | Links optional agent tooling and clarifies which controls lack fresh handbook pictures. |
+| [Nibbli operating guide](../guides/nibbli.md) | Replaces the stale future-only Artist description with implemented Artist/Hands workflows and their limits. |
+| [Security boundaries](../contracts/security-boundaries.md) | Defines protocol/evidence/provider boundaries without implying a sandbox or security certification. |
+| [Exports](../contracts/exports.md) | Describes Blob companion download contexts and their cleanup/qualification boundaries. |
+| [Changelog](../../CHANGELOG.md) | Links this documentation reconciliation separately from the code publication. |
+| [Current status](../current-status.md) | Keeps the documentation-only follow-up separate from dated build/browser qualification. |
+| [This change record](2026-10-13-studio-and-nibbli.md) | Lists the follow-up's affected pages alongside the original 73-file code map. |
+
+Application/test/controller bytes still match the published candidate; no fresh production build or native browser result is claimed for Markdown changes. The Nibbli guide participates in source fingerprints, so earlier source/build labels remain attached to their original runs. Documentation links/inventories and the mandatory pre-push gate are checked for this follow-up before publication. The generic `FullStackGuide.md`, unchanged configuration files and local historical audits do not need content changes merely to acquire a newer file timestamp.
+
+The follow-up's documentation validation passed: 1,297 local links/headings across 59 owned Markdown files, matching generated inventories and a 25.27 MiB publishable checkout within the unchanged 40 MiB budget. All 18 pending files are Markdown and match the follow-up map; comparing source fingerprints confirms that the Nibbli guide is the only changed input, with application/assets/tests/controllers/configuration unchanged.

@@ -48,15 +48,16 @@ To run the full suite including Next.js production compilation:
 npm run gate:full
 ```
 
-### Four standard stages and an optional build
+### Five standard stages and an optional build
 
 | Stage | Command | Purpose |
 | :--- | :--- | :--- |
 | **Stage 1** | `npm run verify:docs` | Checks owned local links/headings, generated inventory, selected source contracts, phase/section rules and version parity. |
 | **Stage 2** | `npm run typecheck` | Checks strict project TypeScript compilation; skipLibCheck, casts, JavaScript dependencies and runtime inputs remain separate boundaries. |
 | **Stage 3** | `npm run lint` | Checks source, tests, scripts, configs, and accessibility rules. |
-| **Stage 4** | `npm test` | Runs the current unit and invariant test suite via Vitest. |
-| **Stage 5** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
+| **Stage 4** | `npm run test:coverage` | Runs unit/invariant correctness and enforces configured-source coverage thresholds. |
+| **Stage 5** | `npm run test:performance` | Measures warmed RotSprite, nearest-neighbor and palette work without coverage instrumentation; original budgets remain enforced. |
+| **Stage 6** | `npm run build` | *(In `gate:full`)* Validates Next.js production bundling, route trees, and code splitting. |
 
 ---
 
@@ -78,6 +79,10 @@ node scripts/installGitHooks.mjs
 ---
 
 ##  Testing Standards
+
+Nibbli verification runs separately from the standard editor/production browser suites. Use `npm run nibbli:test` for Tester, `npm run nibbli:artist -- --mock` for the free planning/correction pipeline and `npm run nibbli:hands -- --mock` for bounded editing fixtures. Conversation adapters use your existing agent; no model API key or paid service is needed for these workflows. Start with the [Nibbli skill](.agents/skills/nibbli/SKILL.md) and [agent contract](docs/guides/nibbli-agent.md).
+
+Validate complete plans before drawing, preserve independent pixel/file expectations and retain failures. Explain each edit's reason, expected change and protected content. Classify product, usage and expectation failures before proposing a separate repair; do not weaken assertions to get a pass. Freeze source and build for browser qualification, keep functional/artistic verdicts separate and leave raw captures in ignored local archives. Curve changes should preserve input ownership, initiating layer/frame, stale-history refusal and Undo-based re-edit Cancel/Redo semantics. Consult [current status](docs/current-status.md) before claiming broader capability or release readiness.
 
 - **Unit & Logic Tests:** Located in `tests/`. Every new algorithm, safety guard, or utility function must include comprehensive unit tests testing nominal, boundary, and pathological inputs.
 - **E2E & Accessibility Tests:** Located in `tests/e2e/`. Critical workstation workflows and accessibility benchmarks (via `@axe-core/playwright`) are tested end-to-end.

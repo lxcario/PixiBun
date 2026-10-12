@@ -1,8 +1,22 @@
 # Build Plan — PixiBun
 
-Maintenance update — 11 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
+Maintenance update — 13 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.
+
+## Nibbli and Studio source publication — 2026-10-13
+
+- [x] Publish scripted Tester, conversation/mock Artist planning/critique and bounded Hands Move, Copy/Paste, Flip H/V and exact quarter-turn editing through the real UI.
+- [x] Preserve independent pixel/file expectations, protected content, whole-plan validation, execution/cost limits and original failure evidence in local archives.
+- [x] Integrate Curve adjustment handles and Studio/color/tool-help refinements, pasted-selection Undo/Cancel repairs and WebKit Blob companion downloads.
+- [x] Correct Curve source/history/input ownership and outside-canvas handle routing; document Undo-based re-edit Cancel/Redo semantics.
+- [x] Review and publish all 73 changed files in [8c207b22](https://github.com/lxcario/PixiBun/commit/8c207b22cae6a1a2f4a7f299ee42f64f65a1c665) with an [English file change record](docs/releases/2026-10-13-studio-and-nibbli.md). Its full gate passed 2,370 tests /212 files and production compilation; 63 scoped native cases passed in three engines. The mandatory pre-push gate passed separately. Earlier Nibbli browser results retain their original identities and were not rerun in this publication.
+- [ ] Close M3's intermittent WebKit scheduling/visible-pose stability with evidence; keep timeout/retry/frame-order expectations unchanged.
+- [ ] Fix Curve secondary/recorded-color retention during adjustment; the published safety checks qualify the primary-color workflow.
+- [ ] Extend M4 beyond qualified 32×32 operations and review arbitrary-angle silhouettes separately from exact-turn correctness.
+- [ ] Develop M5 goal-driven pose/timing planning; no independent model service, automatic training or artistic-quality qualification is claimed.
+
+The [Nibbli milestone plan](docs/plans/nibbli.md) owns next steps. Source publication is separate from hosted-release approval; the historical phase entries below remain unchanged.
 
 ## Studio publication follow-up — 2026-10-01
 

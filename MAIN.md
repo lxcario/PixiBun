@@ -51,6 +51,14 @@ The [storage contract](docs/contracts/storage.md#admission-and-optional-metadata
 
 ## Repo & Environments
 
+### Nibbli developer companion
+
+The repository includes Nibbli Tester, bounded Artist planning and Hands editing through the real PixiBun UI. Tester owns scripted expectations. Artist takes a goal, validates a plan, executes it, observes screenshots/pixels and requests a critique or correction. The existing conversation supplies decisions; local mocks exercise the pipeline without paid services. Provider-neutral adapters do not select a model automatically, and no independently running model service or Studio chat panel is shipped.
+
+Hands currently admits qualified 32×32 Move, disjoint Copy/Paste, Flip H/V and exact quarter-turn operations with source, history and protected-content checks. Larger projects, general cross-layer edits and creative motion planning remain future work. Functional correctness and artistic quality have separate verdicts. See the [agent contract](docs/guides/nibbli-agent.md), [milestones](docs/plans/nibbli.md) and [source publication](docs/releases/2026-10-13-studio-and-nibbli.md).
+
+### Running environments
+
 - **Source:** [lxcario/PixiBun](https://github.com/lxcario/PixiBun), licensed under [MIT](LICENSE). Cloning requires access granted by the repository's GitHub settings; the license does not change those access controls. No future public-launch date is promised here.
 - **Development:** Local Next.js server, normally at `localhost:3000`.
 - **Production:** A Next.js-capable runtime with operator-controlled configuration. A Git push or local check is not a deployment receipt; identify the live revision in a [release record](docs/guides/deployment.md).

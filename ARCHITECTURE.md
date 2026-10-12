@@ -1,5 +1,21 @@
 # Architecture & System Design — PixiBun Atelier
 
+## Nibbli and Studio ownership update — 13 October 2026
+
+Nibbli is repository developer tooling layered over the production Studio UI, separate from the deterministic graphics engine and application state. Its provider-neutral planner boundary accepts conversation replies or deterministic mocks; it does not start a model service or require a provider API key. The loop is goal → plan → whole-plan validation → real UI execution → screenshots/native pixels/files → critique → at most three corrections.
+
+| Boundary | Responsibility |
+| --- | --- |
+| [Artist protocol and adapters](scripts/nibbli/artist/protocol.ts) | Strict command/critique envelopes, observation identity, action/point/call/token/time and reported-cost budgets; adapters supply plans without choosing a provider globally. |
+| [Shared controller](scripts/nibbli/controller.ts) | Real mouse/keyboard/tool/layer/timeline/save/export actions, measured canvas coordinates and bounded selection transforms; no application-state or raster injection. |
+| [Vision](scripts/nibbli/vision.ts) and [attempt memory](scripts/nibbli/memory.ts) | Read-only native pixels, independently decoded files and immutable evidence-linked attempts. Functional expectations remain separate from artistic opinions; experience memory does not train model weights. |
+
+Hands preflights same-layer/frame 32×32 moves, disjoint copies, H/V mirrors and exact clockwise quarter turns against protected metadata/RGBA. Free-angle rotation is a separate trusted diagnostic, not a planner command. Source/build changes invalidate browser qualification; raw evidence stays local. [Agent contract](docs/guides/nibbli-agent.md), [testing](docs/guides/testing.md) and [current status](docs/current-status.md) define the operational limits and retained verdicts.
+
+Curve now has a dedicated draft/adjust/apply/cancel handler and [screen-space handles](src/components/studio/CurveAdjustmentGizmo.tsx). It binds pending work to its initiating workspace/history, cancels on frame/layer/project switches and checks the exact latest Undo entry before re-edit. Re-edit is Undo-based: Cancel leaves the curve undone and Redo restores it. Primary-color workflow is qualified; secondary/recorded-color retention remains open. Pasted-copy transforms initialize gizmo bounds and one Undo baseline; Cancel writes back only genuinely lifted source pixels. [Drawing guidance](docs/guides/drawing-tools.md#bézier-curve) and the [complete change record](docs/releases/2026-10-13-studio-and-nibbli.md) describe these changes and export/UI refinements.
+
+Reduced decorative paint cost does not close M3's intermittent WebKit scheduling/visible-pose issue. The animation clock and frame-order expectations remain unchanged.
+
 ## Import, worker and navigation ownership — 11 October 2026
 
 Image/sheet import stages destination structure, pixels, history and optional palette before publication. Replacement clears transparent input areas and refuses locked destinations; failed admission preserves artwork. The admitted transaction coordinates grouped Undo/Redo, redraw and persistence. The worker starts healthy network requests independently of optional cache access, bounds that access at 250 ms, and captures the owned cache at event arrival so late work does not reopen a retired bucket. Cache failure does not guarantee offline availability when no readable cached bytes exist. Home decorative light updates use transition priority; starter reveals fade while their hit areas remain fixed. These named repairs and their scope are recorded in the [current status](docs/current-status.md).
@@ -731,7 +747,8 @@ The monolithic pointer event architecture has been decomposed into dedicated per
 | `useBrushPointerHandler` | Pen, Eraser, Dither stroke rasterization | `src/hooks/viewport/useBrushPointerHandler.ts` |
 | `useChiselPointerHandler` | Normal Chisel sculpting sessions | `src/hooks/viewport/useChiselPointerHandler.ts` |
 | `useSelectionPointerHandler` | Marquee box, lasso, wand, floating buffer drag | `src/hooks/viewport/useSelectionPointerHandler.ts` |
-| `useShapePointerHandler` | Line, 2:1 iso line, quadratic Bézier, rect, ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
+| `useShapePointerHandler` | Line, 2:1 iso line, rect, ellipse | `src/hooks/viewport/useShapePointerHandler.ts` |
+| `useCurvePointerHandler` | Quadratic Curve draft, adjustable handles, Apply/Cancel and source/history-bound re-edit | `src/hooks/viewport/useCurvePointerHandler.ts` |
 | `usePhotometricEvents` | On-canvas light gizmo drag, preview sessions, cancel tokens | `src/hooks/viewport/events/usePhotometricEvents.ts` |
 | `useArtisanEvents` | Freehand drawing event dispatch and Bresenham raster loops | `src/hooks/viewport/events/useArtisanEvents.ts` |
 | `useGeometricEvents` | Generated shading, normals, shadows, outlines and source-owned layer rotation | `src/hooks/viewport/events/useGeometricEvents.ts` |

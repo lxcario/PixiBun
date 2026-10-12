@@ -34,7 +34,9 @@ For a facilitated observation session, use the [artist workflow study kit](artis
 | Draw with one guest, use the cached studio offline and choose diagnostic preferences | [Collaboration and privacy](collaboration-and-privacy.md) |
 | Keep a backup, handle save conflicts or recover damaged local records | [Artwork safety and backup](artwork-safety.md) |
 
-The [complete feature index](../features.md) connects available features to instructions and implementation, with dated illustrations where captured. New motion/rotation controls have no fresh handbook picture yet. For exact keys and file/resource limits, use the [shortcut](../contracts/shortcuts.md), [storage](../contracts/storage.md) and [export](../contracts/exports.md) references.
+The [complete feature index](../features.md) connects available features to instructions and implementation, with dated illustrations where captured. New motion/rotation/Curve adjustment controls have no fresh handbook picture yet. For exact keys and file/resource limits, use the [shortcut](../contracts/shortcuts.md), [storage](../contracts/storage.md) and [export](../contracts/exports.md) references.
+
+For agent developers helping with drawing or verification, [Nibbli](nibbli.md) and its [agent contract](nibbli-agent.md) describe the separate repository tooling. Artist plans come from your conversation or mocks, and Hands currently supports bounded 32×32 edits. It is not an assistant button inside the Studio; functional checks and artistic opinions remain separate.
 
 ## About the pictures
 

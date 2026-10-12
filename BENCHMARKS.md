@@ -2,7 +2,9 @@
 
 This document records empirical benchmarks, algorithmic execution budgets, and heap memory footprint calculations for PixiBun's core graphics and state engines.
 
-The [current status](docs/current-status.md) records final RotSprite p90 **2.146894 ms locally /2.27146516 ms in CI** against the unchanged **10 ms** limit. This is a serial uninstrumented Node 22 benchmark with five warmup and fifteen measured 50-call batches; p90 describes batch means, not individual-operation latency. Correctness and required coverage stay in the full gate. Earlier instrumented timing failures remain historical evidence.
+The earlier release-repair candidate recorded RotSprite p90 **2.146894 ms locally /2.27146516 ms in CI** against the unchanged **10 ms** limit. The separate 13 October Studio/Nibbli candidate recorded **1.794520 ms** in its frozen full gate and **1.890496 ms** in the subsequent mandatory pre-push gate. These are dated run observations, not a claim that remote CI reran or that the difference is a measured improvement. See [current status](docs/current-status.md) and the [candidate's source/build labels](docs/releases/2026-10-13-studio-and-nibbli.md#verification-and-remaining-scope).
+
+The benchmark is serial uninstrumented Node 22 work with five warmup and fifteen measured 50-call batches; p90 describes batch means, not individual-operation latency. Correctness and required coverage stay in the full gate. These numbers do not measure Studio input-to-display latency or resolve M3's browser scheduling gaps. Earlier instrumented timing failures and the historical tables below retain their original scope.
 
 Current discovery is in [generated/test-inventory.json](docs/generated/test-inventory.json); actual execution is in [current status](docs/current-status.md). Historical measurements retain their original counts and timings.
 

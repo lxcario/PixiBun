@@ -1,6 +1,8 @@
 # PixiBun Atelier — v2 Architecture & Strategic Vision
 
-Planning status — 11 October 2026: the [current status](docs/current-status.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+Planning status — 13 October 2026: the [current status](docs/current-status.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
+
+Near-term work uses the existing engine and test infrastructure: Nibbli Tester, bounded Artist planning and Hands edits are now repository tooling, with plans/critique supplied by the conversation or local mocks. Provider-neutral adapters do not require a model API key for those workflows. Prioritize M3 playback stability, reliable M4 editing and later M5 creative motion planning under the [Nibbli milestone plan](docs/plans/nibbli.md). This progress does not implement WebGPU, WASM SIMD, a tree CRDT, native packaging, model training or an independently running model service. Those infrastructure proposals still need a measured workload and their own acceptance evidence.
 
 **Proposal, reconciled 2 October 2026.** None of the GPU/SIMD/tree-CRDT/wide-gamut/native/neural systems below is established as shipped by this document. Current TypeScript/browser functionality is described in [architecture](ARCHITECTURE.md), [current status](docs/current-status.md) and [the export contract](docs/contracts/exports.md). Historical benchmark numbers without reproducible artifacts were removed from future acceptance claims.
 
