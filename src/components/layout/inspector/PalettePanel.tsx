@@ -149,8 +149,8 @@ export const PalettePanel: React.FC = () => {
       <PinnedColorPanel defaultExpanded={true} pinned={colorPinned} />
 
       {/* 1. Flush Partition Header: Title, Preset Dropdown & Swatch Indicators */}
-      <div className="h-8 px-3 flex items-center justify-between bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
-        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+      <div className="h-8 px-2.5 flex items-center justify-between gap-2 bg-[var(--desk-surface-raised)]/40 border-b border-[var(--desk-border)] shrink-0">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <span className="text-[11px] font-sans font-medium text-[var(--text-muted)] shrink-0">
             Palette
           </span>
@@ -158,7 +158,7 @@ export const PalettePanel: React.FC = () => {
             value={currentPaletteId}
             onChange={(e) => selectPalette(e.target.value)}
             aria-label="Color palette preset"
-            className="w-full max-w-[150px] truncate bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)]/40 transition-colors"
+            className="flex-1 min-w-0 bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-2 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-xs font-sans cursor-pointer hover:border-[var(--accent-gold)]/40 transition-colors truncate"
           >
             {palettes.map((p) => (
               <option key={p.id} value={p.id}>
@@ -169,30 +169,49 @@ export const PalettePanel: React.FC = () => {
         </div>
 
         {/* Primary (1) & Secondary (2) Color Indicators */}
-        <div className="flex items-center gap-2 font-mono text-[10px] shrink-0">
-          <span className="flex items-center gap-1 text-[var(--text-body)] font-medium" title={`Primary Color: ${primaryColor}`}>
+        <div className="flex items-center gap-1 font-mono text-[10px] shrink-0">
+          <span
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)]"
+            title={`Primary Color: ${primaryColor}`}
+          >
             <span
-              className="w-3.5 h-3.5 rounded-[2px] border border-white shadow-xs inline-block ring-1 ring-[var(--accent-gold)]"
+              className="w-2.5 h-2.5 rounded-[1px] border border-white/60 shadow-xs inline-block"
               style={{ backgroundColor: primaryColor }}
             />
-            <span>1</span>
+            <span className="font-semibold text-[9px] text-[var(--accent-gold)]">1</span>
           </span>
-          <span className="text-[var(--text-muted)]">|</span>
-          <span className="flex items-center gap-1 text-[var(--text-body)] font-medium" title={`Secondary Color: ${secondaryColor}`}>
+          <span
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] bg-[var(--surface-0)] border border-[var(--desk-border)] text-[var(--text-body)]"
+            title={`Secondary Color: ${secondaryColor}`}
+          >
             <span
-              className="w-3.5 h-3.5 rounded-[2px] border border-white shadow-xs inline-block ring-1 ring-[var(--accent-plum)]"
+              className="w-2.5 h-2.5 rounded-[1px] border border-white/60 shadow-xs inline-block"
               style={{ backgroundColor: secondaryColor }}
             />
-            <span>2</span>
+            <span className="font-semibold text-[9px] text-[var(--accent-plum)]">2</span>
           </span>
         </div>
       </div>
 
       {/* 2. Direct Swatch Slab */}
-      <button type="button" onClick={() => setBrowsingPalettes(true)} className="mx-3 mt-3 px-3 py-2 text-xs text-left border border-[var(--desk-border)] bg-[var(--surface-0)] hover:border-[var(--accent-gold)]">Browse palettes <span className="float-right text-[var(--text-muted)]">Previews & favorites →</span></button>
+      <div className="px-2.5 pt-2 pb-1 shrink-0">
+        <button
+          type="button"
+          onClick={() => setBrowsingPalettes(true)}
+          className="w-full px-2.5 py-1.5 text-xs text-left border border-[var(--desk-border)] bg-[var(--surface-0)] hover:bg-[var(--surface-1)] hover:border-[var(--accent-gold)]/60 rounded-[3px] transition-colors flex items-center justify-between cursor-pointer group shadow-xs"
+        >
+          <span className="font-medium text-[var(--text-heading)] flex items-center gap-1.5 text-[11px]">
+            <PixelIcon name="layers" size={12} className="text-[var(--accent-gold)]" />
+            Browse palettes
+          </span>
+          <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--accent-gold)] transition-colors">
+            Library &amp; presets →
+          </span>
+        </button>
+      </div>
       {browsingPalettes && <PaletteLibraryModal onClose={() => setBrowsingPalettes(false)} />}
-      <div className="p-3 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] shrink-0">
-        <div className="grid grid-cols-8 gap-1.5 bg-[var(--desk-surface-raised)]/60 p-2 rounded-[var(--radius-sm)] border border-[var(--desk-border)] shadow-xs min-h-[90px] max-h-[220px] overflow-y-auto">
+      <div className="p-2.5 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] shrink-0">
+        <div className="grid grid-cols-8 gap-1.5 bg-[var(--desk-surface-raised)]/40 p-2 rounded-[3px] border border-[var(--desk-border)] shadow-xs min-h-[48px] max-h-[200px] overflow-y-auto">
           {currentPalette.colors.map((color, idx) => {
             const isPrimary = color.toLowerCase() === primaryColor.toLowerCase();
             const isSecondary = color.toLowerCase() === secondaryColor.toLowerCase();
@@ -206,12 +225,12 @@ export const PalettePanel: React.FC = () => {
                   setSecondaryColor(color);
                 }}
                 style={{ backgroundColor: color }}
-                className={`aspect-square w-full rounded-[2px] border transition-all hover:brightness-110 active:translate-y-[1px] cursor-pointer relative flex items-center justify-center ${
+                className={`aspect-square w-full rounded-[2px] border transition-all hover:scale-105 active:scale-95 cursor-pointer relative flex items-center justify-center ${
                   isPrimary
                     ? 'border-white ring-2 ring-[var(--accent-gold)] shadow-xs z-10 scale-[1.04]'
                     : isSecondary
                     ? 'border-white ring-2 ring-[var(--accent-plum)] z-10 scale-[1.04]'
-                    : 'border-[var(--desk-border)] hover:border-white/60'
+                    : 'border-[var(--desk-border)]/80 hover:border-white/60'
                 }`}
                 title={`${color} [#${idx}] (Left-click: Primary | Right-click: Secondary)`}
                 aria-label={`Select color ${color}`}
@@ -230,29 +249,46 @@ export const PalettePanel: React.FC = () => {
             );
           })}
         </div>
-        <div className="flex items-center justify-between gap-2 mt-2">
-          <span className="text-[11px] font-mono text-[var(--text-muted)]">{selectedIndex >= 0 ? currentPalette.colors[selectedIndex] : 'Choose a color'}</span>
-          <TactileButton size="sm" disabled={selectedIndex < 0 || currentPalette.colors.length <= 1}
+        <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-[var(--desk-border)]/50">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span
+              className="w-3.5 h-3.5 rounded-[2px] border border-white/40 shadow-xs shrink-0"
+              style={{ backgroundColor: selectedIndex >= 0 ? currentPalette.colors[selectedIndex] : 'transparent' }}
+            />
+            <span className="text-[11px] font-mono text-[var(--text-muted)] truncate">
+              {selectedIndex >= 0 ? currentPalette.colors[selectedIndex] : 'Choose a color'}
+            </span>
+          </div>
+          <TactileButton
+            size="sm"
+            disabled={selectedIndex < 0 || currentPalette.colors.length <= 1}
             title={currentPalette.colors.length <= 1 ? 'Keep at least one color.' : 'Remove the selected swatch. Artwork stays unchanged.'}
-            onClick={() => { if (removePaletteColor(currentPalette.id, selectedIndex)) setSelectedSwatch({ paletteId: currentPalette.id, index: Math.max(0, selectedIndex - 1) }); }}>
-            <PixelIcon name="trash" size={12} /> Remove color
+            onClick={() => { if (removePaletteColor(currentPalette.id, selectedIndex)) setSelectedSwatch({ paletteId: currentPalette.id, index: Math.max(0, selectedIndex - 1) }); }}
+            className="h-6 px-2 text-[10px] shrink-0"
+          >
+            <PixelIcon name="trash" size={11} /> Remove color
           </TactileButton>
         </div>
       </div>
 
-      {/* 3. Palette Quick Utilities Strip */}
-      <div className="p-2.5 border-b border-[var(--desk-border)] grid grid-cols-3 gap-2 bg-[var(--desk-surface)]">
-        <TactileButton variant="primary" size="sm" onClick={() => setCreatingPalette(true)} className="col-span-3 justify-center">
-          <PixelIcon name="plus" size={12} /> Create palette
+      {/* 3. Palette Quick Utilities Strip (Cozy 2x2 grid) */}
+      <div className="p-2.5 border-b border-[var(--desk-border)] grid grid-cols-2 gap-1.5 bg-[var(--desk-surface)] shrink-0">
+        <TactileButton
+          variant="tactile"
+          size="sm"
+          onClick={() => setCreatingPalette(true)}
+          className="justify-center h-7 text-xs font-semibold text-[var(--accent-gold)] border-[var(--accent-gold)]/40 hover:border-[var(--accent-gold)]"
+        >
+          <PixelIcon name="plus" size={11} /> Create palette
         </TactileButton>
         <TactileButton
           variant="tactile"
           size="sm"
           onClick={() => studioEvents.emit('pixibun:extract-palette')}
           title="Group the visible artwork into up to 6 main colors. Artwork stays unchanged."
-          className="flex-1 text-[11px] font-sans"
+          className="justify-center h-7 text-xs"
         >
-          Scan Canvas
+          <PixelIcon name="eyedropper" size={11} /> Scan Canvas
         </TactileButton>
 
         <TactileButton
@@ -262,9 +298,9 @@ export const PalettePanel: React.FC = () => {
           title="Generate 5-step highlight & shadow ramp in OKLCH"
           aria-label="+ OKLCH Ramp"
           data-testid="oklch-ramp-button"
-          className="flex-1 text-[11px] font-sans"
+          className="justify-center h-7 text-xs"
         >
-          + OKLCH
+          + OKLCH Ramp
         </TactileButton>
 
         <TactileButton
@@ -272,7 +308,7 @@ export const PalettePanel: React.FC = () => {
           size="sm"
           onClick={() => paletteFileInputRef.current?.click()}
           title="Import Lospec .hex or GIMP .gpl palette file (or drag and drop)"
-          className="flex-1 text-[11px] font-sans"
+          className="justify-center h-7 text-xs"
         >
           + Lospec
         </TactileButton>

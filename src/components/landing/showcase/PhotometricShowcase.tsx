@@ -72,7 +72,7 @@ export const PhotometricShowcase: React.FC = () => {
       return;
     }
 
-    const baseCtx = baseCanvas.getContext('2d');
+    const baseCtx = baseCanvas.getContext('2d', { willReadFrequently: true });
     if (!baseCtx) return;
 
     if (displayMode === 'normals') {
@@ -118,7 +118,7 @@ export const PhotometricShowcase: React.FC = () => {
       );
 
       const tempCanvas = createOffscreenCanvas(stageW, stageH);
-      const tempCtx = tempCanvas.getContext('2d');
+      const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
       if (tempCtx) {
         tempCtx.putImageData(shadowImgData, 0, 0);
         ctx.drawImage(tempCanvas, 0, 0);
@@ -151,7 +151,7 @@ export const PhotometricShowcase: React.FC = () => {
     const bCanvas = templateToCanvas(tmpl);
     baseCanvasRef.current = bCanvas;
 
-    const bCtx = bCanvas.getContext('2d');
+    const bCtx = bCanvas.getContext('2d', { willReadFrequently: true });
     if (bCtx) {
       const width = bCanvas.width;
       const height = bCanvas.height;

@@ -26,7 +26,11 @@ Clean corners follows the whole stroke across pointer samples. A trailing stamp 
 
 ![Bézier Curve selected with its tightness control.](../assets/screenshots/2026-10-02-feature-guide/tool-curve.png)
 
-Press **C**, choose a color and brush size, then drag between the start and end of your curve. **Tightness** changes the generated bend. This is a drag-based curve tool; it does not expose a path editor with independently movable control points. Undo and redraw if the bend does not suit your sprite.
+Press **C**, choose a color and brush size, then drag between the start and end of your curve. **Tightness** sets the initial bend. After release, drag the start, end or bend handles to adjust the quadratic curve. **Apply (Enter)** bakes it into the initiating layer as one undoable edit; **Cancel (Esc)** discards the pending preview. Switching tools applies a valid pending curve. Switching frame, layer or project cancels it, and changed source pixels or a newly locked layer refuse publication. Moving a handle beyond the canvas clamps its position to the edge.
+
+Immediately after Apply, **Re-edit Curve** reopens the latest curve by undoing that edit. It is available only while the source and latest history entry still match. Cancel ends that re-edit with the curve undone; **Redo** restores the committed curve. An unrelated edit invalidates re-edit so it cannot undo newer work. Keyboard input in dialogs, fields and focused buttons keeps its own behavior. This is a quadratic curve editor, not a multi-point vector path editor. The screenshot above illustrates the earlier tool controls; the new adjustment handles and toolbar are described here.
+
+Use the primary color for the currently qualified Curve workflow. Secondary-color Shift gestures and retention of a recorded color during re-edit have an open adjustment-preview issue; inspect the visible color before Apply. See the [current change record](../releases/2026-10-13-studio-and-nibbli.md#verification-and-remaining-scope) for its exact qualification limits.
 
 ## Eraser
 

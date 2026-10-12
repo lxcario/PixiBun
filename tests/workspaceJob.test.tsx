@@ -102,6 +102,31 @@ function selectionHook() {
     scaleX: 1, scaleY: 1, pivot: { x: 1, y: 1 }, isTransforming: true, activeHandle: null }));
   return { drawing, commit, render, setFloating };
 }
+function pastedHook() {
+  const id = useStudioStore.getState().activeLayerId, entry = getOrCreateBuffer(id, 32, 32);
+  const pasted = document.createElement('canvas'); pasted.width = 2; pasted.height = 2;
+  const ctx = pasted.getContext('2d')!; ctx.fillStyle = '#00ff00'; ctx.fillRect(0, 0, 2, 2);
+  const capture = vi.fn(), commit = vi.fn();
+  const drawing = renderHook(() => useViewportSelectionTransform({ canvasWidth: 32, canvasHeight: 32, activeLayerId: id,
+    selection: { x: 15, y: 15, w: 2, h: 2 }, selectionMask: null, floatingSelection: { canvas: pasted, x: 15, y: 15, w: 2, h: 2 },
+    setFloatingSelection: vi.fn(), setSelection: vi.fn(), getOrCreateLayerCanvas: layerId => getOrCreateBuffer(layerId, 32, 32).canvas,
+    renderComposite: vi.fn(), captureSnapshot: capture, commitSnapshot: commit, bumpBufferVersion: vi.fn(),
+    liftSelectionToFloating: vi.fn(), commitFloatingSelection: vi.fn() }));
+  return { drawing, entry, capture, commit };
+}
+it('captures the unchanged layer once before transforming a pasted copy so commit has an Undo baseline', async () => {
+  const { drawing, entry, capture, commit } = pastedHook(), before = entry.ctx.getImageData(0, 0, 32, 32).data.slice();
+  capture.mockImplementation(() => expect(entry.ctx.getImageData(0, 0, 32, 32).data).toEqual(before));
+  act(() => drawing.result.current.handlePointerDown('translate', { x: 15, y: 15 }, { x: 15, y: 15 }));
+  await act(async () => { await drawing.result.current.commitTransform(); });
+  expect(capture).toHaveBeenCalledOnce(); expect(commit).toHaveBeenCalledOnce();
+});
+it('cancelling a transform of a pasted copy discards it without restoring copied pixels into the layer', () => {
+  const { drawing, entry, commit } = pastedHook(), before = entry.ctx.getImageData(0, 0, 32, 32).data.slice();
+  act(() => drawing.result.current.handlePointerDown('translate', { x: 15, y: 15 }, { x: 15, y: 15 }));
+  const draw = vi.spyOn(entry.ctx, 'drawImage'); act(() => drawing.result.current.cancelTransform());
+  expect(draw).not.toHaveBeenCalled(); expect(entry.ctx.getImageData(0, 0, 32, 32).data).toEqual(before); expect(commit).not.toHaveBeenCalled();
+});
 function delayedRotation() {
   let finish!: (value: { width: number; height: number; data: Uint8ClampedArray }) => void;
   vi.mocked(runRotSpriteInWorker).mockImplementation(() => new Promise(resolve => { finish = resolve; }));

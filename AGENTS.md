@@ -13,3 +13,5 @@ Project status and documentation contracts: [docs/current-status.md](docs/curren
 Current engineering status: [current status](docs/current-status.md). Retain source/build revision labels and original failure verdicts when maintaining documentation.
 
 Keep raw evidence and completed audits local under [the archive policy](docs/archives.md); never add ignored archives to Git.
+
+For Nibbli testing, agent-driven drawing or Artist planning, read the [Nibbli skill](.agents/skills/nibbli/SKILL.md) and its [agent contract](docs/guides/nibbli-agent.md). Keep functional expectations separate from artistic opinions and preserve failed attempts.

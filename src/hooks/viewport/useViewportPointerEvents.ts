@@ -18,6 +18,7 @@ import { resolveFrameLayerTargets } from '@/lib/project/frameLayerTargets';
 import { useBrushPointerHandler } from './useBrushPointerHandler';
 import { useSelectionPointerHandler } from './useSelectionPointerHandler';
 import { useShapePointerHandler } from './useShapePointerHandler';
+import { useCurvePointerHandler } from './useCurvePointerHandler';
 import { useChiselPointerHandler } from './useChiselPointerHandler';
 import { useGradientPointerHandler } from './useGradientPointerHandler';
 
@@ -47,6 +48,7 @@ export interface UseViewportPointerEventsProps {
   captureSnapshot: (desc: string) => void;
   commitSnapshot: () => void;
   discardSnapshot?: () => void;
+  performUndo?: () => void;
   setPrimaryColor: (color: string) => void;
   renderBrushGhost: (coords: Point | null) => void;
   renderComposite: () => void;
@@ -132,6 +134,18 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
   });
 
+  const curveHandler = useCurvePointerHandler({
+    canvasWidth: props.canvasWidth,
+    canvasHeight: props.canvasHeight,
+    previewCanvasRef: props.previewCanvasRef,
+    drawPointsOnActiveLayer: props.drawPointsOnActiveLayer,
+    captureSnapshot: props.captureSnapshot,
+    commitSnapshot: props.commitSnapshot,
+    discardSnapshot: props.discardSnapshot,
+    performUndo: props.performUndo,
+    renderComposite: props.renderComposite,
+  });
+
   const chiselHandler = useChiselPointerHandler({
     canvasWidth: props.canvasWidth,
     canvasHeight: props.canvasHeight,
@@ -176,6 +190,12 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
     if (selectionHandler.onPointerDown(e, coords)) {
       return;
+    }
+
+    if (tools.activeTool === 'curve') {
+      if (curveHandler.onPointerDown(e, coords)) {
+        return;
+      }
     }
 
     const currentFrame = frames[activeFrameIndex];
@@ -332,7 +352,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
         break;
       }
       case 'line':
-      case 'curve':
       case 'isometric-line':
       case 'rectangle':
       case 'ellipse': {
@@ -406,6 +425,13 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       return;
     }
 
+    if (tools.activeTool === 'curve') {
+      const curveCoords = coords ?? props.clientToCanvasCoords(e.clientX, e.clientY, true);
+      if (curveCoords && curveHandler.onPointerMove(e, curveCoords)) {
+        return;
+      }
+    }
+
     if (!props.isDrawing || !coords) return;
 
     if (tools.activeTool === 'pen' || tools.activeTool === 'eraser' || tools.activeTool === 'dither') {
@@ -416,7 +442,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       chiselHandler.onPointerMove(e, coords);
     } else if (
       (tools.activeTool === 'line' ||
-        tools.activeTool === 'curve' ||
         tools.activeTool === 'isometric-line' ||
         tools.activeTool === 'rectangle' ||
         tools.activeTool === 'ellipse') &&
@@ -451,6 +476,24 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (props.isDraggingSelection) {
       props.setIsDraggingSelection(false);
       return;
+    }
+
+    if (tools.activeTool === 'curve') {
+      let endCoords = props.cursorCoordsRef.current;
+      if (e) {
+        const upCoords = props.clientToCanvasCoords(e.clientX, e.clientY, true);
+        if (upCoords) endCoords = upCoords;
+      }
+      if (!endCoords && props.strokeStart) endCoords = props.strokeStart;
+
+      if (curveHandler.onPointerUp(e, endCoords)) {
+        props.isDrawingRef.current = false;
+        props.setIsDrawing(false);
+        props.setStrokeStart(null);
+        props.setLastPoint(null);
+        chiselSessionRef.current = null;
+        return;
+      }
     }
 
     const isDrawingActive = props.isDrawing || props.isDrawingRef.current;
@@ -505,6 +548,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
 
   const handlePointerCancel = (e?: React.PointerEvent | PointerEvent | Event) => {
     gradientHandler.cancel();
+    if (tools.activeTool === 'curve') {
+      curveHandler.cancel();
+    }
     if (e && 'pointerType' in e && e.pointerType === 'touch' && 'isPrimary' in e && !e.isPrimary) return;
     if (e && 'pointerId' in e && 'currentTarget' in e && e.currentTarget) {
       try {
@@ -581,5 +627,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     handlePointerMove,
     handlePointerUp,
     handlePointerCancel,
+    curveHandler,
   };
 }

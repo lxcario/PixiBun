@@ -9,7 +9,6 @@ import {
   getEllipsePoints,
   applySymmetry,
   getIsometric2p1Line,
-  getQuadraticBezierPoints,
 } from '@/lib/canvas/rasterMath';
 
 interface ShapeHandlerProps {
@@ -40,7 +39,6 @@ export function useShapePointerHandler({
 
     if (
       (tools.activeTool === 'line' ||
-        tools.activeTool === 'curve' ||
         tools.activeTool === 'isometric-line' ||
         tools.activeTool === 'rectangle' ||
         tools.activeTool === 'ellipse') &&
@@ -60,18 +58,6 @@ export function useShapePointerHandler({
             previewPoints = tools.isoAngleSnap
               ? getIsometric2p1Line(strokeStart.x, strokeStart.y, coords.x, coords.y)
               : getClippedLine(strokeStart.x, strokeStart.y, coords.x, coords.y, canvasWidth, canvasHeight);
-          } else if (tools.activeTool === 'curve') {
-            const controlPoint: Point = {
-              x: Math.round(
-                (strokeStart.x + coords.x) / 2 +
-                  (coords.y - strokeStart.y) * tools.curveTightness
-              ),
-              y: Math.round(
-                (strokeStart.y + coords.y) / 2 -
-                  (coords.x - strokeStart.x) * tools.curveTightness
-              ),
-            };
-            previewPoints = getQuadraticBezierPoints(strokeStart, controlPoint, coords);
           } else if (tools.activeTool === 'rectangle') {
             previewPoints = getRectanglePoints(
               strokeStart.x,
@@ -118,7 +104,6 @@ export function useShapePointerHandler({
   const onPointerUp = (e: React.PointerEvent | undefined, endCoords: Point | null) => {
     if (
       (tools.activeTool === 'line' ||
-        tools.activeTool === 'curve' ||
         tools.activeTool === 'isometric-line' ||
         tools.activeTool === 'rectangle' ||
         tools.activeTool === 'ellipse') &&
@@ -132,18 +117,6 @@ export function useShapePointerHandler({
         shapePoints = tools.isoAngleSnap
           ? getIsometric2p1Line(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y)
           : getClippedLine(strokeStart.x, strokeStart.y, endCoords.x, endCoords.y, canvasWidth, canvasHeight);
-      } else if (tools.activeTool === 'curve') {
-        const controlPoint: Point = {
-          x: Math.round(
-            (strokeStart.x + endCoords.x) / 2 +
-              (endCoords.y - strokeStart.y) * tools.curveTightness
-          ),
-          y: Math.round(
-            (strokeStart.y + endCoords.y) / 2 -
-              (endCoords.x - strokeStart.x) * tools.curveTightness
-          ),
-        };
-        shapePoints = getQuadraticBezierPoints(strokeStart, controlPoint, endCoords);
       } else if (tools.activeTool === 'rectangle') {
         shapePoints = getRectanglePoints(
           strokeStart.x,

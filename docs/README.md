@@ -9,10 +9,10 @@ Start with [current status](current-status.md) for scoped engineering results an
 | Get started and contribute | [Project README](../README.md), [Contributing](../CONTRIBUTING.md), [agent rules](../AGENTS.md) |
 | Product and architecture | [Scope](../MAIN.md), [architecture](../ARCHITECTURE.md), [design](../DESIGN.md), [benchmarks](../BENCHMARKS.md) |
 | Artwork and behavior contracts | [Storage](contracts/storage.md), [rendering](contracts/rendering.md), [exports](contracts/exports.md), [shortcuts](contracts/shortcuts.md), [learning](contracts/learning.md) |
-| Security and operations | [Security](../SECURITY.md), [security boundaries](contracts/security-boundaries.md), [deployment](guides/deployment.md), [testing](guides/testing.md), [release readiness](guides/release-readiness.md) |
+| Security and operations | [Security](../SECURITY.md), [security boundaries](contracts/security-boundaries.md), [deployment](guides/deployment.md), [testing](guides/testing.md), [Nibbli](guides/nibbli.md), [Nibbli agent contract](guides/nibbli-agent.md), [release readiness](guides/release-readiness.md) |
 | Active work and research | [Tasks](../TASKS.md), [plans](plans/README.md), [issue registry](research/issue-registry.md), [artist study](guides/artist-study.md), [v2 proposals](../V2_VISION.md) |
 | Discovery and receipts | [Test inventory](generated/test-inventory.json), [source contracts](generated/source-contracts.json), [CI witness](verification/README.md) |
-| Versioned changes | [Changelog](../CHANGELOG.md), [v1.14.1 sign-off](releases/v1.14.1-signoff.md) |
+| Versioned changes | [Changelog](../CHANGELOG.md), [Studio/Nibbli source change record](releases/2026-10-13-studio-and-nibbli.md), [v1.14.1 sign-off](releases/v1.14.1-signoff.md) |
 
 ## Maintenance contract
 

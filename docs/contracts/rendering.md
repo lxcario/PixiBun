@@ -40,6 +40,12 @@ The combined ledger has a 512 MiB admission limit for estimated registered owner
 
 ## Drawing previews and floating view
 
+### Studio playback under delayed callbacks
+
+The current [Studio timeline clock](../../src/components/layout/BottomTimeline.tsx) accumulates elapsed rAF timestamp differences, limiting each contribution to 250 ms. It preserves the fractional remainder, consumes multiple frame holds when necessary and publishes only the final pose for that callback. A short pose can therefore be consumed without publication after a browser scheduling stall. Hidden-page callbacks reset the timestamp rather than catching up hidden time; preview speed does not rewrite stored/exported holds.
+
+The existing [fractional-time tests](../../tests/components/BottomTimeline.test.tsx) explicitly exercise this catch-up behavior. This describes the implementation, not a guarantee that every pose reaches the screen under load. Nibbli's stricter ordered visible-pose assertion remains unchanged. Local WebKit clock diagnosis found consistent arithmetic and fast composition alongside long rAF gaps; scheduling stability and physical display latency remain unqualified in [current status](../current-status.md).
+
 Iso Line reads isoAngleSnap in both [shape preview and commit](../../src/hooks/viewport/useShapePointerHandler.ts). ON retains the existing projected 2:1 stepper, including cardinal drags; FREE uses the ordinary bounded getClippedLine path. Preview and commit apply the current brush footprint and drawing symmetry. The toggle defaults to ON; a projected endpoint is not the pointer endpoint.
 
 [CenterViewport](../../src/components/layout/CenterViewport.tsx) mounts one [FloatingPreviewWindow](../../src/components/studio/FloatingPreviewWindow.tsx), outside the transformed drawing stage. The window composites artwork without drawing overlays, repaints when re-expanded, and stops its pointer-down events from entering the parent drawing handler. Its scale/backdrop controls change the view; Play/Pause shares Studio playback. This is an in-app preview, not a browser-native Picture-in-Picture API or a separate project. [Phase 3 execution (local archive)](../archives.md#record-docs-research-2026-10-02-feature-repairs-phase3-md).

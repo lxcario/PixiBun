@@ -690,13 +690,13 @@ export const BottomTimeline: React.FC<BottomTimelineProps> = ({ isPlaygroundMode
                 }
                 className={`relative w-[72px] h-16 shrink-0 rounded-[2px] border-2 ${
                   isGuest ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
-                } transition-all flex flex-col items-center justify-between px-1.5 py-1 select-none text-left ${
+                } ${isPlaying ? 'transition-none' : 'transition-all'} flex flex-col items-center justify-between px-1.5 py-1 select-none text-left ${
                   isBeingDragged
                     ? 'opacity-30 scale-95 border-dashed border-[var(--accent-gold)] bg-[#1a0f2e]'
                     : isDropTarget
                     ? 'border-[var(--accent-gold)] bg-[#3d2757] ring-2 ring-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.6)] scale-105'
                     : isActive
-                    ? 'bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] shadow-[var(--timeline-frame-active-shadow,none)]'
+                    ? `bg-[var(--timeline-frame-active-bg)] border-[var(--timeline-frame-active-border)] ${isPlaying ? 'shadow-none' : 'shadow-[var(--timeline-frame-active-shadow,none)]'}`
                     : isInsideClip
                     ? 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:bg-[var(--timeline-frame-hover-bg)] hover:border-[var(--timeline-frame-hover-border)]'
                     : 'bg-[var(--desk-surface-raised)] border-[#2c1e3a] opacity-50 hover:opacity-80'

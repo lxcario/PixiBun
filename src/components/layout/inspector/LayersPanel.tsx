@@ -164,8 +164,8 @@ export const LayersPanel: React.FC = () => {
 
       {/* 2. Compact Active Layer Properties Strip */}
       {activeLayer && (
-        <div className="h-7 px-2.5 flex items-center justify-between gap-2 bg-[var(--desk-surface-raised)]/30 border-b border-[var(--desk-border)] text-[10px] shrink-0">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <div className="h-8 px-2 flex items-center justify-between gap-1.5 bg-[var(--desk-surface-raised)]/30 border-b border-[var(--desk-border)] text-[10px] shrink-0">
+          <div className="flex items-center gap-1 min-w-0 flex-1">
             <span className="text-[var(--text-muted)] font-sans text-[10px] shrink-0">Opacity</span>
             <input
               type="range"
@@ -187,20 +187,22 @@ export const LayersPanel: React.FC = () => {
               onKeyUp={() => { opacityGestureLayerRef.current = null; }}
               onBlur={() => { opacityGestureLayerRef.current = null; }}
               aria-label="Layer opacity"
-              className="w-12 h-1 accent-[var(--accent-gold)] cursor-pointer"
+              className="flex-1 min-w-[32px] max-w-[48px] h-1 accent-[var(--accent-gold)] cursor-pointer shrink-0"
             />
-            <span className="font-mono text-[10px] text-[var(--text-heading)] font-medium min-w-[28px] text-right shrink-0">
+            <span className="font-mono text-[10px] text-[var(--text-heading)] font-semibold w-7 text-right shrink-0 tabular-nums">
               {Math.round(activeLayer.opacity * 100)}%
             </span>
           </div>
 
+          <div aria-hidden="true" className="w-px h-3.5 bg-[var(--desk-border)] shrink-0" />
+
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[var(--text-muted)] font-sans text-[10px]">Blend</span>
+            <span className="text-[var(--text-muted)] font-sans text-[10px] shrink-0">Blend</span>
             <select
               value={activeLayer.blendMode}
               onChange={(e) => setLayerBlendMode(activeLayer.id, e.target.value as BlendMode)}
               aria-label="Layer blend mode"
-              className="bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-[10px] font-sans cursor-pointer hover:border-[var(--desk-border-highlight)] focus:border-[var(--accent-gold)]"
+              className="w-[74px] bg-[var(--desk-surface-raised)] text-[var(--text-heading)] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] outline-none text-[10px] font-sans cursor-pointer hover:border-[var(--desk-border-highlight)] focus:border-[var(--accent-gold)] truncate"
             >
               <option value="source-over">Normal</option>
               <option value="multiply">Multiply</option>

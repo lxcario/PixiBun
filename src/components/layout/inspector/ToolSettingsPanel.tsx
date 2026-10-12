@@ -125,24 +125,8 @@ export function ToolSettingsPanel() {
   );
 
   return (
-    <section aria-label="Detailed tool settings" className="p-3 space-y-3 text-[var(--text-heading)] select-none">
-      {!state.motionPart && <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2">
-        <h3 className="font-bold text-xs">PixiMotion</h3>
-        <p className="text-[11px] text-[var(--text-muted)]">{state.selection
-          ? 'Animate the selected artwork as one rigid part.'
-          : 'Animate the active layer as one rigid part, or select an area first.'}</p>
-        <TactileButton variant="primary" data-testid="create-motion-part-btn" onClick={() => handleCreateMotionPart()} className="w-full text-xs font-semibold">
-          <PixelIcon name="rotate" size={13} /><span>Create Motion Part</span>
-        </TactileButton>
-        <p className="text-[11px] text-[var(--text-muted)]">This moves the active layer; other layers remain still.</p>
-        <TactileButton data-testid="create-visible-motion-btn" className="w-full text-xs" onClick={() => {
-          const result = prepareMotionArtwork();
-          if (result.ok) handleCreateMotionPart(true);
-          else studioEvents.emit('pixibun:toast', { type: 'error', message: result.reason });
-        }}>Merge artwork &amp; animate</TactileButton>
-        <p className="text-[11px] text-[var(--text-muted)]">Combines visible color layers first. Cancel, then Undo restores the layers.</p>
-      </div>}
-      {/* 1. Tool Identity Card */}
+    <section aria-label="Detailed tool settings" className="p-2.5 space-y-2.5 text-[var(--text-heading)] select-none">
+      {/* 1. Active Tool Identity Card */}
       <div className="flex items-center gap-2.5 p-2.5 rounded-[4px] bg-[var(--desk-surface-raised)]/60 border border-[var(--desk-border)] shadow-xs">
         <div className="w-8 h-8 rounded-[3px] bg-[var(--surface-0)] border border-[var(--accent-gold)] flex items-center justify-center shrink-0 shadow-xs text-[var(--accent-gold)]">
           <PixelIcon name={meta?.icon ?? 'pen'} size={16} />
@@ -403,6 +387,50 @@ export function ToolSettingsPanel() {
           </select>
         </label>
       </div>
+
+      {/* 6. Quick PixiMotion Helper Card */}
+      {!state.motionPart && (
+        <div className="p-2.5 rounded-[4px] bg-[var(--surface-0)]/80 border border-[var(--desk-border)] space-y-2 shadow-xs">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-xs flex items-center gap-1.5 text-[var(--accent-gold)]">
+              <PixelIcon name="rotate" size={12} />
+              PixiMotion
+            </h3>
+            <span className="text-[9px] font-mono text-[var(--text-muted)]">Rig &amp; Animate</span>
+          </div>
+          <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+            {state.selection
+              ? 'Animate selected artwork as one rigid part.'
+              : 'Animate active layer as a rigid part, or select an area first.'}
+          </p>
+          <div className="flex flex-col gap-1.5 pt-0.5">
+            <TactileButton
+              variant="primary"
+              size="sm"
+              data-testid="create-motion-part-btn"
+              onClick={() => handleCreateMotionPart()}
+              className="w-full text-xs font-semibold justify-center h-7"
+            >
+              <PixelIcon name="rotate" size={12} />
+              <span>Create Motion Part</span>
+            </TactileButton>
+            <TactileButton
+              variant="default"
+              size="sm"
+              data-testid="create-visible-motion-btn"
+              onClick={() => {
+                const result = prepareMotionArtwork();
+                if (result.ok) handleCreateMotionPart(true);
+                else studioEvents.emit('pixibun:toast', { type: 'error', message: result.reason });
+              }}
+              className="w-full text-[11px] justify-center h-7 text-[var(--text-body)]"
+              title="Combines visible color layers first. Cancel, then Undo restores the layers."
+            >
+              Merge artwork &amp; animate
+            </TactileButton>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

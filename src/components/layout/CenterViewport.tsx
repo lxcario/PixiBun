@@ -30,6 +30,7 @@ import { useViewportOverlays } from '@/hooks/viewport/useViewportOverlays';
 import { useViewportSelection } from '@/hooks/viewport/useViewportSelection';
 import { useViewportSelectionTransform } from '@/hooks/viewport/useViewportSelectionTransform';
 import { SelectionTransformGizmo } from '@/components/studio/SelectionTransformGizmo';
+import { CurveAdjustmentGizmo } from '@/components/studio/CurveAdjustmentGizmo';
 import { rotSprite, computeRotatedBounds } from '@/lib/canvas/rotSprite';
 import { paethRotate } from '@/lib/canvas/paethRotation';
 import { rotateNormalVectors } from '@/lib/canvas/normalMapRotation';
@@ -561,7 +562,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   }, [cancelGizmoTransform, canvasHeight, canvasWidth, previewCanvasRef, setLassoPoints]);
 
   // Hook 6: Pointer event routing and drawing dispatch
-  const { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel } =
+  const { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel, curveHandler } =
     useViewportPointerEvents({
       canvasWidth,
       canvasHeight,
@@ -588,6 +589,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       captureSnapshot,
       commitSnapshot,
       discardSnapshot,
+      performUndo,
       setPrimaryColor,
       renderBrushGhost,
       renderComposite,
@@ -625,6 +627,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
 
   // When switching away from selection tools to drawing tools (e.g. Pen, Eraser),
   // commit any floating selection and clear the active selection marquee.
+  const commitCurve = curveHandler.commit;
   const prevToolRef = useRef(tools.activeTool);
   useEffect(() => {
     const prevTool = prevToolRef.current;
@@ -632,6 +635,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     prevToolRef.current = currentTool;
 
     if (prevTool !== currentTool) {
+      if (prevTool === 'curve' && currentTool !== 'curve') {
+        commitCurve();
+      }
       const toolsPreservingSelection = [
         'select-box',
         'select-lasso',
@@ -658,7 +664,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }
       }
     }
-  }, [tools.activeTool, floatingSelection, selectionTransform, commitGizmoTransform, commitFloatingSelection]);
+  }, [tools.activeTool, floatingSelection, selectionTransform, commitGizmoTransform, commitFloatingSelection, commitCurve]);
 
   // Live Composite & Onion Skin Rendering
   useEffect(() => {
@@ -881,7 +887,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       className="relative flex-1 h-full w-full overflow-hidden flex items-center justify-center select-none touch-none outline-none"
       style={{
         backgroundColor: 'var(--canvas-well)',
-        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4), inset 0 0 0 1px var(--canvas-border)'
+        // Keep large canvas decorations cheap to repaint on high-DPI software renderers.
+        backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.3), transparent)',
+        backgroundSize: '100% 4px',
+        backgroundRepeat: 'no-repeat',
+        outline: '1px solid var(--canvas-border)',
+        outlineOffset: '-1px',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -964,11 +975,10 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           flexShrink: 0,
           transform: `translate(${panX}px, ${panY}px)`,
           transition: 'none',
-          boxShadow: 'var(--canvas-shadow)',
         }}
       >
         {/* Atelier / Cozy Classic Platen Mat Collar & Attached Corner Registration Marks */}
-        <div aria-hidden="true" className="absolute -inset-3 bg-[var(--platen-bg)] border border-[var(--platen-border)]/60 rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.3),0_0_0_1px_var(--desk-border)] pointer-events-none -z-10" />
+        <div aria-hidden="true" className="absolute -inset-3 bg-[var(--platen-bg)] border border-[var(--platen-border)]/60 rounded-[2px] outline outline-1 outline-[var(--desk-border)] pointer-events-none -z-10" />
         <div className="absolute -top-3 -left-3 w-2 h-2 border-t border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
         <div className="absolute -top-3 -right-3 w-2 h-2 border-t border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
         <div className="absolute -bottom-3 -left-3 w-2 h-2 border-b border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
@@ -1173,6 +1183,18 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           />
         )}
 
+        {/* Layer 6.7: Interactive Bézier Curve Adjustment Screen-Space Gizmo */}
+        {curveHandler.adjustingCurve && (
+          <CurveAdjustmentGizmo
+            zoom={zoom}
+            start={curveHandler.adjustingCurve.start}
+            control={curveHandler.adjustingCurve.control}
+            end={curveHandler.adjustingCurve.end}
+            draggingHandle={curveHandler.adjustingCurve.draggingHandle}
+            onStartDrag={curveHandler.startDraggingHandle}
+          />
+        )}
+
         {/* Layer 7: Interactive On-Canvas Pixel Light Bulb Gizmo */}
         {photometricGizmoActive && (
           <PixelLightBulbGizmo
@@ -1204,6 +1226,85 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         )}
 
       </div>
+
+      {/* Interactive Curve / Spline Adjustment Control Toolbar */}
+      {curveHandler.isAdjusting && (
+        <div
+          data-testid="curve-adjustment-toolbar"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-[var(--desk-surface-raised)]/95 border border-[var(--desk-border)] rounded-[3px] px-2.5 py-1 shadow-md backdrop-blur-sm text-[10px] font-mono text-[var(--accent-cream)] select-none animate-in fade-in zoom-in-95 duration-150"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)] animate-pulse" />
+          <span className="font-semibold text-[var(--accent-gold)] text-[10px]">Curve</span>
+          <span className="text-[var(--text-muted)]">·</span>
+          <span className="text-[10px] text-[var(--text-secondary)]">Drag handles</span>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              curveHandler.commit();
+            }}
+            className="ml-1 px-2 py-0.5 bg-[var(--accent-gold)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer"
+          >
+            Apply (Enter)
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              curveHandler.cancel();
+            }}
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--accent-rose)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+          >
+            Cancel (Esc)
+          </button>
+        </div>
+      )}
+
+      {/* Curve Re-edit Notification Pill */}
+      {curveHandler.canReEdit && !curveHandler.isAdjusting && tools.activeTool === 'curve' && (
+        <div
+          data-testid="curve-reedit-toolbar"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-[var(--desk-surface-raised)]/95 border border-[var(--desk-border)] rounded-[3px] px-2.5 py-1 shadow-md backdrop-blur-sm text-[10px] font-mono text-[var(--accent-cream)] select-none animate-in fade-in zoom-in-95 duration-150"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-sage)]" />
+          <span className="font-semibold text-[var(--accent-sage)] text-[10px]">Applied</span>
+          <span className="text-[var(--text-muted)]">·</span>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              curveHandler.reEdit();
+            }}
+            className="px-2 py-0.5 bg-[var(--accent-sage)] text-[var(--desk-surface-base)] font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all text-[10px] shadow-xs cursor-pointer flex items-center gap-1"
+          >
+            <span>✎</span>
+            <span>Re-edit Curve (Enter)</span>
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              curveHandler.dismissReEdit();
+            }}
+            className="px-1.5 py-0.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] active:scale-95 transition-colors text-[10px] cursor-pointer"
+            title="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </main>
   );
 };

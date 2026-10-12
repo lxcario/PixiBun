@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Added Nibbli Tester, bounded Artist planning/critique and safe Hands editing through the real PixiBun UI. Added interactive quadratic Curve handles and guarded re-edit, refined Studio/color/tool-help layouts, fixed pasted-selection history/Cancel behavior and separated WebKit export companions. Publication review added Curve source/history/input ownership regressions. [Complete English file change record](docs/releases/2026-10-13-studio-and-nibbli.md), [current status and qualification limits](docs/current-status.md).
+
 - Protect imported artwork with staged transactional replacement, transparent clearing, lock/refusal checks, grouped Undo/Redo, repaint and autosave coordination. Keep correctness under coverage while measuring RotSprite separately after controlled warmup with its unchanged 10 ms limit. [Import safety (local archive)](docs/archives.md#record-docs-research-2026-10-09-import-artwork-safety-md), [current status](docs/current-status.md).
 - Recover healthy online navigation and resource loading when optional cache access rejects or stalls, preserve worker cache ownership during retirement, and repair decorative Home update priority and moving starter hit areas. Peer fixtures own cleanup; compatible rollback waits for observed native activation and records measured platform limits. Final local/CI gates, complete browser evidence and rollback results are recorded separately from release qualification in the handoff.
 

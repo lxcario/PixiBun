@@ -43,6 +43,16 @@ function press(key: string, target: EventTarget = window, init: KeyboardEventIni
 }
 
 describe('Selection keyboard boundaries with both viewport hooks mounted', () => {
+  it('initializes pasted transform bounds and pivot after the source marquee is cancelled', () => {
+    const { result, capture, commit } = setup();
+    press('c', window, { ctrlKey: true, code: 'KeyC' }); press('Escape');
+    expect(result.current.floatingSelection).toBeNull();
+    press('v', window, { ctrlKey: true, code: 'KeyV' });
+    expect(result.current.floatingSelection).toMatchObject({ x: 15, y: 15, w: 2, h: 2 });
+    expect(result.current.transform).toMatchObject({ x: 15, y: 15, w: 2, h: 2, pivot: { x: 16, y: 16 }, rotation: 0, scaleX: 1, scaleY: 1 });
+    expect(capture).not.toHaveBeenCalled(); expect(commit).not.toHaveBeenCalled();
+  });
+
   it.each(['Delete', 'Enter', 'Escape', 'ArrowRight', 'h', 'v'])('preserves selection and history for %s behind a dialog', key => {
     const { result, capture, commit, render } = setup();
     const before = result.current.floatingSelection; const transform = result.current.transform;

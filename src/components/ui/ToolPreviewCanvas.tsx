@@ -123,62 +123,150 @@ interface SpriteStyle {
   selout?: boolean;
   glint?: boolean;
   lightFromRight?: boolean;
+  lightPos?: Point;
 }
+
 function sampleSprite(ctx: Canvas, cx = 48, cy = 27, style: SpriteStyle = {}) {
-  const base = style.base ?? '#dfbfdb';
-  const highlight = style.highlight ?? '#fff0ed';
-  const shadow = style.shadow ?? '#9b78ab';
+  const base = style.base ?? RED;
+  const highlight = style.highlight ?? '#ffa8ba';
+  const shadow = style.shadow ?? '#992847';
+  const outlineColor = style.outline ?? INK;
+
+  // Handcrafted 16-bit cozy pixel heart spans: [y, left, right]
   const rows: readonly [number, number, number][] = [
-    [-15, -12, -7], [-14, -13, -6], [-13, -13, -6], [-12, -13, -6],
-    [-11, -13, -6], [-10, -13, -6], [-9, -13, -6], [-8, -13, -6],
-    [-7, -13, -6], [-6, -13, -6], [-5, -14, 14], [-4, -15, 15],
-    [-3, -16, 16], [-2, -16, 16], [-1, -16, 16], [0, -16, 16],
-    [1, -16, 16], [2, -16, 16], [3, -16, 16], [4, -16, 16],
-    [5, -16, 16], [6, -15, 15], [7, -14, 14], [8, -13, 13],
-    [9, -12, 12], [10, -11, 11], [11, -9, 9], [12, -7, 7],
+    [-6, -13, 13],
+    [-5, -13, 13],
+    [-4, -13, 13],
+    [-3, -13, 13],
+    [-2, -13, 13],
+    [-1, -13, 13],
+    [0, -12, 12],
+    [1, -12, 12],
+    [2, -11, 11],
+    [3, -10, 10],
+    [4, -9, 9],
+    [5, -8, 8],
+    [6, -7, 7],
+    [7, -6, 6],
+    [8, -5, 5],
+    [9, -3, 3],
+    [10, -1, 1],
+    [11, 0, 0],
   ];
-  const spanFor = (y: number, x: number) => {
-    if (y <= -6 && x > 0) return [6, 13] as const;
-    return rows.find(([row]) => row === y)?.slice(1) as [number, number] | undefined;
-  };
-  for (let y = -15; y <= 12; y++) {
-    const spans = y <= -6 ? [[-13, -6], [6, 13]] : [spanFor(y, 0)];
-    for (const span of spans) {
-      if (!span) continue;
-      const [left, right] = span;
+
+  for (let y = -10; y <= 11; y++) {
+    let spans: readonly (readonly [number, number])[];
+    if (y === -10) {
+      spans = [[-9, -5], [5, 9]];
+    } else if (y === -9) {
+      spans = [[-11, -3], [3, 11]];
+    } else if (y === -8) {
+      spans = [[-12, -2], [2, 12]];
+    } else if (y === -7) {
+      spans = [[-13, -1], [1, 13]];
+    } else {
+      const match = rows.find(([row]) => row === y);
+      spans = match ? [[match[1], match[2]]] : [];
+    }
+
+    for (const [left, right] of spans) {
       for (let x = left; x <= right; x++) {
-        const edge = x === left || x === right || y === -15 || y === 12;
-        const litX = style.lightFromRight ? -x : x;
+        const isTop = y === -10 || (y === -7 && (x === -1 || x === 1)) || (y === -6 && x === 0);
+        const isBottom = y === 11;
+        const edge = x === left || x === right || isTop || isBottom;
+
+        // Compute 2.5D inflated surface normal (Nx, Ny, Nz) for realistic photometric dome shading
+        let dx: number;
+        let dy: number;
+        if (y < 1) {
+          dx = (x < 0 ? x - (-6) : x - 6) / 6.5;
+          dy = (y - (-4)) / 6.0;
+        } else {
+          const halfW = Math.max(1, 12 * (1 - (y - 1) / 10.5));
+          dx = x / halfW;
+          dy = (y - 1) / 8.0;
+        }
+
+        const len2 = dx * dx + dy * dy;
+        let Nx = dx;
+        let Ny = dy;
+        let Nz = len2 < 1 ? Math.sqrt(1 - len2) : 0.15;
+        const norm = Math.hypot(Nx, Ny, Nz) || 1;
+        Nx /= norm;
+        Ny /= norm;
+        Nz /= norm;
+
+        // Compute directional light vector (Lx, Ly, Lz)
+        let Lx: number;
+        let Ly: number;
+        let Lz: number;
+        if (style.lightPos) {
+          const lx = style.lightPos[0] - (cx + x);
+          const ly = style.lightPos[1] - (cy + y);
+          const lz = 22;
+          const lLen = Math.hypot(lx, ly, lz) || 1;
+          Lx = lx / lLen;
+          Ly = ly / lLen;
+          Lz = lz / lLen;
+        } else if (style.lightFromRight) {
+          Lx = 0.577;
+          Ly = -0.577;
+          Lz = 0.577;
+        } else {
+          Lx = -0.577;
+          Ly = -0.577;
+          Lz = 0.577;
+        }
+
         let color = base;
+
         if (style.normal) {
-          const r = Math.round((x / 16 + 1) * 110 + 18);
-          const g = Math.round((-y / 15 + 1) * 100 + 25);
-          color = `rgb(${r},${g},220)`;
+          // Tangent space normal map RGB encoding (matches real engine)
+          const r = Math.round((Nx * 0.5 + 0.5) * 255);
+          const g = Math.round((-Ny * 0.5 + 0.5) * 255);
+          const b = Math.round((Nz * 0.5 + 0.5) * 255);
+          color = `rgb(${r},${g},${b})`;
         } else if (edge) {
-          color = style.selout ? (litX < 0 ? highlight : shadow) :
-            style.bevel ? (litX < 0 ? GOLD : '#392c61') : (style.outline ?? INK);
+          const dotEdge = Nx * Lx + Ny * Ly;
+          color = style.selout
+            ? (dotEdge > 0.05 ? highlight : shadow)
+            : style.bevel
+            ? (dotEdge > 0.05 ? GOLD : '#392c61')
+            : outlineColor;
         } else if (!style.flat) {
-          color = litX < -5 && y < 5 ? highlight : litX > 6 || y > 6 ? shadow : base;
-          if (y <= -6 && x > left + 2 && x < right - 2) color = '#ef91b5';
+          // Photometric diffuse (N · L) & Blinn-Phong specular (N · H)
+          const diffuse = Math.max(0, Nx * Lx + Ny * Ly + Nz * Lz);
+          const Hx = Lx;
+          const Hy = Ly;
+          const Hz = Lz + 1;
+          const hLen = Math.hypot(Hx, Hy, Hz) || 1;
+          const NdotH = Math.max(0, Nx * (Hx / hLen) + Ny * (Hy / hLen) + Nz * (Hz / hLen));
+          const specular = Math.pow(NdotH, 14);
+
+          // Total photometric irradiance with ambient term
+          const irradiance = 0.22 + 0.78 * diffuse;
+
+          if (specular > 0.62) {
+            color = '#fff5f7'; // Specular highlight glint
+          } else if (irradiance > 0.78) {
+            color = highlight; // Curving highlight band
+          } else if (irradiance > 0.44) {
+            color = base; // Midtone body
+          } else if (irradiance > 0.24) {
+            color = shadow; // Curving shadow terminator
+          } else {
+            color = '#7a1936'; // Ambient occlusion crease
+          }
         }
         pixel(ctx, cx + x, cy + y, color);
       }
     }
   }
-  if (!style.normal) {
-    box(ctx, cx - 8, cy + 1, 3, 4, INK);
-    box(ctx, cx + 5, cy + 1, 3, 4, INK);
-    pixel(ctx, cx - 7, cy + 1, WHITE);
-    pixel(ctx, cx + 6, cy + 1, WHITE);
-    box(ctx, cx - 12, cy + 5, 4, 2, style.flat ? base : '#ea93b2');
-    box(ctx, cx + 8, cy + 5, 4, 2, style.flat ? base : '#ea93b2');
-    box(ctx, cx - 1, cy + 6, 2, 2, '#a65a81');
-    box(ctx, cx - 3, cy + 8, 2, 1, INK);
-    box(ctx, cx + 1, cy + 8, 2, 1, INK);
-  }
+
+  // Specular sparkle glint on the heart
   if (style.glint) {
-    box(ctx, cx - 10, cy - 12, 2, 7, WHITE);
-    box(ctx, cx - 12, cy - 10, 6, 2, WHITE);
+    box(ctx, cx - 7, cy - 7, 3, 1, WHITE);
+    box(ctx, cx - 6, cy - 8, 1, 3, WHITE);
   }
 }
 function specks(ctx: Canvas, visible: (index: number) => boolean = () => true) {
@@ -238,24 +326,25 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
       break;
     }
     case 'erase': {
-      box(ctx, 27, 19, 42, 16, RED);
-      box(ctx, 27, 19, 42, 2, INK);
-      const erased = Math.round(action * 32);
-      for (let y = 23; y < 31; y++) {
-        for (let x = 32; x < 32 + erased; x++) {
-          box(ctx, x, y, 1, 1, ((x + y) % 2) ? '#21192d' : '#1a1425');
+      sampleSprite(ctx, 48, 27);
+      const erased = Math.round(action * 26);
+      if (action > 0) {
+        for (let y = 18; y < 35; y++) {
+          for (let x = 38; x < 38 + erased; x++) {
+            pixel(ctx, x, y, ((x + y) % 2) ? '#21192d' : '#1a1425');
+          }
         }
       }
-      if (!done) cursor(ctx, 32 + erased, 27, action > 0);
+      if (!done) cursor(ctx, 38 + erased, 26, action > 0);
       label = done ? 'PIXELS REMOVED' : 'DRAG ERASER';
       break;
     }
     case 'fill': {
-      outlineRect(ctx, 23, 16, 48, 24, WHITE);
-      line(ctx, 61, 17, 61, 39, WHITE);
-      box(ctx, 62, 17, 9, 23, BLUE);
-      box(ctx, 24, 17, Math.round(37 * action), 23, RED);
-      if (!done) cursor(ctx, 36, 28, action > 0);
+      sampleSprite(ctx, 48, 27, {
+        flat: true,
+        base: action > 0.35 ? RED : '#251b32',
+      });
+      if (!done) cursor(ctx, 44, 26, action > 0);
       label = done ? 'CONNECTED AREA' : 'CLICK TO FILL';
       break;
     }
@@ -300,7 +389,7 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
     }
     case 'erase-color': {
       sampleSprite(ctx, 48, 27, { flat: true });
-      const cyan: Point[] = [[22, 19], [29, 25], [69, 21], [73, 36], [28, 38]];
+      const cyan: Point[] = [[22, 19], [32, 23], [64, 20], [72, 35], [29, 36]];
       cyan.forEach(([x, y], i) => { if (action < (i + 1) / cyan.length) box(ctx, x, y, 4, 2, BLUE); });
       if (!done) cursor(ctx, 24, 20, action > 0);
       label = done ? 'ONLY CYAN ERASED' : 'CLICK CYAN';
@@ -319,8 +408,8 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
     case 'select-lasso': {
       sampleSprite(ctx);
       pixel(ctx, 76, 35, RED, 2);
-      const loop: Point[] = [[47, 13], [37, 14], [31, 21], [32, 32], [40, 39],
-        [52, 40], [63, 35], [67, 25], [61, 16], [54, 13], [47, 13]];
+      const loop: Point[] = [[48, 14], [38, 15], [32, 21], [33, 31], [42, 38],
+        [48, 41], [54, 38], [63, 31], [64, 21], [58, 15], [48, 14]];
       if (done) ants(ctx, loop, t);
       else {
         path(ctx, loop, action, WHITE);
@@ -389,7 +478,7 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
     case 'light': {
       const lightX = lerp(24, 74, action);
       const lightY = lerp(16, 18, action);
-      sampleSprite(ctx, 48, 28, { lightFromRight: lightX > 48 });
+      sampleSprite(ctx, 48, 28, { lightPos: [lightX, lightY] });
       box(ctx, lightX - 2, lightY - 2, 5, 5, GOLD);
       pixel(ctx, lightX, lightY, WHITE);
       line(ctx, lightX, lightY + 3, 48, 24, '#a57d6d');
@@ -555,13 +644,22 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
     }
     case 'rotate': {
       const angle = action * Math.PI / 4;
-      const shape: Point[] = [];
-      for (let x = -8; x <= 8; x++) for (let y = -8; y <= -5; y++) shape.push([x, y]);
-      for (let x = -2; x <= 2; x++) for (let y = -4; y <= 9; y++) shape.push([x, y]);
-      shape.forEach(([x, y]) => {
+      const heartPoints: Point[] = [
+        [-3,-4],[-2,-4],[-1,-4],[1,-4],[2,-4],[3,-4],
+        [-4,-3],[-3,-3],[-2,-3],[-1,-3],[0,-3],[1,-3],[2,-3],[3,-3],[4,-3],
+        [-4,-2],[-3,-2],[-2,-2],[-1,-2],[0,-2],[1,-2],[2,-2],[3,-2],[4,-2],
+        [-4,-1],[-3,-1],[-2,-1],[-1,-1],[0,-1],[1,-1],[2,-1],[3,-1],[4,-1],
+        [-3,0],[-2,0],[-1,0],[0,0],[1,0],[2,0],[3,0],
+        [-3,1],[-2,1],[-1,1],[0,1],[1,1],[2,1],[3,1],
+        [-2,2],[-1,2],[0,2],[1,2],[2,2],
+        [-1,3],[0,3],[1,3],
+        [0,4],
+      ];
+      heartPoints.forEach(([x, y]) => {
         const rx = Math.round(x * Math.cos(angle) - y * Math.sin(angle));
         const ry = Math.round(x * Math.sin(angle) + y * Math.cos(angle));
-        pixel(ctx, 48 + rx, 27 + ry, GOLD);
+        const edge = Math.abs(x) >= 3 || y >= 3 || y === -4;
+        pixel(ctx, 48 + rx, 27 + ry, edge ? INK : (x < 0 ? '#ffa8ba' : RED));
       });
       box(ctx, 73, 37, 18, 9, INK);
       ctx.fillStyle = WHITE;

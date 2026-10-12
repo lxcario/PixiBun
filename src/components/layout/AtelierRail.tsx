@@ -264,7 +264,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   return (
     <header
       role="banner"
-      className="min-h-12 py-1 flex-wrap bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center px-1 xl:px-3 gap-1 xl:gap-3 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
+      className="h-12 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] flex items-center justify-between px-1.5 xl:px-3 gap-1 xl:gap-2 select-none shrink-0 z-30 font-sans text-xs transition-colors duration-150 relative"
     >
       {/* ── 1. LEFT ZONE: Brand, Project Identity & History ── */}
       <div role="group" aria-label="Project controls" className="flex shrink-0 items-center gap-1 xl:gap-2">
@@ -397,8 +397,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         </div>
       </div>
 
-      {/* Larger tool forms open on request so the header stays one row. */}
-      <div ref={toolMenuRef} role="group" aria-label="Drawing controls" className="relative flex shrink-0 items-center">
+      {/* Center Zone: Active tool options are symmetrically centered */}
+      <div ref={toolMenuRef} role="group" aria-label="Drawing controls" className="relative flex-1 min-w-0 flex items-center justify-center">
         {hasExpandedToolParams && <button type="button" data-testid="tool-options-button"
           aria-label={`${toolLabel} tool options`} aria-expanded={isToolMenuOpen} aria-controls={toolOptionsId}
           onClick={() => setToolMenuFor(isToolMenuOpen ? null : tools.activeTool)}
@@ -657,8 +657,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
         ) : null}
       </div>
 
-      {/* Canvas controls stay on the same row as the project and active tool. */}
-      <div className="ml-auto flex shrink-0 items-center gap-1 xl:gap-3">
+      {/* ── 3. RIGHT ZONE: Canvas view, Workspace presets & Export ── */}
+      <div role="group" aria-label="Workspace and export controls" className="flex shrink-0 items-center gap-1 xl:gap-2.5">
         <div role="group" aria-label="Canvas controls" className="h-7 flex items-center bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] p-px text-xs">
         <div role="group" aria-label="Mirror drawing" className="h-6 flex items-center gap-0.5 px-1">
           <span className="hidden xl:inline px-1 text-[10px] text-[var(--text-body)]">Mirror</span>

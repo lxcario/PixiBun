@@ -564,8 +564,8 @@ export function useViewportDrawing({
   // Draw points on active layer
   const drawPointsOnActiveLayer = useCallback(
     (points: Point[], color: string, isErase: boolean = false, refresh: boolean = true) => {
-      const currentFrame = frames[activeFrameIndex];
-      const targetLayerId = activeLayerId || currentFrame?.layers[0]?.id;
+      const currentFrame = useStudioStore.getState().frames[activeFrameIndex] || frames[activeFrameIndex];
+      const targetLayerId = useStudioStore.getState().activeLayerId || activeLayerId || currentFrame?.layers[0]?.id;
       if (!targetLayerId || !currentFrame?.layers.some(layer => layer.id === targetLayerId && !layer.locked)) return;
 
       const layerCanvas = getOrCreateLayerCanvas(targetLayerId);
@@ -605,6 +605,8 @@ export function useViewportDrawing({
         });
       }
 
+      touchBuffer(targetLayerId);
+      useStudioStore.getState().setDirty(true);
       if (refresh) renderComposite();
 
       // Throttle bumpBufferVersion via requestAnimationFrame

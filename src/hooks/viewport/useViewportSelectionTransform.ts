@@ -89,6 +89,7 @@ export function useViewportSelectionTransform({
     h: number;
     mask: Uint8Array | null;
     layerId: string;
+    restorePixels: boolean;
     ownership: WorkspaceJob;
   } | null>(null);
 
@@ -115,6 +116,7 @@ export function useViewportSelectionTransform({
   } | null>(null);
 
   const lastActiveBoxRef = useRef<string | null>(null);
+  const wasFloatingRef = useRef(false);
   const commitJobRef = useRef<WorkspaceJob | null>(null);
   useEffect(() => () => { commitJobRef.current?.cancel(); originalSourceRef.current?.ownership.dispose(); }, []);
 
@@ -125,6 +127,8 @@ export function useViewportSelectionTransform({
     const box = floatingSelection
       ? { x: floatingSelection.x, y: floatingSelection.y, w: floatingSelection.w, h: floatingSelection.h }
       : selection;
+    const startsFloating = Boolean(floatingSelection) && !wasFloatingRef.current;
+    wasFloatingRef.current = Boolean(floatingSelection);
 
     if (!box) {
       lastActiveBoxRef.current = null;
@@ -132,7 +136,8 @@ export function useViewportSelectionTransform({
     }
 
     const boxKey = `${box.x},${box.y},${box.w},${box.h}`;
-    if (lastActiveBoxRef.current !== boxKey && !floatingSelection) {
+    if ((lastActiveBoxRef.current !== boxKey && !floatingSelection)
+      || (startsFloating && !originalSourceRef.current)) {
       lastActiveBoxRef.current = boxKey;
       setTransform((prev) => ({
         ...prev,
@@ -196,6 +201,7 @@ export function useViewportSelectionTransform({
       h: selection.h,
       mask: selectionMask ? new Uint8Array(selectionMask) : null,
       layerId: activeLayerId,
+      restorePixels: true,
       ownership: beginWorkspaceJob([activeLayerId], undefined, () => transformSourceKey(activeLayerId)),
     };
 
@@ -227,6 +233,8 @@ export function useViewportSelectionTransform({
       if (!floatingSelection && selection) {
         ensureFloatingSelection();
       } else if (floatingSelection && !originalSourceRef.current) {
+        // A paste has not cut pixels from the layer and has no Undo baseline yet.
+        captureSnapshot('Transform Pasted Selection');
         const backup = document.createElement('canvas');
         backup.width = floatingSelection.w;
         backup.height = floatingSelection.h;
@@ -242,6 +250,7 @@ export function useViewportSelectionTransform({
           h: floatingSelection.h,
           mask: null,
           layerId: activeLayerId,
+          restorePixels: false,
           ownership: beginWorkspaceJob([activeLayerId], undefined, () => transformSourceKey(activeLayerId)),
         };
       }
@@ -279,6 +288,7 @@ export function useViewportSelectionTransform({
     },
     [
       activeLayerId,
+      captureSnapshot,
       ensureFloatingSelection,
       floatingSelection,
       selection,
@@ -692,12 +702,12 @@ export function useViewportSelectionTransform({
     commitJobRef.current?.cancel();
     let restoreAllowed = true;
     if (originalSourceRef.current) {
-      const { canvas, x, y, layerId, ownership } = originalSourceRef.current;
+      const { canvas, x, y, layerId, ownership, restorePixels } = originalSourceRef.current;
       try {
         ownership.check();
         // A cancellation may restore only its still-owned raster, never allocate
         // an old layer in a replacement project or overwrite a newer edit.
-        const entry = snapshotBuffers().get(layerId);
+        const entry = restorePixels ? snapshotBuffers().get(layerId) : undefined;
         if (entry) {
           entry.ctx.imageSmoothingEnabled = false;
           entry.ctx.drawImage(canvas, x, y);

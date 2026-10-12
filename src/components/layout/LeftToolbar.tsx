@@ -324,21 +324,30 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             transformOrigin: 'left bottom',
             maxHeight: 'calc(100vh - 120px)',
           }}
-          className="w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[2px] shadow-[0_8px_24px_rgba(0,0,0,0.7)] p-2.5 flex flex-col gap-2.5 text-xs font-sans select-none overflow-y-auto"
+          className="w-56 bg-[var(--surface-2)] border border-[var(--desk-border-highlight)] rounded-[3px] shadow-[0_8px_28px_rgba(0,0,0,0.65)] p-2.5 flex flex-col gap-2 text-xs font-sans select-none overflow-y-auto [&_button]:min-w-11 [&_button]:min-h-11"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-1 border-b border-[var(--desk-border)]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-gold)] font-sans">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[var(--desk-border)]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-gold)] font-sans flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-gold)]" />
               Color Access
             </span>
-            <span className="text-[9px] text-[var(--text-muted)] font-mono">ESC</span>
+            <button
+              type="button"
+              onClick={() => setIsFlyoutOpen(false)}
+              aria-label="Close color access"
+              className="text-[9px] text-[var(--text-muted)] hover:text-[var(--text-heading)] font-mono px-1 py-0.5 rounded-[2px] cursor-pointer transition-colors"
+            >
+              ESC ✕
+            </button>
           </div>
 
           {/* Active Target Switcher & Hex Info */}
           <div className="flex items-center justify-between gap-1 p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
             <button
               onClick={() => setActiveFlyoutTarget('primary')}
-              className={`flex-1 min-h-11 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+              aria-label={`Pri ${primaryColor}`}
+              className={`flex-1 h-8 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
                 activeFlyoutTarget === 'primary'
                   ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-gold)]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
@@ -348,9 +357,9 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                 className="w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] shrink-0"
                 style={{ backgroundColor: primaryColor }}
               />
-              <div className="flex flex-col text-left leading-tight">
+              <div className="flex flex-col text-left leading-tight min-w-0">
                 <span className="text-[8px] font-sans font-medium text-[var(--text-muted)] uppercase">Pri</span>
-                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[50px]">
+                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[52px]">
                   {primaryColor}
                 </span>
               </div>
@@ -360,14 +369,15 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               onClick={swapColors}
               aria-label="Swap colors"
               title="Swap Colors (X)"
-              className="w-11 h-11 shrink-0 text-[10px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] cursor-pointer"
+              className="w-7 h-8 shrink-0 flex items-center justify-center text-[11px] text-[var(--text-muted)] hover:text-[var(--accent-gold)] hover:bg-[var(--surface-1)] rounded-[2px] transition-colors cursor-pointer"
             >
               ⇄
             </button>
 
             <button
               onClick={() => setActiveFlyoutTarget('secondary')}
-              className={`flex-1 min-h-11 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+              aria-label={`Sec ${secondaryColor}`}
+              className={`flex-1 h-8 flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
                 activeFlyoutTarget === 'secondary'
                   ? 'bg-[var(--surface-2)] text-[var(--text-heading)] border border-[var(--accent-plum)]'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-heading)] border border-transparent'
@@ -377,23 +387,23 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                 className="w-3.5 h-3.5 rounded-[1px] border border-[var(--desk-border)] shrink-0"
                 style={{ backgroundColor: secondaryColor }}
               />
-              <div className="flex flex-col text-left leading-tight">
+              <div className="flex flex-col text-left leading-tight min-w-0">
                 <span className="text-[8px] font-sans font-medium text-[var(--text-muted)] uppercase">Sec</span>
-                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[50px]">
+                <span className="text-[9px] font-mono font-bold text-[var(--text-heading)] truncate max-w-[52px]">
                   {secondaryColor}
                 </span>
               </div>
             </button>
           </div>
 
-          {/* Quick Palette Swatches */}
+          {/* Larger alternatives to the compact dock keep 44px targets. */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-[9px] text-[var(--text-muted)]">
-              <span className="truncate max-w-[120px] font-medium font-sans">{currentPalette.name}</span>
+              <span className="truncate max-w-[130px] font-medium font-sans">{currentPalette.name}</span>
               <span className="font-mono text-[8px]">{currentPalette.colors.length}c</span>
             </div>
-            <div className="grid grid-cols-4 gap-1">
-              {currentPalette.colors.slice(0, 16).map((color, idx) => {
+            <div className="grid grid-cols-4 gap-1 p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
+              {currentPalette.colors.slice(0, 32).map((color, idx) => {
                 const isSelected =
                   (activeFlyoutTarget === 'primary' ? primaryColor : secondaryColor).toLowerCase() ===
                   color.toLowerCase();
@@ -407,10 +417,10 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                     }}
                     style={{ backgroundColor: color }}
                     aria-label={`Palette color ${color}`}
-                    className={`w-11 h-11 rounded-[1px] border transition-transform hover:scale-110 active:scale-95 cursor-pointer relative ${
+                    className={`aspect-square w-full rounded-[1px] border transition-transform hover:scale-125 active:scale-95 cursor-pointer relative ${
                       isSelected
                         ? 'border-white ring-1 ring-[var(--accent-gold)] z-10'
-                        : 'border-[var(--desk-border)]'
+                        : 'border-[var(--desk-border)]/80 hover:border-white/80'
                     }`}
                     title={`${color} (Click: ${activeFlyoutTarget} | Right-click: alternate)`}
                   />
@@ -419,11 +429,11 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
             </div>
           </div>
 
-          {/* Recent Colors */}
+          {/* Recent Colors (Cozy compact strip) */}
           {recentColors.length > 0 && (
             <div className="flex flex-col gap-1 pt-1 border-t border-[var(--desk-border)]">
               <span className="text-[9px] text-[var(--text-muted)] font-medium font-sans">Recent Colors</span>
-              <div className="flex items-center gap-1 flex-wrap">
+              <div className="flex items-center gap-1 flex-wrap p-1 bg-[var(--surface-0)] rounded-[2px] border border-[var(--desk-border)]">
                 {recentColors.slice(0, 8).map((color, idx) => (
                   <button
                     key={`flyout-rec-${color}-${idx}`}
@@ -434,7 +444,7 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
                     }}
                     style={{ backgroundColor: color }}
                     aria-label={`Recent color ${color}`}
-                    className="w-11 h-11 rounded-[1px] border border-[var(--desk-border)] hover:scale-110 cursor-pointer"
+                    className="w-5 h-5 rounded-[1px] border border-[var(--desk-border)] hover:scale-125 hover:border-white/80 cursor-pointer transition-transform"
                     title={`${color} (Recent)`}
                   />
                 ))}
@@ -443,29 +453,38 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
           )}
 
           {/* Progressive Actions: Spectrum Picker & Full Palette Tab */}
-          <div className="flex flex-col gap-1 pt-1 border-t border-[var(--desk-border)]">
-            <button type="button" onClick={resetDefaultColors}
-              className="min-h-11 w-full px-2 text-[10px] border border-[var(--desk-border)] rounded-[2px] cursor-pointer">
-              Reset default black and white colors
-            </button>
+          <div className="flex flex-col gap-1.5 pt-1.5 border-t border-[var(--desk-border)]">
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={resetDefaultColors}
+                aria-label="Reset default black and white colors"
+                title="Reset to default Black and White (Shift+D)"
+                className="h-7 px-2 text-[10px] font-medium font-sans border border-[var(--desk-border)] bg-[var(--surface-0)] hover:bg-[var(--surface-1)] hover:border-[var(--desk-border-highlight)] text-[var(--text-body)] rounded-[2px] cursor-pointer truncate transition-colors"
+              >
+                Reset B&amp;W
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFlyoutOpen(false);
+                  setColorPickerTarget(activeFlyoutTarget);
+                }}
+                className="h-7 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
+              >
+                <span className="truncate">Spectrum…</span>
+                <span className="text-[10px] text-[var(--accent-gold)] font-mono ml-0.5">+</span>
+              </button>
+            </div>
             <button
-              onClick={() => {
-                setIsFlyoutOpen(false);
-                setColorPickerTarget(activeFlyoutTarget);
-              }}
-              className="min-h-11 w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between"
-            >
-              <span>Custom Spectrum Picker...</span>
-              <span className="text-[10px] text-[var(--accent-gold)] font-mono">+</span>
-            </button>
-            <button
+              type="button"
               onClick={() => {
                 setIsFlyoutOpen(false);
                 setActiveInspectorTab('palette');
               }}
-              className="min-h-11 w-full py-1 px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--accent-gold)] hover:bg-[var(--surface-3)] border border-transparent hover:border-[var(--desk-border)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
+              className="h-7 w-full px-2 text-[10px] font-sans font-medium pixel-tactile-btn text-[var(--accent-gold)] hover:bg-[var(--surface-3)] border border-[var(--accent-gold)]/30 hover:border-[var(--accent-gold)] rounded-[2px] cursor-pointer flex items-center justify-between transition-colors"
             >
-              <span>Open Full Palette Tab</span>
+              <span>Open Palette Panel</span>
               <span className="text-[10px]">▸</span>
             </button>
           </div>

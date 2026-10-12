@@ -1249,7 +1249,7 @@ export function renderParametric2p5DLighting(
     data
   );
 
-  const pData = photometricCanvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+  const pData = photometricCanvas.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, width, height).data;
   const shadedPixels: ShadedPixel[] = [];
   const specularPixels: ShadedPixel[] = [];
 

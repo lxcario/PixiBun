@@ -51,6 +51,7 @@ import { ProjectExportTab } from './export/ProjectExportTab';
 import { GodotKitExportTab } from './export/GodotKitExportTab';
 import { buildGodotKit } from '@/lib/export/godotKit';
 import { buildAnimationModel, playbackOrder } from '@/lib/export/animationModel';
+import { downloadCompanionAsset } from '@/lib/export/downloadAsset';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -310,10 +311,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         if (packed.metadata.godotTres) {
           const tresBlob = new Blob([packed.metadata.godotTres], { type: 'text/plain' });
           const tresUrl = URL.createObjectURL(tresBlob);
-          const tresLink = document.createElement('a');
-          tresLink.download = `${baseFilename}.tres`;
-          tresLink.href = tresUrl;
-          tresLink.click();
+          downloadCompanionAsset(tresUrl, `${baseFilename}.tres`);
           setTimeout(() => URL.revokeObjectURL(tresUrl), 1000);
         }
 
@@ -322,10 +320,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
         if (jsonContent) {
           const metaBlob = new Blob([jsonContent], { type: 'application/json' });
           const metaUrl = URL.createObjectURL(metaBlob);
-          const metaLink = document.createElement('a');
-          metaLink.download = `${baseFilename}.json`;
-          metaLink.href = metaUrl;
-          metaLink.click();
+          downloadCompanionAsset(metaUrl, `${baseFilename}.json`);
           setTimeout(() => URL.revokeObjectURL(metaUrl), 1000);
         }
       }

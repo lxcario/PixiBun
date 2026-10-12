@@ -1,7 +1,7 @@
 .position {
   position: fixed;
   z-index: 1000;
-  width: min(304px, calc(100vw - 24px));
+  width: min(244px, calc(100vw - 24px));
   pointer-events: auto;
 }
 
@@ -12,8 +12,8 @@
 
 .card {
   position: relative;
-  padding: 9px 7px 10px;
-  border-radius: 8px;
+  padding: 7px 7px 8px;
+  border-radius: 6px;
   color: var(--text-heading);
   background: color-mix(in srgb, var(--desk-surface) 94%, #0f0a1c);
   border: 1px solid var(--desk-border-highlight);
@@ -91,15 +91,15 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
   min-width: 0;
 }
 
 .headerTitleGroup {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
@@ -108,8 +108,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 3px;
   background: var(--surface-1);
   border: 1px solid var(--desk-border);
@@ -118,7 +118,7 @@
 }
 
 .titleText {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-heading);
   letter-spacing: -0.1px;
@@ -131,7 +131,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -139,10 +139,10 @@
 .shortcutKey {
   display: inline-flex;
   align-items: center;
-  padding: 0 6px;
-  height: 20px;
+  padding: 0 5px;
+  height: 18px;
   font-family: var(--font-mono), monospace;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--accent-gold);
   background: var(--surface-2);
@@ -159,14 +159,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: 3px;
   background: transparent;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1;
   transition: all 0.12s ease;
   flex-shrink: 0;
@@ -209,16 +209,16 @@
 .stage::after {
   content: attr(data-step-label);
   position: absolute;
-  top: 9px;
-  left: 9px;
-  max-width: calc(100% - 18px);
-  padding: 4px 7px;
+  top: 6px;
+  left: 6px;
+  max-width: calc(100% - 12px);
+  padding: 2px 5px;
   border: 1px solid rgba(240, 190, 124, 0.35);
-  border-radius: 3px;
+  border-radius: 2px;
   background: rgba(18, 14, 27, 0.92);
   color: #f6d198;
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.2px;
   line-height: 1.2;
@@ -241,7 +241,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 3px;
+  height: 2px;
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -261,13 +261,13 @@
 
 /* Card Body Content */
 .body {
-  margin-top: 9px;
+  margin-top: 6px;
 }
 
 .description {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 11px;
+  line-height: 1.35;
   color: var(--text-body);
 }
 
@@ -275,8 +275,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-top: 9px;
-  padding-top: 7px;
+  margin-top: 6px;
+  padding-top: 5px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -284,8 +284,8 @@
   cursor: pointer;
   background: transparent;
   border: none;
-  padding: 4px 2px;
-  font-size: 11px;
+  padding: 2px 1px;
+  font-size: 10px;
   font-family: var(--font-sans), system-ui, sans-serif;
   color: var(--text-muted);
   opacity: 0.7;
