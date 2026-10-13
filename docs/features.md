@@ -20,7 +20,7 @@ The [3 October session record (local archive)](archives.md#record-docs-research-
 | Image Synthesis demonstration | Two sample scenes, three target sizes, sampling/color/dither comparison | [Image demo](guides/welcome-and-demos.md#image-synthesis) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png) |
 | Game Engine Exports demonstration | Godot/Unity/Phaser sample text and APNG/GIF specification text; copy/download | [Example downloads](guides/welcome-and-demos.md#game-engine-exports) | [Panel](assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-apng-notes.png) |
 
-Source: [welcome desk](../src/components/landing/AtelierDeskScene.tsx), [starter definitions](../src/lib/art/starterTemplates.ts), [showcase](../src/components/landing/AtelierEngineShowcase.tsx). Showcase state and downloads are separate from Studio project state.
+Source: [moonlit atelier](../src/components/landing/night/NightHero.tsx), [starter definitions](../src/lib/art/starterTemplates.ts), [showcase](../src/components/landing/AtelierEngineShowcase.tsx). Showcase state and downloads are separate from Studio project state.
 
 ## Every drawing tool
 

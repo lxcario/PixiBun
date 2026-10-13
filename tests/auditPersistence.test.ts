@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import 'fake-indexeddb/auto';
 import { Blob as NodeBlob } from 'node:buffer';
+import { deflateSync } from 'node:zlib';
 import { makeCanvas } from './helpers/mockCanvas';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { db, createBlankProject, createBlankProjectFile, autoSaveWorkspaceDetailed, loadLatestSavedWorkspace, getLayerBlobsForProject, duplicateProject, getProjectById } from '@/lib/storage/db';
@@ -130,8 +131,7 @@ describe('audit persistence regressions', () => {
     const initialBuffer = getOrCreateBuffer(initial.activeLayerId, 32, 32);
     const file = buildProjectFile();
     file.createdAt = 2000;
-    const validPng =
-      'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAzCQNq/9CoWfocGBpIknb53BwAAAAAAAAAAAAAAAADgYwGzVwEB8fXh+AAAAABJRU5ErkJggg==';
+    const validPng = Buffer.from(await createTestPngBlob(32, 32).arrayBuffer()).toString('base64');
     file.frames[0].layers[0].id = 'incoming-layer-id';
     file.frames[0].layers[0].pngBase64 = validPng;
 
@@ -639,14 +639,20 @@ describe('audit persistence regressions', () => {
   // ==========================================================================
 
   function createTestPngBlob(width = 32, height = 32): Blob {
-    const bytes = new Uint8Array(28);
-    bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
-    bytes.set([0x00, 0x00, 0x00, 0x0d], 8);
-    bytes.set([0x49, 0x48, 0x44, 0x52], 12);
-    const view = new DataView(bytes.buffer);
-    view.setUint32(16, width, false);
-    view.setUint32(20, height, false);
-    return new Blob([bytes], { type: 'image/png' });
+    // The publication tests need a complete PNG to reach their adversarial subscriber.
+    // Their former header-only/incorrect-length fixtures stopped at PNG admission.
+    const chunk = (type: string, data: Buffer) => {
+      const bytes = Buffer.alloc(data.length + 12); bytes.writeUInt32BE(data.length);
+      bytes.write(type, 4); data.copy(bytes, 8); let crc = 0xffffffff;
+      for (const byte of bytes.subarray(4, bytes.length - 4)) {
+        crc ^= byte;
+        for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+      }
+      bytes.writeUInt32BE((crc ^ 0xffffffff) >>> 0, bytes.length - 4); return new Uint8Array(bytes);
+    };
+    const header = Buffer.alloc(13); header.writeUInt32BE(width); header.writeUInt32BE(height, 4); header[8] = 8; header[9] = 6;
+    return new Blob([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', header),
+      chunk('IDAT', deflateSync(Buffer.alloc((width * 4 + 1) * height))), chunk('IEND', Buffer.alloc(0))], { type: 'image/png' });
   }
 
   function createProjectFileFixture(id: string, name: string, layerId: string, width = 32, height = 32): ProjectFile {

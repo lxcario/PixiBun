@@ -20,6 +20,7 @@ export interface ProcessReplayOptions {
   onProgress?: (current: number, total: number) => void;
   signal?: AbortSignal;
   baseline?: ReplayBaselineCheckpoint | null;
+  finalFrame?: RawFrameData;
 }
 
 /**
@@ -290,7 +291,7 @@ export function convertHistoryToRawFrames(
   if (!steps || steps.length === 0) return [];
 
   if (options?.baseline) {
-    return reconstructProcessReplayFrames(steps, options.baseline, scale);
+    return appendFinalFrame(reconstructProcessReplayFrames(steps, options.baseline, scale), scale, options.finalFrame);
   }
 
   const s = Math.max(1, Math.floor(scale));
@@ -320,7 +321,19 @@ export function convertHistoryToRawFrames(
     });
   }
 
-  return rawFrames;
+  return appendFinalFrame(rawFrames, s, options?.finalFrame);
+}
+
+function appendFinalFrame(frames: RawFrameData[], scale: number, finalFrame?: RawFrameData): RawFrameData[] {
+  if (!finalFrame) return frames;
+  const { width, height, data } = finalFrame;
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 1 || height < 1
+    || data.length !== width * height * 4) throw new Error('Invalid final timelapse pixels.');
+  const s = Math.max(1, Math.floor(scale)), outputWidth = width * s, outputHeight = height * s;
+  if (frames.some(frame => frame.width !== outputWidth || frame.height !== outputHeight)) {
+    throw new Error('Retained timelapse contains different canvas sizes. Save a project backup and use animation export for this drawing.');
+  }
+  return [...frames, { width: outputWidth, height: outputHeight, data: scaleRgba(data, width, height, s) }];
 }
 
 /**
@@ -333,8 +346,8 @@ export function convertHistoryToCanvases(
 ): HTMLCanvasElement[] {
   if (typeof document === 'undefined' || !steps || steps.length === 0) return [];
 
-  if (options?.baseline) {
-    const rawFrames = reconstructProcessReplayFrames(steps, options.baseline, options.scale ?? 1);
+  if (options?.baseline || options?.finalFrame) {
+    const rawFrames = convertHistoryToRawFrames(steps, options.scale ?? 1, options);
     const canvases: HTMLCanvasElement[] = [];
     for (const frame of rawFrames) {
       const canvas = document.createElement('canvas');
@@ -382,7 +395,7 @@ export async function exportProcessReplayGifAsync(
   options: ProcessReplayOptions = {}
 ): Promise<Blob> {
   const scale = Math.max(1, Math.min(16, options.scale ?? 1));
-  const rawFrames = convertHistoryToRawFrames(steps, scale);
+  const rawFrames = convertHistoryToRawFrames(steps, scale, options);
 
   if (rawFrames.length === 0) {
     throw new Error('Cannot export process replay: history contains no drawable steps.');

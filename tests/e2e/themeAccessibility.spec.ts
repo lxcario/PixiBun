@@ -6,11 +6,13 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 interface ThemeCombo {
   name: string;
-  studioTheme: 'atelier' | 'cozy-classic';
+  studioTheme: 'moonlit' | 'atelier' | 'cozy-classic';
   colorScheme: 'dark' | 'light';
 }
 
 const THEMES: ThemeCombo[] = [
+  { name: 'Moonlit Dark', studioTheme: 'moonlit', colorScheme: 'dark' },
+  { name: 'Moonlit Light', studioTheme: 'moonlit', colorScheme: 'light' },
   { name: 'Atelier Dark', studioTheme: 'atelier', colorScheme: 'dark' },
   { name: 'Atelier Light', studioTheme: 'atelier', colorScheme: 'light' },
   { name: 'Cozy Classic Dark', studioTheme: 'cozy-classic', colorScheme: 'dark' },

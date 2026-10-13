@@ -3,6 +3,10 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Replaced legacy landing scenes with a living moonlit atelier hero (`src/components/landing/night/NightHero.tsx`) and scroll-driven atelier story (`src/components/landing/night/NightStory.tsx`), featuring dynamic canvas lighting, fireflies, constellation sketching, and reactive companion animations. Retired legacy desk scenes (`src/components/landing/AtelierDeskScene.tsx`, `src/components/landing/PixelDitherCurtain.tsx`).
+
+- Hardened Bézier Curve color retention across adjustment and history re-edits, safeguarded project-layer PNG samples against profile-shift mutations during WebKit hydration, and added independent active-frame composite capture for process replay timelapse exports.
+
 - Reconciled the root product, architecture, contributor, agent, design, benchmark, security, task and v2 documentation with Nibbli and current Curve behavior. Corrected the contributor gate stages and Curve handler ownership; aligned feature/handbook/export/security guidance. Historical reports and measurements keep their original scope. [Documentation entrypoint follow-up](docs/releases/2026-10-13-studio-and-nibbli.md#documentation-entrypoint-follow-up).
 
 - Added Nibbli Tester, bounded Artist planning/critique and safe Hands editing through the real PixiBun UI. Added interactive quadratic Curve handles and guarded re-edit, refined Studio/color/tool-help layouts, fixed pasted-selection history/Cancel behavior and separated WebKit export companions. Publication review added Curve source/history/input ownership regressions. [Complete English file change record](docs/releases/2026-10-13-studio-and-nibbli.md), [current status and qualification limits](docs/current-status.md).

@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useRef, useState } from 'react';
+import { ShowcaseNote } from './ShowcaseNote';
+import { Dot, Picker, ToolWindow } from './ToolKit';
+import { drawBun, type BunPose } from '@/lib/art/bunSprite';
 
 type ExportFormat = 'godot' | 'unity' | 'phaser' | 'apng' | 'gif';
 
@@ -164,6 +166,57 @@ In Studio, choose Export → GIF to download your animation.
 
 This welcome download describes the format. It contains no artwork.`;
 
+const FILE_NAMES: Record<ExportFormat, string> = {
+  godot: 'bun_spriteframes.tres',
+  unity: 'bun_atlas.json',
+  phaser: 'bun_atlas_phaser.json',
+  apng: 'apng_specification.txt',
+  gif: 'gif_pipeline.txt',
+};
+
+const STRIP_FRAMES: Array<[number, BunPose]> = [
+  [0, 'idle'],
+  [-2, 'happy'],
+  [-3, 'happy'],
+  [-1, 'blink'],
+];
+
+/** Four little frames of Bun hopping, laid out like the sprite sheet you would export. */
+const BunSheetStrip: React.FC = () => {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    const g = ref.current?.getContext('2d');
+    if (!g) return;
+    g.clearRect(0, 0, 80, 22);
+    STRIP_FRAMES.forEach(([lift, pose], i) => {
+      g.fillStyle = i % 2 ? '#2a1945' : '#241640';
+      g.fillRect(i * 20, 0, 20, 22);
+      g.fillStyle = 'rgba(8,4,16,0.5)';
+      g.fillRect(i * 20 + 5, 21, 10, 1);
+      drawBun(g, i * 20 + 2, 4 + lift, pose);
+    });
+  }, []);
+  return (
+    <div className="relative w-full max-w-[480px] rounded-[3px] border-2 border-[#0b0714] bg-[#140b21] p-2 shadow-[0_4px_0_#0b0714]">
+      <div className="flex justify-between font-mono text-[11px] text-[#cdbfdf] mb-1.5 px-1">
+        <span>sprite sheet</span>
+        <span className="text-[#ffd285]">4 frames · 20×22</span>
+      </div>
+      <div className="relative">
+        <canvas
+          ref={ref}
+          width={80}
+          height={22}
+          className="block w-full h-auto"
+          style={{ imageRendering: 'pixelated', aspectRatio: '80 / 22' }}
+          aria-label="Sprite sheet with four frames of Bun hopping"
+        />
+        <span aria-hidden="true" className="sheet-playhead absolute top-0 bottom-0 w-1/4 border-2 border-[#ffd285] rounded-[2px]" />
+      </div>
+    </div>
+  );
+};
+
 export const EngineExportShowcase: React.FC = () => {
   const [activeFormat, setActiveFormat] = useState<ExportFormat>('godot');
   const [copied, setCopied] = useState<boolean>(false);
@@ -222,137 +275,82 @@ export const EngineExportShowcase: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-      {/* Left interactive code viewer (7 cols) */}
-      <div className="lg:col-span-7 flex flex-col items-center">
-        {/* Code Box Container */}
-        <div className="w-full max-w-[460px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[2px] shadow-lg select-none overflow-hidden">
-          {/* Format Tabs Bar */}
-          <div className="flex items-center justify-between px-3 py-2 bg-[var(--desk-surface-raised)] border-b border-[var(--desk-border)]">
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-400/80 inline-block mr-0.5" />
-              <span className="w-2 h-2 rounded-full bg-yellow-400/80 inline-block mr-0.5" />
-              <span className="w-2 h-2 rounded-full bg-green-400/80 inline-block mr-2" />
-              <span className="text-[11px] font-mono text-[var(--accent-gold)] font-bold">
-                ENGINE EXPORTS
-              </span>
-            </div>
+      <div className="lg:col-span-7 flex flex-col items-center gap-5">
+        <div className="w-full max-w-[480px]">
+          <Picker
+            label="where is it going?"
+            value={activeFormat}
+            onChange={(fmt) => {
+              setActiveFormat(fmt);
+              setCopied(false);
+              setCopyError(false);
+            }}
+            options={[
+              { value: 'godot', label: 'Godot 4', icon: <Dot color="#6a9fd4" /> },
+              { value: 'unity', label: 'Unity', icon: <Dot color="#ede8f4" /> },
+              { value: 'phaser', label: 'Phaser 3', icon: <Dot color="#c792df" /> },
+              { value: 'apng', label: 'APNG', icon: <Dot color="#a8e092" /> },
+              { value: 'gif', label: 'GIF', icon: <Dot color="#f2b8c6" /> },
+            ]}
+          />
+        </div>
 
-            <div className="flex items-center gap-1.5">
+        <BunSheetStrip />
+
+        <ToolWindow
+          name={FILE_NAMES[activeFormat]}
+          className="max-w-[480px]"
+          status={
+            <span className="flex items-center gap-1.5">
               <button
+                type="button"
                 onClick={handleCopy}
-                className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+                className="px-2 py-0.5 rounded-[2px] border-2 border-[#0b0714] bg-[#ffd285] text-[#2a1945] font-bold shadow-[0_2px_0_#0b0714] active:translate-y-px active:shadow-none"
               >
                 {copied ? 'Copied' : isSpecification ? 'Copy notes' : 'Copy sample'}
               </button>
               <button
+                type="button"
                 onClick={handleDownloadSample}
-                className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[10px] font-mono text-[var(--text-heading)] hover:text-[var(--accent-gold)] transition-colors"
+                className="px-2 py-0.5 rounded-[2px] border-2 border-[#0b0714] bg-[#2a1945] text-[#fff3e0] font-bold shadow-[0_2px_0_#0b0714] active:translate-y-px active:shadow-none"
               >
                 {isSpecification ? 'Download notes (.txt)' : 'Download sample'}
               </button>
-            </div>
-          </div>
-
-          {/* Format Switcher Pills */}
-          <div className="grid grid-cols-5 p-1.5 bg-[var(--desk-surface)] border-b border-[var(--desk-border)] gap-1 text-[11px] font-mono">
-            {[
-              { id: 'godot', label: 'Godot 4' },
-              { id: 'unity', label: 'Unity' },
-              { id: 'phaser', label: 'Phaser 3' },
-              { id: 'apng', label: 'APNG' },
-              { id: 'gif', label: 'GIF' },
-            ].map((fmt) => (
-              <button
-                key={fmt.id}
-                onClick={() => { setActiveFormat(fmt.id as ExportFormat); setCopied(false); setCopyError(false); }}
-                aria-pressed={activeFormat === fmt.id}
-                className={`py-1 text-center rounded-[1px] border transition-colors ${
-                  activeFormat === fmt.id
-                    ? 'bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold'
-                    : 'bg-transparent border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                {fmt.label}
-              </button>
-            ))}
-          </div>
-
-          <p className="px-3 py-2 text-[11px] text-[var(--text-body)]">{isSpecification ? 'Text notes only. Create your own animation in Studio.' : 'Example resource text only. Export your artwork and matching image in Studio.'}</p>
-          {copyError && <p role="status" className="px-3 text-[11px] text-[var(--text-body)]">Copy could not start. You can select the text or download it instead.</p>}
-
-          {/* Syntax Code View */}
-          <div className="p-3 bg-[#171124] overflow-x-auto text-[11px] font-mono text-[#dcd4e8] leading-relaxed max-h-[260px] select-text">
-            <pre className={isSpecification ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}>{getCode()}</pre>
-          </div>
-
-          {/* Bottom Feature Badges */}
-          <div className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border-t border-[var(--desk-border)] flex items-center justify-between text-[10px] font-mono text-[var(--text-muted)]">
-            <span className="flex items-center gap-1 text-[var(--accent-gold)]">
-              <span>✦</span>
-              <span>Sample files</span>
             </span>
-            <span>Your artwork stays yours</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Explanation & Engine Architecture (5 cols) */}
-      <div className="lg:col-span-5 flex flex-col items-start text-left">
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[11px] font-mono text-[var(--accent-gold)] mb-3">
-          <span>07 / GAME ENGINE INTEROPERABILITY</span>
-        </div>
-
-        <h3 className="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3">
-          A little peek at your export options
-        </h3>
-
-        <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Take your pixels into a game or share a little animation. These welcome samples show resource text and format notes.
-          Head to Studio to export your own artwork; check the files in your chosen engine or viewer.
-        </p>
-
-        {/* Feature Points Card */}
-        <div className="w-full bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] p-4 mb-5 space-y-3 font-mono text-xs">
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Godot 4 SpriteFrames (.tres)</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Studio exports Godot SpriteFrames resources with atlas regions and animation holds. Keep the resource beside its matching PNG.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-plum)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">TexturePacker Array JSON (Unity &amp; Phaser)</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Studio exports spritesheet metadata. Your engine may need an importer or a small adapter; this sample includes no image.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">APNG & GIF animations in Studio</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                APNG keeps RGBA color and soft transparency. GIF uses palette colors and simpler transparency. The welcome downloads are text notes.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA to studio */}
-        <Link
-          href="/studio"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+          }
         >
-          <span>EXPORT ASSETS IN STUDIO</span>
-          <span>→</span>
-        </Link>
+          <p className="-mt-1 mb-3 text-[12px] text-[#cdbfdf]">
+            {isSpecification
+              ? 'Notes about the format. Make your own animation in the studio.'
+              : 'A real example file with a sample bunny. Your own export brings its image along.'}
+          </p>
+          {copyError && (
+            <p role="status" className="mb-3 text-[12px] text-[#f2b8c6]">
+              Copy could not start. You can select the text or download it instead.
+            </p>
+          )}
+          <div className="flex max-h-[240px] overflow-auto rounded-[2px] border-2 border-[#0b0714] bg-[#140b21] font-mono text-[11px] leading-relaxed">
+            <div aria-hidden="true" className="sticky left-0 shrink-0 py-2 pl-2 pr-2 text-right text-[#5d4486] bg-[#140b21] select-none">
+              {getCode()
+                .split(/\r?\n/)
+                .map((_, i) => (
+                  <div key={i}>{i + 1}</div>
+                ))}
+            </div>
+            <pre className={`py-2 pr-3 text-[#e9dcf2] select-text ${isSpecification ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
+              {getCode()}
+            </pre>
+          </div>
+        </ToolWindow>
       </div>
+
+      <ShowcaseNote
+        kicker="into your game"
+        title="Take it straight into your game."
+        body="Export a sprite sheet with the notes your engine expects. These are the actual text files, just with a sample bunny."
+        tips={['Pick where your sprite is going.', 'Copy or download the example file.', 'Export your own art from the studio.']}
+        cta="EXPORT FROM THE STUDIO"
+      />
     </div>
   );
 };

@@ -2,12 +2,10 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
-import { CozyAtelierShelvesBackground } from '@/components/landing/CozyAtelierShelvesBackground';
 
 /**
  * CozyAtelierBackground - Authentic Warm Lamplit Desk Atmosphere (DESIGN.md)
- * Features soft ambient amber & wisteria radiance, responsive cursor candlelight tracking,
- * and compact handcrafted 16-bit side shelves.
+ * Features soft ambient amber & wisteria radiance and responsive cursor candlelight tracking.
  */
 export const CozyAtelierBackground: React.FC = () => {
   const { theme } = useThemeStore();
@@ -105,9 +103,6 @@ export const CozyAtelierBackground: React.FC = () => {
             : 'radial-gradient(circle, rgba(240, 190, 124, 0.16) 0%, rgba(199, 146, 223, 0.10) 35%, transparent 70%)',
         }}
       />
-
-      {/* 4. Compact Handcrafted 16-Bit Side Shelves */}
-      <CozyAtelierShelvesBackground />
     </div>
   );
 };

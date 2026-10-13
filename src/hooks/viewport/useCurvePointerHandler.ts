@@ -15,6 +15,7 @@ import {
 } from '@/lib/canvas/rasterMath';
 
 export type CurveHandleId = 'start' | 'control' | 'end';
+type CurveColorSource = 'primary' | 'secondary';
 
 export interface CurvePointerHandlerProps {
   canvasWidth: number;
@@ -33,6 +34,7 @@ export interface CommittedCurveRecord {
   control: Point;
   end: Point;
   drawColor: string;
+  colorSource: CurveColorSource;
   layerId: string;
   frameIndex: number;
   ownerKey: string;
@@ -55,6 +57,7 @@ interface CurveState {
   control: Point;
   end: Point;
   drawColor: string;
+  colorSource: CurveColorSource;
   draggingHandle: CurveHandleId | null;
   hoveredHandle: CurveHandleId | null;
 }
@@ -79,6 +82,7 @@ export function useCurvePointerHandler({
   const projectId = useStudioStore((s) => s.currentProjectId);
 
   const curveStateRef = useRef<CurveState | null>(null);
+  const observedColorsRef = useRef({ primary: primaryColor, secondary: secondaryColor });
   const lastCommittedCurveRef = useRef<CommittedCurveRecord | null>(null);
   const [canReEdit, setCanReEdit] = useState(false);
   const [isAdjusting, setIsAdjusting] = useState(false);
@@ -216,7 +220,7 @@ export function useCurvePointerHandler({
       && undoStep.description === 'Bézier Curve')) {
       lastCommittedCurveRef.current = {
         start: { ...state.start }, control: { ...state.control }, end: { ...state.end },
-        drawColor, layerId: targetLayerId, frameIndex: storeState.activeFrameIndex,
+        drawColor, colorSource: state.colorSource, layerId: targetLayerId, frameIndex: storeState.activeFrameIndex,
         ownerKey: workspaceJobKey([targetLayerId]), undoStep,
       };
       setCanReEdit(true);
@@ -256,6 +260,7 @@ export function useCurvePointerHandler({
       control: { ...record.control },
       end: { ...record.end },
       drawColor: record.drawColor,
+      colorSource: record.colorSource,
       draggingHandle: null,
       hoveredHandle: null,
     };
@@ -413,6 +418,7 @@ export function useCurvePointerHandler({
       control: { ...coords },
       end: { ...coords },
       drawColor,
+      colorSource: e.shiftKey ? 'secondary' : 'primary',
       draggingHandle: null,
       hoveredHandle: null,
     };
@@ -593,13 +599,19 @@ export function useCurvePointerHandler({
     dismissReEdit();
   }, [activeFrameIndex, activeLayerId, projectId, cancel, dismissReEdit]);
 
-  // Update live preview if active color or brush size changes
+  // Opening adjustment/re-edit preserves the chosen color; explicit well edits update it.
   useEffect(() => {
-    if (isAdjusting && curveStateRef.current) {
-      curveStateRef.current.drawColor = primaryColor;
-      renderPreview(curveStateRef.current);
+    const colors = { primary: primaryColor, secondary: secondaryColor };
+    const previous = observedColorsRef.current;
+    observedColorsRef.current = colors;
+    const state = curveStateRef.current;
+    if (isAdjusting && state) {
+      if (colors[state.colorSource] !== previous[state.colorSource]) {
+        state.drawColor = colors[state.colorSource];
+      }
+      renderPreview(state);
     }
-  }, [primaryColor, tools.brushSize, isAdjusting, renderPreview]);
+  }, [primaryColor, secondaryColor, tools.brushSize, isAdjusting, renderPreview]);
 
   return {
     isAdjusting,

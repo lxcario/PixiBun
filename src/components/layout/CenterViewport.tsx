@@ -9,6 +9,7 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getOrCreateBuffer, snapshotBuffers } from '@/lib/engine/bufferRegistry';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
+import { StudioSkyBackdrop } from './StudioSkyBackdrop';
 import { ViewportLensFilters } from '@/components/studio/ViewportLensFilters';
 import { RadialContextMenu } from '@/components/studio/RadialContextMenu';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -909,6 +910,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onDrop={handleDrop}
       onContextMenu={radialMenu.handleContextMenu}
     >
+      {/* Moonlit theme: a quiet night sky around the canvas */}
+      <StudioSkyBackdrop />
+
       {/* Mode Indicators */}
       <div 
         className="absolute z-50 flex flex-col gap-2 items-end pointer-events-none"

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
-import { useThemeStore } from '@/stores/themeStore';
+import { useThemeStore, type StudioTheme } from '@/stores/themeStore';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
 import StudioToggle from '@/components/ui/StudioToggle';
 import {
@@ -18,6 +18,32 @@ export interface AppearancePopoverProps {
   actions?: Array<{ label: string; icon: PixelIconName; onSelect?: () => void; testId?: string; ariaLabel?: string }>;
 }
 
+const STUDIO_STYLES: Array<{
+  id: StudioTheme;
+  name: string;
+  blurb: string;
+  swatches: Array<[string, string]>;
+}> = [
+  {
+    id: 'moonlit',
+    name: 'Moonlit',
+    blurb: 'Cozy night sky, lantern gold',
+    swatches: [['#120b20', 'Night'], ['#2a1945', 'Plum surface'], ['#ffd285', 'Lantern gold']],
+  },
+  {
+    id: 'atelier',
+    name: 'Atelier',
+    blurb: 'Quiet, crafted workbench',
+    swatches: [['#16141a', 'Charcoal Base'], ['#201d26', 'Workbench Surface'], ['#e5a962', 'Warm Brass']],
+  },
+  {
+    id: 'cozy-classic',
+    name: 'Cozy Classic',
+    blurb: 'Warm original PixiBun',
+    swatches: [['#140c1e', 'Plum Base'], ['#201431', 'Lavender Surface'], ['#f0be7c', 'Golden Amber']],
+  },
+];
+
 export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className = '', label, actions }) => {
   const dialogId = useId();
   const { studioTheme, setStudioTheme, colorScheme, setColorScheme } = useThemeStore();
@@ -25,8 +51,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const atelierRef = useRef<HTMLButtonElement>(null);
-  const cozyRef = useRef<HTMLButtonElement>(null);
+  const styleRefs = useRef<Partial<Record<StudioTheme, HTMLButtonElement | null>>>({});
   const darkRef = useRef<HTMLButtonElement>(null);
   const lightRef = useRef<HTMLButtonElement>(null);
   const firstActionRef = useRef<HTMLButtonElement>(null);
@@ -65,10 +90,8 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
         if (popoverRef.current?.contains(document.activeElement)) return;
         if (firstActionRef.current) {
           firstActionRef.current.focus();
-        } else if (studioTheme === 'cozy-classic') {
-          cozyRef.current?.focus();
         } else {
-          atelierRef.current?.focus();
+          styleRefs.current[studioTheme]?.focus();
         }
       });
       return () => cancelAnimationFrame(timer);
@@ -112,13 +135,10 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   const handleStyleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
-      if (studioTheme === 'atelier') {
-        setStudioTheme('cozy-classic');
-        cozyRef.current?.focus();
-      } else {
-        setStudioTheme('atelier');
-        atelierRef.current?.focus();
-      }
+      const index = STUDIO_STYLES.findIndex((style) => style.id === studioTheme);
+      const next = STUDIO_STYLES[(index + (e.key === 'ArrowDown' ? 1 : STUDIO_STYLES.length - 1)) % STUDIO_STYLES.length].id;
+      setStudioTheme(next);
+      styleRefs.current[next]?.focus();
     }
   };
 
@@ -215,71 +235,47 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                 Studio style
               </span>
 
-              {/* Atelier Option */}
-              <button
-                ref={atelierRef}
-                type="button"
-                role="radio"
-                aria-checked={studioTheme === 'atelier'}
-                data-testid="theme-option-atelier"
-                onClick={() => setStudioTheme('atelier')}
-                className={`flex items-start gap-2.5 p-2 rounded-[2px] border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-wisteria)] ${
-                  studioTheme === 'atelier'
-                    ? 'bg-[var(--surface-2)] border-[var(--accent-wisteria)] text-[var(--text-heading)]'
-                    : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-body)] hover:bg-[var(--surface-1)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                <div className="pt-0.5 shrink-0 text-[11px] font-mono text-[var(--accent-gold)]" aria-hidden="true">
-                  {studioTheme === 'atelier' ? '●' : '○'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold text-xs text-[var(--text-heading)]">Atelier</span>
-                    {/* Abstract 3-surface swatch preview */}
-                    <div className="flex items-center gap-0.5 shrink-0" aria-hidden="true">
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#16141a]" title="Charcoal Base" />
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#201d26]" title="Workbench Surface" />
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#e5a962]" title="Warm Brass" />
+              {STUDIO_STYLES.map((style) => {
+                const selected = studioTheme === style.id;
+                return (
+                  <button
+                    key={style.id}
+                    ref={(el) => {
+                      styleRefs.current[style.id] = el;
+                    }}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    data-testid={`theme-option-${style.id}`}
+                    onClick={() => setStudioTheme(style.id)}
+                    className={`flex items-start gap-2.5 p-2 rounded-[2px] border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-gold)] ${
+                      selected
+                        ? 'bg-[var(--surface-2)] border-[var(--accent-gold)] text-[var(--text-heading)]'
+                        : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-body)] hover:bg-[var(--surface-1)] hover:text-[var(--text-heading)]'
+                    }`}
+                  >
+                    <div className="pt-0.5 shrink-0 text-[11px] font-mono text-[var(--accent-gold)]" aria-hidden="true">
+                      {selected ? '●' : '○'}
                     </div>
-                  </div>
-                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug">
-                    Quiet, crafted workbench
-                  </p>
-                </div>
-              </button>
-
-              {/* Cozy Classic Option */}
-              <button
-                ref={cozyRef}
-                type="button"
-                role="radio"
-                aria-checked={studioTheme === 'cozy-classic'}
-                data-testid="theme-option-cozy-classic"
-                onClick={() => setStudioTheme('cozy-classic')}
-                className={`flex items-start gap-2.5 p-2 rounded-[2px] border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-gold)] ${
-                  studioTheme === 'cozy-classic'
-                    ? 'bg-[var(--surface-2)] border-[var(--accent-gold)] text-[var(--text-heading)]'
-                    : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-body)] hover:bg-[var(--surface-1)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                <div className="pt-0.5 shrink-0 text-[11px] font-mono text-[var(--accent-gold)]" aria-hidden="true">
-                  {studioTheme === 'cozy-classic' ? '●' : '○'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold text-xs text-[var(--text-heading)]">Cozy Classic</span>
-                    {/* Abstract 3-surface swatch preview */}
-                    <div className="flex items-center gap-0.5 shrink-0" aria-hidden="true">
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#140c1e]" title="Plum Base" />
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#201431]" title="Lavender Surface" />
-                      <span className="w-2.5 h-2.5 rounded-[1px] border border-black/40 bg-[#f0be7c]" title="Golden Amber" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-semibold text-xs text-[var(--text-heading)]">{style.name}</span>
+                        <div className="flex items-center gap-0.5 shrink-0" aria-hidden="true">
+                          {style.swatches.map(([color, title]) => (
+                            <span
+                              key={color}
+                              className="w-2.5 h-2.5 rounded-[1px] border border-black/40"
+                              style={{ backgroundColor: color }}
+                              title={title}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug">{style.blurb}</p>
                     </div>
-                  </div>
-                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug">
-                    Warm original PixiBun
-                  </p>
-                </div>
-              </button>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Color Scheme Section - Compact pixel-native segmented control */}

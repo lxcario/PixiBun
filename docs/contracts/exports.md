@@ -13,7 +13,7 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 | GIF | worker/shared `gifEncoderCore.ts` | Palette quantization, at most 256 table entries including transparency policy; binary rather than arbitrary RGBA alpha. Delays rounded to GIF centiseconds; LZW dictionary reset fixed, old damaged files need re-export |
 | WebM | `webmEncoder.ts` → `videoRecorder.ts` | Canvas captureStream + MediaRecorder (supported VP8/VP9). Real-time scheduling/capability dependent; arbitrary alpha preservation is not promised |
 | MP4 | WebCodecs H.264 + `isobmffWriter.ts`, supported MediaRecorder fallback | Pads odd dimensions to even values without rescaling; not rounding to 16×16. Codec/browser availability applies. Fallback bypasses the custom muxer; no general alpha guarantee |
-| Process Replay | `processReplay.ts` | Retained session history plus eviction baseline; not complete from-blank history and not restored Undo from a saved file |
+| Process Replay | `processReplay.ts` | Retained session history plus eviction baseline and a separately captured current terminal composite; not complete from-blank history and not restored Undo from a saved file |
 | Godot / TexturePacker / Phaser metadata | Shared animation model + sheet/resource writers | Ordered poses and supported holds/loop semantics represented by the target format; consumer import support must be qualified |
 | Palette shader / indexed assets | Shader and palette-register exporters | Source shades/register/alpha constraints apply. CPU cycling and shader indexing are distinct paths; do not infer arbitrary-source parity |
 | SVG | `depixelizeVector.ts` | PixiBun contour/diagonal heuristic inspired by Kopf–Lischinski, not their full canonical algorithm or byte-identical raster output |
@@ -23,6 +23,10 @@ The direct **Export** button opens format choices. **E selects Eraser**; there i
 ## Scope, holds and cycling
 
 Opening the panel on an image, game-delivery or backup format does not query native video codec support. WebM is checked when WebM is selected; MP4 also checks WebM for its fallback suggestion. MP4 capability checks run only for MP4 or Timelapse MP4, using the scaled output dimensions and that export's frame rate. Timelapse uses its chosen replay FPS rather than the timeline FPS. Availability remains configuration-dependent; these checks do not qualify every browser's media backend.
+
+The local pre-S4 run found Firefox returning a supported H.264 configuration while real encoding failed. A positive query does not guarantee a working encoder. Chromium's downloaded two-pose MP4 decoded locally; WebKit's unsupported path was refused. These are separate outcomes, and broad MP4/backend qualification remains open. See [current status](../current-status.md#local-pre-s4-hardening-candidate).
+
+The local replay repair captures the authored active-frame composite independently of Undo and appends a copied/scaled terminal frame. GIF now uses the supplied eviction baseline. The source workspace is checked before encoding and before download; temporary surfaces/reservations are released on all outcomes. Retained snapshots with different canvas dimensions refuse with project-backup/animation-export advice. This does not reconstruct complete historical multi-frame/multi-layer authoring or qualify actual MP4 timelapse playback.
 
 ![The current Cycle Loop export panel, with two seconds at 8 FPS producing a settings summary of 16 frames.](../assets/screenshots/2026-10-02-docs/cycle-loop-export.png)
 

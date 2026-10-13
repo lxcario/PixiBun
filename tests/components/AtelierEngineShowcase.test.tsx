@@ -105,7 +105,7 @@ describe('AtelierEngineShowcase Component', () => {
     // Section title & philosophy
     expect(
       screen.getByRole('heading', {
-        name: /A REAL COMPUTER GRAPHICS ATELIER IN YOUR BROWSER/i,
+        name: /Try the real tools/i,
       })
     ).toBeDefined();
 
@@ -117,10 +117,10 @@ describe('AtelierEngineShowcase Component', () => {
     expect(tabs).toHaveLength(4);
 
     const expectedTitles = [
-      '2.5D Lighting & Shadows',
-      'RotSprite Precision',
-      'Image Synthesis',
-      'Game Engine Exports',
+      'Light & shadow',
+      'Smooth rotation',
+      'Photo to pixels',
+      'Into your game',
     ];
 
     expectedTitles.forEach((title, idx) => {
@@ -132,25 +132,25 @@ describe('AtelierEngineShowcase Component', () => {
   it('defaults to Tab 01 (2.5D Lighting & Shadows) and allows toggling shadow mode, normal map and materials', async () => {
     render(<AtelierEngineShowcase />);
 
-    const tab01 = screen.getByRole('tab', { name: /2.5D Lighting & Shadows/i });
+    const tab01 = screen.getByRole('tab', { name: /Light & shadow/i });
     expect(tab01.getAttribute('aria-selected')).toBe('true');
 
     // Tabpanel for photometric
     const panel = screen.getByRole('tabpanel');
     expect(panel.id).toBe('panel-photometric');
 
-    // Heading inside PhotometricShowcase (merged with cast shadows)
-    expect(screen.getByRole('heading', { name: /2\.5D Photometric Studio & Bounded Cast Shadows/i })).toBeDefined();
+    // Heading inside PhotometricShowcase
+    expect(screen.getByRole('heading', { name: /Move the lamp, watch it change/i })).toBeDefined();
     expect(screen.getByRole('button', { name: /Orbit/i })).toBeDefined();
 
-    // Shadow mode toggles (Cast Ray, Drop AO, None)
-    const dropAoBtn = screen.getByRole('button', { name: /Drop AO/i });
+    // Shadow choices (long, soft, none)
+    const dropAoBtn = screen.getByRole('button', { name: /Soft shadow/i });
     expect(dropAoBtn).toBeDefined();
     await act(async () => {
       fireEvent.click(dropAoBtn);
     });
 
-    const castRayBtn = screen.getByRole('button', { name: /Cast Ray/i });
+    const castRayBtn = screen.getByRole('button', { name: /Long shadow/i });
     expect(castRayBtn).toBeDefined();
     await act(async () => {
       fireEvent.click(castRayBtn);
@@ -164,7 +164,7 @@ describe('AtelierEngineShowcase Component', () => {
     });
 
     // Toggle normal map button
-    const normalMapBtn = screen.getByRole('button', { name: /Normal Field/i });
+    const normalMapBtn = screen.getByRole('button', { name: /Shape map/i });
     expect(normalMapBtn).toBeDefined();
     await act(async () => {
       fireEvent.click(normalMapBtn);
@@ -211,7 +211,7 @@ describe('AtelierEngineShowcase Component', () => {
     render(<AtelierEngineShowcase />);
 
     // Click Tab 02: RotSprite Precision
-    const rotTab = screen.getByRole('tab', { name: /RotSprite Precision/i });
+    const rotTab = screen.getByRole('tab', { name: /Smooth rotation/i });
     await act(async () => {
       fireEvent.click(rotTab);
     });
@@ -228,7 +228,7 @@ describe('AtelierEngineShowcase Component', () => {
     expect(screen.getByText(/Angle: 45°/i)).toBeDefined();
 
     // Click Tab 04: Game Engine Exports
-    const exportTab = screen.getByRole('tab', { name: /Game Engine Exports/i });
+    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
     await act(async () => {
       fireEvent.click(exportTab);
     });
@@ -261,49 +261,49 @@ describe('AtelierEngineShowcase Component', () => {
     const prevBtn = screen.getByRole('button', { name: /Previous feature/i });
 
     // Initial is 01 Photometric & Shadows
-    expect(screen.getByRole('tab', { name: /2.5D Lighting & Shadows/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Light & shadow/i }).getAttribute('aria-selected')).toBe('true');
 
     // Click Next -> 02 RotSprite Precision
     await act(async () => {
       fireEvent.click(nextBtn);
     });
-    expect(screen.getByRole('tab', { name: /RotSprite Precision/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Smooth rotation/i }).getAttribute('aria-selected')).toBe('true');
 
     // Click Next -> 03 Image Synthesis
     await act(async () => {
       fireEvent.click(nextBtn);
     });
-    expect(screen.getByRole('tab', { name: /Image Synthesis/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Photo to pixels/i }).getAttribute('aria-selected')).toBe('true');
 
     // Click Next -> 04 Game Engine Exports
     await act(async () => {
       fireEvent.click(nextBtn);
     });
-    expect(screen.getByRole('tab', { name: /Game Engine Exports/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Into your game/i }).getAttribute('aria-selected')).toBe('true');
 
     // Click Next again -> wraps to 01 Lighting & Shadows
     await act(async () => {
       fireEvent.click(nextBtn);
     });
-    expect(screen.getByRole('tab', { name: /2.5D Lighting & Shadows/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Light & shadow/i }).getAttribute('aria-selected')).toBe('true');
 
     // Click Prev -> wraps backwards to 04 Game Engine Exports
     await act(async () => {
       fireEvent.click(prevBtn);
     });
-    expect(screen.getByRole('tab', { name: /Game Engine Exports/i }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: /Into your game/i }).getAttribute('aria-selected')).toBe('true');
   });
 
   it('renders Image Synthesis showcase and allows switching scenes and quantize levels', async () => {
     render(<AtelierEngineShowcase />);
 
-    const pixelizeTab = screen.getByRole('tab', { name: /Image Synthesis/i });
+    const pixelizeTab = screen.getByRole('tab', { name: /Photo to pixels/i });
     await act(async () => {
       fireEvent.click(pixelizeTab);
     });
 
-    expect(screen.getByText(/Preserve edges/i)).toBeDefined();
-    expect(screen.getByText(/Nearest neighbor/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Keep edges' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Simple' })).toBeDefined();
 
     // Scene switcher buttons exist
     const mountainBtn = screen.getByRole('button', { name: /Mountain Sunset/i });
@@ -318,7 +318,7 @@ describe('AtelierEngineShowcase Component', () => {
     expect(screen.getByText(/Hearth Atelier/i)).toBeDefined();
 
     // Quantize buttons
-    const sixteenColorsBtn = screen.getByRole('button', { name: '16 Colors' });
+    const sixteenColorsBtn = screen.getByRole('button', { name: '16 colours' });
     await act(async () => {
       fireEvent.click(sixteenColorsBtn);
     });
@@ -371,7 +371,7 @@ describe('AtelierEngineShowcase Component', () => {
   it('triggers sample download for Phaser 3 engine export', async () => {
     render(<AtelierEngineShowcase />);
 
-    const exportTab = screen.getByRole('tab', { name: /Game Engine Exports/i });
+    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
     await act(async () => {
       fireEvent.click(exportTab);
     });
@@ -399,7 +399,7 @@ describe('AtelierEngineShowcase Component', () => {
   it('copies engine export code to clipboard and shows tactile copied confirmation', async () => {
     render(<AtelierEngineShowcase />);
 
-    const exportTab = screen.getByRole('tab', { name: /Game Engine Exports/i });
+    const exportTab = screen.getByRole('tab', { name: /Into your game/i });
     await act(async () => {
       fireEvent.click(exportTab);
     });

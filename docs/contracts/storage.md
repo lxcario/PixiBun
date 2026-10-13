@@ -16,6 +16,12 @@ Older serializers replaced the date inside saved JSON while the gallery row reta
 
 Browser-storage acknowledgement belongs to the autosave coordinator. Saving/downloading a project file does not clear the browser dirty flag or confirm an IndexedDB write. Native file saves retain the previous association until permission, writing and closing succeed; a workspace reset/open during the operation prevents a late association from replacing it. Overlapping file writes are refused while the active write drains. Failed or pre-commit-cancelled writes attempt to abort the writable stream. Cancellation after close has committed cannot undo that file; download fallbacks confirm an initiated download rather than a physical filesystem write.
 
+## Project-layer PNG samples
+
+Project-layer PNGs encode raw RGBA samples, including normal-map data. The local pre-S4 hydration repair removes `iCCP` only from a temporary decoder copy and requests no color-space conversion. It preserves encoded image payloads and original stored/portable bytes; publication and rollback remain atomic. Temporary byte/copy memory is admitted before allocation. Truncated PNG chunks are refused before publication. This applies to project hydration, not general photo import or a new wide-gamut format.
+
+Native WebKit diagnosis found its own PNG profile changing cyan from `(0,255,255,255)` to `(1,255,255,255)` during bitmap decoding despite exact saved samples and `colorSpaceConversion: none`. A profile-free temporary copy restored exact samples, and the final three-engine Curve save/reload cases passed without changing RGB expectations. See [current status](../current-status.md#local-pre-s4-hardening-candidate) for the uncommitted source and evidence scope.
+
 ## Logical versus physical raster records
 
 Application APIs expose `StoredLayerBlob.blob: Blob`. New IndexedDB writes encode its bytes as an **ArrayBuffer**, storing MIME information in `blobType`. Reads reconstruct the logical Blob, remove the physical MIME field from that logical record and retain support for older Blob-backed records. Other unknown fields remain visible to strict recovery validation. PNG records remain associated with project, layer and frame. Metadata and raster writes commit atomically, with revision checks against concurrent changes/deletion.

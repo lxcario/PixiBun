@@ -36,8 +36,13 @@ export async function verifyManualNormalKit(page: Page, info: TestInfo, capture?
   if (capture) await capture('godot-manual-normals.png');
   const files = await downloadFiles(page, info, 'Download Godot kit', 'manual-normals.zip');
   const manifest = JSON.parse(files['manifest.json'].toString()), normal = readNativePng(files['normal.png']), diffuse = readNativePng(files['atlas.png']);
+  const solidColors = [[255, 0, 0, 255], [0, 0, 255, 255], [0, 255, 0, 255]];
   for (let i = 0; i < project.frames.length; i++) {
-    const color = await rgba(page, project.frames[i].layers[0].pngBase64), expectedNormal = await rgba(page, project.frames[i].layers[1].pngBase64);
+    // Native ICC conversion is an appearance transform, not a raw PNG pixel oracle.
+    // Decode the input samples independently, including exact normal-map data bytes.
+    const color = readNativePng(Buffer.from(project.frames[i].layers[0].pngBase64, 'base64'));
+    const expectedNormal = readNativePng(Buffer.from(project.frames[i].layers[1].pngBase64, 'base64'));
+    expect(color.data).toEqual(Array.from({ length: project.width * project.height }, () => solidColors[i]).flat());
     const rect = manifest.rects[i];
     // Independent atlas sampling proves a visible manual data layer does not tint diffuse.
     for (let y = 0; y < project.height; y++) for (let x = 0; x < project.width; x++) {

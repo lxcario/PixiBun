@@ -52,6 +52,7 @@ import { GodotKitExportTab } from './export/GodotKitExportTab';
 import { buildGodotKit } from '@/lib/export/godotKit';
 import { buildAnimationModel, playbackOrder } from '@/lib/export/animationModel';
 import { downloadCompanionAsset } from '@/lib/export/downloadAsset';
+import { beginWorkspaceJob, type WorkspaceJob } from '@/lib/engine/workspaceJob';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -423,30 +424,46 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
     const isMp4 = replayFormat === 'mp4';
     const effectiveScale = Math.min(scale, 8);
     const baseline = getGlobalBaselineCheckpoint();
+    let prepared: ReturnType<typeof prepareExportFrames> | undefined;
+    let releaseFinalMemory: (() => void) | undefined;
+    let sourceJob: WorkspaceJob | undefined;
     try {
+      const source = useStudioStore.getState(), frame = source.frames[source.activeFrameIndex];
+      if (!frame) throw new Error('The current artwork is unavailable. Retry the timelapse export.');
+      sourceJob = beginWorkspaceJob(frame.layers.map(layer => layer.id), controller.signal);
+      prepared = prepareExportFrames([frame], source.canvasWidth, source.canvasHeight);
+      releaseFinalMemory = reserveMemory(source.canvasWidth * source.canvasHeight * 4 * (1 + effectiveScale * effectiveScale), 'Preparing final timelapse artwork');
+      const context = prepared.canvases[0].getContext('2d', { willReadFrequently: true });
+      if (!context) throw new Error('The final artwork could not be read. Retry the timelapse export.');
+      const finalFrame = { width: source.canvasWidth, height: source.canvasHeight,
+        data: context.getImageData(0, 0, source.canvasWidth, source.canvasHeight).data };
+      sourceJob.check();
       const blob = isMp4
         ? await exportProcessReplayMp4Async(history, {
             fps: replayFps,
             scale: effectiveScale,
             holdLastFrameMs,
             baseline,
+            finalFrame,
             onProgress: (current, total) => {
               if (!controller.signal.aborted) setExportProgress({ current, total });
             },
-            signal: controller.signal,
+            signal: sourceJob.signal,
           })
         : await exportProcessReplayGifAsync(history, {
             fps: replayFps,
             scale: effectiveScale,
             holdLastFrameMs,
             baseline,
+            finalFrame,
             onProgress: (current, total) => {
               if (!controller.signal.aborted) setExportProgress({ current, total });
             },
-            signal: controller.signal,
+            signal: sourceJob.signal,
           });
 
       const ext = isMp4 ? 'mp4' : 'gif';
+      sourceJob.check();
       controller.signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -456,11 +473,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       onClose();
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
+      if (err instanceof DOMException && err.name === 'AbortError' && controller.signal.aborted) {
         return;
       }
       console.error('Process replay export failed:', err);
+      studioEvents.emit('pixibun:toast', { message: err instanceof Error ? err.message : 'Timelapse export failed. Please retry.', type: 'error' });
     } finally {
+      prepared?.release();
+      releaseFinalMemory?.();
+      sourceJob?.dispose();
       finishExport(controller);
     }
   };

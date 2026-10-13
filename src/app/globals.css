@@ -436,7 +436,8 @@ html, body {
   background-color: var(--desk-bg);
   color: var(--text-heading);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  /* clip (not hidden) so body never becomes a scroll container and sticky layouts keep working */
+  overflow-x: clip;
 }
 
 /* Crisp Pixel Rendering */
@@ -1100,4 +1101,272 @@ html[data-theme="light"] .atelier-vines-light {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Landing workbench: the playhead stepping across the exported sprite sheet */
+@keyframes sheetPlayhead {
+  from { left: 0; }
+  to { left: 100%; }
+}
+
+.sheet-playhead {
+  animation: sheetPlayhead 0.8s steps(4, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-playhead { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIRST-PARTY THEME: MOONLIT (DEFAULT)
+   The landing page's night palette brought into the studio: deep plum
+   night, warm lantern gold, lilac accents and chunky ink-edged controls.
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-studio-theme="moonlit"] {
+  color-scheme: dark;
+  --desk-bg: #120b20;
+  --desk-surface: #1d1336;
+  --desk-surface-raised: #2a1945;
+  --desk-border: #46306a;
+  --desk-border-highlight: #5d4486;
+  --text-heading: #fff3e0;
+  --text-body: #e2d6ee;
+  --text-muted: #b3a2cc;
+  --accent-gold: #ffd285;
+  --accent-plum: #dcabdf;
+  --accent-wisteria: #c792df;
+  --accent-sage: #a8e092;
+  --btn-bg: #2a1945;
+  --btn-hover: #352058;
+  --btn-border: #46306a;
+  --btn-text: #fff3e0;
+  --btn-shadow: #0b0714;
+  --focus-ring: 0 0 0 2px #ffd285;
+
+  --surface-0: #0f0820;
+  --surface-1: var(--desk-surface);
+  --surface-2: var(--desk-surface-raised);
+  --surface-3: #3a2560;
+
+  --state-hover: #352058;
+  --state-active: #3d2766;
+  --state-selected: #ffd285;
+  --state-disabled: var(--text-muted);
+  --state-danger: #f08a9a;
+  --state-success: #a8e092;
+
+  --canvas-well: #0f0820;
+  --canvas-border: #2a1945;
+
+  --platen-bg: #241640;
+  --platen-border: #46306a;
+  --platen-mark: #8d76ad;
+  --canvas-shadow: 0 8px 0 #0b0714, 0 0 0 2px #0b0714, 0 0 48px rgba(255, 210, 133, 0.12);
+
+  --studio-bg: #120b20;
+  --surface-base: #1d1336;
+  --surface-raised: #2a1945;
+  --surface-sunken: #0f0820;
+  --surface-hover: #352058;
+  --border-default: #46306a;
+  --border-subtle: #2f1d52;
+  --border-emphasis: #5d4486;
+  --accent-creative: #ffd285;
+  --accent-navigation: #c792df;
+  --accent-positive: #a8e092;
+  --control-bg: #2a1945;
+  --control-hover: #352058;
+  --control-active: #3d2766;
+  --control-border: #46306a;
+  --control-border-w: 2px;
+  --shadow-tactile: 0 2px 0px #0b0714;
+
+  --tool-active-bg: #ffd285;
+  --tool-active-fg: #1d1336;
+  --tool-active-border: #0b0714;
+  --tool-active-shadow: 0 2px 0px #0b0714;
+  --tool-active-transform: none;
+  --tool-inactive-hover-bg: #352058;
+  --tool-inactive-hover-fg: #ffd285;
+  --timeline-frame-active-bg: #3d2766;
+  --timeline-frame-active-border: #ffd285;
+  --timeline-frame-active-shadow: 0 2px 0px #0b0714;
+  --timeline-frame-active-fg: #ffd285;
+  --timeline-frame-hover-bg: #352058;
+  --timeline-frame-hover-border: rgba(255, 210, 133, 0.6);
+  --inspector-tab-active-bg: var(--desk-surface-raised);
+  --inspector-tab-active-border: #ffd285;
+  --inspector-tab-active-fg: #ffd285;
+  --color-well-primary-border: #ffd285;
+  --color-well-secondary-border: #46306a;
+}
+
+/* Moonlit at dawn: the same studio with the curtains open */
+html[data-studio-theme="moonlit"].light,
+html[data-studio-theme="moonlit"][data-theme="light"],
+html[data-studio-theme="moonlit"][data-color-scheme="light"] {
+  color-scheme: light;
+  --desk-bg: #f4ecf8;
+  --desk-surface: #ece1f4;
+  --desk-surface-raised: #fffaff;
+  --desk-border: #3a2560;
+  --desk-border-highlight: #6a3f99;
+  --text-heading: #1f1238;
+  --text-body: #45325c;
+  --text-muted: #5f4b78;
+  --accent-gold: #8a4500;
+  --accent-plum: #7e2b96;
+  --accent-wisteria: #8f3fb0;
+  --accent-sage: #2d7a3e;
+  --btn-bg: #fbf6ff;
+  --btn-hover: #f1e2fa;
+  --btn-border: #3a2560;
+  --btn-text: #1f1238;
+  --btn-shadow: #2a153d;
+  --focus-ring: 0 0 0 2px #8a4500;
+
+  --surface-0: #e4d7ef;
+  --surface-1: var(--desk-surface);
+  --surface-2: var(--desk-surface-raised);
+  --surface-3: #f6ebfc;
+
+  --state-hover: #f1e2fa;
+  --state-active: #e8d2f5;
+  --state-selected: #8a4500;
+  --state-disabled: var(--text-muted);
+  --state-danger: #c94455;
+  --state-success: #2d7a3e;
+
+  --canvas-well: #e4d7ef;
+  --canvas-border: #c3b0d6;
+
+  --platen-bg: #efe3f7;
+  --platen-border: #3a2560;
+  --platen-mark: #6a3f99;
+  --canvas-shadow: 0 6px 0 rgba(58, 37, 96, 0.35), 0 0 0 2px #3a2560;
+
+  --studio-bg: #f4ecf8;
+  --surface-base: #ece1f4;
+  --surface-raised: #fffaff;
+  --surface-sunken: #e4d7ef;
+  --surface-hover: #f1e2fa;
+  --border-default: #3a2560;
+  --border-subtle: #d5c6e2;
+  --border-emphasis: #6a3f99;
+  --accent-creative: #8a4500;
+  --accent-navigation: #8f3fb0;
+  --accent-positive: #2d7a3e;
+  --control-bg: #fbf6ff;
+  --control-hover: #f1e2fa;
+  --control-active: #e8d2f5;
+  --control-border: #3a2560;
+  --control-border-w: 2px;
+  --shadow-tactile: 0 2px 0px #2a153d;
+
+  --tool-active-bg: #ffd285;
+  --tool-active-fg: #1f1238;
+  --tool-active-border: #3a2560;
+  --tool-active-shadow: 0 2px 0px #2a153d;
+  --tool-active-transform: none;
+  --tool-inactive-hover-bg: #f1e2fa;
+  --tool-inactive-hover-fg: #1f1238;
+  --timeline-frame-active-bg: #f1e2fa;
+  --timeline-frame-active-border: #8a4500;
+  --timeline-frame-active-shadow: 0 2px 0px #2a153d;
+  --timeline-frame-active-fg: #8a4500;
+  --timeline-frame-hover-bg: #f6ebfc;
+  --timeline-frame-hover-border: #6a3f99;
+  --inspector-tab-active-bg: #fffaff;
+  --inspector-tab-active-border: #8a4500;
+  --inspector-tab-active-fg: #8a4500;
+  --color-well-primary-border: #8a4500;
+  --color-well-secondary-border: #3a2560;
+}
+
+/* Moonlit controls: ink edges and a solid drop, like the landing's buttons */
+html[data-studio-theme="moonlit"] .pixel-tactile-btn {
+  border-width: 2px;
+  box-shadow:
+    inset 1px 1px 0px rgba(255, 255, 255, 0.12),
+    0 2px 0px var(--btn-shadow);
+}
+
+html[data-studio-theme="moonlit"] .pixel-tactile-btn:hover {
+  background-color: var(--btn-hover);
+  border-color: var(--accent-gold);
+  box-shadow:
+    inset 1px 1px 0px rgba(255, 255, 255, 0.18),
+    0 3px 0px var(--btn-shadow);
+}
+
+html[data-studio-theme="moonlit"] .pixel-tactile-btn:active {
+  transform: none;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+html[data-studio-theme="moonlit"] .pixel-primary-btn {
+  background-color: #ffd285;
+  color: #1d1336;
+  border: 2px solid #0b0714;
+  box-shadow:
+    inset 0 -2px 0px #d89a55,
+    inset 2px 2px 0px #fff3c4,
+    0 3px 0px #0b0714;
+}
+
+html[data-studio-theme="moonlit"] .pixel-primary-btn:hover {
+  background-color: #ffe1a6;
+  box-shadow:
+    inset 0 -2px 0px #d89a55,
+    inset 2px 2px 0px #ffffff,
+    0 4px 0px #0b0714;
+}
+
+html[data-studio-theme="moonlit"] .pixel-primary-btn:active {
+  transform: none;
+  box-shadow: inset 0 2px 0px #d89a55;
+}
+
+html[data-studio-theme="moonlit"].light .pixel-tactile-btn,
+html[data-studio-theme="moonlit"][data-theme="light"] .pixel-tactile-btn,
+html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-tactile-btn {
+  background-color: #fbf6ff;
+  color: #1f1238;
+  border: 2px solid #3a2560;
+  box-shadow:
+    inset 1px 1px 0px rgba(255, 255, 255, 0.95),
+    0 3px 0px var(--btn-shadow);
+}
+
+html[data-studio-theme="moonlit"].light .pixel-primary-btn,
+html[data-studio-theme="moonlit"][data-theme="light"] .pixel-primary-btn,
+html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-primary-btn {
+  background-color: #ffd285;
+  color: #1f1238;
+  border: 2px solid #3a2560;
+  box-shadow:
+    inset 0 -2px 0px #d89a55,
+    inset 2px 2px 0px #fff3c4,
+    0 3px 0px #2a153d;
+}
+
+/* Studio buddy: Bun's little reactions in the status bar */
+@keyframes bunHop {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  15% { transform: translateY(1px) scale(1.15, 0.85); }
+  45% { transform: translateY(-6px) scale(0.92, 1.08); }
+  75% { transform: translateY(0) scale(1.1, 0.9); }
+}
+
+@keyframes bunFloat {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(6px, -14px); opacity: 0; }
+}
+
+.bun-hop { animation: bunHop 0.5s ease-out; }
+.bun-float { animation: bunFloat 1.4s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bun-hop, .bun-float { animation: none; }
 }

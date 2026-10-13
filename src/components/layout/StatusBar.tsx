@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import type { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { subscribeCursorHUD } from '@/components/layout/CursorStatusBadge';
+import { StudioBuddy } from '@/components/layout/StudioBuddy';
 
 /* ── Status Bar Component ── */
 
@@ -46,6 +47,8 @@ export const StatusBar: React.FC = React.memo(() => {
       data-testid="status-bar"
       className="flex items-center h-6 px-[var(--space-4)] gap-[var(--space-5)] bg-[var(--desk-surface)] border-t border-[var(--desk-border)] text-[var(--text-muted)] font-mono text-[10px] select-none shrink-0"
     >
+      <StudioBuddy />
+
       {/* Cursor Coordinates */}
       <span
         data-testid="cursor-status-badge"

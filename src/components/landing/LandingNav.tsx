@@ -4,14 +4,15 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
-import { PixelVines } from './PixelVines';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { NIGHT_VARS } from './night/nightPalette';
 
 const NAV_LINKS = [
     { href: '/playground', label: 'Playground', isExternal: true },
   { href: '/studio', label: 'Studio', isExternal: true },
+  { href: '#a-night-at-the-atelier', label: 'Tour', sectionId: 'a-night-at-the-atelier' },
   { href: '#engine-showcase', label: 'Engine', sectionId: 'engine-showcase' },
-  { href: '#features', label: 'Pillars', sectionId: 'features' },
+  { href: '#features', label: 'Promises', sectionId: 'features' },
   { href: '#gallery', label: 'Shelf', sectionId: 'gallery' },
   { href: '#story', label: 'Story', sectionId: 'story' },
 ];
@@ -38,7 +39,7 @@ export const LandingNav: React.FC = () => {
     handleScroll();
 
     // 2. Zero-reflow IntersectionObserver for active section spying
-    const sections = ['engine-showcase', 'features', 'gallery', 'story'];
+    const sections = ['a-night-at-the-atelier', 'engine-showcase', 'features', 'gallery', 'story'];
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -66,8 +67,10 @@ export const LandingNav: React.FC = () => {
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-200 ${
         isScrolled
           ? 'bg-[var(--desk-surface)]/95 backdrop-blur-sm border-b-2 border-[var(--desk-border)] shadow-[0_4px_12px_rgba(0,0,0,0.4)]'
-          : 'header-trim-bar'
+          : 'bg-transparent border-b-2 border-transparent'
       }`}
+      // Over the night-sky hero the bar is transparent, so it always uses the night palette there.
+      style={isScrolled ? undefined : NIGHT_VARS}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 h-14 sm:h-16 flex items-center justify-between relative">
         {/* Brand / Logo */}
@@ -143,9 +146,6 @@ export const LandingNav: React.FC = () => {
           className="h-full w-full bg-gradient-to-r from-[#f0be7c] via-[#dcabdf] to-[#c792df] shadow-[0_0_6px_rgba(240,190,124,0.6)]"
         />
       </div>
-
-      {/* Hanging Pixel Vines attached directly beneath the sticky top bar */}
-      <PixelVines />
     </header>
   );
 };

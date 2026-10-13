@@ -2,7 +2,14 @@
 
 import { create } from 'zustand';
 
-export type StudioTheme = 'atelier' | 'cozy-classic';
+export type StudioTheme = 'moonlit' | 'atelier' | 'cozy-classic';
+
+/** Moonlit is the default for anyone who has not picked a style yet. */
+export const DEFAULT_STUDIO_THEME: StudioTheme = 'moonlit';
+
+export function normalizeStudioTheme(value: unknown): StudioTheme {
+  return value === 'atelier' || value === 'cozy-classic' || value === 'moonlit' ? value : DEFAULT_STUDIO_THEME;
+}
 export type ColorScheme = 'dark' | 'light';
 export type ThemeMode = ColorScheme; // backward compatibility
 
@@ -44,7 +51,7 @@ export function applyThemeToDOM(studioTheme: StudioTheme, colorScheme: ColorSche
   document.head.appendChild(css);
 
   // 2. Mutate theme attributes
-  const validTheme: StudioTheme = studioTheme === 'cozy-classic' ? 'cozy-classic' : 'atelier';
+  const validTheme = normalizeStudioTheme(studioTheme);
   const validScheme: ColorScheme = colorScheme === 'light' ? 'light' : 'dark';
 
   root.setAttribute('data-studio-theme', validTheme);
@@ -73,15 +80,12 @@ export function applyThemeToDOM(studioTheme: StudioTheme, colorScheme: ColorSche
 }
 
 export function getInitialStudioTheme(): StudioTheme {
-  if (typeof window === 'undefined' || !window.localStorage) return 'atelier';
+  if (typeof window === 'undefined' || !window.localStorage) return DEFAULT_STUDIO_THEME;
   try {
-    const saved = window.localStorage.getItem('pixibun-studio-theme');
-    if (saved === 'cozy-classic') return 'cozy-classic';
-    if (saved === 'atelier') return 'atelier';
+    return normalizeStudioTheme(window.localStorage.getItem('pixibun-studio-theme'));
   } catch {
-    // ignore storage errors
+    return DEFAULT_STUDIO_THEME;
   }
-  return 'atelier';
 }
 
 export function getInitialColorScheme(): ColorScheme {
@@ -105,7 +109,7 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
   theme: initialColorScheme,
 
   setStudioTheme: (studioTheme: StudioTheme) => {
-    const validTheme: StudioTheme = studioTheme === 'cozy-classic' ? 'cozy-classic' : 'atelier';
+    const validTheme = normalizeStudioTheme(studioTheme);
     set({ studioTheme: validTheme });
     if (typeof window !== 'undefined' && window.localStorage) {
       try {

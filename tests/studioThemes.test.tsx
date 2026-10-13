@@ -5,7 +5,7 @@ import { useThemeStore, getInitialStudioTheme, StudioTheme } from '@/stores/them
 import { useStudioStore } from '@/stores/studioStore';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
 
-describe('Phase M: Dual First-Party Studio Themes (Atelier & Cozy Classic)', () => {
+describe('First-party studio themes (Moonlit, Atelier & Cozy Classic)', () => {
   beforeEach(() => {
     localStorage.clear();
     act(() => {
@@ -20,9 +20,14 @@ describe('Phase M: Dual First-Party Studio Themes (Atelier & Cozy Classic)', () 
   });
 
   // Requirement 1
-  it('1. Atelier is default studio theme', () => {
-    expect(useThemeStore.getState().studioTheme).toBe('atelier');
-    expect(document.documentElement.getAttribute('data-studio-theme')).toBe('atelier');
+  it('1. Moonlit is the default studio theme for new visitors', () => {
+    localStorage.removeItem('pixibun-studio-theme');
+    expect(getInitialStudioTheme()).toBe('moonlit');
+    act(() => {
+      useThemeStore.getState().setStudioTheme('moonlit');
+    });
+    expect(document.documentElement.getAttribute('data-studio-theme')).toBe('moonlit');
+    expect(localStorage.getItem('pixibun-studio-theme')).toBe('moonlit');
   });
 
   // Requirement 2
@@ -61,15 +66,15 @@ describe('Phase M: Dual First-Party Studio Themes (Atelier & Cozy Classic)', () 
   });
 
   // Requirement 5
-  it('5. Invalid theme value safely falls back to Atelier', () => {
+  it('5. Invalid theme value safely falls back to Moonlit', () => {
     act(() => {
       useThemeStore.getState().setStudioTheme('neon-cyberpunk' as unknown as StudioTheme);
     });
-    expect(useThemeStore.getState().studioTheme).toBe('atelier');
-    expect(document.documentElement.getAttribute('data-studio-theme')).toBe('atelier');
+    expect(useThemeStore.getState().studioTheme).toBe('moonlit');
+    expect(document.documentElement.getAttribute('data-studio-theme')).toBe('moonlit');
 
     localStorage.setItem('pixibun-studio-theme', 'corrupted-theme-key');
-    expect(getInitialStudioTheme()).toBe('atelier');
+    expect(getInitialStudioTheme()).toBe('moonlit');
   });
 
   // Requirement 6
@@ -181,6 +186,21 @@ describe('Phase M: Dual First-Party Studio Themes (Atelier & Cozy Classic)', () 
     fireEvent.click(atelierOption);
     expect(useThemeStore.getState().studioTheme).toBe('atelier');
     expect(atelierOption.getAttribute('aria-checked')).toBe('true');
+
+    const moonlitOption = screen.getByTestId('theme-option-moonlit');
+    fireEvent.click(moonlitOption);
+    expect(useThemeStore.getState().studioTheme).toBe('moonlit');
+    expect(moonlitOption.getAttribute('aria-checked')).toBe('true');
+
+    // Arrow keys cycle through all three styles
+    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
+    expect(useThemeStore.getState().studioTheme).toBe('atelier');
+    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
+    expect(useThemeStore.getState().studioTheme).toBe('cozy-classic');
+    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
+    expect(useThemeStore.getState().studioTheme).toBe('moonlit');
+    fireEvent.keyDown(styleGroup, { key: 'ArrowUp' });
+    expect(useThemeStore.getState().studioTheme).toBe('cozy-classic');
 
     // Color scheme options work with radio semantics
     const lightOption = screen.getByTestId('scheme-option-light');

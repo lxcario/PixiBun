@@ -11,6 +11,7 @@ import {
 } from '@/lib/engine/historyEngine';
 import { exportAnimationToMp4Async, Mp4ExportOptions } from './mp4Encoder';
 import { convertHistoryToCanvases, convertHistoryToRawFrames } from './processReplay';
+import type { RawFrameData } from './gifEncoderCore';
 
 export interface SpeedpaintMp4Options {
   fps?: number; // Playback speed in frames per second (default: 12)
@@ -19,6 +20,7 @@ export interface SpeedpaintMp4Options {
   signal?: AbortSignal;
   onProgress?: (current: number, total: number) => void;
   baseline?: ReplayBaselineCheckpoint | null;
+  finalFrame?: RawFrameData;
 }
 
 /**
@@ -47,6 +49,7 @@ export async function exportProcessReplayMp4Async(
   // Convert history steps to frame canvases
   let canvases = convertHistoryToCanvases(steps, {
     baseline: options.baseline,
+    finalFrame: options.finalFrame,
     scale,
   });
 
@@ -54,6 +57,7 @@ export async function exportProcessReplayMp4Async(
   if (canvases.length === 0) {
     const rawFrames = convertHistoryToRawFrames(steps, scale, {
       baseline: options.baseline,
+      finalFrame: options.finalFrame,
     });
     canvases = rawFrames.map((frame) => {
       const imgData = {

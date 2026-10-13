@@ -25,6 +25,7 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { DesktopFileSystem } from '@/lib/storage/desktopFileSystem';
 import { getGlobalHistoryEngine } from '@/lib/engine/historyEngine';
 import { reserveMemory } from '@/lib/safety/memoryBudget';
+import { rawLayerPng } from './rawLayerPng';
 import { mapBounded, SerializationSupersededError } from '@/lib/safety/boundedWork';
 import {
   isLayerDirty,
@@ -358,7 +359,7 @@ export async function hydrateProject(
           if (dimensions.width !== file.width || dimensions.height !== file.height) {
             throw new Error('Layer dimensions do not match the project canvas.');
           }
-          const bitmap = await createImageBitmap(blob);
+          const bitmap = await createImageBitmap(await rawLayerPng(blob), { colorSpaceConversion: 'none' });
           try { entry.ctx.drawImage(bitmap, 0, 0); } finally { bitmap.close(); }
           staged.set(layer.id, entry);
         } else if (layer.id === activeInitialLayerId) {

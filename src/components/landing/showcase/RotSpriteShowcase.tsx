@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
+import { ShowcaseNote } from './ShowcaseNote';
+import { ArtFrame, Dot, Picker, ToolWindow } from './ToolKit';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 import { templateToCanvas, SWORD_TEMPLATE } from './showcaseSprites';
 import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
@@ -100,72 +101,39 @@ export const RotSpriteShowcase: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-      {/* Left interactive comparison viewport (7 cols) */}
-      <div className="lg:col-span-7 flex flex-col items-center">
-        {/* Side-by-side Stage */}
-        <div className="w-full max-w-[420px] bg-[var(--desk-surface)] border-2 border-[var(--desk-border)] rounded-[2px] p-4 shadow-lg select-none">
-          {/* Top Title Bar */}
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--desk-border)] mb-4 text-xs font-mono">
-            <span className="text-[var(--accent-gold)] font-bold">ROTATION COMPARISON</span>
-            <span className="text-[var(--text-muted)]">Angle: {Math.round(angle)}°</span>
+      <div className="lg:col-span-7 flex flex-col items-center gap-5">
+        <ToolWindow name="rotate.pixi" status={`Angle: ${Math.round(angle)}°`} className="max-w-[460px]">
+          <div className="flex items-start justify-center gap-4 sm:gap-6 pt-3">
+            <ArtFrame tag="RotSprite 8x" glow caption={<span className="text-[#a8e092]">♥ clean lines</span>}>
+              <canvas
+                ref={rotSpriteCanvasRef}
+                className="block w-24 h-24 sm:w-28 sm:h-28"
+                style={{ imageRendering: 'pixelated' }}
+                aria-label="RotSprite rotation output"
+              />
+            </ArtFrame>
+            <ArtFrame tag="standard nearest" caption={<span className="text-[#f2b8c6]">✕ jaggy lines</span>}>
+              <canvas
+                ref={standardCanvasRef}
+                className="block w-24 h-24 sm:w-28 sm:h-28 opacity-90"
+                style={{ imageRendering: 'pixelated' }}
+                aria-label="Standard nearest neighbor rotation output"
+              />
+            </ArtFrame>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Left: RotSprite (Winning algorithm) */}
-            <div className="flex flex-col items-center p-3 bg-[var(--desk-surface-raised)] border-2 border-[var(--accent-gold)]/60 rounded-[2px] relative">
-              <div className="w-full text-center text-[11px] font-mono font-bold text-[var(--accent-gold)] mb-2 flex items-center justify-center gap-1">
-                <span>✦ ROTSPRITE 8X</span>
-              </div>
-              <div className="w-28 h-28 bg-[#1e1730] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center overflow-hidden p-1 shadow-inner">
-                <canvas
-                  ref={rotSpriteCanvasRef}
-                  className="w-24 h-24 pixelated select-none"
-                  style={{ imageRendering: 'pixelated' }}
-                  aria-label="RotSprite rotation output"
-                />
-              </div>
-              <span className="mt-2 text-[10px] font-mono text-[var(--accent-gold)]">
-                Contour-Preserving (RotSprite)
-              </span>
-            </div>
-
-            {/* Right: Standard Rotation (Flawed algorithm) */}
-            <div className="flex flex-col items-center p-3 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] rounded-[2px] opacity-80">
-              <div className="w-full text-center text-[11px] font-mono text-[var(--text-muted)] mb-2">
-                STANDARD NEAREST
-              </div>
-              <div className="w-28 h-28 bg-[#1e1730] border border-[var(--desk-border)] rounded-[1px] flex items-center justify-center overflow-hidden p-1 shadow-inner">
-                <canvas
-                  ref={standardCanvasRef}
-                  className="w-24 h-24 pixelated select-none"
-                  style={{ imageRendering: 'pixelated' }}
-                  aria-label="Standard nearest neighbor rotation output"
-                />
-              </div>
-              <span className="mt-2 text-[10px] font-mono text-red-400">
-                Aliased Grid Sampling
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Interactive Controls Below Stage */}
-        <div className="w-full max-w-[420px] mt-4 space-y-3">
-          {/* Angle Slider & Spin Toggle */}
-          <div className="bg-[var(--desk-surface)] p-3 border border-[var(--desk-border)] rounded-[2px]">
-            <div className="flex items-center justify-between text-xs font-mono text-[var(--text-body)] mb-2">
-              <span className="flex items-center gap-1.5">
-                <span className="text-[var(--accent-gold)]">✦</span>
-                <span>Rotation Angle</span>
-              </span>
+          {/* The turning dial */}
+          <div className="mt-6 pt-4 border-t-2 border-dashed border-[#3d2a5c]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[11px] text-[#cdbfdf]">turn it</span>
               <button
+                type="button"
                 onClick={() => setIsSpinning((prev) => !prev)}
-                className="px-2 py-0.5 rounded-[1px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[10px] font-mono hover:text-[var(--accent-gold)] transition-colors"
+                className="px-2.5 py-1 rounded-[2px] border-2 border-[#0b0714] bg-[#2f1d52] font-mono text-[11px] font-bold text-[#fff3e0] shadow-[0_2px_0_#0b0714] hover:text-[#ffd285] active:translate-y-px active:shadow-none transition-colors"
               >
-                {isSpinning ? '⏸ Pause Spin' : '▶ Auto-Spin'}
+                {isSpinning ? '⏸ pause' : '▶ spin it'}
               </button>
             </div>
-
             <input
               type="range"
               aria-label="Rotation angle"
@@ -177,22 +145,21 @@ export const RotSpriteShowcase: React.FC = () => {
                 setIsSpinning(false);
                 setAngle(Number(e.target.value));
               }}
-              className="w-full accent-[var(--accent-gold)] cursor-pointer"
+              className="w-full accent-[#ffd285] cursor-pointer"
             />
-
-            {/* Quick Angle Snap Buttons */}
-            <div className="grid grid-cols-5 gap-1.5 mt-2">
+            <div className="grid grid-cols-5 gap-1 mt-2 p-1 rounded-[3px] bg-[#140b21] border-2 border-[#0b0714]">
               {[0, 22.5, 45, 90, 135].map((snap) => (
                 <button
                   key={snap}
+                  type="button"
                   onClick={() => {
                     setIsSpinning(false);
                     setAngle(snap);
                   }}
-                  className={`py-0.5 text-[10px] font-mono rounded-[1px] border transition-colors ${
-                    Math.round(angle) === snap
-                      ? 'bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold'
-                      : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
+                  className={`py-1 rounded-[2px] font-mono text-[11px] font-bold transition-colors ${
+                    Math.round(angle) === Math.round(snap)
+                      ? 'bg-[#ffd285] text-[#2a1945] shadow-[inset_0_-2px_0_#d89a55]'
+                      : 'text-[#cdbfdf] hover:bg-[#2a1945] hover:text-[#fff3e0]'
                   }`}
                 >
                   {snap}°
@@ -200,87 +167,29 @@ export const RotSpriteShowcase: React.FC = () => {
               ))}
             </div>
           </div>
+        </ToolWindow>
 
-          {/* Model Switcher */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'sword', label: 'Artisan Blade' },
-              { id: 'ghost', label: 'Hearth Ghost' },
-              { id: 'bun', label: 'Studio Bun' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setSpriteType(item.id as 'sword' | 'ghost' | 'bun')}
-                className={`py-1 px-2 text-xs font-mono rounded-[2px] border transition-colors ${
-                  spriteType === item.id
-                    ? 'bg-[var(--desk-surface-raised)] border-[var(--accent-gold)] text-[var(--accent-gold)] font-bold shadow-sm'
-                    : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        <div className="w-full max-w-[460px]">
+          <Picker
+            label="what to turn"
+            value={spriteType}
+            onChange={setSpriteType}
+            options={[
+              { value: 'sword', label: 'Little blade', icon: <Dot color="#cdbfdf" /> },
+              { value: 'ghost', label: 'Hearth Ghost', icon: <Dot color="#ede8f4" /> },
+              { value: 'bun', label: 'Bun', icon: <Dot color="#f2b8c6" /> },
+            ]}
+          />
         </div>
       </div>
 
-      {/* Right Explanation & Engine Architecture (5 cols) */}
-      <div className="lg:col-span-5 flex flex-col items-start text-left">
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[2px] bg-[var(--desk-surface)] border border-[var(--desk-border)] text-[11px] font-mono text-[var(--accent-gold)] mb-3">
-          <span>03 / SUBPIXEL GEOMETRY</span>
-        </div>
-
-        <h3 className="font-display text-2xl sm:text-3xl text-[var(--text-heading)] leading-tight mb-3">
-          RotSprite 8x Scale2X Precision Rotation
-        </h3>
-
-        <p className="text-xs sm:text-sm leading-relaxed text-[var(--text-body)] mb-4 font-sans">
-          Turn a sample sprite and compare the two results. RotSprite works on an 8x enlarged image before sampling it back onto the pixel grid.
-          It keeps source colors without blending them, but small details and connections can change with the angle.
-        </p>
-
-        {/* Feature Points Card */}
-        <div className="w-full bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] p-4 mb-5 space-y-3 font-mono text-xs">
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">3-Pass Scale2X / EPX Upscaling</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Expands the sprite 8x using pattern-matching corner smoothing (Johnston 1992) before rotation begins.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-plum)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Continuous Inverse Rotation</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Maps destination pixels back into the 8x working image. Inspect small gaps and isolated pixels in the result.
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <span className="text-[var(--accent-gold)] mt-0.5">✦</span>
-            <div>
-              <strong className="text-[var(--text-heading)] block font-sans">Source colors without blending</strong>
-              <span className="text-[var(--text-muted)] text-[11px] leading-normal">
-                Never introduces interpolated intermediary shades. Your hand-picked palette is preserved without color blending at any angle.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA to studio */}
-        <Link
-          href="/studio"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[2px] pixel-primary-btn text-xs font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
-        >
-          <span>ROTATE SPRITES IN STUDIO</span>
-          <span>→</span>
-        </Link>
-      </div>
+      <ShowcaseNote
+        kicker="smooth rotation"
+        title="Turn it without the jaggies."
+        body="Ordinary rotation chews up thin lines. RotSprite works on an enlarged copy first, so edges stay clean and your colours stay yours."
+        tips={['Drag the slider and compare both frames.', 'Snap to 45° to see the difference most.', 'Press spin it and watch the blade stay sharp.']}
+        cta="ROTATE A SPRITE IN THE STUDIO"
+      />
     </div>
   );
 };

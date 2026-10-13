@@ -30,7 +30,7 @@ Press **C**, choose a color and brush size, then drag between the start and end 
 
 Immediately after Apply, **Re-edit Curve** reopens the latest curve by undoing that edit. It is available only while the source and latest history entry still match. Cancel ends that re-edit with the curve undone; **Redo** restores the committed curve. An unrelated edit invalidates re-edit so it cannot undo newer work. Keyboard input in dialogs, fields and focused buttons keeps its own behavior. This is a quadratic curve editor, not a multi-point vector path editor. The screenshot above illustrates the earlier tool controls; the new adjustment handles and toolbar are described here.
 
-Use the primary color for the currently qualified Curve workflow. Secondary-color Shift gestures and retention of a recorded color during re-edit have an open adjustment-preview issue; inspect the visible color before Apply. See the [current change record](../releases/2026-10-13-studio-and-nibbli.md#verification-and-remaining-scope) for its exact qualification limits.
+The local pre-S4 candidate keeps the color chosen at the start of the Curve: hold **Shift** to start with the secondary well. Re-edit keeps the committed color even if the wells have changed. Explicitly changing the chosen well updates adjustment; changing the other well or brush size preserves the chosen color. Twelve native color cases passed across three engines, including exact Undo/Redo and saved reload for secondary cyan. The published `8c207b22` version still has the earlier adjustment-color issue; inspect the preview before Apply on that version. See [current status](../current-status.md#local-pre-s4-hardening-candidate) for the uncommitted candidate and its limits.
 
 ## Eraser
 
