@@ -1,22 +1,37 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import styles from './ToolMotionPreview.module.css';
 import type { Scene } from './ToolMotionPreview';
 import { pixelGradient } from '@/lib/canvas/pixelGradient';
 
 const W = 96;
 const H = 54;
-const DURATION = 2600;
-const GOLD = '#f0be7c';
-const RED = '#e85a70';
-const BLUE = '#66c6e8';
-const INK = '#271b37';
-const WHITE = '#f8edf5';
+const DURATION = 3000;
+const GOLD = '#ffd285';
+const RED = '#ff6b8b';
+const BLUE = '#7ad7f0';
+const INK = '#1d1336';
+const WHITE = '#fff3e0';
+// The motion layer composites the pixel art at this scale with smooth effects on top.
+const SCALE = 5;
 
 type Point = readonly [number, number];
 type Canvas = CanvasRenderingContext2D;
 
 function clamp(value: number) { return Math.max(0, Math.min(1, value)); }
+/** Ease in-out so every demo accelerates and settles like a real hand, never a robot. */
+function easeInOut(value: number) {
+  const v = clamp(value);
+  return v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+}
+
+// Loop time of the frame being drawn, so shared helpers (cursor, ripples) can animate.
+let frameTime = 0;
+let pointer: Point | null = null;
+let pointerPressed = false;
+// When true, scenes paint only their pixel art; the motion layer draws stage, pointer and effects.
+let artOnly = false;
 function lerp(a: number, b: number, t: number) { return Math.round(a + (b - a) * t); }
 function pixel(ctx: Canvas, x: number, y: number, color: string, size = 1) {
   ctx.fillStyle = color;
@@ -80,24 +95,98 @@ function ants(ctx: Canvas, points: readonly Point[], t: number) {
     }
   }
 }
+// A little pixel arrow pointer; its tip sits exactly on (x, y).
+const POINTER: readonly string[] = [
+  'X.....',
+  'XX....',
+  'XWX...',
+  'XWWX..',
+  'XWWWX.',
+  'XWWWWX',
+  'XWWXXX',
+  'XXWX..',
+  '...XX.',
+];
 function cursor(ctx: Canvas, x: number, y: number, pressed = false) {
   x = Math.round(x);
   y = Math.round(y);
-  box(ctx, x - 4, y, 3, 1, WHITE);
-  box(ctx, x + 2, y, 3, 1, WHITE);
-  box(ctx, x, y - 4, 1, 3, WHITE);
-  box(ctx, x, y + 2, 1, 3, WHITE);
-  pixel(ctx, x, y, pressed ? GOLD : BLUE);
-}
-function backdrop(ctx: Canvas) {
-  box(ctx, 0, 0, W, H, '#120e1b');
-  for (let y = 7; y < 47; y += 4) {
-    for (let x = 9; x < 89; x += 4) {
-      box(ctx, x, y, 4, 4, ((x + y) / 4) % 2 ? '#21192d' : '#1a1425');
+  pointer = [x, y];
+  pointerPressed = pressed;
+  if (artOnly) return;
+  // Click ripple: a ring expands from the tip as the action begins.
+  const ripple = (frameTime - 0.12) / 0.16;
+  if (pressed && ripple > 0 && ripple < 1) {
+    const radius = 2 + ripple * 7;
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      pixel(ctx, x + Math.cos(a) * radius, y + Math.sin(a) * radius, ripple < 0.5 ? GOLD : '#8a6a4a');
     }
   }
-  box(ctx, 8, 6, 81, 1, '#40304f');
-  box(ctx, 8, 47, 81, 1, '#40304f');
+  // Soft shadow, then the arrow; a press squashes it down one pixel.
+  const dy = pressed ? 1 : 0;
+  POINTER.forEach((row, ry) => {
+    for (let rx = 0; rx < row.length; rx++) {
+      if (row[rx] === '.') continue;
+      pixel(ctx, x + rx + 1, y + ry + 1 + dy, 'rgba(0,0,0,0.45)');
+    }
+  });
+  POINTER.forEach((row, ry) => {
+    for (let rx = 0; rx < row.length; rx++) {
+      const c = row[rx];
+      if (c === '.') continue;
+      pixel(ctx, x + rx, y + ry + dy, c === 'X' ? INK : pressed ? '#ffe2a8' : WHITE);
+    }
+  });
+  if (pressed) pixel(ctx, x, y, GOLD);
+}
+function backdrop(ctx: Canvas) {
+  if (artOnly) {
+    ctx.clearRect(0, 0, W, H);
+    return;
+  }
+  // Night-desk stage: deep plum with a soft lamp pool and a faint transparency checker.
+  box(ctx, 0, 0, W, H, '#140c22');
+  for (let y = 7; y < 47; y += 4) {
+    for (let x = 9; x < 89; x += 4) {
+      const d = Math.hypot(x + 2 - 48, (y + 2 - 27) * 1.6) / 46;
+      const lit = d < 0.55;
+      box(ctx, x, y, 4, 4, ((x + y) / 4) % 2 ? (lit ? '#2a1f3c' : '#211832') : (lit ? '#231a33' : '#1a132a'));
+    }
+  }
+  box(ctx, 8, 6, 81, 1, '#4a3870');
+  box(ctx, 8, 47, 81, 1, '#4a3870');
+}
+
+/** Loop polish shared by every scene: a sparkle burst on the result and a soft fade between loops. */
+function flourish(ctx: Canvas, t: number) {
+  if (artOnly) return;
+  const burst = (t - 0.68) / 0.18;
+  if (burst > 0 && burst < 1) {
+    const [cx, cy] = pointer ?? [48, 27];
+    const colors = [GOLD, WHITE, '#dcabdf', BLUE];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + 0.4;
+      const r = 3 + burst * 12;
+      const x = cx + Math.cos(a) * r;
+      const y = cy + Math.sin(a) * r * 0.8;
+      ctx.globalAlpha = 1 - burst;
+      pixel(ctx, x, y, colors[i % colors.length]);
+      if (i % 2 === 0 && burst < 0.6) {
+        pixel(ctx, x - 1, y, colors[i % colors.length]);
+        pixel(ctx, x + 1, y, colors[i % colors.length]);
+        pixel(ctx, x, y - 1, colors[i % colors.length]);
+        pixel(ctx, x, y + 1, colors[i % colors.length]);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Fade to the stage colour at the very end, and back in at the start, so loops breathe.
+  const fade = t > 0.93 ? (t - 0.93) / 0.07 : t < 0.03 ? 1 - t / 0.03 : 0;
+  if (fade > 0) {
+    ctx.globalAlpha = Math.min(1, fade);
+    box(ctx, 0, 0, W, H, '#140c22');
+    ctx.globalAlpha = 1;
+  }
 }
 function outlineRect(ctx: Canvas, x: number, y: number, w: number, h: number, color: string) {
   line(ctx, x, y, x + w, y, color);
@@ -295,7 +384,10 @@ function swatches(ctx: Canvas, colors: readonly string[], count = colors.length)
 }
 
 export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
-  const action = clamp((t - 0.12) / 0.56);
+  frameTime = t;
+  pointer = null;
+  pointerPressed = false;
+  const action = easeInOut((t - 0.12) / 0.56);
   const done = t >= 0.68;
   let label = done ? 'RESULT' : action > 0 ? 'ACTION' : 'BEFORE';
   backdrop(ctx);
@@ -340,10 +432,16 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
       break;
     }
     case 'fill': {
-      sampleSprite(ctx, 48, 27, {
-        flat: true,
-        base: action > 0.35 ? RED : '#251b32',
-      });
+      // An empty outlined heart; paint floods outward from the click point.
+      sampleSprite(ctx, 48, 27, { flat: true, base: '#2c2046', outline: '#e9dcf2' });
+      if (action > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(44, 26, Math.max(0.5, action * 30), 0, Math.PI * 2);
+        ctx.clip();
+        sampleSprite(ctx, 48, 27, { flat: true, base: RED, outline: '#e9dcf2' });
+        ctx.restore();
+      }
       if (!done) cursor(ctx, 44, 26, action > 0);
       label = done ? 'CONNECTED AREA' : 'CLICK TO FILL';
       break;
@@ -743,47 +841,342 @@ export function drawToolPreviewFrame(ctx: Canvas, scene: Scene, t: number) {
     }
     default: break;
   }
+  flourish(ctx, t);
   return label;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Motion layer: composites the pixel art like a motion-graphics shot.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CW = W * SCALE;
+const CH = H * SCALE;
+const ART_BOX = { x: 8 * SCALE, y: 6 * SCALE, w: 81 * SCALE, h: 42 * SCALE };
+
+const easeOutBack = (v: number) => {
+  const c = 1.7;
+  const x = clamp(v) - 1;
+  return 1 + (c + 1) * x * x * x + c * x * x;
+};
+const easeOut = (v: number) => 1 - Math.pow(1 - clamp(v), 3);
+
+function roundRect(ctx: Canvas, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function star(ctx: Canvas, x: number, y: number, r: number, rot: number) {
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const a = rot + (i * Math.PI) / 4;
+    const rr = i % 2 ? r * 0.32 : r;
+    ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  ctx.closePath();
+}
+
+const BOKEH = Array.from({ length: 9 }, (_, i) => ({
+  x: (i * 0.137 + 0.08) % 1,
+  y: (i * 0.291 + 0.15) % 1,
+  r: 26 + ((i * 37) % 40),
+  speed: 0.03 + (i % 4) * 0.012,
+  color: i % 3 === 0 ? '255, 210, 133' : i % 3 === 1 ? '199, 146, 223' : '122, 215, 240',
+}));
+
+function stageBackground(ctx: Canvas, t: number, time: number) {
+  const g = ctx.createLinearGradient(0, 0, 0, CH);
+  g.addColorStop(0, '#1d1238');
+  g.addColorStop(1, '#0c0618');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, CW, CH);
+  const glow = ctx.createRadialGradient(CW / 2, CH * 0.55, 10, CW / 2, CH * 0.55, CW * 0.55);
+  glow.addColorStop(0, 'rgba(120, 80, 190, 0.45)');
+  glow.addColorStop(1, 'rgba(120, 80, 190, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, CW, CH);
+  // Drifting bokeh lights
+  for (const b of BOKEH) {
+    const x = ((b.x + time * b.speed * 0.0001) % 1.2 - 0.1) * CW;
+    const y = (b.y + Math.sin(time * 0.0004 + b.r) * 0.03) * CH;
+    const rg = ctx.createRadialGradient(x, y, 0, x, y, b.r);
+    rg.addColorStop(0, `rgba(${b.color}, 0.16)`);
+    rg.addColorStop(1, `rgba(${b.color}, 0)`);
+    ctx.fillStyle = rg;
+    ctx.fillRect(x - b.r, y - b.r, b.r * 2, b.r * 2);
+  }
+  // Fine dot grid
+  ctx.fillStyle = 'rgba(255, 243, 224, 0.05)';
+  for (let y = 15; y < CH; y += 30) for (let x = 15; x < CW; x += 30) ctx.fillRect(x, y, 2, 2);
+  void t;
+}
+
+function artboard(ctx: Canvas) {
+  const { x, y, w, h } = ART_BOX;
+  ctx.save();
+  ctx.shadowColor = 'rgba(4, 2, 10, 0.7)';
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 12;
+  roundRect(ctx, x, y, w, h, 14);
+  ctx.fillStyle = '#1a1130';
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  roundRect(ctx, x, y, w, h, 14);
+  ctx.clip();
+  for (let yy = y; yy < y + h; yy += 20) {
+    for (let xx = x; xx < x + w; xx += 20) {
+      if (((xx - x) / 20 + (yy - y) / 20) % 2) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+        ctx.fillRect(xx, yy, 20, 20);
+      }
+    }
+  }
+  const sheen = ctx.createLinearGradient(x, y, x, y + h);
+  sheen.addColorStop(0, 'rgba(255, 255, 255, 0.06)');
+  sheen.addColorStop(0.4, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+  ctx.save();
+  roundRect(ctx, x + 1, y + 1, w - 2, h - 2, 13);
+  ctx.strokeStyle = 'rgba(199, 146, 223, 0.35)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function vectorPointer(ctx: Canvas, x: number, y: number, pressed: boolean, tilt: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
+  const s = pressed ? 0.88 : 1;
+  ctx.scale(s, s);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, 26);
+  ctx.lineTo(7, 20);
+  ctx.lineTo(12, 30);
+  ctx.lineTo(17, 28);
+  ctx.lineTo(12, 18);
+  ctx.lineTo(21, 18);
+  ctx.closePath();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 5;
+  ctx.fillStyle = pressed ? GOLD : '#ffffff';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = INK;
+  ctx.stroke();
+  ctx.restore();
+}
+
+interface Motion {
+  trail: Point[];
+  lastX: number | null;
+  tilt: number;
+}
+
+function composite(ctx: Canvas, art: HTMLCanvasElement, t: number, time: number, motion: Motion) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.filter = 'none';
+  stageBackground(ctx, t, time);
+
+  // Camera: push in toward the action, then settle on the result with a little overshoot.
+  const action = clamp((t - 0.12) / 0.56);
+  const focus: Point = pointer ? [pointer[0] * SCALE, pointer[1] * SCALE] : [CW / 2, CH / 2];
+  const push = Math.sin(action * Math.PI) * 0.07;
+  const settle = t > 0.68 && t < 0.86 ? Math.sin(((t - 0.68) / 0.18) * Math.PI) * 0.035 : 0;
+  const zoom = 1 + push + settle;
+  const ox = CW / 2 + (focus[0] - CW / 2) * 0.45;
+  const oy = CH / 2 + (focus[1] - CH / 2) * 0.45;
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-ox, -oy);
+
+  artboard(ctx);
+
+  // Art glow for depth, then the crisp pixels on top
+  ctx.save();
+  ctx.filter = 'blur(12px)';
+  ctx.globalAlpha = 0.5;
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(art, 0, 0, CW, CH);
+  ctx.restore();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(art, 0, 0, CW, CH);
+
+  // Pointer motion trail
+  if (pointer) {
+    const [px, py] = [pointer[0] * SCALE, pointer[1] * SCALE];
+    motion.trail.push([px, py]);
+    if (motion.trail.length > 9) motion.trail.shift();
+    const vx = motion.lastX === null ? 0 : px - motion.lastX;
+    motion.tilt += (Math.max(-0.35, Math.min(0.35, vx * 0.03)) - motion.tilt) * 0.25;
+    motion.lastX = px;
+    motion.trail.forEach(([tx, ty], i) => {
+      const a = (i + 1) / motion.trail.length;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 3 + a * 4, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 210, 133, ${0.28 * a})`;
+      ctx.fill();
+    });
+    // Click ripples as the action starts
+    const ripple = (t - 0.12) / 0.22;
+    if (pointerPressed && ripple > 0 && ripple < 1) {
+      for (const lag of [0, 0.25]) {
+        const r = easeOut(ripple - lag) * 46;
+        if (r <= 0) continue;
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.strokeStyle = lag ? `rgba(199, 146, 223, ${0.6 * (1 - ripple)})` : `rgba(255, 210, 133, ${0.9 * (1 - ripple)})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
+  } else {
+    motion.trail.length = 0;
+    motion.lastX = null;
+  }
+
+  // Result: a soft flash and a burst of spinning stars from the focal point
+  const burst = (t - 0.68) / 0.24;
+  if (burst > 0 && burst < 1) {
+    const flash = ctx.createRadialGradient(focus[0], focus[1], 0, focus[0], focus[1], 120);
+    flash.addColorStop(0, `rgba(255, 243, 224, ${0.32 * (1 - burst)})`);
+    flash.addColorStop(1, 'rgba(255, 243, 224, 0)');
+    ctx.fillStyle = flash;
+    ctx.fillRect(focus[0] - 120, focus[1] - 120, 240, 240);
+    const colors = [GOLD, '#ffffff', '#dcabdf', BLUE, '#a8e092', GOLD];
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 - 0.5;
+      const d = easeOut(burst) * 70;
+      const size = 9 * (1 - burst) + 2;
+      ctx.save();
+      ctx.shadowColor = colors[i];
+      ctx.shadowBlur = 12;
+      star(ctx, focus[0] + Math.cos(a) * d, focus[1] + Math.sin(a) * d * 0.8, size, burst * 3 + i);
+      ctx.fillStyle = colors[i];
+      ctx.globalAlpha = 1 - burst * 0.8;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  if (pointer) vectorPointer(ctx, pointer[0] * SCALE, pointer[1] * SCALE, pointerPressed, motion.tilt);
+  ctx.restore();
+
+  // Done badge pops into the artboard corner
+  if (t >= 0.7 && t < 0.95) {
+    const pop = easeOutBack((t - 0.7) / 0.14);
+    const bx = ART_BOX.x + ART_BOX.w - 22;
+    const by = ART_BOX.y + 22;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.scale(pop, pop);
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+    ctx.fillStyle = '#a8e092';
+    ctx.shadowColor = 'rgba(168, 224, 146, 0.8)';
+    ctx.shadowBlur = 16;
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-6, 0);
+    ctx.lineTo(-1.5, 5);
+    ctx.lineTo(7, -5);
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Iris transitions between loops
+  const iris = t > 0.92 ? 1 - (t - 0.92) / 0.08 : t < 0.06 ? t / 0.06 : 1;
+  if (iris < 1) {
+    const r = easeOut(iris) * Math.hypot(CW, CH) * 0.55;
+    ctx.beginPath();
+    ctx.rect(0, 0, CW, CH);
+    ctx.arc(CW / 2, CH / 2, Math.max(0.1, r), 0, Math.PI * 2, true);
+    ctx.fillStyle = '#0c0618';
+    ctx.fill('evenodd');
+  }
+}
+
+type Phase = 'before' | 'action' | 'result';
+
 export function ToolPreviewCanvas({ scene }: { scene: Scene }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [caption, setCaption] = useState<{ label: string; phase: Phase } | null>(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const currentCanvas = canvas;
-    ctx.imageSmoothingEnabled = false;
-    const render = (progress: number) => {
-      const label = drawToolPreviewFrame(ctx, scene, progress);
+    const art = document.createElement('canvas');
+    art.width = W;
+    art.height = H;
+    const artCtx = art.getContext('2d');
+    if (!artCtx) return;
+    artCtx.imageSmoothingEnabled = false;
+    const motion: Motion = { trail: [], lastX: null, tilt: 0 };
+    let shown = '';
+    const render = (progress: number, time: number) => {
+      artOnly = true;
+      artCtx.clearRect(0, 0, W, H);
+      const label = drawToolPreviewFrame(artCtx, scene, progress);
+      artOnly = false;
+      composite(ctx, art, progress, time, motion);
+      const phase: Phase = progress >= 0.68 ? 'result' : progress >= 0.12 ? 'action' : 'before';
+      currentCanvas.dataset.previewPhase = phase;
       currentCanvas.parentElement?.setAttribute('data-step-label', label);
+      if (label + phase !== shown) {
+        shown = label + phase;
+        setCaption({ label, phase });
+      }
     };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      render(0.85);
-      currentCanvas.dataset.previewPhase = 'result';
+      render(0.85, 0);
       return;
     }
     let frame = 0;
     const start = performance.now();
     const animate = (now: number) => {
-      const progress = ((now - start) % DURATION) / DURATION;
-      render(progress);
-      currentCanvas.dataset.previewPhase = progress >= 0.68 ? 'result' : progress >= 0.12 ? 'action' : 'before';
+      render(((now - start) % DURATION) / DURATION, now - start);
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
   }, [scene]);
   return (
-    <canvas
-      ref={canvasRef}
-      width={W}
-      height={H}
-      data-scene={scene}
-      role="img"
-      aria-label={scene.replaceAll('-', ' ') + ' animated tool demonstration'}
-      style={{ imageRendering: 'pixelated' }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        width={CW}
+        height={CH}
+        data-scene={scene}
+        role="img"
+        aria-label={scene.replaceAll('-', ' ') + ' animated tool demonstration'}
+      />
+      {caption && (
+        <span key={caption.label} className={styles.caption} data-phase={caption.phase} aria-hidden="true">
+          {caption.label.toLowerCase()}
+        </span>
+      )}
+    </>
   );
 }

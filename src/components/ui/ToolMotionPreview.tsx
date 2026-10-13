@@ -458,7 +458,7 @@ export function setToolPreviewsDisabled(disabled: boolean) {
 let globalLastDismissTime = 0;
 let globalActiveSource: HTMLElement | null = null;
 const PREVIEW_WIDTH = 304;
-const PREVIEW_HEIGHT = 290;
+const PREVIEW_HEIGHT = 360;
 
 function PreviewCard({
   definition,
@@ -498,9 +498,12 @@ function PreviewCard({
         <div className={styles.header}>
           <div className={styles.headerTitleGroup}>
             <div className={styles.iconWrap}>
-              <PixelIcon name={definition.icon || 'pen'} size={12} />
+              <PixelIcon name={definition.icon || 'pen'} size={14} />
             </div>
-            <span className={styles.titleText}>{definition.title}</span>
+            <div className={styles.titleStack}>
+              {definition.group && <span className={styles.eyebrow}>{definition.group}</span>}
+              <span className={styles.titleText}>{definition.title}</span>
+            </div>
           </div>
 
           <div className={styles.headerActions}>
@@ -526,16 +529,35 @@ function PreviewCard({
           <div className={styles.stage}>
             <ToolPreviewCanvas scene={definition.scene} />
           </div>
-          {/* Looping timeline track */}
-          <div className={styles.timeline} aria-hidden="true">
-            <span className={styles.timelineFill} />
+        </div>
+
+        {/* Storyboard: before, action, result, filling in step with the demo */}
+        <div className={styles.storyboard} aria-hidden="true">
+          <div className={`${styles.storyStep} ${styles.storyBefore}`}>
+            <div className={styles.storyBar}><span /></div>
+            <span className={styles.storyLabel}>before</span>
+          </div>
+          <div className={`${styles.storyStep} ${styles.storyAction}`}>
+            <div className={styles.storyBar}><span /></div>
+            <span className={styles.storyLabel}>action</span>
+          </div>
+          <div className={`${styles.storyStep} ${styles.storyResult}`}>
+            <div className={styles.storyBar}><span /></div>
+            <span className={styles.storyLabel}>result</span>
           </div>
         </div>
 
         {/* Body: Actionable Description & Dismiss Option */}
         <div className={styles.body}>
           <p className={styles.description}>{definition.description}</p>
+          {definition.proTip && (
+            <div className={styles.tip}>
+              <span className={styles.tipBadge}>TIP</span>
+              <span>{definition.proTip}</span>
+            </div>
+          )}
           <div className={styles.footer}>
+            <span className={styles.escHint} aria-hidden="true">esc to close</span>
             <button
               type="button"
               className={styles.dontShowBtn}

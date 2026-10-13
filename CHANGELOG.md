@@ -3,6 +3,10 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Enhanced Tool Motion Previews (`src/components/ui/ToolMotionPreview.tsx`, `src/components/ui/ToolMotionPreview.module.css`, `src/components/ui/ToolPreviewCanvas.tsx`, `tests/toolPreviewScenes.test.ts`) with a structured 3-step storyboard (before / action / result), pro tips, tool category groups, and animated procedural canvas previews across all drawing, selection, and lighting tools.
+
+- Added Moonlit Studio workspace skinning (`src/components/layout/StudioLayout.tsx`, `src/components/layout/FrameBun.tsx`, `src/components/layout/StudioSkyBackdrop.tsx`, `src/app/globals.css`), featuring a full-viewport starry night backdrop with fairy lights and FrameBun perched atop the canvas platen collar reacting with cheerful hops to artwork edits.
+
 - Replaced legacy landing scenes with a living moonlit atelier hero (`src/components/landing/night/NightHero.tsx`) and scroll-driven atelier story (`src/components/landing/night/NightStory.tsx`), featuring dynamic canvas lighting, fireflies, constellation sketching, and reactive companion animations. Retired legacy desk scenes (`src/components/landing/AtelierDeskScene.tsx`, `src/components/landing/PixelDitherCurtain.tsx`).
 
 - Hardened Bézier Curve color retention across adjustment and history re-edits, safeguarded project-layer PNG samples against profile-shift mutations during WebKit hydration, and added independent active-frame composite capture for process replay timelapse exports.

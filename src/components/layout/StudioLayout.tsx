@@ -9,6 +9,8 @@ import { CenterViewport } from './CenterViewport';
 import { RightInspector } from './RightInspector';
 import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
+import { StudioSkyBackdrop } from './StudioSkyBackdrop';
+import { useThemeStore } from '@/stores/themeStore';
 
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
@@ -344,6 +346,15 @@ export const StudioLayout: React.FC = () => {
     }
   }, [importPayload, runAutosave]);
 
+  const moonlit = useThemeStore((s) => s.studioTheme) === 'moonlit';
+
+  // Moonlit skins every control in the studio, including menus and dialogs that portal to <body>.
+  useEffect(() => {
+    if (!moonlit) return;
+    document.body.classList.add('moon-ui');
+    return () => document.body.classList.remove('moon-ui');
+  }, [moonlit]);
+
   // Global Keyboard Shortcuts
   useStudioKeyboard({
     autosaveTimerRef,
@@ -357,9 +368,16 @@ export const StudioLayout: React.FC = () => {
   });
 
   return (
-    <div data-restoration-phase={lifecycleState.phase} className="flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none">
+    <div
+      data-restoration-phase={lifecycleState.phase}
+      data-layout={moonlit ? 'moonlit' : undefined}
+      className="relative isolate flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none"
+    >
+      {/* Moonlit: the night sky fills the whole studio, behind every floating panel */}
+      {moonlit && <StudioSkyBackdrop />}
+
       {/* Unified Atelier Rail (~40px instrument panel) */}
-      <div hidden={focusMode}>
+      <div hidden={focusMode} className="moon-slot moon-slot-rail">
       <AtelierRail
         onOpenExport={() => openExport()}
         onOpenImport={handleOpenImport}
@@ -459,21 +477,21 @@ export const StudioLayout: React.FC = () => {
 
       {/* Main Workspace Area (Left Toolbar + Center Stage + Right Inspector) */}
       <div id="main-workspace" tabIndex={-1} className="flex flex-1 overflow-hidden outline-none relative">
-        <div hidden={focusMode} className="h-full shrink-0"><LeftToolbar /></div>
-        <div hidden={focusMode || workspace.inspectorSide !== 'left'} className="h-full shrink-0">{workspace.inspectorSide === 'left' && <RightInspector />}</div>
+        <div hidden={focusMode} className="moon-slot moon-slot-tools h-full shrink-0"><LeftToolbar /></div>
+        <div hidden={focusMode || workspace.inspectorSide !== 'left'} className="moon-slot moon-slot-inspector h-full shrink-0">{workspace.inspectorSide === 'left' && <RightInspector />}</div>
         <CenterViewport
           retainHistory
           onCommitHistory={handleCommitHistory}
           onOpenImport={handleOpenImport}
         />
-        <div hidden={focusMode || workspace.inspectorSide !== 'right'} className="h-full shrink-0">{workspace.inspectorSide === 'right' && <RightInspector />}</div>
+        <div hidden={focusMode || workspace.inspectorSide !== 'right'} className="moon-slot moon-slot-inspector h-full shrink-0">{workspace.inspectorSide === 'right' && <RightInspector />}</div>
       </div>
 
       {/* Bottom Timeline */}
-      <div hidden={focusMode || !workspace.timeline} className="shrink-0"><BottomTimeline /></div>
+      <div hidden={focusMode || !workspace.timeline} className="moon-slot moon-slot-timeline shrink-0"><BottomTimeline /></div>
 
       {/* Status Bar */}
-      <div hidden={focusMode}><StatusBar /></div>
+      <div hidden={focusMode} className="moon-slot moon-slot-status"><StatusBar /></div>
 
       {/* New Drawing Confirmation Modal */}
       <ModalWrapper

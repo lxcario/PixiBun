@@ -15,7 +15,9 @@ function renderCommands(scene: Scene, time: number) {
     restore() {},
     beginPath() {},
     rect() {},
+    arc() {},
     clip() {},
+    clearRect() {},
   } as unknown as CanvasRenderingContext2D;
   const label = drawToolPreviewFrame(context, scene, time);
   return { commands, label };

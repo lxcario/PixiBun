@@ -9,7 +9,7 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getOrCreateBuffer, snapshotBuffers } from '@/lib/engine/bufferRegistry';
 import type { ImportPayload } from '@/components/modals/ImportModal';
 import { FloatingPreviewWindow } from '@/components/studio/FloatingPreviewWindow';
-import { StudioSkyBackdrop } from './StudioSkyBackdrop';
+import { FrameBun } from './FrameBun';
 import { ViewportLensFilters } from '@/components/studio/ViewportLensFilters';
 import { RadialContextMenu } from '@/components/studio/RadialContextMenu';
 import { PixelIcon } from '@/components/ui/PixelIcon';
@@ -910,9 +910,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onDrop={handleDrop}
       onContextMenu={radialMenu.handleContextMenu}
     >
-      {/* Moonlit theme: a quiet night sky around the canvas */}
-      <StudioSkyBackdrop />
-
       {/* Mode Indicators */}
       <div 
         className="absolute z-50 flex flex-col gap-2 items-end pointer-events-none"
@@ -982,11 +979,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
         }}
       >
         {/* Atelier / Cozy Classic Platen Mat Collar & Attached Corner Registration Marks */}
-        <div aria-hidden="true" className="absolute -inset-3 bg-[var(--platen-bg)] border border-[var(--platen-border)]/60 rounded-[2px] outline outline-1 outline-[var(--desk-border)] pointer-events-none -z-10" />
-        <div className="absolute -top-3 -left-3 w-2 h-2 border-t border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
-        <div className="absolute -top-3 -right-3 w-2 h-2 border-t border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
-        <div className="absolute -bottom-3 -left-3 w-2 h-2 border-b border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
-        <div className="absolute -bottom-3 -right-3 w-2 h-2 border-b border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <FrameBun />
+        <div aria-hidden="true" className="canvas-platen absolute -inset-3 bg-[var(--platen-bg)] border border-[var(--platen-border)]/60 rounded-[2px] outline outline-1 outline-[var(--desk-border)] pointer-events-none -z-10" />
+        <div className="platen-corner absolute -top-3 -left-3 w-2 h-2 border-t border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="platen-corner absolute -top-3 -right-3 w-2 h-2 border-t border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="platen-corner absolute -bottom-3 -left-3 w-2 h-2 border-b border-l border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
+        <div className="platen-corner absolute -bottom-3 -right-3 w-2 h-2 border-b border-r border-[var(--platen-mark)]/50 pointer-events-none" aria-hidden="true" />
         {/* 3x3 Seamless Tile Matrix Preview Surroundings */}
         {showTilePreview && (
           <div className="absolute inset-0 pointer-events-none z-0 opacity-60">

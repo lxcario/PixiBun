@@ -1370,3 +1370,470 @@ html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-primary-btn 
 @media (prefers-reduced-motion: reduce) {
   .bun-hop, .bun-float { animation: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOONLIT LAYOUT: "the night desk"
+   The sky fills the studio; every panel floats over it as an ink-edged,
+   glassy card with a solid drop shadow. The canvas hangs in a wooden frame.
+   ═══════════════════════════════════════════════════════════════════ */
+[data-layout="moonlit"] {
+  --moon-card: rgba(34, 22, 64, 0.88);
+  --moon-card-edge: #4a3472;
+  --moon-card-drop: inset 0 1px 0 rgba(255, 243, 224, 0.08), 0 4px 0 #0b0714, 0 16px 34px rgba(5, 2, 12, 0.55);
+  --moon-gap: 10px;
+  background: transparent;
+}
+
+html.light [data-layout="moonlit"],
+html[data-color-scheme="light"] [data-layout="moonlit"] {
+  --moon-card: rgba(255, 250, 255, 0.86);
+  --moon-card-edge: #3a2560;
+  --moon-card-drop: 0 4px 0 #3a2560, 0 14px 30px rgba(58, 37, 96, 0.18);
+}
+
+/* Floating cards */
+[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
+[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"],
+[data-layout="moonlit"] .moon-slot-tools > aside,
+[data-layout="moonlit"] .moon-slot-inspector > aside,
+[data-layout="moonlit"] .moon-slot-timeline > footer,
+[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] {
+  background: var(--moon-card) !important;
+  border: 2px solid var(--moon-card-edge) !important;
+  border-radius: 8px;
+  box-shadow: var(--moon-card-drop);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+
+/* Narrower screens keep the floating look with tighter gaps, so the canvas keeps its room */
+@media (max-width: 1180px) {
+  [data-layout="moonlit"] { --moon-gap: 4px; }
+}
+
+[data-layout="moonlit"] .moon-slot-rail {
+  padding: 6px var(--moon-gap) 0;
+  position: relative;
+  z-index: 30;
+}
+
+[data-layout="moonlit"] #main-workspace {
+  padding: 6px var(--moon-gap);
+  gap: var(--moon-gap);
+}
+
+[data-layout="moonlit"] .moon-slot-tools > aside,
+[data-layout="moonlit"] .moon-slot-inspector > aside {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Inspector tabs read like bookmarks tucked into a notebook */
+[data-layout="moonlit"] .moon-slot-inspector > aside > div:first-child {
+  background: transparent !important;
+  border-bottom: 2px dashed rgba(141, 118, 173, 0.35) !important;
+  height: auto !important;
+  padding: 6px !important;
+}
+
+/* The canvas area lets the sky through */
+[data-layout="moonlit"] #main-content {
+  background-color: transparent !important;
+  background-image: none !important;
+  outline: none !important;
+  border-radius: 10px;
+}
+
+/* Timeline: a little film strip with sprocket holes */
+[data-layout="moonlit"] .moon-slot-timeline {
+  padding: 0 var(--moon-gap);
+}
+
+[data-layout="moonlit"] .moon-slot-timeline > footer {
+  position: relative;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+[data-layout="moonlit"] .moon-slot-timeline > footer::before,
+[data-layout="moonlit"] .moon-slot-timeline > footer::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 4px;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, rgba(141, 118, 173, 0.45) 0 6px, transparent 6px 14px);
+  border-radius: 1px;
+}
+
+[data-layout="moonlit"] .moon-slot-timeline > footer::before { top: 4px; }
+[data-layout="moonlit"] .moon-slot-timeline > footer::after { bottom: 4px; }
+
+/* Status bar: a small pill floating over the bottom-left of the canvas area,
+   so it costs the canvas no height at all */
+[data-layout="moonlit"] .moon-slot-timeline {
+  padding-bottom: 6px;
+}
+
+[data-layout="moonlit"] .moon-slot-status {
+  position: absolute;
+  z-index: 25;
+  left: calc(56px + var(--moon-gap) * 2 + 8px);
+  bottom: 14px;
+  max-width: min(760px, calc(100% - 420px));
+}
+
+[data-layout="moonlit"]:has(.moon-slot-timeline:not([hidden])) .moon-slot-status {
+  bottom: calc(8rem + 20px);
+}
+
+[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] {
+  height: 28px;
+  border-radius: 999px;
+  padding-left: 10px;
+  padding-right: 6px;
+  gap: 10px;
+}
+
+[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] > .flex-1 {
+  display: none;
+}
+
+/* The canvas hangs in a wooden frame with brass corners and a lamp glow behind it */
+[data-layout="moonlit"] .canvas-platen {
+  inset: -14px !important;
+  background: #7a4a34 !important;
+  border: 3px solid #0b0714 !important;
+  outline: none !important;
+  border-radius: 3px !important;
+  box-shadow:
+    inset 3px 3px 0 #a8683f,
+    inset -3px -3px 0 #4a2a1e,
+    0 8px 0 #0b0714,
+    0 0 0 1px rgba(255, 210, 133, 0.15),
+    0 0 90px 24px rgba(255, 200, 130, 0.13);
+}
+
+[data-layout="moonlit"] .platen-corner {
+  width: 10px !important;
+  height: 10px !important;
+  margin: -2px;
+  border: 2px solid #0b0714 !important;
+  background: #ffd285;
+  box-shadow: inset -2px -2px 0 #d89a55, inset 2px 2px 0 #fff3c4;
+  border-radius: 2px;
+}
+
+[data-layout="moonlit"] .frame-bun { filter: drop-shadow(0 3px 0 rgba(11, 7, 20, 0.6)); }
+
+/* Cozy scrollbars inside the floating cards */
+[data-layout="moonlit"] ::-webkit-scrollbar { width: 8px; height: 8px; }
+[data-layout="moonlit"] ::-webkit-scrollbar-thumb {
+  background: var(--desk-border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+[data-layout="moonlit"] ::-webkit-scrollbar-track { background: transparent; }
+
+/* The top rail breaks into floating islands over the sky */
+[data-layout="moonlit"] .moon-slot-rail > header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  height: 48px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: var(--moon-gap) !important;
+}
+
+[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
+[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"] {
+  height: 44px;
+  padding: 0 8px;
+}
+
+[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > * {
+  background: var(--moon-card) !important;
+  border: 2px solid var(--moon-card-edge) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--moon-card-drop);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOONLIT CONTROL SKIN
+   Every control in the studio (and its portalled menus and dialogs) gets
+   rounder, chunkier, more tactile: bigger hit areas, clear active states,
+   a press-down on every button, and gentle motion on hover.
+   ═══════════════════════════════════════════════════════════════════ */
+body.moon-ui {
+  --moon-ink: #0b0714;
+  --moon-glow: rgba(255, 210, 133, 0.35);
+  --moon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h8v2H6v2H4v2H4V4H2V2H0z' fill='%23ffd285'/%3E%3C/svg%3E");
+  --moon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath d='M8 0h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z' fill='%231d1336'/%3E%3C/svg%3E");
+}
+
+html.light body.moon-ui,
+html[data-color-scheme="light"] body.moon-ui {
+  --moon-ink: #3a2560;
+  --moon-glow: rgba(138, 69, 0, 0.3);
+  --moon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h8v2H6v2H4v2H4V4H2V2H0z' fill='%238a4500'/%3E%3C/svg%3E");
+}
+
+/* Buttons: rounder, and every press visibly pushes in */
+body.moon-ui .pixel-tactile-btn,
+body.moon-ui .pixel-primary-btn {
+  border-radius: 6px !important;
+  transition: transform 80ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease !important;
+}
+
+body.moon-ui .pixel-tactile-btn:hover:not(:disabled),
+body.moon-ui .pixel-primary-btn:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+}
+
+body.moon-ui button:active:not(:disabled) {
+  transform: translateY(1px) !important;
+}
+
+body.moon-ui button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Tool dock: the chosen tool rises, glows, and gets a marker on the dock's edge */
+body.moon-ui .moon-slot-tools button[aria-pressed] {
+  position: relative;
+  border-radius: 8px !important;
+}
+
+body.moon-ui .moon-slot-tools button[aria-pressed="false"]:hover {
+  background: var(--btn-hover) !important;
+  color: var(--accent-gold) !important;
+}
+
+body.moon-ui .moon-slot-tools button[aria-pressed="true"] {
+  background: #ffd285 !important;
+  color: #1d1336 !important;
+  border: 2px solid var(--moon-ink) !important;
+  box-shadow: inset 0 -3px 0 #d89a55, inset 2px 2px 0 #fff3c4, 0 3px 0 var(--moon-ink), 0 0 16px var(--moon-glow) !important;
+  transform: translateY(-1px);
+}
+
+/* A tiny sparkle in the chosen tool's corner */
+body.moon-ui .moon-slot-tools button[aria-pressed="true"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background:
+    linear-gradient(#fff3c4, #fff3c4) center / 4px 2px no-repeat,
+    linear-gradient(#fff3c4, #fff3c4) center / 2px 4px no-repeat;
+  animation: goldPulse 1.6s ease-in-out infinite;
+}
+
+/* Inspector tabs become pill bookmarks */
+body.moon-ui .moon-slot-inspector [data-testid^="tab-"] {
+  border-radius: 999px !important;
+  height: 30px !important;
+}
+
+body.moon-ui .moon-slot-inspector [data-testid^="tab-"][aria-pressed="false"] {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body.moon-ui .moon-slot-inspector [data-testid^="tab-"][aria-pressed="false"]:hover {
+  background: var(--btn-hover) !important;
+}
+
+body.moon-ui .moon-slot-inspector [data-testid^="tab-"][aria-pressed="true"] {
+  background: #ffd285 !important;
+  color: #1d1336 !important;
+  border: 2px solid var(--moon-ink) !important;
+  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink) !important;
+}
+
+/* Dropdowns: chunky, rounded, with a pixel chevron */
+body.moon-ui select {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 26px;
+  padding-right: 24px !important;
+  border: 2px solid var(--desk-border) !important;
+  border-radius: 6px !important;
+  background-color: var(--surface-0) !important;
+  background-image: var(--moon-chevron) !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 8px 6px !important;
+  color: var(--text-heading) !important;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+body.moon-ui select:hover { border-color: var(--accent-gold) !important; }
+
+body.moon-ui select:focus-visible {
+  outline: none !important;
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 3px var(--moon-glow) !important;
+}
+
+body.moon-ui option {
+  background: var(--desk-surface-raised);
+  color: var(--text-heading);
+}
+
+/* Text and number fields: soft insets that light up when you type */
+body.moon-ui input:is([type="number"], [type="text"], [type="search"]):not(.bg-transparent):not([class*="border-0"]),
+body.moon-ui textarea:not(.bg-transparent) {
+  border: 2px solid var(--desk-border) !important;
+  border-radius: 6px !important;
+  background-color: var(--surface-0) !important;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.22);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+body.moon-ui input:is([type="number"], [type="text"], [type="search"]):not(.bg-transparent):not([class*="border-0"]):focus,
+body.moon-ui textarea:not(.bg-transparent):focus {
+  outline: none !important;
+  border-color: var(--accent-gold) !important;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.22), 0 0 0 3px var(--moon-glow) !important;
+}
+
+/* Sliders: a comfy 22px hit area, a 6px track and a chunky gold handle */
+body.moon-ui input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px !important;
+  background-color: transparent !important;
+  background-size: 100% 6px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-radius: 999px !important;
+  cursor: pointer;
+}
+
+body.moon-ui input[type="range"]:not([style*="background"]) {
+  background-image: linear-gradient(var(--desk-border), var(--desk-border)) !important;
+}
+
+body.moon-ui input[type="range"][aria-label="Picker hue"] {
+  background-image: linear-gradient(90deg, #ff4d4d, #ffd24d, #7dff4d, #4dfff0, #4d6bff, #d24dff, #ff4d4d) !important;
+}
+
+body.moon-ui input[type="range"]::-webkit-slider-runnable-track {
+  height: 22px;
+  background: transparent;
+}
+
+body.moon-ui input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px !important;
+  height: 16px !important;
+  margin-top: 3px;
+  border-radius: 5px !important;
+  background: #ffd285 !important;
+  border: 2px solid var(--moon-ink);
+  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink);
+  transition: transform 100ms ease;
+}
+
+body.moon-ui input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.15); }
+body.moon-ui input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.95); }
+
+body.moon-ui input[type="range"]::-moz-range-track { height: 6px; background: transparent; }
+
+body.moon-ui input[type="range"]::-moz-range-thumb {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 5px !important;
+  background: #ffd285 !important;
+  border: 2px solid var(--moon-ink) !important;
+  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink);
+}
+
+body.moon-ui input[type="range"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--moon-glow) !important;
+}
+
+/* Checkboxes: pixel boxes with a pixel tick */
+body.moon-ui input[type="checkbox"]:not(.sr-only):not([class*="opacity-0"]):not(.hidden) {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 2px solid var(--desk-border-highlight);
+  border-radius: 4px;
+  background: var(--surface-0) center / 10px 8px no-repeat;
+  cursor: pointer;
+  transition: background-color 100ms ease, border-color 100ms ease;
+}
+
+body.moon-ui input[type="checkbox"]:not(.sr-only):not([class*="opacity-0"]):not(.hidden):checked {
+  background-color: #ffd285;
+  background-image: var(--moon-check);
+  border-color: var(--moon-ink);
+}
+
+/* Menus and lists that pop out: rounded cards whose items slide toward you on hover */
+body.moon-ui [role="menu"],
+body.moon-ui [role="listbox"] {
+  border: 2px solid var(--moon-ink) !important;
+  border-radius: 10px !important;
+  background: var(--desk-surface-raised) !important;
+  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px rgba(5, 2, 12, 0.55) !important;
+  padding: 6px !important;
+}
+
+body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"]) {
+  border-radius: 6px !important;
+  transition: background-color 100ms ease, padding-left 120ms ease, box-shadow 100ms ease;
+}
+
+body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"]):is(:hover, :focus-visible) {
+  background: rgba(255, 210, 133, 0.14) !important;
+  color: var(--text-heading) !important;
+  padding-left: 12px !important;
+  box-shadow: inset 3px 0 0 var(--accent-gold);
+  outline: none !important;
+}
+
+/* Popovers and dialogs */
+body.moon-ui [role="dialog"][aria-modal="false"] {
+  border: 2px solid var(--moon-ink) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px rgba(5, 2, 12, 0.55) !important;
+}
+
+body.moon-ui dialog[open] > div {
+  border: 2px solid var(--moon-ink) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 0 var(--moon-ink), 0 30px 80px rgba(5, 2, 12, 0.6) !important;
+}
+
+body.moon-ui [role="tooltip"] {
+  border-radius: 8px !important;
+  border: 2px solid var(--moon-ink) !important;
+  box-shadow: 0 3px 0 var(--moon-ink) !important;
+}
+
+/* Timeline frames lift when you hover them */
+body.moon-ui .moon-slot-timeline button[aria-label^="Select frame"] {
+  border-radius: 8px !important;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+body.moon-ui .moon-slot-timeline button[aria-label^="Select frame"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 0 var(--moon-ink), 0 0 14px var(--moon-glow);
+}

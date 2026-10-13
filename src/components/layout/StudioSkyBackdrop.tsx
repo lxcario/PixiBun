@@ -62,8 +62,8 @@ function buildSky(w: number, h: number, dawn: boolean): Sky {
   g.putImageData(img, 0, 0);
 
   // Moon (or a pale morning sun) in the top-right corner
-  const mx = w - 22;
-  const my = 16;
+  const mx = Math.round(w * 0.68);
+  const my = 30;
   for (let y = -6; y <= 6; y++) {
     for (let x = -6; x <= 6; x++) {
       const d = Math.hypot(x, y);
@@ -128,6 +128,29 @@ function paint(g: CanvasRenderingContext2D, sky: Sky, t: number, dawn: boolean) 
       g.fillRect(l.x, l.y, 1, 1);
     }
   }
+  // Fairy lights swagged across the top of the room, just under the rail
+  if (!dawn) {
+    const swags = Math.max(2, Math.round(sky.w / 90));
+    for (let i = 0; i < swags; i++) {
+      const x0 = Math.round((sky.w / swags) * i);
+      const x1 = Math.round((sky.w / swags) * (i + 1));
+      for (let x = x0; x < x1; x++) {
+        const p = (x - x0) / (x1 - x0);
+        const y = 17 + Math.round(Math.sin(p * Math.PI) * 6);
+        g.fillStyle = '#0b0714';
+        g.fillRect(x, y, 1, 1);
+        if ((x - x0) % 7 === 3) {
+          const lit = Math.sin(t / 700 + x * 0.9) > -0.35;
+          g.fillStyle = lit ? ['#ffd285', '#f2b8c6', '#c792df', '#a8e092'][Math.floor(x / 7) % 4] : '#3a2a4a';
+          g.fillRect(x, y + 1, 1, 2);
+          if (lit) {
+            g.fillStyle = 'rgba(255, 210, 133, 0.16)';
+            g.fillRect(x - 1, y, 3, 4);
+          }
+        }
+      }
+    }
+  }
   for (const c of sky.clouds) {
     const x = Math.round(((c.x + t * c.s) % (sky.w + c.w * 2)) - c.w);
     const y = Math.round(c.y);
@@ -187,7 +210,7 @@ export const StudioSkyBackdrop: React.FC = () => {
       ref={ref}
       aria-hidden="true"
       data-testid="studio-sky-backdrop"
-      className="absolute top-0 left-0 pointer-events-none"
+      className="absolute top-0 left-0 -z-10 pointer-events-none"
       style={{ imageRendering: 'pixelated' }}
     />
   );
