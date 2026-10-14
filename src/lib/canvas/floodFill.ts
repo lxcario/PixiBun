@@ -78,10 +78,13 @@ export function replaceLayerColor(
   x: number,
   y: number,
   replacementHex: string,
-  tolerance: number = 0
+  tolerance: number = 0,
+  /** Optional selection: only selected pixels change, and the sample must be selected. */
+  mask: Uint8Array | null = null
 ): number {
   const { width, height, data } = imageData;
   if (x < 0 || x >= width || y < 0 || y >= height) return 0;
+  if (mask && !mask[y * width + x]) return 0;
   const source = (y * width + x) * 4;
   if (data[source + 3] <= 30) return 0;
 
@@ -94,6 +97,7 @@ export function replaceLayerColor(
 
   for (let i = 0; i < data.length; i += 4) {
     if (data[i + 3] <= 30) continue;
+    if (mask && !mask[i >> 2]) continue;
     const dr = data[i] - r;
     const dg = data[i + 1] - g;
     const db = data[i + 2] - b;
@@ -115,12 +119,15 @@ export function performFloodFill(
   fillColorHex: string,
   contiguous: boolean = true,
   tolerance: number = 0,
-  fillEnclosedSpecks: boolean = false
+  fillEnclosedSpecks: boolean = false,
+  /** Optional selection: the fill never leaves it, and a click outside it fills nothing. */
+  mask: Uint8Array | null = null
 ): void {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
 
   if (startX < 0 || startX >= width || startY < 0 || startY >= height) return;
+  if (mask && !mask[startY * width + startX]) return;
 
   const imgData = ctx.getImageData(0, 0, width, height);
   const data = imgData.data;
@@ -145,6 +152,7 @@ export function performFloodFill(
   if (!contiguous) {
     // Global Color Replacement: Replace all matching pixels across the entire layer
     for (let i = 0; i < pixels32.length; i++) {
+      if (mask && !mask[i]) continue;
       const idx = i * 4;
       const currentPixel: RGBA = {
         r: data[idx],
@@ -188,7 +196,7 @@ export function performFloodFill(
         const ny = y + (direction === 2 ? 1 : direction === 3 ? -1 : 0);
         if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
           const nIndex = ny * width + nx;
-          if (!visited[nIndex]) {
+          if (!visited[nIndex] && (!mask || mask[nIndex])) {
             const nOffset = nIndex * 4;
             const nColor: RGBA = {
               r: data[nOffset],
@@ -246,7 +254,7 @@ export function performFloodFill(
             if (py < maxY) visitIslandNeighbor(index + width);
           }
           if (enclosed && tail <= 8) {
-            for (let i = 0; i < tail; i++) pixels32[islandQueue[i]] = replacementColor32;
+            for (let i = 0; i < tail; i++) if (!mask || mask[islandQueue[i]]) pixels32[islandQueue[i]] = replacementColor32;
           }
         }
       }

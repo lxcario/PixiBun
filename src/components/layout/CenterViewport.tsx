@@ -627,7 +627,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     });
 
   // When switching away from selection tools to drawing tools (e.g. Pen, Eraser),
-  // commit any floating selection and clear the active selection marquee.
+  // commit any floating selection. The selection itself stays: it limits every
+  // raster tool until Esc or a click outside the canvas clears it.
   const commitCurve = curveHandler.commit;
   const prevToolRef = useRef(tools.activeTool);
   useEffect(() => {
@@ -658,10 +659,6 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           } else {
             commitFloatingSelection();
           }
-        }
-        const state = useStudioStore.getState();
-        if (state.selection || state.selectionMask) {
-          state.setSelection(null, null);
         }
       }
     }

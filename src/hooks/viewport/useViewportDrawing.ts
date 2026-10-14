@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Point, applySymmetry } from '@/lib/canvas/rasterMath';
+import { fillRectMasked, resolveSelectionMask } from '@/lib/canvas/selectionMask';
 import { createHistoryEngine, HistoryEngine, setGlobalHistoryEngine, getGlobalHistoryEngine, readViewportHistory, rememberViewportHistory } from '@/lib/engine/historyEngine';
 import { HistoryStep, Layer } from '@/types/canvas';
 import { deleteBuffers, touchBuffer } from '@/lib/engine/bufferRegistry';
@@ -591,18 +592,18 @@ export function useViewportDrawing({
       }
 
       const offset = Math.floor(tools.brushSize / 2);
+      // An active selection limits every brush, line, shape and curve stamp.
+      const selected = useStudioStore.getState();
+      const mask = resolveSelectionMask(selected.selection, selected.selectionMask, canvasWidth, canvasHeight);
+      const stamp = (p: Point) => fillRectMasked(ctx, p.x - offset, p.y - offset, tools.brushSize, tools.brushSize, mask, canvasWidth, canvasHeight);
       if (isErase) {
         ctx.globalCompositeOperation = 'destination-out';
-        allPoints.forEach((p) => {
-          ctx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
-        });
+        allPoints.forEach(stamp);
         ctx.globalCompositeOperation = 'source-over';
       } else {
         ctx.fillStyle = color;
         ctx.globalCompositeOperation = 'source-over';
-        allPoints.forEach((p) => {
-          ctx.fillRect(p.x - offset, p.y - offset, tools.brushSize, tools.brushSize);
-        });
+        allPoints.forEach(stamp);
       }
 
       touchBuffer(targetLayerId);

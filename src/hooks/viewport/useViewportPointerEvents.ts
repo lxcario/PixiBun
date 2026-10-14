@@ -6,6 +6,7 @@ import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
 import { Point } from '@/lib/canvas/rasterMath';
 import { performFloodFill, rgbaToHex, replaceLayerColor } from '@/lib/canvas/floodFill';
+import { resolveSelectionMask } from '@/lib/canvas/selectionMask';
 import { eraseMatchingColor } from '@/lib/canvas/eraseMatchingColor';
 import { touchBuffer } from '@/lib/engine/bufferRegistry';
 import { pushStructuralHistoryStep } from '@/lib/engine/structuralHistory';
@@ -305,7 +306,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
       const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
       if (ctx) {
         const imgData = ctx.getImageData(0, 0, props.canvasWidth, props.canvasHeight);
-        const changed = replaceLayerColor(imgData, coords.x, coords.y, primaryColor, tools.bucketTolerance);
+        const selected = useStudioStore.getState();
+        const mask = resolveSelectionMask(selected.selection, selected.selectionMask, props.canvasWidth, props.canvasHeight);
+        const changed = replaceLayerColor(imgData, coords.x, coords.y, primaryColor, tools.bucketTolerance, mask);
         if (changed > 0) {
           props.captureSnapshot('Color Replace');
           ctx.putImageData(imgData, 0, 0);
@@ -321,13 +324,6 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
     if (props.floatingSelection) {
       props.commitFloatingSelection();
     }
-    if (tools.activeTool === 'pen' || tools.activeTool === 'eraser') {
-      const curState = useStudioStore.getState();
-      if (curState.selection || curState.selectionMask) {
-        curState.setSelection(null, null);
-      }
-    }
-
     // Prevent drawing on locked layers
     props.captureSnapshot(`Tool: ${tools.activeTool}`);
 
@@ -387,7 +383,9 @@ export function useViewportPointerEvents(props: UseViewportPointerEventsProps) {
           const ctx = layerCanvas.getContext('2d', { willReadFrequently: true });
           if (ctx) {
             const drawColor = e.shiftKey ? useStudioStore.getState().secondaryColor : primaryColor;
-            performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous, tools.fillTolerance, tools.fillEnclosedSpecks);
+            const selected = useStudioStore.getState();
+            const mask = resolveSelectionMask(selected.selection, selected.selectionMask, props.canvasWidth, props.canvasHeight);
+            performFloodFill(ctx, coords.x, coords.y, drawColor, tools.bucketContiguous, tools.fillTolerance, tools.fillEnclosedSpecks, mask);
             props.renderComposite();
             props.commitSnapshot();
             bumpBufferVersion();

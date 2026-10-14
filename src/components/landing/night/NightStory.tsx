@@ -102,14 +102,11 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
     }
     const inked = clamp01(cp) * INK_ORDER.length;
     const n = Math.ceil(inked);
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < Math.floor(inked); i++) {
       const px = INK_ORDER[i];
-      // The newest few pixels fade in over a short window so the pencil glides instead of ticking.
-      ctx.globalAlpha = clamp01((inked - i) / 4 + 0.1);
       ctx.fillStyle = px.c;
       ctx.fillRect(GX + px.x, GY + px.y, 1, 1);
     }
-    ctx.globalAlpha = 1;
     const tip = INK_ORDER[Math.max(0, n - 1)];
     if (inked < INK_ORDER.length - 0.5) {
       const x = GX + tip.x + 1;
@@ -211,10 +208,10 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   // Chapter 3: four frames glide out into a sprite sheet.
   const k = ease(clamp01(cp * 1.2));
   const sheetY = 6;
-  ctx.fillStyle = '#2a1945';
-  ctx.globalAlpha = k;
-  ctx.fillRect(0, sheetY - 1, W, 18);
-  ctx.globalAlpha = 1;
+  if (k > 0.15) {
+    ctx.fillStyle = '#2a1945';
+    ctx.fillRect(0, sheetY - 1, W, 18);
+  }
   for (let i = 0; i < 4; i++) {
     const x = Math.round(GX + (i * 16 - GX) * k);
     const y = Math.round(GY + (sheetY - GY) * k);
@@ -245,7 +242,7 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
 // Scroll only chooses the chapter; each chapter then plays at its own calm,
 // fixed pace, so a fast flick of the wheel never rushes the drawing.
 const FADE_START = 0.78;
-const FADE_MS = 800;
+const FADE_MS = 650;
 /** How long each chapter's one-time animation takes; 0 means it is an idle loop. */
 const PLAY_MS = [6500, 0, 0, 3200];
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
@@ -273,19 +270,41 @@ interface StageView {
   mix: number;
 }
 
-/** Composites the stage, cross-fading from one chapter to the next. */
+const DISSOLVE = [
+  [0, 8, 2, 10],
+  [12, 4, 14, 6],
+  [3, 11, 1, 9],
+  [15, 7, 13, 5],
+];
+
+/** Composites the stage; between chapters, pixels switch over in an ordered-dither pattern. */
 function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, HTMLCanvasElement], view: StageView, t: number) {
   ctx.clearRect(0, 0, W, H);
   drawBackdrop(ctx);
-  if (view.from >= 0 && view.mix < 1) {
-    renderChapter(layers[0].getContext('2d')!, view.from, view.fromProgress, t);
-    ctx.globalAlpha = 1 - view.mix;
-    ctx.drawImage(layers[0], 0, 0);
+  const toCtx = layers[1].getContext('2d', { willReadFrequently: true })!;
+  renderChapter(toCtx, view.to, view.toProgress, t);
+  if (view.from < 0 || view.mix >= 1) {
+    ctx.drawImage(layers[1], 0, 0);
+    return;
   }
-  renderChapter(layers[1].getContext('2d')!, view.to, view.toProgress, t);
-  ctx.globalAlpha = view.from >= 0 ? view.mix : 1;
-  ctx.drawImage(layers[1], 0, 0);
-  ctx.globalAlpha = 1;
+  const fromCtx = layers[0].getContext('2d', { willReadFrequently: true })!;
+  renderChapter(fromCtx, view.from, view.fromProgress, t);
+  const out = ctx.getImageData(0, 0, W, H);
+  const a = fromCtx.getImageData(0, 0, W, H).data;
+  const b = toCtx.getImageData(0, 0, W, H).data;
+  const level = Math.floor(view.mix * 16);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const src = DISSOLVE[y & 3][x & 3] < level ? b : a;
+      const o = (y * W + x) * 4;
+      if (src[o + 3] === 0) continue;
+      out.data[o] = src[o];
+      out.data[o + 1] = src[o + 1];
+      out.data[o + 2] = src[o + 2];
+      out.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
 }
 
 const EXPORTS = ['sheet.png', 'loop.gif', 'godot kit'];
@@ -357,7 +376,7 @@ export const NightStory: React.FC = () => {
       if (startedAt[current] < 0 && section.getBoundingClientRect().top < window.innerHeight * 0.25) {
         startedAt[current] = now + (previous >= 0 ? FADE_MS / 2 : 250);
       }
-      const mix = reduceMotion || previous < 0 ? 1 : smoothstep(clamp01((now - switchedAt) / FADE_MS));
+      const mix = reduceMotion || previous < 0 ? 1 : clamp01((now - switchedAt) / FADE_MS);
       return { from: previous, fromProgress: previous >= 0 ? played(previous, now) : 0, to: current, toProgress: played(current, now), mix };
     };
     const loop = (t: number) => {
@@ -455,22 +474,21 @@ export const NightStory: React.FC = () => {
                 <StoryPip key={c.kicker} index={i} active={i === chapter} accent={c.accent} progress={smooth} />
               ))}
             </div>
-            {/* Old and new words share one grid cell and cross-fade, entering from the scroll direction */}
+            {/* The words wipe out, then the next ones wipe in from the scroll direction: solid, never see-through */}
             <div className="grid">
-              <AnimatePresence initial={false} custom={direction}>
+              <AnimatePresence initial={false} custom={direction} mode="wait">
                 <motion.div
                   key={chapter}
                   custom={direction}
                   style={{ gridArea: '1 / 1' }}
                   variants={{
-                    enter: (d: number) => (reduceMotion ? { opacity: 0 } : { opacity: 0, y: d * 40, filter: 'blur(6px)' }),
-                    center: { opacity: 1, y: 0, filter: 'blur(0px)' },
-                    exit: (d: number) => (reduceMotion ? { opacity: 0 } : { opacity: 0, y: d * -40, filter: 'blur(6px)' }),
+                    enter: (d: number) => (reduceMotion ? {} : { y: d * 18, clipPath: d > 0 ? 'inset(0 0 100% 0)' : 'inset(100% 0 0 0)' }),
+                    center: { y: 0, clipPath: 'inset(0 0 0% 0)', transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } },
+                    exit: (d: number) => (reduceMotion ? {} : { y: d * -18, clipPath: d > 0 ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } }),
                   }}
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: reduceMotion ? 0.2 : 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--accent-gold)]">{active.kicker}</p>
                   <p className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.05] text-[var(--text-heading)]">
