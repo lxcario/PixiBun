@@ -39,7 +39,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
         </p>
         {CATEGORIES.map((cat) => (
           <div key={cat} className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-mono font-bold text-[#f0be7c] uppercase border-b border-[var(--desk-border)] pb-0.5 tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-[var(--accent-gold)] uppercase border-b border-[var(--desk-border)] pb-0.5 tracking-wider">
               {cat}
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -51,7 +51,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                   <span className="text-[var(--text-heading)] font-medium">
                     {item.description}
                   </span>
-                  <kbd className="bg-[var(--desk-surface)] text-[#f0be7c] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-[10px] font-bold shadow-xs whitespace-nowrap shrink-0">
+                  <kbd className="bg-[var(--desk-surface)] text-[var(--accent-gold)] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-[10px] font-bold shadow-xs whitespace-nowrap shrink-0">
                     {item.key}
                   </kbd>
                 </div>
@@ -72,7 +72,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                 onClose();
                 onOpenDiagnostics();
               }}
-              className="text-[#f0be7c] hover:text-[#fff8db] font-bold underline cursor-pointer"
+              className="text-[var(--accent-gold)] hover:text-[#fff8db] font-bold underline cursor-pointer"
             >
               Privacy & Diagnostics →
             </button>
@@ -83,7 +83,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
           size="sm"
           variant="primary"
           onClick={onClose}
-          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           Close
         </TactileButton>

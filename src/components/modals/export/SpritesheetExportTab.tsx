@@ -35,8 +35,8 @@ export const SpritesheetExportTab: React.FC<SpritesheetExportTabProps> = ({
               onClick={() => setLayoutMode(mode)}
               className={`px-2 py-0.5 rounded-[2px] border capitalize font-bold cursor-pointer transition-colors ${
                 layoutMode === mode
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {mode}
@@ -55,8 +55,8 @@ export const SpritesheetExportTab: React.FC<SpritesheetExportTabProps> = ({
               onClick={() => setScale(s)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                 scale === s
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {s}x
@@ -75,8 +75,8 @@ export const SpritesheetExportTab: React.FC<SpritesheetExportTabProps> = ({
               onClick={() => setPadding(p)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                 padding === p
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {p}px
@@ -92,7 +92,7 @@ export const SpritesheetExportTab: React.FC<SpritesheetExportTabProps> = ({
           onClick={() => setIncludeMetadata(!includeMetadata)}
           className={`px-2 py-0.5 rounded-[2px] border text-[10px] font-bold cursor-pointer transition-colors ${
             includeMetadata
-              ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
+              ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
               : 'bg-[var(--desk-surface)] text-[var(--text-body)] border-[var(--desk-border)]'
           }`}
         >

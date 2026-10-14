@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import localFont from 'next/font/local';
 import './globals.css';
+import './themes.generated.css';
+import { ThemeSync } from '@/components/system/ThemeSync';
 import { DiagnosticsProvider } from '@/components/system/DiagnosticsProvider';
 import { ServiceWorkerRegistrar } from '@/components/system/ServiceWorkerRegistrar';
 import { SkipToContent } from '@/components/system/SkipToContent';
@@ -84,6 +86,7 @@ export default async function RootLayout({
         <SkipToContent />
         <DiagnosticsProvider>
           <ServiceWorkerRegistrar />
+          <ThemeSync />
           {children}
         </DiagnosticsProvider>
       </body>

@@ -1,7 +1,8 @@
 (function() {
   try {
     var savedTheme = localStorage.getItem('pixibun-studio-theme');
-    var studioTheme = savedTheme === 'cozy-classic' || savedTheme === 'atelier' ? savedTheme : 'moonlit';
+    // Theme ids come from src/lib/theme/themes.json; ThemeSync normalizes unknown ones after load.
+    var studioTheme = /^[a-z][a-z0-9-]{0,31}$/.test(savedTheme || '') ? savedTheme : 'moonlit';
     var savedScheme = localStorage.getItem('pixibun-color-scheme') || localStorage.getItem('pixibun-theme');
     var colorScheme = savedScheme === 'light' ? 'light' : 'dark';
 

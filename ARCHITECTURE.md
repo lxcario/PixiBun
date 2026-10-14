@@ -117,7 +117,7 @@ graph TD
 
     subgraph State_Layer [" Reactive State & Memory Pipeline (Zustand + Immer)"]
         Store["useStudioStore (Tools, Zoom, Pan, Active Layer, Palette)"]
-        Theme["themeStore (Dual-Axis Atelier / Cozy Classic × Dark / Light)"]
+        Theme["themeStore (8 styles from themes.json × Night / Day)"]
         BufferReg["bufferRegistry (detached HTMLCanvasElement layers)"]
         UndoRedo["historyEngine (50-Step Undo Stack / 50-Step Redo Stack)"]
     end

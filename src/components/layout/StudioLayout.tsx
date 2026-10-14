@@ -11,6 +11,9 @@ import { BottomTimeline } from './BottomTimeline';
 import { StatusBar } from './StatusBar';
 import { StudioSkyBackdrop } from './StudioSkyBackdrop';
 import { useThemeStore } from '@/stores/themeStore';
+import { isSceneTheme } from '@/lib/theme/registry';
+import { WelcomeJourney, type WelcomeChoice } from '@/components/onboarding/WelcomeJourney';
+import { CoachTips } from '@/components/onboarding/CoachTips';
 
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
@@ -176,6 +179,20 @@ export const StudioLayout: React.FC = () => {
     });
     return () => controller.abort();
   }, [lifecycleState, runAutosave]);
+
+  // The welcome journey's last step opens a drawing through the same guarded
+  // openers as landing links, so the current canvas is saved first.
+  const handleWelcomeStart = useCallback((choice: WelcomeChoice) => {
+    if (choice.kind === 'lessons') {
+      window.location.assign('/playground');
+      return;
+    }
+    if (choice.kind === 'keep') return;
+    const opening = choice.kind === 'blank' ? openBlankWorkspace(choice.size, runAutosave) : openStarterWorkspace(choice.templateId, runAutosave);
+    void opening.catch((error: unknown) => {
+      studioEvents.emit('pixibun:toast', { type: 'error', message: error instanceof Error ? error.message : 'The new drawing could not be opened. Your current drawing is unchanged.' });
+    });
+  }, [runAutosave]);
 
   // Auto-prompt Recovery Modal on startup when pending recovery is detected
   useEffect(() => {
@@ -347,14 +364,14 @@ export const StudioLayout: React.FC = () => {
     }
   }, [importPayload, runAutosave]);
 
-  const moonlit = useThemeStore((s) => s.studioTheme) === 'moonlit';
+  const scene = isSceneTheme(useThemeStore((s) => s.studioTheme));
 
-  // Moonlit skins every control in the studio, including menus and dialogs that portal to <body>.
+  // Scene themes skin every control in the studio, including menus and dialogs that portal to <body>.
   useEffect(() => {
-    if (!moonlit) return;
+    if (!scene) return;
     document.body.classList.add('moon-ui');
     return () => document.body.classList.remove('moon-ui');
-  }, [moonlit]);
+  }, [scene]);
 
   // Global Keyboard Shortcuts
   useStudioKeyboard({
@@ -371,11 +388,11 @@ export const StudioLayout: React.FC = () => {
   return (
     <div
       data-restoration-phase={lifecycleState.phase}
-      data-layout={moonlit ? 'moonlit' : undefined}
+      data-layout={scene ? 'scene' : undefined}
       className="relative isolate flex flex-col h-screen w-screen bg-[var(--desk-bg)] text-[var(--text-heading)] transition-colors duration-300 overflow-hidden select-none"
     >
-      {/* Moonlit: the night sky fills the whole studio, behind every floating panel */}
-      {moonlit && <StudioSkyBackdrop />}
+      {/* Scene themes: their animated scene fills the whole studio, behind every floating panel */}
+      {scene && <StudioSkyBackdrop />}
 
       {/* Unified Atelier Rail (~40px instrument panel) */}
       <div hidden={focusMode} className="moon-slot moon-slot-rail">
@@ -410,18 +427,18 @@ export const StudioLayout: React.FC = () => {
           role="alert"
           className={`fixed bottom-10 left-16 max-w-md shadow-2xl p-3.5 rounded-[3px] flex flex-col gap-2 z-40 text-xs font-mono backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-150 ${
             saveConflict
-              ? 'bg-[#251829]/95 border-2 border-[#f0be7c] text-[#ede8f4]'
-              : 'bg-[#2e111a]/95 border-2 border-[#eb5a66] text-[#ffb4b9]'
+              ? 'bg-[var(--desk-surface-raised)]/95 border-2 border-[var(--accent-gold)] text-[#ede8f4]'
+              : 'bg-[var(--danger-bg)]/95 border-2 border-[var(--danger-border)] text-[var(--danger-fg)]'
           }`}
         >
           <div
             className={`flex items-center justify-between gap-2 border-b pb-1.5 ${
-              saveConflict ? 'border-[#5a3a28]' : 'border-[#6b283d]'
+              saveConflict ? 'border-[#5a3a28]' : 'border-[var(--danger-border)]'
             }`}
           >
             <div
               className={`flex items-center gap-1.5 font-bold ${
-                saveConflict ? 'text-[#f0be7c]' : 'text-[#eb5a66]'
+                saveConflict ? 'text-[var(--accent-gold)]' : 'text-[var(--danger-fg)]'
               }`}
             >
               <PixelIcon name="warning" size={13} className="shrink-0" />
@@ -433,7 +450,7 @@ export const StudioLayout: React.FC = () => {
             </div>
             <button
               onClick={() => setAutosaveError(null)}
-              className="px-1.5 py-0.5 text-xs text-[#d0c4df] hover:text-white transition-colors cursor-pointer leading-none"
+              className="px-1.5 py-0.5 text-xs text-[var(--text-body)] hover:text-white transition-colors cursor-pointer leading-none"
               title="Dismiss warning"
               aria-label="Dismiss error"
             >
@@ -441,12 +458,12 @@ export const StudioLayout: React.FC = () => {
             </button>
           </div>
           <div className="text-[11px] leading-relaxed space-y-1">
-            <p className={`font-semibold ${saveConflict ? 'text-[#5cdaac]' : 'text-[#f0be7c]'}`}>
+            <p className={`font-semibold ${saveConflict ? 'text-[var(--accent-sage)]' : 'text-[var(--accent-gold)]'}`}>
               {saveConflict
                 ? 'Your current artwork is safe in this tab.'
                 : 'Your current drawing is preserved in memory.'}
             </p>
-            <p className={saveConflict ? 'text-[#d0c4df]' : 'text-[#ffb4b9]'}>
+            <p className={saveConflict ? 'text-[var(--text-body)]' : 'text-[var(--danger-fg)]'}>
               {autosaveError}
             </p>
           </div>
@@ -468,7 +485,7 @@ export const StudioLayout: React.FC = () => {
               variant={saveConflict ? 'default' : 'danger'}
               onClick={() => openExport()}
               title="Open Export Dialog"
-              className={saveConflict ? 'text-xs px-2.5 py-1 font-bold' : 'text-xs px-2.5 py-1 bg-[#eb5a66] hover:bg-[#ff8c94] text-[#140d1f] font-bold border border-[#8c202a]'}
+              className={saveConflict ? 'text-xs px-2.5 py-1 font-bold' : 'text-xs px-2.5 py-1 bg-[var(--danger-bg)] hover:bg-[color-mix(in_srgb,var(--state-danger)_28%,var(--desk-surface))] text-[var(--danger-fg)] font-bold border-2 border-[var(--danger-border)]'}
             >
               Export Drawing
             </TactileButton>
@@ -540,6 +557,13 @@ export const StudioLayout: React.FC = () => {
           </div>
         </div>
       </ModalWrapper>
+
+      {/* First visit: skill, look and a first drawing; afterwards, one-time tips */}
+      <WelcomeJourney
+        ready={lifecycleState.phase === 'active' && !pendingRecovery && !(lifecycleState.phase === 'active' && lifecycleState.startupIssue)}
+        onStart={handleWelcomeStart}
+      />
+      <CoachTips exportOpen={isExportOpen} />
 
       {/* Load on first open, then retain cancellation ownership through cleanup. */}
       {hasOpenedExport && (
@@ -702,9 +726,9 @@ export const StudioLayout: React.FC = () => {
             activeToast?.action ? 'pointer-events-auto' : 'pointer-events-none'
           } ${
             activeToast?.type === 'error'
-              ? 'bg-[#2e111a]/95 border border-[#eb5a66] text-[#ffb4b9]'
+              ? 'bg-[var(--danger-bg)]/95 border border-[var(--danger-border)] text-[var(--danger-fg)]'
               : activeToast?.type === 'success'
-              ? 'bg-[#15241b]/95 border border-[#5cdaac] text-[#8ceec5]'
+              ? 'bg-[#15241b]/95 border border-[var(--accent-sage)] text-[#8ceec5]'
               : 'bg-[var(--surface-sunken,#191326)]/95 border border-[var(--accent-gold,#f0be7c)] text-[var(--accent-gold,#f0be7c)]'
           }`}
         >
@@ -713,9 +737,9 @@ export const StudioLayout: React.FC = () => {
             size={14}
             className={
               activeToast?.type === 'error'
-                ? 'text-[#eb5a66] shrink-0'
+                ? 'text-[var(--danger-fg)] shrink-0'
                 : activeToast?.type === 'success'
-                ? 'text-[#5cdaac] shrink-0'
+                ? 'text-[var(--accent-sage)] shrink-0'
                 : 'text-[var(--accent-gold,#f0be7c)] shrink-0'
             }
           />

@@ -209,7 +209,7 @@ export const NormalSculptorSection: React.FC<{ taskView?: boolean }> = ({ taskVi
             aria-pressed={isChiselActive}
             className={`w-full min-h-8 flex items-center justify-center gap-1 py-1.5 px-2 text-[11px] font-sans font-medium rounded-[2px] border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               isChiselActive
-                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[var(--ink)] shadow-[0_1px_0_#8c5120]'
                 : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
             }`}
           >
@@ -281,7 +281,7 @@ export const NormalSculptorSection: React.FC<{ taskView?: boolean }> = ({ taskVi
                     onClick={() => setChiselAzimuth(preset.az)}
                     className={`px-1 py-0.5 rounded-[1px] border cursor-pointer ${
                       tools.chiselAzimuth === preset.az
-                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] font-bold'
+                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[var(--ink)] font-bold'
                         : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                     }`}
                   >

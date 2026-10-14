@@ -4,8 +4,9 @@ import { render, fireEvent, screen, cleanup, act } from '@testing-library/react'
 import { useThemeStore, getInitialStudioTheme, StudioTheme } from '@/stores/themeStore';
 import { useStudioStore } from '@/stores/studioStore';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
+import { STUDIO_THEMES } from '@/lib/theme/registry';
 
-describe('First-party studio themes (Moonlit, Atelier & Cozy Classic)', () => {
+describe('First-party studio themes (Moonlit, Graphite, Plum and the scene themes)', () => {
   beforeEach(() => {
     localStorage.clear();
     act(() => {
@@ -170,7 +171,7 @@ describe('First-party studio themes (Moonlit, Atelier & Cozy Classic)', () => {
     // Radiogroups exist
     const styleGroup = screen.getByRole('radiogroup', { name: /studio style/i });
     expect(styleGroup).toBeDefined();
-    const schemeGroup = screen.getByRole('radiogroup', { name: /color scheme/i });
+    const schemeGroup = screen.getByRole('radiogroup', { name: /time of day/i });
     expect(schemeGroup).toBeDefined();
 
     // Options exist and work with radio semantics
@@ -192,15 +193,16 @@ describe('First-party studio themes (Moonlit, Atelier & Cozy Classic)', () => {
     expect(useThemeStore.getState().studioTheme).toBe('moonlit');
     expect(moonlitOption.getAttribute('aria-checked')).toBe('true');
 
-    // Arrow keys cycle through all three styles
-    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
-    expect(useThemeStore.getState().studioTheme).toBe('atelier');
-    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
-    expect(useThemeStore.getState().studioTheme).toBe('cozy-classic');
-    fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
-    expect(useThemeStore.getState().studioTheme).toBe('moonlit');
+    // Arrow keys step through every registered style in order and wrap around
+    const order = STUDIO_THEMES.map(theme => theme.id);
+    for (const expected of [...order.slice(1), order[0]]) {
+      fireEvent.keyDown(styleGroup, { key: 'ArrowDown' });
+      expect(useThemeStore.getState().studioTheme).toBe(expected);
+    }
     fireEvent.keyDown(styleGroup, { key: 'ArrowUp' });
-    expect(useThemeStore.getState().studioTheme).toBe('cozy-classic');
+    expect(useThemeStore.getState().studioTheme).toBe(order.at(-1));
+    fireEvent.keyDown(styleGroup, { key: 'ArrowRight' });
+    expect(useThemeStore.getState().studioTheme).toBe(order[0]);
 
     // Color scheme options work with radio semantics
     const lightOption = screen.getByTestId('scheme-option-light');

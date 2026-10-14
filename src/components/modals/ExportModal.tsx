@@ -992,7 +992,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
           onClick={handleCancel}
           aria-label="Cancel"
           data-testid="export-cancel-button"
-          className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+          className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
         >
           Cancel
         </TactileButton>
@@ -1032,7 +1032,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, initi
               ? handleExportMp4
               : handleExportPNG
           }
-          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           <PixelIcon name="export" size={12} />
           <span>{isProjectExporting ? 'Preparing backup…' : isExporting ? 'Preparing export…' : exportType === 'project' ? 'Download project backup' : exportType === 'godot-kit' ? 'Download Godot kit' : exportType === 'palette-cycle' ? 'Download cycle animation' : `Download ${exportType.toUpperCase()}`}</span>

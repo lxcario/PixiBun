@@ -102,7 +102,7 @@ export const ExportTabsNav: React.FC<ExportTabsNavProps> = ({
                 data-testid={`export-tab-${type}`}
                 className={`py-1 px-2 rounded-[2px] text-xs font-mono font-bold cursor-pointer ${
                   exportType === type
-                    ? 'bg-[#f0be7c] text-[#140d1f] shadow-xs'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] shadow-xs'
                     : 'text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--surface-2)] bg-[var(--surface-0)] border border-[var(--desk-border)]'
                 } ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >

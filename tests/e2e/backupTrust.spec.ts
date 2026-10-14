@@ -170,11 +170,11 @@ test('project and drawing controls stay grouped, visible and usable at desktop w
   const help = await studio.getByTestId('shortcuts-guide-button').boundingBox();
   expect(actions!.width).toBe(help!.width);
   expect(actions!.height).toBe(help!.height);
-  await studio.getByRole('radio', { name: /Cozy Classic/ }).click();
-  await expect(studio.getByRole('radio', { name: /Cozy Classic/ })).toBeFocused();
-  await page.keyboard.press('ArrowDown');
-  await expect(studio.getByRole('radio', { name: /Atelier/ })).toHaveAttribute('aria-checked', 'true');
-  await expect(studio.getByRole('radio', { name: /Atelier/ })).toBeFocused();
+  await studio.getByRole('radio', { name: /^Plum/ }).click();
+  await expect(studio.getByRole('radio', { name: /^Plum/ })).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(studio.getByRole('radio', { name: /^Graphite/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(studio.getByRole('radio', { name: /^Graphite/ })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(header.getByTestId('appearance-button')).toBeFocused();
   await header.getByRole('button', { name: 'View options menu', exact: true }).click();

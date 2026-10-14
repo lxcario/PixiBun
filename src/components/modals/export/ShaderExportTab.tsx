@@ -46,8 +46,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
                 aria-pressed={cycleLoopDuration === sec}
                 className={`min-h-7 px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                   cycleLoopDuration === sec
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
                 }`}
               >
                 {sec}s
@@ -63,8 +63,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
               aria-label={`${value} FPS`} aria-pressed={cycleLoopFps === value}
               onClick={() => setCycleLoopFps?.(value)}
               className={`min-h-7 py-1 rounded-[2px] border font-bold cursor-pointer ${cycleLoopFps === value
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'}`}>
+                ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'}`}>
               {value}
             </button>)}
           </div>
@@ -82,8 +82,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
                 aria-pressed={cycleLoopFormat === fmt}
                 className={`min-h-7 px-2.5 py-0.5 rounded-[2px] border font-bold cursor-pointer uppercase transition-colors ${
                   cycleLoopFormat === fmt
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
                 }`}
               >
                 {fmt}
@@ -103,8 +103,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
                 aria-pressed={scale === s}
                 className={`min-h-7 px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                   scale === s
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
                 }`}
               >
                 {s}x
@@ -132,8 +132,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
             onClick={() => setShaderTarget?.('godot')}
             className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
               shaderTarget === 'godot'
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
             }`}
           >
             Godot 4 (.gdshader)
@@ -143,8 +143,8 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
             onClick={() => setShaderTarget?.('unity')}
             className={`px-2.5 py-1 rounded-[2px] border font-bold cursor-pointer transition-colors ${
               shaderTarget === 'unity'
-                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
             }`}
           >
             Unity URP 2D (.shader)
@@ -154,10 +154,10 @@ export const ShaderExportTab: React.FC<ShaderExportTabProps> = ({
 
       <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
         <span>Active Tracks:</span>
-        <span className="font-bold text-[#f0be7c]">{activeCycleTracksCount} tracks configured</span>
+        <span className="font-bold text-[var(--accent-gold)]">{activeCycleTracksCount} tracks configured</span>
       </div>
 
-      <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
+      <p className="text-[var(--text-muted)] text-[11px] pt-1 border-t border-[var(--desk-border)]">
         Shader code only; supply a normalized index texture and palette LUT yourself. Use Godot Kit for a runnable sample with raw register bytes and separate alpha. Unity remains unverified in its engine.
       </p>
     </div>

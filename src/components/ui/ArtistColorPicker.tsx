@@ -128,7 +128,7 @@ export function ArtistColorPicker({ color, onChange }: { color: string; onChange
         <label className="flex items-center gap-2 text-[10px]">
           <span className="w-4 font-mono font-semibold text-[var(--text-muted)] shrink-0" title="Hue">H</span>
           <input
-            className="flex-1 min-w-0 h-1 accent-[var(--accent-gold)] cursor-pointer"
+            className="flex-1 min-w-0 h-6 accent-[var(--accent-gold)] cursor-pointer"
             type="range"
             min={0}
             max={359}
@@ -141,7 +141,7 @@ export function ArtistColorPicker({ color, onChange }: { color: string; onChange
         <label className="flex items-center gap-2 text-[10px]">
           <span className="w-4 font-mono font-semibold text-[var(--text-muted)] shrink-0" title="Saturation">S</span>
           <input
-            className="flex-1 min-w-0 h-1 accent-[var(--accent-gold)] cursor-pointer"
+            className="flex-1 min-w-0 h-6 accent-[var(--accent-gold)] cursor-pointer"
             type="range"
             min={0}
             max={100}
@@ -154,7 +154,7 @@ export function ArtistColorPicker({ color, onChange }: { color: string; onChange
         <label className="flex items-center gap-2 text-[10px]">
           <span className="w-4 font-mono font-semibold text-[var(--text-muted)] shrink-0" title="Value">V</span>
           <input
-            className="flex-1 min-w-0 h-1 accent-[var(--accent-gold)] cursor-pointer"
+            className="flex-1 min-w-0 h-6 accent-[var(--accent-gold)] cursor-pointer"
             type="range"
             min={0}
             max={100}

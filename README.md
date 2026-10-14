@@ -38,7 +38,7 @@ Palette cycling changes colors in the active frame. Draw changing poses in the t
 
 ## Pick the desk that feels right
 
-Cozy Classic comes in dark and light: deep plum for a late evening, warm parchment for a brighter afternoon. Atelier offers another look, with a more restrained modern palette. Open **Studio** to choose your theme and light or dark scheme.
+PixiBun has eight looks, each with a Night and a Day. Moonlit, Sakura, Tidepool, Ember, Moss and Arcade float the studio over their own animated pixel scene: a sleepy town, paper lanterns and petals, a glowing reef, rooftop sparks, fireflies, a neon grid. Graphite and Plum (the original PixiBun purple, shown below) stay flat and quiet. Your first visit to the Studio helps you pick one; open **Studio** to change it any time.
 
 ![The same three-character project in Cozy Classic light, with warm parchment panels, plum outlines and amber controls.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
 

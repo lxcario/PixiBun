@@ -164,7 +164,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
     >
       <div className="flex flex-col gap-5 p-1">
         {/* Gallery Header Controls */}
-        <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#3a2e4c]/50 pb-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[var(--desk-border)]/50 pb-4">
           <div className="flex items-center gap-2">
             <TactileButton
               variant="primary"
@@ -223,12 +223,12 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
             Loading saved artworks from IndexedDB...
           </div>
         ) : storageError ? (
-          <div role="alert" className="py-12 px-4 text-center text-xs font-mono text-[#ffb4b9] bg-[#2e111a]/80 border border-[#eb5a66]/50 rounded-[3px] flex flex-col items-center gap-2">
-            <PixelIcon name="warning" size={16} className="text-[#eb5a66]" />
+          <div role="alert" className="py-12 px-4 text-center text-xs font-mono text-[var(--danger-fg)] bg-[var(--danger-bg)]/80 border border-[var(--danger-border)]/50 rounded-[3px] flex flex-col items-center gap-2">
+            <PixelIcon name="warning" size={16} className="text-[var(--danger-fg)]" />
             <p>{storageError}</p>
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="py-16 text-center text-sm font-mono text-[var(--text-muted)] border border-dashed border-[#3a2e4c] rounded-[3px]">
+          <div className="py-16 text-center text-sm font-mono text-[var(--text-muted)] border border-dashed border-[var(--desk-border)] rounded-[3px]">
             {searchQuery ? 'No artworks matching search filter.' : 'No saved artworks yet.'}
           </div>
         ) : (
@@ -251,19 +251,19 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                   aria-label={`Open project ${project.name}`}
                   className={`group relative flex flex-col p-3 rounded-[3px] border-2 transition-all cursor-pointer select-none text-left bg-[var(--desk-surface)] ${
                     isActive
-                      ? 'border-[#f0be7c] shadow-[0_0_12px_rgba(240,190,124,0.15)] ring-1 ring-[#f0be7c]'
+                      ? 'border-[var(--accent-gold)] shadow-[0_0_12px_rgba(240,190,124,0.15)] ring-1 ring-[var(--accent-gold)]'
                       : 'border-[var(--desk-border)] hover:border-[#a86ec6] hover:bg-[var(--desk-surface-raised)]'
                   }`}
                 >
                   {/* Active Indicator Badge */}
                   {isActive && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-[2px] bg-[#f0be7c] text-[#140d1f] text-[9px] font-mono font-bold tracking-wider uppercase shadow-sm">
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-[2px] bg-[var(--primary-bg)] text-[var(--primary-fg)] text-[9px] font-mono font-bold tracking-wider uppercase shadow-sm">
                       Current
                     </div>
                   )}
 
                   {/* Thumbnail Box */}
-                  <div className="w-full aspect-square bg-[#140d1f] border border-[var(--desk-border)] rounded-[2px] overflow-hidden flex items-center justify-center p-2 mb-3 relative bg-[radial-gradient(#281b3d_1px,transparent_1px)] [background-size:8px_8px]">
+                  <div className="w-full aspect-square bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] overflow-hidden flex items-center justify-center p-2 mb-3 relative bg-[radial-gradient(#281b3d_1px,transparent_1px)] [background-size:8px_8px]">
                     {project.thumbnailDataUrl ? (
                       <img
                         src={project.thumbnailDataUrl}
@@ -305,7 +305,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                           onKeyDown={(e) => e.stopPropagation()}
                           ref={(input) => input?.focus()}
                           onChange={(e) => setEditingName(e.target.value)}
-                          className="w-full px-1.5 py-0.5 bg-[#140d1f] border border-[#f0be7c] rounded-[2px] text-xs font-mono text-[var(--text-heading)] outline-none"
+                          className="w-full px-1.5 py-0.5 bg-[var(--surface-0)] border border-[var(--accent-gold)] rounded-[2px] text-xs font-mono text-[var(--text-heading)] outline-none"
                         />
                         <button
                           type="submit"
@@ -332,7 +332,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                             e.stopPropagation();
                             handleStartRename(project);
                           }}
-                          className="opacity-0 group-hover/title:opacity-100 group-focus-within/title:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[#f0be7c] p-0.5"
+                          className="opacity-0 group-hover/title:opacity-100 group-focus-within/title:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] p-0.5"
                           title="Rename artwork"
                           aria-label="Rename artwork"
                         >
@@ -345,10 +345,10 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
 
                   {/* Metadata Chips */}
                   <div className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-muted)] mb-3">
-                    <span className="px-1.5 py-0.5 bg-[#140d1f]/50 border border-[var(--desk-border)] rounded-[2px]">
+                    <span className="px-1.5 py-0.5 bg-[var(--surface-0)]/50 border border-[var(--desk-border)] rounded-[2px]">
                       {project.width}×{project.height}
                     </span>
-                    <span className="px-1.5 py-0.5 bg-[#140d1f]/50 border border-[var(--desk-border)] rounded-[2px]">
+                    <span className="px-1.5 py-0.5 bg-[var(--surface-0)]/50 border border-[var(--desk-border)] rounded-[2px]">
                       {project.fps} FPS
                     </span>
                     <span className="truncate ml-auto" title={new Date(project.updatedAt).toLocaleString()}>
@@ -361,7 +361,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                     <button
                       type="button"
                       onClick={(e) => handleDuplicate(project, e)}
-                      className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[#c792df] transition-colors"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[var(--accent-wisteria)] transition-colors"
                       title="Duplicate drawing"
                     >
                       <PixelIcon name="copy" size={12} />
@@ -377,7 +377,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                             e.stopPropagation();
                             handleDelete(project.id);
                           }}
-                          className="px-1 py-0.5 rounded-[2px] bg-[#a22633] text-white text-[10px] font-mono font-bold hover:bg-[#e43b44]"
+                          className="px-1 py-0.5 rounded-[2px] bg-[#a22633] text-white text-[10px] font-mono font-bold hover:bg-[var(--state-danger)]"
                         >
                           Yes
                         </button>
@@ -387,7 +387,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                             e.stopPropagation();
                             setDeleteConfirmId(null);
                           }}
-                          className="px-1 py-0.5 rounded-[2px] bg-[#3a2e4c] text-[var(--text-body)] text-[10px] font-mono"
+                          className="px-1 py-0.5 rounded-[2px] bg-[var(--desk-border)] text-[var(--text-body)] text-[10px] font-mono"
                         >
                           No
                         </button>
@@ -399,7 +399,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
                           e.stopPropagation();
                           setDeleteConfirmId(project.id);
                         }}
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[#e43b44] transition-colors"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--text-muted)] hover:text-[var(--danger-fg)] transition-colors"
                         title="Delete drawing"
                       >
                         <PixelIcon name="trash" size={12} />
@@ -414,7 +414,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
         )}
 
         {/* Footer Summary */}
-        <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)] pt-3 border-t border-[#3a2e4c]/50">
+        <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)] pt-3 border-t border-[var(--desk-border)]/50">
           <span>{projects.length} {projects.length === 1 ? 'project' : 'projects'} saved in browser IndexedDB</span>
           <TactileButton variant="ghost" size="sm" onClick={onClose}>
             Close

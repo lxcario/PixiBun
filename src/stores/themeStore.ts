@@ -1,14 +1,16 @@
 'use client';
 
 import { create } from 'zustand';
+import { DEFAULT_THEME_ID, isSceneTheme, isThemeId } from '@/lib/theme/registry';
 
-export type StudioTheme = 'moonlit' | 'atelier' | 'cozy-classic';
+/** A theme id from src/lib/theme/themes.json. */
+export type StudioTheme = string;
 
 /** Moonlit is the default for anyone who has not picked a style yet. */
-export const DEFAULT_STUDIO_THEME: StudioTheme = 'moonlit';
+export const DEFAULT_STUDIO_THEME: StudioTheme = DEFAULT_THEME_ID;
 
 export function normalizeStudioTheme(value: unknown): StudioTheme {
-  return value === 'atelier' || value === 'cozy-classic' || value === 'moonlit' ? value : DEFAULT_STUDIO_THEME;
+  return isThemeId(value) ? value : DEFAULT_STUDIO_THEME;
 }
 export type ColorScheme = 'dark' | 'light';
 export type ThemeMode = ColorScheme; // backward compatibility
@@ -55,6 +57,7 @@ export function applyThemeToDOM(studioTheme: StudioTheme, colorScheme: ColorSche
   const validScheme: ColorScheme = colorScheme === 'light' ? 'light' : 'dark';
 
   root.setAttribute('data-studio-theme', validTheme);
+  root.setAttribute('data-layout-kind', isSceneTheme(validTheme) ? 'scene' : 'flat');
   root.setAttribute('data-color-scheme', validScheme);
   root.setAttribute('data-theme', validScheme); // backward compatibility
 
@@ -103,10 +106,14 @@ export function getInitialColorScheme(): ColorScheme {
 const initialStudioTheme = getInitialStudioTheme();
 const initialColorScheme = getInitialColorScheme();
 
+// The store starts at the server's defaults: zustand serves getInitialState()
+// as the hydration snapshot, so React's first client render matches the server
+// HTML. The saved choice is loaded right after creation (below), and components
+// re-render with it once hydration completes instead of discarding the tree.
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  studioTheme: initialStudioTheme,
-  colorScheme: initialColorScheme,
-  theme: initialColorScheme,
+  studioTheme: DEFAULT_STUDIO_THEME,
+  colorScheme: 'dark',
+  theme: 'dark',
 
   setStudioTheme: (studioTheme: StudioTheme) => {
     const validTheme = normalizeStudioTheme(studioTheme);
@@ -150,5 +157,6 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
 }));
 
 if (typeof window !== 'undefined') {
+  useThemeStore.setState({ studioTheme: initialStudioTheme, colorScheme: initialColorScheme, theme: initialColorScheme });
   applyThemeToDOM(initialStudioTheme, initialColorScheme);
 }

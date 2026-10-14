@@ -98,8 +98,8 @@ export function PaletteRolesSection({ palette }: { palette: ColorPalette }) {
 
       {/* Duplicate color resolution banner */}
       {isDuplicate && (
-        <div className="bg-[#2b1f14] border border-[#f0be7c] p-2 rounded-[2px] text-[10px] flex flex-col gap-1.5">
-          <div className="font-semibold text-[#f0be7c] flex items-center gap-1">
+        <div className="bg-[#2b1f14] border border-[var(--accent-gold)] p-2 rounded-[2px] text-[10px] flex flex-col gap-1.5">
+          <div className="font-semibold text-[var(--accent-gold)] flex items-center gap-1">
             <PixelIcon name="warning" size={11} />
             <span>Duplicate Color Register</span>
           </div>

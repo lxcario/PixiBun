@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useStudioStore } from '@/stores/studioStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { STUDIO_THEMES } from '@/lib/theme/registry';
 import { PixelIcon } from '@/components/ui/PixelIcon';
 import { STUDIO_COMMANDS, type StudioCommand } from '@/config/studioCommands';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
@@ -291,25 +292,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       });
     }
 
-    list.push({
-      id: 'proj-theme-atelier',
-      title: 'Studio Theme: Switch to Atelier (Quiet Crafted Workbench)',
-      category: 'Project & Studio',
-      icon: 'palette',
-      action: () => useThemeStore.getState().setStudioTheme('atelier'),
-    });
-
-    list.push({
-      id: 'proj-theme-cozy',
-      title: 'Studio Theme: Switch to Cozy Classic (Warm Original PixiBun)',
-      category: 'Project & Studio',
-      icon: 'palette',
-      action: () => useThemeStore.getState().setStudioTheme('cozy-classic'),
-    });
+    for (const theme of STUDIO_THEMES) {
+      list.push({
+        id: `proj-theme-${theme.id}`,
+        title: `Studio Theme: ${theme.name} (${theme.blurb})`,
+        category: 'Project & Studio',
+        icon: 'palette',
+        action: () => useThemeStore.getState().setStudioTheme(theme.id),
+      });
+    }
 
     list.push({
       id: 'proj-scheme-toggle',
-      title: 'Color Scheme: Toggle Dark / Light',
+      title: 'Time of Day: Toggle Night / Day',
       category: 'Project & Studio',
       icon: 'palette',
       action: () => useThemeStore.getState().toggleColorScheme(),

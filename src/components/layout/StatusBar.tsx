@@ -126,13 +126,13 @@ export const StatusBar: React.FC = React.memo(() => {
           title={saveTitle}
           className={`h-5 px-2 flex items-center gap-1.5 whitespace-nowrap rounded-[2px] border ${
             saveStatus === 'error'
-              ? 'bg-[#2e111a] border-[#eb5a66]/60 text-[#ffb4b9]'
+              ? 'bg-[var(--danger-bg)] border-[var(--danger-border)]/60 text-[var(--danger-fg)]'
               : saveStatus === 'saving' || isDirty
               ? 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--accent-gold)]'
               : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-muted)]'
           }`}
         >
-          <span aria-hidden="true" className={`w-1.5 h-1.5 shrink-0 rounded-full ${saveStatus === 'error' ? 'bg-[#eb5a66]' : saveStatus === 'saving' ? 'bg-[var(--accent-gold)] animate-pulse' : isDirty ? 'bg-[var(--accent-gold)]' : 'bg-[var(--accent-sage,#7d9d7f)]'}`} />
+          <span aria-hidden="true" className={`w-1.5 h-1.5 shrink-0 rounded-full ${saveStatus === 'error' ? 'bg-[var(--state-danger)]' : saveStatus === 'saving' ? 'bg-[var(--accent-gold)] animate-pulse' : isDirty ? 'bg-[var(--accent-gold)]' : 'bg-[var(--accent-sage,#7d9d7f)]'}`} />
           <span>{saveLabel}</span>
         </span>
       </span>
