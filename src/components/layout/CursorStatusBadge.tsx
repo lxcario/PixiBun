@@ -4,19 +4,27 @@ import { useStudioStore } from '@/stores/studioStore';
 
 type CursorListener = (coords: Point | null) => void;
 const listeners = new Set<CursorListener>();
+let current: Point | null = null;
 
 /**
  * Updates the HUD cursor badge without triggering React re-renders in CenterViewport.
+ * Pointer moves within the same canvas pixel are dropped: at high zoom most moves stay
+ * inside one pixel, and re-rendering every subscriber for each one can flood React with
+ * updates when a backlog of pointer events is dispatched at once.
  */
 export function updateCursorHUD(coords: Point | null) {
-  listeners.forEach((fn) => fn(coords));
+  if (coords === current || (coords && current && coords.x === current.x && coords.y === current.y)) return;
+  current = coords ? { x: coords.x, y: coords.y } : null;
+  listeners.forEach((fn) => fn(current));
 }
 
 /**
- * Subscribe to cursor HUD updates. Returns an unsubscribe function.
+ * Subscribe to cursor HUD updates; the handler first receives the current value.
+ * Returns an unsubscribe function.
  */
 export function subscribeCursorHUD(handler: CursorListener): () => void {
   listeners.add(handler);
+  handler(current);
   return () => {
     listeners.delete(handler);
   };
