@@ -4,66 +4,68 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Studio workspace](studio-workspace.md) · [All features](../features.md)
 
-The welcome page gives you a few gentle ways to begin: a blank canvas, a little starter friend, or a guided lesson. Its interactive demonstrations are a place to explore before opening your own drawing.
+The welcome page opens on a pixel town, then follows a drawing through sketching, lighting, movement and export. Its demos use their own sample state; they do not edit your Studio project. The screenshots below were captured on **2 October 2026** and show earlier layouts and download behavior. The [15 October review](../releases/2026-10-15-codebase-and-documentation.md) records the newer source.
 
-![The current welcome page and interactive pixel desk.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png)
+![The earlier welcome layout, captured on 2 October.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-overview.png)
 
 ## A small moment at the desk
 
-Try the desk lamp, pet the sleeping friend, or draw on the tiny sketchpad. Choose a sketchpad color and use **Clear** to start again. These details belong to the welcome scene; the sketchpad is temporary and **Open studio** does not carry its pixels into an editable project. Use the full Studio, or [Pocket Doodle Pad](learning-and-playground.md#pocket-doodle-pad), for a drawing you can export.
+Tap Bun in the opening scene for a reaction, or drag in its sky to make temporary constellations. A tap during the opening fast-forwards it; the logo can replay the intro. Those sky marks are page-local scene state, with no project save/export path. The earlier lamp/pet/mini-sketchpad desk is no longer this homepage's interface. Use Studio or [Pocket Doodle Pad](learning-and-playground.md#pocket-doodle-pad) for editable/exportable artwork.
 
-Use the welcome-page theme control to change the scheme. Its navigation leads to Studio, Playground, the engine demonstrations, starter shelf and project story. Blank-canvas size choices create separate 16, 24, 32 and 48 px drawings after the current workspace can be checkpointed. The requested size is consumed from the URL so reload retains your saved edits. Studio's canvas-size dialog offers more sizes.
+The Daylight switch changes Night/Day for the saved studio style. Where supported, a circular reveal and pixel sun/moon accompany the change; reduced motion and unsupported browsers switch immediately. The scenes and canvas demos read the selected palette. Navigation leads to Playground, Studio, Tour, Engine, Promises, Shelf and Story. The creation story tracks scrolling; its chapter controls can jump through sketch, lamp, frames and sheet. Reduced motion stops timed scene motion while scrolling still moves through the story.
 
-![The current four feature cards, with drawing, rotation, animation and export explanations.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-pillars.png)
-
-If your device prefers reduced motion, the welcome panels reveal without timed movement and the lighting sample starts with **Auto-Orbit** stopped. You can still start or stop it yourself. This preference is read at startup; reload after changing your device setting.
+The final drawing invitation has 16, 24, 32 and 48 px blank-canvas choices. Studio checkpoints an existing workspace before creating that separate drawing and consumes the URL request, so reload keeps saved edits. Studio's Canvas size dialog provides additional choices.
 
 ## Choose a starter friend
 
-![The current four-character starter shelf.](../assets/screenshots/2026-10-02-feature-guide/starter-shelf.png)
+![The earlier four-character starter shelf.](../assets/screenshots/2026-10-02-feature-guide/starter-shelf.png)
 
-Choose **Give it a try** beneath **Hearth Ghost**, **Little Shroom**, **Bun** or **Little Lantern**. Each opens its 16×16 raster artwork in a separate drawing after Studio restores and checkpoints the current project. Failed saving or unfinished recovery, motion, floating artwork or Co-Draw prevents replacement. The starter parameter is removed after opening, so saving and reloading retains your edits. Existing saved projects remain available in Gallery. Save and back up important work before changing projects or routes. A starter is not a layered production game kit or a finished lesson.
+Choose **Give it a try** beneath **Hearth Ghost**, **Little Shroom**, **Bun** or **Little Lantern**. Each opens its 16×16 raster in a separate drawing after restore/checkpoint. Failed saving or unfinished recovery, motion, floating artwork or Co-Draw prevents replacement. The starter parameter is removed after opening. Your prior projects remain in Projects; keep a portable backup of important artwork.
 
 ## Four demonstrations to explore
 
-Select a tab in the engine showcase, or use its previous/next controls. These examples have their own sample state. Changing a demonstration does not relight, rotate or export your current Studio project.
+The workbench tabs are **Light & shadow**, **Smooth rotation**, **Photo to pixels** and **Into your game**. Previous/next controls switch them. Each offers three **Try this** tasks whose ticks track controls tried during this page session, plus an expandable **How it works** explanation. Ticks are navigation feedback, not saved learning progress or participant evidence.
 
 ### 2.5D Lighting & Shadows
 
-![Welcome-page lighting demonstration and its material controls.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-photometric.png)
+The current tab is named **Light & shadow**.
 
-1. Choose a sample sprite and material, then drag the light control or try auto-orbit.
-2. Compare **OKLCH Cel Shaded** and **Normal Field (RGB)**, and **Tone: Smooth / Stepped Cel**.
-3. Try **Cast Ray**, **Drop AO** or **None** for the ground shadow. Observe how a small sprite reads under a different light.
+![The 2 October lighting demonstration.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-photometric.png)
 
-The surface is estimated from bounded sprite data. This is a 2.5D example, not an imported 3D mesh or proof that every image has physically correct depth. To work on your own art, follow [lighting and surface sculpting](lighting-and-surfaces.md).
+Choose a sample/material, drag the lamp or try auto-orbit. Compare color shading with the RGB normal field, smooth/stepped tones and Cast Ray/Drop AO/None shadows. Reduced motion starts auto-orbit stopped. The surface is estimated from bounded sprite data; it is a stylized 2.5D demonstration rather than imported 3D geometry or physically measured depth. Use [lighting and surface sculpting](lighting-and-surfaces.md) on your own art.
 
 ### RotSprite Precision
 
-![Welcome-page RotSprite comparison with the nearest-neighbor result.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-rotsprite.png)
+The current tab is named **Smooth rotation**.
 
-Choose the sword, ghost or Bun, change the angle, try a preset or turn on Spin. Compare the RotSprite result with nearest-neighbor rotation. This makes edge differences visible; it is not a measured guarantee that every shape improves. The Studio's [rotation cleanup controls](pixitools-cleanup-and-tiles.md#clean-rotation-and-lines) operate on your selected layer.
+![The 2 October rotation comparison.](../assets/screenshots/2026-10-02-feature-repairs-phase5-welcome/welcome-rotsprite.png)
 
-### Image Synthesis
+Choose the sword, ghost or Bun, adjust the angle, try presets or Spin, and compare RotSprite with nearest-neighbor. Current free-angle rotation uses the contour-aware v3 engine. These examples expose edge differences rather than proving that all shapes improve. [Studio rotation and cleanup](pixitools-cleanup-and-tiles.md#clean-rotation-and-lines) works on your selected layer.
 
-![Welcome-page image simplification example and sampling controls.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png)
+### Photo to pixels
 
-Choose the mountain or hearth scene, then a 16, 24 or 32 px target. Compare **Preserve edges** (salient-box sampling) with **Nearest neighbor**, eight/sixteen colors with true color, and None / Atkinson / Bayer dithering. The palette below shows extracted colors from the example. Edge weighting uses a local forward-difference estimate; it can give outlines more influence, but it does not guarantee that small details survive downsampling.
+<a id="image-synthesis"></a>
 
-The sample controls run on your device, with linear-light color averaging and bounded OKLab color grouping. These are locally generated sample scenes processed by image algorithms. This panel does not upload your photograph or call an image-generation model. Use [image import](studio-workspace.md#bring-in-an-image) for your own file, or [Simplify](variations-and-scenes.md#simplify) for an existing Studio layer.
+![The 2 October image simplification sample.](../assets/screenshots/2026-10-02-feature-repairs-phase5/welcome-pixelize.png)
+
+Choose the mountain or hearth scene and a 16, 24 or 32 px target. Compare Preserve edges sampling with Nearest neighbor, eight/sixteen colors with true color, and None/Atkinson/Bayer dithering. The extracted palette comes from that generated sample scene. Linear-light averaging and bounded OKLab grouping run on-device; no photo upload or generative model is involved. Edge weighting cannot guarantee retention of every detail. Use [image import](studio-workspace.md#bring-in-an-image) for your file or [Simplify](variations-and-scenes.md#simplify) for a Studio layer.
 
 ### Game Engine Exports
 
-![Welcome APNG notes with an explicitly labeled text download.](../assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-apng-notes.png)
+The current tab is named **Into your game**. It shows an independent four-frame **20×22** Bun loop, with holds **125, 125, 250 and 125 ms** and an **80×22** sprite sheet.
 
-![Welcome GIF notes explain palette color and timing limits.](../assets/screenshots/2026-10-02-feature-repairs-phase4/welcome-gif-notes.png)
+| Choice | Current download | Import boundary |
+| --- | --- | --- |
+| Godot 4 | ZIP with bun_hop.png, bun_spriteframes.tres and README.txt | Place the files together and assign SpriteFrames to AnimatedSprite2D; actual consumer/version qualification is separate |
+| Unity | ZIP with bun_hop.png, bun_atlas.json and README.txt | Configure Point filtering/no compression and slice 20×22 cells; the JSON is atlas metadata, not a Unity project or controller |
+| Phaser 3 | ZIP with the same sheet, multiatlas metadata/animation description and instructions | Load the atlas and create the hop animation from its metadata |
+| APNG | bun_hop.apng | Actual encoded looping RGBA animation |
+| GIF | bun_hop.gif | Actual palette animation, with centisecond-quantized holds |
 
-Choose **Godot 4**, **Unity**, **Phaser 3**, **APNG** or **GIF** to read a sample. Engine tabs offer **Copy sample / Download sample** for example resource text; those examples contain no image. APNG/GIF offer **Copy notes / Download notes (.txt)** and a visible text-only explanation. These downloads describe the formats. To make a playable animation from your drawing, use Studio.
-
-For your actual drawing, open **Studio → Export**. The [export guide](exporting.md) walks through every current output, including playable GIF/APNG and the bounded Godot kit. A welcome-page example does not qualify a current engine integration or prove that a user's exported project opens correctly.
+**Copy metadata** appears for game formats; **Download game kit**, **Download APNG** or **Download GIF** creates the listed file. The older APNG/GIF text-note screenshots describe an earlier interface and are superseded. Downloading a sample is separate from exporting your drawing and does not qualify every engine importer. Open **Studio → Export** for your project; the [export guide](exporting.md) covers its outputs.
 
 ## Ready to draw
 
-For a first small drawing, open Studio, select Pen, choose a color and place a few pixels. For pose-by-pose practice, visit the [Playground lessons](learning-and-playground.md). Keep an [editable project backup](artwork-safety.md) when the drawing starts to matter to you.
+Open Studio, select Pen, choose a color and place a few pixels. For coached practice, visit [Playground](learning-and-playground.md). Keep an [editable project backup](artwork-safety.md) when the drawing matters to you.
 
-Sources: [moonlit atelier](../../src/components/landing/night/NightHero.tsx), [starter artwork](../../src/lib/art/starterTemplates.ts), [showcase navigation](../../src/components/landing/AtelierEngineShowcase.tsx), [lighting demo](../../src/components/landing/showcase/PhotometricShowcase.tsx), [rotation demo](../../src/components/landing/showcase/RotSpriteShowcase.tsx), [image demo](../../src/components/landing/showcase/PixelizeShowcase.tsx), [download behavior](../../src/components/landing/showcase/EngineExportShowcase.tsx).
+Sources: [homepage](../../src/app/page.tsx), [opening scene](../../src/components/landing/night/NightHero.tsx), [creation story](../../src/components/landing/night/NightStory.tsx), [navigation](../../src/components/landing/LandingNav.tsx), [starters](../../src/lib/art/starterTemplates.ts), [workbench](../../src/components/landing/AtelierEngineShowcase.tsx), [lighting](../../src/components/landing/showcase/PhotometricShowcase.tsx), [rotation](../../src/components/landing/showcase/RotSpriteShowcase.tsx), [image conversion](../../src/components/landing/showcase/PixelizeShowcase.tsx), [download creation](../../src/components/landing/showcase/showcaseExport.ts).

@@ -1,41 +1,67 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'motion/react';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
+import { useThemePalette } from '@/lib/theme/useThemePalette';
+import type { ThemePalette } from '@/lib/theme/registry';
 import { CottageBackdrop } from './CottageBackdrop';
+
+/**
+ * The tour: one continuous little film, scrubbed by scrolling. It opens zoomed
+ * all the way into a single pixel, pulls back while the ghost inks itself,
+ * dims the room for the lamp, fans out into animation frames and finally
+ * packs the frames into a sprite sheet. Nothing cuts or fades between
+ * chapters: every stage of the drawing is a function of the scroll position.
+ */
 
 const CHAPTERS = [
   {
     kicker: '01 · sketch',
     title: 'Start with a single pixel.',
     body: 'Pick a colour and tap the grid. Pencil, lines, fills, smooth curves and mirror symmetry are there when you want them, and quiet when you don’t.',
-    accent: '#ffd285',
+    accent: 'var(--primary-bg)',
   },
   {
     kicker: '02 · light',
     title: 'Then give it a lamp.',
     body: 'Move a little light around your sprite and watch the shading follow, with real lighting and cast shadows painted right onto the pixels, using colors from your own palette.',
-    accent: '#f0be7c',
+    accent: 'var(--accent-gold)',
   },
   {
     kicker: '03 · move',
     title: 'Make it breathe.',
     body: 'Flip through a few frames with onion skin to guide your hand. Tiny loops are the best loops.',
-    accent: '#dcabdf',
+    accent: 'var(--accent-plum)',
   },
   {
     kicker: '04 · take it home',
     title: 'Take it home.',
     body: 'Export a PNG, a sprite sheet, a GIF or APNG, or a Godot kit for your game. Everything stays on your device, and nobody asks you to sign up.',
-    accent: '#a8e092',
+    accent: 'var(--accent-sage)',
   },
 ];
 
-const W = 64;
-const H = 48;
-const GX = 24;
-const GY = 12;
+/** Stage resolution in canvas pixels; CSS scales it up crisply. */
+const W = 192;
+const H = 144;
+/** Canvas pixels per art pixel once the camera has pulled back. */
+const REST = 5;
+/** Canvas pixels per art pixel at the very start: one pixel fills the stage. */
+const CLOSE = 156;
+/** Where the sprite's center sits on the stage. */
+const CX = 96;
+const CY = 66;
 const BOB = [0, -1, -2, -1];
 
 const GHOST = STARTER_TEMPLATES.find((t) => t.id === 'hearth-ghost')!;
@@ -47,6 +73,7 @@ GHOST.rows.forEach((row, y) => {
     if (c) PIXELS.push({ x, y, c, key: row[x] });
   }
 });
+/** Outline first, traced around the body, then the fill top to bottom: the way people ink. */
 const INK_ORDER = [...PIXELS].sort((a, b) => {
   const ao = a.key === 'o' ? 0 : 1;
   const bo = b.key === 'o' ? 0 : 1;
@@ -54,9 +81,17 @@ const INK_ORDER = [...PIXELS].sort((a, b) => {
   if (ao === 0) return Math.atan2(a.y - 7, a.x - 7.5) - Math.atan2(b.y - 7, b.x - 7.5);
   return a.y - b.y || a.x - b.x;
 });
+const FIRST = INK_ORDER[0];
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
-const ease = (p: number) => 1 - Math.pow(1 - p, 3);
+const smooth = (x: number) => {
+  const v = clamp01(x);
+  return v * v * (3 - 2 * v);
+};
+const easeOut = (p: number) => 1 - Math.pow(1 - clamp01(p), 3);
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+/** 0 → 1 over [a, b] of a chapter's local progress. */
+const span = (v: number, a: number, b: number) => smooth((v - a) / (b - a));
 
 function rgb(hex: string) {
   const n = parseInt(hex.slice(1), 16);
@@ -68,282 +103,402 @@ function mix(a: string, b: string, t: number) {
   return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`;
 }
 
-function drawBackdrop(ctx: CanvasRenderingContext2D) {
-  for (let y = 0; y < H; y += 4) {
-    for (let x = 0; x < W; x += 4) {
-      ctx.fillStyle = ((x + y) / 4) % 2 ? '#221a35' : '#1c152d';
-      ctx.fillRect(x, y, 4, 4);
-    }
-  }
+export function storyChapter(progress: number): number {
+  return Math.min(3, Math.floor(clamp01(progress) * 4));
 }
 
-function drawGhost(ctx: CanvasRenderingContext2D, ox: number, oy: number, alpha = 1, tint?: string) {
-  ctx.globalAlpha = alpha;
-  for (const p of PIXELS) {
-    ctx.fillStyle = tint ? (p.key === 'o' ? tint : mix(p.c, tint, 0.55)) : p.c;
-    ctx.fillRect(ox + p.x, oy + p.y, 1, 1);
+/** The chapter the words rest on: they hold still while you read, then glide to the next one. */
+export function restingChapter(progress: number): number {
+  const f = clamp01(progress) * 4;
+  const i = Math.min(3, Math.floor(f));
+  return Math.min(3, i + smooth((f - i - 0.74) / 0.26));
+}
+
+/** Everything the stage shows, as a pure function of scroll progress. */
+interface Shot {
+  /** Canvas pixels per art pixel, and the art point the camera centers on. */
+  s: number;
+  fx: number;
+  fy: number;
+  inked: number;
+  paper: number;
+  grid: number;
+  pencil: number;
+  swatches: number;
+  dark: number;
+  lit: number;
+  lampAngle: number;
+  spread: number;
+  onion: number;
+  play: number;
+  timeline: number;
+  sheet: number;
+  parcels: number;
+}
+
+export function storyShot(progress: number, t: number): Shot {
+  const f = clamp01(progress) * 4;
+  const c0 = clamp01(f);
+  const c1 = clamp01(f - 1);
+  const c2 = clamp01(f - 2);
+  const c3 = clamp01(f - 3);
+  const zoom = span(c0, 0.02, 0.4);
+  const s = CLOSE * Math.pow(REST / CLOSE, zoom);
+  const inked = 1 + (INK_ORDER.length - 1) * span(c0, 0.12, 0.9);
+  const lit = span(c1, 0.08, 0.32) * (1 - span(c2, 0, 0.3));
+  return {
+    s,
+    fx: lerp(FIRST.x + 0.5, 8, zoom),
+    fy: lerp(FIRST.y + 0.5, 8, zoom),
+    inked,
+    paper: 1 - span(c1, 0, 0.3) * 0.55 - span(c3, 0, 0.4) * 0.3,
+    grid: clamp01((s - 12) / 36),
+    pencil: (1 - span(c0, 0.86, 0.98)) * span(c0, 0.06, 0.14),
+    swatches: span(c0, 0.3, 0.45) * (1 - span(c1, 0, 0.2)),
+    dark: 0.55 * span(c1, 0, 0.22) * (1 - span(c2, 0, 0.3)),
+    lit,
+    lampAngle: -Math.PI * 0.95 + c1 * Math.PI * 1.9 + Math.sin(t / 1500) * 0.05,
+    spread: span(c2, 0.04, 0.32) * (1 - span(c2, 0.5, 0.74)),
+    onion: span(c2, 0.55, 0.75) * (1 - span(c3, 0, 0.2)),
+    play: span(c2, 0.5, 0.65),
+    timeline: span(c2, 0.36, 0.56) * (1 - span(c3, 0.1, 0.3)),
+    sheet: easeOut((c3 - 0.06) / 0.44),
+    parcels: c3,
+  };
+}
+
+interface SpriteOpts {
+  inked?: number;
+  alpha?: number;
+  tint?: string;
+  lit?: number;
+  light?: [number, number, number];
+  bob?: number;
+}
+
+/** Draws the ghost with its art center (8, 8) at (cx, cy), `s` canvas pixels per art pixel. */
+function drawSprite(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, palette: ThemePalette, opts: SpriteOpts = {}) {
+  const { inked = INK_ORDER.length, alpha = 1, tint, lit = 0, light, bob = 0 } = opts;
+  const count = Math.min(INK_ORDER.length, Math.ceil(inked));
+  for (let i = 0; i < count; i++) {
+    const px = INK_ORDER[i];
+    // The newest pixel lands with a little pop.
+    const pop = clamp01(inked - i);
+    const grow = pop < 1 ? 1 + (1 - easeOut(pop)) * 0.7 : 1;
+    let color = tint ? (px.key === 'o' ? tint : mix(px.c, tint, 0.55)) : px.c;
+    if (lit > 0 && light && px.key !== 'o') {
+      const nx = (px.x - 7.5) / 8;
+      const ny = (px.y - 7) / 8;
+      const nz = Math.sqrt(Math.max(0.05, 1 - nx * nx - ny * ny));
+      const [lx, ly, lz] = light;
+      const d = clamp01((nx * lx + ny * ly + nz * lz) / Math.hypot(lx, ly, lz));
+      const shaded = d > 0.82 ? mix(px.c, palette.primaryShine, 0.6) : mix(px.c, palette.sunken, (1 - d) * 0.75);
+      color = lit >= 1 ? shaded : mix(rgbHex(color), rgbHex(shaded), lit);
+    }
+    const size = s * grow;
+    const x0 = Math.round(cx + (px.x - 8) * s + (s - size) / 2);
+    const y0 = Math.round(cy + (px.y - 8 + bob) * s + (s - size) / 2);
+    const x1 = Math.round(cx + (px.x - 8) * s + (s + size) / 2);
+    const y1 = Math.round(cy + (px.y - 8 + bob) * s + (s + size) / 2);
+    ctx.globalAlpha = alpha * (pop < 1 ? Math.max(0.35, pop) : 1);
+    ctx.fillStyle = color;
+    ctx.fillRect(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
   }
   ctx.globalAlpha = 1;
 }
 
-/** Draws one chapter at progress `cp` (0..1) onto a transparent canvas. `t` is wall time for idle loops. */
-function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: number, t: number) {
-  ctx.clearRect(0, 0, W, H);
+/** `mix()` returns rgb(); blending again needs hex. */
+function rgbHex(color: string): string {
+  if (color.startsWith('#')) return color;
+  const [r, g, b] = color.slice(4, -1).split(',').map(Number);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
 
-  if (chapter === 0) {
-    // A little sheet of paper with a dot grid, then pixels inked one by one, pencil riding the newest one.
-    ctx.fillStyle = '#0f0a1a';
-    ctx.fillRect(GX - 1, GY, 20, 19);
-    ctx.fillStyle = '#f6ead6';
-    ctx.fillRect(GX - 2, GY - 2, 20, 20);
-    ctx.fillStyle = '#e2cfb2';
-    for (let y = 0; y < 16; y += 2) {
-      for (let x = 0; x < 16; x += 2) ctx.fillRect(GX + x, GY + y, 1, 1);
+function ditherDisc(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, color: string, strength: number) {
+  ctx.fillStyle = color;
+  for (let dy = -Math.ceil(ry); dy <= ry; dy++) {
+    for (let dx = -Math.ceil(rx); dx <= rx; dx++) {
+      const d = Math.hypot(dx / rx, dy / ry);
+      if (d > 1) continue;
+      const level = (1 - d) * strength;
+      const bayer = ((dx & 1) * 2 + (dy & 1)) / 4;
+      if (level <= bayer) continue;
+      ctx.fillRect(Math.round(x + dx), Math.round(y + dy), 1, 1);
     }
-    const inked = clamp01(cp) * INK_ORDER.length;
-    const n = Math.ceil(inked);
-    for (let i = 0; i < Math.floor(inked); i++) {
-      const px = INK_ORDER[i];
-      ctx.fillStyle = px.c;
-      ctx.fillRect(GX + px.x, GY + px.y, 1, 1);
+  }
+}
+
+function render(ctx: CanvasRenderingContext2D, shot: Shot, t: number, palette: ThemePalette) {
+  const { s } = shot;
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = palette.sunken;
+  ctx.fillRect(0, 0, W, H);
+
+  // The sprite's own canvas: a chequered sheet with a margin, panned and zoomed by the camera.
+  const cx = CX + (8 - shot.fx) * s;
+  const cy = CY + (8 - shot.fy) * s;
+  const toX = (ax: number) => Math.round(cx + (ax - 8) * s);
+  const toY = (ay: number) => Math.round(cy + (ay - 8) * s);
+  const left = Math.max(-2, Math.floor(8 + (0 - cx) / s));
+  const right = Math.min(18, Math.ceil(8 + (W - cx) / s));
+  const top = Math.max(-2, Math.floor(8 + (0 - cy) / s));
+  const bottom = Math.min(18, Math.ceil(8 + (H - cy) / s));
+  ctx.globalAlpha = shot.paper;
+  for (let ay = top; ay < bottom; ay++) {
+    for (let ax = left; ax < right; ax++) {
+      ctx.fillStyle = (ax + ay) & 1 ? palette.surface : palette.raised;
+      ctx.fillRect(toX(ax), toY(ay), toX(ax + 1) - toX(ax), toY(ay + 1) - toY(ay));
     }
-    const tip = INK_ORDER[Math.max(0, n - 1)];
-    if (inked < INK_ORDER.length - 0.5) {
-      const x = GX + tip.x + 1;
-      const y = GY + tip.y - 1;
-      // Little pixel pencil
-      ctx.fillStyle = '#3a2e4c';
-      for (let k = 0; k < 6; k++) ctx.fillRect(x + k, y - k, 2, 2);
-      ctx.fillStyle = '#f0be7c';
-      for (let k = 1; k < 5; k++) ctx.fillRect(x + k, y - k, 1, 1);
-      ctx.fillStyle = '#e08ca6';
-      ctx.fillRect(x + 6, y - 6, 2, 2);
-      ctx.fillStyle = '#fff3c4';
-      ctx.fillRect(x, y, 1, 1);
-    }
-    // Palette strip
-    ['#3a2e4c', '#ede8f4', '#ffffff', '#f0be7c', '#e08ca6', '#cdbfdf'].forEach((c, i) => {
-      const active = tip && tip.c === c;
-      ctx.fillStyle = active ? '#ffd285' : '#3a2e4c';
-      ctx.fillRect(14 + i * 6, H - 7, 6, 5);
-      ctx.fillStyle = c;
-      ctx.fillRect(15 + i * 6, H - 6, 4, 3);
-    });
-    return;
+  }
+  ctx.globalAlpha = 1;
+  if (shot.grid > 0) {
+    ctx.globalAlpha = shot.grid * 0.6;
+    ctx.fillStyle = palette.border;
+    for (let ax = left; ax <= right; ax++) ctx.fillRect(toX(ax), 0, 1, H);
+    for (let ay = top; ay <= bottom; ay++) ctx.fillRect(0, toY(ay), W, 1);
+    ctx.globalAlpha = 1;
   }
 
-  if (chapter === 1) {
-    // The lamp drifts slowly back and forth; every pixel is shaded by a fake normal facing out of the sprite.
-    const sweep = 0.5 - 0.5 * Math.cos(t / 3400);
-    const angle = -Math.PI * 0.9 + sweep * Math.PI * 1.8;
-    const lx = Math.cos(angle);
-    const ly = Math.sin(angle) * 0.7 - 0.3;
-    const lz = 0.55;
-    const len = Math.hypot(lx, ly, lz);
-    const ground = GY + 17;
-    // Cast shadow away from the lamp
-    const sx = Math.round(GX + 8 - lx * 7);
-    for (let dx = -7; dx <= 7; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        if ((dx * dx) / 49 + (dy * dy) / 2.2 > 1) continue;
-        if ((dx + dy) & 1) continue;
-        ctx.fillStyle = '#0f0a1a';
-        ctx.fillRect(sx + dx, ground + dy, 1, 1);
-      }
-    }
-    for (const px of PIXELS) {
-      if (px.key === 'o') {
-        ctx.fillStyle = px.c;
-      } else {
-        const nx = (px.x - 7.5) / 8;
-        const ny = (px.y - 7) / 8;
-        const nz = Math.sqrt(Math.max(0.05, 1 - nx * nx - ny * ny));
-        const d = (nx * lx + ny * ly + nz * lz) / len;
-        const light = clamp01(d);
-        ctx.fillStyle = light > 0.82 ? mix(px.c, '#fff3c4', 0.6) : mix(px.c, '#3a2350', (1 - light) * 0.75);
-      }
-      ctx.fillRect(GX + px.x, GY + px.y, 1, 1);
-    }
-    // The lamp itself, with a dithered halo
-    const lampX = Math.round(GX + 8 + Math.cos(angle) * 20);
-    const lampY = Math.round(GY + 8 + Math.sin(angle) * 14);
-    for (let dy = -5; dy <= 5; dy++) {
-      for (let dx = -5; dx <= 5; dx++) {
-        const dd = Math.hypot(dx, dy);
-        if (dd > 5 || (dx + dy) & 1) continue;
-        ctx.fillStyle = `rgba(255, 210, 133, ${0.35 * (1 - dd / 5)})`;
-        ctx.fillRect(lampX + dx, lampY + dy, 1, 1);
-      }
-    }
-    ctx.fillStyle = '#fff3c4';
-    ctx.fillRect(lampX - 1, lampY - 1, 3, 3);
-    ctx.fillStyle = '#ffd285';
-    ctx.fillRect(lampX, lampY - 2, 1, 1);
-    ctx.fillRect(lampX, lampY + 2, 1, 1);
-    ctx.fillRect(lampX - 2, lampY, 1, 1);
-    ctx.fillRect(lampX + 2, lampY, 1, 1);
-    return;
+  // The room dims for the lamp.
+  if (shot.dark > 0) {
+    ctx.globalAlpha = shot.dark;
+    ctx.fillStyle = palette.ink;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
   }
 
-  if (chapter === 2) {
-    const frame = Math.floor(t / 340) % 4;
-    const prev = (frame + 3) % 4;
-    const next = (frame + 1) % 4;
-    drawGhost(ctx, GX, GY + BOB[prev] + 1, 0.2, '#c792df');
-    drawGhost(ctx, GX, GY + BOB[next] + 1, 0.14, '#7fae6b');
-    drawGhost(ctx, GX, GY + BOB[frame] + 1);
-    // Timeline strip
+  const lampX = CX + Math.cos(shot.lampAngle) * 72;
+  const lampY = CY + Math.sin(shot.lampAngle) * 46;
+  const light: [number, number, number] = [Math.cos(shot.lampAngle), Math.sin(shot.lampAngle) * 0.7 - 0.3, 0.55];
+  if (shot.lit > 0) {
+    ctx.globalAlpha = shot.lit * 0.5;
+    ditherDisc(ctx, lampX, lampY, 26, 26, palette.primary, 1);
+    ctx.globalAlpha = shot.lit * 0.35;
+    // A cast shadow on the floor, thrown away from the lamp.
+    ditherDisc(ctx, CX - light[0] * 26, CY + 8 * REST + 3, 30, 5, palette.ink, 1.4);
+    ctx.globalAlpha = 1;
+  }
+
+  // Frames: one ghost while sketching and lighting; four when it learns to move.
+  const frame = shot.play > 0 ? Math.floor(t / 170) % 4 : 0;
+  if (shot.sheet > 0) {
+    // Into a sprite sheet along the top, then little parcels drop onto the shelf.
+    const k = shot.sheet;
+    ctx.globalAlpha = k;
+    ctx.fillStyle = palette.primaryFg;
+    ctx.fillRect(0, 8, W, 52);
+    ctx.globalAlpha = 1;
     for (let i = 0; i < 4; i++) {
-      const x = 15 + i * 9;
-      ctx.fillStyle = i === frame ? '#ffd285' : '#3a2e4c';
-      ctx.fillRect(x, H - 9, 8, 7);
-      ctx.fillStyle = i === frame ? '#2a1945' : '#251c38';
-      ctx.fillRect(x + 1, H - 8, 6, 5);
-      ctx.fillStyle = '#ede8f4';
-      ctx.fillRect(x + 3, H - 7 + (BOB[i] < -1 ? 0 : 1), 2, 2);
+      const x = lerp(CX, 24 + i * 48, k);
+      const y = lerp(CY, 34, k);
+      const sc = lerp(REST, 2.6, k);
+      drawSprite(ctx, x, y, sc, palette, { bob: BOB[i] * k });
+      if (k > 0.92) {
+        ctx.fillStyle = palette.primary;
+        ctx.fillRect(i * 48, 8, 1, 52);
+      }
     }
-    return;
+    const shelf = H - 12;
+    ctx.fillStyle = palette.frame;
+    ctx.fillRect(14, shelf, W - 28, 3);
+    [palette.accent, palette.accent3, palette.positive].forEach((c, i) => {
+      const p = easeOut((shot.parcels - 0.45 - i * 0.1) / 0.3);
+      if (p <= 0) return;
+      const x = 46 + i * 40;
+      const y = Math.round(lerp(60, shelf - 18, p));
+      ctx.fillStyle = palette.border;
+      ctx.fillRect(x - 2, y - 2, 30, 22);
+      ctx.fillStyle = c;
+      ctx.fillRect(x, y, 26, 18);
+      ctx.fillStyle = palette.primaryShine;
+      ctx.fillRect(x + 11, y, 4, 18);
+      ctx.fillRect(x, y + 7, 26, 3);
+    });
+  } else if (shot.spread > 0.001) {
+    // The ghost fans out into four frames like cards on the desk, then gathers back up.
+    const k = shot.spread;
+    const sc = lerp(REST, 2.7, k);
+    for (let i = 0; i < 4; i++) {
+      const x = CX + (i - 1.5) * 46 * k;
+      const y = CY - 4 * k;
+      if (k > 0.15) {
+        ctx.globalAlpha = k;
+        ctx.fillStyle = palette.border;
+        ctx.fillRect(Math.round(x - 25), Math.round(y - 27), 50, 56);
+        ctx.fillStyle = palette.raised;
+        ctx.fillRect(Math.round(x - 23), Math.round(y - 25), 46, 52);
+        ctx.fillStyle = i === 0 ? palette.primary : palette.muted;
+        for (let d = 0; d <= i; d++) ctx.fillRect(Math.round(x - 20 + d * 4), Math.round(y + 21), 2, 2);
+        ctx.globalAlpha = 1;
+      }
+      drawSprite(ctx, x, y, sc, palette, { bob: BOB[i] * k, alpha: i === 0 ? 1 : k });
+    }
+  } else {
+    if (shot.onion > 0) {
+      drawSprite(ctx, cx, cy, s, palette, { bob: BOB[(frame + 3) % 4], alpha: 0.22 * shot.onion, tint: palette.accent2 });
+      drawSprite(ctx, cx, cy, s, palette, { bob: BOB[(frame + 1) % 4], alpha: 0.16 * shot.onion, tint: palette.positive });
+    }
+    drawSprite(ctx, cx, cy, s, palette, { inked: shot.inked, lit: shot.lit, light, bob: BOB[frame] * shot.play });
   }
 
-  // Chapter 3: four frames glide out into a sprite sheet.
-  const k = ease(clamp01(cp * 1.2));
-  const sheetY = 6;
-  if (k > 0.15) {
-    ctx.fillStyle = '#2a1945';
-    ctx.fillRect(0, sheetY - 1, W, 18);
+  // The lamp itself.
+  if (shot.lit > 0) {
+    ctx.globalAlpha = shot.lit;
+    ctx.fillStyle = palette.ink;
+    ctx.fillRect(Math.round(lampX) - 4, Math.round(lampY) - 4, 9, 9);
+    ctx.fillStyle = palette.primaryShine;
+    ctx.fillRect(Math.round(lampX) - 3, Math.round(lampY) - 3, 7, 7);
+    ctx.fillStyle = palette.primary;
+    ctx.fillRect(Math.round(lampX) - 1, Math.round(lampY) - 7, 3, 3);
+    ctx.fillRect(Math.round(lampX) - 1, Math.round(lampY) + 5, 3, 3);
+    ctx.fillRect(Math.round(lampX) - 7, Math.round(lampY) - 1, 3, 3);
+    ctx.fillRect(Math.round(lampX) + 5, Math.round(lampY) - 1, 3, 3);
+    ctx.globalAlpha = 1;
   }
-  for (let i = 0; i < 4; i++) {
-    const x = Math.round(GX + (i * 16 - GX) * k);
-    const y = Math.round(GY + (sheetY - GY) * k);
-    drawGhost(ctx, x, y + BOB[i] + 1);
-    if (k > 0.95) {
-      ctx.fillStyle = 'rgba(255, 210, 133, 0.5)';
-      ctx.fillRect(i * 16, sheetY - 1, 1, 18);
+
+  // The pencil rides the newest pixel, at a constant size whatever the zoom.
+  if (shot.pencil > 0) {
+    const tip = INK_ORDER[Math.max(0, Math.ceil(shot.inked) - 1)];
+    const x = Math.round(cx + (tip.x - 8 + 1) * s);
+    const y = Math.round(cy + (tip.y - 8) * s) - Math.round((1 - shot.pencil) * 12);
+    ctx.globalAlpha = shot.pencil;
+    ctx.fillStyle = palette.ink;
+    for (let k = 0; k < 9; k++) ctx.fillRect(x + k * 2 - 1, y - k * 2 - 3, 5, 5);
+    ctx.fillStyle = palette.accent;
+    for (let k = 1; k < 7; k++) ctx.fillRect(x + k * 2, y - k * 2 - 2, 3, 3);
+    ctx.fillStyle = palette.accent2;
+    ctx.fillRect(x + 14, y - 17, 4, 4);
+    ctx.fillStyle = palette.primaryShine;
+    ctx.fillRect(x, y - 2, 2, 2);
+    ctx.globalAlpha = 1;
+  }
+
+  // The palette strip, its active colour following the pencil.
+  if (shot.swatches > 0) {
+    const tip = INK_ORDER[Math.max(0, Math.ceil(shot.inked) - 1)];
+    const swatches = [...new Set(PIXELS.map((p) => p.c))].slice(0, 6);
+    const x0 = Math.round(CX - swatches.length * 8);
+    const y0 = H - 16 + Math.round((1 - shot.swatches) * 18);
+    ctx.globalAlpha = shot.swatches;
+    ctx.fillStyle = palette.border;
+    ctx.fillRect(x0 - 3, y0 - 3, swatches.length * 16 + 4, 16);
+    swatches.forEach((c, i) => {
+      ctx.fillStyle = tip.c === c ? palette.primary : palette.sunken;
+      ctx.fillRect(x0 + i * 16 - 1, y0 - 1, 14, 12);
+      ctx.fillStyle = c;
+      ctx.fillRect(x0 + i * 16 + 1, y0 + 1, 10, 8);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // The timeline slides up while the ghost breathes.
+  if (shot.timeline > 0) {
+    const y0 = H - Math.round(shot.timeline * 26);
+    ctx.fillStyle = palette.border;
+    ctx.fillRect(40, y0, 112, 26);
+    for (let i = 0; i < 4; i++) {
+      const x = 44 + i * 27;
+      ctx.fillStyle = i === frame && shot.play > 0 ? palette.primary : palette.sunken;
+      ctx.fillRect(x, y0 + 3, 24, 20);
+      drawSprite(ctx, x + 12, y0 + 12 + BOB[i], 1, palette);
     }
   }
-  // Little parcels flying to the shelf
-  const shelf = H - 8;
-  ctx.fillStyle = '#5b3a2a';
-  ctx.fillRect(6, shelf + 5, W - 12, 2);
-  ['#f0be7c', '#dcabdf', '#a8e092'].forEach((c, i) => {
-    const pp = ease(clamp01(cp * 1.4 - 0.3 - i * 0.14));
-    if (pp <= 0) return;
-    const x = Math.round(16 + i * 14);
-    const y = Math.round(sheetY + 16 + (shelf - sheetY - 16) * pp);
-    ctx.fillStyle = '#3a2e4c';
-    ctx.fillRect(x - 1, y - 1, 9, 7);
-    ctx.fillStyle = c;
-    ctx.fillRect(x, y, 7, 5);
-    ctx.fillStyle = '#fff3c4';
-    ctx.fillRect(x + 3, y, 1, 5);
-  });
 }
 
-// Scroll only chooses the chapter; each chapter then plays at its own calm,
-// fixed pace, so a fast flick of the wheel never rushes the drawing.
-const FADE_START = 0.78;
-const FADE_MS = 650;
-/** How long each chapter's one-time animation takes; 0 means it is an idle loop. */
-const PLAY_MS = [6500, 0, 0, 3200];
-const smoothstep = (x: number) => x * x * (3 - 2 * x);
-
-/** The chapter on show: it changes late in the chapter's share of the scroll, with its words. */
-export function storyChapter(progress: number): number {
-  const pos = clamp01(progress) * 4;
-  const chapter = Math.min(3, Math.floor(pos));
-  return chapter < 3 && pos - chapter > (FADE_START + 1) / 2 ? chapter + 1 : chapter;
-}
-
-function makeLayer() {
-  const c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
-  return c;
-}
-
-interface StageView {
-  from: number;
-  fromProgress: number;
-  to: number;
-  toProgress: number;
-  /** 0 shows `from`, 1 shows `to`. */
-  mix: number;
-}
-
-const DISSOLVE = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5],
-];
-
-/** Composites the stage; between chapters, pixels switch over in an ordered-dither pattern. */
-function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, HTMLCanvasElement], view: StageView, t: number) {
-  ctx.clearRect(0, 0, W, H);
-  drawBackdrop(ctx);
-  const toCtx = layers[1].getContext('2d', { willReadFrequently: true })!;
-  renderChapter(toCtx, view.to, view.toProgress, t);
-  if (view.from < 0 || view.mix >= 1) {
-    ctx.drawImage(layers[1], 0, 0);
-    return;
+function statusFor(progress: number, shot: Shot, t: number): string {
+  const chapter = storyChapter(progress);
+  if (chapter === 0) {
+    const n = Math.max(1, Math.floor(shot.inked));
+    return n === 1 ? 'zoom 3200% · 1 px' : `${n}/${INK_ORDER.length} px`;
   }
-  const fromCtx = layers[0].getContext('2d', { willReadFrequently: true })!;
-  renderChapter(fromCtx, view.from, view.fromProgress, t);
-  const out = ctx.getImageData(0, 0, W, H);
-  const a = fromCtx.getImageData(0, 0, W, H).data;
-  const b = toCtx.getImageData(0, 0, W, H).data;
-  const level = Math.floor(view.mix * 16);
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const src = DISSOLVE[y & 3][x & 3] < level ? b : a;
-      const o = (y * W + x) * 4;
-      if (src[o + 3] === 0) continue;
-      out.data[o] = src[o];
-      out.data[o + 1] = src[o + 1];
-      out.data[o + 2] = src[o + 2];
-      out.data[o + 3] = 255;
-    }
-  }
-  ctx.putImageData(out, 0, 0);
+  if (chapter === 1) return `☀ lamp ${Math.round((((shot.lampAngle * 180) / Math.PI) % 360 + 360) % 360)}°`;
+  if (chapter === 2) return shot.play > 0 ? `▶ frame ${(Math.floor(t / 170) % 4) + 1}/4` : '4 frames';
+  return shot.parcels > 0.85 ? 'saved ✓' : `exporting ${Math.round(clamp01(shot.parcels / 0.85) * 100)}%`;
 }
 
 const EXPORTS = ['sheet.png', 'loop.gif', 'godot kit'];
 
-/** One chapter's progress pip; its fill follows the scroll spring directly, without re-rendering. */
-const StoryPip: React.FC<{ index: number; active: boolean; accent: string; progress: MotionValue<number> }> = ({ index, active, accent, progress }) => {
-  const fill = useTransform(progress, (v) => `${clamp01(clamp01(v) * 4 - index) * 100}%`);
+/** A line of words that rests while you read it and glides when the next chapter arrives. */
+const StoryLine: React.FC<{ index: number; resting: MotionValue<number>; slot: MotionValue<number>; children: React.ReactNode }> = ({
+  index,
+  resting,
+  slot,
+  children,
+}) => {
+  const distance = useTransform(resting, (v) => index - v);
+  const away = useTransform(distance, (d) => Math.min(1, Math.abs(d)));
+  const y = useTransform([distance, slot], ([d, s]: number[]) => d * s);
+  const scale = useTransform(away, (a) => 1 - a * 0.06);
+  const opacity = useTransform(away, (a) => 1 - a * 0.88);
+  const filter = useTransform(away, (a) => `blur(${a * 3}px)`);
   return (
-    <motion.span
-      className="relative h-1.5 rounded-[1px] overflow-hidden bg-[var(--desk-border)]"
-      animate={{ width: active ? 56 : 14 }}
-      transition={{ type: 'spring', stiffness: 160, damping: 26 }}
-    >
-      <motion.span className="absolute inset-y-0 left-0" style={{ backgroundColor: accent, width: fill }} />
-    </motion.span>
+    <motion.div className="absolute inset-x-0 top-1/2 -translate-y-1/2 origin-left will-change-transform" style={{ y, scale, opacity, filter }}>
+      {children}
+    </motion.div>
+  );
+};
+
+/** The thread down the side: one knot per chapter, filling as you go. Click a knot to jump there. */
+const StoryThread: React.FC<{ progress: MotionValue<number>; chapter: number; onPick: (i: number) => void }> = ({ progress, chapter, onPick }) => {
+  const fill = useTransform(progress, (v) => `${clamp01(v / 0.875) * 100}%`);
+  return (
+    <div className="relative flex flex-col justify-between h-full py-1" aria-hidden="true">
+      <span className="absolute left-1/2 -translate-x-1/2 top-2 bottom-2 w-[2px] bg-[var(--desk-border)]" />
+      <motion.span className="absolute left-1/2 -translate-x-1/2 top-2 w-[2px] bg-[var(--accent-gold)] origin-top" style={{ height: fill }} />
+      {CHAPTERS.map((c, i) => (
+        <button
+          key={c.kicker}
+          type="button"
+          tabIndex={-1}
+          onClick={() => onPick(i)}
+          className="relative z-10 grid place-items-center w-6 h-6 cursor-pointer group"
+          title={c.title}
+        >
+          <motion.span
+            className="block border-2 border-[var(--ink)]"
+            animate={{
+              width: i === chapter ? 14 : 10,
+              height: i === chapter ? 14 : 10,
+              rotate: i === chapter ? 45 : 0,
+              backgroundColor: i <= chapter ? c.accent : 'var(--desk-surface)',
+            }}
+            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+          />
+        </button>
+      ))}
+    </div>
   );
 };
 
 export const NightStory: React.FC = () => {
+  const palette = useThemePalette();
   const reduceMotion = Boolean(useReducedMotion());
   const ref = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const statusRef = useRef<HTMLSpanElement | null>(null);
   const [chapter, setChapter] = useState(0);
-  const [direction, setDirection] = useState(1);
   const [exportsShown, setExportsShown] = useState(false);
-  const shown = useRef(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  // A soft, slightly heavy spring between the scroll and the drawing, so fast
-  // wheel flicks still glide through each step of the story.
-  const smooth = useSpring(scrollYProgress, { stiffness: 55, damping: 22, mass: 0.9, restDelta: 0.0002 });
+  // A light spring on top of scrolling keeps the film gliding through keyboard and scrollbar jumps.
+  const springy = useSpring(scrollYProgress, { stiffness: 150, damping: 30, mass: 0.6, restDelta: 0.0002 });
+  const progress = reduceMotion ? scrollYProgress : springy;
+  const resting = useTransform(progress, restingChapter);
+  const pixelHint = useTransform(progress, [0, 0.03], [1, 0]);
+  // One chapter's step on the reel: a little less than the reel is tall, so neighbours peek in.
+  const reelRef = useRef<HTMLDivElement | null>(null);
+  const slot = useMotionValue(288);
+  useEffect(() => {
+    const reel = reelRef.current;
+    if (!reel || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => slot.set(reel.clientHeight * 0.95));
+    ro.observe(reel);
+    return () => ro.disconnect();
+  }, [slot]);
 
-  useMotionValueEvent(smooth, 'change', (v) => {
+  useMotionValueEvent(progress, 'change', (v) => {
     const next = storyChapter(v);
-    if (next !== shown.current) {
-      setDirection(next > shown.current ? 1 : -1);
-      shown.current = next;
-      setChapter(next);
-    }
-    setExportsShown(clamp01(v) * 4 > 3.55);
+    setChapter((c) => (c === next ? c : next));
+    setExportsShown(clamp01(v) * 4 > 3.82);
   });
 
   useEffect(() => {
@@ -353,37 +508,22 @@ export const NightStory: React.FC = () => {
     if (!canvas || !ctx || !section) return;
     let raf = 0;
     let visible = false;
-    const layers: [HTMLCanvasElement, HTMLCanvasElement] = [makeLayer(), makeLayer()];
-    const progressNow = () => (reduceMotion ? scrollYProgress.get() : smooth.get());
-    // When each chapter started playing; a chapter that already played shows finished.
-    const startedAt = [-1, -1, -1, -1];
-    let current = -1;
-    let previous = -1;
-    let switchedAt = -Infinity;
-    const played = (chapter: number, now: number) => {
-      if (reduceMotion || PLAY_MS[chapter] === 0) return 1;
-      if (startedAt[chapter] < 0) return 0;
-      return smoothstep(clamp01((now - startedAt[chapter]) / PLAY_MS[chapter]));
-    };
-    const view = (now: number): StageView => {
-      const chapter = storyChapter(progressNow());
-      if (chapter !== current) {
-        previous = current;
-        current = chapter;
-        switchedAt = now;
+    let lastStatus = '';
+    const paint = (t: number) => {
+      const p = progress.get();
+      const shot = storyShot(p, t);
+      render(ctx, shot, t, palette);
+      const status = statusFor(p, shot, t);
+      if (status !== lastStatus && statusRef.current) {
+        statusRef.current.textContent = status;
+        lastStatus = status;
       }
-      // Start drawing once the stage is really in view (not while the hero still fills the screen).
-      if (startedAt[current] < 0 && section.getBoundingClientRect().top < window.innerHeight * 0.25) {
-        startedAt[current] = now + (previous >= 0 ? FADE_MS / 2 : 250);
-      }
-      const mix = reduceMotion || previous < 0 ? 1 : clamp01((now - switchedAt) / FADE_MS);
-      return { from: previous, fromProgress: previous >= 0 ? played(previous, now) : 0, to: current, toProgress: played(current, now), mix };
     };
     const loop = (t: number) => {
-      renderStage(ctx, layers, view(t), reduceMotion ? 0 : t);
+      paint(reduceMotion ? 0 : t);
       if (visible) raf = requestAnimationFrame(loop);
     };
-    renderStage(ctx, layers, view(performance.now()), 0);
+    paint(0);
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       cancelAnimationFrame(raf);
@@ -394,7 +534,14 @@ export const NightStory: React.FC = () => {
       cancelAnimationFrame(raf);
       io.disconnect();
     };
-  }, [reduceMotion, smooth, scrollYProgress]);
+  }, [reduceMotion, progress, palette]);
+
+  const pick = (i: number) => {
+    const section = ref.current;
+    if (!section) return;
+    const travel = section.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: section.offsetTop + travel * ((i + 0.62) / 4), behavior: reduceMotion ? 'auto' : 'smooth' });
+  };
 
   const active = CHAPTERS[chapter];
 
@@ -404,7 +551,7 @@ export const NightStory: React.FC = () => {
       ref={ref}
       aria-labelledby="night-story-title"
       className="relative scroll-mt-0 bg-[var(--desk-bg)]"
-      style={{ height: '560vh' }}
+      style={{ height: '420svh' }}
     >
       <h2 id="night-story-title" className="sr-only">
         A night at the Desk
@@ -418,34 +565,45 @@ export const NightStory: React.FC = () => {
         ))}
       </ol>
 
-      <div className="sticky top-0 h-[100svh] flex items-center overflow-hidden" aria-hidden="true">
+      <div className="sticky top-16 h-[calc(100svh-4rem)] flex items-center overflow-hidden" aria-hidden="true">
         <CottageBackdrop chapter={chapter} reduceMotion={reduceMotion} />
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 55% 60% at 30% 50%, color-mix(in srgb, var(--primary-bg) 12%, transparent), transparent 70%), linear-gradient(to bottom, color-mix(in srgb, var(--desk-bg) 55%, transparent), transparent 18%)' }}
         />
-        <div className="relative max-w-7xl w-full mx-auto px-6 sm:px-8 grid lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-16 items-center">
+        <div className="relative max-w-7xl w-full mx-auto px-6 sm:px-8 grid lg:grid-cols-[1.15fr_1fr] gap-6 lg:gap-14 items-center">
           {/* Stage */}
-          <div className="relative mx-auto w-full max-w-[560px]">
+          <div className="relative mx-auto w-full max-w-[min(460px,44svh)] lg:max-w-[540px]">
             <motion.div
-              className="absolute -inset-6 rounded-full blur-3xl opacity-40 pointer-events-none"
+              className="absolute -inset-8 rounded-full blur-3xl opacity-40 pointer-events-none"
               animate={{ backgroundColor: active.accent }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.9 }}
             />
             <div className="relative p-3 bg-[var(--surface-0)] border-2 border-[var(--desk-border)] shadow-[0_8px_0_var(--ink)] rounded-[2px]">
               <div className="flex items-center gap-1.5 pb-2 px-1">
-                <span className="w-2 h-2 bg-[#e08ca6]" />
-                <span className="w-2 h-2 bg-[#f0be7c]" />
-                <span className="w-2 h-2 bg-[#7fae6b]" />
-                <span className="ml-auto font-mono text-[10px] text-[var(--text-muted)]">hearth-ghost.pixi</span>
+                <span className="w-2 h-2 bg-[var(--accent-plum)]" />
+                <span className="w-2 h-2 bg-[var(--primary-bg)]" />
+                <span className="w-2 h-2 bg-[var(--accent-sage)]" />
+                <span className="ml-2 font-mono text-[10px] text-[var(--text-muted)]">hearth-ghost.pixi</span>
+                <span ref={statusRef} className="ml-auto font-mono text-[10px] text-[var(--accent-gold)] tabular-nums">
+                  zoom 3200% · 1 px
+                </span>
               </div>
-              <canvas
-                ref={canvasRef}
-                width={W}
-                height={H}
-                className="block w-full h-auto"
-                style={{ imageRendering: 'pixelated', aspectRatio: `${W} / ${H}` }}
-              />
+              <div className="relative">
+                <canvas
+                  ref={canvasRef}
+                  width={W}
+                  height={H}
+                  className="block w-full h-auto"
+                  style={{ imageRendering: 'pixelated', aspectRatio: `${W} / ${H}` }}
+                />
+                <motion.span
+                  className="absolute left-1/2 top-[18%] -translate-x-1/2 px-2 py-1 bg-[var(--primary-bg)] text-[var(--primary-fg)] font-mono text-[11px] font-bold border-2 border-[var(--ink)] shadow-[0_3px_0_var(--ink)] whitespace-nowrap"
+                  style={{ opacity: pixelHint }}
+                >
+                  this is one pixel ✦
+                </motion.span>
+              </div>
               <AnimatePresence>
                 {exportsShown && (
                   <motion.div className="absolute left-0 right-0 -bottom-5 flex justify-center gap-2">
@@ -467,39 +625,32 @@ export const NightStory: React.FC = () => {
             </div>
           </div>
 
-          {/* Words */}
-          <div className="relative min-h-[15rem] lg:pr-24 xl:pr-28">
-            <div className="flex gap-2 mb-6">
+          {/* Words: a reel that rests on each chapter and glides to the next */}
+          <div className="relative grid grid-cols-[24px_1fr] gap-5 lg:pr-24 xl:pr-28">
+            <div className="h-[15rem] sm:h-[17rem] lg:h-[19rem]">
+              <StoryThread progress={progress} chapter={chapter} onPick={pick} />
+            </div>
+            <div ref={reelRef} className="story-reel relative h-[15rem] sm:h-[17rem] lg:h-[19rem]">
               {CHAPTERS.map((c, i) => (
-                <StoryPip key={c.kicker} index={i} active={i === chapter} accent={c.accent} progress={smooth} />
+                <StoryLine key={c.kicker} index={i} resting={resting} slot={slot}>
+                  <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: c.accent }}>
+                    {c.kicker}
+                  </p>
+                  <p className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl leading-[1.05] text-[var(--text-heading)] [text-shadow:0_3px_0_var(--ink)]">
+                    {c.title}
+                  </p>
+                  <p className="mt-4 max-w-md text-sm sm:text-base leading-relaxed text-[var(--text-body)]">{c.body}</p>
+                </StoryLine>
               ))}
             </div>
-            {/* The words wipe out, then the next ones wipe in from the scroll direction: solid, never see-through */}
-            <div className="grid">
-              <AnimatePresence initial={false} custom={direction} mode="wait">
-                <motion.div
-                  key={chapter}
-                  custom={direction}
-                  style={{ gridArea: '1 / 1' }}
-                  variants={{
-                    enter: (d: number) => (reduceMotion ? {} : { y: d * 18, clipPath: d > 0 ? 'inset(0 0 100% 0)' : 'inset(100% 0 0 0)' }),
-                    center: { y: 0, clipPath: 'inset(0 0 0% 0)', transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] } },
-                    exit: (d: number) => (reduceMotion ? {} : { y: d * -18, clipPath: d > 0 ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } }),
-                  }}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                >
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--accent-gold)]">{active.kicker}</p>
-                  <p className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.05] text-[var(--text-heading)]">
-                    {active.title}
-                  </p>
-                  <p className="mt-5 max-w-md text-base sm:text-lg leading-relaxed text-[var(--text-body)]">{active.body}</p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-            <p className="mt-10 font-mono text-[11px] text-[var(--text-muted)]">
-              {chapter < 3 ? 'keep scrolling ↓' : 'ready when you are ✦'}
+            <p className="col-start-2 font-mono text-[11px] text-[var(--text-muted)]">
+              {chapter < 3 ? (
+                <span className="inline-flex items-center gap-2">
+                  keep scrolling <span className="story-nudge inline-block">↓</span>
+                </span>
+              ) : (
+                'ready when you are ✦'
+              )}
             </p>
           </div>
         </div>

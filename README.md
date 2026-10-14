@@ -21,7 +21,7 @@ Plum shadows, wisteria accents, amber buttons and a few live pixel glints make P
 ## Small canvas, plenty of room to play
 
 - **Draw something that feels like yours.** Start with a pixel pen, shapes and fills. Add layers, select a detail, move it around, or undo a stroke and try again. Import an image or sprite sheet when you already have a starting point.
-- **Try a gentle first lesson.** Desktop Playground gives you a fresh practice sheet while your Studio drawing stays separate. **Return to drawing** brings it back; **Keep practice in Studio** saves a new project. The [12 illustrated lessons](docs/guides/learning-and-playground.md) help you find a starting point. Practice is temporary until you keep it.
+- **Try a gentle first lesson.** Desktop Playground gives you a fresh practice sheet while your Studio drawing stays separate. **Return to drawing** brings it back; **Keep practice in Studio** saves a new project. The [12 coached lessons](docs/guides/learning-and-playground.md) show one pose at a time, offer a ghost-pen demonstration and point out missing cells. Narrow screens get eight Pocket lessons plus a free doodle. Practice is temporary until you keep it.
 - **Give it a little life.** Draw frames, use onion skin to see faded guides from the neighboring poses, choose how long each frame stays on screen and play a loop. Group frames into named clips to keep different movements together.
 - **Move one selected part.** On an unlocked color layer, capture a selection as a rigid part, set Start and End poses with precise controls and session Undo/Redo, preview the arc and bake 2–30 editable cels. Save a named rig to reopen its settings while the source artwork still matches. [Rigid-part workflow](docs/guides/artist-workspace.md#rotate-a-detail-or-try-rigid-part-motion).
 - **Find your colors.** Create a named palette, rearrange its colors, or scan the canvas for up to six main colors. Choose the First and Last colors you want to cycle; choosing just the fire colors can keep the wood and outlines still.
@@ -43,6 +43,8 @@ PixiBun has eight looks, each with a Night and a Day. Moonlit, Sakura, Tidepool,
 ![The same three-character project in Cozy Classic light, with warm parchment panels, plum outlines and amber controls.](docs/assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-light.png)
 
 *The same little friends, with the curtains open.*
+
+The [latest source review](docs/releases/2026-10-15-codebase-and-documentation.md) covers the coached desktop and Pocket lessons, homepage animation/game-kit downloads, saved canvas palettes, inspector refinements and explicit save-before-update restart. Drawing Undo keeps changed rectangles with a 4,096-step depth cap and a shared 64 MiB payload budget.
 
 ## Your first few pixels
 

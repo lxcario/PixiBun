@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { executeStudioCommand } from '@/config/studioCommands';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon } from '@/components/ui/PixelIcon';
+import { CANONICAL_TOOLS } from '@/config/shortcuts';
 import { PixiBunLogo } from '@/components/ui/PixiBunLogo';
 import { AppearancePopover } from '@/components/ui/AppearancePopover';
 import { HeaderFileMenu } from './HeaderFileMenu';
@@ -261,7 +262,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
     isShapeTool;
 
   const hasExpandedToolParams = hasToolParams && tools.activeTool !== 'pen' && tools.activeTool !== 'eraser';
-  const toolLabel = tools.activeTool === 'erase-color' ? 'Erase color' : tools.activeTool === 'color-replace' ? 'Replace color' : tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1);
+  const toolLabel = CANONICAL_TOOLS.find((tool) => tool.id === tools.activeTool)?.label ?? tools.activeTool;
 
   return (
     <header
@@ -411,7 +412,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
           <div id={toolOptionsId} role={hasExpandedToolParams ? 'group' : undefined} data-testid="tool-options-rail" aria-label={hasExpandedToolParams ? `${toolLabel} settings` : 'Tool options rail'} className={`${hasExpandedToolParams ? `${isToolMenuOpen ? 'flex' : 'hidden'} absolute top-full left-0 mt-1 z-[100] w-[360px] max-w-[calc(100vw-16px)] p-3 shadow-xl` : 'flex h-7 px-2 xl:px-2.5'} bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] flex-wrap items-center gap-2`}>
             {/* Tool indicator */}
             <span className={`text-[10px] font-sans font-medium text-[var(--text-heading)] shrink-0 ${hasExpandedToolParams ? 'w-full' : 'hidden xl:inline'}`}>
-              {tools.activeTool.charAt(0).toUpperCase() + tools.activeTool.slice(1)}:
+              {toolLabel}
             </span>
 
             {/* Brush Size Slider & Quick Presets (Pen, Eraser, Curve, Shapes, Dither) */}
@@ -446,10 +447,10 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                     onClick={() => setPixelPerfect(!tools.pixelPerfect)}
                     aria-label={tools.pixelPerfect ? 'Disable clean corners. Pixel-Perfect' : 'Enable clean corners. Pixel-Perfect'}
                     aria-pressed={tools.pixelPerfect}
-                    title="Pixel-Perfect: Removes doubled corner pixels when drawing single-pixel lines"
+                    title="Clean corners (pixel-perfect): removes doubled corner pixels from 1px lines"
                     className={`${hasExpandedToolParams ? 'flex' : 'hidden 2xl:flex'} items-center gap-1 h-6 px-1.5 rounded-[2px] text-[10px] font-sans border transition-colors ${tools.pixelPerfect ? 'border-[var(--accent-gold)] bg-[var(--accent-gold)]/15 text-[var(--text-heading)] font-medium' : 'border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--text-muted)]'}`}
                   >
-                    <span>Pixel-Perfect</span>
+                    <span>Clean corners</span>
                   </button>
                 )}
                 {isBrushMenuOpen && (

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { BUN_ACTIONS, INTRO_MS, MoonlitScene, type BunAction, type Constellation } from './moonlitScene';
-import { useThemeStore } from '@/stores/themeStore';
+import { useLiveThemeChoice } from '@/stores/themeStore';
 import { isSceneTheme } from '@/lib/theme/registry';
 import { buildScene, paintSceneParticles, type BuiltScene } from '@/lib/theme/scenes';
 import { recolorCanvas, sceneRecolor } from '@/lib/theme/sceneRecolor';
@@ -82,8 +82,16 @@ export const NightHero: React.FC = () => {
   const labelId = useRef(0);
   // The painted night follows the studio theme: recolored into its palette, by day or night,
   // with the theme's own drifting particles (petals, bubbles, sparks...) on top.
-  const studioTheme = useThemeStore((s) => s.studioTheme);
-  const day = useThemeStore((s) => s.colorScheme) === 'light';
+  // The scene keeps its built world across Day/Night: only the recolor and the theme's
+  // particle layer change, so switching never rebuilds the town.
+  const { studioTheme, colorScheme } = useLiveThemeChoice();
+  const day = colorScheme === 'light';
+  const themeRef = useRef({ studioTheme, day });
+  const retheme = useRef<() => void>(() => {});
+  useEffect(() => {
+    themeRef.current = { studioTheme, day };
+    retheme.current();
+  }, [studioTheme, day]);
 
   const { scrollY } = useScroll();
   const labelShift = useTransform(scrollY, (v) => v * 0.5);
@@ -128,8 +136,12 @@ export const NightHero: React.FC = () => {
     let raf = 0;
     let visible = true;
     const frozen = reduceMotion;
-    const recolor = sceneRecolor(studioTheme, day);
+    let recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day);
     let motes: BuiltScene | null = null;
+    const buildMotes = (w: number, h: number) => {
+      const { studioTheme: theme, day: isDay } = themeRef.current;
+      motes = isSceneTheme(theme) ? buildScene(theme, isDay, w, h) : null;
+    };
 
     const build = () => {
       const rect = section.getBoundingClientRect();
@@ -145,7 +157,7 @@ export const NightHero: React.FC = () => {
       canvas.style.height = `${h * PX}px`;
       ctx.imageSmoothingEnabled = false;
       sceneRef.current = new MoonlitScene(w, h, ctx);
-      motes = isSceneTheme(studioTheme) ? buildScene(studioTheme, day, w, h) : null;
+      buildMotes(w, h);
     };
 
     const draw = () => {
@@ -169,6 +181,11 @@ export const NightHero: React.FC = () => {
       if (motes) paintSceneParticles(ctx, motes, t, ['stars']);
     };
     renderNow.current = draw;
+    retheme.current = () => {
+      recolor = sceneRecolor(themeRef.current.studioTheme, themeRef.current.day);
+      if (sceneRef.current) buildMotes(canvas.width, canvas.height);
+      draw();
+    };
 
     const loop = () => {
       draw();
@@ -194,8 +211,9 @@ export const NightHero: React.FC = () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      retheme.current = () => {};
     };
-  }, [skipIntro, reduceMotion, now, studioTheme, day]);
+  }, [skipIntro, reduceMotion, now]);
 
   const toLogical = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current!;

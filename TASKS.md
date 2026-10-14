@@ -1,5 +1,9 @@
 # Build Plan — PixiBun
 
+## Source reconciliation — 15 October 2026
+
+The [source/documentation review](docs/releases/2026-10-15-codebase-and-documentation.md) records the latest integrated candidate and current verification. Selection masks, transparency, selective Co-Draw Undo, before/after history patches (4,096-step cap / 64 MiB), Standard/classic keymaps and the folding shelf are implemented. The desktop coach and eight Pocket lessons, real homepage GIF/APNG/game-kit exports, saved canvas palettes, inspector primitives and save-before-update restart are included. Moving the stroke loop out of React, carts/launch, participant outcomes and production-host qualification remain open. The phase ledger below retains earlier completed/failing attempt scope; old 50-step drawing limits are historical, while motion parameter history still uses 50.
+
 Maintenance update — 13 October 2026: see the [current status](docs/current-status.md) for the current engineering milestone. Earlier measurements, failures and decisions below retain their original revision and scope.
 
 > **Historical phase ledger:** Each entry describes its recorded checkpoint, including superseded controls, counts and verification. [Current status](docs/current-status.md) and the [issue registry](docs/research/issue-registry.md) govern present claims. Test assertions are not a formal proof of the full application.

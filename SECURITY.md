@@ -34,6 +34,10 @@ The configured project gate has no explicit dependency-advisory stage, and this 
 
 The [phase 7 dependency review (local archive)](docs/archives.md#record-docs-research-2026-10-02-feature-repairs-phase7-md) records the targeted Next.js patch and dated production-only advisory result. That result does not cover development dependencies, establish an exploitable PixiBun path for every advisory or identify the installed version on a public deployment.
 
+## Explicit application updates
+
+The service worker accepts APPLY_UPDATE only from a source ID present among its window clients. The initiating page first uses the Studio save coordinator and checks it again before reload; other tabs do not automatically reload. Older namespaced caches are retained while multiple window clients exist, and cached assets can be read across those buckets. Cache identity and client checks are operational boundaries rather than authentication of remote people. Qualify real two-build transitions and old-asset retention with the [release guide](docs/guides/release-readiness.md).
+
 ## Privacy and technical safeguards
 
 Artwork is stored locally in browser IndexedDB. Local diagnostics are enabled by default and can contain free-text errors or paths; transmission through the optional relay requires opt-in. Co-draw uses the network, and loading/updating the app makes same-origin requests. There is no browser-wide zero-egress or zero-PII guarantee.

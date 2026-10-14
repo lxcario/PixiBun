@@ -1,3 +1,4 @@
+import './landing.css';
 import type { Metadata } from 'next';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { NightHero } from '@/components/landing/night/NightHero';

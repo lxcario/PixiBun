@@ -14,6 +14,16 @@ Fresh output is the default. `targetCanvas` takes precedence; `freshCanvas: fals
 
 Raster artwork supports fractional alpha. The legacy Clean Jaggies operation fills eligible staircase gaps with alpha 160 and averaged color; it is not a binary-alpha cleanup algorithm. The current inspector previews those changes before Apply. Alpha preservation in lighting/lenses is operation-specific and must not be generalized to every artwork-changing tool.
 
+## Pixel history, selection and display
+
+Drawing history defaults to 4,096 entries per direction and a combined 64 MiB retained-step budget. [pixelPatch](../../src/lib/engine/pixelPatch.ts) crops ordinary edits to before/expected-after rectangles with x/y offsets; commit still captures and compares full-layer pixels. The first pixel edit after structural history keeps the whole layer. Replay seeds each edited layer's full origin once and remains separately accounted; retained patches do not eliminate baseline or transient capture memory.
+
+During Co-Draw, [selectiveRestore](../../src/lib/engine/selectiveRestore.ts) changes a pixel only if before/after differ and the live RGBA still equals the expected result. Differing later peer colors survive Undo/Redo. This is an RGBA test, not per-pixel author identity for equal-color overwrites, and excludes structural/created-layer restoration.
+
+The [selection mask](../../src/lib/canvas/selectionMask.ts) remains active across tool changes and constrains Pen, Eraser, Dither, shapes, Curve, Fill/Color Replace and Normal Chisel. Transparent display uses an art-grid checkerboard when enabled, with blocks bounded to readable screen size; practice uses plain paper without changing that saved preference. Display chrome is excluded from exports.
+
+Studio and desktop practice mount [usePlaybackClock](../../src/hooks/studio/usePlaybackClock.ts) once per workspace. It accumulates elapsed time across frame changes, applies authored holds/clip order and preview speed, caps each rAF contribution at 250 ms and suspends hidden-tab elapsed time. Catch-up may skip an intermediate displayed pose. This is separate from encoded timing and does not close M3 native scheduling qualification.
+
 ## Pixel-art rotation: RotSprite v3
 
 RotSprite arbitrary-angle rotation (`rotSpriteContour`) rotates each structural layer of the sprite separately:

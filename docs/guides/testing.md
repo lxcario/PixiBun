@@ -32,6 +32,8 @@ When verifying a dependency change, a still-running development process may reta
 
 When a local machine cannot sustain the default unit-worker concurrency, the installed Vitest runner accepts `VITEST_MAX_WORKERS`. Record any override with the verdict. It changes concurrency, not assertion coverage or timeouts, and does not establish that CI's default-worker run passed.
 
+Latest source verification is recorded in the [15 October review](../releases/2026-10-15-codebase-and-documentation.md). Keymap/tool-shelf, patch/selective history, lesson art/coaching and update-restart suites cover their specific contracts; older test totals and source/build verdicts retain their original dates. The shared Studio/practice clock now lives in usePlaybackClock; its extraction does not close M3 stability.
+
 ## Preserve evidence
 
 `npm run nibbli:hands -- --mock` runs bounded editing fixtures in the same three recorded browser profiles. It covers real layer/selection/translation and same-layer Copy/Paste, protected source/layer/frame pixels, Undo/Redo, saved reload/export, pasted-copy cancellation and strict refusals. Copy fixtures include an eye at 1600% and an asymmetric three-color motif with transparent holes at 800%. Default `--conversation` selects the earlier alignment journey; `--conversation --copy` requests a coordinate-free copying goal and one observation-bound conversation plan. The deterministic fixtures do not measure original artistic planning, and their results do not close M3 clock stability. Preserve original failed probes and Tester/Artist evidence with their own source/build labels; operation support and discovery counts are not execution verdicts.
@@ -46,7 +48,7 @@ Routine screenshots use `test.info().outputPath('captures', filename)` beneath i
 
 To deliberately archive PNG captures locally, use `npm run evidence:publish -- --source <run-output> --destination artifacts/evidence-archive/<new-run-id> --run <run.json>`. The existing command name remains for compatibility. It requires command, runtime, browser, viewport, revision and verdict metadata, checks Git ignores the destination, creates a new directory and SHA-256 manifest, and refuses overwriting runs or publishing into source documentation. Record dirty status and test names; commit/build hashes identify release evidence more precisely than a dirty base revision.
 
-A screenshot proves captured visible state rather than full interaction, timing, focus restoration, artist usefulness or device coverage. Scans leave manual conformance work in [the registry](../research/issue-registry.md). The requested compact bottom-left color dock retains seven recorded target-size findings; larger alternatives pass bounded keyboard checks, while manual touch/screen-reader equivalence remains open. Keep that tradeoff beside results.
+A screenshot proves captured visible state rather than full interaction, timing, focus restoration, artist usefulness or device coverage. Scans leave manual conformance work in [the registry](../research/issue-registry.md). Earlier scans recorded seven target-size findings on the compact bottom-left color dock; larger alternatives passed bounded keyboard checks. Requalify changed controls, and keep manual touch/screen-reader equivalence open. Keep that tradeoff beside results.
 
 ## TestSprite
 

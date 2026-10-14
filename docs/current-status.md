@@ -1,5 +1,13 @@
 # Current project status
 
+## Latest source and documentation — 15 October 2026
+
+The [15 October review](releases/2026-10-15-codebase-and-documentation.md) covers main through `e9b5e682` and the integrated source changes: coached desktop/Pocket practice, scroll story and real sample downloads, shared playback, inspector primitives, canvas theme hydration and explicit save-before-update restart. Current drawing history is patch-based, defaults to 4,096 entries per direction and shares 64 MiB retained-step payload; motion settings have separate 50-step stacks. Selection masks, Standard/classic keys, transparency and selective Co-Draw history are integrated. The earlier phase/qualification results below keep their original dates and tested labels. Current execution results and remaining limitations are in the new review; this publication does not approve a production release.
+
+The latest candidate passed all six local gates with **2,477 tests /232 files** and a fresh build. Selected production regressions passed **41 cases** across Chromium, Firefox and WebKit, with **one existing Firefox touch capability skip** and zero failures/retries. The review retains the exact source/build/cache labels, failed exploratory attempts and remaining scope.
+
+### Earlier milestones
+
 Updated 14 October 2026: [Strategy Phase 0 and 0.5](#strategy-phase-0-and-05-14-october-2026) below records the offline-safety, brand, theme and onboarding work on branch `phase-0-offline-safety`. The 13 October summary that follows keeps its original scope.
 
 Updated 13 October 2026. PixiBun 1.14.1 has the reviewed import/artwork, navigation and resource-cache repairs published on main at `210df955fd25c840ab52d92c2e9bcc95ed050f0e`. The [Studio/Nibbli source change record](releases/2026-10-13-studio-and-nibbli.md) describes the subsequent integrated source publication and its scoped checks. This page records bounded engineering results. Production release approval remains open.

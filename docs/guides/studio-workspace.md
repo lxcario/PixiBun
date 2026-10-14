@@ -4,9 +4,12 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Drawing tools](drawing-tools.md) · [All features](../features.md)
 
-The studio has a small shelf of tools on the left, your canvas in the middle, **Tools / Layers / Palette / PixiTools** in the inspector, and animation frames below. The **Workspace** row provides Drawing, Animation and Lighting layouts, a left/right inspector, saved arrangements, optional color and navigator panels, and canvas-only mode. Follow [Arrange a desk](artist-workspace.md) for these controls. Start with a little canvas and a few colors; there is no need to learn every panel at once.
+The studio has a small shelf of tools on the left, your canvas in the middle, **Tools / Layers / Palette / Effects** in the inspector, and animation frames below. The **Workspace** row provides Drawing, Animation and Lighting layouts, a left/right inspector, saved arrangements, optional color and navigator panels, and canvas-only mode. Follow [Arrange a desk](artist-workspace.md) for these controls. Start with a little canvas and a few colors; there is no need to learn every panel at once.
 
 ![The current studio with three original little-friend poses.](../assets/screenshots/2026-10-02-docs/studio-atelier-dark.png)
+
+
+The right inspector tabs are **Tools**, **Layers**, **Palette** and **Effects**. Effects contains PixiTools tasks such as lighting, cleanup, tiles and animation review; its accessible name is Effects (PixiTools). Existing screenshots show the earlier PixiTools label.
 
 ## Projects and names
 
@@ -92,7 +95,7 @@ Click a color well at the lower left for quick swatches; double-click for the pi
 
 1. Use **Marquee Box (M)**, **Lasso (Q)** or **Magic Wand (W)** to select pixels. Shift adds; Alt subtracts. On selection tools, Alt's subtract gesture takes priority over viewport panning.
 2. Drag inside to move, or use arrow keys to nudge. Shift can lock a drag axis. Use the resize handles to scale; the outer rotation zones rotate, with Shift snapping to 15° steps. The pivot sets the rotation center.
-3. The action bar flips horizontally/vertically or rotates 90° in either direction. **H / V** act on a selection; without a selection they change drawing mirrors. **Ctrl+C / X / V** copy, cut and paste canvas selections through the editor clipboard.
+3. The action bar flips horizontally/vertically or rotates 90° in either direction. **H / V** flip an active selection; **Shift+H / Shift+V** changes drawing mirrors, with or without a selection. **Ctrl+C / X / V** copy, cut and paste canvas selections through the editor clipboard.
 4. Use the action bar's **Commit** or **Cancel** deliberately. **Enter** commits the transform; **Escape** is owned by the viewport transform handler and cancels the float without first committing it. These keys yield to dialogs and focused controls. If a committed edit changed art unexpectedly, use Undo.
 
 Selection masks matter: a lasso or wand selection does not fill its entire bounding rectangle. Ordinary drawing remains constrained by the active mask. Copy/paste is a pixel workflow, not a transfer of the whole frame's layer metadata.

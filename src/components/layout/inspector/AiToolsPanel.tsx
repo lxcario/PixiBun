@@ -16,12 +16,12 @@ type DomainKey = 'start' | 'all' | 'lighting' | 'tileset' | 'polish' | 'animatio
 
 const LAST_DOMAIN_KEY = 'pixibun:pixitools:last-domain';
 
-const TASKS: { key: Exclude<DomainKey, 'start' | 'all'>; title: string; description: string; icon: PixelIconName }[] = [
-  { key: 'lighting', title: 'Add light and depth', description: 'Light, shadows and surface shape.', icon: 'lamp' },
-  { key: 'tileset', title: 'Build tiles and patterns', description: 'Preview a repeating tile or export a tilemap.', icon: 'grid' },
-  { key: 'polish', title: 'Clean and refine', description: 'Find stray pixels and polish your sprite.', icon: 'sparkles' },
-  { key: 'animation', title: 'Review animation', description: 'Compare frames and protect important details.', icon: 'sparkles' },
-  { key: 'research', title: 'Try a new look', description: 'Simplify pixels, change lighting, or rearrange tiles.', icon: 'grid' },
+const TASKS: { key: Exclude<DomainKey, 'start' | 'all'>; title: string; short: string; description: string; icon: PixelIconName }[] = [
+  { key: 'lighting', title: 'Add light and depth', short: 'Light', description: 'Light, shadows and surface shape.', icon: 'lamp' },
+  { key: 'tileset', title: 'Build tiles and patterns', short: 'Tiles', description: 'Preview a repeating tile or export a tilemap.', icon: 'grid' },
+  { key: 'polish', title: 'Clean and refine', short: 'Clean', description: 'Find stray pixels and polish your sprite.', icon: 'select-wand' },
+  { key: 'animation', title: 'Review animation', short: 'Motion', description: 'Compare frames and protect important details.', icon: 'onion' },
+  { key: 'research', title: 'Try a new look', short: 'Look', description: 'Simplify pixels, change lighting, or rearrange tiles.', icon: 'preview' },
 ];
 
 const DOMAIN_COPY: Record<Exclude<DomainKey, 'start'>, { title: string; description: string }> = {
@@ -76,51 +76,77 @@ export const AiToolsPanel: React.FC = () => {
     <div ref={panelRef} className="h-full flex-1 flex flex-col min-h-0 bg-[var(--desk-surface)]">
       {activeDomain === 'start' ? (
         <>
-          <div className="p-3 border-b border-[var(--desk-border)] bg-[var(--desk-surface-raised)]/30">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[var(--accent-gold)]">PixiTools</p>
-            <h2 className="mt-1 font-display text-sm font-bold text-[var(--text-heading)]">What would you like to do?</h2>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted)]">Choose a task to see the tools for it. Your artwork will not change until you apply an action.</p>
+          <div className="px-3 pt-3 pb-2.5">
+            <p className="insp-eyebrow text-[var(--accent-gold)]">PixiTools</p>
+            <h2 className="mt-1 font-sans text-[15px] leading-5 font-bold text-[var(--text-heading)]">What would you like to do?</h2>
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] leading-4 text-[var(--text-muted)]">
+              <PixelIcon name="eye" size={11} className="shrink-0 text-[var(--accent-wisteria)]" />
+              Everything previews first. Your artwork changes only when you apply.
+            </p>
           </div>
-          <div className="p-3 flex flex-col gap-2">
+          <div className="px-3 pb-3 flex flex-col gap-1.5">
             {TASKS.map((task) => (
               <button
                 key={task.key}
                 type="button"
                 onClick={() => chooseDomain(task.key)}
                 data-testid={`pixitools-task-${task.key}`}
-                className="w-full flex items-start gap-2.5 p-2.5 text-left border border-[var(--desk-border)] rounded-[2px] bg-[var(--surface-1)] hover:bg-[var(--surface-2)] hover:border-[var(--desk-border-highlight)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] transition-colors cursor-pointer"
+                className="group w-full flex items-center gap-2.5 p-2 text-left border border-[var(--desk-border)] rounded-[6px] bg-[var(--surface-0)]/60 hover:bg-[var(--surface-2)] hover:border-[var(--accent-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] transition-colors cursor-pointer"
               >
-                <span aria-hidden="true" className="w-7 h-7 shrink-0 flex items-center justify-center bg-[var(--surface-3)] text-[var(--accent-gold)] rounded-[2px]">
+                <span aria-hidden="true" className="w-8 h-8 shrink-0 flex items-center justify-center bg-[var(--surface-3)] text-[var(--accent-gold)] rounded-[5px] border border-[var(--desk-border)] group-hover:border-[var(--accent-gold)] transition-colors">
                   <PixelIcon name={task.icon} size={15} />
                 </span>
-                <span className="flex flex-col gap-0.5 min-w-0">
+                <span className="flex flex-col gap-0.5 min-w-0 flex-1">
                   <span className="text-xs font-semibold text-[var(--text-heading)]">{task.title}</span>
-                  <span className="text-[10px] leading-4 text-[var(--text-muted)]">{task.description}</span>
+                  <span className="text-[11px] leading-4 text-[var(--text-muted)]">{task.description}</span>
                 </span>
+                <span aria-hidden="true" className="shrink-0 text-[var(--text-muted)] group-hover:text-[var(--accent-gold)] group-hover:translate-x-0.5 transition-transform">›</span>
               </button>
             ))}
             <button
               type="button"
               onClick={() => chooseDomain('all')}
               data-testid="pixitools-browse-all"
-              className="w-full min-h-8 mt-1 px-2 text-[11px] font-semibold text-[var(--text-body)] hover:text-[var(--text-heading)] border border-[var(--desk-border)] rounded-[2px] hover:bg-[var(--surface-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] cursor-pointer"
+              className="w-full min-h-8 mt-1 px-2 text-[11px] font-semibold text-[var(--text-body)] hover:text-[var(--accent-gold)] border border-dashed border-[var(--desk-border-highlight)] rounded-[6px] hover:bg-[var(--surface-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] cursor-pointer"
             >
-              Browse all tools →
+              Show every tool on one page
             </button>
           </div>
         </>
       ) : (
         <>
-          <div className={`${activeDomain === 'research' ? 'px-3 py-2' : 'p-3'} border-b border-[var(--desk-border)] bg-[var(--desk-surface-raised)]/30`}>
+          <div className="px-3 pt-2 pb-2.5 border-b border-[var(--desk-border)]">
             <button
               type="button"
               onClick={() => chooseDomain('start')}
-              className="min-h-6 text-[10px] font-semibold text-[var(--accent-gold)] hover:text-[var(--text-heading)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] rounded-[2px] cursor-pointer"
+              className="min-h-6 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--accent-gold)] hover:text-[var(--text-heading)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] rounded-[2px] cursor-pointer"
             >
-              ← Choose another task
+              <span aria-hidden="true">‹</span> Choose another task
             </button>
-            <h2 className="mt-1 font-display text-sm font-bold text-[var(--text-heading)]">{DOMAIN_COPY[activeDomain].title}</h2>
+            <h2 className="mt-0.5 font-sans text-[15px] leading-5 font-bold text-[var(--text-heading)]">{DOMAIN_COPY[activeDomain].title}</h2>
             {activeDomain !== 'research' && <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted)]">{DOMAIN_COPY[activeDomain].description}</p>}
+            <div role="group" aria-label="Switch task" className="mt-2 flex flex-wrap gap-1">
+              {TASKS.map((task) => {
+                const on = activeDomain === task.key;
+                return (
+                  <button
+                    key={task.key}
+                    type="button"
+                    aria-pressed={on}
+                    title={task.title}
+                    onClick={() => chooseDomain(task.key)}
+                    className={`h-6 px-2 inline-flex items-center gap-1 rounded-full border text-[10px] font-semibold cursor-pointer transition-colors ${
+                      on
+                        ? 'bg-[var(--surface-3)] border-[var(--accent-gold)] text-[var(--accent-gold)]'
+                        : 'bg-transparent border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+                    }`}
+                  >
+                    <PixelIcon name={task.icon} size={10} />
+                    {task.short}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <PixiToolsPreviewLayer>
             <div className="p-3 flex flex-col gap-3">

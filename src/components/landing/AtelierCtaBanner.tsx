@@ -91,10 +91,10 @@ export const AtelierCtaBanner: React.FC = () => {
                 {/* Master CTA Button */}
                 <Link
                   href="/studio"
-                  className="inline-flex items-center gap-3 px-9 py-4 rounded-[2px] pixel-primary-btn text-sm font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+                  className="inline-flex items-center gap-3 px-9 py-4 rounded-[2px] pixel-primary-btn text-sm font-display font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
                 >
                   <span>START A NEW DRAWING</span>
-                  <span className="text-base text-[#140d1f]">→</span>
+                  <span className="text-base text-[var(--primary-fg)]">→</span>
                 </Link>
               </CozyScrollReveal>
 
@@ -134,7 +134,7 @@ export const AtelierCtaBanner: React.FC = () => {
               </CozyScrollReveal>
               <CozyScrollReveal variant="fade-up" delayMs={350}>
                 <div className="flex flex-col items-center p-2 rounded-[1px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)]/70">
-                  <span className="text-[#7fae6b] font-bold text-[11px] mb-0.5">NO TRACKING</span>
+                  <span className="text-[var(--accent-sage)] font-bold text-[11px] mb-0.5">NO TRACKING</span>
                   <span className="text-[10px] text-[var(--text-muted)]">YOUR DRAWINGS STAY YOURS</span>
                 </div>
               </CozyScrollReveal>

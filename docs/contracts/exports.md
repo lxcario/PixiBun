@@ -36,6 +36,10 @@ Shared animation export models preserve selected clip pose order and durations w
 
 Cycle Loop samples the active frame's color animation, not moving silhouettes across the drawn timeline. It offers 3/5/8/10/12/15/24/30 FPS, initially 8. A two-second 8 FPS loop has 16 samples. Cycle rate remains separate from export FPS. First/Last swatches bound each track: source colors outside active ranges keep their bytes in live CPU cycling and generated frames. Shared source colors cannot simultaneously belong to two independent semantic objects without authoring changes.
 
+## Homepage sample downloads
+
+[showcaseExport](../../src/components/landing/showcase/showcaseExport.ts) constructs a separate four-frame, 20×22 Bun animation with 125/125/250/125 ms holds. APNG and GIF download encoded animations; GIF quantizes centisecond boundaries. Godot, Unity and Phaser download ZIPs containing an 80×22 sheet, metadata and README instructions. Godot uses SpriteFrames resource text; Unity/Phaser use atlas JSON, with importer setup still required. Copy metadata is available for game formats. These sample files do not contain the artist's current Studio artwork or constitute qualification of every engine version. Earlier screenshots showing text-only notes are historical.
+
 ## Resource boundaries and evidence
 
 PNG companion metadata uses separate hidden Blob-only download contexts so WebKit does not coalesce several same-frame downloads. The primary PNG remains in the main frame. Companion contexts are removed on failure or by scheduled cleanup after navigation starts; this is resource cleanup rather than a test delay or a guarantee that every browser setting permits multiple downloads. The browser-download fallback is distinct from OS-native picker qualification. See the [Studio/Nibbli change record](../releases/2026-10-13-studio-and-nibbli.md) for source and scoped evidence.

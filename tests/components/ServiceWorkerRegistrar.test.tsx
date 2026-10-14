@@ -18,7 +18,7 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
       render(<PwaUpdateToast onUpdate={onUpdate} onDismiss={onDismiss} />);
 
       expect(screen.getByText(/A fresh PixiBun build is ready/i)).toBeDefined();
-      const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
+      const reloadBtn = screen.getByRole('button', { name: /restart to update/i });
       expect(reloadBtn).toBeDefined();
 
       const dismissBtn = screen.getByRole('button', { name: /dismiss update banner/i });
@@ -38,7 +38,7 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it('displays update toast and posts SKIP_WAITING to waiting worker when reload is clicked', async () => {
+    it('displays update toast and posts APPLY_UPDATE to waiting worker when reload is clicked', async () => {
       const mockPostMessage = vi.fn();
       const mockWaitingWorker = {
         state: 'installed',
@@ -74,11 +74,11 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
         expect(screen.getByText(/A fresh PixiBun build is ready/i)).toBeDefined();
       });
 
-      const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
+      const reloadBtn = screen.getByRole('button', { name: /restart to update/i });
       fireEvent.click(reloadBtn);
 
-      expect(mockPostMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
-      expect(screen.getByText(/close all PixiBun tabs/i)).toBeDefined();
+      await waitFor(() => expect(mockPostMessage).toHaveBeenCalledWith({ type: 'APPLY_UPDATE' }));
+      expect(screen.getByText(/Saving your work and restarting/i)).toBeDefined();
     });
 
     it('dismisses toast when dismiss button is clicked', async () => {

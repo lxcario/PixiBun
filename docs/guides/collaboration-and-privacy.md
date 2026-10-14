@@ -4,6 +4,8 @@ For the tested revision and remaining accessibility, device and host checks, see
 
 [Handbook](README.md) · [Artwork safety](artwork-safety.md) · [Security policy](../../SECURITY.md) · [All features](../features.md)
 
+When an update is ready, **Restart to update** saves the active Studio drawing before requesting activation, then checks saving again before reloading that page. A failed or newly dirty save leaves the drawing open with an error. Other tabs do not automatically reload. Keep or leave practice first, and remember that reload loses session Undo/Redo. [Update and host qualification](deployment.md#offline-updates-and-rollback).
+
 ## Co-Draw
 
 ![The Co-Draw host/join and routing controls before connecting.](../assets/screenshots/2026-10-02-feature-guide/co-draw.png)
@@ -24,6 +26,10 @@ Tokens can contain connection addresses and session information. Share them with
 Brief connection interruptions pause sending for up to 30 seconds while retaining queued artwork. If the connection recovers, sending resumes. A failed connection, delivery timeout, or invalid artwork packet ends the session; the drawing stays open. Open Co-Draw to inspect the error, then disconnect and create a new invite to resynchronize. Keep a backup of each peer's drawing before reconnecting if they have diverged. Shared layer names are limited to 128 characters so admitted structure can still be saved as a project.
 
 Invalid or unusually large invite/reply tokens are refused before being applied to the peer connection. Paste a fresh unmodified invite or reply from the other person; the application accepts up to 256 typed candidate entries per token. That limit bounds the manual pairing workload.
+
+### Undo while sharing
+
+Undo/Redo on supported pixel edits restores only changed cells whose current RGBA still matches that edit's expected result, preserving different later partner pixels. It compares color bytes rather than authors, so an equal-color overwrite cannot be distinguished. Structural and created-layer history have separate behavior. [Implementation and limits](../contracts/rendering.md#pixel-history-selection-and-display).
 
 ## Local saves and offline drawing
 

@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ShowcaseNote } from './ShowcaseNote';
+import { useQuests } from './quests';
 import { ArtFrame, Dot, Picker, ToolWindow } from './ToolKit';
 import { createScenicCanvas, createInteriorCanvas } from './showcaseSprites';
 import { processImageToPixelArt, type PixelizeOptions } from '@/lib/ai/pixelizeEngine';
 
 export const PixelizeShowcase: React.FC = () => {
   const [sceneType, setSceneType] = useState<'mountain' | 'hearth'>('mountain');
+  const { complete } = useQuests();
   const [resolution, setResolution] = useState<16 | 24 | 32>(24);
   const [samplingMode, setSamplingMode] = useState<'salient-box' | 'nearest'>('salient-box');
   const [colorMode, setColorMode] = useState<'reduce-8' | 'reduce-16' | 'true-color'>('reduce-16');
@@ -69,12 +71,12 @@ export const PixelizeShowcase: React.FC = () => {
   }, [sceneType, renderPixelize]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-      <div className="lg:col-span-7 flex flex-col items-center gap-5">
-        <ToolWindow name="pixelize.pixi" status={`${resolution}×${resolution}`} className="max-w-[460px]">
-          <div className="flex items-center justify-center gap-3 sm:gap-5 pt-3">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
+        <ToolWindow name="pixelize.pixi" status={`${resolution}×${resolution}`} className="max-w-[460px] min-w-0">
+          <div className="flex items-center justify-center gap-2 pt-3">
             <ArtFrame tag="before" caption={sceneType === 'mountain' ? 'Sunset Alpine' : 'Lamplit Desk'}>
-              <canvas ref={sourceDisplayCanvasRef} className="block w-24 h-24 sm:w-28 sm:h-28" aria-label="Original source artwork" />
+              <canvas ref={sourceDisplayCanvasRef} className="block w-[clamp(48px,6vw,96px)] h-auto aspect-square" aria-label="Original source artwork" />
             </ArtFrame>
             <span aria-hidden="true" className="flex flex-col items-center gap-1 text-[var(--accent-gold)] font-mono text-lg">
               <span className="animate-pulse">✦</span>
@@ -83,7 +85,7 @@ export const PixelizeShowcase: React.FC = () => {
             <ArtFrame tag="after" glow caption={colorMode === 'true-color' ? 'all colours' : `${colorMode === 'reduce-8' ? 8 : 16} colours`}>
               <canvas
                 ref={displayCanvasRef}
-                className="block w-24 h-24 sm:w-28 sm:h-28"
+                className="block w-[clamp(48px,6vw,96px)] h-auto aspect-square"
                 style={{ imageRendering: 'pixelated' }}
                 aria-label="Converted pixel art output"
               />
@@ -110,14 +112,17 @@ export const PixelizeShowcase: React.FC = () => {
           )}
         </ToolWindow>
 
-        <div className="w-full max-w-[460px] grid gap-3">
+        <div className="w-full max-w-[460px] min-w-0 grid gap-3">
           <Picker
             label="picture"
             value={sceneType}
-            onChange={setSceneType}
+            onChange={(value) => {
+              complete(0);
+              setSceneType(value);
+            }}
             options={[
-              { value: 'mountain', label: 'Mountain Sunset', icon: <Dot color="#eb9a6a" /> },
-              { value: 'hearth', label: 'Lamplit Hearth', icon: <Dot color="#ffd285" /> },
+              { value: 'mountain', label: 'Mountain Sunset', icon: <Dot color="var(--accent-gold)" /> },
+              { value: 'hearth', label: 'Lamplit Hearth', icon: <Dot color="var(--primary-bg)" /> },
             ]}
           />
           <Picker
@@ -131,11 +136,14 @@ export const PixelizeShowcase: React.FC = () => {
               { value: 32, label: '32 px' },
             ]}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-2">
             <Picker
               label="outlines"
               value={samplingMode}
-              onChange={setSamplingMode}
+              onChange={(value) => {
+                if (value === 'nearest') complete(2);
+                setSamplingMode(value);
+              }}
               options={[
                 { value: 'salient-box', label: 'Keep edges' },
                 { value: 'nearest', label: 'Simple' },
@@ -155,7 +163,10 @@ export const PixelizeShowcase: React.FC = () => {
           <Picker
             label="colours"
             value={colorMode}
-            onChange={setColorMode}
+            onChange={(value) => {
+              if (value === 'reduce-8') complete(1);
+              setColorMode(value);
+            }}
             options={[
               { value: 'reduce-8', label: '8 colours' },
               { value: 'reduce-16', label: '16 colours' },

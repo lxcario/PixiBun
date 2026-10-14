@@ -13,7 +13,7 @@
  * override next.config.ts headers with its default text/plain type for a
  * dynamic route, which causes browsers to reject registration.
  *
- * Updates wait for open windows to close; an update must not interrupt artwork.
+ * Updates wait by default; a saved client can explicitly restart without closing tabs.
  *
  * Install precaches every emitted /_next/static file listed by
  * scripts/writePrecacheManifest.mjs (public/precache-manifest.json), so a panel
@@ -63,7 +63,7 @@ function openOwnedCache() {
 }
 
 function readOwnedCache(cache, request) {
-  return cache ? optionalCacheAccess(() => cache.match(request)) : Promise.resolve(null);
+  return optionalCacheAccess(async () => (cache && await cache.match(request)) || await caches.match(request));
 }
 
 function storeResponse(cache, request, response) {
@@ -141,12 +141,11 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
+    Promise.all([caches.keys(), self.clients.matchAll({ type: 'window', includeUncontrolled: true })])
+      .then(([keys, clients]) =>
         Promise.all(
           keys
-            .filter((key) => key.startsWith('pixibun-') && key !== CACHE_NAME)
+            .filter((key) => clients.length <= 1 && key.startsWith('pixibun-') && key !== CACHE_NAME)
             .map((key) => caches.delete(key))
         )
       )
@@ -179,6 +178,13 @@ self.addEventListener('message', (event) => {
       await cache.addAll(incoming);
     }));
     event.waitUntil(warmQueue.catch(() => {}));
+  }
+  if (event.data?.type === 'APPLY_UPDATE') {
+    // A real same-origin window explicitly requested restart after saving its work.
+    // Other open pages keep running and their old static assets remain available.
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      if (event.source && clients.some(client => client.id === event.source.id)) return self.skipWaiting();
+    }));
   }
   if (event.data && event.data.type === 'SKIP_WAITING') {
     event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {

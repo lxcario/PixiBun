@@ -5,6 +5,7 @@ import type { Point } from '@/lib/canvas/rasterMath';
 import { useStudioStore } from '@/stores/studioStore';
 import { subscribeCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { StudioBuddy } from '@/components/layout/StudioBuddy';
+import { CANONICAL_TOOLS } from '@/config/shortcuts';
 
 /* ── Status Bar Component ── */
 
@@ -70,7 +71,7 @@ export const StatusBar: React.FC = React.memo(() => {
 
       {/* Canvas Dimensions */}
       <span className="flex items-center gap-1">
-        <span className="text-[var(--text-muted)]">
+        <span className="text-[var(--text-muted)]" title="Canvas size in pixels">
           {canvasWidth}×{canvasHeight}
         </span>
       </span>
@@ -79,7 +80,7 @@ export const StatusBar: React.FC = React.memo(() => {
       <span className="w-px h-3 bg-[var(--desk-border)]" />
 
       {/* Zoom Level */}
-      <span className="text-[var(--text-muted)]">{zoom}%</span>
+      <span className="text-[var(--text-muted)]" title="Zoom">{zoom}%</span>
 
       {/* Separator */}
       <span className="w-px h-3 bg-[var(--desk-border)]" />
@@ -93,8 +94,8 @@ export const StatusBar: React.FC = React.memo(() => {
       <span className="w-px h-3 bg-[var(--desk-border)]" />
 
       {/* Active Layer */}
-      <span className="truncate max-w-[120px] text-[var(--text-body)]">
-        {activeLayerName ?? 'No Layer'}
+      <span className="truncate max-w-[140px] text-[var(--text-body)]" title="Active layer">
+        {activeLayerName ?? 'No layer'}
       </span>
 
       {/* Separator + Active Tool — push to far right */}
@@ -104,7 +105,7 @@ export const StatusBar: React.FC = React.memo(() => {
       {selectionInfo && selectionInfo.w > 0 && selectionInfo.h > 0 && (
         <>
           <span className="text-[var(--accent-plum)]">
-            Sel: {selectionInfo.w}×{selectionInfo.h}
+            Selection {selectionInfo.w}×{selectionInfo.h}
           </span>
           <span className="w-px h-3 bg-[var(--desk-border)]" />
         </>
@@ -113,8 +114,8 @@ export const StatusBar: React.FC = React.memo(() => {
       {/* Active Tool */}
       <span className="flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-wisteria)]" />
-        <span className="capitalize text-[var(--accent-gold)]">
-          {activeTool}
+        <span className="text-[var(--accent-gold)]">
+          {CANONICAL_TOOLS.find((tool) => tool.id === activeTool)?.label ?? activeTool}
         </span>
       </span>
       <span className="w-px h-3 shrink-0 bg-[var(--desk-border)]" />

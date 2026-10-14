@@ -11,19 +11,19 @@ interface IconProps {
 /** Tiny Pixel Hint Icons for Scene Caption */
 export const IconHintLamp: React.FC<IconProps> = ({ size = 12, className = '' }) => (
   <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
-    <rect x="4" y="1" width="4" height="2" fill="#e0b94d" />
-    <rect x="3" y="3" width="6" height="3" fill="#e0b94d" />
-    <rect x="5" y="6" width="2" height="3" fill="#67558d" />
-    <rect x="3" y="9" width="6" height="2" fill="#130e20" />
+    <rect x="4" y="1" width="4" height="2" fill="var(--accent-wisteria)" />
+    <rect x="3" y="3" width="6" height="3" fill="var(--accent-wisteria)" />
+    <rect x="5" y="6" width="2" height="3" fill="var(--accent-wisteria)" />
+    <rect x="3" y="9" width="6" height="2" fill="var(--ink)" />
   </svg>
 );
 
 export const IconHintPen: React.FC<IconProps> = ({ size = 12, className = '' }) => (
   <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" className={`inline-block pixelated ${className}`} aria-hidden="true">
-    <rect x="8" y="1" width="3" height="3" fill="#f5c2d9" />
-    <rect x="5" y="4" width="4" height="4" fill="#e0b94d" />
-    <rect x="3" y="7" width="3" height="3" fill="#67558d" />
-    <rect x="1" y="10" width="2" height="2" fill="#130e20" />
+    <rect x="8" y="1" width="3" height="3" fill="var(--accent-wisteria)" />
+    <rect x="5" y="4" width="4" height="4" fill="var(--accent-wisteria)" />
+    <rect x="3" y="7" width="3" height="3" fill="var(--accent-wisteria)" />
+    <rect x="1" y="10" width="2" height="2" fill="var(--ink)" />
   </svg>
 );
 
@@ -37,13 +37,13 @@ export const IconPottedPlant: React.FC<IconProps> = ({ size = 64, className = ''
     className={`select-none pixelated ${className}`}
     aria-hidden={ariaHidden}
   >
-    <path d="M9 18h14v2h-1v8h-1v2h-10v-2h-1v-8h-1v-2z" fill="#130e20" />
-    <rect x="10" y="19" width="12" height="2" fill="#f5c2d9" />
-    <rect x="11" y="21" width="10" height="7" fill="#4a3d68" />
-    <rect x="12" y="21" width="2" height="6" fill="#b8aecf" />
+    <path d="M9 18h14v2h-1v8h-1v2h-10v-2h-1v-8h-1v-2z" fill="var(--ink)" />
+    <rect x="10" y="19" width="12" height="2" fill="var(--accent-wisteria)" />
+    <rect x="11" y="21" width="10" height="7" fill="var(--accent-wisteria)" />
+    <rect x="12" y="21" width="2" height="6" fill="var(--accent-wisteria)" />
     <path
       d="M14 6h4v3h2v2h2v4h-3v-2h-2v-2h-1V6z M12 8h3v4h-2v3h-3v-3h1V9h1V8z M7 12h4v3h2v3H9v-2H7v-4z M19 11h4v4h-2v3h-3v-2h1v-5z"
-      fill="#6b4426"
+      fill="var(--accent-wisteria)"
     />
   </svg>
 );
@@ -58,15 +58,15 @@ export const IconHeartEasel: React.FC<IconProps> = ({ size = 80, className = '',
     className={`select-none pixelated ${className}`}
     aria-hidden={ariaHidden}
   >
-    <path d="M17 2h2v6h-2V2z M6 22l-2 12h3l2-12H6z M28 22l2 12h-3l-2-12h3z M17 24h2v10h-2V24z" fill="#3d2718" />
-    <rect x="4" y="22" width="28" height="2" fill="#130e20" />
-    <rect x="6" y="6" width="24" height="17" fill="#130e20" />
-    <rect x="7" y="7" width="22" height="15" fill="#f4f1fa" />
+    <path d="M17 2h2v6h-2V2z M6 22l-2 12h3l2-12H6z M28 22l2 12h-3l-2-12h3z M17 24h2v10h-2V24z" fill="var(--ink)" />
+    <rect x="4" y="22" width="28" height="2" fill="var(--ink)" />
+    <rect x="6" y="6" width="24" height="17" fill="var(--ink)" />
+    <rect x="7" y="7" width="22" height="15" fill="var(--accent-wisteria)" />
     <path
       d="M13 11h3v2h2v-2h3v2h1v3h-1v2h-2v2h-2v2h-2v-2h-2v-2h-2v-2h-1v-3h1v-2h3z"
-      fill="#f5c2d9"
+      fill="var(--accent-wisteria)"
     />
-    <rect x="14" y="12" width="1" height="1" fill="#ffffff" />
+    <rect x="14" y="12" width="1" height="1" fill="var(--accent-wisteria)" />
   </svg>
 );
 
@@ -80,28 +80,28 @@ export const IconCushionCat: React.FC<IconProps> = ({ size = 96, className = '',
     className={`select-none pixelated ${className}`}
     aria-hidden={ariaHidden}
   >
-    <path d="M4 20h36v3h-1v5h-2v2H7v-2H5v-5H4v-3z" fill="#130e20" />
-    <rect x="5" y="21" width="34" height="3" fill="#b8aecf" />
-    <rect x="6" y="24" width="32" height="4" fill="#4a3d68" />
-    <rect x="7" y="28" width="30" height="1" fill="#1e1730" />
-    <rect x="4" y="24" width="1" height="2" fill="#e0b94d" />
-    <rect x="39" y="24" width="1" height="2" fill="#e0b94d" />
+    <path d="M4 20h36v3h-1v5h-2v2H7v-2H5v-5H4v-3z" fill="var(--ink)" />
+    <rect x="5" y="21" width="34" height="3" fill="var(--accent-wisteria)" />
+    <rect x="6" y="24" width="32" height="4" fill="var(--accent-wisteria)" />
+    <rect x="7" y="28" width="30" height="1" fill="var(--ink)" />
+    <rect x="4" y="24" width="1" height="2" fill="var(--accent-wisteria)" />
+    <rect x="39" y="24" width="1" height="2" fill="var(--accent-wisteria)" />
 
     <path
       d="M12 12h14v2h4v2h3v5h-1v2H10v-2H9v-4h1v-3h2v-2z"
-      fill="#130e20"
+      fill="var(--ink)"
     />
     <path
       d="M13 13h12v2h4v2h2v3h-1v1H11v-1h-1v-3h1v-2h2v-2z"
-      fill="#f4f1fa"
+      fill="var(--accent-wisteria)"
     />
-    <rect x="13" y="10" width="3" height="3" fill="#130e20" />
-    <rect x="14" y="11" width="1" height="2" fill="#f5c2d9" />
-    <rect x="18" y="10" width="3" height="3" fill="#130e20" />
-    <rect x="19" y="11" width="1" height="2" fill="#f5c2d9" />
-    <rect x="13" y="16" width="3" height="1" fill="#130e20" />
-    <rect x="18" y="16" width="3" height="1" fill="#130e20" />
-    <rect x="16" y="17" width="1" height="1" fill="#f5c2d9" />
+    <rect x="13" y="10" width="3" height="3" fill="var(--ink)" />
+    <rect x="14" y="11" width="1" height="2" fill="var(--accent-wisteria)" />
+    <rect x="18" y="10" width="3" height="3" fill="var(--ink)" />
+    <rect x="19" y="11" width="1" height="2" fill="var(--accent-wisteria)" />
+    <rect x="13" y="16" width="3" height="1" fill="var(--ink)" />
+    <rect x="18" y="16" width="3" height="1" fill="var(--ink)" />
+    <rect x="16" y="17" width="1" height="1" fill="var(--accent-wisteria)" />
   </svg>
 );
 
@@ -116,46 +116,46 @@ export const IconCozyHearth: React.FC<IconProps> = ({ size = 96, className = '',
     aria-hidden={ariaHidden}
   >
     {/* Brick Fireplace Mantel */}
-    <rect x="4" y="2" width="36" height="5" fill="#1e1730" />
-    <rect x="5" y="3" width="34" height="3" fill="#6a5880" />
-    <rect x="6" y="3" width="32" height="1" fill="#c792df" />
+    <rect x="4" y="2" width="36" height="5" fill="var(--ink)" />
+    <rect x="5" y="3" width="34" height="3" fill="var(--accent-wisteria)" />
+    <rect x="6" y="3" width="32" height="1" fill="var(--accent-wisteria)" />
 
     {/* Brick Columns on sides */}
-    <rect x="5" y="7" width="9" height="23" fill="#1e1730" />
-    <rect x="6" y="8" width="7" height="21" fill="#3a2e4c" />
-    <rect x="6" y="13" width="7" height="1" fill="#1e1730" />
-    <rect x="6" y="19" width="7" height="1" fill="#1e1730" />
-    <rect x="6" y="25" width="7" height="1" fill="#1e1730" />
+    <rect x="5" y="7" width="9" height="23" fill="var(--ink)" />
+    <rect x="6" y="8" width="7" height="21" fill="var(--ink)" />
+    <rect x="6" y="13" width="7" height="1" fill="var(--ink)" />
+    <rect x="6" y="19" width="7" height="1" fill="var(--ink)" />
+    <rect x="6" y="25" width="7" height="1" fill="var(--ink)" />
 
-    <rect x="30" y="7" width="9" height="23" fill="#1e1730" />
-    <rect x="31" y="8" width="7" height="21" fill="#3a2e4c" />
-    <rect x="31" y="13" width="7" height="1" fill="#1e1730" />
-    <rect x="31" y="19" width="7" height="1" fill="#1e1730" />
-    <rect x="31" y="25" width="7" height="1" fill="#1e1730" />
+    <rect x="30" y="7" width="9" height="23" fill="var(--ink)" />
+    <rect x="31" y="8" width="7" height="21" fill="var(--ink)" />
+    <rect x="31" y="13" width="7" height="1" fill="var(--ink)" />
+    <rect x="31" y="19" width="7" height="1" fill="var(--ink)" />
+    <rect x="31" y="25" width="7" height="1" fill="var(--ink)" />
 
     {/* Fireplace Hearth Arch & Dark Backing */}
-    <rect x="14" y="7" width="16" height="23" fill="#1e1730" />
-    <rect x="15" y="8" width="14" height="21" fill="#140f22" />
+    <rect x="14" y="7" width="16" height="23" fill="var(--ink)" />
+    <rect x="15" y="8" width="14" height="21" fill="var(--ink)" />
 
     {/* Glowing Firewood Logs */}
-    <rect x="17" y="23" width="10" height="4" fill="#1e1730" />
-    <rect x="18" y="24" width="8" height="2" fill="#d89a55" />
+    <rect x="17" y="23" width="10" height="4" fill="var(--ink)" />
+    <rect x="18" y="24" width="8" height="2" fill="var(--primary-shade)" />
 
     {/* Glowing Flame & Embers */}
-    <rect x="18" y="17" width="8" height="7" fill="#f0be7c" />
-    <rect x="19" y="18" width="6" height="5" fill="#fbe9c6" />
-    <rect x="21" y="19" width="2" height="3" fill="#ffffff" />
-    <rect x="16" y="21" width="2" height="2" fill="#dcabdf" />
-    <rect x="26" y="21" width="2" height="2" fill="#dcabdf" />
+    <rect x="18" y="17" width="8" height="7" fill="var(--accent-gold)" />
+    <rect x="19" y="18" width="6" height="5" fill="var(--accent-wisteria)" />
+    <rect x="21" y="19" width="2" height="3" fill="var(--accent-wisteria)" />
+    <rect x="16" y="21" width="2" height="2" fill="var(--accent-plum)" />
+    <rect x="26" y="21" width="2" height="2" fill="var(--accent-plum)" />
 
     {/* Tea Kettle on Mantel */}
-    <rect x="8" y="0" width="8" height="3" fill="#1e1730" />
-    <rect x="9" y="1" width="6" height="2" fill="#ede8f4" />
-    <rect x="15" y="1" width="2" height="1" fill="#1e1730" />
+    <rect x="8" y="0" width="8" height="3" fill="var(--ink)" />
+    <rect x="9" y="1" width="6" height="2" fill="var(--text-heading)" />
+    <rect x="15" y="1" width="2" height="1" fill="var(--ink)" />
 
     {/* Warm Candle on Mantel */}
-    <rect x="28" y="0" width="4" height="3" fill="#1e1730" />
-    <rect x="29" y="0" width="2" height="3" fill="#ede8f4" />
-    <rect x="29" y="-2" width="2" height="2" fill="#f0be7c" />
+    <rect x="28" y="0" width="4" height="3" fill="var(--ink)" />
+    <rect x="29" y="0" width="2" height="3" fill="var(--text-heading)" />
+    <rect x="29" y="-2" width="2" height="2" fill="var(--accent-gold)" />
   </svg>
 );

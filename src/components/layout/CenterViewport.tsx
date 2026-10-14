@@ -64,6 +64,12 @@ interface CenterViewportProps {
   onCommitHistory?: () => void;
   retainHistory?: boolean;
   onOpenImport?: (payload: ImportPayload) => void;
+  /** Pointer-transparent layer on the art's pixel grid, above the artwork and stroke preview. */
+  stageOverlay?: React.ReactNode;
+  /** Zoom for fit on open; defaults to the ladder fit capped at 1600%. */
+  fitZoom?: (canvasWidth: number, canvasHeight: number, stageWidth: number, stageHeight: number) => number;
+  /** Show the canvas on plain paper whatever View → Transparency says (the setting itself is untouched). */
+  plainPaper?: boolean;
 }
 
 function ScreenGuide({ axis, fraction, color, thickness = 1 }: {
@@ -86,6 +92,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   onCommitHistory,
   onOpenImport,
   retainHistory = false,
+  stageOverlay,
+  fitZoom,
+  plainPaper = false,
 }) => {
   const focusMode = useWorkspaceStore(s => s.focusMode);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +112,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const zoom = useStudioStore((s) => s.zoom);
-  const showTransparencyChecker = useStudioStore((s) => s.showTransparencyChecker);
+  const showTransparencyChecker = useStudioStore((s) => s.showTransparencyChecker) && !plainPaper;
   const setZoom = useStudioStore((s) => s.setZoom);
   const panX = useStudioStore((s) => s.panX);
   const panY = useStudioStore((s) => s.panY);
@@ -115,6 +124,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const isPlaygroundActive = useOnboardingStore((s) => s.isPlaygroundActive);
   const currentProjectId = useStudioStore((s) => s.currentProjectId);
 
+  const fitZoomRef = useRef(fitZoom);
+  fitZoomRef.current = fitZoom;
   // Fit on open: a newly opened drawing (or a new canvas size) starts fully
   // visible, never zoomed in past the default 1600%.
   useEffect(() => {
@@ -125,8 +136,9 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     const fitWhenSized = () => {
       if (lastFittedCanvas === key || container.clientWidth === 0 || container.clientHeight === 0) return;
       lastFittedCanvas = key;
-      const fit = calculateFitZoom(canvasWidth, canvasHeight, container.clientWidth, container.clientHeight);
-      useStudioStore.getState().setZoomAndPan(Math.min(fit, DEFAULT_ZOOM), 0, 0);
+      const fit = fitZoomRef.current?.(canvasWidth, canvasHeight, container.clientWidth, container.clientHeight)
+        ?? Math.min(calculateFitZoom(canvasWidth, canvasHeight, container.clientWidth, container.clientHeight), DEFAULT_ZOOM);
+      useStudioStore.getState().setZoomAndPan(fit, 0, 0);
       observer.disconnect();
     };
     const observer = new ResizeObserver(fitWhenSized);
@@ -1107,6 +1119,8 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           className="absolute inset-0 w-full h-full pointer-events-none pixelated"
           style={{ filter: cvdFilterCss, imageRendering: 'pixelated' }}
         />
+
+        {stageOverlay}
 
         {/* Layer 4.8: PixiMotion Live Preview Canvas */}
         {motionPart && (

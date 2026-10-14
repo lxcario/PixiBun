@@ -22,6 +22,10 @@ An admitted image import records one Undo step for its pixels, layer/frame chang
 
 Desktop Playground saves a checkpoint of your original before opening separate practice. **Return to drawing** restores it; **Keep practice in Studio** saves a new project first. Practice has no autosave. A refresh loses unkept practice, while Return restores the saved original through normal admission. Session Undo/Redo and native-file handles are not portable. If the checkpoint or Keep fails, stay on the page and read the warning; your original is not replaced by practice. [Step-by-step practice and return](learning-and-playground.md#keep-your-drawing-try-something-new).
 
+### Updates and session history
+
+**Restart to update** requests a local save and rechecks the save boundary before that page reloads. Failed/conflicted or newly dirty work stays open with an error; other tabs do not automatically reload. Session Undo/Redo and native file handles do not survive reload. Drawing history now keeps up to 4,096 before/after rectangle steps per stack within 64 MiB; structural changes and the separate replay baseline can use more memory than a small stroke. Keep an editable backup for durable recovery.
+
 ## Save and restore outcomes
 
 ![The current Project Backup export panel, with the Download project backup button available for a three-frame drawing.](../assets/screenshots/2026-10-02-docs/project-backup.png)

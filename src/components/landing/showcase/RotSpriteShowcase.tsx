@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ShowcaseNote } from './ShowcaseNote';
+import { useQuests } from './quests';
 import { ArtFrame, Dot, Picker, ToolWindow } from './ToolKit';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
 import { templateToCanvas, SWORD_TEMPLATE } from './showcaseSprites';
@@ -9,7 +10,9 @@ import { rotateWithRotSprite } from '@/lib/ai/smartMathEngine';
 
 export const RotSpriteShowcase: React.FC = () => {
   const [spriteType, setSpriteType] = useState<'sword' | 'ghost' | 'bun'>('sword');
-  const [angle, setAngle] = useState<number>(45);
+  // Starts off the 45° snap, so pressing it shows the biggest change.
+  const [angle, setAngle] = useState<number>(30);
+  const { complete } = useQuests();
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
 
   const rotSpriteCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -100,14 +103,14 @@ export const RotSpriteShowcase: React.FC = () => {
   }, [isSpinning]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-      <div className="lg:col-span-7 flex flex-col items-center gap-5">
-        <ToolWindow name="rotate.pixi" status={`Angle: ${Math.round(angle)}°`} className="max-w-[460px]">
-          <div className="flex items-start justify-center gap-4 sm:gap-6 pt-3">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
+        <ToolWindow name="rotate.pixi" status={`Angle: ${Math.round(angle)}°`} className="max-w-[460px] min-w-0">
+          <div className="flex items-start justify-center gap-2 pt-3">
             <ArtFrame tag="RotSprite 8x" glow caption={<span className="text-[var(--accent-sage)]">♥ clean lines</span>}>
               <canvas
                 ref={rotSpriteCanvasRef}
-                className="block w-24 h-24 sm:w-28 sm:h-28"
+                className="block w-[clamp(48px,6vw,96px)] h-auto aspect-square"
                 style={{ imageRendering: 'pixelated' }}
                 aria-label="RotSprite rotation output"
               />
@@ -115,7 +118,7 @@ export const RotSpriteShowcase: React.FC = () => {
             <ArtFrame tag="standard nearest" caption={<span className="text-[var(--accent-plum)]">✕ jaggy lines</span>}>
               <canvas
                 ref={standardCanvasRef}
-                className="block w-24 h-24 sm:w-28 sm:h-28 opacity-90"
+                className="block w-[clamp(48px,6vw,96px)] h-auto aspect-square opacity-90"
                 style={{ imageRendering: 'pixelated' }}
                 aria-label="Standard nearest neighbor rotation output"
               />
@@ -128,7 +131,10 @@ export const RotSpriteShowcase: React.FC = () => {
               <span className="font-mono text-[11px] text-[var(--text-muted)]">turn it</span>
               <button
                 type="button"
-                onClick={() => setIsSpinning((prev) => !prev)}
+                onClick={() => {
+                  complete(2);
+                  setIsSpinning((prev) => !prev);
+                }}
                 className="px-2.5 py-1 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--state-active)] font-mono text-[11px] font-bold text-[var(--text-heading)] shadow-[0_2px_0_var(--ink)] hover:text-[var(--accent-gold)] active:translate-y-px active:shadow-none transition-colors"
               >
                 {isSpinning ? '⏸ pause' : '▶ spin it'}
@@ -142,10 +148,11 @@ export const RotSpriteShowcase: React.FC = () => {
               step="1"
               value={angle}
               onChange={(e) => {
+                complete(0);
                 setIsSpinning(false);
                 setAngle(Number(e.target.value));
               }}
-              className="w-full accent-[#ffd285] cursor-pointer"
+              className="w-full accent-[var(--primary-bg)] cursor-pointer"
             />
             <div className="grid grid-cols-5 gap-1 mt-2 p-1 rounded-[3px] bg-[var(--surface-0)] border-2 border-[var(--ink)]">
               {[0, 22.5, 45, 90, 135].map((snap) => (
@@ -153,6 +160,7 @@ export const RotSpriteShowcase: React.FC = () => {
                   key={snap}
                   type="button"
                   onClick={() => {
+                    if (snap === 45) complete(1);
                     setIsSpinning(false);
                     setAngle(snap);
                   }}
@@ -169,15 +177,15 @@ export const RotSpriteShowcase: React.FC = () => {
           </div>
         </ToolWindow>
 
-        <div className="w-full max-w-[460px]">
+        <div className="w-full max-w-[460px] min-w-0">
           <Picker
             label="what to turn"
             value={spriteType}
             onChange={setSpriteType}
             options={[
-              { value: 'sword', label: 'Little blade', icon: <Dot color="#cdbfdf" /> },
-              { value: 'ghost', label: 'Hearth Ghost', icon: <Dot color="#ede8f4" /> },
-              { value: 'bun', label: 'Bun', icon: <Dot color="#f2b8c6" /> },
+              { value: 'sword', label: 'Little blade', icon: <Dot color="var(--accent-wisteria)" /> },
+              { value: 'ghost', label: 'Hearth Ghost', icon: <Dot color="var(--text-heading)" /> },
+              { value: 'bun', label: 'Bun', icon: <Dot color="var(--accent-plum)" /> },
             ]}
           />
         </div>

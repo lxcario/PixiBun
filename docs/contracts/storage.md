@@ -20,7 +20,7 @@ Browser-storage acknowledgement belongs to the autosave coordinator. Saving/down
 
 Project-layer PNGs encode raw RGBA samples, including normal-map data. The local pre-S4 hydration repair removes `iCCP` only from a temporary decoder copy and requests no color-space conversion. It preserves encoded image payloads and original stored/portable bytes; publication and rollback remain atomic. Temporary byte/copy memory is admitted before allocation. Truncated PNG chunks are refused before publication. This applies to project hydration, not general photo import or a new wide-gamut format.
 
-Native WebKit diagnosis found its own PNG profile changing cyan from `(0,255,255,255)` to `(1,255,255,255)` during bitmap decoding despite exact saved samples and `colorSpaceConversion: none`. A profile-free temporary copy restored exact samples, and the final three-engine Curve save/reload cases passed without changing RGB expectations. See [current status](../current-status.md#local-pre-s4-hardening-candidate) for the uncommitted source and evidence scope.
+Native WebKit diagnosis found its own PNG profile changing cyan from `(0,255,255,255)` to `(1,255,255,255)` during bitmap decoding despite exact saved samples and `colorSpaceConversion: none`. A profile-free temporary copy restored exact samples, and the final three-engine Curve save/reload cases passed without changing RGB expectations. See [current status](../current-status.md#local-pre-s4-hardening-candidate) for the original candidate source and evidence scope; that repair is now integrated in main.
 
 ## Logical versus physical raster records
 
@@ -64,6 +64,12 @@ Normal-map encoding rounds normalized components to bytes; flat is `(128,128,255
 An older deployment can lack the ArrayBuffer read path even with the same Dexie version. Rolling back a server does not roll back browser IndexedDB. Export portable backups and qualify the rollback reader against new physical records and optional metadata before reverting. Never clear storage as an automatic deployment step.
 
 Known reader incompatibilities are recorded in the [dated local candidate assessment (local archive)](../archives.md#record-docs-releases-2026-10-02-local-candidate-assessment-md). A module-level reader check can reject a specific candidate; it cannot qualify an entire historical production build, optional metadata or save-back behavior. Follow the [release-readiness guide](../guides/release-readiness.md).
+
+## Drawing history and explicit update restart
+
+The current drawing engine defaults to 4,096 steps per stack under the shared 64 MiB retained-payload ceiling. Ordinary edits store before/after dirty rectangles; structural entries and the separate full-layer replay baseline have their own accounting. History remains session memory and is not serialized. Motion settings retain separate 50-step parameter stacks. See [rendering](rendering.md#pixel-history-selection-and-display).
+
+[useStudioAutosave](../../src/hooks/studio/useStudioAutosave.ts) registers the save preparation used by [appRestart](../../src/lib/system/appRestart.ts). An explicit update restart refuses non-active lifecycle, practice ownership, failed saves and artwork still dirty after the save. The initiating page rechecks this boundary after controller change before reloading; other pages do not automatically reload. A reload restores persisted projects, not Undo/Redo or native file handles. Host/two-build qualification remains separate.
 
 ## Desktop practice checkpoint and handoff
 

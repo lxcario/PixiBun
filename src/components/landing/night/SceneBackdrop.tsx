@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { recolorCanvas } from '@/lib/theme/sceneRecolor';
-import { useSceneRecolor } from './useSceneRecolor';
+import { useSceneRecolorRef } from './useSceneRecolor';
 import { useReducedMotion } from 'motion/react';
 import { BAYER_4X4 } from '@/lib/canvas/ditherMatrix';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
@@ -353,7 +353,8 @@ function draw(ctx: CanvasRenderingContext2D, scene: BackdropScene, b: Built, t: 
 export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const reduceMotion = Boolean(useReducedMotion());
-  const recolor = useSceneRecolor();
+  const repaint = useRef<() => void>(() => {});
+  const recolor = useSceneRecolorRef(() => repaint.current());
 
   useEffect(() => {
     const el = ref.current;
@@ -380,8 +381,9 @@ export const SceneBackdrop: React.FC<{ scene: BackdropScene }> = ({ scene }) => 
     const paint = () => {
       if (!built) return;
       draw(ctx, scene, built, reduceMotion ? 0 : performance.now() - start);
-      recolorCanvas(ctx, recolor);
+      recolorCanvas(ctx, recolor.current);
     };
+    repaint.current = paint;
     const loop = () => {
       paint();
       if (visible && !reduceMotion) raf = requestAnimationFrame(loop);

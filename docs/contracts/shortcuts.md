@@ -35,7 +35,7 @@ Two keymaps share every letter shortcut and differ only in Space, Enter, Alt, Sh
 | Pixel grid | Ctrl/Cmd + Quote key; the produced apostrophe is the fallback when a physical code is unavailable |
 | Navigator keyboard pan / center | Focus overview: arrows by one pixel; Shift+arrows by eight; Enter centers |
 | Squint / CVD / swap colors | S / P / X |
-| Symmetry / selection flip | Shift+H/V toggles mirrors; H/V flip a selection through viewport handlers, or toggle mirrors when no selection |
+| Symmetry / selection flip | Shift+H/V toggles mirrors; H/V flip an active selection through viewport handlers; without a selection those bare keys do not toggle mirrors |
 
 Letter shortcuts use physical QWERTY key positions, including letter-based Save/Undo/Redo/clipboard commands. Where a keyboard does not report a physical letter code, the produced key provides a fallback. The grid toggle also accepts the physical Quote position. Other punctuation, numbers, Space and navigation retain their character/key meanings. This does not change the interface language or the operating system's keyboard layout.
 

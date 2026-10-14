@@ -1,7 +1,9 @@
 'use client';
 
+import { useThemePalette } from '@/lib/theme/useThemePalette';
 import React, { startTransition, useState, useEffect, useRef, useCallback } from 'react';
 import { ShowcaseNote } from './ShowcaseNote';
+import { useQuests } from './quests';
 import { Dot, Picker, ToolWindow } from './ToolKit';
 import { useReducedMotion } from 'motion/react';
 import { STARTER_TEMPLATES } from '@/lib/art/starterTemplates';
@@ -20,6 +22,8 @@ import { renderBoundedSpriteCastShadow, RaymarchedShadowParams } from '@/lib/ai/
 import { createOffscreenCanvas } from './showcaseSprites';
 
 export const PhotometricShowcase: React.FC = () => {
+  const palette = useThemePalette();
+  const { complete } = useQuests();
   const shouldReduceMotion = useReducedMotion();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('hearth-ghost');
   const [material, setMaterial] = useState<MaterialType>('matte');
@@ -88,13 +92,13 @@ export const PhotometricShowcase: React.FC = () => {
     for (let y = 0; y < stageH; y += 4) {
       for (let x = 0; x < stageW; x += 4) {
         const isAlt = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0;
-        ctx.fillStyle = isAlt ? 'rgba(54, 42, 72, 0.45)' : 'rgba(28, 21, 42, 0.65)';
+        ctx.fillStyle = isAlt ? palette.surface : palette.sunken;
         ctx.fillRect(x, y, 4, 4);
       }
     }
 
     // Floor boundary baseline
-    ctx.fillStyle = 'rgba(220, 171, 223, 0.15)';
+    ctx.fillStyle = palette.borderSubtle;
     ctx.fillRect(0, 25, stageW, 1);
 
     // 2. Compute 2.5D Bounded Cast or Drop Shadow synchronized to light bulb
@@ -103,7 +107,7 @@ export const PhotometricShowcase: React.FC = () => {
         lightAzimuth: azimuth,
         lightElevation: elevation,
         shadowOpacity: 0.68,
-        shadowColor: '#12091c',
+        shadowColor: palette.ink,
         ditherMode: '4x4',
         shadowStyle: shadowMode === 'drop' ? 'drop' : 'cast',
         isFloating: false,
@@ -144,7 +148,7 @@ export const PhotometricShowcase: React.FC = () => {
 
     const shadedCanvas = executePhotometricPipeline(baseCtx, width, height, params);
     ctx.drawImage(shadedCanvas, 8, 6);
-  }, [displayMode, shadowMode, material, celTones, azimuth, elevation, baseVersion]);
+  }, [displayMode, shadowMode, material, celTones, azimuth, elevation, baseVersion, palette]);
 
   // Precompute base canvas, tangent normal map, and scene EDT once when template changes
   useEffect(() => {
@@ -236,6 +240,7 @@ export const PhotometricShowcase: React.FC = () => {
   );
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    complete(0);
     setAutoOrbit(false);
     setIsDragging(true);
     try {
@@ -256,7 +261,13 @@ export const PhotometricShowcase: React.FC = () => {
   };
 
   // Keyboard navigation for accessible light direction adjustment
+  const chooseMaterial = (value: MaterialType) => { setDisplayMode('cel'); setMaterial(value); if (value !== 'matte') complete(1); };
+  const chooseLook = (value: 'cel' | 'normals') => { setDisplayMode(value); if (value === 'normals') complete(2); };
+  const chooseTones = (value: string) => { setDisplayMode('cel'); setCelTones(value === 'stepped'); };
+  const chooseShadow = (value: 'cast' | 'drop' | 'none') => { setDisplayMode('cel'); setShadowMode(value); };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key.startsWith('Arrow')) complete(0);
     switch (e.key) {
       case 'ArrowLeft':
         e.preventDefault();
@@ -296,23 +307,23 @@ export const PhotometricShowcase: React.FC = () => {
   const bulbCoords = lightAnglesToCoords(azimuth, elevation, 140, 140, gizmoRadius);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-      <div className="lg:col-span-7 flex flex-col items-center gap-5">
-        <ToolWindow name="lamp-test.pixi" status={`☀ ${Math.round(azimuth)}°`} className="max-w-[460px]">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
+        <ToolWindow name="lamp-test.pixi" status={`☀ ${Math.round(azimuth)}°`} className="max-w-[460px] min-w-0">
           {/* The little photo booth: drag the bulb around the sitter */}
           <div
-            className="relative mx-auto w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] rounded-[2px] border-2 border-[var(--ink)] overflow-hidden select-none"
+            className="relative mx-auto w-full aspect-square max-w-[250px] rounded-[2px] border-2 border-[var(--ink)] overflow-hidden select-none"
             style={{
               background:
-                'radial-gradient(circle at 50% 46%, #3a2560 0%, #241640 45%, #160d2a 100%)',
+                'radial-gradient(circle at 50% 46%, var(--surface-3), var(--desk-surface), var(--surface-0))',
             }}
           >
             <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 280 280" aria-hidden="true">
-              <circle cx="140" cy="140" r="105" fill="none" stroke="#5d4486" strokeWidth="2" strokeDasharray="2 6" />
-              <text x="140" y="22" fill="#8d76ad" fontSize="10" fontFamily="monospace" textAnchor="middle">N</text>
-              <text x="266" y="144" fill="#8d76ad" fontSize="10" fontFamily="monospace" textAnchor="end">E</text>
-              <text x="140" y="270" fill="#8d76ad" fontSize="10" fontFamily="monospace" textAnchor="middle">S</text>
-              <text x="14" y="144" fill="#8d76ad" fontSize="10" fontFamily="monospace" textAnchor="start">W</text>
+              <circle cx="140" cy="140" r="105" fill="none" stroke="var(--desk-border-highlight)" strokeWidth="2" strokeDasharray="2 6" />
+              <text x="140" y="22" fill="var(--text-muted)" fontSize="10" fontFamily="monospace" textAnchor="middle">N</text>
+              <text x="266" y="144" fill="var(--text-muted)" fontSize="10" fontFamily="monospace" textAnchor="end">E</text>
+              <text x="140" y="270" fill="var(--text-muted)" fontSize="10" fontFamily="monospace" textAnchor="middle">S</text>
+              <text x="14" y="144" fill="var(--text-muted)" fontSize="10" fontFamily="monospace" textAnchor="start">W</text>
             </svg>
 
             <span className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--primary-bg)] font-mono text-[10px] font-bold text-[var(--primary-fg)] pointer-events-none">
@@ -323,7 +334,7 @@ export const PhotometricShowcase: React.FC = () => {
               <div className="p-1.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--surface-0)] shadow-[0_4px_0_var(--ink)]">
                 <canvas
                   ref={displayCanvasRef}
-                  className="w-32 h-32 sm:w-36 sm:h-36 select-none"
+                  className="w-[clamp(96px,9vw,136px)] h-auto aspect-square select-none"
                   style={{ imageRendering: 'pixelated' }}
                   aria-label={`2.5D Photometrically shaded ${selectedTemplateId} sprite`}
                 />
@@ -350,19 +361,19 @@ export const PhotometricShowcase: React.FC = () => {
               <svg className="w-full h-full pointer-events-none" viewBox="0 0 280 280" aria-hidden="true">
                 <defs>
                   <radialGradient id="bulb-beam" cx="0.5" cy="0.5" r="0.5">
-                    <stop offset="0" stopColor="#ffd285" stopOpacity="0.5" />
-                    <stop offset="1" stopColor="#ffd285" stopOpacity="0" />
+                    <stop offset="0" stopColor="var(--primary-bg)" stopOpacity="0.5" />
+                    <stop offset="1" stopColor="var(--primary-bg)" stopOpacity="0" />
                   </radialGradient>
                 </defs>
                 <circle cx={bulbCoords.x} cy={bulbCoords.y} r="46" fill="url(#bulb-beam)" />
-                <line x1={bulbCoords.x} y1={bulbCoords.y} x2="140" y2="140" stroke="#ffd285" strokeOpacity="0.45" strokeWidth="2" strokeDasharray="3 4" />
+                <line x1={bulbCoords.x} y1={bulbCoords.y} x2="140" y2="140" stroke="var(--primary-bg)" strokeOpacity="0.45" strokeWidth="2" strokeDasharray="3 4" />
               </svg>
               <div
                 className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                 style={{ left: `${(bulbCoords.x / 280) * 100}%`, top: `${(bulbCoords.y / 280) * 100}%` }}
               >
-                <div className="relative w-9 h-9 grid place-items-center rounded-full bg-[var(--primary-bg)] border-2 border-[var(--ink)] shadow-[0_0_18px_rgba(255,210,133,0.85)] transition-transform hover:scale-110">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="#2a1945" aria-hidden="true">
+                <div className="relative w-9 h-9 grid place-items-center rounded-full bg-[var(--primary-bg)] border-2 border-[var(--ink)] shadow-[0_0_12px_var(--primary-bg)] transition-transform hover:scale-110">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="var(--primary-fg)" aria-hidden="true">
                     <path d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z" />
                   </svg>
                 </div>
@@ -377,7 +388,8 @@ export const PhotometricShowcase: React.FC = () => {
             </span>
             <button
               type="button"
-              onClick={() => setAutoOrbit((prev) => !prev)}
+              onClick={() => { setDisplayMode('cel'); setAutoOrbit((prev) => !prev); }}
+              aria-pressed={autoOrbit}
               className="px-2.5 py-1 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--state-active)] font-bold text-[var(--text-heading)] shadow-[0_2px_0_var(--ink)] hover:text-[var(--accent-gold)] active:translate-y-px active:shadow-none transition-colors"
               title="Toggle automatic orbital rotation"
             >
@@ -386,18 +398,18 @@ export const PhotometricShowcase: React.FC = () => {
           </div>
         </ToolWindow>
 
-        <div className="w-full max-w-[460px] grid gap-3">
+        <div className="w-full max-w-[460px] min-w-0 grid gap-3">
           <Picker
             label="who is posing"
             value={selectedTemplateId}
             onChange={setSelectedTemplateId}
             options={STARTER_TEMPLATES.map((tmpl) => ({ value: tmpl.id, label: tmpl.name.split(' ')[1] || tmpl.name }))}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-2">
             <Picker
               label="look"
               value={displayMode === 'normals' ? 'normals' : 'cel'}
-              onChange={setDisplayMode}
+              onChange={chooseLook}
               options={[
                 { value: 'cel', label: 'Painted' },
                 { value: 'normals', label: 'Shape map' },
@@ -406,7 +418,7 @@ export const PhotometricShowcase: React.FC = () => {
             <Picker
               label="tones"
               value={celTones ? 'stepped' : 'smooth'}
-              onChange={(v) => setCelTones(v === 'stepped')}
+              onChange={chooseTones}
               options={[
                 { value: 'stepped', label: 'Stepped' },
                 { value: 'smooth', label: 'Smooth' },
@@ -416,18 +428,18 @@ export const PhotometricShowcase: React.FC = () => {
           <Picker
             label="made of"
             value={material}
-            onChange={setMaterial}
+            onChange={chooseMaterial}
             options={[
-              { value: 'matte', label: 'Matte', icon: <Dot color="#cdbfdf" /> },
-              { value: 'gold', label: 'Gold', icon: <Dot color="#f0be7c" /> },
-              { value: 'glass', label: 'Glass', icon: <Dot color="#a8d8f0" /> },
-              { value: 'fabric', label: 'Fabric', icon: <Dot color="#e08ca6" /> },
+              { value: 'matte', label: 'Matte', icon: <Dot color="var(--accent-wisteria)" /> },
+              { value: 'gold', label: 'Gold', icon: <Dot color="var(--accent-gold)" /> },
+              { value: 'glass', label: 'Glass', icon: <Dot color="var(--accent-wisteria)" /> },
+              { value: 'fabric', label: 'Fabric', icon: <Dot color="var(--accent-plum)" /> },
             ]}
           />
           <Picker
             label="shadow"
             value={shadowMode}
-            onChange={setShadowMode}
+            onChange={chooseShadow}
             options={[
               { value: 'cast', label: 'Long shadow' },
               { value: 'drop', label: 'Soft shadow' },

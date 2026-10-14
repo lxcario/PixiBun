@@ -5,8 +5,8 @@ import { motion, useReducedMotion } from 'motion/react';
 
 const COLUMNS = 28;
 const PALETTES = {
-  gold: ['#f0be7c', '#ffd285', '#e5a962'],
-  plum: ['#dcabdf', '#c792df', '#9d7ec4'],
+  gold: ['var(--accent-gold)', 'var(--primary-bg)', 'var(--primary-shade)'],
+  plum: ['var(--accent-plum)', 'var(--accent-wisteria)', 'var(--accent-wisteria)'],
 };
 
 /**
@@ -25,7 +25,7 @@ export const PixelWaveDivider: React.FC<{ tone?: keyof typeof PALETTES }> = ({ t
           return (
             <motion.span
               key="gem"
-              className="mx-3 mb-1 w-3 h-3 shrink-0 rotate-45 bg-[var(--accent-gold)] shadow-[0_0_10px_rgba(240,190,124,0.6)]"
+              className="mx-3 mb-1 w-3 h-3 shrink-0 rotate-45 bg-[var(--accent-gold)] shadow-[0_0_10px_color-mix(in srgb, var(--primary-bg) 60%, transparent)]"
               initial={reduceMotion ? false : { scale: 0, rotate: 45 }}
               whileInView={reduceMotion ? undefined : { scale: 1, rotate: 405 }}
               viewport={{ once: true, margin: '-40px' }}

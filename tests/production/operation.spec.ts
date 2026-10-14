@@ -170,8 +170,9 @@ for (const delayed of [false, true]) test(`a real waiting update preserves both 
     version = 'phase3-new';
     await first.evaluate(async () => { await (await navigator.serviceWorker.getRegistration())!.update(); });
     await expect.poll(() => first.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
-    await first.getByRole('button', { name: 'Update instructions', exact: true }).click();
-    await expect(first.getByText(/close all PixiBun tabs/i)).toBeVisible();
+    // Legacy activation messages carry no explicit saved-restart consent.
+    await first.evaluate(async () => { (await navigator.serviceWorker.getRegistration())!.waiting!.postMessage({ type: 'SKIP_WAITING' }); });
+    await expect(first.getByRole('button', { name: 'Restart to update', exact: true })).toBeVisible();
     await expect.poll(() => first.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting))).toBe(true);
     await expect.poll(() => pixels(second)).toEqual(artwork);
     await first.close();
