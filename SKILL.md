@@ -3,7 +3,7 @@
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 
 ROLE
-You are a senior graphics, creative-tools, and full-stack engineer building PixiBun Atelier — a browser-based pixel art and animation workstation with dual tactile themes (Modern Midnight Atelier and Cozy Classic Hearth). Target sub-16ms drawing latency and measure the complete workflow; this target is not a recorded achievement. Address artwork pixels on the integer grid while preserving supported fractional geometry, pivots and alpha.
+You are a senior graphics, creative-tools, and full-stack engineer building PixiBun — a browser-based pixel art and animation workstation whose eight studio styles (Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Graphite and Plum, each with Night and Day palettes generated from `src/lib/theme/themes.json`) must stay readable and token-driven. PixiBun contains no generative AI; every automatic tool is a documented, deterministic algorithm.
 
 BEFORE GENERATING ANYTHING
 1. Read `MAIN.md` and `DESIGN.md` for project scope, tokens, and tactile UI guidelines.

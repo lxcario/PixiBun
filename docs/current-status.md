@@ -1,5 +1,7 @@
 # Current project status
 
+Updated 14 October 2026: [Strategy Phase 0 and 0.5](#strategy-phase-0-and-05-14-october-2026) below records the offline-safety, brand, theme and onboarding work on branch `phase-0-offline-safety`. The 13 October summary that follows keeps its original scope.
+
 Updated 13 October 2026. PixiBun 1.14.1 has the reviewed import/artwork, navigation and resource-cache repairs published on main at `210df955fd25c840ab52d92c2e9bcc95ed050f0e`. The [Studio/Nibbli source change record](releases/2026-10-13-studio-and-nibbli.md) describes the subsequent integrated source publication and its scoped checks. This page records bounded engineering results. Production release approval remains open.
 
 The 13 October change record covers all pending Curve/UI/Nibbli additions plus the publication review's Curve ownership/history/input safety corrections. Earlier references below to uncommitted content, base HEADs and unchanged application files describe their original dated stages. Their verdicts and source/build labels remain historical evidence; they are not claims that every later source revision reran those suites. Publication does not close M3 playback stability or free-angle artistic qualification. Raw evidence remains local under the archive policy.
@@ -7,6 +9,19 @@ The 13 October change record covers all pending Curve/UI/Nibbli additions plus t
 The final publication candidate passed the six-stage full gate: **2,370 unit tests /212 files**, warning-free lint, unchanged performance budgets and production compilation. **63 native browser cases** passed across Chromium, Firefox and WebKit 2× with zero retries/skips: 21 new Curve ownership cases and 42 existing regressions. Source/build stayed unchanged throughout. The [change record](releases/2026-10-13-studio-and-nibbli.md#verification-and-remaining-scope) retains exact labels and the earlier excluded/failed attempts. Separate Nibbli browser suites were not rerun in this publication. Secondary-color/recorded-color retention in Curve adjustment is a remaining source-inspection finding; primary-color safety qualification does not close it.
 
 The subsequent [documentation entrypoint follow-up](releases/2026-10-13-studio-and-nibbli.md#documentation-entrypoint-follow-up) aligns the root references and feature/handbook/security/export guidance with code publication `8c207b22cae6a1a2f4a7f299ee42f64f65a1c665`. It changes Markdown only. Application, artwork assets, controllers, tests, configs and dependencies remain identical to that commit. Browser/build results above retain their original labels and are not described as rerun for this documentation work. The Nibbli guide is included in source fingerprints, so a documentation-only identity change must not be mistaken for a new compiled-browser qualification.
+
+## Strategy Phase 0 and 0.5 — 14 October 2026 <a id="strategy-phase-0-and-05-14-october-2026"></a>
+
+Source commits on `phase-0-offline-safety`: `5c168380` (offline safety), `6737a78f` (brand and pledge), `58067ebb` (themes and onboarding), plus the RotSprite v3 contour engine and its documentation published with them. The plan is in the [strategy roadmap](plans/2026-10-14-strategy-roadmap.md).
+
+- **Offline (audit defect 1).** A panel first opened offline no longer crashes Studio or loses strokes. Production builds precache every listed static file; failed panels offer Try again; the crash screen saves before reporting "saved". `tests/production/offlinePanels.spec.ts` passed in Chromium, Firefox and WebKit, and failed at the FX panel when the build list was withheld.
+- **Brand.** The product is PixiBun; user-facing "AI" wording and the PixiBud chat state are removed; `/pledge` publishes the dated no-generative-AI pledge.
+- **Themes.** Saved Graphite and Plum choices had silently reverted on reload because hydration dropped the `<html>` theme attributes; that is fixed. Eight styles now have Night and Day palettes from `src/lib/theme/themes.json`; `tests/themeRegistry.test.ts` checks every palette's text roles against its panel colors at WCAG AA (palette pairs, not a conformance audit).
+- **Onboarding.** First-run welcome, level-based one-time tips, Tips and Replay welcome in the Studio menu. `tests/production/welcomeJourney.spec.ts` passed in Chromium, Firefox and WebKit.
+
+Verification on this source: 2,425 / 2,425 unit tests in 222 files, warning-free lint and type checks, documentation checks. The axe theme suite (`tests/e2e/themeAccessibility.spec.ts`, now 80 cases over 16 styles) passed 76 against the development server; the 4 failures were 4px color-picker sliders in the flat styles. After the 24px slider fix, the 16 affected inspector cases passed; the full 80 were not re-run. The same fix made `compactControlAccessibility.spec.ts` pass 4/4 in each of Chromium, Firefox and WebKit; it failed 4/4 in Chromium on `6737a78f`.
+
+Known failures, both also failing in Chromium on `6737a78f` without the theme work: `workspaceConsistency.spec.ts` navigator square-pixel alignment (y 55.02 instead of 56) and `stableStudioGeometry.spec.ts` color dock left edge (12px under the floating layout; the test expects under 10px). Not run: the complete production suite in every browser, and the precache list on a real Vercel deployment.
 
 ## Pre-S4 hardening and studio enhancements <a id="local-pre-s4-hardening-candidate"></a>
 

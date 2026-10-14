@@ -1,4 +1,4 @@
-# Security Policy — PixiBun Atelier
+# Security Policy — PixiBun
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 

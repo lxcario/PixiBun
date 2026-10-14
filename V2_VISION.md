@@ -1,4 +1,4 @@
-# PixiBun Atelier — v2 Architecture & Strategic Vision
+# PixiBun — v2 Architecture & Strategic Vision
 
 Planning status — 13 October 2026: the [current status](docs/current-status.md) records completed engineering validation and open release checks. Proposals below retain their own scope.
 

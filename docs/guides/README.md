@@ -6,7 +6,7 @@ A little drawing can begin with just one color and a few pixels. Pick the guide 
 
 For a facilitated observation session, use the [artist workflow study kit](artist-study.md). It separates complete automated journeys from real participant and device observations.
 
-![The current Cozy Classic studio with its canvas, tools and little starter friends.](../assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
+![The studio in Plum (then named Cozy Classic), captured 2 October 2026, with its canvas, tools and little starter friends.](../assets/screenshots/2026-10-02-feature-repairs-phase5/studio-cozy-dark.png)
 
 ## Your first small drawing
 
