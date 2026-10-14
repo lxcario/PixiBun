@@ -31,6 +31,8 @@ export interface ViewportSlice {
   panX: number;
   panY: number;
   showGrid: boolean;
+  /** Show transparent pixels as a checkerboard instead of white (on by default). */
+  showTransparencyChecker: boolean;
   showTilePreview: boolean;
   showIsoGuides: boolean;
   showFloatingPreview: boolean;
@@ -49,6 +51,7 @@ export interface ViewportSlice {
   setPan: (x: number, y: number) => void;
   setZoomAndPan: (zoom: number, panX: number, panY: number) => void;
   toggleGrid: () => void;
+  toggleTransparencyChecker: () => void;
   toggleTilePreview: () => void;
   toggleIsoGuides: () => void;
   toggleFloatingPreview: () => void;

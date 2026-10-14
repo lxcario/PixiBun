@@ -94,6 +94,8 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
   const setSymmetryGroup = useStudioStore((s) => s.setSymmetryGroup);
   const showGrid = useStudioStore((s) => s.showGrid);
   const toggleGrid = useStudioStore((s) => s.toggleGrid);
+  const showTransparencyChecker = useStudioStore((s) => s.showTransparencyChecker);
+  const toggleTransparencyChecker = useStudioStore((s) => s.toggleTransparencyChecker);
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
   const toggleIsoGuides = useStudioStore((s) => s.toggleIsoGuides);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
@@ -883,6 +885,24 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
                   <span>Pixel Grid</span>
                 </span>
                 <span className="text-[8px] font-mono opacity-70">Ctrl+'</span>
+              </button>
+
+              <button
+                onClick={toggleTransparencyChecker}
+                aria-pressed={showTransparencyChecker}
+                data-testid="toggle-transparency-checker"
+                title="Show transparent pixels as a checkerboard"
+                className={`pixel-tactile-btn px-2 py-1 text-[10px] font-medium rounded-[2px] border flex items-center justify-between cursor-pointer transition-colors ${
+                  showTransparencyChecker
+                    ? 'bg-[var(--surface-3)] text-[var(--text-heading)] border-[var(--desk-border-highlight)] shadow-inner font-semibold'
+                    : 'bg-[var(--surface-0)] text-[var(--text-muted)] border-[var(--desk-border)] hover:text-[var(--text-heading)] hover:border-[var(--desk-border-highlight)]'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-[1px] ${showTransparencyChecker ? 'bg-[var(--accent-wisteria)]' : 'bg-transparent border border-[var(--desk-border)]'}`} />
+                  <span aria-hidden="true" className="inline-block w-[11px] h-[11px] border border-[var(--desk-border)]" style={{ backgroundImage: 'repeating-conic-gradient(#d9d9d9 0% 25%, #ffffff 0% 50%)', backgroundSize: '6px 6px' }} />
+                  <span>Transparency</span>
+                </span>
               </button>
 
               <button

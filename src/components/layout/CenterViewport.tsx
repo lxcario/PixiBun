@@ -51,6 +51,7 @@ import { PixelLightBulbGizmo } from '@/components/studio/PixelLightBulbGizmo';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { RemoteCursorsOverlay } from '@/components/studio/RemoteCursorsOverlay';
 import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
+import { checkerStyle } from '@/lib/render/transparencyChecker';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -95,6 +96,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const zoom = useStudioStore((s) => s.zoom);
+  const showTransparencyChecker = useStudioStore((s) => s.showTransparencyChecker);
   const setZoom = useStudioStore((s) => s.setZoom);
   const panX = useStudioStore((s) => s.panX);
   const panY = useStudioStore((s) => s.panY);
@@ -1021,11 +1023,12 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
           </div>
         )}
 
-        {/* Layer 0: Clean Solid Canvas Background (Original Studio Ivory/White) */}
+        {/* Layer 0: transparency shows as a checkerboard on the art's pixel grid (View → Transparency), or plain white */}
         <div
           data-testid="canvas-solid-underlay"
-          className="absolute inset-0 bg-[#ffffff] pointer-events-none"
-          style={{ filter: cvdFilterCss }}
+          data-transparency={showTransparencyChecker ? 'checker' : 'white'}
+          className="absolute inset-0 pointer-events-none"
+          style={{ filter: cvdFilterCss, ...(showTransparencyChecker ? checkerStyle(zoom) : { backgroundColor: '#ffffff' }) }}
           aria-hidden="true"
         />
 
