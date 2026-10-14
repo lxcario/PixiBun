@@ -14,6 +14,7 @@ import { motionRigBytes } from '@/lib/animation/motionRigDocument';
 import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 import { commitWorkspace } from '@/lib/engine/workspaceTransaction';
+import { selectiveRestore } from '@/lib/engine/selectiveRestore';
 
 interface UseViewportDrawingProps {
   canvasWidth: number;
@@ -22,6 +23,17 @@ interface UseViewportDrawingProps {
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   onCommitHistory?: () => void;
   retainHistory?: boolean;
+}
+
+/**
+ * Co-draw steps carry the layer as it looked right after the change; restoring
+ * then keeps any pixel a partner has painted since (see selectiveRestore).
+ */
+function selectiveImage(live: ImageData, step: HistoryStep): ImageData | null {
+  if (step.type === 'structural' || !step.expectedImageData || step.createdLayerId) return null;
+  if (step.expectedImageData.width !== live.width || step.expectedImageData.height !== live.height) return null;
+  if (step.imageData.width !== live.width || step.imageData.height !== live.height) return null;
+  return new ImageData(selectiveRestore(live.data, step.imageData.data, step.expectedImageData.data), live.width, live.height);
 }
 
 export function useViewportDrawing({
@@ -140,6 +152,11 @@ export function useViewportDrawing({
       }
       if (snapshot.type !== 'structural' && snapshot.layerId) {
         touchBuffer(snapshot.layerId);
+        // While co-drawing, keep the result too, so Undo only takes back our own pixels.
+        if (coDrawBridge.getRole() !== null && !snapshot.createdLayerId) {
+          const after = getOrCreateLayerCanvas(snapshot.layerId).getContext('2d', { willReadFrequently: true });
+          if (after) snapshot.expectedImageData = after.getImageData(0, 0, snapshot.imageData.width, snapshot.imageData.height);
+        }
       }
       historyEngineRef.current.push(snapshot);
       currentStrokeSnapshotRef.current = null;
@@ -153,7 +170,7 @@ export function useViewportDrawing({
         coDrawBridge.notifyStrokeCommitted(snapshot.layerId, snapshot.imageData);
       }
     }
-  }, [onCommitHistory, setCanRedo, setCanUndo]);
+  }, [getOrCreateLayerCanvas, onCommitHistory, setCanRedo, setCanUndo]);
 
   // Abandon an in-progress preview without touching the committed undo stack.
   // Long-lived interactive tools restore their own preview buffer, then use
@@ -226,6 +243,7 @@ export function useViewportDrawing({
     if (!admitHistoryTransition(previousStep, previousStep.type === 'structural' ? getRedoCaptureLayerIds(previousStep, useStudioStore.getState()) : [])) return;
 
     let currentStep: HistoryStep;
+    let undoImage: ImageData | null = null;
 
     if (previousStep.type === 'structural') {
       const state = useStudioStore.getState();
@@ -267,11 +285,13 @@ export function useViewportDrawing({
       if (!ctx) return;
 
       const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      undoImage = selectiveImage(currentImgData, previousStep);
       currentStep = {
         type: 'pixel',
         layerId: previousStep.layerId,
         frameIndex: previousStep.frameIndex,
         imageData: currentImgData,
+        ...(undoImage ? { expectedImageData: undoImage } : {}),
         description: previousStep.description,
         createdLayerId: previousStep.createdLayerId,
         createdLayerTag: previousStep.createdLayerTag,
@@ -335,7 +355,8 @@ export function useViewportDrawing({
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          if (undoImage) targetCtx.putImageData(undoImage, 0, 0);
+          else targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
           touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {
@@ -373,6 +394,7 @@ export function useViewportDrawing({
     if (!admitHistoryTransition(nextStep, nextStep.type === 'structural' ? nextStep.affectedLayerIds ?? [] : [])) return;
 
     let currentStep: HistoryStep;
+    let redoImage: ImageData | null = null;
 
     if (nextStep.type === 'structural') {
       const state = useStudioStore.getState();
@@ -438,11 +460,13 @@ export function useViewportDrawing({
       if (!ctx) return;
 
       const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      redoImage = selectiveImage(currentImgData, nextStep);
       currentStep = {
         type: 'pixel',
         layerId: nextStep.layerId,
         frameIndex: nextStep.frameIndex,
         imageData: currentImgData,
+        ...(redoImage ? { expectedImageData: redoImage } : {}),
         description: nextStep.description,
         createdLayerId: nextStep.createdLayerId,
         createdLayerTag: nextStep.createdLayerTag,
@@ -533,7 +557,8 @@ export function useViewportDrawing({
         const targetCanvas = getOrCreateLayerCanvas(stepToRestore.layerId);
         const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true });
         if (targetCtx) {
-          targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
+          if (redoImage) targetCtx.putImageData(redoImage, 0, 0);
+          else targetCtx.putImageData(stepToRestore.imageData, stepToRestore.x ?? 0, stepToRestore.y ?? 0);
           touchBuffer(stepToRestore.layerId);
         }
         useStudioStore.setState((state) => {

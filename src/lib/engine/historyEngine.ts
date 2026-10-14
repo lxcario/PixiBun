@@ -109,7 +109,7 @@ export function calculateStepBytes(step: HistoryStep): number {
     // Pixel step
     const dataLen = step.imageData?.data?.byteLength ??
       (step.imageData ? (step.imageData.width || 0) * (step.imageData.height || 0) * 4 : 0);
-    return dataLen + 512;
+    return dataLen + (step.expectedImageData?.data?.byteLength ?? 0) + 512;
   }
 }
 
