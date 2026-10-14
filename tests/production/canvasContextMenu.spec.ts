@@ -7,6 +7,9 @@ async function open(page: Page) {
   await expect(page.getByRole('dialog', { name: 'Canvas tools', exact: true })).toBeVisible();
 }
 test.beforeEach(async ({ page }) => {
+  // Right-click on the artwork opens this popup in the PixiBun classic keymap; the
+  // standard keymap paints there instead (see keymaps.spec.ts).
+  await page.addInitScript(() => localStorage.setItem('pixibun-preferences', JSON.stringify({ keymap: 'classic' })));
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/studio?template=hearth-ghost');
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();

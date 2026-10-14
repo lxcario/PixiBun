@@ -27,6 +27,8 @@ export interface CurvePointerHandlerProps {
   discardSnapshot?: () => void;
   performUndo?: () => void;
   renderComposite: () => void;
+  /** Whether a new curve uses the secondary color (keymap-dependent; defaults to Shift). */
+  usesSecondary?: (e: { shiftKey: boolean } | undefined) => boolean;
 }
 
 export interface CommittedCurveRecord {
@@ -72,6 +74,7 @@ export function useCurvePointerHandler({
   discardSnapshot,
   performUndo,
   renderComposite,
+  usesSecondary = e => !!e?.shiftKey,
 }: CurvePointerHandlerProps) {
   const tools = useStudioStore((s) => s.tools);
   const primaryColor = useStudioStore((s) => s.primaryColor);
@@ -321,7 +324,8 @@ export function useCurvePointerHandler({
   );
 
   const onPointerDown = (e: React.PointerEvent, coords: Point): boolean => {
-    if (e.button !== 0) return false;
+    // The right button only arrives here for a secondary-color curve (standard keymap).
+    if (e.button !== 0 && e.button !== 2) return false;
 
     const currentFrame = frames[activeFrameIndex];
     const currentLayer = currentFrame?.layers.find((l) => l.id === activeLayerId);
@@ -408,7 +412,8 @@ export function useCurvePointerHandler({
     }
 
     // Start drafting new curve
-    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+    const secondary = usesSecondary(e);
+    const drawColor = secondary ? secondaryColor : primaryColor;
     curveStateRef.current = {
       layerId: currentLayer.id,
       ownerKey: workspaceJobKey([currentLayer.id]),
@@ -418,7 +423,7 @@ export function useCurvePointerHandler({
       control: { ...coords },
       end: { ...coords },
       drawColor,
-      colorSource: e.shiftKey ? 'secondary' : 'primary',
+      colorSource: secondary ? 'secondary' : 'primary',
       draggingHandle: null,
       hoveredHandle: null,
     };

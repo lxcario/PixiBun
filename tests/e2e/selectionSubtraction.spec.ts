@@ -56,11 +56,12 @@ for (const tool of ['select-box', 'select-lasso', 'select-wand']) {
       await page.mouse.up({ button: 'middle' });
       await expect.poll(async () => (await canvas.boundingBox())!.x).toBe(box.x + 24);
       await page.evaluate(() => (window as unknown as StudioWindow).__studioStore.getState().setActiveTool('pen'));
-      await page.keyboard.down('Alt');
+      // Standard keymap: hold Space to pan with a drawing tool (Alt picks a color).
+      await page.keyboard.down('Space');
       await page.mouse.down();
       await page.mouse.move(at(12, 12).x + 48, at(12, 12).y);
       await page.mouse.up();
-      await page.keyboard.up('Alt');
+      await page.keyboard.up('Space');
       await expect.poll(async () => (await canvas.boundingBox())!.x).toBe(box.x + 48);
     }
   });

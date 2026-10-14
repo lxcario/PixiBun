@@ -8,6 +8,7 @@ import { PixelIcon } from '@/components/ui/PixelIcon';
 import { STUDIO_COMMANDS, type StudioCommand } from '@/config/studioCommands';
 import { ModalWrapper } from '@/components/ui/ModalWrapper';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 type CommandItem = StudioCommand;
 
@@ -57,6 +58,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const canvasWidth = useStudioStore((s) => s.canvasWidth);
   const canvasHeight = useStudioStore((s) => s.canvasHeight);
   const isPlaying = useStudioStore((s) => s.isPlaying);
+  const keymap = usePreferencesStore((s) => s.keymap);
   const setIsPlaying = useStudioStore((s) => s.setIsPlaying);
   const activeFrameIndex = useStudioStore((s) => s.activeFrameIndex);
   const setActiveFrame = useStudioStore((s) => s.setActiveFrame);
@@ -145,7 +147,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       title: isPlaying ? 'Pause Animation Playback' : 'Play Animation',
       category: 'Animation',
       icon: isPlaying ? 'pause' : 'play',
-      shortcut: 'Space',
+      shortcut: keymap === 'classic' ? 'Space' : 'Enter',
       action: () => setIsPlaying(!isPlaying),
     });
 
@@ -312,6 +314,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
     return list;
   }, [
+    keymap,
     swapColors,
     toggleIsoGuides,
     toggleTilePreview,

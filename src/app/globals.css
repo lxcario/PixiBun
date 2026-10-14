@@ -1331,3 +1331,13 @@ body.moon-ui .moon-slot-timeline button[aria-label^="Select frame"]:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 0 var(--moon-ink), 0 0 14px var(--moon-glow);
 }
+
+/* Standard keymap: holding Space turns the artwork into a hand for panning. */
+html[data-space-pan] #main-content,
+html[data-space-pan] #main-content * {
+  cursor: grab !important;
+}
+html[data-space-pan] #main-content:active,
+html[data-space-pan] #main-content:active * {
+  cursor: grabbing !important;
+}

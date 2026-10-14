@@ -7,6 +7,8 @@ import { getNextZoomStep, getPrevZoomStep } from '@/config/zoom';
 import { studioCommandForKey } from '@/config/studioCommands';
 import { cycleCvdLens } from '@/lib/color/cvdLens';
 import { isWorkspaceControlTarget, shouldIgnoreWorkspaceKey, workspaceShortcutKey } from '@/lib/input/workspaceKeyboard';
+import { playbackKey, setSpaceHeld } from '@/lib/input/keymap';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 import type { SaveResult } from '@/types/project';
 
@@ -108,6 +110,14 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
 
       // Single Key & Shift Key Shortcuts
       if (e.ctrlKey || e.metaKey) return;
+      const keymap = usePreferencesStore.getState().keymap;
+      // Standard keymap: Enter plays, unless it is committing a selection.
+      if (e.key === 'Enter' && playbackKey(keymap) === 'Enter' && !e.shiftKey && !e.defaultPrevented
+        && !isWorkspaceControlTarget(e) && !state.selection && !state.selectionMask) {
+        e.preventDefault();
+        state.setIsPlaying(!state.isPlaying);
+        return;
+      }
       switch (key) {
         case 'h': {
           if (!e.ctrlKey && !e.metaKey) {
@@ -155,7 +165,9 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
           // Space activates a focused menu button; it must not start playback.
           if (isWorkspaceControlTarget(e)) return;
           e.preventDefault();
-          state.setIsPlaying(!state.isPlaying);
+          // Standard keymap: hold Space and drag to pan. Classic: Space plays.
+          if (playbackKey(usePreferencesStore.getState().keymap) === ' ') state.setIsPlaying(!state.isPlaying);
+          else setSpaceHeld(true);
           break;
         case ',':
           state.setActiveFrame((state.activeFrameIndex - 1 + state.frames.length) % state.frames.length);
@@ -168,7 +180,16 @@ export function useStudioKeyboard(options: UseStudioKeyboardOptions): void {
       }
     };
 
+    const releaseSpace = (e: KeyboardEvent) => { if (e.key === ' ') setSpaceHeld(false); };
+    const releaseAll = () => setSpaceHeld(false);
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', releaseSpace);
+    window.addEventListener('blur', releaseAll);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', releaseSpace);
+      window.removeEventListener('blur', releaseAll);
+      setSpaceHeld(false);
+    };
   }, []);
 }

@@ -1,5 +1,6 @@
 import { PixelIconName } from '@/components/ui/PixelIcon';
 import { ToolType } from '@/types/tools';
+import type { Keymap } from '@/lib/input/keymap';
 
 export type ShortcutCategory = 'Tools' | 'Editing' | 'Canvas & Viewport' | 'Animation';
 
@@ -8,6 +9,8 @@ export interface ShortcutEntry {
   description: string;
   category: ShortcutCategory;
   toolId?: ToolType;
+  /** Shown only for this keymap; entries without one apply to both. */
+  keymap?: Keymap;
 }
 
 export interface ToolMeta {
@@ -78,10 +81,16 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
   { key: 'Esc', description: 'Deselect / Commit Float', category: 'Editing' },
   { key: 'Shift + Select', description: 'Add to Selection (Union)', category: 'Editing' },
   { key: 'Alt + Select', description: 'Subtract from Selection', category: 'Editing' },
+  { key: 'Alt + Click', description: 'Pick Color (right button: secondary)', category: 'Editing', keymap: 'standard' },
+  { key: 'Shift + Click', description: 'Straight Line from Last Pixel', category: 'Editing', keymap: 'standard' },
+  { key: 'Right-click', description: 'Paint with Secondary Color', category: 'Editing', keymap: 'standard' },
+  { key: 'Shift + Paint', description: 'Paint with Secondary Color', category: 'Editing', keymap: 'classic' },
+  { key: 'Right-click', description: 'Canvas Tools Popup', category: 'Editing', keymap: 'classic' },
 
   // Canvas & Viewport
   { key: 'Shift + Tab', description: 'Canvas only / Restore Panels (canvas focus)', category: 'Canvas & Viewport' },
-  { key: 'Middle / Alt + Drag', description: 'Pan Canvas Viewport', category: 'Canvas & Viewport' },
+  { key: 'Space / Middle + Drag', description: 'Pan Canvas Viewport', category: 'Canvas & Viewport', keymap: 'standard' },
+  { key: 'Middle / Alt + Drag', description: 'Pan Canvas Viewport', category: 'Canvas & Viewport', keymap: 'classic' },
   { key: 'Arrow Keys', description: 'Pan Viewport / Nudge Selection', category: 'Canvas & Viewport' },
   { key: 'Mouse Wheel', description: 'Zoom In / Out Canvas', category: 'Canvas & Viewport' },
   { key: 'Ctrl + + / -', description: 'Zoom In / Out Step', category: 'Canvas & Viewport' },
@@ -95,7 +104,8 @@ export const CANONICAL_SHORTCUTS: ShortcutEntry[] = [
 
   // Animation
   { key: 'F3', description: 'Toggle Onion Skin', category: 'Animation' },
-  { key: 'Space', description: 'Play / Pause Animation', category: 'Animation' },
+  { key: 'Enter', description: 'Play / Pause Animation', category: 'Animation', keymap: 'standard' },
+  { key: 'Space', description: 'Play / Pause Animation', category: 'Animation', keymap: 'classic' },
   { key: ',', description: 'Step to Previous Frame', category: 'Animation' },
   { key: '.', description: 'Step to Next Frame', category: 'Animation' },
 ];
@@ -130,3 +140,8 @@ export const TOOL_METADATA_MAP: Record<string, { label: string; shortcut: string
     },
     {} as Record<string, { label: string; shortcut: string; icon: PixelIconName }>
   );
+
+/** The shortcut list for one keymap. */
+export function shortcutsForKeymap(keymap: Keymap): ShortcutEntry[] {
+  return CANONICAL_SHORTCUTS.filter(entry => !entry.keymap || entry.keymap === keymap);
+}

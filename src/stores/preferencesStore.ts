@@ -1,6 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { parseKeymap, type Keymap } from '@/lib/input/keymap';
 
 /** How much pixel art someone has made; tunes tips and defaults, never locks features. */
 export type Experience = 'new' | 'some' | 'pro';
@@ -13,6 +14,8 @@ export interface Preferences {
   seenTips: string[];
   /** People can switch tips off entirely, whatever their experience. */
   tipsEnabled: boolean;
+  /** Canvas mouse and key conventions (see keymap.ts). */
+  keymap: Keymap;
 }
 
 interface PreferencesStore extends Preferences {
@@ -23,12 +26,13 @@ interface PreferencesStore extends Preferences {
   completeOnboarding: () => void;
   markTipSeen: (id: string) => void;
   setTipsEnabled: (enabled: boolean) => void;
+  setKeymap: (keymap: Keymap) => void;
   resetOnboarding: () => void;
 }
 
 export const PREFERENCES_KEY = 'pixibun-preferences';
 
-const DEFAULTS: Preferences = { experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true };
+const DEFAULTS: Preferences = { experience: null, onboardedAt: null, seenTips: [], tipsEnabled: true, keymap: 'standard' };
 
 export function parsePreferences(raw: string | null): Preferences {
   if (!raw || raw.length > 8192) return { ...DEFAULTS };
@@ -39,6 +43,7 @@ export function parsePreferences(raw: string | null): Preferences {
       onboardedAt: typeof value.onboardedAt === 'number' && Number.isFinite(value.onboardedAt) ? value.onboardedAt : null,
       seenTips: Array.isArray(value.seenTips) ? value.seenTips.filter((id): id is string => typeof id === 'string' && id.length <= 64).slice(0, 64) : [],
       tipsEnabled: value.tipsEnabled !== false,
+      keymap: parseKeymap(value.keymap),
     };
   } catch {
     return { ...DEFAULTS };
@@ -47,8 +52,8 @@ export function parsePreferences(raw: string | null): Preferences {
 
 function persist(state: Preferences) {
   try {
-    const { experience, onboardedAt, seenTips, tipsEnabled } = state;
-    window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ experience, onboardedAt, seenTips, tipsEnabled }));
+    const { experience, onboardedAt, seenTips, tipsEnabled, keymap } = state;
+    window.localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ experience, onboardedAt, seenTips, tipsEnabled, keymap }));
   } catch {
     // Restricted storage: preferences last for this visit only.
   }
@@ -71,6 +76,7 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => {
       if (!get().seenTips.includes(id)) update({ seenTips: [...get().seenTips, id] });
     },
     setTipsEnabled: tipsEnabled => update({ tipsEnabled }),
+    setKeymap: keymap => update({ keymap }),
     resetOnboarding: () => update({ onboardedAt: null, seenTips: [] }),
   };
 });

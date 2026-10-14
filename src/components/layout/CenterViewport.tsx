@@ -52,6 +52,8 @@ import { studioEvents } from '@/lib/events/studioEvents';
 import { RemoteCursorsOverlay } from '@/components/studio/RemoteCursorsOverlay';
 import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { checkerStyle } from '@/lib/render/transparencyChecker';
+import { rightClickOpensToolsPopup } from '@/lib/input/keymap';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -907,7 +909,13 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onContextMenu={radialMenu.handleContextMenu}
+      onContextMenu={(e) => {
+        // Standard keymap: right-click on the artwork paints, so only the space
+        // around it opens the tools popup.
+        const onArtwork = clientToCanvasCoords(e.clientX, e.clientY) !== null;
+        if (rightClickOpensToolsPopup(usePreferencesStore.getState().keymap, onArtwork)) radialMenu.handleContextMenu(e);
+        else e.preventDefault();
+      }}
     >
       {/* Mode Indicators */}
       <div 

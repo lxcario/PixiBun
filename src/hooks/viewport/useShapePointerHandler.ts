@@ -17,6 +17,8 @@ interface ShapeHandlerProps {
   strokeStart: Point | null;
   previewCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   drawPointsOnActiveLayer: (points: Point[], color: string, isErase: boolean) => void;
+  /** Whether this event draws with the secondary color (keymap-dependent; defaults to Shift). */
+  usesSecondary?: (e: { shiftKey: boolean } | undefined) => boolean;
 }
 
 export function useShapePointerHandler({
@@ -25,6 +27,7 @@ export function useShapePointerHandler({
   strokeStart,
   previewCanvasRef,
   drawPointsOnActiveLayer,
+  usesSecondary = e => !!e?.shiftKey,
 }: ShapeHandlerProps) {
   const tools = useStudioStore((s) => s.tools);
   const primaryColor = useStudioStore((s) => s.primaryColor);
@@ -35,7 +38,7 @@ export function useShapePointerHandler({
   };
 
   const onPointerMove = (e: React.PointerEvent, coords: Point) => {
-    const drawColor = e.shiftKey ? secondaryColor : primaryColor;
+    const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
 
     if (
       (tools.activeTool === 'line' ||
@@ -135,7 +138,7 @@ export function useShapePointerHandler({
         );
       }
 
-      const drawColor = e?.shiftKey ? secondaryColor : primaryColor;
+      const drawColor = usesSecondary(e) ? secondaryColor : primaryColor;
       drawPointsOnActiveLayer(shapePoints, drawColor, false);
     }
   };
