@@ -301,7 +301,7 @@ export const PhotometricShowcase: React.FC = () => {
         <ToolWindow name="lamp-test.pixi" status={`☀ ${Math.round(azimuth)}°`} className="max-w-[460px]">
           {/* The little photo booth: drag the bulb around the sitter */}
           <div
-            className="relative mx-auto w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] rounded-[2px] border-2 border-[#0b0714] overflow-hidden select-none"
+            className="relative mx-auto w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] rounded-[2px] border-2 border-[var(--ink)] overflow-hidden select-none"
             style={{
               background:
                 'radial-gradient(circle at 50% 46%, #3a2560 0%, #241640 45%, #160d2a 100%)',
@@ -315,12 +315,12 @@ export const PhotometricShowcase: React.FC = () => {
               <text x="14" y="144" fill="#8d76ad" fontSize="10" fontFamily="monospace" textAnchor="start">W</text>
             </svg>
 
-            <span className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-[2px] border-2 border-[#0b0714] bg-[#ffd285] font-mono text-[10px] font-bold text-[#2a1945] pointer-events-none">
+            <span className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--primary-bg)] font-mono text-[10px] font-bold text-[var(--primary-fg)] pointer-events-none">
               drag the bulb ✦
             </span>
 
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-              <div className="p-1.5 rounded-[2px] border-2 border-[#0b0714] bg-[#140b21] shadow-[0_4px_0_#0b0714]">
+              <div className="p-1.5 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--surface-0)] shadow-[0_4px_0_var(--ink)]">
                 <canvas
                   ref={displayCanvasRef}
                   className="w-32 h-32 sm:w-36 sm:h-36 select-none"
@@ -344,7 +344,7 @@ export const PhotometricShowcase: React.FC = () => {
               onPointerMove={handleGizmoPointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              className="absolute inset-0 z-20 cursor-grab active:cursor-grabbing touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#ffd285]"
+              className="absolute inset-0 z-20 cursor-grab active:cursor-grabbing touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-gold)]"
               title="Drag the glowing bulb to change the light source direction (or use Arrow keys)!"
             >
               <svg className="w-full h-full pointer-events-none" viewBox="0 0 280 280" aria-hidden="true">
@@ -361,7 +361,7 @@ export const PhotometricShowcase: React.FC = () => {
                 className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                 style={{ left: `${(bulbCoords.x / 280) * 100}%`, top: `${(bulbCoords.y / 280) * 100}%` }}
               >
-                <div className="relative w-9 h-9 grid place-items-center rounded-full bg-[#ffd285] border-2 border-[#0b0714] shadow-[0_0_18px_rgba(255,210,133,0.85)] transition-transform hover:scale-110">
+                <div className="relative w-9 h-9 grid place-items-center rounded-full bg-[var(--primary-bg)] border-2 border-[var(--ink)] shadow-[0_0_18px_rgba(255,210,133,0.85)] transition-transform hover:scale-110">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="#2a1945" aria-hidden="true">
                     <path d="M6 1h4v2H6V1zM4 3h8v2H4V3zm-1 2h10v3H3V5zm2 3h6v2H5V8zm1 2h4v1H6v-1zm1 1h2v3H7v-3z" />
                   </svg>
@@ -370,15 +370,15 @@ export const PhotometricShowcase: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3 font-mono text-[11px] text-[#cdbfdf]">
+          <div className="mt-3 flex items-center justify-between gap-3 font-mono text-[11px] text-[var(--text-muted)]">
             <span>
-              light from <span className="text-[#ffd285]">{Math.round(azimuth)}°</span>, up{' '}
-              <span className="text-[#ffd285]">{Math.round(elevation)}°</span>
+              light from <span className="text-[var(--accent-gold)]">{Math.round(azimuth)}°</span>, up{' '}
+              <span className="text-[var(--accent-gold)]">{Math.round(elevation)}°</span>
             </span>
             <button
               type="button"
               onClick={() => setAutoOrbit((prev) => !prev)}
-              className="px-2.5 py-1 rounded-[2px] border-2 border-[#0b0714] bg-[#2f1d52] font-bold text-[#fff3e0] shadow-[0_2px_0_#0b0714] hover:text-[#ffd285] active:translate-y-px active:shadow-none transition-colors"
+              className="px-2.5 py-1 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--state-active)] font-bold text-[var(--text-heading)] shadow-[0_2px_0_var(--ink)] hover:text-[var(--accent-gold)] active:translate-y-px active:shadow-none transition-colors"
               title="Toggle automatic orbital rotation"
             >
               {autoOrbit ? '⏸ Orbit' : '▶ Auto-Orbit'}

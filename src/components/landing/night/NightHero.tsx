@@ -4,6 +4,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { BUN_ACTIONS, INTRO_MS, MoonlitScene, type BunAction, type Constellation } from './moonlitScene';
+import { useThemeStore } from '@/stores/themeStore';
+import { isSceneTheme } from '@/lib/theme/registry';
+import { buildScene, paintSceneParticles, type BuiltScene } from '@/lib/theme/scenes';
+import { recolorCanvas, sceneRecolor } from '@/lib/theme/sceneRecolor';
 
 const SEEN_KEY = 'pixibun_night_intro_v1';
 const MAX_STARS = 14;
@@ -76,6 +80,10 @@ export const NightHero: React.FC = () => {
   const [labels, setLabels] = useState<Label[]>([]);
   const [announce, setAnnounce] = useState('');
   const labelId = useRef(0);
+  // The painted night follows the studio theme: recolored into its palette, by day or night,
+  // with the theme's own drifting particles (petals, bubbles, sparks...) on top.
+  const studioTheme = useThemeStore((s) => s.studioTheme);
+  const day = useThemeStore((s) => s.colorScheme) === 'light';
 
   const { scrollY } = useScroll();
   const labelShift = useTransform(scrollY, (v) => v * 0.5);
@@ -114,12 +122,14 @@ export const NightHero: React.FC = () => {
     if (skipIntro === null) return;
     const section = sectionRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     if (!section || !canvas || !ctx) return;
 
     let raf = 0;
     let visible = true;
     const frozen = reduceMotion;
+    const recolor = sceneRecolor(studioTheme, day);
+    let motes: BuiltScene | null = null;
 
     const build = () => {
       const rect = section.getBoundingClientRect();
@@ -135,6 +145,7 @@ export const NightHero: React.FC = () => {
       canvas.style.height = `${h * PX}px`;
       ctx.imageSmoothingEnabled = false;
       sceneRef.current = new MoonlitScene(w, h, ctx);
+      motes = isSceneTheme(studioTheme) ? buildScene(studioTheme, day, w, h) : null;
     };
 
     const draw = () => {
@@ -153,6 +164,9 @@ export const NightHero: React.FC = () => {
         bunAction: bunAction.current,
         bunHover: bunHover.current,
       });
+      recolorCanvas(ctx, recolor);
+      // The hero paints its own stars; add only the theme's other particles.
+      if (motes) paintSceneParticles(ctx, motes, t, ['stars']);
     };
     renderNow.current = draw;
 
@@ -181,7 +195,7 @@ export const NightHero: React.FC = () => {
       ro.disconnect();
       io.disconnect();
     };
-  }, [skipIntro, reduceMotion, now]);
+  }, [skipIntro, reduceMotion, now, studioTheme, day]);
 
   const toLogical = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current!;
@@ -283,7 +297,7 @@ export const NightHero: React.FC = () => {
     <section
       ref={sectionRef}
       aria-label="Welcome to PixiBun"
-      className="relative min-h-[max(100svh,640px)] overflow-hidden bg-[#0d0a1c] text-[#fff3e0] select-none"
+      className="relative min-h-[max(100svh,640px)] overflow-hidden bg-[var(--desk-bg)] text-[var(--text-heading)] select-none"
       style={{ touchAction: 'pan-y' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -311,7 +325,7 @@ export const NightHero: React.FC = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="absolute -translate-x-1/2 whitespace-nowrap font-mono text-[11px] tracking-wide text-[#f6d7f7] [text-shadow:0_1px_0_#0d0a1c]"
+              className="absolute -translate-x-1/2 whitespace-nowrap font-mono text-[11px] tracking-wide text-[var(--accent-plum)] [text-shadow:0_1px_0_var(--desk-bg)]"
               style={{ left: label.x, top: label.y }}
             >
               ✦ {label.name}
@@ -324,7 +338,7 @@ export const NightHero: React.FC = () => {
       <div
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 60% 55% at 22% 38%, rgba(13,10,28,0.55) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(ellipse 58% 72% at 20% 50%, color-mix(in srgb, var(--desk-bg) 72%, transparent) 0%, color-mix(in srgb, var(--desk-bg) 35%, transparent) 45%, transparent 72%)' }}
       />
 
       {skipIntro !== null && (
@@ -335,14 +349,14 @@ export const NightHero: React.FC = () => {
           <div className="max-w-xl">
             <motion.p
               {...reveal(1.3, skip)}
-              className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] uppercase text-[#f0be7c]"
+              className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] uppercase text-[var(--accent-gold)]"
             >
-              <span aria-hidden="true" className="inline-block w-2 h-2 bg-[#f0be7c] animate-pulse" />
+              <span aria-hidden="true" className="inline-block w-2 h-2 bg-[var(--accent-gold)] animate-pulse" />
               hand-made, never generated
             </motion.p>
 
             <h1
-              className="mt-5 font-display leading-[1.02] tracking-tight [text-shadow:0_4px_0_#0d0a1c]"
+              className="mt-5 font-display leading-[1.02] tracking-tight [text-shadow:0_4px_0_var(--desk-bg)]"
               style={{ fontSize: 'clamp(2.5rem, 6.4vw, 5.4rem)' }}
             >
               {[
@@ -353,7 +367,7 @@ export const NightHero: React.FC = () => {
               ].map(([word, gold], i) => (
                 <span key={word as string} className="inline-block overflow-hidden align-bottom pb-[0.08em] mr-[0.28em]">
                   <motion.span
-                    className={`inline-block ${gold ? 'text-[#ffd285]' : ''}`}
+                    className={`inline-block ${gold ? 'text-[var(--accent-gold)]' : ''}`}
                     initial={skip ? false : { y: '110%', rotate: 6 }}
                     animate={{ y: '0%', rotate: 0 }}
                     transition={{ duration: 0.8, delay: skip ? 0 : 1.5 + i * 0.09, ease: [0.22, 1, 0.36, 1] }}
@@ -368,7 +382,7 @@ export const NightHero: React.FC = () => {
             <motion.p
               {...reveal(2.1, skip)}
               data-hero-copy-text
-              className="mt-6 max-w-md text-base sm:text-lg leading-relaxed text-[#e9dcf2] [text-shadow:0_1px_0_#0d0a1c] select-text"
+              className="mt-6 max-w-md text-base sm:text-lg leading-relaxed text-[var(--text-body)] [text-shadow:0_1px_0_var(--desk-bg)] select-text"
             >
               A cozy pixel studio in your browser. Draw a little sprite, move the Lamp to light it, and loop a few
               frames into something alive. Hand-made, never generated. No account.
@@ -377,7 +391,7 @@ export const NightHero: React.FC = () => {
             <motion.div {...reveal(2.35, skip)} className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 href="/studio"
-                className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-[2px] pixel-primary-btn font-display text-sm font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+                className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-[2px] pixel-primary-btn font-display text-sm font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
               >
                 <span>OPEN THE DESK</span>
                 <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-1.5">
@@ -386,7 +400,7 @@ export const NightHero: React.FC = () => {
               </Link>
               <a
                 href="#a-night-at-the-desk"
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-[2px] border-2 border-[#fff3e0]/30 bg-[#0d0a1c]/40 backdrop-blur-sm font-mono text-xs font-bold tracking-wide text-[#fff3e0] hover:border-[#f0be7c] hover:text-[#ffd285] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
+                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-[2px] border-2 border-[color-mix(in_srgb,var(--text-heading)_30%,transparent)] bg-[color-mix(in_srgb,var(--desk-bg)_45%,transparent)] backdrop-blur-sm font-mono text-xs font-bold tracking-wide text-[var(--text-heading)] hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)]"
               >
                 see how a night goes
                 <span aria-hidden="true">↓</span>
@@ -395,7 +409,7 @@ export const NightHero: React.FC = () => {
 
             <motion.ul
               {...reveal(2.5, skip)}
-              className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] tracking-wide text-[#cdbfdf]"
+              className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[11px] tracking-wide text-[var(--text-muted)]"
             >
               <li>✦ no account</li>
               <li>✦ works offline</li>

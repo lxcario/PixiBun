@@ -104,7 +104,7 @@ export const RotSpriteShowcase: React.FC = () => {
       <div className="lg:col-span-7 flex flex-col items-center gap-5">
         <ToolWindow name="rotate.pixi" status={`Angle: ${Math.round(angle)}°`} className="max-w-[460px]">
           <div className="flex items-start justify-center gap-4 sm:gap-6 pt-3">
-            <ArtFrame tag="RotSprite 8x" glow caption={<span className="text-[#a8e092]">♥ clean lines</span>}>
+            <ArtFrame tag="RotSprite 8x" glow caption={<span className="text-[var(--accent-sage)]">♥ clean lines</span>}>
               <canvas
                 ref={rotSpriteCanvasRef}
                 className="block w-24 h-24 sm:w-28 sm:h-28"
@@ -112,7 +112,7 @@ export const RotSpriteShowcase: React.FC = () => {
                 aria-label="RotSprite rotation output"
               />
             </ArtFrame>
-            <ArtFrame tag="standard nearest" caption={<span className="text-[#f2b8c6]">✕ jaggy lines</span>}>
+            <ArtFrame tag="standard nearest" caption={<span className="text-[var(--accent-plum)]">✕ jaggy lines</span>}>
               <canvas
                 ref={standardCanvasRef}
                 className="block w-24 h-24 sm:w-28 sm:h-28 opacity-90"
@@ -123,13 +123,13 @@ export const RotSpriteShowcase: React.FC = () => {
           </div>
 
           {/* The turning dial */}
-          <div className="mt-6 pt-4 border-t-2 border-dashed border-[#3d2a5c]">
+          <div className="mt-6 pt-4 border-t-2 border-dashed border-[var(--desk-border)]">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[11px] text-[#cdbfdf]">turn it</span>
+              <span className="font-mono text-[11px] text-[var(--text-muted)]">turn it</span>
               <button
                 type="button"
                 onClick={() => setIsSpinning((prev) => !prev)}
-                className="px-2.5 py-1 rounded-[2px] border-2 border-[#0b0714] bg-[#2f1d52] font-mono text-[11px] font-bold text-[#fff3e0] shadow-[0_2px_0_#0b0714] hover:text-[#ffd285] active:translate-y-px active:shadow-none transition-colors"
+                className="px-2.5 py-1 rounded-[2px] border-2 border-[var(--ink)] bg-[var(--state-active)] font-mono text-[11px] font-bold text-[var(--text-heading)] shadow-[0_2px_0_var(--ink)] hover:text-[var(--accent-gold)] active:translate-y-px active:shadow-none transition-colors"
               >
                 {isSpinning ? '⏸ pause' : '▶ spin it'}
               </button>
@@ -147,7 +147,7 @@ export const RotSpriteShowcase: React.FC = () => {
               }}
               className="w-full accent-[#ffd285] cursor-pointer"
             />
-            <div className="grid grid-cols-5 gap-1 mt-2 p-1 rounded-[3px] bg-[#140b21] border-2 border-[#0b0714]">
+            <div className="grid grid-cols-5 gap-1 mt-2 p-1 rounded-[3px] bg-[var(--surface-0)] border-2 border-[var(--ink)]">
               {[0, 22.5, 45, 90, 135].map((snap) => (
                 <button
                   key={snap}
@@ -158,8 +158,8 @@ export const RotSpriteShowcase: React.FC = () => {
                   }}
                   className={`py-1 rounded-[2px] font-mono text-[11px] font-bold transition-colors ${
                     Math.round(angle) === Math.round(snap)
-                      ? 'bg-[#ffd285] text-[#2a1945] shadow-[inset_0_-2px_0_#d89a55]'
-                      : 'text-[#cdbfdf] hover:bg-[#2a1945] hover:text-[#fff3e0]'
+                      ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] shadow-[inset_0_-2px_0_var(--primary-shade)]'
+                      : 'text-[var(--text-muted)] hover:bg-[var(--desk-surface-raised)] hover:text-[var(--text-heading)]'
                   }`}
                 >
                   {snap}°

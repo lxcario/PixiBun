@@ -415,10 +415,16 @@ export function buildScene(themeId: string, day: boolean, w: number, h: number):
 
 const wrap = (v: number, n: number) => ((v % n) + n) % n;
 
-function paintParticles(g: CanvasRenderingContext2D, scene: BuiltScene, t: number) {
+/** Paints only a scene's moving particles (petals, bubbles, embers...), e.g. over another painting. */
+export function paintSceneParticles(g: CanvasRenderingContext2D, scene: BuiltScene, t: number, skip: readonly string[] = []) {
+  paintParticles(g, scene, t, skip);
+}
+
+function paintParticles(g: CanvasRenderingContext2D, scene: BuiltScene, t: number, skip: readonly string[] = []) {
   const { w, h } = scene;
   const sec = t / 1000;
   for (const group of scene.particles) {
+    if (skip.includes(group.kind)) continue;
     const col = (i: number) => group.colors[Math.min(i, group.colors.length - 1)];
     for (const q of group.items) {
       switch (group.kind) {
