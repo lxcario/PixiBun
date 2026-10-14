@@ -17,6 +17,7 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   panX: 0,
   panY: 0,
   showGrid: true,
+  showTransparencyChecker: true,
   showTilePreview: false,
   showIsoGuides: false,
   showFloatingPreview: false,
@@ -112,6 +113,12 @@ export const createViewportSlice: StudioSliceCreator<ViewportSlice> = (set, get)
   toggleGrid: () => {
     set(state => {
       state.showGrid = !state.showGrid;
+    });
+  },
+
+  toggleTransparencyChecker: () => {
+    set(state => {
+      state.showTransparencyChecker = !state.showTransparencyChecker;
     });
   },
 

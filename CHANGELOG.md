@@ -3,6 +3,8 @@
 All notable changes and architectural enhancements to the PixiBun Atelier codebase are documented below.
 ## Unreleased
 
+- Fixed audit v1.14.1 defect 4: transparent pixels show as a two-tone checkerboard instead of white, so they no longer look like white artwork. Squares follow the art's pixel grid (one art pixel per square when zoomed in, power-of-two blocks when zoomed out, never under 8 screen pixels; `src/lib/render/transparencyChecker.ts`), and **View → Transparency** turns it off. Verified by `tests/production/transparencyChecker.spec.ts` at 100%, 800% and 1600% in Chromium, Firefox and WebKit.
+
 - Fixed audit v1.14.1 defect 2: a selection now limits every raster tool. Marquee and lasso selections stay active across tool switches (Esc or a click outside the canvas clears them); Pen, Eraser, Dither, Line, Iso Line, Rectangle, Ellipse and Curve stamp only selected pixels, Flood Fill and Color Replace never leave the selection, and the Normal Chisel keeps pixels outside it (`src/lib/canvas/selectionMask.ts`). Verified by `tests/production/selectionLimitsTools.spec.ts` in Chromium, Firefox and WebKit.
 
 - The scroll story's transitions are crisp: inked pixels appear solid, chapters switch with a stepped ordered-dither dissolve instead of a translucent cross-fade, and the words wipe out and in without fading or blur.
