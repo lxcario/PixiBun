@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { Point, getBresenhamLine } from '@/lib/canvas/rasterMath';
 import { ChiselStrokeSession } from '@/lib/art/normalSculptor';
 import type { HistoryStep } from '@/types/canvas';
+import { keepOutsideMask, resolveSelectionMask } from '@/lib/canvas/selectionMask';
 
 interface ChiselHandlerProps {
   canvasWidth: number;
@@ -15,6 +16,12 @@ interface ChiselHandlerProps {
   setLastPoint: (pt: Point | null) => void;
   getOrCreateLayerCanvas: (layerId: string) => HTMLCanvasElement;
   renderComposite: () => void;
+}
+
+/** An active selection limits the chisel too: pixels outside it keep their pre-stroke values. */
+function keepOutsideSelection(original: Uint8ClampedArray, edited: Uint8ClampedArray) {
+  const state = useStudioStore.getState();
+  keepOutsideMask(original, edited, resolveSelectionMask(state.selection, state.selectionMask, state.canvasWidth, state.canvasHeight));
 }
 
 export function useChiselPointerHandler({
@@ -55,6 +62,7 @@ export function useChiselPointerHandler({
             canvasHeight
           );
           chiselSessionRef.current.compositeOnto(workingImg, tools.normalBlendMode);
+          keepOutsideSelection(currentStrokeSnapshotRef.current.imageData.data, workingImg.data);
           lCtx.putImageData(workingImg, 0, 0);
           renderComposite();
         }
@@ -94,6 +102,7 @@ export function useChiselPointerHandler({
               canvasHeight
             );
             chiselSessionRef.current.compositeOnto(workingImg, tools.normalBlendMode);
+            keepOutsideSelection(currentStrokeSnapshotRef.current.imageData.data, workingImg.data);
             lCtx.putImageData(workingImg, 0, 0);
             renderComposite();
           }
