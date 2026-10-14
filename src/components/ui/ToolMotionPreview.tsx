@@ -213,7 +213,7 @@ export const DRAWING_PREVIEWS: Record<string, ToolPreviewDefinition> = {
 export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   [/bake light|apply lighting/i, {
     title: 'Bake Lighting',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Bake directional light and shadow tones permanently onto your artwork.',
     proTip: 'Converts dynamic lighting preview into permanent layer pixels.',
     scene: 'bake-light',
@@ -221,7 +221,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/place light bulb|analyze & light bulb|^light bulb$|preview lighting/i, {
     title: 'Lighting',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Move the light across a finished sprite.',
     proTip: 'Drag the light bulb gizmo to cast dynamic highlights & shadows.',
     scene: 'light',
@@ -229,7 +229,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/view normals|hide normals|3d map:|show surface directions|hide surface directions/i, {
     title: 'Normal Map',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'See the surface directions used for lighting.',
     proTip: 'Converts 2D pixel silhouettes into illuminated 3D geometric surfaces.',
     scene: 'normal-map',
@@ -237,7 +237,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/bake normal map|new 3d normal layer/i, {
     title: 'Bake Normal Map',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Save 3D surface depth angles into a dedicated normal map layer.',
     proTip: 'Exports standard OpenGL tangent-space normal maps for 3D game engines.',
     scene: 'bake-normal',
@@ -245,7 +245,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/specular glint/i, {
     title: 'Specular Glint',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Cast sharp 3D specular light reflections matching your scene light.',
     proTip: 'Calculates Blinn-Phong surface reflections to add brilliant metallic and gemstone highlights.',
     scene: 'glow',
@@ -253,7 +253,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/sel.out/i, {
     title: 'Selective Outline',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Replace harsh black borders with light-aware edge colors.',
     proTip: 'Softens sprite edges to blend harmoniously with backgrounds like professional pixel art.',
     scene: 'sel-out',
@@ -269,7 +269,7 @@ export const PIXITOOLS: Array<[RegExp, ToolPreviewDefinition]> = [
   }],
   [/add floor shadow|cast ground shadow|render cast shadow|analyze & cast shadow/i, {
     title: 'Ground Shadow',
-    group: 'AI & Shading',
+    group: 'Light & Shading',
     description: 'Cast the sprite’s silhouette onto the floor.',
     proTip: 'Raymarches realistic contact shadows anchored to character feet.',
     scene: 'shadow',

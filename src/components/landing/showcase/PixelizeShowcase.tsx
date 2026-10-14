@@ -73,7 +73,7 @@ export const PixelizeShowcase: React.FC = () => {
       <div className="lg:col-span-7 flex flex-col items-center gap-5">
         <ToolWindow name="pixelize.pixi" status={`${resolution}×${resolution}`} className="max-w-[460px]">
           <div className="flex items-center justify-center gap-3 sm:gap-5 pt-3">
-            <ArtFrame tag="before" caption={sceneType === 'mountain' ? 'Sunset Alpine' : 'Hearth Atelier'}>
+            <ArtFrame tag="before" caption={sceneType === 'mountain' ? 'Sunset Alpine' : 'Lamplit Desk'}>
               <canvas ref={sourceDisplayCanvasRef} className="block w-24 h-24 sm:w-28 sm:h-28" aria-label="Original source artwork" />
             </ArtFrame>
             <span aria-hidden="true" className="flex flex-col items-center gap-1 text-[#ffd285] font-mono text-lg">
@@ -85,7 +85,7 @@ export const PixelizeShowcase: React.FC = () => {
                 ref={displayCanvasRef}
                 className="block w-24 h-24 sm:w-28 sm:h-28"
                 style={{ imageRendering: 'pixelated' }}
-                aria-label="Synthesized pixel art output"
+                aria-label="Converted pixel art output"
               />
             </ArtFrame>
           </div>

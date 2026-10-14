@@ -24,7 +24,7 @@ async function coDraw(page: Page) {
 async function gallery(page: Page) {
   await page.getByTestId('file-menu-button').click();
   await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-  return page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+  return page.getByRole('dialog', { name: 'Projects & Gallery' });
 }
 
 test('compiled LAN guest reloads the shared copy and reopens its untouched original from Gallery', async ({ peerHost: host, page }, testInfo) => {

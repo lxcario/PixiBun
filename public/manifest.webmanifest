@@ -1,5 +1,5 @@
 {
-  "name": "PixiBun Atelier",
+  "name": "PixiBun",
   "short_name": "PixiBun",
   "description": "A cozy pixel art studio that lives in your browser. 100% offline-capable with frame-by-frame animation, 16-bit palettes, and local-first storage.",
   "start_url": "/studio",

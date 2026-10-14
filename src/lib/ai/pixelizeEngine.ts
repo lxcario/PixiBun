@@ -1,5 +1,5 @@
 /**
- * PixiBun Intelligent Image-to-Pixel-Art Synthesis Engine
+ * PixiBun image-to-pixel-art conversion engine (deterministic; no generative models)
  * Grounded in computer graphics literature & perceptual color science:
  * - Linear Optical Gamma-Corrected Area Box Downsampling
  * - Forward-Difference Gradient Salience Edge-Preservation

@@ -637,7 +637,7 @@ export function createBlankProjectFile(
     palettes: [
       {
         id: 'pal-default-atelier',
-        name: 'Atelier Hearth',
+        name: 'Lamplit Hearth',
         colors: [
           '#140d1f', '#281b3d', '#3a2e4c', '#6a5880',
           '#a86ec6', '#c792df', '#dcabdf', '#d0c4df',

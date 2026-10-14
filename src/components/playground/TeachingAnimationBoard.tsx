@@ -758,12 +758,12 @@ export const TeachingAnimationBoard: React.FC<TeachingAnimationBoardProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-[#f0be7c]">/\_/\</span>
             <span>( o.o )</span>
-            <span className="text-[var(--text-body)] font-bold">PixiBun Atelier Standards</span>
+            <span className="text-[var(--text-body)] font-bold">PixiBun Standards</span>
             <span>— Discrete mass invariance & Richard Williams apex cushioning</span>
           </div>
 
           <div className="flex items-center gap-2 font-display text-[10px] tracking-wider text-[var(--text-muted)]">
-            <span>PIXIBUN ATELIER</span>
+            <span>PIXIBUN STUDIO</span>
             <span className="text-[#f0be7c]">© 2026</span>
           </div>
         </div>

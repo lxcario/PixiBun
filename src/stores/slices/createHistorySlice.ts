@@ -18,7 +18,6 @@ import { parseAnimationReview } from '@/lib/animation/reviewMetadata';
  * - `bufferVersion` (reactive revision counter for rendering buffers)
  * - `saveStatus` (autosave status)
  * - `selection` / `selectionMask` (viewport selection)
- * - `aiMessages` / `isAiThinking` (PixiBud assistant chat state)
  * - `loadProjectState` / `resetCanvas` (document lifecycle)
  */
 export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) => ({
@@ -73,37 +72,11 @@ export const createHistorySlice: StudioSliceCreator<HistorySlice> = (set, get) =
     });
   },
 
-  aiMessages: [
-    {
-      id: 'welcome-msg',
-      sender: 'assistant',
-      text: "Hey there! I'm PixiBud, your pixel art math studio assistant. Tap any of the panels below to execute deterministic 2.5D photometric lighting, volumetric SSS, or normal baking directly on your artwork layers!",
-      timestamp: Date.now(),
-      suggestions: ['2.5D Photometric', 'Volumetric SSS', 'Harmonize palette', 'Clean jaggies'],
-    },
-  ],
-  isAiThinking: false,
   activeInspectorTab: 'layers',
 
   setActiveInspectorTab: tab => {
     set(state => {
       state.activeInspectorTab = tab;
-    });
-  },
-
-  addAiMessage: message => {
-    set(state => {
-      state.aiMessages.push({
-        ...message,
-        id: createId('msg'),
-        timestamp: Date.now(),
-      });
-    });
-  },
-
-  setIsAiThinking: thinking => {
-    set(state => {
-      state.isAiThinking = thinking;
     });
   },
 

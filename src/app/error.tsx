@@ -26,7 +26,7 @@ export default function ErrorBoundary({
           <PixiBunLogo size="lg" className="drop-shadow-sm" />
         </div>
         <h2 className="text-lg font-bold text-[var(--accent-gold)] font-display">
-          A Hitch in the Atelier
+          A Hitch at the Desk
         </h2>
         <p className="text-xs text-[var(--text-body)] leading-relaxed">
           An unexpected interruption occurred. Your artwork and preferences remain safely stored in your browser.
@@ -49,7 +49,7 @@ export default function ErrorBoundary({
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-[var(--desk-surface-raised)] text-[var(--text-heading)] font-medium text-xs rounded border border-[var(--desk-border)] hover:bg-[var(--desk-surface)] transition-colors"
           >
-            Reload Atelier
+            Reload PixiBun
           </button>
           <button
             type="button"

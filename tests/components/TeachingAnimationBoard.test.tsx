@@ -40,8 +40,8 @@ describe('TeachingAnimationBoard Component', () => {
     expect(screen.getByText('ANIMATION')).toBeDefined();
 
     // Atelier Branding Watermark
-    expect(screen.getByText(/PixiBun Atelier Standards/i)).toBeDefined();
-    expect(screen.getByText('PIXIBUN ATELIER')).toBeDefined();
+    expect(screen.getByText(/PixiBun Standards/i)).toBeDefined();
+    expect(screen.getByText('PIXIBUN STUDIO')).toBeDefined();
   });
 
   it('switches between Bun mascot and Gel Slime', () => {

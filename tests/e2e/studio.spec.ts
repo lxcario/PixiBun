@@ -88,16 +88,16 @@ test.describe('Studio Workbench & Drawing Interactions', () => {
     await page.waitForTimeout(400);
     await guideBtn.click();
 
-    await expect(page.getByText(/Atelier Guide & Shortcuts/i)).toBeVisible();
+    await expect(page.getByText(/Guide & Shortcuts/i)).toBeVisible();
 
     // Close dialog using Close dialog button
     const closeBtn = page.getByRole('button', { name: 'Close dialog' });
     await closeBtn.click();
-    await expect(page.getByText(/Atelier Guide & Shortcuts/i)).not.toBeVisible();
+    await expect(page.getByText(/Guide & Shortcuts/i)).not.toBeVisible();
 
     // Open via '?' keypress
     await page.keyboard.press('?');
-    await expect(page.getByText(/Atelier Guide & Shortcuts/i)).toBeVisible();
+    await expect(page.getByText(/Guide & Shortcuts/i)).toBeVisible();
   });
 
   test('handles canvas stroke drawing and undo/redo with pixel verification', async ({ page }) => {

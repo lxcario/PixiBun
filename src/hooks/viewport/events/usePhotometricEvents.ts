@@ -716,10 +716,6 @@ export function usePhotometricEvents({
           message: 'Normal-map result was discarded because the source frame changed while it was processing.',
           type: 'error',
         });
-        latest.addAiMessage({
-          sender: 'assistant',
-          text: 'Normal-map result was discarded because the source frame changed while it was processing.',
-        });
         return;
       }
 

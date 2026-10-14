@@ -12,9 +12,9 @@ import { CozyAtelierBackground } from '@/components/landing/CozyAtelierBackgroun
 import { PixelWaveDivider } from '@/components/landing/hero/PixelWaveDivider';
 
 export const metadata: Metadata = {
-  title: 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine',
+  title: 'PixiBun — Pixels with a pulse',
   description:
-    'A quiet pixel art studio in your browser. Draw sprites, animate a few frames, try a light, and export images, a Godot kit or Unity shader code. No account needed.',
+    'A cozy pixel art studio in your browser. Draw a sprite, light it with the Lamp and loop it into a little animation. Hand-made, never generated. No account.',
 };
 
 export default function Home() {

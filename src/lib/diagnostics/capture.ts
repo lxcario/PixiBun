@@ -208,7 +208,7 @@ export async function exportDiagnosticsFile(): Promise<void> {
     const entries = await getRecentDiagnostics(MAX_DIAGNOSTICS_ENTRIES);
     const settings = getDiagnosticsSettings();
     const payload = {
-      app: 'PixiBun Atelier',
+      app: 'PixiBun',
       version: APP_VERSION,
       exportedAt: new Date().toISOString(),
       rasterRegistry: getBufferRegistryUsage(),

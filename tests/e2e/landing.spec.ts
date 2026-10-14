@@ -15,7 +15,7 @@ test.describe('Landing Page & Accessibility', () => {
     await expect(page).toHaveTitle(/PixiBun/);
 
     // Verify presence of call to action leading to Studio
-    const studioCta = page.getByRole('link', { name: /OPEN THE ATELIER|Enter the Atelier/i }).first();
+    const studioCta = page.getByRole('link', { name: /OPEN THE DESK/i }).first();
     await expect(studioCta).toBeVisible();
 
     await expect(page.getByText(/take a Godot kit into your game/)).toBeVisible();
@@ -23,7 +23,7 @@ test.describe('Landing Page & Accessibility', () => {
 
     // Navigation must remain responsive while the default lighting demo animates.
     const orbit = page.getByTitle('Toggle automatic orbital rotation', { exact: true });
-    const light = page.getByRole('slider', { name: /Interactive 2.5D Light Direction Gizmo/ });
+    const light = page.getByRole('slider', { name: /Lamp direction/ });
     const preview = page.locator('canvas[aria-label^="2.5D Photometrically shaded"]');
     const pixels = () => preview.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
     await expect(orbit).toHaveText('⏸ Orbit');

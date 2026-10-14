@@ -32,7 +32,7 @@ test('Help owns keyboard input and closing it preserves artwork, selection and U
   const artwork = await pixels(page);
   const gizmo = page.getByTestId('selection-transform-gizmo'); const bounds = await gizmo.boundingBox();
   await page.locator('#main-content').focus(); await page.keyboard.press('Shift+/');
-  const dialog = page.getByRole('dialog', { name: 'Atelier Guide & Shortcuts' });
+  const dialog = page.getByRole('dialog', { name: 'Guide & Shortcuts' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText(/Letter shortcuts use QWERTY key positions/)).toBeVisible();
   await dialog.getByRole('button', { name: 'Close dialog', exact: true }).focus();

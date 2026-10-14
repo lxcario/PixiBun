@@ -159,7 +159,7 @@ export const ProjectsGalleryModal: React.FC<ProjectsGalleryModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title="Atelier Projects & Gallery"
+      title="Projects & Gallery"
       maxWidth="max-w-4xl"
     >
       <div className="flex flex-col gap-5 p-1">

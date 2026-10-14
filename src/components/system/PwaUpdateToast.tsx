@@ -21,7 +21,7 @@ export const PwaUpdateToast: React.FC<PwaUpdateToastProps> = ({
     >
       <div className="flex min-w-0 items-center gap-2">
         <PixelIcon name="sun" size={14} />
-        <span>{deferred ? 'Update ready · Close all PixiBun tabs when done to apply.' : 'Update ready · A fresh atelier build is ready. Close all PixiBun tabs when done to apply.'}</span>
+        <span>{deferred ? 'Update ready · Close all PixiBun tabs when done to apply.' : 'Update ready · A fresh PixiBun build is ready. Close all PixiBun tabs when done to apply.'}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <button

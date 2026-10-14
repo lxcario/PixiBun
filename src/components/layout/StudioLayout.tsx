@@ -273,7 +273,7 @@ export const StudioLayout: React.FC = () => {
   useEffect(() => {
     document.title = `${isDirty ? '● ' : ''}${projectName} — PixiBun`;
     return () => {
-      document.title = 'PixiBun Atelier — 2.5D Photometric Pixel Art Studio & Animation Engine';
+      document.title = 'PixiBun — Pixels with a pulse';
     };
   }, [isDirty, projectName]);
 

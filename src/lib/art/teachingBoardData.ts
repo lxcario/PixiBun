@@ -1044,7 +1044,7 @@ export const TEACHING_CHARACTERS: Record<'bun' | 'slime', TeachingCharacter> = {
   slime: {
     id: 'slime',
     name: 'Gel Slime',
-    tagline: 'Classic Atelier Creature',
+    tagline: 'Classic Desk Creature',
     defaultPaletteId: 'matcha',
     buildingSteps: SLIME_BUILDING_STEPS,
     jumpFrames: SLIME_JUMP_FRAMES,

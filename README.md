@@ -2,7 +2,7 @@
   <img src="docs/assets/readme/pixibun-logo.png" alt="PixiBun logo: a pixel bunny above lilac lettering, with a star and carrot." width="256" height="256" />
 </p>
 
-# PixiBun Atelier
+# PixiBun
 
 Current engineering verification and remaining release checks are recorded in the [current status](docs/current-status.md).
 

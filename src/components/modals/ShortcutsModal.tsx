@@ -27,7 +27,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title="Atelier Guide & Shortcuts"
+      title="Guide & Shortcuts"
       maxWidth="w-[740px] max-w-[95vw]"
       bodyClassName="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden"
     >

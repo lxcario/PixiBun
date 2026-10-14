@@ -6,7 +6,7 @@ import { BunMascot } from '@/components/ui/BunMascot';
 export interface PixiBunLogoProps {
   /** Size scale: 'sm' (compact/rail), 'md' (standard nav), 'lg' (hero/errors). */
   size?: 'sm' | 'md' | 'lg';
-  /** Whether to render the 'ATELIER' subtitle under 'PIXIBUN' (default true). */
+  /** Whether to render the 'STUDIO' subtitle under 'PIXIBUN' (default true). */
   showSubtitle?: boolean;
   /** Optional responsive treatment of the wordmark; the mascot stays visible. */
   wordmarkClassName?: string;
@@ -65,7 +65,7 @@ export const PixiBunLogo: React.FC<PixiBunLogoProps> = ({
           <span
             className={`font-mono tracking-tight text-[var(--accent-gold)] ${sizeConfig.subtitle}`}
           >
-            ATELIER
+            STUDIO
           </span>
         )}
       </div>

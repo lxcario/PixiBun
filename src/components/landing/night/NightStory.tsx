@@ -16,7 +16,7 @@ const CHAPTERS = [
   {
     kicker: '02 · light',
     title: 'Then give it a lamp.',
-    body: 'Move a little light around your sprite and watch the shading follow, with real 2.5D lighting and cast shadows painted right onto the pixels.',
+    body: 'Move a little light around your sprite and watch the shading follow, with real lighting and cast shadows painted right onto the pixels, using colors from your own palette.',
     accent: '#f0be7c',
   },
   {
@@ -328,14 +328,14 @@ export const NightStory: React.FC = () => {
 
   return (
     <section
-      id="a-night-at-the-atelier"
+      id="a-night-at-the-desk"
       ref={ref}
       aria-labelledby="night-story-title"
       className="relative scroll-mt-0 bg-[#20152b]"
       style={{ ...NIGHT_VARS, height: '420vh' }}
     >
       <h2 id="night-story-title" className="sr-only">
-        A night at the atelier
+        A night at the Desk
       </h2>
       <ol className="sr-only">
         {CHAPTERS.map((c) => (

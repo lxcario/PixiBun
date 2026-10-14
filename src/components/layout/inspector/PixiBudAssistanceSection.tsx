@@ -148,7 +148,7 @@ export const PixiBudAssistanceSection: React.FC = () => {
   return (
     <PanelSection
       title="Pixel Cleanup & RotSprite"
-      ariaLabel="Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)"
+      ariaLabel="Pixel Cleanup & RotSprite"
       storageKey="pixibun:panel:pixibud"
       defaultOpen={true}
     >

@@ -17,7 +17,7 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
 
       render(<PwaUpdateToast onUpdate={onUpdate} onDismiss={onDismiss} />);
 
-      expect(screen.getByText(/A fresh atelier build is ready/i)).toBeDefined();
+      expect(screen.getByText(/A fresh PixiBun build is ready/i)).toBeDefined();
       const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
       expect(reloadBtn).toBeDefined();
 
@@ -71,7 +71,7 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
       render(<ServiceWorkerRegistrar />);
 
       await waitFor(() => {
-        expect(screen.getByText(/A fresh atelier build is ready/i)).toBeDefined();
+        expect(screen.getByText(/A fresh PixiBun build is ready/i)).toBeDefined();
       });
 
       const reloadBtn = screen.getByRole('button', { name: /update instructions/i });
@@ -113,13 +113,13 @@ describe('PWA Update Lifecycle & ServiceWorkerRegistrar (Milestone C1)', () => {
       render(<ServiceWorkerRegistrar />);
 
       await waitFor(() => {
-        expect(screen.getByText(/A fresh atelier build is ready/i)).toBeDefined();
+        expect(screen.getByText(/A fresh PixiBun build is ready/i)).toBeDefined();
       });
 
       const dismissBtn = screen.getByRole('button', { name: /dismiss update banner/i });
       fireEvent.click(dismissBtn);
 
-      expect(screen.queryByText(/A fresh atelier build is ready/i)).toBeNull();
+      expect(screen.queryByText(/A fresh PixiBun build is ready/i)).toBeNull();
     });
   });
 });

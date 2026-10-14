@@ -198,7 +198,7 @@ export const AtelierGallery: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto mb-14">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-[2px] pixel-box-frame text-[var(--accent-plum)] font-display font-bold text-xs uppercase tracking-wider mb-4 shadow-sm">
               <span className="text-[var(--accent-gold)] text-xs font-mono animate-gold-pulse inline-block">✦</span>
-              <ShinyText text="ATELIER STARTER COLLECTION" speed={2.6} />
+              <ShinyText text="STARTER COLLECTION" speed={2.6} />
             </div>
 
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-[var(--text-heading)] flex items-center justify-center gap-3 drop-shadow-sm">

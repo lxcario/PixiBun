@@ -90,7 +90,7 @@ export const RightInspector: React.FC = () => {
           aria-label="FX PixiTools"
           data-testid="tab-ai"
           aria-pressed={activeInspectorTab === 'ai'}
-          title="PixiTools (AI & FX)"
+          title="PixiTools (FX)"
           className={`flex-1 min-w-0 h-7 flex items-center justify-center gap-1 text-[11px] font-sans rounded-[2px] border px-1 overflow-hidden transition-all duration-100 ${
             activeInspectorTab === 'ai'
               ? 'bg-[var(--inspector-tab-active-bg)] text-[var(--inspector-tab-active-fg)] border-[var(--inspector-tab-active-border)] font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.15),0_1px_0_var(--btn-shadow)]'

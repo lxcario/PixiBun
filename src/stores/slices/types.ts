@@ -12,7 +12,6 @@ import {
 } from '@/types/tools';
 import { ColorPalette, ColorRamp, PaletteCycleTrack } from '@/types/palette';
 import { LoopMode, OnionSkinSettings, AnimationClip } from '@/types/animation';
-import { AiMessage } from '@/types/ai';
 import type { CvdLensMode } from '@/lib/color/cvdLens';
 import type { AnchorPosition } from '@/components/modals/CanvasResizeModal';
 import type { ProjectFile } from '@/types/project';
@@ -221,12 +220,8 @@ export interface HistorySlice {
   hasFloatingSelection: boolean;
   setSelection: (sel: { x: number; y: number; w: number; h: number } | null, mask?: Uint8Array | null) => void;
 
-  aiMessages: AiMessage[];
-  isAiThinking: boolean;
   activeInspectorTab: 'layers' | 'palette' | 'ai' | 'tools';
   setActiveInspectorTab: (tab: 'layers' | 'palette' | 'ai' | 'tools') => void;
-  addAiMessage: (message: Omit<AiMessage, 'id' | 'timestamp'>) => void;
-  setIsAiThinking: (thinking: boolean) => void;
 
   loadProjectState: (projectData: Partial<ProjectFile>, projectId?: string) => void;
   resetToNewProject: (newId?: string) => void;

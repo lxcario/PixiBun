@@ -330,7 +330,7 @@ test.describe('Recovery UI, Safe Modes & Repair Wizard (E2E)', () => {
     // 3. Open Gallery Modal
     await page.getByTestId('file-menu-button').click();
     await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-    const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
+    const modal = page.getByRole('dialog', { name: /Projects & Gallery/i });
     await expect(modal).toBeVisible();
 
     // Click on Gallery Damaged Project card

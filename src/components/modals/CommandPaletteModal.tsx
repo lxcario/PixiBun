@@ -283,7 +283,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     if (onOpenShortcuts) {
       list.push({
         id: 'proj-shortcuts',
-        title: 'Open Atelier Guide & Keyboard Shortcuts',
+        title: 'Open Guide & Keyboard Shortcuts',
         category: 'Project & Studio',
         icon: 'help',
         shortcut: '?',
@@ -496,7 +496,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             <span>↑↓ to navigate</span>
             <span>↵ to execute</span>
           </div>
-          <span>PixiBun Atelier Command Hub</span>
+          <span>PixiBun Command Hub</span>
         </div>
     </ModalWrapper>
   );

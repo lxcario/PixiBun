@@ -399,6 +399,8 @@ export const CottageBackdrop: React.FC<{ chapter: number; reduceMotion: boolean 
       const PX = rect.width >= 1024 ? 4 : 3;
       const w = Math.ceil(rect.width / PX);
       const h = Math.ceil(rect.height / PX);
+      // A hidden or collapsed host has no pixels to paint; wait for ResizeObserver.
+      if (w < 1 || h < 1) { room = null; return; }
       canvas.width = w;
       canvas.height = h;
       canvas.style.width = `${w * PX}px`;

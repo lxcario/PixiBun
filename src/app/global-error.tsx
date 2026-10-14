@@ -27,7 +27,7 @@ export default function GlobalError({
             <PixiBunLogo size="lg" className="drop-shadow-sm" />
           </div>
           <h1 className="text-xl font-bold text-[var(--accent-gold)] font-display m-0">
-            PixiBun Atelier Interruption
+            PixiBun Interruption
           </h1>
           <p className="text-xs text-[var(--text-body)] leading-relaxed m-0">
             A critical interruption occurred while loading the application shell. Your stored artwork remains secure on this device.
@@ -43,7 +43,7 @@ export default function GlobalError({
               onClick={() => reset()}
               className="px-4 py-2 bg-[var(--accent-gold)] text-[var(--desk-bg)] font-bold text-xs rounded border-2 border-[var(--desk-border)] hover:opacity-90 cursor-pointer"
             >
-              Restart Atelier
+              Restart PixiBun
             </button>
             <button
               type="button"

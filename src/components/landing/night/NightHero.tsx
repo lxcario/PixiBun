@@ -127,6 +127,8 @@ export const NightHero: React.FC = () => {
       pxRef.current = PX;
       const w = Math.ceil(rect.width / PX);
       const h = Math.ceil(rect.height / PX);
+      // A hidden or collapsed host has no pixels to paint; wait for ResizeObserver.
+      if (w < 1 || h < 1) { sceneRef.current = null; return; }
       canvas.width = w;
       canvas.height = h;
       canvas.style.width = `${w * PX}px`;
@@ -336,7 +338,7 @@ export const NightHero: React.FC = () => {
               className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.2em] uppercase text-[#f0be7c]"
             >
               <span aria-hidden="true" className="inline-block w-2 h-2 bg-[#f0be7c] animate-pulse" />
-              a cozy pixel atelier
+              hand-made, never generated
             </motion.p>
 
             <h1
@@ -344,11 +346,10 @@ export const NightHero: React.FC = () => {
               style={{ fontSize: 'clamp(2.5rem, 6.4vw, 5.4rem)' }}
             >
               {[
-                ['Draw', false],
-                ['tiny', true],
-                ['worlds', true],
-                ['by', false],
-                ['lamplight.', false],
+                ['Pixels', false],
+                ['with', false],
+                ['a', false],
+                ['pulse.', true],
               ].map(([word, gold], i) => (
                 <span key={word as string} className="inline-block overflow-hidden align-bottom pb-[0.08em] mr-[0.28em]">
                   <motion.span
@@ -369,9 +370,8 @@ export const NightHero: React.FC = () => {
               data-hero-copy-text
               className="mt-6 max-w-md text-base sm:text-lg leading-relaxed text-[#e9dcf2] [text-shadow:0_1px_0_#0d0a1c] select-text"
             >
-              PixiBun is an offline-first pixel art atelier &amp; 2.5D game studio. Draw a little sprite, try a
-              different light, or bring a few frames to life. Share an image or animation, and take a Godot kit into
-              your game.
+              A cozy pixel studio in your browser. Draw a little sprite, move the Lamp to light it, and loop a few
+              frames into something alive. Hand-made, never generated. No account.
             </motion.p>
 
             <motion.div {...reveal(2.35, skip)} className="mt-8 flex flex-wrap items-center gap-4">
@@ -379,13 +379,13 @@ export const NightHero: React.FC = () => {
                 href="/studio"
                 className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-[2px] pixel-primary-btn font-display text-sm font-bold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
               >
-                <span>OPEN THE ATELIER</span>
+                <span>OPEN THE DESK</span>
                 <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-1.5">
                   →
                 </span>
               </Link>
               <a
-                href="#a-night-at-the-atelier"
+                href="#a-night-at-the-desk"
                 className="inline-flex items-center gap-2 px-5 py-3.5 rounded-[2px] border-2 border-[#fff3e0]/30 bg-[#0d0a1c]/40 backdrop-blur-sm font-mono text-xs font-bold tracking-wide text-[#fff3e0] hover:border-[#f0be7c] hover:text-[#ffd285] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0be7c]"
               >
                 see how a night goes

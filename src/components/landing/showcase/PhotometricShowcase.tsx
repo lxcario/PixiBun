@@ -334,7 +334,7 @@ export const PhotometricShowcase: React.FC = () => {
               ref={gizmoContainerRef}
               tabIndex={0}
               role="slider"
-              aria-label="Interactive 2.5D Light Direction Gizmo. Use arrow keys to adjust azimuth and elevation."
+              aria-label="Lamp direction. Use arrow keys to move the light around and up or down."
               aria-valuemin={0}
               aria-valuemax={360}
               aria-valuenow={Math.round(azimuth)}
