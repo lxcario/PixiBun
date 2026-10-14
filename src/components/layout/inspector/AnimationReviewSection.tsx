@@ -197,7 +197,7 @@ export function AnimationReviewSection() {
           <div className="mt-2 flex flex-col gap-2">
             <p>Use the selection tool, then save its rectangular bounding box. Regions stay at these canvas coordinates across this clip.</p>
             {selection ? (
-              <div className="text-[10px] text-[#5cdaac] bg-[var(--surface-0)] px-2 py-1 border border-[var(--desk-border)] rounded-[2px]">
+              <div className="text-[10px] text-[var(--accent-sage)] bg-[var(--surface-0)] px-2 py-1 border border-[var(--desk-border)] rounded-[2px]">
                 Active selection: ({Math.round(selection.x)}, {Math.round(selection.y)}) {Math.round(selection.w)}×{Math.round(selection.h)} px
               </div>
             ) : (
@@ -248,7 +248,7 @@ export function AnimationReviewSection() {
               >
                 <div className="flex items-center gap-1.5 font-semibold text-[11px] text-[var(--text-heading)]">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                    finding.severity === 'watch' ? 'bg-[#eb5a66]' : finding.severity === 'notice' ? 'bg-[#f0be7c]' : 'bg-[#5cdaac]'
+                    finding.severity === 'watch' ? 'bg-[var(--state-danger)]' : finding.severity === 'notice' ? 'bg-[var(--primary-bg)]' : 'bg-[var(--accent-sage)]'
                   }`} />
                   <span>{finding.title}</span>
                 </div>

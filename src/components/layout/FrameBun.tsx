@@ -3,15 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { BunMascot } from '@/components/ui/BunMascot';
 import { useThemeStore } from '@/stores/themeStore';
+import { isSceneTheme } from '@/lib/theme/registry';
 import { useStudioStore } from '@/stores/studioStore';
 
 /**
- * Moonlit only: Bun perched on the top edge of the canvas frame, legs dangling,
+ * Scene themes only: Bun perched on the top edge of the canvas frame, legs dangling,
  * keeping you company while you draw. Bun perks up for a moment whenever the
  * artwork changes, then settles back to a sleepy blink. Purely decorative.
  */
 export const FrameBun: React.FC = () => {
-  const moonlit = useThemeStore((s) => s.studioTheme) === 'moonlit';
+  const moonlit = isSceneTheme(useThemeStore((s) => s.studioTheme));
   const frames = useStudioStore((s) => s.frames);
   const [cheer, setCheer] = useState(0);
   const [happy, setHappy] = useState(false);

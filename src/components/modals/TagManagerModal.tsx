@@ -80,14 +80,14 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                   key={clip.id}
                   className={`flex flex-col gap-2 p-2.5 rounded-[2px] border-2 transition-all ${
                     isActive
-                      ? 'bg-[#2a1d3b] border-[#f0be7c] shadow-xs'
+                      ? 'bg-[#2a1d3b] border-[var(--accent-gold)] shadow-xs'
                       : 'bg-[var(--desk-surface-raised)] border-[var(--desk-border)]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     {/* Color Swatch Indicator */}
                     <span
-                      className="w-3.5 h-3.5 rounded-[2px] border border-[#140d1f] shrink-0"
+                      className="w-3.5 h-3.5 rounded-[2px] border border-[var(--ink)] shrink-0"
                       style={{ backgroundColor: color }}
                     />
 
@@ -97,7 +97,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                       aria-label="Tag name"
                       value={clip.name}
                       onChange={(e) => updateTag(clip.id, { name: e.target.value })}
-                      className="bg-[#181124] text-[var(--text-heading)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] focus:border-[#f0be7c] outline-none flex-1 font-bold text-xs"
+                      className="bg-[var(--surface-0)] text-[var(--text-heading)] px-2 py-1 rounded-[2px] border border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none flex-1 font-bold text-xs"
                     />
 
                     {/* Active Filter Toggle Button */}
@@ -141,7 +141,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                       variant="danger"
                       onClick={() => deleteTag(clip.id)}
                       title="Delete Tag"
-                      className="w-7 h-7 bg-[#3d1928] border-[#6b283d] text-[#ff99aa]"
+                      className="w-7 h-7 bg-[var(--danger-bg)] border-[var(--danger-border)] text-[var(--danger-fg)]"
                     >
                       <PixelIcon name="trash" size={12} />
                     </TactileButton>
@@ -165,7 +165,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                             }
                           }}
                           aria-label={`Start frame for tag ${clip.name}`}
-                          className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 bg-[var(--surface-0)] text-[var(--accent-gold)] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span>to</span>
                         <input
@@ -180,7 +180,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                             }
                           }}
                           aria-label={`End frame for tag ${clip.name}`}
-                          className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 bg-[var(--surface-0)] text-[var(--accent-gold)] px-1 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-center text-[11px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
 
@@ -191,7 +191,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                           value={loop}
                           onChange={(e) => updateTag(clip.id, { loopMode: e.target.value as TagLoopMode })}
                           aria-label={`Loop mode for tag ${clip.name}`}
-                          className="bg-[#181124] text-[var(--text-heading)] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-[11px] outline-none"
+                          className="bg-[var(--surface-0)] text-[var(--text-heading)] px-1.5 py-0.5 rounded-[2px] border border-[var(--desk-border)] text-[11px] outline-none"
                         >
                           <option value="forward">Forward</option>
                           <option value="reverse">Reverse</option>
@@ -208,7 +208,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                           type="button"
                           onClick={() => updateTag(clip.id, { color: c })}
                           className={`w-3.5 h-3.5 rounded-[2px] border transition-transform cursor-pointer ${
-                            color === c ? 'border-[#ffffff] scale-110' : 'border-[#140d1f]'
+                            color === c ? 'border-[#ffffff] scale-110' : 'border-[var(--ink)]'
                           }`}
                           style={{ backgroundColor: c }}
                           aria-label={`Set tag color to ${c}`}
@@ -238,7 +238,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               aria-label="New tag name"
-              className="bg-[#181124] text-[var(--text-heading)] px-2.5 py-1.5 rounded-[2px] border border-[var(--desk-border)] focus:border-[#f0be7c] outline-none flex-1 text-xs"
+              className="bg-[var(--surface-0)] text-[var(--text-heading)] px-2.5 py-1.5 rounded-[2px] border border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none flex-1 text-xs"
             />
 
             <div className="flex items-center gap-1 text-[11px]">
@@ -250,7 +250,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                 value={newFromFrame}
                 onChange={(e) => setNewFromFrame(parseInt(e.target.value, 10) || 1)}
                 aria-label="New tag start frame"
-                className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-14 bg-[var(--surface-0)] text-[var(--accent-gold)] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span>-</span>
               <input
@@ -260,7 +260,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                 value={newToFrame}
                 onChange={(e) => setNewToFrame(parseInt(e.target.value, 10) || 1)}
                 aria-label="New tag end frame"
-                className="w-14 bg-[#181124] text-[#f0be7c] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-14 bg-[var(--surface-0)] text-[var(--accent-gold)] px-1 py-1 rounded-[2px] border border-[var(--desk-border)] text-center text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 
@@ -268,7 +268,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
               value={newLoopMode}
               onChange={(e) => setNewLoopMode(e.target.value as TagLoopMode)}
               aria-label="New tag loop mode"
-              className="bg-[#181124] text-[var(--text-heading)] px-2 py-1.5 rounded-[2px] border border-[var(--desk-border)] text-xs outline-none"
+              className="bg-[var(--surface-0)] text-[var(--text-heading)] px-2 py-1.5 rounded-[2px] border border-[var(--desk-border)] text-xs outline-none"
             >
               <option value="forward">Forward</option>
               <option value="reverse">Reverse</option>
@@ -294,7 +294,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                 type="button"
                 onClick={() => setNewColor(c)}
                 className={`w-4 h-4 rounded-[2px] border transition-transform cursor-pointer ${
-                  newColor === c ? 'border-[#ffffff] scale-125 ring-1 ring-[#f0be7c]' : 'border-[#140d1f]'
+                  newColor === c ? 'border-[#ffffff] scale-125 ring-1 ring-[var(--accent-gold)]' : 'border-[var(--ink)]'
                 }`}
                 style={{ backgroundColor: c }}
                 aria-label={`Select color ${c}`}

@@ -69,12 +69,12 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
   return (
     <div className="flex flex-col gap-2.5 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] text-xs font-mono shadow-xs">
       {exportType === 'webm' && !isWebmSupported && (
-        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-xs font-mono text-[var(--danger-fg)]">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--danger-fg)]">
             <PixelIcon name="warning" size={13} />
             <span>WebM Video Recording Unsupported</span>
           </div>
-          <p role="alert" className="text-[11px] leading-relaxed text-[#fcd2d7]">
+          <p role="alert" className="text-[11px] leading-relaxed text-[var(--danger-fg)]">
             WebM recording is unavailable in this browser. Choose <strong>GIF</strong> or <strong>APNG</strong> instead.
           </p>
           {onSelectType && (
@@ -98,12 +98,12 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
         </div>
       )}
       {exportType === 'mp4' && !isMp4Supported && (
-        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-xs font-mono text-[var(--danger-fg)]">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--danger-fg)]">
             <PixelIcon name="warning" size={13} />
             <span>MP4 Video Recording Unsupported</span>
           </div>
-          <p role="alert" className="text-[11px] leading-relaxed text-[#fcd2d7]">
+          <p role="alert" className="text-[11px] leading-relaxed text-[var(--danger-fg)]">
             MP4 encoding is unavailable for this export configuration. Please choose <strong>WebM</strong> for video or <strong>GIF / APNG</strong> for animation export instead.
           </p>
           {onSelectType && (
@@ -130,12 +130,12 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       )}
 
       {!activeValidation.valid && (
-        <div className="flex flex-col gap-1 p-2 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-[11px] font-mono text-[#ffb3c1]" data-testid="unsafe-scale-warning">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+        <div className="flex flex-col gap-1 p-2 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-[11px] font-mono text-[var(--danger-fg)]" data-testid="unsafe-scale-warning">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--danger-fg)]">
             <PixelIcon name="warning" size={13} />
             <span>Selected Scale Exceeds Safety Ceilings</span>
           </div>
-          <p className="leading-tight text-[#fcd2d7]">
+          <p className="leading-tight text-[var(--danger-fg)]">
             {activeValidation.error || `${scale}x scale exceeds the configured safety ceiling (${getOutputDimensions(scale).outW}×${getOutputDimensions(scale).outH}px). Please select a safe scale before exporting.`}
           </p>
         </div>
@@ -163,11 +163,11 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
                 className={`px-2 py-0.5 rounded-[2px] border font-bold transition-colors ${
                   !safe
                     ? scale === s
-                      ? 'bg-[#5a1e28] text-[#ff8099] border-[#b84a62] cursor-not-allowed'
+                      ? 'bg-[#5a1e28] text-[var(--danger-fg)] border-[var(--danger-border)] cursor-not-allowed'
                       : 'opacity-30 cursor-not-allowed bg-[var(--desk-surface)] text-[var(--text-muted)] border-[var(--desk-border)]'
                     : scale === s
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] cursor-pointer'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)] cursor-pointer'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)] cursor-pointer'
                 }`}
               >
                 {s}x
@@ -189,8 +189,8 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
                 onClick={() => setVideoLoopCount(c)}
                 className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                   videoLoopCount === c
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
                 }`}
               >
                 {c} {c === 1 ? 'loop' : 'loops'}
@@ -203,7 +203,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       {/* Info Output */}
       <div className="flex items-center justify-between text-[var(--text-body)]">
         <span className="font-bold">Output Info:</span>
-        <span className="text-[#f0be7c] font-bold">
+        <span className="text-[var(--accent-gold)] font-bold">
           {getOutputDimensions(scale).outW} × {getOutputDimensions(scale).outH} px
           {exportType === 'gif' && `, ${totalFrames} frames at ${fps} FPS`}
           {exportType === 'apng' && `, ${totalFrames} frames (RGBA)`}
@@ -213,7 +213,7 @@ export const AnimatedExportTab: React.FC<AnimatedExportTabProps> = ({
       </div>
 
       {/* Footnote / Explanation */}
-      <p className="text-[#a89ab8] text-[11px] pt-1 border-t border-[var(--desk-border)]">
+      <p className="text-[var(--text-muted)] text-[11px] pt-1 border-t border-[var(--desk-border)]">
         {exportType === 'gif' && 'Animated GIF with crisp nearest-neighbor integer scaling.'}
         {exportType === 'apng' &&
           'APNG keeps full RGBA color and transparency. Uncompressed image data can make larger files; check that your destination plays animated PNGs.'}

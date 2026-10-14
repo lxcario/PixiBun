@@ -33,10 +33,10 @@ export function GodotKitExportTab({ indexed, normals, pivot, onIndexed, onNormal
       {preflight.ready.length > 0 && (
         <div className="flex flex-col gap-0.5">
           <div className="text-[11px] font-semibold text-[var(--text-heading)] flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5cdaac]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-sage)]" />
             <span>Ready ({preflight.ready.length})</span>
           </div>
-          <ul className="text-[10px] text-[var(--text-body)] space-y-0.5 pl-3 border-l border-[#5cdaac]/30">
+          <ul className="text-[10px] text-[var(--text-body)] space-y-0.5 pl-3 border-l border-[var(--accent-sage)]/30">
             {preflight.ready.map((item, i) => <li key={i}>{item}</li>)}
           </ul>
         </div>
@@ -45,10 +45,10 @@ export function GodotKitExportTab({ indexed, normals, pivot, onIndexed, onNormal
       {preflight.attention.length > 0 && (
         <div className="flex flex-col gap-0.5">
           <div className="text-[11px] font-semibold text-[var(--text-heading)] flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#f0be7c]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary-bg)]" />
             <span>Needs attention ({preflight.attention.length})</span>
           </div>
-          <ul className="text-[11px] text-[var(--text-body)] space-y-0.5 pl-3 border-l border-[#f0be7c]/30">
+          <ul className="text-[11px] text-[var(--text-body)] space-y-0.5 pl-3 border-l border-[var(--accent-gold)]/30">
             {preflight.attention.map((item, i) => <li key={i}>{item}</li>)}
           </ul>
         </div>
@@ -57,10 +57,10 @@ export function GodotKitExportTab({ indexed, normals, pivot, onIndexed, onNormal
       {preflight.optional.length > 0 && (
         <div className="flex flex-col gap-0.5">
           <div className="text-[11px] font-semibold text-[var(--text-heading)] flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#c792df]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-wisteria)]" />
             <span>Optional improvements ({preflight.optional.length})</span>
           </div>
-          <ul className="text-[10px] text-[var(--text-muted)] space-y-0.5 pl-3 border-l border-[#c792df]/30">
+          <ul className="text-[10px] text-[var(--text-muted)] space-y-0.5 pl-3 border-l border-[var(--accent-wisteria)]/30">
             {preflight.optional.map((item, i) => <li key={i}>{item}</li>)}
           </ul>
         </div>

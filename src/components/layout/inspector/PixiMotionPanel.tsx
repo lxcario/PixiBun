@@ -171,7 +171,7 @@ export const PixiMotionPanel: React.FC = () => {
             aria-pressed={motionActivePose === 'start'}
             className={`h-8 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
               motionActivePose === 'start'
-                ? 'bg-[var(--accent-wisteria)] text-[#140d1f] border-[var(--accent-wisteria)] shadow-xs'
+                ? 'bg-[var(--accent-wisteria)] text-[var(--primary-fg)] border-[var(--accent-wisteria)] shadow-xs'
                 : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >
@@ -187,7 +187,7 @@ export const PixiMotionPanel: React.FC = () => {
             aria-pressed={motionActivePose === 'end'}
             className={`h-8 px-2 rounded-[2px] border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
               motionActivePose === 'end'
-                ? 'bg-[var(--accent-gold)] text-[#140d1f] border-[var(--accent-gold)] shadow-xs'
+                ? 'bg-[var(--accent-gold)] text-[var(--primary-fg)] border-[var(--accent-gold)] shadow-xs'
                 : 'pixel-tactile-btn border-[var(--desk-border)] text-[var(--text-muted)] hover:text-[var(--text-heading)]'
             }`}
           >

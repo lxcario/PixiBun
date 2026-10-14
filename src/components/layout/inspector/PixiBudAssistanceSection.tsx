@@ -220,8 +220,8 @@ export const PixiBudAssistanceSection: React.FC = () => {
           {cleanupReport?.phase === 'scan' && cleanupReport.beforePreview && cleanupReport.afterPreview && (
             <div className="flex flex-col gap-1.5">
               {(cleanupReport.stats.protectedPixels ?? 0) > 0 && (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-[#251829] border border-[#f0be7c] text-[#f0be7c] text-[10px] font-mono rounded-[2px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#f0be7c] shrink-0" />
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-[var(--desk-surface-raised)] border border-[var(--accent-gold)] text-[var(--accent-gold)] text-[10px] font-mono rounded-[2px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary-bg)] shrink-0" />
                   <span>Protected regions active · {cleanupReport.stats.protectedPixels} pixel{cleanupReport.stats.protectedPixels === 1 ? '' : 's'} shielded from cleanup</span>
                 </div>
               )}

@@ -139,7 +139,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
               aria-pressed={shadowStyle === 'cast'}
               className={`min-h-8 px-2 py-0.5 text-[10px] font-sans font-medium rounded-[1px] border transition-colors cursor-pointer ${
                 shadowStyle === 'cast'
-                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[var(--ink)] shadow-[0_1px_0_#8c5120]'
                   : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
               }`}
             >
@@ -151,7 +151,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
               aria-pressed={shadowStyle === 'drop'}
               className={`min-h-8 px-2 py-0.5 text-[10px] font-sans font-medium rounded-[1px] border transition-colors cursor-pointer ${
                 shadowStyle === 'drop'
-                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                  ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[var(--ink)] shadow-[0_1px_0_#8c5120]'
                   : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
               }`}
             >
@@ -195,7 +195,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
             </div>
 
             {inferredRationale && (
-              <div className="p-1.5 bg-[#26140b] text-[var(--accent-gold)] text-[9px] font-mono rounded-[2px] border border-[#8c5120] leading-relaxed">
+              <div className="p-1.5 bg-[#26140b] text-[var(--accent-gold)] text-[9px] font-mono rounded-[2px] border border-[var(--ink)] leading-relaxed">
                 {inferredRationale}
               </div>
             )}
@@ -226,7 +226,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
               <button
                 type="button"
                 onClick={handleAlignWithKeyLight}
-                className="px-2 py-0.5 text-[9px] font-mono font-bold text-[var(--accent-gold)] bg-[var(--desk-surface)] hover:bg-[#3a204d] rounded-[1px] border border-[var(--desk-border)] transition-colors cursor-pointer"
+                className="px-2 py-0.5 text-[9px] font-mono font-bold text-[var(--accent-gold)] bg-[var(--desk-surface)] hover:bg-[var(--state-active)] rounded-[1px] border border-[var(--desk-border)] transition-colors cursor-pointer"
               >
                 Match Scene Light
               </button>
@@ -294,7 +294,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
                     onClick={() => setShadowColor(preset.hex)}
                     className={`flex-1 py-1 text-[8px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer text-center ${
                       shadowColor.toLowerCase() === preset.hex.toLowerCase()
-                        ? 'border-[var(--accent-gold)] bg-[#3a204d] text-[var(--accent-gold)]'
+                        ? 'border-[var(--accent-gold)] bg-[var(--state-active)] text-[var(--accent-gold)]'
                         : 'border-[var(--desk-border)] bg-[var(--desk-surface)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                     }`}
                     title={`${preset.label} (${preset.hex})`}
@@ -316,7 +316,7 @@ export const RaymarchedShadowSection: React.FC<{ taskView?: boolean }> = ({ task
                     onClick={() => setShadowDitherMode(dMode)}
                     className={`px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-[1px] border transition-colors cursor-pointer ${
                       shadowDitherMode === dMode
-                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[#8c5120] shadow-[0_1px_0_#8c5120]'
+                        ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border-[var(--ink)] shadow-[0_1px_0_#8c5120]'
                         : 'bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                     }`}
                   >

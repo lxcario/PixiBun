@@ -65,7 +65,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
     >
       <div className="flex flex-col gap-3 font-mono text-xs text-[var(--text-heading)]">
         <p className="text-[12px] text-[var(--text-muted)] leading-relaxed">
-          PixiBun honors a strict <strong className="text-[#f0be7c]">zero-telemetry policy</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting and local performance profiling.
+          PixiBun honors a strict <strong className="text-[var(--accent-gold)]">zero-telemetry policy</strong>. Diagnostic events and web vitals are captured exclusively to your browser&apos;s local IndexedDB ring buffer (200 entries max) for troubleshooting and local performance profiling.
         </p>
 
         <div className="p-3 bg-[var(--desk-surface)] rounded-[3px] border border-[var(--desk-border)] flex flex-col gap-3">
@@ -92,7 +92,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
 
             {diagSettings.relayOptIn && (
               <p className="pl-5 text-[10px] text-[var(--text-muted)] italic leading-tight">
-                The relay destination is configured by the server operator via <code className="text-[#f0be7c]">DIAGNOSTICS_RELAY_URL</code>. If no upstream is configured, reports stay on this device.
+                The relay destination is configured by the server operator via <code className="text-[var(--accent-gold)]">DIAGNOSTICS_RELAY_URL</code>. If no upstream is configured, reports stay on this device.
               </p>
             )}
           </div>
@@ -101,14 +101,14 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={() => exportDiagnosticsFile()}
-              className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:border-[#f0be7c] text-[11px] rounded text-[#f0be7c] font-bold cursor-pointer transition-colors"
+              className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:border-[var(--accent-gold)] text-[11px] rounded text-[var(--accent-gold)] font-bold cursor-pointer transition-colors"
             >
               Export Diagnostics JSON
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:border-[#fca5a5] text-[11px] rounded text-[#fca5a5] font-bold cursor-pointer transition-colors"
+              className="px-3 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:border-[var(--danger-border)] text-[11px] rounded text-[var(--danger-fg)] font-bold cursor-pointer transition-colors"
             >
               Clear Stored Logs
             </button>
@@ -122,7 +122,7 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({ isOpen, onCl
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:text-[#f0be7c] text-xs font-bold rounded-[2px] cursor-pointer transition-colors"
+            className="px-4 py-1.5 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] hover:text-[var(--accent-gold)] text-xs font-bold rounded-[2px] cursor-pointer transition-colors"
           >
             Close
           </button>

@@ -240,175 +240,8 @@ html.light, html[data-theme="light"], html[data-color-scheme="light"] {
   --color-well-secondary-border: var(--desk-border);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   FIRST-PARTY THEME: COZY CLASSIC (ORIGINAL PIXIBUN HISTORICAL IDENTITY)
-   Recovered verbatim from LAST PUSHED GITHUB STATE (origin/main: 92ad36d)
-   ═══════════════════════════════════════════════════════════════════ */
-html[data-studio-theme="cozy-classic"] {
-  color-scheme: dark;
-  --desk-bg: #140c1e;
-  --desk-surface: #201431;
-  --desk-surface-raised: #281b3d;
-  --desk-border: #3a2e4c;
-  --desk-border-highlight: #4d3a66;
-  --text-heading: #ede8f4;
-  --text-body: #d0c4df;
-  --text-muted: #a496b8;
-  --accent-gold: #f0be7c;
-  --accent-plum: #dcabdf;
-  --accent-wisteria: #c792df;
-  --accent-sage: #7d9d7f;
-  --btn-bg: #281b3d;
-  --btn-hover: #2e2040;
-  --btn-border: #3a2e4c;
-  --btn-text: #ede8f4;
-  --btn-shadow: #130e20;
-  --focus-ring: 0 0 0 2px #f0be7c;
-
-  /* Surface Elevation */
-  --surface-0: #100a18;
-  --surface-1: var(--desk-surface);
-  --surface-2: var(--desk-surface-raised);
-  --surface-3: #352248;
-
-  /* Interactive States */
-  --state-hover: #2e2040;
-  --state-active: #2c1e40;
-  --state-selected: #f0be7c;
-  --state-disabled: var(--text-muted);
-  --state-danger: #e06b7d;
-  --state-success: #7d9d7f;
-
-  /* Canvas Chrome */
-  --canvas-well: #100a18;
-  --canvas-border: #2c1e3a;
-
-  /* Platen & Canvas Depth */
-  --platen-bg: #1e1329;
-  --platen-border: #3a2e4c;
-  --platen-mark: #5d4277;
-  --canvas-shadow: 0 8px 24px rgba(10, 6, 18, 0.5), 0 0 0 1px rgba(240, 190, 124, 0.15);
-
-  /* Studio Semantic Roles */
-  --studio-bg: #140c1e;
-  --surface-base: #201431;
-  --surface-raised: #281b3d;
-  --surface-sunken: #100a18;
-  --surface-hover: #2e2040;
-  --border-default: #3a2e4c;
-  --border-subtle: #2c1e3a;
-  --border-emphasis: #4d3a66;
-  --accent-creative: #f0be7c;
-  --accent-navigation: #c792df;
-  --accent-positive: #7d9d7f;
-  --control-bg: #281b3d;
-  --control-hover: #2e2040;
-  --control-active: #2c1e40;
-  --control-border: #3a2e4c;
-  --control-border-w: 2px;
-  --shadow-tactile: 0 2px 0px #130e20;
-
-  /* Tool & Timeline Presentation */
-  --tool-active-bg: #f0be7c;
-  --tool-active-fg: #140d1f;
-  --tool-active-border: #8c5120;
-  --tool-active-shadow: 0 2px 0px #8c5120;
-  --tool-active-transform: none;
-  --tool-inactive-hover-bg: #2e2040;
-  --tool-inactive-hover-fg: #f0be7c;
-  --timeline-frame-active-bg: #2c1e40;
-  --timeline-frame-active-border: #f0be7c;
-  --timeline-frame-active-shadow: 0 2px 0px #130e20;
-  --timeline-frame-active-fg: #f0be7c;
-  --timeline-frame-hover-bg: #2e2040;
-  --timeline-frame-hover-border: rgba(240, 190, 124, 0.6);
-  --inspector-tab-active-bg: var(--desk-surface-raised);
-  --inspector-tab-active-border: #f0be7c;
-  --inspector-tab-active-fg: #f0be7c;
-  --color-well-primary-border: #f0be7c;
-  --color-well-secondary-border: #3a2e4c;
-}
-
-/* Cozy Classic Light Mode */
-html[data-studio-theme="cozy-classic"].light,
-html[data-studio-theme="cozy-classic"][data-theme="light"],
-html[data-studio-theme="cozy-classic"][data-color-scheme="light"] {
-  color-scheme: light;
-  --desk-bg: #fbf8f3;
-  --desk-surface: #f3ebe0;
-  --desk-surface-raised: #fffdf9;
-  --desk-border: #3c2254;
-  --desk-border-highlight: #683d8a;
-  --text-heading: #221233;
-  --text-body: #4a3559;
-  --text-muted: #685179;
-  --accent-gold: #8a4500;
-  --accent-plum: #7e2b96;
-  --accent-wisteria: #9940b5;
-  --btn-bg: #f8f3eb;
-  --btn-hover: #faecdc;
-  --btn-border: #3c2254;
-  --btn-text: #221233;
-  --btn-shadow: #2a153d;
-  --focus-ring: 0 0 0 2px #8a4500;
-
-  --surface-0: #ece2d2;
-  --surface-1: var(--desk-surface);
-  --surface-2: var(--desk-surface-raised);
-  --surface-3: #faecdc;
-
-  --state-hover: #faecdc;
-  --state-active: #f0d4b8;
-  --state-selected: #8a4500;
-  --state-disabled: var(--text-muted);
-  --state-danger: #c94455;
-  --state-success: #2d8a3e;
-
-  --canvas-well: #e8ded0;
-  --canvas-border: #b8a690;
-
-  --platen-bg: #f0e6d6;
-  --platen-border: #3c2254;
-  --platen-mark: #683d8a;
-  --canvas-shadow: 0 6px 18px rgba(60, 34, 84, 0.15), 0 0 0 1px rgba(138, 69, 0, 0.15);
-
-  --studio-bg: #fbf8f3;
-  --surface-base: #f3ebe0;
-  --surface-raised: #fffdf9;
-  --surface-sunken: #ece2d2;
-  --surface-hover: #faecdc;
-  --border-default: #3c2254;
-  --border-subtle: #d8cdbe;
-  --border-emphasis: #683d8a;
-  --accent-creative: #8a4500;
-  --accent-navigation: #9940b5;
-  --accent-positive: #2d8a3e;
-  --control-bg: #f8f3eb;
-  --control-hover: #faecdc;
-  --control-active: #f0d4b8;
-  --control-border: #3c2254;
-  --control-border-w: 2px;
-  --shadow-tactile: 0 2px 0px #2a153d;
-
-  --tool-active-bg: #f5ab35;
-  --tool-active-fg: #1e0e2e;
-  --tool-active-border: #3c2254;
-  --tool-active-shadow: 0 2px 0px #2a153d;
-  --tool-active-transform: none;
-  --tool-inactive-hover-bg: #faecdc;
-  --tool-inactive-hover-fg: #221233;
-  --timeline-frame-active-bg: #faecdc;
-  --timeline-frame-active-border: #8a4500;
-  --timeline-frame-active-shadow: 0 2px 0px #2a153d;
-  --timeline-frame-active-fg: #8a4500;
-  --timeline-frame-hover-bg: #f5ede0;
-  --timeline-frame-hover-border: #683d8a;
-  --inspector-tab-active-bg: #fffdf9;
-  --inspector-tab-active-border: #8a4500;
-  --inspector-tab-active-fg: #8a4500;
-  --color-well-primary-border: #8a4500;
-  --color-well-secondary-border: #3c2254;
-}
+/* Per-theme tokens (Moonlit, Sakura, Tidepool, Ember, Moss, Arcade, Graphite, Plum)
+   are generated into themes.generated.css from src/lib/theme/themes.json. */
 
 :focus-visible {
   outline: 2px solid var(--accent-gold);
@@ -610,13 +443,13 @@ html, body {
 .pixel-primary-btn {
   position: relative;
   overflow: hidden;
-  background-color: var(--accent-gold);
-  color: #140d1f;
-  border: 1px solid #8c5120;
+  background-color: var(--primary-bg, var(--accent-gold));
+  color: var(--primary-fg, #140d1f);
+  border: var(--control-border-w, 1px) solid var(--ink, #8c5120);
   box-shadow:
-    inset 1px 1px 0px #fff8db,
-    inset -1px -1px 0px #b87428,
-    0 1px 0px var(--btn-shadow);
+    inset 2px 2px 0px var(--primary-shine, #fff8db),
+    inset -2px -2px 0px var(--primary-shade, #b87428),
+    0 2px 0px var(--ink, var(--btn-shadow));
   transition:
     transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1),
@@ -645,11 +478,11 @@ html, body {
 
 .pixel-primary-btn:hover {
   transform: none;
-  background-color: #fcd699;
+  background-color: var(--primary-hover, #fcd699);
   box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset -1px -1px 0px #b87428,
-    0 2px 0px var(--btn-shadow);
+    inset 2px 2px 0px #ffffff,
+    inset -2px -2px 0px var(--primary-shade, #b87428),
+    0 3px 0px var(--ink, var(--btn-shadow));
 }
 
 .pixel-primary-btn:hover::before {
@@ -658,8 +491,7 @@ html, body {
 
 .pixel-primary-btn:active {
   transform: none;
-  box-shadow:
-    inset 1px 1px 2px rgba(140, 81, 32, 0.6);
+  box-shadow: inset 2px 2px 0px var(--primary-shade, #b87428);
   transition: transform 0.05s ease, box-shadow 0.05s ease;
 }
 
@@ -675,138 +507,29 @@ html, body {
   }
 }
 
-/* Light Mode Overrides for High-Contrast Warm Paper Feel */
-html.light .pixel-box-frame {
-  background-color: #f3ebe0;
-  border: 2px solid #3c2254;
+/* Every theme: borders follow the theme's control weight; day themes get a paper-white bevel */
+.pixel-tactile-btn { border-width: var(--control-border-w, 1px); }
+
+html[data-color-scheme="light"] .pixel-box-frame {
   box-shadow:
     inset 1px 1px 0px rgba(255, 255, 255, 0.95),
-    inset -1px -1px 0px rgba(60, 34, 84, 0.15),
-    0 3px 0px var(--btn-shadow);
+    inset -1px -1px 0px color-mix(in srgb, var(--ink) 15%, transparent),
+    0 3px 0px var(--ink);
 }
 
-html.light .pixel-tactile-btn {
-  background-color: #f8f3eb;
-  color: #221233;
-  border: 2px solid #3c2254;
+html[data-color-scheme="light"] .pixel-tactile-btn {
   box-shadow:
     inset 1px 1px 0px rgba(255, 255, 255, 0.95),
-    inset -1px -1px 0px rgba(60, 34, 84, 0.12),
-    0 3px 0px var(--btn-shadow);
+    inset -1px -1px 0px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 3px 0px var(--ink);
 }
 
-html.light .pixel-tactile-btn:hover {
-  background-color: #faecdc;
-  border-color: #7e2b96;
-  box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 1),
-    inset -1px -1px 0px rgba(60, 34, 84, 0.15),
-    0 5px 0px var(--btn-shadow);
-}
-
-html.light .pixel-primary-btn {
-  background-color: #f5ab35;
-  color: #1e0e2e;
-  border: 2px solid #3c2254;
-  box-shadow:
-    inset 2px 2px 0px #fff7d6,
-    inset -2px -2px 0px #c47d18,
-    0 0 0 1px #ffd778,
-    0 4px 0px #2a153d;
-}
-
-html.light .pixel-primary-btn:hover {
-  background-color: #ffbe4d;
-  box-shadow:
-    inset 2px 2px 0px #ffffff,
-    inset -2px -2px 0px #c47d18,
-    0 0 0 1px #ffd778,
-    0 6px 0px #2a153d;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   COZY CLASSIC COMPONENT PRESENTATION (TACTILE FRAMING & DEPTH)
-   Preserved from origin/main (92ad36d)
-   ═══════════════════════════════════════════════════════════════════ */
-
-/* Cozy Classic Tactile Buttons: 2px borders, deeper specular & drop shadow */
-html[data-studio-theme="cozy-classic"] .pixel-tactile-btn {
-  border-width: 2px;
-  box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.18),
-    inset -1px -1px 0px rgba(0, 0, 0, 0.25),
-    0 2px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"] .pixel-tactile-btn:hover {
-  background-color: var(--btn-hover);
+html[data-color-scheme="light"] .pixel-tactile-btn:hover {
   border-color: var(--accent-wisteria);
   box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.25),
-    inset -1px -1px 0px rgba(0, 0, 0, 0.25),
-    0 3px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"] .pixel-tactile-btn:active {
-  transform: none;
-  box-shadow:
-    inset -1px -1px 0px rgba(255, 255, 255, 0.1),
-    inset 1px 1px 0px rgba(0, 0, 0, 0.3),
-    0 1px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"] .pixel-primary-btn {
-  background-color: #f0be7c;
-  color: #140d1f;
-  border: 2px solid #8c5120;
-  box-shadow:
-    inset 2px 2px 0px #fff8db,
-    inset -2px -2px 0px #b87428,
-    0 0 0 1px #ffd778,
-    0 3px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"] .pixel-primary-btn:hover {
-  background-color: #fcd699;
-  box-shadow:
-    inset 2px 2px 0px #ffffff,
-    inset -2px -2px 0px #b87428,
-    0 0 0 1px #ffd778,
-    0 4px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"] .pixel-primary-btn:active {
-  transform: none;
-  box-shadow:
-    inset -2px -2px 0px #fff8db,
-    inset 2px 2px 0px #8c5120,
-    0 1px 0px var(--btn-shadow);
-}
-
-/* Cozy Classic Light Mode Button Overrides */
-html[data-studio-theme="cozy-classic"].light .pixel-tactile-btn,
-html[data-studio-theme="cozy-classic"][data-theme="light"] .pixel-tactile-btn,
-html[data-studio-theme="cozy-classic"][data-color-scheme="light"] .pixel-tactile-btn {
-  background-color: #f8f3eb;
-  color: #221233;
-  border: 2px solid #3c2254;
-  box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.95),
-    inset -1px -1px 0px rgba(60, 34, 84, 0.12),
-    0 3px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="cozy-classic"].light .pixel-primary-btn,
-html[data-studio-theme="cozy-classic"][data-theme="light"] .pixel-primary-btn,
-html[data-studio-theme="cozy-classic"][data-color-scheme="light"] .pixel-primary-btn {
-  background-color: #f5ab35;
-  color: #1e0e2e;
-  border: 2px solid #3c2254;
-  box-shadow:
-    inset 2px 2px 0px #fff7d6,
-    inset -2px -2px 0px #c47d18,
-    0 0 0 1px #ffd778,
-    0 4px 0px var(--btn-shadow);
+    inset 1px 1px 0px #ffffff,
+    inset -1px -1px 0px color-mix(in srgb, var(--ink) 15%, transparent),
+    0 4px 0px var(--ink);
 }
 
 /* Smooth theme background color transitions for chrome (80-140ms, respecting prefers-reduced-motion) */
@@ -1117,237 +840,25 @@ html[data-theme="light"] .atelier-vines-light {
   .sheet-playhead { animation: none; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   FIRST-PARTY THEME: MOONLIT (DEFAULT)
-   The landing page's night palette brought into the studio: deep plum
-   night, warm lantern gold, lilac accents and chunky ink-edged controls.
-   ═══════════════════════════════════════════════════════════════════ */
-html[data-studio-theme="moonlit"] {
-  color-scheme: dark;
-  --desk-bg: #120b20;
-  --desk-surface: #1d1336;
-  --desk-surface-raised: #2a1945;
-  --desk-border: #46306a;
-  --desk-border-highlight: #5d4486;
-  --text-heading: #fff3e0;
-  --text-body: #e2d6ee;
-  --text-muted: #b3a2cc;
-  --accent-gold: #ffd285;
-  --accent-plum: #dcabdf;
-  --accent-wisteria: #c792df;
-  --accent-sage: #a8e092;
-  --btn-bg: #2a1945;
-  --btn-hover: #352058;
-  --btn-border: #46306a;
-  --btn-text: #fff3e0;
-  --btn-shadow: #0b0714;
-  --focus-ring: 0 0 0 2px #ffd285;
-
-  --surface-0: #0f0820;
-  --surface-1: var(--desk-surface);
-  --surface-2: var(--desk-surface-raised);
-  --surface-3: #3a2560;
-
-  --state-hover: #352058;
-  --state-active: #3d2766;
-  --state-selected: #ffd285;
-  --state-disabled: var(--text-muted);
-  --state-danger: #f08a9a;
-  --state-success: #a8e092;
-
-  --canvas-well: #0f0820;
-  --canvas-border: #2a1945;
-
-  --platen-bg: #241640;
-  --platen-border: #46306a;
-  --platen-mark: #8d76ad;
-  --canvas-shadow: 0 8px 0 #0b0714, 0 0 0 2px #0b0714, 0 0 48px rgba(255, 210, 133, 0.12);
-
-  --studio-bg: #120b20;
-  --surface-base: #1d1336;
-  --surface-raised: #2a1945;
-  --surface-sunken: #0f0820;
-  --surface-hover: #352058;
-  --border-default: #46306a;
-  --border-subtle: #2f1d52;
-  --border-emphasis: #5d4486;
-  --accent-creative: #ffd285;
-  --accent-navigation: #c792df;
-  --accent-positive: #a8e092;
-  --control-bg: #2a1945;
-  --control-hover: #352058;
-  --control-active: #3d2766;
-  --control-border: #46306a;
-  --control-border-w: 2px;
-  --shadow-tactile: 0 2px 0px #0b0714;
-
-  --tool-active-bg: #ffd285;
-  --tool-active-fg: #1d1336;
-  --tool-active-border: #0b0714;
-  --tool-active-shadow: 0 2px 0px #0b0714;
-  --tool-active-transform: none;
-  --tool-inactive-hover-bg: #352058;
-  --tool-inactive-hover-fg: #ffd285;
-  --timeline-frame-active-bg: #3d2766;
-  --timeline-frame-active-border: #ffd285;
-  --timeline-frame-active-shadow: 0 2px 0px #0b0714;
-  --timeline-frame-active-fg: #ffd285;
-  --timeline-frame-hover-bg: #352058;
-  --timeline-frame-hover-border: rgba(255, 210, 133, 0.6);
-  --inspector-tab-active-bg: var(--desk-surface-raised);
-  --inspector-tab-active-border: #ffd285;
-  --inspector-tab-active-fg: #ffd285;
-  --color-well-primary-border: #ffd285;
-  --color-well-secondary-border: #46306a;
-}
-
-/* Moonlit at dawn: the same studio with the curtains open */
-html[data-studio-theme="moonlit"].light,
-html[data-studio-theme="moonlit"][data-theme="light"],
-html[data-studio-theme="moonlit"][data-color-scheme="light"] {
-  color-scheme: light;
-  --desk-bg: #f4ecf8;
-  --desk-surface: #ece1f4;
-  --desk-surface-raised: #fffaff;
-  --desk-border: #3a2560;
-  --desk-border-highlight: #6a3f99;
-  --text-heading: #1f1238;
-  --text-body: #45325c;
-  --text-muted: #5f4b78;
-  --accent-gold: #8a4500;
-  --accent-plum: #7e2b96;
-  --accent-wisteria: #8f3fb0;
-  --accent-sage: #2d7a3e;
-  --btn-bg: #fbf6ff;
-  --btn-hover: #f1e2fa;
-  --btn-border: #3a2560;
-  --btn-text: #1f1238;
-  --btn-shadow: #2a153d;
-  --focus-ring: 0 0 0 2px #8a4500;
-
-  --surface-0: #e4d7ef;
-  --surface-1: var(--desk-surface);
-  --surface-2: var(--desk-surface-raised);
-  --surface-3: #f6ebfc;
-
-  --state-hover: #f1e2fa;
-  --state-active: #e8d2f5;
-  --state-selected: #8a4500;
-  --state-disabled: var(--text-muted);
-  --state-danger: #c94455;
-  --state-success: #2d7a3e;
-
-  --canvas-well: #e4d7ef;
-  --canvas-border: #c3b0d6;
-
-  --platen-bg: #efe3f7;
-  --platen-border: #3a2560;
-  --platen-mark: #6a3f99;
-  --canvas-shadow: 0 6px 0 rgba(58, 37, 96, 0.35), 0 0 0 2px #3a2560;
-
-  --studio-bg: #f4ecf8;
-  --surface-base: #ece1f4;
-  --surface-raised: #fffaff;
-  --surface-sunken: #e4d7ef;
-  --surface-hover: #f1e2fa;
-  --border-default: #3a2560;
-  --border-subtle: #d5c6e2;
-  --border-emphasis: #6a3f99;
-  --accent-creative: #8a4500;
-  --accent-navigation: #8f3fb0;
-  --accent-positive: #2d7a3e;
-  --control-bg: #fbf6ff;
-  --control-hover: #f1e2fa;
-  --control-active: #e8d2f5;
-  --control-border: #3a2560;
-  --control-border-w: 2px;
-  --shadow-tactile: 0 2px 0px #2a153d;
-
-  --tool-active-bg: #ffd285;
-  --tool-active-fg: #1f1238;
-  --tool-active-border: #3a2560;
-  --tool-active-shadow: 0 2px 0px #2a153d;
-  --tool-active-transform: none;
-  --tool-inactive-hover-bg: #f1e2fa;
-  --tool-inactive-hover-fg: #1f1238;
-  --timeline-frame-active-bg: #f1e2fa;
-  --timeline-frame-active-border: #8a4500;
-  --timeline-frame-active-shadow: 0 2px 0px #2a153d;
-  --timeline-frame-active-fg: #8a4500;
-  --timeline-frame-hover-bg: #f6ebfc;
-  --timeline-frame-hover-border: #6a3f99;
-  --inspector-tab-active-bg: #fffaff;
-  --inspector-tab-active-border: #8a4500;
-  --inspector-tab-active-fg: #8a4500;
-  --color-well-primary-border: #8a4500;
-  --color-well-secondary-border: #3a2560;
-}
-
-/* Moonlit controls: ink edges and a solid drop, like the landing's buttons */
-html[data-studio-theme="moonlit"] .pixel-tactile-btn {
+/* Scene themes: ink-edged controls with a solid drop, like the landing's buttons */
+html[data-layout-kind="scene"] .pixel-tactile-btn {
   border-width: 2px;
   box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.12),
-    0 2px 0px var(--btn-shadow);
+    inset 1px 1px 0px color-mix(in srgb, var(--text-heading) 12%, transparent),
+    0 2px 0px var(--ink);
 }
 
-html[data-studio-theme="moonlit"] .pixel-tactile-btn:hover {
+html[data-layout-kind="scene"] .pixel-tactile-btn:hover {
   background-color: var(--btn-hover);
   border-color: var(--accent-gold);
   box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.18),
-    0 3px 0px var(--btn-shadow);
+    inset 1px 1px 0px color-mix(in srgb, var(--text-heading) 18%, transparent),
+    0 3px 0px var(--ink);
 }
 
-html[data-studio-theme="moonlit"] .pixel-tactile-btn:active {
+html[data-layout-kind="scene"] .pixel-tactile-btn:active {
   transform: none;
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.35);
-}
-
-html[data-studio-theme="moonlit"] .pixel-primary-btn {
-  background-color: #ffd285;
-  color: #1d1336;
-  border: 2px solid #0b0714;
-  box-shadow:
-    inset 0 -2px 0px #d89a55,
-    inset 2px 2px 0px #fff3c4,
-    0 3px 0px #0b0714;
-}
-
-html[data-studio-theme="moonlit"] .pixel-primary-btn:hover {
-  background-color: #ffe1a6;
-  box-shadow:
-    inset 0 -2px 0px #d89a55,
-    inset 2px 2px 0px #ffffff,
-    0 4px 0px #0b0714;
-}
-
-html[data-studio-theme="moonlit"] .pixel-primary-btn:active {
-  transform: none;
-  box-shadow: inset 0 2px 0px #d89a55;
-}
-
-html[data-studio-theme="moonlit"].light .pixel-tactile-btn,
-html[data-studio-theme="moonlit"][data-theme="light"] .pixel-tactile-btn,
-html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-tactile-btn {
-  background-color: #fbf6ff;
-  color: #1f1238;
-  border: 2px solid #3a2560;
-  box-shadow:
-    inset 1px 1px 0px rgba(255, 255, 255, 0.95),
-    0 3px 0px var(--btn-shadow);
-}
-
-html[data-studio-theme="moonlit"].light .pixel-primary-btn,
-html[data-studio-theme="moonlit"][data-theme="light"] .pixel-primary-btn,
-html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-primary-btn {
-  background-color: #ffd285;
-  color: #1f1238;
-  border: 2px solid #3a2560;
-  box-shadow:
-    inset 0 -2px 0px #d89a55,
-    inset 2px 2px 0px #fff3c4,
-    0 3px 0px #2a153d;
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ink) 35%, transparent);
 }
 
 /* Studio buddy: Bun's little reactions in the status bar */
@@ -1376,28 +887,23 @@ html[data-studio-theme="moonlit"][data-color-scheme="light"] .pixel-primary-btn 
    The sky fills the studio; every panel floats over it as an ink-edged,
    glassy card with a solid drop shadow. The canvas hangs in a wooden frame.
    ═══════════════════════════════════════════════════════════════════ */
-[data-layout="moonlit"] {
-  --moon-card: rgba(34, 22, 64, 0.88);
-  --moon-card-edge: #4a3472;
-  --moon-card-drop: inset 0 1px 0 rgba(255, 243, 224, 0.08), 0 4px 0 #0b0714, 0 16px 34px rgba(5, 2, 12, 0.55);
+[data-layout="scene"] {
   --moon-gap: 10px;
   background: transparent;
 }
 
-html.light [data-layout="moonlit"],
-html[data-color-scheme="light"] [data-layout="moonlit"] {
-  --moon-card: rgba(255, 250, 255, 0.86);
-  --moon-card-edge: #3a2560;
-  --moon-card-drop: 0 4px 0 #3a2560, 0 14px 30px rgba(58, 37, 96, 0.18);
+html[data-color-scheme="light"] [data-layout="scene"] {
+  --moon-card: color-mix(in srgb, var(--desk-surface-raised) 86%, transparent);
+  --moon-card-drop: 0 4px 0 var(--ink), 0 14px 30px color-mix(in srgb, var(--ink) 18%, transparent);
 }
 
 /* Floating cards */
-[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
-[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"],
-[data-layout="moonlit"] .moon-slot-tools > aside,
-[data-layout="moonlit"] .moon-slot-inspector > aside,
-[data-layout="moonlit"] .moon-slot-timeline > footer,
-[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] {
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"],
+[data-layout="scene"] .moon-slot-tools > aside,
+[data-layout="scene"] .moon-slot-inspector > aside,
+[data-layout="scene"] .moon-slot-timeline > footer,
+[data-layout="scene"] .moon-slot-status > [data-testid="status-bar"] {
   background: var(--moon-card) !important;
   border: 2px solid var(--moon-card-edge) !important;
   border-radius: 8px;
@@ -1408,36 +914,36 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
 
 /* Narrower screens keep the floating look with tighter gaps, so the canvas keeps its room */
 @media (max-width: 1180px) {
-  [data-layout="moonlit"] { --moon-gap: 4px; }
+  [data-layout="scene"] { --moon-gap: 4px; }
 }
 
-[data-layout="moonlit"] .moon-slot-rail {
+[data-layout="scene"] .moon-slot-rail {
   padding: 6px var(--moon-gap) 0;
   position: relative;
   z-index: 30;
 }
 
-[data-layout="moonlit"] #main-workspace {
+[data-layout="scene"] #main-workspace {
   padding: 6px var(--moon-gap);
   gap: var(--moon-gap);
 }
 
-[data-layout="moonlit"] .moon-slot-tools > aside,
-[data-layout="moonlit"] .moon-slot-inspector > aside {
+[data-layout="scene"] .moon-slot-tools > aside,
+[data-layout="scene"] .moon-slot-inspector > aside {
   height: 100%;
   overflow: hidden;
 }
 
 /* Inspector tabs read like bookmarks tucked into a notebook */
-[data-layout="moonlit"] .moon-slot-inspector > aside > div:first-child {
+[data-layout="scene"] .moon-slot-inspector > aside > div:first-child {
   background: transparent !important;
-  border-bottom: 2px dashed rgba(141, 118, 173, 0.35) !important;
+  border-bottom: 2px dashed color-mix(in srgb, var(--desk-border-highlight) 45%, transparent) !important;
   height: auto !important;
   padding: 6px !important;
 }
 
 /* The canvas area lets the sky through */
-[data-layout="moonlit"] #main-content {
+[data-layout="scene"] #main-content {
   background-color: transparent !important;
   background-image: none !important;
   outline: none !important;
@@ -1445,38 +951,38 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
 }
 
 /* Timeline: a little film strip with sprocket holes */
-[data-layout="moonlit"] .moon-slot-timeline {
+[data-layout="scene"] .moon-slot-timeline {
   padding: 0 var(--moon-gap);
 }
 
-[data-layout="moonlit"] .moon-slot-timeline > footer {
+[data-layout="scene"] .moon-slot-timeline > footer {
   position: relative;
   padding-top: 10px !important;
   padding-bottom: 10px !important;
 }
 
-[data-layout="moonlit"] .moon-slot-timeline > footer::before,
-[data-layout="moonlit"] .moon-slot-timeline > footer::after {
+[data-layout="scene"] .moon-slot-timeline > footer::before,
+[data-layout="scene"] .moon-slot-timeline > footer::after {
   content: '';
   position: absolute;
   left: 14px;
   right: 14px;
   height: 4px;
   pointer-events: none;
-  background-image: repeating-linear-gradient(90deg, rgba(141, 118, 173, 0.45) 0 6px, transparent 6px 14px);
+  background-image: repeating-linear-gradient(90deg, color-mix(in srgb, var(--desk-border-highlight) 60%, transparent) 0 6px, transparent 6px 14px);
   border-radius: 1px;
 }
 
-[data-layout="moonlit"] .moon-slot-timeline > footer::before { top: 4px; }
-[data-layout="moonlit"] .moon-slot-timeline > footer::after { bottom: 4px; }
+[data-layout="scene"] .moon-slot-timeline > footer::before { top: 4px; }
+[data-layout="scene"] .moon-slot-timeline > footer::after { bottom: 4px; }
 
 /* Status bar: a small pill floating over the bottom-left of the canvas area,
    so it costs the canvas no height at all */
-[data-layout="moonlit"] .moon-slot-timeline {
+[data-layout="scene"] .moon-slot-timeline {
   padding-bottom: 6px;
 }
 
-[data-layout="moonlit"] .moon-slot-status {
+[data-layout="scene"] .moon-slot-status {
   position: absolute;
   z-index: 25;
   left: calc(56px + var(--moon-gap) * 2 + 8px);
@@ -1484,11 +990,11 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
   max-width: min(760px, calc(100% - 420px));
 }
 
-[data-layout="moonlit"]:has(.moon-slot-timeline:not([hidden])) .moon-slot-status {
+[data-layout="scene"]:has(.moon-slot-timeline:not([hidden])) .moon-slot-status {
   bottom: calc(8rem + 20px);
 }
 
-[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] {
+[data-layout="scene"] .moon-slot-status > [data-testid="status-bar"] {
   height: 28px;
   border-radius: 999px;
   padding-left: 10px;
@@ -1496,49 +1002,49 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
   gap: 10px;
 }
 
-[data-layout="moonlit"] .moon-slot-status > [data-testid="status-bar"] > .flex-1 {
+[data-layout="scene"] .moon-slot-status > [data-testid="status-bar"] > .flex-1 {
   display: none;
 }
 
 /* The canvas hangs in a wooden frame with brass corners and a lamp glow behind it */
-[data-layout="moonlit"] .canvas-platen {
+[data-layout="scene"] .canvas-platen {
   inset: -14px !important;
-  background: #7a4a34 !important;
-  border: 3px solid #0b0714 !important;
+  background: var(--frame-wood) !important;
+  border: 3px solid var(--ink) !important;
   outline: none !important;
   border-radius: 3px !important;
   box-shadow:
-    inset 3px 3px 0 #a8683f,
-    inset -3px -3px 0 #4a2a1e,
-    0 8px 0 #0b0714,
-    0 0 0 1px rgba(255, 210, 133, 0.15),
-    0 0 90px 24px rgba(255, 200, 130, 0.13);
+    inset 3px 3px 0 var(--frame-light),
+    inset -3px -3px 0 var(--frame-dark),
+    0 8px 0 var(--ink),
+    0 0 0 1px var(--frame-glow),
+    0 0 90px 24px var(--frame-glow);
 }
 
-[data-layout="moonlit"] .platen-corner {
+[data-layout="scene"] .platen-corner {
   width: 10px !important;
   height: 10px !important;
   margin: -2px;
-  border: 2px solid #0b0714 !important;
-  background: #ffd285;
-  box-shadow: inset -2px -2px 0 #d89a55, inset 2px 2px 0 #fff3c4;
+  border: 2px solid var(--ink) !important;
+  background: var(--primary-bg);
+  box-shadow: inset -2px -2px 0 var(--primary-shade), inset 2px 2px 0 var(--primary-shine);
   border-radius: 2px;
 }
 
-[data-layout="moonlit"] .frame-bun { filter: drop-shadow(0 3px 0 rgba(11, 7, 20, 0.6)); }
+[data-layout="scene"] .frame-bun { filter: drop-shadow(0 3px 0 var(--shadow-far)); }
 
 /* Cozy scrollbars inside the floating cards */
-[data-layout="moonlit"] ::-webkit-scrollbar { width: 8px; height: 8px; }
-[data-layout="moonlit"] ::-webkit-scrollbar-thumb {
+[data-layout="scene"] ::-webkit-scrollbar { width: 8px; height: 8px; }
+[data-layout="scene"] ::-webkit-scrollbar-thumb {
   background: var(--desk-border);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
-[data-layout="moonlit"] ::-webkit-scrollbar-track { background: transparent; }
+[data-layout="scene"] ::-webkit-scrollbar-track { background: transparent; }
 
 /* The top rail breaks into floating islands over the sky */
-[data-layout="moonlit"] .moon-slot-rail > header {
+[data-layout="scene"] .moon-slot-rail > header {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -1548,13 +1054,13 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
   gap: var(--moon-gap) !important;
 }
 
-[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
-[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"] {
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Project controls"],
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Workspace and export controls"] {
   height: 44px;
   padding: 0 8px;
 }
 
-[data-layout="moonlit"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > * {
+[data-layout="scene"] .moon-slot-rail > header > [role="group"][aria-label="Drawing controls"] > * {
   background: var(--moon-card) !important;
   border: 2px solid var(--moon-card-edge) !important;
   border-radius: 8px !important;
@@ -1569,19 +1075,7 @@ html[data-color-scheme="light"] [data-layout="moonlit"] {
    rounder, chunkier, more tactile: bigger hit areas, clear active states,
    a press-down on every button, and gentle motion on hover.
    ═══════════════════════════════════════════════════════════════════ */
-body.moon-ui {
-  --moon-ink: #0b0714;
-  --moon-glow: rgba(255, 210, 133, 0.35);
-  --moon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h8v2H6v2H4v2H4V4H2V2H0z' fill='%23ffd285'/%3E%3C/svg%3E");
-  --moon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath d='M8 0h2v2H8v2H6v2H4v2H2V6H0V4h2v2h2V4h2V2h2z' fill='%231d1336'/%3E%3C/svg%3E");
-}
-
-html.light body.moon-ui,
-html[data-color-scheme="light"] body.moon-ui {
-  --moon-ink: #3a2560;
-  --moon-glow: rgba(138, 69, 0, 0.3);
-  --moon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h8v2H6v2H4v2H4V4H2V2H0z' fill='%238a4500'/%3E%3C/svg%3E");
-}
+/* Control skin tokens (--moon-ink, --moon-glow, --moon-chevron, --moon-check) come from themes.generated.css */
 
 /* Buttons: rounder, and every press visibly pushes in */
 body.moon-ui .pixel-tactile-btn,
@@ -1616,10 +1110,10 @@ body.moon-ui .moon-slot-tools button[aria-pressed="false"]:hover {
 }
 
 body.moon-ui .moon-slot-tools button[aria-pressed="true"] {
-  background: #ffd285 !important;
-  color: #1d1336 !important;
+  background: var(--primary-bg) !important;
+  color: var(--primary-fg) !important;
   border: 2px solid var(--moon-ink) !important;
-  box-shadow: inset 0 -3px 0 #d89a55, inset 2px 2px 0 #fff3c4, 0 3px 0 var(--moon-ink), 0 0 16px var(--moon-glow) !important;
+  box-shadow: inset 0 -3px 0 var(--primary-shade), inset 2px 2px 0 var(--primary-shine), 0 3px 0 var(--moon-ink), 0 0 16px var(--moon-glow) !important;
   transform: translateY(-1px);
 }
 
@@ -1632,8 +1126,8 @@ body.moon-ui .moon-slot-tools button[aria-pressed="true"]::after {
   width: 4px;
   height: 4px;
   background:
-    linear-gradient(#fff3c4, #fff3c4) center / 4px 2px no-repeat,
-    linear-gradient(#fff3c4, #fff3c4) center / 2px 4px no-repeat;
+    linear-gradient(var(--primary-shine), var(--primary-shine)) center / 4px 2px no-repeat,
+    linear-gradient(var(--primary-shine), var(--primary-shine)) center / 2px 4px no-repeat;
   animation: goldPulse 1.6s ease-in-out infinite;
 }
 
@@ -1654,10 +1148,10 @@ body.moon-ui .moon-slot-inspector [data-testid^="tab-"][aria-pressed="false"]:ho
 }
 
 body.moon-ui .moon-slot-inspector [data-testid^="tab-"][aria-pressed="true"] {
-  background: #ffd285 !important;
-  color: #1d1336 !important;
+  background: var(--primary-bg) !important;
+  color: var(--primary-fg) !important;
   border: 2px solid var(--moon-ink) !important;
-  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink) !important;
+  box-shadow: inset 0 -2px 0 var(--primary-shade), 0 2px 0 var(--moon-ink) !important;
 }
 
 /* Dropdowns: chunky, rounded, with a pixel chevron */
@@ -1697,7 +1191,7 @@ body.moon-ui textarea:not(.bg-transparent) {
   border: 2px solid var(--desk-border) !important;
   border-radius: 6px !important;
   background-color: var(--surface-0) !important;
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ink) 22%, transparent);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
@@ -1705,14 +1199,14 @@ body.moon-ui input:is([type="number"], [type="text"], [type="search"]):not(.bg-t
 body.moon-ui textarea:not(.bg-transparent):focus {
   outline: none !important;
   border-color: var(--accent-gold) !important;
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.22), 0 0 0 3px var(--moon-glow) !important;
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--ink) 22%, transparent), 0 0 0 3px var(--moon-glow) !important;
 }
 
-/* Sliders: a comfy 22px hit area, a 6px track and a chunky gold handle */
+/* Sliders: a 24px hit area (WCAG 2.2 target size), a 6px track and a chunky handle */
 body.moon-ui input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  height: 22px !important;
+  height: 24px !important;
   background-color: transparent !important;
   background-size: 100% 6px !important;
   background-position: center !important;
@@ -1730,7 +1224,7 @@ body.moon-ui input[type="range"][aria-label="Picker hue"] {
 }
 
 body.moon-ui input[type="range"]::-webkit-slider-runnable-track {
-  height: 22px;
+  height: 24px;
   background: transparent;
 }
 
@@ -1738,11 +1232,11 @@ body.moon-ui input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px !important;
   height: 16px !important;
-  margin-top: 3px;
+  margin-top: 4px;
   border-radius: 5px !important;
-  background: #ffd285 !important;
+  background: var(--primary-bg) !important;
   border: 2px solid var(--moon-ink);
-  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink);
+  box-shadow: inset 0 -2px 0 var(--primary-shade), 0 2px 0 var(--moon-ink);
   transition: transform 100ms ease;
 }
 
@@ -1755,9 +1249,9 @@ body.moon-ui input[type="range"]::-moz-range-thumb {
   width: 14px !important;
   height: 14px !important;
   border-radius: 5px !important;
-  background: #ffd285 !important;
+  background: var(--primary-bg) !important;
   border: 2px solid var(--moon-ink) !important;
-  box-shadow: inset 0 -2px 0 #d89a55, 0 2px 0 var(--moon-ink);
+  box-shadow: inset 0 -2px 0 var(--primary-shade), 0 2px 0 var(--moon-ink);
 }
 
 body.moon-ui input[type="range"]:focus-visible {
@@ -1780,7 +1274,7 @@ body.moon-ui input[type="checkbox"]:not(.sr-only):not([class*="opacity-0"]):not(
 }
 
 body.moon-ui input[type="checkbox"]:not(.sr-only):not([class*="opacity-0"]):not(.hidden):checked {
-  background-color: #ffd285;
+  background-color: var(--primary-bg);
   background-image: var(--moon-check);
   border-color: var(--moon-ink);
 }
@@ -1791,7 +1285,7 @@ body.moon-ui [role="listbox"] {
   border: 2px solid var(--moon-ink) !important;
   border-radius: 10px !important;
   background: var(--desk-surface-raised) !important;
-  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px rgba(5, 2, 12, 0.55) !important;
+  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px var(--shadow-far) !important;
   padding: 6px !important;
 }
 
@@ -1801,7 +1295,7 @@ body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheck
 }
 
 body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"]):is(:hover, :focus-visible) {
-  background: rgba(255, 210, 133, 0.14) !important;
+  background: var(--menu-hover) !important;
   color: var(--text-heading) !important;
   padding-left: 12px !important;
   box-shadow: inset 3px 0 0 var(--accent-gold);
@@ -1812,13 +1306,13 @@ body.moon-ui :is([role="menuitem"], [role="menuitemradio"], [role="menuitemcheck
 body.moon-ui [role="dialog"][aria-modal="false"] {
   border: 2px solid var(--moon-ink) !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px rgba(5, 2, 12, 0.55) !important;
+  box-shadow: 0 4px 0 var(--moon-ink), 0 18px 40px var(--shadow-far) !important;
 }
 
 body.moon-ui dialog[open] > div {
   border: 2px solid var(--moon-ink) !important;
   border-radius: 14px !important;
-  box-shadow: 0 6px 0 var(--moon-ink), 0 30px 80px rgba(5, 2, 12, 0.6) !important;
+  box-shadow: 0 6px 0 var(--moon-ink), 0 30px 80px var(--shadow-far) !important;
 }
 
 body.moon-ui [role="tooltip"] {

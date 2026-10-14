@@ -211,7 +211,7 @@ export const PlaygroundLayout: React.FC = () => {
                 onClick={() => setBrushSize(sz)}
                 className={`px-1.5 py-0.5 rounded-[1px] text-[10px] font-mono font-bold cursor-pointer transition-colors ${
                   tools.brushSize === sz
-                    ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border border-[#8c5120]'
+                    ? 'bg-[var(--accent-gold)] text-[var(--desk-bg)] border border-[var(--ink)]'
                     : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                 }`}
                 title={`Set Brush Size to ${sz}px`}
@@ -251,7 +251,7 @@ export const PlaygroundLayout: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowTeachingBoard(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[#8c5120] text-xs font-mono font-bold text-[var(--accent-gold)] hover:text-[#fff] transition-all cursor-pointer shadow-sm active:translate-y-px"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] hover:bg-[var(--surface-2)] border-2 border-[var(--ink)] text-xs font-mono font-bold text-[var(--accent-gold)] hover:text-[#fff] transition-all cursor-pointer shadow-sm active:translate-y-px"
             title="Open 10-Frame Jump Anatomy Teaching Board"
           >
             <span className="text-[var(--accent-gold)]">✦</span>
@@ -259,7 +259,7 @@ export const PlaygroundLayout: React.FC = () => {
           </button>
 
           <button type="button" onClick={practice?.keep} disabled={!practice}
-            className="border-2 border-[#8c5120] px-3 py-1.5 text-xs font-mono text-[var(--accent-gold)]">
+            className="border-2 border-[var(--ink)] px-3 py-1.5 text-xs font-mono text-[var(--accent-gold)]">
             Keep practice in Studio
           </button>
           <ThemeToggle />

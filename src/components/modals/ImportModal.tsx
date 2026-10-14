@@ -338,7 +338,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             Choose file
             <input type="file" accept=".pixibun,.json,image/png,image/jpeg,image/webp" onChange={handleChooseFile} className="sr-only" aria-label="Choose file to import" data-testid="import-modal-file-input" />
           </label>
-          {fileError && <p role="alert" className="text-[#ffb4b9]">{fileError}</p>}
+          {fileError && <p role="alert" className="text-[var(--danger-fg)]">{fileError}</p>}
         </div>
       </ModalWrapper>
     );
@@ -361,7 +361,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       title={effectivePayload.type === 'project' ? 'Import Project (.pixibun)' : 'Import Image & Sprite Sheet Slicer'}
       maxWidth={effectivePayload.type === 'image' ? 'w-[680px]' : 'w-[440px]'}
     >
-      {(fileError || previewError) && <p role="alert" className="text-[#ffb4b9]">{fileError || previewError}</p>}
+      {(fileError || previewError) && <p role="alert" className="text-[var(--danger-fg)]">{fileError || previewError}</p>}
       {/* 1. Project Import View */}
       {effectivePayload.type === 'project' && (
         <div className="flex flex-col gap-3">
@@ -370,12 +370,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             <span className="text-[var(--text-body)]">
               Frames: {String(Array.isArray((effectivePayload.projectJson as { frames?: unknown[] })?.frames) ? (effectivePayload.projectJson as { frames: unknown[] }).frames.length : '--')} | Size: {String((effectivePayload.projectJson as { width?: unknown })?.width ?? '--')}x{String((effectivePayload.projectJson as { height?: unknown })?.height ?? '--')}
             </span>
-            <p className="text-[#a89ab8] text-[11px] leading-relaxed">
+            <p className="text-[var(--text-muted)] text-[11px] leading-relaxed">
               Loading this project will replace the current canvas workspace with all saved frames, layers, and color palettes.
             </p>
 
             {error && (
-              <p className="bg-[#3d1928] border border-[#6b283d] text-[#ff99aa] rounded-[2px] px-2 py-1.5 leading-relaxed font-bold">
+              <p className="bg-[var(--danger-bg)] border border-[var(--danger-border)] text-[var(--danger-fg)] rounded-[2px] px-2 py-1.5 leading-relaxed font-bold">
                 {error}
               </p>
             )}
@@ -397,7 +397,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         <div className="flex flex-col gap-3">
           {/* File Source Selection Header */}
           <div className="flex items-center justify-between p-2 bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[2px] text-xs font-mono">
-            <span className="text-[10px] font-bold text-[#f0be7c] uppercase">File Source Selection</span>
+            <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase">File Source Selection</span>
             <span className="text-[10px] text-[var(--text-muted)] truncate max-w-[200px]">{effectivePayload.filename}</span>
           </div>
 
@@ -415,8 +415,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
               data-testid="tab-single-sprite"
               className={`px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold cursor-pointer transition-colors ${
                 importMode === 'single'
-                  ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border border-[var(--desk-border)] hover:text-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
               }`}
             >
               Single Sprite / Layer
@@ -428,8 +428,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
               data-testid="tab-sprite-sheet-slicer"
               className={`px-3 py-1.5 rounded-[2px] text-xs font-mono font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
                 importMode === 'slicer'
-                  ? 'bg-[#f0be7c] text-[#140d1f] border border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border border-[var(--desk-border)] hover:text-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-body)] border border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
               }`}
             >
               <PixelIcon name="grid" size={13} />
@@ -448,15 +448,15 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                     <span className="font-bold text-[var(--text-heading)] truncate max-w-[160px]">
                       {effectivePayload.filename}
                     </span>
-                    <span className="text-[10px] text-[#f0be7c] font-bold">
+                    <span className="text-[10px] text-[var(--accent-gold)] font-bold">
                       {srcW} × {srcH} px
                     </span>
                   </div>
 
                   {/* Canvas Sizing Option */}
                     <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                      <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Canvas Sizing</span>
-                      <label htmlFor="size-mode-match-image" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
+                      <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase">Canvas Sizing</span>
+                      <label htmlFor="size-mode-match-image" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[var(--accent-gold)] transition-colors">
                         <input
                           id="size-mode-match-image"
                           type="radio"
@@ -469,13 +469,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                           <span className="font-bold text-[var(--text-heading)] text-[11px]">
                             {sourceExceedsCanvasLimit ? `Fit Within Canvas Limit (${MAX_CANVAS_DIMENSION} px)` : `Match Image Size (${srcW}×${srcH} px)`}
                           </span>
-                          <span className="text-[9px] text-[#a89ab8]">
+                          <span className="text-[9px] text-[var(--text-muted)]">
                             {sourceExceedsCanvasLimit ? 'The source exceeds the canvas limit and must be downscaled.' : 'Keeps exact 1:1 original pixels.'}
                           </span>
                         </div>
                       </label>
 
-                      <label htmlFor="size-mode-fit-canvas" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[#f0be7c] transition-colors">
+                      <label htmlFor="size-mode-fit-canvas" className="flex items-start gap-2 p-1.5 rounded-[2px] bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] cursor-pointer hover:border-[var(--accent-gold)] transition-colors">
                         <input
                           id="size-mode-fit-canvas"
                           type="radio"
@@ -488,7 +488,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                           <span className="font-bold text-[var(--text-heading)] text-[11px]">
                             Fit into Current Canvas ({canvasWidth}×{canvasHeight} px)
                           </span>
-                          <span className="text-[9px] text-[#a89ab8]">
+                          <span className="text-[9px] text-[var(--text-muted)]">
                             Fits proportionally inside the current canvas dimensions.
                           </span>
                         </div>
@@ -497,14 +497,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
                   {/* Pixel Art Stylize Toggle */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                    <span className="text-[10px] font-bold text-[#dcabdf] uppercase">Color & Quality</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-plum)] uppercase">Color & Quality</span>
                     <div className="grid grid-cols-2 gap-1 text-[10px]">
                       <button
                         onClick={() => setProcessingMode('exact')}
                         className={`py-1.5 px-2 rounded-[2px] border font-bold text-center cursor-pointer transition-colors ${
                           processingMode === 'exact'
-                            ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                            ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                         }`}
                       >
                         Exact 1:1 Pixels
@@ -513,8 +513,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         onClick={() => setProcessingMode('pixelize')}
                         className={`py-1.5 px-2 rounded-[2px] border font-bold text-center cursor-pointer transition-colors ${
                           processingMode === 'pixelize'
-                            ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                            ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                         }`}
                       >
                         Retro Pixelize
@@ -527,13 +527,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         <div className="grid grid-cols-2 gap-1 text-[9px]">
                           <button
                             onClick={() => setColorMode('reduce-16')}
-                            className={`p-1 rounded-[2px] border ${colorMode === 'reduce-16' ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface-raised)]'}`}
+                            className={`p-1 rounded-[2px] border ${colorMode === 'reduce-16' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[var(--desk-surface-raised)]'}`}
                           >
                             16 Colors
                           </button>
                           <button
                             onClick={() => setColorMode('active-palette')}
-                            className={`p-1 rounded-[2px] border ${colorMode === 'active-palette' ? 'bg-[#f0be7c] text-[#140d1f]' : 'bg-[var(--desk-surface-raised)]'}`}
+                            className={`p-1 rounded-[2px] border ${colorMode === 'active-palette' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[var(--desk-surface-raised)]'}`}
                           >
                             Active Palette
                           </button>
@@ -544,13 +544,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                           <div className="flex gap-1">
                             <button
                               onClick={() => setDitherMode('none')}
-                              className={`px-1.5 py-0.5 rounded-[1px] border ${ditherMode === 'none' ? 'bg-[#dcabdf] text-[#140d1f]' : 'bg-[var(--desk-surface-raised)]'}`}
+                              className={`px-1.5 py-0.5 rounded-[1px] border ${ditherMode === 'none' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[var(--desk-surface-raised)]'}`}
                             >
                               Flat
                             </button>
                             <button
                               onClick={() => setDitherMode('atkinson')}
-                              className={`px-1.5 py-0.5 rounded-[1px] border ${ditherMode === 'atkinson' ? 'bg-[#dcabdf] text-[#140d1f]' : 'bg-[var(--desk-surface-raised)]'}`}
+                              className={`px-1.5 py-0.5 rounded-[1px] border ${ditherMode === 'atkinson' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]' : 'bg-[var(--desk-surface-raised)]'}`}
                             >
                               Atkinson
                             </button>
@@ -582,12 +582,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
                   {/* Destination */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                    <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Destination</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase">Destination</span>
                     <div className="grid grid-cols-3 gap-1 text-[10px]">
                       <button
                         onClick={() => setImageTarget('new-layer')}
                         className={`py-1 px-1 rounded-[2px] border font-bold text-center cursor-pointer ${
-                          imageTarget === 'new-layer' ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
+                          imageTarget === 'new-layer' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
                         }`}
                       >
                         New Layer
@@ -595,7 +595,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       <button
                         onClick={() => setImageTarget('replace-layer')}
                         className={`py-1 px-1 rounded-[2px] border font-bold text-center cursor-pointer ${
-                          imageTarget === 'replace-layer' ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
+                          imageTarget === 'replace-layer' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
                         }`}
                       >
                         Replace
@@ -603,7 +603,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       <button
                         onClick={() => setImageTarget('new-frame')}
                         className={`py-1 px-1 rounded-[2px] border font-bold text-center cursor-pointer ${
-                          imageTarget === 'new-frame' ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
+                          imageTarget === 'new-frame' ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]' : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)]'
                         }`}
                       >
                         New Frame
@@ -615,20 +615,20 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 {/* Right Column: Live Clean Preview */}
                 <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs items-center justify-between min-h-[280px]">
                   <div className="flex items-center justify-between w-full text-xs font-mono">
-                    <span className="text-[10px] font-bold text-[#f0be7c] uppercase flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase flex items-center gap-1">
                       <PixelIcon name="preview" size={12} />
                       <span>Canvas Preview</span>
                     </span>
-                    <span className="text-[10px] text-[#dcabdf] font-bold font-mono">
+                    <span className="text-[10px] text-[var(--accent-plum)] font-bold font-mono">
                       {previewResult ? `${previewResult.width} × ${previewResult.height} px` : ''}
                     </span>
                   </div>
 
                   {/* Crisp pixelated canvas view */}
-                  <div className="w-full flex-1 min-h-[200px] bg-[#120a1c] border-2 border-[var(--desk-border)] rounded-[2px] flex items-center justify-center p-2 overflow-hidden relative shadow-inner">
+                  <div className="w-full flex-1 min-h-[200px] bg-[var(--surface-0)] border-2 border-[var(--desk-border)] rounded-[2px] flex items-center justify-center p-2 overflow-hidden relative shadow-inner">
                     <canvas
                       ref={previewCanvasRef}
-                      className="max-w-full max-h-[190px] aspect-square object-contain pixelated shadow-lg border border-[#3a2e4c]"
+                      className="max-w-full max-h-[190px] aspect-square object-contain pixelated shadow-lg border border-[var(--desk-border)]"
                       style={{ imageRendering: 'pixelated' }}
                     />
                   </div>
@@ -666,7 +666,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       });
                     }
                   }}
-                  className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4"
+                  className="bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4"
                 >
                   <PixelIcon name="pen" size={14} />
                   <span>Import Image</span>
@@ -686,14 +686,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                     <span className="font-bold text-[var(--text-heading)] truncate max-w-[160px]">
                       {effectivePayload.filename}
                     </span>
-                    <span className="text-[10px] text-[#f0be7c] font-bold">
+                    <span className="text-[10px] text-[var(--accent-gold)] font-bold">
                       {srcW} × {srcH} px
                     </span>
                   </div>
 
                   {/* Cell Dimensions & Presets */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                    <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Cell Dimensions (Frame Size)</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase">Cell Dimensions (Frame Size)</span>
                     <div className="flex flex-wrap gap-1">
                       {PRESET_CELL_SIZES.map((preset) => {
                         const isSelected = slicerCellW === preset.w && slicerCellH === preset.h;
@@ -707,8 +707,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                             }}
                             className={`px-2 py-1 rounded-[2px] border font-bold text-[10px] cursor-pointer transition-colors ${
                               isSelected
-                                ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                                ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                                : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                             }`}
                           >
                             {preset.label}
@@ -731,7 +731,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                           title="Cell Width"
                           aria-label="Frame cell width in pixels"
                           onChange={(e) => setSlicerCellW(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                          className="w-full bg-transparent text-[#f0be7c] font-bold text-right outline-none text-xs"
+                          className="w-full bg-transparent text-[var(--accent-gold)] font-bold text-right outline-none text-xs"
                         />
                         <span className="text-[9px] text-[var(--text-body)]/60">px</span>
                       </label>
@@ -748,7 +748,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                           title="Cell Height"
                           aria-label="Frame cell height in pixels"
                           onChange={(e) => setSlicerCellH(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                          className="w-full bg-transparent text-[#f0be7c] font-bold text-right outline-none text-xs"
+                          className="w-full bg-transparent text-[var(--accent-gold)] font-bold text-right outline-none text-xs"
                         />
                         <span className="text-[9px] text-[var(--text-body)]/60">px</span>
                       </label>
@@ -767,7 +767,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                             aria-label={`${label} in pixels`} value={value}
                             onChange={(event) => setter(Math.min(label.endsWith('X') ? srcW : srcH,
                               Math.max(0, Number.parseInt(event.target.value, 10) || 0)))}
-                            className="w-full min-w-0 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c] px-1" />
+                            className="w-full min-w-0 bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--accent-gold)] px-1" />
                         </label>
                       ))}
                     </div>
@@ -775,23 +775,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       <span>Frame Ordering:</span>
                       <select aria-label="Frame ordering" name="frameOrdering" value={slicerOrder}
                         onChange={(event) => setSlicerOrder(event.target.value as 'row-major' | 'column-major')}
-                        className="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[#f0be7c]">
+                        className="bg-[var(--desk-surface-raised)] border border-[var(--desk-border)] text-[var(--accent-gold)]">
                         <option value="row-major">Across rows</option>
                         <option value="column-major">Down columns</option>
                       </select>
                     </label>
 
-                    <span className="text-[9px] text-[#a89ab8]">
+                    <span className="text-[9px] text-[var(--text-muted)]">
                       {slicerGrid.columns} cols × {slicerGrid.rows} rows = {slicerGrid.totalCells} total frames
                     </span>
                     {slicerGrid.totalCells > MAX_CANVAS_FRAMES && (
-                      <span className="text-[9px] text-[#ff99aa]">At most {MAX_CANVAS_FRAMES} cells can be imported. Increase the cell size.</span>
+                      <span className="text-[9px] text-[var(--danger-fg)]">At most {MAX_CANVAS_FRAMES} cells can be imported. Increase the cell size.</span>
                     )}
                   </div>
 
                   {/* Filtering Options */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                    <span className="text-[10px] font-bold text-[#dcabdf] uppercase">Frame Options</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-plum)] uppercase">Frame Options</span>
 
                     <label className="flex items-center gap-2 cursor-pointer text-[10px] text-[var(--text-body)]">
                       <input
@@ -816,7 +816,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       <span>Resize entire project to cell size ({slicerCellW}×{slicerCellH} px)</span>
                     </label>
                     {slicerWouldClip && (
-                      <div role="alert" className="p-1.5 rounded-[2px] bg-[#3d1928] border border-[#6b283d] text-[#ff99aa] text-[10px] font-bold leading-tight">
+                      <div role="alert" className="p-1.5 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-[var(--danger-fg)] text-[10px] font-bold leading-tight">
                         Each frame is {slicerCellW}×{slicerCellH}, but the canvas is {canvasWidth}×{canvasHeight}. Enable resize above to import without cropping artwork.
                       </div>
                     )}
@@ -834,7 +834,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                     {slicerSkipEmpty && nonZeroFramesCount === 0 && slicerGrid.totalCells <= MAX_CANVAS_FRAMES && (
                       <div
                         data-testid="slicer-empty-warning"
-                        className="p-1.5 rounded-[2px] bg-[#3d1928] border border-[#6b283d] text-[#ff99aa] text-[10px] font-bold leading-tight"
+                        className="p-1.5 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-[var(--danger-fg)] text-[10px] font-bold leading-tight"
                       >
                         No non-empty frames detected (all cells are transparent). Uncheck &quot;Skip Empty&quot; to import blank frames.
                       </div>
@@ -843,15 +843,15 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
                   {/* Timeline Destination */}
                   <div className="flex flex-col gap-1.5 bg-[var(--desk-surface)] p-2 rounded-[2px] border border-[var(--desk-border)]">
-                    <span className="text-[10px] font-bold text-[#f0be7c] uppercase">Timeline Target</span>
+                    <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase">Timeline Target</span>
                     <div className="grid grid-cols-2 gap-1 text-[10px]">
                       <button
                         type="button"
                         onClick={() => setSlicerTarget('sprite-sheet-append')}
                         className={`py-1.5 px-2 rounded-[2px] border font-bold text-center cursor-pointer transition-colors ${
                           slicerTarget === 'sprite-sheet-append'
-                            ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                            ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                         }`}
                       >
                         Append to Timeline
@@ -861,8 +861,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                         onClick={() => setSlicerTarget('sprite-sheet-replace')}
                         className={`py-1.5 px-2 rounded-[2px] border font-bold text-center cursor-pointer transition-colors ${
                           slicerTarget === 'sprite-sheet-replace'
-                            ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[#f0be7c]'
+                            ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                            : 'bg-[var(--desk-surface-raised)] text-[var(--text-body)] border-[var(--desk-border)] hover:text-[var(--accent-gold)]'
                         }`}
                       >
                         Replace Frames
@@ -874,22 +874,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 {/* Right Column: Slicer Cutline Preview */}
                 <div className="flex flex-col gap-2 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--desk-border)] shadow-xs items-center justify-between min-h-[280px]">
                   <div className="flex items-center justify-between w-full text-xs font-mono">
-                    <span className="text-[10px] font-bold text-[#f0be7c] uppercase flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-[var(--accent-gold)] uppercase flex items-center gap-1">
                       <PixelIcon name="grid" size={12} />
                       <span>Cutline Grid Preview</span>
                     </span>
-                    <span className="text-[10px] text-[#dcabdf] font-bold font-mono">
+                    <span className="text-[10px] text-[var(--accent-plum)] font-bold font-mono">
                       {srcW} × {srcH} px
                     </span>
                   </div>
 
                   {/* Cutline Preview Canvas */}
-                  <div className="w-full flex-1 min-h-[200px] bg-[#120a1c] border-2 border-[var(--desk-border)] rounded-[2px] flex items-center justify-center p-2 overflow-auto relative shadow-inner">
+                  <div className="w-full flex-1 min-h-[200px] bg-[var(--surface-0)] border-2 border-[var(--desk-border)] rounded-[2px] flex items-center justify-center p-2 overflow-auto relative shadow-inner">
                     <canvas
                       ref={slicerCanvasRef}
                       aria-label="Slicer cutline preview canvas"
                       data-testid="slicer-cutline-preview"
-                      className="max-w-full max-h-[220px] object-contain pixelated shadow-lg border border-[#3a2e4c]"
+                      className="max-w-full max-h-[220px] object-contain pixelated shadow-lg border border-[var(--desk-border)]"
                       style={{ imageRendering: 'pixelated' }}
                     />
                   </div>
@@ -956,7 +956,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                       releaseSlices?.();
                     }
                   }}
-                  className={`bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4 ${
+                  className={`bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120] flex items-center gap-1.5 px-4 ${
                     slicerInvalid
                       ? 'opacity-50 cursor-not-allowed'
                       : 'cursor-pointer'

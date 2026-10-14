@@ -353,7 +353,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({
             size={12}
             className={
               saveStatus === 'error'
-                ? 'text-[#eb5a66]'
+                ? 'text-[var(--danger-fg)]'
                 : saveStatus === 'saving'
                 ? 'text-[var(--accent-gold)] animate-pulse'
                 : isDirty

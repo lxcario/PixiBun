@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useThemeStore, type StudioTheme } from '@/stores/themeStore';
+import { STUDIO_THEMES } from '@/lib/theme/registry';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 import { PixelIcon, type PixelIconName } from '@/components/ui/PixelIcon';
 import StudioToggle from '@/components/ui/StudioToggle';
 import {
@@ -18,31 +20,8 @@ export interface AppearancePopoverProps {
   actions?: Array<{ label: string; icon: PixelIconName; onSelect?: () => void; testId?: string; ariaLabel?: string }>;
 }
 
-const STUDIO_STYLES: Array<{
-  id: StudioTheme;
-  name: string;
-  blurb: string;
-  swatches: Array<[string, string]>;
-}> = [
-  {
-    id: 'moonlit',
-    name: 'Moonlit',
-    blurb: 'Cozy night sky, lantern gold',
-    swatches: [['#120b20', 'Night'], ['#2a1945', 'Plum surface'], ['#ffd285', 'Lantern gold']],
-  },
-  {
-    id: 'atelier',
-    name: 'Atelier',
-    blurb: 'Quiet, crafted workbench',
-    swatches: [['#16141a', 'Charcoal Base'], ['#201d26', 'Workbench Surface'], ['#e5a962', 'Warm Brass']],
-  },
-  {
-    id: 'cozy-classic',
-    name: 'Cozy Classic',
-    blurb: 'Warm original PixiBun',
-    swatches: [['#140c1e', 'Plum Base'], ['#201431', 'Lavender Surface'], ['#f0be7c', 'Golden Amber']],
-  },
-];
+/** Theme ids, names and palettes come from src/lib/theme/themes.json. */
+const STUDIO_STYLES = STUDIO_THEMES;
 
 export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className = '', label, actions }) => {
   const dialogId = useId();
@@ -58,6 +37,9 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
 
   const [toolPreviewsEnabled, setToolPreviewsEnabled] = useState(true);
+  const tipsEnabled = usePreferencesStore((s) => s.tipsEnabled);
+  const setTipsEnabled = usePreferencesStore((s) => s.setTipsEnabled);
+  const requestWelcome = usePreferencesStore((s) => s.requestWelcome);
 
   useEffect(() => {
     setMounted(true);
@@ -133,10 +115,11 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
   }, [isOpen, updateCoords]);
 
   const handleStyleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
+      const forward = e.key === 'ArrowDown' || e.key === 'ArrowRight';
       const index = STUDIO_STYLES.findIndex((style) => style.id === studioTheme);
-      const next = STUDIO_STYLES[(index + (e.key === 'ArrowDown' ? 1 : STUDIO_STYLES.length - 1)) % STUDIO_STYLES.length].id;
+      const next = STUDIO_STYLES[(index + (forward ? 1 : STUDIO_STYLES.length - 1)) % STUDIO_STYLES.length].id;
       setStudioTheme(next);
       styleRefs.current[next]?.focus();
     }
@@ -190,7 +173,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
             role="dialog"
             aria-modal="false"
             aria-label={actions ? 'Studio options' : 'Appearance settings'}
-            className="fixed z-[9999] w-64 max-w-[calc(100vw-24px)] overflow-y-auto bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-2xl p-3 text-xs font-sans text-[var(--text-heading)] select-none animate-in fade-in zoom-in-95 duration-100"
+            className="fixed z-[9999] w-72 max-w-[calc(100vw-24px)] overflow-y-auto bg-[var(--desk-surface)] border border-[var(--desk-border)] rounded-[3px] shadow-2xl p-3 text-xs font-sans text-[var(--text-heading)] select-none animate-in fade-in zoom-in-95 duration-100"
             style={{
               top: `${coords.top}px`,
               right: `${coords.right}px`,
@@ -224,7 +207,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
               </button>)}
             </div>}
 
-            {/* Studio Style Section */}
+            {/* Studio Style Section: a compact grid, each card showing its palette for the current time of day */}
             <div
               role="radiogroup" tabIndex={-1}
               aria-label="Studio style"
@@ -235,57 +218,51 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                 Studio style
               </span>
 
-              {STUDIO_STYLES.map((style) => {
-                const selected = studioTheme === style.id;
-                return (
-                  <button
-                    key={style.id}
-                    ref={(el) => {
-                      styleRefs.current[style.id] = el;
-                    }}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    data-testid={`theme-option-${style.id}`}
-                    onClick={() => setStudioTheme(style.id)}
-                    className={`flex items-start gap-2.5 p-2 rounded-[2px] border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-gold)] ${
-                      selected
-                        ? 'bg-[var(--surface-2)] border-[var(--accent-gold)] text-[var(--text-heading)]'
-                        : 'bg-[var(--surface-0)] border-[var(--desk-border)] text-[var(--text-body)] hover:bg-[var(--surface-1)] hover:text-[var(--text-heading)]'
-                    }`}
-                  >
-                    <div className="pt-0.5 shrink-0 text-[11px] font-mono text-[var(--accent-gold)]" aria-hidden="true">
-                      {selected ? '●' : '○'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-semibold text-xs text-[var(--text-heading)]">{style.name}</span>
-                        <div className="flex items-center gap-0.5 shrink-0" aria-hidden="true">
-                          {style.swatches.map(([color, title]) => (
-                            <span
-                              key={color}
-                              className="w-2.5 h-2.5 rounded-[1px] border border-black/40"
-                              style={{ backgroundColor: color }}
-                              title={title}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug">{style.blurb}</p>
-                    </div>
-                  </button>
-                );
-              })}
+              <div className="grid grid-cols-2 gap-1.5">
+                {STUDIO_STYLES.map((style) => {
+                  const selected = studioTheme === style.id;
+                  const palette = colorScheme === 'light' ? style.day : style.night;
+                  return (
+                    <button
+                      key={style.id}
+                      ref={(el) => {
+                        styleRefs.current[style.id] = el;
+                      }}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      aria-label={`${style.name}: ${colorScheme === 'light' ? style.dayBlurb : style.blurb}`}
+                      title={colorScheme === 'light' ? style.dayBlurb : style.blurb}
+                      data-testid={`theme-option-${style.id}`}
+                      onClick={() => setStudioTheme(style.id)}
+                      className={`flex flex-col gap-1.5 p-1.5 rounded-[3px] border-2 text-left cursor-pointer transition-[transform,border-color] duration-150 hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-gold)] ${
+                        selected ? 'border-[var(--accent-gold)]' : 'border-[var(--desk-border)] hover:border-[var(--desk-border-highlight)]'
+                      }`}
+                      style={{ backgroundColor: palette.surface }}
+                    >
+                      <span className="flex h-3 w-full overflow-hidden rounded-[1px] border" style={{ borderColor: palette.ink }} aria-hidden="true">
+                        {[palette.bg, palette.raised, palette.primary, palette.accent2, palette.accent3].map((color, index) => (
+                          <span key={index} className="flex-1" style={{ backgroundColor: color }} />
+                        ))}
+                      </span>
+                      <span className="flex items-center justify-between gap-1">
+                        <span className="font-semibold text-[11px]" style={{ color: palette.heading }}>{style.name}</span>
+                        {selected && <span aria-hidden="true" className="text-[10px]" style={{ color: palette.accent }}>●</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Color Scheme Section - Compact pixel-native segmented control */}
             <div className="flex flex-col gap-1.5 pt-2 border-t border-[var(--desk-border)]">
               <span className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider" id="color-scheme-label">
-                Color scheme
+                Time of day
               </span>
               <div
                 role="radiogroup" tabIndex={-1}
-                aria-label="Color scheme"
+                aria-label="Time of day"
                 onKeyDown={handleSchemeKeyDown}
                 className="flex p-0.5 bg-[var(--surface-0)] border border-[var(--desk-border)] rounded-[2px] gap-0.5"
               >
@@ -313,7 +290,7 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                   >
                     <path d="M12 9.5A5.5 5.5 0 0 1 6.5 4a5.55 5.55 0 0 1 .45-2.2A6 6 0 1 0 14.2 8.9c-.68.4-1.45.6-2.2.6z" />
                   </svg>
-                  <span>Dark</span>
+                  <span>Night</span>
                 </button>
 
                 <button
@@ -348,18 +325,30 @@ export const AppearancePopover: React.FC<AppearancePopoverProps> = ({ className 
                     <rect x="11" y="3" width="2" height="2" />
                     <rect x="3" y="11" width="2" height="2" />
                   </svg>
-                  <span>Light</span>
+                  <span>Day</span>
                 </button>
               </div>
             </div>
 
-            {/* Tool Previews Preference Toggle */}
-            <div className="pt-2 border-t border-[var(--desk-border)]">
+            {/* Help preferences: hover previews, one-time tips, and the welcome journey */}
+            <div className="pt-2 border-t border-[var(--desk-border)] flex flex-col gap-1.5">
               <StudioToggle
                 label="Tool Previews"
                 checked={toolPreviewsEnabled}
                 onChange={(enabled) => setToolPreviewsDisabled(!enabled)}
               />
+              <StudioToggle label="Tips" checked={tipsEnabled} onChange={setTipsEnabled} />
+              <button
+                type="button"
+                data-testid="replay-welcome"
+                onClick={() => {
+                  setIsOpen(false);
+                  requestWelcome();
+                }}
+                className="mt-1 h-8 w-full pixel-tactile-btn rounded-[2px] text-xs text-[var(--text-body)] cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-gold)]"
+              >
+                Replay welcome
+              </button>
             </div>
           </div>,
           document.body

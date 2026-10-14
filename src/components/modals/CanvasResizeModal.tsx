@@ -76,8 +76,8 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
               }}
               className={`px-2 py-1 rounded-[2px] border text-[11px] font-mono font-bold cursor-pointer transition-colors ${
                 width === p && height === p
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {p}x{p}
@@ -96,7 +96,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             max={512}
             value={width}
             onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || 4)}
-            className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[#f0be7c] outline-none"
+            className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
         </div>
 
@@ -108,7 +108,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
             max={512}
             value={height}
             onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || 4)}
-            className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[#f0be7c] outline-none"
+            className="bg-[var(--desk-surface)] text-[var(--text-heading)] font-mono font-bold text-sm px-2.5 py-1.5 rounded-[2px] border-2 border-[var(--desk-border)] focus:border-[var(--accent-gold)] outline-none"
           />
         </div>
 
@@ -145,7 +145,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
         >
           <div className="flex flex-col">
             <span className="text-xs font-mono font-bold text-[var(--text-heading)]">ANCHOR ALIGNMENT</span>
-            <span className="text-[10px] font-mono text-[#a89ab8]">
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">
               Where pixels stay when expanding/cropping
             </span>
           </div>
@@ -160,14 +160,14 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
                 data-testid={`anchor-${pos}`}
                 className={`w-6 h-6 rounded-[2px] border flex items-center justify-center transition-all cursor-pointer ${
                   anchor === pos
-                    ? 'bg-[#f0be7c] border-[#8c5120] shadow-xs scale-105'
+                    ? 'bg-[var(--primary-bg)] border-[var(--ink)] shadow-xs scale-105'
                     : 'bg-[var(--desk-surface)] border-[var(--desk-border)] hover:bg-[#2e2040]'
                 }`}
                 title={`Anchor: ${pos}`}
               >
                 <div
                   className={`w-2 h-2 rounded-full ${
-                    anchor === pos ? 'bg-[#140d1f]' : 'bg-[#d0c4df]/50'
+                    anchor === pos ? 'bg-[var(--surface-0)]' : 'bg-[#d0c4df]/50'
                   }`}
                 />
               </button>
@@ -182,7 +182,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
           size="sm"
           variant="default"
           onClick={onClose}
-          className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+          className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
         >
           Cancel
         </TactileButton>
@@ -190,7 +190,7 @@ export const CanvasResizeModal: React.FC<CanvasResizeModalProps> = ({
           size="sm"
           variant="primary"
           onClick={handleApply}
-          className="bg-[#f0be7c] text-[#140d1f] hover:bg-[#fcd699] hover:shadow-[0_2px_0_#8c5120] border-2 border-[#8c5120] font-display font-bold shadow-[0_2px_0_#8c5120]"
+          className="bg-[var(--primary-bg)] text-[var(--primary-fg)] hover:bg-[var(--primary-hover)] hover:shadow-[0_2px_0_#8c5120] border-2 border-[var(--ink)] font-display font-bold shadow-[0_2px_0_#8c5120]"
         >
           Apply Resize
         </TactileButton>

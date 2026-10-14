@@ -42,8 +42,8 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
               onClick={() => setReplayFormat(fmt)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors uppercase ${
                 replayFormat === fmt
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {fmt === 'mp4' ? 'MP4 Video' : 'Animated GIF'}
@@ -53,12 +53,12 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
       </div>
 
       {replayFormat === 'mp4' && !isMp4Supported && (
-        <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[#3a1d28] border border-[#b84a62] text-xs font-mono text-[#ffb3c1]">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff8099]">
+        <div className="flex flex-col gap-1 p-2.5 rounded-[2px] bg-[var(--danger-bg)] border border-[var(--danger-border)] text-xs font-mono text-[var(--danger-fg)]">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--danger-fg)]">
             <PixelIcon name="warning" size={13} />
             <span>MP4 Video Recording Unsupported</span>
           </div>
-          <p className="text-[11px] leading-relaxed text-[#fcd2d7]">
+          <p className="text-[11px] leading-relaxed text-[var(--danger-fg)]">
             Your browser lacks native MP4 (H.264) MediaRecorder support. Please choose <strong>Animated GIF</strong> for timelapse export.
           </p>
         </div>
@@ -74,8 +74,8 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
               onClick={() => setScale(s)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                 scale === s
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {s}x
@@ -94,8 +94,8 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
               onClick={() => setReplayFps(f)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                 replayFps === f
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {f} FPS
@@ -114,8 +114,8 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
               onClick={() => setHoldLastFrameMs(ms)}
               className={`px-2 py-0.5 rounded-[2px] border font-bold cursor-pointer transition-colors ${
                 holdLastFrameMs === ms
-                  ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120]'
-                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c]'
+                  ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)]'
+                  : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)]'
               }`}
             >
               {ms / 1000}s
@@ -138,7 +138,7 @@ export const ReplayExportTab: React.FC<ReplayExportTabProps> = ({
 
       <div className="flex items-center justify-between text-[var(--text-body)] pt-1 border-t border-[var(--desk-border)]">
         <span className="font-bold">History Steps:</span>
-        <span className="text-[#f0be7c] font-bold">
+        <span className="text-[var(--accent-gold)] font-bold">
           {historyLength} stroke snapshots recorded
         </span>
       </div>

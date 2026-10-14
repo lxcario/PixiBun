@@ -1,54 +1,36 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { unexpectedStudioAccessibilityFindings } from '../helpers/studioAccessibilityFindings';
+import { STUDIO_THEMES } from '../../src/lib/theme/registry';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 interface ThemeCombo {
   name: string;
-  studioTheme: 'moonlit' | 'atelier' | 'cozy-classic';
+  studioTheme: string;
   colorScheme: 'dark' | 'light';
 }
 
-const THEMES: ThemeCombo[] = [
-  { name: 'Moonlit Dark', studioTheme: 'moonlit', colorScheme: 'dark' },
-  { name: 'Moonlit Light', studioTheme: 'moonlit', colorScheme: 'light' },
-  { name: 'Atelier Dark', studioTheme: 'atelier', colorScheme: 'dark' },
-  { name: 'Atelier Light', studioTheme: 'atelier', colorScheme: 'light' },
-  { name: 'Cozy Classic Dark', studioTheme: 'cozy-classic', colorScheme: 'dark' },
-  { name: 'Cozy Classic Light', studioTheme: 'cozy-classic', colorScheme: 'light' },
-];
+// Every registered theme, at night and by day.
+const THEMES: ThemeCombo[] = STUDIO_THEMES.flatMap(theme => [
+  { name: `${theme.name} Night`, studioTheme: theme.id, colorScheme: 'dark' as const },
+  { name: `${theme.name} Day`, studioTheme: theme.id, colorScheme: 'light' as const },
+]);
 
-test.describe('Four-Theme Rendered Browser Accessibility Audits', () => {
+test.describe('Rendered Browser Accessibility Audits for Every Theme', () => {
   for (const theme of THEMES) {
     test.describe(`${theme.name} Theme Accessibility Suite`, () => {
       test.beforeEach(async ({ page }) => {
+        // The saved choice is the real path: /theme.js applies it before paint and ThemeSync keeps it.
+        await page.addInitScript(({ studioTheme, colorScheme }) => {
+          localStorage.setItem('pixibun-studio-theme', studioTheme);
+          localStorage.setItem('pixibun-color-scheme', colorScheme);
+        }, { studioTheme: theme.studioTheme, colorScheme: theme.colorScheme });
         await page.goto('/studio');
         await page.waitForLoadState('domcontentloaded');
         await expect(page.locator('div[role="application"]')).toBeVisible();
-
-        // Allow React hydration to complete
-        await page.waitForTimeout(1100);
-
-        // Apply theme attributes synchronously to DOM
-        await page.evaluate(
-          ({ studioTheme, colorScheme }) => {
-            const root = document.documentElement;
-            root.setAttribute('data-studio-theme', studioTheme);
-            root.setAttribute('data-color-scheme', colorScheme);
-            root.setAttribute('data-theme', colorScheme);
-            if (colorScheme === 'light') {
-              root.classList.add('light');
-              root.classList.remove('dark');
-              root.style.colorScheme = 'light';
-            } else {
-              root.classList.add('dark');
-              root.classList.remove('light');
-              root.style.colorScheme = 'dark';
-            }
-          },
-          { studioTheme: theme.studioTheme, colorScheme: theme.colorScheme }
-        );
+        await expect(page.locator('html')).toHaveAttribute('data-studio-theme', theme.studioTheme);
+        await expect(page.locator('html')).toHaveAttribute('data-color-scheme', theme.colorScheme);
 
         // Allow theme CSS variables to propagate and animations to settle
         await page.waitForTimeout(300);

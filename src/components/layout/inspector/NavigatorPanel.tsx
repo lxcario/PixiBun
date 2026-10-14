@@ -119,7 +119,7 @@ export function NavigatorPanel() {
       </div>
 
       {/* 2. Sleek Screen Bezel */}
-      <div className="relative w-full h-[120px] mx-auto rounded-[3px] overflow-hidden bg-[#16141a] border border-[var(--desk-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] flex items-center justify-center">
+      <div className="relative w-full h-[120px] mx-auto rounded-[3px] overflow-hidden bg-[var(--surface-0)] border border-[var(--desk-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] flex items-center justify-center">
         <button type="button" className="relative w-[224px] h-[112px] shrink-0 p-0 outline-offset-2"
           aria-label="Canvas overview. Click or drag to pan; arrow keys pan, Shift moves eight pixels, Enter centers."
           onClick={event => { if (event.detail === 0) setPan(0, 0); }}

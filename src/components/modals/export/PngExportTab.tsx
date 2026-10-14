@@ -76,8 +76,8 @@ export const PngExportTab: React.FC<PngExportTabProps> = ({
                   exceedsCeiling
                     ? 'opacity-30 cursor-not-allowed bg-[var(--desk-surface)] text-[var(--text-muted)] border-[var(--desk-border)]'
                     : scale === s
-                    ? 'bg-[#f0be7c] text-[#140d1f] border-[#8c5120] cursor-pointer'
-                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[#f0be7c] cursor-pointer'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] border-[var(--ink)] cursor-pointer'
+                    : 'bg-[var(--desk-surface)] text-[var(--text-heading)] border-[var(--desk-border)] hover:border-[var(--accent-gold)] cursor-pointer'
                 }`}
               >
                 {s}x
@@ -89,7 +89,7 @@ export const PngExportTab: React.FC<PngExportTabProps> = ({
 
       <div className="flex items-center justify-between text-[var(--text-body)]">
         <span className="font-bold">Output Size:</span>
-        <span className="text-[#f0be7c] font-bold">
+        <span className="text-[var(--accent-gold)] font-bold">
           {currentOutputW} × {currentOutputH} px
           <span className="text-[10px] text-[var(--text-muted)] font-normal ml-1.5">
             (~{memoryMb < 1 ? '<1' : memoryMb.toFixed(1)} MB buffer)
@@ -99,13 +99,13 @@ export const PngExportTab: React.FC<PngExportTabProps> = ({
 
       {hasDisabledScales && (
         <div className="text-[10px] text-[var(--text-muted)] bg-[var(--desk-bg)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
-          <span className="text-[#f0be7c] font-bold">Canvas Safety Limit:</span> Higher scales exceeding 4096 px or 16.7 MP are disabled for this canvas ({canvasWidth}×{canvasHeight} px) to prevent browser allocation crashes (iOS / Safari ceiling).
+          <span className="text-[var(--accent-gold)] font-bold">Canvas Safety Limit:</span> Higher scales exceeding 4096 px or 16.7 MP are disabled for this canvas ({canvasWidth}×{canvasHeight} px) to prevent browser allocation crashes (iOS / Safari ceiling).
         </div>
       )}
 
       {currentOutputW >= 2048 && !hasDisabledScales && (
         <div className="text-[10px] text-[var(--text-muted)] bg-[var(--desk-bg)] p-1.5 rounded-[2px] border border-[var(--desk-border)]">
-          <span className="text-[#f0be7c] font-bold">Note:</span> High-resolution canvas export ({currentOutputW}×{currentOutputH}px). Verified safe within standard browser ceilings (up to 4096px / 16.7MP).
+          <span className="text-[var(--accent-gold)] font-bold">Note:</span> High-resolution canvas export ({currentOutputW}×{currentOutputH}px). Verified safe within standard browser ceilings (up to 4096px / 16.7MP).
         </div>
       )}
     </div>

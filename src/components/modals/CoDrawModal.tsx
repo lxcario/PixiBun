@@ -154,7 +154,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
             <span
               className={`w-2.5 h-2.5 rounded-full ${
                 connectionState === 'connected'
-                  ? 'bg-[#a3be8c] animate-pulse'
+                  ? 'bg-[var(--accent-sage)] animate-pulse'
                   : connectionState === 'connecting' || connectionState === 'waiting-for-answer'
                   ? 'bg-[#ebcb8b] animate-pulse'
                   : 'bg-[var(--text-muted)]'
@@ -167,25 +167,25 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
 
           {session && (
             <span className="text-[10px] text-[var(--text-body)]">
-              Peer ID: <code className="text-[#f0be7c]">{session.peerId.slice(0, 8)}</code>
+              Peer ID: <code className="text-[var(--accent-gold)]">{session.peerId.slice(0, 8)}</code>
             </span>
           )}
         </div>
 
         {errorMsg && (
-          <div className="bg-[#4c1d1d] text-[#ff8080] p-2.5 rounded-[2px] border border-[#ff8080]/40 text-xs">
+          <div className="bg-[#4c1d1d] text-[var(--danger-fg)] p-2.5 rounded-[2px] border border-[var(--danger-border)]/40 text-xs">
             {errorMsg}
           </div>
         )}
 
         {connectionState === 'connected' ? (
-          <div className="flex flex-col gap-3 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[#a3be8c]">
+          <div className="flex flex-col gap-3 bg-[var(--desk-surface)] p-3 rounded-[2px] border-2 border-[var(--accent-sage)]">
             <p className="text-[var(--text-body)] leading-relaxed">
-              <strong className="text-[#a3be8c]">Connected!</strong> You are drawing live together in real time. Remote strokes appear instantly.
+              <strong className="text-[var(--accent-sage)]">Connected!</strong> You are drawing live together in real time. Remote strokes appear instantly.
 
 
             </p>
-            <p className="text-[10px] text-[#ebcb8b] leading-relaxed">
+            <p className="text-[10px] text-[var(--accent-gold)] leading-relaxed">
               Session role: The host manages project frames and layers. Guests paint freely on the active layers.
 
             </p>
@@ -194,7 +194,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                 size="sm"
                 variant="default"
                 onClick={handleDisconnect}
-                className="bg-[#3e1414] text-[#ff8080] border-[#8c2020] hover:bg-[#5a1c1c]"
+                className="bg-[#3e1414] text-[var(--danger-fg)] border-[#8c2020] hover:bg-[#5a1c1c]"
               >
                 Disconnect Session
               </TactileButton>
@@ -213,8 +213,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     onClick={() => setNetworkMode('internet')}
                     className={`px-2 py-1 rounded-[2px] font-bold cursor-pointer transition-colors ${
                       networkMode === 'internet'
-                        ? 'bg-[#f0be7c] text-[#140d1f]'
-                        : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                        ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]'
+                        : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                     }`}
                   >
                     Internet (STUN)
@@ -225,8 +225,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     onClick={() => setNetworkMode('lan')}
                     className={`px-2 py-1 rounded-[2px] font-bold cursor-pointer transition-colors ${
                       networkMode === 'lan'
-                        ? 'bg-[#a3be8c] text-[#140d1f]'
-                        : 'text-[var(--text-body)] hover:text-[#a3be8c]'
+                        ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)]'
+                        : 'text-[var(--text-body)] hover:text-[var(--accent-sage)]'
                     }`}
                   >
                     Local LAN (Zero-Egress)
@@ -250,8 +250,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                 }}
                 className={`flex-1 py-1.5 rounded-[2px] font-bold transition-colors cursor-pointer ${
                   tab === 'host'
-                    ? 'bg-[#f0be7c] text-[#140d1f] shadow-xs'
-                    : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] shadow-xs'
+                    : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                 }`}
               >
                 Host Session
@@ -264,8 +264,8 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                 }}
                 className={`flex-1 py-1.5 rounded-[2px] font-bold transition-colors cursor-pointer ${
                   tab === 'join'
-                    ? 'bg-[#f0be7c] text-[#140d1f] shadow-xs'
-                    : 'text-[var(--text-body)] hover:text-[#f0be7c]'
+                    ? 'bg-[var(--primary-bg)] text-[var(--primary-fg)] shadow-xs'
+                    : 'text-[var(--text-body)] hover:text-[var(--accent-gold)]'
                 }`}
               >
                 Join Session
@@ -289,7 +289,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       variant="primary"
                       onClick={handleCreateHostSession}
                       disabled={!!session || joining}
-                      className="bg-[#f0be7c] text-[#140d1f] border-2 border-[#8c5120] font-bold mt-1"
+                      className="bg-[var(--primary-bg)] text-[var(--primary-fg)] border-2 border-[var(--ink)] font-bold mt-1"
                     >
                       <PixelIcon name="export" size={12} />
                       <span>Generate Invite Code</span>
@@ -305,7 +305,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                         aria-label="Generated invite code"
                         value={inviteToken}
                         rows={3}
-                        className="flex-1 bg-[#181124] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none select-all"
+                        className="flex-1 bg-[var(--surface-0)] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none select-all"
                       />
                       <TactileButton
                         size="sm"
@@ -331,14 +331,14 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                         value={inputToken}
                         onChange={(e) => setInputToken(e.target.value)}
                         rows={2}
-                        className="flex-1 bg-[#181124] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none focus:border-[#f0be7c] outline-none"
+                        className="flex-1 bg-[var(--surface-0)] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none focus:border-[var(--accent-gold)] outline-none"
                       />
                       <TactileButton
                         size="sm"
                         variant="primary"
                         disabled={!inputToken.trim()}
                         onClick={handleCompleteHostConnection}
-                        className="self-start px-2 py-1 text-xs bg-[#f0be7c] text-[#140d1f] font-bold"
+                        className="self-start px-2 py-1 text-xs bg-[var(--primary-bg)] text-[var(--primary-fg)] font-bold"
                       >
                         Connect
                       </TactileButton>
@@ -361,7 +361,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       value={inputToken}
                       onChange={(e) => setInputToken(e.target.value)}
                       rows={3}
-                      className="bg-[#181124] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none focus:border-[#f0be7c] outline-none"
+                      className="bg-[var(--surface-0)] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none focus:border-[var(--accent-gold)] outline-none"
                     />
                     <p className="text-[var(--text-body)] leading-relaxed">
                       Your current drawing will be saved in Gallery. The shared artwork opens as a separate
@@ -372,7 +372,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                       variant="primary"
                       disabled={joining || !inputToken.trim() || !!session}
                       onClick={handleJoinSession}
-                      className="bg-[#f0be7c] text-[#140d1f] border-2 border-[#8c5120] font-bold self-end"
+                      className="bg-[var(--primary-bg)] text-[var(--primary-fg)] border-2 border-[var(--ink)] font-bold self-end"
                     >
                       {joining ? 'Saving & preparing…' : 'Save My Drawing & Join Separately'}
                     </TactileButton>
@@ -387,7 +387,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                         aria-label="Generated answer token"
                         value={guestAnswerToken}
                         rows={4}
-                        className="flex-1 bg-[#181124] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none select-all"
+                        className="flex-1 bg-[var(--surface-0)] text-[10px] text-[var(--text-heading)] p-2 rounded-[2px] border border-[var(--desk-border)] font-mono resize-none select-all"
                       />
                       <TactileButton
                         size="sm"
@@ -401,7 +401,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
                     </div>
                     {copyStatus === 'failed' && <p role="alert">Couldn’t copy the code. Select the code above and copy it manually.</p>}
                     {copyStatus === 'copied' && <span role="status" className="sr-only">Answer token copied.</span>}
-                    <p className="text-[10px] text-[#ebcb8b] pt-1">
+                    <p className="text-[10px] text-[var(--accent-gold)] pt-1">
                       Waiting for host to apply your answer token. Your original is saved in Gallery;
                       the shared drawing will receive the host&apos;s artwork and save separately.
                     </p>
@@ -422,7 +422,7 @@ export const CoDrawModal: React.FC<CoDrawModalProps> = ({
             size="sm"
             variant="default"
             onClick={handleClose}
-            className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[#f0be7c]"
+            className="bg-[var(--desk-surface)] border-[var(--desk-border)] text-[var(--text-body)] hover:text-[var(--accent-gold)]"
           >
             Close
           </TactileButton>
