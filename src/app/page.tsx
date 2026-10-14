@@ -10,6 +10,7 @@ import { AtelierCtaBanner } from '@/components/landing/AtelierCtaBanner';
 import { AtelierFooter } from '@/components/landing/AtelierFooter';
 import { CozyAtelierBackground } from '@/components/landing/CozyAtelierBackground';
 import { PixelWaveDivider } from '@/components/landing/hero/PixelWaveDivider';
+import { SmoothScroll } from '@/components/landing/SmoothScroll';
 
 export const metadata: Metadata = {
   title: 'PixiBun — Pixels with a pulse',
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <SmoothScroll />
       <CozyAtelierBackground />
 
       <main id="top" tabIndex={-1} className="min-h-screen bg-transparent text-[var(--text-heading)] flex flex-col relative z-10">
