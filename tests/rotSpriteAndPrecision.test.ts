@@ -378,8 +378,27 @@ describe('RotSprite Engine & Precision Viewport Fixes', () => {
       if (rData[i] > 32) solidPixels++;
     }
 
-    // RotSprite preserves the full continuous contour without gaping dropouts
-    expect(solidPixels).toBeGreaterThanOrEqual(75);
+    // A pixel-perfect 8-connected r=10 ring needs roughly 4·√2·r ≈ 57 cells. The earlier
+    // >= 75 floor counted v2's doubled corners; v3 redraws one-pixel strokes without them.
+    expect(solidPixels).toBeGreaterThanOrEqual(55);
+
+    // RotSprite preserves the full continuous contour without gaping dropouts: the centre
+    // must stay sealed from the border through four-connected empty cells.
+    const outside = new Uint8Array(32 * 32);
+    const queue: number[] = [];
+    for (let i = 0; i < 32; i++) for (const p of [i, 31 * 32 + i, i * 32, i * 32 + 31]) {
+      if (rData[p * 4 + 3] <= 32 && !outside[p]) { outside[p] = 1; queue.push(p); }
+    }
+    while (queue.length) {
+      const p = queue.pop()!, x = p % 32, y = (p - x) / 32;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, q = ny * 32 + nx;
+        if (nx < 0 || ny < 0 || nx >= 32 || ny >= 32 || outside[q] || rData[q * 4 + 3] > 32) continue;
+        outside[q] = 1;
+        queue.push(q);
+      }
+    }
+    expect(outside[16 * 32 + 16]).toBe(0);
   });
 
   it('rotates multi-color outlined sprites at 45 degrees symmetrically with zero fill leaks and no bloated edges', () => {
