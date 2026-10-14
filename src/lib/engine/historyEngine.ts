@@ -5,6 +5,7 @@ import { estimateClipBytes } from '@/lib/animation/reviewMetadata';
 import { estimatePaletteBytes } from '@/lib/color/paletteSemantics';
 import { motionRigBytes } from '@/lib/animation/motionRigDocument';
 import { researchBytes } from '@/lib/research/recipes';
+import { isPatchStep, pastePatch } from '@/lib/engine/pixelPatch';
 export type { HistoryStep, PixelHistoryStep, StructuralHistoryStep, LayerBufferBackup };
 
 export interface ReplayBaselineLayer {
@@ -39,8 +40,12 @@ export interface HistoryEngineOptions {
 export interface HistoryEngine {
   /** Roll back stacks, accounting and replay baseline if a synchronous commit fails. */
   transaction<T>(operation: () => T): T;
-  /** Push a completed stroke snapshot; drops redo tail, prunes to maxDepth and maxBytes, returns new undo depth. */
-  push(step: HistoryStep): number;
+  /**
+   * Push a completed stroke snapshot; drops redo tail, prunes to maxDepth and maxBytes, returns new undo depth.
+   * `origin` is the whole layer before a pixel step; it seeds the replay baseline the first time a layer is
+   * edited, so timelapse export can rebuild full frames from dirty-rectangle patches.
+   */
+  push(step: HistoryStep, origin?: ImageData): number;
   /** Pop undo stack; if currentState is provided, pushes it to redo stack; returns the step to restore, or null if nothing to undo. */
   undo(currentState?: HistoryStep): HistoryStep | null;
   /** Pop redo stack; if currentState is provided, pushes it to undo stack; returns the step to restore, or null if nothing to redo. */
@@ -73,11 +78,12 @@ export interface HistoryEngine {
 /**
  * Undo and redo stacks are independently depth-bounded, while their combined
  * retained HistoryStep payload is constrained by the configured 64 MiB history
- * byte envelope.
+ * byte envelope. Pixel steps keep only the rectangle they changed, so the byte
+ * budget, not the depth, is what normally limits Undo.
  * The replay baseline is separately bounded by current project raster complexity
  * and does not grow with session duration.
  */
-export const DEFAULT_HISTORY_MAX_DEPTH = 50;
+export const DEFAULT_HISTORY_MAX_DEPTH = 4096;
 export const DEFAULT_HISTORY_MAX_BYTES = 64 * 1024 * 1024; // 64 MiB
 
 /**
@@ -151,68 +157,63 @@ export function createHistoryEngine(
     };
   }
 
+  function baselineLayer(frameIndex: number, layerId: string): ReplayBaselineLayer | undefined {
+    return baselineCheckpoint?.frames.find((f) => f.frameIndex === frameIndex)?.layers.find((l) => l.layerId === layerId);
+  }
+
+  /** Store a whole-layer image in the baseline. `imageData` must not be shared with a retained step. */
+  function setBaselineLayer(step: PixelHistoryStep, imageData: ImageData): void {
+    const fIdx = step.frameIndex ?? 0;
+    if (!baselineCheckpoint) {
+      baselineCheckpoint = { width: imageData.width, height: imageData.height, frames: [], activeFrameIndex: fIdx, totalBytes: 0 };
+    }
+    let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
+    if (!frame) {
+      frame = { frameIndex: fIdx, layers: [] };
+      baselineCheckpoint.frames.push(frame);
+    }
+    const existingLayer = frame.layers.find((l) => l.layerId === step.layerId);
+    if (existingLayer) {
+      existingLayer.imageData = imageData;
+      if (step.layerName) existingLayer.name = step.layerName;
+      if (step.layerBlendMode) existingLayer.blendMode = step.layerBlendMode;
+    } else {
+      frame.layers.push({
+        layerId: step.layerId,
+        frameIndex: fIdx,
+        imageData,
+        name: step.layerName,
+        opacity: 1,
+        blendMode: step.layerBlendMode ?? 'source-over',
+        visible: true,
+        order: frame.layers.length,
+      });
+    }
+    // Recalculate bounded totalBytes from active baseline buffers
+    let total = 1024;
+    for (const f of baselineCheckpoint.frames) {
+      total += 512;
+      for (const l of f.layers) {
+        total += l.imageData.data.byteLength + 512;
+      }
+    }
+    baselineCheckpoint.totalBytes = total;
+  }
+
   function updateBaselineFromEvicted(evicted: HistoryStep): void {
     if (evicted.type === 'pixel' && evicted.imageData) {
-      const fIdx = evicted.frameIndex ?? 0;
-      const w = evicted.imageData.width;
-      const h = evicted.imageData.height;
-      if (!baselineCheckpoint) {
-        baselineCheckpoint = {
-          width: w,
-          height: h,
-          frames: [
-            {
-              frameIndex: fIdx,
-              layers: [
-                {
-                  layerId: evicted.layerId,
-                  frameIndex: fIdx,
-                  imageData: cloneImageData(evicted.imageData),
-                  name: evicted.layerName,
-                  opacity: 1,
-                  blendMode: evicted.layerBlendMode ?? 'source-over',
-                  visible: true,
-                  order: 0,
-                },
-              ],
-            },
-          ],
-          activeFrameIndex: fIdx,
-          totalBytes: evicted.imageData.data.byteLength + 1024 + 512 + 512,
-        };
-      } else {
-        let frame = baselineCheckpoint.frames.find((f) => f.frameIndex === fIdx);
-        if (!frame) {
-          frame = { frameIndex: fIdx, layers: [] };
-          baselineCheckpoint.frames.push(frame);
-        }
-        const existingLayer = frame.layers.find((l) => l.layerId === evicted.layerId);
-        if (existingLayer) {
-          existingLayer.imageData = cloneImageData(evicted.imageData);
-          if (evicted.layerName) existingLayer.name = evicted.layerName;
-          if (evicted.layerBlendMode) existingLayer.blendMode = evicted.layerBlendMode;
-        } else {
-          frame.layers.push({
-            layerId: evicted.layerId,
-            frameIndex: fIdx,
-            imageData: cloneImageData(evicted.imageData),
-            name: evicted.layerName,
-            opacity: 1,
-            blendMode: evicted.layerBlendMode ?? 'source-over',
-            visible: true,
-            order: frame.layers.length,
-          });
-        }
-        // Recalculate bounded totalBytes from active baseline buffers
-        let total = 1024;
-        for (const f of baselineCheckpoint.frames) {
-          total += 512;
-          for (const l of f.layers) {
-            total += l.imageData.data.byteLength + 512;
-          }
-        }
-        baselineCheckpoint.totalBytes = total;
+      if (!isPatchStep(evicted)) {
+        setBaselineLayer(evicted, cloneImageData(evicted.imageData));
+        return;
       }
+      // A patch lands on the layer the baseline already holds; the baseline then
+      // shows the layer right after the evicted change.
+      const known = baselineLayer(evicted.frameIndex ?? 0, evicted.layerId)?.imageData;
+      if (!known && !baselineCheckpoint) return;
+      const next = known ? cloneImageData(known) : createBlankImageData(baselineCheckpoint!.width, baselineCheckpoint!.height);
+      pastePatch(next, evicted.imageData, evicted.x, evicted.y);
+      if (evicted.expectedImageData) pastePatch(next, evicted.expectedImageData, evicted.x, evicted.y);
+      setBaselineLayer(evicted, next);
     } else if (evicted.type === 'structural') {
       if (!baselineCheckpoint && evicted.canvasWidth && evicted.canvasHeight) {
         baselineCheckpoint = {
@@ -359,7 +360,7 @@ export function createHistoryEngine(
         throw error;
       } finally { release(); }
     },
-    push(step: HistoryStep): number {
+    push(step: HistoryStep, origin?: ImageData): number {
       const stepBytes = calculateStepBytes(step);
 
       // Oversized entry safety:
@@ -391,6 +392,15 @@ export function createHistoryEngine(
 
       // Evict oldest entries until within both depth and byte budget
       evictUntilWithinBudget(stepBytes);
+
+      // First edit of a layer: remember the whole layer once, so replay has a
+      // full image for later patches to land on.
+      if (origin && step.type !== 'structural' && origin.width > 0 && origin.height > 0
+        && (!baselineCheckpoint || (baselineCheckpoint.width === origin.width && baselineCheckpoint.height === origin.height))
+        && !baselineLayer(step.frameIndex ?? 0, step.layerId)
+        && !undoStack.some((s) => s.type !== 'structural' && s.layerId === step.layerId && s.frameIndex === step.frameIndex)) {
+        setBaselineLayer(step, origin);
+      }
 
       undoStack.push(step);
       undoBytes += stepBytes;
@@ -558,7 +568,7 @@ export function rememberViewportHistory(projectId: string, engine: HistoryEngine
   retainedViewportHistory = { projectId, engine };
 }
 export function readViewportHistory(projectId: string): HistoryEngine {
-  return retainedViewportHistory?.projectId === projectId ? retainedViewportHistory.engine : createHistoryEngine(50);
+  return retainedViewportHistory?.projectId === projectId ? retainedViewportHistory.engine : createHistoryEngine();
 }
 export function forgetViewportHistory(): void { retainedViewportHistory = null; }
 registerMemoryUsage('history', () => {

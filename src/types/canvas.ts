@@ -100,11 +100,13 @@ export interface PixelHistoryStep {
   layerId: string;
   imageData: ImageData;
   /**
-   * Co-draw only: the layer right after this change. Undo and redo then take back
-   * only pixels that still show it, so a partner's later strokes survive.
+   * The same pixels as `imageData` (the whole layer, or the patch at x/y) right
+   * after this change. Co-draw Undo and Redo take back only pixels that still
+   * show it, so a partner's later strokes survive; timelapse replay uses it to
+   * move a layer forward past the step.
    */
   expectedImageData?: ImageData;
-  // Optional dirty bounding box origin for bounded delta snapshotting
+  // Dirty-rectangle origin: when set, imageData covers only this patch of the layer
   x?: number;
   y?: number;
   // If this step created a new layer, its ID is stored here so undo can remove it cleanly

@@ -1,5 +1,6 @@
 import { getOrCreateBuffer, touchBuffer } from '@/lib/engine/bufferRegistry';
 import { calculateStepBytes, getGlobalHistoryEngine } from '@/lib/engine/historyEngine';
+import { toPatchStep } from '@/lib/engine/pixelPatch';
 import { studioEvents } from '@/lib/events/studioEvents';
 import { assertMemoryAvailable } from '@/lib/safety/memoryBudget';
 import { coDrawBridge } from '@/lib/sync/coDrawBridge';
@@ -38,7 +39,7 @@ export function applyLessonEdit(
     // Canvas state (for example fillStyle) is not part of the artwork snapshot.
     buf.ctx.save();
     try { draw(buf.ctx); } finally { buf.ctx.restore(); }
-    history.push(snapshot);
+    history.push(toPatchStep(snapshot, buf.ctx.getImageData(0, 0, state.canvasWidth, state.canvasHeight)), snapshot.imageData);
     rollback = undefined;
     useStudioStore.setState(draft => {
       const edited = draft.frames[snapshot.frameIndex]?.layers.find(candidate => candidate.id === layer.id);
