@@ -26,8 +26,11 @@ import { CreatePaletteModal } from '@/components/modals/CreatePaletteModal';
 import { PaletteCycleColors } from './PaletteCycleColors';
 import { PinnedColorPanel } from '@/components/ui/ArtistColorPicker';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import dynamic from 'next/dynamic';
-const PaletteLibraryModal = dynamic(() => import('@/components/modals/PaletteLibraryModal').then(m => m.PaletteLibraryModal), { ssr: false });
+import { lazyPanel } from '@/components/system/lazyPanel';
+const PaletteLibraryModal = lazyPanel(
+  () => import('@/components/modals/PaletteLibraryModal').then(m => m.PaletteLibraryModal),
+  'Palette library'
+);
 
 export const PalettePanel: React.FC = () => {
   const colorPinned = useWorkspaceStore(s => s.layout.color);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import dynamic from 'next/dynamic';
+import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
 import { PixelIcon, PixelIconName } from '@/components/ui/PixelIcon';
 import { motion } from 'motion/react';
@@ -14,9 +14,9 @@ import {
 
 // Heavy color picker dialog is code-split client-side (Phase 33): it mounts
 // only while open, so its chunk is fetched on first open, never on page load.
-const ColorPickerModal = dynamic(
+const ColorPickerModal = lazyPanel(
   () => import('@/components/modals/ColorPickerModal').then((m) => m.ColorPickerModal),
-  { ssr: false }
+  'Color picker'
 );
 
 import { TOOL_GROUPS } from '@/config/shortcuts';

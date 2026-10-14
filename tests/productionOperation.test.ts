@@ -157,6 +157,30 @@ it('precaches same-origin shell dependencies and retains them while bounding dyn
   expect([...records.keys()].filter(path => path.startsWith('/dynamic/'))).toHaveLength(50);
 });
 
+it('precaches every static file from its own build list and ignores another deployment\'s list', async () => {
+  const origin = 'https://pixibun.test';
+  async function install(list: unknown) {
+    const added: string[][] = [];
+    const cache = {
+      addAll: vi.fn(async (paths: string[]) => { added.push(paths); }),
+      match: async () => new Response('<script src="/_next/static/studio.js"></script>'),
+      put: async () => {},
+    };
+    const fetch = vi.fn(async () => list === null ? new Response('missing', { status: 404 }) : Response.json(list));
+    const runtime = new Function('self', 'caches', 'fetch', buildServiceWorkerScript('release-1') + '\nreturn { precacheShell };')(
+      { location: { origin }, addEventListener: vi.fn() }, { open: async () => cache }, fetch);
+    await runtime.precacheShell();
+    expect(fetch).toHaveBeenCalledWith('/precache-manifest.json', { cache: 'no-store' });
+    return added[1];
+  }
+  const lazy = ['/_next/static/chunks/export.js', '/_next/static/media/font.woff2', '/_next/static/studio.js'];
+  expect(await install({ version: 'release-1', assets: [...lazy, '/api/private', '/_next/static/../secret', 7] })).toEqual(lazy);
+  expect(await install({ version: 'release-0', assets: lazy })).toEqual(['/_next/static/studio.js']);
+  expect(await install(null)).toEqual(['/_next/static/studio.js']);
+  // Same version, different build (a dev server beside a production list): the shell's file is missing.
+  expect(await install({ version: 'release-1', assets: lazy.slice(0, 2) })).toEqual(['/_next/static/studio.js']);
+});
+
 it('preserves worker constructor fragments when serving cached bootstrap scripts', async () => {
   const handlers = new Map<string, (event: unknown) => void>();
   const workerResponse = new Response('worker bootstrap', { headers: { 'Content-Type': 'application/javascript', 'Cross-Origin-Resource-Policy': 'same-origin' } });
