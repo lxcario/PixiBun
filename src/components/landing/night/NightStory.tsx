@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from 'motion/react';
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { STARTER_TEMPLATES, TEMPLATE_PALETTE } from '@/lib/art/starterTemplates';
 import { CottageBackdrop } from './CottageBackdrop';
 import { NIGHT_VARS } from './nightPalette';
@@ -246,7 +246,18 @@ function renderChapter(ctx: CanvasRenderingContext2D, chapter: number, cp: numbe
   });
 }
 
-const BLEND = 0.06; // portion of a chapter spent cross-fading into the next
+// Each chapter's share of the scroll: the drawing eases in, holds finished
+// long enough to read, then cross-fades slowly into the next chapter.
+const DRAW_END = 0.6;
+const FADE_START = 0.78;
+const smoothstep = (x: number) => x * x * (3 - 2 * x);
+
+/** The chapter whose words are shown: it changes halfway through the cross-fade, with the picture. */
+export function storyChapter(progress: number): number {
+  const pos = clamp01(progress) * 4;
+  const chapter = Math.min(3, Math.floor(pos));
+  return chapter < 3 && pos - chapter > (FADE_START + 1) / 2 ? chapter + 1 : chapter;
+}
 
 function makeLayer() {
   const c = document.createElement('canvas');
@@ -263,9 +274,8 @@ function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, 
   ctx.clearRect(0, 0, W, H);
   drawBackdrop(ctx);
   const a = layers[0].getContext('2d')!;
-  // Fade toward the next chapter during the last sliver of this one.
-  const fade = chapter < 3 ? clamp01((cp - (1 - BLEND)) / BLEND) : 0;
-  renderChapter(a, chapter, fade > 0 ? 1 : cp / (chapter < 3 ? 1 - BLEND : 1), t);
+  const fade = chapter < 3 ? smoothstep(clamp01((cp - FADE_START) / (1 - FADE_START))) : 0;
+  renderChapter(a, chapter, smoothstep(clamp01(cp / DRAW_END)), t);
   ctx.globalAlpha = 1 - fade;
   ctx.drawImage(layers[0], 0, 0);
   if (fade > 0) {
@@ -279,23 +289,41 @@ function renderStage(ctx: CanvasRenderingContext2D, layers: [HTMLCanvasElement, 
 
 const EXPORTS = ['sheet.png', 'loop.gif', 'godot kit'];
 
+/** One chapter's progress pip; its fill follows the scroll spring directly, without re-rendering. */
+const StoryPip: React.FC<{ index: number; active: boolean; accent: string; progress: MotionValue<number> }> = ({ index, active, accent, progress }) => {
+  const fill = useTransform(progress, (v) => `${clamp01(clamp01(v) * 4 - index) * 100}%`);
+  return (
+    <motion.span
+      className="relative h-1.5 rounded-[1px] overflow-hidden bg-[var(--desk-border)]"
+      animate={{ width: active ? 56 : 14 }}
+      transition={{ type: 'spring', stiffness: 160, damping: 26 }}
+    >
+      <motion.span className="absolute inset-y-0 left-0" style={{ backgroundColor: accent, width: fill }} />
+    </motion.span>
+  );
+};
+
 export const NightStory: React.FC = () => {
   const reduceMotion = Boolean(useReducedMotion());
   const ref = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [chapter, setChapter] = useState(0);
-  const [inChapter, setInChapter] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [exportsShown, setExportsShown] = useState(false);
+  const shown = useRef(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  // A soft spring between the wheel and the drawing keeps every step of the story gliding.
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.6, restDelta: 0.0005 });
+  // A soft, slightly heavy spring between the scroll and the drawing, so fast
+  // wheel flicks still glide through each step of the story.
+  const smooth = useSpring(scrollYProgress, { stiffness: 55, damping: 22, mass: 0.9, restDelta: 0.0002 });
 
   useMotionValueEvent(smooth, 'change', (v) => {
-    const pos = clamp01(v) * 4;
-    const c = Math.min(3, Math.floor(pos));
-    setChapter(c);
-    setInChapter(Math.round(Math.min(1, pos - c) * 100) / 100);
-    setExportsShown(c === 3 && pos - 3 > 0.55);
+    const next = storyChapter(v);
+    if (next !== shown.current) {
+      setDirection(next > shown.current ? 1 : -1);
+      shown.current = next;
+      setChapter(next);
+    }
+    setExportsShown(clamp01(v) * 4 > 3.55);
   });
 
   useEffect(() => {
@@ -332,7 +360,7 @@ export const NightStory: React.FC = () => {
       ref={ref}
       aria-labelledby="night-story-title"
       className="relative scroll-mt-0 bg-[#20152b]"
-      style={{ ...NIGHT_VARS, height: '420vh' }}
+      style={{ ...NIGHT_VARS, height: '560vh' }}
     >
       <h2 id="night-story-title" className="sr-only">
         A night at the Desk
@@ -399,34 +427,34 @@ export const NightStory: React.FC = () => {
           <div className="relative min-h-[15rem] lg:pr-24 xl:pr-28">
             <div className="flex gap-2 mb-6">
               {CHAPTERS.map((c, i) => (
-                <motion.span
-                  key={c.kicker}
-                  className="relative h-1.5 rounded-[1px] overflow-hidden bg-[var(--desk-border)]"
-                  animate={{ width: i === chapter ? 56 : 14 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-                >
-                  <span
-                    className="absolute inset-y-0 left-0"
-                    style={{ backgroundColor: c.accent, width: `${i < chapter ? 100 : i === chapter ? inChapter * 100 : 0}%` }}
-                  />
-                </motion.span>
+                <StoryPip key={c.kicker} index={i} active={i === chapter} accent={c.accent} progress={smooth} />
               ))}
             </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={chapter}
-                initial={reduceMotion ? false : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? undefined : { opacity: 0, y: -30 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--accent-gold)]">{active.kicker}</p>
-                <p className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.05] text-[var(--text-heading)]">
-                  {active.title}
-                </p>
-                <p className="mt-5 max-w-md text-base sm:text-lg leading-relaxed text-[var(--text-body)]">{active.body}</p>
-              </motion.div>
-            </AnimatePresence>
+            {/* Old and new words share one grid cell and cross-fade, entering from the scroll direction */}
+            <div className="grid">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={chapter}
+                  custom={direction}
+                  style={{ gridArea: '1 / 1' }}
+                  variants={{
+                    enter: (d: number) => (reduceMotion ? { opacity: 0 } : { opacity: 0, y: d * 40, filter: 'blur(6px)' }),
+                    center: { opacity: 1, y: 0, filter: 'blur(0px)' },
+                    exit: (d: number) => (reduceMotion ? { opacity: 0 } : { opacity: 0, y: d * -40, filter: 'blur(6px)' }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: reduceMotion ? 0.2 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--accent-gold)]">{active.kicker}</p>
+                  <p className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.05] text-[var(--text-heading)]">
+                    {active.title}
+                  </p>
+                  <p className="mt-5 max-w-md text-base sm:text-lg leading-relaxed text-[var(--text-body)]">{active.body}</p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
             <p className="mt-10 font-mono text-[11px] text-[var(--text-muted)]">
               {chapter < 3 ? 'keep scrolling ↓' : 'ready when you are ✦'}
             </p>
