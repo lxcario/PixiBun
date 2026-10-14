@@ -290,6 +290,14 @@ export const createLayerSlice: StudioSliceCreator<LayerSlice> = (set, get) => ({
     const upper = frame.layers[layerIndex];
     const lower = frame.layers[layerIndex + 1];
     if (upper.locked || lower.locked) return;
+    const hidden = [upper, lower].find(layer => !layer.visible);
+    if (hidden) {
+      studioEvents.emit('pixibun:toast', {
+        type: 'error',
+        message: `Show "${hidden.name}" before merging, so its pixels are kept.`,
+      });
+      return;
+    }
     const nonNormal = [upper, lower].find(layer => layer.visible && layer.opacity > 0 && layer.blendMode !== 'source-over');
     if (nonNormal) {
       const modeLabel = nonNormal.blendMode.charAt(0).toUpperCase() + nonNormal.blendMode.slice(1);

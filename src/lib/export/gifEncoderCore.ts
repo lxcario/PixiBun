@@ -281,6 +281,23 @@ class DynamicByteArray {
   }
 }
 
+/**
+ * GIF delays are whole centiseconds. Rounding each frame alone drifts a loop
+ * (125 ms frames become 130 ms, 4% slow); rounding the running total keeps every
+ * frame boundary within half a centisecond of its exact time. Frames shorter
+ * than 2 cs are lengthened, as browsers do, and later frames absorb the difference.
+ */
+export function gifFrameDelays(exactCentiseconds: number[]): number[] {
+  let exactTotal = 0;
+  let written = 0;
+  return exactCentiseconds.map(delay => {
+    exactTotal += Math.max(0, delay);
+    const out = Math.max(2, Math.round(exactTotal) - written);
+    written += out;
+    return out;
+  });
+}
+
 export function encodeGifRawFrames(
   frames: RawFrameData[],
   fps: number,
@@ -294,7 +311,7 @@ export function encodeGifRawFrames(
 
   const width = frames[0].width;
   const height = frames[0].height;
-  const defaultDelay = Math.max(2, Math.round(100 / Math.max(1, fps)));
+  const frameDelays = gifFrameDelays(frames.map((_, i) => (delays && delays[i] !== undefined ? delays[i] : 100 / Math.max(1, fps))));
   const writer = new DynamicByteArray(width * height * frames.length);
 
   // Header
@@ -325,9 +342,7 @@ export function encodeGifRawFrames(
     const frame = frames[i];
     const { palette, indexedPixels, transparentIndex } = quantizePixels(frame.data, width * height);
 
-    const frameDelay = delays && delays[i] !== undefined
-      ? Math.max(2, Math.round(delays[i]))
-      : defaultDelay;
+    const frameDelay = frameDelays[i];
 
     // Graphics Control Extension
     writer.writeByte(0x21); // Extension Introducer

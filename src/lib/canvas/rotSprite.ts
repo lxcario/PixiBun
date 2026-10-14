@@ -14,7 +14,8 @@
  *
  * v2 architecture:
  * 1. Lossless integer fast-paths for 0°, 90°, 180°, 270°.
- * 2. 3-pass Scale2x / EPX expansion (1x -> 2x -> 4x -> 8x) respecting color similarity thresholds.
+ * 2. 3-pass Scale2x / EPX expansion (1x -> 2x -> 4x -> 8x); rotation uses exact color matches
+ *    (similarityThreshold 0), and `scale8x` accepts a threshold for callers that want near-shade merging.
  * 3. RotSprite v2 Multi-Candidate Rotation Search:
  *    Generates fractional source-space candidate offsets (0, ±0.25 px) evaluated against
  *    Scale8x raster with subpixel inverse sampling.

@@ -186,6 +186,26 @@ beforeEach(() => {
 });
 
 describe('Layer Merge Down (mergeLayerDown)', () => {
+  it('refuses to merge a hidden layer instead of discarding its pixels (audit defect 6)', () => {
+    const store = useStudioStore.getState();
+    store.addLayer('Hidden Top');
+    const frame = useStudioStore.getState().frames[0];
+    const topLayerId = frame.layers[0].id;
+    const topBuf = getOrCreateBuffer(topLayerId, 16, 16);
+    topBuf.ctx.fillStyle = '#0000FF';
+    topBuf.ctx.fillRect(0, 0, 4, 4);
+    useStudioStore.getState().toggleLayerVisibility(topLayerId);
+    expect(useStudioStore.getState().frames[0].layers[0].visible).toBe(false);
+
+    useStudioStore.getState().mergeLayerDown(topLayerId);
+
+    const after = useStudioStore.getState().frames[0];
+    expect(after.layers).toHaveLength(2);
+    expect(after.layers[0].id).toBe(topLayerId);
+    expect(after.layers[0].visible).toBe(false);
+    expect(Array.from(getOrCreateBuffer(topLayerId, 16, 16).ctx.getImageData(0, 0, 1, 1).data)).toEqual([0, 0, 255, 255]);
+  });
+
   it('merges an upper layer onto the underlying layer and prunes the stack', () => {
     const store = useStudioStore.getState();
     const frame = store.frames[0];
