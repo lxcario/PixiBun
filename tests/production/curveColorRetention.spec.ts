@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page, id = 'main-composite-canvas') => page.getByTestId(id).evaluate((c: HTMLCanvasElement) =>
   Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
@@ -14,7 +15,7 @@ async function color(page: Page, target: 'Primary' | 'Secondary', hex: string) {
   await dialog.getByRole('button', { name: 'Select Color', exact: true }).click(); await expect(dialog).toBeHidden();
 }
 async function draft(page: Page, secondary = false) {
-  await page.getByTestId('curve-tool').click(); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  await chooseTool(page, 'curve'); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   const point = (x: number, y: number) => ({ x: box.x + (x + .5) * box.width / 32, y: box.y + (y + .5) * box.height / 32 });
   // The standard keymap draws a secondary-color curve with the right button.
   const a = point(5, 8), b = point(23, 8), button = secondary ? 'right' : 'left';

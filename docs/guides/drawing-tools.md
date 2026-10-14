@@ -6,7 +6,7 @@ Animated tool previews appear on hover or focus. Activating a tool dismisses its
 
 [Handbook](README.md) · [Workspace and layers](studio-workspace.md) · [All features](../features.md)
 
-Pick a tool from the left-hand toolbar. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
+Pick a tool from the left-hand toolbar. On shorter windows the toolbar folds related tools into one button (Lines and shapes first, then Selection, then Drawing); click the button for the tool it shows, or its corner arrow or right-click for the rest of the group. The button keeps the last tool you used there, and letter shortcuts always work. Its controls appear along the top; some open under **tool options**, while brush size has its own small menu. Click a color swatch for your primary color. Right-click a swatch for your secondary color, and press **X** to swap them.
 
 Work on the intended frame and an unlocked layer. Most drawing tools change that layer's pixels; selecting a tool alone changes no artwork. **Undo** or **Ctrl+Z** restores a committed drawing action while it remains in session history. A selected area can limit drawing. Clear it with **Esc** before painting elsewhere. [Shortcut details](../contracts/shortcuts.md) explain keyboard focus and selection exceptions.
 

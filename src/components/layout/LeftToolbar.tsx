@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { lazyPanel } from '@/components/system/lazyPanel';
 import { useStudioStore } from '@/stores/studioStore';
@@ -19,7 +19,12 @@ const ColorPickerModal = lazyPanel(
   'Color picker'
 );
 
-import { TOOL_GROUPS } from '@/config/shortcuts';
+import { EXTRAS_SLOT, TOOL_GROUPS, TOOL_SLOTS } from '@/config/shortcuts';
+import { ToolSlotButton } from './ToolSlotButton';
+import { planShelf, visibleGroups, type FoldStage } from '@/lib/layout/toolShelf';
+
+// Client layout effects only; the server render keeps the full shelf.
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export interface LeftToolbarProps {
   isPlaygroundMode?: boolean;
@@ -117,6 +122,29 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
     };
   }, [isFlyoutOpen, updateFlyoutCoords]);
 
+  // Small windows: fold tool groups into flyout slots, only as many as needed.
+  const toolScrollRef = useRef<HTMLDivElement>(null);
+  const [folded, setFolded] = useState<ReadonlySet<FoldStage>>(() => new Set());
+  useIsomorphicLayoutEffect(() => {
+    const el = toolScrollRef.current;
+    if (!el || isPlaygroundMode) return;
+    const check = () => {
+      const next = planShelf(el.clientHeight);
+      setFolded(prev => (prev.size === next.size && [...next].every(group => prev.has(group)) ? prev : next));
+    };
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isPlaygroundMode]);
+
+  // Each slot shows the active tool if it is in that group, else the last one used there.
+  const [lastUsed, setLastUsed] = useState<Record<string, ToolType>>({});
+  useEffect(() => {
+    const slot = TOOL_SLOTS.find(candidate => candidate.tools.includes(tools.activeTool));
+    if (slot) setLastUsed(prev => (prev[slot.id] === tools.activeTool ? prev : { ...prev, [slot.id]: tools.activeTool }));
+  }, [tools.activeTool]);
+
   const currentPalette = palettes.find((p) => p.id === currentPaletteId) || palettes[0];
 
   const activeToolGroups = isPlaygroundMode
@@ -143,10 +171,14 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
   return (
     <aside className="w-14 h-full max-h-full bg-[var(--desk-surface)] border-r border-[var(--desk-border)] flex flex-col items-center select-none z-10 transition-colors duration-150 relative overflow-hidden">
       {/* 1. Categorized Tool Groups: Scrollable Container */}
-      <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center py-2 px-1 custom-scrollbar">
+      <div
+        ref={toolScrollRef}
+        data-shelf={folded.size ? `folded ${[...folded].join(' ')}` : 'full'}
+        className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-center py-2 px-1 custom-scrollbar"
+      >
         <DrawingToolsPreviewLayer>
           <div className="flex flex-col gap-1 w-full px-0.5 items-center">
-            {activeToolGroups.map((group, gIdx) => (
+            {activeToolGroups.filter(group => isPlaygroundMode || visibleGroups(folded).some(name => name === group.groupName)).map((group, gIdx) => (
               <div
                 key={group.groupName}
                 role="group"
@@ -155,11 +187,15 @@ export const LeftToolbar: React.FC<LeftToolbarProps> = ({ isPlaygroundMode = fal
               >
                 {gIdx > 0 && (
                   <div
-                    className="w-8 h-[1px] bg-[var(--desk-border)] my-1 shrink-0"
+                    className="w-8 h-[1px] bg-[var(--desk-border)] my-0.5 shrink-0"
                     aria-hidden="true"
                   />
                 )}
-                {group.tools.map((tool) => {
+                {(folded.has(group.groupName as FoldStage) || (group.groupName === '2.5D Sculpt' && folded.has('Extras'))) && !isPlaygroundMode ? (group.groupName === '2.5D Sculpt' && folded.has('Extras') ? [EXTRAS_SLOT] : TOOL_SLOTS.filter(slot => slot.group === group.groupName)).map(slot => {
+                  const holdsActive = slot.tools.includes(tools.activeTool);
+                  const shown = holdsActive ? tools.activeTool : lastUsed[slot.id] ?? slot.tools[0];
+                  return <ToolSlotButton key={slot.id} slot={slot} shown={shown} active={holdsActive} onChoose={setActiveTool} />;
+                }) : group.tools.map((tool) => {
                   const isActive = tools.activeTool === tool.id;
                   return (
                     <DrawingToolPreview

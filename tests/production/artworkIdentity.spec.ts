@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import type { ProjectFile } from '@/types/project';
+import { chooseTool } from '../helpers/tools';
 
 async function importFixture(page: Page) {
   await page.addInitScript(() => { Object.defineProperty(window, 'showSaveFilePicker', { value: undefined, configurable: true }); });
@@ -78,7 +79,7 @@ test('compiled frame move refuses to split a clip without changing the exported 
 
 test('compiled all-frame color erase follows Body across reordered stacks and undo preserves hidden Lighting', async ({ page }) => {
   await importFixture(page); await page.getByRole('button', { name: /Select frame 1\./ }).click();
-  await page.getByTestId('erase-color-tool').click(); await page.getByTestId('tool-options-button').click();
+  await chooseTool(page, 'erase-color'); await page.getByTestId('tool-options-button').click();
   await page.getByRole('button', { name: 'Erase Color frame scope' }).click();
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.click(box.x + box.width * 3.5 / 32, box.y + box.height * 3.5 / 32);

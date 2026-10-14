@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { importAnimationReviewFixture as fixture } from '../helpers/animationReviewFixture';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -27,7 +28,7 @@ test('native animation review is read-only, undoable, persists exceptions and ex
   await page.getByRole('combobox', { name: 'Animation review clip' }).selectOption({ label: 'Animation review (1–2)' });
   await page.getByRole('button', { name: 'Scan animation', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Reopen this interval' })).toBeVisible();
-  await page.getByTestId('pen-tool').click();
+  await chooseTool(page, 'pen');
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.click(box.x + box.width * 0.65, box.y + box.height * 0.65);
   await expect(report).toHaveCount(0); await expect(page.getByText('Artwork or review regions changed. Scan again.')).toBeVisible();
@@ -37,7 +38,7 @@ test('native animation review is read-only, undoable, persists exceptions and ex
 
 test('selected protection survives cleanup across the clip and metadata undo/redo and reload', async ({ page }) => {
   await fixture(page);
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.move(box.x + box.width * 1.5 / 32, box.y + box.height * 1.5 / 32); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 4.5 / 32, box.y + box.height * 4.5 / 32, { steps: 4 }); await page.mouse.up();

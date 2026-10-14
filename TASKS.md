@@ -12,7 +12,7 @@ Source: the Strategy and Audit & Roadmap documents of 13 October 2026, summarize
 - [x] Phase 0.5: product name PixiBun, no user-facing AI wording, landing copy, dated `/pledge`.
 - [x] Requested addition: eight Night/Day studio styles, theme hydration fix, first-run welcome and level-based tips.
 - [ ] Rename `src/lib/ai` to `src/lib/graphics`.
-- [ ] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
+- [x] Phase 1: selection masks for every raster tool, transparency checkerboard, co-draw selective undo, quick fixes, standard keymap, tool flyouts and fit-to-view, byte-budgeted undo.
 - [ ] Carts, phone cart player, Light Sweep and Handmade Receipt (strategy launch bets).
 - [ ] Fix the two production failures that predate this work: navigator square-pixel alignment and the color dock's 10px edge expectation under the floating layout.
 

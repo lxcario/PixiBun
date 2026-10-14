@@ -127,6 +127,32 @@ export const TOOL_GROUPS = [
   })),
 }));
 
+/**
+ * Compact toolbar slots. When the shelf is too short for every tool, each slot
+ * shows one tool (the active or last-used one) and opens the rest in a flyout.
+ * The first tool is the slot's default.
+ */
+export interface ToolSlot {
+  id: string;
+  label: string;
+  group: ToolMeta['group'];
+  tools: ToolType[];
+}
+
+export const TOOL_SLOTS: ToolSlot[] = [
+  { id: 'pen', label: 'Pen tools', group: 'Drawing', tools: ['pen', 'curve'] },
+  { id: 'eraser', label: 'Erasers', group: 'Drawing', tools: ['eraser', 'erase-color'] },
+  { id: 'fill', label: 'Fills', group: 'Drawing', tools: ['bucket', 'gradient', 'color-replace'] },
+  { id: 'dither', label: 'Dither Brush', group: 'Drawing', tools: ['dither'] },
+  { id: 'select', label: 'Selection tools', group: 'Selection', tools: ['select-box', 'select-lasso', 'select-wand'] },
+  { id: 'shapes', label: 'Lines and shapes', group: 'Geometry', tools: ['line', 'isometric-line', 'rectangle', 'ellipse'] },
+  { id: 'chisel', label: 'Normal Chisel', group: '2.5D Sculpt', tools: ['normal-chisel'] },
+  { id: 'eyedropper', label: 'Eyedropper', group: 'Utility', tools: ['eyedropper'] },
+];
+
+/** On the shortest windows the last two single-tool groups share one slot. */
+export const EXTRAS_SLOT: ToolSlot = { id: 'extras', label: 'Eyedropper and chisel', group: '2.5D Sculpt', tools: ['eyedropper', 'normal-chisel'] };
+
 /** Tool metadata dictionary shared by toolbar and shortcut surfaces. */
 export const TOOL_METADATA_MAP: Record<string, { label: string; shortcut: string; icon: PixelIconName }> =
   CANONICAL_TOOLS.reduce(

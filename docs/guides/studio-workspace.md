@@ -105,7 +105,7 @@ Selection masks matter: a lasso or wand selection does not fill its entire bound
 
 | Feature | A gentle first use | Artwork effect |
 | --- | --- | --- |
-| Zoom / Fit / 100% | Wheel or +/− to inspect pixels; Ctrl+0 to fit; Ctrl+1 for native scale | View only |
+| Zoom / Fit / 100% | Wheel or +/− to inspect pixels; Ctrl+0 to fit; Ctrl+1 for native scale. A drawing opens fitted to the window, at most 1600% | View only |
 | Pan | Hold Space and drag, or middle-drag (PixiBun classic: Alt-drag when not subtracting a selection); arrows when no selection | View only |
 | Pixel Grid | Turn on View → Pixel Grid for precise placement | Not exported |
 | 2:1 Iso Grid | Use alongside isometric shapes | Not exported |

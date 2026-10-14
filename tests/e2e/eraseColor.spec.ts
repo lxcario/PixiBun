@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 async function importGreenSheet(page: Page) {
   await page.goto('/studio');
@@ -69,7 +70,7 @@ async function thumbnailPixel(page: Page, frameIndex: number, x: number, y: numb
 
 test('Erase Sampled Color removes green across animation frames and undo restores both', async ({ page }) => {
   await importGreenSheet(page);
-  await page.getByTestId('erase-color-tool').click();
+  await chooseTool(page, 'erase-color');
   await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('slider', { name: 'Erase Color tolerance' })).toHaveValue('24');
   const scopeBtn = page.getByRole('button', { name: 'Erase Color frame scope' });
@@ -114,7 +115,7 @@ test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
     state.toggleLayerLock(state.frames[1].layers[0].id);
     state.setActiveFrame(0);
   });
-  await page.getByTestId('erase-color-tool').click();
+  await chooseTool(page, 'erase-color');
   await page.getByTestId('tool-options-button').click();
   await page.getByRole('button', { name: 'Erase Color frame scope' }).click();
   await clickPixel(page, 2, 2);
@@ -125,7 +126,7 @@ test('Erase Sampled Color skips a locked frame layer', async ({ page }) => {
 
 test('Default color family clears pale spill, repairs dark green outline pixels, and has a distinct icon', async ({ page }) => {
   await importGreenSheet(page);
-  await page.getByTestId('erase-color-tool').click();
+  await chooseTool(page, 'erase-color');
   await page.getByTestId('tool-options-button').click();
   await expect(page.getByRole('button', { name: 'Erase Color family mode' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Erase Color matching mode' })).toContainText('All matches');
@@ -151,7 +152,7 @@ test('Erase Sampled Color with All Frames scope clears matching color across ani
   await expect.poll(() => page.evaluate(() => Boolean((window as Window & { __studioStore?: unknown }).__studioStore))).toBe(true);
 
   // Select pen tool
-  await page.getByTestId('pen-tool').click();
+  await chooseTool(page, 'pen');
 
   // Set orange drawing color
   await page.evaluate(() => {
@@ -173,7 +174,7 @@ test('Erase Sampled Color with All Frames scope clears matching color across ani
   await expect.poll(() => thumbnailPixel(page, 1, 16, 16)).toEqual([255, 136, 0, 255]);
 
   // Select Erase Color tool in left toolbar
-  await page.getByTestId('erase-color-tool').click();
+  await chooseTool(page, 'erase-color');
 
   // Click the frame scope button in the tool options rail to switch from This frame to All frames
   await page.getByTestId('tool-options-button').click();

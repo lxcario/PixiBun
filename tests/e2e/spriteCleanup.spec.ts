@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 async function pixel(page: Page, x: number, y: number) {
   return page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement, point: [number, number]) =>
@@ -19,7 +20,7 @@ test('cleanup requires a fresh scan after the artwork changes', async ({ page })
   await page.getByRole('button', { name: 'Scan artwork for cleanup' }).click();
   await expect(apply).toBeEnabled();
 
-  await page.getByTestId('pen-tool').click();
+  await chooseTool(page, 'pen');
   await page.mouse.click(box!.x + box!.width * 0.55, box!.y + box!.height * 0.55);
   await expect(apply).toBeDisabled();
   await expect(page.getByText('Artwork changed since this preview. Scan again before applying.')).toBeVisible();
@@ -50,7 +51,7 @@ test('stray removal previews the real edit before applying and invalidates when 
   await expect.poll(async () => (await pixel(page, 16, 16))[3]).toBeGreaterThan(0);
 
   await page.getByRole('button', { name: 'Erase Stray Pixels - Remove Stray Pixels' }).click();
-  await page.getByTestId('pen-tool').click();
+  await chooseTool(page, 'pen');
   await page.mouse.click(box!.x + box!.width * 0.7, box!.y + box!.height * 0.7);
   await expect(page.getByRole('button', { name: 'Apply Erase Stray Pixels preview' })).toBeDisabled();
 });

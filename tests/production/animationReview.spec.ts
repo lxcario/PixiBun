@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { importAnimationReviewFixture } from '../helpers/animationReviewFixture';
+import { chooseTool } from '../helpers/tools';
 
 const pixel = (page: Page, x: number, y: number) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement, point: number[]) =>
   Array.from(canvas.getContext('2d')!.getImageData(point[0], point[1], 1, 1).data), [x, y]);
@@ -18,7 +19,7 @@ test('compiled animation worker, saved exceptions and protected cleanup preserve
   await page.getByRole('combobox', { name: 'Animation review clip' }).selectOption({ label: 'Animation review (1–2)' });
   await page.getByRole('button', { name: 'Scan animation', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Reopen this interval' })).toBeVisible();
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.move(box.x + box.width * 1.5 / 32, box.y + box.height * 1.5 / 32); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 4.5 / 32, box.y + box.height * 4.5 / 32, { steps: 4 }); await page.mouse.up();

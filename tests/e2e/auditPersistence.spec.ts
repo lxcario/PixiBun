@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import { chooseTool } from '../helpers/tools';
 
 test('drawing survives an explicit save and a fresh-page IndexedDB restore', async ({ page }) => {
   await page.goto('/studio');
@@ -210,7 +211,7 @@ test('repeat preview exports the selected tile without changing the artwork', as
     const state = (window as Window & { __studioStore?: { getState: () => { frames: { layers: unknown[] }[]; activeFrameIndex: number; editRevision: number } } }).__studioStore!.getState();
     return { layers: state.frames[state.activeFrameIndex].layers.length, revision: state.editRevision };
   });
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   await page.mouse.move(box!.x + box!.width * 0.4, box!.y + box!.height * 0.4);
   await page.mouse.down();
   await page.mouse.move(box!.x + box!.width * 0.6, box!.y + box!.height * 0.6);

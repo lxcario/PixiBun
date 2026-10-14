@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { importAnimationReviewFixture } from '../helpers/animationReviewFixture';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
+import { chooseTool } from '../helpers/tools';
 
 
 test.describe('PixiBun Visual QA & UX Verification Suite', () => {
@@ -121,7 +122,7 @@ test.describe('PixiBun Visual QA & UX Verification Suite', () => {
     await page.screenshot({ path: test.info().outputPath('captures', '11-animation-review-details-expanded.png') });
 
     // 12. Create a protected region from selection
-    await page.getByTestId('select-box-tool').click();
+    await chooseTool(page, 'select-box');
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
     await page.mouse.move(box.x + box.width * 1.5 / 32, box.y + box.height * 1.5 / 32);
     await page.mouse.down();

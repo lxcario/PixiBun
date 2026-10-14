@@ -3,6 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { verifyAnimatedDownloadOrder } from '../helpers/gameAnimationDownload';
+import { chooseTool } from '../helpers/tools';
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
 test('animated downloads preserve reverse and bounce pose holds and play-once settings', async ({ page }) => {
   test.setTimeout(60_000);
@@ -73,7 +74,7 @@ test('visible selection bindings resolve duplicate register identity on every ex
   }
   await page.getByTestId('tab-palette').click(); await page.getByText('Roles and index bindings', { exact: true }).click();
   await page.getByRole('combobox', { name: 'Semantic palette register' }).selectOption('255');
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   for (let i = 1; i <= 3; i++) {
     await page.getByRole('button', { name: new RegExp(`^Select frame ${i}\\.`) }).click();
     // A drag inside the previous marquee moves artwork. Start a new selection.

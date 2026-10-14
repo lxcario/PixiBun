@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 // Audit v1.14.1: the standard pixel-art keymap by default, with the original
 // keys kept as "PixiBun classic" in Guide & Shortcuts.
@@ -28,7 +29,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto(`/studio?width=${ART}&height=${ART}`);
   await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await color(page, 'Primary', '#ff0055'); await color(page, 'Secondary', '#00ffff');
-  await page.getByTestId('pen-tool').click();
+  await chooseTool(page, 'pen');
 });
 
 test('standard keymap: right-click paints, Alt picks, Shift draws a line, Space pans, Enter plays', async ({ page }) => {
