@@ -99,6 +99,11 @@ export interface PixelHistoryStep {
   frameIndex: number;
   layerId: string;
   imageData: ImageData;
+  /**
+   * Co-draw only: the layer right after this change. Undo and redo then take back
+   * only pixels that still show it, so a partner's later strokes survive.
+   */
+  expectedImageData?: ImageData;
   // Optional dirty bounding box origin for bounded delta snapshotting
   x?: number;
   y?: number;
