@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { readAnimatedGif } from '../helpers/readAnimatedGif';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((c: HTMLCanvasElement) =>
   Array.from(c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data));
@@ -18,7 +19,7 @@ async function stroke(page: Page, x1: number, x2: number, y: number) {
 test('downloaded timelapse finishes on the latest artwork without consuming Undo or changing saved pixels', async ({ page }, info) => {
   await page.addInitScript(() => { Object.defineProperty(window, 'showSaveFilePicker', { value: undefined, configurable: true }); });
   await page.setViewportSize({ width: 1600, height: 1100 }); await page.goto('/studio?width=32&height=32');
-  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible(); await page.getByTestId('pen-tool').click();
+  await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible(); await chooseTool(page, 'pen');
   await color(page, '#ff0055'); await stroke(page, 4, 11, 4); const first = await pixels(page);
   await color(page, '#3366ff'); await stroke(page, 6, 18, 12); const final = await pixels(page); expect(final).not.toEqual(first);
   await page.getByTestId('export-button').click(); await page.getByTestId('export-tab-replay').click();

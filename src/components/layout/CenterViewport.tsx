@@ -54,6 +54,11 @@ import { updateCursorHUD } from '@/components/layout/CursorStatusBadge';
 import { checkerStyle } from '@/lib/render/transparencyChecker';
 import { rightClickOpensToolsPopup } from '@/lib/input/keymap';
 import { usePreferencesStore } from '@/stores/preferencesStore';
+import { calculateFitZoom, DEFAULT_ZOOM } from '@/config/zoom';
+
+// The project and canvas size last fitted to the window, so returning to the
+// same drawing (route handoff, remount) keeps the zoom the artist chose.
+let lastFittedCanvas: string | null = null;
 
 interface CenterViewportProps {
   onCommitHistory?: () => void;
@@ -108,6 +113,27 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
   const referenceOverlay = useStudioStore((s) => s.referenceOverlay);
   const showIsoGuides = useStudioStore((s) => s.showIsoGuides);
   const isPlaygroundActive = useOnboardingStore((s) => s.isPlaygroundActive);
+  const currentProjectId = useStudioStore((s) => s.currentProjectId);
+
+  // Fit on open: a newly opened drawing (or a new canvas size) starts fully
+  // visible, never zoomed in past the default 1600%.
+  useEffect(() => {
+    const key = `${currentProjectId}:${canvasWidth}x${canvasHeight}`;
+    const container = containerRef.current;
+    if (lastFittedCanvas === key || !container) return;
+    // The stage may not have its size yet (layout still settling); fit once it does.
+    const fitWhenSized = () => {
+      if (lastFittedCanvas === key || container.clientWidth === 0 || container.clientHeight === 0) return;
+      lastFittedCanvas = key;
+      const fit = calculateFitZoom(canvasWidth, canvasHeight, container.clientWidth, container.clientHeight);
+      useStudioStore.getState().setZoomAndPan(Math.min(fit, DEFAULT_ZOOM), 0, 0);
+      observer.disconnect();
+    };
+    const observer = new ResizeObserver(fitWhenSized);
+    observer.observe(container);
+    fitWhenSized();
+    return () => observer.disconnect();
+  }, [canvasHeight, canvasWidth, currentProjectId]);
   const activeLessonId = useOnboardingStore((s) => s.activeLessonId);
   const showTilePreview = useStudioStore((s) => s.showTilePreview);
   const showNormalMapPreview = useStudioStore((s) => s.showNormalMapPreview);

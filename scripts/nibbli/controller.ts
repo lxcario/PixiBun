@@ -58,10 +58,19 @@ export class PixiBunController {
     });
   }
 
+  /** Shorter windows fold tool groups into slots; pick a folded tool from its flyout. */
+  private async chooseTool(tool: string) {
+    const shelf = this.page.locator('[data-shelf]');
+    const direct = shelf.getByTestId(`${tool}-tool`);
+    if (await direct.isVisible()) return direct.click();
+    await shelf.locator(`[data-tools~="${tool}"] button[aria-haspopup]`).click({ button: 'right' });
+    await this.page.getByRole('menu').getByTestId(`${tool}-tool`).click();
+  }
+
   async tool(tool: 'pen' | 'eraser' | 'bucket' | 'line' | 'curve' | 'select-box') {
     return this.action('choose-tool', { tool }, async () => {
-      await this.page.getByTestId(`${tool}-tool`).click();
-      await expect(this.page.getByTestId(`${tool}-tool`)).toHaveAttribute('aria-pressed', 'true');
+      await this.chooseTool(tool);
+      await expect(this.page.locator('[data-shelf]').getByTestId(`${tool}-tool`)).toHaveAttribute('aria-pressed', 'true');
     });
   }
 
@@ -187,7 +196,7 @@ export class PixiBunController {
       const activeRow = this.page.locator('[data-testid^="layer-row-"]').filter({ has: this.page.locator('button.font-semibold[aria-label^="Select layer "]') });
       if (await activeRow.count() !== 1 || await activeRow.getByRole('button', { name: /^Unlock layer / }).count()
         || await activeRow.getByRole('button', { name: /^Show layer / }).count()) throw new ControllerInputError('Active layer is unavailable, locked or hidden.');
-      await this.page.getByTestId('select-box-tool').click();
+      await this.chooseTool('select-box');
       await this.page.mouse.move(start.x, start.y); await this.page.mouse.down();
       try { await this.page.mouse.move(end.x, end.y, { steps: 2 }); } finally { await this.page.mouse.up(); }
       await expect(gizmo).toBeVisible(); await this.settle();
@@ -235,7 +244,7 @@ export class PixiBunController {
       const activeRow = this.page.locator('[data-testid^="layer-row-"]').filter({ has: this.page.locator('button.font-semibold[aria-label^="Select layer "]') });
       if (await activeRow.count() !== 1 || await activeRow.getByRole('button', { name: /^Unlock layer / }).count()
         || await activeRow.getByRole('button', { name: /^Show layer / }).count()) throw new ControllerInputError('Active layer is unavailable, locked or hidden.');
-      await this.page.getByTestId('select-box-tool').click();
+      await this.chooseTool('select-box');
       await this.page.mouse.move(start.x, start.y); await this.page.mouse.down();
       try { await this.page.mouse.move(end.x, end.y, { steps: 2 }); } finally { await this.page.mouse.up(); }
       await expect(gizmo).toBeVisible(); await this.settle();
@@ -291,7 +300,7 @@ export class PixiBunController {
       await this.page.getByTestId('tab-layers').click();
       const row=this.page.locator('[data-testid^="layer-row-"]').filter({has:this.page.locator('button.font-semibold[aria-label^="Select layer "]')});
       if(await row.count()!==1||await row.getByRole('button',{name:/^Unlock layer /}).count()||await row.getByRole('button',{name:/^Show layer /}).count())throw new ControllerInputError('Active layer is unavailable, locked or hidden.');
-      await this.page.getByTestId('select-box-tool').click();
+      await this.chooseTool('select-box');
       await this.page.getByTestId('tab-tools').click();
       await this.page.getByRole('combobox',{name:'Rotation algorithm',exact:true}).selectOption('rotsprite');
       await expect(this.page.getByRole('combobox',{name:'Rotation algorithm',exact:true})).toHaveValue('rotsprite');

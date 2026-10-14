@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page, testId = 'main-composite-canvas') => page.getByTestId(testId).evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -10,7 +11,7 @@ async function setup(page: Page) {
   await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.4, { steps: 4 }); await page.mouse.up();
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   const authored = await pixels(page);
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 }); await page.mouse.up();
   await page.getByTestId('tab-tools').click(); await page.getByTestId('create-motion-part-btn').click();

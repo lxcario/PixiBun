@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { importGameDeliveryFixture } from '../helpers/gameDeliveryFixture';
 import { openResearch, preview, openResearchOptions, selectResearchWorkflow } from '../helpers/researchWorkflows';
+import { chooseTool } from '../helpers/tools';
 
 
 test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
@@ -20,7 +21,7 @@ test.describe('Phase 6 Artist Study Dry-Run Verification', () => {
     await page.getByRole('combobox', { name: 'Simplification candidate' }).selectOption('contrast');
 
     // 3. Mark and protect a detail region on canvas
-    await page.getByTestId('select-box-tool').click();
+    await chooseTool(page, 'select-box');
     const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.2);
     await page.mouse.down();

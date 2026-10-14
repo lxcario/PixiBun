@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) =>
   Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -17,7 +18,7 @@ async function paint(page: Page) {
   return box;
 }
 async function select(page: Page, box: { x: number; y: number; width: number; height: number }) {
-  await page.getByTestId('select-box-tool').click();
+  await chooseTool(page, 'select-box');
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.8, { steps: 4 });

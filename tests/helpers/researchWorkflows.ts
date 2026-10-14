@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { importGameDeliveryFixture } from './gameDeliveryFixture';
+import { chooseTool } from './tools';
 
 export const artwork = (page: Page) => page.getByTestId('main-composite-canvas').evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
 export const viewPixels = (page: Page, label: string) => page.getByRole('img', { name: label, exact: true }).evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
@@ -75,7 +76,7 @@ export async function verifyDetailWorkflow(page: Page) {
   // This dense palette fixture has strong boundaries at every row. Explicitly opt out
   // before testing manual protected rectangles and applying a coarse result.
   await page.getByRole('checkbox', { name: 'Keep outlines', exact: true }).uncheck();
-  await page.getByTestId('select-box-tool').click(); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  await chooseTool(page, 'select-box'); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.move(box.x + box.width * 17.5 / 32, box.y + box.height * 2.5 / 16); await page.mouse.down();
   await page.mouse.move(box.x + box.width * 20.5 / 32, box.y + box.height * 5.5 / 16, { steps: 3 }); await page.mouse.up();
   await page.getByRole('textbox', { name: 'Research detail name' }).fill('Tiny fabric detail');

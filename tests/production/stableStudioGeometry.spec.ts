@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { chooseTool } from '../helpers/tools';
 
 const pixels = (page: Page, id = 'main-composite-canvas') => page.getByTestId(id).evaluate((canvas: HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data));
 async function numeric(page: Page, label: string, value: string) { const input = page.getByRole('spinbutton', { name: label, exact: true }); await input.fill(value); await input.press('Enter'); }
@@ -50,7 +51,7 @@ test('merging layered artwork moves every painted layer without leaving an origi
   await page.setViewportSize({ width: 1600, height: 1000 }); await page.goto('/studio'); await expect(page.locator('[data-restoration-phase="active"]')).toBeVisible();
   await draw(page, 8, 8); await page.getByTestId('tab-layers').click(); await page.getByRole('button', { name: 'Add New Layer', exact: true }).click(); await draw(page, 12, 8);
   await page.getByRole('slider', { name: 'Layer opacity', exact: true }).fill('50'); const original = await pixels(page); expect(original.filter((v, i) => i % 4 === 3 && v)).toHaveLength(2);
-  await page.getByTestId('select-box-tool').click(); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
+  await chooseTool(page, 'select-box'); const box = (await page.getByTestId('main-composite-canvas').boundingBox())!;
   await page.mouse.move(box.x + box.width * 7 / 32, box.y + box.height * 7 / 32); await page.mouse.down(); await page.mouse.move(box.x + box.width * 10 / 32, box.y + box.height * 10 / 32); await page.mouse.up();
   await page.getByTestId('tab-tools').click(); await page.getByTestId('create-visible-motion-btn').click();
   await numeric(page, 'Position X pixels', '2'); await numeric(page, 'Motion frames', '3');
