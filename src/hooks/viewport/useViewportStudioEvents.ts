@@ -163,7 +163,7 @@ export function useViewportStudioEvents({
     return sCtx.getImageData(0, 0, canvasWidth, canvasHeight);
   }, [canvasHeight, canvasWidth, getOrCreateLayerCanvas]);
 
-  // Helper: write AI generated content to a dedicated tagged layer
+  // Helper: write generated effect content to a dedicated tagged layer
   const updateTaggedLayer = useCallback(
     (
       displayName: string,

@@ -171,7 +171,7 @@ export class CoDrawBridge {
     const artworkCurrent = () => current() && this.guestWorkspaceReady;
     return new P2PSyncSession({
       peerId: this.peerId,
-      peerName: this.role === 'host' ? 'Atelier Host' : 'Atelier Guest',
+      peerName: this.role === 'host' ? 'PixiBun Host' : 'PixiBun Guest',
       iceServers: options.lanOnly === true
         ? LAN_ICE_SERVERS
         : options.lanOnly === false

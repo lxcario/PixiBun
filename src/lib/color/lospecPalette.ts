@@ -197,7 +197,7 @@ export function exportPaletteToGpl(palette: ColorPalette): string {
     'GIMP Palette',
     `Name: ${palette.name}`,
     'Columns: 8',
-    '# Exported from PixiBun Atelier (Lospec Compatible)',
+    '# Exported from PixiBun (Lospec Compatible)',
   ];
 
   for (const hex of palette.colors) {

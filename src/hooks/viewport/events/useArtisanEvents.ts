@@ -33,7 +33,7 @@ export function useArtisanEvents({
   useEffect(() => {
     const jobs = new Set<WorkspaceJob>();
     const handleCleanJaggiesEvent = () => {
-      captureSnapshot('AI Clean Jaggies');
+      captureSnapshot('Clean Jaggies');
       const currentLayerCanvas = getOrCreateLayerCanvas(activeLayerId);
       const ctx = currentLayerCanvas.getContext('2d', { willReadFrequently: true });
       if (ctx) {
@@ -109,7 +109,7 @@ export function useArtisanEvents({
       const customEvent = e as CustomEvent;
       const grade = customEvent.detail?.grade || 'sunset';
 
-      captureSnapshot(`AI Color Grade (${grade})`);
+      captureSnapshot(`Color Grade (${grade})`);
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d');
       if (tCtx) {
@@ -124,7 +124,7 @@ export function useArtisanEvents({
       const customEvent = e as CustomEvent;
       const paletteColors = customEvent.detail?.colors || [];
 
-      captureSnapshot('AI Snap to Palette');
+      captureSnapshot('Snap to Palette');
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d');
       if (tCtx) {
@@ -136,7 +136,7 @@ export function useArtisanEvents({
     };
 
     const handleRemoveStraysEvent = () => {
-      captureSnapshot('AI Remove Stray Pixels');
+      captureSnapshot('Remove Stray Pixels');
       const targetCanvas = getOrCreateLayerCanvas(activeLayerId);
       const tCtx = targetCanvas.getContext('2d');
       if (tCtx) {
@@ -231,10 +231,6 @@ export function useArtisanEvents({
         studioEvents.emit('pixibun:toast', {
           message: 'In-between result was discarded because the animation changed while it was processing.',
           type: 'error',
-        });
-        latest.addAiMessage({
-          sender: 'assistant',
-          text: 'In-between result was discarded because the animation changed while it was processing.',
         });
         return;
       }

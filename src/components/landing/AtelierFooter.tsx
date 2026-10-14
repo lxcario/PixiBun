@@ -111,6 +111,11 @@ export const AtelierFooter: React.FC = () => {
                 <p className="leading-relaxed">
                   No trackers, no uploads. Your drawings stay on your device.
                 </p>
+                <p className="leading-relaxed">
+                  <Link href="/pledge" className="text-[var(--accent-gold)] underline underline-offset-2 hover:opacity-80">
+                    Our pledge: no generative AI, ever.
+                  </Link>
+                </p>
                 <div className="pt-2 flex items-center gap-4 text-xs font-mono">
                   <a href="#features" className="text-[var(--text-body)] hover:text-[var(--accent-gold)] transition-colors">
                     Studio
@@ -132,7 +137,7 @@ export const AtelierFooter: React.FC = () => {
       <div className="border-t border-[var(--desk-border)] py-6 bg-[var(--desk-surface-raised)]">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
           <p className="text-[var(--text-body)] text-center sm:text-left">
-            © 2026 PixiBun Atelier. Made with pixels &amp; late nights.
+            © 2026 PixiBun. Made with pixels &amp; late nights.
           </p>
           <p className="text-[var(--accent-gold)] flex items-center gap-1">
             <span>Made for anyone who likes making little things.</span>

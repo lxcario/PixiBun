@@ -6,7 +6,7 @@ test.describe('PWA Manifest & Service Worker Assets', () => {
     expect(res.status()).toBe(200);
 
     const json = await res.json();
-    expect(json.name).toBe('PixiBun Atelier');
+    expect(json.name).toBe('PixiBun');
     expect(json.short_name).toBe('PixiBun');
     expect(json.display).toBe('standalone');
     expect(json.start_url).toBe('/studio');

@@ -36,7 +36,7 @@ test('the landing starter creates a separate saved drawing and Gallery retains t
   await expect.poll(async () => (await pixels(page)).some((v, i) => i % 4 === 3 && v > 0)).toBe(true);
   await saveReload(page); const starter = await pixels(page); expect(starter).not.toEqual(original);
   await page.getByTestId('file-menu-button').click(); await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-  const gallery = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+  const gallery = page.getByRole('dialog', { name: 'Projects & Gallery' });
   await expect(gallery.getByRole('button', { name: 'Open project Hearth Ghost', exact: true })).toBeVisible();
   await gallery.getByRole('button', { name: 'Open project Starter original', exact: true }).click();
   await expect(gallery).toBeHidden(); await expect.poll(() => pixels(page)).toEqual(original);

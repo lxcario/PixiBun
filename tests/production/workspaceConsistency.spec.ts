@@ -55,7 +55,7 @@ test('compiled command search contains focus, empty results and unavailable hist
   }
   await input.focus(); await input.press('Escape'); await expect(opener).toBeFocused();
   await (await palette(page, 'Gallery')).press('Enter');
-  const gallery = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+  const gallery = page.getByRole('dialog', { name: 'Projects & Gallery' });
   await expect(gallery).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.activeElement?.closest('dialog')?.getAttribute('aria-labelledby'))).toBe(await gallery.getAttribute('aria-labelledby'));
   await page.keyboard.press('Tab'); expect(await page.evaluate(() => Boolean(document.activeElement?.closest('dialog[open]')))).toBe(true);

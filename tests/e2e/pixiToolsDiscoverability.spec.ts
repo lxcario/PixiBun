@@ -94,7 +94,7 @@ test('PixiTools starts with tasks and keeps expert browse available', async ({ p
   await page.getByRole('button', { name: 'Choose another task' }).click();
   await page.getByTestId('pixitools-browse-all').click();
   await expect(page.getByRole('heading', { name: 'All PixiTools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Pixel Cleanup & RotSprite' })).toBeVisible();
 });
 
 test('47-blob contours preview before creating a generated layer', async ({ page }) => {

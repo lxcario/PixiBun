@@ -14,7 +14,7 @@ export const MobileStudioGate: React.FC = () => {
         Desk Too Small
       </h1>
       <p className="text-sm text-[var(--text-body)] mb-6 max-w-sm leading-relaxed">
-        PixiBun Atelier is a desktop workstation featuring multi-layer timelines, color ramps, and pixel math tools. Please open this studio on a laptop, desktop screen, or rotate your tablet to landscape mode (1024px+).
+        PixiBun Studio is a desktop workspace featuring multi-layer timelines, color ramps, and pixel math tools. Please open this studio on a laptop, desktop screen, or rotate your tablet to landscape mode (1024px+).
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         <Link

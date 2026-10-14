@@ -110,7 +110,7 @@ describe('AtelierEngineShowcase Component', () => {
     ).toBeDefined();
 
     // Tab list and 4 tabs
-    const tabList = screen.getByRole('tablist', { name: /Atelier Engine Features/i });
+    const tabList = screen.getByRole('tablist', { name: /What the Desk can do/i });
     expect(tabList).toBeDefined();
 
     const tabs = screen.getAllByRole('tab');
@@ -182,7 +182,7 @@ describe('AtelierEngineShowcase Component', () => {
     const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
     const view = render(<AtelierEngineShowcase />);
     const orbit = screen.getByTitle('Toggle automatic orbital rotation');
-    const light = screen.getByRole('slider', { name: /Interactive 2.5D Light Direction Gizmo/ });
+    const light = screen.getByRole('slider', { name: /Lamp direction/ });
     expect(frames.size).toBe(0); // Reduced-motion preference is respected.
 
     await act(async () => { fireEvent.click(orbit); });
@@ -315,7 +315,7 @@ describe('AtelierEngineShowcase Component', () => {
     await act(async () => {
       fireEvent.click(hearthBtn);
     });
-    expect(screen.getByText(/Hearth Atelier/i)).toBeDefined();
+    expect(screen.getByText(/Lamplit Desk/i)).toBeDefined();
 
     // Quantize buttons
     const sixteenColorsBtn = screen.getByRole('button', { name: '16 colours' });

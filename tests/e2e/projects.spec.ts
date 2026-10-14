@@ -23,7 +23,7 @@ test.describe('Projects Gallery & Workspace Management', () => {
 
     await page.getByTestId('file-menu-button').click();
     await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-    const gallery = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+    const gallery = page.getByRole('dialog', { name: 'Projects & Gallery' });
     await gallery.getByRole('button', { name: 'New Drawing' }).click();
     await expect(gallery).toBeVisible();
     await expect(page.getByTestId('studio-toast')).toContainText('could not be saved');
@@ -48,11 +48,11 @@ test.describe('Projects Gallery & Workspace Management', () => {
     await projectsBtn.click();
 
     // Verify Gallery modal appears
-    await expect(page.getByText(/Atelier Projects & Gallery/i)).toBeVisible();
+    await expect(page.getByText(/Projects & Gallery/i)).toBeVisible();
 
     // Close modal
     await page.keyboard.press('Escape');
-    await expect(page.getByText(/Atelier Projects & Gallery/i)).not.toBeVisible();
+    await expect(page.getByText(/Projects & Gallery/i)).not.toBeVisible();
 
     // 2. Draw a stroke on the canvas to produce an undoable action
     const canvas = page.getByTestId('main-composite-canvas');
@@ -77,7 +77,7 @@ test.describe('Projects Gallery & Workspace Management', () => {
     // 3. Create a new drawing via Projects Gallery
     await page.getByTestId('file-menu-button').click();
     await projectsBtn.click();
-    const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
+    const modal = page.getByRole('dialog', { name: /Projects & Gallery/i });
     await expect(modal).toBeVisible();
 
     const newDrawingBtn = modal.getByRole('button', { name: 'New Drawing' });

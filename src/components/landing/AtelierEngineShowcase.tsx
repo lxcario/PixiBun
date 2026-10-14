@@ -90,7 +90,7 @@ export const AtelierEngineShowcase: React.FC = () => {
           <div
             className="flex flex-wrap items-end justify-center gap-3 mb-8"
             role="tablist"
-            aria-label="Atelier Engine Features"
+            aria-label="What the Desk can do"
           >
             {SHOWCASE_TABS.map((tab, i) => {
               const isActive = tab.id === activeTabId;

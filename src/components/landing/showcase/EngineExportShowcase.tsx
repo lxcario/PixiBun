@@ -87,7 +87,7 @@ const UNITY_SAMPLE = `{
     }
   ],
   "meta": {
-    "app": "PixiBun Atelier",
+    "app": "PixiBun",
     "version": "1.0",
     "image": "bun_walk.png",
     "format": "RGBA8888",
@@ -138,7 +138,7 @@ const PHASER_SAMPLE = `{
     }
   ],
   "meta": {
-    "app": "PixiBun Atelier",
+    "app": "PixiBun",
     "version": "1.0",
     "format": "RGBA8888",
     "scale": "1"

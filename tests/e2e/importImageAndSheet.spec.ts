@@ -51,7 +51,7 @@ test('visible import actions let the user choose a real file', async ({ page }) 
 
   await page.getByTestId('file-menu-button').click();
   await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Atelier Projects & Gallery' }).getByRole('button', { name: 'Import File' }).click();
+  await page.getByRole('dialog', { name: 'Projects & Gallery' }).getByRole('button', { name: 'Import File' }).click();
   const importDialog = page.getByRole('dialog', { name: 'Import File' });
   await expect(importDialog.getByText('Choose a .pixibun project, image, or sprite sheet to import.')).toBeVisible();
   await importDialog.getByTestId('import-modal-file-input').setInputFiles({ name: 'gallery-art.png', mimeType: 'image/png', buffer });
@@ -270,7 +270,7 @@ test('the studio 45-degree RotSprite command preserves its palette and visibly t
   const editRevision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
   await page.getByRole('button', { name: 'PixiTools' }).click();
   await page.getByTestId('pixitools-task-polish').click();
-  const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
+  const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite' });
   if (await cleanupPanel.getAttribute('aria-expanded') === 'false') await cleanupPanel.click();
   await page.getByRole('button', { name: '+45°' }).click();
   await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision), { timeout: 30_000 }).toBeGreaterThan(editRevision);
@@ -305,7 +305,7 @@ test('Rotate Cleanly keeps an outlined circle closed at 45 degrees', async ({ pa
   const revision = await page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision);
   await page.getByRole('button', { name: 'PixiTools' }).click();
   await page.getByTestId('pixitools-task-polish').click();
-  const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite (Atelier Assistants & Ramps)' });
+  const cleanupPanel = page.getByRole('button', { name: 'Pixel Cleanup & RotSprite' });
   if (await cleanupPanel.getAttribute('aria-expanded') === 'false') await cleanupPanel.click();
   await page.getByRole('button', { name: '+45°' }).click();
   await expect.poll(() => page.evaluate(() => (window as Window & { __studioStore?: { getState: () => { editRevision: number } } }).__studioStore!.getState().editRevision)).toBeGreaterThan(revision);

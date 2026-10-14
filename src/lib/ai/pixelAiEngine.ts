@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// PixiBun Smart Pixel AI & Mathematical Raster Engine
+// PixiBun deterministic pixel raster engine (no generative models)
 // Professional Real Data Algorithms:
 // - Optical Flow & SDF 2D In-Between Frame Morphing
 // - Sub-Pixel Anti-Aliasing (De-Jaggy) & Staircase Corner Smoothing

@@ -536,7 +536,7 @@ export const CenterViewport: React.FC<CenterViewportProps> = ({
     brushSize: tools.brushSize,
   });
 
-  // Hook 5: Studio events and AI operations
+  // Hook 5: Studio events and PixiTools operations
   useViewportStudioEvents({
     mainCanvasRef,
     canvasWidth,

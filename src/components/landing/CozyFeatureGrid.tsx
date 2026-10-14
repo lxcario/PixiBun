@@ -74,7 +74,7 @@ const PROMISES: Array<{ kind: Kind; tag: string; title: string; body: string; co
     kind: 'fort',
     tag: 'no wifi? no worries',
     title: 'Works offline.',
-    body: 'After your first visit the atelier keeps working without a connection, on a train or in a blanket fort.',
+    body: 'After your first visit the Desk keeps working without a connection, on a train or in a blanket fort.',
     color: '#dcabdf',
   },
   {
@@ -114,7 +114,7 @@ export const CozyFeatureGrid: React.FC = () => {
               Made to feel like home.
             </h2>
             <p className="mt-5 text-base sm:text-lg leading-relaxed text-[var(--text-body)]">
-              A few things we keep true, however big the atelier gets.
+              A few things we keep true, however big PixiBun gets.
             </p>
           </div>
         </CozyScrollReveal>

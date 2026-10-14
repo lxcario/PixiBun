@@ -23,7 +23,7 @@ async function save(page: Page) {
 }
 async function gallery(page: Page) {
   await page.getByTestId('file-menu-button').click(); await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Atelier Projects & Gallery' }); await expect(dialog).toBeVisible(); return dialog;
+  const dialog = page.getByRole('dialog', { name: 'Projects & Gallery' }); await expect(dialog).toBeVisible(); return dialog;
 }
 async function rename(page: Page, oldName: string, newName: string, keyboard = false) {
   const dialog = await gallery(page), card = dialog.getByRole('button', { name: `Open project ${oldName}`, exact: true });

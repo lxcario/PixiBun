@@ -193,7 +193,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Never intercept or cache non-GET requests or AI/API endpoints
+  // 1. Never intercept or cache non-GET requests or API endpoints
   if (request.method !== 'GET' || url.pathname.startsWith('/api/')) {
     return;
   }

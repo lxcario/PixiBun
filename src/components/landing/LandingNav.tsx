@@ -10,7 +10,7 @@ import { NIGHT_VARS } from './night/nightPalette';
 const NAV_LINKS = [
     { href: '/playground', label: 'Playground', isExternal: true },
   { href: '/studio', label: 'Studio', isExternal: true },
-  { href: '#a-night-at-the-atelier', label: 'Tour', sectionId: 'a-night-at-the-atelier' },
+  { href: '#a-night-at-the-desk', label: 'Tour', sectionId: 'a-night-at-the-desk' },
   { href: '#engine-showcase', label: 'Engine', sectionId: 'engine-showcase' },
   { href: '#features', label: 'Promises', sectionId: 'features' },
   { href: '#gallery', label: 'Shelf', sectionId: 'gallery' },
@@ -39,7 +39,7 @@ export const LandingNav: React.FC = () => {
     handleScroll();
 
     // 2. Zero-reflow IntersectionObserver for active section spying
-    const sections = ['a-night-at-the-atelier', 'engine-showcase', 'features', 'gallery', 'story'];
+    const sections = ['a-night-at-the-desk', 'engine-showcase', 'features', 'gallery', 'story'];
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

@@ -209,7 +209,7 @@ test.describe('Startup Recovery Routing & Controlled Hydration (E2E)', () => {
     await projectsBtn.click();
 
     // Verify Gallery modal appears
-    const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
+    const modal = page.getByRole('dialog', { name: /Projects & Gallery/i });
     await expect(modal).toBeVisible();
 
     // Find and click the damaged project card
@@ -311,7 +311,7 @@ test.describe('Startup Recovery Routing & Controlled Hydration (E2E)', () => {
     const projectsBtn = page.getByRole('menuitem', { name: 'Projects', exact: true });
     await projectsBtn.click();
 
-    const modal = page.getByRole('dialog', { name: /Atelier Projects & Gallery/i });
+    const modal = page.getByRole('dialog', { name: /Projects & Gallery/i });
     await expect(modal).toBeVisible();
 
     const targetCard = modal.getByText('Header Valid Decode Invalid Project');

@@ -15,7 +15,7 @@ async function backup(page: Page) {
 }
 async function gallery(page: Page) {
   await page.getByTestId('file-menu-button').click(); await page.getByRole('menuitem', { name: 'Projects', exact: true }).click();
-  return page.getByRole('dialog', { name: 'Atelier Projects & Gallery' });
+  return page.getByRole('dialog', { name: 'Projects & Gallery' });
 }
 for (const createdAt of [0, 946684800000]) test(`compiled creation date ${createdAt} survives import, edits, reload and backup while duplicates get a new date`, async ({ page }, info) => {
   await ready(page);
