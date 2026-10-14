@@ -222,7 +222,8 @@ describe('Selection cancellation when clicking outside canvas or switching tools
     expect(useStudioStore.getState().selection).toBeNull();
   });
 
-  it('clears selection when drawing with pen if a selection was active', () => {
+  // Audit defect 2: the selection limits the pen instead of being dropped by it.
+  it('keeps the selection when drawing with pen inside an active selection', () => {
     useStudioStore.getState().setActiveTool('pen');
     useStudioStore.getState().setSelection({ x: 4, y: 4, w: 10, h: 10 });
 
@@ -292,6 +293,6 @@ describe('Selection cancellation when clicking outside canvas or switching tools
       result.current.handlePointerDown(pointerEvent);
     });
 
-    expect(useStudioStore.getState().selection).toBeNull();
+    expect(useStudioStore.getState().selection).toEqual({ x: 4, y: 4, w: 10, h: 10 });
   });
 });
